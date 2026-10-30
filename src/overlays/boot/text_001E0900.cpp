@@ -48,10 +48,9 @@ extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
 extern BootTrackPool<BootClass177BE0>* D_001B6678;
 extern BootTrackPool<BootClass174440>* D_001B667C;
 extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
-void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool);
 void func_4C5B60(s32 first, s32 second);
 void func_4E14B0(BootProjectionACD0* projection, BootDimensionsACD0* display);
-void lib_container_attach_widget(BootContainer* object, BootListObject* child);
+void lib_container_attach_widget(BootContainer* container, BootListObject* child);
 void func_100F60(void* root);
 void* func_1012C0(void* root);
 s32 func_11D9A0(void* clock_source, struct BootClock* clock);
@@ -110,7 +109,7 @@ s32 func_110C10(BootSound1B65F8* sound, s32 handle);
 u32 func_10E310(BootSound1B65F8* sound, s32 handle, float time);
 void func_11E020(BootInputRoot9670* root, s32 slot, s32 enabled);
 void func_11E320(BootInputRoot9670* root, s32 slot, s32* first, s32* second, s32* third, s32* fourth);
-void lib_text_set_resource(BootTextWidget* object, s32 source, s32 key, u8 flag);
+void lib_text_set_resource(BootTextWidget* text, s32 source, s32 key, u8 flag);
 BootClass170F30* func_472EB0(BootListObject* models, BootClass170F30* model);
 void func_4BF100(BootAnimation* animation, BootListObject* models, void* optional);
 void lib_animation_bind_state(BootAnimation* animation, BootAnimationTarget* target, const char* name);
@@ -183,16 +182,16 @@ struct BootRender6618
     void* packet;
 };
 
-static inline void copy_transfer_name(BootBattleTrophyCard* object, const char* base, const char* suffix);
-static inline s32 prepare_transfer_request(BootBattleTrophyCard* object);
+static inline void copy_transfer_name(BootBattleTrophyCard* trophy_card, const char* base, const char* suffix);
+static inline s32 prepare_transfer_request(BootBattleTrophyCard* trophy_card);
 
 /**
  * @brief Clear the stored filename and copy the optional base and suffix.
- * @param object State containing the filename buffer.
+ * @param trophy_card State containing the filename buffer.
  * @param base Base filename; a null pointer leaves the buffer unchanged.
  * @param suffix Optional suffix to append after the base.
  */
-static inline void copy_transfer_name(BootBattleTrophyCard* object, const char* base, const char* suffix)
+static inline void copy_transfer_name(BootBattleTrophyCard* trophy_card, const char* base, const char* suffix)
 {
     s32 index;
 
@@ -200,48 +199,48 @@ static inline void copy_transfer_name(BootBattleTrophyCard* object, const char* 
     {
         for (index = 0; index < BOOT_TRANSFER_NAME_CAPACITY; index++)
         {
-            object->filename[index] = 0;
+            trophy_card->filename[index] = 0;
         }
 
-        func_13C948(object->filename, base);
+        func_13C948(trophy_card->filename, base);
 
         if (suffix != 0)
         {
-            strcat(object->filename, suffix);
+            strcat(trophy_card->filename, suffix);
         }
     }
 }
 
 /**
  * @brief Clear an allocated buffer and populate its transfer request records.
- * @param object State containing the buffer and filename storage.
+ * @param trophy_card State containing the buffer and filename storage.
  * @return 1 when the records are prepared, or 0 when no buffer is allocated.
  */
-static inline s32 prepare_transfer_request(BootBattleTrophyCard* object)
+static inline s32 prepare_transfer_request(BootBattleTrophyCard* trophy_card)
 {
     u8 ready;
 
-    if (object->transfer_buffer == 0)
+    if (trophy_card->transfer_buffer == 0)
     {
         ready = 0;
     }
     else
     {
-        func_13A678(object->transfer_buffer, 0, BOOT_TRANSFER_BUFFER_SIZE);
+        func_13A678(trophy_card->transfer_buffer, 0, BOOT_TRANSFER_BUFFER_SIZE);
 
         if (strlen(g_card_product_code) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
         {
-            copy_transfer_name(object, g_card_product_code, g_trophy_file_suffix);
+            copy_transfer_name(trophy_card, g_card_product_code, g_trophy_file_suffix);
         }
 
-        object->file_buffer.unk00 = object->filename;
-        object->file_buffer.unk04 = object->transfer_buffer;
-        object->file_buffer.unk08 = BOOT_TRANSFER_BUFFER_SIZE;
-        object->file_buffer.unk0C = 0;
-        object->file_request.unk00 = object->filename;
-        object->file_request.unk04 = 1;
-        object->file_request.unk08 = 0;
-        object->file_request.unk0C = &object->file_buffer;
+        trophy_card->file_buffer.unk00 = trophy_card->filename;
+        trophy_card->file_buffer.unk04 = trophy_card->transfer_buffer;
+        trophy_card->file_buffer.unk08 = BOOT_TRANSFER_BUFFER_SIZE;
+        trophy_card->file_buffer.unk0C = 0;
+        trophy_card->file_request.unk00 = trophy_card->filename;
+        trophy_card->file_request.unk04 = 1;
+        trophy_card->file_request.unk08 = 0;
+        trophy_card->file_request.unk0C = &trophy_card->file_buffer;
         ready = 1;
     }
 
@@ -331,7 +330,10 @@ static inline u8 settings_fourth_dimension_unlocked(BootSystemSettings* settings
     return settings->fourth_dimension_unlocked;
 }
 
-/** @brief Report the list kind used when registration requests the default. @return Two. */
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Two.
+ */
 s32 BootBattleTrophyCard::get_default_list_kind()
 {
     return 2;
@@ -400,13 +402,19 @@ void BootBattleTrophyCard::finish_transfer()
     }
 }
 
-/** @brief Return the stored signed request result. @return The stored value. */
+/**
+ * @brief Return the stored signed request result.
+ * @return The stored value.
+ */
 s32 BootBattleTrophyCard::get_transfer_result()
 {
     return transfer_result;
 }
 
-/** @brief Return the transfer state. @return 1 once the transfer has finished, -1 while it runs or after a reset. */
+/**
+ * @brief Return the transfer state.
+ * @return 1 once the transfer has finished, -1 while it runs or after a reset.
+ */
 s16 BootBattleTrophyCard::get_transfer_state()
 {
     return transfer_state;
@@ -423,14 +431,14 @@ s16 BootBattleTrophyCard::advance_transfer()
     switch (transfer_phase)
     {
     case 0:
-        unkDF9 = 1;
+        transfer_open = 1;
         result = func_432310(card, transfer_slot, &file_request);
 
         if (result == -1)
         {
-            unkDF8 = 0;
+            transfer_pending = 0;
             transfer_state = 1;
-            unk1C = 0;
+            card_step = 0;
             transfer_slot = -1;
             transfer_phase = -1;
         }
@@ -450,13 +458,13 @@ s16 BootBattleTrophyCard::advance_transfer()
 
         if (result == 1)
         {
-            unkDF8 = 0;
+            transfer_pending = 0;
 
             if (transfer_result >= 0)
             {
                 finish_transfer();
                 transfer_state = 1;
-                unk1C = 0;
+                card_step = 0;
                 transfer_slot = -1;
                 transfer_phase = -1;
             }
@@ -465,12 +473,12 @@ s16 BootBattleTrophyCard::advance_transfer()
                 transfer_state = 1;
                 transfer_slot = -1;
                 transfer_phase = -1;
-                unk1C = 1;
-                unkDF8 = 0;
+                card_step = 1;
+                transfer_pending = 0;
 
-                if (unkDF9 == 1)
+                if (transfer_open == 1)
                 {
-                    unkDF9 = 0;
+                    transfer_open = 0;
                 }
             }
         }
@@ -505,7 +513,7 @@ s32 BootBattleTrophyCard::start_transfer(u16 mode, void* destination)
     transfer_slot = mode;
     transfer_result = -1;
     transfer_phase = 0;
-    unkDF8 = 1;
+    transfer_pending = 1;
     slot = transfer_slot;
     unk1E = 0;
 
@@ -521,7 +529,7 @@ s32 BootBattleTrophyCard::start_transfer(u16 mode, void* destination)
         return 0;
     }
 
-    unkDF9 = 0;
+    transfer_open = 0;
     return 1;
 }
 
@@ -540,17 +548,17 @@ void BootBattleTrophyCard::set_mode(u8 mode)
 
 /**
  * @brief Drop a pending transfer and go back to waiting for the card.
- * @param object Memory card object.
+ * @param trophy_card Memory card trophy_card.
  */
-static inline void cancel_transfer(BootBattleTrophyCard* object)
+static inline void cancel_transfer(BootBattleTrophyCard* trophy_card)
 {
-    object->transfer_state = 1;
-    object->transfer_result = -12;
-    object->transfer_slot = -1;
-    object->transfer_phase = -1;
-    object->unk1C = 1;
-    object->unkDF9 = 0;
-    object->unkDF8 = 0;
+    trophy_card->transfer_state = 1;
+    trophy_card->transfer_result = -12;
+    trophy_card->transfer_slot = -1;
+    trophy_card->transfer_phase = -1;
+    trophy_card->card_step = 1;
+    trophy_card->transfer_open = 0;
+    trophy_card->transfer_pending = 0;
 }
 
 /** @brief Advance the memory card state for the current mode. */
@@ -562,19 +570,19 @@ void BootBattleTrophyCard::update()
 
     if (card != 0 && card->unk20 != 0)
     {
-        status = unk1A;
+        status = last_card_status;
 
         if (unk1E == 0)
         {
             status = card->unk14[slot].unk48;
 
-            if (status != unk1A)
+            if (status != last_card_status)
             {
-                unk1A = status;
-                unk1C = 1;
+                last_card_status = status;
+                card_step = 1;
                 transfer_state = -1;
 
-                if (unkDF9 != 0)
+                if (transfer_open != 0)
                 {
                     cancel_transfer(this);
                 }
@@ -593,7 +601,7 @@ void BootBattleTrophyCard::update()
                 break;
             }
 
-            switch (unk1C)
+            switch (card_step)
             {
             case 0:
                 done = 1;
@@ -601,7 +609,7 @@ void BootBattleTrophyCard::update()
             case 1:
                 if (status != 2)
                 {
-                    if (unkDF8 == 0)
+                    if (transfer_pending == 0)
                     {
                         handle_card_event(1, 15, 1);
                     }
@@ -637,7 +645,7 @@ void BootBattleTrophyCard::update()
                 }
 
                 slot_free_space[slot] = free_space;
-                unk1C = 2;
+                card_step = 2;
 
                 if (free_space < 175)
                 {
@@ -659,7 +667,7 @@ void BootBattleTrophyCard::update()
                 }
                 else
                 {
-                    unk1C = 3;
+                    card_step = 3;
                 }
 
                 break;
@@ -693,7 +701,7 @@ void BootBattleTrophyCard::update()
                 {
                     if (status == 1)
                     {
-                        unk1C = 4;
+                        card_step = 4;
                     }
                     else
                     {
@@ -702,7 +710,7 @@ void BootBattleTrophyCard::update()
                 }
                 else if (status == 1)
                 {
-                    unk1C = 4;
+                    card_step = 4;
                 }
                 else
                 {
@@ -724,7 +732,7 @@ void BootBattleTrophyCard::update()
                 }
                 else
                 {
-                    unk1C = 5;
+                    card_step = 5;
                 }
 
                 break;
@@ -750,9 +758,9 @@ void BootBattleTrophyCard::update()
                         {
                             handle_card_event(1, 5, 1);
                         }
-                        else if (unkDF8 != 0)
+                        else if (transfer_pending != 0)
                         {
-                            unk1C = 8;
+                            card_step = 8;
                             transfer_state = -1;
                         }
                         else
@@ -787,18 +795,18 @@ void BootBattleTrophyCard::update()
 
 /**
  * @brief Return a mode's stored byte, or zero for an unsupported mode.
- * @param object State holding the mode values.
+ * @param trophy_card State holding the mode values.
  * @param mode Mode 0 or 1 to query.
  * @return The stored byte, or zero when the mode is unsupported.
  */
-static inline u8 state_mode_value(BootBattleTrophyCard* object, u16 mode)
+static inline u8 state_mode_value(BootBattleTrophyCard* trophy_card, u16 mode)
 {
     if (mode != 0 && mode != 1)
     {
         return 0;
     }
 
-    return object->unkD37[mode];
+    return trophy_card->unkD37[mode];
 }
 
 /**
@@ -1130,9 +1138,9 @@ void BootBattleTrophyCard::reset_slot(s16 mode)
 {
     s32 selected = mode;
     slot = mode;
-    unk1A = -1;
+    last_card_status = -1;
     unk1E = 0;
-    unk1C = 0;
+    card_step = 0;
     unk2D = 0;
 
     if (selected == 0)
@@ -1180,7 +1188,7 @@ s32 BootBattleTrophyCard::initialize()
     func_432720(card, D_001B6614);
     func_432660(card, 0, 0, 0);
     func_432660(card, 1, 1, 0);
-    unk1C = 0;
+    card_step = 0;
     reset_slot(0);
     settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
 
@@ -1226,9 +1234,9 @@ BootBattleTrophyCard::BootBattleTrophyCard()
 {
     s32 index;
     card = 0;
-    unk1C = -1;
+    card_step = -1;
     slot = -1;
-    unk1A = -1;
+    last_card_status = -1;
     unk1E = 0;
     unk20 = 0;
     free_space = 0;
@@ -1255,14 +1263,14 @@ BootBattleTrophyCard::BootBattleTrophyCard()
     transfer_state = -1;
     transfer_destination = 0;
     settings = 0;
-    unkDF8 = 0;
+    transfer_pending = 0;
 
     for (index = 0; index < BOOT_TRANSFER_NAME_CAPACITY; index++)
     {
         filename[index] = 0;
     }
 
-    unkDF9 = 0;
+    transfer_open = 0;
     slot_free_space[0] = -1;
     unkE04[0] = -1;
     slot_free_space[1] = -1;
@@ -1897,7 +1905,10 @@ BootStartupChecks::BootStartupChecks()
     text = 0;
 }
 
-/** @brief Report the list kind used when registration requests the default. @return Four. */
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Four.
+ */
 s32 BootNewGameSettings::get_default_list_kind()
 {
     return 4;
@@ -2978,7 +2989,7 @@ void BootNewGameSettings::update_page_images()
 
             if (images[9 + i] != 0)
             {
-                images[9 + i]->model->unk6a &= ~1;
+                images[9 + i]->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
             }
         }
         else
@@ -2997,7 +3008,7 @@ void BootNewGameSettings::update_page_images()
 
             if (images[9 + i] != 0)
             {
-                images[9 + i]->model->unk6a |= 1;
+                images[9 + i]->model->draw_flags |= BOOT_DRAW_HIDDEN;
             }
         }
     }
@@ -3006,11 +3017,11 @@ void BootNewGameSettings::update_page_images()
     {
         if (page == BOOT_SETTINGS_DIFFICULTY)
         {
-            images[15]->model->unk6a |= 1;
+            images[15]->model->draw_flags |= BOOT_DRAW_HIDDEN;
         }
         else
         {
-            images[15]->model->unk6a &= ~1;
+            images[15]->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
         }
     }
 }
@@ -3962,7 +3973,10 @@ BootClass170F30::~BootClass170F30()
 {
 }
 
-/** @brief Virtual slot 5. @return Always 0. */
+/**
+ * @brief Virtual slot 5.
+ * @return Always 0.
+ */
 s32 BootInput::func_001E9640()
 {
     return 0;
@@ -3990,7 +4004,7 @@ void BootInput::update()
     u16 ready;
     held = func_11E010(D_001B65F0, 0);
     pressed = func_11DFF0(D_001B65F0, 0);
-    unk1A = func_11E000(D_001B65F0, 0);
+    held_any = func_11E000(D_001B65F0, 0);
     repeated = func_11DFB0(D_001B65F0, 0);
     func_11DF90(D_001B65F0, 0);
     trophy_card = g_boot_program.trophy_card;
@@ -4258,7 +4272,7 @@ void BootOpeningMovie::update()
             case 1:
             {
                 float alpha = (30.0f - (float)fade) / 30.0f;
-                caption_image->model->unk6a &= ~1;
+                caption_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
                 BootVector4DDAA0 color;
                 color.x = 1.0f;
                 color.y = 1.0f;
@@ -5022,6 +5036,145 @@ void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool)
 s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* pool, s32 count)
 {
     return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledFloatCurveTrack::~BootPooledFloatCurveTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledFloatCurveTrack::BootPooledFloatCurveTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledVectorCurveTrack::~BootPooledVectorCurveTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledVectorCurveTrack::BootPooledVectorCurveTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 track_171A70_pool_allocate(BootTrackPool<BootClass177BE0>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootClass177BE0::~BootClass177BE0()
+{
+}
+
+/** @brief Construct the track. */
+BootClass177BE0::BootClass177BE0()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void track_171A70_pool_release(BootTrackPool<BootClass177BE0>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 track_171680_pool_allocate(BootTrackPool<BootClass174440>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootClass174440::~BootClass174440()
+{
+}
+
+/** @brief Construct the track. */
+BootClass174440::BootClass174440()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void track_171680_pool_release(BootTrackPool<BootClass174440>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledQuaternionTrack::~BootPooledQuaternionTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledQuaternionTrack::BootPooledQuaternionTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool)
+{
+    pool->release();
 }
 
 #include "overlays/boot/transform_inlines.h"

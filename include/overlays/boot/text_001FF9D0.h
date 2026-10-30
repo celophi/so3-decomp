@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_BOOT_TEXT_001FF9E0_H
-#define SO3_OVERLAYS_BOOT_TEXT_001FF9E0_H
+#ifndef SO3_OVERLAYS_BOOT_TEXT_001FF9D0_H
+#define SO3_OVERLAYS_BOOT_TEXT_001FF9D0_H
 
 #include "types.h"
 #include "main/resident_0011EE70.h"
@@ -47,7 +47,10 @@ extern "C" s32 func_467AD0(BootStringLabel* object, const char* text, u8 flag, f
 class BootPacketBuffer : public ResidentPacket
 {
     public:
-        /** @brief Allocate the packet's storage. @param size Storage size in bytes. */
+        /**
+         * @brief Allocate the packet's storage.
+         * @param size Storage size in bytes.
+         */
         BootPacketBuffer(s32 size)
         {
             unk04 = 0;
@@ -156,7 +159,10 @@ class BootNeedleMeter : public BootTransformOwner, public BootDmaCallbacks
          */
         virtual void build_packet(const void* matrix, void* context);
 
-        /** @brief Clear dma_pending and run the Lib hook. @param value Notification value; unused. */
+        /**
+         * @brief Clear dma_pending and run the Lib hook.
+         * @param value Notification value; unused.
+         */
         virtual void on_packet_complete(u32 value);
 
         /**
@@ -213,7 +219,10 @@ class BootStringLabel : public BootDrawWidget
         /** @brief Destroy the label. */
         virtual ~BootStringLabel();
 
-        /** @brief Change the string and mark the label for redraw. @param value String to draw. */
+        /**
+         * @brief Change the string and mark the label for redraw.
+         * @param value String to draw.
+         */
         void set_text(const char* value)
         {
             text = value;
@@ -251,7 +260,10 @@ class BootMusicPlayer : public BootListObject
         /** @brief Release the loaded data, the owned objects and the transform, then stop the stream. */
         virtual ~BootMusicPlayer();
 
-        /** @brief Report the list kind used when registration requests the default. @return Four. */
+        /**
+         * @brief Report the list kind used when registration requests the default.
+         * @return Four.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Run the player. */

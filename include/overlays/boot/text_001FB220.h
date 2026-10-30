@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_BOOT_TEXT_001FF0A0_H
-#define SO3_OVERLAYS_BOOT_TEXT_001FF0A0_H
+#ifndef SO3_OVERLAYS_BOOT_TEXT_001FB220_H
+#define SO3_OVERLAYS_BOOT_TEXT_001FB220_H
 
 #include "types.h"
 
@@ -52,7 +52,10 @@ class BootBattleTrophyViewer : public BootListObject
         /** @brief Release the loaded data and every owned object. */
         virtual ~BootBattleTrophyViewer();
 
-        /** @brief Report the list kind used when registration requests the default. @return Four. */
+        /**
+         * @brief Report the list kind used when registration requests the default.
+         * @return Four.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Run the viewer: choose a memory card slot, load its trophy data, then browse the trophy grid. */
@@ -95,6 +98,7 @@ class BootBattleTrophyViewer : public BootListObject
 
         /** Decoded image blocks of resource 0x2B. */
         u8* image_blocks[3];
+
         /** Screen images built from the image blocks. */
         BootImage* images[10];
 
@@ -179,8 +183,10 @@ class BootBattleTrophyViewer : public BootListObject
 
         /** Rank title, shown once enough trophies are earned. */
         BootTextWidget* rank_text;
+
         /** Clips the trophy grid to the area between the header and footer. */
         BootClipRegion* grid_clip;
+
         /** Restores drawing to the whole display after the grid. */
         BootClipRegion* screen_clip;
 
@@ -215,6 +221,7 @@ class BootBattleTrophyViewer : public BootListObject
 
         /** How far each trophy picture has turned from its back to its front, zero when unrevealed. */
         float flip_progress[300];
+
         /** Next trophy to start turning over as the screen opens. */
         s32 reveal_index;
 

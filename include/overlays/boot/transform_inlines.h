@@ -5,13 +5,19 @@
 
 #ifdef __cplusplus
 
-/** @brief Store the halfword at offset 0x6A. @param value Value to store. */
-inline void BootTransformOwner::func_001DFE30(u16 value)
+/**
+ * @brief Set the draw flags (BOOT_DRAW_*).
+ * @param value New flags.
+ */
+inline void BootTransformOwner::set_draw_flags(u16 value)
 {
-    unk6a = value;
+    draw_flags = value;
 }
 
-/** @brief Store the halfword at offset 0x6C. @param value Value to store. */
+/**
+ * @brief Store the halfword at offset 0x6C.
+ * @param value Value to store.
+ */
 inline void BootTransformOwner::func_001DFE40(u16 value)
 {
     unk6c = value;
@@ -40,7 +46,7 @@ inline BootTransformOwner::BootTransformOwner()
     unk66 = 0;
     unk68 = 0;
     unk69 = 0;
-    unk6a = 0x10;
+    draw_flags = BOOT_DRAW_FLAG_0010;
     unk6c = 1;
     unk80 = 0;
     unk88 = 0;

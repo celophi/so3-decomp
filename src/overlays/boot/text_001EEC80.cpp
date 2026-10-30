@@ -3,51 +3,17 @@
 #include "vu0.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/vector_inlines.h"
-#include "overlays/boot/text_001ED4E0.h"
-#include "overlays/boot/text_001DD3C0.h"
-#include "overlays/boot/text_001E0900.h"
-#include "overlays/boot/text_001FF0A0.h"
-#include "overlays/boot/text_001FF9E0.h"
-#include "overlays/boot/init.h"
+#include "overlays/boot/text_001EEC80.h"
 #include "overlays/boot/resident.h"
-#include "overlays/lib/render_buffer.h"
 
 extern "C" {
-extern void* D_001B663C;
-u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 unk4, s32 unk5, s32 unk6, s32 unk7);
-u8* func_11F860(ResidentPacket* packet, s32 quadwords);
-u8* func_11F830(ResidentPacket* packet, u8* cursor);
 
-extern void func_4D00B0(void* object);
 FieldVec4B func_4B1640(const BootVectorSegmentBase* range, float key);
 extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
-void vector_curve_track_pool_free(BootTrackPool<BootPooledVectorCurveTrack>* pool, BootPooledVectorCurveTrack* track);
-float func_4B16C0(void* object, float key);
+float func_4B16C0(void* segment, float key);
 extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
-void vector_track_pool_free(BootTrackPool<BootPooledVectorTrack>* pool, BootPooledVectorTrack* track);
 extern float D_001B668C;
-void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total);
-void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
-extern void* D_001B6630;
-void func_4333A0(BootImageStrip* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
-
-extern const char g_new_game_node_name[];
-extern const char g_continue_node_name[];
-extern const char g_battle_collection_node_name[];
-extern const char g_install_node_name[];
-extern const char g_title_camera_node_name[];
-void func_455DF0(LibDrawBuffer* buffer, s32 first, s32 second);
-void func_455040(LibDrawBuffer* buffer, const BootTextureResource* resource);
-void func_455150(LibDrawBuffer* buffer, BootDrawSettings* settings);
-void func_4550F0(LibDrawBuffer* buffer, s32 count);
-void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
-void func_4791F0(BootScene* scene, u8* data);
-void func_40B3A0(u8* data);
-void func_473AA0(BootScene* scene);
-s32 func_112610(BootSound1B65F8* sound, s32 key);
-void func_100B40(void* allocation);
-
-void func_11F510(void* owner, void* object);
+}
 
 typedef struct FieldF32At050
 {
@@ -61,157 +27,6 @@ typedef struct FieldF32At04C
     float value;
 } FieldF32At04C;
 
-typedef struct FieldU32At048
-{
-    u8 pad[0x48];
-    u32 value;
-} FieldU32At048;
-
-typedef struct FieldU32At04C
-{
-    u8 pad[0x4C];
-    u32 value;
-} FieldU32At04C;
-
-/** @brief Destroy the track. */
-BootPooledFloatCurveTrack::~BootPooledFloatCurveTrack()
-{
-}
-
-/** @brief Construct the track. */
-BootPooledFloatCurveTrack::BootPooledFloatCurveTrack()
-{
-}
-
-/**
- * @brief Release every track in the pool and its storage.
- * @param pool Pool to clear.
- */
-void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool)
-{
-    pool->release();
-}
-
-/**
- * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
- * @param pool Pool to fill.
- * @param count Number of tracks.
- * @return One on success, or zero when the tracks could not be allocated.
- */
-s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count)
-{
-    return pool->init(count);
-}
-
-/** @brief Destroy the track. */
-BootPooledVectorCurveTrack::~BootPooledVectorCurveTrack()
-{
-}
-
-/** @brief Construct the track. */
-BootPooledVectorCurveTrack::BootPooledVectorCurveTrack()
-{
-}
-
-/**
- * @brief Release every track in the pool and its storage.
- * @param pool Pool to clear.
- */
-void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool)
-{
-    pool->release();
-}
-
-/**
- * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
- * @param pool Pool to fill.
- * @param count Number of tracks.
- * @return One on success, or zero when the tracks could not be allocated.
- */
-s32 track_171A70_pool_allocate(BootTrackPool<BootClass177BE0>* pool, s32 count)
-{
-    return pool->init(count);
-}
-
-/** @brief Destroy the track. */
-BootClass177BE0::~BootClass177BE0()
-{
-}
-
-/** @brief Construct the track. */
-BootClass177BE0::BootClass177BE0()
-{
-}
-
-/**
- * @brief Release every track in the pool and its storage.
- * @param pool Pool to clear.
- */
-void track_171A70_pool_release(BootTrackPool<BootClass177BE0>* pool)
-{
-    pool->release();
-}
-
-/**
- * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
- * @param pool Pool to fill.
- * @param count Number of tracks.
- * @return One on success, or zero when the tracks could not be allocated.
- */
-s32 track_171680_pool_allocate(BootTrackPool<BootClass174440>* pool, s32 count)
-{
-    return pool->init(count);
-}
-
-/** @brief Destroy the track. */
-BootClass174440::~BootClass174440()
-{
-}
-
-/** @brief Construct the track. */
-BootClass174440::BootClass174440()
-{
-}
-
-/**
- * @brief Release every track in the pool and its storage.
- * @param pool Pool to clear.
- */
-void track_171680_pool_release(BootTrackPool<BootClass174440>* pool)
-{
-    pool->release();
-}
-
-/**
- * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
- * @param pool Pool to fill.
- * @param count Number of tracks.
- * @return One on success, or zero when the tracks could not be allocated.
- */
-s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count)
-{
-    return pool->init(count);
-}
-
-/** @brief Destroy the track. */
-BootPooledQuaternionTrack::~BootPooledQuaternionTrack()
-{
-}
-
-/** @brief Construct the track. */
-BootPooledQuaternionTrack::BootPooledQuaternionTrack()
-{
-}
-
-/**
- * @brief Release every track in the pool and its storage.
- * @param pool Pool to clear.
- */
-void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool)
-{
-    pool->release();
-}
-
 /**
  * @brief Evaluate a vector range at a key.
  * @param range Range to evaluate.
@@ -223,6 +38,10 @@ FieldVec4B vector_segment_evaluate(const BootVectorSegmentBase* range, float key
     return func_4B1640(range, key);
 }
 
+/**
+ * @brief Run the default track hook.
+ * @param object Object to use.
+ */
 void func_001EECA0(void* object)
 {
 }
@@ -233,31 +52,59 @@ void BootFloatCurveTrackBase::release()
     delete this;
 }
 
-s32 func_001EED30(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001EED30(void* track)
 {
     return 0;
 }
 
-s32 func_001EED40(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001EED40(void* track)
 {
     return 0;
 }
 
-s32 func_001EED50(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001EED50(void* track)
 {
     return 0;
 }
 
-s32 func_001EED60(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 func_001EED60(void* track)
 {
     return 0;
 }
 
-void func_001EED70(void* object)
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
+void func_001EED70(void* track)
 {
 }
 
-void func_001EED80(void* object)
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
+void func_001EED80(void* track)
 {
 }
 
@@ -268,7 +115,7 @@ void BootPooledVectorCurveTrack::release()
     {
         if (state.pooled)
         {
-            func_001EEDF0();
+            return_to_pool();
         }
         else
         {
@@ -277,15 +124,25 @@ void BootPooledVectorCurveTrack::release()
     }
 }
 
-void func_001EEDF0(BootPooledVectorCurveTrack* track)
+/**
+ * @brief Free a pooled track's keys and give the track back to its pool.
+ * @param track Pooled track.
+ */
+void vector_curve_track_return_to_pool(BootPooledVectorCurveTrack* track)
 {
     vector_curve_track_free_keys(track);
     vector_curve_track_pool_free(g_vector_curve_track_pool, track);
 }
 
-float func_001EEE20(void* object, float key)
+/**
+ * @brief Evaluate a float curve segment at a key.
+ * @param segment Segment to evaluate.
+ * @param key Key to evaluate at.
+ * @return Value at the key.
+ */
+float float_segment_evaluate(void* segment, float key)
 {
-    return func_4B16C0(object, key);
+    return func_4B16C0(segment, key);
 }
 
 /** @brief Return a pooled track to its pool, or delete an ordinary track. */
@@ -295,7 +152,7 @@ void BootPooledVectorTrack::release()
     {
         if (state.pooled)
         {
-            func_slot84();
+            return_to_pool();
         }
         else
         {
@@ -304,7 +161,11 @@ void BootPooledVectorTrack::release()
     }
 }
 
-void func_001EEEA0(BootPooledVectorTrack* track)
+/**
+ * @brief Free a pooled track's keys and give the track back to its pool.
+ * @param track Pooled track.
+ */
+void vector_track_return_to_pool(BootPooledVectorTrack* track)
 {
     vector_track_free_keys(track);
     vector_track_pool_free(g_vector_track_pool, track);
@@ -316,10 +177,11 @@ struct ResetVectorB0_001ED4E0
     FieldVec4B value;
 };
 
-void vector_curve_track_reset_sampling(void* object)
+/** Clear the last sampled value, then reset the key state. */
+void vector_curve_track_reset_sampling(void* track)
 {
-    ((ResetVectorB0_001ED4E0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
-    vector_curve_track_reset_state((BootVectorCurveTrackState*)object);
+    ((ResetVectorB0_001ED4E0*)track)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    vector_curve_track_reset_state((BootVectorCurveTrackState*)track);
 }
 
 /**
@@ -578,7 +440,14 @@ static inline const FieldVec4A* track_vector(const FieldVec4A* vector, FieldVec4
     return vector;
 }
 
-/** @brief Append a keyframe, using zero vectors for missing auxiliary vectors. */
+/**
+ * @brief Append a keyframe, using zero vectors for missing auxiliary vectors.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 BootVectorCurveTrack::append_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key)
 {
     FieldVec4A zero_first;
@@ -622,7 +491,15 @@ s32 BootVectorCurveTrack::replace_curve_key(s32 index, float key, const FieldVec
     return 1;
 }
 
-/** @brief Replace an indexed keyframe, using zero vectors for missing auxiliary vectors. */
+/**
+ * @brief Replace an indexed keyframe, using zero vectors for missing auxiliary vectors.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 BootVectorCurveTrack::replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent)
 {
     FieldVec4A zero_first;
@@ -632,7 +509,15 @@ s32 BootVectorCurveTrack::replace_key(s32 index, float key, const FieldVec4A* va
     return replace_curve_key(index, key, value, in_tangent, out_tangent);
 }
 
-/** @brief Insert a keyframe, using zero vectors for missing auxiliary vectors. */
+/**
+ * @brief Insert a keyframe, using zero vectors for missing auxiliary vectors.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 BootVectorCurveTrack::insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent)
 {
     FieldVec4A zero_first;
@@ -642,7 +527,13 @@ s32 BootVectorCurveTrack::insert_key(s32 index, float key, const FieldVec4A* val
     return insert_curve_key(index, key, value, in_tangent, out_tangent);
 }
 
-/** @brief Store a single keyframe, using zero vectors for missing auxiliary vectors. */
+/**
+ * @brief Store a single keyframe, using zero vectors for missing auxiliary vectors.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ */
 void BootVectorCurveTrack::set_single_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key)
 {
     FieldVec4A zero_first;
@@ -703,7 +594,12 @@ void BootVectorCurveTrack::reset_keys()
     set_single_key(&zero, &zero, &zero, 0.0f);
 }
 
-extern "C" void vector_curve_track_get_value_rate(const BootVectorCurveTrack* track, FieldVec4B* output)
+/**
+ * @brief Return how fast the value changed at the last sample, per second.
+ * @param track Track to read.
+ * @param output Receives the rate.
+ */
+void vector_curve_track_get_value_rate(const BootVectorCurveTrack* track, FieldVec4B* output)
 {
     *output = *reinterpret_cast<const FieldVec4A*>(&track->value_rate);
 }
@@ -721,13 +617,24 @@ void BootVectorCurveTrack::get_end_delta(FieldVec4B* output) const
     }
 }
 
+/**
+ * @brief Clear the last sampled value, then reset the key state.
+ * @param track Track to reset.
+ */
 void float_curve_track_reset_sampling(BootFloatCurveTrack* track)
 {
     track->last_value = 0.0f;
     float_curve_track_reset_state(reinterpret_cast<BootFloatCurveTrackState*>(track));
 }
 
-/** @brief Append an entry, using zero for missing components. */
+/**
+ * @brief Append an entry, using zero for missing components.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 BootFloatCurveTrack::append_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
     float y_value;
@@ -739,7 +646,15 @@ s32 BootFloatCurveTrack::append_key(const float* value, const float* in_tangent,
     return append_curve_key(value, in_tangent, out_tangent, key);
 }
 
-/** @brief Replace an indexed entry, using zero for missing components. */
+/**
+ * @brief Replace an indexed entry, using zero for missing components.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 BootFloatCurveTrack::replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
 {
     float y_value;
@@ -751,7 +666,15 @@ s32 BootFloatCurveTrack::replace_key(s32 index, float key, const float* value, c
     return replace_curve_key(index, key, value, in_tangent, out_tangent);
 }
 
-/** @brief Insert an entry, using zero for missing components. */
+/**
+ * @brief Insert an entry, using zero for missing components.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 BootFloatCurveTrack::insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
 {
     float y_value;
@@ -763,7 +686,13 @@ s32 BootFloatCurveTrack::insert_key(s32 index, float key, const float* value, co
     return insert_curve_key(index, key, value, in_tangent, out_tangent);
 }
 
-/** @brief Store a single entry, using zero for missing components. */
+/**
+ * @brief Store a single entry, using zero for missing components.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ */
 void BootFloatCurveTrack::set_single_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
     float y_value;
@@ -782,18 +711,28 @@ void BootFloatCurveTrack::reset_keys()
     set_single_key(&zero, &zero, &zero, 0.0f);
 }
 
-void float_curve_track_get_value_rate(void* object, float* value)
+/**
+ * @brief Return how fast the value changed at the last sample, per second.
+ * @param track Track to read.
+ * @param value Receives the rate.
+ */
+void float_curve_track_get_value_rate(void* track, float* value)
 {
-    *value = ((FieldF32At050*)object)->value;
+    *value = ((FieldF32At050*)track)->value;
 }
 
-void float_curve_track_get_end_delta(void* object, float* result)
+/**
+ * @brief Write the difference between the last and first float values in a sixteen-byte record array.
+ * @param track Object containing the array pointer and count.
+ * @param result Destination for the difference; unchanged if the array is absent.
+ */
+void float_curve_track_get_end_delta(void* track, float* result)
 {
-    float* values = *(float**)((u8*)object + 4);
+    float* values = *(float**)((u8*)track + 4);
 
     if (values != 0)
     {
-        s16 count = *(s16*)((u8*)object + 0x20);
+        s16 count = *(s16*)((u8*)track + 0x20);
         *result = values[count * 4 - 3] - values[1];
     }
 }
@@ -834,6 +773,16 @@ BootFloatSegmentBase::BootFloatSegmentBase()
 {
 }
 
+/**
+ * @brief Store four scalar inputs and an endpoint span, substituting one for zero.
+ * @param segment Receiver of the inputs, endpoints, and span.
+ * @param start_value Value at the start_key key.
+ * @param start_tangent Tangent at the start_key key.
+ * @param end_value Value at the end_key key.
+ * @param end_tangent Tangent at the end_key key.
+ * @param start_key Key the segment starts at.
+ * @param end_key Key the segment ends at.
+ */
 void float_segment_set_endpoints(BootFloatSegmentState* segment, const float* start_value, const float* start_tangent, const float* end_value,
                                  const float* end_tangent, float start_key, float end_key)
 {
@@ -857,10 +806,11 @@ struct ResetVector90_001ED4E0
     FieldVec4B value;
 };
 
-void vector_track_reset_sampling(void* object)
+/** Clear the last sampled value, then reset the key state. */
+void vector_track_reset_sampling(void* track)
 {
-    ((ResetVector90_001ED4E0*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
-    vector_track_reset_state((BootVectorTrackState*)object);
+    ((ResetVector90_001ED4E0*)track)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    vector_track_reset_state((BootVectorTrackState*)track);
 }
 
 /**
@@ -973,31 +923,47 @@ void BootVectorTrack::get_end_delta(FieldVec4B* output) const
     }
 }
 
-extern "C" void vector_track_get_value_rate(const BootVectorTrack* track, FieldVec4B* output)
+/**
+ * @brief Return how fast the value changed at the last sample, per second.
+ * @param track Track to read.
+ * @param output Receives the rate.
+ */
+void vector_track_get_value_rate(const BootVectorTrack* track, FieldVec4B* output)
 {
     *output = *reinterpret_cast<const FieldVec4A*>(&track->value_rate);
 }
 
-void float_track_reset_sampling(BootFloatTrack* track)
+/** @brief Clear the last sampled value, then reset the key state. */
+void BootFloatTrack::reset_state()
 {
-    track->last_value = 0.0f;
-    float_track_reset_state(reinterpret_cast<BootFloatTrackState*>(track));
+    last_value = 0.0f;
+    BootFloatTrackBase::reset_state();
 }
 
-void float_track_get_end_delta(void* object, float* result)
+/**
+ * @brief Write the difference between the last and first float values in an eight-byte record array.
+ * @param track Object containing the array pointer and count.
+ * @param result Destination for the difference; unchanged if the array is absent.
+ */
+void float_track_get_end_delta(void* track, float* result)
 {
-    float* values = *(float**)((u8*)object + 4);
+    float* values = *(float**)((u8*)track + 4);
 
     if (values != 0)
     {
-        s16 count = *(s16*)((u8*)object + 0x18);
+        s16 count = *(s16*)((u8*)track + 0x18);
         *result = values[count * 2 - 1] - values[1];
     }
 }
 
-void float_track_get_value_rate(void* object, float* value)
+/**
+ * @brief Return how fast the value changed at the last sample, per second.
+ * @param track Track to read.
+ * @param value Receives the rate.
+ */
+void float_track_get_value_rate(void* track, float* value)
 {
-    *value = ((FieldF32At04C*)object)->value;
+    *value = ((FieldF32At04C*)track)->value;
 }
 
 /** @brief Reset the record and clear its vector. */
@@ -1045,6 +1011,10 @@ BootClass171B20::BootClass171B20()
     history_171B20_reset(this);
 }
 
+/**
+ * @brief Forget the stored samples.
+ * @param history History to clear.
+ */
 void history_171B20_reset(BootClass171B20* history)
 {
     history->sample_count = 0;
@@ -1059,6 +1029,10 @@ BootVectorHistoryBase::BootVectorHistoryBase()
     vector_history_reset(this);
 }
 
+/**
+ * @brief Forget the stored samples.
+ * @param history History to clear.
+ */
 void vector_history_reset(BootVectorHistoryBase* history)
 {
     history->sample_count = 0;
@@ -1073,6 +1047,10 @@ BootFloatHistoryBase::BootFloatHistoryBase()
     float_history_reset(this);
 }
 
+/**
+ * @brief Forget the stored samples.
+ * @param history History to clear.
+ */
 void float_history_reset(BootFloatHistoryBase* history)
 {
     history->sample_count = 0;
@@ -1180,19 +1158,26 @@ BootClass171A70::~BootClass171A70()
     track_171A70_free_keys(this);
 }
 
+/**
+ * @brief Release owned record-array storage and clear the array pointer.
+ * @param track Receiver whose packed ownership flag distinguishes external storage.
+ */
 void track_171A70_free_keys(BootClass171A70* track)
 {
     if (!track->state.external_keys)
     {
-        if (track->key_array)
-        {
-            func_100BE0((u8*)track->key_array - 16);
-        }
+        delete[] track->key_array;
     }
 
     track->key_array = 0;
 }
 
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param track Receiver with 48-byte records and a nonzero cached key span.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
 float vector_curve_track_update_cycle_count(BootVectorCurveTrackState* track, float key)
 {
     float first = track->entries[0].key;
@@ -1295,6 +1280,10 @@ BootVectorCurveTrackBase::~BootVectorCurveTrackBase()
     vector_curve_track_free_keys(this);
 }
 
+/**
+ * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
+ * @param track Receiver to reset without releasing its current storage.
+ */
 void vector_curve_track_reset_state(BootVectorCurveTrackState* track)
 {
     track->entries = 0;
@@ -1310,6 +1299,12 @@ void vector_curve_track_reset_state(BootVectorCurveTrackState* track)
     track->external_keys = 0;
 }
 
+/**
+ * @brief Bind external 48-byte records and cache their first-to-last key span.
+ * @param track Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
 void vector_curve_track_bind_keys(BootVectorCurveTrackState* track, s32 count, BootVectorCurveStateKey* entries)
 {
     s32 last_index = count - 1;
@@ -1322,52 +1317,97 @@ void vector_curve_track_bind_keys(BootVectorCurveTrackState* track, s32 count, B
     track->span = last->key - track->entries[0].key;
 }
 
-void vector_curve_track_set_before_mode(BootVectorCurveTrackState* state, u32 value)
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootVectorCurveTrackBase::set_before_mode(u32 value)
 {
-    state->before_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.before_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-void vector_curve_track_set_after_mode(BootVectorCurveTrackState* state, u32 value)
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootVectorCurveTrackBase::set_after_mode(u32 value)
 {
-    state->after_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.after_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-s32 vector_curve_track_get_cycle_count(const BootVectorCurveTrackState* track)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 BootVectorCurveTrackBase::get_cycle_count() const
 {
-    return track->cycle_count;
+    return state.cycle_count;
 }
 
-s16 vector_curve_track_get_key_count(const BootVectorCurveTrackState* track)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 BootVectorCurveTrackBase::get_key_count() const
 {
-    return track->count;
+    return state.key_count;
 }
 
-s16 vector_curve_track_get_key_capacity(const BootVectorCurveTrackState* track)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 BootVectorCurveTrackBase::get_key_capacity()
 {
-    return track->capacity;
+    return state.key_capacity;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 vector_curve_track_on_append_key(void* track)
 {
     return 0;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 vector_curve_track_on_replace_key(void* track)
 {
     return 0;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 vector_curve_track_on_insert_key(void* track)
 {
     return 0;
 }
 
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
 void vector_curve_track_on_set_single_key(void* track)
 {
 }
 
+/**
+ * @brief Test whether the 48-byte record array contains an exactly equal key.
+ * @param track Receiver with valid storage when its count is positive.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
 s32 vector_curve_track_has_key(BootVectorCurveTrackState* track, float key)
 {
     s32 index;
@@ -1383,6 +1423,10 @@ s32 vector_curve_track_has_key(BootVectorCurveTrackState* track, float key)
     return 0;
 }
 
+/**
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
+ */
 void vector_curve_track_get_zero_value(u32* result)
 {
     result[0] = 0;
@@ -1391,6 +1435,11 @@ void vector_curve_track_get_zero_value(u32* result)
     result[3] = 0;
 }
 
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @param track Receiver with valid storage when its count is at least two.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
 float vector_curve_track_get_key_span(BootVectorCurveTrackState* track)
 {
     s32 last_index;
@@ -1438,6 +1487,12 @@ void BootVectorCurveTrackBase::evaluate(float key, FieldVec4B* output)
     *output = sample(key);
 }
 
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param track Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
 float vector_curve_track_wrap_key(BootVectorCurveTrackState* track, float key)
 {
     s32 last_index = track->count - 1;
@@ -1463,19 +1518,25 @@ float vector_curve_track_wrap_key(BootVectorCurveTrackState* track, float key)
     return key;
 }
 
+/**
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
+ */
 BootVectorCurveStateKey* vector_curve_track_get_keys(const BootVectorCurveTrackState* track)
 {
     return track->entries;
 }
 
+/**
+ * @brief Release owned record-array storage and clear the array pointer.
+ * @param track Receiver whose packed ownership flag distinguishes external storage.
+ */
 void vector_curve_track_free_keys(BootVectorCurveTrackBase* track)
 {
     if (!track->state.external_keys)
     {
-        if (track->key_array)
-        {
-            func_100BE0((u8*)track->key_array - 16);
-        }
+        delete[] static_cast<BootVectorCurveTrackKey*>(track->key_array);
     }
 
     track->key_array = 0;
@@ -1487,6 +1548,10 @@ BootFloatCurveTrackBase::~BootFloatCurveTrackBase()
     float_curve_track_free_keys(this);
 }
 
+/**
+ * @brief Reset array storage, counts, packed controls, and cached indices.
+ * @param track Receiver to reset without releasing its current storage.
+ */
 void float_curve_track_reset_state(BootFloatCurveTrackState* track)
 {
     track->entries = 0;
@@ -1519,52 +1584,96 @@ void BootFloatCurveTrackBase::allocate_keys(s32 count)
     }
 }
 
-void float_curve_track_set_before_mode(BootFloatCurveTrackState* state, u32 value)
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootFloatCurveTrackBase::set_before_mode(u32 value)
 {
-    state->before_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.before_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-void float_curve_track_set_after_mode(BootFloatCurveTrackState* state, u32 value)
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootFloatCurveTrackBase::set_after_mode(u32 value)
 {
-    state->after_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.after_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-s32 float_curve_track_get_cycle_count(const BootFloatCurveTrackState* track)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 BootFloatCurveTrackBase::get_cycle_count() const
 {
-    return track->cycle_count;
+    return state.cycle_count;
 }
 
-s16 float_curve_track_get_key_count(const BootFloatCurveTrackState* track)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 BootFloatCurveTrackBase::get_key_count() const
 {
-    return track->count;
+    return state.key_count;
 }
 
-s16 float_curve_track_get_key_capacity(const BootFloatCurveTrackState* track)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 BootFloatCurveTrackBase::get_key_capacity() const
 {
-    return track->capacity;
+    return state.key_capacity;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 float_curve_track_on_append_key(void* track)
 {
     return 0;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 float_curve_track_on_replace_key(void* track)
 {
     return 0;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 float_curve_track_on_insert_key(void* track)
 {
     return 0;
 }
 
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
 void float_curve_track_on_set_single_key(void* track)
 {
 }
 
+/**
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param track Receives the zero value.
+ * @return Zero.
+ */
 float float_curve_track_get_zero_value(void* track)
 {
     return 0.0f;
@@ -1580,19 +1689,24 @@ void BootFloatCurveTrackBase::evaluate(float key, float* output)
     *output = sample(key);
 }
 
-BootFloatCurveStateKey* float_curve_track_get_keys(const BootFloatCurveTrackState* track)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+BootFloatCurveTrackKey* BootFloatCurveTrackBase::get_keys() const
 {
-    return track->entries;
+    return key_array;
 }
 
+/**
+ * @brief Release owned array storage and clear the array pointer.
+ * @param track Receiver whose packed ownership flag distinguishes external storage.
+ */
 void float_curve_track_free_keys(BootFloatCurveTrackBase* track)
 {
     if (!track->state.external_keys)
     {
-        if (track->key_array)
-        {
-            func_100BE0((u8*)track->key_array - 16);
-        }
+        delete[] track->key_array;
     }
 
     track->key_array = 0;
@@ -1604,6 +1718,10 @@ BootClass1718C0::~BootClass1718C0()
     track_1718C0_free_keys(this);
 }
 
+/**
+ * @brief Reset array storage, counts, packed controls, and cached indices.
+ * @param track Receiver to reset without releasing its current storage.
+ */
 void track_1718C0_reset_state(BootState1F1580* track)
 {
     track->entries = 0;
@@ -1619,33 +1737,57 @@ void track_1718C0_reset_state(BootState1F1580* track)
     track->external_keys = 0;
 }
 
-void track_1718C0_set_before_mode(BootState1F1580* state, u32 value)
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootClass1718C0::set_before_mode(u32 value)
 {
-    state->before_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.before_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-void track_1718C0_set_after_mode(BootState1F1580* state, u32 value)
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootClass1718C0::set_after_mode(u32 value)
 {
-    state->after_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.after_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-s32 track_1718C0_get_cycle_count(const BootState1F1580* track)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 BootClass1718C0::get_cycle_count() const
 {
-    return track->cycle_count;
+    return state.cycle_count;
 }
 
-s16 track_1718C0_get_key_count(const BootState1F1580* track)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 BootClass1718C0::get_key_count() const
 {
-    return track->count;
+    return state.key_count;
 }
 
-s16 track_1718C0_get_key_capacity(const BootState1F1580* track)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 BootClass1718C0::get_key_capacity()
 {
-    return track->capacity;
+    return state.key_capacity;
 }
 
+/**
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
+ */
 void track_1718C0_get_zero_value(u32* result)
 {
     result[0] = 0;
@@ -1664,24 +1806,36 @@ void BootClass1718C0::evaluate(float key, FieldVec4B* output) const
     *output = sample(key);
 }
 
+/**
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
+ */
 BootKeyEntry32* track_1718C0_get_keys(const BootState1F1580* track)
 {
     return track->entries;
 }
 
+/**
+ * @brief Release owned array storage and clear the array pointer.
+ * @param track Receiver whose packed ownership flag distinguishes external storage.
+ */
 void track_1718C0_free_keys(BootClass1718C0* track)
 {
     if (!track->state.external_keys)
     {
-        if (track->key_array)
-        {
-            func_100BE0((u8*)track->key_array - 16);
-        }
+        delete[] track->key_array;
     }
 
     track->key_array = 0;
 }
 
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param track Receiver with vector-key records and a nonzero cached key span.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
 float vector_track_update_cycle_count(BootVectorTrackState* track, float key)
 {
     float first = track->entries[0].key;
@@ -1784,6 +1938,10 @@ BootVectorTrackBase::~BootVectorTrackBase()
     vector_track_free_keys(this);
 }
 
+/**
+ * @brief Reset vector-key storage, counts, control fields, and cached indices.
+ * @param track Array receiver to reset without releasing its current storage.
+ */
 void vector_track_reset_state(BootVectorTrackState* track)
 {
     track->entries = 0;
@@ -1799,6 +1957,12 @@ void vector_track_reset_state(BootVectorTrackState* track)
     track->external_keys = 0;
 }
 
+/**
+ * @brief Bind external vector-key storage and cache its first-to-last key span.
+ * @param track Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
 void vector_track_bind_keys(BootVectorTrackState* track, s32 count, BootVectorStateKey* entries)
 {
     s32 last_index = count - 1;
@@ -1811,33 +1975,59 @@ void vector_track_bind_keys(BootVectorTrackState* track, s32 count, BootVectorSt
     track->span = last->key - track->entries[0].key;
 }
 
-void vector_track_set_before_mode(BootVectorTrackState* state, u32 value)
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootVectorTrackBase::set_before_mode(u32 value)
 {
-    state->before_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.before_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-void vector_track_set_after_mode(BootVectorTrackState* state, u32 value)
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootVectorTrackBase::set_after_mode(u32 value)
 {
-    state->after_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.after_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-s32 vector_track_get_cycle_count(const BootVectorTrackState* track)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 BootVectorTrackBase::get_cycle_count() const
 {
-    return track->cycle_count;
+    return state.cycle_count;
 }
 
-s16 vector_track_get_key_count(BootVectorTrackState* track)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 BootVectorTrackBase::get_key_count() const
 {
-    return track->count;
+    return state.key_count;
 }
 
-s16 vector_track_get_key_capacity(BootVectorTrackState* track)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 BootVectorTrackBase::get_key_capacity()
 {
-    return track->capacity;
+    return state.key_capacity;
 }
 
+/**
+ * @brief Test whether the vector-key array contains an exactly equal key.
+ * @param track Receiver with valid storage when its count is positive.
+ * @param key Key to find.
+ * @return One if a key matches, or zero otherwise.
+ */
 s32 vector_track_has_key(BootVectorTrackState* track, float key)
 {
     s32 index;
@@ -1853,6 +2043,10 @@ s32 vector_track_has_key(BootVectorTrackState* track, float key)
     return 0;
 }
 
+/**
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
+ */
 void vector_track_get_zero_value(u32* result)
 {
     result[0] = 0;
@@ -1861,6 +2055,11 @@ void vector_track_get_zero_value(u32* result)
     result[3] = 0;
 }
 
+/**
+ * @brief Compute the span between the last and first vector-entry keys.
+ * @param track Receiver with valid storage when it has at least two entries.
+ * @return Key span, or zero when fewer than two entries exist.
+ */
 float vector_track_get_key_span(BootVectorTrackState* track)
 {
     BootVectorStateKey* last;
@@ -1906,6 +2105,12 @@ void BootVectorTrackBase::evaluate(float key, FieldVec4B* output)
     *output = sample(key);
 }
 
+/**
+ * @brief Wrap a key by the first-to-last vector-entry key span.
+ * @param track Receiver with valid nonempty storage and a nonzero key span.
+ * @param key Key to wrap using truncation after adjusting negative positions.
+ * @return Key with the computed whole spans subtracted.
+ */
 float vector_track_wrap_key(BootVectorTrackState* track, float key)
 {
     BootVectorStateKey* last = track->entries + (track->count - 1);
@@ -1929,19 +2134,25 @@ float vector_track_wrap_key(BootVectorTrackState* track, float key)
     return key;
 }
 
+/**
+ * @brief Return the key storage.
+ * @param track Track to read.
+ * @return Key array, or null.
+ */
 BootVectorStateKey* vector_track_get_keys(const BootVectorTrackState* track)
 {
     return track->entries;
 }
 
+/**
+ * @brief Release owned array storage and clear the array pointer.
+ * @param track Receiver whose packed ownership flag distinguishes external storage.
+ */
 void vector_track_free_keys(BootVectorTrackBase* track)
 {
     if (!track->state.external_keys)
     {
-        if (track->key_array)
-        {
-            func_100BE0((u8*)track->key_array - 16);
-        }
+        delete[] track->key_array;
     }
 
     track->key_array = 0;
@@ -1953,19 +2164,22 @@ BootFloatTrackBase::~BootFloatTrackBase()
     float_track_free_keys(this);
 }
 
-void float_track_reset_state(BootFloatTrackState* track)
+/**
+ * @brief Reset float-entry storage, counts, control fields, and cached indices.
+ */
+void BootFloatTrackBase::reset_state()
 {
-    track->entries = 0;
-    track->before_mode = 1;
-    track->after_mode = 1;
-    track->capacity = 0;
-    track->count = 0;
-    track->unk1C = -1;
-    track->cycle_count = 0;
-    track->unk1E = -1;
-    track->cached_index = -1;
-    track->repeats = 0;
-    track->external_keys = 0;
+    key_array = 0;
+    state.before_mode = 1;
+    state.after_mode = 1;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.unk0c = -1;
+    state.cycle_count = 0;
+    state.unk0e = -1;
+    state.cached_index = -1;
+    state.repeats = 0;
+    state.external_keys = 0;
 }
 
 /**
@@ -1985,33 +2199,58 @@ void BootFloatTrackBase::allocate_keys(s32 count)
     }
 }
 
-void float_track_set_before_mode(BootFloatTrackState* state, u32 value)
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootFloatTrackBase::set_before_mode(u32 value)
 {
-    state->before_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.before_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-void float_track_set_after_mode(BootFloatTrackState* state, u32 value)
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootFloatTrackBase::set_after_mode(u32 value)
 {
-    state->after_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.after_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-s32 float_track_get_cycle_count(const BootFloatTrackState* track)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 BootFloatTrackBase::get_cycle_count() const
 {
-    return track->cycle_count;
+    return state.cycle_count;
 }
 
-s16 float_track_get_key_count(const BootFloatTrackState* track)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 BootFloatTrackBase::get_key_count() const
 {
-    return track->count;
+    return state.key_count;
 }
 
-s16 float_track_get_key_capacity(const BootFloatTrackState* track)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 BootFloatTrackBase::get_key_capacity()
 {
-    return track->capacity;
+    return state.key_capacity;
 }
 
+/**
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param object Receives the zero value.
+ * @return Zero.
+ */
 float float_track_get_zero_value(void* object)
 {
     return 0.0f;
@@ -2027,19 +2266,24 @@ void BootFloatTrackBase::evaluate(float key, float* output)
     *output = sample(key);
 }
 
-BootFloatStateKey* float_track_get_keys(const BootFloatTrackState* track)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+BootFloatTrackKey* BootFloatTrackBase::get_keys()
 {
-    return track->entries;
+    return key_array;
 }
 
+/**
+ * @brief Release owned array storage and clear the array pointer.
+ * @param track Receiver whose packed ownership flag distinguishes external storage.
+ */
 void float_track_free_keys(BootFloatTrackBase* track)
 {
     if (!track->state.external_keys)
     {
-        if (track->key_array)
-        {
-            func_100BE0((u8*)track->key_array - 16);
-        }
+        delete[] track->key_array;
     }
 
     track->key_array = 0;
@@ -2051,14 +2295,15 @@ BootQuaternionTrackBase::~BootQuaternionTrackBase()
     quaternion_track_free_keys(this);
 }
 
+/**
+ * @brief Release owned record-array storage and clear the array pointer.
+ * @param track Receiver whose packed ownership flag distinguishes external storage.
+ */
 void quaternion_track_free_keys(BootQuaternionTrackBase* track)
 {
     if (!track->state.external_keys)
     {
-        if (track->key_array)
-        {
-            func_100BE0((u8*)track->key_array - 16);
-        }
+        delete[] track->key_array;
     }
 
     track->key_array = 0;
@@ -2070,14 +2315,15 @@ BootClass171680::~BootClass171680()
     track_171680_free_keys(this);
 }
 
+/**
+ * @brief Release owned record-array storage and clear the array pointer.
+ * @param track Receiver whose packed ownership flag distinguishes external storage.
+ */
 void track_171680_free_keys(BootClass171680* track)
 {
     if (!track->state.external_keys)
     {
-        if (track->key_array)
-        {
-            func_100BE0((u8*)track->key_array - 16);
-        }
+        delete[] track->key_array;
     }
 
     track->key_array = 0;
@@ -2117,11 +2363,16 @@ BootQuaternionTrackBase::BootQuaternionTrackBase()
     reset_state();
 }
 
-float float_track_wrap_key(BootFloatTrackState* track, float key)
+/**
+ * @brief Wrap a key by the span between the first and last entries.
+ * @param key Key to wrap using truncation after adjusting negative positions.
+ * @return Key with the computed whole spans subtracted.
+ */
+float BootFloatTrackBase::wrap_key(float key) const
 {
-    s32 last_index = track->count - 1;
-    float first = track->entries[0].key;
-    float span = track->entries[last_index].key - first;
+    s32 last_index = state.key_count - 1;
+    float first = key_array[0].key;
+    float span = key_array[last_index].key - first;
     float position = (key - first) / span;
     s32 cycles;
 
@@ -2140,6 +2391,12 @@ float float_track_wrap_key(BootFloatTrackState* track, float key)
     return key;
 }
 
+/**
+ * @brief Read the value associated with the first exactly equal key.
+ * @param track Receiver with valid storage when its count is positive.
+ * @param key Key to find.
+ * @return Associated value, or zero when no key matches.
+ */
 float float_track_find_key_value(BootFloatTrackState* track, float key)
 {
     s32 index;
@@ -2156,26 +2413,36 @@ float float_track_find_key_value(BootFloatTrackState* track, float key)
     return 0.0f;
 }
 
-float float_track_get_key_span(BootFloatTrackState* track)
+/**
+ * @brief Compute the difference between the last and first entry keys.
+ * @return Key span, or zero when fewer than two entries exist.
+ */
+float BootFloatTrackBase::get_key_span() const
 {
     s32 last_index;
 
-    if (track->count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    last_index = track->count - 1;
-    return track->entries[last_index].key - track->entries[0].key;
+    last_index = state.key_count - 1;
+    return key_array[last_index].key - key_array[0].key;
 }
 
-s32 float_track_has_key(BootFloatTrackState* track, float key)
+/**
+ * @brief Test whether the float-entry array contains an exactly equal key.
+ * @param key Key to find.
+ * @return One if a matching key exists, or zero otherwise.
+ */
+s32 BootFloatTrackBase::has_key(float key) const
 {
+    s16 count = state.key_count;
     s32 index;
 
-    for (index = 0; index < track->count; index++)
+    for (index = 0; index < count; index++)
     {
-        if (key == track->entries[index].key)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -2184,57 +2451,106 @@ s32 float_track_has_key(BootFloatTrackState* track, float key)
     return 0;
 }
 
-/** @brief Forward a keyframe with a key to slot 0x74. */
+/**
+ * @brief Forward a keyframe with a key to slot 0x74.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param key Key the keyframe sits at.
+ */
 void float_track_set_single_key(BootFloatTrackBase* track, const float* value, float key)
 {
     track->on_set_single_key(value, key);
 }
 
-void float_track_on_set_single_key(void* object)
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
+void float_track_on_set_single_key(void* track)
 {
 }
 
-/** @brief Forward an indexed keyframe with a key to slot 0x70. */
+/**
+ * @brief Forward an indexed keyframe with a key to slot 0x70.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 float_track_insert_key(BootFloatTrackBase* track, s32 index, float key, const float* value)
 {
     return track->on_insert_key(index, key, value);
 }
 
-s32 float_track_on_insert_key(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 float_track_on_insert_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward an indexed keyframe with a key to slot 0x6C. */
+/**
+ * @brief Forward an indexed keyframe with a key to slot 0x6C.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 float_track_replace_key(BootFloatTrackBase* track, s32 index, float key, const float* value)
 {
     return track->on_replace_key(index, key, value);
 }
 
-s32 float_track_on_replace_key(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 float_track_on_replace_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward a keyframe with a key to slot 0x68. */
+/**
+ * @brief Forward a keyframe with a key to slot 0x68.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 float_track_append_key(BootFloatTrackBase* track, const float* value, float key)
 {
     return track->on_append_key(value, key);
 }
 
-s32 float_track_on_append_key(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 float_track_on_append_key(void* track)
 {
     return 0;
 }
 
-void float_track_bind_keys(BootFloatTrackState* track, s32 count, BootFloatStateKey* entries)
+/**
+ * @brief Bind external entry storage and cache its first-to-last key span.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void BootFloatTrackBase::bind_keys(s32 count, BootFloatTrackKey* entries)
 {
     s32 last_index = count - 1;
-    track->external_keys = 1;
-    track->entries = entries;
-    track->capacity = count;
-    track->count = count;
-    track->span = track->entries[last_index].key - track->entries[0].key;
+    state.external_keys = 1;
+    key_array = entries;
+    state.key_capacity = count;
+    state.key_count = count;
+    state.span = key_array[last_index].key - key_array[0].key;
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
@@ -2244,45 +2560,89 @@ BootFloatTrackBase::BootFloatTrackBase()
     reset_state();
 }
 
-/** @brief Forward to slot 0x74. */
+/**
+ * @brief Forward to slot 0x74.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param key Key the keyframe sits at.
+ */
 void vector_track_set_single_key(BootVectorTrackBase* track, const FieldVec4A* value, float key)
 {
     track->on_set_single_key(value, key);
 }
 
-void vector_track_on_set_single_key(void* object)
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
+void vector_track_on_set_single_key(void* track)
 {
 }
 
-/** @brief Forward to slot 0x70. */
+/**
+ * @brief Forward to slot 0x70.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 vector_track_insert_key(BootVectorTrackBase* track, s32 index, float key, const FieldVec4A* value)
 {
     return track->on_insert_key(index, key, value);
 }
 
-s32 vector_track_on_insert_key(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 vector_track_on_insert_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x6C. */
+/**
+ * @brief Forward to slot 0x6C.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 vector_track_replace_key(BootVectorTrackBase* track, s32 index, float key, const FieldVec4A* value)
 {
     return track->on_replace_key(index, key, value);
 }
 
-s32 vector_track_on_replace_key(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 vector_track_on_replace_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x68. */
+/**
+ * @brief Forward to slot 0x68.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 vector_track_append_key(BootVectorTrackBase* track, const FieldVec4A* value, float key)
 {
     return track->on_append_key(value, key);
 }
 
-s32 vector_track_on_append_key(void* object)
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
+s32 vector_track_on_append_key(void* track)
 {
     return 0;
 }
@@ -2311,6 +2671,12 @@ BootVectorTrackBase::BootVectorTrackBase()
     reset_state();
 }
 
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param track Receiver with positive count, valid storage, and distinct endpoint keys.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
 float track_1718C0_wrap_key(BootState1F1580* track, float key)
 {
     s32 last_index = track->count - 1;
@@ -2358,6 +2724,11 @@ FieldVec4A track_1718C0_find_key_value(BootState1F1580* track, float key)
     return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @param track Receiver with valid storage when its count is at least two.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
 float track_1718C0_get_key_span(BootState1F1580* track)
 {
     s32 last_index;
@@ -2373,6 +2744,12 @@ float track_1718C0_get_key_span(BootState1F1580* track)
     return last_entry->key - track->entries[0].key;
 }
 
+/**
+ * @brief Test whether the 32-byte record array contains an exactly equal key.
+ * @param track Receiver with valid storage when its count is positive.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
 s32 track_1718C0_has_key(BootState1F1580* track, float key)
 {
     s32 index;
@@ -2388,49 +2765,99 @@ s32 track_1718C0_has_key(BootState1F1580* track, float key)
     return 0;
 }
 
-/** @brief Forward to slot 0x74. */
+/**
+ * @brief Forward to slot 0x74.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param key Key the keyframe sits at.
+ */
 void track_1718C0_set_single_key(BootClass1718C0* track, const FieldVec4A* value, float key)
 {
     track->on_set_single_key(value, key);
 }
 
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
 void track_1718C0_on_set_single_key(void* track)
 {
 }
 
-/** @brief Forward to slot 0x70. */
+/**
+ * @brief Forward to slot 0x70.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_1718C0_insert_key(BootClass1718C0* track, s32 index, float key, const FieldVec4A* value)
 {
     return track->on_insert_key(index, key, value);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_1718C0_on_insert_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x6C. */
+/**
+ * @brief Forward to slot 0x6C.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_1718C0_replace_key(BootClass1718C0* track, s32 index, float key, const FieldVec4A* value)
 {
     return track->on_replace_key(index, key, value);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_1718C0_on_replace_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x68. */
+/**
+ * @brief Forward to slot 0x68.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_1718C0_append_key(BootClass1718C0* track, const FieldVec4A* value, float key)
 {
     return track->on_append_key(value, key);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_1718C0_on_append_key(void* track)
 {
     return 0;
 }
 
+/**
+ * @brief Bind external 32-byte records and cache their first-to-last key span.
+ * @param track Array receiver.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
 void track_1718C0_bind_keys(BootState1F1580* track, s32 count, BootKeyEntry32* entries)
 {
     s32 last_index = count - 1;
@@ -2450,7 +2877,7 @@ void track_1718C0_bind_keys(BootState1F1580* track, s32 count, BootKeyEntry32* e
 void BootClass1718C0::allocate_keys(s32 count)
 {
     state.external_keys = 0;
-    delete[] static_cast<BootTrackKey1718C0*>(key_array);
+    delete[] key_array;
     key_array = new (0) BootTrackKey1718C0[count];
     state.key_capacity = count;
 
@@ -2460,6 +2887,7 @@ void BootClass1718C0::allocate_keys(s32 count)
     }
 }
 
+/** @brief Leave the keyframe uninitialized. */
 BootTrackKey1718C0::BootTrackKey1718C0()
 {
 }
@@ -2471,11 +2899,16 @@ BootClass1718C0::BootClass1718C0()
     reset_state();
 }
 
-float float_curve_track_wrap_key(BootFloatCurveTrackState* track, float key)
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float BootFloatCurveTrackBase::wrap_key(float key) const
 {
-    s32 last_index = track->count - 1;
-    BootFloatCurveStateKey* entries = track->entries;
-    BootFloatCurveStateKey* last = entries + last_index;
+    s32 last_index = state.key_count - 1;
+    BootFloatCurveTrackKey* entries = key_array;
+    BootFloatCurveTrackKey* last = entries + last_index;
     float first = entries[0].key;
     float span = last->key - first;
     float quotient = (key - first) / span;
@@ -2496,15 +2929,20 @@ float float_curve_track_wrap_key(BootFloatCurveTrackState* track, float key)
     return key;
 }
 
-float float_curve_track_find_key_value(BootFloatCurveTrackState* track, float key)
+/**
+ * @brief Find the value stored with the first exactly equal scalar key.
+ * @param key Scalar key to find.
+ * @return The first matching value, or zero when the key is absent.
+ */
+float BootFloatCurveTrackBase::find_key_value(float key)
 {
     s32 index;
 
-    for (index = 0; index < track->count; index++)
+    for (index = 0; index < state.key_count; index++)
     {
-        if (key == track->entries[index].key)
+        if (key == key_array[index].key)
         {
-            BootFloatCurveStateKey* entry = track->entries + index;
+            BootFloatCurveTrackKey* entry = key_array + index;
             return entry->value;
         }
     }
@@ -2512,28 +2950,38 @@ float float_curve_track_find_key_value(BootFloatCurveTrackState* track, float ke
     return 0.0f;
 }
 
-float float_curve_track_get_key_span(BootFloatCurveTrackState* track)
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float BootFloatCurveTrackBase::get_key_span() const
 {
     s32 last_index;
-    BootFloatCurveStateKey* last_entry;
+    BootFloatCurveTrackKey* last_entry;
 
-    if (track->count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    last_index = track->count - 1;
-    last_entry = track->entries + last_index;
-    return last_entry->key - track->entries[0].key;
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
-s32 float_curve_track_has_key(BootFloatCurveTrackState* track, float key)
+/**
+ * @brief Test whether the 16-byte record array contains an exactly equal key.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 BootFloatCurveTrackBase::has_key(float key) const
 {
+    s16 count = state.key_count;
     s32 index;
 
-    for (index = 0; index < track->count; index++)
+    for (index = 0; index < count; index++)
     {
-        if (key == track->entries[index].key)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -2542,16 +2990,21 @@ s32 float_curve_track_has_key(BootFloatCurveTrackState* track, float key)
     return 0;
 }
 
-void float_curve_track_bind_keys(BootFloatCurveTrackState* track, s32 count, BootFloatCurveStateKey* entries)
+/**
+ * @brief Bind external 16-byte records and cache their first-to-last key span.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void BootFloatCurveTrackBase::bind_keys(s32 count, BootFloatCurveTrackKey* entries)
 {
     s32 last_index = count - 1;
-    BootFloatCurveStateKey* last;
-    track->external_keys = 1;
-    track->entries = entries;
-    track->capacity = count;
-    track->count = count;
-    last = track->entries + last_index;
-    track->span = last->key - track->entries[0].key;
+    BootFloatCurveTrackKey* last;
+    state.external_keys = 1;
+    key_array = entries;
+    state.key_capacity = count;
+    state.key_count = count;
+    last = key_array + last_index;
+    state.span = last->key - key_array[0].key;
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
@@ -2604,6 +3057,14 @@ void BootFloatKeyTrack::on_set_single_key(const float* value, float key)
     single_key.key = key;
 }
 
+/**
+ * @brief Read either or both members of an indexed float entry.
+ * @param track Array receiver.
+ * @param index Nonnegative entry index, checked against capacity.
+ * @param key Optional destination for the entry key.
+ * @param value Optional destination for the entry value.
+ * @return One for an available slot, or zero if storage is absent or the index is too large.
+ */
 s32 float_track_read_entry(BootFloatTrackState* track, s32 index, float* key, float* value)
 {
     if (track->entries == 0)
@@ -2629,6 +3090,14 @@ s32 float_track_read_entry(BootFloatTrackState* track, s32 index, float* key, fl
     return 1;
 }
 
+/**
+ * @brief Insert a float entry before an existing index and shift following entries.
+ * @param track Array receiver with spare capacity.
+ * @param index Nonnegative index less than the current count.
+ * @param value Entry value to copy.
+ * @param key Key associated with the entry.
+ * @return One if inserted, or zero if storage is absent, full, or the index is too large.
+ */
 s32 float_track_insert_entry(BootFloatTrackState* track, s32 index, const float* value, float key)
 {
     s32 cursor;
@@ -2670,6 +3139,14 @@ s32 float_track_insert_entry(BootFloatTrackState* track, s32 index, const float*
     return 1;
 }
 
+/**
+ * @brief Replace an indexed float entry and update the span when it is the last entry.
+ * @param track Array receiver.
+ * @param index Nonnegative entry index, checked against capacity.
+ * @param value Entry value to copy.
+ * @param key Key associated with the entry.
+ * @return One if stored, or zero if storage is absent or the index is outside capacity.
+ */
 s32 float_track_replace_entry(BootFloatTrackState* track, s32 index, const float* value, float key)
 {
     if (track->entries == 0)
@@ -2695,6 +3172,13 @@ s32 float_track_replace_entry(BootFloatTrackState* track, s32 index, const float
     return 1;
 }
 
+/**
+ * @brief Append a float entry and update the cached key span.
+ * @param track Array receiver.
+ * @param value Entry value to copy.
+ * @param key Key associated with the entry.
+ * @return One if appended, or zero if storage is absent or full.
+ */
 s32 float_track_append_entry(BootFloatTrackState* track, const float* value, float key)
 {
     if (track->entries == 0)
@@ -2811,12 +3295,12 @@ s32 BootClass171320::read_key(s32 index, float* key, FieldVec4B* value, FieldVec
 
     if (key)
     {
-        *key = static_cast<const BootTrackKey1718C0*>(key_array)[index].key;
+        *key = key_array[index].key;
     }
 
     if (value)
     {
-        *value = static_cast<const BootTrackKey1718C0*>(key_array)[index].value;
+        *value = key_array[index].value;
     }
 
     return 1;
@@ -2853,15 +3337,15 @@ s32 BootClass171320::on_insert_key(s32 index, float key, const FieldVec4A* value
 
     for (i = count; i > index; i--)
     {
-        static_cast<BootTrackKey1718C0*>(key_array)[i] = static_cast<BootTrackKey1718C0*>(key_array)[i - 1];
+        key_array[i] = key_array[i - 1];
     }
 
-    static_cast<BootTrackKey1718C0*>(key_array)[index].value = *value;
-    static_cast<BootTrackKey1718C0*>(key_array)[index].key = key;
+    key_array[index].value = *value;
+    key_array[index].key = key;
 
     if (index == state.key_count - 1)
     {
-        state.span = key - static_cast<BootTrackKey1718C0*>(key_array)[0].key;
+        state.span = key - key_array[0].key;
     }
 
     state.unk0e = -1;
@@ -2889,12 +3373,12 @@ s32 BootClass171320::on_replace_key(s32 index, float key, const FieldVec4A* valu
         return 0;
     }
 
-    static_cast<BootTrackKey1718C0*>(key_array)[index].value = *value;
-    static_cast<BootTrackKey1718C0*>(key_array)[index].key = key;
+    key_array[index].value = *value;
+    key_array[index].key = key;
 
     if (index == state.key_count - 1)
     {
-        state.span = key - static_cast<BootTrackKey1718C0*>(key_array)[0].key;
+        state.span = key - key_array[0].key;
     }
 
     state.unk0e = -1;
@@ -2920,9 +3404,9 @@ s32 BootClass171320::on_append_key(const FieldVec4A* value, float key)
         return 0;
     }
 
-    static_cast<BootTrackKey1718C0*>(key_array)[state.key_count].value = *value;
-    static_cast<BootTrackKey1718C0*>(key_array)[state.key_count].key = key;
-    state.span = key - static_cast<BootTrackKey1718C0*>(key_array)[0].key;
+    key_array[state.key_count].value = *value;
+    key_array[state.key_count].key = key;
+    state.span = key - key_array[0].key;
     state.unk0e = -1;
     state.cached_index = -1;
     state.key_count++;
@@ -3044,6 +3528,16 @@ void BootVectorTrack::reset_keys()
     set_before_mode(1);
 }
 
+/**
+ * @brief Copy an indexed entry's key and values to the requested outputs.
+ * @param track Record-array receiver.
+ * @param index Nonnegative entry index, checked against capacity.
+ * @param key Optional output for the entry key.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return One if read, or zero if storage is absent or the index is outside capacity.
+ */
 s32 float_curve_track_read_entry(BootFloatCurveTrackState* track, s32 index, float* key, float* value, float* in_tangent, float* out_tangent)
 {
     if (!track->entries)
@@ -3095,6 +3589,16 @@ void BootFloatCurveTrack::set_single_curve_key(const float* value, const float* 
     single_key.key = key;
 }
 
+/**
+ * @brief Insert three values and their key before an existing entry.
+ * @param track Record-array receiver with a nonnegative entry count.
+ * @param index Nonnegative insertion index, less than the current entry count.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key associated with the inserted entry.
+ * @return One if inserted, or zero if storage, index, or remaining capacity is invalid.
+ */
 s32 float_curve_track_insert_curve_key(BootFloatCurveTrackState* track, s32 index, const float* value, const float* in_tangent, const float* out_tangent,
                                        float key)
 {
@@ -3139,6 +3643,16 @@ s32 float_curve_track_insert_curve_key(BootFloatCurveTrackState* track, s32 inde
     return 1;
 }
 
+/**
+ * @brief Replace an indexed three-value entry and update the span for the last entry.
+ * @param track Record-array receiver.
+ * @param index Nonnegative entry index, checked against capacity.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key associated with the entry.
+ * @return One if stored, or zero if storage is absent or the index is outside capacity.
+ */
 s32 float_curve_track_replace_curve_key(BootFloatCurveTrackState* track, s32 index, const float* value, const float* in_tangent, const float* out_tangent,
                                         float key)
 {
@@ -3165,6 +3679,15 @@ s32 float_curve_track_replace_curve_key(BootFloatCurveTrackState* track, s32 ind
     return 1;
 }
 
+/**
+ * @brief Append three values and their key, updating the span and entry count.
+ * @param track Record-array receiver with a nonnegative entry count.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key associated with the new entry.
+ * @return One if appended, or zero if storage is absent or capacity is exhausted.
+ */
 s32 float_curve_track_append_entry(BootFloatCurveTrackState* track, const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
     if (!track->entries)
@@ -3370,22 +3893,34 @@ s32 BootVectorCurveTrack::insert_curve_key(s32 index, float key, const FieldVec4
     return 1;
 }
 
-void track_171680_set_before_mode(BootState1F4730* state, u32 value)
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootClass171680::set_before_mode(u32 value)
 {
-    state->before_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.before_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-void quaternion_track_set_before_mode(BootQuaternionTrackState* state, u32 value)
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootQuaternionTrackBase::set_before_mode(u32 value)
 {
-    state->before_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.before_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-void track_171A70_set_before_mode(BootState1F47F0* state, u32 value)
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootClass171A70::set_before_mode(u32 value)
 {
-    state->before_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.before_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
 /**
@@ -3409,6 +3944,12 @@ void BootClass171B70::push_sample(const FieldVec4A* value, float key)
     }
 }
 
+/**
+ * @brief Store paired float values in the next slot of a two-entry history.
+ * @param history History whose write index wraps and count saturates at two.
+ * @param value First float value to copy.
+ * @param associated Second float value to store.
+ */
 void float_history_push(BootFloatHistoryState* history, const float* value, float associated)
 {
     history->values[history->next_index] = *value;
@@ -3425,31 +3966,46 @@ void float_history_push(BootFloatHistoryState* history, const float* value, floa
     }
 }
 
-void func_001F4950(void* object)
+/**
+ * @brief Perform no work.
+ * @param history Receiver or first argument; unused.
+ */
+void func_001F4950(void* history)
 {
 }
 
-void func_001F4960(void* object)
+/**
+ * @brief Perform no work.
+ * @param history Receiver or first argument; unused.
+ */
+void func_001F4960(void* history)
 {
 }
 
-void func_001F4970(void* object)
+/**
+ * @brief Perform no work.
+ * @param history Receiver or first argument; unused.
+ */
+void func_001F4970(void* history)
 {
 }
 
-void track_171A70_reset_state(BootState1F47F0* track)
+/**
+ * @brief Reset array storage, counts, packed controls, and cached indices.
+ */
+void BootClass171A70::reset_state()
 {
-    track->entries = 0;
-    track->before_mode = 1;
-    track->after_mode = 1;
-    track->capacity = 0;
-    track->count = 0;
-    track->unk3C = -1;
-    track->cycle_count = 0;
-    track->unk3E = -1;
-    track->cached_index = -1;
-    track->repeats = 0;
-    track->external_keys = 0;
+    key_array = 0;
+    state.before_mode = 1;
+    state.after_mode = 1;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.unk0c = -1;
+    state.cycle_count = 0;
+    state.unk0e = -1;
+    state.cached_index = -1;
+    state.repeats = 0;
+    state.external_keys = 0;
 }
 
 /**
@@ -3459,7 +4015,7 @@ void track_171A70_reset_state(BootState1F47F0* track)
 void BootClass171A70::allocate_keys(s32 count)
 {
     state.external_keys = 0;
-    delete[] static_cast<BootTrackKey171A70*>(key_array);
+    delete[] key_array;
     key_array = new (0) BootTrackKey171A70[count];
     state.key_capacity = count;
 
@@ -3469,70 +4025,142 @@ void BootClass171A70::allocate_keys(s32 count)
     }
 }
 
-void track_171A70_set_after_mode(BootState1F47F0* state, u32 value)
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootClass171A70::set_after_mode(u32 value)
 {
-    state->after_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.after_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-s32 track_171A70_get_cycle_count(const BootState1F47F0* track)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 BootClass171A70::get_cycle_count() const
 {
-    return track->cycle_count;
+    return state.cycle_count;
 }
 
-s16 track_171A70_get_key_count(const BootState1F47F0* track)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 BootClass171A70::get_key_count() const
 {
-    return track->count;
+    return state.key_count;
 }
 
-s16 track_171A70_get_key_capacity(const BootState1F47F0* track)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 BootClass171A70::get_key_capacity()
 {
-    return track->capacity;
+    return state.key_capacity;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_171A70_on_append_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x68. */
+/**
+ * @brief Forward to slot 0x68.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_171A70_append_key(BootClass171A70* track, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return track->on_append_key(value, first, second, key);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_171A70_on_replace_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x6C. */
+/**
+ * @brief Forward to slot 0x6C.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_171A70_replace_key(BootClass171A70* track, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return track->on_replace_key(index, key, value, first, second);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_171A70_on_insert_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x70. */
+/**
+ * @brief Forward to slot 0x70.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_171A70_insert_key(BootClass171A70* track, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return track->on_insert_key(index, key, value, first, second);
 }
 
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
 void track_171A70_on_set_single_key(void* track)
 {
 }
 
-/** @brief Forward to slot 0x74. */
+/**
+ * @brief Forward to slot 0x74.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @param key Key the keyframe sits at.
+ */
 void track_171A70_set_single_key(BootClass171A70* track, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     track->on_set_single_key(value, first, second, key);
 }
 
+/**
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
+ */
 void track_171A70_get_zero_value(u32* result)
 {
     result[0] = 0;
@@ -3551,39 +4179,82 @@ void BootClass171A70::evaluate(float key, FieldVec4B* output) const
     *output = sample(key);
 }
 
-BootKeyEntry32* track_171A70_get_keys(const BootState1F47F0* track)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+BootTrackKey171A70* BootClass171A70::get_keys()
 {
-    return track->entries;
+    return key_array;
 }
 
-/** @brief Forward to slot 0x68. */
+/**
+ * @brief Forward to slot 0x68.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 vector_curve_track_append_key(BootVectorCurveTrackBase* track, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent,
                                   float key)
 {
     return track->on_append_key(value, in_tangent, out_tangent, key);
 }
 
-/** @brief Forward to slot 0x6C. */
+/**
+ * @brief Forward to slot 0x6C.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 vector_curve_track_replace_key(BootVectorCurveTrackBase* track, s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent,
                                    const FieldVec4A* out_tangent)
 {
     return track->on_replace_key(index, key, value, in_tangent, out_tangent);
 }
 
-/** @brief Forward to slot 0x70. */
+/**
+ * @brief Forward to slot 0x70.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 vector_curve_track_insert_key(BootVectorCurveTrackBase* track, s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent,
                                   const FieldVec4A* out_tangent)
 {
     return track->on_insert_key(index, key, value, in_tangent, out_tangent);
 }
 
-/** @brief Forward to slot 0x74. */
+/**
+ * @brief Forward to slot 0x74.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ */
 void vector_curve_track_set_single_key(BootVectorCurveTrackBase* track, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent,
                                        float key)
 {
     track->on_set_single_key(value, in_tangent, out_tangent, key);
 }
 
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param track Receiver with record storage and a nonzero cached key span.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
 float float_curve_track_update_cycle_count(BootFloatCurveTrackState* track, float key)
 {
     float first = track->entries[0].key;
@@ -3680,30 +4351,69 @@ u8 float_curve_track_find_surrounding_keys(BootFloatCurveTrackBase* track, float
     track->state.unk0c = index;
     return 0;
 }
-/** @brief Forward to slot 0x68. */
+/**
+ * @brief Forward to slot 0x68.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 float_curve_track_append_key(BootFloatCurveTrackBase* track, const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
     return track->on_append_key(value, in_tangent, out_tangent, key);
 }
 
-/** @brief Forward to slot 0x6C. */
+/**
+ * @brief Forward to slot 0x6C.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 float_curve_track_replace_key(BootFloatCurveTrackBase* track, s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
 {
     return track->on_replace_key(index, key, value, in_tangent, out_tangent);
 }
 
-/** @brief Forward to slot 0x70. */
+/**
+ * @brief Forward to slot 0x70.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 float_curve_track_insert_key(BootFloatCurveTrackBase* track, s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
 {
     return track->on_insert_key(index, key, value, in_tangent, out_tangent);
 }
 
-/** @brief Forward to slot 0x74. */
+/**
+ * @brief Forward to slot 0x74.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ */
 void float_curve_track_set_single_key(BootFloatCurveTrackBase* track, const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
     track->on_set_single_key(value, in_tangent, out_tangent, key);
 }
 
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param track Receiver with float-key entries and a nonzero cached key span.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
 float float_track_update_cycle_count(BootFloatTrackState* track, float key)
 {
     float first = track->entries[0].key;
@@ -3800,19 +4510,22 @@ u8 float_track_find_surrounding_keys(BootFloatTrackBase* track, float key, s32* 
     track->state.unk0c = index;
     return 0;
 }
-void quaternion_track_reset_state(BootQuaternionTrackState* track)
+/**
+ * @brief Reset signed-key entry storage, counts, control fields, and cached indices.
+ */
+void BootQuaternionTrackBase::reset_state()
 {
-    track->entries = 0;
-    track->before_mode = 1;
-    track->after_mode = 1;
-    track->capacity = 0;
-    track->count = 0;
-    track->unk1C = -1;
-    track->cycle_count = 0;
-    track->unk1E = -1;
-    track->cached_index = -1;
-    track->repeats = 0;
-    track->external_keys = 0;
+    key_array = 0;
+    state.before_mode = 1;
+    state.after_mode = 1;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.unk0c = -1;
+    state.cycle_count = 0;
+    state.unk0e = -1;
+    state.cached_index = -1;
+    state.repeats = 0;
+    state.external_keys = 0;
 }
 
 /**
@@ -3822,7 +4535,7 @@ void quaternion_track_reset_state(BootQuaternionTrackState* track)
 void BootQuaternionTrackBase::allocate_keys(s32 count)
 {
     state.external_keys = 0;
-    delete[] static_cast<BootQuaternionTrackKey*>(key_array);
+    delete[] key_array;
     key_array = new (0) BootQuaternionTrackKey[count];
     state.key_capacity = count;
 
@@ -3832,91 +4545,170 @@ void BootQuaternionTrackBase::allocate_keys(s32 count)
     }
 }
 
-void quaternion_track_bind_keys(BootQuaternionTrackState* track, s32 count, BootQuaternionStateKey* entries)
+/**
+ * @brief Bind external entry storage and cache its first-to-last key span.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void BootQuaternionTrackBase::bind_keys(s32 count, BootQuaternionTrackKey* entries)
 {
     s32 last_index = count - 1;
-    BootQuaternionStateKey* last;
-    track->external_keys = 1;
-    track->entries = entries;
-    track->capacity = count;
-    track->count = count;
-    last = track->entries + last_index;
-    track->span = (float)last->key - (float)track->entries[0].key;
+    BootQuaternionTrackKey* last;
+    state.external_keys = 1;
+    key_array = entries;
+    state.key_capacity = count;
+    state.key_count = count;
+    last = key_array + last_index;
+    state.span = (float)last->key - (float)key_array[0].key;
 }
 
-void quaternion_track_set_after_mode(BootQuaternionTrackState* state, u32 value)
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootQuaternionTrackBase::set_after_mode(u32 value)
 {
-    state->after_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.after_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-s32 quaternion_track_get_cycle_count(const BootQuaternionTrackState* track)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 BootQuaternionTrackBase::get_cycle_count() const
 {
-    return track->cycle_count;
+    return state.cycle_count;
 }
 
-s16 quaternion_track_get_key_count(const BootQuaternionTrackState* track)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 BootQuaternionTrackBase::get_key_count() const
 {
-    return track->count;
+    return state.key_count;
 }
 
-s16 quaternion_track_get_key_capacity(const BootQuaternionTrackState* track)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 BootQuaternionTrackBase::get_key_capacity()
 {
-    return track->capacity;
+    return state.key_capacity;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 quaternion_track_on_append_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x68. */
+/**
+ * @brief Forward to slot 0x68.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 quaternion_track_append_key(BootQuaternionTrackBase* track, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return track->on_append_key(value, first, second, key);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 quaternion_track_on_replace_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x6C. */
+/**
+ * @brief Forward to slot 0x6C.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 quaternion_track_replace_key(BootQuaternionTrackBase* track, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first,
                                  const FieldVec4A* second)
 {
     return track->on_replace_key(index, key, value, first, second);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 quaternion_track_on_insert_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x70. */
+/**
+ * @brief Forward to slot 0x70.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 quaternion_track_insert_key(BootQuaternionTrackBase* track, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first,
                                 const FieldVec4A* second)
 {
     return track->on_insert_key(index, key, value, first, second);
 }
 
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
 void quaternion_track_on_set_single_key(void* track)
 {
 }
 
-/** @brief Forward to slot 0x74. */
+/**
+ * @brief Forward to slot 0x74.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @param key Key the keyframe sits at.
+ */
 void quaternion_track_set_single_key(BootQuaternionTrackBase* track, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     track->on_set_single_key(value, first, second, key);
 }
 
-s32 quaternion_track_has_key(BootQuaternionTrackState* track, float key)
+/**
+ * @brief Test whether the array contains a signed entry key equal to the given float.
+ * @param key Key to find.
+ * @return One if a matching key exists, or zero otherwise.
+ */
+s32 BootQuaternionTrackBase::has_key(float key) const
 {
+    s16 count = state.key_count;
     s32 index;
 
-    for (index = 0; index < track->count; index++)
+    for (index = 0; index < count; index++)
     {
-        if (key == track->entries[index].key)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -3925,6 +4717,10 @@ s32 quaternion_track_has_key(BootQuaternionTrackState* track, float key)
     return 0;
 }
 
+/**
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
+ */
 void quaternion_track_get_zero_value(u32* result)
 {
     result[0] = 0;
@@ -3933,19 +4729,23 @@ void quaternion_track_get_zero_value(u32* result)
     result[3] = 0;
 }
 
-float quaternion_track_get_key_span(BootQuaternionTrackState* track)
+/**
+ * @brief Compute the difference between the last and first entry keys.
+ * @return Key span, or zero when fewer than two entries exist.
+ */
+float BootQuaternionTrackBase::get_key_span() const
 {
     s32 last_index;
-    BootQuaternionStateKey* last_entry;
+    BootQuaternionTrackKey* last_entry;
 
-    if (track->count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    last_index = track->count - 1;
-    last_entry = track->entries + last_index;
-    return (float)last_entry->key - (float)track->entries[0].key;
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return (float)last_entry->key - (float)key_array[0].key;
 }
 
 /**
@@ -3962,16 +4762,16 @@ static inline void reread_result(FieldVec4A*& out)
 /**
  * @brief Find the keyframe with a key and decode its rotation.
  * @param out Receives the rotation, or zero when the key is absent.
- * @param object Keyframe array.
+ * @param track Keyframe array.
  * @param key Key to find.
  */
-void quaternion_track_find_key_value(FieldVec4A* out, BootQuaternionTrackState* object, float key)
+void quaternion_track_find_key_value(FieldVec4A* out, BootQuaternionTrackState* track, float key)
 {
     s32 index;
 
-    for (index = 0; index < object->count; index++)
+    for (index = 0; index < track->count; index++)
     {
-        BootQuaternionStateKey* entry = object->entries + index;
+        BootQuaternionStateKey* entry = track->entries + index;
 
         if (key == entry->key)
         {
@@ -4001,11 +4801,16 @@ void BootQuaternionTrackBase::evaluate(float key, FieldVec4B* output) const
     *output = sample(key);
 }
 
-float quaternion_track_wrap_key(BootQuaternionTrackState* track, float key)
+/**
+ * @brief Wrap a key by the span between the first and last entries.
+ * @param key Key whose normalized span quotient must fit in a signed word.
+ * @return Key with the computed whole spans subtracted.
+ */
+float BootQuaternionTrackBase::wrap_key(float key) const
 {
-    s32 last_index = track->count - 1;
-    BootQuaternionStateKey* entries = track->entries;
-    BootQuaternionStateKey* last = entries + last_index;
+    s32 last_index = state.key_count - 1;
+    BootQuaternionTrackKey* entries = key_array;
+    BootQuaternionTrackKey* last = entries + last_index;
     float first = entries[0].key;
     float span = last->key - first;
     float position = (key - first) / span;
@@ -4026,24 +4831,31 @@ float quaternion_track_wrap_key(BootQuaternionTrackState* track, float key)
     return key;
 }
 
-BootQuaternionStateKey* quaternion_track_get_keys(const BootQuaternionTrackState* track)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+BootQuaternionTrackKey* BootQuaternionTrackBase::get_keys()
 {
-    return track->entries;
+    return key_array;
 }
 
-void track_171680_reset_state(BootState1F4730* track)
+/**
+ * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
+ */
+void BootClass171680::reset_state()
 {
-    track->entries = 0;
-    track->before_mode = 1;
-    track->after_mode = 1;
-    track->capacity = 0;
-    track->count = 0;
-    track->unk4C = -1;
-    track->cycle_count = 0;
-    track->unk4E = -1;
-    track->cached_index = -1;
-    track->repeats = 0;
-    track->external_keys = 0;
+    key_array = 0;
+    state.before_mode = 1;
+    state.after_mode = 1;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.unk0c = -1;
+    state.cycle_count = 0;
+    state.unk0e = -1;
+    state.cached_index = -1;
+    state.repeats = 0;
+    state.external_keys = 0;
 }
 
 /**
@@ -4053,7 +4865,7 @@ void track_171680_reset_state(BootState1F4730* track)
 void BootClass171680::allocate_keys(s32 count)
 {
     state.external_keys = 0;
-    delete[] static_cast<BootTrackKey171680*>(key_array);
+    delete[] key_array;
     key_array = new (0) BootTrackKey171680[count];
     state.key_capacity = count;
 
@@ -4063,89 +4875,168 @@ void BootClass171680::allocate_keys(s32 count)
     }
 }
 
-void track_171680_bind_keys(BootState1F4730* track, s32 count, BootKeyEntry48* entries)
+/**
+ * @brief Bind external 48-byte records and cache their first-to-last key span.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void BootClass171680::bind_keys(s32 count, BootTrackKey171680* entries)
 {
     s32 last_index = count - 1;
-    BootKeyEntry48* last;
-    track->external_keys = 1;
-    track->entries = entries;
-    track->capacity = count;
-    track->count = count;
-    last = track->entries + last_index;
-    track->span = last->key - track->entries[0].key;
+    BootTrackKey171680* last;
+    state.external_keys = 1;
+    key_array = entries;
+    state.key_capacity = count;
+    state.key_count = count;
+    last = key_array + last_index;
+    state.span = last->key - key_array[0].key;
 }
 
-void track_171680_set_after_mode(BootState1F4730* state, u32 value)
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param value Value to store, truncated to four bits.
+ */
+void BootClass171680::set_after_mode(u32 value)
 {
-    state->after_mode = value;
-    state->repeats = state->before_mode == 4 || state->after_mode == 4;
+    state.after_mode = value;
+    state.repeats = state.before_mode == 4 || state.after_mode == 4;
 }
 
-s32 track_171680_get_cycle_count(const BootState1F4730* track)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 BootClass171680::get_cycle_count() const
 {
-    return track->cycle_count;
+    return state.cycle_count;
 }
 
-s16 track_171680_get_key_count(const BootState1F4730* track)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 BootClass171680::get_key_count() const
 {
-    return track->count;
+    return state.key_count;
 }
 
-s16 track_171680_get_key_capacity(const BootState1F4730* track)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 BootClass171680::get_key_capacity()
 {
-    return track->capacity;
+    return state.key_capacity;
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_171680_on_append_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x68. */
+/**
+ * @brief Forward to slot 0x68.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_171680_append_key(BootClass171680* track, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return track->on_append_key(value, first, second, key);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_171680_on_replace_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x6C. */
+/**
+ * @brief Forward to slot 0x6C.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_171680_replace_key(BootClass171680* track, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return track->on_replace_key(index, key, value, first, second);
 }
 
+/**
+ * @brief Return the fixed value 0.
+ * @param track Receiver or first argument; unused.
+ * @return Always 0.
+ */
 s32 track_171680_on_insert_key(void* track)
 {
     return 0;
 }
 
-/** @brief Forward to slot 0x70. */
+/**
+ * @brief Forward to slot 0x70.
+ * @param track Track to use.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @return Nonzero when the keyframe was stored.
+ */
 s32 track_171680_insert_key(BootClass171680* track, s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return track->on_insert_key(index, key, value, first, second);
 }
 
+/**
+ * @brief Perform no work.
+ * @param track Receiver or first argument; unused.
+ */
 void track_171680_on_set_single_key(void* track)
 {
 }
 
-/** @brief Forward to slot 0x74. */
+/**
+ * @brief Forward to slot 0x74.
+ * @param track Track to use.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @param key Key the keyframe sits at.
+ */
 void track_171680_set_single_key(BootClass171680* track, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     track->on_set_single_key(value, first, second, key);
 }
 
-s32 track_171680_has_key(BootState1F4730* track, float key)
+/**
+ * @brief Test whether the 48-byte record array contains an exactly equal key.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 BootClass171680::has_key(float key) const
 {
+    s16 count = state.key_count;
     s32 index;
 
-    for (index = 0; index < track->count; index++)
+    for (index = 0; index < count; index++)
     {
-        if (key == track->entries[index].key)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -4154,6 +5045,10 @@ s32 track_171680_has_key(BootState1F4730* track, float key)
     return 0;
 }
 
+/**
+ * @brief Write a zero value; the track's value when it has no keys.
+ * @param result Receives the zero value.
+ */
 void track_171680_get_zero_value(u32* result)
 {
     result[0] = 0;
@@ -4162,19 +5057,23 @@ void track_171680_get_zero_value(u32* result)
     result[3] = 0;
 }
 
-float track_171680_get_key_span(BootState1F4730* track)
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float BootClass171680::get_key_span() const
 {
     s32 last_index;
-    BootKeyEntry48* last_entry;
+    BootTrackKey171680* last_entry;
 
-    if (track->count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    last_index = track->count - 1;
-    last_entry = track->entries + last_index;
-    return last_entry->key - track->entries[0].key;
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
 /**
@@ -4209,11 +5108,16 @@ void BootClass171680::evaluate(float key, FieldVec4B* output) const
     *output = sample(key);
 }
 
-float track_171680_wrap_key(BootState1F4730* track, float key)
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float BootClass171680::wrap_key(float key) const
 {
-    s32 last_index = track->count - 1;
-    BootKeyEntry48* entries = track->entries;
-    BootKeyEntry48* last = entries + last_index;
+    s32 last_index = state.key_count - 1;
+    BootTrackKey171680* entries = key_array;
+    BootTrackKey171680* last = entries + last_index;
     float first = entries[0].key;
     float span = last->key - first;
     float quotient = (key - first) / span;
@@ -4234,20 +5138,30 @@ float track_171680_wrap_key(BootState1F4730* track, float key)
     return key;
 }
 
-BootKeyEntry48* track_171680_get_keys(const BootState1F4730* track)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+BootTrackKey171680* BootClass171680::get_keys()
 {
-    return track->entries;
+    return key_array;
 }
 
+/** @brief Leave the keyframe uninitialized. */
 BootTrackKey171680::BootTrackKey171680()
 {
 }
 
-float track_171A70_wrap_key(BootState1F47F0* track, float key)
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float BootClass171A70::wrap_key(float key) const
 {
-    s32 last_index = track->count - 1;
-    BootKeyEntry32* entries = track->entries;
-    BootKeyEntry32* last = entries + last_index;
+    s32 last_index = state.key_count - 1;
+    BootTrackKey171A70* entries = key_array;
+    BootTrackKey171A70* last = entries + last_index;
     float first = entries[0].key;
     float span = last->key - first;
     float quotient = (key - first) / span;
@@ -4290,28 +5204,38 @@ FieldVec4A track_171A70_find_key_value(BootState1F47F0* track, float key)
     return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-float track_171A70_get_key_span(BootState1F47F0* track)
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float BootClass171A70::get_key_span() const
 {
     s32 last_index;
-    BootKeyEntry32* last_entry;
+    BootTrackKey171A70* last_entry;
 
-    if (track->count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    last_index = track->count - 1;
-    last_entry = track->entries + last_index;
-    return last_entry->key - track->entries[0].key;
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
-s32 track_171A70_has_key(BootState1F47F0* track, float key)
+/**
+ * @brief Test whether the 32-byte record array contains an exactly equal key.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 BootClass171A70::has_key(float key) const
 {
+    s16 count = state.key_count;
     s32 index;
 
-    for (index = 0; index < track->count; index++)
+    for (index = 0; index < count; index++)
     {
-        if (key == track->entries[index].key)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -4320,1354 +5244,24 @@ s32 track_171A70_has_key(BootState1F47F0* track, float key)
     return 0;
 }
 
-void track_171A70_bind_keys(BootState1F47F0* track, s32 count, BootKeyEntry32* entries)
+/**
+ * @brief Bind external 32-byte records and cache their first-to-last key span.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param entries External storage containing the specified number of entries.
+ */
+void BootClass171A70::bind_keys(s32 count, BootTrackKey171A70* entries)
 {
     s32 last_index = count - 1;
-    BootKeyEntry32* last;
-    track->external_keys = 1;
-    track->entries = entries;
-    track->capacity = count;
-    track->count = count;
-    last = track->entries + last_index;
-    track->span = last->key - track->entries[0].key;
+    BootTrackKey171A70* last;
+    state.external_keys = 1;
+    key_array = entries;
+    state.key_capacity = count;
+    state.key_count = count;
+    last = key_array + last_index;
+    state.span = last->key - key_array[0].key;
 }
 
+/** @brief Leave the keyframe uninitialized. */
 BootTrackKey171A70::BootTrackKey171A70()
 {
-}
-
-/**
- * @brief Find the scene node of a title menu item.
- * @param menu Title menu.
- * @param item Item number, from 0 to 3.
- * @return The item's node, or null if the scene has none.
- */
-static inline BootClass170F30* find_menu_item(BootTitleMenu* menu, s32 item)
-{
-    BootClass170F30* node;
-
-    switch (item)
-    {
-    case 0:
-        node = lib_find_renderable_entry(menu->scene, g_new_game_node_name);
-        break;
-    case 1:
-        node = lib_find_renderable_entry(menu->scene, g_continue_node_name);
-        break;
-    case 2:
-        node = lib_find_renderable_entry(menu->scene, g_battle_collection_node_name);
-        break;
-    case 3:
-        node = lib_find_renderable_entry(menu->scene, g_install_node_name);
-        break;
-    }
-
-    return node;
-}
-
-/**
- * @brief Grow and pulse the selected item and ease the others back to normal.
- * @param snap Nonzero to put the selected item straight at full size.
- */
-void BootTitleMenu::animate_items(u8 snap)
-{
-    if (scene == 0)
-    {
-        return;
-    }
-
-    for (s32 item = 0; item < 4; item++)
-    {
-        BootClass170F30* node = find_menu_item(this, item);
-
-        if (node == 0)
-        {
-            continue;
-        }
-
-        if (item == selected)
-        {
-            BootVector4DDAA0 value;
-            copy_vector(&value, &node->unk40);
-
-            if (value.x < 1.08f && !snap)
-            {
-                value.x += 0.02f * D_001B6688;
-                value.y += 0.02f * D_001B6688;
-                value.z += 0.02f * D_001B6688;
-            }
-            else
-            {
-                value.x = 1.1f;
-                value.y = 1.1f;
-                value.z = 1.1f;
-            }
-
-            node->set_scale_vector(&value);
-            copy_vector(&value, &node->base_color_factor);
-
-            if (value.w > 0.9f)
-            {
-                if (!pulse_up)
-                {
-                    value.x -= 0.01f * D_001B6688;
-                    value.y -= 0.005f * D_001B6688;
-
-                    if (value.y < 0.5f)
-                    {
-                        value.y = 0.5f;
-                    }
-
-                    if (value.x < 0.5f)
-                    {
-                        value.x = 0.5f;
-                        pulse_up = 1;
-                    }
-                }
-                else if (pulse_up)
-                {
-                    value.x += 0.01f * D_001B6688;
-                    value.y += 0.005f * D_001B6688;
-
-                    if (value.y > 1.0f)
-                    {
-                        value.y = 1.0f;
-                    }
-
-                    if (value.x > 1.0f)
-                    {
-                        value.x = 1.0f;
-                        pulse_up = 0;
-                    }
-                }
-
-                copy_vector(&node->base_color_factor, &value);
-                node->update_combined_color_factor();
-            }
-        }
-        else
-        {
-            BootVector4DDAA0 value;
-            copy_vector(&value, &node->unk40);
-
-            if (value.x > 1.05f)
-            {
-                value.x -= 0.05f * D_001B6688;
-                value.y -= 0.05f * D_001B6688;
-                value.z -= 0.05f * D_001B6688;
-            }
-            else
-            {
-                value.x = 1.0f;
-                value.y = 1.0f;
-                value.z = 1.0f;
-            }
-
-            node->set_scale_vector(&value);
-            copy_vector(&value, &node->base_color_factor);
-
-            if (value.x < 1.0f)
-            {
-                value.x += 0.025f * D_001B6688;
-                value.y += 0.05f * D_001B6688;
-
-                if (value.x > 1.0f)
-                {
-                    value.x = 1.0f;
-                }
-
-                if (value.y > 1.0f)
-                {
-                    value.y = 1.0f;
-                }
-            }
-
-            copy_vector(&node->base_color_factor, &value);
-            node->update_combined_color_factor();
-        }
-    }
-}
-
-/**
- * @brief Work out the screen position of the cursor beside the selected item.
- * @param x Receives the horizontal position, or zero if the item has no node.
- * @param y Receives the vertical position, or zero if the item has no node.
- */
-void BootTitleMenu::get_cursor_position(float* x, float* y)
-{
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
-    BootClass170F30* node = find_menu_item(this, selected);
-
-    if (node == 0)
-    {
-        *x = 0.0f;
-        *y = 0.0f;
-        return;
-    }
-
-    if (!node->matrix_ready)
-    {
-        node->update_transform_matrix();
-    }
-
-    float screen_x = node->unkD0.vectors[0].w;
-    float screen_y = node->unkD0.vectors[1].w;
-
-    if (settings->widescreen)
-    {
-        *x = 319.0f + 0.75f * screen_x;
-        *y = 224.0f + screen_y;
-    }
-    else
-    {
-        *x = 320.0f + screen_x;
-        *y = 224.0f + screen_y;
-    }
-
-    if (selected == 1)
-    {
-        *x -= 6.0f;
-    }
-
-    if (selected < 4)
-    {
-        *y += 24.0f;
-    }
-}
-
-/** @brief Dim Continue and Battle Collection unless a memory card holds the data they need. */
-void BootTitleMenu::update_item_availability()
-{
-    if (scene == 0)
-    {
-        return;
-    }
-
-    BootClass170F30* continue_node;
-    BootInput* input = g_boot_program.input;
-    u32 slot1 = input->slot1_state;
-    u32 slot2 = input->slot2_state;
-    u32 first = input->slot1_raw_state;
-    u32 second = input->slot2_raw_state;
-    continue_node = lib_find_renderable_entry(scene, g_continue_node_name);
-
-    if (continue_node == 0)
-    {
-        return;
-    }
-
-    BootClass170F30* collection_node = lib_find_renderable_entry(scene, g_battle_collection_node_name);
-
-    if (collection_node == 0)
-    {
-        return;
-    }
-
-    BootVector4DDAA0 color;
-    copy_vector(&color, &collection_node->base_color_factor);
-
-    if (first == 5 || second == 5)
-    {
-        color.w = 1.0f;
-        collection_ready = 1;
-        copy_vector(&collection_node->base_color_factor, &color);
-        collection_node->update_combined_color_factor();
-    }
-    else
-    {
-        color.x = 1.0f;
-        color.y = 1.0f;
-        color.z = 1.0f;
-        color.w = 0.5f;
-        collection_ready = 0;
-        copy_vector(&collection_node->base_color_factor, &color);
-        collection_node->update_combined_color_factor();
-    }
-
-    copy_vector(&color, &continue_node->base_color_factor);
-
-    if (slot1 == 0x11 || slot2 == 0x11)
-    {
-        color.w = 1.0f;
-        continue_ready = 1;
-        copy_vector(&continue_node->base_color_factor, &color);
-        continue_node->update_combined_color_factor();
-    }
-    else
-    {
-        color.x = 1.0f;
-        color.y = 1.0f;
-        color.z = 1.0f;
-        color.w = 0.5f;
-        continue_ready = 0;
-        copy_vector(&continue_node->base_color_factor, &color);
-        continue_node->update_combined_color_factor();
-    }
-}
-
-/** @brief Run the menu state machine. */
-void BootTitleMenu::update()
-{
-    BootSystemSettings* settings;
-    BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
-
-    switch (step)
-    {
-    case 0:
-    {
-        if (func_102D00(D_001B65E8) == 0)
-        {
-            break;
-        }
-
-        if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) == 0)
-        {
-            break;
-        }
-
-        check_main_code();
-        scene = new (0) BootScene;
-        func_4791F0(scene, scene_data);
-        func_474010(scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
-        delete[] scene_data;
-        scene_data = 0;
-        func_40B3A0(unk30);
-        delete[] unk30;
-        unk30 = 0;
-        camera = lib_find_camera_entry(scene, g_title_camera_node_name);
-        D_001B6628->current_display = camera;
-
-        if (initial_item != -1)
-        {
-            selected = initial_item;
-        }
-        else if (input->slot1_state == 0x11 || input->slot2_state == 0x11)
-        {
-            selected = 1;
-        }
-        else
-        {
-            selected = 0;
-        }
-
-        animate_items(1);
-        D_001B661C->prepend_node(new (0) BootClass179150, -1);
-        float x;
-        float y;
-        get_cursor_position(&x, &y);
-        cursor = new (0) BootSelectionCursor;
-        func_467570(cursor, 1, 0, 0, x, y, 0.0f);
-        func_465B20(D_001B657C, cursor);
-        step++;
-        break;
-    }
-    case 1:
-        if (func_112990(D_001B65F8, 2, 1, 0, 0) == 0)
-        {
-            break;
-        }
-
-        check_main_code();
-        step++;
-        idle_time = 0.0f;
-        break;
-    case 2:
-    {
-        check_main_code();
-
-        if (input->repeated == 0x80 && cursor->unk35)
-        {
-            selected--;
-
-            if (selected > 2)
-            {
-                selected = 2;
-            }
-
-            float x;
-            float y;
-            get_cursor_position(&x, &y);
-            cursor->func_00466E40(x, y, 0.05f);
-            pulse_up = 0;
-            func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
-        }
-
-        if (input->repeated == 0x20 && cursor->unk35)
-        {
-            selected++;
-
-            if (selected > 2)
-            {
-                selected = 0;
-            }
-
-            float x;
-            float y;
-            get_cursor_position(&x, &y);
-            cursor->func_00466E40(x, y, 0.05f);
-            func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
-        }
-
-        idle_time += D_001B6690;
-
-        if (input->pressed & settings->confirm_buttons)
-        {
-            u8 accepted = 0;
-
-            if (selected == 0)
-            {
-                step++;
-                accepted = 1;
-            }
-
-            if (selected == 1 && continue_ready)
-            {
-                settings->continue_selected = 1;
-                accepted = 1;
-                step = 5;
-            }
-
-            if (selected == 2 && collection_ready)
-            {
-                accepted = 1;
-                step = 7;
-            }
-
-            if (selected == 3 && unk2c)
-            {
-                accepted = 1;
-                step = 6;
-            }
-
-            if (accepted)
-            {
-                queue_fade();
-                func_10F000(D_001B65F8, 0x1E, -1);
-                func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
-            }
-            else
-            {
-                func_112400(D_001B65F8, 3, 0, 0, 0x7F, 0x40, 0);
-            }
-        }
-        else if (!(idle_time < 45.0f) && func_112610(D_001B65F8, -1) == 0 && func_115270(D_001B65E4, 1) == 1)
-        {
-            queue_fade();
-            func_10F000(D_001B65F8, 0x1E, -1);
-            step = 4;
-        }
-
-        break;
-    }
-    case 3:
-        check_main_code();
-        g_boot_program.select_projection();
-        step++;
-        func_473AA0(scene);
-        scene->destroy();
-        scene = 0;
-        cursor->destroy();
-        cursor = 0;
-        D_001B6614->append_node(new (0) BootNewGameSettings, -1);
-        lib_object_detach_owner(this);
-        destroy();
-        break;
-    case 4:
-        check_main_code();
-        g_boot_program.select_projection();
-        step++;
-        func_473AA0(scene);
-        scene->destroy();
-        scene = 0;
-        cursor->destroy();
-        cursor = 0;
-        func_10F000(D_001B65F8, 0, -1);
-        D_001B6614->append_node(new (0) BootOpeningMovie, -1);
-        lib_object_detach_owner(this);
-        destroy();
-        break;
-    case 5:
-        check_main_code();
-        g_boot_program.select_projection();
-        step++;
-        func_473AA0(scene);
-        scene->destroy();
-        scene = 0;
-        cursor->destroy();
-        cursor = 0;
-        D_001B6614->append_node(new (0) BootGameLauncher, -1);
-        lib_object_detach_owner(this);
-        destroy();
-        break;
-    case 6:
-        check_main_code();
-        g_boot_program.select_projection();
-        step++;
-        func_473AA0(scene);
-        scene->destroy();
-        scene = 0;
-        cursor->destroy();
-        cursor = 0;
-        D_001B6614->append_node(new (0) BootInstaller, -1);
-        lib_object_detach_owner(this);
-        destroy();
-        break;
-    case 7:
-    {
-        check_main_code();
-        g_boot_program.select_projection();
-        step++;
-        func_473AA0(scene);
-        scene->destroy();
-        scene = 0;
-        cursor->destroy();
-        cursor = 0;
-        void* block = func_100B00(func_10CE00(), 0);
-        D_001B6614->append_node(new (0) BootBattleTrophyViewer, -1);
-        func_100B40(block);
-        lib_object_detach_owner(this);
-        destroy();
-        break;
-    }
-    }
-
-    update_item_availability();
-    animate_items(0);
-
-    if (step > 0)
-    {
-        check_main_code();
-    }
-}
-
-/** @brief Free the resource buffers, then destroy the scene and its model. */
-BootTitleMenu::~BootTitleMenu()
-{
-    delete[] scene_data;
-    delete[] unk30;
-
-    if (scene != 0)
-    {
-        scene->destroy();
-    }
-
-    if (cursor != 0)
-    {
-        cursor->destroy();
-    }
-}
-
-/**
- * @brief Queue the scene resources and remember the item to start on.
- * @param initial_item Item to select first, or -1 to pick Continue when a card holds a save.
- */
-BootTitleMenu::BootTitleMenu(s32 initial_item)
-{
-    step = 0;
-    scene_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x27));
-    func_103E70(D_001B65E8, 0x27, scene_data, 1, 0x34BC0, 0, 0, 0, 1);
-    unk30 = func_139700(0x40, func_11C8C0(D_001B65E4, 0xA));
-    func_103E70(D_001B65E8, 0xA, unk30, 1, 0x34BC0, 0, 0, 0, 1);
-    scene = 0;
-    cursor = 0;
-    pulse_up = 0;
-    continue_ready = 0;
-    unk2c = 0;
-    collection_ready = 0;
-    this->initial_item = initial_item;
-    g_boot_program.trophy_card->set_mode(2);
-}
-
-/** @brief Detach the bar and its model, destroy the model and delete the bar. */
-void BootProgressBar::destroy()
-{
-    lib_object_detach_owner(this);
-
-    if (model != 0)
-    {
-        lib_object_detach_owner(this);
-        model->destroy();
-    }
-
-    model = 0;
-    delete this;
-}
-
-/**
- * @brief Append one vertex to a draw buffer's streams.
- * @param buffer Draw buffer.
- * @param position Vertex position.
- * @param unk Value for the second vector stream.
- * @param texcoord Packed texture coordinates.
- * @param color Vertex color.
- */
-static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position, const FieldVec4A& unk, u32 texcoord, u32 color)
-{
-    *buffer->positions = position;
-    buffer->positions++;
-    *buffer->unk4c = unk;
-    buffer->unk4c++;
-    *buffer->texcoords++ = texcoord;
-    *buffer->colors++ = color;
-    buffer->vertex_count++;
-}
-
-/**
- * @brief Draw a progress bar: a dark border, the bar outline and a fill proportional to done / total.
- * @param bar Progress bar to draw.
- * @param done Completed amount; clamped to total.
- * @param total Total amount.
- */
-void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
-{
-    BootDrawSettings settings;
-    s32 fill;
-
-    func_455DF0(bar->draw_buffer, 0, 1);
-    init_draw_settings(&settings);
-    settings.unk00 = 0xC;
-    settings.unk02 = 0;
-    settings.unk05 = 1;
-    settings.unk06 = 0;
-    FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
-
-    if (total < done)
-    {
-        done = total;
-    }
-
-    if (total > 999)
-    {
-        fill = done / (total / 1000);
-    }
-    else
-    {
-        fill = done * 1000 / total;
-    }
-
-    func_455150(bar->draw_buffer, &settings);
-    s32 width = bar->width;
-    s32 height = bar->height;
-    u32 color = bar->color;
-    s32 depth = bar->mode;
-    func_4550F0(bar->draw_buffer, 4);
-    add_vertex(bar->draw_buffer, FieldVec4A(-2.0f, -1.0f, (float)depth, 1.0f), normal, 0, 0x80301004);
-    add_vertex(bar->draw_buffer, FieldVec4A(2.0f + width, -1.0f, (float)depth, 1.0f), normal, 0, 0x80301004);
-    add_vertex(bar->draw_buffer, FieldVec4A(-2.0f, 1.0f + height, (float)depth, 1.0f), normal, 0, 0x80301004);
-    add_vertex(bar->draw_buffer, FieldVec4A(2.0f + width, 1.0f + height, (float)depth, 1.0f), normal, 0, 0x80301004);
-    func_4550F0(bar->draw_buffer, 4);
-    add_vertex(bar->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(0.0f, 1.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A((float)width, 1.0f, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
-    add_vertex(bar->draw_buffer, FieldVec4A(0.0f, height - 1.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A((float)width, height - 1.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(0.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A((float)width, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
-    add_vertex(bar->draw_buffer, FieldVec4A(-1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(-1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
-    add_vertex(bar->draw_buffer, FieldVec4A(width - 1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, 0.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(width - 1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
-    add_vertex(bar->draw_buffer, FieldVec4A(3.0f, 3.0f, (float)depth, 1.0f), normal, 0, color);
-    float right = 3.0f + ((width - 6.0f) * fill) / 1000.0f;
-    add_vertex(bar->draw_buffer, FieldVec4A(right, 3.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(3.0f, height - 3.0f, (float)depth, 1.0f), normal, 0, color);
-    add_vertex(bar->draw_buffer, FieldVec4A(right, height - 3.0f, (float)depth, 1.0f), normal, 0, color);
-    func_455BD0(bar->draw_buffer, 0, 1.0f, 0);
-}
-
-void init_draw_settings(BootDrawSettings* settings)
-{
-    settings->unk00 = 12;
-    settings->unk03 = 0;
-    settings->unk02 = 0;
-    settings->unk04 = 0;
-    settings->unk05 = 0;
-    settings->unk06 = 1;
-    settings->unk07 = 1;
-    settings->unk08 = 1.0f;
-    settings->unk0C = 1.0f;
-    settings->unk10 = 0.5f;
-    settings->unk18 = 0;
-    settings->unk19 = 0;
-    settings->unk1A = 0;
-    settings->unk1B = 0;
-    settings->unk1C = 0;
-    settings->unk14 = 0.0f;
-}
-
-/**
- * @brief Recreate the bar's draw buffer and model, then draw it empty and show it.
- * @param bar Progress bar.
- * @param width Bar width.
- * @param height Bar height.
- * @param color Bar color.
- * @param mode Draw mode.
- */
-void progress_bar_reset(BootProgressBar* bar, s32 width, s32 height, u32 color, s32 mode)
-{
-    if (bar->draw_buffer != 0)
-    {
-        delete bar->draw_buffer;
-    }
-
-    if (bar->model != 0)
-    {
-        bar->model->destroy();
-    }
-
-    bar->draw_buffer = new (0) LibDrawBuffer;
-    bar->model = new (0) BootModel;
-    bar->draw_buffer->allocate_storage(2, 0x600, 1, 8);
-    bar->width = width;
-    bar->height = height;
-    bar->color = color;
-    bar->mode = mode;
-    progress_bar_draw(bar, 0, 1);
-    func_4D6430(bar->model, bar->draw_buffer);
-    bar->model->unk80 = D_001B6630;
-    bar->model->unk6a |= 0x400;
-    D_001B661C->append_node(bar->model, -1);
-}
-
-/** @brief Destroy the bar's model, then the bar. */
-BootProgressBar::~BootProgressBar()
-{
-    if (model != 0)
-    {
-        model->destroy();
-    }
-}
-
-/** @brief Clear the bar's model and state. */
-BootProgressBar::BootProgressBar()
-{
-    draw_buffer = 0;
-    model = 0;
-}
-
-/** @brief Fade out; once transparent, destroy the strips and the fade. */
-void BootScreenFade::update()
-{
-    alpha -= fade_speed * D_001B6690;
-
-    if (alpha <= 0.0f)
-    {
-        for (s32 i = 0; i < 10; i++)
-        {
-            if (images[i] != 0)
-            {
-                lib_object_detach_owner(images[i]);
-                images[i]->destroy();
-                images[i] = 0;
-            }
-        }
-
-        lib_object_detach_owner(this);
-        destroy();
-    }
-}
-
-/** @brief Mark the fade inactive and run the Lib release helper. @param value Unused. */
-void BootScreenFade::on_packet_complete(u32 value)
-{
-    dma_pending = 0;
-    func_4D00B0(this);
-}
-
-/** @brief Mark the fade active and submit its packet. */
-void BootScreenFade::render()
-{
-    dma_pending = 1;
-    func_11F510(packet, static_cast<BootDmaCallbacks*>(this));
-}
-
-/**
- * @brief Build the fade's GS packet: upload each of the ten strips to VRAM and draw it as a sprite at the fade's
- * alpha. The first call only arms the fade.
- * @param matrix Matrix supplied by the caller; unused.
- * @param context Opaque caller context; unused.
- */
-void BootScreenFade::build_packet(const void* matrix, void* context)
-{
-    if (!armed)
-    {
-        armed = 1;
-        return;
-    }
-
-    BootPacketBuffer* buffer_packet = packet;
-    buffer_packet->unk08 = buffer_packet->unk00 + 0x40;
-    buffer_packet->unk0c = buffer_packet->unk08;
-    BootFadeStripPacket* strip = reinterpret_cast<BootFadeStripPacket*>(func_11F860(packet, 0));
-    BootVramRequest request;
-    request.width = 64;
-    request.height = 448;
-    request.size = 0x1C000;
-    request.unk0c = 1;
-    request.unk0e = 6;
-    request.unk0f = 10;
-    u32 address = func_4D93A0(D_001B663C, &request, 0x54744664, 1, 0, 0, 1, 0);
-
-    if (address != 0)
-    {
-        u32 base = address >> 6;
-        float top = 1824.0f;
-        float bottom = 2272.0f;
-        float left = 1728.0f;
-        float width = 64.0f;
-
-        for (s32 i = 0; i < 10; i++)
-        {
-            u8* image = buffer + 448 * (i * 64) * 3 / 16 * 16;
-            strip->transfer_dma = 0x10000006;
-            strip->transfer_tag.tag = 0x1000000000000004ULL;
-            strip->transfer_tag.registers = 0;
-            strip->transfer_tag.fields.register0 = 0xE;
-            strip->bitbltbuf = ((u64)base << 32) | 0x0101000000000000ULL;
-            strip->bitbltbuf_register = 0x50;
-            strip->trxpos = 1;
-            strip->trxpos_register = 0x51;
-            strip->trxreg = 0x000001C000000040ULL;
-            strip->trxreg_register = 0x52;
-            strip->trxdir = 0;
-            strip->trxdir_register = 0x53;
-            strip->image_tag = 0x1800000000001500ULL;
-            strip->image_dma = ((u64)(u32)image << 32) | 0x30001500;
-            strip->draw_dma = 0x10000008;
-            strip->draw_tag.tag = 0x1000000000008004ULL;
-            strip->draw_tag.registers = 0;
-            strip->draw_tag.fields.register0 = 0xE;
-            strip->texflush = 0;
-            strip->texflush_register = 0x3F;
-            strip->tex0 = base | 0x0000000298104000ULL;
-            strip->tex0_register = 7;
-            strip->prim = 0x356;
-            strip->prim_register = 0;
-            u32 color = 0x808080;
-            color |= (s32)(128.0f * alpha) << 24;
-            strip->rgbaq = color;
-            strip->rgbaq_register = 1;
-            strip->sprite_tag.tag = 0x4400000000008001ULL;
-            strip->sprite_tag.registers = 0;
-            strip->sprite_tag.fields.register0 = 3;
-            strip->sprite_tag.fields.register1 = 5;
-            strip->sprite_tag.fields.register2 = 3;
-            strip->sprite_tag.fields.register3 = 5;
-            strip->uv0 = 0x80008;
-            strip->xyz0 = ((u64)(s32)(top * 16.0f) << 16) | (u64)((s32)(left + i * width) << 4) | ((u64)0xFFFFFF << 32);
-            strip->uv1 = 0x1C080408;
-            strip->xyz1 = ((u64)(s32)(bottom * 16.0f) << 16) | (u64)((s32)(left + (1.0f + i) * width) << 4) | ((u64)0xFFFFFF << 32);
-            strip++;
-        }
-
-        *reinterpret_cast<u64*>(strip) = 0x70000000;
-        func_11F830(packet, reinterpret_cast<u8*>(strip) + 0x10);
-        unk63 = 1;
-    }
-}
-
-/** @brief Destroy the strips, the copy buffer and the packet. */
-BootScreenFade::~BootScreenFade()
-{
-    for (s32 i = 0; i < 10; i++)
-    {
-        if (images[i] != 0)
-        {
-            lib_object_detach_owner(images[i]);
-            images[i]->destroy();
-        }
-    }
-
-    delete[] buffer;
-    delete packet;
-}
-
-/** @brief Release the packet storage unless it is external. */
-BootPacketBuffer::~BootPacketBuffer()
-{
-    if (!unk14)
-    {
-        delete unk04;
-    }
-}
-
-#include "overlays/boot/transform_inlines.h"
-
-/** @brief Copy the display into ten strips and show them, fully opaque. @param display Display to copy. */
-BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
-{
-    s32 width;
-    s32 height;
-    s32 i;
-    this->display = display;
-    width = display->unk3C60.width / 2 + display->unk3C60.width / 2;
-    height = display->unk3C60.height / 2 + display->unk3C60.height / 2;
-    buffer = new (0) u8[width * height * 3 / 16 * 16];
-
-    for (i = 0; i < 10; i++)
-    {
-        images[i] = new (0) BootImageStrip;
-        images[i]->unk65 = 1;
-        func_4333A0(images[i], buffer + height * (i * 64) * 3 / 16 * 16, (display->unk160 & 0x1FF) << 5, width / 64, 1, i * 64, 0, 0x40, height);
-        D_001B661C->append_node(images[i], -1);
-    }
-
-    func_001DFE40(0x4000);
-    unk65 = 1;
-    func_001DFE30(0x400);
-    packet = new (0) BootPacketBuffer(0x400);
-    alpha = 1.0f;
-    fade_speed = 1.0f;
-    armed = 0;
-}
-
-/** @brief Detach the image and its model, destroy the model and delete the image. */
-void BootImage::destroy()
-{
-    lib_object_detach_owner(this);
-
-    if (model != 0)
-    {
-        lib_object_detach_owner(this);
-        model->destroy();
-    }
-
-    model = 0;
-    delete this;
-}
-
-/**
- * @brief Build an image's quad from a rectangle of its texture and a rectangle of its palette, and queue the
- * model for drawing.
- * @param image Image to build.
- * @param x Left edge of the texture rectangle, in texels.
- * @param y Top edge of the texture rectangle.
- * @param width Rectangle width, which is also the quad's width.
- * @param height Rectangle height, which is also the quad's height.
- * @param palette_x Left edge of the palette rectangle.
- * @param palette_y Top edge of the palette rectangle.
- * @param palette_width Palette rectangle width.
- * @param palette_height Palette rectangle height.
- * @param color Vertex color.
- * @param depth Z position of the quad.
- */
-void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width,
-                                      s32 palette_height, u32 color, s32 depth)
-{
-    BootDrawSettings settings;
-
-    func_455DF0(image->draw_buffer, 1, 1);
-    init_draw_settings(&settings);
-    settings.unk06 = 0;
-    settings.unk02 = 2;
-    settings.unk00 = 0x5C;
-    settings.unk05 = 1;
-    FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
-    func_455150(image->draw_buffer, &settings);
-    func_4550F0(image->draw_buffer, 4);
-
-    if (image->centered)
-    {
-        float half_width = 0.5f * (float)width;
-        float half_height = 0.5f * (float)height;
-        add_vertex(image->draw_buffer, FieldVec4A(-half_width, -half_height, (float)depth, 1.0f), normal,
-                   ((x << 12) / image->texture_width) | (((y << 12) / image->texture_height) << 16), color);
-        add_vertex(image->draw_buffer, FieldVec4A(half_width, -half_height, (float)depth, 1.0f), normal,
-                   (((y << 12) / image->texture_height) << 16) | (((x + width) << 12) / image->texture_width), color);
-        add_vertex(image->draw_buffer, FieldVec4A(-half_width, half_height, (float)depth, 1.0f), normal,
-                   ((x << 12) / image->texture_width) | ((((y + height) << 12) / image->texture_height) << 16), color);
-        add_vertex(image->draw_buffer, FieldVec4A(half_width, half_height, (float)depth, 1.0f), normal,
-                   (((x + width) << 12) / image->texture_width) | ((((y + height) << 12) / image->texture_height) << 16), color);
-    }
-    else
-    {
-        add_vertex(image->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal,
-                   ((x << 12) / image->texture_width) | (((y << 12) / image->texture_height) << 16), color);
-        // TODO: right as its own variable shifted in place is a guess; it's what gets the
-        // sum and its shift to share a register like the original.
-        s32 right = x + width;
-        right = (u32)right << 12;
-        add_vertex(image->draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal,
-                   (((y << 12) / image->texture_height) << 16) | (right / image->texture_width), color);
-        add_vertex(image->draw_buffer, FieldVec4A(0.0f, (float)height, (float)depth, 1.0f), normal,
-                   ((x << 12) / image->texture_width) | ((((y + height) << 12) / image->texture_height) << 16), color);
-        add_vertex(image->draw_buffer, FieldVec4A((float)width, (float)height, (float)depth, 1.0f), normal,
-                   (right / image->texture_width) | ((((y + height) << 12) / image->texture_height) << 16), color);
-    }
-
-    if (image->has_palette)
-    {
-        settings.unk05 = 0;
-        settings.unk03 = 1;
-        func_455150(image->draw_buffer, &settings);
-        func_4550F0(image->draw_buffer, 4);
-
-        if (image->centered)
-        {
-            float half_width = 0.5f * (float)palette_width;
-            float half_height = 0.5f * (float)palette_height;
-            add_vertex(image->draw_buffer, FieldVec4A(-half_width, -half_height, (float)depth, 1.0f), normal,
-                       (((palette_y << 12) / image->palette_height) << 16) | (((palette_x + palette_width) << 12) / image->palette_width), color);
-            add_vertex(image->draw_buffer, FieldVec4A(half_width, -half_height, (float)depth, 1.0f), normal,
-                       ((palette_x << 12) / image->palette_width) | (((palette_y << 12) / image->palette_height) << 16), color);
-            add_vertex(image->draw_buffer, FieldVec4A(-half_width, half_height, (float)depth, 1.0f), normal,
-                       (((palette_x + palette_width) << 12) / image->palette_width) | ((((palette_y + palette_height) << 12) / image->palette_height) << 16),
-                       color);
-            add_vertex(image->draw_buffer, FieldVec4A(half_width, half_height, (float)depth, 1.0f), normal,
-                       ((palette_x << 12) / image->palette_width) | ((((palette_y + palette_height) << 12) / image->palette_height) << 16), color);
-        }
-        else
-        {
-            add_vertex(image->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal,
-                       (((palette_y << 12) / image->palette_height) << 16) | (((palette_x + palette_width) << 12) / image->texture_width), color);
-            add_vertex(image->draw_buffer, FieldVec4A((float)palette_width, 0.0f, (float)depth, 1.0f), normal,
-                       ((palette_x << 12) / image->texture_width) | (((palette_y << 12) / image->texture_height) << 16), color);
-            add_vertex(image->draw_buffer, FieldVec4A(0.0f, (float)palette_height, (float)depth, 1.0f), normal,
-                       (((palette_x + palette_width) << 12) / image->texture_width) | ((((palette_y + palette_height) << 12) / image->texture_height) << 16),
-                       color);
-            add_vertex(image->draw_buffer, FieldVec4A((float)palette_width, (float)palette_height, (float)depth, 1.0f), normal,
-                       ((palette_x << 12) / image->texture_width) | ((((palette_y + palette_height) << 12) / image->palette_height) << 16), color);
-        }
-    }
-
-    func_455BD0(image->draw_buffer, image->unk2c, 500.0f, 0);
-    func_4D6430(image->model, image->draw_buffer);
-    image->model->unk80 = D_001B6630;
-    image->model->unk6a |= 0x400;
-    D_001B661C->append_node(image->model, -1);
-}
-
-/**
- * @brief Build the image's quad from a rectangle of its texture and queue the model for drawing.
- * @param x Left edge of the rectangle in the texture, in texels.
- * @param y Top edge of the rectangle in the texture.
- * @param width Rectangle width, which is also the quad's width.
- * @param height Rectangle height, which is also the quad's height.
- * @param color Vertex color.
- * @param depth Z position of the quad.
- */
-void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s32 depth)
-{
-    BootDrawSettings settings;
-
-    func_455DF0(draw_buffer, 0, 1);
-    init_draw_settings(&settings);
-    settings.unk06 = 0;
-    settings.unk02 = 2;
-    settings.unk00 = 0x5C;
-    settings.unk05 = 1;
-    func_455150(draw_buffer, &settings);
-    func_4550F0(draw_buffer, 4);
-    FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
-
-    if (centered)
-    {
-        float half_width = 0.5f * (float)width;
-        float half_height = 0.5f * (float)height;
-        add_vertex(draw_buffer, FieldVec4A(-half_width, -half_height, (float)depth, 1.0f), normal,
-                   ((x << 12) / texture_width) | (((y << 12) / texture_height) << 16), color);
-        add_vertex(draw_buffer, FieldVec4A(half_width, -half_height, (float)depth, 1.0f), normal,
-                   (((y << 12) / texture_height) << 16) | (((x + width) << 12) / texture_width), color);
-        add_vertex(draw_buffer, FieldVec4A(-half_width, half_height, (float)depth, 1.0f), normal,
-                   ((x << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
-        add_vertex(draw_buffer, FieldVec4A(half_width, half_height, (float)depth, 1.0f), normal,
-                   (((x + width) << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
-    }
-    else
-    {
-        add_vertex(draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal, ((x << 12) / texture_width) | (((y << 12) / texture_height) << 16), color);
-        add_vertex(draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal,
-                   (((y << 12) / texture_height) << 16) | (((x + width) << 12) / texture_width), color);
-        add_vertex(draw_buffer, FieldVec4A(0.0f, (float)height, (float)depth, 1.0f), normal,
-                   ((x << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
-        add_vertex(draw_buffer, FieldVec4A((float)width, (float)height, (float)depth, 1.0f), normal,
-                   (((x + width) << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
-    }
-
-    func_455BD0(draw_buffer, unk2c, 500.0f, 0);
-    func_4D6430(model, draw_buffer);
-    model->unk80 = D_001B6630;
-    model->unk6a |= 0x400;
-    D_001B661C->append_node(model, -1);
-}
-
-/**
- * @brief Recreate the image's draw buffer and model and upload a texture and optional palette.
- * @param texture Texture resource.
- * @param palette Palette resource, or null.
- */
-void BootImage::set_texture(const BootTextureResource* texture, const BootTextureResource* palette)
-{
-    if (draw_buffer != 0)
-    {
-        delete draw_buffer;
-    }
-
-    if (model != 0)
-    {
-        model->destroy();
-    }
-
-    draw_buffer = new (0) LibDrawBuffer;
-    model = new (0) BootModel;
-    draw_buffer->allocate_storage(1, 0x600, 2, 8);
-    func_455040(draw_buffer, texture);
-
-    if (palette != 0)
-    {
-        func_455040(draw_buffer, palette);
-    }
-
-    const BootTextureImage* info = texture_image(texture);
-    texture_width = 1 << info->width_log2;
-    texture_height = 1 << info->height_log2;
-
-    if (palette != 0)
-    {
-        info = texture_image(palette);
-        palette_width = 1 << info->width_log2;
-        palette_height = 1 << info->height_log2;
-        has_palette = 1;
-    }
-}
-
-/** @brief Destroy the image's model, then the image. */
-BootImage::~BootImage()
-{
-    if (model != 0)
-    {
-        model->destroy();
-    }
-}
-
-/** @brief Clear the image's model and state. */
-BootImage::BootImage()
-{
-    draw_buffer = 0;
-    model = 0;
-    centered = 0;
-    has_palette = 0;
-    unk2c = 0;
-}
-
-/** @brief Set the byte at offset 0x60 to 10. */
-void BootScreenFade::func_001E0860()
-{
-    unk60 = 10;
-}
-
-/** @brief Run the launch steps: seed, movie, load, hand over. */
-void BootGameLauncher::update()
-{
-    BootSystemSettings* settings;
-    BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
-    u32 previous;
-
-    switch (step)
-    {
-    case 0:
-        previous = resident_next_random_word();
-
-        while (previous == resident_next_random_word())
-        {
-        }
-
-        previous = func_10CE00();
-
-        while (previous == func_10CE00())
-        {
-        }
-
-        previous = func_10CAA0(1000);
-
-        while (previous == func_10CAA0(1000))
-        {
-        }
-
-        previous = func_10CC40(0, 1000);
-
-        while (previous == func_10CC40(0, 1000))
-        {
-        }
-
-        if ((u8)settings->continue_selected == 0)
-        {
-            BootSealedRecord* record = &settings->sealed_record;
-            func_13A678(record, 0, sizeof(BootSealedRecord));
-            seal_record(record);
-            BootTrophyFlags* bits = &settings->trophy_flags;
-            s32 size = bits->size;
-
-            for (s32 i = 0; i < size; i++)
-            {
-                bits->flag_bytes[i] = 0;
-            }
-
-            bits->trophy_key = resident_next_random_word();
-            func_457520(bits);
-        }
-
-        if ((u8)settings->continue_selected == 0 && settings->sound_output == 2)
-        {
-            step++;
-            timer = 0;
-        }
-        else
-        {
-            step = 5;
-            timer = 0;
-        }
-
-        break;
-    case 1:
-        if (++timer > 60)
-        {
-            if (func_115430(D_001B65E4) == 0 && func_115670(D_001B65E4) != 0 && func_115650(D_001B65E4) != 0)
-            {
-                break;
-            }
-
-            movie_heap = new (0) BootResident113E40;
-            movie_heap->unk2C = 0x40;
-            func_113930(movie_heap, 0x579F2C);
-            void* heap = resident_exchange_allocation_heap(movie_heap);
-            player = new (0) BootMoviePlayer(640, 448);
-            resident_exchange_allocation_heap(heap);
-            player->state->set_scale(1.0f, 1.0f);
-            player->state->set_words(0x800, 0x800, 1);
-
-            if (((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
-            {
-                player->state->unk80D8 = 1;
-            }
-
-            func_419A70(player, 13, 1);
-            step++;
-        }
-        else if (input->held & 8)
-        {
-            step = 5;
-        }
-
-        break;
-    case 2:
-        timer++;
-
-        if ((input->held & 8) || !player->is_playing)
-        {
-            step++;
-        }
-
-        break;
-    case 3:
-        func_41A210(player);
-        player->destroy();
-        player = 0;
-        step++;
-        break;
-    case 4:
-        delete movie_heap;
-        movie_heap = 0;
-        step++;
-        break;
-    case 5:
-        program = func_139700(0x40, func_11C8C0(D_001B65E4, 0x42B));
-        func_103E70(D_001B65E8, 0x42B, program, 1, 0x34BC0, 0, 0, 0, 1);
-        step++;
-        break;
-    case 6:
-        if (func_102D00(D_001B65E8) != 0 && ++timer > 40)
-        {
-            lib_object_detach_owner(this);
-            destroy();
-            g_boot_program.next_program = program;
-            return;
-        }
-
-        break;
-    }
-}
-
-/**
- * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.
- * @param record Record to seal; an already sealed record is left alone.
- */
-void seal_record(BootSealedRecord* record)
-{
-    s32 i;
-
-    if (record->sealed == 0)
-    {
-        record->sealed = BOOT_RECORD_SEALED;
-        record->unk00 ^= 0xD7;
-        record->unk02 ^= 0xF393;
-        record->unk04 ^= 0x7CE3C7F7;
-        record->unk08 ^= 0x7CE3C7F7;
-        record->unk0C ^= 0x7CE3C7F7;
-        record->unk10 ^= 0x7CE3C7F7;
-        record->unk14 ^= 0x7CE3C7F7;
-        record->unk18 ^= 0x7CE3C7F7;
-        record->unk1C ^= 0x7CE3C7F7;
-        record->unk20 ^= 0x7CE3C7F7;
-        record->unk24 ^= 0x7CE3C7F7;
-        record->unk28 ^= 0x7CE3C7F7;
-        record->unk2C ^= 0x7CE3C7F7;
-        record->unk30 ^= 0x7CE3C7F7;
-        record->unk34 ^= 0x7CE3C7F7;
-        record->unk38 ^= 0x7CE3C7F7;
-        record->unk3C ^= 0x7CE3C7F7;
-        record->unk40 ^= 0x7CE3C7F7;
-        record->unk44 ^= 0x7CE3C7F7;
-        record->unk48 ^= 0x7CE3C7F7;
-        record->unk4C ^= 0x7CE3C7F7;
-        record->unk50 ^= 0x7CE3C7F7;
-        record->unk54 ^= 0x7CE3C7F7;
-        record->unk58 ^= 0x7CE3C7F7;
-
-        for (i = 0; i < 76; i++)
-        {
-            record->unk64[i] ^= 0xD7;
-        }
-
-        record->key = resident_next_random_word();
-        record->checksum = func_457470(record->key * 37, record, (u8*)&record->checksum - (u8*)record);
-    }
-    else if (record->sealed != BOOT_RECORD_SEALED)
-    {
-        func_13A678(record, 0, sizeof(BootSealedRecord));
-    }
-}
-
-/** @brief Release the player, its heap and the work buffer. */
-BootGameLauncher::~BootGameLauncher()
-{
-    if (player != 0)
-    {
-        player->destroy();
-    }
-
-    delete movie_heap;
-    delete buffer;
-}
-
-/** @brief Clear the state and allocate the 0x12000-byte work buffer. */
-BootGameLauncher::BootGameLauncher()
-{
-    program = 0;
-    step = 0;
-    buffer = func_139700(0x40, 0x12000);
-    movie_heap = 0;
-    player = 0;
-}
 }

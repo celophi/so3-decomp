@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/text_001F6010.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "overlays/lib/text_0045AD10.h"
@@ -10,26 +11,24 @@
 extern "C" {
 extern BootVector4DDAA0 D_50CD30;
 void func_4CE4C0(void* destination, const float* source);
-void progress_bar_reset(BootProgressBar* object, s32 width, s32 height, u32 color, s32 mode);
-void progress_bar_draw(BootProgressBar* object, s32 done, s32 total);
 s32 func_102AA0(void* queue);
 void func_1126D0(void* request, u8* data, s32 first, s32 second);
-void func_1152C0(BootResident1B65E4* object, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size);
-void func_1152E0(BootResident1B65E4* object, u8* buffer, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size, u8* fourth,
+void func_1152C0(BootResident1B65E4* resident, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size);
+void func_1152E0(BootResident1B65E4* resident, u8* buffer, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size, u8* fourth,
                  s32 fourth_size);
-void func_115420(BootResident1B65E4* object);
-s32 func_115460(BootResident1B65E4* object, s32 first, s32 second);
-s32 func_115640(BootResident1B65E4* object);
-s32 func_115660(BootResident1B65E4* object);
-void func_1156B0(BootResident1B65E4* object, u8* buffer);
-void func_1156C0(BootResident1B65E4* object);
-void func_115810(BootResident1B65E4* object, s32 command, s32 argument);
-u32 func_115830(BootResident1B65E4* object);
-u32 func_115840(BootResident1B65E4* object);
-s32 func_1158A0(BootResident1B65E4* object);
+void func_115420(BootResident1B65E4* resident);
+s32 func_115460(BootResident1B65E4* resident, s32 first, s32 second);
+s32 func_115640(BootResident1B65E4* resident);
+s32 func_115660(BootResident1B65E4* resident);
+void func_1156B0(BootResident1B65E4* resident, u8* buffer);
+void func_1156C0(BootResident1B65E4* resident);
+void func_115810(BootResident1B65E4* resident, s32 command, s32 argument);
+u32 func_115830(BootResident1B65E4* resident);
+u32 func_115840(BootResident1B65E4* resident);
+s32 func_1158A0(BootResident1B65E4* resident);
 void func_139928(void* allocation);
-void lib_container_attach_widget(BootContainer* object, BootTextWidget* child);
-void lib_text_set_resource(BootTextWidget* object, s32 slot, u32 key, u8 flag);
+void lib_container_attach_widget(BootContainer* container, BootTextWidget* child);
+void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 }
 
 /**
@@ -764,8 +763,8 @@ void BootInstaller::update()
                 cursor = new (0) BootSelectionCursor;
                 func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
                 func_465B20(D_001B657C, cursor);
-                tip_text->unk3f = 0;
-                tip_image->model->unk6a |= 1;
+                tip_text->visible = 0;
+                tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
                 step = 3;
                 yes_step = 0x1B;
                 no_step = 0x1A;
@@ -799,8 +798,8 @@ void BootInstaller::update()
         break;
     case 25:
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_COMPLETE, 0);
-        tip_text->unk3f = 0;
-        tip_image->model->unk6a |= 1;
+        tip_text->visible = 0;
+        tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
         step = 0x15;
         break;
     case 20:
@@ -901,8 +900,8 @@ void BootInstaller::update()
         destroy();
         return;
     case 26:
-        tip_text->unk3f = 1;
-        tip_image->model->unk6a &= ~1;
+        tip_text->visible = 1;
+        tip_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         D_001B65E4->unk13b = 0;
         step = 0x13;
@@ -1100,7 +1099,10 @@ BootInstaller::~BootInstaller()
     g_boot_program.error_popup->set_enabled(1);
 }
 
-/** @brief Turn the popup on or off. @param value Nonzero to allow the popup. */
+/**
+ * @brief Turn the popup on or off.
+ * @param value Nonzero to allow the popup.
+ */
 void BootUnitErrorPopup::set_enabled(u8 value)
 {
     enabled = value;
@@ -1152,23 +1154,35 @@ BootInstaller::BootInstaller()
     screen_images_loaded = 0;
 }
 
-/** @brief Default DMA notification hook; does nothing. @param value Notification value. */
+/**
+ * @brief Default DMA notification hook; does nothing.
+ * @param value Notification value.
+ */
 void BootDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
-/** @brief Default preparation hook; does nothing. @param value Notification word or packet address. */
+/**
+ * @brief Default preparation hook; does nothing.
+ * @param value Notification word or packet address.
+ */
 void BootDmaCallbacks::on_packet_complete(u32 value)
 {
 }
 
-/** @brief Copy the position. @param value Source vector. */
+/**
+ * @brief Copy the position.
+ * @param value Source vector.
+ */
 void BootPositionTransform::copy_translation(const BootVector4DDAA0* value)
 {
     copy_vector(&unk20, value);
 }
 
-/** @brief Copy the position. @param value Source vector. */
+/**
+ * @brief Copy the position.
+ * @param value Source vector.
+ */
 void BootPositionTransform::set_translation_vector(const BootVector4DDAA0* value)
 {
     copy_vector(&unk20, value);
@@ -1202,14 +1216,20 @@ void BootListObject::update()
 {
 }
 
-/** @brief Copy the position and mark the transform dirty. @param value Source vector. */
+/**
+ * @brief Copy the position and mark the transform dirty.
+ * @param value Source vector.
+ */
 void BootTransform::copy_translation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
     copy_vector(&unk20, value);
 }
 
-/** @brief Copy the position and mark the transform dirty. @param value Source vector. */
+/**
+ * @brief Copy the position and mark the transform dirty.
+ * @param value Source vector.
+ */
 void BootTransform::set_translation_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
@@ -1232,28 +1252,40 @@ void BootTransform::set_orientation_components(float x, float y, float z, float 
     unk30.w = w;
 }
 
-/** @brief Copy the rotation vector and mark the transform dirty. @param value Source vector. */
+/**
+ * @brief Copy the rotation vector and mark the transform dirty.
+ * @param value Source vector.
+ */
 void BootTransform::copy_orientation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
     copy_vector(&unk30, value);
 }
 
-/** @brief Copy the rotation vector and mark the transform dirty. @param value Source vector. */
+/**
+ * @brief Copy the rotation vector and mark the transform dirty.
+ * @param value Source vector.
+ */
 void BootTransform::set_orientation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
     copy_vector(&unk30, value);
 }
 
-/** @brief Convert a rotation into the rotation vector and mark the transform dirty. @param value Source rotation. */
+/**
+ * @brief Convert a rotation into the rotation vector and mark the transform dirty.
+ * @param value Source rotation.
+ */
 void BootTransform::convert_rotation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
     func_4CE4C0(&unk30, &value->x);
 }
 
-/** @brief Convert a rotation into the rotation vector and mark the transform dirty. @param value Source rotation. */
+/**
+ * @brief Convert a rotation into the rotation vector and mark the transform dirty.
+ * @param value Source rotation.
+ */
 void BootTransform::set_rotation_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
@@ -1277,14 +1309,20 @@ void BootTransform::set_rotation(float x, float y, float z)
     func_4CE4C0(&unk30, &value.x);
 }
 
-/** @brief Copy the scale vector and mark the transform dirty. @param value Source vector. */
+/**
+ * @brief Copy the scale vector and mark the transform dirty.
+ * @param value Source vector.
+ */
 void BootTransform::copy_scale(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
     copy_vector(&unk40, value);
 }
 
-/** @brief Copy the scale vector and mark the transform dirty. @param value Source vector. */
+/**
+ * @brief Copy the scale vector and mark the transform dirty.
+ * @param value Source vector.
+ */
 void BootTransform::set_scale_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
@@ -1302,7 +1340,11 @@ void BootTransformOwner::render()
 {
 }
 
-/** @brief Default output handler. @param output Opaque output object. @return Zero. */
+/**
+ * @brief Default output handler.
+ * @param output Opaque output object.
+ * @return Zero.
+ */
 s32 BootTransformOwner::func_001E0880(void* output)
 {
     return 0;
@@ -1319,7 +1361,10 @@ bool BootTransformOwner::func_001E0890(float value, float mode)
     return value < 0.0f;
 }
 
-/** @brief Return the shared fallback vector. @return Vector pointer. */
+/**
+ * @brief Return the shared fallback vector.
+ * @return Vector pointer.
+ */
 const BootVector4DDAA0* BootTransformOwner::func_001E08B0()
 {
     return &D_50CD30;
@@ -1334,7 +1379,10 @@ void BootTransformOwner::build_packet(const void* matrix, void* context)
 {
 }
 
-/** @brief Produce a transformation receiver. @return Null. */
+/**
+ * @brief Produce a transformation receiver.
+ * @return Null.
+ */
 BootTransformOwner* BootTransformOwner::func_001E08D0()
 {
     return 0;

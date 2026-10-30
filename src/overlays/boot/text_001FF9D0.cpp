@@ -1,5 +1,5 @@
 #include "include_asm.h"
-#include "overlays/boot/text_001FF9E0.h"
+#include "overlays/boot/text_001FF9D0.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
@@ -18,8 +18,8 @@ s32 func_109FB0(void* handle);
 s32 func_109FD0(void* handle);
 s32 func_112610(void* request, s32 sound);
 s32 func_13C4F0(char* buffer, const char* format, ...);
-void lib_container_attach_widget(BootContainer* object, BootDrawWidget* child);
-void lib_text_set_resource(BootTextWidget* object, s32 slot, u32 key, u8 flag);
+void lib_container_attach_widget(BootContainer* container, BootDrawWidget* child);
+void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 
 /** Sound played for each track. */
 extern const s32 g_music_track_sounds[];
@@ -29,6 +29,12 @@ extern const char g_first_track_number[];
 
 /** Format of the track number label. */
 extern const char g_track_number_format[];
+}
+
+/** @brief Clear the byte at offset 0x60. */
+void BootNeedleMeter::func_001E0860()
+{
+    unk60 = 0;
 }
 
 /**
@@ -1363,7 +1369,10 @@ BootMusicPlayer::BootMusicPlayer()
     }
 }
 
-/** @brief Report the list kind used when registration requests the default. @return Four. */
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Four.
+ */
 s32 BootMusicPlayer::get_default_list_kind()
 {
     return 4;
@@ -1376,7 +1385,7 @@ BootNeedleMeter::BootNeedleMeter()
 {
     func_001DFE40(0x4001);
     unk65 = 1;
-    func_001DFE30(0x400);
+    set_draw_flags(BOOT_DRAW_FLAG_0400);
     packet = new (0) BootPacketBuffer(0x800);
     levels[0] = 0.0f;
     levels[1] = 0.0f;

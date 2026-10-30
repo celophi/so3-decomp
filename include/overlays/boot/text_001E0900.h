@@ -80,7 +80,10 @@ class BootBattleTrophyCard : public BootListObject
         {
         }
 
-        /** @brief Report the list kind used when registration requests the default. @return Two. */
+        /**
+         * @brief Report the list kind used when registration requests the default.
+         * @return Two.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Release the transfer buffer and the memory card object, then queue this object for deletion. */
@@ -98,10 +101,16 @@ class BootBattleTrophyCard : public BootListObject
         /** @brief Apply transferred flags and header values, copy the payload, and release its buffer. */
         void finish_transfer();
 
-        /** @brief Return the last transfer's result. @return Result code; negative on failure. */
+        /**
+         * @brief Return the last transfer's result.
+         * @return Result code; negative on failure.
+         */
         s32 get_transfer_result();
 
-        /** @brief Return the transfer state. @return 1 once the transfer has finished, -1 while it runs or after a reset. */
+        /**
+         * @brief Return the transfer state.
+         * @return 1 once the transfer has finished, -1 while it runs or after a reset.
+         */
         s16 get_transfer_state();
 
         /**
@@ -164,8 +173,12 @@ class BootBattleTrophyCard : public BootListObject
         /** Selected slot, or -1. */
         s16 slot;
 
-        s16 unk1A;
-        s16 unk1C;
+        /** Card status last read for the selected slot; a change restarts card_step. */
+        s16 last_card_status;
+
+        /** Step of update()'s card state machine; 0 is idle, 8 runs the transfer. */
+        s16 card_step;
+
         u8 unk1E;
         u8 unk1F;
         u32 unk20;
@@ -188,14 +201,21 @@ class BootBattleTrophyCard : public BootListObject
         u8* transfer_buffer;
         void* transfer_destination;
         s16 transfer_slot;
+
         /** 1 once the transfer has finished, -1 while it runs or after a reset. */
         s16 transfer_state;
+
         s32 transfer_result;
         BootCardFileBuffer file_buffer;
         BootCardFileRequest file_request;
         BootSystemSettings* settings;
-        u8 unkDF8;
-        u8 unkDF9;
+
+        /** Set by start_transfer until the transfer finishes or fails. */
+        u8 transfer_pending;
+
+        /** Set once the card file has been opened for the transfer. */
+        u8 transfer_open;
+
         s32 slot_free_space[2];
         s32 unkE04[2];
 };
@@ -253,7 +273,10 @@ class BootStartupChecks : public BootListObject
 class BootClass170F20
 {
     public:
-        /** @brief Return the interface's value. @return Value. */
+        /**
+         * @brief Return the interface's value.
+         * @return Value.
+         */
         virtual float func_001E9380() = 0;
 };
 
@@ -261,7 +284,10 @@ class BootClass170F20
 class BootClass170F10 : public BootClass170F20
 {
     public:
-        /** @brief Return zero. @return Always 0.0f. */
+        /**
+         * @brief Return zero.
+         * @return Always 0.0f.
+         */
         virtual float func_001E9380()
         {
             return 0.0f;
@@ -378,7 +404,10 @@ class BootNewGameSettings : public BootListObject
         /** @brief Release the loaded data and owned objects. */
         virtual ~BootNewGameSettings();
 
-        /** @brief Report the list kind used when registration requests the default. @return Four. */
+        /**
+         * @brief Report the list kind used when registration requests the default.
+         * @return Four.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Run the current page or the speaker setup, then stream the next model block and place the rows. */
@@ -526,7 +555,10 @@ class BootInput : public BootListObject
         /** @brief Sample the first pad, then keep the latest nonzero state of each memory card slot. */
         virtual void update();
 
-        /** @brief Virtual slot 5. @return Always 0. */
+        /**
+         * @brief Virtual slot 5.
+         * @return Always 0.
+         */
         virtual s32 func_001E9640();
 
         /** @brief Forget the memory card states so the next query starts fresh. */
@@ -541,7 +573,8 @@ class BootInput : public BootListObject
         /** Buttons pressed this frame. */
         u16 pressed;
 
-        u16 unk1A;
+        /** Buttons held at any point since the pad state was last cleared. */
+        u16 held_any;
 
         /** Buttons pressed this frame or auto-repeating. */
         u16 repeated;
@@ -782,13 +815,19 @@ class BootProgram : public BootResidentProgram
         /** @brief Release the track pools and every object, resource and buffer the program owns. */
         void release_resources();
 
-        /** @brief Read the message bank handle. @return Bank handle. */
+        /**
+         * @brief Read the message bank handle.
+         * @return Bank handle.
+         */
         s32 get_messages() const
         {
             return messages;
         }
 
-        /** @brief Read the pad and memory card monitor. @return Monitor. */
+        /**
+         * @brief Read the pad and memory card monitor.
+         * @return Monitor.
+         */
         BootInput* get_input() const
         {
             return input;
@@ -830,7 +869,9 @@ class BootProgram : public BootResidentProgram
 
         /** Nonzero when damaged game data on the PlayStation BB Unit was deleted. */
         u8 unit_data_deleted;
+
         u8 unk3D[3];
+
         /** Resource 3: the program image, holding a copy of the main executable's code. */
         BootProgramImage* image;
 };
@@ -1027,7 +1068,11 @@ class BootFloatHistory : public BootFloatHistoryBase
         /** @brief Reset the record and clear its first word. */
         BootFloatHistory();
 
-        /** @brief Evaluate the record at a key. @param key Evaluation key. @return Evaluated value. */
+        /**
+         * @brief Evaluate the record at a key.
+         * @param key Evaluation key.
+         * @return Evaluated value.
+         */
         virtual float sample(float key) const = 0;
 
         // Virtual slot 0x10; only its position is known.
@@ -1038,10 +1083,18 @@ class BootFloatHistory : public BootFloatHistoryBase
 class BootClass178200 : public BootFloatHistory
 {
     public:
-        /** @brief Evaluate the record at a key. @param key Evaluation key. @return Evaluated value. */
+        /**
+         * @brief Evaluate the record at a key.
+         * @param key Evaluation key.
+         * @return Evaluated value.
+         */
         virtual float sample(float key) const;
 
-        /** @brief Add a key and its value to the record. @param key Key. @param value Value at the key. */
+        /**
+         * @brief Add a key and its value to the record.
+         * @param key Key.
+         * @param value Value at the key.
+         */
         virtual void add_sample(float key, float value);
 
         u8 unk14[0x10];
@@ -1071,7 +1124,11 @@ class BootVectorHistory : public BootVectorHistoryBase
         /** @brief Reset the record and clear its vector. */
         BootVectorHistory();
 
-        /** @brief Evaluate the record at a key. @param key Evaluation key. @return Evaluated vector. */
+        /**
+         * @brief Evaluate the record at a key.
+         * @param key Evaluation key.
+         * @return Evaluated vector.
+         */
         virtual FieldVec4B sample(float key) = 0;
 
         /**
@@ -1089,7 +1146,11 @@ class BootVectorHistory : public BootVectorHistoryBase
 class BootClass1781E0 : public BootVectorHistory
 {
     public:
-        /** @brief Evaluate the record at a key. @param key Evaluation key. @return Evaluated vector. */
+        /**
+         * @brief Evaluate the record at a key.
+         * @param key Evaluation key.
+         * @return Evaluated vector.
+         */
         virtual FieldVec4B sample(float key);
 };
 
@@ -1171,8 +1232,8 @@ class BootFloatSegmentBase
 class BootFloatSegment : public BootFloatSegmentBase
 {
     public:
-        // Virtual slot 0xC; only its position is known.
-        virtual void func_001EEE20();
+        /** @brief Evaluate the segment at a key. */
+        virtual void evaluate();
 };
 
 /** Root of the keyframe tracks (vtable D_171170 in main data). A track holds keys sorted by time and samples a value between them. */
@@ -1214,97 +1275,200 @@ class BootFloatTrackBase : public BootTrack
         /** @brief Destroy the track. */
         virtual ~BootFloatTrackBase();
 
-        /** @brief Allocate storage for the requested keyframe count. @param count Requested keyframe count. */
+        /**
+         * @brief Allocate storage for the requested keyframe count.
+         * @param count Requested keyframe count.
+         */
         virtual void allocate_keys(s32 count);
 
-        /** @brief Bind an external keyframe array. @param count Keyframe count. @param entries External keyframe storage. */
-        virtual void bind_keys(s32 count, void* entries);
+        /**
+         * @brief Bind an external keyframe array.
+         * @param count Keyframe count.
+         * @param entries External keyframe storage.
+         */
+        virtual void bind_keys(s32 count, BootFloatTrackKey* entries);
 
-        /** @brief Set what the track does before its first key. @param mode Mode value. */
-        virtual void set_before_mode(u32 mode);
+        /**
+         * @brief Set what the track does before its first key.
+         * @param value Mode value.
+         */
+        virtual void set_before_mode(u32 value);
 
-        /** @brief Set what the track does after its last key. @param mode Mode value. */
-        virtual void set_after_mode(u32 mode);
+        /**
+         * @brief Set what the track does after its last key.
+         * @param value Mode value.
+         */
+        virtual void set_after_mode(u32 value);
 
-        /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
-        virtual u32 get_cycle_count() const;
+        /**
+         * @brief Return how many key spans the last wrapped key was past the first key.
+         * @return Signed cycle count.
+         */
+        virtual s32 get_cycle_count() const;
 
-        /** @brief Append a keyframe. @param value Keyframe value. @param key Sort key. @return Append status. */
+        /**
+         * @brief Append a keyframe.
+         * @param value Keyframe value.
+         * @param key Sort key.
+         * @return Append status.
+         */
         virtual s32 append_key(const float* value, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Replacement status. */
+        /**
+         * @brief Replace an indexed keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @return Replacement status.
+         */
         virtual s32 replace_key(s32 index, float key, const float* value);
 
-        /** @brief Insert an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Insertion status. */
+        /**
+         * @brief Insert an indexed keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @return Insertion status.
+         */
         virtual s32 insert_key(s32 index, float key, const float* value);
 
-        /** @brief Read an indexed keyframe; the base has none. @return Nonzero when the keyframe is available. */
+        /**
+         * @brief Read an indexed keyframe; the base has none.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Nonzero when the keyframe is available.
+         */
         virtual s32 read_key(s32 index, float* key, float* value, float* first, float* second) const;
 
-        /** @brief Add a keyframe through the track implementation. @param value Keyframe value. @param key Sort key. */
+        /**
+         * @brief Add a keyframe through the track implementation.
+         * @param value Keyframe value.
+         * @param key Sort key.
+         */
         virtual void set_single_key(const float* value, float key);
 
         /** @brief Run the default update hook. */
         virtual void reset_keys();
 
-        /** @brief Test whether the track contains the supplied key. @param key Key to find. @return Nonzero when the key exists. */
+        /**
+         * @brief Test whether the track contains the supplied key.
+         * @param key Key to find.
+         * @return Nonzero when the key exists.
+         */
         virtual s32 has_key(float key) const;
 
-        // Pure virtual slot 0x40; only its position is known.
+        /**
+         * @brief Return the difference between the last and first key values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(float* output) const = 0;
 
-        /** @brief Wrap a key into the stored key range. @param key Key to wrap. @return Wrapped key. */
+        /**
+         * @brief Wrap a key into the stored key range.
+         * @param key Key to wrap.
+         * @return Wrapped key.
+         */
         virtual float wrap_key(float key) const;
 
-        // Pure virtual slot 0x48; only its position is known.
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(float* output) const = 0;
 
-        /** @brief Return the span between the first and last keys. @return Key span, or zero with fewer than two keys. */
+        /**
+         * @brief Return the span between the first and last keys.
+         * @return Key span, or zero with fewer than two keys.
+         */
         virtual float get_key_span() const;
 
-        /** @brief Evaluate the track at a key. @param key Evaluation key. @param output Receives the evaluated value. */
+        /**
+         * @brief Evaluate the track at a key.
+         * @param key Evaluation key.
+         * @param output Receives the evaluated value.
+         */
         virtual void evaluate(float key, float* output);
 
-        /** @brief Return the stored keyframe count. @return Keyframe count. */
+        /**
+         * @brief Return the stored keyframe count.
+         * @return Keyframe count.
+         */
         virtual s16 get_key_count() const;
 
         /** @brief Return a pooled track to its pool, or delete an ordinary track. */
         virtual void release();
 
-        /** @brief Return the keyframe storage. @return Keyframe storage. */
-        virtual void* get_keys();
+        /**
+         * @brief Return the keyframe storage.
+         * @return Keyframe storage.
+         */
+        virtual BootFloatTrackKey* get_keys();
 
         /** @brief Reset the sequence fields and set both modes to one. */
         virtual void reset_state();
 
-        /** @brief Return the number of keys the storage can hold. @return Key capacity. */
+        /**
+         * @brief Return the number of keys the storage can hold.
+         * @return Key capacity.
+         */
         virtual s16 get_key_capacity();
 
-        /** @brief Handle a keyframe with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle a keyframe with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param key Key the keyframe sits at.
+         * @return Handler result.
+         */
         virtual s32 on_append_key(const float* value, float key);
 
-        /** @brief Handle an indexed keyframe with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed keyframe with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @return Handler result.
+         */
         virtual s32 on_replace_key(s32 index, float key, const float* value);
 
-        /** @brief Handle an indexed keyframe with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed keyframe with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @return Handler result.
+         */
         virtual s32 on_insert_key(s32 index, float key, const float* value);
 
-        /** @brief Handle a keyframe with a key; the base implementation ignores it. */
+        /**
+         * @brief Handle a keyframe with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param key Key the keyframe sits at.
+         */
         virtual void on_set_single_key(const float* value, float key);
 
-        /** @brief Return zero. @return Zero. */
+        /**
+         * @brief Return zero.
+         * @return Zero.
+         */
         virtual float get_zero_value() const;
 
-        /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+        /**
+         * @brief Return the value of the keyframe with the supplied key.
+         * @param key Key to find.
+         * @return Keyframe value, or zero when the key is absent.
+         */
         virtual float find_key_value(float key) const;
 
-        // Pure virtual slots 0x80 and 0x84; only their positions are known.
+        // Implemented by the derived tracks: sample (slot 0x80) and return_to_pool (slot 0x84).
         virtual float sample(float key) = 0;
 
-        virtual void func_slot84() = 0;
+        virtual void return_to_pool() = 0;
 
         BootFloatTrackKey* key_array;
 
@@ -1323,21 +1487,48 @@ class BootFloatKeyTrack : public BootFloatTrackBase
         {
         }
 
-        /** @brief Read an indexed keyframe. @return One when the index is within the capacity, otherwise zero. */
+        /**
+         * @brief Read an indexed keyframe.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return One when the index is within the capacity, otherwise zero.
+         */
         virtual s32 read_key(s32 index, float* key, float* value, float* first, float* second) const;
 
-        /** @brief Append a keyframe. @param value Keyframe value. @param key Sort key. @return Nonzero when the keyframe was stored. */
+        /**
+         * @brief Append a keyframe.
+         * @param value Keyframe value.
+         * @param key Sort key.
+         * @return Nonzero when the keyframe was stored.
+         */
         virtual s32 on_append_key(const float* value, float key);
 
-        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe
-         * was stored. */
+        /**
+         * @brief Replace an indexed keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @return Nonzero when the keyframe was stored.
+         */
         virtual s32 on_replace_key(s32 index, float key, const float* value);
 
-        /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the
-         * keyframe was stored. */
+        /**
+         * @brief Insert a keyframe at an index.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @return Nonzero when the keyframe was stored.
+         */
         virtual s32 on_insert_key(s32 index, float key, const float* value);
 
-        /** @brief Store a single keyframe. @param value Keyframe value. @param key Sort key. */
+        /**
+         * @brief Store a single keyframe.
+         * @param value Keyframe value.
+         * @param key Sort key.
+         */
         virtual void on_set_single_key(const float* value, float key);
 };
 
@@ -1353,16 +1544,26 @@ class BootFloatTrack : public BootFloatKeyTrack
         /** @brief Reset to a single zero keyframe at key zero, then set before_mode to one. */
         virtual void reset_keys();
 
-        /** @brief Return the difference between the endpoint values. @param output Receives the difference. */
+        /**
+         * @brief Return the difference between the endpoint values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(float* output) const;
 
-        /** @brief Return how fast the value changed at the last sample, per second. @param output Receives the rate. */
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(float* output) const;
 
         /** @brief Clear the last sampled value, then reset the key state. */
         virtual void reset_state();
 
-        /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated value. */
+        /**
+         * @brief Evaluate the track at a key.
+         * @param key Evaluation key.
+         * @return Evaluated value.
+         */
         virtual float sample(float key);
 
         BootClass178200 sample_history;
@@ -1380,8 +1581,8 @@ class BootPooledFloatTrack : public BootFloatTrack
         /** @brief Destroy the track. */
         virtual ~BootPooledFloatTrack();
 
-        // Lib implementation of the pure slot 0x84; only its position is known.
-        virtual void func_slot84();
+        /** @brief Free the keys and give the track back to its pool; boot uses the Lib implementation. */
+        virtual void return_to_pool();
 };
 
 struct BootVectorTrackKey;
@@ -1396,101 +1597,205 @@ class BootVectorTrackBase : public BootTrack
         /** @brief Destroy the track. */
         virtual ~BootVectorTrackBase();
 
-        /** @brief Allocate storage for the requested keyframe count. @param count Requested keyframe count. */
+        /**
+         * @brief Allocate storage for the requested keyframe count.
+         * @param count Requested keyframe count.
+         */
         virtual void allocate_keys(s32 count);
 
-        /** @brief Bind an external keyframe array. @param count Keyframe count. @param entries External keyframe storage. */
+        /**
+         * @brief Bind an external keyframe array.
+         * @param count Keyframe count.
+         * @param entries External keyframe storage.
+         */
         virtual void bind_keys(s32 count, void* entries);
 
-        /** @brief Set what the track does before its first key. @param mode Mode value. */
-        virtual void set_before_mode(s32 mode);
+        /**
+         * @brief Set what the track does before its first key.
+         * @param value Mode value.
+         */
+        virtual void set_before_mode(u32 value);
 
-        /** @brief Set what the track does after its last key. @param mode Mode value. */
-        virtual void set_after_mode(s32 mode);
+        /**
+         * @brief Set what the track does after its last key.
+         * @param value Mode value.
+         */
+        virtual void set_after_mode(u32 value);
 
-        /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
+        /**
+         * @brief Return how many key spans the last wrapped key was past the first key.
+         * @return Signed cycle count.
+         */
         virtual s32 get_cycle_count() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param key Sort key. @return Append status. */
+        /**
+         * @brief Append a vector keyframe.
+         * @param value Keyframe value.
+         * @param key Sort key.
+         * @return Append status.
+         */
         virtual s32 append_key(const FieldVec4A* value, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Replacement
-         * status. */
+        /**
+         * @brief Replace an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @return Replacement status.
+         */
         virtual s32 replace_key(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Insertion status.
+        /**
+         * @brief Insert an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @return Insertion status.
          */
         virtual s32 insert_key(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
-         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /**
+         * @brief Read an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Receives the sort key.
+         * @param value Receives the value.
+         * @param first Receives the first auxiliary vector.
+         * @param second Receives the second auxiliary vector.
+         * @return Nonzero when the keyframe is available.
+         */
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param key Sort key. */
+        /**
+         * @brief Add a vector keyframe through the track implementation.
+         * @param value Keyframe value.
+         * @param key Sort key.
+         */
         virtual void set_single_key(const FieldVec4A* value, float key);
 
         /** @brief Run the default update hook. */
         virtual void reset_keys();
 
-        /** @brief Test whether the track contains the supplied key. @param key Key to find. @return Nonzero when the key exists. */
+        /**
+         * @brief Test whether the track contains the supplied key.
+         * @param key Key to find.
+         * @return Nonzero when the key exists.
+         */
         virtual s32 has_key(float key) const;
 
-        // Pure virtual slot 0x40; only its position is known.
+        /**
+         * @brief Return the difference between the last and first key values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(FieldVec4B* output) const = 0;
 
-        /** @brief Wrap a key into the stored key range. @param key Key to wrap. @return Wrapped key. */
+        /**
+         * @brief Wrap a key into the stored key range.
+         * @param key Key to wrap.
+         * @return Wrapped key.
+         */
         virtual float wrap_key(float key) const;
 
-        // Pure virtual slot 0x48; only its position is known.
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(FieldVec4B* output) const = 0;
 
-        /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
+        /**
+         * @brief Return the span between the first and last keys.
+         * @return Key span, or zero when fewer than two keys are stored.
+         */
         virtual float get_key_span() const;
 
-        /** @brief Evaluate the vector track at a key. @param key Evaluation key. @param output Receives the evaluated vector. */
+        /**
+         * @brief Evaluate the vector track at a key.
+         * @param key Evaluation key.
+         * @param output Receives the evaluated vector.
+         */
         virtual void evaluate(float key, FieldVec4B* output);
 
-        /** @brief Return the stored keyframe count. @return Keyframe count. */
+        /**
+         * @brief Return the stored keyframe count.
+         * @return Keyframe count.
+         */
         virtual s16 get_key_count() const;
 
         /** @brief Return a pooled track or delete an ordinary track. */
         virtual void release();
 
-        /** @brief Return the key storage. @return Key array, or null. */
+        /**
+         * @brief Return the key storage.
+         * @return Key array, or null.
+         */
         virtual void* get_keys();
 
         /** @brief Reset the sequence fields and set both modes to one. */
         virtual void reset_state();
 
-        /** @brief Return the number of keys the storage can hold. @return Key capacity. */
+        /**
+         * @brief Return the number of keys the storage can hold.
+         * @return Key capacity.
+         */
         virtual s16 get_key_capacity();
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param key Key the keyframe sits at.
+         * @return Handler result.
+         */
         virtual s32 on_append_key(const FieldVec4A* value, float key);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @return Handler result.
+         */
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @return Handler result.
+         */
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param key Key the keyframe sits at.
+         */
         virtual void on_set_single_key(const FieldVec4A* value, float key);
 
-        /** @brief Return a zero vector. @return Zero vector. */
+        /**
+         * @brief Return a zero vector.
+         * @return Zero vector.
+         */
         virtual FieldVec4A get_zero_value() const;
 
-        /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+        /**
+         * @brief Return the value of the keyframe with the supplied key.
+         * @param key Key to find.
+         * @return Keyframe value, or zero when the key is absent.
+         */
         virtual FieldVec4A find_key_value(float key) const;
 
-        // Pure virtual slot 0x80; only its position is known.
+        /**
+         * @brief Sample the track at a key and cache the value and its change per second.
+         * @param key Key to sample at.
+         * @return Value at the key.
+         */
         virtual FieldVec4A sample(float key) = 0;
 
-        // Pure virtual slot 0x84; only its position is known.
-        virtual void func_slot84() = 0;
+        /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
+        virtual void return_to_pool() = 0;
 
         BootVectorTrackKey* key_array;
         u8 unk08[8];
@@ -1507,8 +1812,9 @@ class BootVectorKeyTrack : public BootVectorTrackBase
         {
         }
 
-        // Overrides of base slots; only their positions are known.
+        // Overrides of the base slots of the same names.
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
         virtual s32 on_append_key(const FieldVec4A* value, float key);
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
@@ -1524,8 +1830,9 @@ class BootVectorTrack : public BootVectorKeyTrack
         {
         }
 
-        // Overrides of base slots; only their positions are known.
+        // Overrides of the base slots of the same names.
         virtual void reset_keys();
+
         virtual void get_end_delta(FieldVec4B* output) const;
         virtual void get_value_rate(FieldVec4B* output) const;
         virtual void reset_state();
@@ -1546,9 +1853,10 @@ class BootPooledVectorTrack : public BootVectorTrack
         /** @brief Destroy the track. */
         virtual ~BootPooledVectorTrack();
 
-        // Overrides of base slots; only their positions are known.
+        // Overrides of the base slots of the same names.
         virtual void release();
-        virtual void func_slot84();
+
+        virtual void return_to_pool();
 };
 
 /** 32-byte keyframe of BootClass1718C0: a key and a value at offset 0x10. */
@@ -1571,103 +1879,207 @@ class BootClass1718C0 : public BootTrack
         /** @brief Destroy the track. */
         virtual ~BootClass1718C0();
 
-        /** @brief Allocate storage for the requested keyframe count. @param count Requested keyframe count. */
+        /**
+         * @brief Allocate storage for the requested keyframe count.
+         * @param count Requested keyframe count.
+         */
         virtual void allocate_keys(s32 count);
 
-        /** @brief Bind an external keyframe array. @param count Keyframe count. @param entries External keyframe storage. */
+        /**
+         * @brief Bind an external keyframe array.
+         * @param count Keyframe count.
+         * @param entries External keyframe storage.
+         */
         virtual void bind_keys(s32 count, void* entries);
 
-        /** @brief Set what the track does before its first key. @param mode Mode value. */
-        virtual void set_before_mode(s32 mode);
+        /**
+         * @brief Set what the track does before its first key.
+         * @param value Mode value.
+         */
+        virtual void set_before_mode(u32 value);
 
-        /** @brief Set what the track does after its last key. @param mode Mode value. */
-        virtual void set_after_mode(s32 mode);
+        /**
+         * @brief Set what the track does after its last key.
+         * @param value Mode value.
+         */
+        virtual void set_after_mode(u32 value);
 
-        /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
+        /**
+         * @brief Return how many key spans the last wrapped key was past the first key.
+         * @return Signed cycle count.
+         */
         virtual s32 get_cycle_count() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param key Sort key. @return Append status. */
+        /**
+         * @brief Append a vector keyframe.
+         * @param value Keyframe value.
+         * @param key Sort key.
+         * @return Append status.
+         */
         virtual s32 append_key(const FieldVec4A* value, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Replacement
-         * status. */
+        /**
+         * @brief Replace an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @return Replacement status.
+         */
         virtual s32 replace_key(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Insertion status.
+        /**
+         * @brief Insert an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @return Insertion status.
          */
         virtual s32 insert_key(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
-         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /**
+         * @brief Read an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Receives the sort key.
+         * @param value Receives the value.
+         * @param first Receives the first auxiliary vector.
+         * @param second Receives the second auxiliary vector.
+         * @return Nonzero when the keyframe is available.
+         */
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param key Sort key. */
+        /**
+         * @brief Add a vector keyframe through the track implementation.
+         * @param value Keyframe value.
+         * @param key Sort key.
+         */
         virtual void set_single_key(const FieldVec4A* value, float key);
 
         /** @brief Run the default update hook. */
         virtual void reset_keys();
 
-        /** @brief Test whether the track contains the supplied key. @param key Key to find. @return Nonzero when the key exists. */
+        /**
+         * @brief Test whether the track contains the supplied key.
+         * @param key Key to find.
+         * @return Nonzero when the key exists.
+         */
         virtual s32 has_key(float key) const;
 
-        // Pure virtual slot 0x40; only its position is known.
+        /**
+         * @brief Return the difference between the last and first key values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(FieldVec4B* output) const = 0;
 
-        /** @brief Wrap a key into the stored key range. @param key Key to wrap. @return Wrapped key. */
+        /**
+         * @brief Wrap a key into the stored key range.
+         * @param key Key to wrap.
+         * @return Wrapped key.
+         */
         virtual float wrap_key(float key) const;
 
-        // Pure virtual slot 0x48; only its position is known.
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(FieldVec4B* output) const = 0;
 
-        /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
+        /**
+         * @brief Return the span between the first and last keys.
+         * @return Key span, or zero when fewer than two keys are stored.
+         */
         virtual float get_key_span() const;
 
-        /** @brief Evaluate the vector track at a key. @param key Evaluation key. @param output Receives the evaluated vector. */
+        /**
+         * @brief Evaluate the vector track at a key.
+         * @param key Evaluation key.
+         * @param output Receives the evaluated vector.
+         */
         virtual void evaluate(float key, FieldVec4B* output) const;
 
-        /** @brief Return the stored keyframe count. @return Keyframe count. */
+        /**
+         * @brief Return the stored keyframe count.
+         * @return Keyframe count.
+         */
         virtual s16 get_key_count() const;
 
         /** @brief Return a pooled track or delete an ordinary track. */
         virtual void release();
 
-        /** @brief Return the key storage. @return Key array, or null. */
+        /**
+         * @brief Return the key storage.
+         * @return Key array, or null.
+         */
         virtual void* get_keys();
 
         /** @brief Clear the key storage, counts, modes and cached indices. */
         virtual void reset_state();
 
-        /** @brief Return the number of keys the storage can hold. @return Key capacity. */
+        /**
+         * @brief Return the number of keys the storage can hold.
+         * @return Key capacity.
+         */
         virtual s16 get_key_capacity();
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param key Key the keyframe sits at.
+         * @return Handler result.
+         */
         virtual s32 on_append_key(const FieldVec4A* value, float key);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @return Handler result.
+         */
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @return Handler result.
+         */
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param key Key the keyframe sits at.
+         */
         virtual void on_set_single_key(const FieldVec4A* value, float key);
 
-        /** @brief Return a zero vector. @return Zero vector. */
+        /**
+         * @brief Return a zero vector.
+         * @return Zero vector.
+         */
         virtual FieldVec4A get_zero_value() const;
 
-        /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+        /**
+         * @brief Return the value of the keyframe with the supplied key.
+         * @param key Key to find.
+         * @return Keyframe value, or zero when the key is absent.
+         */
         virtual FieldVec4A find_key_value(float key) const;
 
-        // Pure virtual slot 0x80; only its position is known.
+        /**
+         * @brief Sample the track at a key and cache the value and its change per second.
+         * @param key Key to sample at.
+         * @return Value at the key.
+         */
         virtual FieldVec4A sample(float key) const = 0;
 
-        // Pure virtual slot 0x84; only its position is known.
-        virtual void func_slot84() = 0;
+        /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
+        virtual void return_to_pool() = 0;
 
-        void* key_array;
+        BootTrackKey1718C0* key_array;
         u8 unk08[8];
         float unk10;
         u8 unk14[0xC];
@@ -1684,8 +2096,9 @@ class BootClass171320 : public BootClass1718C0
         {
         }
 
-        // Overrides of base slots; only their positions are known.
+        // Overrides of the base slots of the same names.
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
         virtual s32 on_append_key(const FieldVec4A* value, float key);
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
@@ -1702,11 +2115,12 @@ class BootClass177EE0 : public BootClass171320
         /** @brief Destroy the track. */
         virtual ~BootClass177EE0();
 
-        // Lib implementations of the pure slots; only their positions are known.
+        // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
+
         virtual void get_value_rate(FieldVec4B* output) const;
         virtual FieldVec4A sample(float key) const;
-        virtual void func_slot84();
+        virtual void return_to_pool();
 
         BootClass1781C0 unk50;
         u8 unkA0[0x20];
@@ -1745,111 +2159,227 @@ class BootFloatCurveTrackBase : public BootTrack
         /** @brief Destroy the track. */
         virtual ~BootFloatCurveTrackBase();
 
-        /** @brief Replace the entry array with count new entries. @param count Number of entries. */
+        /**
+         * @brief Replace the entry array with count new entries.
+         * @param count Number of entries.
+         */
         virtual void allocate_keys(s32 count);
 
-        /** @brief Install an entry array, set both counts, mark the array as installed and cache its span. @param count Number of entries; must be at least
-         * one. @param entries Entry array to install. */
-        virtual void bind_keys(s32 count, void* entries);
+        /**
+         * @brief Install an entry array, set both counts, mark the array as installed and cache its span.
+         * @param count Number of entries; must be at least one.
+         * @param entries Entry array to install.
+         */
+        virtual void bind_keys(s32 count, BootFloatCurveTrackKey* entries);
 
-        /** @brief Set what the track does before its first key, and whether it repeats. @param value Value whose low four bits are
-         * stored. */
-        virtual void set_before_mode(s32 value);
+        /**
+         * @brief Set what the track does before its first key, and whether it repeats.
+         * @param value Value whose low four bits are stored.
+         */
+        virtual void set_before_mode(u32 value);
 
-        /** @brief Set what the track does after its last key, and whether it repeats. @param value Value whose low four bits are
-         * stored. */
-        virtual void set_after_mode(s32 value);
+        /**
+         * @brief Set what the track does after its last key, and whether it repeats.
+         * @param value Value whose low four bits are stored.
+         */
+        virtual void set_after_mode(u32 value);
 
-        /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
+        /**
+         * @brief Return how many key spans the last wrapped key was past the first key.
+         * @return Signed cycle count.
+         */
         virtual s32 get_cycle_count() const;
 
-        /** @brief Append an entry through slot 24. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null.
-         * @param key Sort value. @return The result of slot 24. */
+        /**
+         * @brief Append an entry through slot 24.
+         * @param value Key value, or null.
+         * @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null.
+         * @param key Sort value.
+         * @return The result of slot 24.
+         */
         virtual s32 append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         /** @brief Default virtual handler that performs no work. */
         virtual void func_001EECA0();
 
-        /** @brief Set an entry through slot 25. @param index Entry index. @param key Sort value. @param value Key value, or null. @param in_tangent Tangent arriving at the key,
-         * or null. @param out_tangent Tangent leaving the key, or null. @return The result of slot 25. */
+        /**
+         * @brief Set an entry through slot 25.
+         * @param index Entry index.
+         * @param key Sort value.
+         * @param value Key value, or null.
+         * @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null.
+         * @return The result of slot 25.
+         */
         virtual s32 replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Insert an entry through slot 26. @param index Entry index. @param key Sort value. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null. @return The result of slot 26. */
+        /**
+         * @brief Insert an entry through slot 26.
+         * @param index Entry index.
+         * @param key Sort value.
+         * @param value Key value, or null.
+         * @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null.
+         * @return The result of slot 26.
+         */
         virtual s32 insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Default entry reader that returns zero. @param index Entry index. @param key Receives the sort value, or null. @param x Receives the first
-         * component, or null. @param y Receives the second component, or null. @param z Receives the third component, or null. @return Always 0. */
+        /**
+         * @brief Default entry reader that returns zero.
+         * @param index Entry index.
+         * @param key Receives the sort value, or null.
+         * @param value Receives the key value, or null.
+         * @param in_tangent Receives the arriving tangent, or null.
+         * @param out_tangent Receives the leaving tangent, or null.
+         * @return Always 0.
+         */
         virtual s32 read_key(s32 index, float* key, float* value, float* in_tangent, float* out_tangent) const;
 
-        /** @brief Add an entry through slot 27. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null.
-         * @param key Sort value. */
+        /**
+         * @brief Add an entry through slot 27.
+         * @param value Key value, or null.
+         * @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null.
+         * @param key Sort value.
+         */
         virtual void set_single_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         /** @brief Default virtual handler that performs no work. */
         virtual void reset_keys();
 
-        /** @brief Test whether an entry has exactly the given sort value. @param key Sort value to find. @return 1 when a matching entry exists, otherwise 0.
+        /**
+         * @brief Test whether an entry has exactly the given sort value.
+         * @param key Sort value to find.
+         * @return 1 when a matching entry exists, otherwise 0.
          */
         virtual s32 has_key(float key) const;
 
-        // Pure virtual slot 0x40; only its position is known.
+        /**
+         * @brief Return the difference between the last and first key values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(float* output) const = 0;
 
-        /** @brief Wrap a value into the span between the first and last entry sort values. @param value Value to wrap. @return value reduced by a whole number
-         * of spans, or value unchanged when that number is zero. */
-        virtual float wrap_key(float value) const;
+        /**
+         * @brief Wrap a value into the span between the first and last entry sort values.
+         * @param key Value to wrap.
+         * @return value reduced by a whole number of spans, or value unchanged when that number is zero.
+         */
+        virtual float wrap_key(float key) const;
 
-        // Pure virtual slot 0x48; only its position is known.
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(float* output) const = 0;
 
-        /** @brief Compute the span between the first and last entry sort values. @return The span, or 0.0f when fewer than two entries exist. */
+        /**
+         * @brief Compute the span between the first and last entry sort values.
+         * @return The span, or 0.0f when fewer than two entries exist.
+         */
         virtual float get_key_span() const;
 
-        /** @brief Store slot 30's value for a sort value. @param key Sort value. @param out Receives the value. */
+        /**
+         * @brief Store slot 30's value for a sort value.
+         * @param key Sort value.
+         * @param output Receives the value.
+         */
         virtual void evaluate(float key, float* output);
 
-        /** @brief Return the stored keyframe count. @return Keyframe count. */
+        /**
+         * @brief Return the stored keyframe count.
+         * @return Keyframe count.
+         */
         virtual s16 get_key_count() const;
 
         /** @brief Delete the object through its virtual destructor. */
         virtual void release();
 
-        /** @brief Return the key storage. @return Key array, or null. */
-        virtual void* get_keys() const;
+        /**
+         * @brief Return the key storage.
+         * @return Key array, or null.
+         */
+        virtual BootFloatCurveTrackKey* get_keys() const;
 
         /** @brief Reset the entry array pointer, counters, indices, nibbles and ownership flags. */
         virtual void reset_state();
 
-        /** @brief Return the number of keys the storage can hold. @return Key capacity. */
+        /**
+         * @brief Return the number of keys the storage can hold.
+         * @return Key capacity.
+         */
         virtual s16 get_key_capacity() const;
 
-        /** @brief Default append handler. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null. @param key
-         * Sort value. @return Always 0. */
+        /**
+         * @brief Default append handler.
+         * @param value Key value, or null.
+         * @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null.
+         * @param key Sort value.
+         * @return Always 0.
+         */
         virtual s32 on_append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
-        /** @brief Default set handler. @param index Entry index. @param key Sort value. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null.
-         * @param out_tangent Tangent leaving the key, or null. @return Always 0. */
+        /**
+         * @brief Default set handler.
+         * @param index Entry index.
+         * @param key Sort value.
+         * @param value Key value, or null.
+         * @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null.
+         * @return Always 0.
+         */
         virtual s32 on_replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Default insert handler. @param index Entry index. @param key Sort value. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or
-         * null. @param out_tangent Tangent leaving the key, or null. @return Always 0. */
+        /**
+         * @brief Default insert handler.
+         * @param index Entry index.
+         * @param key Sort value.
+         * @param value Key value, or null.
+         * @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null.
+         * @return Always 0.
+         */
         virtual s32 on_insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Default add handler. @param value Key value, or null. @param in_tangent Tangent arriving at the key, or null. @param out_tangent Tangent leaving the key, or null. @param key
-         * Sort value. */
+        /**
+         * @brief Default add handler.
+         * @param value Key value, or null.
+         * @param in_tangent Tangent arriving at the key, or null.
+         * @param out_tangent Tangent leaving the key, or null.
+         * @param key Sort value.
+         */
         virtual void on_set_single_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
-        /** @brief Report a fixed zero value for this receiver class. @return Always 0.0f. */
+        /**
+         * @brief Report a fixed zero value for this receiver class.
+         * @return Always 0.0f.
+         */
         virtual float get_zero_value() const;
 
-        /** @brief Find the first entry with the requested sort value. @param key Sort value to find. @return The entry's first component, or zero when no entry
-         * matches. */
+        /**
+         * @brief Find the first entry with the requested sort value.
+         * @param key Sort value to find.
+         * @return The entry's first component, or zero when no entry matches.
+         */
         virtual float find_key_value(float key);
 
-        // Pure virtual slot 0x80; only its position is known.
+        /**
+         * @brief Sample the track at a key and cache the value and its change per second.
+         * @param key Key to sample at.
+         * @return Value at the key.
+         */
         virtual float sample(float key) = 0;
 
-        // Pure virtual slot 0x84; only its position is known.
+        /**
+         * @brief Append a key with its tangents.
+         * @param value Key value.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
+         * @param key Key.
+         * @return Nonzero when the key was stored.
+         */
         virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key) = 0;
 
         BootFloatCurveTrackKey* key_array;
@@ -1866,8 +2396,9 @@ class BootFloatCurveTrack : public BootFloatCurveTrackBase
         {
         }
 
-        // Overrides of base slots; only their positions are known.
+        // Overrides of the base slots of the same names.
         virtual s32 append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
+
         virtual s32 replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
         virtual s32 insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
         virtual s32 read_key(s32 index, float* key, float* value, float* in_tangent, float* out_tangent) const;
@@ -1879,16 +2410,35 @@ class BootFloatCurveTrack : public BootFloatCurveTrackBase
         virtual float sample(float key);
         virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
-        /** @brief Replace an indexed entry. @param index Entry index. @param key Sort value. @param value Key value. @param in_tangent Tangent arriving at the
-         * key. @param out_tangent Tangent leaving the key. @return One when the entry was stored. */
+        /**
+         * @brief Replace an indexed entry.
+         * @param index Entry index.
+         * @param key Sort value.
+         * @param value Key value.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
+         * @return One when the entry was stored.
+         */
         virtual s32 replace_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Insert an entry at an index. @param index Entry index. @param key Sort value. @param value Key value. @param in_tangent Tangent arriving at
-         * the key. @param out_tangent Tangent leaving the key. @return One when the entry was stored. */
+        /**
+         * @brief Insert an entry at an index.
+         * @param index Entry index.
+         * @param key Sort value.
+         * @param value Key value.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
+         * @return One when the entry was stored.
+         */
         virtual s32 insert_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
-        /** @brief Store a single entry in the cached entry. @param value Key value. @param in_tangent Tangent arriving at the key. @param out_tangent Tangent
-         * leaving the key. @param key Sort value. */
+        /**
+         * @brief Store a single entry in the cached entry.
+         * @param value Key value.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
+         * @param key Sort value.
+         */
         virtual void set_single_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         BootFloatSegment curve_segment;
@@ -1939,7 +2489,7 @@ class BootVectorSegmentBase
 class BootVectorSegment : public BootVectorSegmentBase
 {
     public:
-        // Virtual slot 0xC; only its position is known.
+        /** @brief Evaluate the segment at a key. */
         virtual void evaluate();
 };
 
@@ -1976,103 +2526,229 @@ class BootVectorCurveTrackBase : public BootTrack
         /** @brief Destroy the track. */
         virtual ~BootVectorCurveTrackBase();
 
-        /** @brief Allocate storage for the requested keyframe count. @param count Requested keyframe count. */
+        /**
+         * @brief Allocate storage for the requested keyframe count.
+         * @param count Requested keyframe count.
+         */
         virtual void allocate_keys(s32 count);
 
-        /** @brief Bind an external keyframe array. @param count Keyframe count. @param entries External keyframe storage. */
+        /**
+         * @brief Bind an external keyframe array.
+         * @param count Keyframe count.
+         * @param entries External keyframe storage.
+         */
         virtual void bind_keys(s32 count, void* entries);
 
-        /** @brief Set what the track does before its first key. @param mode Mode value. */
-        virtual void set_before_mode(s32 mode);
+        /**
+         * @brief Set what the track does before its first key.
+         * @param value Mode value.
+         */
+        virtual void set_before_mode(u32 value);
 
-        /** @brief Set what the track does after its last key. @param mode Mode value. */
-        virtual void set_after_mode(s32 mode);
+        /**
+         * @brief Set what the track does after its last key.
+         * @param value Mode value.
+         */
+        virtual void set_after_mode(u32 value);
 
-        /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
+        /**
+         * @brief Return how many key spans the last wrapped key was past the first key.
+         * @return Signed cycle count.
+         */
         virtual s32 get_cycle_count() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary
-         * vector. @param key Sort key. @return Append status. */
+        /**
+         * @brief Append a vector keyframe.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @param key Sort key.
+         * @return Append status.
+         */
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional
-         * first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+        /**
+         * @brief Replace an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @return Replacement status.
+         */
         virtual s32 replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first
-         * auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+        /**
+         * @brief Insert an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @return Insertion status.
+         */
         virtual s32 insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
-         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /**
+         * @brief Read an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Receives the sort key.
+         * @param value Receives the value.
+         * @param first Receives the first auxiliary vector.
+         * @param second Receives the second auxiliary vector.
+         * @return Nonzero when the keyframe is available.
+         */
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param
-         * second Optional second auxiliary vector. @param key Sort key. */
+        /**
+         * @brief Add a vector keyframe through the track implementation.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @param key Sort key.
+         * @param second Second auxiliary vector.
+         */
         virtual void set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default update hook. */
         virtual void reset_keys();
 
-        /** @brief Test whether the track contains the supplied key. @param key Key to find. @return Nonzero when the key exists. */
+        /**
+         * @brief Test whether the track contains the supplied key.
+         * @param key Key to find.
+         * @return Nonzero when the key exists.
+         */
         virtual s32 has_key(float key) const;
 
-        // Pure virtual slot 0x40; only its position is known.
+        /**
+         * @brief Return the difference between the last and first key values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(FieldVec4B* output) const = 0;
 
-        /** @brief Wrap a key into the stored key range. @param key Key to wrap. @return Wrapped key. */
+        /**
+         * @brief Wrap a key into the stored key range.
+         * @param key Key to wrap.
+         * @return Wrapped key.
+         */
         virtual float wrap_key(float key) const;
 
-        // Pure virtual slot 0x48; only its position is known.
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(FieldVec4B* output) const = 0;
 
-        /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
+        /**
+         * @brief Return the span between the first and last keys.
+         * @return Key span, or zero when fewer than two keys are stored.
+         */
         virtual float get_key_span() const;
 
-        /** @brief Evaluate the vector track at a key. @param key Evaluation key. @param output Receives the evaluated vector. */
+        /**
+         * @brief Evaluate the vector track at a key.
+         * @param key Evaluation key.
+         * @param output Receives the evaluated vector.
+         */
         virtual void evaluate(float key, FieldVec4B* output);
 
-        /** @brief Return the stored keyframe count. @return Keyframe count. */
+        /**
+         * @brief Return the stored keyframe count.
+         * @return Keyframe count.
+         */
         virtual s16 get_key_count() const;
 
         /** @brief Return a pooled track or delete an ordinary track. */
         virtual void release();
 
-        /** @brief Return the key storage. @return Key array, or null. */
+        /**
+         * @brief Return the key storage.
+         * @return Key array, or null.
+         */
         virtual void* get_keys();
 
         /** @brief Reset the sequence fields and set both modes to one. */
         virtual void reset_state();
 
-        /** @brief Return the number of keys the storage can hold. @return Key capacity. */
+        /**
+         * @brief Return the number of keys the storage can hold.
+         * @return Key capacity.
+         */
         virtual s16 get_key_capacity();
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @param key Key the keyframe sits at.
+         * @return Handler result.
+         */
         virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Handler result.
+         */
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Handler result.
+         */
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @param key Key the keyframe sits at.
+         */
         virtual void on_set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Return a zero vector. @return Zero vector. */
+        /**
+         * @brief Return a zero vector.
+         * @return Zero vector.
+         */
         virtual FieldVec4A get_zero_value() const;
 
-        /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+        /**
+         * @brief Return the value of the keyframe with the supplied key.
+         * @param key Key to find.
+         * @return Keyframe value, or zero when the key is absent.
+         */
         virtual FieldVec4A find_key_value(float key) const;
 
-        // Pure virtual slot 0x80; only its position is known.
+        /**
+         * @brief Sample the track at a key and cache the value and its change per second.
+         * @param key Key to sample at.
+         * @return Value at the key.
+         */
         virtual FieldVec4A sample(float key) = 0;
 
-        // Pure virtual slot 0x84; only its position is known.
-        virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key) = 0;
+        /**
+         * @brief Append a key with its tangents.
+         * @param value Key value.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
+         * @param key Key.
+         * @return Nonzero when the key was stored.
+         */
+        virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key) = 0;
 
         void* key_array;
         u8 unk08[8];
@@ -2092,8 +2768,9 @@ class BootVectorCurveTrack : public BootVectorCurveTrackBase
         {
         }
 
-        // Overrides of base slots; only their positions are known.
+        // Overrides of the base slots of the same names.
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
         virtual s32 replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
         virtual s32 insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
@@ -2105,16 +2782,35 @@ class BootVectorCurveTrack : public BootVectorCurveTrackBase
         virtual FieldVec4A sample(float key);
         virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
-        /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param in_tangent Tangent
-         * arriving at the key. @param out_tangent Tangent leaving the key. @return Nonzero when the keyframe was stored. */
+        /**
+         * @brief Replace an indexed keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
+         * @return Nonzero when the keyframe was stored.
+         */
         virtual s32 replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
 
-        /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param in_tangent Tangent
-         * arriving at the key. @param out_tangent Tangent leaving the key. @return Nonzero when the keyframe was stored. */
+        /**
+         * @brief Insert a keyframe at an index.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
+         * @return Nonzero when the keyframe was stored.
+         */
         virtual s32 insert_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
 
-        /** @brief Store a single keyframe in the cached vectors. @param value Keyframe value. @param in_tangent Tangent arriving at the key. @param out_tangent
-         * Tangent leaving the key. auxiliary vector. @param key Key. */
+        /**
+         * @brief Store a single keyframe in the cached vectors.
+         * @param value Keyframe value.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key. auxiliary vector.
+         * @param key Key.
+         */
         virtual void set_single_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
         BootVectorSegment curve_segment;
@@ -2132,11 +2828,11 @@ class BootPooledVectorCurveTrack : public BootVectorCurveTrack
         /** @brief Destroy the track. */
         virtual ~BootPooledVectorCurveTrack();
 
-        // Overrides of base slots; only their positions are known.
+        // Overrides of the base slots of the same names.
         virtual void release();
 
-        // Virtual slot 0x94; only its position is known.
-        virtual void func_001EEDF0();
+        /** @brief Free the keys and give the track back to its pool. */
+        virtual void return_to_pool();
 };
 
 /** Partial 32-byte keyframe of BootClass171A70 with its key first. */
@@ -2146,7 +2842,8 @@ struct BootTrackKey171A70
     BootTrackKey171A70();
 
     float key;
-    u8 unk04[0x1C];
+    u8 unk04[0xC];
+    float value[4];
 };
 
 /** Partial keyframe track with vtable D_171A70 in main data; its constructor and destructor are out of line. */
@@ -2159,105 +2856,224 @@ class BootClass171A70 : public BootTrack
         /** @brief Destroy the track. */
         virtual ~BootClass171A70();
 
-        /** @brief Allocate storage for the requested keyframe count. @param count Requested keyframe count. */
+        /**
+         * @brief Allocate storage for the requested keyframe count.
+         * @param count Requested keyframe count.
+         */
         virtual void allocate_keys(s32 count);
 
-        /** @brief Bind an external keyframe array. @param count Keyframe count. @param entries External keyframe storage. */
-        virtual void bind_keys(s32 count, void* entries);
+        /**
+         * @brief Bind an external keyframe array.
+         * @param count Keyframe count.
+         * @param entries External keyframe storage.
+         */
+        virtual void bind_keys(s32 count, BootTrackKey171A70* entries);
 
-        /** @brief Set what the track does before its first key. @param mode Mode value. */
-        virtual void set_before_mode(s32 mode);
+        /**
+         * @brief Set what the track does before its first key.
+         * @param value Mode value.
+         */
+        virtual void set_before_mode(u32 value);
 
-        /** @brief Set what the track does after its last key. @param mode Mode value. */
-        virtual void set_after_mode(s32 mode);
+        /**
+         * @brief Set what the track does after its last key.
+         * @param value Mode value.
+         */
+        virtual void set_after_mode(u32 value);
 
-        /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
+        /**
+         * @brief Return how many key spans the last wrapped key was past the first key.
+         * @return Signed cycle count.
+         */
         virtual s32 get_cycle_count() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary
-         * vector. @param key Sort key. @return Append status. */
+        /**
+         * @brief Append a vector keyframe.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @param key Sort key.
+         * @return Append status.
+         */
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional
-         * first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+        /**
+         * @brief Replace an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @return Replacement status.
+         */
         virtual s32 replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first
-         * auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+        /**
+         * @brief Insert an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @return Insertion status.
+         */
         virtual s32 insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
-         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /**
+         * @brief Read an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Receives the sort key.
+         * @param value Receives the value.
+         * @param first Receives the first auxiliary vector.
+         * @param second Receives the second auxiliary vector.
+         * @return Nonzero when the keyframe is available.
+         */
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param
-         * second Optional second auxiliary vector. @param key Sort key. */
+        /**
+         * @brief Add a vector keyframe through the track implementation.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @param key Sort key.
+         * @param second Second auxiliary vector.
+         */
         virtual void set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default update hook. */
         virtual void reset_keys();
 
-        /** @brief Test whether the track contains the supplied key. @param key Key to find. @return Nonzero when the key exists. */
+        /**
+         * @brief Test whether the track contains the supplied key.
+         * @param key Key to find.
+         * @return Nonzero when the key exists.
+         */
         virtual s32 has_key(float key) const;
 
-        // Pure virtual slot 0x40; only its position is known.
+        /**
+         * @brief Return the difference between the last and first key values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(FieldVec4B* output) const = 0;
 
-        /** @brief Wrap a key into the stored key range. @param key Key to wrap. @return Wrapped key. */
+        /**
+         * @brief Wrap a key into the stored key range.
+         * @param key Key to wrap.
+         * @return Wrapped key.
+         */
         virtual float wrap_key(float key) const;
 
-        // Pure virtual slot 0x48; only its position is known.
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(FieldVec4B* output) const = 0;
 
-        /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
+        /**
+         * @brief Return the span between the first and last keys.
+         * @return Key span, or zero when fewer than two keys are stored.
+         */
         virtual float get_key_span() const;
 
-        /** @brief Evaluate the vector track at a key. @param key Evaluation key. @param output Receives the evaluated vector. */
+        /**
+         * @brief Evaluate the vector track at a key.
+         * @param key Evaluation key.
+         * @param output Receives the evaluated vector.
+         */
         virtual void evaluate(float key, FieldVec4B* output) const;
 
-        /** @brief Return the stored keyframe count. @return Keyframe count. */
+        /**
+         * @brief Return the stored keyframe count.
+         * @return Keyframe count.
+         */
         virtual s16 get_key_count() const;
 
         /** @brief Return a pooled track or delete an ordinary track. */
         virtual void release();
 
-        /** @brief Return the key storage. @return Key array, or null. */
-        virtual void* get_keys();
+        /**
+         * @brief Return the key storage.
+         * @return Key array, or null.
+         */
+        virtual BootTrackKey171A70* get_keys();
 
         /** @brief Clear the key storage, counts, modes and cached indices. */
         virtual void reset_state();
 
-        /** @brief Return the number of keys the storage can hold. @return Key capacity. */
+        /**
+         * @brief Return the number of keys the storage can hold.
+         * @return Key capacity.
+         */
         virtual s16 get_key_capacity();
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @param key Key the keyframe sits at.
+         * @return Handler result.
+         */
         virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Handler result.
+         */
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Handler result.
+         */
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @param key Key the keyframe sits at.
+         */
         virtual void on_set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Return a zero vector. @return Zero vector. */
+        /**
+         * @brief Return a zero vector.
+         * @return Zero vector.
+         */
         virtual FieldVec4A get_zero_value() const;
 
-        /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+        /**
+         * @brief Return the value of the keyframe with the supplied key.
+         * @param key Key to find.
+         * @return Keyframe value, or zero when the key is absent.
+         */
         virtual FieldVec4A find_key_value(float key) const;
 
-        // Pure virtual slot 0x80; only its position is known.
+        /**
+         * @brief Sample the track at a key and cache the value and its change per second.
+         * @param key Key to sample at.
+         * @return Value at the key.
+         */
         virtual FieldVec4A sample(float key) const = 0;
 
-        // Pure virtual slot 0x84; only its position is known.
-        virtual void func_slot84() = 0;
+        /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
+        virtual void return_to_pool() = 0;
 
-        void* key_array;
+        BootTrackKey171A70* key_array;
         u8 unk08[0x28];
         BootSequenceTail state;
 };
@@ -2272,11 +3088,12 @@ class BootClass177BE0 : public BootClass171A70
         /** @brief Destroy the track. */
         virtual ~BootClass177BE0();
 
-        // Lib implementations of the pure slots; only their positions are known.
+        // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
+
         virtual void get_value_rate(FieldVec4B* output) const;
         virtual FieldVec4A sample(float key) const;
-        virtual void func_slot84();
+        virtual void return_to_pool();
 
         u8 unk44[0x3C];
 };
@@ -2288,7 +3105,9 @@ struct BootTrackKey171680
     BootTrackKey171680();
 
     float key;
-    u8 unk04[0x2C];
+    u8 unk04[0xC];
+    float value[4];
+    u8 unk20[0x10];
 };
 
 /** Partial keyframe track with vtable D_171680 in main data; its constructor and destructor are out of line. */
@@ -2301,105 +3120,224 @@ class BootClass171680 : public BootTrack
         /** @brief Destroy the track. */
         virtual ~BootClass171680();
 
-        /** @brief Allocate storage for the requested keyframe count. @param count Requested keyframe count. */
+        /**
+         * @brief Allocate storage for the requested keyframe count.
+         * @param count Requested keyframe count.
+         */
         virtual void allocate_keys(s32 count);
 
-        /** @brief Bind an external keyframe array. @param count Keyframe count. @param entries External keyframe storage. */
-        virtual void bind_keys(s32 count, void* entries);
+        /**
+         * @brief Bind an external keyframe array.
+         * @param count Keyframe count.
+         * @param entries External keyframe storage.
+         */
+        virtual void bind_keys(s32 count, BootTrackKey171680* entries);
 
-        /** @brief Set what the track does before its first key. @param mode Mode value. */
-        virtual void set_before_mode(s32 mode);
+        /**
+         * @brief Set what the track does before its first key.
+         * @param value Mode value.
+         */
+        virtual void set_before_mode(u32 value);
 
-        /** @brief Set what the track does after its last key. @param mode Mode value. */
-        virtual void set_after_mode(s32 mode);
+        /**
+         * @brief Set what the track does after its last key.
+         * @param value Mode value.
+         */
+        virtual void set_after_mode(u32 value);
 
-        /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
+        /**
+         * @brief Return how many key spans the last wrapped key was past the first key.
+         * @return Signed cycle count.
+         */
         virtual s32 get_cycle_count() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary
-         * vector. @param key Sort key. @return Append status. */
+        /**
+         * @brief Append a vector keyframe.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @param key Sort key.
+         * @return Append status.
+         */
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional
-         * first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+        /**
+         * @brief Replace an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @return Replacement status.
+         */
         virtual s32 replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first
-         * auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+        /**
+         * @brief Insert an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @return Insertion status.
+         */
         virtual s32 insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
-         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /**
+         * @brief Read an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Receives the sort key.
+         * @param value Receives the value.
+         * @param first Receives the first auxiliary vector.
+         * @param second Receives the second auxiliary vector.
+         * @return Nonzero when the keyframe is available.
+         */
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param
-         * second Optional second auxiliary vector. @param key Sort key. */
+        /**
+         * @brief Add a vector keyframe through the track implementation.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @param key Sort key.
+         * @param second Second auxiliary vector.
+         */
         virtual void set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default update hook. */
         virtual void reset_keys();
 
-        /** @brief Test whether the track contains the supplied key. @param key Key to find. @return Nonzero when the key exists. */
+        /**
+         * @brief Test whether the track contains the supplied key.
+         * @param key Key to find.
+         * @return Nonzero when the key exists.
+         */
         virtual s32 has_key(float key) const;
 
-        // Pure virtual slot 0x40; only its position is known.
+        /**
+         * @brief Return the difference between the last and first key values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(FieldVec4B* output) const = 0;
 
-        /** @brief Wrap a key into the stored key range. @param key Key to wrap. @return Wrapped key. */
+        /**
+         * @brief Wrap a key into the stored key range.
+         * @param key Key to wrap.
+         * @return Wrapped key.
+         */
         virtual float wrap_key(float key) const;
 
-        // Pure virtual slot 0x48; only its position is known.
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(FieldVec4B* output) const = 0;
 
-        /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
+        /**
+         * @brief Return the span between the first and last keys.
+         * @return Key span, or zero when fewer than two keys are stored.
+         */
         virtual float get_key_span() const;
 
-        /** @brief Evaluate the vector track at a key. @param key Evaluation key. @param output Receives the evaluated vector. */
+        /**
+         * @brief Evaluate the vector track at a key.
+         * @param key Evaluation key.
+         * @param output Receives the evaluated vector.
+         */
         virtual void evaluate(float key, FieldVec4B* output) const;
 
-        /** @brief Return the stored keyframe count. @return Keyframe count. */
+        /**
+         * @brief Return the stored keyframe count.
+         * @return Keyframe count.
+         */
         virtual s16 get_key_count() const;
 
         /** @brief Return a pooled track or delete an ordinary track. */
         virtual void release();
 
-        /** @brief Return the key storage. @return Key array, or null. */
-        virtual void* get_keys();
+        /**
+         * @brief Return the key storage.
+         * @return Key array, or null.
+         */
+        virtual BootTrackKey171680* get_keys();
 
         /** @brief Clear the key storage, counts, modes and cached indices. */
         virtual void reset_state();
 
-        /** @brief Return the number of keys the storage can hold. @return Key capacity. */
+        /**
+         * @brief Return the number of keys the storage can hold.
+         * @return Key capacity.
+         */
         virtual s16 get_key_capacity();
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @param key Key the keyframe sits at.
+         * @return Handler result.
+         */
         virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Handler result.
+         */
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Handler result.
+         */
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @param key Key the keyframe sits at.
+         */
         virtual void on_set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Return a zero vector. @return Zero vector. */
+        /**
+         * @brief Return a zero vector.
+         * @return Zero vector.
+         */
         virtual FieldVec4A get_zero_value() const;
 
-        /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+        /**
+         * @brief Return the value of the keyframe with the supplied key.
+         * @param key Key to find.
+         * @return Keyframe value, or zero when the key is absent.
+         */
         virtual FieldVec4A find_key_value(float key) const;
 
-        // Pure virtual slot 0x80; only its position is known.
+        /**
+         * @brief Sample the track at a key and cache the value and its change per second.
+         * @param key Key to sample at.
+         * @return Value at the key.
+         */
         virtual FieldVec4A sample(float key) const = 0;
 
-        // Pure virtual slot 0x84; only its position is known.
-        virtual void func_slot84() = 0;
+        /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
+        virtual void return_to_pool() = 0;
 
-        void* key_array;
+        BootTrackKey171680* key_array;
         u8 unk08[0x38];
         BootSequenceTail state;
 };
@@ -2414,11 +3352,12 @@ class BootClass174440 : public BootClass171680
         /** @brief Destroy the track. */
         virtual ~BootClass174440();
 
-        // Lib implementations of the pure slots; only their positions are known.
+        // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
+
         virtual void get_value_rate(FieldVec4B* output) const;
         virtual FieldVec4A sample(float key) const;
-        virtual void func_slot84();
+        virtual void return_to_pool();
 
         u8 unk54[0x3C];
 };
@@ -2454,105 +3393,224 @@ class BootQuaternionTrackBase : public BootTrack
         /** @brief Destroy the track. */
         virtual ~BootQuaternionTrackBase();
 
-        /** @brief Allocate storage for the requested keyframe count. @param count Requested keyframe count. */
+        /**
+         * @brief Allocate storage for the requested keyframe count.
+         * @param count Requested keyframe count.
+         */
         virtual void allocate_keys(s32 count);
 
-        /** @brief Bind an external keyframe array. @param count Keyframe count. @param entries External keyframe storage. */
-        virtual void bind_keys(s32 count, void* entries);
+        /**
+         * @brief Bind an external keyframe array.
+         * @param count Keyframe count.
+         * @param entries External keyframe storage.
+         */
+        virtual void bind_keys(s32 count, BootQuaternionTrackKey* entries);
 
-        /** @brief Set what the track does before its first key. @param mode Mode value. */
-        virtual void set_before_mode(s32 mode);
+        /**
+         * @brief Set what the track does before its first key.
+         * @param value Mode value.
+         */
+        virtual void set_before_mode(u32 value);
 
-        /** @brief Set what the track does after its last key. @param mode Mode value. */
-        virtual void set_after_mode(s32 mode);
+        /**
+         * @brief Set what the track does after its last key.
+         * @param value Mode value.
+         */
+        virtual void set_after_mode(u32 value);
 
-        /** @brief Return how many key spans the last wrapped key was past the first key. @return Signed cycle count. */
+        /**
+         * @brief Return how many key spans the last wrapped key was past the first key.
+         * @return Signed cycle count.
+         */
         virtual s32 get_cycle_count() const;
 
-        /** @brief Append a vector keyframe. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary
-         * vector. @param key Sort key. @return Append status. */
+        /**
+         * @brief Append a vector keyframe.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @param key Sort key.
+         * @return Append status.
+         */
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default track hook. */
         virtual void func_001EECA0();
 
-        /** @brief Replace an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional
-         * first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+        /**
+         * @brief Replace an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @return Replacement status.
+         */
         virtual s32 replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Insert an indexed vector keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first
-         * auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+        /**
+         * @brief Insert an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Sort key.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @return Insertion status.
+         */
         virtual s32 insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Read an indexed vector keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first
-         * Receives the first auxiliary vector. @param second Receives the second auxiliary vector. @return Nonzero when the keyframe is available. */
+        /**
+         * @brief Read an indexed vector keyframe.
+         * @param index Keyframe index.
+         * @param key Receives the sort key.
+         * @param value Receives the value.
+         * @param first Receives the first auxiliary vector.
+         * @param second Receives the second auxiliary vector.
+         * @return Nonzero when the keyframe is available.
+         */
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
-        /** @brief Add a vector keyframe through the track implementation. @param value Keyframe value. @param first Optional first auxiliary vector. @param
-         * second Optional second auxiliary vector. @param key Sort key. */
+        /**
+         * @brief Add a vector keyframe through the track implementation.
+         * @param value Keyframe value.
+         * @param first Optional first auxiliary vector.
+         * @param second Optional second auxiliary vector.
+         * @param key Sort key.
+         * @param second Second auxiliary vector.
+         */
         virtual void set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /** @brief Run the default update hook. */
         virtual void reset_keys();
 
-        /** @brief Test whether the track contains the supplied key. @param key Key to find. @return Nonzero when the key exists. */
+        /**
+         * @brief Test whether the track contains the supplied key.
+         * @param key Key to find.
+         * @return Nonzero when the key exists.
+         */
         virtual s32 has_key(float key) const;
 
-        // Pure virtual slot 0x40; only its position is known.
+        /**
+         * @brief Return the difference between the last and first key values.
+         * @param output Receives the difference.
+         */
         virtual void get_end_delta(FieldVec4B* output) const = 0;
 
-        /** @brief Wrap a key into the stored key range. @param key Key to wrap. @return Wrapped key. */
+        /**
+         * @brief Wrap a key into the stored key range.
+         * @param key Key to wrap.
+         * @return Wrapped key.
+         */
         virtual float wrap_key(float key) const;
 
-        // Pure virtual slot 0x48; only its position is known.
+        /**
+         * @brief Return how fast the value changed at the last sample, per second.
+         * @param output Receives the rate.
+         */
         virtual void get_value_rate(FieldVec4B* output) const = 0;
 
-        /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
+        /**
+         * @brief Return the span between the first and last keys.
+         * @return Key span, or zero when fewer than two keys are stored.
+         */
         virtual float get_key_span() const;
 
-        /** @brief Evaluate the vector track at a key. @param key Evaluation key. @param output Receives the evaluated vector. */
+        /**
+         * @brief Evaluate the vector track at a key.
+         * @param key Evaluation key.
+         * @param output Receives the evaluated vector.
+         */
         virtual void evaluate(float key, FieldVec4B* output) const;
 
-        /** @brief Return the stored keyframe count. @return Keyframe count. */
+        /**
+         * @brief Return the stored keyframe count.
+         * @return Keyframe count.
+         */
         virtual s16 get_key_count() const;
 
         /** @brief Return a pooled track or delete an ordinary track. */
         virtual void release();
 
-        /** @brief Return the key storage. @return Key array, or null. */
-        virtual void* get_keys();
+        /**
+         * @brief Return the key storage.
+         * @return Key array, or null.
+         */
+        virtual BootQuaternionTrackKey* get_keys();
 
         /** @brief Clear the key storage, counts, modes and cached indices. */
         virtual void reset_state();
 
-        /** @brief Return the number of keys the storage can hold. @return Key capacity. */
+        /**
+         * @brief Return the number of keys the storage can hold.
+         * @return Key capacity.
+         */
         virtual s16 get_key_capacity();
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @param key Key the keyframe sits at.
+         * @return Handler result.
+         */
         virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Handler result.
+         */
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+        /**
+         * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+         * @param index Key index.
+         * @param key Key the keyframe sits at.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @return Handler result.
+         */
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
-        /** @brief Handle a vector set with a key; the base implementation ignores it. */
+        /**
+         * @brief Handle a vector set with a key; the base implementation ignores it.
+         * @param value Key value.
+         * @param first First auxiliary vector.
+         * @param second Second auxiliary vector.
+         * @param key Key the keyframe sits at.
+         */
         virtual void on_set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Return a zero vector. @return Zero vector. */
+        /**
+         * @brief Return a zero vector.
+         * @return Zero vector.
+         */
         virtual FieldVec4A get_zero_value() const;
 
-        /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+        /**
+         * @brief Return the value of the keyframe with the supplied key.
+         * @param key Key to find.
+         * @return Keyframe value, or zero when the key is absent.
+         */
         virtual FieldVec4A find_key_value(float key) const;
 
-        // Pure virtual slot 0x80; only its position is known.
+        /**
+         * @brief Sample the track at a key and cache the value and its change per second.
+         * @param key Key to sample at.
+         * @return Value at the key.
+         */
         virtual FieldVec4A sample(float key) const = 0;
 
-        // Pure virtual slot 0x84; only its position is known.
-        virtual void func_slot84() = 0;
+        /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
+        virtual void return_to_pool() = 0;
 
-        void* key_array;
+        BootQuaternionTrackKey* key_array;
         u8 unk08[8];
         BootSequenceTail state;
 };
@@ -2567,11 +3625,12 @@ class BootPooledQuaternionTrack : public BootQuaternionTrackBase
         /** @brief Destroy the track. */
         virtual ~BootPooledQuaternionTrack();
 
-        // Lib implementations of the pure slots; only their positions are known.
+        // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
+
         virtual void get_value_rate(FieldVec4B* output) const;
         virtual FieldVec4A sample(float key) const;
-        virtual void func_slot84();
+        virtual void return_to_pool();
 
         u8 unk24[8];
 };
@@ -2584,6 +3643,7 @@ void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool);
 s32 track_1718C0_pool_allocate(BootTrackPool<BootClass177EE0>* pool, s32 count);
 void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool);
 s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* pool, s32 count);
+void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool);
 s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count);
 void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool);
 s32 track_171A70_pool_allocate(BootTrackPool<BootClass177BE0>* pool, s32 count);

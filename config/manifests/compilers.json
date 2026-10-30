@@ -63,7 +63,11 @@
       "flags": ["-O4,p"]
     },
     {
-      "source": "src/overlays/boot/text_001ED4E0.cpp",
+      "source": "src/overlays/boot/text_001EEC80.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/boot/text_001F6010.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
@@ -71,7 +75,7 @@
       "flags": ["-inline", "level=7"]
     },
     {
-      "source": "src/overlays/boot/text_001FF9E0.cpp",
+      "source": "src/overlays/boot/text_001FF9D0.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
