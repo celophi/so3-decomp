@@ -182,7 +182,7 @@ typedef struct ShopRuntime
 } ShopRuntime;
 // Resident runtime interface, scoped to this overlay.
 extern ShopRuntime* D_001B643C;
-extern ResidentReleaseQueues* D_001B65F4;
+extern ResidentReleaseQueues* g_resident_release_queues;
 extern float D_001B6690;
 extern ShopInventoryState* D_001B64F8;
 
@@ -3621,7 +3621,7 @@ void ShopState::func_slot5c()
 
 void ShopState::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /**

@@ -7660,7 +7660,7 @@ void SkillController::func_slot5c()
 void SkillController::func_001DD7B0()
 {
     FieldClass153E30* entry = this;
-    resident_enqueue_object(D_001B65F4, entry);
+    resident_enqueue_object(g_resident_release_queues, entry);
 }
 
 /** @brief Create the skill or symbology windows and attach their navigation links. @return One. */
@@ -9123,7 +9123,7 @@ void SkillHpMpGauge::func_003EF740()
 {
     queued_for_release = 1;
     func_44B210(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 SkillOptionsWindow::SkillOptionsWindow()

@@ -1408,7 +1408,7 @@ void CmcClass18AF20::func_slot5c()
 /** @brief Add this object to the resident queue. */
 void CmcClass18AF20::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00358620);

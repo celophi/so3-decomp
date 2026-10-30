@@ -208,21 +208,21 @@ class BootBattleTrophyViewer : public BootListObject
         char number_text[9];
 
         /** Trophy number shown at each list position. */
-        s16 order[300];
+        s16 order[BOOT_TROPHY_COUNT];
 
         u8 unk32E[2];
 
         /** Picture of each trophy. */
-        BootImage* trophy_images[300];
+        BootImage* trophy_images[BOOT_TROPHY_COUNT];
 
         /** Record of each trophy, as read from the memory card. */
         BootTrophyRecord* records;
 
         /** Texture built for each earned trophy. */
-        BootTextureResource* textures[300];
+        BootTextureResource* textures[BOOT_TROPHY_COUNT];
 
         /** How far each trophy picture has turned from its back to its front, zero when unrevealed. */
-        float flip_progress[300];
+        float flip_progress[BOOT_TROPHY_COUNT];
 
         /** Next trophy to start turning over as the screen opens. */
         s32 reveal_index;

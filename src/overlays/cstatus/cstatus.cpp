@@ -3312,7 +3312,7 @@ void StatusResourceState::func_slot5c()
 /** @brief Submit this receiver to the resident object queue. */
 void StatusResourceState::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /** @brief Switch between record and name windows through a timed transition. */

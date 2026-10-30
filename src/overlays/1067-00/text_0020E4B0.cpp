@@ -77,7 +77,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020F5
 extern "C" void func_0020F6C0(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020E4B0", func_0020F6F0);

@@ -37,7 +37,7 @@ s32 func_002D3BD0(FieldListObject* object)
 void func_002D3BE0(FieldListObject* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 void func_002D3C10(void* object)
@@ -210,7 +210,7 @@ u8 field_queue_allocation_release(FieldBufferSlots* object, u8 index)
         return 0;
     }
 
-    resident_queue_allocation_release(D_001B65F4, allocation);
+    resident_queue_allocation_release(g_resident_release_queues, allocation);
     object->allocations[index] = 0;
     return 1;
 }
@@ -341,7 +341,7 @@ s32 func_002D4D40(FieldListObject* object)
 void func_002D4D50(FieldListObject* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D4D80);

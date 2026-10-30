@@ -218,7 +218,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203C
 extern "C" void func_00203DF0(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 /** Partial item flags with the enable bit word at offset 0x6A. */

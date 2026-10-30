@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001F6010.h"
+#include "overlays/boot/text_001E0900.h"
 #include "overlays/boot/text_001FB220.h"
 #include "overlays/boot/text_001FF9D0.h"
 #include "overlays/boot/resident.h"
@@ -45,10 +46,63 @@ void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
 void func_4791F0(BootScene* scene, u8* data);
 void func_40B3A0(u8* data);
 void func_473AA0(BootScene* scene);
-s32 func_112610(BootSound1B65F8* sound, s32 key);
+s32 func_112610(BootSoundState* sound, s32 key);
 
 void func_11F510(void* owner, void* object);
 }
+
+/** Title screen stages, including the hand-off for each menu choice. */
+enum BootTitleStep
+{
+    BOOT_TITLE_LOAD_SCENE = 0,
+    BOOT_TITLE_START_MUSIC = 1,
+    BOOT_TITLE_BROWSE = 2,
+    BOOT_TITLE_START_NEW_GAME = 3,
+    BOOT_TITLE_REPLAY_OPENING = 4,
+    BOOT_TITLE_CONTINUE_GAME = 5,
+    BOOT_TITLE_OPEN_INSTALLER = 6,
+    BOOT_TITLE_OPEN_BATTLE_TROPHIES = 7
+};
+
+/** Idle time before the title screen replays the opening movie. */
+#define BOOT_TITLE_IDLE_MOVIE_SECONDS 45.0f
+
+/** Steps between leaving the title and handing the next program to boot. */
+enum BootLaunchStep
+{
+    BOOT_LAUNCH_PREPARE = 0,
+    BOOT_LAUNCH_WAIT_TO_PLAY_MOVIE = 1,
+    BOOT_LAUNCH_PLAY_MOVIE = 2,
+    BOOT_LAUNCH_STOP_MOVIE = 3,
+    BOOT_LAUNCH_RELEASE_MOVIE_HEAP = 4,
+    BOOT_LAUNCH_LOAD_PROGRAM = 5,
+    BOOT_LAUNCH_HAND_OFF = 6
+};
+
+enum BootLaunchConstants
+{
+    BOOT_LAUNCH_MOVIE_ID = 13,
+    BOOT_LAUNCH_PROGRAM_RESOURCE = 0x42B,
+    BOOT_LAUNCH_WORK_BUFFER_SIZE = 0x12000,
+    BOOT_LAUNCH_MOVIE_START_DELAY_FRAMES = 60,
+    BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES = 40
+};
+
+/** Progress bar fill is computed in thousandths of its inner width. */
+enum BootProgressBarConstants
+{
+    BOOT_PROGRESS_BAR_SCALE = 1000
+};
+
+/** The captured 640-pixel display is split into ten 64-pixel strips for the fade. */
+enum BootFadeStripConstants
+{
+    BOOT_FADE_STRIP_COUNT = 10,
+    BOOT_FADE_STRIP_WIDTH = 64,
+    BOOT_FADE_STRIP_HEIGHT = 448,
+    /** PSMCT24 occupies four bytes per pixel in VRAM. */
+    BOOT_FADE_STRIP_VRAM_SIZE = BOOT_FADE_STRIP_WIDTH * BOOT_FADE_STRIP_HEIGHT * 4
+};
 
 /**
  * @brief Find the scene node of a title menu item.
@@ -62,16 +116,16 @@ static inline BootClass170F30* find_menu_item(BootTitleMenu* menu, s32 item)
 
     switch (item)
     {
-    case 0:
+    case BOOT_TITLE_ITEM_NEW_GAME:
         node = lib_find_renderable_entry(menu->scene, g_new_game_node_name);
         break;
-    case 1:
+    case BOOT_TITLE_ITEM_CONTINUE:
         node = lib_find_renderable_entry(menu->scene, g_continue_node_name);
         break;
-    case 2:
+    case BOOT_TITLE_ITEM_BATTLE_TROPHIES:
         node = lib_find_renderable_entry(menu->scene, g_battle_collection_node_name);
         break;
-    case 3:
+    case BOOT_TITLE_ITEM_INSTALL:
         node = lib_find_renderable_entry(menu->scene, g_install_node_name);
         break;
     }
@@ -238,7 +292,7 @@ void BootTitleMenu::get_cursor_position(float* x, float* y)
         *y = 224.0f + screen_y;
     }
 
-    if (selected == 1)
+    if (selected == BOOT_TITLE_ITEM_CONTINUE)
     {
         *x -= 6.0f;
     }
@@ -280,7 +334,7 @@ void BootTitleMenu::update_item_availability()
     BootVector4DDAA0 color;
     copy_vector(&color, &collection_node->base_color_factor);
 
-    if (first == 5 || second == 5)
+    if (first == BOOT_TROPHY_FILE_PRESENT || second == BOOT_TROPHY_FILE_PRESENT)
     {
         color.w = 1.0f;
         collection_ready = 1;
@@ -300,7 +354,7 @@ void BootTitleMenu::update_item_availability()
 
     copy_vector(&color, &continue_node->base_color_factor);
 
-    if (slot1 == 0x11 || slot2 == 0x11)
+    if (slot1 == BOOT_CARD_STATUS_SAVE_PRESENT || slot2 == BOOT_CARD_STATUS_SAVE_PRESENT)
     {
         color.w = 1.0f;
         continue_ready = 1;
@@ -328,14 +382,14 @@ void BootTitleMenu::update()
 
     switch (step)
     {
-    case 0:
+    case BOOT_TITLE_LOAD_SCENE:
     {
         if (func_102D00(D_001B65E8) == 0)
         {
             break;
         }
 
-        if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) == 0)
+        if (BOOT_ALIGN_RESOURCE(g_boot_program.message_block) == 0)
         {
             break;
         }
@@ -352,17 +406,17 @@ void BootTitleMenu::update()
         camera = lib_find_camera_entry(scene, g_title_camera_node_name);
         D_001B6628->current_display = camera;
 
-        if (initial_item != -1)
+        if (initial_item != BOOT_TITLE_ITEM_AUTO)
         {
             selected = initial_item;
         }
-        else if (input->slot1_state == 0x11 || input->slot2_state == 0x11)
+        else if (input->slot1_state == BOOT_CARD_STATUS_SAVE_PRESENT || input->slot2_state == BOOT_CARD_STATUS_SAVE_PRESENT)
         {
-            selected = 1;
+            selected = BOOT_TITLE_ITEM_CONTINUE;
         }
         else
         {
-            selected = 0;
+            selected = BOOT_TITLE_ITEM_NEW_GAME;
         }
 
         animate_items(1);
@@ -376,7 +430,7 @@ void BootTitleMenu::update()
         step++;
         break;
     }
-    case 1:
+    case BOOT_TITLE_START_MUSIC:
         if (func_112990(D_001B65F8, 2, 1, 0, 0) == 0)
         {
             break;
@@ -386,17 +440,17 @@ void BootTitleMenu::update()
         step++;
         idle_time = 0.0f;
         break;
-    case 2:
+    case BOOT_TITLE_BROWSE:
     {
         check_main_code();
 
-        if (input->repeated == 0x80 && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_LEFT && cursor->unk35)
         {
             selected--;
 
-            if (selected > 2)
+            if (selected > BOOT_TITLE_ITEM_BATTLE_TROPHIES)
             {
-                selected = 2;
+                selected = BOOT_TITLE_ITEM_BATTLE_TROPHIES;
             }
 
             float x;
@@ -407,13 +461,13 @@ void BootTitleMenu::update()
             func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
         }
 
-        if (input->repeated == 0x20 && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_RIGHT && cursor->unk35)
         {
             selected++;
 
-            if (selected > 2)
+            if (selected > BOOT_TITLE_ITEM_BATTLE_TROPHIES)
             {
-                selected = 0;
+                selected = BOOT_TITLE_ITEM_NEW_GAME;
             }
 
             float x;
@@ -429,29 +483,29 @@ void BootTitleMenu::update()
         {
             u8 accepted = 0;
 
-            if (selected == 0)
+            if (selected == BOOT_TITLE_ITEM_NEW_GAME)
             {
                 step++;
                 accepted = 1;
             }
 
-            if (selected == 1 && continue_ready)
+            if (selected == BOOT_TITLE_ITEM_CONTINUE && continue_ready)
             {
                 settings->continue_selected = 1;
                 accepted = 1;
-                step = 5;
+                step = BOOT_TITLE_CONTINUE_GAME;
             }
 
-            if (selected == 2 && collection_ready)
+            if (selected == BOOT_TITLE_ITEM_BATTLE_TROPHIES && collection_ready)
             {
                 accepted = 1;
-                step = 7;
+                step = BOOT_TITLE_OPEN_BATTLE_TROPHIES;
             }
 
-            if (selected == 3 && install_ready)
+            if (selected == BOOT_TITLE_ITEM_INSTALL && install_ready)
             {
                 accepted = 1;
-                step = 6;
+                step = BOOT_TITLE_OPEN_INSTALLER;
             }
 
             if (accepted)
@@ -465,16 +519,16 @@ void BootTitleMenu::update()
                 func_112400(D_001B65F8, 3, 0, 0, 0x7F, 0x40, 0);
             }
         }
-        else if (!(idle_time < 45.0f) && func_112610(D_001B65F8, -1) == 0 && func_115270(D_001B65E4, 1) == 1)
+        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && func_112610(D_001B65F8, -1) == 0 && func_115270(D_001B65E4, 1) == 1)
         {
             queue_fade();
             func_10F000(D_001B65F8, 0x1E, -1);
-            step = 4;
+            step = BOOT_TITLE_REPLAY_OPENING;
         }
 
         break;
     }
-    case 3:
+    case BOOT_TITLE_START_NEW_GAME:
         check_main_code();
         g_boot_program.select_projection();
         step++;
@@ -487,7 +541,7 @@ void BootTitleMenu::update()
         lib_object_detach_owner(this);
         destroy();
         break;
-    case 4:
+    case BOOT_TITLE_REPLAY_OPENING:
         check_main_code();
         g_boot_program.select_projection();
         step++;
@@ -501,7 +555,7 @@ void BootTitleMenu::update()
         lib_object_detach_owner(this);
         destroy();
         break;
-    case 5:
+    case BOOT_TITLE_CONTINUE_GAME:
         check_main_code();
         g_boot_program.select_projection();
         step++;
@@ -514,7 +568,7 @@ void BootTitleMenu::update()
         lib_object_detach_owner(this);
         destroy();
         break;
-    case 6:
+    case BOOT_TITLE_OPEN_INSTALLER:
         check_main_code();
         g_boot_program.select_projection();
         step++;
@@ -527,7 +581,7 @@ void BootTitleMenu::update()
         lib_object_detach_owner(this);
         destroy();
         break;
-    case 7:
+    case BOOT_TITLE_OPEN_BATTLE_TROPHIES:
     {
         check_main_code();
         g_boot_program.select_projection();
@@ -578,11 +632,11 @@ BootTitleMenu::~BootTitleMenu()
  */
 BootTitleMenu::BootTitleMenu(s32 initial_item)
 {
-    step = 0;
-    scene_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x27));
-    func_103E70(D_001B65E8, 0x27, scene_data, 1, 0x34BC0, 0, 0, 0, 1);
-    game_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0xA));
-    func_103E70(D_001B65E8, 0xA, game_data, 1, 0x34BC0, 0, 0, 0, 1);
+    step = BOOT_TITLE_LOAD_SCENE;
+    scene_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_TITLE_SCENE));
+    func_103E70(D_001B65E8, BOOT_RES_TITLE_SCENE, scene_data, 1, 0x34BC0, 0, 0, 0, 1);
+    game_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_GAME_DATA));
+    func_103E70(D_001B65E8, BOOT_RES_GAME_DATA, game_data, 1, 0x34BC0, 0, 0, 0, 1);
     scene = 0;
     cursor = 0;
     pulse_up = 0;
@@ -651,13 +705,13 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
         done = total;
     }
 
-    if (total > 999)
+    if (total > BOOT_PROGRESS_BAR_SCALE - 1)
     {
-        fill = done / (total / 1000);
+        fill = done / (total / BOOT_PROGRESS_BAR_SCALE);
     }
     else
     {
-        fill = done * 1000 / total;
+        fill = done * BOOT_PROGRESS_BAR_SCALE / total;
     }
 
     func_455150(bar->draw_buffer, &settings);
@@ -692,7 +746,7 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, (float)height, (float)depth, 1.0f), normal, 0, color);
     func_4550F0(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(3.0f, 3.0f, (float)depth, 1.0f), normal, 0, color);
-    float right = 3.0f + ((width - 6.0f) * fill) / 1000.0f;
+    float right = 3.0f + ((width - 6.0f) * fill) / (float)BOOT_PROGRESS_BAR_SCALE;
     add_vertex(bar->draw_buffer, FieldVec4A(right, 3.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(3.0f, height - 3.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(right, height - 3.0f, (float)depth, 1.0f), normal, 0, color);
@@ -780,7 +834,7 @@ void BootScreenFade::update()
 
     if (alpha <= 0.0f)
     {
-        for (s32 i = 0; i < 10; i++)
+        for (s32 i = 0; i < BOOT_FADE_STRIP_COUNT; i++)
         {
             if (images[i] != 0)
             {
@@ -831,9 +885,9 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
     buffer_packet->unk0c = buffer_packet->unk08;
     BootFadeStripPacket* strip = reinterpret_cast<BootFadeStripPacket*>(func_11F860(packet, 0));
     BootVramRequest request;
-    request.width = 64;
-    request.height = 448;
-    request.size = 0x1C000;
+    request.width = BOOT_FADE_STRIP_WIDTH;
+    request.height = BOOT_FADE_STRIP_HEIGHT;
+    request.size = BOOT_FADE_STRIP_VRAM_SIZE;
     request.psm = 1;
     request.width_log2 = 6;
     request.height_log2 = 10;
@@ -847,9 +901,9 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
         float left = 1728.0f;
         float width = 64.0f;
 
-        for (s32 i = 0; i < 10; i++)
+        for (s32 i = 0; i < BOOT_FADE_STRIP_COUNT; i++)
         {
-            u8* image = buffer + 448 * (i * 64) * 3 / 16 * 16;
+            u8* image = buffer + BOOT_FADE_STRIP_HEIGHT * (i * BOOT_FADE_STRIP_WIDTH) * 3 / 16 * 16;
             strip->transfer_dma = 0x10000006;
             strip->transfer_tag.tag = 0x1000000000000004ULL;
             strip->transfer_tag.registers = 0;
@@ -900,7 +954,7 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
 /** @brief Destroy the strips, the copy buffer and the packet. */
 BootScreenFade::~BootScreenFade()
 {
-    for (s32 i = 0; i < 10; i++)
+    for (s32 i = 0; i < BOOT_FADE_STRIP_COUNT; i++)
     {
         if (images[i] != 0)
         {
@@ -934,15 +988,16 @@ BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
     s32 height;
     s32 i;
     this->display = display;
-    width = display->unk3C60.width / 2 + display->unk3C60.width / 2;
-    height = display->unk3C60.height / 2 + display->unk3C60.height / 2;
+    width = display->display_area.width / 2 + display->display_area.width / 2;
+    height = display->display_area.height / 2 + display->display_area.height / 2;
     buffer = new (0) u8[width * height * 3 / 16 * 16];
 
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < BOOT_FADE_STRIP_COUNT; i++)
     {
         images[i] = new (0) BootImageStrip;
         images[i]->unk65 = 1;
-        func_4333A0(images[i], buffer + height * (i * 64) * 3 / 16 * 16, (display->unk160 & 0x1FF) << 5, width / 64, 1, i * 64, 0, 0x40, height);
+        func_4333A0(images[i], buffer + height * (i * BOOT_FADE_STRIP_WIDTH) * 3 / 16 * 16, (display->unk160 & 0x1FF) << 5,
+                      width / BOOT_FADE_STRIP_WIDTH, 1, i * BOOT_FADE_STRIP_WIDTH, 0, BOOT_FADE_STRIP_WIDTH, height);
         D_001B661C->append_node(images[i], -1);
     }
 
@@ -1017,8 +1072,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     {
         add_vertex(image->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal,
                    ((x << 12) / image->texture_width) | (((y << 12) / image->texture_height) << 16), color);
-        // TODO: right as its own variable shifted in place is a guess; it's what gets the
-        // sum and its shift to share a register like the original.
+        // Shift the right edge in place so the addition and shift share a register.
         s32 right = x + width;
         right = (u32)right << 12;
         add_vertex(image->draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal,
@@ -1200,7 +1254,7 @@ void BootGameLauncher::update()
 
     switch (step)
     {
-    case 0:
+    case BOOT_LAUNCH_PREPARE:
         previous = resident_next_random_word();
 
         while (previous == resident_next_random_word())
@@ -1213,15 +1267,15 @@ void BootGameLauncher::update()
         {
         }
 
-        previous = func_10CAA0(1000);
+        previous = func_10CAA0(BOOT_RANDOM_WARMUP_RANGE);
 
-        while (previous == func_10CAA0(1000))
+        while (previous == func_10CAA0(BOOT_RANDOM_WARMUP_RANGE))
         {
         }
 
-        previous = func_10CC40(0, 1000);
+        previous = func_10CC40(0, BOOT_RANDOM_WARMUP_RANGE);
 
-        while (previous == func_10CC40(0, 1000))
+        while (previous == func_10CC40(0, BOOT_RANDOM_WARMUP_RANGE))
         {
         }
 
@@ -1242,20 +1296,20 @@ void BootGameLauncher::update()
             func_457520(bits);
         }
 
-        if ((u8)settings->continue_selected == 0 && settings->sound_output == 2)
+        if ((u8)settings->continue_selected == 0 && settings->sound_output == BOOT_SOUND_DOLBY_PRO_LOGIC_II)
         {
             step++;
             timer = 0;
         }
         else
         {
-            step = 5;
+            step = BOOT_LAUNCH_LOAD_PROGRAM;
             timer = 0;
         }
 
         break;
-    case 1:
-        if (++timer > 60)
+    case BOOT_LAUNCH_WAIT_TO_PLAY_MOVIE:
+        if (++timer > BOOT_LAUNCH_MOVIE_START_DELAY_FRAMES)
         {
             if (func_115430(D_001B65E4) == 0 && func_115670(D_001B65E4) != 0 && func_115650(D_001B65E4) != 0)
             {
@@ -1264,9 +1318,9 @@ void BootGameLauncher::update()
 
             movie_heap = new (0) BootResident113E40;
             movie_heap->unk2C = 0x40;
-            func_113930(movie_heap, 0x579F2C);
+            func_113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
             void* heap = resident_exchange_allocation_heap(movie_heap);
-            player = new (0) BootMoviePlayer(640, 448);
+            player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
             resident_exchange_allocation_heap(heap);
             player->state->set_scale(1.0f, 1.0f);
             player->state->set_words(0x800, 0x800, 1);
@@ -1276,42 +1330,42 @@ void BootGameLauncher::update()
                 player->state->unk80D8 = 1;
             }
 
-            func_419A70(player, 13, 1);
+            func_419A70(player, BOOT_LAUNCH_MOVIE_ID, 1);
             step++;
         }
-        else if (input->held & 8)
+        else if (input->held & BOOT_BUTTON_START)
         {
-            step = 5;
+            step = BOOT_LAUNCH_LOAD_PROGRAM;
         }
 
         break;
-    case 2:
+    case BOOT_LAUNCH_PLAY_MOVIE:
         timer++;
 
-        if ((input->held & 8) || !player->is_playing)
+        if ((input->held & BOOT_BUTTON_START) || !player->is_playing)
         {
             step++;
         }
 
         break;
-    case 3:
+    case BOOT_LAUNCH_STOP_MOVIE:
         func_41A210(player);
         player->destroy();
         player = 0;
         step++;
         break;
-    case 4:
+    case BOOT_LAUNCH_RELEASE_MOVIE_HEAP:
         delete movie_heap;
         movie_heap = 0;
         step++;
         break;
-    case 5:
-        program = func_139700(0x40, func_11C8C0(D_001B65E4, 0x42B));
-        func_103E70(D_001B65E8, 0x42B, program, 1, 0x34BC0, 0, 0, 0, 1);
+    case BOOT_LAUNCH_LOAD_PROGRAM:
+        program = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_LAUNCH_PROGRAM_RESOURCE));
+        func_103E70(D_001B65E8, BOOT_LAUNCH_PROGRAM_RESOURCE, program, 1, 0x34BC0, 0, 0, 0, 1);
         step++;
         break;
-    case 6:
-        if (func_102D00(D_001B65E8) != 0 && ++timer > 40)
+    case BOOT_LAUNCH_HAND_OFF:
+        if (func_102D00(D_001B65E8) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
         {
             lib_object_detach_owner(this);
             destroy();
@@ -1334,38 +1388,38 @@ void seal_record(BootSealedRecord* record)
     if (record->sealed == 0)
     {
         record->sealed = BOOT_RECORD_SEALED;
-        record->unk00 ^= 0xD7;
-        record->unk02 ^= 0xF393;
-        record->unk04 ^= 0x7CE3C7F7;
-        record->unk08 ^= 0x7CE3C7F7;
-        record->unk0C ^= 0x7CE3C7F7;
-        record->unk10 ^= 0x7CE3C7F7;
-        record->unk14 ^= 0x7CE3C7F7;
-        record->unk18 ^= 0x7CE3C7F7;
-        record->unk1C ^= 0x7CE3C7F7;
-        record->unk20 ^= 0x7CE3C7F7;
-        record->unk24 ^= 0x7CE3C7F7;
-        record->unk28 ^= 0x7CE3C7F7;
-        record->unk2C ^= 0x7CE3C7F7;
-        record->unk30 ^= 0x7CE3C7F7;
-        record->unk34 ^= 0x7CE3C7F7;
-        record->unk38 ^= 0x7CE3C7F7;
-        record->unk3C ^= 0x7CE3C7F7;
-        record->unk40 ^= 0x7CE3C7F7;
-        record->unk44 ^= 0x7CE3C7F7;
-        record->unk48 ^= 0x7CE3C7F7;
-        record->unk4C ^= 0x7CE3C7F7;
-        record->unk50 ^= 0x7CE3C7F7;
-        record->unk54 ^= 0x7CE3C7F7;
-        record->unk58 ^= 0x7CE3C7F7;
+        record->unk00 ^= BOOT_RECORD_XOR_BYTE;
+        record->unk02 ^= BOOT_RECORD_XOR_HALFWORD;
+        record->unk04 ^= BOOT_RECORD_XOR_WORD;
+        record->unk08 ^= BOOT_RECORD_XOR_WORD;
+        record->unk0C ^= BOOT_RECORD_XOR_WORD;
+        record->unk10 ^= BOOT_RECORD_XOR_WORD;
+        record->unk14 ^= BOOT_RECORD_XOR_WORD;
+        record->unk18 ^= BOOT_RECORD_XOR_WORD;
+        record->unk1C ^= BOOT_RECORD_XOR_WORD;
+        record->unk20 ^= BOOT_RECORD_XOR_WORD;
+        record->unk24 ^= BOOT_RECORD_XOR_WORD;
+        record->unk28 ^= BOOT_RECORD_XOR_WORD;
+        record->unk2C ^= BOOT_RECORD_XOR_WORD;
+        record->unk30 ^= BOOT_RECORD_XOR_WORD;
+        record->unk34 ^= BOOT_RECORD_XOR_WORD;
+        record->unk38 ^= BOOT_RECORD_XOR_WORD;
+        record->unk3C ^= BOOT_RECORD_XOR_WORD;
+        record->unk40 ^= BOOT_RECORD_XOR_WORD;
+        record->unk44 ^= BOOT_RECORD_XOR_WORD;
+        record->unk48 ^= BOOT_RECORD_XOR_WORD;
+        record->unk4C ^= BOOT_RECORD_XOR_WORD;
+        record->unk50 ^= BOOT_RECORD_XOR_WORD;
+        record->unk54 ^= BOOT_RECORD_XOR_WORD;
+        record->unk58 ^= BOOT_RECORD_XOR_WORD;
 
-        for (i = 0; i < 76; i++)
+        for (i = 0; i < BOOT_RECORD_ENCODED_TAIL_SIZE; i++)
         {
-            record->unk64[i] ^= 0xD7;
+            record->encoded_tail[i] ^= BOOT_RECORD_XOR_BYTE;
         }
 
         record->key = resident_next_random_word();
-        record->checksum = func_457470(record->key * 37, record, (u8*)&record->checksum - (u8*)record);
+        record->checksum = func_457470(record->key * BOOT_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
     }
     else if (record->sealed != BOOT_RECORD_SEALED)
     {
@@ -1389,8 +1443,8 @@ BootGameLauncher::~BootGameLauncher()
 BootGameLauncher::BootGameLauncher()
 {
     program = 0;
-    step = 0;
-    buffer = func_139700(0x40, 0x12000);
+    step = BOOT_LAUNCH_PREPARE;
+    buffer = func_139700(0x40, BOOT_LAUNCH_WORK_BUFFER_SIZE);
     movie_heap = 0;
     player = 0;
 }

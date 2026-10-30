@@ -52,7 +52,7 @@ FieldClass154BB0::~FieldClass154BB0()
 void func_0026EEA0(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 s32 func_0026EED0(const void* object)
@@ -387,7 +387,7 @@ s32 FieldClass154CC0::get_default_list_kind()
 void FieldClass154CC0::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002720C0);

@@ -6,12 +6,46 @@
 #include "overlays/lib/vector.h"
 
 #define BOOT_TRANSFER_NAME_CAPACITY 64
-#define BOOT_TRANSFER_BUFFER_SIZE 1158050
-#define BOOT_TRANSFER_FLAG_COUNT 300
+/** Mask used to align memory card query buffers to 64 bytes. */
+#define BOOT_CARD_QUERY_ALIGNMENT_MASK 0x3F
+#define BOOT_ALIGN_CARD_QUERY(value) (((u32)(value) + BOOT_CARD_QUERY_ALIGNMENT_MASK) & ~BOOT_CARD_QUERY_ALIGNMENT_MASK)
+#define BOOT_TRANSFER_FLAG_COUNT BOOT_TROPHY_COUNT
 #define BOOT_TRANSFER_FLAG_BYTES ((BOOT_TRANSFER_FLAG_COUNT + 7) / 8)
+#define BOOT_TROPHY_RECORD_SIZE 0xF10
+#define BOOT_TROPHY_RECORD_BYTES (BOOT_TRANSFER_FLAG_COUNT * BOOT_TROPHY_RECORD_SIZE)
+#define BOOT_TROPHY_FILE_FLAGS_OFFSET 0x4B4
+#define BOOT_TROPHY_FILE_RECORDS_OFFSET (BOOT_TROPHY_FILE_FLAGS_OFFSET + BOOT_TRANSFER_FLAG_BYTES + 8)
+#define BOOT_TRANSFER_BUFFER_SIZE (BOOT_TROPHY_FILE_RECORDS_OFFSET + BOOT_TROPHY_RECORD_BYTES)
+
+/** Button bits returned by the pad sampler and stored in BootInput. */
+enum BootInputButton
+{
+    BOOT_BUTTON_START = 0x8,
+    BOOT_BUTTON_UP = 0x10,
+    BOOT_BUTTON_RIGHT = 0x20,
+    BOOT_BUTTON_DOWN = 0x40,
+    BOOT_BUTTON_LEFT = 0x80,
+    BOOT_BUTTON_L1 = 0x400,
+    BOOT_BUTTON_R1 = 0x800,
+    BOOT_BUTTON_TRIANGLE = 0x1000,
+    BOOT_BUTTON_CROSS = 0x4000
+};
+
+/** On-card trophy collection file, including the saved flags and all 300 trophy records. */
+struct BootTrophyCardFile
+{
+    u8 trophy_key[4];
+    u8 header[BOOT_TROPHY_FILE_FLAGS_OFFSET - 4];
+    u8 trophy_flags[BOOT_TRANSFER_FLAG_BYTES];
+    /** Saved checksum seed and checksum, stored without word alignment. */
+    u8 checksum_words[8];
+    u8 records[BOOT_TROPHY_RECORD_BYTES];
+};
+
+typedef char BootTrophyCardFileSizeCheck[sizeof(BootTrophyCardFile) == BOOT_TRANSFER_BUFFER_SIZE ? 1 : -1];
 
 /** @brief Partial 0x100-byte record the memory card object keeps per slot. */
-struct BootModeSlot0910
+struct BootCardSlotState
 {
     u8 unk00[0x48];
 
@@ -35,7 +69,7 @@ class BootModeOwner0910 : public BootListObject
         BootModeOwner0910();
 
         /** The two card slots. */
-        BootModeSlot0910* slots;
+        BootCardSlotState* slots;
 
         u8 unk18[8];
 
@@ -45,10 +79,10 @@ class BootModeOwner0910 : public BootListObject
         u8 unk21[0x37];
 };
 
-enum BootModeFlags0910
+enum BootCardSlotMask
 {
-    BOOT_MODE_0910_FLAG_0 = 0x1,
-    BOOT_MODE_0910_FLAG_1 = 0x2
+    BOOT_CARD_SLOT_1 = 0x1,
+    BOOT_CARD_SLOT_2 = 0x2
 };
 
 /** One file of a memory card request: Lib opens `<directory>/<name>` and transfers size bytes at data. */
@@ -67,6 +101,55 @@ struct BootCardFileRequest
     s32 file_count;
     u32 unk08;
     BootCardFileBuffer* files;
+};
+
+/** Card checks and file probes performed before a Battle Trophy transfer. */
+enum BootTrophyCardStep
+{
+    BOOT_TROPHY_CARD_UNINITIALIZED = -1,
+    BOOT_TROPHY_CARD_IDLE = 0,
+    BOOT_TROPHY_CARD_INSPECT_SLOT,
+    BOOT_TROPHY_CARD_PROBE_SAVE,
+    BOOT_TROPHY_CARD_WAIT_SAVE_PROBE,
+    BOOT_TROPHY_CARD_PROBE_TROPHIES,
+    BOOT_TROPHY_CARD_WAIT_TROPHY_PROBE,
+    BOOT_TROPHY_CARD_TRANSFER = 8
+};
+
+/** Phases of a Battle Trophy memory card file request. */
+enum BootTrophyTransferPhase
+{
+    BOOT_TROPHY_TRANSFER_INACTIVE = -1,
+    BOOT_TROPHY_TRANSFER_OPEN,
+    BOOT_TROPHY_TRANSFER_POLL
+};
+
+/** Free-space limits used when classifying memory card save and trophy capacity. */
+enum BootCardFreeSpace
+{
+    BOOT_CARD_SAVE_SPACE_MINIMUM = 175,
+    BOOT_CARD_TROPHY_SPACE_MINIMUM = 1200,
+    BOOT_CARD_BOTH_SPACE_MINIMUM = BOOT_CARD_SAVE_SPACE_MINIMUM + BOOT_CARD_TROPHY_SPACE_MINIMUM,
+    BOOT_CARD_MAX_EXPECTED_SPACE = 8000
+};
+
+/** Card status values used to decide whether boot can save data or show a space warning. */
+enum BootCardCapacityStatus
+{
+    BOOT_CARD_STATUS_NO_SPACE = 10,
+    BOOT_CARD_STATUS_SAVE_SPACE_ONLY = 11,
+    BOOT_CARD_STATUS_EITHER_FILE_ONLY = 12,
+    BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE = 13,
+    BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE = 14,
+    BOOT_CARD_STATUS_UNAVAILABLE = 15,
+    BOOT_CARD_STATUS_SAVE_PRESENT = 17
+};
+
+/** Results of probing the Battle Trophies collection file on a memory card. */
+enum BootTrophyProbeEvent
+{
+    BOOT_TROPHY_FILE_PRESENT = 5,
+    BOOT_TROPHY_FILE_MISSING = 6
 };
 
 /**
@@ -184,14 +267,16 @@ class BootBattleTrophyCard : public BootListObject
         /** Step of update()'s card state machine; 0 is idle, 8 runs the transfer. */
         s16 card_step;
 
-        u8 unk1E;
+        /** Skip polling the selected card while a slot result awaits consumption. */
+        u8 card_poll_paused;
         u8 unk1F;
 
         /** Copy of the slot's formatted flag from the last check. */
         u32 card_formatted;
 
         s32 free_space;
-        u8 unk28;
+        /** Reset slot 0 after a caller reads a pending slot result. */
+        u8 pending_slot_reset;
         u8 slot1_status_valid;
         u8 slot2_status_valid;
         u8 slot1_status;
@@ -201,13 +286,22 @@ class BootBattleTrophyCard : public BootListObject
         u8 low_space;
 
         char filename[BOOT_TRANSFER_NAME_CAPACITY];
-        u8 unk6E[0xCC0];
-        u8* unkD30;
+        /** Backing storage for the general save-file card query. */
+        u8 save_file_probe_storage[0xCC0];
+
+        /** 64-byte-aligned pointer into save_file_probe_storage. */
+        u8* save_file_probe_buffer;
         u8 card_mode;
-        u8 unkD35[2];
-        u8 unkD37[2];
-        u8 unkD39[0x80];
-        u8* unkDBC;
+        /** Whether each direct mode status has been set. */
+        u8 mode_status_valid[2];
+
+        /** Direct status returned by get_slot_state for each mode. */
+        u8 mode_status[2];
+        /** Backing storage for the Battle Trophies file query. */
+        u8 trophy_file_probe_storage[0x80];
+
+        /** 64-byte-aligned pointer into trophy_file_probe_storage. */
+        u8* trophy_file_probe_buffer;
         s16 transfer_phase;
         u8* transfer_buffer;
         void* transfer_destination;
@@ -228,7 +322,8 @@ class BootBattleTrophyCard : public BootListObject
         u8 transfer_open;
 
         s32 slot_free_space[2];
-        s32 unkE04[2];
+        /** Save-file probe status used when classifying each slot. */
+        s32 save_probe_status[2];
 };
 
 /** Startup screens BootStartupChecks runs in turn. */
@@ -240,6 +335,36 @@ enum BootStartupScreen
     BOOT_STARTUP_PROGRESSIVE,
     /** Reports an uninitialized PlayStation BB Unit or damaged data on it. */
     BOOT_STARTUP_UNIT_CHECK
+};
+
+/** Steps used while checking memory card space. */
+enum BootStartupCardStep
+{
+    BOOT_STARTUP_CARD_INSPECT,
+    BOOT_STARTUP_CARD_SHOW_WARNING,
+    BOOT_STARTUP_CARD_WAIT_FOR_INPUT
+};
+
+/** Steps of the optional progressive display setup. */
+enum BootStartupProgressiveStep
+{
+    BOOT_STARTUP_PROGRESSIVE_DETECT,
+    BOOT_STARTUP_PROGRESSIVE_LOAD_OFFER,
+    BOOT_STARTUP_PROGRESSIVE_OFFER,
+    BOOT_STARTUP_PROGRESSIVE_SWITCH_DELAY,
+    BOOT_STARTUP_PROGRESSIVE_SWITCH_WAIT,
+    BOOT_STARTUP_PROGRESSIVE_CONFIRM,
+    BOOT_STARTUP_PROGRESSIVE_REVERT_DELAY,
+    BOOT_STARTUP_PROGRESSIVE_REVERT_WAIT
+};
+
+/** Steps used to report PlayStation BB Unit status. */
+enum BootStartupUnitStep
+{
+    BOOT_STARTUP_UNIT_INSPECT,
+    BOOT_STARTUP_UNIT_LOAD_WARNING,
+    BOOT_STARTUP_UNIT_WAIT_FOR_INPUT,
+    BOOT_STARTUP_UNIT_LOAD_DELETED_WARNING
 };
 
 /**
@@ -675,6 +800,14 @@ struct BootMovieState15E700
     u8 unk80D8;
 };
 
+/** Heap capacity and frame dimensions shared by the opening and launch movies. */
+enum BootMovieConstants
+{
+    BOOT_MOVIE_HEAP_SIZE = 0x579F2C,
+    BOOT_MOVIE_FRAME_WIDTH = 640,
+    BOOT_MOVIE_FRAME_HEIGHT = 448
+};
+
 /** Partial 0x15E7C0-byte Lib movie player with vtable D_172500 in main data; boot calls the Lib constructor. */
 class BootMoviePlayer : public BootListObject
 {
@@ -697,6 +830,25 @@ class BootMoviePlayer : public BootListObject
         u8 is_playing;
 
         u8 unk15E795[0x2B];
+};
+
+/** Steps of the opening movie, from loading its images through opening the title menu. */
+enum BootOpeningMovieStep
+{
+    BOOT_MOVIE_PREPARE,
+    BOOT_MOVIE_CAPTIONS,
+    BOOT_MOVIE_WAIT_FOR_END,
+    BOOT_MOVIE_STOP,
+    BOOT_MOVIE_OPEN_TITLE
+};
+
+/** Visibility phases of an opening movie caption. */
+enum BootCaptionPhase
+{
+    BOOT_CAPTION_HIDDEN,
+    BOOT_CAPTION_FADE_IN,
+    BOOT_CAPTION_SHOWN,
+    BOOT_CAPTION_FADE_OUT
 };
 
 /** The opening movie with its timed captions, with vtable D_171050 in main data; Start skips it. */
@@ -732,6 +884,15 @@ class BootOpeningMovie : public BootListObject
         BootTextWidget* caption_text;
 };
 
+/** Blocks decoded from the boot program's common UI resource. */
+enum BootCommonUiBlock
+{
+    BOOT_COMMON_UI_MESSAGES,
+    BOOT_COMMON_UI_CAPTIONS,
+    BOOT_COMMON_UI_IMAGES,
+    BOOT_COMMON_UI_BLOCK_COUNT
+};
+
 /** Partial 0x20-byte boot object with vtable D_171090 in main data. */
 class BootResourceLoader : public BootListObject
 {
@@ -742,10 +903,10 @@ class BootResourceLoader : public BootListObject
          */
         BootResourceLoader(class BootProgram* owner)
         {
-            data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x26));
-            func_103E70(D_001B65E8, 0x26, data, 1, 0x34BC0, 0, 0, 0, 1);
+            data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_COMMON_UI));
+            func_103E70(D_001B65E8, BOOT_RES_COMMON_UI, data, 1, 0x34BC0, 0, 0, 0, 1);
             program = owner;
-            block = 0;
+            block = BOOT_COMMON_UI_MESSAGES;
         }
 
         /** @brief Destroy the object. */
@@ -776,6 +937,15 @@ class BootResidentProgram
 
 /** Opaque resident input root queried by slot. */
 struct BootInputRoot9670;
+
+/** Resource and state limits used while boot runs and hands off to the main program. */
+enum BootProgramConstants
+{
+    BOOT_PROGRAM_MAIN_CODE_RESOURCE = 3,
+    BOOT_PROGRAM_MAIN_CODE_MAX_SIZE = 0x50000,
+    BOOT_SAVED_WIDESCREEN_UNSET = 0xFF,
+    BOOT_RANDOM_WARMUP_RANGE = 1000
+};
 
 /**
  * The boot program, g_boot_program, with vtable D_1710B0 in main data. It owns the display, the pad monitor and
@@ -895,7 +1065,7 @@ class BootProgram : public BootResidentProgram
 };
 
 /** Partial resident object D_001B6658 that holds the current display. */
-struct BootResident6658
+struct BootResidentDisplay
 {
     u8 unk00[4];
     BootDimensionsACD0* display;
@@ -939,6 +1109,31 @@ class BootScratchHeap
         u8 unk00[0x2910];
 };
 
+/** How a track evaluates keys outside its first and last keyframes. */
+enum BootTrackEndMode
+{
+    /** Keep the first or last value outside the key span. */
+    BOOT_TRACK_END_HOLD,
+
+    /** Wrap the key into the stored span. */
+    BOOT_TRACK_END_CYCLE,
+
+    /** Use the first value at the last segment's endpoint. */
+    BOOT_TRACK_END_CYCLE_TO_FIRST,
+
+    /** Reflect the key on odd cycles. */
+    BOOT_TRACK_END_PING_PONG,
+
+    /** Continue evaluating the first or last segment outside the span. */
+    BOOT_TRACK_END_EXTEND_SEGMENT,
+
+    /** Wrap the key and add the endpoint difference for each cycle. */
+    BOOT_TRACK_END_OFFSET_CYCLE,
+
+    /** Interpolate from the stored single key before the first array key. */
+    BOOT_TRACK_END_USE_PRE_START_KEY
+};
+
 /** Bookkeeping every track keeps after its key storage: counts, the cached lookup and how it extends past its ends. */
 struct BootSequenceTail
 {
@@ -960,14 +1155,14 @@ struct BootSequenceTail
     /** Upper key index the cached segment was built from; -1 after the keys change. */
     s16 segment_upper;
 
-    /** What the track does before its first key; 4 repeats the keys, the other codes are still unclear. */
+    /** BootTrackEndMode applied before the first key. */
     u8 before_mode : 4;
 
-    /** What the track does after its last key, with the same codes as before_mode. */
+    /** BootTrackEndMode applied after the last key. */
     u8 after_mode : 4;
 
-    /** Set when either mode is 4. */
-    u8 repeats : 1;
+    /** Set when either end extends its first or last keyframe segment. */
+    u8 extends_segment : 1;
 
     /** Set when the keys are bound from outside, so the track doesn't free them. */
     u8 external_keys : 1;
@@ -1535,7 +1730,7 @@ class BootFloatTrackBase : public BootTrack
          * @param key Key to place.
          * @param lower Receives the lower entry index.
          * @param upper Receives the upper entry index.
-         * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+         * @return One when the active end mode extends the first or last segment, otherwise zero.
          */
         u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
@@ -1610,7 +1805,7 @@ class BootFloatTrack : public BootFloatKeyTrack
         {
         }
 
-        /** @brief Reset to a single zero keyframe at key zero, then set before_mode to one. */
+        /** @brief Reset to a single zero keyframe at key zero, then select the cycle end mode. */
         virtual void reset_keys();
 
         /**
@@ -1890,7 +2085,7 @@ class BootVectorTrackBase : public BootTrack
          * @param key Key to place.
          * @param lower Receives the lower entry index.
          * @param upper Receives the upper entry index.
-         * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+         * @return One when the active end mode extends the first or last segment, otherwise zero.
          */
         u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
@@ -2287,13 +2482,13 @@ class BootFloatCurveTrackBase : public BootTrack
         virtual void bind_keys(s32 count, BootFloatCurveTrackKey* entries);
 
         /**
-         * @brief Set what the track does before its first key, and whether it repeats.
+         * @brief Set what the track does before its first key, and whether it extends an end segment.
          * @param value Value whose low four bits are stored.
          */
         virtual void set_before_mode(u32 value);
 
         /**
-         * @brief Set what the track does after its last key, and whether it repeats.
+         * @brief Set what the track does after its last key, and whether it extends an end segment.
          * @param value Value whose low four bits are stored.
          */
         virtual void set_after_mode(u32 value);
@@ -2511,7 +2706,7 @@ class BootFloatCurveTrackBase : public BootTrack
          * @param key Key to place.
          * @param lower Receives the lower entry index.
          * @param upper Receives the upper entry index.
-         * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+         * @return One when the active end mode extends the first or last segment, otherwise zero.
          */
         u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
@@ -2905,7 +3100,7 @@ class BootVectorCurveTrackBase : public BootTrack
          * @param key Key to place.
          * @param lower Receives the lower entry index.
          * @param upper Receives the upper entry index.
-         * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+         * @return One when the active end mode extends the first or last segment, otherwise zero.
          */
         u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 

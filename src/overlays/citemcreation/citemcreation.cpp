@@ -15330,7 +15330,7 @@ s32 ItemCreationSelectedDisplayState::on_resource_loaded(void* buffer)
 void ItemCreationSelectedDisplayState::func_001DD7B0()
 {
     item_creation_save_workshop_lines(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /** @brief Find a saved workshop. @param index Workshop ID. @return Record, or null outside IDs one through twelve. */

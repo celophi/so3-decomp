@@ -343,7 +343,7 @@ extern "C" int func_002CBAA0(void* object) { return 9; }
 extern "C" void func_002CBAB0(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 u32 func_002CBAE0()

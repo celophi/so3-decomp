@@ -135,7 +135,7 @@ s32 resident_queue_resource_request(ResidentResourceQueue* queue, s32 file_key, 
 ResidentRegisteredObject* func_00101560(ResidentRegisteredObject* object);
 
 /** Resident resource decoder. */
-extern ResidentDecodeObject* D_001B65EC;
+extern ResidentDecodeObject* g_resident_resource_decoder;
 
 /**
  * @brief Decode an LZ payload with 16-bit literals and word offsets.

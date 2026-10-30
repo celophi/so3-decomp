@@ -21,7 +21,7 @@ s32 func_002541F0(FieldObject1537C0* object)
 void func_00254200(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_00254230);

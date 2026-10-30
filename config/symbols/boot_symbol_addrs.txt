@@ -1,3 +1,5 @@
+g_resident_resource_decoder = 0x001B65EC; // size:0x4 absolute:True
+g_resident_release_queues = 0x001B65F4; // size:0x4 absolute:True
 D_001B65F0 = 0x001B65F0; // size:0x4
 D_001B6614 = 0x001B6614; // size:0x4
 g_card_product_code = 0x00205100;
@@ -28,6 +30,7 @@ lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
 lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True
 lib_release_resource_slot = 0x00465430; // type:func absolute:True
 resident_next_random_word = 0x0010CF80; // type:func absolute:True
+resident_get_resource_size = 0x0011C8C0; // type:func absolute:True
 
 __dl__FPv = 0x00100B40; // type:func absolute:True
 

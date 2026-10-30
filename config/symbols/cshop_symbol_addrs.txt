@@ -1,5 +1,5 @@
 D_001B643C = 0x001B643C; // size:0x4
-D_001B65F4 = 0x001B65F4; // size:0x4
+g_resident_release_queues = 0x001B65F4; // size:0x4
 func_28E3D0 = 0x28E3D0; // type:func
 field_record_selection_load = 0x28E3D0; // type:func absolute:True allow_duplicated:True
 func_002FD940 = 0x002FD940; // type:func

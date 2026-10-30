@@ -135,13 +135,13 @@ float FieldClass150DC0::func_00201530()
 /** @brief Queue the script object for release. */
 void FieldClass150DC0::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 extern "C" void func_00201560(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201590);
@@ -244,7 +244,7 @@ void FieldClass150E10::update()
 extern "C" void func_002020F0(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 /**

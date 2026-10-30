@@ -69,10 +69,10 @@ extern float D_001B6690;
 s32 func_10CAA0(s32 upper);
 s32 func_10CC40(s32 lower, s32 upper);
 u32 func_10CE00(void);
-void func_10DB10(BootSound1B65F8* sound, s32 value);
+void func_10DB10(BootSoundState* sound, s32 value);
 void func_10F000(void* request, s32 first, s32 second);
 // TODO: Main names this resident_allocate_request and types D_001B65F8 as ResidentRequest112400, but boot reads
-// that object as BootSound1B65F8 and the two layouts disagree. I'm keeping boot's declaration until they're merged.
+// that object as BootSoundState and the two layouts disagree. I'm keeping boot's declaration until they're merged.
 void func_112400(void* request, s32 sound, s32 first, s32 second, s32 volume, s32 pan, s32 third);
 s32 func_112990(void* request, s32 sound, s32 first, s32 second, s32 third);
 u32 func_113930(BootResident113E40* heap, u32 size);

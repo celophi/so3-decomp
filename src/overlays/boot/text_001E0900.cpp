@@ -12,18 +12,20 @@
 #include "overlays/lib/vector_inlines.h"
 
 #define TIMER0_COUNT (*(volatile u32*)0x10000000)
+/** Timebase used to convert frame ticks to seconds. */
+#define BOOT_FRAME_TICKS_PER_SECOND 60.0f
 
 extern "C" {
 extern BootFloorQuery* g_floor_query;
-void func_10DA70(BootSound1B65F8* sound, s32 mode);
+void func_10DA70(BootSoundState* sound, s32 mode);
 void func_11E030(BootInputRoot9670* root, s32 slot, s32 enabled);
 // TODO: Lib's lib_load_resource_slot, which takes FieldRuntime; boot still has its own mirror of it.
 s32 func_4656B0(BootRuntime1B657C* runtime, void* data);
 void func_11E210(BootInputRoot9670* root, s32 first, s32 second, s32 third);
 extern void* D_001B663C;
 extern void* D_001B65E0;
-extern struct BootRender6618* D_001B6618;
-extern BootResident6658* D_001B6658;
+extern struct BootRenderState* D_001B6618;
+extern BootResidentDisplay* D_001B6658;
 void func_4E09B0(BootDimensionsACD0* display, s32 mode);
 void func_4E0BC0(BootDimensionsACD0* display, s32 index, float first, float second, s32 mask);
 void func_4DD440(BootDimensionsACD0* display, s32 index, s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g, s32 width, s32 height);
@@ -97,14 +99,14 @@ extern const char g_empty_name[];
 extern const char g_bone_root_name[];
 extern const char g_camera_node_name[];
 extern const char g_face_model_name[];
-void func_10DAA0(BootSound1B65F8* sound, s32 mode);
-void func_10DA30(BootSound1B65F8* sound);
-void func_10EA70(BootSound1B65F8* sound, BootTransformOwner* listener, float first, float second);
-void func_10EA90(BootSound1B65F8* sound, s32 speaker, float angle);
-s32 func_110920(BootSound1B65F8* sound, s32 handle, s32 flag);
-s32 func_111C50(BootSound1B65F8* sound, s32 id, BootTransformOwner* emitter, s32 first, s32 volume, s32 second);
-s32 func_110C10(BootSound1B65F8* sound, s32 handle);
-u32 func_10E310(BootSound1B65F8* sound, s32 handle, float time);
+void func_10DAA0(BootSoundState* sound, s32 mode);
+void func_10DA30(BootSoundState* sound);
+void func_10EA70(BootSoundState* sound, BootTransformOwner* listener, float first, float second);
+void func_10EA90(BootSoundState* sound, s32 speaker, float angle);
+s32 func_110920(BootSoundState* sound, s32 handle, s32 flag);
+s32 func_111C50(BootSoundState* sound, s32 id, BootTransformOwner* emitter, s32 first, s32 volume, s32 second);
+s32 func_110C10(BootSoundState* sound, s32 handle);
+u32 func_10E310(BootSoundState* sound, s32 handle, float time);
 void func_11E020(BootInputRoot9670* root, s32 slot, s32 enabled);
 void func_11E320(BootInputRoot9670* root, s32 slot, s32* first, s32* second, s32* third, s32* fourth);
 void lib_text_set_resource(BootTextWidget* text, s32 source, s32 key, u8 flag);
@@ -135,6 +137,22 @@ struct BootCaption
     s16 y;
     s16 width;
     s16 height;
+};
+
+enum BootCaptionAnchor
+{
+    BOOT_CAPTION_CENTER,
+    BOOT_CAPTION_TOP_LEFT,
+    BOOT_CAPTION_TOP_RIGHT,
+    BOOT_CAPTION_BOTTOM_LEFT,
+    BOOT_CAPTION_BOTTOM_RIGHT
+};
+
+enum BootCaptionTiming
+{
+    BOOT_CAPTION_FADE_FRAMES = 30,
+    BOOT_CAPTION_HOLD_END = 90,
+    BOOT_CAPTION_DISPLAY_END = 120
 };
 
 /** Partial extent returned by the text measurement. */
@@ -172,7 +190,7 @@ struct BootScreenRect
 };
 
 /** Partial resident render state D_001B6618. */
-struct BootRender6618
+struct BootRenderState
 {
     u8 unk00[0xC];
     u32 clear_color;
@@ -248,13 +266,13 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* trophy_card)
 /**
  * @brief Read the saved difficulty when the protected settings pass their checksum.
  * @param settings System settings.
- * @return Difficulty, or zero (Earth) when the checksum fails.
+ * @return Difficulty, or Earth when the checksum fails.
  */
 static inline u8 settings_difficulty(BootSystemSettings* settings)
 {
     if (settings->checksum != func_457470(settings->key, &settings->unk26, (u8*)&settings->checksum - &settings->unk26))
     {
-        return 0;
+        return BOOT_DIFFICULTY_EARTH;
     }
 
     return settings->difficulty;
@@ -344,7 +362,7 @@ s32 BootBattleTrophyCard::get_default_list_kind()
 u16 BootBattleTrophyCard::get_ready_slots()
 {
     BootModeOwner0910* owner = card;
-    BootModeSlot0910* modes;
+    BootCardSlotState* modes;
     u16 flags;
 
     if (owner->ready == 0)
@@ -357,12 +375,12 @@ u16 BootBattleTrophyCard::get_ready_slots()
 
     if (modes[0].card_state == 2)
     {
-        flags |= BOOT_MODE_0910_FLAG_0;
+        flags |= BOOT_CARD_SLOT_1;
     }
 
     if (modes[1].card_state == 2)
     {
-        flags |= BOOT_MODE_0910_FLAG_1;
+        flags |= BOOT_CARD_SLOT_2;
     }
 
     return flags;
@@ -378,7 +396,7 @@ void BootBattleTrophyCard::finish_transfer()
 
     if (transfer_buffer != 0)
     {
-        saved = (u8*)transfer_buffer + 0x4B4;
+        saved = (u8*)transfer_buffer + BOOT_TROPHY_FILE_FLAGS_OFFSET;
         bits = &settings->trophy_flags;
         func_13A678(saved_bits, 0, BOOT_TRANSFER_FLAG_BYTES);
         func_13A4C0(saved_bits, saved, BOOT_TRANSFER_FLAG_BYTES);
@@ -390,7 +408,7 @@ void BootBattleTrophyCard::finish_transfer()
 
         bits->trophy_key = *(u32*)transfer_buffer;
         func_13A4C0(&bits->checksum_seed, saved + BOOT_TRANSFER_FLAG_BYTES, 8);
-        func_13A4C0(transfer_destination, (u8*)transfer_buffer + 0x4E2, 0x11A6C0);
+        func_13A4C0(transfer_destination, (u8*)transfer_buffer + BOOT_TROPHY_FILE_RECORDS_OFFSET, BOOT_TROPHY_RECORD_BYTES);
 
         if (transfer_buffer != 0)
         {
@@ -428,7 +446,7 @@ s16 BootBattleTrophyCard::advance_transfer()
 
     switch (transfer_phase)
     {
-    case 0:
+    case BOOT_TROPHY_TRANSFER_OPEN:
         transfer_open = 1;
         result = func_432310(card, transfer_slot, &file_request);
 
@@ -436,9 +454,9 @@ s16 BootBattleTrophyCard::advance_transfer()
         {
             transfer_pending = 0;
             transfer_state = 1;
-            card_step = 0;
+            card_step = BOOT_TROPHY_CARD_IDLE;
             transfer_slot = -1;
-            transfer_phase = -1;
+            transfer_phase = BOOT_TROPHY_TRANSFER_INACTIVE;
         }
         else if (result == 0)
         {
@@ -446,7 +464,7 @@ s16 BootBattleTrophyCard::advance_transfer()
         }
 
         break;
-    case 1:
+    case BOOT_TROPHY_TRANSFER_POLL:
         result = func_432270(card, transfer_slot, &transfer_result);
 
         if (result == 0)
@@ -462,16 +480,16 @@ s16 BootBattleTrophyCard::advance_transfer()
             {
                 finish_transfer();
                 transfer_state = 1;
-                card_step = 0;
+                card_step = BOOT_TROPHY_CARD_IDLE;
                 transfer_slot = -1;
-                transfer_phase = -1;
+                transfer_phase = BOOT_TROPHY_TRANSFER_INACTIVE;
             }
             else
             {
                 transfer_state = 1;
                 transfer_slot = -1;
-                transfer_phase = -1;
-                card_step = 1;
+                transfer_phase = BOOT_TROPHY_TRANSFER_INACTIVE;
+                card_step = BOOT_TROPHY_CARD_INSPECT_SLOT;
                 transfer_pending = 0;
 
                 if (transfer_open == 1)
@@ -510,10 +528,10 @@ s32 BootBattleTrophyCard::start_transfer(u16 mode, void* destination)
     transfer_destination = destination;
     transfer_slot = mode;
     transfer_result = -1;
-    transfer_phase = 0;
+    transfer_phase = BOOT_TROPHY_TRANSFER_OPEN;
     transfer_pending = 1;
     slot = transfer_slot;
-    unk1E = 0;
+    card_poll_paused = 0;
 
     if (transfer_buffer == 0)
     {
@@ -553,8 +571,8 @@ static inline void cancel_transfer(BootBattleTrophyCard* trophy_card)
     trophy_card->transfer_state = 1;
     trophy_card->transfer_result = -12;
     trophy_card->transfer_slot = -1;
-    trophy_card->transfer_phase = -1;
-    trophy_card->card_step = 1;
+    trophy_card->transfer_phase = BOOT_TROPHY_TRANSFER_INACTIVE;
+    trophy_card->card_step = BOOT_TROPHY_CARD_INSPECT_SLOT;
     trophy_card->transfer_open = 0;
     trophy_card->transfer_pending = 0;
 }
@@ -570,14 +588,14 @@ void BootBattleTrophyCard::update()
     {
         status = last_card_status;
 
-        if (unk1E == 0)
+        if (card_poll_paused == 0)
         {
             status = card->slots[slot].card_state;
 
             if (status != last_card_status)
             {
                 last_card_status = status;
-                card_step = 1;
+                card_step = BOOT_TROPHY_CARD_INSPECT_SLOT;
                 transfer_state = -1;
 
                 if (transfer_open != 0)
@@ -601,10 +619,10 @@ void BootBattleTrophyCard::update()
 
             switch (card_step)
             {
-            case 0:
+            case BOOT_TROPHY_CARD_IDLE:
                 done = 1;
                 break;
-            case 1:
+            case BOOT_TROPHY_CARD_INSPECT_SLOT:
                 if (status != 2)
                 {
                     if (transfer_pending == 0)
@@ -639,25 +657,25 @@ void BootBattleTrophyCard::update()
 
                 if (card_formatted == 0 && card_mode == 1)
                 {
-                    free_space = 8000;
+                    free_space = BOOT_CARD_MAX_EXPECTED_SPACE;
                 }
 
                 slot_free_space[slot] = free_space;
-                card_step = 2;
+                card_step = BOOT_TROPHY_CARD_PROBE_SAVE;
 
-                if (free_space < 175)
+                if (free_space < BOOT_CARD_SAVE_SPACE_MINIMUM)
                 {
                     low_space = 1;
                 }
 
                 break;
-            case 2:
+            case BOOT_TROPHY_CARD_PROBE_SAVE:
                 if (strlen(g_card_product_code) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
                 {
                     copy_transfer_name(this, g_card_product_code, g_any_file_suffix);
                 }
 
-                status = func_431F90(card, slot, filename, 0, 1, unkD30);
+                status = func_431F90(card, slot, filename, 0, 1, save_file_probe_buffer);
 
                 if (status == -1)
                 {
@@ -665,11 +683,11 @@ void BootBattleTrophyCard::update()
                 }
                 else
                 {
-                    card_step = 3;
+                    card_step = BOOT_TROPHY_CARD_WAIT_SAVE_PROBE;
                 }
 
                 break;
-            case 3:
+            case BOOT_TROPHY_CARD_WAIT_SAVE_PROBE:
                 status = func_432270(card, slot, &progress);
 
                 if (status != 0 && status == 1)
@@ -699,7 +717,7 @@ void BootBattleTrophyCard::update()
                 {
                     if (status == 1)
                     {
-                        card_step = 4;
+                        card_step = BOOT_TROPHY_CARD_PROBE_TROPHIES;
                     }
                     else
                     {
@@ -708,7 +726,7 @@ void BootBattleTrophyCard::update()
                 }
                 else if (status == 1)
                 {
-                    card_step = 4;
+                    card_step = BOOT_TROPHY_CARD_PROBE_TROPHIES;
                 }
                 else
                 {
@@ -716,13 +734,13 @@ void BootBattleTrophyCard::update()
                 }
 
                 break;
-            case 4:
+            case BOOT_TROPHY_CARD_PROBE_TROPHIES:
                 if (strlen(g_card_product_code) + 1 <= BOOT_TRANSFER_NAME_CAPACITY)
                 {
                     copy_transfer_name(this, g_card_product_code, g_trophy_file_suffix);
                 }
 
-                status = func_431F90(card, slot, filename, 0, 1, unkDBC);
+                status = func_431F90(card, slot, filename, 0, 1, trophy_file_probe_buffer);
 
                 if (status == -1)
                 {
@@ -730,11 +748,11 @@ void BootBattleTrophyCard::update()
                 }
                 else
                 {
-                    card_step = 5;
+                    card_step = BOOT_TROPHY_CARD_WAIT_TROPHY_PROBE;
                 }
 
                 break;
-            case 5:
+            case BOOT_TROPHY_CARD_WAIT_TROPHY_PROBE:
                 status = func_432270(card, slot, &progress);
 
                 if (status != 0 && status == 1)
@@ -743,27 +761,27 @@ void BootBattleTrophyCard::update()
                     {
                         if (card_mode == 1)
                         {
-                            handle_card_event(1, 6, 1);
+                            handle_card_event(1, BOOT_TROPHY_FILE_MISSING, 1);
                         }
                         else
                         {
-                            handle_card_event(1, 6, 2);
+                            handle_card_event(1, BOOT_TROPHY_FILE_MISSING, 2);
                         }
                     }
                     else if (progress > 0)
                     {
                         if (card_mode == 1)
                         {
-                            handle_card_event(1, 5, 1);
+                            handle_card_event(1, BOOT_TROPHY_FILE_PRESENT, 1);
                         }
                         else if (transfer_pending != 0)
                         {
-                            card_step = 8;
+                            card_step = BOOT_TROPHY_CARD_TRANSFER;
                             transfer_state = -1;
                         }
                         else
                         {
-                            handle_card_event(1, 5, 2);
+                            handle_card_event(1, BOOT_TROPHY_FILE_PRESENT, 2);
                         }
                     }
                     else if (card_mode == 1)
@@ -779,7 +797,7 @@ void BootBattleTrophyCard::update()
 
                 done = 1;
                 break;
-            case 8:
+            case BOOT_TROPHY_CARD_TRANSFER:
                 advance_transfer();
                 done = 1;
                 break;
@@ -804,7 +822,7 @@ static inline u8 state_mode_value(BootBattleTrophyCard* trophy_card, u16 mode)
         return 0;
     }
 
-    return trophy_card->unkD37[mode];
+    return trophy_card->mode_status[mode];
 }
 
 /**
@@ -852,7 +870,7 @@ u16 BootBattleTrophyCard::get_slot_state(u16 mode, u16 kind)
         value = state_mode_value(this, mode);
     }
 
-    if (unk28)
+    if (pending_slot_reset)
     {
         reset_slot(0);
     }
@@ -898,8 +916,8 @@ void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
 
                         break;
                     case 15:
-                    case 5:
-                    case 6:
+                    case BOOT_TROPHY_FILE_PRESENT:
+                    case BOOT_TROPHY_FILE_MISSING:
                         slot2_status_valid = 1;
                         ready = 1;
                         break;
@@ -907,7 +925,7 @@ void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
 
                     if (ready)
                     {
-                        unk28 = 1;
+                        pending_slot_reset = 1;
                     }
                 }
                 else if (card_mode == 2)
@@ -915,18 +933,18 @@ void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
                     switch (event)
                     {
                     case 15:
-                        unkD37[1] = 15;
-                        unkD35[1] = 1;
-                        unk28 = 1;
+                        mode_status[1] = 15;
+                        mode_status_valid[1] = 1;
+                        pending_slot_reset = 1;
                         break;
                     }
                 }
             }
             else if (kind == 2)
             {
-                unkD37[1] = event;
-                unkD35[1] = 1;
-                unk28 = 1;
+                mode_status[1] = event;
+                mode_status_valid[1] = 1;
+                pending_slot_reset = 1;
             }
         }
 
@@ -951,8 +969,8 @@ void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
 
                         break;
                     case 15:
-                    case 5:
-                    case 6:
+                    case BOOT_TROPHY_FILE_PRESENT:
+                    case BOOT_TROPHY_FILE_MISSING:
                         slot1_status_valid = 1;
                         ready = 1;
                         break;
@@ -970,8 +988,8 @@ void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
                     case 15:
                         if (card_mode == 2)
                         {
-                            unkD37[0] = 15;
-                            unkD35[0] = 1;
+                            mode_status[0] = 15;
+                            mode_status_valid[0] = 1;
                             reset_slot(1);
                         }
 
@@ -991,20 +1009,20 @@ void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
             }
             else if (kind == 2)
             {
-                unkD37[0] = event;
-                unkD35[0] = 1;
+                mode_status[0] = event;
+                mode_status_valid[0] = 1;
                 reset_slot(1);
             }
         }
     }
 
-    if (unk28 == 0)
+    if (pending_slot_reset == 0)
     {
-        unk1E = 0;
+        card_poll_paused = 0;
     }
     else
     {
-        unk1E = enabled;
+        card_poll_paused = enabled;
     }
 }
 
@@ -1025,10 +1043,10 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
         switch (event)
         {
         case 15:
-            *result = 15;
+            *result = BOOT_CARD_STATUS_UNAVAILABLE;
             break;
         case 2:
-            unkE04[slot] = 10;
+            save_probe_status[slot] = BOOT_CARD_STATUS_NO_SPACE;
             break;
         case 16:
             if (card_formatted == 0)
@@ -1037,71 +1055,71 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
             }
             else
             {
-                unkE04[slot] = 16;
+                save_probe_status[slot] = 16;
             }
 
             break;
         case 17:
-            unkE04[slot] = 17;
+            save_probe_status[slot] = BOOT_CARD_STATUS_SAVE_PRESENT;
             break;
-        case 6:
-            if (unkE04[slot] == 17)
+        case BOOT_TROPHY_FILE_MISSING:
+            if (save_probe_status[slot] == BOOT_CARD_STATUS_SAVE_PRESENT)
             {
-                if (value < 0 || value > 8000)
+                if (value < 0 || value > BOOT_CARD_MAX_EXPECTED_SPACE)
                 {
-                    *result = 15;
+                    *result = BOOT_CARD_STATUS_UNAVAILABLE;
                 }
 
-                *result = 17;
-                if (0 <= value && value < 1200)
+                *result = BOOT_CARD_STATUS_SAVE_PRESENT;
+                if (0 <= value && value < BOOT_CARD_TROPHY_SPACE_MINIMUM)
                 {
-                    *result = 13;
+                    *result = BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE;
                 }
             }
             else
             {
-                if (value < 0 || value > 8000)
+                if (value < 0 || value > BOOT_CARD_MAX_EXPECTED_SPACE)
                 {
-                    *result = 15;
+                    *result = BOOT_CARD_STATUS_UNAVAILABLE;
                 }
 
-                *result = unkE04[slot];
-                if (0 <= value && value < 1375)
+                *result = save_probe_status[slot];
+                if (0 <= value && value < BOOT_CARD_BOTH_SPACE_MINIMUM)
                 {
-                    *result = 12;
+                    *result = BOOT_CARD_STATUS_EITHER_FILE_ONLY;
                 }
 
-                if (0 <= value && value < 175)
+                if (0 <= value && value < BOOT_CARD_SAVE_SPACE_MINIMUM)
                 {
-                    *result = 10;
+                    *result = BOOT_CARD_STATUS_NO_SPACE;
                 }
-                else if (value >= 175 && value < 1200)
+                else if (value >= BOOT_CARD_SAVE_SPACE_MINIMUM && value < BOOT_CARD_TROPHY_SPACE_MINIMUM)
                 {
-                    *result = 11;
+                    *result = BOOT_CARD_STATUS_SAVE_SPACE_ONLY;
                 }
-                else if (value >= 1200 && value < 1375)
+                else if (value >= BOOT_CARD_TROPHY_SPACE_MINIMUM && value < BOOT_CARD_BOTH_SPACE_MINIMUM)
                 {
-                    *result = 12;
+                    *result = BOOT_CARD_STATUS_EITHER_FILE_ONLY;
                 }
             }
 
             break;
-        case 5:
-            if (unkE04[slot] == 17)
+        case BOOT_TROPHY_FILE_PRESENT:
+            if (save_probe_status[slot] == BOOT_CARD_STATUS_SAVE_PRESENT)
             {
-                *result = 17;
+                *result = BOOT_CARD_STATUS_SAVE_PRESENT;
             }
             else
             {
-                if (value < 0 || value > 8000)
+                if (value < 0 || value > BOOT_CARD_MAX_EXPECTED_SPACE)
                 {
-                    *result = 15;
+                    *result = BOOT_CARD_STATUS_UNAVAILABLE;
                 }
 
-                *result = unkE04[slot];
-                if (0 <= value && value < 175)
+                *result = save_probe_status[slot];
+                if (0 <= value && value < BOOT_CARD_SAVE_SPACE_MINIMUM)
                 {
-                    *result = 14;
+                    *result = BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE;
                 }
             }
 
@@ -1113,7 +1131,7 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
         switch (event)
         {
         case 15:
-            *result = 15;
+            *result = BOOT_CARD_STATUS_UNAVAILABLE;
             break;
         case 2:
             *result = 2;
@@ -1122,7 +1140,7 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
             *result = 16;
             break;
         case 17:
-            *result = 17;
+            *result = BOOT_CARD_STATUS_SAVE_PRESENT;
             break;
         }
     }
@@ -1137,32 +1155,32 @@ void BootBattleTrophyCard::reset_slot(s16 mode)
     s32 selected = mode;
     slot = mode;
     last_card_status = -1;
-    unk1E = 0;
-    card_step = 0;
+    card_poll_paused = 0;
+    card_step = BOOT_TROPHY_CARD_IDLE;
     low_space = 0;
 
     if (selected == 0)
     {
         slot1_status_valid = 0;
         slot1_status = 0;
-        unk28 = 0;
-        unk1E = 0;
-        unkD37[0] = 0;
-        unkD35[0] = 0;
+        pending_slot_reset = 0;
+        card_poll_paused = 0;
+        mode_status[0] = 0;
+        mode_status_valid[0] = 0;
     }
 
     if (selected == 1)
     {
         slot2_status_valid = 0;
         slot2_status = 0;
-        unkD37[1] = 0;
-        unkD35[1] = 0;
+        mode_status[1] = 0;
+        mode_status_valid[1] = 0;
     }
 
     if (selected == 0 || selected == 1)
     {
         slot_free_space[selected] = -1;
-        unkE04[selected] = -1;
+        save_probe_status[selected] = -1;
     }
 }
 
@@ -1186,7 +1204,7 @@ s32 BootBattleTrophyCard::initialize()
     func_432720(card, D_001B6614);
     func_432660(card, 0, 0, 0);
     func_432660(card, 1, 1, 0);
-    card_step = 0;
+    card_step = BOOT_TROPHY_CARD_IDLE;
     reset_slot(0);
     settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
@@ -1224,7 +1242,7 @@ void BootBattleTrophyCard::destroy()
         card->destroy();
     }
 
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /** @brief Clear the transfer state, both modes, and the filename. */
@@ -1232,29 +1250,29 @@ BootBattleTrophyCard::BootBattleTrophyCard()
 {
     s32 index;
     card = 0;
-    card_step = -1;
+    card_step = BOOT_TROPHY_CARD_UNINITIALIZED;
     slot = -1;
     last_card_status = -1;
-    unk1E = 0;
+    card_poll_paused = 0;
     card_formatted = 0;
     free_space = 0;
-    unk28 = 0;
-    func_13A678(unk6E, 0, sizeof(unk6E));
-    unkD30 = (u8*)(((u32)unk6E + 0x3F) & ~0x3F);
+    pending_slot_reset = 0;
+    func_13A678(save_file_probe_storage, 0, sizeof(save_file_probe_storage));
+    save_file_probe_buffer = (u8*)BOOT_ALIGN_CARD_QUERY(save_file_probe_storage);
     low_space = 0;
     slot1_status_valid = 0;
-    unkD35[0] = 0;
+    mode_status_valid[0] = 0;
     slot1_status = 0;
-    unkD37[0] = 0;
+    mode_status[0] = 0;
     slot2_status_valid = 0;
-    unkD35[1] = 0;
+    mode_status_valid[1] = 0;
     slot2_status = 0;
-    unkD37[1] = 0;
+    mode_status[1] = 0;
     card_mode = 1;
-    unkDBC = 0;
-    func_13A678(unkD39, 0, sizeof(unkD39));
-    unkDBC = (u8*)(((u32)unkD39 + 0x3F) & ~0x3F);
-    transfer_phase = -1;
+    trophy_file_probe_buffer = 0;
+    func_13A678(trophy_file_probe_storage, 0, sizeof(trophy_file_probe_storage));
+    trophy_file_probe_buffer = (u8*)BOOT_ALIGN_CARD_QUERY(trophy_file_probe_storage);
+    transfer_phase = BOOT_TROPHY_TRANSFER_INACTIVE;
     transfer_buffer = 0;
     transfer_slot = -1;
     transfer_result = -1;
@@ -1270,9 +1288,9 @@ BootBattleTrophyCard::BootBattleTrophyCard()
 
     transfer_open = 0;
     slot_free_space[0] = -1;
-    unkE04[0] = -1;
+    save_probe_status[0] = -1;
     slot_free_space[1] = -1;
-    unkE04[1] = -1;
+    save_probe_status[1] = -1;
 }
 
 /** @brief Destroy the object. */
@@ -1314,283 +1332,293 @@ void BootStartupChecks::update()
     {
         switch (step)
         {
-        case 0:
-            if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
+        case BOOT_STARTUP_CARD_INSPECT:
+            if (BOOT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
             {
                 check_main_code();
                 D_001B657C->message_value = 175;
 
-                if ((u32)(slot1 - 16) <= 1 || (u32)(slot2 - 16) <= 1 || (slot1 == 11 && slot2 == 12) || (slot1 == 11 && slot2 == 14) ||
-                    (slot1 == 12 && slot2 == 11) || (slot1 == 12 && slot2 == 12) || (slot1 == 12 && slot2 == 13) || (slot1 == 12 && slot2 == 14) ||
-                    (slot1 == 13 && slot2 == 12) || (slot1 == 13 && slot2 == 14) || (slot1 == 14 && slot2 == 11) || (slot1 == 14 && slot2 == 12) ||
-                    (slot1 == 14 && slot2 == 13))
+                // Statuses 16-17 need no warning; these pairs can split the save and trophy files between cards.
+                if ((u32)(slot1 - 16) <= 1 ||
+                    (u32)(slot2 - 16) <= 1 ||
+                    (slot1 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY && slot2 == BOOT_CARD_STATUS_EITHER_FILE_ONLY) ||
+                    (slot1 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY && slot2 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE) ||
+                    (slot1 == BOOT_CARD_STATUS_EITHER_FILE_ONLY && slot2 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY) ||
+                    (slot1 == BOOT_CARD_STATUS_EITHER_FILE_ONLY && slot2 == BOOT_CARD_STATUS_EITHER_FILE_ONLY) ||
+                    (slot1 == BOOT_CARD_STATUS_EITHER_FILE_ONLY && slot2 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE) ||
+                    (slot1 == BOOT_CARD_STATUS_EITHER_FILE_ONLY && slot2 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE) ||
+                    (slot1 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE && slot2 == BOOT_CARD_STATUS_EITHER_FILE_ONLY) ||
+                    (slot1 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE && slot2 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE) ||
+                    (slot1 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE && slot2 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY) ||
+                    (slot1 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE && slot2 == BOOT_CARD_STATUS_EITHER_FILE_ONLY) ||
+                    (slot1 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE && slot2 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE))
                 {
                     screen = BOOT_STARTUP_PROGRESSIVE;
-                    step = 0;
+                    step = BOOT_STARTUP_PROGRESSIVE_DETECT;
                     return;
                 }
 
-                if (slot1 == 15 && slot2 == 15)
+                if (slot1 == BOOT_CARD_STATUS_UNAVAILABLE && slot2 == BOOT_CARD_STATUS_UNAVAILABLE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_NO_CARD;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 15 && slot2 == 10)
+                if (slot1 == BOOT_CARD_STATUS_UNAVAILABLE && slot2 == BOOT_CARD_STATUS_NO_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 15 && slot2 == 11)
+                if (slot1 == BOOT_CARD_STATUS_UNAVAILABLE && slot2 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 15 && slot2 == 12)
+                if (slot1 == BOOT_CARD_STATUS_UNAVAILABLE && slot2 == BOOT_CARD_STATUS_EITHER_FILE_ONLY)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 15 && slot2 == 13)
+                if (slot1 == BOOT_CARD_STATUS_UNAVAILABLE && slot2 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_NO_TROPHY_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 15 && slot2 == 14)
+                if (slot1 == BOOT_CARD_STATUS_UNAVAILABLE && slot2 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_NO_SAVE_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 10 && slot2 == 15)
+                if (slot1 == BOOT_CARD_STATUS_NO_SPACE && slot2 == BOOT_CARD_STATUS_UNAVAILABLE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 10 && slot2 == 10)
+                if (slot1 == BOOT_CARD_STATUS_NO_SPACE && slot2 == BOOT_CARD_STATUS_NO_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 10 && slot2 == 11)
+                if (slot1 == BOOT_CARD_STATUS_NO_SPACE && slot2 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 10 && slot2 == 12)
+                if (slot1 == BOOT_CARD_STATUS_NO_SPACE && slot2 == BOOT_CARD_STATUS_EITHER_FILE_ONLY)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 10 && slot2 == 13)
+                if (slot1 == BOOT_CARD_STATUS_NO_SPACE && slot2 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 10 && slot2 == 14)
+                if (slot1 == BOOT_CARD_STATUS_NO_SPACE && slot2 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 11 && slot2 == 15)
+                if (slot1 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY && slot2 == BOOT_CARD_STATUS_UNAVAILABLE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 11 && slot2 == 10)
+                if (slot1 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY && slot2 == BOOT_CARD_STATUS_NO_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 11 && slot2 == 11)
+                if (slot1 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY && slot2 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 11 && slot2 == 13)
+                if (slot1 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY && slot2 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 12 && slot2 == 15)
+                if (slot1 == BOOT_CARD_STATUS_EITHER_FILE_ONLY && slot2 == BOOT_CARD_STATUS_UNAVAILABLE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 12 && slot2 == 10)
+                if (slot1 == BOOT_CARD_STATUS_EITHER_FILE_ONLY && slot2 == BOOT_CARD_STATUS_NO_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 13 && slot2 == 15)
+                if (slot1 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE && slot2 == BOOT_CARD_STATUS_UNAVAILABLE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_NO_TROPHY_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 13 && slot2 == 10)
+                if (slot1 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE && slot2 == BOOT_CARD_STATUS_NO_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 13 && slot2 == 11)
+                if (slot1 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE && slot2 == BOOT_CARD_STATUS_SAVE_SPACE_ONLY)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 13 && slot2 == 13)
+                if (slot1 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE && slot2 == BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 14 && slot2 == 15)
+                if (slot1 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE && slot2 == BOOT_CARD_STATUS_UNAVAILABLE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_NO_SAVE_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 14 && slot2 == 10)
+                if (slot1 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE && slot2 == BOOT_CARD_STATUS_NO_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
 
-                if (slot1 == 14 && slot2 == 14)
+                if (slot1 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE && slot2 == BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE)
                 {
                     shown_slot1 = slot1;
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
-                    step = 1;
+                    step = BOOT_STARTUP_CARD_SHOW_WARNING;
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     return;
                 }
             }
 
             break;
-        case 1:
+        case BOOT_STARTUP_CARD_SHOW_WARNING:
             check_main_code();
             container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
             text = new (0) BootTextWidget(g_boot_program.get_messages(), message, 0, 32.0f, 128.0f, 576.0f, 320.0f);
             lib_container_attach_widget(container, text);
-            step = 2;
+            step = BOOT_STARTUP_CARD_WAIT_FOR_INPUT;
             break;
-        case 2:
+        case BOOT_STARTUP_CARD_WAIT_FOR_INPUT:
         {
             u16 pressed = input->pressed;
 
@@ -1598,7 +1626,7 @@ void BootStartupChecks::update()
             {
                 check_main_code();
                 screen = BOOT_STARTUP_PROGRESSIVE;
-                step = 0;
+                step = BOOT_STARTUP_PROGRESSIVE_DETECT;
                 text->destroy();
                 text = 0;
                 container->destroy();
@@ -1612,7 +1640,7 @@ void BootStartupChecks::update()
                 container->destroy();
                 container = 0;
                 func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
-                step = 0;
+                step = BOOT_STARTUP_CARD_INSPECT;
             }
             else if (shown_slot1 != slot1 || shown_slot2 != slot2)
             {
@@ -1621,7 +1649,7 @@ void BootStartupChecks::update()
                 container->destroy();
                 container = 0;
                 input->clear_card_states();
-                step = 0;
+                step = BOOT_STARTUP_CARD_INSPECT;
             }
 
             break;
@@ -1636,26 +1664,26 @@ void BootStartupChecks::update()
         {
             switch (step)
             {
-            case 0:
+            case BOOT_STARTUP_PROGRESSIVE_DETECT:
                 again = 0;
                 check_main_code();
 
-                if ((input->held & 0x1000) && (input->held & 0x4000))
+                if ((input->held & BOOT_BUTTON_TRIANGLE) && (input->held & BOOT_BUTTON_CROSS))
                 {
                     step++;
                     container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
                     func_465B20(D_001B657C, container);
                 }
-                else if (++frames >= 30 && (((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
+                else if (++frames >= 30 && BOOT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
                 {
                     finished = 1;
                 }
 
                 break;
-            case 1:
+            case BOOT_STARTUP_PROGRESSIVE_LOAD_OFFER:
                 again = 0;
 
-                if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
+                if (BOOT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
                 {
                     check_main_code();
                     text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_PROGRESSIVE_OFFER, 0, 32.0f, 96.0f, 576.0f, 320.0f);
@@ -1664,7 +1692,7 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 2:
+            case BOOT_STARTUP_PROGRESSIVE_OFFER:
                 again = 0;
                 check_main_code();
 
@@ -1693,7 +1721,7 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 3:
+            case BOOT_STARTUP_PROGRESSIVE_SWITCH_DELAY:
                 again = 0;
                 check_main_code();
 
@@ -1705,7 +1733,7 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 4:
+            case BOOT_STARTUP_PROGRESSIVE_SWITCH_WAIT:
                 again = 0;
                 check_main_code();
 
@@ -1728,7 +1756,7 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 5:
+            case BOOT_STARTUP_PROGRESSIVE_CONFIRM:
                 again = 0;
                 check_main_code();
 
@@ -1747,7 +1775,7 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 6:
+            case BOOT_STARTUP_PROGRESSIVE_REVERT_DELAY:
                 check_main_code();
                 again = 0;
 
@@ -1760,13 +1788,13 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 7:
+            case BOOT_STARTUP_PROGRESSIVE_REVERT_WAIT:
                 check_main_code();
                 again = 0;
 
                 if (++frames > 60)
                 {
-                    step = 1;
+                    step = BOOT_STARTUP_PROGRESSIVE_LOAD_OFFER;
                     frames = 0;
                 }
 
@@ -1780,7 +1808,7 @@ void BootStartupChecks::update()
 
         if (finished)
         {
-            step = 0;
+            step = BOOT_STARTUP_UNIT_INSPECT;
 
             if (text != 0)
             {
@@ -1805,7 +1833,7 @@ void BootStartupChecks::update()
         {
             switch (step)
             {
-            case 0:
+            case BOOT_STARTUP_UNIT_INSPECT:
                 again = 0;
                 check_main_code();
 
@@ -1819,7 +1847,7 @@ void BootStartupChecks::update()
                     }
                     else if (g_boot_program.unit_data_deleted != 0)
                     {
-                        step = 3;
+                        step = BOOT_STARTUP_UNIT_LOAD_DELETED_WARNING;
                         container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
                         func_465B20(D_001B657C, container);
                     }
@@ -1830,11 +1858,11 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 1:
+            case BOOT_STARTUP_UNIT_LOAD_WARNING:
                 again = 0;
                 check_main_code();
 
-                if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
+                if (BOOT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
                 {
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_UNIT_NOT_INITIALIZED, 0, 32.0f, 96.0f, 576.0f, 320.0f);
@@ -1843,7 +1871,7 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 2:
+            case BOOT_STARTUP_UNIT_WAIT_FOR_INPUT:
                 check_main_code();
                 again = 0;
 
@@ -1854,15 +1882,15 @@ void BootStartupChecks::update()
                 }
 
                 break;
-            case 3:
+            case BOOT_STARTUP_UNIT_LOAD_DELETED_WARNING:
                 again = 0;
 
-                if ((((u32)g_boot_program.message_block + 0x7F) & ~0x7F) != 0)
+                if (BOOT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
                 {
                     func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
                     text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_UNIT_DATA_DELETED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
                     lib_container_attach_widget(container, text);
-                    step = 2;
+                    step = BOOT_STARTUP_UNIT_WAIT_FOR_INPUT;
                 }
 
                 break;
@@ -1896,9 +1924,9 @@ void BootStartupChecks::update()
 /** @brief Start on the memory card check. */
 BootStartupChecks::BootStartupChecks()
 {
-    step = 0;
+    step = BOOT_STARTUP_CARD_INSPECT;
     frames = 0;
-    screen = 0;
+    screen = BOOT_STARTUP_CARD_CHECK;
     container = 0;
     text = 0;
 }
@@ -2322,16 +2350,16 @@ void BootNewGameSettings::load_option_value()
         switch (D_001B65F8->output_mode)
         {
         case 1:
-            selection = 0;
+            selection = BOOT_SOUND_MONO;
             break;
         case 0:
-            selection = 1;
+            selection = BOOT_SOUND_STEREO;
             break;
         case 2:
-            selection = 2;
+            selection = BOOT_SOUND_DOLBY_PRO_LOGIC_II;
             break;
         case 3:
-            selection = 3;
+            selection = BOOT_SOUND_HEADPHONES;
             break;
         }
 
@@ -2363,14 +2391,14 @@ void BootNewGameSettings::apply_option_value()
         {
         case 0:
             settings->widescreen = 0;
-            D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)g_boot_program.display->unk3C60.height)) / (float)g_boot_program.display->unk3C60.width;
+            D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width;
             D_001B6654->unk25C = 1.5707964f;
             g_boot_program.update_projection_aspect();
             break;
         case 1:
             settings->widescreen = 1;
             D_001B6654->unk278 =
-                (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->unk3C60.height)) / (float)g_boot_program.display->unk3C60.width)) /
+                (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width)) /
                 1.3333334f;
             D_001B6654->unk25C = 1.8325958f;
             g_boot_program.update_projection_aspect();
@@ -2381,21 +2409,21 @@ void BootNewGameSettings::apply_option_value()
     case BOOT_SETTINGS_SOUND:
         switch (selection)
         {
-        case 0:
+        case BOOT_SOUND_MONO:
             func_10DA70(D_001B65F8, 1);
-            settings->sound_output = 0;
+            settings->sound_output = BOOT_SOUND_MONO;
             break;
-        case 1:
+        case BOOT_SOUND_STEREO:
             func_10DA70(D_001B65F8, 0);
-            settings->sound_output = 1;
+            settings->sound_output = BOOT_SOUND_STEREO;
             break;
-        case 2:
+        case BOOT_SOUND_DOLBY_PRO_LOGIC_II:
             func_10DA70(D_001B65F8, 2);
-            settings->sound_output = 2;
+            settings->sound_output = BOOT_SOUND_DOLBY_PRO_LOGIC_II;
             break;
-        case 3:
+        case BOOT_SOUND_HEADPHONES:
             func_10DA70(D_001B65F8, 3);
-            settings->sound_output = 3;
+            settings->sound_output = BOOT_SOUND_HEADPHONES;
             break;
         }
 
@@ -2450,7 +2478,7 @@ s32 BootNewGameSettings::get_value_message()
     case BOOT_SETTINGS_TV_MODE:
         return selection + BOOT_MSG_TV_NORMAL;
     case BOOT_SETTINGS_SOUND:
-        if (selection == 3)
+        if (selection == BOOT_SOUND_HEADPHONES)
         {
             return BOOT_MSG_SOUND_HEADPHONES;
         }
@@ -2459,7 +2487,7 @@ s32 BootNewGameSettings::get_value_message()
     case BOOT_SETTINGS_EVENT_SKIP:
         return selection + BOOT_MSG_EVENT_SKIP_ON;
     case BOOT_SETTINGS_VOICE:
-        if (selection == 3)
+        if (selection == BOOT_VOICE_AUTO)
         {
             return BOOT_MSG_VOICE_AUTO;
         }
@@ -2468,7 +2496,7 @@ s32 BootNewGameSettings::get_value_message()
     case BOOT_SETTINGS_VIBRATION:
         return selection + BOOT_MSG_VIBRATION_ON;
     case BOOT_SETTINGS_DIFFICULTY:
-        if (selection == 3)
+        if (selection == BOOT_DIFFICULTY_FOURTH_DIMENSION)
         {
             if (settings_fourth_dimension_unlocked(settings))
             {
@@ -2478,7 +2506,7 @@ s32 BootNewGameSettings::get_value_message()
             return BOOT_MSG_FOURTH_DIMENSION_LOCKED;
         }
 
-        if (settings_universe_unlocked(settings) && selection == 2)
+        if (settings_universe_unlocked(settings) && selection == BOOT_DIFFICULTY_UNIVERSE)
         {
             return BOOT_MSG_UNIVERSE_UNLOCKED;
         }
@@ -2504,16 +2532,16 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
     case BOOT_SETTINGS_SOUND:
         switch (selection)
         {
-        case 0:
+        case BOOT_SOUND_MONO:
             *y = 90.0f;
             return;
-        case 1:
+        case BOOT_SOUND_STEREO:
             *y = 126.0f;
             return;
-        case 2:
+        case BOOT_SOUND_DOLBY_PRO_LOGIC_II:
             *y = 160.0f;
             return;
-        case 3:
+        case BOOT_SOUND_HEADPHONES:
             *y = 194.0f;
             return;
         }
@@ -2522,16 +2550,16 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
     case BOOT_SETTINGS_VOICE:
         switch (selection)
         {
-        case 0:
+        case BOOT_VOICE_SUBTITLES_AND_SOUND:
             *y = 108.0f;
             return;
-        case 1:
+        case BOOT_VOICE_SOUND_ONLY:
             *y = 148.0f;
             return;
-        case 2:
+        case BOOT_VOICE_SUBTITLES_ONLY:
             *y = 188.0f;
             return;
-        case 3:
+        case BOOT_VOICE_AUTO:
             *y = 228.0f;
             return;
         }
@@ -2542,16 +2570,16 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
         {
             switch (selection)
             {
-            case 0:
+            case BOOT_DIFFICULTY_EARTH:
                 *y = 108.0f;
                 return;
-            case 1:
+            case BOOT_DIFFICULTY_GALAXY:
                 *y = 148.0f;
                 return;
-            case 2:
+            case BOOT_DIFFICULTY_UNIVERSE:
                 *y = 188.0f;
                 return;
-            case 3:
+            case BOOT_DIFFICULTY_FOURTH_DIMENSION:
                 *y = 228.0f;
                 return;
             }
@@ -2560,13 +2588,13 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
         {
             switch (selection)
             {
-            case 0:
+            case BOOT_DIFFICULTY_EARTH:
                 *y = 108.0f;
                 return;
-            case 1:
+            case BOOT_DIFFICULTY_GALAXY:
                 *y = 158.0f;
                 return;
-            case 2:
+            case BOOT_DIFFICULTY_UNIVERSE:
                 *y = 208.0f;
                 return;
             }
@@ -2636,58 +2664,58 @@ void BootNewGameSettings::update_option_rows()
             {
             case BOOT_SETTINGS_TV_MODE:
                 row_x = -272.0f;
-                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[16]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[3]), 0);
                 images[16]->set_rectangle(0, 8, 288, 40, 0x80808080, 0);
                 images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
-                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[17]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[3]), 0);
                 images[17]->set_rectangle(0, 68, 288, 40, 0x80808080, 0);
                 images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_SOUND:
                 row_x = -272.0f;
-                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[16]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[3]), 0);
                 images[16]->set_rectangle(0, 106, 288, 40, 0x80808080, 0);
                 images[16]->model->set_translation(-272.0f, -162.0f, 0.0f);
-                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[17]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[3]), 0);
                 images[17]->set_rectangle(0, 162, 200, 40, 0x80808080, 0);
                 images[17]->model->set_translation(-272.0f, -126.0f, 0.0f);
-                images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[18]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[3]), 0);
                 images[18]->set_rectangle(0, 236, 424, 40, 0x80808080, 0);
                 images[18]->model->set_translation(-272.0f, -90.0f, 0.0f);
-                images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[19]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[3]), 0);
                 images[19]->set_rectangle(224, 168, 237, 38, 0x80808080, 0);
                 images[19]->model->set_translation(-272.0f, -55.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_EVENT_SKIP:
                 row_x = -272.0f;
-                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[16]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[3]), 0);
                 images[16]->set_rectangle(0, 312, 340, 40, 0x80808080, 0);
                 images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
-                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[3] + 0x7F) & ~0x7F), 0);
+                images[17]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[3]), 0);
                 images[17]->set_rectangle(0, 368, 340, 40, 0x80808080, 0);
                 images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VOICE:
                 row_x = -260.0f;
-                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[16]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                 images[16]->set_rectangle(0, 0, 340, 40, 0x80808080, 0);
                 images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
-                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[17]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                 images[17]->set_rectangle(0, 55, 340, 40, 0x80808080, 0);
                 images[17]->model->set_translation(-260.0f, -102.0f, 0.0f);
-                images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[18]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                 images[18]->set_rectangle(0, 110, 340, 40, 0x80808080, 0);
                 images[18]->model->set_translation(-260.0f, -62.0f, 0.0f);
-                images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[19]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                 images[19]->set_rectangle(0, 416, 500, 40, 0x80808080, 0);
                 images[19]->model->set_translation(-260.0f, -22.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VIBRATION:
                 row_x = -254.0f;
-                images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[16]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                 images[16]->set_rectangle(0, 160, 340, 40, 0x80808080, 0);
                 images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
-                images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                images[17]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                 images[17]->set_rectangle(0, 215, 340, 40, 0x80808080, 0);
                 images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
@@ -2696,28 +2724,28 @@ void BootNewGameSettings::update_option_rows()
 
                 if (!settings_universe_unlocked(settings))
                 {
-                    images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[16]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                     images[16]->set_rectangle(0, 257, 340, 42, 0x80808080, 0);
                     images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
-                    images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[17]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                     images[17]->set_rectangle(0, 313, 340, 42, 0x80808080, 0);
                     images[17]->model->set_translation(-260.0f, -92.0f, 0.0f);
-                    images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[18]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                     images[18]->set_rectangle(0, 369, 340, 42, 0x80808080, 0);
                     images[18]->model->set_translation(-260.0f, -42.0f, 0.0f);
                 }
                 else
                 {
-                    images[16]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[16]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                     images[16]->set_rectangle(3, 257, 340, 42, 0x80808080, 0);
                     images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
-                    images[17]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[17]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                     images[17]->set_rectangle(3, 313, 340, 42, 0x80808080, 0);
                     images[17]->model->set_translation(-260.0f, -102.0f, 0.0f);
-                    images[18]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[18]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                     images[18]->set_rectangle(3, 369, 340, 42, 0x80808080, 0);
                     images[18]->model->set_translation(-260.0f, -62.0f, 0.0f);
-                    images[19]->set_texture((const BootTextureResource*)(((u32)image_blocks[4] + 0x7F) & ~0x7F), 0);
+                    images[19]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[4]), 0);
                     images[19]->set_rectangle(0, 466, 340, 42, 0x80808080, 0);
                     images[19]->model->set_translation(-260.0f, -24.0f, 0.0f);
                 }
@@ -2755,7 +2783,7 @@ void BootNewGameSettings::update_option_rows()
 
         s32 i;
         BootModel* model;
-        // TODO: My guess; the original reads the extra block through a pointer formed before the loop.
+        // Form the settings block pointer before the loop to preserve its access pattern.
         u8* extra = &settings->unk1A0;
 
         for (i = 0; i < 4; i++)
@@ -2856,7 +2884,7 @@ void BootNewGameSettings::update_page_images()
     if (images[0] == 0)
     {
         images[0] = new (0) BootImage;
-        images[0]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
+        images[0]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[0]), 0);
         images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
@@ -2864,7 +2892,7 @@ void BootNewGameSettings::update_page_images()
     if (images[1] == 0)
     {
         images[1] = new (0) BootImage;
-        images[1]->set_texture((const BootTextureResource*)(((u32)image_blocks[1] + 0x7F) & ~0x7F), 0);
+        images[1]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[1]), 0);
         images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
         images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
@@ -2872,13 +2900,13 @@ void BootNewGameSettings::update_page_images()
     if (images[2] == 0 && on_speaker_setup == 0)
     {
         images[2] = new (0) BootImage;
-        images[2]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
+        images[2]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[0]), 0);
         images[2]->set_rectangle(0x1A, 0xF5, 0x18, 0x16, 0x80808080, 0);
 
         for (s32 i = 0; i < 6; i++)
         {
             images[3 + i] = new (0) BootImage;
-            images[3 + i]->set_texture((const BootTextureResource*)(((u32)image_blocks[0] + 0x7F) & ~0x7F), 0);
+            images[3 + i]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[0]), 0);
             images[3 + i]->set_rectangle(0x52, 0xF3 + i * 29, 0xEE, 0x1C, 0x80808080, 0);
         }
     }
@@ -2888,7 +2916,7 @@ void BootNewGameSettings::update_page_images()
         for (s32 i = 0; i < 6; i++)
         {
             images[9 + i] = new (0) BootImage;
-            images[9 + i]->set_texture((const BootTextureResource*)(((u32)image_blocks[2] + 0x7F) & ~0x7F), 0);
+            images[9 + i]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[2]), 0);
             images[9 + i]->set_rectangle(0, 2 + i * 32, 0x180, 0x20, 0x80808080, 0);
         }
     }
@@ -2896,7 +2924,7 @@ void BootNewGameSettings::update_page_images()
     if (images[15] == 0 && on_speaker_setup == 0)
     {
         images[15] = new (0) BootImage;
-        images[15]->set_texture((const BootTextureResource*)(((u32)image_blocks[2] + 0x7F) & ~0x7F), 0);
+        images[15]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[2]), 0);
         images[15]->set_rectangle(0, 0xC2, 0x180, 0x20, 0x80808080, 0);
     }
 
@@ -3087,7 +3115,7 @@ static inline bool at_end(const BootListSentinel* list, const BootListSentinel* 
  * @param speaker Speaker index.
  * @return Angle in radians.
  */
-static inline float speaker_angle(BootSound1B65F8* sound, s32 speaker)
+static inline float speaker_angle(BootSoundState* sound, s32 speaker)
 {
     return sound->speaker_angles[speaker];
 }
@@ -3106,7 +3134,7 @@ void BootNewGameSettings::update()
         if (func_102D00(D_001B65E8) != 0)
         {
             func_112990(D_001B65F8, 0x48, 1, 0, 0);
-            func_103E70(D_001B65E8, 0x29, model_data, 1, 0x34BC0, 0, 0, 0, 1);
+            func_103E70(D_001B65E8, BOOT_RES_SETTINGS_MODELS, model_data, 1, 0x34BC0, 0, 0, 0, 1);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             loaded_image_blocks = 0;
@@ -3130,8 +3158,8 @@ void BootNewGameSettings::update()
 
         break;
     case BOOT_SETTINGS_STAGE_LOAD_IMAGES:
-        image_blocks[loaded_image_blocks] = func_102920(D_001B65EC, image_data, loaded_image_blocks, 1);
-        func_1025A0(D_001B65EC, image_data, (void*)(((u32)image_blocks[loaded_image_blocks] + 0x7F) & ~0x7F), loaded_image_blocks);
+        image_blocks[loaded_image_blocks] = func_102920(g_resident_resource_decoder, image_data, loaded_image_blocks, 1);
+        func_1025A0(g_resident_resource_decoder, image_data, (void*)BOOT_ALIGN_RESOURCE(image_blocks[loaded_image_blocks]), loaded_image_blocks);
 
         if (++loaded_image_blocks >= 5)
         {
@@ -3142,7 +3170,7 @@ void BootNewGameSettings::update()
 
         break;
     case BOOT_SETTINGS_STAGE_PAGE:
-        if (input->repeated == 0x40 && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_DOWN && cursor->unk35)
         {
             selection = (selection + 1) % g_settings_option_counts[page];
             apply_option_value();
@@ -3155,7 +3183,7 @@ void BootNewGameSettings::update()
             show_value_message();
         }
 
-        if (input->repeated == 0x10 && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_UP && cursor->unk35)
         {
             u8 count = g_settings_option_counts[page];
             selection = (selection + count - 1) % count;
@@ -3249,7 +3277,7 @@ void BootNewGameSettings::update()
             cursor = 0;
         }
 
-        D_001B6614->append_node(new (0) BootTitleMenu(0), -1);
+        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_NEW_GAME), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
@@ -3314,10 +3342,10 @@ void BootNewGameSettings::update()
         {
             func_11E020(D_001B65F0, 0, 0);
             room_scene = new (0) BootScene;
-            func_479190(room_scene, (void*)(((u32)model_blocks[0] + 0x7F) & ~0x7F));
+            func_479190(room_scene, (void*)BOOT_ALIGN_RESOURCE(model_blocks[0]));
             func_474010(room_scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
             girl_scene = new (0) BootScene;
-            func_479190(girl_scene, (void*)(((u32)model_blocks[1] + 0x7F) & ~0x7F));
+            func_479190(girl_scene, (void*)BOOT_ALIGN_RESOURCE(model_blocks[1]));
             func_474010(girl_scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
             s32 count = 0;
 
@@ -3334,7 +3362,7 @@ void BootNewGameSettings::update()
             for (s32 i = 0; i < 6; i++)
             {
                 girl_animations[i] = new (0) BootAnimation;
-                girl_animations[i]->set_resource((void*)(((u32)model_blocks[2 + i] + 0x7F) & ~0x7F));
+                girl_animations[i]->set_resource((void*)BOOT_ALIGN_RESOURCE(model_blocks[2 + i]));
                 func_4BF100(girl_animations[i], girl_scene, 0);
                 animation_targets[i] = new (0) BootAnimationTarget;
                 lib_animation_bind_state(girl_animations[i], animation_targets[i], g_bone_root_name);
@@ -3374,7 +3402,7 @@ void BootNewGameSettings::update()
         break;
     }
     case BOOT_SETTINGS_STAGE_SPEAKERS:
-        if (input->repeated & 0xC0)
+        if (input->repeated & (BOOT_BUTTON_DOWN | BOOT_BUTTON_LEFT))
         {
             if (adjusting_speaker == 0)
             {
@@ -3426,7 +3454,7 @@ void BootNewGameSettings::update()
             }
         }
 
-        if (input->repeated & 0x30)
+        if (input->repeated & (BOOT_BUTTON_UP | BOOT_BUTTON_RIGHT))
         {
             if (adjusting_speaker == 0)
             {
@@ -3780,8 +3808,8 @@ void BootNewGameSettings::update()
 
     if (stage > BOOT_SETTINGS_STAGE_LOAD && resident_find_resource_request(D_001B65E8, 0x29, 0, 0, -1, 0) == 0 && loaded_model_blocks < 8)
     {
-        model_blocks[loaded_model_blocks] = func_102920(D_001B65EC, model_data, loaded_model_blocks, 1);
-        func_1025A0(D_001B65EC, model_data, (void*)(((u32)model_blocks[loaded_model_blocks] + 0x7F) & ~0x7F), loaded_model_blocks);
+        model_blocks[loaded_model_blocks] = func_102920(g_resident_resource_decoder, model_data, loaded_model_blocks, 1);
+        func_1025A0(g_resident_resource_decoder, model_data, (void*)BOOT_ALIGN_RESOURCE(model_blocks[loaded_model_blocks]), loaded_model_blocks);
         loaded_model_blocks++;
         FlushCache(0);
     }
@@ -3879,9 +3907,9 @@ BootNewGameSettings::~BootNewGameSettings()
 BootNewGameSettings::BootNewGameSettings()
 {
     BootSystemSettings* resource;
-    image_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x28));
-    func_103E70(D_001B65E8, 0x28, image_data, 1, 0x34BC0, 0, 0, 0, 1);
-    model_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x29));
+    image_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_SETTINGS_IMAGES));
+    func_103E70(D_001B65E8, BOOT_RES_SETTINGS_IMAGES, image_data, 1, 0x34BC0, 0, 0, 0, 1);
+    model_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_SETTINGS_MODELS));
     stage = BOOT_SETTINGS_STAGE_LOAD;
 
     for (s32 i = 0; i < 5; i++)
@@ -3922,19 +3950,20 @@ BootNewGameSettings::BootNewGameSettings()
     loaded_model_blocks = 0;
     resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
+    // The audio system reverses the mono and stereo codes used by the saved setting.
     switch (D_001B65F8->output_mode)
     {
     case 1:
-        resource->sound_output = 0;
+        resource->sound_output = BOOT_SOUND_MONO;
         break;
     case 0:
-        resource->sound_output = 1;
+        resource->sound_output = BOOT_SOUND_STEREO;
         break;
     case 2:
-        resource->sound_output = 2;
+        resource->sound_output = BOOT_SOUND_DOLBY_PRO_LOGIC_II;
         break;
     case 3:
-        resource->sound_output = 3;
+        resource->sound_output = BOOT_SOUND_HEADPHONES;
         break;
     }
 }
@@ -4083,14 +4112,14 @@ void BootOpeningMovie::update()
 
     switch (step)
     {
-    case 0:
-        if ((input->held & 8) || func_115270(D_001B65E4, 1) != 1)
+    case BOOT_MOVIE_PREPARE:
+        if ((input->held & BOOT_BUTTON_START) || func_115270(D_001B65E4, 1) != 1)
         {
-            step = 3;
+            step = BOOT_MOVIE_STOP;
             break;
         }
 
-        if ((((u32)g_boot_program.image_block + 0x7F) & ~0x7F) == 0)
+        if (BOOT_ALIGN_RESOURCE(g_boot_program.image_block) == 0)
         {
             break;
         }
@@ -4099,11 +4128,11 @@ void BootOpeningMovie::update()
         func_465B20(D_001B657C, container);
         func_419A70(player, 12, 1);
         caption = 0;
-        caption_phase = 0;
+        caption_phase = BOOT_CAPTION_HIDDEN;
         step++;
         caption_image_loaded = 0;
         break;
-    case 1:
+    case BOOT_MOVIE_CAPTIONS:
         fade = 0;
         offset = player->state->current_frame - g_opening_captions[caption].frame;
 
@@ -4113,35 +4142,35 @@ void BootOpeningMovie::update()
             break;
         }
 
-        if (input->held & 8)
+        if (input->held & BOOT_BUTTON_START)
         {
-            step = 3;
+            step = BOOT_MOVIE_STOP;
             D_001B661C->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
         }
 
         is_text = g_opening_captions[caption].is_text;
 
-        if (offset >= -30 && offset < 0)
+        if (offset >= -BOOT_CAPTION_FADE_FRAMES && offset < 0)
         {
             fade = -offset;
-            caption_phase = 1;
+            caption_phase = BOOT_CAPTION_FADE_IN;
         }
 
-        if (offset >= 0 && offset < 90)
+        if (offset >= 0 && offset < BOOT_CAPTION_HOLD_END)
         {
             fade = offset;
-            caption_phase = 2;
+            caption_phase = BOOT_CAPTION_SHOWN;
         }
 
-        if (offset >= 90 && offset < 120)
+        if (offset >= BOOT_CAPTION_HOLD_END && offset < BOOT_CAPTION_DISPLAY_END)
         {
-            fade = offset - 90;
-            caption_phase = 3;
+            fade = offset - BOOT_CAPTION_HOLD_END;
+            caption_phase = BOOT_CAPTION_FADE_OUT;
         }
 
-        if (offset >= 120)
+        if (offset >= BOOT_CAPTION_DISPLAY_END)
         {
-            caption_phase = 0;
+            caption_phase = BOOT_CAPTION_HIDDEN;
             caption++;
 
             if (is_text == 0)
@@ -4166,7 +4195,7 @@ void BootOpeningMovie::update()
             }
         }
 
-        if (caption_phase <= 0)
+        if (caption_phase <= BOOT_CAPTION_HIDDEN)
         {
             break;
         }
@@ -4179,7 +4208,7 @@ void BootOpeningMovie::update()
             if (caption_image_loaded == 0)
             {
                 caption_image = new (0) BootImage;
-                caption_image->set_texture((const BootTextureResource*)(((u32)g_boot_program.image_block + 0x7F) & ~0x7F), 0);
+                caption_image->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(g_boot_program.image_block), 0);
                 caption_image->set_rectangle(g_opening_captions[caption].x, g_opening_captions[caption].y, width, height, 0x80808080, 0);
                 caption_image_loaded = 1;
             }
@@ -4212,23 +4241,23 @@ void BootOpeningMovie::update()
         {
             switch (anchor)
             {
-            case 0:
+            case BOOT_CAPTION_CENTER:
                 x = 288 - width / 2;
                 y = 192 - height / 2;
                 break;
-            case 1:
+            case BOOT_CAPTION_TOP_LEFT:
                 x = 0;
                 y = 0;
                 break;
-            case 2:
+            case BOOT_CAPTION_TOP_RIGHT:
                 x = 576 - width;
                 y = 0;
                 break;
-            case 3:
+            case BOOT_CAPTION_BOTTOM_LEFT:
                 x = 0;
                 y = 384 - height;
                 break;
-            case 4:
+            case BOOT_CAPTION_BOTTOM_RIGHT:
                 x = 576 - width;
                 y = 384 - height;
                 break;
@@ -4238,23 +4267,23 @@ void BootOpeningMovie::update()
         {
             switch (anchor)
             {
-            case 0:
+            case BOOT_CAPTION_CENTER:
                 caption_text->set_horizontal_align(1);
                 caption_text->set_vertical_align(1);
                 break;
-            case 1:
+            case BOOT_CAPTION_TOP_LEFT:
                 caption_text->set_horizontal_align(0);
                 caption_text->set_vertical_align(0);
                 break;
-            case 2:
+            case BOOT_CAPTION_TOP_RIGHT:
                 caption_text->set_horizontal_align(2);
                 caption_text->set_vertical_align(0);
                 break;
-            case 3:
+            case BOOT_CAPTION_BOTTOM_LEFT:
                 caption_text->set_horizontal_align(0);
                 caption_text->set_vertical_align(2);
                 break;
-            case 4:
+            case BOOT_CAPTION_BOTTOM_RIGHT:
                 caption_text->set_horizontal_align(2);
                 caption_text->set_vertical_align(2);
                 break;
@@ -4267,9 +4296,9 @@ void BootOpeningMovie::update()
 
             switch (caption_phase)
             {
-            case 1:
+            case BOOT_CAPTION_FADE_IN:
             {
-                float alpha = (30.0f - (float)fade) / 30.0f;
+                float alpha = ((float)BOOT_CAPTION_FADE_FRAMES - (float)fade) / (float)BOOT_CAPTION_FADE_FRAMES;
                 caption_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
                 BootVector4DDAA0 color;
                 color.x = 1.0f;
@@ -4281,7 +4310,7 @@ void BootOpeningMovie::update()
                 model->update_combined_color_factor();
                 break;
             }
-            case 2:
+            case BOOT_CAPTION_SHOWN:
             {
                 BootVector4DDAA0 color;
                 color.x = 1.0f;
@@ -4293,13 +4322,13 @@ void BootOpeningMovie::update()
                 model->update_combined_color_factor();
                 break;
             }
-            case 3:
+            case BOOT_CAPTION_FADE_OUT:
             {
                 BootVector4DDAA0 color;
                 color.x = 1.0f;
                 color.y = 1.0f;
                 color.z = 1.0f;
-                color.w = (30.0f - (float)fade) / 30.0f;
+                color.w = ((float)BOOT_CAPTION_FADE_FRAMES - (float)fade) / (float)BOOT_CAPTION_FADE_FRAMES;
                 BootModel* model = caption_image->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
@@ -4311,26 +4340,26 @@ void BootOpeningMovie::update()
         {
             switch (caption_phase)
             {
-            case 1:
-            case 3:
-                caption_text->set_alpha(128.0f * (30.0f - (float)fade) / 30.0f);
+            case BOOT_CAPTION_FADE_IN:
+            case BOOT_CAPTION_FADE_OUT:
+                caption_text->set_alpha(128.0f * ((float)BOOT_CAPTION_FADE_FRAMES - (float)fade) / (float)BOOT_CAPTION_FADE_FRAMES);
                 break;
-            case 2:
+            case BOOT_CAPTION_SHOWN:
                 caption_text->set_alpha(128.0f);
                 break;
             }
         }
 
         break;
-    case 2:
-        if ((input->held & 8) || !player->is_playing)
+    case BOOT_MOVIE_WAIT_FOR_END:
+        if ((input->held & BOOT_BUTTON_START) || !player->is_playing)
         {
             D_001B661C->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
-            step = 3;
+            step = BOOT_MOVIE_STOP;
         }
 
         break;
-    case 3:
+    case BOOT_MOVIE_STOP:
         func_41A210(player);
 
         if (caption_image != 0)
@@ -4359,10 +4388,10 @@ void BootOpeningMovie::update()
 
         step++;
         break;
-    case 4:
+    case BOOT_MOVIE_OPEN_TITLE:
         lib_object_detach_owner(this);
         destroy();
-        D_001B6614->append_node(new (0) BootTitleMenu(-1), -1);
+        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
         return;
     }
 }
@@ -4398,12 +4427,12 @@ BootOpeningMovie::BootOpeningMovie()
 {
     void* heap;
     BootSystemSettings* resource;
-    step = 0;
+    step = BOOT_MOVIE_PREPARE;
     movie_heap = new (0) BootResident113E40;
     movie_heap->unk2C = 0x40;
-    func_113930(movie_heap, 0x579F2C);
+    func_113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
     heap = resident_exchange_allocation_heap(movie_heap);
-    player = new (0) BootMoviePlayer(640, 448);
+    player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
     resident_exchange_allocation_heap(heap);
     player->state->set_scale(1.0f, 1.0f);
     player->state->set_words(0x800, 0x800, 1);
@@ -4413,7 +4442,7 @@ BootOpeningMovie::BootOpeningMovie()
     {
         player->state->unk80D8 = 1;
         D_001B6654->unk278 =
-            (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->unk3C60.height)) / (float)g_boot_program.display->unk3C60.width)) /
+            (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width)) /
             1.3333334f;
         D_001B6654->unk25C = 1.8325958f;
     }
@@ -4433,7 +4462,7 @@ void BootUnitErrorPopup::update()
 
     if (func_115430(D_001B65E4) != 0)
     {
-        if (container == 0 && (((u32)program->message_block + 0x7F) & ~0x7F) != 0)
+        if (container == 0 && BOOT_ALIGN_RESOURCE(program->message_block) != 0)
         {
             container = new (0) BootContainer(8, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
@@ -4491,7 +4520,7 @@ void BootUnitErrorPopup::destroy()
         container = 0;
     }
 
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /**
@@ -4500,7 +4529,7 @@ void BootUnitErrorPopup::destroy()
  */
 void BootProgram::rebuild_display(u8 full)
 {
-    BootDisplayArea3C60* area;
+    BootDisplayArea* area;
     delete display;
     display = new (0) BootDimensionsACD0;
     func_4E09B0(display, 2);
@@ -4510,7 +4539,7 @@ void BootProgram::rebuild_display(u8 full)
     func_4DF890(display, 0, 640, 224, 2, 0x31);
     func_4E03C0(display, 1, 640, 224);
     func_4DF6E0(display, 0, 0, 0, 0x81);
-    area = &display->unk3C60;
+    area = &display->display_area;
     func_4DE250(display, 0, 0, 0, area->width, area->height);
     func_4DE250(display, 1, 0, 0, area->width, area->height);
     func_4DCFA0(display);
@@ -4548,19 +4577,19 @@ inline void BootProgram::update_projection_aspect()
     if (resource->widescreen != 0)
     {
         dimensions = g_boot_program.display;
-        projection->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) / (float)dimensions->unk3C60.width)) / 1.3333334f;
+        projection->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
         projection->unk250 = 0.75f;
         dimensions = g_boot_program.display;
-        D_001B6654->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) / (float)dimensions->unk3C60.width)) / 1.3333334f;
+        D_001B6654->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
         D_001B6654->unk25C = 1.8325958f;
     }
     else
     {
         dimensions = g_boot_program.display;
-        projection->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) / (float)dimensions->unk3C60.width;
+        projection->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
         projection->unk250 = 1.0f;
         dimensions = g_boot_program.display;
-        D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->unk3C60.height)) / (float)dimensions->unk3C60.width;
+        D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
         D_001B6654->unk25C = 1.5707964f;
     }
 }
@@ -4613,7 +4642,7 @@ void BootResourceLoader::update()
 
     if (func_102D00(D_001B65E8) != 0)
     {
-        if (block >= 3)
+        if (block >= BOOT_COMMON_UI_BLOCK_COUNT)
         {
             delete[] data;
             lib_object_detach_owner(this);
@@ -4621,21 +4650,21 @@ void BootResourceLoader::update()
             return;
         }
 
-        buffer = func_102920(D_001B65EC, data, block, 1);
-        aligned = (u8*)(((u32)buffer + 0x7F) & ~0x7F);
-        func_1025A0(D_001B65EC, data, aligned, block);
+        buffer = func_102920(g_resident_resource_decoder, data, block, 1);
+        aligned = (u8*)BOOT_ALIGN_RESOURCE(buffer);
+        func_1025A0(g_resident_resource_decoder, data, aligned, block);
 
         switch (block)
         {
-        case 0:
+        case BOOT_COMMON_UI_MESSAGES:
             program->message_block = buffer;
             program->messages = func_4656B0(D_001B657C, aligned);
             break;
-        case 1:
+        case BOOT_COMMON_UI_CAPTIONS:
             program->caption_block = buffer;
             program->captions = func_4656B0(D_001B657C, aligned);
             break;
-        case 2:
+        case BOOT_COMMON_UI_IMAGES:
             program->image_block = buffer;
             break;
         }
@@ -4709,18 +4738,18 @@ void BootProgram::run()
     unit_data_deleted = 0;
 
     buffer = new (0) u8[func_10CE00() + 0x40];
-    size = func_11C8C0(func_1012C0(resident_get_runtime_owner()), 3);
+    size = resident_get_resource_size(func_1012C0(resident_get_runtime_owner()), BOOT_PROGRAM_MAIN_CODE_RESOURCE);
 
-    if (size > 0x50000)
+    if (size > BOOT_PROGRAM_MAIN_CODE_MAX_SIZE)
     {
-        size = 0x50000;
+        size = BOOT_PROGRAM_MAIN_CODE_MAX_SIZE;
     }
 
     image = (BootProgramImage*)func_139700(0x40, size);
-    func_103E70(func_101250(resident_get_runtime_owner()), 3, image, 1, 0x34BC0, 0, size, 0, 1);
+    func_103E70(func_101250(resident_get_runtime_owner()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image, 1, 0x34BC0, 0, size, 0, 1);
     delete[] buffer;
 
-    saved_widescreen = 0xFF;
+    saved_widescreen = BOOT_SAVED_WIDESCREEN_UNSET;
     fresh = true;
 
     if (resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1) != 0)
@@ -4734,8 +4763,8 @@ void BootProgram::run()
     {
         func_433680();
         func_4E33B0();
-        resident_drain_release_queues(D_001B65F4);
-        resident_drain_release_queues(D_001B65F4);
+        resident_drain_release_queues(g_resident_release_queues);
+        resident_drain_release_queues(g_resident_release_queues);
     }
 
     func_4D8970();
@@ -4759,7 +4788,7 @@ void BootProgram::run()
     create_pools_and_projection();
     settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
-    if (saved_widescreen != 0xFF)
+    if (saved_widescreen != BOOT_SAVED_WIDESCREEN_UNSET)
     {
         settings->widescreen = saved_widescreen != 0;
     }
@@ -4781,7 +4810,7 @@ void BootProgram::run()
     }
     else
     {
-        D_001B6614->append_node(new (0) BootTitleMenu(-1), -1);
+        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
     }
 
     D_001B6420 = 1;
@@ -4798,7 +4827,7 @@ void BootProgram::run()
         func_4D4BE0(D_001B661C);
         D_001B6614->update_nodes();
         func_11F770(D_001B6618->packet, 0);
-        resident_drain_release_queues(D_001B65F4);
+        resident_drain_release_queues(g_resident_release_queues);
         func_4DCFF0(display, frame);
 
         if (frame > 1)
@@ -4807,15 +4836,15 @@ void BootProgram::run()
         }
 
         D_001B6688 = (float)func_11DF00(D_001B65F0);
-        D_001B6690 = D_001B6688 / 60.0f;
+        D_001B6690 = D_001B6688 / BOOT_FRAME_TICKS_PER_SECOND;
         TIMER0_COUNT = 0;
     }
 
     D_001B661C->unk40CE = 1;
-    resident_drain_release_queues(D_001B65F4);
+    resident_drain_release_queues(g_resident_release_queues);
     g_boot_program.release_resources();
-    resident_drain_release_queues(D_001B65F4);
-    resident_drain_release_queues(D_001B65F4);
+    resident_drain_release_queues(g_resident_release_queues);
+    resident_drain_release_queues(g_resident_release_queues);
 
     previous = resident_next_random_word();
 
@@ -4829,15 +4858,15 @@ void BootProgram::run()
     {
     }
 
-    previous = func_10CAA0(1000);
+    previous = func_10CAA0(BOOT_RANDOM_WARMUP_RANGE);
 
-    while (previous == func_10CAA0(1000))
+    while (previous == func_10CAA0(BOOT_RANDOM_WARMUP_RANGE))
     {
     }
 
-    previous = func_10CC40(0, 1000);
+    previous = func_10CC40(0, BOOT_RANDOM_WARMUP_RANGE);
 
-    while (previous == func_10CC40(0, 1000))
+    while (previous == func_10CC40(0, BOOT_RANDOM_WARMUP_RANGE))
     {
     }
 

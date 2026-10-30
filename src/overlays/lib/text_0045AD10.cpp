@@ -582,7 +582,7 @@ extern "C" void lib_release_resource_slot(void* manager, s32 index)
     {
         if (slot->allocation)
         {
-            resident_queue_allocation_release(D_001B65F4, slot->allocation);
+            resident_queue_allocation_release(g_resident_release_queues, slot->allocation);
             slot->allocation = 0;
         }
         slot->active = 0;

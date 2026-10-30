@@ -349,7 +349,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022B4
 void func_0022B550(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022B580);

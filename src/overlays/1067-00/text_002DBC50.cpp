@@ -74,7 +74,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DC6
 void func_002DCA40(FieldListObject* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 void func_002DCA70(FieldReset2DCA70* object)

@@ -756,7 +756,7 @@ extern "C" void func_002FE880(FieldByte60F9C90* object)
 extern "C" void func_002FE890(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FE8C0);

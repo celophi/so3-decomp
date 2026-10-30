@@ -569,5 +569,5 @@ void FieldClass15AE70::func_slot0c()
     {
         static_cast<LibClass174610&>(*unk10).func_003EF740();
     }
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }

@@ -246,14 +246,14 @@ FieldVec4A BootVectorCurveTrack::sample(float key)
         state.search_index = 0;
     }
 
-    if (state.key_count == 1 && (!(key < static_cast<BootVectorCurveTrackKey*>(key_array)[0].value.w) || state.before_mode != 6))
+    if (state.key_count == 1 && (!(key < static_cast<BootVectorCurveTrackKey*>(key_array)[0].value.w) || state.before_mode != BOOT_TRACK_END_USE_PRE_START_KEY))
     {
         return *reinterpret_cast<FieldVec4A*>(&static_cast<BootVectorCurveTrackKey*>(key_array)[0].value);
     }
 
     extrapolate = 0;
 
-    if (key < static_cast<BootVectorCurveTrackKey*>(key_array)[0].value.w && state.before_mode == 6)
+    if (key < static_cast<BootVectorCurveTrackKey*>(key_array)[0].value.w && state.before_mode == BOOT_TRACK_END_USE_PRE_START_KEY)
     {
         upper = 0;
         wrapped_key = key;
@@ -265,12 +265,12 @@ FieldVec4A BootVectorCurveTrack::sample(float key)
 
         if (state.cycle_count)
         {
-            if (state.before_mode == 0 && state.cycle_count < 0)
+            if (state.before_mode == BOOT_TRACK_END_HOLD && state.cycle_count < 0)
             {
                 return *reinterpret_cast<FieldVec4A*>(&static_cast<BootVectorCurveTrackKey*>(key_array)[0].value);
             }
 
-            if (state.after_mode == 0 && state.cycle_count > 0)
+            if (state.after_mode == BOOT_TRACK_END_HOLD && state.cycle_count > 0)
             {
                 return *reinterpret_cast<FieldVec4A*>(&static_cast<BootVectorCurveTrackKey*>(key_array)[state.key_count - 1].value);
             }
@@ -293,8 +293,8 @@ FieldVec4A BootVectorCurveTrack::sample(float key)
             BootVectorCurveTrackKey* first = lower >= 0 ? static_cast<BootVectorCurveTrackKey*>(key_array) + lower : &single_key;
             s32 last = state.key_count - 1;
 
-            if (upper == last && ((!(key < static_cast<BootVectorCurveTrackKey*>(key_array)[0].value.w) && state.after_mode == 2) ||
-                                  (key < static_cast<BootVectorCurveTrackKey*>(key_array)[0].value.w && state.before_mode == 2)))
+            if (upper == last && ((!(key < static_cast<BootVectorCurveTrackKey*>(key_array)[0].value.w) && state.after_mode == BOOT_TRACK_END_CYCLE_TO_FIRST) ||
+                                  (key < static_cast<BootVectorCurveTrackKey*>(key_array)[0].value.w && state.before_mode == BOOT_TRACK_END_CYCLE_TO_FIRST)))
             {
                 BootVectorCurveTrackKey* entries = static_cast<BootVectorCurveTrackKey*>(key_array);
                 BootVectorCurveTrackKey* second = entries + upper;
@@ -320,7 +320,8 @@ FieldVec4A BootVectorCurveTrack::sample(float key)
 
         result = curve_segment.interpolate(wrapped_key);
 
-        if (state.cycle_count && ((state.before_mode == 5 && state.cycle_count < 0) || (state.after_mode == 5 && state.cycle_count > 0)))
+        if (state.cycle_count && ((state.before_mode == BOOT_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+            (state.after_mode == BOOT_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0)))
         {
             FieldVec4B delta = difference(static_cast<BootVectorCurveTrackKey*>(key_array)[state.key_count - 1].value,
                                           static_cast<BootVectorCurveTrackKey*>(key_array)[0].value);
@@ -795,12 +796,12 @@ FieldVec4A BootVectorTrack::sample(float key)
         state.search_index = 0;
     }
 
-    if (state.key_count == 1 && (!(key < key_array[0].value.w) || state.before_mode != 6))
+    if (state.key_count == 1 && (!(key < key_array[0].value.w) || state.before_mode != BOOT_TRACK_END_USE_PRE_START_KEY))
     {
         return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
     }
 
-    if (key < key_array[0].value.w && state.before_mode == 6)
+    if (key < key_array[0].value.w && state.before_mode == BOOT_TRACK_END_USE_PRE_START_KEY)
     {
         upper = 0;
         wrapped_key = key;
@@ -810,12 +811,12 @@ FieldVec4A BootVectorTrack::sample(float key)
     {
         wrapped_key = update_cycle_count(key);
 
-        if (state.before_mode == 0 && state.cycle_count < 0)
+        if (state.before_mode == BOOT_TRACK_END_HOLD && state.cycle_count < 0)
         {
             return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
         }
 
-        if (state.after_mode == 0 && state.cycle_count > 0)
+        if (state.after_mode == BOOT_TRACK_END_HOLD && state.cycle_count > 0)
         {
             return *reinterpret_cast<FieldVec4A*>(&key_array[state.key_count - 1].value);
         }
@@ -836,10 +837,11 @@ FieldVec4A BootVectorTrack::sample(float key)
         sample_history.reset();
         sample_history.push_sample(first->value.w, reinterpret_cast<const FieldVec4A*>(&first->value));
         s32 last = state.key_count - 1;
-        // TODO: My guess; copying upper into its own local is the only way I found that matches.
+        // Keep a separate index for the upper key to preserve register allocation.
         s32 upper_index = upper;
 
-        if (upper_index == last && ((!(key < key_array[0].value.w) && state.after_mode == 2) || (key < key_array[0].value.w && state.before_mode == 2)))
+        if (upper_index == last && ((!(key < key_array[0].value.w) && state.after_mode == BOOT_TRACK_END_CYCLE_TO_FIRST) ||
+            (key < key_array[0].value.w && state.before_mode == BOOT_TRACK_END_CYCLE_TO_FIRST)))
         {
             BootVectorTrackKey* entries = key_array;
             BootVectorTrackKey* second = entries + upper_index;
@@ -859,7 +861,8 @@ FieldVec4A BootVectorTrack::sample(float key)
 
     FieldVec4B result = sample_history.sample(wrapped_key);
 
-    if ((state.before_mode == 5 && state.cycle_count < 0) || (state.after_mode == 5 && state.cycle_count > 0))
+    if ((state.before_mode == BOOT_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+        (state.after_mode == BOOT_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0))
     {
         FieldVec4B delta = difference(key_array[state.key_count - 1].value, key_array[0].value);
         result += scaled((float)state.cycle_count, delta);
@@ -1135,7 +1138,7 @@ float BootVectorCurveTrackBase::update_cycle_count(float key)
     {
         float result = key - (float)state.cycle_count * state.span;
 
-        if ((state.before_mode == 3 && state.cycle_count < 0) || (state.after_mode == 3 && state.cycle_count > 0))
+        if ((state.before_mode == BOOT_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == BOOT_TRACK_END_PING_PONG && state.cycle_count > 0))
         {
             s32 last_index = state.key_count - 1;
             BootVectorCurveTrackKey* last_entry = static_cast<BootVectorCurveTrackKey*>(key_array) + last_index;
@@ -1158,7 +1161,7 @@ float BootVectorCurveTrackBase::update_cycle_count(float key)
  * @param key Key to place.
  * @param lower Receives the lower entry index.
  * @param upper Receives the upper entry index.
- * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
  */
 u8 BootVectorCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
 {
@@ -1166,9 +1169,9 @@ u8 BootVectorCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* u
     s32 count;
     s32 next;
 
-    if (state.repeats)
+    if (state.extends_segment)
     {
-        if (state.before_mode == 4 && state.cycle_count < 0)
+        if (state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
         {
             *lower = 0;
             *upper = 1;
@@ -1176,7 +1179,7 @@ u8 BootVectorCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* u
             return 1;
         }
 
-        if (state.after_mode == 4 && state.cycle_count > 0)
+        if (state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
         {
             *lower = state.key_count - 2;
             *upper = state.key_count - 1;
@@ -1226,15 +1229,15 @@ BootVectorCurveTrackBase::~BootVectorCurveTrackBase()
 void BootVectorCurveTrackBase::reset_state()
 {
     static_cast<BootVectorCurveTrackKey*>(key_array) = 0;
-    state.before_mode = 1;
-    state.after_mode = 1;
+    state.before_mode = BOOT_TRACK_END_CYCLE;
+    state.after_mode = BOOT_TRACK_END_CYCLE;
     state.key_capacity = 0;
     state.key_count = 0;
     state.search_index = -1;
     state.cycle_count = 0;
     state.segment_lower = -1;
     state.segment_upper = -1;
-    state.repeats = 0;
+    state.extends_segment = 0;
     state.external_keys = 0;
 }
 
@@ -1262,7 +1265,7 @@ void BootVectorCurveTrackBase::bind_keys(s32 count, BootVectorCurveTrackKey* ent
 void BootVectorCurveTrackBase::set_before_mode(u32 value)
 {
     state.before_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -1272,7 +1275,7 @@ void BootVectorCurveTrackBase::set_before_mode(u32 value)
 void BootVectorCurveTrackBase::set_after_mode(u32 value)
 {
     state.after_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -1496,15 +1499,15 @@ BootFloatCurveTrackBase::~BootFloatCurveTrackBase()
 void BootFloatCurveTrackBase::reset_state()
 {
     key_array = 0;
-    state.before_mode = 1;
-    state.after_mode = 1;
+    state.before_mode = BOOT_TRACK_END_CYCLE;
+    state.after_mode = BOOT_TRACK_END_CYCLE;
     state.key_capacity = 0;
     state.key_count = 0;
     state.search_index = -1;
     state.cycle_count = 0;
     state.segment_lower = -1;
     state.segment_upper = -1;
-    state.repeats = 0;
+    state.extends_segment = 0;
     state.external_keys = 0;
 }
 
@@ -1532,7 +1535,7 @@ void BootFloatCurveTrackBase::allocate_keys(s32 count)
 void BootFloatCurveTrackBase::set_before_mode(u32 value)
 {
     state.before_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -1542,7 +1545,7 @@ void BootFloatCurveTrackBase::set_before_mode(u32 value)
 void BootFloatCurveTrackBase::set_after_mode(u32 value)
 {
     state.after_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -1675,15 +1678,15 @@ BootClass1718C0::~BootClass1718C0()
 void BootClass1718C0::reset_state()
 {
     key_array = 0;
-    state.before_mode = 1;
-    state.after_mode = 1;
+    state.before_mode = BOOT_TRACK_END_CYCLE;
+    state.after_mode = BOOT_TRACK_END_CYCLE;
     state.key_capacity = 0;
     state.key_count = 0;
     state.search_index = -1;
     state.cycle_count = 0;
     state.segment_lower = -1;
     state.segment_upper = -1;
-    state.repeats = 0;
+    state.extends_segment = 0;
     state.external_keys = 0;
 }
 
@@ -1694,7 +1697,7 @@ void BootClass1718C0::reset_state()
 void BootClass1718C0::set_before_mode(u32 value)
 {
     state.before_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -1704,7 +1707,7 @@ void BootClass1718C0::set_before_mode(u32 value)
 void BootClass1718C0::set_after_mode(u32 value)
 {
     state.after_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -1794,7 +1797,7 @@ float BootVectorTrackBase::update_cycle_count(float key)
     {
         float result = key - (float)state.cycle_count * state.span;
 
-        if ((state.before_mode == 3 && state.cycle_count < 0) || (state.after_mode == 3 && state.cycle_count > 0))
+        if ((state.before_mode == BOOT_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == BOOT_TRACK_END_PING_PONG && state.cycle_count > 0))
         {
             s32 last_index = state.key_count - 1;
             BootVectorTrackKey* last_entry = key_array + last_index;
@@ -1817,7 +1820,7 @@ float BootVectorTrackBase::update_cycle_count(float key)
  * @param key Key to place.
  * @param lower Receives the lower entry index.
  * @param upper Receives the upper entry index.
- * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
  */
 u8 BootVectorTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
 {
@@ -1825,9 +1828,9 @@ u8 BootVectorTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
     s32 count;
     s32 next;
 
-    if (state.repeats)
+    if (state.extends_segment)
     {
-        if (state.before_mode == 4 && state.cycle_count < 0)
+        if (state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
         {
             *lower = 0;
             *upper = 1;
@@ -1835,7 +1838,7 @@ u8 BootVectorTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
             return 1;
         }
 
-        if (state.after_mode == 4 && state.cycle_count > 0)
+        if (state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
         {
             *lower = state.key_count - 2;
             *upper = state.key_count - 1;
@@ -1885,15 +1888,15 @@ BootVectorTrackBase::~BootVectorTrackBase()
 void BootVectorTrackBase::reset_state()
 {
     key_array = 0;
-    state.before_mode = 1;
-    state.after_mode = 1;
+    state.before_mode = BOOT_TRACK_END_CYCLE;
+    state.after_mode = BOOT_TRACK_END_CYCLE;
     state.key_capacity = 0;
     state.key_count = 0;
     state.search_index = -1;
     state.cycle_count = 0;
     state.segment_lower = -1;
     state.segment_upper = -1;
-    state.repeats = 0;
+    state.extends_segment = 0;
     state.external_keys = 0;
 }
 
@@ -1921,7 +1924,7 @@ void BootVectorTrackBase::bind_keys(s32 count, BootVectorTrackKey* entries)
 void BootVectorTrackBase::set_before_mode(u32 value)
 {
     state.before_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -1931,7 +1934,7 @@ void BootVectorTrackBase::set_before_mode(u32 value)
 void BootVectorTrackBase::set_after_mode(u32 value)
 {
     state.after_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -2099,15 +2102,15 @@ BootFloatTrackBase::~BootFloatTrackBase()
 void BootFloatTrackBase::reset_state()
 {
     key_array = 0;
-    state.before_mode = 1;
-    state.after_mode = 1;
+    state.before_mode = BOOT_TRACK_END_CYCLE;
+    state.after_mode = BOOT_TRACK_END_CYCLE;
     state.key_capacity = 0;
     state.key_count = 0;
     state.search_index = -1;
     state.cycle_count = 0;
     state.segment_lower = -1;
     state.segment_upper = -1;
-    state.repeats = 0;
+    state.extends_segment = 0;
     state.external_keys = 0;
 }
 
@@ -2135,7 +2138,7 @@ void BootFloatTrackBase::allocate_keys(s32 count)
 void BootFloatTrackBase::set_before_mode(u32 value)
 {
     state.before_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -2145,7 +2148,7 @@ void BootFloatTrackBase::set_before_mode(u32 value)
 void BootFloatTrackBase::set_after_mode(u32 value)
 {
     state.after_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -2972,7 +2975,7 @@ BootFloatQuaternionTrackBase::BootFloatQuaternionTrackBase()
  */
 void BootFloatKeyTrack::on_set_single_key(const float* value, float key)
 {
-    set_before_mode(6);
+    set_before_mode(BOOT_TRACK_END_USE_PRE_START_KEY);
     single_key.value = *value;
     single_key.key = key;
 }
@@ -3125,7 +3128,7 @@ s32 BootFloatKeyTrack::on_append_key(const float* value, float key)
  */
 void BootVectorKeyTrack::on_set_single_key(const FieldVec4A* value, float key)
 {
-    set_before_mode(6);
+    set_before_mode(BOOT_TRACK_END_USE_PRE_START_KEY);
     single_key.value = *value;
     single_key.value.w = key;
 }
@@ -3185,7 +3188,7 @@ s32 BootVectorKeyTrack::on_insert_key(s32 index, float key, const FieldVec4A* va
  */
 void BootClass171320::on_set_single_key(const FieldVec4A* value, float key)
 {
-    set_before_mode(6);
+    set_before_mode(BOOT_TRACK_END_USE_PRE_START_KEY);
     single_value = *value;
     single_key = key;
 }
@@ -3331,12 +3334,12 @@ s32 BootClass171320::on_append_key(const FieldVec4A* value, float key)
     return 1;
 }
 
-/** @brief Reset to a single zero keyframe at key zero, then set before_mode to one. */
+/** @brief Reset to a single zero keyframe at key zero, then select the cycle end mode. */
 void BootFloatTrack::reset_keys()
 {
     float zero = 0.0f;
     on_set_single_key(&zero, 0.0f);
-    set_before_mode(1);
+    set_before_mode(BOOT_TRACK_END_CYCLE);
 }
 
 /**
@@ -3362,12 +3365,12 @@ float BootFloatTrack::sample(float key)
         state.search_index = 0;
     }
 
-    if (state.key_count == 1 && (!(key < key_array[0].key) || state.before_mode != 6))
+    if (state.key_count == 1 && (!(key < key_array[0].key) || state.before_mode != BOOT_TRACK_END_USE_PRE_START_KEY))
     {
         return key_array[0].value;
     }
 
-    if (key < key_array[0].key && state.before_mode == 6)
+    if (key < key_array[0].key && state.before_mode == BOOT_TRACK_END_USE_PRE_START_KEY)
     {
         upper = 0;
         wrapped_key = key;
@@ -3377,12 +3380,12 @@ float BootFloatTrack::sample(float key)
     {
         wrapped_key = update_cycle_count(key);
 
-        if (state.before_mode == 0 && state.cycle_count < 0)
+        if (state.before_mode == BOOT_TRACK_END_HOLD && state.cycle_count < 0)
         {
             return key_array[0].value;
         }
 
-        if (state.after_mode == 0 && state.cycle_count > 0)
+        if (state.after_mode == BOOT_TRACK_END_HOLD && state.cycle_count > 0)
         {
             return key_array[state.key_count - 1].value;
         }
@@ -3406,10 +3409,11 @@ float BootFloatTrack::sample(float key)
         sample_history.unk0C = 0;
         sample_history.add_sample(first->key, first->value);
         s32 last = state.key_count - 1;
-        // TODO: My guess; copying upper into its own local is the only way I found that matches.
+        // Keep a separate index for the upper key to preserve register allocation.
         s32 upper_index = upper;
 
-        if (upper_index == last && ((!(key < key_array[0].key) && state.after_mode == 2) || (key < key_array[0].key && state.before_mode == 2)))
+        if (upper_index == last && ((!(key < key_array[0].key) && state.after_mode == BOOT_TRACK_END_CYCLE_TO_FIRST) ||
+            (key < key_array[0].key && state.before_mode == BOOT_TRACK_END_CYCLE_TO_FIRST)))
         {
             BootFloatTrackKey* entries = key_array;
             sample_history.add_sample(entries[upper_index].key, entries[0].value);
@@ -3427,7 +3431,8 @@ float BootFloatTrack::sample(float key)
 
     result = sample_history.sample(wrapped_key);
 
-    if ((state.before_mode == 5 && state.cycle_count < 0) || (state.after_mode == 5 && state.cycle_count > 0))
+    if ((state.before_mode == BOOT_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+        (state.after_mode == BOOT_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0))
     {
         float delta = key_array[state.key_count - 1].value - key_array[0].value;
         result += delta * state.cycle_count;
@@ -3438,12 +3443,12 @@ float BootFloatTrack::sample(float key)
     return result;
 }
 
-/** @brief Reset to a single zero keyframe at key zero, then set before_mode to one. */
+/** @brief Reset to a single zero keyframe at key zero, then select the cycle end mode. */
 void BootVectorTrack::reset_keys()
 {
     FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
     on_set_single_key(&zero, 0.0f);
-    set_before_mode(1);
+    set_before_mode(BOOT_TRACK_END_CYCLE);
 }
 
 /**
@@ -3499,7 +3504,7 @@ s32 BootFloatCurveTrack::read_key(s32 index, float* key, float* value, float* in
  */
 void BootFloatCurveTrack::set_single_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
-    set_before_mode(6);
+    set_before_mode(BOOT_TRACK_END_USE_PRE_START_KEY);
     single_key.value = *value;
     single_key.in_tangent = *in_tangent;
     single_key.out_tangent = *out_tangent;
@@ -3644,14 +3649,14 @@ float BootFloatCurveTrack::sample(float key)
         state.search_index = 0;
     }
 
-    if (state.key_count == 1 && (!(key < key_array[0].key) || state.before_mode != 6))
+    if (state.key_count == 1 && (!(key < key_array[0].key) || state.before_mode != BOOT_TRACK_END_USE_PRE_START_KEY))
     {
         return key_array[0].value;
     }
 
     extrapolate = 0;
 
-    if (key < key_array[0].key && state.before_mode == 6)
+    if (key < key_array[0].key && state.before_mode == BOOT_TRACK_END_USE_PRE_START_KEY)
     {
         upper = 0;
         wrapped_key = key;
@@ -3663,12 +3668,12 @@ float BootFloatCurveTrack::sample(float key)
 
         if (state.cycle_count)
         {
-            if (state.before_mode == 0 && state.cycle_count < 0)
+            if (state.before_mode == BOOT_TRACK_END_HOLD && state.cycle_count < 0)
             {
                 return key_array[0].value;
             }
 
-            if (state.after_mode == 0 && state.cycle_count > 0)
+            if (state.after_mode == BOOT_TRACK_END_HOLD && state.cycle_count > 0)
             {
                 return key_array[state.key_count - 1].value;
             }
@@ -3691,7 +3696,8 @@ float BootFloatCurveTrack::sample(float key)
             BootFloatCurveTrackKey* first = lower >= 0 ? key_array + lower : &single_key;
             s32 last = state.key_count - 1;
 
-            if (upper == last && ((!(key < key_array[0].key) && state.after_mode == 2) || (key < key_array[0].key && state.before_mode == 2)))
+            if (upper == last && ((!(key < key_array[0].key) && state.after_mode == BOOT_TRACK_END_CYCLE_TO_FIRST) ||
+                (key < key_array[0].key && state.before_mode == BOOT_TRACK_END_CYCLE_TO_FIRST)))
             {
                 BootFloatCurveTrackKey* entries = key_array;
                 curve_segment.set_endpoints(&first->value, &first->out_tangent, &entries[0].value, &entries[0].in_tangent, first->key, entries[upper].key);
@@ -3710,7 +3716,8 @@ float BootFloatCurveTrack::sample(float key)
 
         result = curve_segment.interpolate(wrapped_key);
 
-        if (state.cycle_count && ((state.before_mode == 5 && state.cycle_count < 0) || (state.after_mode == 5 && state.cycle_count > 0)))
+        if (state.cycle_count && ((state.before_mode == BOOT_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+            (state.after_mode == BOOT_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0)))
         {
             float delta = key_array[state.key_count - 1].value - key_array[0].value;
             result += delta * state.cycle_count;
@@ -3748,7 +3755,7 @@ float BootFloatCurveTrack::sample(float key)
  */
 void BootVectorCurveTrack::set_single_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key)
 {
-    set_before_mode(6);
+    set_before_mode(BOOT_TRACK_END_USE_PRE_START_KEY);
     single_key.value = *value;
     single_key.in_tangent = *in_tangent;
     single_key.out_tangent = *out_tangent;
@@ -3812,7 +3819,7 @@ s32 BootVectorCurveTrack::insert_curve_key(s32 index, float key, const FieldVec4
 void BootQuaternionCurveTrackBase::set_before_mode(u32 value)
 {
     state.before_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -3822,7 +3829,7 @@ void BootQuaternionCurveTrackBase::set_before_mode(u32 value)
 void BootQuaternionTrackBase::set_before_mode(u32 value)
 {
     state.before_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -3832,7 +3839,7 @@ void BootQuaternionTrackBase::set_before_mode(u32 value)
 void BootFloatQuaternionTrackBase::set_before_mode(u32 value)
 {
     state.before_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -3898,15 +3905,15 @@ void BootFloatHistoryBase::func_slot08()
 void BootFloatQuaternionTrackBase::reset_state()
 {
     key_array = 0;
-    state.before_mode = 1;
-    state.after_mode = 1;
+    state.before_mode = BOOT_TRACK_END_CYCLE;
+    state.after_mode = BOOT_TRACK_END_CYCLE;
     state.key_capacity = 0;
     state.key_count = 0;
     state.search_index = -1;
     state.cycle_count = 0;
     state.segment_lower = -1;
     state.segment_upper = -1;
-    state.repeats = 0;
+    state.extends_segment = 0;
     state.external_keys = 0;
 }
 
@@ -3934,7 +3941,7 @@ void BootFloatQuaternionTrackBase::allocate_keys(s32 count)
 void BootFloatQuaternionTrackBase::set_after_mode(u32 value)
 {
     state.after_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -4171,7 +4178,7 @@ float BootFloatCurveTrackBase::update_cycle_count(float key)
     {
         float result = key - (float)state.cycle_count * state.span;
 
-        if ((state.before_mode == 3 && state.cycle_count < 0) || (state.after_mode == 3 && state.cycle_count > 0))
+        if ((state.before_mode == BOOT_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == BOOT_TRACK_END_PING_PONG && state.cycle_count > 0))
         {
             s32 last_index = state.key_count - 1;
             BootFloatCurveTrackKey* last_entry = key_array + last_index;
@@ -4194,7 +4201,7 @@ float BootFloatCurveTrackBase::update_cycle_count(float key)
  * @param key Key to place.
  * @param lower Receives the lower entry index.
  * @param upper Receives the upper entry index.
- * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
  */
 u8 BootFloatCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
 {
@@ -4202,9 +4209,9 @@ u8 BootFloatCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* up
     s32 count;
     s32 next;
 
-    if (state.repeats)
+    if (state.extends_segment)
     {
-        if (state.before_mode == 4 && state.cycle_count < 0)
+        if (state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
         {
             *lower = 0;
             *upper = 1;
@@ -4212,7 +4219,7 @@ u8 BootFloatCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* up
             return 1;
         }
 
-        if (state.after_mode == 4 && state.cycle_count > 0)
+        if (state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
         {
             *lower = state.key_count - 2;
             *upper = state.key_count - 1;
@@ -4324,7 +4331,7 @@ float BootFloatTrackBase::update_cycle_count(float key)
     {
         float result = key - (float)state.cycle_count * state.span;
 
-        if ((state.before_mode == 3 && state.cycle_count < 0) || (state.after_mode == 3 && state.cycle_count > 0))
+        if ((state.before_mode == BOOT_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == BOOT_TRACK_END_PING_PONG && state.cycle_count > 0))
         {
             s32 last_index = state.key_count - 1;
             BootFloatTrackKey* last_entry = key_array + last_index;
@@ -4347,7 +4354,7 @@ float BootFloatTrackBase::update_cycle_count(float key)
  * @param key Key to place.
  * @param lower Receives the lower entry index.
  * @param upper Receives the upper entry index.
- * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
  */
 u8 BootFloatTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
 {
@@ -4355,9 +4362,9 @@ u8 BootFloatTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
     s32 count;
     s32 next;
 
-    if (state.repeats)
+    if (state.extends_segment)
     {
-        if (state.before_mode == 4 && state.cycle_count < 0)
+        if (state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
         {
             *lower = 0;
             *upper = 1;
@@ -4365,7 +4372,7 @@ u8 BootFloatTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
             return 1;
         }
 
-        if (state.after_mode == 4 && state.cycle_count > 0)
+        if (state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
         {
             *lower = state.key_count - 2;
             *upper = state.key_count - 1;
@@ -4409,15 +4416,15 @@ u8 BootFloatTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
 void BootQuaternionTrackBase::reset_state()
 {
     key_array = 0;
-    state.before_mode = 1;
-    state.after_mode = 1;
+    state.before_mode = BOOT_TRACK_END_CYCLE;
+    state.after_mode = BOOT_TRACK_END_CYCLE;
     state.key_capacity = 0;
     state.key_count = 0;
     state.search_index = -1;
     state.cycle_count = 0;
     state.segment_lower = -1;
     state.segment_upper = -1;
-    state.repeats = 0;
+    state.extends_segment = 0;
     state.external_keys = 0;
 }
 
@@ -4462,7 +4469,7 @@ void BootQuaternionTrackBase::bind_keys(s32 count, BootQuaternionTrackKey* entri
 void BootQuaternionTrackBase::set_after_mode(u32 value)
 {
     state.after_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**
@@ -4652,7 +4659,7 @@ float BootQuaternionTrackBase::get_key_span() const
  */
 static inline void reread_result(FieldVec4A*& out)
 {
-    // TODO: The original reads the result pointer again after the copy; a volatile read is the only way I found that matches.
+    // Preserve the read of the result pointer after the copy.
     FieldVec4A* volatile* slot = &out;
     (void)*slot;
 }
@@ -4744,15 +4751,15 @@ BootQuaternionTrackKey* BootQuaternionTrackBase::get_keys()
 void BootQuaternionCurveTrackBase::reset_state()
 {
     key_array = 0;
-    state.before_mode = 1;
-    state.after_mode = 1;
+    state.before_mode = BOOT_TRACK_END_CYCLE;
+    state.after_mode = BOOT_TRACK_END_CYCLE;
     state.key_capacity = 0;
     state.key_count = 0;
     state.search_index = -1;
     state.cycle_count = 0;
     state.segment_lower = -1;
     state.segment_upper = -1;
-    state.repeats = 0;
+    state.extends_segment = 0;
     state.external_keys = 0;
 }
 
@@ -4797,7 +4804,7 @@ void BootQuaternionCurveTrackBase::bind_keys(s32 count, BootQuaternionCurveTrack
 void BootQuaternionCurveTrackBase::set_after_mode(u32 value)
 {
     state.after_mode = value;
-    state.repeats = state.before_mode == 4 || state.after_mode == 4;
+    state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
 }
 
 /**

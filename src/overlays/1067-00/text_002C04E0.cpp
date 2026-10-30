@@ -1002,7 +1002,7 @@ FieldClass15A690::~FieldClass15A690()
 extern "C" void func_002C3B70(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C3BA0);
@@ -1088,7 +1088,7 @@ void FieldClass15AAB0::func_001DD7B0()
         unk2C = 0;
     }
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C5AE0);

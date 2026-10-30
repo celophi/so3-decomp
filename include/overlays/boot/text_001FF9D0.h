@@ -233,23 +233,53 @@ class BootStringLabel : public BootDrawWidget
         const char* text;
 };
 
-/** Real and imaginary parts of one channel's spectrum. */
-struct BootSpectrum
-{
-    float real[1024];
-    float imag[1024];
-};
-
 /** Music player limits. */
 enum BootMusicConstants
 {
     /** Number of tracks the player can play. */
-    BOOT_MUSIC_TRACK_COUNT = 87
+    BOOT_MUSIC_TRACK_COUNT = 87,
+
+    /** Samples in one FFT analysis window. */
+    BOOT_MUSIC_FFT_SIZE = 1024,
+
+    /** Audio samples generated each second. */
+    BOOT_MUSIC_SAMPLE_RATE = 48000,
+
+    /** Initial sample lead when playback advances to another track. */
+    BOOT_MUSIC_NEXT_TRACK_LEAD_SAMPLES = 4096,
+
+    /** Bytes reserved for each stereo stream buffer. */
+    BOOT_MUSIC_STREAM_BUFFER_SIZE = 0x200000,
+
+    /** Number of random swaps used to prepare the shuffled track order. */
+    BOOT_MUSIC_SHUFFLE_SWAPS = 500,
+
+    /** First message in the three play mode labels. */
+    BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE = 0x3E8,
+
+    /** Offset from a track's sound ID to its name message. */
+    BOOT_MUSIC_TRACK_NAME_MESSAGE_OFFSET = 0x44B
+};
+
+/** Real and imaginary parts of one channel's spectrum. */
+struct BootSpectrum
+{
+    float real[BOOT_MUSIC_FFT_SIZE];
+    float imag[BOOT_MUSIC_FFT_SIZE];
+};
+
+/** How the music player advances after a track ends. */
+enum BootMusicPlayMode
+{
+    BOOT_MUSIC_PLAY_SINGLE,
+    BOOT_MUSIC_PLAY_IN_ORDER,
+    BOOT_MUSIC_PLAY_SHUFFLED,
+    BOOT_MUSIC_PLAY_MODE_COUNT
 };
 
 /**
- * Music player with vtable D_171D80 in main data, opened from the Battle Trophies screen. It streams one of 87 tracks
- * in order, on repeat or shuffled, and shows five frequency bands of each channel on a row of needle meters.
+ * Music player with vtable D_171D80 in main data, opened from the Battle Trophies screen. It can stop after one track,
+ * continue through its 87 tracks in order or shuffle them, and shows five frequency bands per channel on needle meters.
  */
 class BootMusicPlayer : public BootListObject
 {
@@ -292,7 +322,7 @@ class BootMusicPlayer : public BootListObject
         /** Nonzero while the selected row's image brightens again. */
         u8 brightening;
 
-        /** Zero plays one track, one plays the list in order and two plays it shuffled. */
+        /** BootMusicPlayMode value selected in the menu. */
         u8 play_mode;
 
         u8 unk78;
@@ -324,13 +354,13 @@ class BootMusicPlayer : public BootListObject
         u8 unke4[0xC];
 
         /** Left and right stream buffers. */
-        u8 stream_buffers[2][0x200000];
+        u8 stream_buffers[2][BOOT_MUSIC_STREAM_BUFFER_SIZE];
 
         /** Spectrum of each channel. */
         BootSpectrum spectra[2];
 
         /** Hann window over one block of samples. */
-        float window[1024];
+        float window[BOOT_MUSIC_FFT_SIZE];
 
         BootContainer* container;
         BootListObject* unk4050f4;

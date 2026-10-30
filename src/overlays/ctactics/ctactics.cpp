@@ -3420,7 +3420,7 @@ void TacticsController::func_slot5c()
 /** @brief Submit the State to the resident object queue. */
 void TacticsController::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /** @brief Default update handler that performs no work. */
