@@ -30,6 +30,50 @@ void lib_container_attach_widget(BootContainer* container, BootTextWidget* child
 void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 }
 
+/** Stages of the installer screen's resource loading, unit checks, copy, and exit paths. */
+enum BootInstallerStep
+{
+    BOOT_INSTALL_WAIT_FOR_RESOURCES = 0,
+    BOOT_INSTALL_DECODE_SCREEN_IMAGES = 1,
+    BOOT_INSTALL_SHOW_INITIAL_PROMPT = 2,
+    BOOT_INSTALL_HANDLE_CHOICE = 3,
+    BOOT_INSTALL_LEAVE = 4,
+    BOOT_INSTALL_WAIT_FOR_UNIT_RESOURCES = 5,
+    BOOT_INSTALL_QUERY_UNIT = 6,
+    BOOT_INSTALL_WAIT_FOR_UNIT_STATUS = 7,
+    BOOT_INSTALL_WAIT_FOR_UNIT_COMMAND = 8,
+    BOOT_INSTALL_CHECK_UNIT_RESULT = 9,
+    BOOT_INSTALL_SHOW_OVERWRITE_PROMPT = 10,
+    BOOT_INSTALL_REQUEST_SPACE = 11,
+    BOOT_INSTALL_WAIT_FOR_SPACE = 12,
+    BOOT_INSTALL_CHECK_SPACE = 13,
+    BOOT_INSTALL_SHOW_NO_SPACE = 14,
+    BOOT_INSTALL_WAIT_TO_BEGIN = 15,
+    BOOT_INSTALL_PREPARE_FILES = 16,
+    BOOT_INSTALL_WAIT_FOR_FILES = 17,
+    BOOT_INSTALL_START_COPY = 18,
+    BOOT_INSTALL_COPY_PROGRESS = 19,
+    BOOT_INSTALL_SHOW_ERROR = 20,
+    BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT = 21,
+    BOOT_INSTALL_RETURN_TO_TITLE = 22,
+    BOOT_INSTALL_FINISH_COPY = 23,
+    BOOT_INSTALL_WAIT_FOR_FINISH = 24,
+    BOOT_INSTALL_SHOW_COMPLETE = 25,
+    BOOT_INSTALL_RESUME_COPY = 26,
+    BOOT_INSTALL_ABORT_COPY = 27,
+    BOOT_INSTALL_WAIT_FOR_ABORT = 28,
+    BOOT_INSTALL_FINISH_ABORT = 29,
+    BOOT_INSTALL_WAIT_FOR_ABORT_FINISH = 30,
+    BOOT_INSTALL_RETURN_FROM_ABORT = 31
+};
+
+enum BootInstallerLimits
+{
+    BOOT_INSTALL_TIP_COUNT = 8,
+    BOOT_INSTALL_SECOND_TIP_PERCENT = 12,
+    BOOT_INSTALL_ABORT_TIMEOUT_FRAMES = 600
+};
+
 /**
  * @brief Return the cursor's horizontal position for a yes/no selection.
  * @param selection Selected entry, 0 or 1.
@@ -87,14 +131,14 @@ void BootInstaller::show_tip_image(s32 index)
 
     if (tip_image_buffer != 0)
     {
-        resident_queue_allocation_release(D_001B65F4, tip_image_buffer);
+        resident_queue_allocation_release(g_resident_release_queues, tip_image_buffer);
         tip_image_buffer = 0;
     }
 
-    tip_image_buffer = func_102920(D_001B65EC, tip_image_data, index, 1);
-    func_1025A0(D_001B65EC, tip_image_data, (void*)(((u32)tip_image_buffer + 0x7F) & ~0x7F), index);
+    tip_image_buffer = func_102920(g_resident_resource_decoder, tip_image_data, index, 1);
+    func_1025A0(g_resident_resource_decoder, tip_image_data, (void*)BOOT_ALIGN_RESOURCE(tip_image_buffer), index);
     tip_image = new (0) BootImage;
-    tip_image->set_texture((const BootTextureResource*)(((u32)tip_image_buffer + 0x7F) & ~0x7F), 0);
+    tip_image->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(tip_image_buffer), 0);
     resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     tip_image->set_rectangle(0, 1, 0x120, 0xC9, 0x80808080, 0);
     tip_image->model->set_translation(-296.0f, -64.0f, 0.0f);
@@ -123,7 +167,7 @@ void BootInstaller::update_choice_images()
         return;
     }
 
-    if (step >= 0xE && images[4] != 0)
+    if (step >= BOOT_INSTALL_SHOW_NO_SPACE && images[4] != 0)
     {
         lib_object_detach_owner(images[4]);
         images[4]->destroy();
@@ -144,10 +188,10 @@ void BootInstaller::update_choice_images()
     if (images[4] == 0)
     {
         images[4] = new (0) BootImage;
-        images[4]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[4]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[4]->set_rectangle(0x1E, 0x131, 0x4C, 0x26, 0x80808080, 0);
         images[5] = new (0) BootImage;
-        images[5]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[5]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[5]->set_rectangle(0x1E, 0x167, 0x4C, 0x26, 0x80808080, 0);
     }
 
@@ -254,7 +298,7 @@ void BootInstaller::place_screen_images()
     if (images[0] == 0)
     {
         images[0] = new (0) BootImage;
-        images[0]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[0]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
@@ -262,7 +306,7 @@ void BootInstaller::place_screen_images()
     if (images[1] == 0)
     {
         images[1] = new (0) BootImage;
-        images[1]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[1] + 0x7F) & ~0x7F), 0);
+        images[1]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[1]), 0);
         images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
         images[1]->model->set_translation(-312.0f, -216.0f, 0.0f);
     }
@@ -270,14 +314,14 @@ void BootInstaller::place_screen_images()
     if (images[2] == 0)
     {
         images[2] = new (0) BootImage;
-        images[2]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[2]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[2]->set_rectangle(0, 0xEA, 0xC8, 0x1D, 0x80808080, 0);
     }
 
     if (images[3] == 0)
     {
         images[3] = new (0) BootImage;
-        images[3]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[0] + 0x7F) & ~0x7F), 0);
+        images[3]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[3]->set_rectangle(0x1B, 0x190, 0x1B6, 0x31, 0x80808080, 0);
     }
 
@@ -346,7 +390,7 @@ void BootInstaller::update()
 
     switch (step)
     {
-    case 0:
+    case BOOT_INSTALL_WAIT_FOR_RESOURCES:
         if (func_102D00(D_001B65E8) != 0)
         {
             func_103E70(D_001B65E8, BOOT_RES_SOUND, sound_data, 1, 0x34BC0, 0, 0, 0, 1);
@@ -369,9 +413,9 @@ void BootInstaller::update()
         }
 
         break;
-    case 1:
-        screen_image_buffers[screen_images_loaded] = func_102920(D_001B65EC, screen_image_data, screen_images_loaded, 1);
-        func_1025A0(D_001B65EC, screen_image_data, (void*)(((u32)screen_image_buffers[screen_images_loaded] + 0x7F) & ~0x7F), screen_images_loaded);
+    case BOOT_INSTALL_DECODE_SCREEN_IMAGES:
+        screen_image_buffers[screen_images_loaded] = func_102920(g_resident_resource_decoder, screen_image_data, screen_images_loaded, 1);
+        func_1025A0(g_resident_resource_decoder, screen_image_data, (void*)BOOT_ALIGN_RESOURCE(screen_image_buffers[screen_images_loaded]), screen_images_loaded);
 
         if (++screen_images_loaded >= 2)
         {
@@ -380,11 +424,11 @@ void BootInstaller::update()
         }
 
         break;
-    case 2:
+    case BOOT_INSTALL_SHOW_INITIAL_PROMPT:
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 0);
         selection = 0;
-        no_step = 4;
-        yes_step = 5;
+        no_step = BOOT_INSTALL_LEAVE;
+        yes_step = BOOT_INSTALL_WAIT_FOR_UNIT_RESOURCES;
         selection = 0;
         x = menu_cursor_x(selection);
 
@@ -400,10 +444,10 @@ void BootInstaller::update()
         menu_frames = 0;
         step++;
         break;
-    case 3:
+    case BOOT_INSTALL_HANDLE_CHOICE:
         menu_frames++;
 
-        if ((input->repeated & 0xA0) && cursor->unk35)
+        if ((input->repeated & (BOOT_BUTTON_RIGHT | BOOT_BUTTON_LEFT)) && cursor->unk35)
         {
             selection = (selection + 1) & 1;
             choice_growing = 0;
@@ -435,7 +479,7 @@ void BootInstaller::update()
         }
 
         break;
-    case 4:
+    case BOOT_INSTALL_LEAVE:
         if (exiting == 0)
         {
             func_10F000(D_001B65F8, 0, -1);
@@ -501,37 +545,37 @@ void BootInstaller::update()
                 progress_bar = 0;
             }
 
-            static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(3), -1);
+            static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_INSTALL), -1);
             lib_object_detach_owner(this);
             destroy();
             return;
         }
 
         break;
-    case 5:
+    case BOOT_INSTALL_WAIT_FOR_UNIT_RESOURCES:
         if (func_102D00(D_001B65E8) != 0)
         {
             step++;
         }
 
         break;
-    case 6:
+    case BOOT_INSTALL_QUERY_UNIT:
         if (func_115460(D_001B65E4, 1, 1) != 0)
         {
-            step = 7;
+            step = BOOT_INSTALL_WAIT_FOR_UNIT_STATUS;
         }
         else
         {
-            step = 0xB;
+            step = BOOT_INSTALL_REQUEST_SPACE;
         }
 
         break;
-    case 7:
+    case BOOT_INSTALL_WAIT_FOR_UNIT_STATUS:
         if (func_115650(D_001B65E4) == 0)
         {
             if (func_115640(D_001B65E4) != 0)
             {
-                step = 0xB;
+                step = BOOT_INSTALL_REQUEST_SPACE;
             }
             else
             {
@@ -541,31 +585,31 @@ void BootInstaller::update()
         }
 
         break;
-    case 8:
+    case BOOT_INSTALL_WAIT_FOR_UNIT_COMMAND:
         if (func_115650(D_001B65E4) == 0)
         {
             step++;
         }
 
         break;
-    case 9:
+    case BOOT_INSTALL_CHECK_UNIT_RESULT:
         func_115460(D_001B65E4, 0, 0);
 
         if (func_115640(D_001B65E4) == 0)
         {
-            step = 0xA;
+            step = BOOT_INSTALL_SHOW_OVERWRITE_PROMPT;
         }
         else
         {
-            step = 0xB;
+            step = BOOT_INSTALL_REQUEST_SPACE;
         }
 
         break;
-    case 10:
+    case BOOT_INSTALL_SHOW_OVERWRITE_PROMPT:
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_OVERWRITE_CONFIRM, 0);
-        yes_step = 0xB;
-        no_step = 2;
-        step = 3;
+        yes_step = BOOT_INSTALL_REQUEST_SPACE;
+        no_step = BOOT_INSTALL_SHOW_INITIAL_PROMPT;
+        step = BOOT_INSTALL_HANDLE_CHOICE;
 
         if (cursor != 0)
         {
@@ -576,16 +620,16 @@ void BootInstaller::update()
         }
 
         break;
-    case 11:
+    case BOOT_INSTALL_REQUEST_SPACE:
         func_115810(D_001B65E4, 2, 0);
         step++;
         break;
-    case 12:
+    case BOOT_INSTALL_WAIT_FOR_SPACE:
         if (func_115650(D_001B65E4) == 0)
         {
             if (func_115640(D_001B65E4) != 0)
             {
-                step = 0x14;
+                step = BOOT_INSTALL_SHOW_ERROR;
             }
             else
             {
@@ -594,27 +638,27 @@ void BootInstaller::update()
         }
 
         break;
-    case 13:
+    case BOOT_INSTALL_CHECK_SPACE:
     {
         u32 needed = func_115840(D_001B65E4);
 
         if (func_115830(D_001B65E4) < needed)
         {
-            step = 0xE;
+            step = BOOT_INSTALL_SHOW_NO_SPACE;
         }
         else
         {
-            step = 0xF;
+            step = BOOT_INSTALL_WAIT_TO_BEGIN;
         }
 
         break;
     }
-    case 14:
+    case BOOT_INSTALL_SHOW_NO_SPACE:
         D_001B657C->message_value = func_115840(D_001B65E4) >> 11;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_NOT_ENOUGH_SPACE, 0);
-        step = 0x15;
+        step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
-    case 15:
+    case BOOT_INSTALL_WAIT_TO_BEGIN:
         if (func_102D00(D_001B65E8) != 0)
         {
             queue_fade();
@@ -622,7 +666,7 @@ void BootInstaller::update()
         }
 
         break;
-    case 16:
+    case BOOT_INSTALL_PREPARE_FILES:
     {
         s32 sizes[3];
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
@@ -634,7 +678,7 @@ void BootInstaller::update()
         lib_container_attach_widget(container, tip_text);
         show_tip_image(0);
         tip_index = 1;
-        next_tip_percent = 0xC;
+        next_tip_percent = BOOT_INSTALL_SECOND_TIP_PERCENT;
         D_001B657C->message_value = 0;
 
         if (resource->widescreen)
@@ -658,7 +702,7 @@ void BootInstaller::update()
             sizes[i] = header->decoded_size;
             system_file_buffers[i] = func_139700(0x200, header->decoded_size + 0x200);
             func_13A678(system_file_buffers[i], 0, header->decoded_size + 0x200);
-            func_1025A0(D_001B65EC, (u8*)header, system_file_buffers[i], 0);
+            func_1025A0(g_resident_resource_decoder, (u8*)header, system_file_buffers[i], 0);
             header = (ResidentResourceHeader*)((u8*)header + header->next_offset);
         }
 
@@ -671,7 +715,7 @@ void BootInstaller::update()
             sizes[i] = header->decoded_size;
             navigator_file_buffers[i] = func_139700(0x200, header->decoded_size + 0x200);
             func_13A678(navigator_file_buffers[i], 0, header->decoded_size + 0x200);
-            func_1025A0(D_001B65EC, (u8*)header, navigator_file_buffers[i], 0);
+            func_1025A0(g_resident_resource_decoder, (u8*)header, navigator_file_buffers[i], 0);
             header = (ResidentResourceHeader*)((u8*)header + header->next_offset);
         }
 
@@ -680,7 +724,7 @@ void BootInstaller::update()
         step++;
         break;
     }
-    case 17:
+    case BOOT_INSTALL_WAIT_FOR_FILES:
         if (func_115650(D_001B65E4) == 0)
         {
             func_139928(system_file_buffers[0]);
@@ -692,7 +736,7 @@ void BootInstaller::update()
 
             if (func_115640(D_001B65E4) != 0)
             {
-                step = 0x14;
+                step = BOOT_INSTALL_SHOW_ERROR;
             }
             else
             {
@@ -702,12 +746,12 @@ void BootInstaller::update()
         }
 
         break;
-    case 18:
+    case BOOT_INSTALL_START_COPY:
         if (func_115650(D_001B65E4) == 0)
         {
             if (func_115640(D_001B65E4) != 0)
             {
-                step = 0x14;
+                step = BOOT_INSTALL_SHOW_ERROR;
             }
             else
             {
@@ -722,16 +766,16 @@ void BootInstaller::update()
         }
 
         break;
-    case 19:
+    case BOOT_INSTALL_COPY_PROGRESS:
         if (func_115650(D_001B65E4) == 0)
         {
             if (func_115640(D_001B65E4) != 0)
             {
-                step = 0x14;
+                step = BOOT_INSTALL_SHOW_ERROR;
             }
             else
             {
-                step = 0x17;
+                step = BOOT_INSTALL_FINISH_COPY;
             }
         }
         else
@@ -741,12 +785,12 @@ void BootInstaller::update()
             D_001B657C->message_value = percent;
             lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
 
-            if (percent >= next_tip_percent && tip_index < 8)
+            if (percent >= next_tip_percent && tip_index < BOOT_INSTALL_TIP_COUNT)
             {
                 show_tip_image(tip_index);
                 lib_text_set_resource(tip_text, g_boot_program.messages, tip_index + BOOT_MSG_FIRST_TIP, 0);
                 tip_index++;
-                next_tip_percent = tip_index * 100 / 8;
+                next_tip_percent = tip_index * 100 / BOOT_INSTALL_TIP_COUNT;
             }
 
             progress_bar_draw(progress_bar, install_total - remaining, install_total);
@@ -764,14 +808,14 @@ void BootInstaller::update()
                 func_465B20(D_001B657C, cursor);
                 tip_text->visible = 0;
                 tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
-                step = 3;
-                yes_step = 0x1B;
-                no_step = 0x1A;
+                step = BOOT_INSTALL_HANDLE_CHOICE;
+                yes_step = BOOT_INSTALL_ABORT_COPY;
+                no_step = BOOT_INSTALL_RESUME_COPY;
             }
         }
 
         break;
-    case 23:
+    case BOOT_INSTALL_FINISH_COPY:
         D_001B657C->message_value = 100;
         lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
         progress_bar_draw(progress_bar, 100, 100);
@@ -786,7 +830,7 @@ void BootInstaller::update()
         func_115810(D_001B65E4, 4, 0);
         step++;
         break;
-    case 24:
+    case BOOT_INSTALL_WAIT_FOR_FINISH:
         if (func_115650(D_001B65E4) == 0)
         {
             func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
@@ -795,13 +839,13 @@ void BootInstaller::update()
         }
 
         break;
-    case 25:
+    case BOOT_INSTALL_SHOW_COMPLETE:
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_COMPLETE, 0);
         tip_text->visible = 0;
         tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
-        step = 0x15;
+        step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
-    case 20:
+    case BOOT_INSTALL_SHOW_ERROR:
         if (func_115430(D_001B65E4) != 0)
         {
             if (tip_text != 0)
@@ -825,18 +869,18 @@ void BootInstaller::update()
             lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_ERROR, 0);
         }
 
-        step = 0x15;
+        step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
-    case 21:
+    case BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT:
         if (input->pressed & resource->confirm_buttons)
         {
             func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
-            step = 0x16;
+            step = BOOT_INSTALL_RETURN_TO_TITLE;
         }
 
         break;
-    case 22:
+    case BOOT_INSTALL_RETURN_TO_TITLE:
         func_10F000(D_001B65F8, 0, -1);
         func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
 
@@ -894,18 +938,18 @@ void BootInstaller::update()
             tip_image = 0;
         }
 
-        static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(-1), -1);
+        static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
-    case 26:
+    case BOOT_INSTALL_RESUME_COPY:
         tip_text->visible = 1;
         tip_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         D_001B65E4->unk13b = 0;
-        step = 0x13;
+        step = BOOT_INSTALL_COPY_PROGRESS;
         break;
-    case 27:
+    case BOOT_INSTALL_ABORT_COPY:
         if (tip_text != 0)
         {
             tip_text->destroy();
@@ -925,7 +969,7 @@ void BootInstaller::update()
         step++;
         wait_frames = 0;
         break;
-    case 28:
+    case BOOT_INSTALL_WAIT_FOR_ABORT:
         wait_frames++;
 
         if (func_115650(D_001B65E4) == 0)
@@ -934,16 +978,16 @@ void BootInstaller::update()
             step++;
         }
 
-        if (wait_frames >= 600)
+        if (wait_frames >= BOOT_INSTALL_ABORT_TIMEOUT_FRAMES)
         {
             BootResident1B65E4* resident = D_001B65E4;
             resident->unk108 = 0;
             resident->unk141 = 3;
-            step = 0x1F;
+            step = BOOT_INSTALL_RETURN_FROM_ABORT;
         }
 
         break;
-    case 29:
+    case BOOT_INSTALL_FINISH_ABORT:
         if (func_115650(D_001B65E4) == 0)
         {
             func_115810(D_001B65E4, 2, 0);
@@ -951,17 +995,17 @@ void BootInstaller::update()
         }
 
         break;
-    case 30:
+    case BOOT_INSTALL_WAIT_FOR_ABORT_FINISH:
         if (func_115650(D_001B65E4) == 0)
         {
             step++;
         }
 
         break;
-    case 31:
+    case BOOT_INSTALL_RETURN_FROM_ABORT:
         if (func_115670(D_001B65E4) != 0)
         {
-            step = 2;
+            step = BOOT_INSTALL_SHOW_INITIAL_PROMPT;
             selection = 0;
             x = menu_cursor_x(selection);
             cursor = new (0) BootSelectionCursor;
@@ -970,7 +1014,7 @@ void BootInstaller::update()
         }
         else
         {
-            step = 4;
+            step = BOOT_INSTALL_LEAVE;
         }
 
         if (progress_text != 0)
@@ -1087,7 +1131,7 @@ BootInstaller::~BootInstaller()
 
     if (tip_image_buffer != 0)
     {
-        resident_queue_allocation_release(D_001B65F4, tip_image_buffer);
+        resident_queue_allocation_release(g_resident_release_queues, tip_image_buffer);
     }
 
     delete navigator_file_buffers[0];
@@ -1111,11 +1155,11 @@ void BootUnitErrorPopup::set_enabled(u8 value)
 BootInstaller::BootInstaller()
 {
     s32 i;
-    screen_image_data = func_139700(0x40, func_11C8C0(D_001B65E4, BOOT_RES_SCREEN_IMAGES));
+    screen_image_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_SCREEN_IMAGES));
     func_103E70(D_001B65E8, BOOT_RES_SCREEN_IMAGES, screen_image_data, 1, 0x34BC0, 0, 0, 0, 1);
-    sound_data = func_139700(0x40, func_11C8C0(D_001B65E4, BOOT_RES_SOUND));
-    tip_image_data = func_139700(0x40, func_11C8C0(D_001B65E4, BOOT_RES_TIP_IMAGES));
-    step = 0;
+    sound_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_SOUND));
+    tip_image_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_TIP_IMAGES));
+    step = BOOT_INSTALL_WAIT_FOR_RESOURCES;
 
     for (i = 0; i < 2; i++)
     {
@@ -1147,8 +1191,8 @@ BootInstaller::BootInstaller()
     navigator_file_buffers[0] = 0;
     navigator_file_buffers[1] = 0;
     navigator_file_buffers[2] = 0;
-    system_file_data = new (0) u8[func_11C8C0(D_001B65E4, BOOT_RES_SYSTEM_FILES)];
-    navigator_file_data = new (0) u8[func_11C8C0(D_001B65E4, BOOT_RES_NAVIGATOR_FILES)];
+    system_file_data = new (0) u8[resident_get_resource_size(D_001B65E4, BOOT_RES_SYSTEM_FILES)];
+    navigator_file_data = new (0) u8[resident_get_resource_size(D_001B65E4, BOOT_RES_NAVIGATOR_FILES)];
     selection = 0;
     screen_images_loaded = 0;
 }

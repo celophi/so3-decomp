@@ -234,5 +234,5 @@ s32 FieldClass1522C0::get_default_list_kind()
 void FieldClass1522C0::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }

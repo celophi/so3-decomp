@@ -39,7 +39,7 @@ s32 FieldResourceRequestHandler::get_default_list_kind()
 
 void FieldResourceRequestHandler::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /**
@@ -215,7 +215,7 @@ static inline s32 field_resource_size(FieldResourceRecord*& source, s32 index)
 static inline s32 field_decode_resource(FieldResourceLoader* loader, u8* allocation, s32 index)
 {
     ResidentResourceHeader* source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-    return resident_decode_resource_block(D_001B65EC, source, field_aligned_buffer(allocation), index);
+    return resident_decode_resource_block(g_resident_resource_decoder, source, field_aligned_buffer(allocation), index);
 }
 
 /**
@@ -232,18 +232,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
     bool present_1 = field_has_allocation(buffer_slots, 0);
     if (!present_1)
     {
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 1, 1);
         if (!allocation)
         {
             void* previous_heap = resident_exchange_allocation_heap(0);
-            allocation = resident_allocate_decode_buffer(D_001B65EC,
+            allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 1, 1);
             resident_exchange_allocation_heap(previous_heap);
         }
         if (!allocation || !field_decode_resource(loader, allocation, 1))
         {
-            resident_find_resource_block(D_001B65EC,
+            resident_find_resource_block(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 1);
             field_decode_resource(loader, allocation, 1);
             if (allocation)
@@ -261,18 +261,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
     bool present_2 = field_has_allocation(buffer_slots, 11);
     if (!present_2)
     {
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 2, 1);
         if (!allocation)
         {
             void* previous_heap = resident_exchange_allocation_heap(0);
-            allocation = resident_allocate_decode_buffer(D_001B65EC,
+            allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 2, 1);
             resident_exchange_allocation_heap(previous_heap);
         }
         if (!allocation || !field_decode_resource(loader, allocation, 2))
         {
-            resident_find_resource_block(D_001B65EC,
+            resident_find_resource_block(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 2);
             field_decode_resource(loader, allocation, 2);
             if (allocation)
@@ -292,18 +292,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, slot + 1);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), index, 1);
             if (!allocation)
             {
                 void* previous_heap = resident_exchange_allocation_heap(0);
-                allocation = resident_allocate_decode_buffer(D_001B65EC,
+                allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), index, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, index))
             {
-                resident_find_resource_block(D_001B65EC,
+                resident_find_resource_block(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), index);
                 field_decode_resource(loader, allocation, index);
                 if (allocation)
@@ -322,18 +322,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
     bool present_11 = field_has_allocation(buffer_slots, 12);
     if (!present_11)
     {
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 11, 1);
         if (!allocation)
         {
             void* previous_heap = resident_exchange_allocation_heap(0);
-            allocation = resident_allocate_decode_buffer(D_001B65EC,
+            allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 11, 1);
             resident_exchange_allocation_heap(previous_heap);
         }
         if (!allocation || !field_decode_resource(loader, allocation, 11))
         {
-            resident_find_resource_block(D_001B65EC,
+            resident_find_resource_block(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 11);
             field_decode_resource(loader, allocation, 11);
             if (allocation)
@@ -367,18 +367,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
             return 0;
         }
         s32 size = source->unk08;
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 12, 1);
         if (!allocation)
         {
             void* previous_heap = resident_exchange_allocation_heap(0);
-            allocation = resident_allocate_decode_buffer(D_001B65EC,
+            allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 12, 1);
             resident_exchange_allocation_heap(previous_heap);
         }
         if (!allocation || !field_decode_resource(loader, allocation, 12))
         {
-            resident_find_resource_block(D_001B65EC,
+            resident_find_resource_block(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 12);
             field_decode_resource(loader, allocation, 12);
             if (allocation)
@@ -404,18 +404,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
             FieldResourceRequest* record = loader->requests;
             source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
             s32 size = field_resource_size(source, resource_index);
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), resource_index, 1);
             if (!allocation)
             {
                 void* previous_heap = resident_exchange_allocation_heap(0);
-                allocation = resident_allocate_decode_buffer(D_001B65EC,
+                allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), resource_index, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, resource_index))
             {
-                resident_find_resource_block(D_001B65EC,
+                resident_find_resource_block(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), resource_index);
                 field_decode_resource(loader, allocation, resource_index);
                 if (allocation)
@@ -441,18 +441,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, slot + 49);
         if (!present)
         {
-            allocation = resident_allocate_decode_buffer(D_001B65EC,
+            allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), index, 1);
             if (!allocation)
             {
                 previous_heap = resident_exchange_allocation_heap(0);
-                allocation = resident_allocate_decode_buffer(D_001B65EC,
+                allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), index, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, index))
             {
-                resident_find_resource_block(D_001B65EC,
+                resident_find_resource_block(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), index);
                 field_decode_resource(loader, allocation, index);
                 if (allocation)
@@ -473,18 +473,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, slot + 9);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 24, 1);
             if (!allocation)
             {
                 void* previous_heap = resident_exchange_allocation_heap(0);
-                allocation = resident_allocate_decode_buffer(D_001B65EC,
+                allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 24, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, slot + 24))
             {
-                resident_find_resource_block(D_001B65EC,
+                resident_find_resource_block(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 24);
                 field_decode_resource(loader, allocation, slot + 24);
                 if (allocation)
@@ -505,18 +505,18 @@ s32 FieldResourceRequestHandler::func_001E1830(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, slot + 57);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 26, 1);
             if (!allocation)
             {
                 void* previous_heap = resident_exchange_allocation_heap(0);
-                allocation = resident_allocate_decode_buffer(D_001B65EC,
+                allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 26, 1);
                 resident_exchange_allocation_heap(previous_heap);
             }
             if (!allocation || !field_decode_resource(loader, allocation, slot + 26))
             {
-                resident_find_resource_block(D_001B65EC,
+                resident_find_resource_block(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 26);
                 field_decode_resource(loader, allocation, slot + 26);
                 if (allocation)
@@ -550,10 +550,10 @@ s32 FieldResourceRequestHandler::func_001E2E40(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, 0);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 1, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 1))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 1))
             {
                 if (allocation)
                 {
@@ -572,10 +572,10 @@ s32 FieldResourceRequestHandler::func_001E2E40(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, 11);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 2, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 2))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 2))
             {
                 if (allocation)
                 {
@@ -594,10 +594,10 @@ s32 FieldResourceRequestHandler::func_001E2E40(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, 13);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 3, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 3))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 3))
             {
                 if (allocation)
                 {
@@ -631,10 +631,10 @@ s32 FieldResourceRequestHandler::func_001E2E40(FieldResourceLoader* loader)
             return 0;
         }
         s32 size = source->unk08;
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 4, 1);
         ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-        if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 4))
+        if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 4))
         {
             if (allocation)
             {
@@ -650,10 +650,10 @@ s32 FieldResourceRequestHandler::func_001E2E40(FieldResourceLoader* loader)
     }
     for (s32 slot = 0; slot < 38; slot++)
     {
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 5, 1);
         ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-        if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), slot + 5))
+        if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), slot + 5))
         {
             if (allocation)
             {
@@ -671,10 +671,10 @@ s32 FieldResourceRequestHandler::func_001E2E40(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, 14);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 43, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 43))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 43))
             {
                 if (allocation)
                 {
@@ -712,10 +712,10 @@ s32 FieldResourceRequestHandler::func_001E3580(FieldResourceLoader* loader)
             if (!present)
             {
                 u16 resource_index = index + 1;
-                u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+                u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), resource_index, 1);
                 ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-                if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), resource_index))
+                if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), resource_index))
                 {
                     if (allocation)
                     {
@@ -737,10 +737,10 @@ s32 FieldResourceRequestHandler::func_001E3580(FieldResourceLoader* loader)
             if (!present)
             {
                 u16 resource_index = index + 1;
-                u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+                u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                     reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), resource_index, 1);
                 ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-                if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), resource_index))
+                if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), resource_index))
                 {
                     if (allocation)
                     {
@@ -763,10 +763,10 @@ s32 FieldResourceRequestHandler::func_001E3580(FieldResourceLoader* loader)
         if (!present)
         {
             u16 resource_index = index + 11;
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), resource_index, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), resource_index))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), resource_index))
             {
                 if (allocation)
                 {
@@ -798,9 +798,9 @@ s32 FieldResourceRequestHandler::func_001E39A0(FieldResourceLoader* loader)
     bool present = field_has_allocation(buffer_slots, 11);
     if (!present)
     {
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 1, 1);
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 1, 1);
         ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-        if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 1))
+        if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 1))
         {
             if (allocation)
             {
@@ -819,9 +819,9 @@ s32 FieldResourceRequestHandler::func_001E39A0(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, slot + 1);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 2, 1);
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 2, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), slot + 2))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), slot + 2))
             {
                 if (allocation)
                 {
@@ -843,9 +843,9 @@ s32 FieldResourceRequestHandler::func_001E39A0(FieldResourceLoader* loader)
         FieldResourceRequest* record = loader->requests;
         source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
         s32 size = field_resource_size(source, 10);
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 10, 1);
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 10, 1);
         ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-        if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 10))
+        if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 10))
         {
             if (allocation)
             {
@@ -870,9 +870,9 @@ s32 FieldResourceRequestHandler::func_001E39A0(FieldResourceLoader* loader)
             FieldResourceRequest* record = loader->requests;
             source = reinterpret_cast<FieldResourceRecord*>(record->buffer_address());
             s32 size = field_resource_size(source, index);
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), index, 1);
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), index, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), index))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), index))
             {
                 if (allocation)
                 {
@@ -893,9 +893,9 @@ s32 FieldResourceRequestHandler::func_001E39A0(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, slot + 9);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 14, 1);
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 14, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), slot + 14))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), slot + 14))
             {
                 if (allocation)
                 {
@@ -915,9 +915,9 @@ s32 FieldResourceRequestHandler::func_001E39A0(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, slot + 49);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC, reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 16, 1);
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), slot + 16, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), slot + 16))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), slot + 16))
             {
                 if (allocation)
                 {
@@ -949,10 +949,10 @@ s32 FieldResourceRequestHandler::func_001E4220(FieldResourceLoader* loader)
     bool present = field_has_allocation(buffer_slots, 0);
     if (!present)
     {
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 1, 1);
         ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-        if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 1))
+        if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 1))
         {
             if (allocation)
             {
@@ -969,10 +969,10 @@ s32 FieldResourceRequestHandler::func_001E4220(FieldResourceLoader* loader)
     bool second_present = field_has_allocation(buffer_slots, 11);
     if (!second_present)
     {
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), 2, 1);
         ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-        if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 2))
+        if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 2))
         {
             if (allocation)
             {
@@ -991,10 +991,10 @@ s32 FieldResourceRequestHandler::func_001E4220(FieldResourceLoader* loader)
         bool present = field_has_allocation(buffer_slots, slot + 1);
         if (!present)
         {
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), index, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), index))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), index))
             {
                 if (allocation)
                 {
@@ -1028,10 +1028,10 @@ s32 FieldResourceRequestHandler::func_001E4220(FieldResourceLoader* loader)
             return 0;
         }
         s32 size = source->unk08;
-        u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+        u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
             reinterpret_cast<ResidentResourceHeader*>(record->buffer_address()), 11, 1);
         ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-        if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), 11))
+        if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), 11))
         {
             if (allocation)
             {
@@ -1051,10 +1051,10 @@ s32 FieldResourceRequestHandler::func_001E4220(FieldResourceLoader* loader)
         if (!present)
         {
             s32 index = slot + 12;
-            u8* allocation = resident_allocate_decode_buffer(D_001B65EC,
+            u8* allocation = resident_allocate_decode_buffer(g_resident_resource_decoder,
                 reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address()), index, 1);
             ResidentResourceHeader* decoded_source = reinterpret_cast<ResidentResourceHeader*>(loader->requests->buffer_address());
-            if (!resident_decode_resource_block(D_001B65EC, decoded_source, field_aligned_buffer(allocation), index))
+            if (!resident_decode_resource_block(g_resident_resource_decoder, decoded_source, field_aligned_buffer(allocation), index))
             {
                 if (allocation)
                 {
@@ -1125,7 +1125,7 @@ void FieldResourceRequestHandler::func_001DDB30(void* arg)
 
         if (destination)
         {
-            resident_decode_resource_block(D_001B65EC, source, destination, 0);
+            resident_decode_resource_block(g_resident_resource_decoder, source, destination, 0);
             FlushCache(0);
             func_001011B0(func_10D8E0(), destination, 4, source->decoded_size);
         }
@@ -1215,7 +1215,7 @@ FieldResourceRequestHandler::FieldResourceRequestHandler()
  */
 void FieldKeyedResourceLoader::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /**

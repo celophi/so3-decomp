@@ -1405,7 +1405,7 @@ s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags)
 void FieldMenuManager::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 FieldMenuManager::~FieldMenuManager()
@@ -1839,7 +1839,7 @@ void FieldClass15B0E0::func_002D2020()
 void FieldClass15B0E0::func_001DD7B0()
 {
     release_retained(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 
     if (unk48 != 0)
     {

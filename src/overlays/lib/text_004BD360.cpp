@@ -455,10 +455,10 @@ extern "C" void lib_animation_load_resource(LibClass178220* object, ResidentReso
     }
     object->targets_bound = 0;
     object->resource_is_borrowed = 0;
-    u8* data = resident_allocate_decode_buffer(D_001B65EC, source, 0, 0);
+    u8* data = resident_allocate_decode_buffer(g_resident_resource_decoder, source, 0, 0);
     if (data)
     {
-        resident_decode_resource_block(D_001B65EC, source, data, 0);
+        resident_decode_resource_block(g_resident_resource_decoder, source, data, 0);
         object->resource_data = data;
     }
 }

@@ -2491,7 +2491,7 @@ void ItemHpMpGauge::func_003EF740()
 {
     queued_for_release = 1;
     func_0044B210(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /** @brief Restore the category help line and destroy the gauges and the window. */
@@ -4458,7 +4458,7 @@ void ItemController::func_001DD7B0()
     }
 
     FieldClass153E30* receiver = this;
-    resident_enqueue_object(D_001B65F4, receiver);
+    resident_enqueue_object(g_resident_release_queues, receiver);
 }
 
 /** @brief Remove the items listed in record_identifiers when requested, then destroy the bases. */

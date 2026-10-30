@@ -699,7 +699,7 @@ void func_001E94F0(LibClass177B50* object)
 void FieldClass150330::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 s32 func_001E95B0(s32 flag)
@@ -1217,7 +1217,7 @@ void FieldClass1504F0::func_001EB590()
 void FieldClass1504C0::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 void func_001EB690(FieldCountOwner34* object, s32 count)
@@ -1253,7 +1253,7 @@ void FieldClass1504F0::func_001DD7B0()
     if (!unk4d_1)
     {
         lib_object_detach_owner(this);
-        resident_enqueue_object(D_001B65F4, this);
+        resident_enqueue_object(g_resident_release_queues, this);
         if (unk18)
         {
             static_cast<LibClass174610&>(*unk18).func_003EF740();

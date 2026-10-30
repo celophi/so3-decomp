@@ -86,7 +86,7 @@ void FieldClass14FE30::func_001DD7B0()
 {
     FieldListObject& base = *this;
     lib_object_detach_owner(&base);
-    resident_enqueue_object(D_001B65F4, static_cast<FieldListObject*>(this));
+    resident_enqueue_object(g_resident_release_queues, static_cast<FieldListObject*>(this));
 }
 
 /**

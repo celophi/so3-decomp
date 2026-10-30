@@ -249,7 +249,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023BE
 void func_0023BF50(void* object)
 {
     func_44B210(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023BF80);
@@ -482,7 +482,7 @@ extern "C" void func_0023D2C0(FieldObject23D2C0* object)
 {
     object->attachment->func_001DD7B0();
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 FieldNode23D310* func_0023D310(FieldObject23D310* object, s32 count)

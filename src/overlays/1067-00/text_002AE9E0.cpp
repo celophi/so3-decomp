@@ -1079,7 +1079,7 @@ s32 FieldTimedQuadController::accepts_source(const void* actor, const void* sour
 void FieldTimedQuadController::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
     field_release_slot_object(attached_object);
 
     if (!renderer_external)
@@ -1282,7 +1282,7 @@ extern "C" void field_set_display_blend(ResidentContext* context, float alpha)
 void FieldDisplayBlendNode::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /**
@@ -1429,7 +1429,7 @@ void field_run_update_loop(ResidentContext* context)
             context->update_callback->func_001FC020();
         }
 
-        resident_drain_release_queues(D_001B65F4);
+        resident_drain_release_queues(g_resident_release_queues);
         resident_get_runtime_owner();
         s32 overrun = 0;
         void* first_attachment = 0;
@@ -1698,7 +1698,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
         delete context->unk78;
         context->unk78 = 0;
-        resident_drain_release_queues(D_001B65F4);
+        resident_drain_release_queues(g_resident_release_queues);
         delete static_cast<ResidentHeap*>(context->unk70);
         context->unk70 = 0;
         resident_exchange_allocation_heap(0);
@@ -1708,7 +1708,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
             func_004E33B0();
         }
 
-        resident_drain_release_queues(D_001B65F4);
+        resident_drain_release_queues(g_resident_release_queues);
 
         if (full_release)
         {

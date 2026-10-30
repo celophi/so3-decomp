@@ -1,3 +1,4 @@
+g_resident_release_queues = 0x001B65F4; // size:0x4 absolute:True
 append__14LibClass178A70FPv = 0x004CA020; // type:func absolute:True allow_duplicated:True
 prepend__14LibClass178A70FPv = 0x004C9FF0; // type:func absolute:True allow_duplicated:True
 insert_after__14LibClass178A70FPvPv = 0x004C9FC0; // type:func absolute:True allow_duplicated:True

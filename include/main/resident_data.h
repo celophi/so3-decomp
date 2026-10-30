@@ -264,7 +264,7 @@ extern ResidentObject1B65E4* D_001B65E4;
 extern ResidentResourceQueue* D_001B65E8;
 /** Resident input root supplying per-slot samples and retained flags. */
 extern struct BootInputRoot9670* D_001B65F0;
-extern ResidentReleaseQueues* D_001B65F4;
+extern ResidentReleaseQueues* g_resident_release_queues;
 extern ResidentRequest112400* D_001B65F8;
 extern ResidentContextRef* D_001B6430;
 extern FieldRuntime* D_001B657C;

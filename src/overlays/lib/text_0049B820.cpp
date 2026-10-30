@@ -6,7 +6,7 @@
 #include "main/resident_0010A0E0.h"
 
 extern "C" void func_004D00B0(void* object);
-extern "C" ResidentReleaseQueues* D_001B65F4;
+extern "C" ResidentReleaseQueues* g_resident_release_queues;
 
 /** Partial word-array owner with its native virtual pointer after the data fields. */
 class LibResourceBitset
@@ -522,7 +522,7 @@ extern "C" void lib_queue_object_release(void* object)
         receiver += 0x14;
     }
 
-    resident_enqueue_object(D_001B65F4, receiver);
+    resident_enqueue_object(g_resident_release_queues, receiver);
 }
 
 void func_004A9220(void* object)

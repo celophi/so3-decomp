@@ -10,6 +10,35 @@
 /** Marker byte of an encoded BootSealedRecord. */
 #define BOOT_RECORD_SEALED 0x69
 
+/** Masks and sizes used when sealing the saved record. */
+enum BootSealedRecordConstants
+{
+    BOOT_RECORD_XOR_BYTE = 0xD7,
+    BOOT_RECORD_XOR_HALFWORD = 0xF393,
+    BOOT_RECORD_XOR_WORD = 0x7CE3C7F7,
+    BOOT_RECORD_ENCODED_TAIL_SIZE = 76,
+    BOOT_RECORD_CHECKSUM_KEY_FACTOR = 37
+};
+
+/** Number of Battle Trophies and of flags in the saved collection. */
+#define BOOT_TROPHY_COUNT 300
+
+/** Mask used to round decoded resource pointers up to a 128-byte boundary. */
+#define BOOT_RESOURCE_ALIGNMENT_MASK 0x7F
+#define BOOT_ALIGN_RESOURCE(value) (((u32)(value) + BOOT_RESOURCE_ALIGNMENT_MASK) & ~BOOT_RESOURCE_ALIGNMENT_MASK)
+
+/** Resource IDs used by the boot program and its menus. */
+enum BootScreenResourceId
+{
+    BOOT_RES_GAME_DATA = 0xA,
+    BOOT_RES_COMMON_UI = 0x26,
+    BOOT_RES_TITLE_SCENE = 0x27,
+    BOOT_RES_SETTINGS_IMAGES = 0x28,
+    BOOT_RES_SETTINGS_MODELS = 0x29,
+    BOOT_RES_TROPHY_VIEWER = 0x2B,
+    BOOT_RES_MUSIC_PLAYER = 0x2C
+};
+
 /** @brief Four aligned floating-point vector components. */
 typedef struct BootVector4DDAA0
 {
@@ -88,7 +117,8 @@ typedef struct BootSealedRecord
     u32 unk54;
     u32 unk58;
     u8 unk5C[8];
-    u8 unk64[76];
+    /** Tail encoded byte by byte with BOOT_RECORD_XOR_BYTE. */
+    u8 encoded_tail[BOOT_RECORD_ENCODED_TAIL_SIZE];
     u16 checksum;
 
     /** Random byte; the checksum seed is 37 times this. */
@@ -97,6 +127,33 @@ typedef struct BootSealedRecord
     /** BOOT_RECORD_SEALED once encoded; any other nonzero value marks a damaged record. */
     u8 sealed;
 } BootSealedRecord;
+
+/** Saved sound output choice; the audio system uses a different code for mono and stereo. */
+enum BootSoundOutput
+{
+    BOOT_SOUND_MONO,
+    BOOT_SOUND_STEREO,
+    BOOT_SOUND_DOLBY_PRO_LOGIC_II,
+    BOOT_SOUND_HEADPHONES
+};
+
+/** Saved voice and subtitle choice. */
+enum BootVoiceMode
+{
+    BOOT_VOICE_SUBTITLES_AND_SOUND,
+    BOOT_VOICE_SOUND_ONLY,
+    BOOT_VOICE_SUBTITLES_ONLY,
+    BOOT_VOICE_AUTO
+};
+
+/** Saved difficulty choice. */
+enum BootDifficulty
+{
+    BOOT_DIFFICULTY_EARTH,
+    BOOT_DIFFICULTY_GALAXY,
+    BOOT_DIFFICULTY_UNIVERSE,
+    BOOT_DIFFICULTY_FOURTH_DIMENSION
+};
 
 /** @brief Partial system settings, with option bits and two checksummed blocks. */
 typedef struct BootSystemSettings
@@ -159,7 +216,7 @@ typedef struct BootSystemSettings
 
     u8 unk18D;
 
-    /** Sound output: mono, stereo, Dolby Pro Logic II or headphones. */
+    /** BootSoundOutput saved in the settings record. */
     u8 sound_output;
 
     u8 unk18F;
@@ -239,7 +296,7 @@ struct BootSoundStream
 };
 
 /** @brief Partial resident sound object reached through D_001B65F8. */
-struct BootSound1B65F8
+struct BootSoundState
 {
     struct BootSoundStream* stream;
     u8 unk04[0x36C];
@@ -258,7 +315,7 @@ struct BootSound1B65F8
 };
 
 /** @brief Partial display area whose signed dimensions drive the projection. */
-struct BootDisplayArea3C60
+struct BootDisplayArea
 {
     u8 unk00[0xC];
     s16 width;
@@ -275,7 +332,7 @@ class BootDimensionsACD0
         u8 unk00[0x160];
         u16 unk160;
         u8 unk162[0x3AFE];
-        BootDisplayArea3C60 unk3C60;
+        BootDisplayArea display_area;
         u8 unk3C70[8];
         void* unk3C78;
         u8 unk3C7C[0x290];
@@ -299,9 +356,15 @@ s32 func_1025A0(void* decoder, u8* source, void* destination, s32 index);
 s32 func_102D00(void* queue);
 extern BootResident1B65E4* D_001B65E4;
 extern ResidentResourceQueue* D_001B65E8;
-extern ResidentReleaseQueues* D_001B65F4;
-extern struct BootSound1B65F8* D_001B65F8;
-u32 func_11C8C0(void* table, s32 id);
+extern ResidentReleaseQueues* g_resident_release_queues;
+extern struct BootSoundState* D_001B65F8;
+/**
+ * @brief Return the 2048-byte-block allocation size for a resource key.
+ * @param table Resident resource descriptor table.
+ * @param key Resource key.
+ * @return Resource size in bytes.
+ */
+u32 resident_get_resource_size(void* table, s32 key);
 u8* func_139700(u32 alignment, u32 size);
 // TODO: Main names this resident_queue_resource_request and takes the buffer as a u32 address; boot passes pointers.
 void func_103E70(void* queue, s32 id, void* destination, s32 first, u32 size, s32 second, s32 third, s32 fourth, s32 fifth);
@@ -1275,6 +1338,16 @@ class BootScreenFade : public BootTransformOwner, public BootDmaCallbacks
 };
 
 class BootScene;
+
+/** Title menu choices; auto-select picks Continue when a card holds a save. */
+enum BootTitleItem
+{
+    BOOT_TITLE_ITEM_AUTO = -1,
+    BOOT_TITLE_ITEM_NEW_GAME = 0,
+    BOOT_TITLE_ITEM_CONTINUE = 1,
+    BOOT_TITLE_ITEM_BATTLE_TROPHIES = 2,
+    BOOT_TITLE_ITEM_INSTALL = 3
+};
 
 /**
  * Title menu, with vtable D_171BB0 in main data: a Lib scene from resources 0x27 and 0xA whose nodes are the New Game,

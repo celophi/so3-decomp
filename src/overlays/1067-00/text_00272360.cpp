@@ -94,7 +94,7 @@ void FieldClass154EF0::func_001DD7B0()
     if (!unk20_3)
     {
         func_slot28();
-        resident_enqueue_object(D_001B65F4, this);
+        resident_enqueue_object(g_resident_release_queues, this);
         unk20_3 = 1;
     }
 }
@@ -204,7 +204,7 @@ void FieldClass154E90::func_001DD7B0()
 {
     func_001DD730();
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /** @brief Destroy the field node and its secondary list. */

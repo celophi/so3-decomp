@@ -740,7 +740,7 @@ s32 func_001EE260(void* object)
 void func_001EE270(void* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 /** @brief Subtract position components while preserving the left vector's fourth component. */
@@ -1239,7 +1239,7 @@ extern "C" s32 func_001EF6C0(FieldScriptCursorU32* cursor)
         if (owner == ((FieldClass1505B0*)node)->unk18)
         {
             list->remove_node(node);
-            resident_enqueue_object(D_001B65F4, node);
+            resident_enqueue_object(g_resident_release_queues, node);
         }
     }
     return 1;
@@ -1936,7 +1936,7 @@ s32 FieldClass150630::get_default_list_kind()
 void FieldClass150630::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /** @brief Destroy the queue object. */
@@ -1948,7 +1948,7 @@ FieldClass150650::~FieldClass150650()
 void FieldClass150650::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 extern "C" s32 func_001F2070(FieldScriptCursorF32* cursor)
@@ -2898,7 +2898,7 @@ extern "C" void* func_001F8C80(void* object)
 /** @brief Add this object to the resident queue. */
 void FieldClass1507A0::func_001DD7B0()
 {
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 /** @brief Start the request for the current record when its buffer address is nonzero. */

@@ -688,7 +688,7 @@ FieldClass151570::~FieldClass151570()
 void FieldClass151570::func_001DD7B0()
 {
     lib_object_detach_owner(this);
-    resident_enqueue_object(D_001B65F4, this);
+    resident_enqueue_object(g_resident_release_queues, this);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", update__16FieldClass151570Fv);

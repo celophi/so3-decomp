@@ -54,7 +54,7 @@ s32 func_002BC5A0(FieldListObject* object)
 
 void func_002BC5B0(FieldListObject* object)
 {
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 /**
@@ -113,7 +113,7 @@ void func_002BD1F0(FieldState2BD1F0* object)
 {
     object->unk124 = 1;
     func_44B210(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BC510", func_002BD230);

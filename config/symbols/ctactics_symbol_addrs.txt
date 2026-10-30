@@ -1,3 +1,4 @@
+g_resident_release_queues = 0x001B65F4; // size:0x4 absolute:True
 __ct__22TacticsFormationWindowFv = 0x0034AF20; // type:func
 __vt__22TacticsFormationWindow = 0x0018B220; // size:0xF8 absolute:True
 __dt__22TacticsFormationWindowFv = 0x0034AEC0; // type:func

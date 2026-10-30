@@ -1,5 +1,5 @@
 resident_enqueue_object = 0x0011ED90; // type:func absolute:True
-D_001B65F4 = 0x001B65F4; // size:0x4
+g_resident_release_queues = 0x001B65F4; // size:0x4
 func_2CEAF0 = 0x002CEAF0; // type:func absolute:True allow_duplicated:True
 func_2BC410 = 0x002BC410; // type:func
 func_2CEBE0 = 0x002CEBE0; // type:func absolute:True allow_duplicated:True

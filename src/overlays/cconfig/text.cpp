@@ -4652,7 +4652,7 @@ void func_003520C0(ConfigControlReceiver* object)
 
 void func_00352110(void* object)
 {
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 s32 func_00352130(ConfigController* object)

@@ -1,3 +1,5 @@
+g_resident_resource_decoder = 0x001B65EC; // size:0x4 absolute:True
+g_resident_release_queues = 0x001B65F4; // size:0x4 absolute:True
 // Lib classes named after their vtables in main data.
 enqueue_submission__14LibClass179080Fv = 0x004E20F0; // type:func
 func_004E20F0 = 0x004E20F0; // type:func absolute:True

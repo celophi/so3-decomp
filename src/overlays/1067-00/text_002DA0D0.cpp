@@ -19,7 +19,7 @@ s32 func_002DA170(FieldListObject* object)
 void func_002DA180(FieldListObject* object)
 {
     lib_object_detach_owner(object);
-    resident_enqueue_object(D_001B65F4, object);
+    resident_enqueue_object(g_resident_release_queues, object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DA0D0", func_002DA1B0);
