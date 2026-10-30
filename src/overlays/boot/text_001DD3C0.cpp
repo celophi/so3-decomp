@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/text_001F6010.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "overlays/lib/text_0045AD10.h"
@@ -10,26 +11,23 @@
 extern "C" {
 extern BootVector4DDAA0 D_50CD30;
 void func_4CE4C0(void* destination, const float* source);
-void func_001F8720(BootProgressBar* object, s32 width, s32 height, u32 color, s32 mode);
-void func_001F79A0(BootProgressBar* object, s32 done, s32 total);
-s32 func_102AA0(void* queue);
 void func_1126D0(void* request, u8* data, s32 first, s32 second);
-void func_1152C0(BootResident1B65E4* object, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size);
-void func_1152E0(BootResident1B65E4* object, u8* buffer, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size, u8* fourth,
+void func_1152C0(BootResident1B65E4* resident, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size);
+void func_1152E0(BootResident1B65E4* resident, u8* buffer, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size, u8* fourth,
                  s32 fourth_size);
-void func_115420(BootResident1B65E4* object);
-s32 func_115460(BootResident1B65E4* object, s32 first, s32 second);
-s32 func_115640(BootResident1B65E4* object);
-s32 func_115660(BootResident1B65E4* object);
-void func_1156B0(BootResident1B65E4* object, u8* buffer);
-void func_1156C0(BootResident1B65E4* object);
-void func_115810(BootResident1B65E4* object, s32 command, s32 argument);
-u32 func_115830(BootResident1B65E4* object);
-u32 func_115840(BootResident1B65E4* object);
-s32 func_1158A0(BootResident1B65E4* object);
+void func_115420(BootResident1B65E4* resident);
+s32 func_115460(BootResident1B65E4* resident, s32 first, s32 second);
+s32 func_115640(BootResident1B65E4* resident);
+s32 func_115660(BootResident1B65E4* resident);
+void func_1156B0(BootResident1B65E4* resident, u8* buffer);
+void func_1156C0(BootResident1B65E4* resident);
+void func_115810(BootResident1B65E4* resident, s32 command, s32 argument);
+u32 func_115830(BootResident1B65E4* resident);
+u32 func_115840(BootResident1B65E4* resident);
+s32 func_1158A0(BootResident1B65E4* resident);
 void func_139928(void* allocation);
-void lib_container_attach_widget(BootClass178660* object, BootClass178750* child);
-void lib_text_set_resource(BootClass178750* object, s32 slot, u32 key, u8 flag);
+void lib_container_attach_widget(BootContainer* container, BootTextWidget* child);
+void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 }
 
 /**
@@ -64,13 +62,13 @@ s32 BootInstaller::get_default_list_kind()
 }
 
 /** @brief Delete the object through its virtual destructor; null is ignored. */
-void BootClass170E90::destroy()
+void BootListObject::destroy()
 {
     delete this;
 }
 
 /** @brief Virtual slot 4; the base implementation does nothing. */
-void BootClass170E90::func_001DD4C0()
+void BootListObject::render()
 {
 }
 
@@ -89,7 +87,7 @@ void BootInstaller::show_tip_image(s32 index)
 
     if (tip_image_buffer != 0)
     {
-        func_11EE00(D_001B65F4, tip_image_buffer);
+        resident_queue_allocation_release(D_001B65F4, tip_image_buffer);
         tip_image_buffer = 0;
     }
 
@@ -97,9 +95,9 @@ void BootInstaller::show_tip_image(s32 index)
     func_1025A0(D_001B65EC, tip_image_data, (void*)(((u32)tip_image_buffer + 0x7F) & ~0x7F), index);
     tip_image = new (0) BootImage;
     tip_image->set_texture((const BootTextureResource*)(((u32)tip_image_buffer + 0x7F) & ~0x7F), 0);
-    func_101440(func_101290(func_10D8E0()), 1);
+    resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     tip_image->set_rectangle(0, 1, 0x120, 0xC9, 0x80808080, 0);
-    tip_image->unk18->func_001E0520(-296.0f, -64.0f, 0.0f);
+    tip_image->model->set_translation(-296.0f, -64.0f, 0.0f);
 }
 
 /**
@@ -108,13 +106,13 @@ void BootInstaller::show_tip_image(s32 index)
  * @param y Second component.
  * @param z Third component.
  */
-void BootClass170D90::func_001E0520(float x, float y, float z)
+void BootTransform::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk20.x = x;
-    unk20.y = y;
-    unk20.z = z;
-    unk20.w = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /** @brief Create the yes/no choice images and pulse the selected one; release them once installing starts. */
@@ -153,41 +151,41 @@ void BootInstaller::update_choice_images()
         images[5]->set_rectangle(0x1E, 0x167, 0x4C, 0x26, 0x80808080, 0);
     }
 
-    if (((BootResource0970*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
     {
         if (images[4] != 0)
         {
-            images[4]->unk18->func_001E0520(-174.0f, 0.0f, 0.0f);
+            images[4]->model->set_translation(-174.0f, 0.0f, 0.0f);
         }
 
         if (images[5] != 0)
         {
-            images[5]->unk18->func_001E0520(78.0f, 0.0f, 0.0f);
+            images[5]->model->set_translation(78.0f, 0.0f, 0.0f);
         }
     }
     else
     {
         if (images[4] != 0)
         {
-            images[4]->unk18->func_001E0520(-132.0f, 0.0f, 0.0f);
+            images[4]->model->set_translation(-132.0f, 0.0f, 0.0f);
         }
 
         if (images[5] != 0)
         {
-            images[5]->unk18->func_001E0520(60.0f, 0.0f, 0.0f);
+            images[5]->model->set_translation(60.0f, 0.0f, 0.0f);
         }
     }
 
     for (s32 i = 0; i < 2; i++)
     {
-        if (images[4 + i] != 0 && images[4 + i]->unk18 != 0)
+        if (images[4 + i] != 0 && images[4 + i]->model != 0)
         {
-            BootClass177820* model = images[4 + i]->unk18;
+            BootModel* model = images[4 + i]->model;
 
             if (selection == i)
             {
                 BootVector4DDAA0 scale;
-                copy_vector(&scale, &model->unk560);
+                copy_vector(&scale, &model->base_color_factor);
 
                 if (choice_growing == 0)
                 {
@@ -222,8 +220,8 @@ void BootInstaller::update_choice_images()
                     }
                 }
 
-                copy_vector(&model->unk560, &scale);
-                model->func_001DDAA0();
+                copy_vector(&model->base_color_factor, &scale);
+                model->update_combined_color_factor();
             }
             else
             {
@@ -232,17 +230,17 @@ void BootInstaller::update_choice_images()
                 scale.y = 1.0f;
                 scale.z = 1.0f;
                 scale.w = 1.0f;
-                copy_vector(&model->unk560, &scale);
-                model->func_001DDAA0();
+                copy_vector(&model->base_color_factor, &scale);
+                model->update_combined_color_factor();
             }
         }
     }
 }
 
 /** @brief Store the component product of the two input vectors. */
-void BootClass174310::func_001DDAA0()
+void BootColorModel::update_combined_color_factor()
 {
-    vu0_multiply_xyzw(&unk580, &unk560, &unk570);
+    vu0_multiply_xyzw(&combined_color_factor, &base_color_factor, &color_modulation);
 }
 
 /** @brief Create the four screen images once, then place them for the 4:3 or widescreen layout. */
@@ -258,7 +256,7 @@ void BootInstaller::place_screen_images()
         images[0] = new (0) BootImage;
         images[0]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[0] + 0x7F) & ~0x7F), 0);
         images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
-        images[0]->unk18->func_001E0520(-244.0f, -112.0f, 0.0f);
+        images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
     if (images[1] == 0)
@@ -266,7 +264,7 @@ void BootInstaller::place_screen_images()
         images[1] = new (0) BootImage;
         images[1]->set_texture((const BootTextureResource*)(((u32)screen_image_buffers[1] + 0x7F) & ~0x7F), 0);
         images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
-        images[1]->unk18->func_001E0520(-312.0f, -216.0f, 0.0f);
+        images[1]->model->set_translation(-312.0f, -216.0f, 0.0f);
     }
 
     if (images[2] == 0)
@@ -283,40 +281,40 @@ void BootInstaller::place_screen_images()
         images[3]->set_rectangle(0x1B, 0x190, 0x1B6, 0x31, 0x80808080, 0);
     }
 
-    if (((BootResource0970*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->func_001E0520(-404.0f, -216.0f, 0.0f);
-            images[1]->unk18->func_001DDED0(1.31f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-404.0f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.31f, 1.0f, 1.0f);
         }
 
         if (images[2] != 0)
         {
-            images[2]->unk18->func_001E0520(220.0f, 180.0f, 0.0f);
+            images[2]->model->set_translation(220.0f, 180.0f, 0.0f);
         }
 
         if (images[3] != 0)
         {
-            images[3]->unk18->func_001E0520(-32.0f, -221.0f, 0.0f);
+            images[3]->model->set_translation(-32.0f, -221.0f, 0.0f);
         }
     }
     else
     {
         if (images[1] != 0)
         {
-            images[1]->unk18->func_001E0520(-312.0f, -216.0f, 0.0f);
-            images[1]->unk18->func_001DDED0(1.0f, 1.0f, 1.0f);
+            images[1]->model->set_translation(-312.0f, -216.0f, 0.0f);
+            images[1]->model->set_scale(1.0f, 1.0f, 1.0f);
         }
 
         if (images[2] != 0)
         {
-            images[2]->unk18->func_001E0520(150.0f, 180.0f, 0.0f);
+            images[2]->model->set_translation(150.0f, 180.0f, 0.0f);
         }
 
         if (images[3] != 0)
         {
-            images[3]->unk18->func_001E0520(-128.0f, -221.0f, 0.0f);
+            images[3]->model->set_translation(-128.0f, -221.0f, 0.0f);
         }
     }
 }
@@ -327,24 +325,24 @@ void BootInstaller::place_screen_images()
  * @param y Second component.
  * @param z Third component.
  */
-void BootClass170D90::func_001DDED0(float x, float y, float z)
+void BootTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk40.x = x;
-    unk40.y = y;
-    unk40.z = z;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
 }
 
 /** @brief Advance the install sequence: load the screen, ask, check the BB Unit, install, then hand over. */
 void BootInstaller::update()
 {
-    BootResource0970* resource;
+    BootSystemSettings* resource;
     float x;
     s32 remaining;
     s32 percent;
     BootInput* input;
     input = g_boot_program.input;
-    resource = (BootResource0970*)func_101440(func_101290(func_10D8E0()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     switch (step)
     {
@@ -359,13 +357,13 @@ void BootInstaller::update()
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
             step++;
-            container = new (0) BootClass178660(9, 0.0f, 0.0f, 0.0f);
+            container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
             func_465B20(D_001B657C, container);
-            message_text = new (0) BootClass178750(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
+            message_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
             message_text->set_color(0x34130F);
             lib_container_attach_widget(container, message_text);
             x = menu_cursor_x(selection);
-            cursor = new (0) BootClass175070;
+            cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
             func_465B20(D_001B657C, cursor);
         }
@@ -378,7 +376,7 @@ void BootInstaller::update()
         if (++screen_images_loaded >= 2)
         {
             step++;
-            func_121FE0(0);
+            FlushCache(0);
         }
 
         break;
@@ -391,7 +389,7 @@ void BootInstaller::update()
         x = menu_cursor_x(selection);
 
         {
-            BootClass175070* arrow = cursor;
+            BootSelectionCursor* arrow = cursor;
             ItemCreationClass185050& motion = *arrow;
             motion.unk10 = x;
             motion.unk14 = 256.0f;
@@ -415,7 +413,7 @@ void BootInstaller::update()
             func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
         }
 
-        if (input->pressed & resource->unk00)
+        if (input->pressed & resource->confirm_buttons)
         {
             func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
@@ -429,7 +427,7 @@ void BootInstaller::update()
                 step = no_step;
             }
         }
-        else if (input->pressed & resource->unk02)
+        else if (input->pressed & resource->cancel_buttons)
         {
             func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
@@ -441,12 +439,12 @@ void BootInstaller::update()
         if (exiting == 0)
         {
             func_10F000(D_001B65F8, 0, -1);
-            func_103B20(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0);
-            func_103B20(D_001B65E8, BOOT_RES_SYSTEM_FILES, 0, 0, -1, 0);
-            func_103B20(D_001B65E8, BOOT_RES_TIP_IMAGES, 0, 0, -1, 0);
+            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0);
+            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_SYSTEM_FILES, 0, 0, -1, 0);
+            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_TIP_IMAGES, 0, 0, -1, 0);
             exiting = 1;
         }
-        else if (func_102AA0(D_001B65E8) == 0 && D_001B65E4->unk12183 == 0)
+        else if (resident_update_resource_queue(D_001B65E8) == 0 && D_001B65E4->unk12183 == 0)
         {
             func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
 
@@ -503,7 +501,7 @@ void BootInstaller::update()
                 progress_bar = 0;
             }
 
-            static_cast<BootClass178DD0*>(D_001B6614)->append_node(new (0) BootTitleMenu(3), -1);
+            static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(3), -1);
             lib_object_detach_owner(this);
             destroy();
             return;
@@ -630,8 +628,8 @@ void BootInstaller::update()
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         icon_header = func_139700(0x40, 0x200);
         progress_bar = new (0) BootProgressBar;
-        func_001F8720(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
-        tip_text = new (0) BootClass178750(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
+        progress_bar_reset(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
+        tip_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
         tip_text->set_color(0x34130F);
         lib_container_attach_widget(container, tip_text);
         show_tip_image(0);
@@ -641,14 +639,14 @@ void BootInstaller::update()
 
         if (resource->widescreen)
         {
-            progress_bar->unk18->func_001E0520(-366.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootClass178750(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
+            progress_bar->model->set_translation(-366.0f, 180.0f, 0.0f);
+            progress_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
         else
         {
-            progress_bar->unk18->func_001E0520(-280.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootClass178750(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
+            progress_bar->model->set_translation(-280.0f, 180.0f, 0.0f);
+            progress_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
 
@@ -714,7 +712,7 @@ void BootInstaller::update()
             else
             {
                 install_buffer = func_139700(0x40, 0x200000);
-                func_121FE0(0);
+                FlushCache(0);
                 func_1156B0(D_001B65E4, install_buffer);
                 D_001B65E4->unk13b = 0;
                 func_115810(D_001B65E4, 5, 0);
@@ -751,9 +749,9 @@ void BootInstaller::update()
                 next_tip_percent = tip_index * 100 / 8;
             }
 
-            func_001F79A0(progress_bar, install_total - remaining, install_total);
+            progress_bar_draw(progress_bar, install_total - remaining, install_total);
 
-            if (input->pressed & resource->unk02)
+            if (input->pressed & resource->cancel_buttons)
             {
                 lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_ABORT_CONFIRM, 0);
                 func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
@@ -761,11 +759,11 @@ void BootInstaller::update()
                 D_001B65E4->unk13b = 1;
                 selection = 1;
                 x = menu_cursor_x(selection);
-                cursor = new (0) BootClass175070;
+                cursor = new (0) BootSelectionCursor;
                 func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
                 func_465B20(D_001B657C, cursor);
-                tip_text->unk3f = 0;
-                tip_image->unk18->unk6a |= 1;
+                tip_text->visible = 0;
+                tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
                 step = 3;
                 yes_step = 0x1B;
                 no_step = 0x1A;
@@ -776,7 +774,7 @@ void BootInstaller::update()
     case 23:
         D_001B657C->message_value = 100;
         lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
-        func_001F79A0(progress_bar, 100, 100);
+        progress_bar_draw(progress_bar, 100, 100);
         func_1156B0(D_001B65E4, 0);
 
         if (install_buffer != 0)
@@ -799,8 +797,8 @@ void BootInstaller::update()
         break;
     case 25:
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_COMPLETE, 0);
-        tip_text->unk3f = 0;
-        tip_image->unk18->unk6a |= 1;
+        tip_text->visible = 0;
+        tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
         step = 0x15;
         break;
     case 20:
@@ -830,7 +828,7 @@ void BootInstaller::update()
         step = 0x15;
         break;
     case 21:
-        if (input->pressed & resource->unk00)
+        if (input->pressed & resource->confirm_buttons)
         {
             func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
@@ -896,13 +894,13 @@ void BootInstaller::update()
             tip_image = 0;
         }
 
-        static_cast<BootClass178DD0*>(D_001B6614)->append_node(new (0) BootTitleMenu(-1), -1);
+        static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(-1), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
     case 26:
-        tip_text->unk3f = 1;
-        tip_image->unk18->unk6a &= ~1;
+        tip_text->visible = 1;
+        tip_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         D_001B65E4->unk13b = 0;
         step = 0x13;
@@ -966,7 +964,7 @@ void BootInstaller::update()
             step = 2;
             selection = 0;
             x = menu_cursor_x(selection);
-            cursor = new (0) BootClass175070;
+            cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
             func_465B20(D_001B657C, cursor);
         }
@@ -1004,7 +1002,7 @@ void BootInstaller::update()
         break;
     }
 
-    if (exiting == 0 && step > 0 && sound_started == 0 && func_103640(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0) == 0)
+    if (exiting == 0 && step > 0 && sound_started == 0 && resident_find_resource_request(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0) == 0)
     {
         func_1126D0(D_001B65F8, sound_data, 1, 0);
         sound_started = 1;
@@ -1015,7 +1013,7 @@ void BootInstaller::update()
 }
 
 /** @brief Destroy the list receiver. */
-BootClass178A70::~BootClass178A70()
+BootListReceiver::~BootListReceiver()
 {
 }
 
@@ -1089,7 +1087,7 @@ BootInstaller::~BootInstaller()
 
     if (tip_image_buffer != 0)
     {
-        func_11EE00(D_001B65F4, tip_image_buffer);
+        resident_queue_allocation_release(D_001B65F4, tip_image_buffer);
     }
 
     delete navigator_file_buffers[0];
@@ -1100,7 +1098,10 @@ BootInstaller::~BootInstaller()
     g_boot_program.error_popup->set_enabled(1);
 }
 
-/** @brief Turn the popup on or off. @param value Nonzero to allow the popup. */
+/**
+ * @brief Turn the popup on or off.
+ * @param value Nonzero to allow the popup.
+ */
 void BootUnitErrorPopup::set_enabled(u8 value)
 {
     enabled = value;
@@ -1152,26 +1153,38 @@ BootInstaller::BootInstaller()
     screen_images_loaded = 0;
 }
 
-/** @brief Default DMA notification hook; does nothing. @param value Notification value. */
-void BootClass170D50::func_001E04E0(u32 value)
+/**
+ * @brief Default DMA notification hook; does nothing.
+ * @param value Notification value.
+ */
+void BootDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
-/** @brief Default preparation hook; does nothing. @param value Notification word or packet address. */
-void BootClass170D50::func_001E04F0(u32 value)
+/**
+ * @brief Default preparation hook; does nothing.
+ * @param value Notification word or packet address.
+ */
+void BootDmaCallbacks::on_packet_complete(u32 value)
 {
 }
 
-/** @brief Copy the position. @param value Source vector. */
-void BootClass170D60::func_001E0500(const BootVector4DDAA0* value)
+/**
+ * @brief Copy the position.
+ * @param value Source vector.
+ */
+void BootPositionTransform::copy_translation(const BootVector4DDAA0* value)
 {
-    copy_vector(&unk20, value);
+    copy_vector(&translation, value);
 }
 
-/** @brief Copy the position. @param value Source vector. */
-void BootClass170D60::func_001E0510(const BootVector4DDAA0* value)
+/**
+ * @brief Copy the position.
+ * @param value Source vector.
+ */
+void BootPositionTransform::set_translation_vector(const BootVector4DDAA0* value)
 {
-    copy_vector(&unk20, value);
+    copy_vector(&translation, value);
 }
 
 /**
@@ -1180,40 +1193,46 @@ void BootClass170D60::func_001E0510(const BootVector4DDAA0* value)
  * @param y Second component.
  * @param z Third component.
  */
-void BootClass170D60::func_001E0520(float x, float y, float z)
+void BootPositionTransform::set_translation(float x, float y, float z)
 {
-    unk20.x = x;
-    unk20.y = y;
-    unk20.z = z;
-    unk20.w = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /**
  * @brief Report the list kind used when registration requests the default.
  * @return Three in the base implementation.
  */
-s32 BootClass170E90::get_default_list_kind()
+s32 BootListObject::get_default_list_kind()
 {
     return 3;
 }
 
 /** @brief Advance this registered object's state; the base implementation does nothing. */
-void BootClass170E90::update()
+void BootListObject::update()
 {
 }
 
-/** @brief Copy the position and mark the transform dirty. @param value Source vector. */
-void BootClass170D90::func_001E0500(const BootVector4DDAA0* value)
+/**
+ * @brief Copy the position and mark the transform dirty.
+ * @param value Source vector.
+ */
+void BootTransform::copy_translation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk20, value);
+    copy_vector(&translation, value);
 }
 
-/** @brief Copy the position and mark the transform dirty. @param value Source vector. */
-void BootClass170D90::func_001E0510(const BootVector4DDAA0* value)
+/**
+ * @brief Copy the position and mark the transform dirty.
+ * @param value Source vector.
+ */
+void BootTransform::set_translation_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk20, value);
+    copy_vector(&translation, value);
 }
 
 /**
@@ -1223,41 +1242,53 @@ void BootClass170D90::func_001E0510(const BootVector4DDAA0* value)
  * @param z Third component.
  * @param w Fourth component.
  */
-void BootClass170D90::func_001E0630(float x, float y, float z, float w)
+void BootTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
-    unk30.x = x;
-    unk30.y = y;
-    unk30.z = z;
-    unk30.w = w;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
-/** @brief Copy the rotation vector and mark the transform dirty. @param value Source vector. */
-void BootClass170D90::func_001E0650(const BootVector4DDAA0* value)
+/**
+ * @brief Copy the rotation vector and mark the transform dirty.
+ * @param value Source vector.
+ */
+void BootTransform::copy_orientation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk30, value);
+    copy_vector(&orientation, value);
 }
 
-/** @brief Copy the rotation vector and mark the transform dirty. @param value Source vector. */
-void BootClass170D90::func_001E0670(const BootVector4DDAA0* value)
+/**
+ * @brief Copy the rotation vector and mark the transform dirty.
+ * @param value Source vector.
+ */
+void BootTransform::set_orientation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk30, value);
+    copy_vector(&orientation, value);
 }
 
-/** @brief Convert a rotation into the rotation vector and mark the transform dirty. @param value Source rotation. */
-void BootClass170D90::func_001E0690(const BootVector4DDAA0* value)
+/**
+ * @brief Convert a rotation into the rotation vector and mark the transform dirty.
+ * @param value Source rotation.
+ */
+void BootTransform::convert_rotation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&unk30, &value->x);
+    func_4CE4C0(&orientation, &value->x);
 }
 
-/** @brief Convert a rotation into the rotation vector and mark the transform dirty. @param value Source rotation. */
-void BootClass170D90::func_001E06C0(const BootVector4DDAA0* value)
+/**
+ * @brief Convert a rotation into the rotation vector and mark the transform dirty.
+ * @param value Source rotation.
+ */
+void BootTransform::set_rotation_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&unk30, &value->x);
+    func_4CE4C0(&orientation, &value->x);
 }
 
 /**
@@ -1266,7 +1297,7 @@ void BootClass170D90::func_001E06C0(const BootVector4DDAA0* value)
  * @param y Second component.
  * @param z Third component.
  */
-void BootClass170D90::func_001E06F0(float x, float y, float z)
+void BootTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
     BootVector4DDAA0 value;
@@ -1274,53 +1305,66 @@ void BootClass170D90::func_001E06F0(float x, float y, float z)
     value.y = y;
     value.z = z;
     value.w = 1.0f;
-    func_4CE4C0(&unk30, &value.x);
+    func_4CE4C0(&orientation, &value.x);
 }
 
-/** @brief Copy the scale vector and mark the transform dirty. @param value Source vector. */
-void BootClass170D90::func_001E0730(const BootVector4DDAA0* value)
+/**
+ * @brief Copy the scale vector and mark the transform dirty.
+ * @param value Source vector.
+ */
+void BootTransform::copy_scale(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk40, value);
+    copy_vector(&scale, value);
 }
 
-/** @brief Copy the scale vector and mark the transform dirty. @param value Source vector. */
-void BootClass170D90::func_001E0750(const BootVector4DDAA0* value)
+/**
+ * @brief Copy the scale vector and mark the transform dirty.
+ * @param value Source vector.
+ */
+void BootTransform::set_scale_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk40, value);
+    copy_vector(&scale, value);
 }
 
-/** @brief Clear the byte at offset 0x60. */
-void BootClass178A90::func_001E0860()
+/** @brief Draw in the main list (bucket zero). */
+void BootTransformOwner::set_default_draw_bucket()
 {
-    unk60 = 0;
+    draw_bucket = 0;
 }
 
 /** @brief Virtual slot 4; the owner's implementation does nothing. */
-void BootClass178A90::func_001DD4C0()
+void BootTransformOwner::render()
 {
 }
 
-/** @brief Default output handler. @param output Opaque output object. @return Zero. */
-s32 BootClass178A90::func_001E0880(void* output)
+/**
+ * @brief Give the centre for Lib's oriented-box visibility test; this owner has none.
+ * @param output Receives the centre in local space.
+ * @return Nonzero when a centre was written; zero here, so the test is skipped.
+ */
+s32 BootTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
 
 /**
- * @brief Test the supplied value.
- * @param value Value to test.
- * @param mode Additional mode used by derived implementations.
+ * @brief Fade the owner as it nears the camera; Lib calls this for owners with draw flag 0x800. This owner doesn't fade.
+ * @param value Distance in front of the camera over the fade range, clamped to one.
+ * @param mode Two from Lib's caller; unused here.
  * @return Whether the value is negative.
  */
-bool BootClass178A90::func_001E0890(float value, float mode)
+bool BootTransformOwner::set_fade_alpha(float value, float mode)
 {
     return value < 0.0f;
 }
 
-/** @brief Return the shared fallback vector. @return Vector pointer. */
-const BootVector4DDAA0* BootClass178A90::func_001E08B0()
+/**
+ * @brief Return the bounding sphere Lib culls against (centre in xyz, radius in w); this owner has Lib's shared default.
+ * @return Bounding sphere.
+ */
+const BootVector4DDAA0* BootTransformOwner::get_bounding_sphere()
 {
     return &D_50CD30;
 }
@@ -1330,18 +1374,21 @@ const BootVector4DDAA0* BootClass178A90::func_001E08B0()
  * @param matrix Matrix supplied by the caller.
  * @param context Opaque caller context.
  */
-void BootClass178A90::func_001E08C0(const void* matrix, void* context)
+void BootTransformOwner::build_packet(const void* matrix, void* context)
 {
 }
 
-/** @brief Produce a transformation receiver. @return Null. */
-BootClass178A90* BootClass178A90::func_001E08D0()
+/**
+ * @brief Make a copy of this object that stays linked to it; this owner can't be copied.
+ * @return The copy, or null.
+ */
+BootTransformOwner* BootTransformOwner::clone()
 {
     return 0;
 }
 
-/** @brief Default hook; does nothing. */
-void BootClass178A90::func_001E08E0()
+/** @brief Unlink a copy from its original and queue it for release; this owner never has copies, so it does nothing. */
+void BootTransformOwner::release_clone()
 {
 }
 

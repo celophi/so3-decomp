@@ -5,16 +5,22 @@
 
 #ifdef __cplusplus
 
-/** @brief Store the halfword at offset 0x6A. @param value Value to store. */
-inline void BootClass178A90::func_001DFE30(u16 value)
+/**
+ * @brief Set the draw flags (BOOT_DRAW_*).
+ * @param value New flags.
+ */
+inline void BootTransformOwner::set_draw_flags(u16 value)
 {
-    unk6a = value;
+    draw_flags = value;
 }
 
-/** @brief Store the halfword at offset 0x6C. @param value Value to store. */
-inline void BootClass178A90::func_001DFE40(u16 value)
+/**
+ * @brief Set the object's type ID.
+ * @param value Type ID.
+ */
+inline void BootTransformOwner::set_type_id(u16 value)
 {
-    unk6c = value;
+    type_id = value;
 }
 
 /** @brief Clear all four words. */
@@ -27,25 +33,25 @@ inline BootWordQuad::BootWordQuad()
 }
 
 /** @brief Install the interface's vtable. */
-inline BootClass170D50::BootClass170D50()
+inline BootDmaCallbacks::BootDmaCallbacks()
 {
 }
 
 /** @brief Initialize the owner's state bytes and tracking words. */
-inline BootClass178A90::BootClass178A90()
+inline BootTransformOwner::BootTransformOwner()
 {
-    unk60 = 0;
-    unk61 = 0;
+    draw_bucket = 0;
+    matrix_ready = 0;
     unk63 = 0;
     unk66 = 0;
     unk68 = 0;
     unk69 = 0;
-    unk6a = 0x10;
-    unk6c = 1;
+    draw_flags = BOOT_DRAW_FLAG_0010;
+    type_id = 1;
     unk80 = 0;
     unk88 = 0;
     unk8c = 0;
-    unk0f = 2;
+    object_kind = 2;
 }
 
 #endif
