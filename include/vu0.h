@@ -168,7 +168,9 @@ static inline void vu0_read_vf6(void* result)
  * Packs x, y and z into one 128-bit register, converts them to floats with 15
  * fraction bits, and starts the square root of 1 - x² - y² - z² for w. The
  * same sequence, with the same fixed GPRs t0, t1, t2 and t7, appears in five
- * modules, so I think it's a shared engine macro. Finish it with
+ * modules, so I think it's a shared engine macro. The GPR half only builds
+ * the qmtc2 operand, and it has to stay asm: MWCC rejects 128-bit shifts
+ * ("illegal data size"), so pcpyld can't be written in C. Finish it with
  * vu0_store_decoded_quaternion.
  * @param packed Three signed halfwords: x, y and z.
  * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf), and SO3's

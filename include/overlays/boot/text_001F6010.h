@@ -7,7 +7,9 @@
 /** Settings record initialized before calls to the resident rendering interface. */
 typedef struct BootDrawSettings
 {
-    u16 unk00;
+    /** GS PRIM bits: 0xC is a Gouraud-shaded triangle strip; 0x5C adds texture mapping and alpha blending. */
+    u16 prim;
+
     u8 unk02;
 
     /** Which of the draw buffer's textures to draw with; the palette quad uses 1. */
@@ -53,7 +55,10 @@ struct BootGifTag
 struct BootFadeStripPacket
 {
     u64 transfer_dma;
-    u64 unk08;
+
+    /** Upper half of the DMA tag; left unwritten, as the tag doesn't transfer it. */
+    u64 transfer_dma_high;
+
     BootGifTag transfer_tag;
     u64 bitbltbuf;
     u64 bitbltbuf_register;
@@ -64,11 +69,14 @@ struct BootFadeStripPacket
     u64 trxdir;
     u64 trxdir_register;
     u64 image_tag;
-    u64 unk68;
+
+    /** REGS half of the IMAGE-mode GIF tag; unused, so left unwritten. */
+    u64 image_tag_registers;
+
     u64 image_dma;
-    u64 unk78;
+    u64 image_dma_high;
     u64 draw_dma;
-    u64 unk88;
+    u64 draw_dma_high;
     BootGifTag draw_tag;
     u64 texflush;
     u64 texflush_register;
@@ -92,9 +100,15 @@ struct BootVramRequest
     s16 height;
     s32 size;
     u8 unk08[4];
-    s16 unk0c;
-    u8 unk0e;
-    u8 unk0f;
+
+    /** GS pixel storage mode (1 is PSMCT24). */
+    s16 psm;
+
+    /** Texture width as a power of two (TEX0's TW). */
+    u8 width_log2;
+
+    /** Texture height as a power of two (TEX0's TH). */
+    u8 height_log2;
 };
 
 extern "C" {
@@ -105,12 +119,6 @@ extern "C" {
  * @param settings Settings record to initialize.
  */
 void init_draw_settings(BootDrawSettings* settings);
-
-/**
- * @brief Forward to the cleanup routine for the containing object.
- * @param object Embedded object at offset 0x90.
- */
-void func_001FA890(void* object);
 
 /**
  * @brief Build an image's quad from a rectangle of its texture and a rectangle of its palette, and queue the

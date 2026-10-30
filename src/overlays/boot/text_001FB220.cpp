@@ -21,7 +21,7 @@ char* func_13CD50(char* destination, const char* source, u32 size);
 s32 func_13C4F0(char* destination, const char* format, ...);
 void func_4CD810(FieldVec4B* output, const BootVector4DDAA0* axis_angle);
 void func_4CD630(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t);
-s32 func_457220(BootTrophyRecordF10* record);
+s32 func_457220(BootTrophyRecord* record);
 
 /** Key each trophy record must carry, stored XOR-encoded. */
 extern const u32 g_trophy_keys[];
@@ -109,7 +109,7 @@ void BootBattleTrophyViewer::sort_trophies(u8 newest_first)
  * @param texture Texture resource to fill.
  * @param index Trophy index.
  */
-void BootBattleTrophyViewer::build_trophy_texture(const BootTrophyRecordF10* record, BootTextureResource* texture, s32 index)
+void BootBattleTrophyViewer::build_trophy_texture(const BootTrophyRecord* record, BootTextureResource* texture, s32 index)
 {
     func_13A4C0(texture, (void*)(((u32)image_blocks[2] + 0x7F) & ~0x7F), 0x4600);
     BootTextureHeader* header = &texture->header;
@@ -274,11 +274,11 @@ void BootBattleTrophyViewer::update_grid()
         if (image != 0)
         {
             BootModel* model = image->model;
-            copy_vector(&value, &model->unk20);
+            copy_vector(&value, &model->translation);
             value.x = -236.0f + (i & 7) * 68;
             value.y = scrolled(-94.0f + i / 8 * 100, scroll);
             model->set_translation_vector(&value);
-            copy_vector(&value, &model->unk40);
+            copy_vector(&value, &model->scale);
 
             if (selected == i && scroll_step == 0)
             {
@@ -293,7 +293,7 @@ void BootBattleTrophyViewer::update_grid()
                     value.z = 1.2f;
                 }
 
-                model->func_001E94E0(2);
+                model->set_blend_mode(2);
             }
             else
             {
@@ -311,7 +311,7 @@ void BootBattleTrophyViewer::update_grid()
                     }
                 }
 
-                model->func_001E94E0(0);
+                model->set_blend_mode(0);
             }
 
             model->set_scale_vector(&value);
@@ -357,12 +357,12 @@ s32 BootBattleTrophyViewer::create_trophy_images()
     {
         for (s32 i = 0; i < 300; i++)
         {
-            BootTrophyRecordF10* record = &records[i];
+            BootTrophyRecord* record = &records[i];
 
-            if (func_457220(record) == 0 || *((BootResidentRoot15CC0*)func_10D8E0())->status == 0x67)
+            if (func_457220(record) == 0 || *((BootResidentRoot15CC0*)resident_get_runtime_owner())->status == 0x67)
             {
                 set_resource_bit(bits, i, 0);
-                record->unk0C = 0;
+                record->key = 0;
                 func_457520(bits);
                 return 0;
             }
@@ -423,7 +423,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
         }
     }
 
-    func_121FE0(0);
+    FlushCache(0);
     screen_clip = new (0) BootClipRegion;
     D_001B661C->append_node(screen_clip, -1);
     screen_clip->display = g_boot_program.display;
@@ -490,7 +490,7 @@ void BootBattleTrophyViewer::update_images()
 
     if (bar_fading && progress_bar != 0)
     {
-        progress_bar->model->func_001E94E0(2);
+        progress_bar->model->set_blend_mode(2);
         set_bar_color(progress_bar, 1.0f, 1.0f, 1.0f, bar_alpha);
         bar_alpha -= 2.0f * D_001B6690;
 
@@ -510,10 +510,10 @@ void BootBattleTrophyViewer::update_images()
  * @param index Trophy number.
  * @return True when the record's key matches.
  */
-static inline bool trophy_genuine(const BootTrophyRecordF10* record, s32 index)
+static inline bool trophy_genuine(const BootTrophyRecord* record, s32 index)
 {
     u32 key = g_trophy_keys[index] ^ 0x943FED16 ^ (boot_settings()->trophy_flags.trophy_key ^ 0x23DACE93);
-    return key == record->unk0C;
+    return key == record->key;
 }
 
 /**
@@ -575,7 +575,7 @@ static inline void move_grid_cursor(BootBattleTrophyViewer* viewer)
 void BootBattleTrophyViewer::update()
 {
     BootInput* input = g_boot_program.get_input();
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     s32 card_states[2];
     card_states[0] = input->slot1_raw_state;
     card_states[1] = input->slot2_raw_state;
@@ -591,7 +591,7 @@ void BootBattleTrophyViewer::update()
             func_112990(D_001B65F8, 0x48, 1, 0, 0);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
 
-            if (*((BootResidentRoot15CC0*)func_10D8E0())->status != 0x67)
+            if (*((BootResidentRoot15CC0*)resident_get_runtime_owner())->status != 0x67)
             {
                 step++;
             }
@@ -609,7 +609,7 @@ void BootBattleTrophyViewer::update()
         if (++images_loaded >= 3)
         {
             step++;
-            func_121FE0(0);
+            FlushCache(0);
         }
 
         break;
@@ -753,14 +753,14 @@ void BootBattleTrophyViewer::update()
         lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? 0x86 : 0x85, 0);
         break;
     case 6:
-        func_121FE0(0);
+        FlushCache(0);
 
         if (records != 0)
         {
             delete[] records;
         }
 
-        records = new (0) BootTrophyRecordF10[300];
+        records = new (0) BootTrophyRecord[300];
         lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? 0x82 : 0x68, 0);
 
         if (slot1_text != 0)
@@ -979,7 +979,7 @@ void BootBattleTrophyViewer::update()
                 }
             }
 
-            if (*((BootResidentRoot15CC0*)func_10D8E0())->status != 0x67)
+            if (*((BootResidentRoot15CC0*)resident_get_runtime_owner())->status != 0x67)
             {
                 if (score < 765)
                 {
@@ -1427,7 +1427,7 @@ void BootBattleTrophyViewer::release()
 
         if (textures[i] != 0)
         {
-            func_11EE00(D_001B65F4, textures[i]);
+            resident_queue_allocation_release(D_001B65F4, textures[i]);
             textures[i] = 0;
         }
     }
@@ -1491,7 +1491,7 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
 
         if (textures[i] != 0)
         {
-            func_11EE00(D_001B65F4, textures[i]);
+            resident_queue_allocation_release(D_001B65F4, textures[i]);
         }
     }
 

@@ -58,7 +58,6 @@ struct BootDisplayLinks661C : public BootUpdateList
 };
 
 extern "C" {
-extern void* D_001B65F4;
 extern BootDisplayLinks661C* D_001B661C;
 extern BootDisplay6624* D_001B6624;
 
@@ -67,13 +66,13 @@ extern float D_001B6688;
 
 extern float D_001B6690;
 
-s32 func_103640(void* queue, s32 id, s32 first, s32 second, s32 third, s32 fourth);
-void func_103B20(void* queue, s32 id, s32 first, s32 second, s32 third, s32 fourth);
 s32 func_10CAA0(s32 upper);
 s32 func_10CC40(s32 lower, s32 upper);
 u32 func_10CE00(void);
 void func_10DB10(BootSound1B65F8* sound, s32 value);
 void func_10F000(void* request, s32 first, s32 second);
+// TODO: Main names this resident_allocate_request and types D_001B65F8 as ResidentRequest112400, but boot reads
+// that object as BootSound1B65F8 and the two layouts disagree. I'm keeping boot's declaration until they're merged.
 void func_112400(void* request, s32 sound, s32 first, s32 second, s32 volume, s32 pan, s32 third);
 s32 func_112990(void* request, s32 sound, s32 first, s32 second, s32 third);
 u32 func_113930(BootResident113E40* heap, u32 size);
@@ -81,10 +80,11 @@ s32 func_115270(BootResident1B65E4* resident, s32 slot);
 s32 func_115430(BootResident1B65E4* resident);
 s32 func_115650(BootResident1B65E4* resident);
 s32 func_115670(BootResident1B65E4* resident);
-void func_11EE00(void* queue, void* allocation);
-void func_121FE0(s32 value);
+void FlushCache(s32 value);
 void func_419A70(BootMoviePlayer* player, s32 first, s32 second);
 void func_41A210(BootMoviePlayer* player);
+// TODO: Lib's lib_queue_display_object, which takes FieldRuntime and LibClass178A90; boot still has its own
+// mirrors of those classes.
 s32 func_465B20(BootRuntime1B657C* runtime, BootTransformOwner* object);
 void func_467570(BootSelectionCursor* object, s32 first, s32 second, s32 third, float x, float y, float z);
 void func_479190(BootScene* scene, void* data);
@@ -109,7 +109,7 @@ static inline void check_main_code()
     {
         if (code[-0x80000] != *copy)
         {
-            BootResidentRoot15CC0* root = (BootResidentRoot15CC0*)func_10D8E0();
+            BootResidentRoot15CC0* root = (BootResidentRoot15CC0*)resident_get_runtime_owner();
 
             *root->status = 0x67;
             for (;;)

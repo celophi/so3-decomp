@@ -149,8 +149,8 @@ class BootNeedleMeter : public BootTransformOwner, public BootDmaCallbacks
         /** @brief Mark the meter active and submit its packet. */
         virtual void render();
 
-        /** @brief Clear the byte at offset 0x60. */
-        virtual void func_001E0860();
+        /** @brief Draw in the main list (bucket zero). */
+        virtual void set_default_draw_bucket();
 
         /**
          * @brief Move the needles towards their levels and draw them.

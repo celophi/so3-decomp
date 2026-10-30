@@ -22,18 +22,20 @@ struct BootTrophyTime
 };
 
 /** Partial 0xF10-byte record the Battle Trophies viewer keeps for each of the 300 trophies. */
-struct BootTrophyRecordF10
+struct BootTrophyRecord
 {
     /**
      * @brief Copy a record; declared only, which keeps the array header on new[] and delete[].
      * @param other Record to copy.
      * @return This record.
      */
-    BootTrophyRecordF10& operator=(const BootTrophyRecordF10& other);
+    BootTrophyRecord& operator=(const BootTrophyRecord& other);
 
     u8 unk00[4];
     BootTrophyTime time;
-    u32 unk0C;
+
+    /** Key the game gave this trophy; a record whose key doesn't match is treated as forged. */
+    u32 key;
 
     /** 64x96 picture, five bits per pixel, packed from the lowest bit up. */
     u8 image[0xF00];
@@ -70,7 +72,7 @@ class BootBattleTrophyViewer : public BootListObject
          * @param texture Texture resource to fill.
          * @param index Trophy index.
          */
-        void build_trophy_texture(const BootTrophyRecordF10* record, BootTextureResource* texture, s32 index);
+        void build_trophy_texture(const BootTrophyRecord* record, BootTextureResource* texture, s32 index);
 
         /**
          * @brief Reset the display order to trophy number order, then optionally sort it newest first.
@@ -214,7 +216,7 @@ class BootBattleTrophyViewer : public BootListObject
         BootImage* trophy_images[300];
 
         /** Record of each trophy, as read from the memory card. */
-        BootTrophyRecordF10* records;
+        BootTrophyRecord* records;
 
         /** Texture built for each earned trophy. */
         BootTextureResource* textures[300];

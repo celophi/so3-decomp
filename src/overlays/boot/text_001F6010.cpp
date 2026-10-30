@@ -46,7 +46,6 @@ void func_4791F0(BootScene* scene, u8* data);
 void func_40B3A0(u8* data);
 void func_473AA0(BootScene* scene);
 s32 func_112610(BootSound1B65F8* sound, s32 key);
-void func_100B40(void* allocation);
 
 void func_11F510(void* owner, void* object);
 }
@@ -103,7 +102,7 @@ void BootTitleMenu::animate_items(u8 snap)
         if (item == selected)
         {
             BootVector4DDAA0 value;
-            copy_vector(&value, &node->unk40);
+            copy_vector(&value, &node->scale);
 
             if (value.x < 1.08f && !snap)
             {
@@ -163,7 +162,7 @@ void BootTitleMenu::animate_items(u8 snap)
         else
         {
             BootVector4DDAA0 value;
-            copy_vector(&value, &node->unk40);
+            copy_vector(&value, &node->scale);
 
             if (value.x > 1.05f)
             {
@@ -210,7 +209,7 @@ void BootTitleMenu::animate_items(u8 snap)
  */
 void BootTitleMenu::get_cursor_position(float* x, float* y)
 {
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     BootClass170F30* node = find_menu_item(this, selected);
 
     if (node == 0)
@@ -325,7 +324,7 @@ void BootTitleMenu::update()
 {
     BootSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     switch (step)
     {
@@ -347,9 +346,9 @@ void BootTitleMenu::update()
         func_474010(scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
         delete[] scene_data;
         scene_data = 0;
-        func_40B3A0(unk30);
-        delete[] unk30;
-        unk30 = 0;
+        func_40B3A0(game_data);
+        delete[] game_data;
+        game_data = 0;
         camera = lib_find_camera_entry(scene, g_title_camera_node_name);
         D_001B6628->current_display = camera;
 
@@ -449,7 +448,7 @@ void BootTitleMenu::update()
                 step = 7;
             }
 
-            if (selected == 3 && unk2c)
+            if (selected == 3 && install_ready)
             {
                 accepted = 1;
                 step = 6;
@@ -538,9 +537,9 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        void* block = func_100B00(func_10CE00(), 0);
+        u8* block = new (0) u8[func_10CE00()];
         D_001B6614->append_node(new (0) BootBattleTrophyViewer, -1);
-        func_100B40(block);
+        delete block;
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -560,7 +559,7 @@ void BootTitleMenu::update()
 BootTitleMenu::~BootTitleMenu()
 {
     delete[] scene_data;
-    delete[] unk30;
+    delete[] game_data;
 
     if (scene != 0)
     {
@@ -582,13 +581,13 @@ BootTitleMenu::BootTitleMenu(s32 initial_item)
     step = 0;
     scene_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0x27));
     func_103E70(D_001B65E8, 0x27, scene_data, 1, 0x34BC0, 0, 0, 0, 1);
-    unk30 = func_139700(0x40, func_11C8C0(D_001B65E4, 0xA));
-    func_103E70(D_001B65E8, 0xA, unk30, 1, 0x34BC0, 0, 0, 0, 1);
+    game_data = func_139700(0x40, func_11C8C0(D_001B65E4, 0xA));
+    func_103E70(D_001B65E8, 0xA, game_data, 1, 0x34BC0, 0, 0, 0, 1);
     scene = 0;
     cursor = 0;
     pulse_up = 0;
     continue_ready = 0;
-    unk2c = 0;
+    install_ready = 0;
     collection_ready = 0;
     this->initial_item = initial_item;
     g_boot_program.trophy_card->set_mode(2);
@@ -641,7 +640,7 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
 
     func_455DF0(bar->draw_buffer, 0, 1);
     init_draw_settings(&settings);
-    settings.unk00 = 0xC;
+    settings.prim = 0xC;
     settings.unk02 = 0;
     settings.unk05 = 1;
     settings.unk06 = 0;
@@ -706,7 +705,7 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
  */
 void init_draw_settings(BootDrawSettings* settings)
 {
-    settings->unk00 = 12;
+    settings->prim = 0xC;
     settings->texture_index = 0;
     settings->unk02 = 0;
     settings->unk04 = 0;
@@ -835,9 +834,9 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
     request.width = 64;
     request.height = 448;
     request.size = 0x1C000;
-    request.unk0c = 1;
-    request.unk0e = 6;
-    request.unk0f = 10;
+    request.psm = 1;
+    request.width_log2 = 6;
+    request.height_log2 = 10;
     u32 address = func_4D93A0(D_001B663C, &request, 0x54744664, 1, 0, 0, 1, 0);
 
     if (address != 0)
@@ -947,7 +946,7 @@ BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
         D_001B661C->append_node(images[i], -1);
     }
 
-    func_001DFE40(0x4000);
+    set_type_id(0x4000);
     unk65 = 1;
     set_draw_flags(BOOT_DRAW_FLAG_0400);
     packet = new (0) BootPacketBuffer(0x400);
@@ -995,7 +994,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     init_draw_settings(&settings);
     settings.unk06 = 0;
     settings.unk02 = 2;
-    settings.unk00 = 0x5C;
+    settings.prim = 0x5C;
     settings.unk05 = 1;
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
     func_455150(image->draw_buffer, &settings);
@@ -1089,7 +1088,7 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
     init_draw_settings(&settings);
     settings.unk06 = 0;
     settings.unk02 = 2;
-    settings.unk00 = 0x5C;
+    settings.prim = 0x5C;
     settings.unk05 = 1;
     func_455150(draw_buffer, &settings);
     func_4550F0(draw_buffer, 4);
@@ -1185,10 +1184,10 @@ BootImage::BootImage()
     unk2c = 0;
 }
 
-/** @brief Set the byte at offset 0x60 to 10. */
-void BootScreenFade::func_001E0860()
+/** @brief Draw in bucket 10 instead of the main list. */
+void BootScreenFade::set_default_draw_bucket()
 {
-    unk60 = 10;
+    draw_bucket = 10;
 }
 
 /** @brief Run the launch steps: seed, movie, load, hand over. */
@@ -1196,7 +1195,7 @@ void BootGameLauncher::update()
 {
     BootSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     u32 previous;
 
     switch (step)
@@ -1272,7 +1271,7 @@ void BootGameLauncher::update()
             player->state->set_scale(1.0f, 1.0f);
             player->state->set_words(0x800, 0x800, 1);
 
-            if (((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+            if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
             {
                 player->state->unk80D8 = 1;
             }

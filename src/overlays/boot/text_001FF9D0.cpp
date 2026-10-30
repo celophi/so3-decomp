@@ -31,10 +31,10 @@ extern const char g_first_track_number[];
 extern const char g_track_number_format[];
 }
 
-/** @brief Clear the byte at offset 0x60. */
-void BootNeedleMeter::func_001E0860()
+/** @brief Draw in the main list (bucket zero). */
+void BootNeedleMeter::set_default_draw_bucket()
 {
-    unk60 = 0;
+    draw_bucket = 0;
 }
 
 /**
@@ -524,7 +524,7 @@ void BootMusicPlayer::create_images()
         images[14]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
     }
 
-    if (((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
     {
         if (images[1] != 0)
         {
@@ -686,7 +686,7 @@ void BootMusicPlayer::update()
     BootSystemSettings* resource;
     s32 i;
     BootInput* input = g_boot_program.input;
-    resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     switch (step)
     {
@@ -708,7 +708,7 @@ void BootMusicPlayer::update()
         if (++images_loaded >= 2)
         {
             step++;
-            func_121FE0(0);
+            FlushCache(0);
         }
 
         break;
@@ -1383,7 +1383,7 @@ s32 BootMusicPlayer::get_default_list_kind()
 /** @brief Set up the meter's transform and packet, with every needle at rest. */
 BootNeedleMeter::BootNeedleMeter()
 {
-    func_001DFE40(0x4001);
+    set_type_id(0x4001);
     unk65 = 1;
     set_draw_flags(BOOT_DRAW_FLAG_0400);
     packet = new (0) BootPacketBuffer(0x800);

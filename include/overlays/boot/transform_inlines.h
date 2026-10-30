@@ -15,12 +15,12 @@ inline void BootTransformOwner::set_draw_flags(u16 value)
 }
 
 /**
- * @brief Store the halfword at offset 0x6C.
- * @param value Value to store.
+ * @brief Set the object's type ID.
+ * @param value Type ID.
  */
-inline void BootTransformOwner::func_001DFE40(u16 value)
+inline void BootTransformOwner::set_type_id(u16 value)
 {
-    unk6c = value;
+    type_id = value;
 }
 
 /** @brief Clear all four words. */
@@ -40,18 +40,18 @@ inline BootDmaCallbacks::BootDmaCallbacks()
 /** @brief Initialize the owner's state bytes and tracking words. */
 inline BootTransformOwner::BootTransformOwner()
 {
-    unk60 = 0;
+    draw_bucket = 0;
     matrix_ready = 0;
     unk63 = 0;
     unk66 = 0;
     unk68 = 0;
     unk69 = 0;
     draw_flags = BOOT_DRAW_FLAG_0010;
-    unk6c = 1;
+    type_id = 1;
     unk80 = 0;
     unk88 = 0;
     unk8c = 0;
-    unk0f = 2;
+    object_kind = 2;
 }
 
 #endif

@@ -16,13 +16,13 @@ struct BootModeSlot0910
     u8 unk00[0x48];
 
     /** Card state; two once the card is ready. */
-    s32 unk48;
+    s32 card_state;
 
     /** Free space. */
-    s32 unk4C;
+    s32 free_space;
 
     /** Nonzero when the card is formatted. */
-    s32 unk50;
+    s32 formatted;
 
     u8 unk54[0xAC];
 };
@@ -34,9 +34,14 @@ class BootModeOwner0910 : public BootListObject
         /** @brief Initialize the memory card object. */
         BootModeOwner0910();
 
-        BootModeSlot0910* unk14;
+        /** The two card slots. */
+        BootModeSlot0910* slots;
+
         u8 unk18[8];
-        u8 unk20;
+
+        /** Zero while the card object is busy. */
+        u8 ready;
+
         u8 unk21[0x37];
 };
 
@@ -46,22 +51,22 @@ enum BootModeFlags0910
     BOOT_MODE_0910_FLAG_1 = 0x2
 };
 
-/** @brief Stored filename, buffer address, extent, and an unknown word. */
+/** One file of a memory card request: Lib opens `<directory>/<name>` and transfers size bytes at data. */
 struct BootCardFileBuffer
 {
-    char* unk00;
-    void* unk04;
-    u32 unk08;
+    char* name;
+    void* data;
+    u32 size;
     u32 unk0C;
 };
 
-/** @brief Request record retained by the mode owner's selected entry. */
+/** Memory card request for files in one directory; Lib keeps a pointer to it in the slot until it finishes. */
 struct BootCardFileRequest
 {
-    char* unk00;
-    s32 unk04;
+    char* directory;
+    s32 file_count;
     u32 unk08;
-    BootCardFileBuffer* unk0C;
+    BootCardFileBuffer* files;
 };
 
 /**
@@ -181,14 +186,20 @@ class BootBattleTrophyCard : public BootListObject
 
         u8 unk1E;
         u8 unk1F;
-        u32 unk20;
+
+        /** Copy of the slot's formatted flag from the last check. */
+        u32 card_formatted;
+
         s32 free_space;
         u8 unk28;
         u8 slot1_status_valid;
         u8 slot2_status_valid;
         u8 slot1_status;
         u8 slot2_status;
-        u8 unk2D;
+
+        /** Set when the slot had under 175 units free. */
+        u8 low_space;
+
         char filename[BOOT_TRANSFER_NAME_CAPACITY];
         u8 unk6E[0xCC0];
         u8* unkD30;
@@ -269,26 +280,30 @@ class BootStartupChecks : public BootListObject
         BootTextWidget* text;
 };
 
-/** Interface with one pure virtual function, with vtable D_170F20 in main data. */
-class BootClass170F20
+/**
+ * Floor height lookup, with vtable D_170F20 in main data. Lib (0x4C8860) calls the one in g_floor_query with a
+ * model's position and uses the result as the offset of a horizontal plane it keeps for the object. The field
+ * installs one of its own objects; the new-game settings screen installs a BootFlatFloor.
+ */
+class BootFloorQuery
 {
     public:
         /**
-         * @brief Return the interface's value.
-         * @return Value.
+         * @brief Return the floor height under a position; Lib passes the position and the object.
+         * @return Floor height.
          */
-        virtual float func_001E9380() = 0;
+        virtual float get_floor_height() = 0;
 };
 
-/** Implementation of BootClass170F20 that returns zero, with vtable D_170F10 in main data. */
-class BootClass170F10 : public BootClass170F20
+/** Flat floor at height zero, with vtable D_170F10 in main data. */
+class BootFlatFloor : public BootFloorQuery
 {
     public:
         /**
-         * @brief Return zero.
-         * @return Always 0.0f.
+         * @brief Return the floor height, which is zero everywhere.
+         * @return Zero.
          */
-        virtual float func_001E9380()
+        virtual float get_floor_height()
         {
             return 0.0f;
         }
@@ -531,7 +546,10 @@ class BootNewGameSettings : public BootListObject
         BootAnimation* girl_animations[6];
 
         BootAnimationTarget* animation_targets[6];
-        BootClass170F10 unk138;
+
+        /** Installed in g_floor_query while the screen runs, so Lib sees a floor at height zero. */
+        BootFlatFloor flat_floor;
+
         BootContainer* container;
 
         /** Description of the selected option. */
@@ -556,10 +574,10 @@ class BootInput : public BootListObject
         virtual void update();
 
         /**
-         * @brief Virtual slot 5.
-         * @return Always 0.
+         * @brief Virtual slot 0x1C; nothing in boot, main or Lib calls it, so its purpose is unknown.
+         * @return Zero.
          */
-        virtual s32 func_001E9640();
+        virtual s32 func_slot1c();
 
         /** @brief Forget the memory card states so the next query starts fresh. */
         void clear_card_states();
@@ -649,7 +667,7 @@ struct BootMovieState15E700
     u8 unk80B8[8];
 
     /** Frame being shown. */
-    s32 unk80C0;
+    s32 current_frame;
 
     float unk80C4;
     float unk80C8;
@@ -932,11 +950,15 @@ struct BootSequenceTail
 
     s16 key_count;
     s16 key_capacity;
-    s16 unk0c;
-    s16 unk0e;
 
-    /** Upper key index of the last lookup, where the next search starts; -1 when unset. */
-    s16 cached_index;
+    /** Lower key index the last search found; the next search starts there. */
+    s16 search_index;
+
+    /** Lower key index the cached segment was built from; -1 after the keys change. */
+    s16 segment_lower;
+
+    /** Upper key index the cached segment was built from; -1 after the keys change. */
+    s16 segment_upper;
 
     /** What the track does before its first key; 4 repeats the keys, the other codes are still unclear. */
     u8 before_mode : 4;
@@ -1051,14 +1073,17 @@ class BootFloatHistoryBase
         /** @brief Reset the record. */
         BootFloatHistoryBase();
 
+        /** @brief Forget the stored samples. */
+        void reset();
+
         u32 unk00;
-        u16 sample_count;
-        u16 next_index;
+        s16 sample_count;
+        s16 next_index;
         u32 unk08;
         u32 unk0C;
 
-        // Virtual slot 8; only its position is known.
-        virtual void func_001F4970();
+        /** @brief Slot 8; empty here and in every Lib copy, so its purpose is unknown. */
+        virtual void func_slot08();
 };
 
 /** BootFloatHistoryBase with vtable D_171B30 in main data. */
@@ -1075,8 +1100,15 @@ class BootFloatHistory : public BootFloatHistoryBase
          */
         virtual float sample(float key) const = 0;
 
-        // Virtual slot 0x10; only its position is known.
-        virtual void push_sample();
+        /**
+         * @brief Store a value and key in the two-entry history and count it, up to two.
+         * @param value Value to store.
+         * @param key Key to store.
+         */
+        virtual void push_sample(const float* value, float key);
+
+        float values[2];
+        float keys[2];
 };
 
 /** 0x24-byte BootFloatHistory with the Lib vtable D_178200. */
@@ -1096,8 +1128,6 @@ class BootClass178200 : public BootFloatHistory
          * @param value Value at the key.
          */
         virtual void add_sample(float key, float value);
-
-        u8 unk14[0x10];
 };
 
 /** Vector record with vtable D_171B10 in main data; its data comes before the vptr. */
@@ -1107,14 +1137,17 @@ class BootVectorHistoryBase
         /** @brief Reset the record. */
         BootVectorHistoryBase();
 
+        /** @brief Forget the stored samples. */
+        void reset();
+
         FieldVec4B unk00;
         s16 sample_count;
         s16 next_index;
         u32 unk14;
         u32 unk18;
 
-        // Virtual slot 8; only its position is known.
-        virtual void func_001F4960();
+        /** @brief Slot 8; empty here and in every Lib copy, so its purpose is unknown. */
+        virtual void func_slot08();
 };
 
 /** BootVectorHistoryBase with vtable D_171B50 in main data. */
@@ -1138,8 +1171,8 @@ class BootVectorHistory : public BootVectorHistoryBase
          */
         virtual void push_sample(float key, const FieldVec4A* value);
 
-        FieldVec4B unk20[2];
-        float unk40[2];
+        FieldVec4B values[2];
+        float keys[2];
 };
 
 /** 0x20-byte BootVectorHistory with the Lib vtable D_1781E0. */
@@ -1154,12 +1187,18 @@ class BootClass1781E0 : public BootVectorHistory
         virtual FieldVec4B sample(float key);
 };
 
-/** Vector record with vtable D_171B20 in main data; its data comes before the vptr. */
+/**
+ * Two-sample vector history with vtable D_171B20 in main data; its data comes before the vptr. The same layout as
+ * BootVectorHistoryBase; Lib's BootClass1718C0-family sampler resets and fills one.
+ */
 class BootClass171B20
 {
     public:
         /** @brief Reset the record. */
         BootClass171B20();
+
+        /** @brief Forget the stored samples. */
+        void reset();
 
         FieldVec4B unk00;
         s16 sample_count;
@@ -1167,8 +1206,8 @@ class BootClass171B20
         u32 unk14;
         u32 unk18;
 
-        // Virtual slot 8; only its position is known.
-        virtual void func_001F4950();
+        /** @brief Slot 8; empty here and in every Lib copy, so its purpose is unknown. */
+        virtual void func_slot08();
 };
 
 /** BootClass171B20 with vtable D_171B70 in main data. */
@@ -1188,8 +1227,8 @@ class BootClass171B70 : public BootClass171B20
          */
         virtual void push_sample(const FieldVec4A* value, float key);
 
-        FieldVec4B unk20[2];
-        float unk40[2];
+        FieldVec4B values[2];
+        float keys[2];
 };
 
 /** 0x20-byte BootClass171B70 with the Lib vtable D_1781C0. */
@@ -1216,24 +1255,35 @@ class BootFloatSegmentBase
         float key_span;
 
         /**
-         * @brief Set the range from two endpoint values and their tangents.
-         * @param start_value Value at the start_key key.
-         * @param start_tangent Tangent at the start_key key.
-         * @param end_value Value at the end_key key.
-         * @param end_tangent Tangent at the end_key key.
-         * @param start_key Key the segment starts at.
-         * @param end_key Key the segment ends at.
+         * @brief Evaluate the segment at a key; Lib implements this.
+         * @param key Evaluation key.
+         * @return Value at the key.
          */
-        virtual void set_endpoints(const float* start_value, const float* start_tangent, const float* end_value, const float* end_tangent, float start_key,
-                                   float end_key);
+        float interpolate(float key) const;
+
+        /**
+         * @brief Set the segment from the values, tangents and keys at its two ends.
+         * @param from_value Value at the start key.
+         * @param from_tangent Tangent at the start key.
+         * @param to_value Value at the end key.
+         * @param to_tangent Tangent at the end key.
+         * @param from_key Key the segment starts at.
+         * @param to_key Key the segment ends at.
+         */
+        virtual void set_endpoints(const float* from_value, const float* from_tangent, const float* to_value, const float* to_tangent, float from_key,
+                                   float to_key);
 };
 
 /** 0x20-byte BootFloatSegmentBase with vtable D_171270 in main data. */
 class BootFloatSegment : public BootFloatSegmentBase
 {
     public:
-        /** @brief Evaluate the segment at a key. */
-        virtual void evaluate();
+        /**
+         * @brief Evaluate the segment at a key.
+         * @param key Evaluation key.
+         * @return Value at the key.
+         */
+        virtual float evaluate(float key) const;
 };
 
 /** Root of the keyframe tracks (vtable D_171170 in main data). A track holds keys sorted by time and samples a value between them. */
@@ -1314,8 +1364,8 @@ class BootFloatTrackBase : public BootTrack
          */
         virtual s32 append_key(const float* value, float key);
 
-        /** @brief Run the default track hook. */
-        virtual void func_001EECA0();
+        /** @brief Slot 0x24; BootTrack's empty version (track_default_func_slot24) is the only one. */
+        virtual void func_slot24();
 
         /**
          * @brief Replace an indexed keyframe.
@@ -1463,12 +1513,31 @@ class BootFloatTrackBase : public BootTrack
          * @param key Key to find.
          * @return Keyframe value, or zero when the key is absent.
          */
-        virtual float find_key_value(float key) const;
+        virtual float find_key_value(float key);
 
         // Implemented by the derived tracks: sample (slot 0x80) and return_to_pool (slot 0x84).
         virtual float sample(float key) = 0;
 
         virtual void return_to_pool() = 0;
+
+        /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+        void free_keys();
+
+        /**
+         * @brief Normalize a key across the cached span and store its signed period count.
+         * @param key Key whose period count is representable as a signed 32-bit integer.
+         * @return Normalized key, with odd-period reflection selected by the control fields.
+         */
+        float update_cycle_count(float key);
+
+        /**
+         * @brief Find the entries around a key, starting from the cached cursor.
+         * @param key Key to place.
+         * @param lower Receives the lower entry index.
+         * @param upper Receives the upper entry index.
+         * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+         */
+        u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
         BootFloatTrackKey* key_array;
 
@@ -1585,7 +1654,16 @@ class BootPooledFloatTrack : public BootFloatTrack
         virtual void return_to_pool();
 };
 
-struct BootVectorTrackKey;
+/** 16-byte keyframe of BootVectorTrackBase; the value's fourth component is its key. */
+struct BootVectorTrackKey
+{
+    /** @brief Leave the value uninitialized. */
+    BootVectorTrackKey()
+    {
+    }
+
+    FieldVec4B value;
+};
 
 /** Key storage for tracks of xyz vectors whose w holds the key (vtable D_171830 in main data). */
 class BootVectorTrackBase : public BootTrack
@@ -1608,7 +1686,7 @@ class BootVectorTrackBase : public BootTrack
          * @param count Keyframe count.
          * @param entries External keyframe storage.
          */
-        virtual void bind_keys(s32 count, void* entries);
+        virtual void bind_keys(s32 count, BootVectorTrackKey* entries);
 
         /**
          * @brief Set what the track does before its first key.
@@ -1636,8 +1714,8 @@ class BootVectorTrackBase : public BootTrack
          */
         virtual s32 append_key(const FieldVec4A* value, float key);
 
-        /** @brief Run the default track hook. */
-        virtual void func_001EECA0();
+        /** @brief Slot 0x24; BootTrack's empty version (track_default_func_slot24) is the only one. */
+        virtual void func_slot24();
 
         /**
          * @brief Replace an indexed vector keyframe.
@@ -1730,7 +1808,7 @@ class BootVectorTrackBase : public BootTrack
          * @brief Return the key storage.
          * @return Key array, or null.
          */
-        virtual void* get_keys();
+        virtual BootVectorTrackKey* get_keys();
 
         /** @brief Reset the sequence fields and set both modes to one. */
         virtual void reset_state();
@@ -1785,7 +1863,7 @@ class BootVectorTrackBase : public BootTrack
          * @param key Key to find.
          * @return Keyframe value, or zero when the key is absent.
          */
-        virtual FieldVec4A find_key_value(float key) const;
+        virtual FieldVec4A find_key_value(float key);
 
         /**
          * @brief Sample the track at a key and cache the value and its change per second.
@@ -1797,9 +1875,31 @@ class BootVectorTrackBase : public BootTrack
         /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
         virtual void return_to_pool() = 0;
 
+        /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+        void free_keys();
+
+        /**
+         * @brief Normalize a key across the cached span and store its signed period count.
+         * @param key Key whose period count is representable as a signed 32-bit integer.
+         * @return Normalized key, with odd-period reflection selected by the control fields.
+         */
+        float update_cycle_count(float key);
+
+        /**
+         * @brief Find the entries around a key, starting from the cached cursor.
+         * @param key Key to place.
+         * @param lower Receives the lower entry index.
+         * @param upper Receives the upper entry index.
+         * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+         */
+        u8 find_surrounding_keys(float key, s32* lower, s32* upper);
+
         BootVectorTrackKey* key_array;
         u8 unk08[8];
-        FieldVec4B unk10;
+
+        /** Single cached keyframe, used before an array is allocated. */
+        BootVectorTrackKey single_key;
+
         BootSequenceTail state;
 };
 
@@ -1869,7 +1969,12 @@ struct BootTrackKey1718C0
     FieldVec4B value;
 };
 
-/** Partial keyframe track with vtable D_1718C0 in main data; its constructor and destructor are out of line. */
+/**
+ * Keyframe track with vtable D_1718C0 in main data; its constructor and destructor are out of line. The values look
+ * like rotations: Lib's sampler (0x4B1A50, through D_177EE0) handles the end modes with quaternion inverses and a VU
+ * normalize, as BootFloatQuaternionTrackBase's does, but interpolates with plain float maths and a BootClass171B70
+ * history instead of slerp.
+ */
 class BootClass1718C0 : public BootTrack
 {
     public:
@@ -1890,7 +1995,7 @@ class BootClass1718C0 : public BootTrack
          * @param count Keyframe count.
          * @param entries External keyframe storage.
          */
-        virtual void bind_keys(s32 count, void* entries);
+        virtual void bind_keys(s32 count, BootTrackKey1718C0* entries);
 
         /**
          * @brief Set what the track does before its first key.
@@ -1918,8 +2023,8 @@ class BootClass1718C0 : public BootTrack
          */
         virtual s32 append_key(const FieldVec4A* value, float key);
 
-        /** @brief Run the default track hook. */
-        virtual void func_001EECA0();
+        /** @brief Slot 0x24; BootTrack's empty version (track_default_func_slot24) is the only one. */
+        virtual void func_slot24();
 
         /**
          * @brief Replace an indexed vector keyframe.
@@ -2012,7 +2117,7 @@ class BootClass1718C0 : public BootTrack
          * @brief Return the key storage.
          * @return Key array, or null.
          */
-        virtual void* get_keys();
+        virtual BootTrackKey1718C0* get_keys();
 
         /** @brief Clear the key storage, counts, modes and cached indices. */
         virtual void reset_state();
@@ -2067,7 +2172,7 @@ class BootClass1718C0 : public BootTrack
          * @param key Key to find.
          * @return Keyframe value, or zero when the key is absent.
          */
-        virtual FieldVec4A find_key_value(float key) const;
+        virtual FieldVec4A find_key_value(float key);
 
         /**
          * @brief Sample the track at a key and cache the value and its change per second.
@@ -2079,11 +2184,20 @@ class BootClass1718C0 : public BootTrack
         /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
         virtual void return_to_pool() = 0;
 
+        /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+        void free_keys();
+
         BootTrackKey1718C0* key_array;
         u8 unk08[8];
-        float unk10;
+
+        /** Key of the single cached keyframe, used before an array is allocated. */
+        float single_key;
+
         u8 unk14[0xC];
-        FieldVec4B unk20;
+
+        /** Value of the single cached keyframe. */
+        FieldVec4B single_value;
+
         BootSequenceTail state;
 };
 
@@ -2201,7 +2315,7 @@ class BootFloatCurveTrackBase : public BootTrack
         virtual s32 append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         /** @brief Default virtual handler that performs no work. */
-        virtual void func_001EECA0();
+        virtual void func_slot24();
 
         /**
          * @brief Set an entry through slot 25.
@@ -2382,6 +2496,25 @@ class BootFloatCurveTrackBase : public BootTrack
          */
         virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key) = 0;
 
+        /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+        void free_keys();
+
+        /**
+         * @brief Normalize a key across the cached span and store its signed period count.
+         * @param key Key whose period count is representable as a signed 32-bit integer.
+         * @return Normalized key, with odd-period reflection selected by the control fields.
+         */
+        float update_cycle_count(float key);
+
+        /**
+         * @brief Find the entries around a key, starting from the cached cursor.
+         * @param key Key to place.
+         * @param lower Receives the lower entry index.
+         * @param upper Receives the upper entry index.
+         * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+         */
+        u8 find_surrounding_keys(float key, s32* lower, s32* upper);
+
         BootFloatCurveTrackKey* key_array;
         BootFloatCurveTrackKey single_key;
         BootSequenceTail state;
@@ -2473,6 +2606,13 @@ class BootVectorSegmentBase
         float key_span;
 
         /**
+         * @brief Evaluate the segment at a key; Lib implements this.
+         * @param key Evaluation key.
+         * @return Value at the key.
+         */
+        FieldVec4B interpolate(float key) const;
+
+        /**
          * @brief Set the segment from the keys, values and tangents at its two ends.
          * @param from_key Key the segment starts at.
          * @param to_key Key the segment ends at.
@@ -2489,19 +2629,12 @@ class BootVectorSegmentBase
 class BootVectorSegment : public BootVectorSegmentBase
 {
     public:
-        /** @brief Evaluate the segment at a key. */
-        virtual void evaluate();
-};
-
-/** 16-byte keyframe of BootVectorTrackBase; the value's fourth component is its key. */
-struct BootVectorTrackKey
-{
-    /** @brief Leave the value uninitialized. */
-    BootVectorTrackKey()
-    {
-    }
-
-    FieldVec4B value;
+        /**
+         * @brief Evaluate the segment at a key.
+         * @param key Evaluation key.
+         * @return Value at the key.
+         */
+        virtual FieldVec4B evaluate(float key) const;
 };
 
 /** 48-byte vector keyframe of BootVectorCurveTrackBase: a BootVectorTrackBase keyframe and two auxiliary vectors. */
@@ -2537,7 +2670,7 @@ class BootVectorCurveTrackBase : public BootTrack
          * @param count Keyframe count.
          * @param entries External keyframe storage.
          */
-        virtual void bind_keys(s32 count, void* entries);
+        virtual void bind_keys(s32 count, BootVectorCurveTrackKey* entries);
 
         /**
          * @brief Set what the track does before its first key.
@@ -2560,37 +2693,43 @@ class BootVectorCurveTrackBase : public BootTrack
         /**
          * @brief Append a vector keyframe.
          * @param value Keyframe value.
-         * @param first Optional first auxiliary vector.
-         * @param second Optional second auxiliary vector.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
          * @param key Sort key.
          * @return Append status.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
          */
-        virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+        virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
-        /** @brief Run the default track hook. */
-        virtual void func_001EECA0();
+        /** @brief Slot 0x24; BootTrack's empty version (track_default_func_slot24) is the only one. */
+        virtual void func_slot24();
 
         /**
          * @brief Replace an indexed vector keyframe.
          * @param index Keyframe index.
          * @param key Sort key.
          * @param value Keyframe value.
-         * @param first Optional first auxiliary vector.
-         * @param second Optional second auxiliary vector.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
          * @return Replacement status.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
          */
-        virtual s32 replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+        virtual s32 replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
 
         /**
          * @brief Insert an indexed vector keyframe.
          * @param index Keyframe index.
          * @param key Sort key.
          * @param value Keyframe value.
-         * @param first Optional first auxiliary vector.
-         * @param second Optional second auxiliary vector.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
          * @return Insertion status.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
          */
-        virtual s32 insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+        virtual s32 insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
 
         /**
          * @brief Read an indexed vector keyframe.
@@ -2606,12 +2745,13 @@ class BootVectorCurveTrackBase : public BootTrack
         /**
          * @brief Add a vector keyframe through the track implementation.
          * @param value Keyframe value.
-         * @param first Optional first auxiliary vector.
-         * @param second Optional second auxiliary vector.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
          * @param key Sort key.
-         * @param second Second auxiliary vector.
+         * @param in_tangent Tangent arriving at the key.
+         * @param out_tangent Tangent leaving the key.
          */
-        virtual void set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+        virtual void set_single_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
         /** @brief Run the default update hook. */
         virtual void reset_keys();
@@ -2668,7 +2808,7 @@ class BootVectorCurveTrackBase : public BootTrack
          * @brief Return the key storage.
          * @return Key array, or null.
          */
-        virtual void* get_keys();
+        virtual BootVectorCurveTrackKey* get_keys();
 
         /** @brief Reset the sequence fields and set both modes to one. */
         virtual void reset_state();
@@ -2731,7 +2871,7 @@ class BootVectorCurveTrackBase : public BootTrack
          * @param key Key to find.
          * @return Keyframe value, or zero when the key is absent.
          */
-        virtual FieldVec4A find_key_value(float key) const;
+        virtual FieldVec4A find_key_value(float key);
 
         /**
          * @brief Sample the track at a key and cache the value and its change per second.
@@ -2750,11 +2890,31 @@ class BootVectorCurveTrackBase : public BootTrack
          */
         virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key) = 0;
 
+        /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+        void free_keys();
+
+        /**
+         * @brief Normalize a key across the cached span and store its signed period count.
+         * @param key Key whose period count is representable as a signed 32-bit integer.
+         * @return Normalized key, with odd-period reflection selected by the control fields.
+         */
+        float update_cycle_count(float key);
+
+        /**
+         * @brief Find the entries around a key, starting from the cached cursor.
+         * @param key Key to place.
+         * @param lower Receives the lower entry index.
+         * @param upper Receives the upper entry index.
+         * @return One when a reflecting end mode extends the first or last segment, otherwise zero.
+         */
+        u8 find_surrounding_keys(float key, s32* lower, s32* upper);
+
         void* key_array;
         u8 unk08[8];
-        FieldVec4B unk10;
-        FieldVec4B unk20;
-        FieldVec4B unk30;
+
+        /** Single cached keyframe, used before an array is allocated. */
+        BootVectorCurveTrackKey single_key;
+
         BootSequenceTail state;
         u8 unk54[0xC];
 };
@@ -2835,26 +2995,31 @@ class BootPooledVectorCurveTrack : public BootVectorCurveTrack
         virtual void return_to_pool();
 };
 
-/** Partial 32-byte keyframe of BootClass171A70 with its key first. */
-struct BootTrackKey171A70
+/** 32-byte keyframe of BootFloatQuaternionTrackBase: a key and a rotation quaternion at offset 0x10. */
+struct BootFloatQuaternionTrackKey
 {
     /** @brief Leave the keyframe uninitialized. */
-    BootTrackKey171A70();
+    BootFloatQuaternionTrackKey();
 
     float key;
     u8 unk04[0xC];
+
+    /** Rotation quaternion (x, y, z, w). */
     float value[4];
 };
 
-/** Partial keyframe track with vtable D_171A70 in main data; its constructor and destructor are out of line. */
-class BootClass171A70 : public BootTrack
+/**
+ * Key storage for rotation tracks with full float quaternions (vtable D_171A70 in main data); its constructor and
+ * destructor are out of line. Lib's sampler slerps between neighbouring keys.
+ */
+class BootFloatQuaternionTrackBase : public BootTrack
 {
     public:
         /** @brief Construct the track. */
-        BootClass171A70();
+        BootFloatQuaternionTrackBase();
 
         /** @brief Destroy the track. */
-        virtual ~BootClass171A70();
+        virtual ~BootFloatQuaternionTrackBase();
 
         /**
          * @brief Allocate storage for the requested keyframe count.
@@ -2867,7 +3032,7 @@ class BootClass171A70 : public BootTrack
          * @param count Keyframe count.
          * @param entries External keyframe storage.
          */
-        virtual void bind_keys(s32 count, BootTrackKey171A70* entries);
+        virtual void bind_keys(s32 count, BootFloatQuaternionTrackKey* entries);
 
         /**
          * @brief Set what the track does before its first key.
@@ -2897,8 +3062,8 @@ class BootClass171A70 : public BootTrack
          */
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Run the default track hook. */
-        virtual void func_001EECA0();
+        /** @brief Slot 0x24; BootTrack's empty version (track_default_func_slot24) is the only one. */
+        virtual void func_slot24();
 
         /**
          * @brief Replace an indexed vector keyframe.
@@ -2998,7 +3163,7 @@ class BootClass171A70 : public BootTrack
          * @brief Return the key storage.
          * @return Key array, or null.
          */
-        virtual BootTrackKey171A70* get_keys();
+        virtual BootFloatQuaternionTrackKey* get_keys();
 
         /** @brief Clear the key storage, counts, modes and cached indices. */
         virtual void reset_state();
@@ -3061,7 +3226,7 @@ class BootClass171A70 : public BootTrack
          * @param key Key to find.
          * @return Keyframe value, or zero when the key is absent.
          */
-        virtual FieldVec4A find_key_value(float key) const;
+        virtual FieldVec4A find_key_value(float key);
 
         /**
          * @brief Sample the track at a key and cache the value and its change per second.
@@ -3073,20 +3238,23 @@ class BootClass171A70 : public BootTrack
         /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
         virtual void return_to_pool() = 0;
 
-        BootTrackKey171A70* key_array;
+        /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+        void free_keys();
+
+        BootFloatQuaternionTrackKey* key_array;
         u8 unk08[0x28];
         BootSequenceTail state;
 };
 
-/** 0x80-byte pooled track with the Lib vtable D_177BE0. */
-class BootClass177BE0 : public BootClass171A70
+/** 0x80-byte float quaternion track allocated from a BootTrackPool, with the Lib vtable D_177BE0. */
+class BootPooledFloatQuaternionTrack : public BootFloatQuaternionTrackBase
 {
     public:
         /** @brief Construct the track. */
-        BootClass177BE0();
+        BootPooledFloatQuaternionTrack();
 
         /** @brief Destroy the track. */
-        virtual ~BootClass177BE0();
+        virtual ~BootPooledFloatQuaternionTrack();
 
         // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
@@ -3098,27 +3266,34 @@ class BootClass177BE0 : public BootClass171A70
         u8 unk44[0x3C];
 };
 
-/** Partial 48-byte keyframe of BootClass171680 with its key first. */
-struct BootTrackKey171680
+/** 48-byte keyframe of BootQuaternionCurveTrackBase: a key, a rotation quaternion and its squad control quaternion. */
+struct BootQuaternionCurveTrackKey
 {
     /** @brief Leave the keyframe uninitialized. */
-    BootTrackKey171680();
+    BootQuaternionCurveTrackKey();
 
     float key;
     u8 unk04[0xC];
+
+    /** Rotation quaternion (x, y, z, w). */
     float value[4];
-    u8 unk20[0x10];
+
+    /** Inner control quaternion that squad blends through between this key and the next. */
+    float control[4];
 };
 
-/** Partial keyframe track with vtable D_171680 in main data; its constructor and destructor are out of line. */
-class BootClass171680 : public BootTrack
+/**
+ * Key storage for smooth rotation tracks (vtable D_171680 in main data); its constructor and destructor are out
+ * of line. Each key carries a control quaternion, and Lib's sampler interpolates with squad.
+ */
+class BootQuaternionCurveTrackBase : public BootTrack
 {
     public:
         /** @brief Construct the track. */
-        BootClass171680();
+        BootQuaternionCurveTrackBase();
 
         /** @brief Destroy the track. */
-        virtual ~BootClass171680();
+        virtual ~BootQuaternionCurveTrackBase();
 
         /**
          * @brief Allocate storage for the requested keyframe count.
@@ -3131,7 +3306,7 @@ class BootClass171680 : public BootTrack
          * @param count Keyframe count.
          * @param entries External keyframe storage.
          */
-        virtual void bind_keys(s32 count, BootTrackKey171680* entries);
+        virtual void bind_keys(s32 count, BootQuaternionCurveTrackKey* entries);
 
         /**
          * @brief Set what the track does before its first key.
@@ -3161,8 +3336,8 @@ class BootClass171680 : public BootTrack
          */
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Run the default track hook. */
-        virtual void func_001EECA0();
+        /** @brief Slot 0x24; BootTrack's empty version (track_default_func_slot24) is the only one. */
+        virtual void func_slot24();
 
         /**
          * @brief Replace an indexed vector keyframe.
@@ -3262,7 +3437,7 @@ class BootClass171680 : public BootTrack
          * @brief Return the key storage.
          * @return Key array, or null.
          */
-        virtual BootTrackKey171680* get_keys();
+        virtual BootQuaternionCurveTrackKey* get_keys();
 
         /** @brief Clear the key storage, counts, modes and cached indices. */
         virtual void reset_state();
@@ -3325,7 +3500,7 @@ class BootClass171680 : public BootTrack
          * @param key Key to find.
          * @return Keyframe value, or zero when the key is absent.
          */
-        virtual FieldVec4A find_key_value(float key) const;
+        virtual FieldVec4A find_key_value(float key);
 
         /**
          * @brief Sample the track at a key and cache the value and its change per second.
@@ -3337,20 +3512,23 @@ class BootClass171680 : public BootTrack
         /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
         virtual void return_to_pool() = 0;
 
-        BootTrackKey171680* key_array;
+        /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+        void free_keys();
+
+        BootQuaternionCurveTrackKey* key_array;
         u8 unk08[0x38];
         BootSequenceTail state;
 };
 
-/** 0x90-byte pooled track with the Lib vtable D_174440. */
-class BootClass174440 : public BootClass171680
+/** 0x90-byte quaternion curve track allocated from a BootTrackPool, with the Lib vtable D_174440. */
+class BootPooledQuaternionCurveTrack : public BootQuaternionCurveTrackBase
 {
     public:
         /** @brief Construct the track. */
-        BootClass174440();
+        BootPooledQuaternionCurveTrack();
 
         /** @brief Destroy the track. */
-        virtual ~BootClass174440();
+        virtual ~BootPooledQuaternionCurveTrack();
 
         // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
@@ -3372,14 +3550,16 @@ struct BootQuaternionTrackKey
      */
     BootQuaternionTrackKey& operator=(const BootQuaternionTrackKey& entry)
     {
-        unk00[0] = entry.unk00[0];
-        unk00[1] = entry.unk00[1];
-        unk00[2] = entry.unk00[2];
+        packed_rotation[0] = entry.packed_rotation[0];
+        packed_rotation[1] = entry.packed_rotation[1];
+        packed_rotation[2] = entry.packed_rotation[2];
         key = entry.key;
         return *this;
     }
 
-    s16 unk00[3];
+    /** Rotation as the quaternion's x, y and z in 1.15 fixed point; w is rebuilt from them. */
+    s16 packed_rotation[3];
+
     s16 key;
 };
 
@@ -3434,8 +3614,8 @@ class BootQuaternionTrackBase : public BootTrack
          */
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
-        /** @brief Run the default track hook. */
-        virtual void func_001EECA0();
+        /** @brief Slot 0x24; BootTrack's empty version (track_default_func_slot24) is the only one. */
+        virtual void func_slot24();
 
         /**
          * @brief Replace an indexed vector keyframe.
@@ -3610,6 +3790,9 @@ class BootQuaternionTrackBase : public BootTrack
         /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
         virtual void return_to_pool() = 0;
 
+        /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+        void free_keys();
+
         BootQuaternionTrackKey* key_array;
         u8 unk08[8];
         BootSequenceTail state;
@@ -3646,10 +3829,10 @@ s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* po
 void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool);
 s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count);
 void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool);
-s32 track_171A70_pool_allocate(BootTrackPool<BootClass177BE0>* pool, s32 count);
-void track_171A70_pool_release(BootTrackPool<BootClass177BE0>* pool);
-s32 track_171680_pool_allocate(BootTrackPool<BootClass174440>* pool, s32 count);
-void track_171680_pool_release(BootTrackPool<BootClass174440>* pool);
+s32 float_quaternion_track_pool_allocate(BootTrackPool<BootPooledFloatQuaternionTrack>* pool, s32 count);
+void float_quaternion_track_pool_release(BootTrackPool<BootPooledFloatQuaternionTrack>* pool);
+s32 quaternion_curve_track_pool_allocate(BootTrackPool<BootPooledQuaternionCurveTrack>* pool, s32 count);
+void quaternion_curve_track_pool_release(BootTrackPool<BootPooledQuaternionCurveTrack>* pool);
 s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count);
 void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool);
 }
@@ -3661,13 +3844,11 @@ u16 func_11DFF0(BootInputRoot9670* root, s32 slot);
 u16 func_11E000(BootInputRoot9670* root, s32 slot);
 u16 func_11DFB0(BootInputRoot9670* root, s32 slot);
 void func_11DF90(BootInputRoot9670* root, s32 slot);
-void* func_100AC0(u32 size, s32 flags);
 s32 func_432720(BootModeOwner0910* owner, void* queue);
 void func_432660(BootModeOwner0910* owner, s32 mode, u32 enabled, u32 flags);
 s32 func_432310(BootModeOwner0910* owner, u32 mode, BootCardFileRequest* request);
 s32 func_432270(BootModeOwner0910* owner, s32 mode, s32* result);
 extern BootUpdateList* D_001B6614;
-void* func_100B00(u32 size, s32 flags);
 char* func_13C948(char* destination, const char* source);
 void* func_13A4C0(void* destination, const void* source, u32 size);
 /** Product code at the start of every save name: "BASLUS-20488". */

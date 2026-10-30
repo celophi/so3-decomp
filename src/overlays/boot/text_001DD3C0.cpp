@@ -11,7 +11,6 @@
 extern "C" {
 extern BootVector4DDAA0 D_50CD30;
 void func_4CE4C0(void* destination, const float* source);
-s32 func_102AA0(void* queue);
 void func_1126D0(void* request, u8* data, s32 first, s32 second);
 void func_1152C0(BootResident1B65E4* resident, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size);
 void func_1152E0(BootResident1B65E4* resident, u8* buffer, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size, u8* fourth,
@@ -88,7 +87,7 @@ void BootInstaller::show_tip_image(s32 index)
 
     if (tip_image_buffer != 0)
     {
-        func_11EE00(D_001B65F4, tip_image_buffer);
+        resident_queue_allocation_release(D_001B65F4, tip_image_buffer);
         tip_image_buffer = 0;
     }
 
@@ -96,7 +95,7 @@ void BootInstaller::show_tip_image(s32 index)
     func_1025A0(D_001B65EC, tip_image_data, (void*)(((u32)tip_image_buffer + 0x7F) & ~0x7F), index);
     tip_image = new (0) BootImage;
     tip_image->set_texture((const BootTextureResource*)(((u32)tip_image_buffer + 0x7F) & ~0x7F), 0);
-    func_101440(func_101290(func_10D8E0()), 1);
+    resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     tip_image->set_rectangle(0, 1, 0x120, 0xC9, 0x80808080, 0);
     tip_image->model->set_translation(-296.0f, -64.0f, 0.0f);
 }
@@ -110,10 +109,10 @@ void BootInstaller::show_tip_image(s32 index)
 void BootTransform::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk20.x = x;
-    unk20.y = y;
-    unk20.z = z;
-    unk20.w = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /** @brief Create the yes/no choice images and pulse the selected one; release them once installing starts. */
@@ -152,7 +151,7 @@ void BootInstaller::update_choice_images()
         images[5]->set_rectangle(0x1E, 0x167, 0x4C, 0x26, 0x80808080, 0);
     }
 
-    if (((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
     {
         if (images[4] != 0)
         {
@@ -282,7 +281,7 @@ void BootInstaller::place_screen_images()
         images[3]->set_rectangle(0x1B, 0x190, 0x1B6, 0x31, 0x80808080, 0);
     }
 
-    if (((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen)
+    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
     {
         if (images[1] != 0)
         {
@@ -329,9 +328,9 @@ void BootInstaller::place_screen_images()
 void BootTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk40.x = x;
-    unk40.y = y;
-    unk40.z = z;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
 }
 
 /** @brief Advance the install sequence: load the screen, ask, check the BB Unit, install, then hand over. */
@@ -343,7 +342,7 @@ void BootInstaller::update()
     s32 percent;
     BootInput* input;
     input = g_boot_program.input;
-    resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     switch (step)
     {
@@ -377,7 +376,7 @@ void BootInstaller::update()
         if (++screen_images_loaded >= 2)
         {
             step++;
-            func_121FE0(0);
+            FlushCache(0);
         }
 
         break;
@@ -440,12 +439,12 @@ void BootInstaller::update()
         if (exiting == 0)
         {
             func_10F000(D_001B65F8, 0, -1);
-            func_103B20(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0);
-            func_103B20(D_001B65E8, BOOT_RES_SYSTEM_FILES, 0, 0, -1, 0);
-            func_103B20(D_001B65E8, BOOT_RES_TIP_IMAGES, 0, 0, -1, 0);
+            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0);
+            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_SYSTEM_FILES, 0, 0, -1, 0);
+            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_TIP_IMAGES, 0, 0, -1, 0);
             exiting = 1;
         }
-        else if (func_102AA0(D_001B65E8) == 0 && D_001B65E4->unk12183 == 0)
+        else if (resident_update_resource_queue(D_001B65E8) == 0 && D_001B65E4->unk12183 == 0)
         {
             func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
 
@@ -713,7 +712,7 @@ void BootInstaller::update()
             else
             {
                 install_buffer = func_139700(0x40, 0x200000);
-                func_121FE0(0);
+                FlushCache(0);
                 func_1156B0(D_001B65E4, install_buffer);
                 D_001B65E4->unk13b = 0;
                 func_115810(D_001B65E4, 5, 0);
@@ -1003,7 +1002,7 @@ void BootInstaller::update()
         break;
     }
 
-    if (exiting == 0 && step > 0 && sound_started == 0 && func_103640(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0) == 0)
+    if (exiting == 0 && step > 0 && sound_started == 0 && resident_find_resource_request(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0) == 0)
     {
         func_1126D0(D_001B65F8, sound_data, 1, 0);
         sound_started = 1;
@@ -1088,7 +1087,7 @@ BootInstaller::~BootInstaller()
 
     if (tip_image_buffer != 0)
     {
-        func_11EE00(D_001B65F4, tip_image_buffer);
+        resident_queue_allocation_release(D_001B65F4, tip_image_buffer);
     }
 
     delete navigator_file_buffers[0];
@@ -1176,7 +1175,7 @@ void BootDmaCallbacks::on_packet_complete(u32 value)
  */
 void BootPositionTransform::copy_translation(const BootVector4DDAA0* value)
 {
-    copy_vector(&unk20, value);
+    copy_vector(&translation, value);
 }
 
 /**
@@ -1185,7 +1184,7 @@ void BootPositionTransform::copy_translation(const BootVector4DDAA0* value)
  */
 void BootPositionTransform::set_translation_vector(const BootVector4DDAA0* value)
 {
-    copy_vector(&unk20, value);
+    copy_vector(&translation, value);
 }
 
 /**
@@ -1196,10 +1195,10 @@ void BootPositionTransform::set_translation_vector(const BootVector4DDAA0* value
  */
 void BootPositionTransform::set_translation(float x, float y, float z)
 {
-    unk20.x = x;
-    unk20.y = y;
-    unk20.z = z;
-    unk20.w = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /**
@@ -1223,7 +1222,7 @@ void BootListObject::update()
 void BootTransform::copy_translation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk20, value);
+    copy_vector(&translation, value);
 }
 
 /**
@@ -1233,7 +1232,7 @@ void BootTransform::copy_translation(const BootVector4DDAA0* value)
 void BootTransform::set_translation_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk20, value);
+    copy_vector(&translation, value);
 }
 
 /**
@@ -1246,10 +1245,10 @@ void BootTransform::set_translation_vector(const BootVector4DDAA0* value)
 void BootTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
-    unk30.x = x;
-    unk30.y = y;
-    unk30.z = z;
-    unk30.w = w;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
 /**
@@ -1259,7 +1258,7 @@ void BootTransform::set_orientation_components(float x, float y, float z, float 
 void BootTransform::copy_orientation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk30, value);
+    copy_vector(&orientation, value);
 }
 
 /**
@@ -1269,7 +1268,7 @@ void BootTransform::copy_orientation(const BootVector4DDAA0* value)
 void BootTransform::set_orientation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk30, value);
+    copy_vector(&orientation, value);
 }
 
 /**
@@ -1279,7 +1278,7 @@ void BootTransform::set_orientation(const BootVector4DDAA0* value)
 void BootTransform::convert_rotation(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&unk30, &value->x);
+    func_4CE4C0(&orientation, &value->x);
 }
 
 /**
@@ -1289,7 +1288,7 @@ void BootTransform::convert_rotation(const BootVector4DDAA0* value)
 void BootTransform::set_rotation_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&unk30, &value->x);
+    func_4CE4C0(&orientation, &value->x);
 }
 
 /**
@@ -1306,7 +1305,7 @@ void BootTransform::set_rotation(float x, float y, float z)
     value.y = y;
     value.z = z;
     value.w = 1.0f;
-    func_4CE4C0(&unk30, &value.x);
+    func_4CE4C0(&orientation, &value.x);
 }
 
 /**
@@ -1316,7 +1315,7 @@ void BootTransform::set_rotation(float x, float y, float z)
 void BootTransform::copy_scale(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk40, value);
+    copy_vector(&scale, value);
 }
 
 /**
@@ -1326,13 +1325,13 @@ void BootTransform::copy_scale(const BootVector4DDAA0* value)
 void BootTransform::set_scale_vector(const BootVector4DDAA0* value)
 {
     transform_dirty = 1;
-    copy_vector(&unk40, value);
+    copy_vector(&scale, value);
 }
 
-/** @brief Clear the byte at offset 0x60. */
-void BootTransformOwner::func_001E0860()
+/** @brief Draw in the main list (bucket zero). */
+void BootTransformOwner::set_default_draw_bucket()
 {
-    unk60 = 0;
+    draw_bucket = 0;
 }
 
 /** @brief Virtual slot 4; the owner's implementation does nothing. */
@@ -1341,31 +1340,31 @@ void BootTransformOwner::render()
 }
 
 /**
- * @brief Default output handler.
- * @param output Opaque output object.
- * @return Zero.
+ * @brief Give the centre for Lib's oriented-box visibility test; this owner has none.
+ * @param output Receives the centre in local space.
+ * @return Nonzero when a centre was written; zero here, so the test is skipped.
  */
-s32 BootTransformOwner::func_001E0880(void* output)
+s32 BootTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
 
 /**
- * @brief Test the supplied value.
- * @param value Value to test.
- * @param mode Additional mode used by derived implementations.
+ * @brief Fade the owner as it nears the camera; Lib calls this for owners with draw flag 0x800. This owner doesn't fade.
+ * @param value Distance in front of the camera over the fade range, clamped to one.
+ * @param mode Two from Lib's caller; unused here.
  * @return Whether the value is negative.
  */
-bool BootTransformOwner::func_001E0890(float value, float mode)
+bool BootTransformOwner::set_fade_alpha(float value, float mode)
 {
     return value < 0.0f;
 }
 
 /**
- * @brief Return the shared fallback vector.
- * @return Vector pointer.
+ * @brief Return the bounding sphere Lib culls against (centre in xyz, radius in w); this owner has Lib's shared default.
+ * @return Bounding sphere.
  */
-const BootVector4DDAA0* BootTransformOwner::func_001E08B0()
+const BootVector4DDAA0* BootTransformOwner::get_bounding_sphere()
 {
     return &D_50CD30;
 }
@@ -1380,16 +1379,16 @@ void BootTransformOwner::build_packet(const void* matrix, void* context)
 }
 
 /**
- * @brief Produce a transformation receiver.
- * @return Null.
+ * @brief Make a copy of this object that stays linked to it; this owner can't be copied.
+ * @return The copy, or null.
  */
-BootTransformOwner* BootTransformOwner::func_001E08D0()
+BootTransformOwner* BootTransformOwner::clone()
 {
     return 0;
 }
 
-/** @brief Default hook; does nothing. */
-void BootTransformOwner::func_001E08E0()
+/** @brief Unlink a copy from its original and queue it for release; this owner never has copies, so it does nothing. */
+void BootTransformOwner::release_clone()
 {
 }
 

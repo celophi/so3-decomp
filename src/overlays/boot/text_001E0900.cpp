@@ -14,12 +14,12 @@
 #define TIMER0_COUNT (*(volatile u32*)0x10000000)
 
 extern "C" {
-extern BootClass170F20* D_001B65AC;
+extern BootFloorQuery* g_floor_query;
 void func_10DA70(BootSound1B65F8* sound, s32 mode);
 void func_11E030(BootInputRoot9670* root, s32 slot, s32 enabled);
+// TODO: Lib's lib_load_resource_slot, which takes FieldRuntime; boot still has its own mirror of it.
 s32 func_4656B0(BootRuntime1B657C* runtime, void* data);
 void func_11E210(BootInputRoot9670* root, s32 first, s32 second, s32 third);
-void func_11ED90(void* queue, void* object);
 extern void* D_001B663C;
 extern void* D_001B65E0;
 extern struct BootRender6618* D_001B6618;
@@ -45,11 +45,10 @@ extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
 extern BootTrackPool<BootClass177EE0>* D_001B666C;
 extern BootTrackPool<BootPooledFloatCurveTrack>* g_float_curve_track_pool;
 extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
-extern BootTrackPool<BootClass177BE0>* D_001B6678;
-extern BootTrackPool<BootClass174440>* D_001B667C;
+extern BootTrackPool<BootPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
+extern BootTrackPool<BootPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
 extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
 void func_4C5B60(s32 first, s32 second);
-void func_4E14B0(BootProjectionACD0* projection, BootDimensionsACD0* display);
 void lib_container_attach_widget(BootContainer* container, BootListObject* child);
 void func_100F60(void* root);
 void* func_1012C0(void* root);
@@ -59,7 +58,6 @@ void func_45A5D0(void);
 void func_45A770(void);
 void func_433680(void);
 void func_4E33B0(void);
-void func_11ECD0(void* queue);
 void func_4D8970(void);
 void func_121890(BootDimensionsACD0* display);
 void func_4E3830(BootDimensionsACD0* display, u32 first, s32 second, s32 third, s32 fourth, s32 fifth, s32 sixth);
@@ -233,14 +231,14 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* trophy_card)
             copy_transfer_name(trophy_card, g_card_product_code, g_trophy_file_suffix);
         }
 
-        trophy_card->file_buffer.unk00 = trophy_card->filename;
-        trophy_card->file_buffer.unk04 = trophy_card->transfer_buffer;
-        trophy_card->file_buffer.unk08 = BOOT_TRANSFER_BUFFER_SIZE;
+        trophy_card->file_buffer.name = trophy_card->filename;
+        trophy_card->file_buffer.data = trophy_card->transfer_buffer;
+        trophy_card->file_buffer.size = BOOT_TRANSFER_BUFFER_SIZE;
         trophy_card->file_buffer.unk0C = 0;
-        trophy_card->file_request.unk00 = trophy_card->filename;
-        trophy_card->file_request.unk04 = 1;
+        trophy_card->file_request.directory = trophy_card->filename;
+        trophy_card->file_request.file_count = 1;
         trophy_card->file_request.unk08 = 0;
-        trophy_card->file_request.unk0C = &trophy_card->file_buffer;
+        trophy_card->file_request.files = &trophy_card->file_buffer;
         ready = 1;
     }
 
@@ -349,20 +347,20 @@ u16 BootBattleTrophyCard::get_ready_slots()
     BootModeSlot0910* modes;
     u16 flags;
 
-    if (owner->unk20 == 0)
+    if (owner->ready == 0)
     {
         return 0;
     }
 
-    modes = owner->unk14;
+    modes = owner->slots;
     flags = 0;
 
-    if (modes[0].unk48 == 2)
+    if (modes[0].card_state == 2)
     {
         flags |= BOOT_MODE_0910_FLAG_0;
     }
 
-    if (modes[1].unk48 == 2)
+    if (modes[1].card_state == 2)
     {
         flags |= BOOT_MODE_0910_FLAG_1;
     }
@@ -568,13 +566,13 @@ void BootBattleTrophyCard::update()
     s32 status;
     u8 done;
 
-    if (card != 0 && card->unk20 != 0)
+    if (card != 0 && card->ready != 0)
     {
         status = last_card_status;
 
         if (unk1E == 0)
         {
-            status = card->unk14[slot].unk48;
+            status = card->slots[slot].card_state;
 
             if (status != last_card_status)
             {
@@ -621,9 +619,9 @@ void BootBattleTrophyCard::update()
                     return;
                 }
 
-                unk20 = card->unk14[slot].unk50;
+                card_formatted = card->slots[slot].formatted;
 
-                if (unk20 == 0)
+                if (card_formatted == 0)
                 {
                     if (card_mode == 1)
                     {
@@ -637,9 +635,9 @@ void BootBattleTrophyCard::update()
                     return;
                 }
 
-                free_space = card->unk14[slot].unk4C;
+                free_space = card->slots[slot].free_space;
 
-                if (unk20 == 0 && card_mode == 1)
+                if (card_formatted == 0 && card_mode == 1)
                 {
                     free_space = 8000;
                 }
@@ -649,7 +647,7 @@ void BootBattleTrophyCard::update()
 
                 if (free_space < 175)
                 {
-                    unk2D = 1;
+                    low_space = 1;
                 }
 
                 break;
@@ -678,7 +676,7 @@ void BootBattleTrophyCard::update()
                 {
                     if (progress == 0)
                     {
-                        if (unk2D != 0)
+                        if (low_space != 0)
                         {
                             handle_card_event(1, 2, 1);
                         }
@@ -892,7 +890,7 @@ void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
                     switch (event)
                     {
                     case 16:
-                        if (unk20 == 0)
+                        if (card_formatted == 0)
                         {
                             slot2_status_valid = 1;
                             ready = 1;
@@ -945,7 +943,7 @@ void BootBattleTrophyCard::handle_card_event(u8 enabled, u16 event, u16 kind)
                     switch (event)
                     {
                     case 16:
-                        if (unk20 == 0)
+                        if (card_formatted == 0)
                         {
                             slot1_status_valid = 1;
                             ready = 1;
@@ -1033,7 +1031,7 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
             unkE04[slot] = 10;
             break;
         case 16:
-            if (unk20 == 0)
+            if (card_formatted == 0)
             {
                 *result = 16;
             }
@@ -1141,7 +1139,7 @@ void BootBattleTrophyCard::reset_slot(s16 mode)
     last_card_status = -1;
     unk1E = 0;
     card_step = 0;
-    unk2D = 0;
+    low_space = 0;
 
     if (selected == 0)
     {
@@ -1190,7 +1188,7 @@ s32 BootBattleTrophyCard::initialize()
     func_432660(card, 1, 1, 0);
     card_step = 0;
     reset_slot(0);
-    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     if (settings == 0)
     {
@@ -1226,7 +1224,7 @@ void BootBattleTrophyCard::destroy()
         card->destroy();
     }
 
-    func_11ED90(D_001B65F4, this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 /** @brief Clear the transfer state, both modes, and the filename. */
@@ -1238,12 +1236,12 @@ BootBattleTrophyCard::BootBattleTrophyCard()
     slot = -1;
     last_card_status = -1;
     unk1E = 0;
-    unk20 = 0;
+    card_formatted = 0;
     free_space = 0;
     unk28 = 0;
     func_13A678(unk6E, 0, sizeof(unk6E));
     unkD30 = (u8*)(((u32)unk6E + 0x3F) & ~0x3F);
-    unk2D = 0;
+    low_space = 0;
     slot1_status_valid = 0;
     unkD35[0] = 0;
     slot1_status = 0;
@@ -1307,7 +1305,7 @@ void BootStartupChecks::update()
         return;
     }
 
-    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     input = g_boot_program.input;
     slot1 = input->slot1_state;
     slot2 = input->slot2_state;
@@ -2305,7 +2303,7 @@ void BootNewGameSettings::place_speakers()
 /** @brief Select the option that matches the current page's saved setting. */
 void BootNewGameSettings::load_option_value()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     switch (page)
     {
@@ -2356,7 +2354,7 @@ void BootNewGameSettings::load_option_value()
 /** @brief Save the selected option for the current page and apply it to the display, sound or pad. */
 void BootNewGameSettings::apply_option_value()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     switch (page)
     {
@@ -2445,7 +2443,7 @@ void BootNewGameSettings::apply_option_value()
  */
 s32 BootNewGameSettings::get_value_message()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     switch (page)
     {
@@ -2498,7 +2496,7 @@ s32 BootNewGameSettings::get_value_message()
  */
 void BootNewGameSettings::get_cursor_position(float* x, float* y)
 {
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     *x = 58.0f;
     switch (page)
@@ -2616,7 +2614,7 @@ void BootNewGameSettings::update_option_rows()
 
     if (image_blocks[4] != 0 && on_speaker_setup == 0)
     {
-        settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+        settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
         if (shown_page != page)
         {
@@ -2735,7 +2733,7 @@ void BootNewGameSettings::update_option_rows()
                 if (images[16 + i] != 0 && images[16 + i]->model != 0)
                 {
                     BootVector4DDAA0 position;
-                    copy_vector(&position, &images[16 + i]->model->unk20);
+                    copy_vector(&position, &images[16 + i]->model->translation);
                     position.x = 8.0f + 1.3333334f * row_x;
                     images[16 + i]->model->set_translation_vector(&position);
                 }
@@ -2748,7 +2746,7 @@ void BootNewGameSettings::update_option_rows()
                 if (images[16 + i] != 0 && images[16 + i]->model != 0)
                 {
                     BootVector4DDAA0 position;
-                    copy_vector(&position, &images[16 + i]->model->unk20);
+                    copy_vector(&position, &images[16 + i]->model->translation);
                     position.x = row_x;
                     images[16 + i]->model->set_translation_vector(&position);
                 }
@@ -2902,7 +2900,7 @@ void BootNewGameSettings::update_page_images()
         images[15]->set_rectangle(0, 0xC2, 0x180, 0x20, 0x80808080, 0);
     }
 
-    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     if (settings->widescreen)
     {
@@ -3026,7 +3024,7 @@ void BootNewGameSettings::update_page_images()
     }
 }
 
-/** Partial Lib morph target, one of a face model's children; unk0f is two for a morph target. */
+/** Partial Lib morph target, one of a face model's children; object_kind is two for a morph target. */
 struct BootMorphTarget : public BootListObject
 {
     u8 unk14[0x1C];
@@ -3098,7 +3096,7 @@ static inline float speaker_angle(BootSound1B65F8* sound, s32 speaker)
 void BootNewGameSettings::update()
 {
     BootInput* input = g_boot_program.input;
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     u8 extra = settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked);
     g_difficulty_option_count = extra ? 4 : 3;
 
@@ -3139,7 +3137,7 @@ void BootNewGameSettings::update()
         {
             stage++;
             shown_page = 0xFF;
-            func_121FE0(0);
+            FlushCache(0);
         }
 
         break;
@@ -3218,9 +3216,9 @@ void BootNewGameSettings::update()
     case BOOT_SETTINGS_STAGE_EXIT:
         func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
 
-        if (func_103640(D_001B65E8, 0x29, 0, 0, -1, 0) != 0)
+        if (resident_find_resource_request(D_001B65E8, 0x29, 0, 0, -1, 0) != 0)
         {
-            func_103B20(D_001B65E8, 0x29, 0, 0, -1, 0);
+            resident_cancel_resource_requests(D_001B65E8, 0x29, 0, 0, -1, 0);
         }
 
         for (s32 i = 0; i < 21; i++)
@@ -3325,7 +3323,7 @@ void BootNewGameSettings::update()
 
             for (BootClass170F30* model = lib_find_renderable_entry(girl_scene, g_empty_name); model != 0; model = func_472EB0(girl_scene, model))
             {
-                if (model->unk6c == 0x100)
+                if (model->type_id == 0x100)
                 {
                     girl_models[count] = new (0) BootClass170F30;
                     girl_models[count]->func_4A37C0(D_001B661C, model);
@@ -3597,7 +3595,7 @@ void BootNewGameSettings::update()
                 {
                     BootMorphTarget* target = (BootMorphTarget*)node;
 
-                    if (target->unk0f == 2)
+                    if (target->object_kind == 2)
                     {
                         if (shape == *target->shape)
                         {
@@ -3618,7 +3616,7 @@ void BootNewGameSettings::update()
                 {
                     BootMorphTarget* target = (BootMorphTarget*)node;
 
-                    if (target->unk0f == 2)
+                    if (target->object_kind == 2)
                     {
                         func_4C96E0(target, 0.0f);
                     }
@@ -3642,7 +3640,7 @@ void BootNewGameSettings::update()
             {
                 BootMorphTarget* target = (BootMorphTarget*)node;
 
-                if (target->unk0f == 2 && *target->shape == 0)
+                if (target->object_kind == 2 && *target->shape == 0)
                 {
                     if (blink_frame < 5)
                     {
@@ -3768,9 +3766,9 @@ void BootNewGameSettings::update()
         break;
     }
     case BOOT_SETTINGS_STAGE_START_GAME:
-        if (func_103640(D_001B65E8, 0x29, 0, 0, -1, 0) != 0)
+        if (resident_find_resource_request(D_001B65E8, 0x29, 0, 0, -1, 0) != 0)
         {
-            func_103B20(D_001B65E8, 0x29, 0, 0, -1, 0);
+            resident_cancel_resource_requests(D_001B65E8, 0x29, 0, 0, -1, 0);
         }
 
         settings->continue_selected = 0;
@@ -3780,12 +3778,12 @@ void BootNewGameSettings::update()
         return;
     }
 
-    if (stage > BOOT_SETTINGS_STAGE_LOAD && func_103640(D_001B65E8, 0x29, 0, 0, -1, 0) == 0 && loaded_model_blocks < 8)
+    if (stage > BOOT_SETTINGS_STAGE_LOAD && resident_find_resource_request(D_001B65E8, 0x29, 0, 0, -1, 0) == 0 && loaded_model_blocks < 8)
     {
         model_blocks[loaded_model_blocks] = func_102920(D_001B65EC, model_data, loaded_model_blocks, 1);
         func_1025A0(D_001B65EC, model_data, (void*)(((u32)model_blocks[loaded_model_blocks] + 0x7F) & ~0x7F), loaded_model_blocks);
         loaded_model_blocks++;
-        func_121FE0(0);
+        FlushCache(0);
     }
 
     if (rumble_frames != 0 && --rumble_frames == 0)
@@ -3874,7 +3872,7 @@ BootNewGameSettings::~BootNewGameSettings()
         func_11E210(D_001B65F0, 0, 0, 0);
     }
 
-    D_001B65AC = 0;
+    g_floor_query = 0;
 }
 
 /** @brief Start loading the page images and the speaker setup scenes, and clear the owned objects. */
@@ -3919,10 +3917,10 @@ BootNewGameSettings::BootNewGameSettings()
     girl_scene = 0;
     on_speaker_setup = 0;
     rumble_frames = 0;
-    D_001B65AC = &unk138;
+    g_floor_query = &flat_floor;
     page = 0;
     loaded_model_blocks = 0;
-    resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     switch (D_001B65F8->output_mode)
     {
@@ -3974,10 +3972,10 @@ BootClass170F30::~BootClass170F30()
 }
 
 /**
- * @brief Virtual slot 5.
- * @return Always 0.
+ * @brief Virtual slot 0x1C; nothing in boot, main or Lib calls it, so its purpose is unknown.
+ * @return Zero.
  */
-s32 BootInput::func_001E9640()
+s32 BootInput::func_slot1c()
 {
     return 0;
 }
@@ -4078,7 +4076,7 @@ void BootOpeningMovie::update()
     s32 x;
     s32 y;
     BootInput* input = g_boot_program.input;
-    BootSystemSettings* settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     s32 width;
     s32 height;
     s32 anchor;
@@ -4107,7 +4105,7 @@ void BootOpeningMovie::update()
         break;
     case 1:
         fade = 0;
-        offset = player->state->unk80C0 - g_opening_captions[caption].frame;
+        offset = player->state->current_frame - g_opening_captions[caption].frame;
 
         if (g_opening_captions[caption].frame == -1)
         {
@@ -4409,7 +4407,7 @@ BootOpeningMovie::BootOpeningMovie()
     resident_exchange_allocation_heap(heap);
     player->state->set_scale(1.0f, 1.0f);
     player->state->set_words(0x800, 0x800, 1);
-    resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     if (resource->widescreen != 0)
     {
@@ -4493,7 +4491,7 @@ void BootUnitErrorPopup::destroy()
         container = 0;
     }
 
-    func_11ED90(D_001B65F4, this);
+    resident_enqueue_object(D_001B65F4, this);
 }
 
 /**
@@ -4544,7 +4542,7 @@ void BootProgram::select_projection()
 /** @brief Set the projections' aspect and field of view for the 4:3 or widescreen setting. */
 inline void BootProgram::update_projection_aspect()
 {
-    BootSystemSettings* resource = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    BootSystemSettings* resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
     BootDimensionsACD0* dimensions;
 
     if (resource->widescreen != 0)
@@ -4579,12 +4577,12 @@ void BootProgram::set_progressive(u8 progressive)
     if (progressive)
     {
         func_4DCEA0(display, 0, 0);
-        func_101040(func_10D8E0(), 1);
+        func_101040(resident_get_runtime_owner(), 1);
     }
     else
     {
         func_4DCEA0(display, 0, 0);
-        func_101040(func_10D8E0(), 0);
+        func_101040(resident_get_runtime_owner(), 0);
     }
 
     rebuild_display(1);
@@ -4655,11 +4653,11 @@ void BootProgram::create_pools_and_projection()
     track_1718C0_pool_allocate(D_001B666C, 500);
     float_curve_track_pool_allocate(g_float_curve_track_pool, 2000);
     vector_curve_track_pool_allocate(g_vector_curve_track_pool, 2000);
-    track_171A70_pool_allocate(D_001B6678, 2000);
-    track_171680_pool_allocate(D_001B667C, 1000);
+    float_quaternion_track_pool_allocate(g_float_quaternion_track_pool, 2000);
+    quaternion_curve_track_pool_allocate(g_quaternion_curve_track_pool, 1000);
     quaternion_track_pool_allocate(g_quaternion_track_pool, 1000);
     projection = new (0) BootProjectionACD0(display);
-    func_4E14B0(projection, display);
+    projection->initialize_projection(display);
     projection->set_translation(0.0f, 0.0f, -500.0f);
     D_001B6628->append_node(projection, -1);
     D_001B6628->current_display = projection;
@@ -4682,12 +4680,12 @@ void BootProgram::run()
     BootSystemSettings* settings;
     BootResourceLoader* loader;
 
-    if (((BootResidentRoot15CC0*)func_10D8E0())->status == 0)
+    if (((BootResidentRoot15CC0*)resident_get_runtime_owner())->status == 0)
     {
-        func_100F60(func_10D8E0());
+        func_100F60(resident_get_runtime_owner());
     }
 
-    func_11D9A0(func_1012C0(func_10D8E0()), &clock);
+    func_11D9A0(func_1012C0(resident_get_runtime_owner()), &clock);
     count = (u8)(TIMER0_COUNT + (clock.hour + (clock.second + clock.minute)));
 
     for (index = 0; index < count; index++)
@@ -4711,7 +4709,7 @@ void BootProgram::run()
     unit_data_deleted = 0;
 
     buffer = new (0) u8[func_10CE00() + 0x40];
-    size = func_11C8C0(func_1012C0(func_10D8E0()), 3);
+    size = func_11C8C0(func_1012C0(resident_get_runtime_owner()), 3);
 
     if (size > 0x50000)
     {
@@ -4719,15 +4717,15 @@ void BootProgram::run()
     }
 
     image = (BootProgramImage*)func_139700(0x40, size);
-    func_103E70(func_101250(func_10D8E0()), 3, image, 1, 0x34BC0, 0, size, 0, 1);
+    func_103E70(func_101250(resident_get_runtime_owner()), 3, image, 1, 0x34BC0, 0, size, 0, 1);
     delete[] buffer;
 
     saved_widescreen = 0xFF;
     fresh = true;
 
-    if (func_101440(func_101290(func_10D8E0()), 1) != 0)
+    if (resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1) != 0)
     {
-        saved_widescreen = ((BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1))->widescreen;
+        saved_widescreen = ((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen;
         func_45A5D0();
         fresh = false;
     }
@@ -4736,8 +4734,8 @@ void BootProgram::run()
     {
         func_433680();
         func_4E33B0();
-        func_11ECD0(D_001B65F4);
-        func_11ECD0(D_001B65F4);
+        resident_drain_release_queues(D_001B65F4);
+        resident_drain_release_queues(D_001B65F4);
     }
 
     func_4D8970();
@@ -4759,7 +4757,7 @@ void BootProgram::run()
     check_main_code();
     func_45A770();
     create_pools_and_projection();
-    settings = (BootSystemSettings*)func_101440(func_101290(func_10D8E0()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 
     if (saved_widescreen != 0xFF)
     {
@@ -4800,7 +4798,7 @@ void BootProgram::run()
         func_4D4BE0(D_001B661C);
         D_001B6614->update_nodes();
         func_11F770(D_001B6618->packet, 0);
-        func_11ECD0(D_001B65F4);
+        resident_drain_release_queues(D_001B65F4);
         func_4DCFF0(display, frame);
 
         if (frame > 1)
@@ -4814,10 +4812,10 @@ void BootProgram::run()
     }
 
     D_001B661C->unk40CE = 1;
-    func_11ECD0(D_001B65F4);
+    resident_drain_release_queues(D_001B65F4);
     g_boot_program.release_resources();
-    func_11ECD0(D_001B65F4);
-    func_11ECD0(D_001B65F4);
+    resident_drain_release_queues(D_001B65F4);
+    resident_drain_release_queues(D_001B65F4);
 
     previous = resident_next_random_word();
 
@@ -4843,7 +4841,7 @@ void BootProgram::run()
     {
     }
 
-    func_1010D0(func_10D8E0(), next_program, 1);
+    func_1010D0(resident_get_runtime_owner(), next_program, 1);
 }
 
 /** @brief Release the track pools and every object, resource and buffer the program owns. */
@@ -4856,8 +4854,8 @@ void BootProgram::release_resources()
     track_1718C0_pool_release(D_001B666C);
     float_curve_track_pool_release(g_float_curve_track_pool);
     vector_curve_track_pool_release(g_vector_curve_track_pool);
-    track_171A70_pool_release(D_001B6678);
-    track_171680_pool_release(D_001B667C);
+    float_quaternion_track_pool_release(g_float_quaternion_track_pool);
+    quaternion_curve_track_pool_release(g_quaternion_curve_track_pool);
     quaternion_track_pool_release(g_quaternion_track_pool);
     delete image;
     image = 0;
@@ -5093,18 +5091,18 @@ void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* 
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 track_171A70_pool_allocate(BootTrackPool<BootClass177BE0>* pool, s32 count)
+s32 float_quaternion_track_pool_allocate(BootTrackPool<BootPooledFloatQuaternionTrack>* pool, s32 count)
 {
     return pool->init(count);
 }
 
 /** @brief Destroy the track. */
-BootClass177BE0::~BootClass177BE0()
+BootPooledFloatQuaternionTrack::~BootPooledFloatQuaternionTrack()
 {
 }
 
 /** @brief Construct the track. */
-BootClass177BE0::BootClass177BE0()
+BootPooledFloatQuaternionTrack::BootPooledFloatQuaternionTrack()
 {
 }
 
@@ -5112,7 +5110,7 @@ BootClass177BE0::BootClass177BE0()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void track_171A70_pool_release(BootTrackPool<BootClass177BE0>* pool)
+void float_quaternion_track_pool_release(BootTrackPool<BootPooledFloatQuaternionTrack>* pool)
 {
     pool->release();
 }
@@ -5123,18 +5121,18 @@ void track_171A70_pool_release(BootTrackPool<BootClass177BE0>* pool)
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 track_171680_pool_allocate(BootTrackPool<BootClass174440>* pool, s32 count)
+s32 quaternion_curve_track_pool_allocate(BootTrackPool<BootPooledQuaternionCurveTrack>* pool, s32 count)
 {
     return pool->init(count);
 }
 
 /** @brief Destroy the track. */
-BootClass174440::~BootClass174440()
+BootPooledQuaternionCurveTrack::~BootPooledQuaternionCurveTrack()
 {
 }
 
 /** @brief Construct the track. */
-BootClass174440::BootClass174440()
+BootPooledQuaternionCurveTrack::BootPooledQuaternionCurveTrack()
 {
 }
 
@@ -5142,7 +5140,7 @@ BootClass174440::BootClass174440()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void track_171680_pool_release(BootTrackPool<BootClass174440>* pool)
+void quaternion_curve_track_pool_release(BootTrackPool<BootPooledQuaternionCurveTrack>* pool)
 {
     pool->release();
 }
