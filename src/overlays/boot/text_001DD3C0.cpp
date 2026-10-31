@@ -379,10 +379,14 @@ void BootInstaller::update()
     case BOOT_INSTALL_WAIT_FOR_RESOURCES:
         if (func_102D00(g_resource_queue) != 0)
         {
-            func_103E70(g_resource_queue, BOOT_RES_SOUND, sound_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(g_resource_queue, BOOT_RES_SYSTEM_FILES, system_file_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(g_resource_queue, BOOT_RES_NAVIGATOR_FILES, navigator_file_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(g_resource_queue, BOOT_RES_TIP_IMAGES, tip_image_data, 1, 0x34BC0, 0, 0, 0, 1);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_SOUND, sound_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_SYSTEM_FILES, system_file_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_NAVIGATOR_FILES, navigator_file_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_TIP_IMAGES, tip_image_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
@@ -1142,7 +1146,8 @@ BootInstaller::BootInstaller()
 {
     s32 i;
     screen_image_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SCREEN_IMAGES));
-    func_103E70(g_resource_queue, BOOT_RES_SCREEN_IMAGES, screen_image_data, 1, 0x34BC0, 0, 0, 0, 1);
+    resident_queue_resource_request(g_resource_queue, BOOT_RES_SCREEN_IMAGES, screen_image_data,
+                                    BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
     sound_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SOUND));
     tip_image_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TIP_IMAGES));
     step = BOOT_INSTALL_WAIT_FOR_RESOURCES;

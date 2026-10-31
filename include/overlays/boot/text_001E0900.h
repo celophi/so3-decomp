@@ -905,7 +905,7 @@ class BootResourceLoader : public BootListObject
         BootResourceLoader(class BootProgram* owner)
         {
             data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_COMMON_UI));
-            func_103E70(g_resource_queue, BOOT_RES_COMMON_UI, data, 1, 0x34BC0, 0, 0, 0, 1);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_COMMON_UI, data, BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             program = owner;
             block = BOOT_COMMON_UI_MESSAGES;
         }

@@ -631,9 +631,9 @@ BootTitleMenu::BootTitleMenu(s32 initial_item)
 {
     step = BOOT_TITLE_LOAD_SCENE;
     scene_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TITLE_SCENE));
-    func_103E70(g_resource_queue, BOOT_RES_TITLE_SCENE, scene_data, 1, 0x34BC0, 0, 0, 0, 1);
+    resident_queue_resource_request(g_resource_queue, BOOT_RES_TITLE_SCENE, scene_data, BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
     game_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_GAME_DATA));
-    func_103E70(g_resource_queue, BOOT_RES_GAME_DATA, game_data, 1, 0x34BC0, 0, 0, 0, 1);
+    resident_queue_resource_request(g_resource_queue, BOOT_RES_GAME_DATA, game_data, BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
     scene = 0;
     cursor = 0;
     pulse_up = 0;
@@ -1358,7 +1358,8 @@ void BootGameLauncher::update()
         break;
     case BOOT_LAUNCH_LOAD_PROGRAM:
         program = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_LAUNCH_PROGRAM_RESOURCE));
-        func_103E70(g_resource_queue, BOOT_LAUNCH_PROGRAM_RESOURCE, program, 1, 0x34BC0, 0, 0, 0, 1);
+        resident_queue_resource_request(g_resource_queue, BOOT_LAUNCH_PROGRAM_RESOURCE, program,
+                                        BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
         step++;
         break;
     case BOOT_LAUNCH_HAND_OFF:

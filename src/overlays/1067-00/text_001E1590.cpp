@@ -1498,7 +1498,7 @@ void FieldResourceLoader::start_current_read()
     {
         FieldClass1DD400* owner = this;
         u32 submitted_byte_count = record->byte_capacity;
-        resident_queue_resource_request(g_resource_queue, record->file_key, record->buffer_address(), 0x80000000, request_priority, owner, submitted_byte_count, 0, 1);
+        resident_queue_resource_request(g_resource_queue, record->file_key, (void*)record->buffer_address(), 0x80000000, request_priority, owner, submitted_byte_count, 0, 1);
         u32 byte_count = record->byte_capacity;
         u32 buffer_address = record->buffer_address();
         record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
