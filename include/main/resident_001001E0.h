@@ -64,6 +64,12 @@ void func_001011B0(struct ResidentSystem* system, void* destination, s32 type, u
 void func_00100AB0(void* object);
 
 /**
+ * @brief Allocate the system's status byte at a random heap address and mark it clean.
+ * @param system Resident system.
+ */
+void resident_system_create_status(struct ResidentSystem* system);
+
+/**
  * @brief Set progressive (525p) or interlaced output and reset the GS to match.
  * @param system Resident system.
  * @param progressive Nonzero for progressive output.

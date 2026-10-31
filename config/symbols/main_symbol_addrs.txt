@@ -577,6 +577,7 @@ resident_get_allocation_heap = 0x00100C90; // type:func size:0x8
 resident_get_entry_table = 0x00101290; // type:func size:0x10
 resident_find_entry = 0x00101440; // type:func size:0x40
 resident_get_system = 0x0010D8E0; // type:func size:0xC
+resident_system_create_status = 0x00100F60; // type:func size:0x60
 resident_system_set_progressive = 0x00101040; // type:func size:0x60
 resident_system_switch_program = 0x001010D0; // type:func size:0xE0
 resident_system_load_overlay = 0x001011D0; // type:func size:0x80
@@ -592,6 +593,7 @@ resident_heap_allocate = 0x00113710; // type:func size:0x19C
 func_00113710 = 0x00113710; // type:func absolute:True allow_duplicated:True
 
 // Scalar delete dispatches resident allocations by their header markers.
+__nwa__FUii = 0x00100B00; // type:func size:0x40
 __dl__FPv = 0x00100B40; // type:func size:0x94
 func_00100B40 = 0x00100B40; // type:func absolute:True allow_duplicated:True
 func_100B40 = 0x00100B40; // type:func absolute:True allow_duplicated:True

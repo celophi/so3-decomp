@@ -347,6 +347,12 @@ s32 func_00114560(void* object, s16 value, s32 size);
 u32 resident_next_random_word(void);
 
 /**
+ * @brief Return the next resident random number.
+ * @return Random number.
+ */
+u32 resident_rand(void);
+
+/**
  * @brief Read the byte size associated with a key in the resident descriptor table.
  * @param object Resident descriptor table owner.
  * @param key Descriptor key.

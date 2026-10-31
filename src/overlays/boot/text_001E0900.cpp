@@ -49,7 +49,7 @@ extern BootTrackPool<BootPooledQuaternionCurveTrack>* g_quaternion_curve_track_p
 extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
 void func_4C5B60(s32 first, s32 second);
 void lib_container_attach_widget(BootContainer* container, BootListObject* child);
-void func_100F60(void* root);
+void resident_system_create_status(ResidentSystem* system);
 s32 resident_archive_get_clock(ResidentArchive* archive, struct BootClock* clock);
 ResidentResourceQueue* func_101250(void* root);
 void func_45A5D0(void);
@@ -4702,7 +4702,7 @@ void BootProgram::run()
 
     if (resident_get_system()->status == 0)
     {
-        func_100F60(resident_get_system());
+        resident_system_create_status(resident_get_system());
     }
 
     resident_archive_get_clock(resident_get_archive(resident_get_system()), &clock);

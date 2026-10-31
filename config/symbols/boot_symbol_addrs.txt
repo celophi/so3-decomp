@@ -783,6 +783,7 @@ resident_find_resource_request = 0x00103640; // type:func absolute:True
 resident_cancel_resource_requests = 0x00103B20; // type:func absolute:True
 resident_queue_resource_request = 0x00103E70; // type:func absolute:True
 resident_get_system = 0x0010D8E0; // type:func absolute:True
+resident_system_create_status = 0x00100F60; // type:func absolute:True
 resident_system_set_progressive = 0x00101040; // type:func absolute:True
 resident_system_switch_program = 0x001010D0; // type:func absolute:True
 resident_drain_release_queues = 0x0011ECD0; // type:func absolute:True

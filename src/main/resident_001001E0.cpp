@@ -28,7 +28,7 @@ void* func_00100AC0(u32 size, s32 unused)
     return __nw__FUi(size);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100B00);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", __nwa__FUii);
 
 extern "C" void free_guess(void* memory);
 /** Partial resident allocation header containing its two ownership markers. */
@@ -81,7 +81,17 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100D00)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100E70);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100F60);
+/**
+ * @brief Allocate the system's status byte at a random heap address and mark it clean.
+ * @param system Resident system.
+ */
+void resident_system_create_status(ResidentSystem* system)
+{
+    // Never freed; it only moves the status byte to a different address on each boot.
+    new (0) u8[(resident_rand() & 0x3FF) + 0x40];
+    system->status = new (0) u8[0x10];
+    *system->status = 0x66;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100FC0);
 
