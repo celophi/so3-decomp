@@ -2,6 +2,9 @@
 #include "main/resident_001001E0.h"
 #include "main/resident_0010A0E0.h"
 #include "sdk/main/libgraph_0012EAC8.h"
+#include "sdk/main/libc_guess_00131D18.h"
+#include "sdk/main/libc_guess_00137290.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/mslgcc_00142A40.h"
 
@@ -14,7 +17,46 @@ void func_00100A40(u8 value)
     D_001B6420 = value;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100A50);
+/** Object that reports running out of memory in place of the default message; null by default. */
+class ResidentMemoryHook
+{
+public:
+    virtual void func_slot08();
+
+    /** @brief Report running out of memory. @param data D_001CC510. */
+    virtual void func_slot0c(void* data);
+};
+
+/** Partial resident state at D_001CC500, holding the out-of-memory hook. */
+struct ResidentMemoryState
+{
+    ResidentMemoryHook* hook;
+    u8 unk04;
+    s32 unk08;
+    s32 unk0c;
+};
+
+extern "C" {
+extern ResidentMemoryState D_001CC500;
+extern u8 D_001CC510[];
+
+/** "Memory exhaused.\n" */
+extern const char D_0014D660[];
+}
+
+/** @brief The new handler main installs: report through the hook, or print a message and exit. */
+void resident_handle_out_of_memory(void)
+{
+    if (D_001CC500.hook != 0)
+    {
+        D_001CC500.hook->func_slot0c(D_001CC510);
+    }
+    else
+    {
+        printf(D_0014D660);
+        exit(1);
+    }
+}
 
 void func_00100AB0(void* object)
 {
@@ -50,7 +92,6 @@ void* operator new[](u32 size, s32 unused)
     return ::operator new(size);
 }
 
-extern "C" void free_guess(void* memory);
 /** Partial resident allocation header containing its two ownership markers. */
 struct ResidentAllocationHeader
 {
@@ -110,7 +151,23 @@ void* resident_get_allocation_heap(void)
     return g_allocation_heap;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100CA0);
+/** End of the program image, where the C library heap starts. */
+extern "C" u8 _end[];
+
+/** Size of the main thread's stack; the linker passes it as an address. */
+extern "C" u8 _stack_size[];
+
+/**
+ * @brief Allocate and free all memory between the program and the stack, so the C library claims it in one block.
+ * @return Size of the block.
+ */
+u32 resident_prime_heap(void)
+{
+    u32 stack = (u32)_stack_size + 0x1000;
+    u32 size = 0x2000000 - ((u32)_end + stack + 0x1000);
+    free_guess(malloc_guess(size - 0x10));
+    return size - 0x10;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100D00);
 

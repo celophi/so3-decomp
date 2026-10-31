@@ -36,6 +36,9 @@ extern void* g_sif_command_receiver;
 /** Store a byte in the global at address 0x001B6420. */
 void func_00100A40(u8 value);
 
+/** @brief The new handler main installs: report through the hook, or print a message and exit. */
+void resident_handle_out_of_memory(void);
+
 /**
  * @brief Replace the heap used by operator new and operator new[].
  * @param heap Heap to use, or null for the default allocator.
@@ -61,6 +64,12 @@ struct ResidentSystem;
 void resident_system_init_overlay(struct ResidentSystem* system, void* overlay, s32 slot, u32 size);
 
 void func_00100AB0(void* object);
+
+/**
+ * @brief Allocate and free all memory between the program and the stack, so the C library claims it in one block.
+ * @return Size of the block.
+ */
+u32 resident_prime_heap(void);
 
 /**
  * @brief Allocate the system's status byte at a random heap address and mark it clean.
