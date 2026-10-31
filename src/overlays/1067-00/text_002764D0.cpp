@@ -158,10 +158,9 @@ typedef struct FieldState27A9A0
 /* US Field uses shortened names for these resident copy and fill routines. */
 extern "C" s32 func_4339F0();
 extern "C" s32 func_433880(void*, s32);
-extern "C" void* func_13A4C0(void* destination, const void* source, u32 size);
-extern "C" void* func_13A678(void* destination, s32 value, u32 size);
-extern "C" u32 func_11C8C0(void* table, s32 index);
-extern "C" void func_1105E0(ResidentRequest112400* requests, void* target);
+extern "C" void* memcpy_guess(void* destination, const void* source, u32 size);
+extern "C" void* memset_guess(void* destination, s32 value, u32 size);
+extern "C" void func_1105E0(ResidentSound* requests, void* target);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002764D0);
 
@@ -472,7 +471,7 @@ void FieldBattleResourcePreloader::reconcile_requests(LibClass3F5B80* source)
             record->file_key = value;
             if (size <= 0)
             {
-                record->byte_capacity = (func_11C8C0(D_001B65E4, record->file_key) + 0x7FF) & ~0x7FF;
+                record->byte_capacity = (resident_get_resource_size(g_resource_archive, record->file_key) + 0x7FF) & ~0x7FF;
             }
             else
             {
@@ -509,7 +508,7 @@ void FieldBattleResourcePreloader::rebuild_requests()
             {
                 u32 byte_count = record->byte_capacity;
                 u32 buffer_address = record->buffer_address();
-                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+                resident_cancel_resource_requests(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
                 record->read_complete = 0;
                 record->cancel_pending = 1;
             }
@@ -517,7 +516,7 @@ void FieldBattleResourcePreloader::rebuild_requests()
             {
                 u32 byte_count = record->byte_capacity;
                 u32 buffer_address = record->buffer_address();
-                record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+                record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
 
                 if (record->request_address)
                 {
@@ -695,7 +694,7 @@ void FieldBattleResourcePreloader::update_requests(s32 flag)
             FieldPreloadRequest* record = &requests[i];
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
-            resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+            resident_cancel_resource_requests(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             record->read_complete = 0;
             record->cancel_pending = 1;
         }
@@ -726,11 +725,11 @@ void func_0027A550(FieldState2A550* object, u32 value14, const FieldSource2A550*
     object->unk30 = value30;
     if (data != 0)
     {
-        func_13A4C0(object->unk58, data, 0x10);
+        memcpy_guess(object->unk58, data, 0x10);
     }
     else
     {
-        func_13A678(object->unk58, 0, 0x10);
+        memset_guess(object->unk58, 0, 0x10);
     }
     object->unk68 = 0;
     object->unk69_0 = 1;
@@ -755,11 +754,11 @@ void func_0027A6F0(FieldState2A550* object, u32 value14, u32 value50,
     object->unk30 = value30;
     if (data != 0)
     {
-        func_13A4C0(object->unk58, data, 0x10);
+        memcpy_guess(object->unk58, data, 0x10);
     }
     else
     {
-        func_13A678(object->unk58, 0, 0x10);
+        memset_guess(object->unk58, 0, 0x10);
     }
     object->unk68 = 0;
     object->unk50 = value50;
@@ -790,7 +789,7 @@ void func_0027ABF0(FieldObject22E680* object)
 {
     if (object->unk50 != 0)
     {
-        func_1105E0(D_001B65F8, object->unk50);
+        func_1105E0(g_sound, object->unk50);
         object->unk50 = 0;
     }
     if (object->unk4c_5 == 0)

@@ -289,6 +289,12 @@ resident_heap_release = 0x001134C0; // type:func absolute:True allow_duplicated:
 
 resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated:True
 
-resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
+resident_sound_play = 0x00112400; // type:func absolute:True allow_duplicated:True
 
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
+memcpy_guess = 0x0013A4C0; // type:func absolute:True
+memset_guess = 0x0013A678; // type:func absolute:True
+strcpy_guess = 0x0013C948; // type:func absolute:True
+g_frame_ticks = 0x001B6688; // absolute:True
+g_frame_seconds = 0x001B6690; // absolute:True
+g_sound = 0x001B65F8; // absolute:True

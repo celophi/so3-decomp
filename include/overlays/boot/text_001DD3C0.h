@@ -6,6 +6,8 @@
 #include "main/resident_00101260.h"
 #include "main/resident_00101550.h"
 #include "main/resident_0010A0E0.h"
+#include "sdk/main/libc_guess_00137290.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 
 /** Marker byte of an encoded BootSealedRecord. */
 #define BOOT_RECORD_SEALED 0x69
@@ -40,29 +42,29 @@ enum BootScreenResourceId
 };
 
 /** @brief Four aligned floating-point vector components. */
-typedef struct BootVector4DDAA0
+typedef struct BootVector4
 {
     float x;
     float y;
     float z;
     float w;
-} __attribute__((aligned(16))) BootVector4DDAA0;
+} __attribute__((aligned(16))) BootVector4;
 
 /**
  * @brief Copy all 128 bits of an aligned four-component vector.
  * @param destination Vector receiving the copy.
  * @param source Vector to copy.
  */
-static inline void copy_vector(BootVector4DDAA0* destination, const BootVector4DDAA0* source)
+static inline void copy_vector(BootVector4* destination, const BootVector4* source)
 {
     *(unsigned __int128*)destination = *(const unsigned __int128*)source;
 }
 
 /** @brief Matrix storage containing four aligned four-component vectors. */
-typedef struct BootMatrix92D0
+typedef struct BootMatrix
 {
-    BootVector4DDAA0 vectors[4];
-} BootMatrix92D0;
+    BootVector4 vectors[4];
+} BootMatrix;
 
 /** @brief The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
 typedef struct BootTrophyFlags
@@ -244,20 +246,6 @@ typedef struct BootSystemSettings
     BootTrophyFlags trophy_flags;
 } BootSystemSettings;
 
-/** Partial resident memory card and loading state reached through D_001B65E4. */
-typedef struct BootResident1B65E4
-{
-    u8 unk00[0x108];
-    u8 unk108;
-    u8 unk109[0x32];
-    u8 unk13b;
-    u8 unk13c[5];
-    u8 unk141;
-    u8 unk142[0x12041];
-    u8 unk12183;
-    u8 unk12184;
-} BootResident1B65E4;
-
 /** Partial resident display runtime reached through D_001B657C, with the Lib vtable D_174F50. */
 class BootRuntime1B657C
 {
@@ -284,34 +272,6 @@ class BootRuntime1B657C
         s32 message_values[9];
 
         u8 unk590[0x74];
-};
-
-/** @brief Partial resident sound stream reached through the sound object. */
-struct BootSoundStream
-{
-    u8 unk00[0x90];
-
-    /** Stream handle. */
-    void* handle;
-};
-
-/** @brief Partial resident sound object reached through D_001B65F8. */
-struct BootSoundState
-{
-    struct BootSoundStream* stream;
-    u8 unk04[0x36C];
-    u8 unk370;
-    u8 unk371[0x4B];
-    s32 unk3bc;
-    u8 unk3c0[0x90];
-
-    /** Sound output mode: 1 mono, 0 stereo, 2 Dolby Pro Logic II, 3 headphones. */
-    u8 output_mode;
-
-    u8 unk451[0xF4B];
-
-    /** Angle of each of the four surround speakers. */
-    float speaker_angles[4];
 };
 
 /** @brief Partial display area whose signed dimensions drive the projection. */
@@ -347,25 +307,16 @@ extern "C" {
 
 extern class BootProjectionACD0* D_001B6654;
 
-void* func_13A678(void* destination, s32 value, u32 size);
 extern BootRuntime1B657C* D_001B657C;
 // TODO: Main names these two resident_allocate_decode_buffer and resident_decode_resource_block and takes a
 // ResidentResourceHeader; boot's resource buffers are still plain bytes.
 u8* func_102920(void* decoder, u8* source, s32 index, s32 aligned);
 s32 func_1025A0(void* decoder, u8* source, void* destination, s32 index);
 s32 func_102D00(void* queue);
-extern BootResident1B65E4* D_001B65E4;
-extern ResidentResourceQueue* D_001B65E8;
+extern ResidentArchive* g_resource_archive;
+extern ResidentResourceQueue* g_resource_queue;
 extern ResidentReleaseQueues* g_resident_release_queues;
-extern struct BootSoundState* D_001B65F8;
-/**
- * @brief Return the 2048-byte-block allocation size for a resource key.
- * @param table Resident resource descriptor table.
- * @param key Resource key.
- * @return Resource size in bytes.
- */
-u32 resident_get_resource_size(void* table, s32 key);
-u8* func_139700(u32 alignment, u32 size);
+extern ResidentSound* g_sound;
 // TODO: Main names this resident_queue_resource_request and takes the buffer as a u32 address; boot passes pointers.
 void func_103E70(void* queue, s32 id, void* destination, s32 first, u32 size, s32 second, s32 third, s32 fourth, s32 fifth);
 u16 func_457470(u16 seed, const void* data, s32 size);
@@ -583,16 +534,16 @@ class BootPositionTransform : public BootListObject
          * @brief Copy the position.
          * @param value Source vector.
          */
-        virtual void set_translation_vector(const BootVector4DDAA0* value);
+        virtual void set_translation_vector(const BootVector4* value);
 
         /**
          * @brief Copy the position.
          * @param value Source vector.
          */
-        virtual void copy_translation(const BootVector4DDAA0* value);
+        virtual void copy_translation(const BootVector4* value);
 
         u8 unk14[0xC];
-        BootVector4DDAA0 translation;
+        BootVector4 translation;
 };
 
 /** Boot's copy of the position, rotation and scale transform, with vtable D_170D90 in main data. */
@@ -619,13 +570,13 @@ class BootTransform : public BootPositionTransform
          * @brief Copy the position and mark the transform dirty.
          * @param value Source vector.
          */
-        virtual void set_translation_vector(const BootVector4DDAA0* value);
+        virtual void set_translation_vector(const BootVector4* value);
 
         /**
          * @brief Copy the position and mark the transform dirty.
          * @param value Source vector.
          */
-        virtual void copy_translation(const BootVector4DDAA0* value);
+        virtual void copy_translation(const BootVector4* value);
 
         /**
          * @brief Convert three rotation components into the rotation vector and mark the transform dirty.
@@ -639,25 +590,25 @@ class BootTransform : public BootPositionTransform
          * @brief Convert a rotation into the rotation vector and mark the transform dirty.
          * @param value Source rotation.
          */
-        virtual void set_rotation_vector(const BootVector4DDAA0* value);
+        virtual void set_rotation_vector(const BootVector4* value);
 
         /**
          * @brief Convert a rotation into the rotation vector and mark the transform dirty.
          * @param value Source rotation.
          */
-        virtual void convert_rotation(const BootVector4DDAA0* value);
+        virtual void convert_rotation(const BootVector4* value);
 
         /**
          * @brief Copy the rotation vector and mark the transform dirty.
          * @param value Source vector.
          */
-        virtual void set_orientation(const BootVector4DDAA0* value);
+        virtual void set_orientation(const BootVector4* value);
 
         /**
          * @brief Copy the rotation vector and mark the transform dirty.
          * @param value Source vector.
          */
-        virtual void copy_orientation(const BootVector4DDAA0* value);
+        virtual void copy_orientation(const BootVector4* value);
 
         /**
          * @brief Set all four rotation components and mark the transform dirty.
@@ -680,18 +631,18 @@ class BootTransform : public BootPositionTransform
          * @brief Copy the scale vector and mark the transform dirty.
          * @param value Source vector.
          */
-        virtual void set_scale_vector(const BootVector4DDAA0* value);
+        virtual void set_scale_vector(const BootVector4* value);
 
         /**
          * @brief Copy the scale vector and mark the transform dirty.
          * @param value Source vector.
          */
-        virtual void copy_scale(const BootVector4DDAA0* value);
+        virtual void copy_scale(const BootVector4* value);
 
         /** Rotation as a quaternion; Euler angles are converted on the way in. */
-        BootVector4DDAA0 orientation;
+        BootVector4 orientation;
 
-        BootVector4DDAA0 scale;
+        BootVector4 scale;
 
         /** Nonzero when the transformation matrices need rebuilding. */
         u8 transform_dirty;
@@ -760,7 +711,7 @@ class BootTransformOwner : public BootTransform
          * @brief Return the bounding sphere Lib culls against (centre in xyz, radius in w); this owner has Lib's shared default.
          * @return Bounding sphere.
          */
-        virtual const BootVector4DDAA0* get_bounding_sphere();
+        virtual const BootVector4* get_bounding_sphere();
 
         /**
          * @brief Default matrix handler; does nothing.
@@ -1499,7 +1450,7 @@ class BootModelBase : public BootTransformOwner
          * @brief Read the offset transform's translation.
          * @return Translation.
          */
-        virtual const BootVector4DDAA0* get_offset_translation() const
+        virtual const BootVector4* get_offset_translation() const
         {
             return &offset_translation;
         }
@@ -1508,7 +1459,7 @@ class BootModelBase : public BootTransformOwner
          * @brief Read the offset transform's rotation.
          * @return Rotation quaternion.
          */
-        virtual const BootVector4DDAA0* get_offset_rotation() const
+        virtual const BootVector4* get_offset_rotation() const
         {
             return &offset_rotation;
         }
@@ -1517,7 +1468,7 @@ class BootModelBase : public BootTransformOwner
          * @brief Read the offset transform's scale.
          * @return Scale.
          */
-        virtual const BootVector4DDAA0* get_offset_scale() const
+        virtual const BootVector4* get_offset_scale() const
         {
             return &offset_scale;
         }
@@ -1529,15 +1480,15 @@ class BootModelBase : public BootTransformOwner
          */
         virtual void copy_offset_transform_state(const BootModelBase* source);
 
-        BootMatrix92D0 unk90;
-        BootMatrix92D0 unkD0;
+        BootMatrix unk90;
+        BootMatrix unkD0;
         u8 unk110[0xC0];
-        BootVector4DDAA0 offset_translation;
+        BootVector4 offset_translation;
 
         /** Quaternion used to build the offset transform. */
-        BootVector4DDAA0 offset_rotation;
+        BootVector4 offset_rotation;
 
-        BootVector4DDAA0 offset_scale;
+        BootVector4 offset_scale;
         u8 unk200[8];
         s32 unk208;
         u8 unk20C[4];
@@ -1584,7 +1535,7 @@ class BootColorModel : public BootModelBase
          * @param key Caller's key; unused here.
          * @param modulation Color modulation to store.
          */
-        virtual void set_color_modulation(s32 key, const BootVector4DDAA0* modulation)
+        virtual void set_color_modulation(s32 key, const BootVector4* modulation)
         {
             copy_vector(&color_modulation, modulation);
             update_combined_color_factor();
@@ -1594,7 +1545,7 @@ class BootColorModel : public BootModelBase
          * @brief Read the color modulation.
          * @return Vector at offset 0x570.
          */
-        virtual const BootVector4DDAA0* get_color_modulation() const
+        virtual const BootVector4* get_color_modulation() const
         {
             return &color_modulation;
         }
@@ -1606,9 +1557,9 @@ class BootColorModel : public BootModelBase
         virtual void func_448180();
 
         u8 unk220[0x340];
-        BootVector4DDAA0 base_color_factor;
-        BootVector4DDAA0 color_modulation;
-        BootVector4DDAA0 combined_color_factor;
+        BootVector4 base_color_factor;
+        BootVector4 color_modulation;
+        BootVector4 combined_color_factor;
         u8 unk590[0xD];
         u8 unk59d_0_2 : 3;
         u8 unk59d_3 : 1;
@@ -1714,7 +1665,7 @@ class BootModel : public BootModelPrimaryBase, public BootModelSecondaryBase
          * @brief Return the bounding sphere from the mesh, with the radius scaled by the model; Lib implements this.
          * @return Bounding sphere (centre in xyz, radius in w).
          */
-        virtual const BootVector4DDAA0* get_bounding_sphere();
+        virtual const BootVector4* get_bounding_sphere();
 
         /**
          * @brief Apply a matrix; boot uses the Lib implementation.

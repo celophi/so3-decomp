@@ -33,7 +33,7 @@ typedef struct FieldScriptWord18
     u8 unk59d_rest : 7;
 } FieldScriptWord18;
 
-extern "C" void* func_13A678(void* destination, s32 value, u32 size);
+extern "C" void* memset_guess(void* destination, s32 value, u32 size);
 
 s32 func_0021DE20(FieldScriptObject151D40* object, u32 count)
 {
@@ -83,7 +83,7 @@ s32 func_0021DF30(FieldScriptObject151D40* object, u32 count)
 s32 func_0021DF60(FieldScriptObject151D40* object, u32 count)
 {
     FieldRuntimeValues* values = (FieldRuntimeValues*)func_101440(func_101290(func_10D8E0()), 4);
-    func_13A678(values->flags_5000, 0, sizeof(values->flags_5000));
+    memset_guess(values->flags_5000, 0, sizeof(values->flags_5000));
     return 1;
 }
 

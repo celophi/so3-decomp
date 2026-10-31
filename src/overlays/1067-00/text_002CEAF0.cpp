@@ -141,9 +141,9 @@ struct FieldMenuRuntime
 
 extern "C" FieldMenuRuntime* D_001B643C;
 
-extern "C" s32 func_110C10(ResidentRequest112400* request, s32 handle);
+extern "C" s32 resident_sound_is_active(ResidentSound* request, s32 handle);
 
-extern "C" s32 func_110920(ResidentRequest112400* request, s32 handle, s32 flag);
+extern "C" s32 resident_sound_stop(ResidentSound* request, s32 handle, s32 flag);
 
 /** Partial pad state with its button masks. */
 struct FieldMenuPad
@@ -715,17 +715,17 @@ static inline s32 play_menu_sound(FieldMenuManager* manager, s16 sound)
 
     if (manager->sounds[index] == -1)
     {
-        manager->sounds[index] = resident_allocate_request(D_001B65F8, index, 0, 0, 0x7F, 0x40, 0);
+        manager->sounds[index] = resident_sound_play(g_sound, index, 0, 0, 0x7F, 0x40, 0);
     }
     else
     {
-        if (static_cast<u8>(func_110C10(D_001B65F8, manager->sounds[index])) == 1)
+        if (static_cast<u8>(resident_sound_is_active(g_sound, manager->sounds[index])) == 1)
         {
-            manager->unk5c = static_cast<u8>(func_110920(D_001B65F8, manager->sounds[index], 0));
+            manager->unk5c = static_cast<u8>(resident_sound_stop(g_sound, manager->sounds[index], 0));
             manager->sounds[index] = -1;
         }
 
-        manager->sounds[index] = resident_allocate_request(D_001B65F8, sound, 0, 0, 0x7F, 0x40, 0);
+        manager->sounds[index] = resident_sound_play(g_sound, sound, 0, 0, 0x7F, 0x40, 0);
     }
 
     return 1;
@@ -1426,7 +1426,7 @@ FieldMenuManager::FieldMenuManager()
     load_state = 0;
     unk2a = 0;
     skip_transition = 0;
-    func_0013A678(sounds, 0, sizeof(sounds));
+    memset_guess(sounds, 0, sizeof(sounds));
     unk5c = 0;
     ready = 0;
     unk62 = 0;
@@ -1606,7 +1606,7 @@ void FieldClass15B090::update()
         unkb4_1 = 1;
     }
 
-    unka0 -= D_001B6688;
+    unka0 -= g_frame_ticks;
 
     if (unka0 <= 0.0f)
     {
@@ -1624,7 +1624,7 @@ void FieldClass15B090::update()
         unk8c_4 = 1;
     }
 
-    float dt = D_001B6688;
+    float dt = g_frame_ticks;
     float speed = unkb4_0 ? 0.05f : -0.05f;
     unka4 += speed * dt;
     LibVector4 direction;
@@ -1640,8 +1640,8 @@ void FieldClass15B090::update()
     lib_direction_angles_xz(&angles, &direction, 0.0f);
     func_004CE4C0(rotation.components, angles.components);
     func_004CD3A0(reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&rotation), 1.0f);
-    unk20.y += unka8 * D_001B6688;
-    unka8 += 0.5f * D_001B6688;
+    unk20.y += unka8 * g_frame_ticks;
+    unka8 += 0.5f * g_frame_ticks;
 
     if (!(unk20.y <= unkb0))
     {
@@ -1771,7 +1771,7 @@ static inline void reset_entry_timer(FieldClass15B0E0* object)
     flags &= ~1;
     entry->flags = flags;
     object->unk28 = -140.0f;
-    func_0013A678(entry->unk1d4, 0, sizeof(entry->unk1d4));
+    memset_guess(entry->unk1d4, 0, sizeof(entry->unk1d4));
 }
 
 void FieldClass15B0E0::func_002D1D70()

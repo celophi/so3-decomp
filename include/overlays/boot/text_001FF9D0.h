@@ -19,7 +19,7 @@ void func_4D00B0(void* object);
  * @param packet Packet to set up.
  * @param size Storage size in bytes.
  */
-void func_11F8A0(ResidentPacket* packet, s32 size);
+void resident_packet_allocate(ResidentPacket* packet, s32 size);
 
 #ifdef __cplusplus
 }
@@ -55,7 +55,7 @@ class BootPacketBuffer : public ResidentPacket
         {
             unk04 = 0;
             unk15 = 0;
-            func_11F8A0(this, size);
+            resident_packet_allocate(this, size);
         }
 
         /** @brief Release the packet storage. */

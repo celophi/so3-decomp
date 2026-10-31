@@ -105,31 +105,31 @@ struct FieldRuntimeState
     /** @brief Clear runtime values and restore the default character names. */
     FieldRuntimeState()
     {
-        func_0013A678(unk588, 0, sizeof(unk588));
-        func_0013A678(unkC588, 0, sizeof(unkC588));
-        func_0013A678(unk04, 0, sizeof(unk04));
-        func_0013A678(unkC688, 0, sizeof(unkC688));
+        memset_guess(unk588, 0, sizeof(unk588));
+        memset_guess(unkC588, 0, sizeof(unkC588));
+        memset_guess(unk04, 0, sizeof(unk04));
+        memset_guess(unkC688, 0, sizeof(unkC688));
         field_clear_flags_5000(reinterpret_cast<FieldRuntimeValues*>(this));
-        func_0013A678(variables, 0, sizeof(variables));
+        memset_guess(variables, 0, sizeof(variables));
         unkC7A0 = 0;
         unkC7E6 = 0;
         unkC7A4 = 0;
         unkC7E0 = 0x7FFF;
         unkC7E2 = 100;
         unkC7E4 = 100;
-        func_0013A678(character_names, 0, sizeof(character_names));
-        func_0013C948(character_names[0], g_field_default_name_fayt);
-        func_0013C948(character_names[1], g_field_default_name_sophia);
-        func_0013C948(character_names[2], g_field_default_name_maria);
-        func_0013C948(character_names[3], g_field_default_name_cliff);
-        func_0013C948(character_names[4], g_field_default_name_nel);
-        func_0013C948(character_names[5], g_field_default_name_albel);
-        func_0013C948(character_names[6], g_field_default_name_roger);
-        func_0013C948(character_names[7], g_field_default_name_peppita);
-        func_0013C948(character_names[8], g_field_default_name_adray);
-        func_0013C948(character_names[9], g_field_default_name_mirage);
-        func_0013A678(unkC7E8, 0, sizeof(unkC7E8));
-        func_0013A678(unkCF90, 0, sizeof(unkCF90));
+        memset_guess(character_names, 0, sizeof(character_names));
+        strcpy_guess(character_names[0], g_field_default_name_fayt);
+        strcpy_guess(character_names[1], g_field_default_name_sophia);
+        strcpy_guess(character_names[2], g_field_default_name_maria);
+        strcpy_guess(character_names[3], g_field_default_name_cliff);
+        strcpy_guess(character_names[4], g_field_default_name_nel);
+        strcpy_guess(character_names[5], g_field_default_name_albel);
+        strcpy_guess(character_names[6], g_field_default_name_roger);
+        strcpy_guess(character_names[7], g_field_default_name_peppita);
+        strcpy_guess(character_names[8], g_field_default_name_adray);
+        strcpy_guess(character_names[9], g_field_default_name_mirage);
+        memset_guess(unkC7E8, 0, sizeof(unkC7E8));
+        memset_guess(unkCF90, 0, sizeof(unkCF90));
         ResidentCheckedRecord* record = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1));
 
         if (record != 0)
@@ -182,8 +182,8 @@ struct FieldLoaderState
     /** @brief Clear retained loader commands and reset their data buffer. */
     FieldLoaderState()
     {
-        func_0013A678(commands, 0, sizeof(commands));
-        func_0013A678(unk7e0, 0, sizeof(unk7e0));
+        memset_guess(commands, 0, sizeof(commands));
+        memset_guess(unk7e0, 0, sizeof(unk7e0));
         unk17e0 = 0;
         command_count = 0;
         unk17e4 = 0;
@@ -419,7 +419,7 @@ void FieldClass157AF0::emit_primary_entries(const LibVector4* position, const Li
     primary_emitter->emit_entries(primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                          0, 0, 0, 0, 0, 0);
     vu0_reset_emission_state();
-    vu0_set_emission_delta(D_001B6690);
+    vu0_set_emission_delta(g_frame_seconds);
     vu0_restore_emission_state(saved_state);
 }
 
@@ -492,7 +492,7 @@ void FieldClass157AF0::emit_secondary_entries(const LibVector4* position, LibVec
         secondary_emitter->emit_entries(secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                                0, 0, 0, 0, 0, 0);
         vu0_reset_emission_state();
-        vu0_set_emission_delta(D_001B6690);
+        vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
         first_offset->components[3] = unk3C;
     }
@@ -561,7 +561,7 @@ void FieldClass157E30::emit_primary_entries(const LibVector4* position, const Li
     primary_emitter->emit_entries(primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                          0, 0, 0, 0, 0, 0);
     vu0_reset_emission_state();
-    vu0_set_emission_delta(D_001B6690);
+    vu0_set_emission_delta(g_frame_seconds);
     vu0_restore_emission_state(saved_state);
 }
 
@@ -634,7 +634,7 @@ void FieldClass157E30::emit_secondary_entries(const LibVector4* position, LibVec
         secondary_emitter->emit_entries(secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                                0, 0, 0, 0, 0, 0);
         vu0_reset_emission_state();
-        vu0_set_emission_delta(D_001B6690);
+        vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
         first_offset->components[3] = unk3C;
     }
@@ -703,7 +703,7 @@ void FieldClass158170::emit_primary_entries(const LibVector4* position, const Li
     primary_emitter->emit_entries(primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                          0, 0, 0, 0, 0, 0);
     vu0_reset_emission_state();
-    vu0_set_emission_delta(D_001B6690);
+    vu0_set_emission_delta(g_frame_seconds);
     vu0_restore_emission_state(saved_state);
 }
 
@@ -776,7 +776,7 @@ void FieldClass158170::emit_secondary_entries(const LibVector4* position, LibVec
         secondary_emitter->emit_entries(secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                                0, 0, 0, 0, 0, 0);
         vu0_reset_emission_state();
-        vu0_set_emission_delta(D_001B6690);
+        vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
         first_offset->components[3] = unk3C;
     }
@@ -846,7 +846,7 @@ bool field_update_timed_value(FieldTimedValueState* state, float* value)
 {
     if (state->updating)
     {
-        state->update_remaining -= D_001B6688;
+        state->update_remaining -= g_frame_ticks;
 
         if (state->update_remaining <= 0.0f)
         {
@@ -858,7 +858,7 @@ bool field_update_timed_value(FieldTimedValueState* state, float* value)
 
     if (!(state->delay_remaining <= 0.0f))
     {
-        state->delay_remaining -= D_001B6688;
+        state->delay_remaining -= g_frame_ticks;
 
         if (state->delay_remaining <= 0.0f)
         {
@@ -1186,7 +1186,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002AE9E0", update__24F
 FieldTimedQuadController::FieldTimedQuadController()
 {
     unk18 = 5;
-    func_0013A678(records, 0, sizeof(records));
+    memset_guess(records, 0, sizeof(records));
     texture_index = -1;
     record_count = 0;
     renderer = 0;
@@ -1314,8 +1314,8 @@ static inline void field_apply_time_step(ResidentContext* context, float step)
     }
 
     float scaled_step = context->time_step * context->time_scale;
-    D_001B6688 = scaled_step;
-    D_001B6690 = scaled_step / 60.0f;
+    g_frame_ticks = scaled_step;
+    g_frame_seconds = scaled_step / 60.0f;
 
     if (D_001B657C != 0)
     {
@@ -1393,7 +1393,7 @@ void field_run_update_loop(ResidentContext* context)
 {
     TIMER0_MODE = 0x83;
 
-    for (; func_0011DF10(D_001B65F0, 0) == 0;)
+    for (; func_0011DF10(g_input_system, 0) == 0;)
     {
     }
 
@@ -1415,7 +1415,7 @@ void field_run_update_loop(ResidentContext* context)
 
         if (D_001B6618 != 0)
         {
-            func_0011F770(D_001B6618->packet, 0);
+            resident_packet_submit(D_001B6618->packet, 0);
             func_4D76C0(D_001B6618, 16, 16);
         }
 
@@ -1458,7 +1458,7 @@ void field_run_update_loop(ResidentContext* context)
             }
 
             context->display_field = func_4DCFF0(D_001B6650, context->render_count);
-            func_0011DF00(D_001B65F0);
+            resident_input_take_vblank_count(g_input_system);
         }
         else
         {
@@ -1466,14 +1466,14 @@ void field_run_update_loop(ResidentContext* context)
             context->display_field = func_4DCFF0(D_001B6650, context->render_count);
             for (s32 retries = 5; retries >= 0; retries--)
             {
-                remaining -= func_0011DF00(D_001B65F0);
+                remaining -= resident_input_take_vblank_count(g_input_system);
 
                 if (remaining <= 0)
                 {
                     break;
                 }
 
-                context->display_field = func_0011DF10(D_001B65F0, 0);
+                context->display_field = func_0011DF10(g_input_system, 0);
             }
 
             if (remaining < 0)
@@ -1526,7 +1526,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         func_004288C0(1);
         D_001B6518 = 0;
         D_001B65B0 = 0;
-        func_00110C60(D_001B65F8);
+        func_00110C60(g_sound);
         static_cast<FieldContextOwner20*>(context->unk20)->unk34_4 = 1;
 
         if (context->unk1c != 0)
@@ -1674,7 +1674,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
         if (!D_001B6430->context->unkdd.unk4)
         {
-            func_0011DEE0(D_001B65F0, context->unk0c, 0);
+            resident_input_attach_display(g_input_system, context->unk0c, 0);
         }
 
         delete D_001B6430;
@@ -1714,8 +1714,8 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         {
             delete static_cast<ResidentHeap*>(context->unk6c);
             context->unk6c = 0;
-            D_001B65F8->unk0c = 0;
-            func_001106B0(D_001B65F8, 0);
+            g_sound->unk0c = 0;
+            func_001106B0(g_sound, 0);
         }
 
         ResidentCheckedRecord* resource =
@@ -1793,8 +1793,8 @@ extern "C" void field_initialize_context(ResidentContext* context)
     context->unkb0 = -1;
     context->unka8 = -1;
     context->unkaa = 0;
-    D_001B6688 = 1.0f;
-    D_001B6690 = 1.0f / 60.0f;
+    g_frame_ticks = 1.0f;
+    g_frame_seconds = 1.0f / 60.0f;
     func_002B4620(D_001B6664);
     func_002B4C50(D_001B6668);
     func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(D_001B666C));
@@ -1836,7 +1836,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
 
     if (saved == 0)
     {
-        func_0011DF80(D_001B65F0);
+        func_0011DF80(g_input_system);
         context->unk6c = ::new (0) ResidentHeap;
         func_00113930(static_cast<ResidentHeap*>(context->unk6c), 0x40C00);
         void* previous_heap = resident_exchange_allocation_heap(context->unk6c);
@@ -2152,7 +2152,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
             camera->unk9e0 = 0;
             camera->unk9e4 = 0;
             camera->unk9e8 = 0;
-            func_0013C948(camera->name, g_field_default_camera_name);
+            strcpy_guess(camera->name, g_field_default_camera_name);
             camera->unk9fd_0 = 1;
             camera->unk9ca = 0;
             static_cast<LibClass178DD0*>(D_001B661C)->append_node(camera, -1);
@@ -2231,7 +2231,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
             const u32 present_kinds = kinds;
             s32 added = 0;
 
-            if (!(present_kinds & 2) && (s32)func_0011C8C0(D_001B65E4, D_303CB0[saved->resource_index].file_key) > 0x800)
+            if (!(present_kinds & 2) && (s32)resident_get_resource_size(g_resource_archive, D_303CB0[saved->resource_index].file_key) > 0x800)
             {
                 field_append_file_request(loader, D_303CB0[saved->resource_index].file_key, 0);
                 added++;
@@ -2300,7 +2300,7 @@ extern "C" void field_set_checked_fol(ResidentCheckedRecord* record, s32 fol)
  */
 extern "C" void field_clear_flags_5000(FieldRuntimeValues* values)
 {
-    func_0013A678(values->flags_5000, 0, sizeof(values->flags_5000));
+    memset_guess(values->flags_5000, 0, sizeof(values->flags_5000));
 }
 
 /** @brief Disable display blending and restore the default alpha. */

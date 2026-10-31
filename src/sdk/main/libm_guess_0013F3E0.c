@@ -26,13 +26,13 @@ INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_001
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_00141938);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_00141BE0);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", cosf_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_00141CC8);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_00141CE8);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_00141DD0);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", sinf_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_00141EC0);
 
@@ -42,6 +42,6 @@ INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_001
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_00142148);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_00142270);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", log10f_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libm_guess_0013F3E0", func_001423C0);

@@ -25,7 +25,7 @@ void __malloc_unlock_guess(void* lock);
  * @param size Number of bytes to copy.
  * @return Destination pointer.
  */
-void* func_0013A4C0(void* destination, const void* source, u32 size);
+void* memcpy_guess(void* destination, const void* source, u32 size);
 
 /**
  * @brief Fill a destination range with the low byte of a value.
@@ -34,7 +34,7 @@ void* func_0013A4C0(void* destination, const void* source, u32 size);
  * @param size Number of bytes to fill.
  * @return The original destination pointer.
  */
-void* func_0013A678(void* destination, s32 value, u32 size);
+void* memset_guess(void* destination, s32 value, u32 size);
 
 /**
  * @brief Resize an allocation through the default C allocator.
@@ -50,7 +50,7 @@ void* func_0013B858(void* memory, u32 size);
  * @param format Printf-style format string.
  * @return Result returned by the resident formatter.
  */
-s32 func_0013C4F0(char* destination, const char* format, ...);
+s32 sprintf_guess(char* destination, const char* format, ...);
 
 #ifdef __cplusplus
 }

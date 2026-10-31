@@ -362,7 +362,7 @@ extern "C" FieldSceneResourceRequest* field_append_file_request(FieldContextReso
 
     loader->requests[loader->request_count].reset_request();
     loader->requests[loader->request_count].file_key = file_key;
-    loader->requests[loader->request_count].set_capacity(func_0011C8C0(D_001B65E4, loader->requests[loader->request_count].file_key));
+    loader->requests[loader->request_count].set_capacity(resident_get_resource_size(g_resource_archive, loader->requests[loader->request_count].file_key));
     loader->requests[loader->request_count].slot_index = loader->request_count;
     loader->requests[loader->request_count].kind = kind;
     loader->request_count++;

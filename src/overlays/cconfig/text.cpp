@@ -2680,16 +2680,16 @@ void func_0034C600(ConfigOptions* object, u16 input)
     if (selected)
     {
         settings->unk24_bit5 = 0;
-        func_0011E030(D_001B65F0, 0, 0);
-        func_0011E030(D_001B65F0, 1, 0);
+        resident_pad_set_vibration_enabled(g_input_system, 0, 0);
+        resident_pad_set_vibration_enabled(g_input_system, 1, 0);
         first->set_color(0x505050);
         second->set_color(0x808080);
     }
     else
     {
         settings->unk24_bit5 = 1;
-        func_0011E030(D_001B65F0, 0, 1);
-        func_0011E030(D_001B65F0, 1, 1);
+        resident_pad_set_vibration_enabled(g_input_system, 0, 1);
+        resident_pad_set_vibration_enabled(g_input_system, 1, 1);
         func_0020F110(D_001B6430->context->unk38, 1, 128, 10.0f, 5.0f);
         first->set_color(0x808080);
         second->set_color(0x505050);
@@ -3084,7 +3084,7 @@ void ConfigOptions::func_slotac()
         s32 selected = this->selected;
         if (selected == 12 && unk101 == 0)
         {
-            resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
         }
         else
         {
@@ -3101,7 +3101,7 @@ void ConfigOptions::func_slota8()
         s32 selected = this->selected;
         if (selected == 12 && unk101 == 0)
         {
-            resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
         }
         else
         {
@@ -4497,7 +4497,7 @@ void func_003516B0(ConfigMessageWindow* object)
         return;
     }
 
-    x -= 108.0f * D_001B6690;
+    x -= 108.0f * g_frame_seconds;
 
     if (x < object->clip_x - object->extent)
     {

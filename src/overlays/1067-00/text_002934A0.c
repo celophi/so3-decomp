@@ -4,7 +4,7 @@
 
 
 
-extern float D_001B6688;
+extern float g_frame_ticks;
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002934A0", func_002934A0);
 
@@ -29,7 +29,7 @@ void func_00293540(FieldObject1573D0* object)
 {
     if (object->unk38_0 && !object->unk38_1)
     {
-        object->unk30 += D_001B6688;
+        object->unk30 += g_frame_ticks;
         if (object->unk30 >= object->unk2c)
         {
             object->unk34 = object->unk20;

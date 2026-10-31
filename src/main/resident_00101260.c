@@ -60,13 +60,13 @@ void* func_001012B0(void* object)
 }
 
 /**
- * @brief Return the address at receiver offset 0x17C0.
- * @param object Receiver containing the address.
- * @return Address at offset 0x17C0.
+ * @brief Get the resource archive the runtime owner holds.
+ * @param owner Runtime owner.
+ * @return Resource archive.
  */
-void* func_001012C0(void* object)
+ResidentArchive* resident_get_archive(void* owner)
 {
-    return (u8*)object + 0x17C0;
+    return (ResidentArchive*)((u8*)owner + 0x17C0);
 }
 
 /**

@@ -106,7 +106,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F140)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F1D0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F390);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", resident_packet_add_line);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F510);
 
@@ -127,7 +127,7 @@ u32 func_0011F760(const void* object)
     return words[3] & 0x0FFFFFFF;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F770);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", resident_packet_submit);
 
 /**
  * @brief Advance the packet cursor to the next 16-byte boundary.
@@ -135,7 +135,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F770)
  * @param cursor Requested cursor.
  * @return The updated packet cursor.
  */
-u8* func_0011F830(ResidentPacket* packet, u8* cursor)
+u8* resident_packet_align_cursor(ResidentPacket* packet, u8* cursor)
 {
     if (((u32)cursor & 0xF) != 0)
     {
@@ -145,9 +145,9 @@ u8* func_0011F830(ResidentPacket* packet, u8* cursor)
     return packet->unk08;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F860);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", resident_packet_reserve);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F8A0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", resident_packet_allocate);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F940);
 

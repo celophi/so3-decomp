@@ -2880,7 +2880,7 @@ void FieldClass158860::emit_primary_entries(const LibVector4* position, const Li
     primary_emitter->emit_entries(primary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                          0, 0, 0, 0, 0, 0);
     vu0_reset_emission_state();
-    vu0_set_emission_delta(D_001B6690);
+    vu0_set_emission_delta(g_frame_seconds);
     vu0_restore_emission_state(saved_state);
 }
 
@@ -2953,7 +2953,7 @@ void FieldClass158860::emit_secondary_entries(const LibVector4* position, LibVec
         secondary_emitter->emit_entries(secondary_emission_count, position_arg, first_offset_arg, second_offset_arg, color_arg,
                                                0, 0, 0, 0, 0, 0);
         vu0_reset_emission_state();
-        vu0_set_emission_delta(D_001B6690);
+        vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
         first_offset->components[3] = unk3C;
     }
@@ -2991,7 +2991,7 @@ void field_update_grid_frame_vectors(FieldClass158860* object, s32 capacity, Fie
     if (object->skip_frame_playback != 0)
     {
         s32 consumed = 0;
-        vu0_set_grid_frame_delta(D_001B6690);
+        vu0_set_grid_frame_delta(g_frame_seconds);
 
         if (columns == 1)
         {
@@ -3071,7 +3071,7 @@ void field_update_grid_frame_vectors(FieldClass158860* object, s32 capacity, Fie
         s32 loop_mode = object->frame_header->loop_mode;
         s32 boundary_limit = (s32)object->unk30;
         float frame_seconds = 1.0f / 60.0f;
-        vu0_set_grid_frame_delta(D_001B6690);
+        vu0_set_grid_frame_delta(g_frame_seconds);
 
         if (columns == 1)
         {
@@ -3103,7 +3103,7 @@ void field_update_grid_frame_vectors(FieldClass158860* object, s32 capacity, Fie
                     continue;
                 }
 
-                frame->remaining_time -= D_001B6690;
+                frame->remaining_time -= g_frame_seconds;
 
                 s32 frame_index = frame->frame_index;
                 vu0_load_grid_frame_vectors(&state->value, &state->rate);
@@ -3181,7 +3181,7 @@ void field_update_grid_frame_vectors(FieldClass158860* object, s32 capacity, Fie
                     continue;
                 }
 
-                frame->remaining_time -= D_001B6690;
+                frame->remaining_time -= g_frame_seconds;
 
                 s32 frame_index = frame->frame_index;
                 FieldGridFrameVector* previous = &object->unk20[index * (columns - 1)].unk30;

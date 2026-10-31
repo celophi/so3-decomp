@@ -675,7 +675,7 @@ void EquipHelpWindow::func_slot5c()
         return;
     }
 
-    x -= 108.0f * D_001B6690;
+    x -= 108.0f * g_frame_seconds;
 
     if (x < clip_x - (float)scroll_span)
     {
@@ -1572,14 +1572,14 @@ static inline void set_comparison_number(LibObject174F20*& widget, s32 value, s3
  */
 static inline EquipCharacterRecord* copy_comparison_context(EquipStatComparisonWindow* window, const s16& selected)
 {
-    func_0013A678(&window->preview_record, 0, sizeof(window->preview_record));
-    func_0013A678(&window->preview_equipment, 0, sizeof(window->preview_equipment));
+    memset_guess(&window->preview_record, 0, sizeof(window->preview_record));
+    memset_guess(&window->preview_equipment, 0, sizeof(window->preview_equipment));
     window->preview_item = selected;
     FieldRecordSelection* selection = window->controller->selected_records();
     EquipCharacterRecord* original = selected_character(selection);
     EquipCharacterEquipment* equipment = selected_equipment(selection);
-    func_0013A4C0(&window->preview_record, original, sizeof(window->preview_record));
-    func_0013A4C0(&window->preview_equipment, equipment, sizeof(window->preview_equipment));
+    memcpy_guess(&window->preview_record, original, sizeof(window->preview_record));
+    memcpy_guess(&window->preview_equipment, equipment, sizeof(window->preview_equipment));
     window->preview_equipment.set_equipment_id(window->slot, window->preview_item);
     lib_character_recalculate_stats(&window->preview_record, &window->preview_equipment, 0, -1);
     return original;
@@ -1718,8 +1718,8 @@ EquipStatComparisonWindow::EquipStatComparisonWindow(EquipController* state)
     item = 0;
     preview_item = 0;
     unkb2 = 0;
-    func_0013A678(&preview_record, 0, sizeof(preview_record));
-    func_0013A678(&preview_equipment, 0, sizeof(preview_equipment));
+    memset_guess(&preview_record, 0, sizeof(preview_record));
+    memset_guess(&preview_equipment, 0, sizeof(preview_equipment));
     slot_label = 0;
     item_icon = 0;
     stat_labels[0] = 0;

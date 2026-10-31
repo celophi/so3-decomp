@@ -3,7 +3,7 @@
 
 extern "C" {
 void func_4D00B0(void* object);
-void func_11F770(void* owner, void* object);
+void resident_packet_submit(void* owner, void* object);
 typedef struct ConstantByteSetterOwnertext_003D1A40
 {
     u8 unk00[0x60];
@@ -1229,7 +1229,7 @@ void func_003DB550(N50Owner98_003D1A40* object)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
-    func_11F770(object->owner, adjusted);
+    resident_packet_submit(object->owner, adjusted);
 }
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003D1A40", func_003DB590);

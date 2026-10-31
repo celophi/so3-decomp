@@ -170,3 +170,4 @@ __ct__16FieldClass173A80Fv = 0x002A8520; // type:func
 __ct__16FieldClass1736B0Fv = 0x002B0760; // type:func
 D_171690 = 0x00171690; // size:0x4 absolute:True
 D_1752C0 = 0x001752C0; // size:0x4 absolute:True
+resident_sound_is_music_playing = 0x00112610; // type:func absolute:True

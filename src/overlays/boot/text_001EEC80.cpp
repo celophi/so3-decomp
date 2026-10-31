@@ -868,7 +868,7 @@ FieldVec4A BootVectorTrack::sample(float key)
         result += scaled((float)state.cycle_count, delta);
     }
 
-    value_rate = scaled(1.0f / D_001B6688, difference(result, last_value));
+    value_rate = scaled(1.0f / g_frame_ticks, difference(result, last_value));
     last_value = result;
     return *reinterpret_cast<FieldVec4A*>(&result);
 }
@@ -3438,7 +3438,7 @@ float BootFloatTrack::sample(float key)
         result += delta * state.cycle_count;
     }
 
-    value_rate = (result - last_value) / D_001B6688;
+    value_rate = (result - last_value) / g_frame_ticks;
     last_value = result;
     return result;
 }

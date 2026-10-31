@@ -691,9 +691,9 @@ extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
     if (allocation == 0)
         return 0;
     source = (LibResourceHeader*)(((u32)allocation + 127) & ~127u);
-    func_0013A4C0(source, data, prefix);
+    memcpy_guess(source, data, prefix);
     if (remainder_size != 0)
-        func_0013A4C0((u8*)source + prefix, remainder, remainder_size);
+        memcpy_guess((u8*)source + prefix, remainder, remainder_size);
     slot->allocation = allocation;
     slot->data = source;
     slot->sections[0] = (u8*)source + source->offsets[0];

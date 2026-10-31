@@ -52,7 +52,7 @@ typedef struct ResidentRegisteredObject
     const ResidentDispatchTable* dispatch;
 } ResidentRegisteredObject;
 
-/** Partial resident resource queue reached through D_001B65E8. */
+/** Partial resident resource queue reached through g_resource_queue. */
 typedef struct ResidentResourceQueue
 {
     u8 unk00[0x30];

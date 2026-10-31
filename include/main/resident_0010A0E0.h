@@ -23,10 +23,76 @@ typedef struct ResidentReleaseQueues
     void* vtable;
 } ResidentReleaseQueues;
 
-struct BootInputRoot9670;
+/** The two pads (buttons, sticks and vibration) and the vblank counters that time each frame. */
+struct ResidentInputSystem;
 
-/** Resident descriptor table used by the keyed resource-size lookup. */
-struct ResidentObject1B65E4;
+/**
+ * The game's resource archive: the packed entry of every resource, plus the worker that installs the archive to the
+ * PlayStation BB Unit (the hard disk) and reports its progress.
+ */
+typedef struct ResidentArchive
+{
+    u8 unk00[0x6C];
+    u8 unk6c;
+    u8 unk6d[0x7F];
+    u8 unkEC[0x18];
+
+    /** Free space the last space query found on the unit. */
+    u32 free_space;
+
+    /** Set once the unit is present and initialized. */
+    u8 unit_ready;
+
+    u8 unk109[3];
+
+    /** Nonzero while a worker command runs. */
+    s32 busy;
+
+    /** Result of the last worker command; nonzero is an error. */
+    s32 command_result;
+
+    u8 unk114[4];
+
+    /** Words left to copy while installing. */
+    s32 copy_remaining;
+
+    u8 unk11c[0x18];
+
+    /** Buffer the install copies through. */
+    u8* copy_buffer;
+
+    /** Set to ask the running command to stop. */
+    u8 cancel_requested;
+
+    u8 unk139[2];
+
+    /** Set while the install's abort prompt is up. */
+    u8 copy_paused;
+
+    u8 unk13c[4];
+    u8 unk140;
+
+    /** Unit state: one when it isn't initialized, two when it's ready. */
+    u8 unit_state;
+
+    u8 unk142[0x1A];
+
+    /** BB Navigator files written next to the installed archive. */
+    u8* navigator_files[3];
+
+    s32 navigator_file_sizes[3];
+    u8 unk174[0x6008];
+
+    /** Per resource: its size in 2048-byte blocks in the low 24 bits. */
+    u32 resource_entries[0x1800];
+
+    /** Per resource: nonzero when the install copies it. */
+    u32 install_flags[0x1800];
+
+    u8 unk1217c[7];
+    u8 unk12183;
+    u8 unk12184;
+} ResidentArchive;
 
 /** One of the sixty resident request slots. */
 typedef struct ResidentRequestSlot
@@ -55,22 +121,57 @@ typedef struct ResidentRequestSlot
 } ResidentRequestSlot;
 
 /** Receiver prefix containing the cyclic slot cursor and request identifiers. */
-struct ResidentRequest112400
+struct ResidentSoundStream
 {
-    void* context;
+    u8 unk00[0x90];
+
+    /** Stream handle. */
+    void* handle;
+};
+
+/**
+ * The sound system: sound effects and voices in sixty slots, streamed music, and the surround output with its
+ * listener and speaker placement.
+ */
+struct ResidentSound
+{
+    struct ResidentSoundStream* stream;
     u8 unk04[8];
     u32 unk0c;
     u8 unk10[0x100];
     u8 state;
-    u8 unk111[0x260];
+    u8 unk111[0x25F];
+
+    /** Set when sound is unavailable; most calls then do nothing and report success. */
+    u8 disabled;
+
     u8 unk371;
-    u8 unk372[0x16A];
+    u8 unk372[0x4A];
+    s32 unk3bc;
+    u8 unk3c0[0x90];
+
+    /** Sound output mode: 1 mono, 0 stereo, 2 Dolby Pro Logic II, 3 headphones. */
+    u8 output_mode;
+
+    u8 unk451[0x8B];
     u32 next_identifier;
     s32 cursor;
     ResidentRequestSlot slots[60];
+    u8 unk12f4[0x9C];
+
+    /** Object the positional sounds are heard from. */
+    void* listener;
+
+    float unk1394;
+
+    /** Square of the distance positional sounds reach. */
+    float range_squared;
+
+    /** Angle of each of the four surround speakers. */
+    float speaker_angles[4];
 };
 
-typedef struct ResidentRequest112400 ResidentRequest112400;
+typedef struct ResidentSound ResidentSound;
 
 /** Partial resident DMA queue exposing the asynchronously cleared busy flag. */
 typedef struct ResidentDmaQueue
@@ -165,23 +266,42 @@ void resident_heap_release(void* memory);
 /** Clear bytes at 0x78-0x7B and copy the word at 0x84 to offsets 0x7C and 0x80. */
 void func_0010B730(void* object);
 
-/** Copy the default resident float quad into the receiver's float fields. */
-void func_0010DA30(void* object);
-/** Store the low byte at offset 0x450, then run the resident helper on the pointer at offset 0. */
-void func_0010DA70(void* object, u32 value);
+/**
+ * @brief Put the four surround speakers back at their default angles.
+ * @param sound Sound system.
+ */
+void resident_sound_reset_speaker_angles(ResidentSound* sound);
 
 /**
- * @brief Store a request target, float value, and squared distance value.
- * @param request Resident request receiver.
- * @param target Target pointer to store.
- * @param value Float value to store.
- * @param distance Value to square and store.
+ * @brief Set the sound output mode.
+ * @param sound Sound system.
+ * @param mode Output mode: 1 mono, 0 stereo, 2 Dolby Pro Logic II, 3 headphones.
  */
-void func_0010EA70(ResidentRequest112400* request, void* target, float value, float distance);
-/** Store the float at receiver offset 0x139C for index. */
-void func_0010EA90(void* object, s32 index, float value);
-/** Copy four floats to receiver offsets 0x139C, 0x13A0, 0x13A4, and 0x13A8. */
-void func_0010EAA0(void* object, const float* values);
+void resident_sound_set_output_mode(ResidentSound* sound, s32 mode);
+
+/**
+ * @brief Set the object positional sounds are heard from.
+ * @param sound Sound system.
+ * @param listener Listening object.
+ * @param value Stored with the listener; its use is unknown.
+ * @param range Distance positional sounds reach.
+ */
+void resident_sound_set_listener(ResidentSound* sound, void* listener, float value, float range);
+
+/**
+ * @brief Set the angle of one surround speaker.
+ * @param sound Sound system.
+ * @param speaker Speaker index, 0 to 3.
+ * @param angle Speaker angle in radians.
+ */
+void resident_sound_set_speaker_angle(ResidentSound* sound, s32 speaker, float angle);
+
+/**
+ * @brief Set the angles of all four surround speakers.
+ * @param sound Sound system.
+ * @param angles Four speaker angles in radians.
+ */
+void resident_sound_set_speaker_angles(ResidentSound* sound, const float* angles);
 /** Append the pointer at object offset zero to the resident manager array. */
 void func_0010EF50(const void* object);
 /** Run the resident helper on the pointer at offset zero with its final flag set. */
@@ -209,15 +329,98 @@ u32 resident_next_random_word(void);
  * @param key Descriptor key.
  * @return Resource size in bytes.
  */
-u32 func_0011C8C0(struct ResidentObject1B65E4* object, s32 key);
+u32 resident_get_resource_size(const ResidentArchive* archive, s32 key);
 
 /**
- * @brief Store a slot input flag and reset its retained state when disabled.
- * @param root Resident input root.
- * @param slot Input slot index.
- * @param flag Flag whose low byte is stored; zero resets the retained state.
+ * @brief Attach the display whose field the vblank handler updates.
+ * @param input Input system.
+ * @param display Display to update each vblank, or null.
+ * @param enabled Nonzero to update the display each vblank.
  */
-void func_0011E030(struct BootInputRoot9670* root, s32 slot, u32 flag);
+void resident_input_attach_display(struct ResidentInputSystem* input, void* display, s32 enabled);
+
+/**
+ * @brief Take the number of vblanks counted since the last call.
+ * @param input Input system.
+ * @return Vblanks since the last call.
+ */
+s32 resident_input_take_vblank_count(struct ResidentInputSystem* input);
+
+/**
+ * @brief Get the buttons a pad holds this frame.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @return Held button bits.
+ */
+u16 resident_pad_get_held(const struct ResidentInputSystem* input, s32 slot);
+
+/**
+ * @brief Get the buttons newly pressed since the latches were last cleared.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @return Pressed button bits.
+ */
+u16 resident_pad_get_pressed(const struct ResidentInputSystem* input, s32 slot);
+
+/**
+ * @brief Get every button held at some point since the latches were last cleared.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @return Held button bits.
+ */
+u16 resident_pad_get_held_since_clear(const struct ResidentInputSystem* input, s32 slot);
+
+/**
+ * @brief Get the pressed buttons, or the held ones once they have been held long enough to repeat.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @return Button bits.
+ */
+u16 resident_pad_get_repeated(const struct ResidentInputSystem* input, s32 slot);
+
+/**
+ * @brief Clear the pressed and held-since-clear latches of a pad.
+ * @param input Input system.
+ * @param slot Pad slot.
+ */
+void resident_pad_clear_latched(struct ResidentInputSystem* input, s32 slot);
+
+/**
+ * @brief Choose whether a pad's analog sticks also press the direction buttons.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @param enabled Nonzero to map the sticks onto the direction buttons.
+ */
+void resident_pad_set_stick_dpad(struct ResidentInputSystem* input, s32 slot, s32 enabled);
+
+/**
+ * @brief Enable or disable a pad's vibration; disabling stops both motors.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @param enabled Nonzero to allow vibration.
+ */
+void resident_pad_set_vibration_enabled(struct ResidentInputSystem* input, s32 slot, s32 enabled);
+
+/**
+ * @brief Set a pad's motor levels while vibration is enabled.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @param small Small motor, on when nonzero.
+ * @param large Large motor strength.
+ */
+void resident_pad_set_vibration(struct ResidentInputSystem* input, s32 slot, s32 small, s32 large);
+
+/**
+ * @brief Read a pad's four analog stick axes with the dead zone and calibration applied.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @param first Receives the first axis.
+ * @param second Receives the second axis.
+ * @param third Receives the third axis.
+ * @param fourth Receives the fourth axis.
+ * @return Nonzero when the pad is in analog mode; the axes are zero otherwise.
+ */
+s32 resident_pad_get_sticks(struct ResidentInputSystem* input, s32 slot, s32* first, s32* second, s32* third, s32* fourth);
 
 /**
  * @brief Queue an object for destruction by its virtual destructor.
@@ -228,33 +431,146 @@ void func_0011E030(struct BootInputRoot9670* root, s32 slot, u32 flag);
 s32 resident_enqueue_object(ResidentReleaseQueues* queue, void* object);
 
 /**
- * @brief Allocate a resident request using its selector and packed values.
- * @param receiver Resident request storage.
- * @param arg1 First request value; its low 16 bits are stored.
+ * @brief Play a sound effect in a free slot.
+ * @param receiver Sound system.
+ * @param arg1 Sound number; its low 16 bits are stored.
  * @param arg2 Request selector.
  * @param arg3 Value forwarded to request dispatch.
- * @param arg4 Value stored and packed into the upper byte.
- * @param arg5 Value packed into the next byte.
+ * @param arg4 Volume, 0x7F for full; stored and packed into the upper byte.
+ * @param arg5 Pan, 0x40 for centre; packed into the next byte.
  * @param arg6 Value packed into the lower 16 bits.
- * @return Request identifier, zero on dispatch failure, one when disabled, or minus one when unavailable.
+ * @return Slot identifier, zero on dispatch failure, one when disabled, or minus one when no slot is free.
  */
-s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
+s32 resident_sound_play(ResidentSound* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 
-/** @brief Check a resident request key and its active state. @param request Resident request receiver. @param key Request key. @return Nonzero when the request state is active. */
-s32 func_00112610(ResidentRequest112400* request, s32 key);
+/**
+ * @brief Report whether music is playing.
+ * @param sound Sound system.
+ * @param key Music to check for, or -1 for any.
+ * @return Nonzero while that music plays, or always when sound is disabled.
+ */
+s32 resident_sound_is_music_playing(ResidentSound* sound, s32 key);
 
-/** Return the word at receiver offset 0x110. */
-u32 func_00115640(const void* object);
-/** Return the word at receiver offset 0x10C. */
-u32 func_00115650(const void* object);
-/** Return the word at receiver offset 0x118. */
-u32 func_00115660(const void* object);
-/** Return the word at receiver offset 0x104. */
-u32 func_00115830(const void* object);
-/** Sum each of 0x1800 entry values whose resident flag word is nonzero. */
-u32 func_001158A0(const void* object);
-/** Return and clear the word at receiver offset 0x10. */
-u32 func_0011DF00(void* object);
+/**
+ * @brief Report whether a hard disk unit error is pending.
+ * @param archive Resource archive.
+ * @return One when an error is pending, otherwise zero.
+ */
+s32 resident_archive_has_unit_error(const ResidentArchive* archive);
+
+/**
+ * @brief Clear the pending hard disk unit error.
+ * @param archive Resource archive.
+ */
+void resident_archive_clear_unit_error(ResidentArchive* archive);
+
+/**
+ * @brief Report whether the unit is ready, with no error pending.
+ * @param archive Resource archive.
+ * @return Nonzero when the unit is ready.
+ */
+s32 resident_archive_is_unit_ready(const ResidentArchive* archive);
+
+/**
+ * @brief Start a query of the unit and any existing install when the unit is usable.
+ * @param archive Resource archive.
+ * @param first Nonzero to start the query.
+ * @param second Selects which checks the query skips.
+ * @return Nonzero when a query is running or already done.
+ */
+s32 resident_archive_query_unit(ResidentArchive* archive, s32 first, s32 second);
+
+/**
+ * @brief Queue a command for the hard disk worker.
+ * @param archive Resource archive.
+ * @param command Worker command.
+ * @param argument Command argument.
+ */
+void resident_archive_start_command(ResidentArchive* archive, s32 command, s32 argument);
+
+/**
+ * @brief Ask the running worker command to stop.
+ * @param archive Resource archive.
+ */
+void resident_archive_cancel_command(ResidentArchive* archive);
+
+/**
+ * @brief Report whether a worker command is running.
+ * @param archive Resource archive.
+ * @return Nonzero while a command runs.
+ */
+s32 resident_archive_is_busy(const ResidentArchive* archive);
+
+/**
+ * @brief Get the result of the last worker command.
+ * @param archive Resource archive.
+ * @return Zero on success, otherwise an error.
+ */
+s32 resident_archive_get_command_result(const ResidentArchive* archive);
+
+/**
+ * @brief Get the words the install still has to copy.
+ * @param archive Resource archive.
+ * @return Remaining words.
+ */
+s32 resident_archive_get_copy_remaining(const ResidentArchive* archive);
+
+/**
+ * @brief Get the free space the last space query found.
+ * @param archive Resource archive.
+ * @return Free space in bytes.
+ */
+u32 resident_archive_get_free_space(const ResidentArchive* archive);
+
+/**
+ * @brief Get the space the install needs, rounded up to 256 KiB.
+ * @param archive Resource archive.
+ * @return Needed space in bytes.
+ */
+u32 resident_archive_get_install_size(const ResidentArchive* archive);
+
+/**
+ * @brief Sum the entries of every resource the install copies.
+ * @param archive Resource archive.
+ * @return Install size in words.
+ */
+s32 resident_archive_get_install_words(const ResidentArchive* archive);
+
+/**
+ * @brief Set the buffer the install copies through.
+ * @param archive Resource archive.
+ * @param buffer Copy buffer, or null once the copy is done.
+ */
+void resident_archive_set_copy_buffer(ResidentArchive* archive, u8* buffer);
+
+/**
+ * @brief Set the three BB Navigator files the install writes.
+ * @param archive Resource archive.
+ * @param first First file.
+ * @param first_size Size of first.
+ * @param second Second file.
+ * @param second_size Size of second.
+ * @param third Third file.
+ * @param third_size Size of third.
+ */
+void resident_archive_set_navigator_files(ResidentArchive* archive, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
+                                          s32 third_size);
+
+/**
+ * @brief Hand the system files and their icon header to the hard disk worker.
+ * @param archive Resource archive.
+ * @param header Icon header.
+ * @param first First file.
+ * @param first_size Size of first.
+ * @param second Second file.
+ * @param second_size Size of second.
+ * @param third Third file.
+ * @param third_size Size of third.
+ * @param fourth Fourth file.
+ * @param fourth_size Size of fourth.
+ */
+void resident_archive_set_system_files(ResidentArchive* archive, u8* header, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
+                                       s32 third_size, u8* fourth, s32 fourth_size);
 
 /**
  * @brief Wait for the next display interrupt and return the retained GS field bit.
@@ -262,7 +578,7 @@ u32 func_0011DF00(void* object);
  * @param mode Minus one reads the field without waiting; other values wait.
  * @return Retained display field, zero or one.
  */
-u32 func_0011DF10(struct BootInputRoot9670* root, s32 mode);
+u32 func_0011DF10(struct ResidentInputSystem* root, s32 mode);
 
 /**
  * @brief Release pending allocations, then destroy pending objects and flush the cache.
@@ -276,12 +592,6 @@ void func_0011DF60(void* object, u32 value);
 u32 func_0011DF70(const void* object);
 /** Clear the word at receiver offset 0x8 and its byte at offset 0x2F9. */
 void func_0011DF80(void* object);
-/** Clear the halfwords at receiver offsets 0x268 and 0x26C for index. */
-void func_0011DF90(void* object, s32 index);
-
-
-/** Store the word at receiver offset 0x134. */
-void func_001156B0(void* object, u32 value);
 
 
 /** Store the byte constant at receiver offset 0x1012. */
@@ -316,13 +626,6 @@ s32 func_00114E80(void);
 /** Return whether the resident thread starts successfully. */
 s32 func_00114EB0(void* object);
 
-/** Store six words at receiver offsets 0x15C through 0x170. */
-void func_001152C0(void* object, u32 arg1, u32 arg2, u32 arg3,
-                   u32 arg4, u32 arg5, u32 arg6);
-
-/** Clear the receiver's bytes at offsets 0x140 and 0x6C. */
-void func_00115420(void* object);
-
 /** Call func_00114E00 with the second argument. */
 void func_00118B80(void* object, void* value);
 
@@ -339,16 +642,13 @@ extern "C" {
 #endif
 
 /** Clear the receiver's eight retained request buffers. */
-void func_00110C60(ResidentRequest112400* request);
+void func_00110C60(ResidentSound* request);
 
 /** Reconfigure the resident request receiver. */
-s32 func_001106B0(ResidentRequest112400* request, s32 value);
+s32 func_001106B0(ResidentSound* request, s32 value);
 
 /** Synchronize the GS path while holding the receiver's semaphore. */
 s32 func_0011DE00(void* object, s32 first, s32 second);
-
-/** Bind the display state and store its input flag. */
-void func_0011DEE0(void* object, void* display, u8 flag);
 
 #ifdef __cplusplus
 }

@@ -6,10 +6,10 @@ extern "C" {
 #endif
 
 /** @brief Compute the single-precision cosine. @param angle Angle in radians. @return Cosine of the angle. */
-float func_00141BE0(float angle);
+float cosf_guess(float angle);
 
 /** @brief Compute the single-precision sine. @param angle Angle in radians. @return Sine of the angle. */
-float func_00141DD0(float angle);
+float sinf_guess(float angle);
 
 /**
  * @brief Compute the single-precision tangent.
@@ -25,6 +25,13 @@ float func_00141EC0(float angle);
  * @return Angle in radians.
  */
 float func_00142148(float y, float x);
+
+/**
+ * @brief Compute the single-precision base-10 logarithm.
+ * @param value Value to take the logarithm of.
+ * @return Base-10 logarithm of value.
+ */
+float log10f_guess(float value);
 
 #ifdef __cplusplus
 }

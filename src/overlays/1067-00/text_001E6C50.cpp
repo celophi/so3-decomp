@@ -654,7 +654,7 @@ FieldClass150320::FieldClass150320(LibClass178220* animation, void* owner, float
         resident_exchange_allocation_heap(heap);
         if (unk04)
         {
-            func_0013A4C0(unk04, temporary, size);
+            memcpy_guess(unk04, temporary, size);
         }
     }
     operator delete(temporary);
@@ -1046,7 +1046,7 @@ void FieldClass1504C0::func_001EAA10(ResidentPacket* packet)
         }
         if (item->unk30 < 1.0f)
         {
-            item->unk30 += D_001B6688 / 15.0f;
+            item->unk30 += g_frame_ticks / 15.0f;
         }
         u32 color = (item->unk14 & 0xFFFFFF) | ((u32)(128.0f * item->unk30) << 24);
         for (s32 i = 0; i < item->unk3a; i++)

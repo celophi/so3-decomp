@@ -39,25 +39,25 @@ s32 func_00138A50(void* object);
 u8* func_001394E8(void);
 
 /**
- * @brief Allocate a buffer from the current resident heap with the requested alignment.
+ * @brief newlib's memalign: allocate a buffer from the C heap with the requested alignment.
  * @param alignment Buffer alignment in bytes.
  * @param size Requested buffer size in bytes.
  * @return Allocated buffer, or null when allocation fails.
  */
-void* func_00139700(u32 alignment, u32 size);
+void* memalign_guess(u32 alignment, u32 size);
 
 /**
  * @brief Allocate a buffer from the resident heap.
  * @param size Requested buffer size in bytes.
  * @return Allocated buffer, or null when allocation fails.
  */
-void* func_00139900(u32 size);
+void* malloc_guess(u32 size);
 
 /**
- * @brief Release a resident heap allocation.
+ * @brief newlib's free: release a C heap allocation.
  * @param ptr Allocation to release.
  */
-void func_00139928(void* ptr);
+void free_guess(void* ptr);
 
 #ifdef __cplusplus
 }

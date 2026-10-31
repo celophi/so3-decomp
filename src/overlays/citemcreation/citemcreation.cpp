@@ -2909,7 +2909,7 @@ u8 InadequateLineDialog::func_slotb4()
             state->add_child(window);
             state = selection_state;
             state->func_00263C70(window);
-            resident_allocate_request(D_001B65F8, 8, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 8, 0, 0, 127, 64, 0);
         }
         else
         {
@@ -2953,7 +2953,7 @@ u8 InadequateLineDialog::func_slotb0()
             state->add_child(window);
             state = selection_state;
             state->func_00263C70(window);
-            resident_allocate_request(D_001B65F8, 8, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 8, 0, 0, 127, 64, 0);
         }
         else
         {
@@ -3201,7 +3201,7 @@ u8 AbortDevelopmentDialog::func_slotb0()
                 window->func_slotf4(selection_state->get_resource_slot());
                 selection_state->add_child(window);
                 selection_state->func_00263C70(window);
-                resident_allocate_request(D_001B65F8, 8, 0, 0, 127, 64, 0);
+                resident_sound_play(g_sound, 8, 0, 0, 127, 64, 0);
                 return 0;
             }
             state = static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14);
@@ -3593,7 +3593,7 @@ void InventorStatusList::func_00412C40(u32 first, u32 second, u32 third)
             }
             else if (result < 0)
             {
-                resident_allocate_request(D_001B65F8, 2, 0, 0, 127, 64, 0);
+                resident_sound_play(g_sound, 2, 0, 0, 127, 64, 0);
                 notify_cancel();
             }
             if (result != 0)
@@ -4431,7 +4431,7 @@ u8 ItemDetailsWindow::func_slotb0()
         next->func_slotf4(unka8->get_resource_slot());
         unka8->add_child(next);
         unka8->func_00263C70(next);
-        resident_allocate_request(D_001B65F8, 8, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 8, 0, 0, 127, 64, 0);
         return 0;
     }
     return 1;
@@ -4746,7 +4746,7 @@ u8 LineFailureDialog::func_slotb0()
         next->func_slotf4(state->get_resource_slot());
         state->add_child(next);
         state->func_00263C70(next);
-        resident_allocate_request(D_001B65F8, 8, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 8, 0, 0, 127, 64, 0);
         return 0;
     }
     return 1;
@@ -4905,7 +4905,7 @@ u8 ItemSubmissionDialog::func_slotb0()
                 next->func_slotf4(selection_state->get_resource_slot());
                 selection_state->add_child(next);
                 selection_state->func_00263C70(next);
-                resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
+                resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
             }
             else
             {
@@ -4913,7 +4913,7 @@ u8 ItemSubmissionDialog::func_slotb0()
                 func_00352DE0(alternate);
                 alternate->func_slot20(1);
                 alternate->unke8->unkab = 1;
-                resident_allocate_request(D_001B65F8, 18, 0, 0, 127, 64, 0);
+                resident_sound_play(g_sound, 18, 0, 0, 127, 64, 0);
                 D_001B643C->unk10->unk14->func_00263C70(alternate);
             }
             break;
@@ -5495,7 +5495,7 @@ void ItemCreationClass186770::func_slot5c()
                         state->pending_resource_key = 0;
                         state->inventor_resource_countdown = 0;
                     }
-                    resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
+                    resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
                     return;
                 }
             }
@@ -6251,7 +6251,7 @@ struct ItemCreationStringRecord
 // These external interfaces are scoped here because their owning code is in other overlays.
 extern "C"
 {
-    extern ResidentRequest112400* D_001B65F8;
+    extern ResidentSound* g_sound;
     extern ItemCreationCategoryDefinition* D_001B64F0;
     extern const char D_0036F738[];
     /** @brief Select the mode display state. @param object Mode window. @param mode Display mode. */
@@ -6927,7 +6927,7 @@ u8 InventoryItemInstanceList::func_slotb8()
         display->unk18.unk04 = 330.0f;
         display->unk3c = 1;
         lib_text_set_resource(action_controls_label, state->get_resource_slot(), 0x1B76, 0);
-        resident_allocate_request(D_001B65F8, 2, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 2, 0, 0, 127, 64, 0);
     }
     else
     {
@@ -6951,7 +6951,7 @@ u8 InventoryItemInstanceList::func_slotb8()
             display->unk18.unk04 = 337.0f;
             display->unk3c = 1;
             lib_text_set_resource(action_controls_label, state->get_resource_slot(), 0x1B77, 0);
-            resident_allocate_request(D_001B65F8, 1, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 1, 0, 0, 127, 64, 0);
         }
     }
     return 0;
@@ -7273,7 +7273,7 @@ void InventoryItemInstanceList::refresh_rows(s32 start)
 {
     ItemCreationAllocationRecord* records[99];
     s32 category = item_type_id;
-    func_0013A678(records, 0, sizeof(records));
+    memset_guess(records, 0, sizeof(records));
     unk88 = lib_collect_unequipped_allocations(D_001B64F8->records, records, (u16)category);
     for (s32 row = 0; row < 6; row++)
     {
@@ -10148,7 +10148,7 @@ void AssignedInventorGrid::func_slotac()
                 func_0023C550(unkb4, 0);
             }
             func_00361220(this);
-            resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
             return;
         }
         else if (index == 7)
@@ -10158,7 +10158,7 @@ void AssignedInventorGrid::func_slotac()
                 func_0023C550(unkb4, 5);
             }
             func_00361220(this);
-            resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
             return;
         }
         else if (index == 12)
@@ -10168,7 +10168,7 @@ void AssignedInventorGrid::func_slotac()
                 func_0023C550(unkb4, 10);
             }
             func_00361220(this);
-            resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
             return;
         }
     }
@@ -10192,7 +10192,7 @@ void AssignedInventorGrid::func_slota8()
                 func_0023C550(unkb4, 2);
             }
             func_00361220(this);
-            resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
             return;
         }
         else if (index == 5)
@@ -10202,7 +10202,7 @@ void AssignedInventorGrid::func_slota8()
                 func_0023C550(unkb4, 7);
             }
             func_00361220(this);
-            resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
             return;
         }
         else if (index == 10)
@@ -10212,7 +10212,7 @@ void AssignedInventorGrid::func_slota8()
                 func_0023C550(unkb4, 12);
             }
             func_00361220(this);
-            resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
             return;
         }
     }
@@ -10278,7 +10278,7 @@ void AssignedInventorGrid::func_slota4()
         }
         func_00360E60(this, 0);
         D_001B643C->unk10->unk14->func_00263C70(other);
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     }
     else if (unkb4 != 0 && unkb4->process_direction(1) != 1)
     {
@@ -10310,7 +10310,7 @@ void AssignedInventorGrid::func_slota0()
         }
         func_00360E60(this, 0);
         D_001B643C->unk10->unk14->func_00263C70(other);
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     }
     else if (unkb4 != 0 && unkb4->process_direction(0) != 1)
     {
@@ -11088,7 +11088,7 @@ void AvailableInventorGrid::func_slota4()
         func_00360E60(other, 1);
         func_00364090(this, 0);
         D_001B643C->unk10->unk14->func_00263C70(other);
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
         return;
     }
     if (marker != 0 && marker->process_direction(1) != 1)
@@ -11159,7 +11159,7 @@ void AvailableInventorGrid::func_slota0()
         func_00360E60(other, 1);
         func_00364090(this, 0);
         D_001B643C->unk10->unk14->func_00263C70(other);
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
         return;
     }
     if (marker != 0 && marker->process_direction(0) != 1)
@@ -12741,7 +12741,7 @@ void ItemCreationStatusBanner::func_slot5c()
         return;
     }
     start = this->message_frame_x;
-    x -= 108.0f * D_001B6690;
+    x -= 108.0f * g_frame_seconds;
     if (x < start - (float)this->message_scroll_span)
     {
         x = start + this->message_frame_width + 2.0f;
@@ -14584,7 +14584,7 @@ void ItemCreationSelectedDisplayState::func_0036BF30(s32 index, bool enabled)
 }
 
 /** @brief Return a random integer in a range. @param lower Lower bound. @param upper Upper bound. @return Random value. */
-extern "C" s32 func_10CC40(s32 lower, s32 upper);
+extern "C" s32 resident_random_range(s32 lower, s32 upper);
 
 void func_0036C080(ItemCreationSelectedDisplayState* object, s32 index, u32 value)
 {
@@ -14599,7 +14599,7 @@ void func_0036C080(ItemCreationSelectedDisplayState* object, s32 index, u32 valu
         {
             object->line_target_update_intervals[index] = 360.0f;
         }
-        object->unk170[index] = func_10CC40(1, 5);
+        object->unk170[index] = resident_random_range(1, 5);
         object->line_target_update_countdowns[index] = object->line_target_update_intervals[index];
         object->line_quality_percentages[index] = 100.0f;
         object->line_target_update_results[index] = 0;
@@ -14922,7 +14922,7 @@ void ItemCreationSelectedDisplayState::update()
                                 popup->func_slotf4(get_resource_slot());
                                 FieldClass153E30::add_child(popup);
                                 FieldClass153E30::unk20 = popup;
-                                resident_allocate_request(D_001B65F8, 18, 0, 0, 127, 64, 0);
+                                resident_sound_play(g_sound, 18, 0, 0, 127, 64, 0);
                                 break;
                             }
                             else if (target->unk88[2])
@@ -14947,7 +14947,7 @@ void ItemCreationSelectedDisplayState::update()
                                 func_003500D0(inadequate_line_dialog, (u8)index);
                                 inadequate_line_dialog->func_slot20(1);
                                 FieldClass153E30::unk20 = inadequate_line_dialog;
-                                resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
+                                resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
                                 break;
                             }
                             else

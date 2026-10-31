@@ -1205,7 +1205,7 @@ void ItemHpMpGauge::func_003EEBE0()
 
     if (unk08 != 0)
     {
-        func_0011F770(unk08, this);
+        resident_packet_submit(unk08, static_cast<LibClass171FF0*>(this));
     }
 }
 
@@ -1652,7 +1652,7 @@ u8 ItemEquipWindow::func_slotb0()
         }
 
         lib_character_recalculate_stats(character, equipment, 0, -1);
-        resident_allocate_request(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+        resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
     }
     else
     {
@@ -2113,10 +2113,10 @@ u8 ItemUseWindow::func_slotb0()
             return 3;
         case 1:
             func_0040C9F0(D_001B64F8, lib_allocation_get_identifier(owner->selected_allocation));
-            resident_allocate_request(D_001B65F8, 0x1B4, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 0x1B4, 0, 0, 0x7F, 0x40, 0);
             break;
         case 2:
-            resident_allocate_request(D_001B65F8, 0x1B4, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 0x1B4, 0, 0, 0x7F, 0x40, 0);
             break;
         }
     }
@@ -3483,7 +3483,7 @@ void ItemInstanceListWindow::refresh_rows(s32 start)
     {
         u32 item_type = owner->selected_item_type;
         s32 index;
-        func_0013A678(records, 0, sizeof(records));
+        memset_guess(records, 0, sizeof(records));
         unk88 = lib_collect_unequipped_allocations(D_001B64F8, records, (u16)item_type);
 
         for (index = 0; index < 6; index++)
@@ -3543,7 +3543,7 @@ u8 ItemInstanceListWindow::func_slotb8()
     {
         field_cancel_model_request(model);
         closing_details = 1;
-        resident_allocate_request(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
+        resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
     }
     else
     {
@@ -3584,7 +3584,7 @@ u8 ItemInstanceListWindow::func_slotb8()
             text->unk18.unk04 = 337.0f;
             text->unk3c = 1;
             lib_text_set_resource(action_prompt, owner->get_resource_slot(), ITEM_MSG_SWITCH_BACK_PROMPT, 0);
-            resident_allocate_request(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
         }
     }
 
@@ -3648,7 +3648,7 @@ u8 ItemTypeListWindow::func_slotb0()
 
     if (controller->selected_category == ITEM_CATEGORY_VALUABLES)
     {
-        resident_allocate_request(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+        resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
         return 0;
     }
 
@@ -4220,7 +4220,7 @@ void ItemHelpWindow::func_slot5c()
     }
 
     float left = this->clip_x;
-    x -= 108.0f * D_001B6690;
+    x -= 108.0f * g_frame_seconds;
 
     if (x < left - (float)this->scroll_extent)
     {

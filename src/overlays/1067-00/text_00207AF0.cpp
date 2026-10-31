@@ -303,7 +303,7 @@ s32 FieldClass151440::func_00208230()
     if (!(unk30 & 1))
     {
         motion->unk10 = unk20;
-        func_0010EA70(D_001B65F8, context->unk308, 75.0f, 1000.0f);
+        resident_sound_set_listener(g_sound, context->unk308, 75.0f, 1000.0f);
         context->unk370_2 = 1;
     }
 
@@ -742,7 +742,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020DB
  */
 extern "C" LibClass178A90* func_0020CA10(FieldClass151620* entry, const char* name)
 {
-    func_0013A4C0(entry->unk84, name, sizeof(entry->unk84));
+    memcpy_guess(entry->unk84, name, sizeof(entry->unk84));
     LibClass178A90* transform = (LibClass178A90*)func_00473390(
         D_001B6430->context->unk08->current_object->unk7c, entry->unk84);
     entry->shape.unk04 = transform;
@@ -874,7 +874,7 @@ extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
         else
         {
             char name[32];
-            func_0013C4F0(name, D_31A840, (u8)(shape->unk18->unk0b - 0x3f));
+            sprintf_guess(name, D_31A840, (u8)(shape->unk18->unk0b - 0x3f));
             result = lib_find_camera_entry(static_cast<LibEntryManager*>(D_001B6430->context->unk08->current_object->unk7c), name);
         }
         if (result)

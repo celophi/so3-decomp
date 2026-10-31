@@ -1341,7 +1341,7 @@ void CmcClass18AD20::func_slot5c()
         }
         return;
     }
-    x -= 108.0f * D_001B6690;
+    x -= 108.0f * g_frame_seconds;
     if (x < unkC8 - static_cast<float>(unkB4))
     {
         x = (unkC8 + unkCc) + 2.0f;

@@ -57,13 +57,6 @@ typedef struct ResidentContextObject52
     u8 unk52_1_7 : 7;
 } ResidentContextObject52;
 
-/** Partial resident object reached through D_001B65E4. */
-typedef struct ResidentObject1B65E4
-{
-    u8 unk00[0x12183];
-    u8 unk12183;
-} ResidentObject1B65E4;
-
 /** Partial object at offset 0x38 of the field context. */
 typedef struct ResidentContextObject38
 {
@@ -260,12 +253,11 @@ extern "C" {
 #endif
 
 extern const ResidentDispatchTable D_159070;
-extern ResidentObject1B65E4* D_001B65E4;
-extern ResidentResourceQueue* D_001B65E8;
-/** Resident input root supplying per-slot samples and retained flags. */
-extern struct BootInputRoot9670* D_001B65F0;
+extern ResidentArchive* g_resource_archive;
+extern ResidentResourceQueue* g_resource_queue;
+extern struct ResidentInputSystem* g_input_system;
 extern ResidentReleaseQueues* g_resident_release_queues;
-extern ResidentRequest112400* D_001B65F8;
+extern ResidentSound* g_sound;
 extern ResidentContextRef* D_001B6430;
 extern FieldRuntime* D_001B657C;
 extern u8 D_001B6448;
@@ -274,8 +266,8 @@ extern void* D_001B6450;
 extern void* D_001B6458;
 extern void* D_001B661C;
 extern void* D_001B6684;
-extern float D_001B6688;
-extern float D_001B6690;
+extern float g_frame_ticks;
+extern float g_frame_seconds;
 
 extern u8 D_001B6420;
 
@@ -288,14 +280,14 @@ extern u8 D_001B6420;
  * @brief Report whether record processing must wait for the resident objects.
  *
  * Shared by FieldResourcePreloader::advance_requests and its FieldBattleResourcePreloader override.
- * @return True when the byte at offset 0x12183 of D_001B65E4 is set,
- *         resident_update_resource_queue(D_001B65E8) reports pending cancellation, or
+ * @return True when the byte at offset 0x12183 of g_resource_archive is set,
+ *         resident_update_resource_queue(g_resource_queue) reports pending cancellation, or
  *         the byte at offset 0x30
- *         of D_001B65E8 is set.
+ *         of g_resource_queue is set.
  */
 static inline bool field_records_blocked()
 {
-    if (D_001B65E4->unk12183 || resident_update_resource_queue(D_001B65E8) || D_001B65E8->unk30)
+    if (g_resource_archive->unk12183 || resident_update_resource_queue(g_resource_queue) || g_resource_queue->unk30)
     {
         return true;
     }

@@ -14,7 +14,7 @@ extern "C" {
  * @param size Number of bytes to write.
  * @return Original destination pointer.
  */
-char* func_0013CD50(char* destination, const char* source, u32 size);
+char* strncpy_guess(char* destination, const char* source, u32 size);
 
 #ifdef __cplusplus
 }

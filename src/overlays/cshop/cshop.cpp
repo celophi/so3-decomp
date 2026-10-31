@@ -183,7 +183,7 @@ typedef struct ShopRuntime
 // Resident runtime interface, scoped to this overlay.
 extern ShopRuntime* D_001B643C;
 extern ResidentReleaseQueues* g_resident_release_queues;
-extern float D_001B6690;
+extern float g_frame_seconds;
 extern ShopInventoryState* D_001B64F8;
 
 // This Field overlay interface has no recovered declaration in its owning header.
@@ -575,7 +575,7 @@ u8 ShopSellAllConfirmWindow::func_slotb0()
         shop_sell_item(transaction, lib_allocation_get_identifier(unequipped_allocations[i]));
     }
 
-    resident_allocate_request(D_001B65F8, 6, 0, 0, 127, 64, 0);
+    resident_sound_play(g_sound, 6, 0, 0, 127, 64, 0);
     shop_refresh_sale_item_range(static_cast<ShopSaleItemWindow*>(func_slot44()));
     state->remove_child(this);
     state->remove_child(func_slot44());
@@ -725,7 +725,7 @@ u8 ShopSellConfirmWindow::func_slotb0()
 
     ShopState* state = D_001B643C->callbacks->shop;
     shop_sell_item(&state->transaction, lib_allocation_get_identifier(state->selected_allocation));
-    resident_allocate_request(D_001B65F8, 6, 0, 0, 127, 64, 0);
+    resident_sound_play(g_sound, 6, 0, 0, 127, 64, 0);
     shop_refresh_sale_item_range(static_cast<ShopSaleItemWindow*>(func_slot44()));
     state->remove_child(this);
     state->selected_allocation = 0;
@@ -894,7 +894,7 @@ u8 ShopBuyConfirmWindow::func_slotb0()
 
     ShopState* state = D_001B643C->callbacks->shop;
     shop_complete_purchase(&state->transaction);
-    resident_allocate_request(D_001B65F8, 6, 0, 0, 127, 64, 0);
+    resident_sound_play(g_sound, 6, 0, 0, 127, 64, 0);
     state->remove_child(this);
     void* window = func_slot44();
     shop_refresh_buy_list(window, 0);
@@ -2013,12 +2013,12 @@ void ShopBuyListWindow::func_slot74()
 
     if (shop_increase_quantity(transaction, shop_get_category_item(transaction, state->category, FieldClass15AE60::unk24)))
     {
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
         refresh_rows(FieldClass15AE60::unk22);
     }
     else if (error_sound_timer < 0)
     {
-        resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
         error_sound_timer = 30;
     }
 }
@@ -2030,12 +2030,12 @@ void ShopBuyListWindow::func_slot70()
 
     if (shop_decrease_quantity(transaction, shop_get_category_item(transaction, state->category, FieldClass15AE60::unk24)))
     {
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
         refresh_rows(FieldClass15AE60::unk22);
     }
     else if (error_sound_timer < 0)
     {
-        resident_allocate_request(D_001B65F8, 3, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
         error_sound_timer = 30;
     }
 }
@@ -3348,7 +3348,7 @@ void shop_update_help_text(ShopScrollingWindow* object)
     }
 
     float clip_left = object->help_clip_left;
-    text_x -= 108.0f * D_001B6690;
+    text_x -= 108.0f * g_frame_seconds;
 
     if (text_x < clip_left - static_cast<float>(object->help_text_width))
     {

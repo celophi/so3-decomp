@@ -2,6 +2,7 @@
 #define SO3_MAIN_RESIDENT_00101260_H
 
 #include "types.h"
+#include "main/resident_0010A0E0.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,8 +29,12 @@ void func_00101480(void* table, s32 key);
 /** Return the first pointer argument unchanged. */
 void* func_00101270(void* value);
 
-/** Return the receiver address at byte offset 0x17C0. */
-void* func_001012C0(void* object);
+/**
+ * @brief Get the resource archive the runtime owner holds.
+ * @param owner Runtime owner.
+ * @return Resource archive.
+ */
+ResidentArchive* resident_get_archive(void* owner);
 
 /** Return the receiver address at byte offset 0x1480. */
 void* func_001012D0(void* object);

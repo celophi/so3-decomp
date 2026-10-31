@@ -12,7 +12,7 @@ struct FieldFloat48
     float value;
 };
 
-extern "C" float D_001B6688;
+extern "C" float g_frame_ticks;
 
 struct FieldTable14
 {
@@ -1157,7 +1157,7 @@ extern "C" void func_002C95B0(FieldFloat48* object)
 {
     if (object->value > 0.0f)
     {
-        object->value -= D_001B6688;
+        object->value -= g_frame_ticks;
     }
 }
 

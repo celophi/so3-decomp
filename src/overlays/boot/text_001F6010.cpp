@@ -25,8 +25,6 @@ enum
 extern "C" {
 extern void* D_001B663C;
 u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 unk4, s32 unk5, s32 unk6, s32 unk7);
-u8* func_11F860(ResidentPacket* packet, s32 quadwords);
-u8* func_11F830(ResidentPacket* packet, u8* cursor);
 
 extern void func_4D00B0(void* object);
 void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
@@ -46,7 +44,6 @@ void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
 void func_4791F0(BootScene* scene, u8* data);
 void func_40B3A0(u8* data);
 void func_473AA0(BootScene* scene);
-s32 func_112610(BootSoundState* sound, s32 key);
 
 void func_11F510(void* owner, void* object);
 }
@@ -155,14 +152,14 @@ void BootTitleMenu::animate_items(u8 snap)
 
         if (item == selected)
         {
-            BootVector4DDAA0 value;
+            BootVector4 value;
             copy_vector(&value, &node->scale);
 
             if (value.x < 1.08f && !snap)
             {
-                value.x += 0.02f * D_001B6688;
-                value.y += 0.02f * D_001B6688;
-                value.z += 0.02f * D_001B6688;
+                value.x += 0.02f * g_frame_ticks;
+                value.y += 0.02f * g_frame_ticks;
+                value.z += 0.02f * g_frame_ticks;
             }
             else
             {
@@ -178,8 +175,8 @@ void BootTitleMenu::animate_items(u8 snap)
             {
                 if (!pulse_up)
                 {
-                    value.x -= 0.01f * D_001B6688;
-                    value.y -= 0.005f * D_001B6688;
+                    value.x -= 0.01f * g_frame_ticks;
+                    value.y -= 0.005f * g_frame_ticks;
 
                     if (value.y < 0.5f)
                     {
@@ -194,8 +191,8 @@ void BootTitleMenu::animate_items(u8 snap)
                 }
                 else if (pulse_up)
                 {
-                    value.x += 0.01f * D_001B6688;
-                    value.y += 0.005f * D_001B6688;
+                    value.x += 0.01f * g_frame_ticks;
+                    value.y += 0.005f * g_frame_ticks;
 
                     if (value.y > 1.0f)
                     {
@@ -215,14 +212,14 @@ void BootTitleMenu::animate_items(u8 snap)
         }
         else
         {
-            BootVector4DDAA0 value;
+            BootVector4 value;
             copy_vector(&value, &node->scale);
 
             if (value.x > 1.05f)
             {
-                value.x -= 0.05f * D_001B6688;
-                value.y -= 0.05f * D_001B6688;
-                value.z -= 0.05f * D_001B6688;
+                value.x -= 0.05f * g_frame_ticks;
+                value.y -= 0.05f * g_frame_ticks;
+                value.z -= 0.05f * g_frame_ticks;
             }
             else
             {
@@ -236,8 +233,8 @@ void BootTitleMenu::animate_items(u8 snap)
 
             if (value.x < 1.0f)
             {
-                value.x += 0.025f * D_001B6688;
-                value.y += 0.05f * D_001B6688;
+                value.x += 0.025f * g_frame_ticks;
+                value.y += 0.05f * g_frame_ticks;
 
                 if (value.x > 1.0f)
                 {
@@ -331,7 +328,7 @@ void BootTitleMenu::update_item_availability()
         return;
     }
 
-    BootVector4DDAA0 color;
+    BootVector4 color;
     copy_vector(&color, &collection_node->base_color_factor);
 
     if (first == BOOT_TROPHY_FILE_PRESENT || second == BOOT_TROPHY_FILE_PRESENT)
@@ -384,7 +381,7 @@ void BootTitleMenu::update()
     {
     case BOOT_TITLE_LOAD_SCENE:
     {
-        if (func_102D00(D_001B65E8) == 0)
+        if (func_102D00(g_resource_queue) == 0)
         {
             break;
         }
@@ -431,7 +428,7 @@ void BootTitleMenu::update()
         break;
     }
     case BOOT_TITLE_START_MUSIC:
-        if (func_112990(D_001B65F8, 2, 1, 0, 0) == 0)
+        if (resident_sound_play_music(g_sound, 2, 1, 0, 0) == 0)
         {
             break;
         }
@@ -458,7 +455,7 @@ void BootTitleMenu::update()
             get_cursor_position(&x, &y);
             cursor->func_00466E40(x, y, 0.05f);
             pulse_up = 0;
-            func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
 
         if (input->repeated == BOOT_BUTTON_RIGHT && cursor->unk35)
@@ -474,10 +471,10 @@ void BootTitleMenu::update()
             float y;
             get_cursor_position(&x, &y);
             cursor->func_00466E40(x, y, 0.05f);
-            func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
 
-        idle_time += D_001B6690;
+        idle_time += g_frame_seconds;
 
         if (input->pressed & settings->confirm_buttons)
         {
@@ -511,18 +508,18 @@ void BootTitleMenu::update()
             if (accepted)
             {
                 queue_fade();
-                func_10F000(D_001B65F8, 0x1E, -1);
-                func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_stop_music(g_sound, 0x1E, -1);
+                resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
             }
             else
             {
-                func_112400(D_001B65F8, 3, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
             }
         }
-        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && func_112610(D_001B65F8, -1) == 0 && func_115270(D_001B65E4, 1) == 1)
+        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && func_115270(g_resource_archive, 1) == 1)
         {
             queue_fade();
-            func_10F000(D_001B65F8, 0x1E, -1);
+            resident_sound_stop_music(g_sound, 0x1E, -1);
             step = BOOT_TITLE_REPLAY_OPENING;
         }
 
@@ -550,7 +547,7 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        func_10F000(D_001B65F8, 0, -1);
+        resident_sound_stop_music(g_sound, 0, -1);
         D_001B6614->append_node(new (0) BootOpeningMovie, -1);
         lib_object_detach_owner(this);
         destroy();
@@ -591,7 +588,7 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        u8* block = new (0) u8[func_10CE00()];
+        u8* block = new (0) u8[resident_rand()];
         D_001B6614->append_node(new (0) BootBattleTrophyViewer, -1);
         delete block;
         lib_object_detach_owner(this);
@@ -633,10 +630,10 @@ BootTitleMenu::~BootTitleMenu()
 BootTitleMenu::BootTitleMenu(s32 initial_item)
 {
     step = BOOT_TITLE_LOAD_SCENE;
-    scene_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_TITLE_SCENE));
-    func_103E70(D_001B65E8, BOOT_RES_TITLE_SCENE, scene_data, 1, 0x34BC0, 0, 0, 0, 1);
-    game_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_GAME_DATA));
-    func_103E70(D_001B65E8, BOOT_RES_GAME_DATA, game_data, 1, 0x34BC0, 0, 0, 0, 1);
+    scene_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TITLE_SCENE));
+    func_103E70(g_resource_queue, BOOT_RES_TITLE_SCENE, scene_data, 1, 0x34BC0, 0, 0, 0, 1);
+    game_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_GAME_DATA));
+    func_103E70(g_resource_queue, BOOT_RES_GAME_DATA, game_data, 1, 0x34BC0, 0, 0, 0, 1);
     scene = 0;
     cursor = 0;
     pulse_up = 0;
@@ -830,7 +827,7 @@ BootProgressBar::BootProgressBar()
 /** @brief Fade out; once transparent, destroy the strips and the fade. */
 void BootScreenFade::update()
 {
-    alpha -= fade_speed * D_001B6690;
+    alpha -= fade_speed * g_frame_seconds;
 
     if (alpha <= 0.0f)
     {
@@ -883,7 +880,7 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
     BootPacketBuffer* buffer_packet = packet;
     buffer_packet->unk08 = buffer_packet->unk00 + 0x40;
     buffer_packet->unk0c = buffer_packet->unk08;
-    BootFadeStripPacket* strip = reinterpret_cast<BootFadeStripPacket*>(func_11F860(packet, 0));
+    BootFadeStripPacket* strip = reinterpret_cast<BootFadeStripPacket*>(resident_packet_reserve(packet, 0));
     BootVramRequest request;
     request.width = BOOT_FADE_STRIP_WIDTH;
     request.height = BOOT_FADE_STRIP_HEIGHT;
@@ -946,7 +943,7 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
         }
 
         *reinterpret_cast<u64*>(strip) = 0x70000000;
-        func_11F830(packet, reinterpret_cast<u8*>(strip) + 0x10);
+        resident_packet_align_cursor(packet, reinterpret_cast<u8*>(strip) + 0x10);
         unk63 = 1;
     }
 }
@@ -1261,28 +1258,28 @@ void BootGameLauncher::update()
         {
         }
 
-        previous = func_10CE00();
+        previous = resident_rand();
 
-        while (previous == func_10CE00())
+        while (previous == resident_rand())
         {
         }
 
-        previous = func_10CAA0(BOOT_RANDOM_WARMUP_RANGE);
+        previous = resident_random_below(BOOT_RANDOM_WARMUP_RANGE);
 
-        while (previous == func_10CAA0(BOOT_RANDOM_WARMUP_RANGE))
+        while (previous == resident_random_below(BOOT_RANDOM_WARMUP_RANGE))
         {
         }
 
-        previous = func_10CC40(0, BOOT_RANDOM_WARMUP_RANGE);
+        previous = resident_random_range(0, BOOT_RANDOM_WARMUP_RANGE);
 
-        while (previous == func_10CC40(0, BOOT_RANDOM_WARMUP_RANGE))
+        while (previous == resident_random_range(0, BOOT_RANDOM_WARMUP_RANGE))
         {
         }
 
         if ((u8)settings->continue_selected == 0)
         {
             BootSealedRecord* record = &settings->sealed_record;
-            func_13A678(record, 0, sizeof(BootSealedRecord));
+            memset_guess(record, 0, sizeof(BootSealedRecord));
             seal_record(record);
             BootTrophyFlags* bits = &settings->trophy_flags;
             s32 size = bits->size;
@@ -1311,7 +1308,7 @@ void BootGameLauncher::update()
     case BOOT_LAUNCH_WAIT_TO_PLAY_MOVIE:
         if (++timer > BOOT_LAUNCH_MOVIE_START_DELAY_FRAMES)
         {
-            if (func_115430(D_001B65E4) == 0 && func_115670(D_001B65E4) != 0 && func_115650(D_001B65E4) != 0)
+            if (resident_archive_has_unit_error(g_resource_archive) == 0 && resident_archive_is_unit_ready(g_resource_archive) != 0 && resident_archive_is_busy(g_resource_archive) != 0)
             {
                 break;
             }
@@ -1360,12 +1357,12 @@ void BootGameLauncher::update()
         step++;
         break;
     case BOOT_LAUNCH_LOAD_PROGRAM:
-        program = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_LAUNCH_PROGRAM_RESOURCE));
-        func_103E70(D_001B65E8, BOOT_LAUNCH_PROGRAM_RESOURCE, program, 1, 0x34BC0, 0, 0, 0, 1);
+        program = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_LAUNCH_PROGRAM_RESOURCE));
+        func_103E70(g_resource_queue, BOOT_LAUNCH_PROGRAM_RESOURCE, program, 1, 0x34BC0, 0, 0, 0, 1);
         step++;
         break;
     case BOOT_LAUNCH_HAND_OFF:
-        if (func_102D00(D_001B65E8) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
+        if (func_102D00(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
         {
             lib_object_detach_owner(this);
             destroy();
@@ -1423,7 +1420,7 @@ void seal_record(BootSealedRecord* record)
     }
     else if (record->sealed != BOOT_RECORD_SEALED)
     {
-        func_13A678(record, 0, sizeof(BootSealedRecord));
+        memset_guess(record, 0, sizeof(BootSealedRecord));
     }
 }
 
@@ -1444,7 +1441,7 @@ BootGameLauncher::BootGameLauncher()
 {
     program = 0;
     step = BOOT_LAUNCH_PREPARE;
-    buffer = func_139700(0x40, BOOT_LAUNCH_WORK_BUFFER_SIZE);
+    buffer = (u8*)memalign_guess(0x40, BOOT_LAUNCH_WORK_BUFFER_SIZE);
     movie_heap = 0;
     player = 0;
 }
