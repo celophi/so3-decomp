@@ -6471,7 +6471,7 @@
           "aliases": []
         },
         {
-          "name": "memalign_guess",
+          "name": "memalign",
           "offset": 236928,
           "address": 1283840,
           "size": 48,

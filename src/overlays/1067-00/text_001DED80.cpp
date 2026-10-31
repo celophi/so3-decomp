@@ -990,7 +990,7 @@ void* field_allocate_preload_buffer(FieldListObject* loader, u32 size, s32 mode)
         }
         else
         {
-            result = memalign_guess(128, size);
+            result = memalign(128, size);
         }
         if (result)
         {

@@ -3265,7 +3265,7 @@ extern "C" void* field_allocate_scene_buffer(FieldListObject* loader, u32 size, 
         }
         else
         {
-            result = memalign_guess(128, size);
+            result = memalign(128, size);
         }
         if (result)
         {

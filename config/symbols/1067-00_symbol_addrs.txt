@@ -481,7 +481,7 @@ advance_requests__24FieldKeyedResourceLoaderFv = 0x001E5520; // type:func allow_
 resident_get_resource_size = 0x0011C8C0; // type:func allow_duplicated:true
 resident_get_resource_size = 0x0011C8C0; // type:func allow_duplicated:true
 
-memalign_guess = 0x00139700; // type:func
+memalign = 0x00139700; // type:func
 malloc_guess = 0x00139900; // type:func
 free_guess = 0x00139928; // type:func
 func_433880 = 0x00433880; // type:func allow_duplicated:true

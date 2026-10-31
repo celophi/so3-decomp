@@ -44,7 +44,7 @@ u8* func_001394E8(void);
  * @param size Requested buffer size in bytes.
  * @return Allocated buffer, or null when allocation fails.
  */
-void* memalign_guess(u32 alignment, u32 size);
+void* memalign(u32 alignment, u32 size);
 
 /**
  * @brief Allocate a buffer from the resident heap.

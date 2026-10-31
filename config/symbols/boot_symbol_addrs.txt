@@ -26,7 +26,7 @@ __sinit_init.cpp_destructor_chain = 0x00205E00; // size:0xC
 // newlib functions in main.
 strcat = 0x0013C6D0; // type:func
 strlen = 0x0013CA60; // type:func
-memalign_guess = 0x00139700; // type:func absolute:True
+memalign = 0x00139700; // type:func absolute:True
 free_guess = 0x00139928; // type:func absolute:True
 lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
 lib_text_init_resource_rectangle = 0x004C7FE0; // type:func absolute:True

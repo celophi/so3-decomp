@@ -533,7 +533,7 @@ sceVibSetActParam = 0x00142948; // type:func size:0xF8
 // Runtime code I haven't matched exactly yet. Names ending in _guess are my
 // best guess and need research. The Metrowerks C++ runtime names without _guess
 // match CodeWarrior for PS2 R3.04's runtime byte for byte. See docs/research.md.
-memalign_guess = 0x00139700; // type:func
+memalign = 0x00139700; // type:func
 malloc_guess = 0x00139900; // type:func
 free_guess = 0x00139928; // type:func
 memcpy_guess = 0x0013A4C0; // type:func

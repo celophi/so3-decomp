@@ -3897,10 +3897,10 @@ BootNewGameSettings::~BootNewGameSettings()
 BootNewGameSettings::BootNewGameSettings()
 {
     BootSystemSettings* resource;
-    image_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_IMAGES));
+    image_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_IMAGES));
     resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_IMAGES, image_data,
                                     BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
-    model_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_MODELS));
+    model_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_MODELS));
     stage = BOOT_SETTINGS_STAGE_LOAD;
 
     for (s32 i = 0; i < 5; i++)
@@ -4736,7 +4736,7 @@ void BootProgram::run()
         size = BOOT_PROGRAM_MAIN_CODE_MAX_SIZE;
     }
 
-    image = (BootProgramImage*)memalign_guess(0x40, size);
+    image = (BootProgramImage*)memalign(0x40, size);
     // Leaving the u32 conversion implicit moves the clamp's copy of size; the explicit cast keeps it.
     resident_queue_resource_request(func_101250(resident_get_runtime_owner()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image,
                                     BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, (u32)size, 0, BOOT_RESOURCE_READ);

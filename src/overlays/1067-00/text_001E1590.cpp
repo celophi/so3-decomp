@@ -1886,7 +1886,7 @@ void* field_allocate_request_buffer(FieldListObject* loader, u32 size, s32 mode)
         }
         else
         {
-            result = memalign_guess(0x80, size);
+            result = memalign(0x80, size);
         }
         if (result)
         {

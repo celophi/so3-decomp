@@ -1336,7 +1336,7 @@ BootMusicPlayer::~BootMusicPlayer()
 /** @brief Start loading resource 0x2C, create the meters and build the analysis window. */
 BootMusicPlayer::BootMusicPlayer()
 {
-    resource_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_MUSIC_PLAYER));
+    resource_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_MUSIC_PLAYER));
     resident_queue_resource_request(g_resource_queue, BOOT_RES_MUSIC_PLAYER, resource_data,
                                     BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
     playing = 0;
