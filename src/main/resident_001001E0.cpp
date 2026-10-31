@@ -25,9 +25,9 @@ void func_00100AB0(void* object)
  */
 void* operator new(u32 size, s32 unused)
 {
-    if (D_001B6400 != 0)
+    if (g_allocation_heap != 0)
     {
-        return resident_heap_allocate(D_001B6400, size);
+        return resident_heap_allocate(g_allocation_heap, size);
     }
     return ::operator new(size);
 }
@@ -40,9 +40,9 @@ void* operator new(u32 size, s32 unused)
  */
 void* operator new[](u32 size, s32 unused)
 {
-    if (D_001B6400 != 0)
+    if (g_allocation_heap != 0)
     {
-        return resident_heap_allocate(D_001B6400, size);
+        return resident_heap_allocate(g_allocation_heap, size);
     }
     return ::operator new(size);
 }
@@ -81,15 +81,15 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100BE0)
 /** @brief Exchange the heap selected for resident new allocations. @param heap New heap, or null for the default allocator. @return Previous heap. */
 void* resident_exchange_allocation_heap(void* heap)
 {
-    void* previous = D_001B6400;
-    D_001B6400 = heap;
+    void* previous = g_allocation_heap;
+    g_allocation_heap = heap;
     return previous;
 }
 
 /** @brief Read the heap selected for resident new allocations. @return Current heap, or null for the default allocator. */
 void* resident_get_allocation_heap(void)
 {
-    return D_001B6400;
+    return g_allocation_heap;
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100CA0);

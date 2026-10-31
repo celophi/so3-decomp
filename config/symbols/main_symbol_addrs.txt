@@ -566,8 +566,9 @@ __DecodeSignedNumber__FPcPi = 0x001437C0; // type:func
 __end__catch = 0x00143870; // type:func
 __unexpected = 0x001438B0; // type:func
 
-// Heap selected for operator new and operator new[].
-D_001B6400 = 0x001B6400; // type:u32 size:0x4 absolute:True
+g_allocation_heap = 0x001B6400; // type:u32 size:0x4 absolute:True
+g_current_program = 0x001B6404; // type:u32 size:0x4 absolute:True
+g_sif_command_receiver = 0x001B6408; // type:u32 size:0x4 absolute:True
 D_001B640C = 0x001B640C; // type:s32 size:0x4 absolute:True
 D_001CF8E0 = 0x001CF8E0; // type:u32 size:0xE0 absolute:True
 g_system = 0x001B6880; // absolute:True

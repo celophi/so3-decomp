@@ -76,7 +76,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decod
 extern "C" u8* resident_allocate_decode_buffer(ResidentDecodeObject* decoder, ResidentResourceHeader* source,
                                              s32 index, s32 aligned)
 {
-    if (aligned && D_001B6400 != 0)
+    if (aligned && g_allocation_heap != 0)
     {
         for (s32 block_index = 0; block_index < index; block_index++)
         {
@@ -90,7 +90,7 @@ extern "C" u8* resident_allocate_decode_buffer(ResidentDecodeObject* decoder, Re
             source = reinterpret_cast<ResidentResourceHeader*>(reinterpret_cast<u8*>(source) + next_offset);
         }
 
-        u8* allocation = static_cast<u8*>(resident_heap_allocate(D_001B6400, source->decoded_size + 128));
+        u8* allocation = static_cast<u8*>(resident_heap_allocate(g_allocation_heap, source->decoded_size + 128));
         u32 padding = 128 - ((u32)allocation & 127);
 
         return static_cast<u8*>(resident_heap_resize(allocation, source->decoded_size + padding));

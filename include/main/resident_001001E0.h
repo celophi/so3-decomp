@@ -24,7 +24,13 @@ extern "C" {
 #endif
 
 /** Optional heap used by resident operator new and aligned decode buffers. */
-extern void* D_001B6400;
+extern void* g_allocation_heap;
+
+/** The running program; its constructor registers it, and switching programs calls its run(). */
+extern void* g_current_program;
+
+/** Object that receives the IOP's SIF commands 0 to 3, or null; the sound system registers its stream. */
+extern void* g_sif_command_receiver;
 
 /** Store a byte in the global at address 0x001B6420. */
 void func_00100A40(u8 value);
