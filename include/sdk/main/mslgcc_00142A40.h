@@ -32,6 +32,13 @@ u8* func_00143B20(void);
  */
 s32 __ptmf_test(const u32* member);
 
+/**
+ * @brief Prepare a loaded overlay: clear the BSS after its image and run its static initializers.
+ * @param overlay Overlay image, starting with its MWo3 header.
+ * @param size Size of the loaded image; the BSS starts there.
+ */
+void mwOverlayInit(void* overlay, u32 size);
+
 #ifdef __cplusplus
 }
 #endif

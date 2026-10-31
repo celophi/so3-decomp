@@ -2,6 +2,7 @@
 #define SO3_MAIN_RESIDENT_001001E0_H
 
 #include "types.h"
+#include "sdk/main/libkernl_00121940.h"
 
 #ifdef __cplusplus
 /**
@@ -51,13 +52,13 @@ void* resident_get_allocation_heap(void);
 struct ResidentSystem;
 
 /**
- * @brief Dispatch the loaded resource buffer through the resident system.
+ * @brief Clear a decoded overlay's BSS and run its static initializers.
  * @param system Resident system.
- * @param destination Loaded resource buffer.
- * @param type Resource type.
- * @param size Resource payload size.
+ * @param overlay Decoded overlay image.
+ * @param slot The overlay's slot in the resident overlay table D_001B5FB0.
+ * @param size Decoded size of the overlay image; its BSS follows it.
  */
-void func_001011B0(struct ResidentSystem* system, void* destination, s32 type, u32 size);
+void resident_system_init_overlay(struct ResidentSystem* system, void* overlay, s32 slot, u32 size);
 
 void func_00100AB0(void* object);
 
@@ -68,6 +69,27 @@ void func_00100AB0(void* object);
 void resident_system_create_status(struct ResidentSystem* system);
 
 /**
+ * @brief Set an alarm from interrupt context, doubling the time in progressive mode so it lasts as long as in
+ * interlaced mode.
+ * @param system Resident system.
+ * @param time Horizontal syncs to wait in interlaced mode.
+ * @param handler Handler to call from interrupt context.
+ * @param common Argument passed to the handler.
+ * @return Alarm ID, or a negative value on failure.
+ */
+s32 resident_system_iset_alarm(struct ResidentSystem* system, u16 time, KernelAlarmHandler handler, void* common);
+
+/**
+ * @brief Set an alarm, doubling the time in progressive mode so it lasts as long as in interlaced mode.
+ * @param system Resident system.
+ * @param time Horizontal syncs to wait in interlaced mode.
+ * @param handler Handler to call from interrupt context.
+ * @param common Argument passed to the handler.
+ * @return Alarm ID, or a negative value on failure.
+ */
+s32 resident_system_set_alarm(struct ResidentSystem* system, u16 time, KernelAlarmHandler handler, void* common);
+
+/**
  * @brief Set progressive (525p) or interlaced output and reset the GS to match.
  * @param system Resident system.
  * @param progressive Nonzero for progressive output.
@@ -75,20 +97,21 @@ void resident_system_create_status(struct ResidentSystem* system);
 void resident_system_set_progressive(struct ResidentSystem* system, u8 progressive);
 
 /**
- * @brief Load the overlay in a slot, delete the request, then unwind to main's stack and run the new program.
+ * @brief Decode an overlay into its slot and delete the loaded resource, then unwind to main's stack and run the
+ * new program.
  * @param system Resident system.
- * @param program Request for the next program; switching deletes it.
+ * @param source Loaded, compressed overlay resource; switching deletes it.
  * @param slot Slot in the resident overlay table D_001B5FB0.
  */
-void resident_system_switch_program(struct ResidentSystem* system, void* program, s32 slot);
+void resident_system_switch_program(struct ResidentSystem* system, void* source, s32 slot);
 
 /**
- * @brief Load the overlay in a slot and run its static initializers.
+ * @brief Decode an overlay into its slot and run its static initializers.
  * @param system Resident system.
- * @param program Overlay load request.
+ * @param source Loaded, compressed overlay resource.
  * @param slot Slot in the resident overlay table D_001B5FB0.
  */
-void resident_system_load_overlay(struct ResidentSystem* system, void* program, s32 slot);
+void resident_system_load_overlay(struct ResidentSystem* system, void* source, s32 slot);
 
 #ifdef __cplusplus
 }

@@ -66,7 +66,7 @@ void func_4D8AC0(void);
 void func_4D76C0(void* object, u16 x, u16 y);
 void func_4D4BE0(void* object);
 u32 func_4DCFF0(BootDimensionsACD0* display, s32 frame);
-void resident_system_switch_program(ResidentSystem* system, void* program, s32 slot);
+void resident_system_switch_program(ResidentSystem* system, void* source, s32 slot);
 extern const struct BootLabelOffsets D_205170;
 const struct BootTextExtent* lib_text_measure_bounds(BootTextWidget* text);
 extern const struct BootCaption g_opening_captions[];

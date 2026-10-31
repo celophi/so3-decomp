@@ -2,6 +2,8 @@
 #include "main/resident_001001E0.h"
 #include "main/resident_0010A0E0.h"
 #include "sdk/main/libgraph_0012EAC8.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "sdk/main/mslgcc_00142A40.h"
 
 extern u8 D_001B6420;
 
@@ -126,9 +128,40 @@ void resident_system_create_status(ResidentSystem* system)
     *system->status = 0x66;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100FC0);
+/**
+ * @brief Set an alarm from interrupt context, doubling the time in progressive mode so it lasts as long as in
+ * interlaced mode.
+ * @param system Resident system.
+ * @param time Horizontal syncs to wait in interlaced mode.
+ * @param handler Handler to call from interrupt context.
+ * @param common Argument passed to the handler.
+ * @return Alarm ID, or a negative value on failure.
+ */
+s32 resident_system_iset_alarm(ResidentSystem* system, u16 time, KernelAlarmHandler handler, void* common)
+{
+    if (system->progressive)
+    {
+        time *= 2;
+    }
+    return iSetAlarm(time, handler, common);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00101000);
+/**
+ * @brief Set an alarm, doubling the time in progressive mode so it lasts as long as in interlaced mode.
+ * @param system Resident system.
+ * @param time Horizontal syncs to wait in interlaced mode.
+ * @param handler Handler to call from interrupt context.
+ * @param common Argument passed to the handler.
+ * @return Alarm ID, or a negative value on failure.
+ */
+s32 resident_system_set_alarm(ResidentSystem* system, u16 time, KernelAlarmHandler handler, void* common)
+{
+    if (system->progressive)
+    {
+        time *= 2;
+    }
+    return SetAlarm(time, handler, common);
+}
 
 /**
  * @brief Set progressive (525p) or interlaced output and reset the GS to match.
@@ -153,6 +186,16 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001010A0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", resident_system_switch_program);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001011B0);
+/**
+ * @brief Clear a decoded overlay's BSS and run its static initializers.
+ * @param system Resident system.
+ * @param overlay Decoded overlay image.
+ * @param slot The overlay's slot in the resident overlay table D_001B5FB0.
+ * @param size Decoded size of the overlay image; its BSS follows it.
+ */
+void resident_system_init_overlay(ResidentSystem* system, void* overlay, s32 slot, u32 size)
+{
+    mwOverlayInit(overlay, size);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", resident_system_load_overlay);

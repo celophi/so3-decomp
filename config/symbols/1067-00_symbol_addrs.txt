@@ -491,7 +491,7 @@ D_001B5FC0 = 0x001B5FC0;
 
 func_001025A0 = 0x001025A0; // type:func absolute:True allow_duplicated:True
 func_00102920 = 0x00102920; // type:func absolute:True allow_duplicated:True
-func_001011B0 = 0x001011B0; // type:func
+resident_system_init_overlay = 0x001011B0; // type:func absolute:True
 func_001E4E50__16FieldClass150120Fv = 0x001E4E50; // absolute:True allow_duplicated:True type:func
 deliver_completed_request__27FieldResourceRequestHandlerFv = 0x001E4E50; // type:func allow_duplicated:True
 func_001E48A0__16FieldClass150120FP16FieldClass150150 = 0x001E48A0; // absolute:True allow_duplicated:True type:func

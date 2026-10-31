@@ -25,6 +25,27 @@ void InitTLB(void);
  */
 s32 iSignalSema(s32 sema_id);
 
+/** Alarm callback: the alarm ID, the time it was set for, and the argument passed to SetAlarm. */
+typedef void (*KernelAlarmHandler)(s32 alarm_id, u16 time, void* common);
+
+/**
+ * @brief Call a handler after a number of horizontal syncs.
+ * @param time Horizontal syncs to wait.
+ * @param handler Handler to call from interrupt context.
+ * @param common Argument passed to the handler.
+ * @return Alarm ID, or a negative value on failure.
+ */
+s32 SetAlarm(u16 time, KernelAlarmHandler handler, void* common);
+
+/**
+ * @brief SetAlarm for use from interrupt context.
+ * @param time Horizontal syncs to wait.
+ * @param handler Handler to call from interrupt context.
+ * @param common Argument passed to the handler.
+ * @return Alarm ID, or a negative value on failure.
+ */
+s32 iSetAlarm(u16 time, KernelAlarmHandler handler, void* common);
+
 /**
  * @brief Report failure to close a file descriptor.
  * @param fd File descriptor.
