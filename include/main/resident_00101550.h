@@ -114,7 +114,7 @@ void resident_cancel_resource_requests(ResidentResourceQueue* queue, s32 file_ke
  * @brief Queue a resource request in priority order.
  * @param queue Resident resource queue.
  * @param file_key Nonzero file key for the request.
- * @param buffer_address Destination buffer address.
+ * @param buffer Destination buffer.
  * @param tag Tag retained for later lookup and cancellation.
  * @param priority Lower values run first; minus one inserts at the front.
  * @param completion_callback Optional callback object notified when the request finishes.
@@ -123,7 +123,7 @@ void resident_cancel_resource_requests(ResidentResourceQueue* queue, s32 file_ke
  * @param request_kind Request kind stored in the low byte.
  * @return One when queued, or zero when the file key is zero or no request slot remains.
  */
-s32 resident_queue_resource_request(ResidentResourceQueue* queue, s32 file_key, u32 buffer_address, u32 tag,
+s32 resident_queue_resource_request(ResidentResourceQueue* queue, s32 file_key, void* buffer, u32 tag,
                                    s32 priority, void* completion_callback, u32 byte_count, s32 file_offset,
                                    s32 request_kind);
 

@@ -317,8 +317,6 @@ extern ResidentArchive* g_resource_archive;
 extern ResidentResourceQueue* g_resource_queue;
 extern ResidentReleaseQueues* g_resident_release_queues;
 extern ResidentSound* g_sound;
-// TODO: Main names this resident_queue_resource_request and takes the buffer as a u32 address; boot passes pointers.
-void func_103E70(void* queue, s32 id, void* destination, s32 first, u32 size, s32 second, s32 third, s32 fourth, s32 fifth);
 u16 func_457470(u16 seed, const void* data, s32 size);
 
 /**
@@ -348,6 +346,19 @@ static inline BootSystemSettings* boot_settings()
 {
     return (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
 }
+
+/** Arguments every boot resource load passes to the resident queue. */
+enum BootResourceRequest
+{
+    /** Tag on every boot request; boot's lookups and cancels match any tag. */
+    BOOT_RESOURCE_TAG = 1,
+
+    /** Queue priority for boot's loads (lower runs first); 1067-00 queues its reads at the same priority. */
+    BOOT_RESOURCE_PRIORITY = 0x34BC0,
+
+    /** Plain read request; kinds two and three select the file by an offset instead. */
+    BOOT_RESOURCE_READ = 1
+};
 
 /**
  * @brief Read a selected bit in the resource's flag array.

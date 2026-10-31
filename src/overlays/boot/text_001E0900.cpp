@@ -51,7 +51,7 @@ void func_4C5B60(s32 first, s32 second);
 void lib_container_attach_widget(BootContainer* container, BootListObject* child);
 void func_100F60(void* root);
 s32 resident_archive_get_clock(ResidentArchive* archive, struct BootClock* clock);
-void* func_101250(void* root);
+ResidentResourceQueue* func_101250(void* root);
 void func_45A5D0(void);
 void func_45A770(void);
 void func_433680(void);
@@ -3123,7 +3123,8 @@ void BootNewGameSettings::update()
         if (func_102D00(g_resource_queue) != 0)
         {
             resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
-            func_103E70(g_resource_queue, BOOT_RES_SETTINGS_MODELS, model_data, 1, 0x34BC0, 0, 0, 0, 1);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, model_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             loaded_image_blocks = 0;
@@ -3896,9 +3897,10 @@ BootNewGameSettings::~BootNewGameSettings()
 BootNewGameSettings::BootNewGameSettings()
 {
     BootSystemSettings* resource;
-    image_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_IMAGES));
-    func_103E70(g_resource_queue, BOOT_RES_SETTINGS_IMAGES, image_data, 1, 0x34BC0, 0, 0, 0, 1);
-    model_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_MODELS));
+    image_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_IMAGES));
+    resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_IMAGES, image_data,
+                                    BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
+    model_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_MODELS));
     stage = BOOT_SETTINGS_STAGE_LOAD;
 
     for (s32 i = 0; i < 5; i++)
@@ -4734,8 +4736,10 @@ void BootProgram::run()
         size = BOOT_PROGRAM_MAIN_CODE_MAX_SIZE;
     }
 
-    image = (BootProgramImage*)memalign_guess(0x40, size);
-    func_103E70(func_101250(resident_get_runtime_owner()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image, 1, 0x34BC0, 0, size, 0, 1);
+    image = (BootProgramImage*)memalign(0x40, size);
+    // Leaving the u32 conversion implicit moves the clamp's copy of size; the explicit cast keeps it.
+    resident_queue_resource_request(func_101250(resident_get_runtime_owner()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image,
+                                    BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, (u32)size, 0, BOOT_RESOURCE_READ);
     delete[] buffer;
 
     saved_widescreen = BOOT_SAVED_WIDESCREEN_UNSET;

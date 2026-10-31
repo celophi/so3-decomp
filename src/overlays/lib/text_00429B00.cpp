@@ -602,7 +602,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004339F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433AA0);
 
-void* func_00433BE0(u32 alignment, u32 size) { return memalign_guess(alignment, size); }
+void* func_00433BE0(u32 alignment, u32 size) { return memalign(alignment, size); }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433C00);
 

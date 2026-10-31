@@ -657,7 +657,7 @@ s32 field_request_model_resource(FieldStatus14* object, s32 key)
 
     state->first_key = key;
     state->second_key = 0;
-    state->first_buffer_address = (u32)memalign_guess(64, resident_get_resource_size(g_resource_archive, key));
+    state->first_buffer_address = (u32)memalign(64, resident_get_resource_size(g_resource_archive, key));
 
     if (!state->first_buffer_address)
     {
@@ -666,7 +666,7 @@ s32 field_request_model_resource(FieldStatus14* object, s32 key)
 
     state->second_buffer_address = 0;
 
-    if (!resident_queue_resource_request(g_resource_queue, key, state->first_buffer_address, 0x1357F, 1, 0, 0, 0, 1))
+    if (!resident_queue_resource_request(g_resource_queue, key, (void*)state->first_buffer_address, 0x1357F, 1, 0, 0, 0, 1))
     {
         delete[] (u8*)state->first_buffer_address;
         state->first_buffer_address = 0;

@@ -379,10 +379,14 @@ void BootInstaller::update()
     case BOOT_INSTALL_WAIT_FOR_RESOURCES:
         if (func_102D00(g_resource_queue) != 0)
         {
-            func_103E70(g_resource_queue, BOOT_RES_SOUND, sound_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(g_resource_queue, BOOT_RES_SYSTEM_FILES, system_file_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(g_resource_queue, BOOT_RES_NAVIGATOR_FILES, navigator_file_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(g_resource_queue, BOOT_RES_TIP_IMAGES, tip_image_data, 1, 0x34BC0, 0, 0, 0, 1);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_SOUND, sound_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_SYSTEM_FILES, system_file_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_NAVIGATOR_FILES, navigator_file_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
+            resident_queue_resource_request(g_resource_queue, BOOT_RES_TIP_IMAGES, tip_image_data,
+                                            BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
@@ -656,7 +660,7 @@ void BootInstaller::update()
     {
         s32 sizes[3];
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
-        icon_header = (u8*)memalign_guess(0x40, 0x200);
+        icon_header = (u8*)memalign(0x40, 0x200);
         progress_bar = new (0) BootProgressBar;
         progress_bar_reset(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
         tip_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
@@ -686,7 +690,7 @@ void BootInstaller::update()
         for (s32 i = 0; i < 3; i++)
         {
             sizes[i] = header->decoded_size;
-            system_file_buffers[i] = (u8*)memalign_guess(0x200, header->decoded_size + 0x200);
+            system_file_buffers[i] = (u8*)memalign(0x200, header->decoded_size + 0x200);
             memset_guess(system_file_buffers[i], 0, header->decoded_size + 0x200);
             func_1025A0(g_resident_resource_decoder, (u8*)header, system_file_buffers[i], 0);
             header = (ResidentResourceHeader*)((u8*)header + header->next_offset);
@@ -699,7 +703,7 @@ void BootInstaller::update()
         for (s32 i = 0; i < 3; i++)
         {
             sizes[i] = header->decoded_size;
-            navigator_file_buffers[i] = (u8*)memalign_guess(0x200, header->decoded_size + 0x200);
+            navigator_file_buffers[i] = (u8*)memalign(0x200, header->decoded_size + 0x200);
             memset_guess(navigator_file_buffers[i], 0, header->decoded_size + 0x200);
             func_1025A0(g_resident_resource_decoder, (u8*)header, navigator_file_buffers[i], 0);
             header = (ResidentResourceHeader*)((u8*)header + header->next_offset);
@@ -741,7 +745,7 @@ void BootInstaller::update()
             }
             else
             {
-                install_buffer = (u8*)memalign_guess(0x40, 0x200000);
+                install_buffer = (u8*)memalign(0x40, 0x200000);
                 FlushCache(0);
                 resident_archive_set_copy_buffer(g_resource_archive, install_buffer);
                 g_resource_archive->copy_paused = 0;
@@ -1141,10 +1145,11 @@ void BootUnitErrorPopup::set_enabled(u8 value)
 BootInstaller::BootInstaller()
 {
     s32 i;
-    screen_image_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SCREEN_IMAGES));
-    func_103E70(g_resource_queue, BOOT_RES_SCREEN_IMAGES, screen_image_data, 1, 0x34BC0, 0, 0, 0, 1);
-    sound_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SOUND));
-    tip_image_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TIP_IMAGES));
+    screen_image_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SCREEN_IMAGES));
+    resident_queue_resource_request(g_resource_queue, BOOT_RES_SCREEN_IMAGES, screen_image_data,
+                                    BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
+    sound_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SOUND));
+    tip_image_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TIP_IMAGES));
     step = BOOT_INSTALL_WAIT_FOR_RESOURCES;
 
     for (i = 0; i < 2; i++)

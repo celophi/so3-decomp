@@ -415,7 +415,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
     for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
     {
         order[i] = i;
-        textures[i] = (BootTextureResource*)memalign_guess(0x80, 0x4600);
+        textures[i] = (BootTextureResource*)memalign(0x80, 0x4600);
     }
 
     grid_clip = new (0) BootClipRegion;
@@ -1627,8 +1627,9 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
 /** @brief Start loading resource 0x2B, clear the owned objects and build the three palettes. */
 BootBattleTrophyViewer::BootBattleTrophyViewer()
 {
-    resource_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TROPHY_VIEWER));
-    func_103E70(g_resource_queue, BOOT_RES_TROPHY_VIEWER, resource_data, 1, 0x34BC0, 0, 0, 0, 1);
+    resource_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TROPHY_VIEWER));
+    resident_queue_resource_request(g_resource_queue, BOOT_RES_TROPHY_VIEWER, resource_data,
+                                    BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
     unk14 = new (0) u8[resident_random_below(0x400) * 4 + 0x400];
     image_blocks[0] = 0;
     image_blocks[1] = 0;
