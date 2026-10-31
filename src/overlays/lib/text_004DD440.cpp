@@ -7,7 +7,7 @@
 
 extern "C" void func_004D00B0(void* object);
 extern "C" void* D_001B6674;
-extern "C" void func_0011F770(void* owner, void* object);
+extern "C" void resident_packet_submit(void* owner, void* object);
 extern "C" void* D_001B6668;
 extern "C" void func_004E6690(void* object);
 extern "C" void func_004E6B30(void* owner, void* object);
@@ -229,7 +229,7 @@ void func_004E1040(N50Owner114_004DD440* object)
     {
         adjusted = (u8*)adjusted + 0x108;
     }
-    func_0011F770(object->owner, adjusted);
+    resident_packet_submit(object->owner, adjusted);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1080);
@@ -546,7 +546,7 @@ void func_004E2F20(N50OwnerBC_004DD440* object)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
-    func_0011F770(object->owner, adjusted);
+    resident_packet_submit(object->owner, adjusted);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2F60);

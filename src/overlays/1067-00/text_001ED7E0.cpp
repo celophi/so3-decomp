@@ -2444,7 +2444,7 @@ extern "C" s32 func_001F7470(FieldScriptCursorU32* cursor, s32 word_count)
     command->unk1c = resident_heap_allocate(D_001B6430->context->unk6c, byte_count);
     if (command->unk1c != 0)
     {
-        func_0013A4C0(command->unk1c, source, byte_count);
+        memcpy_guess(command->unk1c, source, byte_count);
         command->unk20 = word_count / 10;
     }
     actor->commands.append_node(command, -1);
@@ -2675,7 +2675,7 @@ extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
     {
         u32 key = *cursor->current++;
         char name[17];
-        func_0013CD50(name, (const char*)cursor->current, 16);
+        strncpy_guess(name, (const char*)cursor->current, 16);
         name[16] = 0;
         FieldClass155580* actor = new FieldClass155580;
         actor->unk70 = key;
@@ -2737,7 +2737,7 @@ extern "C" s32 func_001F83A0(FieldScriptCursorU32* cursor, u32 count)
         u32 key = *cursor->current++;
         char name[17];
         u32 flags = 0;
-        func_0013CD50(name, (const char*)cursor->current, 16);
+        strncpy_guess(name, (const char*)cursor->current, 16);
         name[16] = 0;
         if (count > 5)
         {
@@ -2910,10 +2910,10 @@ void FieldSceneResourceLoader::start_current_read()
     {
         FieldClass1DD400* owner = this;
         u32 submitted_byte_count = record->byte_capacity;
-        resident_queue_resource_request(D_001B65E8, record->file_key, record->buffer_address(), 0x80000000, unk28, owner, submitted_byte_count, 0, 1);
+        resident_queue_resource_request(g_resource_queue, record->file_key, record->buffer_address(), 0x80000000, unk28, owner, submitted_byte_count, 0, 1);
         u32 byte_count = record->byte_capacity;
         u32 buffer_address = record->buffer_address();
-        record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+        record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
         request_state = 1;
         callback_ready = 0;
     }
@@ -2948,7 +2948,7 @@ s32 FieldSceneResourceLoader::request_removal()
             {
                 u32 byte_count = record->unk0;
                 u32 buffer_address = field_record_buffer_address(record);
-                resident_cancel_resource_requests(D_001B65E8, record->indexC, buffer_address, 0x80000000, byte_count, 0);
+                resident_cancel_resource_requests(g_resource_queue, record->indexC, buffer_address, 0x80000000, byte_count, 0);
             }
         }
 
@@ -3017,7 +3017,7 @@ s32 FieldSceneResourceLoader::poll_request_release()
             {
                 u32 byte_count = record->byte_capacity;
                 u32 buffer_address = record->buffer_address();
-                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+                resident_cancel_resource_requests(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
         }
 
@@ -3102,7 +3102,7 @@ void FieldSceneResourceLoader::update_requests(s32 cancel_request)
                 FieldSceneResourceRequest* record = &requests[i];
                 u32 byte_count = record->byte_capacity;
                 u32 buffer_address = record->buffer_address();
-                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+                resident_cancel_resource_requests(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
 
             request_state = 9;
@@ -3113,7 +3113,7 @@ void FieldSceneResourceLoader::update_requests(s32 cancel_request)
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
 
-            if (!resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0) && !field_records_blocked())
+            if (!resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0) && !field_records_blocked())
             {
                 func_001DDB30(0);
             }
@@ -3137,7 +3137,7 @@ void FieldSceneResourceLoader::update_requests(s32 cancel_request)
             FieldSceneResourceRequest* record = &records[i];
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
-            record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+            record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
 
             if (record->request_address)
             {
@@ -3173,7 +3173,7 @@ void FieldSceneResourceLoader::update_requests(s32 cancel_request)
         {
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
-            record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+            record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
 
             if (record->request_address)
             {
@@ -3217,7 +3217,7 @@ void FieldSceneResourceLoader::advance_requests()
         u32 byte_count = record->byte_capacity;
         u32 buffer_address = record->buffer_address();
 
-        if (resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0))
+        if (resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0))
         {
             return;
         }
@@ -3265,7 +3265,7 @@ extern "C" void* field_allocate_scene_buffer(FieldListObject* loader, u32 size, 
         }
         else
         {
-            result = func_00139700(128, size);
+            result = memalign_guess(128, size);
         }
         if (result)
         {

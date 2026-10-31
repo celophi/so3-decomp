@@ -36,7 +36,7 @@ func_004CE4C0 = 0x004CE4C0; // type:func absolute:True
 D_50CD30 = 0x0050CD30; // absolute:True
 func_0040D890 = 0x0040D890; // type:func absolute:True
 func_0040CF90 = 0x0040CF90; // type:func absolute:True
-func_0013A678 = 0x0013A678; // type:func absolute:True
+memset_guess = 0x0013A678; // type:func absolute:True
 func_0040D930 = 0x0040D930; // type:func absolute:True
 func_0040C9F0 = 0x0040C9F0; // type:func absolute:True
 
@@ -259,8 +259,7 @@ func_421170 = 0x00421170; // type:func absolute:True
 func_420D20 = 0x00420D20; // type:func absolute:True
 
 __vt__25DevelopmentCompleteDialog = 0x00186370; // absolute:True
-func_00112400 = 0x00112400; // type:func absolute:True
-D_001B65F8 = 0x001B65F8; // size:0x4
+g_sound = 0x001B65F8; // size:0x4
 func_0036E9C0 = 0x0036E9C0; // type:func allow_duplicated:True
 __dt__25DevelopmentCompleteDialogFv = 0x0036E9C0; // type:func allow_duplicated:True
 func_003548A0 = 0x003548A0; // type:func allow_duplicated:True
@@ -1070,7 +1069,7 @@ resident_heap_release = 0x001134C0; // type:func absolute:True allow_duplicated:
 
 resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated:True
 
-resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
+resident_sound_play = 0x00112400; // type:func absolute:True allow_duplicated:True
 
 lib_panel_init_transform = 0x004C4AB0; // type:func absolute:True allow_duplicated:True
 
@@ -1091,3 +1090,5 @@ field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_dupl
 
 update_transform_matrix__14LibClass178A90Fv = 0x004D0090; // type:func allow_duplicated:True absolute:True
 get_transform_matrix__14LibClass178A90Fv = 0x004D00A0; // type:func allow_duplicated:True absolute:True
+g_frame_seconds = 0x001B6690; // absolute:True
+resident_random_range = 0x0010CC40; // type:func absolute:True

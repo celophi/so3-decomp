@@ -70,7 +70,7 @@ FieldRecordSelection::FieldRecordSelection()
 {
     records = 0;
     unk04 = 0;
-    func_0013A678(slots, 0, 8);
+    memset_guess(slots, 0, 8);
     count = 0;
     current = -1;
     active = 0;

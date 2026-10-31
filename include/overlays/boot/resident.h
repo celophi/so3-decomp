@@ -62,24 +62,18 @@ extern BootDisplayLinks661C* D_001B661C;
 extern BootDisplay6624* D_001B6624;
 
 /** Seconds since the last frame. */
-extern float D_001B6688;
+extern float g_frame_ticks;
 
-extern float D_001B6690;
+extern float g_frame_seconds;
 
-s32 func_10CAA0(s32 upper);
-s32 func_10CC40(s32 lower, s32 upper);
-u32 func_10CE00(void);
-void func_10DB10(BootSoundState* sound, s32 value);
-void func_10F000(void* request, s32 first, s32 second);
-// TODO: Main names this resident_allocate_request and types D_001B65F8 as ResidentRequest112400, but boot reads
-// that object as BootSoundState and the two layouts disagree. I'm keeping boot's declaration until they're merged.
-void func_112400(void* request, s32 sound, s32 first, s32 second, s32 volume, s32 pan, s32 third);
-s32 func_112990(void* request, s32 sound, s32 first, s32 second, s32 third);
+s32 resident_random_below(s32 upper);
+s32 resident_random_range(s32 lower, s32 upper);
+u32 resident_rand(void);
+void resident_sound_set_volume_scale(ResidentSound* sound, s32 value);
+void resident_sound_stop_music(ResidentSound* sound, s32 first, s32 second);
+s32 resident_sound_play_music(ResidentSound* sound, s32 music, s32 first, s32 second, s32 third);
 u32 func_113930(BootResident113E40* heap, u32 size);
-s32 func_115270(BootResident1B65E4* resident, s32 slot);
-s32 func_115430(BootResident1B65E4* resident);
-s32 func_115650(BootResident1B65E4* resident);
-s32 func_115670(BootResident1B65E4* resident);
+s32 func_115270(ResidentArchive* archive, s32 slot);
 void FlushCache(s32 value);
 void func_419A70(BootMoviePlayer* player, s32 first, s32 second);
 void func_41A210(BootMoviePlayer* player);

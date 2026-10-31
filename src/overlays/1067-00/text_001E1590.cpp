@@ -1268,11 +1268,11 @@ void FieldKeyedResourceLoader::update_requests(s32 cancel_request)
                 }
             }
             u32 allocation_size = requests[current_request].byte_capacity + 0x80;
-            buffer_allocation = func_00139900(allocation_size + 0x7D000);
+            buffer_allocation = malloc_guess(allocation_size + 0x7D000);
 
             if (buffer_allocation)
             {
-                func_00139928(buffer_allocation);
+                free_guess(buffer_allocation);
                 buffer_allocation = new(0) u8[(allocation_size + 0x7FF) & ~0x7FF];
             }
             else
@@ -1451,8 +1451,8 @@ FieldKeyedResourceLoader::FieldKeyedResourceLoader(s32 key)
     file_key = key;
     FieldResourceRequest* record = field_append_resource_request(this, file_key, 0);
     initial_request_slot = record->slot_index;
-    func_0011C8C0(D_001B65E4, file_key);
-    u32 aligned_size = (func_0011C8C0(D_001B65E4, file_key) + 0x7FF) & ~0x7FF;
+    resident_get_resource_size(g_resource_archive, file_key);
+    u32 aligned_size = (resident_get_resource_size(g_resource_archive, file_key) + 0x7FF) & ~0x7FF;
     record->set_capacity(aligned_size);
 }
 
@@ -1498,10 +1498,10 @@ void FieldResourceLoader::start_current_read()
     {
         FieldClass1DD400* owner = this;
         u32 submitted_byte_count = record->byte_capacity;
-        resident_queue_resource_request(D_001B65E8, record->file_key, record->buffer_address(), 0x80000000, request_priority, owner, submitted_byte_count, 0, 1);
+        resident_queue_resource_request(g_resource_queue, record->file_key, record->buffer_address(), 0x80000000, request_priority, owner, submitted_byte_count, 0, 1);
         u32 byte_count = record->byte_capacity;
         u32 buffer_address = record->buffer_address();
-        record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+        record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
         request_state = 1;
         callback_ready = 0;
     }
@@ -1527,7 +1527,7 @@ void FieldResourceLoader::advance_requests()
         u32 byte_count = record->byte_capacity;
         u32 buffer_address = record->buffer_address();
 
-        if (resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0))
+        if (resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0))
         {
             return;
         }
@@ -1600,7 +1600,7 @@ void FieldResourceLoader::update_requests(s32 cancel_request)
                 FieldResourceRequest* record = &requests[i];
                 u32 byte_count = record->byte_capacity;
                 u32 buffer_address = record->buffer_address();
-                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+                resident_cancel_resource_requests(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
 
             request_state = 9;
@@ -1611,7 +1611,7 @@ void FieldResourceLoader::update_requests(s32 cancel_request)
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
 
-            if (!resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0) && !field_records_blocked())
+            if (!resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0) && !field_records_blocked())
             {
                 func_001DDB30(0);
             }
@@ -1635,7 +1635,7 @@ void FieldResourceLoader::update_requests(s32 cancel_request)
             FieldResourceRequest* record = &records[i];
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
-            record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+            record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
 
             if (record->request_address)
             {
@@ -1670,7 +1670,7 @@ void FieldResourceLoader::update_requests(s32 cancel_request)
         {
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
-            record->request_address = resident_find_resource_request(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+            record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
 
             if (record->request_address)
             {
@@ -1715,7 +1715,7 @@ s32 FieldResourceLoader::poll_request_release()
             {
                 u32 byte_count = record->byte_capacity;
                 u32 buffer_address = record->buffer_address();
-                resident_cancel_resource_requests(D_001B65E8, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+                resident_cancel_resource_requests(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
         }
 
@@ -1790,7 +1790,7 @@ s32 FieldResourceLoader::request_removal()
             {
                 u32 byte_count = entry->byte_capacity;
                 u32 buffer_address = entry->buffer_address();
-                resident_cancel_resource_requests(D_001B65E8, entry->file_key, buffer_address, 0x80000000, byte_count, 0);
+                resident_cancel_resource_requests(g_resource_queue, entry->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
         }
 
@@ -1859,7 +1859,7 @@ extern "C" FieldResourceRequest* field_append_resource_request(FieldResourceLoad
     record->slot_index = 0;
     record->kind = 0;
     loader->requests[loader->request_count].file_key = file_key;
-    loader->requests[loader->request_count].set_capacity(func_0011C8C0(D_001B65E4, loader->requests[loader->request_count].file_key));
+    loader->requests[loader->request_count].set_capacity(resident_get_resource_size(g_resource_archive, loader->requests[loader->request_count].file_key));
     loader->requests[loader->request_count].slot_index = loader->request_count;
     loader->requests[loader->request_count].kind = kind;
     loader->request_count++;
@@ -1886,7 +1886,7 @@ void* field_allocate_request_buffer(FieldListObject* loader, u32 size, s32 mode)
         }
         else
         {
-            result = func_00139700(0x80, size);
+            result = memalign_guess(0x80, size);
         }
         if (result)
         {

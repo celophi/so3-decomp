@@ -4057,7 +4057,7 @@ s32 SkillModeSelection::func_slotd4()
     refresh_mode_message(this);
     refresh_mode_message(this);
     skill_refresh_selection_marker(this);
-    resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     return 0;
 }
 
@@ -4102,7 +4102,7 @@ s32 SkillModeSelection::func_slotd0()
     refresh_mode_message(this);
     refresh_mode_message(this);
     skill_refresh_selection_marker(this);
-    resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     return 0;
 }
 
@@ -6438,7 +6438,7 @@ u8 SkillStatusSkillWindow::func_slotb0()
         }
         }
         func_003559F0(this);
-        resident_allocate_request(D_001B65F8, 0x12, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0x12, 0, 0, 127, 64, 0);
         return 0;
     }
     return 3;
@@ -7411,7 +7411,7 @@ void SkillHelpWindow::func_slot5c()
     }
     {
         float clip_left = this->clip_left;
-        x -= 108.0f * D_001B6690;
+        x -= 108.0f * g_frame_seconds;
         if (x < clip_left - (float)this->text_width)
         {
             x = 2.0f + (clip_left + this->clip_width);
@@ -8565,7 +8565,7 @@ void SkillHpMpGauge::func_003EEBE0()
     dma_pending = 1;
     if (unk08 != 0)
     {
-        func_0011F770(unk08, this);
+        resident_packet_submit(unk08, static_cast<LibClass171FF0*>(this));
     }
 }
 
@@ -9313,7 +9313,7 @@ s32 SkillSymbologyWindow::func_slotc4()
             }
         }
     }
-    resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     return 0;
 }
 
@@ -9353,7 +9353,7 @@ s32 SkillSymbologyWindow::func_slotc0()
             }
         }
     }
-    resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+    resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     return 0;
 }
 
@@ -9435,7 +9435,7 @@ void SkillSymbologyWindow::func_slot6c()
         }
         this->shift = -33;
         this->position += 2;
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     }
     else
     {
@@ -9464,7 +9464,7 @@ void SkillSymbologyWindow::func_slot68()
         }
         this->shift = 33;
         this->position -= 2;
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     }
     else
     {

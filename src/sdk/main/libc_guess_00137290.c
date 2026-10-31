@@ -46,13 +46,13 @@ INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", func_001
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", func_001395B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", func_00139700);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", memalign_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", func_00139730);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", func_00139900);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", malloc_guess);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", func_00139928);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", free_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00137290", func_00139938);
 

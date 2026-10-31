@@ -166,7 +166,7 @@ struct FieldRuntime
 /** @brief Refresh the aggregate's scalar display. @param object Widget aggregate. */
 extern "C" void func_413BB0(LibClass1723F0* object);
 /** @brief Dispatch a resident request. @param receiver Request receiver. @param arg1 Request kind. @param arg2 Request argument. @param arg3 Request argument. @param arg4 Request argument. @param arg5 Request argument. @param arg6 Request argument. @return Request result. */
-extern "C" s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
+extern "C" s32 resident_sound_play(ResidentSound* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 /** @brief Set the movement target. @param object Movement state. @param x Horizontal coordinate. @param y Vertical coordinate. @param duration Movement duration. */
 extern "C" void func_466E40(ItemCreationClass185050* object, float x, float y, float duration);
 
@@ -576,7 +576,7 @@ s32 func_002D6AF0(FieldScalarTransition2D6AF0* object)
 {
     if (object->unk08_0)
     {
-        object->unk00 -= 16.0f * D_001B6688;
+        object->unk00 -= 16.0f * g_frame_ticks;
         if (object->unk00 <= object->unk04)
         {
             object->unk00 = object->unk04;
@@ -591,7 +591,7 @@ s32 func_002D6AF0(FieldScalarTransition2D6AF0* object)
     }
     if (object->unk08_1)
     {
-        object->unk00 += 16.0f * D_001B6688;
+        object->unk00 += 16.0f * g_frame_ticks;
         if (!(object->unk00 < 128.0f))
         {
             object->unk00 = 128.0f;
@@ -602,7 +602,7 @@ s32 func_002D6AF0(FieldScalarTransition2D6AF0* object)
     }
     if (object->unk08_2)
     {
-        object->unk00 -= 16.0f * D_001B6688;
+        object->unk00 -= 16.0f * g_frame_ticks;
         if (object->unk00 <= 0.0f)
         {
             object->unk00 = 0.0f;
@@ -769,7 +769,7 @@ bool func_002D6CB0(FieldClass15B300* object)
     }
     if (changed)
     {
-        resident_allocate_request(D_001B65F8, 0, 0, 0, 127, 64, 0);
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     }
     return changed;
 }

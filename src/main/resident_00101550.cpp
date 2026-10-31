@@ -110,13 +110,13 @@ extern "C" u8* resident_allocate_decode_buffer(ResidentDecodeObject* decoder, Re
 
     if (aligned)
     {
-        u8* allocation = static_cast<u8*>(func_00139900(source->decoded_size + 128));
+        u8* allocation = static_cast<u8*>(malloc_guess(source->decoded_size + 128));
         u32 padding = 128 - ((u32)allocation & 127);
 
         return static_cast<u8*>(func_0013B858(allocation, source->decoded_size + padding));
     }
 
-    return static_cast<u8*>(func_00139900(source->decoded_size));
+    return static_cast<u8*>(malloc_guess(source->decoded_size));
 }
 
 /**

@@ -11,8 +11,8 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_0027D380.h"
 
-extern "C" s32 func_10CC40(s32 lower, s32 upper);
-extern "C" s32 func_112610(ResidentRequest112400* request, s32 key);
+extern "C" s32 resident_random_range(s32 lower, s32 upper);
+extern "C" s32 resident_sound_is_music_playing(ResidentSound* request, s32 key);
 
 /** Partial request state used by the resource-count script handler. */
 typedef struct ResidentRequestCountView
@@ -1969,7 +1969,7 @@ void func_002840B0(FieldClass156710* object, s32 rows, s32 columns)
 
 FieldClass156620::FieldClass156620()
 {
-    unk30 = func_10CC40(0x3C, 0x78);
+    unk30 = resident_random_range(0x3C, 0x78);
     unk50 = 0;
     unk38 = 0;
 }
@@ -2448,9 +2448,9 @@ s32 func_00286460(FieldScriptObject151D40* object)
 /** @brief Compare the resident resource count with the current script word. */
 s32 func_002864A0(FieldScriptObject151D40* object)
 {
-    if (func_112610(D_001B65F8, -1) != 0)
+    if (resident_sound_is_music_playing(g_sound, -1) != 0)
     {
-        ResidentRequestCountView* request = (ResidentRequestCountView*)D_001B65F8;
+        ResidentRequestCountView* request = (ResidentRequestCountView*)g_sound;
         u32 resource_count = request->unk370 != 0
                                  ? 1
                                  : (request->unk38 >= 0 ? request->unk3bc : 0);

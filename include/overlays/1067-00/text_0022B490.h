@@ -36,7 +36,7 @@ public:
     {
         unk18 = 0x100EC;
         unk2d_0 = enable;
-        func_0013A4C0(unk1c, words, sizeof(unk1c));
+        memcpy_guess(unk1c, words, sizeof(unk1c));
         unk2c = 0;
     }
     /** @brief Destroy the command. */

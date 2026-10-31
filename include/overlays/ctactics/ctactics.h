@@ -227,7 +227,7 @@ public:
         base_x = 0.0f;
         base_y = 0.0f;
         selected = 0;
-        func_0013A678(character_ids, 0, sizeof(character_ids));
+        memset_guess(character_ids, 0, sizeof(character_ids));
         candidate_indices_by_slot[0] = 0;
         candidate_indices_by_slot[1] = 0;
         candidate_indices_by_slot[2] = 0;
@@ -343,7 +343,7 @@ public:
         equipment_records = 0;
         selection = 0;
         selected = -1;
-        func_0013A678(record_enabled, 0, sizeof(record_enabled));
+        memset_guess(record_enabled, 0, sizeof(record_enabled));
         preset_position.x = 0.0f;
         preset_position.y = 0.0f;
     }

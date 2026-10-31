@@ -15,7 +15,7 @@ extern "C" {
  * @param handle Handle to find.
  * @return One when an active slot holds the handle, otherwise zero.
  */
-s32 func_110C10(ResidentRequest112400* request, s32 handle);
+s32 resident_sound_is_active(ResidentSound* request, s32 handle);
 
 /**
  * @brief Stop the resident slot that holds the handle.
@@ -24,7 +24,7 @@ s32 func_110C10(ResidentRequest112400* request, s32 handle);
  * @param flag Option passed to the stop.
  * @return Status of the stop.
  */
-s32 func_110920(ResidentRequest112400* request, s32 handle, s32 flag);
+s32 resident_sound_stop(ResidentSound* request, s32 handle, s32 flag);
 }
 
 /**
@@ -38,9 +38,9 @@ public:
     /** @brief Release the handle at offset 0x24, then destroy the object. */
     virtual ~FieldClass155780()
     {
-        if (unk24 != -1 && func_110C10(D_001B65F8, unk24))
+        if (unk24 != -1 && resident_sound_is_active(g_sound, unk24))
         {
-            func_110920(D_001B65F8, unk24, 0);
+            resident_sound_stop(g_sound, unk24, 0);
             unk24 = -1;
         }
     }

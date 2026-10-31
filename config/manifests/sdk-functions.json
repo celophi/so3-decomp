@@ -6471,7 +6471,7 @@
           "aliases": []
         },
         {
-          "name": "func_00139700",
+          "name": "memalign_guess",
           "offset": 236928,
           "address": 1283840,
           "size": 48,
@@ -6487,7 +6487,7 @@
           "aliases": []
         },
         {
-          "name": "func_00139900",
+          "name": "malloc_guess",
           "offset": 237440,
           "address": 1284352,
           "size": 40,
@@ -6495,7 +6495,7 @@
           "aliases": []
         },
         {
-          "name": "func_00139928",
+          "name": "free_guess",
           "offset": 237480,
           "address": 1284392,
           "size": 16,
@@ -6573,7 +6573,7 @@
       "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
       "functions": [
         {
-          "name": "func_0013A4C0",
+          "name": "memcpy_guess",
           "offset": 240448,
           "address": 1287360,
           "size": 176,
@@ -6589,7 +6589,7 @@
           "aliases": []
         },
         {
-          "name": "func_0013A678",
+          "name": "memset_guess",
           "offset": 240888,
           "address": 1287800,
           "size": 192,
@@ -6933,7 +6933,7 @@
           "aliases": []
         },
         {
-          "name": "func_0013C4F0",
+          "name": "sprintf_guess",
           "offset": 248688,
           "address": 1295600,
           "size": 112,
@@ -7019,7 +7019,7 @@
       "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
       "functions": [
         {
-          "name": "func_0013C948",
+          "name": "strcpy_guess",
           "offset": 249800,
           "address": 1296712,
           "size": 280,
@@ -7073,7 +7073,7 @@
       "evidence": "functions start 8 bytes past 16-byte boundaries, which CodeWarrior never produces, so this was built with GCC; 11 functions in the surrounding region match newlib from the SDK 2.7.2 toolchain (sha256 4053f36360d5c90da8050b6eecb07c4fba449cdcf992dd177257dedc7070a440) exactly but abort does not; assumed library code pending a matching toolchain; see docs/research.md",
       "functions": [
         {
-          "name": "func_0013CD50",
+          "name": "strncpy_guess",
           "offset": 250832,
           "address": 1297744,
           "size": 448,
@@ -7293,7 +7293,7 @@
           "aliases": []
         },
         {
-          "name": "func_00141BE0",
+          "name": "cosf_guess",
           "offset": 270944,
           "address": 1317856,
           "size": 232,
@@ -7317,7 +7317,7 @@
           "aliases": []
         },
         {
-          "name": "func_00141DD0",
+          "name": "sinf_guess",
           "offset": 271440,
           "address": 1318352,
           "size": 240,
@@ -7357,7 +7357,7 @@
           "aliases": []
         },
         {
-          "name": "func_00142270",
+          "name": "log10f_guess",
           "offset": 272624,
           "address": 1319536,
           "size": 336,

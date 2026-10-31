@@ -1,10 +1,10 @@
 #include "include_asm.h"
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", func_0013A4C0);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", memcpy_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", func_0013A570);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", func_0013A678);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", memset_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", __malloc_lock_guess);
 
@@ -90,7 +90,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", func_001
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", func_0013C488);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", func_0013C4F0);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", sprintf_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013A4C0", func_0013C560);
 

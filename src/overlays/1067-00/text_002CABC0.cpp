@@ -173,7 +173,6 @@ struct FieldCollection50
     FieldEntry50* entries;
 };
 // This overlay uses shorter aliases for these resident functions.
-extern "C" u32 func_11C8C0(void* table, s32 index);
 extern "C" void func_113EA0();
 extern "C" void func_4C74E0(FieldState100* state);
 extern "C" void func_462320(FieldState100* state, s32, s32);
@@ -327,7 +326,7 @@ FieldNameEntry* func_002CB9D0(FieldNameOwner* object, FieldNameGroup** group_ptr
     for (s32 index = 0; index < group->count; index++, entry++)
     {
         const char* source = (const char*)(group->names + entry->name_index * 0x14 + 4);
-        func_0013CD50(buffer, source, 16);
+        strncpy_guess(buffer, source, 16);
         buffer[16] = 0;
         if (strcmp(buffer, object->name) == 0)
         {
@@ -348,8 +347,8 @@ extern "C" void func_002CBAB0(void* object)
 
 u32 func_002CBAE0()
 {
-    return ((func_11C8C0(D_001B65E4, 0xD7E) + 0x7FF) & ~0x7FF)
-        + ((func_11C8C0(D_001B65E4, 0xD7F) + 0x7FF) & ~0x7FF);
+    return ((resident_get_resource_size(g_resource_archive, 0xD7E) + 0x7FF) & ~0x7FF)
+        + ((resident_get_resource_size(g_resource_archive, 0xD7F) + 0x7FF) & ~0x7FF);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CBB30);

@@ -56,7 +56,7 @@ extern "C" u16 func_457470(u16 seed, const void* data, s32 size);
 extern "C" u32 func_414130(ItemCreationCategoryRecord* item);
 extern "C" u32 func_40D760(ItemCreationAllocationRecord* allocation);
 
-extern "C" void* func_0013A678(void* destination, s32 value, u32 size);
+extern "C" void* memset_guess(void* destination, s32 value, u32 size);
 extern "C" u8 func_40B360(u32 shop_id);
 extern "C" void* func_1012D0(FieldRuntimeRoot* root);
 extern "C" u32 func_11DF70(void* clock);
@@ -403,7 +403,7 @@ s32 shop_init_transaction(ShopTransaction* transaction, u8 shop_id, u8 discount_
     {
         return 0;
     }
-    func_0013A678(transaction, 0, sizeof(*transaction));
+    memset_guess(transaction, 0, sizeof(*transaction));
     transaction->shop_id = shop_id;
     transaction->shop_index = shop_id - 1;
     transaction->dynamic_inventory_slot = func_40B360(shop_id);
@@ -608,12 +608,12 @@ void field_cancel_model_request(FieldStatus14* object)
         case 1:
             if (requests->first_buffer_address)
             {
-                resident_cancel_resource_requests(D_001B65E8, requests->first_key, requests->first_buffer_address, 0, -1, 0);
+                resident_cancel_resource_requests(g_resource_queue, requests->first_key, requests->first_buffer_address, 0, -1, 0);
             }
 
             if (requests->second_buffer_address)
             {
-                resident_cancel_resource_requests(D_001B65E8, requests->second_key, requests->second_buffer_address, 0, -1, 0);
+                resident_cancel_resource_requests(g_resource_queue, requests->second_key, requests->second_buffer_address, 0, -1, 0);
             }
 
             object->status = 8;
@@ -657,7 +657,7 @@ s32 field_request_model_resource(FieldStatus14* object, s32 key)
 
     state->first_key = key;
     state->second_key = 0;
-    state->first_buffer_address = (u32)func_00139700(64, func_0011C8C0(D_001B65E4, key));
+    state->first_buffer_address = (u32)memalign_guess(64, resident_get_resource_size(g_resource_archive, key));
 
     if (!state->first_buffer_address)
     {
@@ -666,7 +666,7 @@ s32 field_request_model_resource(FieldStatus14* object, s32 key)
 
     state->second_buffer_address = 0;
 
-    if (!resident_queue_resource_request(D_001B65E8, key, state->first_buffer_address, 0x1357F, 1, 0, 0, 0, 1))
+    if (!resident_queue_resource_request(g_resource_queue, key, state->first_buffer_address, 0x1357F, 1, 0, 0, 0, 1))
     {
         delete[] (u8*)state->first_buffer_address;
         state->first_buffer_address = 0;

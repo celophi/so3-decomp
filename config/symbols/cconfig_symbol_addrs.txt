@@ -34,7 +34,7 @@ __vt__23ItemCreationClass185050 = 0x00181A60; // size:0x10
 g_resident_release_queues = 0x001B65F4; // size:0x4
 resident_enqueue_object = 0x0011ED90; // type:func
 D_001B643C = 0x001B643C; // type:u32 absolute:True
-D_001B65F8 = 0x001B65F8; // type:u32 absolute:True
+g_sound = 0x001B65F8; // type:u32 absolute:True
 __ct__16ConfigList182210Fv = 0x003526D0; // type:func
 __dt__16ConfigList182210Fv = 0x00352750; // type:func
 __ct__16ConfigList182200Fv = 0x003529F0; // type:func
@@ -187,10 +187,10 @@ __dt__14LibClass174EF0Fv = 0x00464A80; // type:func absolute:True allow_duplicat
 __vt__23ItemCreationClass172600 = 0x00172600; // size:0x24 absolute:True allow_duplicated:True
 
 // Resident and Field interfaces used by option input callbacks.
-func_0011E030 = 0x0011E030;
+resident_pad_set_vibration_enabled = 0x0011E030;
 func_0020F110 = 0x0020F110;
 func_004587C0 = 0x004587C0;
-D_001B65F0 = 0x001B65F0;
+g_input_system = 0x001B65F0;
 
 func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
 func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
@@ -248,7 +248,7 @@ resident_heap_release = 0x001134C0; // type:func absolute:True allow_duplicated:
 
 resident_heap_allocate = 0x00113710; // type:func absolute:True allow_duplicated:True
 
-resident_allocate_request = 0x00112400; // type:func absolute:True allow_duplicated:True
+resident_sound_play = 0x00112400; // type:func absolute:True allow_duplicated:True
 
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
 
@@ -259,3 +259,4 @@ func_002D3D80 = 0x002D3D80; // type:func absolute:True allow_duplicated:True
 field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_duplicated:True
 __ct__16ConfigControllerFv = 0x00352460; // type:func
 __ct__16FieldClass153E30Fv = 0x002642D0; // type:func absolute:True allow_duplicated:True
+g_frame_seconds = 0x001B6690; // absolute:True

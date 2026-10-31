@@ -18,7 +18,7 @@ union FieldLocalVector4
 };
 extern "C" void func_00228DD0(FieldTransform*);
 extern "C" bool func_00227280(FieldState3BA*);
-extern "C" float D_001B6688;
+extern "C" float g_frame_ticks;
 
 struct FieldSlot { u8 pad[0x20]; FieldLocalQword unk20; };
 struct FieldState704 { u8 pad[0x704]; u32 unk704; };
@@ -129,7 +129,7 @@ s32 FieldClass150DC0::func_00201520()
 /** @brief Read the field frame increment. @return Current frame increment. */
 float FieldClass150DC0::func_00201530()
 {
-    return D_001B6688;
+    return g_frame_ticks;
 }
 
 /** @brief Queue the script object for release. */

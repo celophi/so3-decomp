@@ -4,8 +4,6 @@
 #include "types.h"
 #include "main/resident_0010A0E0.h"
 
-struct LibClass171FF0;
-
 /**
  * Partial GS packet buffer: base, allocated storage, write cursor, capacity in 64-bit words, a
  * borrowed-storage flag at offset 0x14 and a flag byte at offset 0x15.
@@ -81,11 +79,11 @@ void func_0011EF90(ResidentPacket* packet, u64 data);
 void func_0011F140(ResidentPacket* packet, u64 data);
 
 /**
- * @brief Finish pending packet data and submit it with a DMA notification receiver.
+ * @brief End the packet's pending data with a GIF end tag and send it on DMA channel 2.
  * @param packet Packet buffer to submit.
- * @param notification Secondary interface notified after submission.
+ * @param notification Object notified when the transfer finishes, or null.
  */
-void func_0011F770(ResidentPacket* packet, struct LibClass171FF0* notification);
+void resident_packet_submit(ResidentPacket* packet, void* notification);
 
 /**
  * @brief Advance the packet cursor to the next 16-byte boundary at or after a supplied cursor.
@@ -93,7 +91,7 @@ void func_0011F770(ResidentPacket* packet, struct LibClass171FF0* notification);
  * @param cursor Requested cursor.
  * @return Rounded cursor.
  */
-u8* func_0011F830(ResidentPacket* packet, u8* cursor);
+u8* resident_packet_align_cursor(ResidentPacket* packet, u8* cursor);
 
 /**
  * @brief Get the current packet cursor when a requested range fits.
@@ -101,7 +99,7 @@ u8* func_0011F830(ResidentPacket* packet, u8* cursor);
  * @param quadwords Number of 16-byte words required.
  * @return Current cursor, or null when there is insufficient capacity.
  */
-u8* func_0011F860(ResidentPacket* packet, s32 quadwords);
+u8* resident_packet_reserve(ResidentPacket* packet, s32 quadwords);
 
 /**
  * @brief Read the byte at offset 0x25 of an object.

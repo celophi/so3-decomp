@@ -3,24 +3,20 @@
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
+#include "sdk/main/libm_guess_0013F3E0.h"
 
 /** Frame rate used to advance the music visualizer's sample position. */
 #define BOOT_MUSIC_FRAME_RATE 59.94f
 
 extern "C" {
-float func_141DD0(float angle);
-float func_142270(float value);
 float sqrtf(float value);
-void func_11F390(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, u32 z, u32 color);
-void func_11F770(ResidentPacket* packet, void* notification);
+void resident_packet_add_line(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, u32 z, u32 color);
 float lib_cosine(float angle);
 float lib_sine(float angle);
 void func_109F40(void* handle, void* left, void* right, s32 size);
 s32 func_109F20(void* handle, s32 channel, s32 count, float* destination);
 s32 func_109FB0(void* handle);
 s32 func_109FD0(void* handle);
-s32 func_112610(void* request, s32 sound);
-s32 func_13C4F0(char* buffer, const char* format, ...);
 void lib_container_attach_widget(BootContainer* container, BootDrawWidget* child);
 void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 
@@ -74,7 +70,7 @@ void BootNeedleMeter::on_packet_complete(u32 value)
 void BootNeedleMeter::render()
 {
     dma_pending = 1;
-    func_11F770(packet, static_cast<BootDmaCallbacks*>(this));
+    resident_packet_submit(packet, static_cast<BootDmaCallbacks*>(this));
 }
 
 /**
@@ -87,7 +83,7 @@ void BootNeedleMeter::build_packet(const void* matrix, void* context)
     ResidentPacket* buffer = packet;
     buffer->unk08 = buffer->unk00 + 0x40;
     buffer->unk0c = buffer->unk08;
-    func_142270(1073741824.0f);
+    log10f_guess(1073741824.0f);
 
     if (levels[0] > needles[0])
     {
@@ -189,7 +185,7 @@ void BootNeedleMeter::build_packet(const void* matrix, void* context)
 
     if (peak_hold > 0.0f)
     {
-        peak_hold -= D_001B6690;
+        peak_hold -= g_frame_seconds;
 
         if (peak_hold < 0.0f)
         {
@@ -228,12 +224,12 @@ void BootNeedleMeter::build_packet(const void* matrix, void* context)
     s32 peak_tip_y = y + 72.0f * peak_y;
     s32 peak_tail_x = x - 15.0f * peak_x;
     s32 peak_tail_y = y - 15.0f * peak_y;
-    func_11F390(packet, right_tip_x + 2, right_tip_y + 2, right_tail_x + 2, right_tail_y + 2, 0xFFFFFF, 0x8068261E);
-    func_11F390(packet, left_tip_x + 2, left_tip_y + 2, left_tail_x + 2, left_tail_y + 2, 0xFFFFFF, 0x8068261E);
-    func_11F390(packet, peak_tip_x + 2, peak_tip_y + 2, peak_tail_x + 2, peak_tail_y + 2, 0xFFFFFF, 0x8068261E);
-    func_11F390(packet, right_tip_x, right_tip_y, right_tail_x, right_tail_y, 0xFFFFFF, 0x80A0FFA0);
-    func_11F390(packet, left_tip_x, left_tip_y, left_tail_x, left_tail_y, 0xFFFFFF, 0x80FFD0D0);
-    func_11F390(packet, peak_tip_x, peak_tip_y, peak_tail_x, peak_tail_y, 0xFFFFFF, 0x801010FF);
+    resident_packet_add_line(packet, right_tip_x + 2, right_tip_y + 2, right_tail_x + 2, right_tail_y + 2, 0xFFFFFF, 0x8068261E);
+    resident_packet_add_line(packet, left_tip_x + 2, left_tip_y + 2, left_tail_x + 2, left_tail_y + 2, 0xFFFFFF, 0x8068261E);
+    resident_packet_add_line(packet, peak_tip_x + 2, peak_tip_y + 2, peak_tail_x + 2, peak_tail_y + 2, 0xFFFFFF, 0x8068261E);
+    resident_packet_add_line(packet, right_tip_x, right_tip_y, right_tail_x, right_tail_y, 0xFFFFFF, 0x80A0FFA0);
+    resident_packet_add_line(packet, left_tip_x, left_tip_y, left_tail_x, left_tail_y, 0xFFFFFF, 0x80FFD0D0);
+    resident_packet_add_line(packet, peak_tip_x, peak_tip_y, peak_tail_x, peak_tail_y, 0xFFFFFF, 0x801010FF);
     unk63 = 1;
 }
 
@@ -374,7 +370,7 @@ void BootFft::make_sine_table(s32 n, float* table)
     s32 n2 = n / 2;
     s32 n4 = n / 4;
     s32 n8 = n / 8;
-    float t = func_141DD0(3.1415927f / n);
+    float t = sinf_guess(3.1415927f / n);
     float dc = 2.0f * t * t;
     float ds = sqrtf(dc * (2.0f - dc));
     float c;
@@ -425,13 +421,13 @@ void BootMusicPlayer::update_row_colors()
 
             if (selection == i)
             {
-                BootVector4DDAA0 scale;
+                BootVector4 scale;
                 copy_vector(&scale, &model->base_color_factor);
 
                 if (brightening == 0)
                 {
-                    scale.x -= 0.01f * D_001B6688;
-                    scale.y -= 0.005f * D_001B6688;
+                    scale.x -= 0.01f * g_frame_ticks;
+                    scale.y -= 0.005f * g_frame_ticks;
 
                     if (scale.y < 0.5f)
                     {
@@ -446,8 +442,8 @@ void BootMusicPlayer::update_row_colors()
                 }
                 else if (brightening != 0)
                 {
-                    scale.x += 0.01f * D_001B6688;
-                    scale.y += 0.005f * D_001B6688;
+                    scale.x += 0.01f * g_frame_ticks;
+                    scale.y += 0.005f * g_frame_ticks;
 
                     if (!(scale.y <= 1.0f))
                     {
@@ -466,7 +462,7 @@ void BootMusicPlayer::update_row_colors()
             }
             else
             {
-                BootVector4DDAA0 scale;
+                BootVector4 scale;
                 scale.x = 1.0f;
                 scale.y = 1.0f;
                 scale.z = 1.0f;
@@ -714,7 +710,7 @@ void BootMusicPlayer::update()
     switch (step)
     {
     case BOOT_MUSIC_WAIT_FOR_RESOURCES:
-        if (func_102D00(D_001B65E8) != 0)
+        if (func_102D00(g_resource_queue) != 0)
         {
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             step++;
@@ -787,7 +783,7 @@ void BootMusicPlayer::update()
         }
 
         next_track_delay = 0.0f;
-        func_10DB10(D_001B65F8, 0xFFFF);
+        resident_sound_set_volume_scale(g_sound, 0xFFFF);
         break;
     case BOOT_MUSIC_ACTIVE:
         if (input->repeated == BOOT_BUTTON_DOWN && cursor->unk35)
@@ -839,8 +835,8 @@ void BootMusicPlayer::update()
 
             for (i = 0; i < BOOT_MUSIC_SHUFFLE_SWAPS; i++)
             {
-                u32 first = func_10CE00() % BOOT_MUSIC_TRACK_COUNT;
-                u32 second = func_10CE00() % BOOT_MUSIC_TRACK_COUNT;
+                u32 first = resident_rand() % BOOT_MUSIC_TRACK_COUNT;
+                u32 second = resident_rand() % BOOT_MUSIC_TRACK_COUNT;
                 u8 swap = shuffle_order[first];
                 u8* other = &shuffle_order[second];
                 shuffle_order[first] = *other;
@@ -856,18 +852,18 @@ void BootMusicPlayer::update()
             case BOOT_MUSIC_ROW_TRACK:
             case BOOT_MUSIC_ROW_PLAY:
                 playing = 1;
-                func_109F40(D_001B65F8->stream->handle, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
+                func_109F40(g_sound->stream->handle, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
 
                 if (play_mode == BOOT_MUSIC_PLAY_SHUFFLED)
                 {
                     track = shuffle_order[shuffle_position++];
 
-                    if (func_112990(D_001B65F8, g_music_track_sounds[track], 1, 0, 0) == 0)
+                    if (resident_sound_play_music(g_sound, g_music_track_sounds[track], 1, 0, 0) == 0)
                     {
                         pending_track = g_music_track_sounds[track];
                     }
                 }
-                else if (func_112990(D_001B65F8, g_music_track_sounds[track], 1, 0, 0) == 0)
+                else if (resident_sound_play_music(g_sound, g_music_track_sounds[track], 1, 0, 0) == 0)
                 {
                     pending_track = g_music_track_sounds[track];
                 }
@@ -876,7 +872,7 @@ void BootMusicPlayer::update()
                 break;
             case BOOT_MUSIC_ROW_STOP:
                 playing = 0;
-                func_10F000(D_001B65F8, 0x3C, -1);
+                resident_sound_stop_music(g_sound, 0x3C, -1);
                 next_track_delay = 0.0f;
                 break;
             }
@@ -884,8 +880,8 @@ void BootMusicPlayer::update()
 
         if (input->pressed & resource->cancel_buttons)
         {
-            func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
-            func_10F000(D_001B65F8, 0x1E, -1);
+            resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_stop_music(g_sound, 0x1E, -1);
             BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
             fade->fade_speed = 2.0f;
             D_001B661C->append_node(fade, -1);
@@ -893,14 +889,14 @@ void BootMusicPlayer::update()
             return;
         }
 
-        if (play_mode > BOOT_MUSIC_PLAY_SINGLE && func_112610(D_001B65F8, -1) != 0 && func_109FB0(D_001B65F8->stream->handle) > 0 && playing)
+        if (play_mode > BOOT_MUSIC_PLAY_SINGLE && resident_sound_is_music_playing(g_sound, -1) != 0 && func_109FB0(g_sound->stream->handle) > 0 && playing)
         {
-            func_10F000(D_001B65F8, 0x1E0, -1);
+            resident_sound_stop_music(g_sound, 0x1E0, -1);
             next_track_delay = 8.0f;
             playing = 0;
         }
 
-        if (func_112610(D_001B65F8, -1) == 0 && next_track_delay == 0.0f && play_mode > BOOT_MUSIC_PLAY_SINGLE && playing)
+        if (resident_sound_is_music_playing(g_sound, -1) == 0 && next_track_delay == 0.0f && play_mode > BOOT_MUSIC_PLAY_SINGLE && playing)
         {
             next_track_delay = 2.0f;
             playing = 0;
@@ -908,7 +904,7 @@ void BootMusicPlayer::update()
 
         if (next_track_delay > 0.0f)
         {
-            next_track_delay -= D_001B6690;
+            next_track_delay -= g_frame_seconds;
 
             if (next_track_delay <= 0.0f)
             {
@@ -918,7 +914,7 @@ void BootMusicPlayer::update()
                 {
                     samples_analysed = 0.0f;
                     samples_played = (float)BOOT_MUSIC_NEXT_TRACK_LEAD_SAMPLES;
-                    func_109F40(D_001B65F8->stream->handle, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
+                    func_109F40(g_sound->stream->handle, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
                     playing = 1;
 
                     switch (play_mode)
@@ -926,7 +922,7 @@ void BootMusicPlayer::update()
                     case BOOT_MUSIC_PLAY_IN_ORDER:
                         track = (track + 1) % BOOT_MUSIC_TRACK_COUNT;
 
-                        if (func_112990(D_001B65F8, g_music_track_sounds[track], 1, 0, 0) == 0)
+                        if (resident_sound_play_music(g_sound, g_music_track_sounds[track], 1, 0, 0) == 0)
                         {
                             pending_track = g_music_track_sounds[track];
                         }
@@ -936,7 +932,7 @@ void BootMusicPlayer::update()
                         track = shuffle_order[shuffle_position];
                         shuffle_position = (shuffle_position + 1) % BOOT_MUSIC_TRACK_COUNT;
 
-                        if (func_112990(D_001B65F8, g_music_track_sounds[track], 1, 0, 0) == 0)
+                        if (resident_sound_play_music(g_sound, g_music_track_sounds[track], 1, 0, 0) == 0)
                         {
                             pending_track = g_music_track_sounds[track];
                         }
@@ -947,7 +943,7 @@ void BootMusicPlayer::update()
             }
         }
 
-        func_13C4F0(number, g_track_number_format, track + 1);
+        sprintf_guess(number, g_track_number_format, track + 1);
 
         if (number_text != 0)
         {
@@ -957,16 +953,16 @@ void BootMusicPlayer::update()
         lib_text_set_resource(name_text, g_boot_program.messages, g_music_track_sounds[track] + BOOT_MUSIC_TRACK_NAME_MESSAGE_OFFSET, 0);
         lib_text_set_resource(mode_text, g_boot_program.messages, play_mode + BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE, 0);
 
-        if ((func_112610(D_001B65F8, -1) != 0 && (D_001B65F8->unk370 ? 1 : D_001B65F8->unk3bc) > 0) || next_track_delay > 0.0f)
+        if ((resident_sound_is_music_playing(g_sound, -1) != 0 && (g_sound->disabled ? 1 : g_sound->unk3bc) > 0) || next_track_delay > 0.0f)
         {
-            samples_played += (float)BOOT_MUSIC_SAMPLE_RATE * D_001B6688 / BOOT_MUSIC_FRAME_RATE;
+            samples_played += (float)BOOT_MUSIC_SAMPLE_RATE * g_frame_ticks / BOOT_MUSIC_FRAME_RATE;
 
             if (samples_analysed < samples_played - (float)BOOT_MUSIC_FFT_SIZE)
             {
                 samples_analysed += (float)BOOT_MUSIC_FFT_SIZE;
-                func_109F20(D_001B65F8->stream->handle, 0, BOOT_MUSIC_FFT_SIZE, spectra[0].real);
+                func_109F20(g_sound->stream->handle, 0, BOOT_MUSIC_FFT_SIZE, spectra[0].real);
 
-                if ((u8)func_109F20(D_001B65F8->stream->handle, 1, BOOT_MUSIC_FFT_SIZE, spectra[1].real))
+                if ((u8)func_109F20(g_sound->stream->handle, 1, BOOT_MUSIC_FFT_SIZE, spectra[1].real))
                 {
                     for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
                     {
@@ -974,7 +970,7 @@ void BootMusicPlayer::update()
                         spectra[1].imag[i] = 0.0f;
                     }
 
-                    if (func_109FD0(D_001B65F8->stream->handle) != 0)
+                    if (func_109FD0(g_sound->stream->handle) != 0)
                     {
                         for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
                         {
@@ -998,7 +994,7 @@ void BootMusicPlayer::update()
                         band_power += spectra[0].real[i] * spectra[0].real[i] + spectra[0].imag[i] * spectra[0].imag[i];
                     }
 
-                    meters[0]->levels[0] = 10.0f * func_142270(4.0f * band_power / 2.0f);
+                    meters[0]->levels[0] = 10.0f * log10f_guess(4.0f * band_power / 2.0f);
                     band_power = 0.0f;
 
                     {
@@ -1022,7 +1018,7 @@ void BootMusicPlayer::update()
                         band_power += re * re + im * im;
                     }
 
-                    meters[1]->levels[0] = 10.0f * func_142270(4.0f * band_power / 17.0f);
+                    meters[1]->levels[0] = 10.0f * log10f_guess(4.0f * band_power / 17.0f);
                     band_power = 0.0f;
 
                     for (s32 i = 22; i < 86; i++)
@@ -1030,7 +1026,7 @@ void BootMusicPlayer::update()
                         band_power += spectra[0].real[i] * spectra[0].real[i] + spectra[0].imag[i] * spectra[0].imag[i];
                     }
 
-                    meters[2]->levels[0] = 10.0f * func_142270(4.0f * band_power / 64.0f);
+                    meters[2]->levels[0] = 10.0f * log10f_guess(4.0f * band_power / 64.0f);
                     band_power = 0.0f;
 
                     for (s32 i = 86; i < 170; i++)
@@ -1038,7 +1034,7 @@ void BootMusicPlayer::update()
                         band_power += spectra[0].real[i] * spectra[0].real[i] + spectra[0].imag[i] * spectra[0].imag[i];
                     }
 
-                    meters[3]->levels[0] = 10.0f * func_142270(4.0f * band_power / 84.0f);
+                    meters[3]->levels[0] = 10.0f * log10f_guess(4.0f * band_power / 84.0f);
                     band_power = 0.0f;
 
                     for (s32 i = 170; i < 320; i++)
@@ -1046,7 +1042,7 @@ void BootMusicPlayer::update()
                         band_power += spectra[0].real[i] * spectra[0].real[i] + spectra[0].imag[i] * spectra[0].imag[i];
                     }
 
-                    meters[4]->levels[0] = 10.0f * func_142270(4.0f * band_power / 150.0f);
+                    meters[4]->levels[0] = 10.0f * log10f_guess(4.0f * band_power / 150.0f);
                     band_power = 0.0f;
 
                     for (s32 i = 2; i < 4; i++)
@@ -1054,7 +1050,7 @@ void BootMusicPlayer::update()
                         band_power += spectra[1].real[i] * spectra[1].real[i] + spectra[1].imag[i] * spectra[1].imag[i];
                     }
 
-                    meters[0]->levels[1] = 10.0f * func_142270(4.0f * band_power / 2.0f);
+                    meters[0]->levels[1] = 10.0f * log10f_guess(4.0f * band_power / 2.0f);
                     band_power = 0.0f;
 
                     {
@@ -1078,7 +1074,7 @@ void BootMusicPlayer::update()
                         band_power += re * re + im * im;
                     }
 
-                    meters[1]->levels[1] = 10.0f * func_142270(4.0f * band_power / 17.0f);
+                    meters[1]->levels[1] = 10.0f * log10f_guess(4.0f * band_power / 17.0f);
                     band_power = 0.0f;
 
                     for (s32 i = 22; i < 86; i++)
@@ -1086,7 +1082,7 @@ void BootMusicPlayer::update()
                         band_power += spectra[1].real[i] * spectra[1].real[i] + spectra[1].imag[i] * spectra[1].imag[i];
                     }
 
-                    meters[2]->levels[1] = 10.0f * func_142270(4.0f * band_power / 64.0f);
+                    meters[2]->levels[1] = 10.0f * log10f_guess(4.0f * band_power / 64.0f);
                     band_power = 0.0f;
 
                     for (s32 i = 86; i < 170; i++)
@@ -1094,7 +1090,7 @@ void BootMusicPlayer::update()
                         band_power += spectra[1].real[i] * spectra[1].real[i] + spectra[1].imag[i] * spectra[1].imag[i];
                     }
 
-                    meters[3]->levels[1] = 10.0f * func_142270(4.0f * band_power / 84.0f);
+                    meters[3]->levels[1] = 10.0f * log10f_guess(4.0f * band_power / 84.0f);
                     band_power = 0.0f;
 
                     for (s32 i = 170; i < 320; i++)
@@ -1102,7 +1098,7 @@ void BootMusicPlayer::update()
                         band_power += spectra[1].real[i] * spectra[1].real[i] + spectra[1].imag[i] * spectra[1].imag[i];
                     }
 
-                    meters[4]->levels[1] = 10.0f * func_142270(4.0f * band_power / 150.0f);
+                    meters[4]->levels[1] = 10.0f * log10f_guess(4.0f * band_power / 150.0f);
                 }
             }
         }
@@ -1129,7 +1125,7 @@ void BootMusicPlayer::update()
         break;
     case BOOT_MUSIC_RETURN_TO_TITLE:
         func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
-        func_10F000(D_001B65F8, 0x1E, -1);
+        resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
         D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
         lib_object_detach_owner(this);
@@ -1137,7 +1133,7 @@ void BootMusicPlayer::update()
         return;
     }
 
-    if (pending_track != 0 && func_112990(D_001B65F8, pending_track, 1, 0, 0) != 0)
+    if (pending_track != 0 && resident_sound_play_music(g_sound, pending_track, 1, 0, 0) != 0)
     {
         pending_track = 0;
     }
@@ -1333,15 +1329,15 @@ BootMusicPlayer::~BootMusicPlayer()
     }
 
     delete fft;
-    func_109F40(D_001B65F8->stream->handle, 0, 0, 0);
-    func_10DB10(D_001B65F8, 0x7FFF);
+    func_109F40(g_sound->stream->handle, 0, 0, 0);
+    resident_sound_set_volume_scale(g_sound, 0x7FFF);
 }
 
 /** @brief Start loading resource 0x2C, create the meters and build the analysis window. */
 BootMusicPlayer::BootMusicPlayer()
 {
-    resource_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_MUSIC_PLAYER));
-    func_103E70(D_001B65E8, BOOT_RES_MUSIC_PLAYER, resource_data, 1, 0x34BC0, 0, 0, 0, 1);
+    resource_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_MUSIC_PLAYER));
+    func_103E70(g_resource_queue, BOOT_RES_MUSIC_PLAYER, resource_data, 1, 0x34BC0, 0, 0, 0, 1);
     playing = 0;
     image_buffers[0] = 0;
     image_buffers[1] = 0;

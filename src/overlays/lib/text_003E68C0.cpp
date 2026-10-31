@@ -6,7 +6,7 @@
 #include "main/resident_0010A0E0.h"
 
 extern "C" LibVector4 D_50CD30;
-extern "C" void func_0011F770(void* owner, void* object);
+extern "C" void resident_packet_submit(void* owner, void* object);
 extern "C" void func_004D00B0(LibClass178A90* object);
 
 struct LibStateByteB4View
@@ -294,7 +294,7 @@ void func_003EFAF0(N50Owner94_003E68C0* object)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
-    func_0011F770(object->owner, adjusted);
+    resident_packet_submit(object->owner, adjusted);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EFB30);

@@ -1094,9 +1094,9 @@ void StatusResourceState::func_00263C70(void* value)
 
 void status_initialize_name_maps(StatusNameWindow* object)
 {
-    func_0013A678(object->hiragana_bytes, 0, 90);
-    func_0013A678(object->katakana_bytes, 0, 90);
-    func_0013A678(object->alphanumeric_bytes, 0, 80);
+    memset_guess(object->hiragana_bytes, 0, 90);
+    memset_guess(object->katakana_bytes, 0, 90);
+    memset_guess(object->alphanumeric_bytes, 0, 80);
     StatusGlyphMap90 first = g_status_hiragana_bytes;
 
     for (s32 i = 0; i < 90; ++i)
@@ -1772,7 +1772,7 @@ u8 StatusNameWindow::func_slotb0()
             } while ((*destination++ = *source++) != 0);
             StatusNameSection* section = reinterpret_cast<StatusNameSection*>(
                 resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
-            func_0013A4C0(section->names[selection->slots[selection->current] - 1], name_bytes, 24);
+            memcpy_guess(section->names[selection->slots[selection->current] - 1], name_bytes, 24);
             close_status_selection(this);
         }
         else
@@ -2100,16 +2100,16 @@ StatusNameWindow::StatusNameWindow()
     row_height = 0;
     glyph_scale = 0;
     glyph_width = 0;
-    func_0013C948(reinterpret_cast<char*>(default_names[0]), g_status_default_fayt_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[1]), g_status_default_sophia_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[2]), g_status_default_maria_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[3]), g_status_default_cliff_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[4]), g_status_default_nel_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[5]), g_status_default_albel_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[6]), g_status_default_roger_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[7]), g_status_default_peppita_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[8]), g_status_default_adray_name);
-    func_0013C948(reinterpret_cast<char*>(default_names[9]), g_status_default_mirage_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[0]), g_status_default_fayt_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[1]), g_status_default_sophia_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[2]), g_status_default_maria_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[3]), g_status_default_cliff_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[4]), g_status_default_nel_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[5]), g_status_default_albel_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[6]), g_status_default_roger_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[7]), g_status_default_peppita_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[8]), g_status_default_adray_name);
+    strcpy_guess(reinterpret_cast<char*>(default_names[9]), g_status_default_mirage_name);
     portrait = 0;
     portrait_resource_slot = 0;
     selected_grid_cell = STATUS_NAME_COMMAND_BACKSPACE;
@@ -3176,7 +3176,7 @@ void StatusHelpWindow::func_slot5c()
         return;
     }
 
-    x -= 108.0f * D_001B6690;
+    x -= 108.0f * g_frame_seconds;
 
     if (x < object->clip_x - (float)object->scroll_distance)
     {

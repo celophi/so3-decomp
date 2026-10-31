@@ -4,6 +4,7 @@
 #include "overlays/boot/text_001DD3C0.h"
 #include "main/resident_001001E0.h"
 #include "overlays/lib/vector.h"
+#include "sdk/main/libc_guess_0013C948.h"
 
 #define BOOT_TRANSFER_NAME_CAPACITY 64
 /** Mask used to align memory card query buffers to 64 bytes. */
@@ -903,8 +904,8 @@ class BootResourceLoader : public BootListObject
          */
         BootResourceLoader(class BootProgram* owner)
         {
-            data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_COMMON_UI));
-            func_103E70(D_001B65E8, BOOT_RES_COMMON_UI, data, 1, 0x34BC0, 0, 0, 0, 1);
+            data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_COMMON_UI));
+            func_103E70(g_resource_queue, BOOT_RES_COMMON_UI, data, 1, 0x34BC0, 0, 0, 0, 1);
             program = owner;
             block = BOOT_COMMON_UI_MESSAGES;
         }
@@ -936,7 +937,7 @@ class BootResidentProgram
 };
 
 /** Opaque resident input root queried by slot. */
-struct BootInputRoot9670;
+struct ResidentInputSystem;
 
 /** Resource and state limits used while boot runs and hands off to the main program. */
 enum BootProgramConstants
@@ -4033,19 +4034,12 @@ void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* poo
 }
 
 extern "C" {
-extern BootInputRoot9670* D_001B65F0;
-u16 func_11E010(BootInputRoot9670* root, s32 slot);
-u16 func_11DFF0(BootInputRoot9670* root, s32 slot);
-u16 func_11E000(BootInputRoot9670* root, s32 slot);
-u16 func_11DFB0(BootInputRoot9670* root, s32 slot);
-void func_11DF90(BootInputRoot9670* root, s32 slot);
+extern ResidentInputSystem* g_input_system;
 s32 func_432720(BootModeOwner0910* owner, void* queue);
 void func_432660(BootModeOwner0910* owner, s32 mode, u32 enabled, u32 flags);
 s32 func_432310(BootModeOwner0910* owner, u32 mode, BootCardFileRequest* request);
 s32 func_432270(BootModeOwner0910* owner, s32 mode, s32* result);
 extern BootUpdateList* D_001B6614;
-char* func_13C948(char* destination, const char* source);
-void* func_13A4C0(void* destination, const void* source, u32 size);
 /** Product code at the start of every save name: "BASLUS-20488". */
 extern const char g_card_product_code[];
 /** Save name suffix of the battle trophy file: "BTLCOL". */

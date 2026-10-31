@@ -4,9 +4,9 @@
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_0046AE20.h"
 
-extern "C" float D_001B6688;
+extern "C" float g_frame_ticks;
 extern "C" u8 D_001B6448;
-extern "C" float D_001B6690;
+extern "C" float g_frame_seconds;
 extern "C" void func_428670(void* object);
 extern "C" void func_426C20(void* object);
 extern "C" u8 func_452870(void* object, void* context);
@@ -24,7 +24,7 @@ static inline bool update_delay(float& delay)
     }
     if (delay > 0.0f)
     {
-        delay -= D_001B6688;
+        delay -= g_frame_ticks;
         if (delay > 0.0f)
         {
             return false;
@@ -60,14 +60,14 @@ void func_00293750(FieldClass157400* object)
 
 u8 func_002937F0(FieldClass1587E8* object, void* context)
 {
-    float previous = D_001B6690;
+    float previous = g_frame_seconds;
     u8 result;
     if (D_001B6448)
     {
-        D_001B6690 = 1.0f / 60.0f;
+        g_frame_seconds = 1.0f / 60.0f;
     }
     result = func_452870(object, context);
-    D_001B6690 = previous;
+    g_frame_seconds = previous;
     return result;
 }
 

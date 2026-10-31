@@ -15,7 +15,7 @@ typedef struct FieldContextE4C0
 
 float func_0020E4B0(void* object)
 {
-    return D_001B6688;
+    return g_frame_ticks;
 }
 
 s32 func_0020E4C0(void* object)

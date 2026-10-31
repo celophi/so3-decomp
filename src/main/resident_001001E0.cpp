@@ -30,7 +30,7 @@ void* func_00100AC0(u32 size, s32 unused)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100B00);
 
-extern "C" void func_00139928(void* memory);
+extern "C" void free_guess(void* memory);
 /** Partial resident allocation header containing its two ownership markers. */
 struct ResidentAllocationHeader
 {
@@ -53,7 +53,7 @@ void operator delete(void* memory) throw()
         }
         else
         {
-            func_00139928(memory);
+            free_guess(memory);
         }
     }
 }

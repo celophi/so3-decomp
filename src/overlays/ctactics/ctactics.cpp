@@ -729,8 +729,8 @@ static inline bool initialize_selector_records(TacticsReplaceWindow* object)
         return false;
     }
 
-    func_0013A678(object->character_record_buffer, 0, sizeof(TacticsCharacterRecord));
-    func_0013A678(object->equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
+    memset_guess(object->character_record_buffer, 0, sizeof(TacticsCharacterRecord));
+    memset_guess(object->equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
     return true;
 }
 
@@ -1479,7 +1479,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, resource_heading);
     u8 saved_entry = D_001B643C->state->leader_character_id;
     u16 resource_index = 0;
-    func_0013A678(character_ids, 0, 3);
+    memset_guess(character_ids, 0, 3);
 
     for (s32 index = 0; index < 3; index++)
     {
@@ -1583,7 +1583,7 @@ TacticsFormationWindow::TacticsFormationWindow()
     character_displays[0] = 0;
     character_displays[1] = 0;
     character_displays[2] = 0;
-    func_0013A678(character_ids, 0, 3);
+    memset_guess(character_ids, 0, 3);
     selected = D_001B643C->state->formation;
     base_x = 0.0f;
     base_y = 0.0f;
@@ -1856,14 +1856,14 @@ u8 TacticsReplaceWindow::func_slotb0()
         {
             if (source != destination_record_index)
             {
-                func_0013A678(character_record_buffer, 0, sizeof(TacticsCharacterRecord));
-                func_0013A678(equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
-                func_0013A4C0(character_record_buffer, &character_records[source_record_index], sizeof(TacticsCharacterRecord));
-                func_0013A4C0(equipment_record_buffer, &equipment_records[source_record_index], sizeof(TacticsCharacterEquipment));
-                func_0013A4C0(&character_records[source_record_index], &character_records[destination_record_index], sizeof(TacticsCharacterRecord));
-                func_0013A4C0(&equipment_records[source_record_index], &equipment_records[destination_record_index], sizeof(TacticsCharacterEquipment));
-                func_0013A4C0(&character_records[destination_record_index], character_record_buffer, sizeof(TacticsCharacterRecord));
-                func_0013A4C0(&equipment_records[destination_record_index], equipment_record_buffer, sizeof(TacticsCharacterEquipment));
+                memset_guess(character_record_buffer, 0, sizeof(TacticsCharacterRecord));
+                memset_guess(equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
+                memcpy_guess(character_record_buffer, &character_records[source_record_index], sizeof(TacticsCharacterRecord));
+                memcpy_guess(equipment_record_buffer, &equipment_records[source_record_index], sizeof(TacticsCharacterEquipment));
+                memcpy_guess(&character_records[source_record_index], &character_records[destination_record_index], sizeof(TacticsCharacterRecord));
+                memcpy_guess(&equipment_records[source_record_index], &equipment_records[destination_record_index], sizeof(TacticsCharacterEquipment));
+                memcpy_guess(&character_records[destination_record_index], character_record_buffer, sizeof(TacticsCharacterRecord));
+                memcpy_guess(&equipment_records[destination_record_index], equipment_record_buffer, sizeof(TacticsCharacterEquipment));
                 u8 rejected = 0;
                 u8 invalid[4] = {0};
 
@@ -1898,14 +1898,14 @@ u8 TacticsReplaceWindow::func_slotb0()
 
                 if (rejected)
                 {
-                    func_0013A678(character_record_buffer, 0, sizeof(TacticsCharacterRecord));
-                    func_0013A678(equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
-                    func_0013A4C0(character_record_buffer, &character_records[source_record_index], sizeof(TacticsCharacterRecord));
-                    func_0013A4C0(equipment_record_buffer, &equipment_records[source_record_index], sizeof(TacticsCharacterEquipment));
-                    func_0013A4C0(&character_records[source_record_index], &character_records[destination_record_index], sizeof(TacticsCharacterRecord));
-                    func_0013A4C0(&equipment_records[source_record_index], &equipment_records[destination_record_index], sizeof(TacticsCharacterEquipment));
-                    func_0013A4C0(&character_records[destination_record_index], character_record_buffer, sizeof(TacticsCharacterRecord));
-                    func_0013A4C0(&equipment_records[destination_record_index], equipment_record_buffer, sizeof(TacticsCharacterEquipment));
+                    memset_guess(character_record_buffer, 0, sizeof(TacticsCharacterRecord));
+                    memset_guess(equipment_record_buffer, 0, sizeof(TacticsCharacterEquipment));
+                    memcpy_guess(character_record_buffer, &character_records[source_record_index], sizeof(TacticsCharacterRecord));
+                    memcpy_guess(equipment_record_buffer, &equipment_records[source_record_index], sizeof(TacticsCharacterEquipment));
+                    memcpy_guess(&character_records[source_record_index], &character_records[destination_record_index], sizeof(TacticsCharacterRecord));
+                    memcpy_guess(&equipment_records[source_record_index], &equipment_records[destination_record_index], sizeof(TacticsCharacterEquipment));
+                    memcpy_guess(&character_records[destination_record_index], character_record_buffer, sizeof(TacticsCharacterRecord));
+                    memcpy_guess(&equipment_records[destination_record_index], equipment_record_buffer, sizeof(TacticsCharacterEquipment));
                     result = 3;
                 }
                 else
@@ -3279,7 +3279,7 @@ void TacticsHelpWindow::func_slot5c()
         return;
     }
 
-    x -= 108.0f * D_001B6690;
+    x -= 108.0f * g_frame_seconds;
 
     if (x < clip_x - (float)scroll_span)
     {

@@ -9,23 +9,9 @@
 #include "vu0.h"
 
 extern "C" {
-extern BootVector4DDAA0 D_50CD30;
+extern BootVector4 D_50CD30;
 void func_4CE4C0(void* destination, const float* source);
-void func_1126D0(void* request, u8* data, s32 first, s32 second);
-void func_1152C0(BootResident1B65E4* resident, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size);
-void func_1152E0(BootResident1B65E4* resident, u8* buffer, u8* first, s32 first_size, u8* second, s32 second_size, u8* third, s32 third_size, u8* fourth,
-                 s32 fourth_size);
-void func_115420(BootResident1B65E4* resident);
-s32 func_115460(BootResident1B65E4* resident, s32 first, s32 second);
-s32 func_115640(BootResident1B65E4* resident);
-s32 func_115660(BootResident1B65E4* resident);
-void func_1156B0(BootResident1B65E4* resident, u8* buffer);
-void func_1156C0(BootResident1B65E4* resident);
-void func_115810(BootResident1B65E4* resident, s32 command, s32 argument);
-u32 func_115830(BootResident1B65E4* resident);
-u32 func_115840(BootResident1B65E4* resident);
-s32 func_1158A0(BootResident1B65E4* resident);
-void func_139928(void* allocation);
+void resident_sound_load_bank(ResidentSound* sound, u8* data, s32 first, s32 second);
 void lib_container_attach_widget(BootContainer* container, BootTextWidget* child);
 void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 }
@@ -228,13 +214,13 @@ void BootInstaller::update_choice_images()
 
             if (selection == i)
             {
-                BootVector4DDAA0 scale;
+                BootVector4 scale;
                 copy_vector(&scale, &model->base_color_factor);
 
                 if (choice_growing == 0)
                 {
-                    scale.x -= 0.01f * D_001B6688;
-                    scale.y -= 0.005f * D_001B6688;
+                    scale.x -= 0.01f * g_frame_ticks;
+                    scale.y -= 0.005f * g_frame_ticks;
 
                     if (scale.y < 0.5f)
                     {
@@ -249,8 +235,8 @@ void BootInstaller::update_choice_images()
                 }
                 else if (choice_growing != 0)
                 {
-                    scale.x += 0.01f * D_001B6688;
-                    scale.y += 0.005f * D_001B6688;
+                    scale.x += 0.01f * g_frame_ticks;
+                    scale.y += 0.005f * g_frame_ticks;
 
                     if (!(scale.y <= 1.0f))
                     {
@@ -269,7 +255,7 @@ void BootInstaller::update_choice_images()
             }
             else
             {
-                BootVector4DDAA0 scale;
+                BootVector4 scale;
                 scale.x = 1.0f;
                 scale.y = 1.0f;
                 scale.z = 1.0f;
@@ -391,12 +377,12 @@ void BootInstaller::update()
     switch (step)
     {
     case BOOT_INSTALL_WAIT_FOR_RESOURCES:
-        if (func_102D00(D_001B65E8) != 0)
+        if (func_102D00(g_resource_queue) != 0)
         {
-            func_103E70(D_001B65E8, BOOT_RES_SOUND, sound_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(D_001B65E8, BOOT_RES_SYSTEM_FILES, system_file_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(D_001B65E8, BOOT_RES_NAVIGATOR_FILES, navigator_file_data, 1, 0x34BC0, 0, 0, 0, 1);
-            func_103E70(D_001B65E8, BOOT_RES_TIP_IMAGES, tip_image_data, 1, 0x34BC0, 0, 0, 0, 1);
+            func_103E70(g_resource_queue, BOOT_RES_SOUND, sound_data, 1, 0x34BC0, 0, 0, 0, 1);
+            func_103E70(g_resource_queue, BOOT_RES_SYSTEM_FILES, system_file_data, 1, 0x34BC0, 0, 0, 0, 1);
+            func_103E70(g_resource_queue, BOOT_RES_NAVIGATOR_FILES, navigator_file_data, 1, 0x34BC0, 0, 0, 0, 1);
+            func_103E70(g_resource_queue, BOOT_RES_TIP_IMAGES, tip_image_data, 1, 0x34BC0, 0, 0, 0, 1);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
@@ -454,12 +440,12 @@ void BootInstaller::update()
             x = menu_cursor_x(selection);
             cursor->func_00466E40(x, 256.0f, 0.05f);
             choice_growing = 0;
-            func_112400(D_001B65F8, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
 
         if (input->pressed & resource->confirm_buttons)
         {
-            func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
 
             if (selection == 0)
@@ -473,7 +459,7 @@ void BootInstaller::update()
         }
         else if (input->pressed & resource->cancel_buttons)
         {
-            func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
             step = no_step;
         }
@@ -482,13 +468,13 @@ void BootInstaller::update()
     case BOOT_INSTALL_LEAVE:
         if (exiting == 0)
         {
-            func_10F000(D_001B65F8, 0, -1);
-            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0);
-            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_SYSTEM_FILES, 0, 0, -1, 0);
-            resident_cancel_resource_requests(D_001B65E8, BOOT_RES_TIP_IMAGES, 0, 0, -1, 0);
+            resident_sound_stop_music(g_sound, 0, -1);
+            resident_cancel_resource_requests(g_resource_queue, BOOT_RES_SOUND, 0, 0, -1, 0);
+            resident_cancel_resource_requests(g_resource_queue, BOOT_RES_SYSTEM_FILES, 0, 0, -1, 0);
+            resident_cancel_resource_requests(g_resource_queue, BOOT_RES_TIP_IMAGES, 0, 0, -1, 0);
             exiting = 1;
         }
-        else if (resident_update_resource_queue(D_001B65E8) == 0 && D_001B65E4->unk12183 == 0)
+        else if (resident_update_resource_queue(g_resource_queue) == 0 && g_resource_archive->unk12183 == 0)
         {
             func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
 
@@ -553,14 +539,14 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_WAIT_FOR_UNIT_RESOURCES:
-        if (func_102D00(D_001B65E8) != 0)
+        if (func_102D00(g_resource_queue) != 0)
         {
             step++;
         }
 
         break;
     case BOOT_INSTALL_QUERY_UNIT:
-        if (func_115460(D_001B65E4, 1, 1) != 0)
+        if (resident_archive_query_unit(g_resource_archive, 1, 1) != 0)
         {
             step = BOOT_INSTALL_WAIT_FOR_UNIT_STATUS;
         }
@@ -571,31 +557,31 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_WAIT_FOR_UNIT_STATUS:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            if (func_115640(D_001B65E4) != 0)
+            if (resident_archive_get_command_result(g_resource_archive) != 0)
             {
                 step = BOOT_INSTALL_REQUEST_SPACE;
             }
             else
             {
-                func_115810(D_001B65E4, 8, 0);
+                resident_archive_start_command(g_resource_archive, 8, 0);
                 step++;
             }
         }
 
         break;
     case BOOT_INSTALL_WAIT_FOR_UNIT_COMMAND:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
             step++;
         }
 
         break;
     case BOOT_INSTALL_CHECK_UNIT_RESULT:
-        func_115460(D_001B65E4, 0, 0);
+        resident_archive_query_unit(g_resource_archive, 0, 0);
 
-        if (func_115640(D_001B65E4) == 0)
+        if (resident_archive_get_command_result(g_resource_archive) == 0)
         {
             step = BOOT_INSTALL_SHOW_OVERWRITE_PROMPT;
         }
@@ -621,13 +607,13 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_REQUEST_SPACE:
-        func_115810(D_001B65E4, 2, 0);
+        resident_archive_start_command(g_resource_archive, 2, 0);
         step++;
         break;
     case BOOT_INSTALL_WAIT_FOR_SPACE:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            if (func_115640(D_001B65E4) != 0)
+            if (resident_archive_get_command_result(g_resource_archive) != 0)
             {
                 step = BOOT_INSTALL_SHOW_ERROR;
             }
@@ -640,9 +626,9 @@ void BootInstaller::update()
         break;
     case BOOT_INSTALL_CHECK_SPACE:
     {
-        u32 needed = func_115840(D_001B65E4);
+        u32 needed = resident_archive_get_install_size(g_resource_archive);
 
-        if (func_115830(D_001B65E4) < needed)
+        if (resident_archive_get_free_space(g_resource_archive) < needed)
         {
             step = BOOT_INSTALL_SHOW_NO_SPACE;
         }
@@ -654,12 +640,12 @@ void BootInstaller::update()
         break;
     }
     case BOOT_INSTALL_SHOW_NO_SPACE:
-        D_001B657C->message_value = func_115840(D_001B65E4) >> 11;
+        D_001B657C->message_value = resident_archive_get_install_size(g_resource_archive) >> 11;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_NOT_ENOUGH_SPACE, 0);
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_WAIT_TO_BEGIN:
-        if (func_102D00(D_001B65E8) != 0)
+        if (func_102D00(g_resource_queue) != 0)
         {
             queue_fade();
             step++;
@@ -670,7 +656,7 @@ void BootInstaller::update()
     {
         s32 sizes[3];
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
-        icon_header = func_139700(0x40, 0x200);
+        icon_header = (u8*)memalign_guess(0x40, 0x200);
         progress_bar = new (0) BootProgressBar;
         progress_bar_reset(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
         tip_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
@@ -700,76 +686,76 @@ void BootInstaller::update()
         for (s32 i = 0; i < 3; i++)
         {
             sizes[i] = header->decoded_size;
-            system_file_buffers[i] = func_139700(0x200, header->decoded_size + 0x200);
-            func_13A678(system_file_buffers[i], 0, header->decoded_size + 0x200);
+            system_file_buffers[i] = (u8*)memalign_guess(0x200, header->decoded_size + 0x200);
+            memset_guess(system_file_buffers[i], 0, header->decoded_size + 0x200);
             func_1025A0(g_resident_resource_decoder, (u8*)header, system_file_buffers[i], 0);
             header = (ResidentResourceHeader*)((u8*)header + header->next_offset);
         }
 
-        func_1152E0(D_001B65E4, icon_header, system_file_buffers[0], sizes[0], system_file_buffers[1], sizes[1], system_file_buffers[2], sizes[2],
+        resident_archive_set_system_files(g_resource_archive, icon_header, system_file_buffers[0], sizes[0], system_file_buffers[1], sizes[1], system_file_buffers[2], sizes[2],
                     system_file_buffers[2], sizes[2]);
         header = (ResidentResourceHeader*)navigator_file_data;
 
         for (s32 i = 0; i < 3; i++)
         {
             sizes[i] = header->decoded_size;
-            navigator_file_buffers[i] = func_139700(0x200, header->decoded_size + 0x200);
-            func_13A678(navigator_file_buffers[i], 0, header->decoded_size + 0x200);
+            navigator_file_buffers[i] = (u8*)memalign_guess(0x200, header->decoded_size + 0x200);
+            memset_guess(navigator_file_buffers[i], 0, header->decoded_size + 0x200);
             func_1025A0(g_resident_resource_decoder, (u8*)header, navigator_file_buffers[i], 0);
             header = (ResidentResourceHeader*)((u8*)header + header->next_offset);
         }
 
-        func_1152C0(D_001B65E4, navigator_file_buffers[0], sizes[0], navigator_file_buffers[1], sizes[1], navigator_file_buffers[2], sizes[2]);
-        func_115810(D_001B65E4, 1, 0);
+        resident_archive_set_navigator_files(g_resource_archive, navigator_file_buffers[0], sizes[0], navigator_file_buffers[1], sizes[1], navigator_file_buffers[2], sizes[2]);
+        resident_archive_start_command(g_resource_archive, 1, 0);
         step++;
         break;
     }
     case BOOT_INSTALL_WAIT_FOR_FILES:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            func_139928(system_file_buffers[0]);
-            func_139928(system_file_buffers[1]);
-            func_139928(system_file_buffers[2]);
+            free_guess(system_file_buffers[0]);
+            free_guess(system_file_buffers[1]);
+            free_guess(system_file_buffers[2]);
             system_file_buffers[0] = 0;
             system_file_buffers[1] = 0;
             system_file_buffers[2] = 0;
 
-            if (func_115640(D_001B65E4) != 0)
+            if (resident_archive_get_command_result(g_resource_archive) != 0)
             {
                 step = BOOT_INSTALL_SHOW_ERROR;
             }
             else
             {
-                func_115810(D_001B65E4, 3, 0);
+                resident_archive_start_command(g_resource_archive, 3, 0);
                 step++;
             }
         }
 
         break;
     case BOOT_INSTALL_START_COPY:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            if (func_115640(D_001B65E4) != 0)
+            if (resident_archive_get_command_result(g_resource_archive) != 0)
             {
                 step = BOOT_INSTALL_SHOW_ERROR;
             }
             else
             {
-                install_buffer = func_139700(0x40, 0x200000);
+                install_buffer = (u8*)memalign_guess(0x40, 0x200000);
                 FlushCache(0);
-                func_1156B0(D_001B65E4, install_buffer);
-                D_001B65E4->unk13b = 0;
-                func_115810(D_001B65E4, 5, 0);
-                install_total = func_1158A0(D_001B65E4) * 4;
+                resident_archive_set_copy_buffer(g_resource_archive, install_buffer);
+                g_resource_archive->copy_paused = 0;
+                resident_archive_start_command(g_resource_archive, 5, 0);
+                install_total = resident_archive_get_install_words(g_resource_archive) * 4;
                 step++;
             }
         }
 
         break;
     case BOOT_INSTALL_COPY_PROGRESS:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            if (func_115640(D_001B65E4) != 0)
+            if (resident_archive_get_command_result(g_resource_archive) != 0)
             {
                 step = BOOT_INSTALL_SHOW_ERROR;
             }
@@ -780,7 +766,7 @@ void BootInstaller::update()
         }
         else
         {
-            remaining = func_115660(D_001B65E4);
+            remaining = resident_archive_get_copy_remaining(g_resource_archive);
             percent = 99 - remaining * 99 / install_total;
             D_001B657C->message_value = percent;
             lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
@@ -798,9 +784,9 @@ void BootInstaller::update()
             if (input->pressed & resource->cancel_buttons)
             {
                 lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_ABORT_CONFIRM, 0);
-                func_112400(D_001B65F8, 2, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
                 queue_fade();
-                D_001B65E4->unk13b = 1;
+                g_resource_archive->copy_paused = 1;
                 selection = 1;
                 x = menu_cursor_x(selection);
                 cursor = new (0) BootSelectionCursor;
@@ -819,21 +805,21 @@ void BootInstaller::update()
         D_001B657C->message_value = 100;
         lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
         progress_bar_draw(progress_bar, 100, 100);
-        func_1156B0(D_001B65E4, 0);
+        resident_archive_set_copy_buffer(g_resource_archive, 0);
 
         if (install_buffer != 0)
         {
-            func_139928(install_buffer);
+            free_guess(install_buffer);
             install_buffer = 0;
         }
 
-        func_115810(D_001B65E4, 4, 0);
+        resident_archive_start_command(g_resource_archive, 4, 0);
         step++;
         break;
     case BOOT_INSTALL_WAIT_FOR_FINISH:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            func_112400(D_001B65F8, 8, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
             step++;
         }
@@ -846,7 +832,7 @@ void BootInstaller::update()
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_SHOW_ERROR:
-        if (func_115430(D_001B65E4) != 0)
+        if (resident_archive_has_unit_error(g_resource_archive) != 0)
         {
             if (tip_text != 0)
             {
@@ -862,7 +848,7 @@ void BootInstaller::update()
             }
 
             lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_UNIT_ERROR, 0);
-            func_115420(D_001B65E4);
+            resident_archive_clear_unit_error(g_resource_archive);
         }
         else
         {
@@ -874,14 +860,14 @@ void BootInstaller::update()
     case BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT:
         if (input->pressed & resource->confirm_buttons)
         {
-            func_112400(D_001B65F8, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
             queue_fade();
             step = BOOT_INSTALL_RETURN_TO_TITLE;
         }
 
         break;
     case BOOT_INSTALL_RETURN_TO_TITLE:
-        func_10F000(D_001B65F8, 0, -1);
+        resident_sound_stop_music(g_sound, 0, -1);
         func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
 
         for (s32 i = 0; i < 20; i++)
@@ -946,7 +932,7 @@ void BootInstaller::update()
         tip_text->visible = 1;
         tip_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
-        D_001B65E4->unk13b = 0;
+        g_resource_archive->copy_paused = 0;
         step = BOOT_INSTALL_COPY_PROGRESS;
         break;
     case BOOT_INSTALL_ABORT_COPY:
@@ -964,46 +950,46 @@ void BootInstaller::update()
         }
 
         queue_fade();
-        D_001B65E4->unk13b = 0;
-        func_1156C0(D_001B65E4);
+        g_resource_archive->copy_paused = 0;
+        resident_archive_cancel_command(g_resource_archive);
         step++;
         wait_frames = 0;
         break;
     case BOOT_INSTALL_WAIT_FOR_ABORT:
         wait_frames++;
 
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            func_115810(D_001B65E4, 4, 0);
+            resident_archive_start_command(g_resource_archive, 4, 0);
             step++;
         }
 
         if (wait_frames >= BOOT_INSTALL_ABORT_TIMEOUT_FRAMES)
         {
-            BootResident1B65E4* resident = D_001B65E4;
-            resident->unk108 = 0;
-            resident->unk141 = 3;
+            ResidentArchive* archive = g_resource_archive;
+            archive->unit_ready = 0;
+            archive->unit_state = 3;
             step = BOOT_INSTALL_RETURN_FROM_ABORT;
         }
 
         break;
     case BOOT_INSTALL_FINISH_ABORT:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            func_115810(D_001B65E4, 2, 0);
+            resident_archive_start_command(g_resource_archive, 2, 0);
             step++;
         }
 
         break;
     case BOOT_INSTALL_WAIT_FOR_ABORT_FINISH:
-        if (func_115650(D_001B65E4) == 0)
+        if (resident_archive_is_busy(g_resource_archive) == 0)
         {
             step++;
         }
 
         break;
     case BOOT_INSTALL_RETURN_FROM_ABORT:
-        if (func_115670(D_001B65E4) != 0)
+        if (resident_archive_is_unit_ready(g_resource_archive) != 0)
         {
             step = BOOT_INSTALL_SHOW_INITIAL_PROMPT;
             selection = 0;
@@ -1046,9 +1032,9 @@ void BootInstaller::update()
         break;
     }
 
-    if (exiting == 0 && step > 0 && sound_started == 0 && resident_find_resource_request(D_001B65E8, BOOT_RES_SOUND, 0, 0, -1, 0) == 0)
+    if (exiting == 0 && step > 0 && sound_started == 0 && resident_find_resource_request(g_resource_queue, BOOT_RES_SOUND, 0, 0, -1, 0) == 0)
     {
-        func_1126D0(D_001B65F8, sound_data, 1, 0);
+        resident_sound_load_bank(g_sound, sound_data, 1, 0);
         sound_started = 1;
     }
 
@@ -1137,7 +1123,7 @@ BootInstaller::~BootInstaller()
     delete navigator_file_buffers[0];
     delete navigator_file_buffers[1];
     delete navigator_file_buffers[2];
-    func_10F000(D_001B65F8, 0, -1);
+    resident_sound_stop_music(g_sound, 0, -1);
     delete sound_data;
     g_boot_program.error_popup->set_enabled(1);
 }
@@ -1155,10 +1141,10 @@ void BootUnitErrorPopup::set_enabled(u8 value)
 BootInstaller::BootInstaller()
 {
     s32 i;
-    screen_image_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_SCREEN_IMAGES));
-    func_103E70(D_001B65E8, BOOT_RES_SCREEN_IMAGES, screen_image_data, 1, 0x34BC0, 0, 0, 0, 1);
-    sound_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_SOUND));
-    tip_image_data = func_139700(0x40, resident_get_resource_size(D_001B65E4, BOOT_RES_TIP_IMAGES));
+    screen_image_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SCREEN_IMAGES));
+    func_103E70(g_resource_queue, BOOT_RES_SCREEN_IMAGES, screen_image_data, 1, 0x34BC0, 0, 0, 0, 1);
+    sound_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SOUND));
+    tip_image_data = (u8*)memalign_guess(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TIP_IMAGES));
     step = BOOT_INSTALL_WAIT_FOR_RESOURCES;
 
     for (i = 0; i < 2; i++)
@@ -1191,8 +1177,8 @@ BootInstaller::BootInstaller()
     navigator_file_buffers[0] = 0;
     navigator_file_buffers[1] = 0;
     navigator_file_buffers[2] = 0;
-    system_file_data = new (0) u8[resident_get_resource_size(D_001B65E4, BOOT_RES_SYSTEM_FILES)];
-    navigator_file_data = new (0) u8[resident_get_resource_size(D_001B65E4, BOOT_RES_NAVIGATOR_FILES)];
+    system_file_data = new (0) u8[resident_get_resource_size(g_resource_archive, BOOT_RES_SYSTEM_FILES)];
+    navigator_file_data = new (0) u8[resident_get_resource_size(g_resource_archive, BOOT_RES_NAVIGATOR_FILES)];
     selection = 0;
     screen_images_loaded = 0;
 }
@@ -1217,7 +1203,7 @@ void BootDmaCallbacks::on_packet_complete(u32 value)
  * @brief Copy the position.
  * @param value Source vector.
  */
-void BootPositionTransform::copy_translation(const BootVector4DDAA0* value)
+void BootPositionTransform::copy_translation(const BootVector4* value)
 {
     copy_vector(&translation, value);
 }
@@ -1226,7 +1212,7 @@ void BootPositionTransform::copy_translation(const BootVector4DDAA0* value)
  * @brief Copy the position.
  * @param value Source vector.
  */
-void BootPositionTransform::set_translation_vector(const BootVector4DDAA0* value)
+void BootPositionTransform::set_translation_vector(const BootVector4* value)
 {
     copy_vector(&translation, value);
 }
@@ -1263,7 +1249,7 @@ void BootListObject::update()
  * @brief Copy the position and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::copy_translation(const BootVector4DDAA0* value)
+void BootTransform::copy_translation(const BootVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&translation, value);
@@ -1273,7 +1259,7 @@ void BootTransform::copy_translation(const BootVector4DDAA0* value)
  * @brief Copy the position and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::set_translation_vector(const BootVector4DDAA0* value)
+void BootTransform::set_translation_vector(const BootVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&translation, value);
@@ -1299,7 +1285,7 @@ void BootTransform::set_orientation_components(float x, float y, float z, float 
  * @brief Copy the rotation vector and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::copy_orientation(const BootVector4DDAA0* value)
+void BootTransform::copy_orientation(const BootVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
@@ -1309,7 +1295,7 @@ void BootTransform::copy_orientation(const BootVector4DDAA0* value)
  * @brief Copy the rotation vector and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::set_orientation(const BootVector4DDAA0* value)
+void BootTransform::set_orientation(const BootVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
@@ -1319,7 +1305,7 @@ void BootTransform::set_orientation(const BootVector4DDAA0* value)
  * @brief Convert a rotation into the rotation vector and mark the transform dirty.
  * @param value Source rotation.
  */
-void BootTransform::convert_rotation(const BootVector4DDAA0* value)
+void BootTransform::convert_rotation(const BootVector4* value)
 {
     transform_dirty = 1;
     func_4CE4C0(&orientation, &value->x);
@@ -1329,7 +1315,7 @@ void BootTransform::convert_rotation(const BootVector4DDAA0* value)
  * @brief Convert a rotation into the rotation vector and mark the transform dirty.
  * @param value Source rotation.
  */
-void BootTransform::set_rotation_vector(const BootVector4DDAA0* value)
+void BootTransform::set_rotation_vector(const BootVector4* value)
 {
     transform_dirty = 1;
     func_4CE4C0(&orientation, &value->x);
@@ -1344,7 +1330,7 @@ void BootTransform::set_rotation_vector(const BootVector4DDAA0* value)
 void BootTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
-    BootVector4DDAA0 value;
+    BootVector4 value;
     value.x = x;
     value.y = y;
     value.z = z;
@@ -1356,7 +1342,7 @@ void BootTransform::set_rotation(float x, float y, float z)
  * @brief Copy the scale vector and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::copy_scale(const BootVector4DDAA0* value)
+void BootTransform::copy_scale(const BootVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
@@ -1366,7 +1352,7 @@ void BootTransform::copy_scale(const BootVector4DDAA0* value)
  * @brief Copy the scale vector and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::set_scale_vector(const BootVector4DDAA0* value)
+void BootTransform::set_scale_vector(const BootVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
@@ -1408,7 +1394,7 @@ bool BootTransformOwner::set_fade_alpha(float value, float mode)
  * @brief Return the bounding sphere Lib culls against (centre in xyz, radius in w); this owner has Lib's shared default.
  * @return Bounding sphere.
  */
-const BootVector4DDAA0* BootTransformOwner::get_bounding_sphere()
+const BootVector4* BootTransformOwner::get_bounding_sphere()
 {
     return &D_50CD30;
 }

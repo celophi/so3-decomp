@@ -107,7 +107,7 @@ extern "C" void func_0020DE80(FieldClass151640* object)
         {
             break;
         }
-        func_0013A4C0(node->unk84, node->unk84, 0x11);
+        memcpy_guess(node->unk84, node->unk84, 0x11);
         node->shape.unk04 = (LibClass178A90*)func_00473390(D_001B6430->context->unk08->current_object->unk7c, node->unk84);
     }
 }

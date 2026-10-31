@@ -1,6 +1,6 @@
 #include "include_asm.h"
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013CD50", func_0013CD50);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013CD50", strncpy_guess);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_0013CD50", func_0013CF10);
 

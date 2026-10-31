@@ -740,12 +740,12 @@ extern "C" void func_004CFD80(LibMatrix44Value* output, float x_scale, float y_s
 /** @brief Set the upper 3x3 rotation from three angles. @param output Matrix whose rotation is updated. @param angles Three rotation angles in radians. */
 extern "C" void func_004CFDE0(LibMatrix44Value* output, const float* angles)
 {
-    float cosine_x = func_00141BE0(angles[0]);
-    float sine_x = func_00141DD0(angles[0]);
-    float cosine_y = func_00141BE0(angles[1]);
-    float sine_y = func_00141DD0(angles[1]);
-    float cosine_z = func_00141BE0(angles[2]);
-    float sine_z = func_00141DD0(angles[2]);
+    float cosine_x = cosf_guess(angles[0]);
+    float sine_x = sinf_guess(angles[0]);
+    float cosine_y = cosf_guess(angles[1]);
+    float sine_y = sinf_guess(angles[1]);
+    float cosine_z = cosf_guess(angles[2]);
+    float sine_z = sinf_guess(angles[2]);
     float sine_x_sine_y = sine_x * sine_y;
     output->m[0][0] = cosine_y * cosine_z - sine_z * sine_x_sine_y;
     output->m[1][0] = -cosine_x * sine_z;
@@ -762,8 +762,8 @@ extern "C" void func_004CFDE0(LibMatrix44Value* output, const float* angles)
 /** @brief Set the upper 3x3 rotation about the Y axis. @param output Matrix whose rotation is updated. @param angle Rotation angle in radians. */
 extern "C" void func_004CFEE0(LibMatrix44Value* output, float angle)
 {
-    float cosine = func_00141BE0(angle);
-    float sine = func_00141DD0(angle);
+    float cosine = cosf_guess(angle);
+    float sine = sinf_guess(angle);
     output->m[0][0] = cosine;
     output->m[1][0] = 0.0f;
     output->m[2][0] = -sine;
@@ -1641,7 +1641,7 @@ LibTextureScrollChannel::LibTextureScrollChannel()
 
     for (s32 i = 0; i < TRANSFER_COUNT; i++, packet++)
     {
-        func_0013A678(packet, 0, sizeof(LibTextureTransferPacket));
+        memset_guess(packet, 0, sizeof(LibTextureTransferPacket));
         packet->vif_unpack[0] = 0;
         packet->vif_unpack[1] = 0;
         packet->vif_unpack[2] = 0;

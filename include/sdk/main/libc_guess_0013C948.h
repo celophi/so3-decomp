@@ -13,7 +13,7 @@ extern "C" {
  * @param source Null-terminated source string.
  * @return Original destination pointer.
  */
-char* func_0013C948(char* destination, const char* source);
+char* strcpy_guess(char* destination, const char* source);
 
 #ifdef __cplusplus
 }

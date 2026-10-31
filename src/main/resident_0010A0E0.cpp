@@ -13,18 +13,18 @@ static inline bool resident_object_release_ring_is_full(const ResidentReleaseQue
 }
 
 extern "C" {
-void func_00118880(void* object);
+void func_00118880(void* worker, s32 command, s32 argument);
 void func_00114E00(void* value);
 s32 iWakeupThread(s32 thread_id);
 s32 StartThread(s32 thread_id, void* argument);
 s32 SleepThread(void);
 s32 func_00135320(double left, double right);
 s32 func_00115000(void* object, s32 mode, s32 size);
-typedef struct ResidentFloatQuadDA30
+typedef struct ResidentSpeakerAngles
 {
-    float values[4];
-} ResidentFloatQuadDA30;
-extern const ResidentFloatQuadDA30 D_00144260;
+    float angles[4];
+} ResidentSpeakerAngles;
+extern const ResidentSpeakerAngles D_00144260;
 typedef struct ConstantByteSetterOwnerresident_0010A0E0
 {
     u8 unk00[0x1012];
@@ -32,12 +32,6 @@ typedef struct ConstantByteSetterOwnerresident_0010A0E0
 } ConstantByteSetterOwnerresident_0010A0E0;
 
 
-
-typedef struct WordSetterOwnerresident_0010A0E0
-{
-    u8 unk00[0x134];
-    u32 unk134;
-} WordSetterOwnerresident_0010A0E0;
 
 
 
@@ -60,14 +54,6 @@ typedef struct ResidentPairSetter112D70
     u32 unk10;
     void* unk14;
 } ResidentPairSetter112D70;
-
-typedef struct ResidentTwoByteClear15420
-{
-    u8 unk00[0x6C];
-    u8 unk6C;
-    u8 unk6D[0xD3];
-    u8 unk140;
-} ResidentTwoByteClear15420;
 
 typedef struct ResidentThreadHandle114DD0
 {
@@ -101,31 +87,6 @@ typedef struct ResidentWordAndFlag2F9
     u8 unk2F9;
 } ResidentWordAndFlag2F9;
 
-typedef struct ResidentDistanceRequestEA70
-{
-    u8 unk00[0x1390];
-    void* target;
-    float value;
-    float distance_squared;
-} ResidentDistanceRequestEA70;
-
-typedef struct ResidentSixWordSetter152C0
-{
-    u8 unk00[0x15C];
-    u32 unk15C;
-    u32 unk160;
-    u32 unk164;
-    u32 unk168;
-    u32 unk16C;
-    u32 unk170;
-} ResidentSixWordSetter152C0;
-
-typedef struct ResidentFloatCopyTargetEAA0
-{
-    u8 pad00[0x139C];
-    float values[4];
-} ResidentFloatCopyTargetEAA0;
-
 typedef struct ResidentByteAndWordResetB730
 {
     u8 pad00[0x78];
@@ -134,13 +95,6 @@ typedef struct ResidentByteAndWordResetB730
     u32 unk80;
     u32 unk84;
 } ResidentByteAndWordResetB730;
-
-typedef struct ResidentByteStoreAndHelperDA70
-{
-    void* unk00;
-    u8 pad04[0x44C];
-    u8 unk450;
-} ResidentByteStoreAndHelperDA70;
 
 typedef struct ResidentManagerEF50
 {
@@ -262,11 +216,11 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C820)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C8E0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010CAA0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_random_below);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010CC40);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_random_range);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010CE00);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_rand);
 
 /**
  * @brief Advance the resident subtractive random sequence and return its next word.
@@ -304,28 +258,33 @@ void* resident_get_runtime_owner(void)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D8F0);
 
-/** Copy the default resident float quad into the receiver's float fields. */
-void func_0010DA30(void* object)
+/**
+ * @brief Put the four surround speakers back at their default angles.
+ * @param sound Sound system.
+ */
+void resident_sound_reset_speaker_angles(ResidentSound* sound)
 {
-    ResidentFloatQuadDA30 values = D_00144260;
-    ResidentFloatCopyTargetEAA0* receiver = (ResidentFloatCopyTargetEAA0*)object;
-    receiver->values[0] = values.values[0];
-    receiver->values[1] = values.values[1];
-    receiver->values[2] = values.values[2];
-    receiver->values[3] = values.values[3];
+    ResidentSpeakerAngles angles = D_00144260;
+    sound->speaker_angles[0] = angles.angles[0];
+    sound->speaker_angles[1] = angles.angles[1];
+    sound->speaker_angles[2] = angles.angles[2];
+    sound->speaker_angles[3] = angles.angles[3];
 }
 
-/** Store the low byte at offset 0x450, then run the resident helper on the pointer at offset 0. */
-void func_0010DA70(void* object, u32 value)
+/**
+ * @brief Set the sound output mode.
+ * @param sound Sound system.
+ * @param mode Output mode: 1 mono, 0 stereo, 2 Dolby Pro Logic II, 3 headphones.
+ */
+void resident_sound_set_output_mode(ResidentSound* sound, s32 mode)
 {
-    ResidentByteStoreAndHelperDA70* receiver = (ResidentByteStoreAndHelperDA70*)object;
-    receiver->unk450 = value;
-    func_00108C40(receiver->unk00, 0, 0, 0, value & 0xFF);
+    sound->output_mode = mode;
+    func_00108C40(sound->stream, 0, 0, 0, mode & 0xFF);
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DAA0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DB10);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_set_volume_scale);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DBB0);
 
@@ -352,33 +311,46 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E130)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E200);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E310);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_get_voice_level);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E4B0);
 
-void func_0010EA70(ResidentRequest112400* request, void* target, float value, float distance)
+/**
+ * @brief Set the object positional sounds are heard from.
+ * @param sound Sound system.
+ * @param listener Listening object.
+ * @param value Stored with the listener; its use is unknown.
+ * @param range Distance positional sounds reach.
+ */
+void resident_sound_set_listener(ResidentSound* sound, void* listener, float value, float range)
 {
-    ResidentDistanceRequestEA70* receiver = (ResidentDistanceRequestEA70*)request;
-    receiver->target = target;
-    receiver->value = value;
-    receiver->distance_squared = distance * distance;
+    sound->listener = listener;
+    sound->unk1394 = value;
+    sound->range_squared = range * range;
 }
 
-/** Store the float at receiver offset 0x139C for index. */
-void func_0010EA90(void* object, s32 index, float value)
+/**
+ * @brief Set the angle of one surround speaker.
+ * @param sound Sound system.
+ * @param speaker Speaker index, 0 to 3.
+ * @param angle Speaker angle in radians.
+ */
+void resident_sound_set_speaker_angle(ResidentSound* sound, s32 speaker, float angle)
 {
-    float* values = (float*)object;
-    values[index + 0x4E7] = value;
+    sound->speaker_angles[speaker] = angle;
 }
 
-/** Copy four floats to receiver offsets 0x139C, 0x13A0, 0x13A4, and 0x13A8. */
-void func_0010EAA0(void* object, const float* values)
+/**
+ * @brief Set the angles of all four surround speakers.
+ * @param sound Sound system.
+ * @param angles Four speaker angles in radians.
+ */
+void resident_sound_set_speaker_angles(ResidentSound* sound, const float* angles)
 {
-    ResidentFloatCopyTargetEAA0* receiver = (ResidentFloatCopyTargetEAA0*)object;
-    receiver->values[0] = values[0];
-    receiver->values[1] = values[1];
-    receiver->values[2] = values[2];
-    receiver->values[3] = values[3];
+    sound->speaker_angles[0] = angles[0];
+    sound->speaker_angles[1] = angles[1];
+    sound->speaker_angles[2] = angles[2];
+    sound->speaker_angles[3] = angles[3];
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EAD0);
@@ -423,7 +395,7 @@ s32 func_0010EFD0(void* object)
     return func_00107B10(*(void**)object, 0, 0, 0, 1) != 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010F000);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_stop_music);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010F250);
 
@@ -439,9 +411,9 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001105E0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001106B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00110920);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_stop);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00110C10);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_is_active);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00110C60);
 
@@ -457,7 +429,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00111860)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00111A90);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00111C50);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_play_voice);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00111EF0);
 
@@ -470,7 +442,7 @@ extern s32 func_00108220(void* context, s32 first,
     s32 selected, s32 value, s32 arg3, s32 zero, s32 packed);
 
 /** @brief Find a free slot while advancing and wrapping the allocation cursor. @param receiver Request receiver. @return Free slot index, or minus one. */
-static inline s32 find_available_request_slot(ResidentRequest112400* receiver)
+static inline s32 find_available_request_slot(ResidentSound* receiver)
 {
     s32 i;
     s32 slot;
@@ -502,7 +474,7 @@ static inline ResidentRequestSlot* request_slot(ResidentRequestSlot* slots, s32 
 }
 
 /** @brief Reserve and dispatch a request with an unused identifier. @param receiver Request receiver. @param arg1 Request value. @param arg2 Request selector. @param arg3 Forwarded dispatch value. @param arg4 Stored value and upper packed byte. @param arg5 Next packed byte. @param arg6 Lower packed halfword. @return Request identifier, zero on failure, one when disabled, or minus one when unavailable. */
-s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg2,
+s32 resident_sound_play(ResidentSound* receiver, s32 arg1, s32 arg2,
                   s32 arg3, s32 arg4, s32 arg5, s32 arg6)
 {
     s32 slot;
@@ -550,7 +522,7 @@ s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg
         request->value = arg1;
         request->unk18 = arg4;
         request->unk1c = 0;
-        if (!func_00108220(receiver->context, 0, func_0010EE60, request,
+        if (!func_00108220(receiver->stream, 0, func_0010EE60, request,
                           ((s32*)((u8*)receiver + 0x454))[arg2], arg1, arg3, 0,
                           ((u32)arg6 & 0xFFFF) | (((u32)arg4 << 24) | ((u32)arg5 << 16))))
         {
@@ -563,11 +535,11 @@ s32 resident_allocate_request(ResidentRequest112400* receiver, s32 arg1, s32 arg
 }
 
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112610);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_is_music_playing);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001126D0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_load_bank);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112990);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_play_music);
 
 void func_00112D70(void* object, u32 value, void* pointer)
 {
@@ -847,90 +819,129 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001151B0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115270);
 
-/** Store six words at receiver offsets 0x15C through 0x170. */
-void func_001152C0(void* object, u32 arg1, u32 arg2, u32 arg3,
-                   u32 arg4, u32 arg5, u32 arg6)
+/**
+ * @brief Set the three BB Navigator files the install writes.
+ * @param archive Resource archive.
+ * @param first First file.
+ * @param first_size Size of first.
+ * @param second Second file.
+ * @param second_size Size of second.
+ * @param third Third file.
+ * @param third_size Size of third.
+ */
+void resident_archive_set_navigator_files(ResidentArchive* archive, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
+                                          s32 third_size)
 {
-    ResidentSixWordSetter152C0* receiver = (ResidentSixWordSetter152C0*)object;
-    receiver->unk15C = arg1;
-    receiver->unk168 = arg2;
-    receiver->unk160 = arg3;
-    receiver->unk16C = arg4;
-    receiver->unk164 = arg5;
-    receiver->unk170 = arg6;
+    archive->navigator_files[0] = first;
+    archive->navigator_file_sizes[0] = first_size;
+    archive->navigator_files[1] = second;
+    archive->navigator_file_sizes[1] = second_size;
+    archive->navigator_files[2] = third;
+    archive->navigator_file_sizes[2] = third_size;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001152E0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_set_system_files);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115310);
 
-void func_00115420(void* object)
+/**
+ * @brief Clear the pending hard disk unit error.
+ * @param archive Resource archive.
+ */
+void resident_archive_clear_unit_error(ResidentArchive* archive)
 {
-    ResidentTwoByteClear15420* receiver = (ResidentTwoByteClear15420*)object;
-    receiver->unk140 = 0;
-    receiver->unk6C = 0;
+    archive->unk140 = 0;
+    archive->unk6c = 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115430);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_has_unit_error);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115460);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_query_unit);
 
-/** Return the word at receiver offset 0x110. */
-u32 func_00115640(const void* object)
+/**
+ * @brief Get the result of the last worker command.
+ * @param archive Resource archive.
+ * @return Zero on success, otherwise an error.
+ */
+s32 resident_archive_get_command_result(const ResidentArchive* archive)
 {
-    const WordGetterOwnerresident_0010A0E0* receiver = (const WordGetterOwnerresident_0010A0E0*)object;
-    return receiver->unk110;
+    return archive->command_result;
 }
 
-/** Return the word at receiver offset 0x10C. */
-u32 func_00115650(const void* object)
+/**
+ * @brief Report whether a worker command is running.
+ * @param archive Resource archive.
+ * @return Nonzero while a command runs.
+ */
+s32 resident_archive_is_busy(const ResidentArchive* archive)
 {
-    const WordGetterOwnerresident_0010A0E0* receiver = (const WordGetterOwnerresident_0010A0E0*)object;
-    return receiver->unk10c;
+    return archive->busy;
 }
 
-/** Return the word at receiver offset 0x118. */
-u32 func_00115660(const void* object)
+/**
+ * @brief Get the words the install still has to copy.
+ * @param archive Resource archive.
+ * @return Remaining words.
+ */
+s32 resident_archive_get_copy_remaining(const ResidentArchive* archive)
 {
-    const WordGetterOwnerresident_0010A0E0* receiver = (const WordGetterOwnerresident_0010A0E0*)object;
-    return receiver->unk118;
+    return archive->copy_remaining;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115670);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_is_unit_ready);
 
-/** Store the word at receiver offset 0x134. */
-void func_001156B0(void* object, u32 value)
+/**
+ * @brief Set the buffer the install copies through.
+ * @param archive Resource archive.
+ * @param buffer Copy buffer, or null once the copy is done.
+ */
+void resident_archive_set_copy_buffer(ResidentArchive* archive, u8* buffer)
 {
-    WordSetterOwnerresident_0010A0E0* receiver = (WordSetterOwnerresident_0010A0E0*)object;
-    receiver->unk134 = value;
+    archive->copy_buffer = buffer;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001156C0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_cancel_command);
 
-void func_00115810(void* object)
+/**
+ * @brief Queue a command for the hard disk worker.
+ * @param archive Resource archive.
+ * @param command Worker command.
+ * @param argument Command argument.
+ */
+void resident_archive_start_command(ResidentArchive* archive, s32 command, s32 argument)
 {
-    func_00118880((u8*)object + 0xEC);
+    func_00118880(archive->unkEC, command, argument);
 }
 
-/** Return the word at receiver offset 0x104. */
-u32 func_00115830(const void* object)
+/**
+ * @brief Get the free space the last space query found.
+ * @param archive Resource archive.
+ * @return Free space in bytes.
+ */
+u32 resident_archive_get_free_space(const ResidentArchive* archive)
 {
-    const WordGetterOwnerresident_0010A0E0* receiver = (const WordGetterOwnerresident_0010A0E0*)object;
-    return receiver->unk104;
+    return archive->free_space;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115840);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_get_install_size);
 
-/** Sum each entry value when its resident flag word is nonzero. */
-u32 func_001158A0(const void* object)
+/**
+ * @brief Sum the entries of every resource the install copies.
+ * @param archive Resource archive.
+ * @return Install size in words.
+ */
+s32 resident_archive_get_install_words(const ResidentArchive* archive)
 {
-    const u8* entry = (const u8*)object;
     u32 total = 0;
-    for (s32 index = 0; index < 0x1800; index++, entry += sizeof(u32)) {
-        if (*(const u32*)(entry + 0xC17C) != 0) {
-            total += *(const u32*)(entry + 0x617C);
+
+    for (s32 i = 0; i < 0x1800; i++)
+    {
+        if (archive->install_flags[i] != 0)
+        {
+            total += archive->resource_entries[i];
         }
     }
+
     return total;
 }
 
@@ -984,11 +995,15 @@ s32 func_0011C7C0(const void* object)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C7D0);
 
-/** Return the descriptor's low 24-bit size value in bytes for key. */
-u32 func_0011C8C0(struct ResidentObject1B65E4* object, s32 key)
+/**
+ * @brief Get the size of a resource, in whole 2048-byte blocks.
+ * @param archive Resource archive.
+ * @param key Resource key.
+ * @return Resource size in bytes.
+ */
+u32 resident_get_resource_size(const ResidentArchive* archive, s32 key)
 {
-    const u32* values = (const u32*)((const u8*)object + 0x617C);
-    return (values[key] & 0x00FFFFFF) << 11;
+    return (archive->resource_entries[key] & 0x00FFFFFF) << 11;
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C8E0);
@@ -1016,7 +1031,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D840)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D950);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D9A0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_get_clock);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DA80);
 
@@ -1030,12 +1045,16 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DDA0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DE00);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DEE0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_input_attach_display);
 
-/** Return and clear the word at receiver offset 0x10. */
-u32 func_0011DF00(void* object)
+/**
+ * @brief Take the number of vblanks counted since the last call.
+ * @param input Input system.
+ * @return Vblanks since the last call.
+ */
+s32 resident_input_take_vblank_count(struct ResidentInputSystem* input)
 {
-    ResidentWordExchange10* receiver = (ResidentWordExchange10*)object;
+    ResidentWordExchange10* receiver = (ResidentWordExchange10*)input;
     u32 value = receiver->unk10;
     receiver->unk10 = 0;
     return value;
@@ -1066,49 +1085,71 @@ void func_0011DF80(void* object)
     receiver->unk2F9 = 0;
 }
 
-/** Clear the halfwords at receiver offsets 0x268 and 0x26C for index. */
-void func_0011DF90(void* object, s32 index)
+/**
+ * @brief Clear the pressed and held-since-clear latches of a pad.
+ * @param input Input system.
+ * @param slot Pad slot.
+ */
+void resident_pad_clear_latched(struct ResidentInputSystem* input, s32 slot)
 {
-    u16* values = (u16*)object;
-    values[index + 0x134] = 0;
-    values[index + 0x136] = 0;
+    u16* values = (u16*)input;
+    values[slot + 0x134] = 0;
+    values[slot + 0x136] = 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DFB0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_pad_get_repeated);
 
-u16 func_0011DFF0(const void* object, s32 index)
+/**
+ * @brief Get the buttons newly pressed since the latches were last cleared.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @return Pressed button bits.
+ */
+u16 resident_pad_get_pressed(const struct ResidentInputSystem* input, s32 slot)
 {
-    const u16* values = (const u16*)((const u8*)object + 0x26C);
-    return values[index];
+    const u16* values = (const u16*)((const u8*)input + 0x26C);
+    return values[slot];
 }
 
-u16 func_0011E000(const void* object, s32 index)
+/**
+ * @brief Get every button held at some point since the latches were last cleared.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @return Held button bits.
+ */
+u16 resident_pad_get_held_since_clear(const struct ResidentInputSystem* input, s32 slot)
 {
-    const u16* values = (const u16*)((const u8*)object + 0x268);
-    return values[index];
+    const u16* values = (const u16*)((const u8*)input + 0x268);
+    return values[slot];
 }
 
-u16 func_0011E010(const void* object, s32 index)
+/**
+ * @brief Get the buttons a pad holds this frame.
+ * @param input Input system.
+ * @param slot Pad slot.
+ * @return Held button bits.
+ */
+u16 resident_pad_get_held(const struct ResidentInputSystem* input, s32 slot)
 {
-    const u16* values = (const u16*)((const u8*)object + 0x260);
-    return values[index];
+    const u16* values = (const u16*)((const u8*)input + 0x260);
+    return values[slot];
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E020);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_pad_set_stick_dpad);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E030);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_pad_set_vibration_enabled);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E060);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_pad_update_vibration);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E210);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_pad_set_vibration);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E290);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E320);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_pad_get_sticks);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E440);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_input_handle_vblank);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E540);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_pad_update);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E970);
 
