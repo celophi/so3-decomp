@@ -101,6 +101,11 @@ struct ResidentAllocationHeader
     u32 tag;
 };
 
+// TODO: The destructors inline operator delete, but resident_system_create_status doesn't inline operator new[],
+// so auto inlining seems to have been on only for this function.
+#pragma push
+#pragma auto_inline on
+
 /** @brief Release resident heap allocations or use the default free routine. @param memory Allocation to release, or null. */
 void operator delete(void* memory) throw()
 {
@@ -118,6 +123,8 @@ void operator delete(void* memory) throw()
         }
     }
 }
+
+#pragma pop
 
 /** @brief Release resident heap arrays or use the default free routine. @param memory Allocation to release, or null. */
 void operator delete[](void* memory) throw()
@@ -171,7 +178,14 @@ u32 resident_prime_heap(void)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100D00);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100E70);
+/** @brief Delete the kernel semaphore, if one was created. */
+ResidentSemaphore::~ResidentSemaphore()
+{
+    if (id >= 0)
+    {
+        DeleteSema(id);
+    }
+}
 
 /**
  * @brief Allocate the system's status byte at a random heap address and mark it clean.
@@ -255,4 +269,26 @@ void resident_system_init_overlay(ResidentSystem* system, void* overlay, s32 slo
     mwOverlayInit(overlay, size);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", resident_system_load_overlay);
+/** Load address of the overlay in each slot, or null for an empty slot. */
+extern "C" void* D_001B5FB0[];
+
+/**
+ * @brief Decode an overlay into its slot and run its static initializers.
+ * @param system Resident system.
+ * @param source Loaded, compressed overlay resource.
+ * @param slot Slot in the resident overlay table D_001B5FB0.
+ */
+void resident_system_load_overlay(ResidentSystem* system, ResidentResourceHeader* source, s32 slot)
+{
+    u32 size;
+    void* overlay = D_001B5FB0[slot];
+
+    if (overlay != 0)
+    {
+        resident_decode_resource_block(&system->decoder, source, overlay, 0);
+        size = source->decoded_size;
+        FlushCache(0);
+        mwOverlayInit(overlay, size);
+        FlushCache(2);
+    }
+}

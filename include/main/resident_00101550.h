@@ -59,8 +59,11 @@ typedef struct ResidentResourceQueue
     u8 unk30;
 } ResidentResourceQueue;
 
-/** Opaque resident decoder used by the resource loading helpers. */
-typedef struct ResidentDecodeObject ResidentDecodeObject;
+/** Resident decoder used by the resource loading helpers; it keeps no state, so it is one byte. */
+typedef struct ResidentDecodeObject
+{
+    u8 unk00;
+} ResidentDecodeObject;
 
 /** Header of an SLZ/SLE compression block; next_offset is relative to this header. */
 typedef struct ResidentResourceHeader

@@ -21,6 +21,17 @@ void* operator new(u32 size, s32 unused);
  */
 void* operator new[](u32 size, s32 unused);
 
+/** Kernel semaphore that deletes itself when destroyed; vtable D_0014F9E0. */
+class ResidentSemaphore
+{
+public:
+    /** Kernel semaphore ID, or a negative value when none was created. */
+    s32 id;
+
+    /** @brief Delete the kernel semaphore, if one was created. */
+    virtual ~ResidentSemaphore();
+};
+
 extern "C" {
 #endif
 
@@ -53,6 +64,7 @@ void* resident_exchange_allocation_heap(void* heap);
 void* resident_get_allocation_heap(void);
 
 struct ResidentSystem;
+struct ResidentResourceHeader;
 
 /**
  * @brief Clear a decoded overlay's BSS and run its static initializers.
@@ -120,7 +132,7 @@ void resident_system_switch_program(struct ResidentSystem* system, void* source,
  * @param source Loaded, compressed overlay resource.
  * @param slot Slot in the resident overlay table D_001B5FB0.
  */
-void resident_system_load_overlay(struct ResidentSystem* system, void* source, s32 slot);
+void resident_system_load_overlay(struct ResidentSystem* system, struct ResidentResourceHeader* source, s32 slot);
 
 #ifdef __cplusplus
 }

@@ -25,6 +25,13 @@ void InitTLB(void);
  */
 s32 iSignalSema(s32 sema_id);
 
+/**
+ * @brief Delete a semaphore.
+ * @param sema_id Semaphore ID to delete.
+ * @return The deleted semaphore's ID, or a negative value on failure.
+ */
+s32 DeleteSema(s32 sema_id);
+
 /** Alarm callback: the alarm ID, the time it was set for, and the argument passed to SetAlarm. */
 typedef void (*KernelAlarmHandler)(s32 alarm_id, u16 time, void* common);
 

@@ -16,7 +16,7 @@ keeps its copy only when that address is inside the unit, and the other
 copies are renamed out of `.text` so the overlay link discards them. Their
 public symbols become undefined references to the kept copies. Mapped vtables
 are supplied by resident data; their generated definitions likewise become
-references before the overlay linker discards their sections.
+references before the linker discards their sections.
 
 Some kept copies are outside every image we have (1070-00 was linked against
 an older resident program). Those are listed by name as external copies and
@@ -228,12 +228,12 @@ def order_text_sections(data, addresses, thunks=None, keep=None, reorder=True, e
         data = discard_sections(data, dropped)
         headers = [list(struct.unpack_from('<10I', data, shoff + i * size)) for i in range(count)]
         texts = [i for i in texts if i not in dropped]
-    if keep is not None:
-        # Overlay vtables live in retained resident data, not these generated
-        # sections. Nothing places the generated ones, and MWLDPS2 refuses a
-        # definition in a section it doesn't place, so they become references.
-        vtables = {i for i, h in enumerate(headers) if name(h) == '.vtables'}
-        data = undefine_symbols(data, vtables, addresses)
+    # Mapped vtables live in the retained resident data (main's data is kept as
+    # a binary), not these generated sections. Nothing places the generated
+    # ones, and MWLDPS2 refuses a definition in a section it doesn't place, so
+    # they become references, for main units as well as overlay units.
+    vtables = {i for i, h in enumerate(headers) if name(h) == '.vtables'}
+    data = undefine_symbols(data, vtables, addresses)
     if not reorder:
         return data
 

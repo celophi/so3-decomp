@@ -609,6 +609,8 @@ __dl__FPv = 0x00100B40; // type:func size:0x94
 func_00100B40 = 0x00100B40; // type:func absolute:True allow_duplicated:True
 func_100B40 = 0x00100B40; // type:func absolute:True allow_duplicated:True
 __dla__FPv = 0x00100BE0; // type:func size:0x94
+__dt__17ResidentSemaphoreFv = 0x00100E70; // type:func size:0xF0
+__vt__17ResidentSemaphore = 0x0014F9E0; // type:u32 size:0xC
 
 // Resident request slot allocation and dispatch.
 resident_sound_play = 0x00112400; // type:func size:0x208

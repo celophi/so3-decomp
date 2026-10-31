@@ -2,6 +2,7 @@
 #define SO3_MAIN_RESIDENT_0010A0E0_H
 
 #include "types.h"
+#include "main/resident_00101550.h"
 
 /**
  * Pointer ring with write_index at the next insertion slot and read_index at the
@@ -214,7 +215,12 @@ typedef struct DmaSubmission DmaSubmission;
  */
 typedef struct ResidentSystem
 {
-    u8 unk00[0x15C84];
+    u8 unk00[0x1398C];
+
+    /** Decoder that unpacks each program's overlay. */
+    ResidentDecodeObject decoder;
+
+    u8 unk1398D[0x22F7];
 
     /** Nonzero for progressive (525p) output. */
     u8 progressive;
