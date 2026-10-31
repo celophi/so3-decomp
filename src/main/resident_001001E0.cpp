@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_0010A0E0.h"
+#include "sdk/main/libgraph_0012EAC8.h"
 
 extern u8 D_001B6420;
 
@@ -75,8 +76,23 @@ void operator delete(void* memory) throw()
     }
 }
 
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100BE0);
+/** @brief Release resident heap arrays or use the default free routine. @param memory Allocation to release, or null. */
+void operator delete[](void* memory) throw()
+{
+    if (memory != 0)
+    {
+        ResidentAllocationHeader* header = (ResidentAllocationHeader*)((u8*)memory - 0x20);
+        if (header->tag == 0x4D655279 && header->marker == 0x4058)
+        {
+            resident_heap_release(memory);
+            return;
+        }
+        else
+        {
+            free_guess(memory);
+        }
+    }
+}
 
 /** @brief Exchange the heap selected for resident new allocations. @param heap New heap, or null for the default allocator. @return Previous heap. */
 void* resident_exchange_allocation_heap(void* heap)
@@ -114,7 +130,24 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100FC0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00101000);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", resident_system_set_progressive);
+/**
+ * @brief Set progressive (525p) or interlaced output and reset the GS to match.
+ * @param system Resident system.
+ * @param progressive Nonzero for progressive output.
+ */
+void resident_system_set_progressive(ResidentSystem* system, u8 progressive)
+{
+    system->progressive = progressive;
+
+    if (progressive)
+    {
+        sceGsResetGraph(0, SCE_GS_NOINTERLACE, SCE_GS_DTV480P, SCE_GS_FRAME);
+    }
+    else
+    {
+        sceGsResetGraph(0, SCE_GS_INTERLACE, SCE_GS_NTSC, SCE_GS_FRAME);
+    }
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001010A0);
 
