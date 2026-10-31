@@ -87,12 +87,12 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100FC0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00101000);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00101040);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", resident_system_set_progressive);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001010A0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001010D0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", resident_system_switch_program);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001011B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001011D0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", resident_system_load_overlay);

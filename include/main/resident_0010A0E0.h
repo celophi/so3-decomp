@@ -208,6 +208,29 @@ public:
 typedef struct DmaSubmission DmaSubmission;
 #endif
 
+/**
+ * The resident system g_system, which outlives every program. It holds the resource archive, the entry table, the
+ * resource queue and the decoder that loads each program's overlay, and it switches from one program to the next.
+ */
+typedef struct ResidentSystem
+{
+    u8 unk00[0x15C84];
+
+    /** Nonzero for progressive (525p) output. */
+    u8 progressive;
+
+    u8 unk15C85[0x17];
+
+    /** Main's stack and frame pointers, restored when switching programs. */
+    void* saved_sp;
+    void* saved_fp;
+
+    u8 unk15CA4[0x1C];
+
+    /** Status byte, allocated on first use; a failed main code check sets it to 0x67. */
+    u8* status;
+} ResidentSystem;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -233,10 +256,10 @@ void func_0010ECF0(void* object);
 s32 func_00114100(ResidentDmaQueue* queue, DmaSubmission* submission);
 
 /**
- * @brief Return the resident runtime table owner.
- * @return Opaque table owner.
+ * @brief Get the resident system.
+ * @return g_system.
  */
-void* resident_get_runtime_owner(void);
+ResidentSystem* resident_get_system(void);
 
 /**
  * @brief Allocate a block from a resident heap.

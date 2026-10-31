@@ -1299,7 +1299,7 @@ void FieldClass1504F0::func_001ED160()
     unk4d_4 = 0;
     unk4d_5 = 0;
     ResidentContextObject38* state = D_001B6430->context->unk38;
-    ResidentHudSection1B4* section = (ResidentHudSection1B4*)func_101440(func_101290(func_10D8E0()), 4);
+    ResidentHudSection1B4* section = (ResidentHudSection1B4*)func_101440(func_101290(resident_get_system()), 4);
     if (func_00217600(state, 0x4E9))
     {
         unk4d_6 = 1;

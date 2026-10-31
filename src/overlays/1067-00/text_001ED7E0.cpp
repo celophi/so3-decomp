@@ -2643,7 +2643,7 @@ extern "C" s32 func_001F7EE0(FieldScriptCursorU32* cursor)
     position.x = (float)(s32)*cursor->current++;
     position.y = (float)(s32)*cursor->current++;
     position.z = (float)(s32)*cursor->current;
-    FieldRuntimePositions* section = (FieldRuntimePositions*)func_101440(func_101290(func_10D8E0()), 6);
+    FieldRuntimePositions* section = (FieldRuntimePositions*)func_101440(func_101290(resident_get_system()), 6);
     if (section->mode == 1)
     {
         count = section->count;
@@ -2811,7 +2811,7 @@ extern "C" s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* act
     {
         actor->unk8d_0 = 1;
     }
-    FieldRuntimePositions* section = (FieldRuntimePositions*)func_101440(func_101290(func_10D8E0()), 6);
+    FieldRuntimePositions* section = (FieldRuntimePositions*)func_101440(func_101290(resident_get_system()), 6);
     if (section->mode == 1)
     {
         s32 size = section->count;

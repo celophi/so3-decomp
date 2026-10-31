@@ -195,7 +195,7 @@ extern ShopInventoryState* D_001B64F8;
  */
 static inline ShopRuntimeFlags* shop_runtime_flags()
 {
-    return reinterpret_cast<ShopRuntimeFlags*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
+    return reinterpret_cast<ShopRuntimeFlags*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
 }
 
 /**
@@ -1906,7 +1906,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     field_replace_model_camera(item_model, D_001B643C->field_camera);
     field_attach_model_display(item_model);
 
-    if (reinterpret_cast<ShopDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen != 0)
+    if (reinterpret_cast<ShopDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen != 0)
     {
         func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(item_model), 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
     }

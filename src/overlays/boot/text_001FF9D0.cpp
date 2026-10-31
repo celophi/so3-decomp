@@ -543,7 +543,7 @@ void BootMusicPlayer::create_images()
         images[14]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
     }
 
-    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
+    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
     {
         if (images[1] != 0)
         {
@@ -705,7 +705,7 @@ void BootMusicPlayer::update()
     BootSystemSettings* resource;
     s32 i;
     BootInput* input = g_boot_program.input;
-    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (step)
     {

@@ -2,9 +2,9 @@
 #define SO3_OVERLAYS_1067_00_FIELD_RUNTIME_H
 
 #include "types.h"
+#include "main/resident_0010A0E0.h"
 
-/** Opaque resident runtime root and its resource-section directory. */
-typedef struct FieldRuntimeRoot FieldRuntimeRoot;
+/** Opaque resource-section directory in the resident system. */
 typedef struct FieldRuntimeSections FieldRuntimeSections;
 
 /** Resource section containing packed flags and variable words. */
@@ -24,17 +24,11 @@ extern "C" {
 #endif
 
 /**
- * @brief Get the resident runtime root.
- * @return Resident root pointer.
- */
-FieldRuntimeRoot* func_10D8E0(void);
-
-/**
- * @brief Get the runtime root's resource-section directory.
- * @param root Resident runtime root.
+ * @brief Get the resident system's resource-section directory.
+ * @param system Resident system.
  * @return Embedded section directory.
  */
-FieldRuntimeSections* func_101290(FieldRuntimeRoot* root);
+FieldRuntimeSections* func_101290(ResidentSystem* system);
 
 /**
  * @brief Find a resource section by its directory key.

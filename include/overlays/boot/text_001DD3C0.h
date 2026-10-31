@@ -344,7 +344,7 @@ void func_457520(BootTrophyFlags* bits);
  */
 static inline BootSystemSettings* boot_settings()
 {
-    return (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    return (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 }
 
 /** Arguments every boot resource load passes to the resident queue. */

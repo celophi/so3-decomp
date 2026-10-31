@@ -12906,7 +12906,7 @@ void ItemCreationSelection::func_slot10()
 void func_00369510(ItemCreationSelection* object)
 {
     s32 enabled;
-    FieldRuntimeValues* flags = static_cast<FieldRuntimeValues*>(func_101440(func_101290(func_10D8E0()), 4));
+    FieldRuntimeValues* flags = static_cast<FieldRuntimeValues*>(func_101440(func_101290(resident_get_system()), 4));
     if (flags != 0)
     {
         enabled = (flags->unk04[118] & ITEM_CREATION_FLAG_4) != 0;
@@ -14800,7 +14800,7 @@ void ItemCreationSelectedDisplayState::update()
         resource_window->unk5b = 1;
         field_replace_model_camera(resource_window, reinterpret_cast<ItemCreationRuntime643CGeometry*>(D_001B643C)->unk1c);
         field_attach_model_display(resource_window);
-        ItemCreationRuntimeSection1* section = static_cast<ItemCreationRuntimeSection1*>(func_101440(func_101290(func_10D8E0()), 1));
+        ItemCreationRuntimeSection1* section = static_cast<ItemCreationRuntimeSection1*>(func_101440(func_101290(resident_get_system()), 1));
         if (pending_resource_key > 487)
         {
             if (pending_secondary_resource_key)
@@ -15360,7 +15360,7 @@ static inline ItemCreationInventorRecord* saved_inventor_record(u8 index)
  */
 u8 ItemCreationSelectedDisplayState::func_00264110()
 {
-    unk40 = static_cast<FieldRuntimeValues*>(func_101440(func_101290(func_10D8E0()), 4));
+    unk40 = static_cast<FieldRuntimeValues*>(func_101440(func_101290(resident_get_system()), 4));
     if (!unk40)
     {
         return 0;

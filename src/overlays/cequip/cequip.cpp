@@ -2824,7 +2824,7 @@ EquipController::EquipController()
     selected_item_type = 0;
     unk58 = 0;
     unk5c = 0;
-    void* table = resident_get_entry_table(resident_get_runtime_owner());
+    void* table = resident_get_entry_table(resident_get_system());
     unk58 = resident_find_entry(table, 2);
     unk5c = resident_find_entry(table, 3);
     selected_slot = 0;

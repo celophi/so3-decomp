@@ -3096,7 +3096,7 @@ void ItemInstanceListWindow::refresh_instances(s32 reset)
             field_replace_model_camera(model, D_001B643C->field_camera);
             field_attach_model_display(model);
 
-            if (reinterpret_cast<ItemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen != 0)
+            if (reinterpret_cast<ItemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen != 0)
             {
                 func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(model), 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
             }
@@ -3564,7 +3564,7 @@ u8 ItemInstanceListWindow::func_slotb8()
                 field_replace_model_camera(model, D_001B643C->field_camera);
                 field_attach_model_display(model);
 
-                if (reinterpret_cast<ItemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen != 0)
+                if (reinterpret_cast<ItemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen != 0)
                 {
                     func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(model), 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
                 }
@@ -4351,7 +4351,7 @@ void ItemController::func_slot5c()
 /** @brief Collect the owned valuables and create the menu windows. @return One. */
 s32 ItemController::init_windows()
 {
-    ItemFlagBlock* flag_block = reinterpret_cast<ItemFlagBlock*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
+    ItemFlagBlock* flag_block = reinterpret_cast<ItemFlagBlock*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
 
     if (flag_block != 0)
     {
@@ -4445,7 +4445,7 @@ u8 ItemController::func_00264110()
         return 0;
     }
 
-    resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4);
+    resident_find_entry(resident_get_entry_table(resident_get_system()), 4);
     return 1;
 }
 

@@ -1088,7 +1088,7 @@ u32 func_00217920(FieldScriptObject151D40* object, s32 key)
     {
         return object->unk424;
     }
-    values = func_101440(func_101290(func_10D8E0()), 4);
+    values = func_101440(func_101290(resident_get_system()), 4);
     switch (key & 0xF000)
     {
     case 0:

@@ -125,7 +125,7 @@ void BootInstaller::show_tip_image(s32 index)
     func_1025A0(g_resident_resource_decoder, tip_image_data, (void*)BOOT_ALIGN_RESOURCE(tip_image_buffer), index);
     tip_image = new (0) BootImage;
     tip_image->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(tip_image_buffer), 0);
-    resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     tip_image->set_rectangle(0, 1, 0x120, 0xC9, 0x80808080, 0);
     tip_image->model->set_translation(-296.0f, -64.0f, 0.0f);
 }
@@ -181,7 +181,7 @@ void BootInstaller::update_choice_images()
         images[5]->set_rectangle(0x1E, 0x167, 0x4C, 0x26, 0x80808080, 0);
     }
 
-    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
+    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
     {
         if (images[4] != 0)
         {
@@ -311,7 +311,7 @@ void BootInstaller::place_screen_images()
         images[3]->set_rectangle(0x1B, 0x190, 0x1B6, 0x31, 0x80808080, 0);
     }
 
-    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
+    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
     {
         if (images[1] != 0)
         {
@@ -372,7 +372,7 @@ void BootInstaller::update()
     s32 percent;
     BootInput* input;
     input = g_boot_program.input;
-    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (step)
     {

@@ -281,11 +281,11 @@ void func_002EEE20(FieldObject2EDFD0* object, s16 value, u8 flag)
 
 void* func_002EEE30(void* object, s32 index)
 {
-    FieldRuntimeRoot* root;
+    ResidentSystem* system;
     FieldRuntimeSections* sections;
     u8* base;
-    root = func_10D8E0();
-    sections = func_101290(root);
+    system = resident_get_system();
+    sections = func_101290(system);
     base = (u8*)func_101440(sections, 4);
     return base + 0xC6B0 + (index - 1) * 24;
 }

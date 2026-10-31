@@ -105,7 +105,7 @@ typedef struct ResidentManagerEF50
 } ResidentManagerEF50;
 
 
-extern u8 D_001B6880[];
+extern ResidentSystem g_system;
 extern s32 D_001B640C;
 extern ResidentManagerEF50* D_001B6410;
 extern u32 D_001CF8E0[56];
@@ -250,10 +250,10 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D100)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D710);
 
-/** @brief Return the resident runtime owner. @return Runtime owner in resident storage. */
-void* resident_get_runtime_owner(void)
+/** @brief Get the resident system. @return g_system. */
+ResidentSystem* resident_get_system(void)
 {
-    return D_001B6880;
+    return &g_system;
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D8F0);

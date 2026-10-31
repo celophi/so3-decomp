@@ -50,26 +50,41 @@ void* resident_exchange_allocation_heap(void* heap);
  */
 void* resident_get_allocation_heap(void);
 
-struct FieldRuntimeRoot;
+struct ResidentSystem;
 
 /**
- * @brief Dispatch the loaded resource buffer through the resident runtime.
- * @param root Resident runtime root.
+ * @brief Dispatch the loaded resource buffer through the resident system.
+ * @param system Resident system.
  * @param destination Loaded resource buffer.
  * @param type Resource type.
  * @param size Resource payload size.
  */
-void func_001011B0(struct FieldRuntimeRoot* root, void* destination, s32 type, u32 size);
+void func_001011B0(struct ResidentSystem* system, void* destination, s32 type, u32 size);
 
 void func_00100AB0(void* object);
 
 /**
- * @brief Restore an overlay descriptor and the runtime's saved execution context.
- * @param root Resident runtime owner.
- * @param descriptor Saved overlay descriptor.
- * @param slot Overlay slot selected in the resident descriptor table.
+ * @brief Set progressive (525p) or interlaced output and reset the GS to match.
+ * @param system Resident system.
+ * @param progressive Nonzero for progressive output.
  */
-void func_001010D0(void* root, void* descriptor, s32 slot);
+void resident_system_set_progressive(struct ResidentSystem* system, u8 progressive);
+
+/**
+ * @brief Load the overlay in a slot, delete the request, then unwind to main's stack and run the new program.
+ * @param system Resident system.
+ * @param program Request for the next program; switching deletes it.
+ * @param slot Slot in the resident overlay table D_001B5FB0.
+ */
+void resident_system_switch_program(struct ResidentSystem* system, void* program, s32 slot);
+
+/**
+ * @brief Load the overlay in a slot and run its static initializers.
+ * @param system Resident system.
+ * @param program Overlay load request.
+ * @param slot Slot in the resident overlay table D_001B5FB0.
+ */
+void resident_system_load_overlay(struct ResidentSystem* system, void* program, s32 slot);
 
 #ifdef __cplusplus
 }

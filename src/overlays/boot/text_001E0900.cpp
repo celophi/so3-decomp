@@ -35,7 +35,7 @@ void func_4DCC10(void* object, void* value);
 void func_4D78F0(void* object);
 void func_42D940(void);
 void func_4DCEA0(BootDimensionsACD0* display, s32 first, s32 second);
-void func_101040(void* settings, s32 widescreen);
+void resident_system_set_progressive(ResidentSystem* system, u8 progressive);
 extern BootDimensionsACD0* D_001B6650;
 extern BootDimensionsACD0* D_001B6520;
 extern u8 D_001B6420;
@@ -66,7 +66,7 @@ void func_4D8AC0(void);
 void func_4D76C0(void* object, u16 x, u16 y);
 void func_4D4BE0(void* object);
 u32 func_4DCFF0(BootDimensionsACD0* display, s32 frame);
-void func_1010D0(void* root, u8* program, s32 flag);
+void resident_system_switch_program(ResidentSystem* system, void* program, s32 slot);
 extern const struct BootLabelOffsets D_205170;
 const struct BootTextExtent* lib_text_measure_bounds(BootTextWidget* text);
 extern const struct BootCaption g_opening_captions[];
@@ -1195,7 +1195,7 @@ s32 BootBattleTrophyCard::initialize()
     func_432660(card, 1, 1, 0);
     card_step = BOOT_TROPHY_CARD_IDLE;
     reset_slot(0);
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (settings == 0)
     {
@@ -1312,7 +1312,7 @@ void BootStartupChecks::update()
         return;
     }
 
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     input = g_boot_program.input;
     slot1 = input->slot1_state;
     slot2 = input->slot2_state;
@@ -2320,7 +2320,7 @@ void BootNewGameSettings::place_speakers()
 /** @brief Select the option that matches the current page's saved setting. */
 void BootNewGameSettings::load_option_value()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (page)
     {
@@ -2371,7 +2371,7 @@ void BootNewGameSettings::load_option_value()
 /** @brief Save the selected option for the current page and apply it to the display, sound or pad. */
 void BootNewGameSettings::apply_option_value()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (page)
     {
@@ -2460,7 +2460,7 @@ void BootNewGameSettings::apply_option_value()
  */
 s32 BootNewGameSettings::get_value_message()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (page)
     {
@@ -2513,7 +2513,7 @@ s32 BootNewGameSettings::get_value_message()
  */
 void BootNewGameSettings::get_cursor_position(float* x, float* y)
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     *x = 58.0f;
     switch (page)
@@ -2631,7 +2631,7 @@ void BootNewGameSettings::update_option_rows()
 
     if (image_blocks[4] != 0 && on_speaker_setup == 0)
     {
-        settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+        settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
         if (shown_page != page)
         {
@@ -2917,7 +2917,7 @@ void BootNewGameSettings::update_page_images()
         images[15]->set_rectangle(0, 0xC2, 0x180, 0x20, 0x80808080, 0);
     }
 
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (settings->widescreen)
     {
@@ -3113,7 +3113,7 @@ static inline float speaker_angle(ResidentSound* sound, s32 speaker)
 void BootNewGameSettings::update()
 {
     BootInput* input = g_boot_program.input;
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     u8 extra = settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked);
     g_difficulty_option_count = extra ? 4 : 3;
 
@@ -3939,7 +3939,7 @@ BootNewGameSettings::BootNewGameSettings()
     g_floor_query = &flat_floor;
     page = 0;
     loaded_model_blocks = 0;
-    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     // The audio system reverses the mono and stereo codes used by the saved setting.
     switch (g_sound->output_mode)
@@ -4096,7 +4096,7 @@ void BootOpeningMovie::update()
     s32 x;
     s32 y;
     BootInput* input = g_boot_program.input;
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     s32 width;
     s32 height;
     s32 anchor;
@@ -4427,7 +4427,7 @@ BootOpeningMovie::BootOpeningMovie()
     resident_exchange_allocation_heap(heap);
     player->state->set_scale(1.0f, 1.0f);
     player->state->set_words(0x800, 0x800, 1);
-    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (resource->widescreen != 0)
     {
@@ -4562,7 +4562,7 @@ void BootProgram::select_projection()
 /** @brief Set the projections' aspect and field of view for the 4:3 or widescreen setting. */
 inline void BootProgram::update_projection_aspect()
 {
-    BootSystemSettings* resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     BootDimensionsACD0* dimensions;
 
     if (resource->widescreen != 0)
@@ -4597,12 +4597,12 @@ void BootProgram::set_progressive(u8 progressive)
     if (progressive)
     {
         func_4DCEA0(display, 0, 0);
-        func_101040(resident_get_runtime_owner(), 1);
+        resident_system_set_progressive(resident_get_system(), 1);
     }
     else
     {
         func_4DCEA0(display, 0, 0);
-        func_101040(resident_get_runtime_owner(), 0);
+        resident_system_set_progressive(resident_get_system(), 0);
     }
 
     rebuild_display(1);
@@ -4700,12 +4700,12 @@ void BootProgram::run()
     BootSystemSettings* settings;
     BootResourceLoader* loader;
 
-    if (((BootResidentRoot15CC0*)resident_get_runtime_owner())->status == 0)
+    if (resident_get_system()->status == 0)
     {
-        func_100F60(resident_get_runtime_owner());
+        func_100F60(resident_get_system());
     }
 
-    resident_archive_get_clock(resident_get_archive(resident_get_runtime_owner()), &clock);
+    resident_archive_get_clock(resident_get_archive(resident_get_system()), &clock);
     count = (u8)(TIMER0_COUNT + (clock.hour + (clock.second + clock.minute)));
 
     for (index = 0; index < count; index++)
@@ -4729,7 +4729,7 @@ void BootProgram::run()
     unit_data_deleted = 0;
 
     buffer = new (0) u8[resident_rand() + 0x40];
-    size = resident_get_resource_size(resident_get_archive(resident_get_runtime_owner()), BOOT_PROGRAM_MAIN_CODE_RESOURCE);
+    size = resident_get_resource_size(resident_get_archive(resident_get_system()), BOOT_PROGRAM_MAIN_CODE_RESOURCE);
 
     if (size > BOOT_PROGRAM_MAIN_CODE_MAX_SIZE)
     {
@@ -4738,16 +4738,16 @@ void BootProgram::run()
 
     image = (BootProgramImage*)memalign(0x40, size);
     // Leaving the u32 conversion implicit moves the clamp's copy of size; the explicit cast keeps it.
-    resident_queue_resource_request(func_101250(resident_get_runtime_owner()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image,
+    resident_queue_resource_request(func_101250(resident_get_system()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image,
                                     BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, (u32)size, 0, BOOT_RESOURCE_READ);
     delete[] buffer;
 
     saved_widescreen = BOOT_SAVED_WIDESCREEN_UNSET;
     fresh = true;
 
-    if (resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1) != 0)
+    if (resident_find_entry(resident_get_entry_table(resident_get_system()), 1) != 0)
     {
-        saved_widescreen = ((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen;
+        saved_widescreen = ((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen;
         func_45A5D0();
         fresh = false;
     }
@@ -4779,7 +4779,7 @@ void BootProgram::run()
     check_main_code();
     func_45A770();
     create_pools_and_projection();
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (saved_widescreen != BOOT_SAVED_WIDESCREEN_UNSET)
     {
@@ -4863,7 +4863,7 @@ void BootProgram::run()
     {
     }
 
-    func_1010D0(resident_get_runtime_owner(), next_program, 1);
+    resident_system_switch_program(resident_get_system(), next_program, 1);
 }
 
 /** @brief Release the track pools and every object, resource and buffer the program owns. */

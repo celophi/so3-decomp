@@ -1703,7 +1703,7 @@ struct FieldResidentEntry4
 /** @brief Return resident state entry 4. @return Entry 4. */
 static inline FieldResidentEntry4* resident_entry4()
 {
-    return reinterpret_cast<FieldResidentEntry4*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
+    return reinterpret_cast<FieldResidentEntry4*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
 }
 
 /**

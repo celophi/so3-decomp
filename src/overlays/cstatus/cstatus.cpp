@@ -1771,7 +1771,7 @@ u8 StatusNameWindow::func_slotb0()
             {
             } while ((*destination++ = *source++) != 0);
             StatusNameSection* section = reinterpret_cast<StatusNameSection*>(
-                resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
+                resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
             memcpy_guess(section->names[selection->slots[selection->current] - 1], name_bytes, 24);
             close_status_selection(this);
         }
@@ -2437,7 +2437,7 @@ void status_create_character_model(StatusCharacterWindow* object)
         field_attach_model_display(object->character_model);
 
         if (reinterpret_cast<StatusWindowSection*>(
-                resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->enabled != 0)
+                resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->enabled != 0)
         {
             func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->character_model), 0.5235988f, 750.0f, 0.0f, 140.0f, 115.0f);
         }
@@ -2464,7 +2464,7 @@ u8 StatusCharacterWindow::func_slotb8()
         FieldRecordSelection* selection = this->selection;
         s32 next = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_resource_variant + 1;
         StatusVariantSection* section = reinterpret_cast<StatusVariantSection*>(
-            resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1));
+            resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
         u16 checksum = section->checksum;
         const u8* begin = section->values;
         const u8* end = reinterpret_cast<const u8*>(&section->checksum);
@@ -2620,7 +2620,7 @@ void status_refresh_battle_skill_keys(StatusCharacterWindow* object)
 s32 StatusCharacterWindow::func_slotf4(u32 associated)
 {
     StatusFlagsSection* flags = reinterpret_cast<StatusFlagsSection*>(
-        resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
+        resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
     if (flags != 0)
     {
         alternate_portrait_group = (flags->flags & 0x10) != 0;
@@ -2697,7 +2697,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     portrait->unk34 = 3;
     lib_container_attach_widget(unk10, portrait);
     StatusVariantSection* variants = reinterpret_cast<StatusVariantSection*>(
-        resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1));
+        resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
     u8* variant_begin = variants->values;
     u8* variant_end = reinterpret_cast<u8*>(&variants->checksum);
     u8 variant;

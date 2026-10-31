@@ -570,12 +570,16 @@ __unexpected = 0x001438B0; // type:func
 D_001B6400 = 0x001B6400; // type:u32 size:0x4 absolute:True
 D_001B640C = 0x001B640C; // type:s32 size:0x4 absolute:True
 D_001CF8E0 = 0x001CF8E0; // type:u32 size:0xE0 absolute:True
+g_system = 0x001B6880; // absolute:True
 
 resident_exchange_allocation_heap = 0x00100C80; // type:func size:0xC
 resident_get_allocation_heap = 0x00100C90; // type:func size:0x8
 resident_get_entry_table = 0x00101290; // type:func size:0x10
 resident_find_entry = 0x00101440; // type:func size:0x40
-resident_get_runtime_owner = 0x0010D8E0; // type:func size:0xC
+resident_get_system = 0x0010D8E0; // type:func size:0xC
+resident_system_set_progressive = 0x00101040; // type:func size:0x60
+resident_system_switch_program = 0x001010D0; // type:func size:0xE0
+resident_system_load_overlay = 0x001011D0; // type:func size:0x80
 resident_enqueue_object = 0x0011ED90; // type:func size:0x68
 resident_next_random_word = 0x0010CF80; // type:func size:0x17C
 

@@ -402,7 +402,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
         {
             BootTrophyRecord* record = &records[i];
 
-            if (func_457220(record) == 0 || *((BootResidentRoot15CC0*)resident_get_runtime_owner())->status == 0x67)
+            if (func_457220(record) == 0 || *resident_get_system()->status == 0x67)
             {
                 set_resource_bit(bits, i, 0);
                 record->key = 0;
@@ -620,7 +620,7 @@ static inline void move_grid_cursor(BootBattleTrophyViewer* viewer)
 void BootBattleTrophyViewer::update()
 {
     BootInput* input = g_boot_program.get_input();
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     s32 card_states[2];
     card_states[0] = input->slot1_raw_state;
     card_states[1] = input->slot2_raw_state;
@@ -636,7 +636,7 @@ void BootBattleTrophyViewer::update()
             resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
 
-            if (*((BootResidentRoot15CC0*)resident_get_runtime_owner())->status != 0x67)
+            if (*resident_get_system()->status != 0x67)
             {
                 step++;
             }
@@ -1024,7 +1024,7 @@ void BootBattleTrophyViewer::update()
                 }
             }
 
-            if (*((BootResidentRoot15CC0*)resident_get_runtime_owner())->status != 0x67)
+            if (*resident_get_system()->status != 0x67)
             {
                 if (score < BOOT_TROPHY_FIRST_COLOR_COUNT * BOOT_TROPHY_BROWSE_SCORE_PER_EARNED)
                 {
