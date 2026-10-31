@@ -3,7 +3,6 @@
 #include "main/resident_0010A0E0.h"
 
 extern u8 D_001B6420;
-extern "C" void* __nw__FUi(u32 size);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_001001E0);
 
@@ -18,17 +17,35 @@ void func_00100AB0(void* object)
 {
 }
 
-/** @brief Allocate through the selected heap or the default new allocator. @param size Byte count. @param unused Ignored second argument. @return Allocated memory. */
-void* func_00100AC0(u32 size, s32 unused)
+/**
+ * @brief Allocate memory from the current heap, or from the default allocator when none is set.
+ * @param size Number of bytes to allocate.
+ * @param unused Second argument passed by callers; the resident implementation ignores it.
+ * @return The allocated memory.
+ */
+void* operator new(u32 size, s32 unused)
 {
     if (D_001B6400 != 0)
     {
         return resident_heap_allocate(D_001B6400, size);
     }
-    return __nw__FUi(size);
+    return ::operator new(size);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", __nwa__FUii);
+/**
+ * @brief Allocate array memory from the current heap, or from the default allocator when none is set.
+ * @param size Number of bytes to allocate.
+ * @param unused Second argument passed by callers; the resident implementation ignores it.
+ * @return The allocated memory.
+ */
+void* operator new[](u32 size, s32 unused)
+{
+    if (D_001B6400 != 0)
+    {
+        return resident_heap_allocate(D_001B6400, size);
+    }
+    return ::operator new(size);
+}
 
 extern "C" void free_guess(void* memory);
 /** Partial resident allocation header containing its two ownership markers. */

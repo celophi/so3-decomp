@@ -3899,7 +3899,7 @@ s32 ShopState::func_slot84()
  */
 void shop_append_choice(FieldCountedList* list, void* value)
 {
-    FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -3924,7 +3924,7 @@ void shop_append_choice(FieldCountedList* list, void* value)
  */
 void shop_append_text(FieldCountedList* list, void* value)
 {
-    FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -3949,7 +3949,7 @@ void shop_append_text(FieldCountedList* list, void* value)
  */
 void shop_append_frame(FieldCountedList* list, void* value)
 {
-    FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -3974,7 +3974,7 @@ void shop_append_frame(FieldCountedList* list, void* value)
  */
 void shop_append_panel(FieldCountedList* list, void* value)
 {
-    FieldListNode* node = static_cast<FieldListNode*>(func_00100AC0(sizeof(FieldListNode), 0));
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {

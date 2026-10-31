@@ -220,8 +220,7 @@ func_00413D20__23ItemCreationClass175110Fv = 0x00467750; // type:func absolute:T
 draw__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:True allow_duplicated:True
 func_00413D20__33ItemCreationOptionResourceDisplayFv = 0x002D63F0; // type:func absolute:True allow_duplicated:True
 draw__33ItemCreationOptionResourceDisplayFv = 0x002D5DA0; // type:func absolute:True allow_duplicated:True
-__nw__FUii = 0x00100AC0; // type:func absolute:True allow_duplicated:True
-func_00100AC0 = 0x00100AC0; // type:func absolute:True allow_duplicated:True
+__nw__FUii = 0x00100AC0; // type:func absolute:True
 lib_container_attach_widget = 0x004C6190; // type:func absolute:True allow_duplicated:True
 
 func_slotf4__22InventorTransferWindowFUi = 0x0034E9C0; // type:func allow_duplicated:True

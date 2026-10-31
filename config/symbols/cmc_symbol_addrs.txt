@@ -1,3 +1,4 @@
+__nw__FUii = 0x00100AC0; // type:func absolute:True
 g_resident_release_queues = 0x001B65F4; // size:0x4 absolute:True
 __vt__13FieldDuration = 0x00153E20; // type:u32 absolute:True
 second_digit__13FieldDurationFi = 0x002637E0; // type:func absolute:True

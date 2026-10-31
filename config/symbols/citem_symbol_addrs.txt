@@ -1,7 +1,6 @@
 g_resident_release_queues = 0x001B65F4; // size:0x4 absolute:True
 D_001B64F0 = 0x001B64F0; // size:0x4
-func_00100AC0 = 0x100AC0; // type:func allow_duplicated:True
-__nw__FUii = 0x00100AC0; // type:func absolute:True allow_duplicated:True
+__nw__FUii = 0x00100AC0; // type:func absolute:True
 func_100B40 = 0x100B40; // type:func allow_duplicated:True
 __dl__FPv = 0x00100B40; // type:func absolute:True allow_duplicated:True
 func_100C80 = 0x100C80; // type:func allow_duplicated:True

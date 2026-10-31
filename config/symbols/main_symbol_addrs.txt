@@ -592,8 +592,9 @@ resident_heap_allocate = 0x00113710; // type:func size:0x19C
 
 func_00113710 = 0x00113710; // type:func absolute:True allow_duplicated:True
 
+__nw__FUii = 0x00100AC0; // type:func size:0x3C
+__nwa__FUii = 0x00100B00; // type:func size:0x3C
 // Scalar delete dispatches resident allocations by their header markers.
-__nwa__FUii = 0x00100B00; // type:func size:0x40
 __dl__FPv = 0x00100B40; // type:func size:0x94
 func_00100B40 = 0x00100B40; // type:func absolute:True allow_duplicated:True
 func_100B40 = 0x00100B40; // type:func absolute:True allow_duplicated:True

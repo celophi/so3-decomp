@@ -4835,7 +4835,7 @@ ItemGaugeList::~ItemGaugeList()
  */
 void ItemGaugeList::append(void* gauge)
 {
-    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    ItemListNode* node = new (0) ItemListNode;
 
     if (node != 0)
     {
@@ -4907,7 +4907,7 @@ ItemTypeList::~ItemTypeList()
  */
 void ItemTypeList::append(ItemCreationCategoryRecord* record)
 {
-    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    ItemListNode* node = new (0) ItemListNode;
 
     if (node != 0)
     {
@@ -4976,7 +4976,7 @@ ItemListNode* ItemTypeList::at(s32 index)
  */
 void FieldClass15AFE8::append(void* value)
 {
-    FieldListNode* node = (FieldListNode*)func_00100AC0(sizeof(FieldListNode), 0);
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -5001,7 +5001,7 @@ void FieldClass15AFE8::append(void* value)
  */
 void FieldClass15AF88::append(void* value)
 {
-    FieldListNode* node = (FieldListNode*)func_00100AC0(sizeof(FieldListNode), 0);
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -5049,7 +5049,7 @@ FieldListNode* FieldClass15AF88::at(s32 index)
  */
 void FieldClass15AF78::append(void* value)
 {
-    FieldListNode* node = (FieldListNode*)func_00100AC0(sizeof(FieldListNode), 0);
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -5074,7 +5074,7 @@ void FieldClass15AF78::append(void* value)
  */
 void FieldClass15AF68::append(void* value)
 {
-    FieldListNode* node = (FieldListNode*)func_00100AC0(sizeof(FieldListNode), 0);
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {

@@ -611,7 +611,6 @@ struct StatusWidgetList
 
 extern StatusRuntime* D_001B643C;
 
-extern "C" void* func_100AC0(s32 size, s32 flags);
 
 /** @brief Apply an allocation to character statistics and equipment. */
 extern "C" s32 lib_character_recalculate_stats(StatusCharacterRecord*, StatusCharacterEquipment*, ItemCreationAllocationRecord*, s32);
@@ -3642,7 +3641,7 @@ StatusItemWidgetList::~StatusItemWidgetList()
 
 void status_append_item_widget(StatusWidgetList* list, void* value)
 {
-    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = new (0) StatusWidgetNode;
 
     if (node != 0)
     {
@@ -3683,7 +3682,7 @@ void status_clear_item_widgets(StatusWidgetList* list)
 
 void status_append_name_widget(StatusWidgetList* list, void* value)
 {
-    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = new (0) StatusWidgetNode;
 
     if (node != 0)
     {
@@ -3730,7 +3729,7 @@ StatusNumericWidgetList::~StatusNumericWidgetList()
 
 void status_append_numeric_widget(StatusWidgetList* list, void* value)
 {
-    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = new (0) StatusWidgetNode;
 
     if (node != 0)
     {
@@ -3797,7 +3796,7 @@ StatusTextWidgetList::~StatusTextWidgetList()
 
 void status_append_text_widget(StatusWidgetList* list, void* value)
 {
-    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = new (0) StatusWidgetNode;
 
     if (node != 0)
     {
@@ -3856,7 +3855,7 @@ void* status_list_node_at(void* list, s32 count)
 
 void status_append_scissor_widget(StatusWidgetList* list, void* value)
 {
-    StatusWidgetNode* node = (StatusWidgetNode*)func_100AC0(8, 0);
+    StatusWidgetNode* node = new (0) StatusWidgetNode;
 
     if (node != 0)
     {
