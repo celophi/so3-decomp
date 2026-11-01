@@ -9,11 +9,32 @@ extern "C" {
 #endif
 
 /**
- * @brief Locate the entry table within its resident owner.
- * @param object Opaque table owner.
- * @return Opaque entry table.
+ * @brief Get the resident system's release queues.
+ * @param system Resident system.
+ * @return Release queues at offset 0x13A10.
  */
-void* resident_get_entry_table(void* object);
+ResidentReleaseQueues* func_00101260(struct ResidentSystem* system);
+
+/**
+ * @brief Get the resident system's sound stream.
+ * @param system Resident system.
+ * @return Sound stream at offset 0x15A5C.
+ */
+struct ResidentSoundStream* func_00101280(struct ResidentSystem* system);
+
+/**
+ * @brief Get the resident system's entry table.
+ * @param system Resident system.
+ * @return Entry table at offset 0x13990.
+ */
+ResidentEntryTable* resident_get_entry_table(struct ResidentSystem* system);
+
+/**
+ * @brief Get the byte after the resident system's decoder.
+ * @param system Resident system.
+ * @return Byte at offset 0x1398D.
+ */
+u8* func_001012A0(struct ResidentSystem* system);
 
 /**
  * @brief Find the entry associated with one of the table's sixteen keys.
@@ -28,24 +49,24 @@ void func_00101480(void* table, s32 key);
 
 /**
  * @brief Get the resident system's sound system, which starts it.
- * @param object Resident system.
+ * @param system Resident system.
  * @return Sound system at offset 0.
  */
-ResidentSound* func_00101270(void* object);
+ResidentSound* func_00101270(struct ResidentSystem* system);
 
 /**
- * @brief Get the resource archive the runtime owner holds.
- * @param owner Runtime owner.
- * @return Resource archive.
+ * @brief Get the resident system's resource archive.
+ * @param system Resident system.
+ * @return Resource archive at offset 0x17C0.
  */
-ResidentArchive* resident_get_archive(void* owner);
+ResidentArchive* resident_get_archive(struct ResidentSystem* system);
 
 /**
  * @brief Get the resident system's input system.
- * @param object Resident system.
+ * @param system Resident system.
  * @return Input system at offset 0x1480.
  */
-struct ResidentInputSystem* func_001012D0(void* object);
+struct ResidentInputSystem* func_001012D0(struct ResidentSystem* system);
 
 /**
  * @brief Get the resident system's resource queue.
@@ -56,10 +77,10 @@ ResidentResourceQueue* func_00101250(void* object);
 
 /**
  * @brief Get the resident system's overlay decoder.
- * @param object Resident system.
+ * @param system Resident system.
  * @return Decoder at offset 0x1398C.
  */
-ResidentDecodeObject* func_001012B0(void* object);
+ResidentDecodeObject* func_001012B0(struct ResidentSystem* system);
 
 #ifdef __cplusplus
 }

@@ -495,9 +495,11 @@ ResidentSystem::~ResidentSystem()
  */
 void resident_system_create_status(ResidentSystem* system)
 {
-    // Never freed; it only moves the status byte to a different address on each boot.
-    new (0) u8[(resident_rand() & 0x3FF) + 0x40];
-    system->status = new (0) u8[0x10];
+    // This memory is never freed. It seems like this is a way to get a random heap address, 
+    // since the resident heap is randomized and the allocation size is random.
+    new (0) u8[(resident_rand() & 0x3FF) + 64];
+    
+    system->status = new (0) u8[16];
     *system->status = RESIDENT_STATUS_CLEAN;
 }
 

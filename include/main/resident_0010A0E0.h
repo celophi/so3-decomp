@@ -42,6 +42,13 @@ enum ResidentStatus
     RESIDENT_STATUS_TAMPERED = 0x67
 };
 
+/** Sixteen keyed full-word entries in the resident system. */
+typedef struct ResidentEntryTable
+{
+    u32 entries[16];
+    s32 keys[16];
+} ResidentEntryTable;
+
 /** Clock bytes the archive's clock query fills. */
 typedef struct ResidentClock
 {
@@ -314,7 +321,7 @@ struct ResidentSystem
     ResidentDecodeObject decoder;
 
     u8 unk1398D[3];
-    u8 unk13990[0x80];
+    ResidentEntryTable entry_table;
     ResidentReleaseQueues release_queues;
     ResidentResourceQueue resource_queue;
     u8 unk_resource_queue_end[0x38 - sizeof(ResidentResourceQueue)];
