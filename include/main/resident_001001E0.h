@@ -29,7 +29,13 @@ public:
     s32 id;
 
     /** @brief Delete the kernel semaphore, if one was created. */
-    virtual ~ResidentSemaphore();
+    virtual ~ResidentSemaphore()
+    {
+        if (id >= 0)
+        {
+            DeleteSema(id);
+        }
+    }
 };
 
 extern "C" {

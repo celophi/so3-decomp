@@ -176,15 +176,9 @@ u32 resident_prime_heap(void)
     return size - 0x10;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_001001E0", func_00100D00);
-
-/** @brief Delete the kernel semaphore, if one was created. */
-ResidentSemaphore::~ResidentSemaphore()
+/** @brief Destroy every part of the system. */
+ResidentSystem::~ResidentSystem()
 {
-    if (id >= 0)
-    {
-        DeleteSema(id);
-    }
 }
 
 /**

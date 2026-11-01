@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "main/resident_00101550.h"
+#include "main/resident_001001E0.h"
 
 /**
  * Pointer ring with write_index at the next insertion slot and read_index at the
@@ -22,6 +23,11 @@ typedef struct ResidentReleaseQueues
     ResidentReleaseRing allocations;
     ResidentReleaseRing objects;
     void* vtable;
+
+#ifdef __cplusplus
+    /** @brief Drain both release rings. */
+    ~ResidentReleaseQueues();
+#endif
 } ResidentReleaseQueues;
 
 /** The two pads (buttons, sticks and vibration) and the vblank counters that time each frame. */
@@ -93,6 +99,11 @@ typedef struct ResidentArchive
     u8 unk1217c[7];
     u8 unk12183;
     u8 unk12184;
+
+#ifdef __cplusplus
+    /** @brief Destroy the archive and its install worker. */
+    ~ResidentArchive();
+#endif
 } ResidentArchive;
 
 /** One of the sixty resident request slots. */
@@ -128,6 +139,11 @@ struct ResidentSoundStream
 
     /** Stream handle. */
     void* handle;
+
+#ifdef __cplusplus
+    /** @brief Destroy the stream. */
+    ~ResidentSoundStream();
+#endif
 };
 
 /**
@@ -170,6 +186,11 @@ struct ResidentSound
 
     /** Angle of each of the four surround speakers. */
     float speaker_angles[4];
+
+#ifdef __cplusplus
+    /** @brief Remove the sound interrupt handler and free the sound buffers. */
+    ~ResidentSound();
+#endif
 };
 
 typedef struct ResidentSound ResidentSound;
@@ -209,18 +230,68 @@ public:
 typedef struct DmaSubmission DmaSubmission;
 #endif
 
-/**
- * The resident system g_system, which outlives every program. It holds the resource archive, the entry table, the
- * resource queue and the decoder that loads each program's overlay, and it switches from one program to the next.
- */
-typedef struct ResidentSystem
+#ifdef __cplusplus
+/** Kernel thread with its own stack; vtable D_0014FBA0. Slots 0xC and 0x10 aren't declared yet. */
+class ResidentThread
 {
-    u8 unk00[0x1398C];
+public:
+    u8 unk00[4];
+    void* unk04;
+
+    /** Kernel thread ID. */
+    s32 thread_id;
+
+    /** @brief Stop and delete the kernel thread. */
+    virtual ~ResidentThread();
+};
+
+/** Thread owned by g_system at 0x1784; vtable D_0014FC60. */
+class ResidentClass14FC60 : public ResidentThread
+{
+public:
+    u8 unk10[8];
+
+    /** @brief Destroy the thread. */
+    virtual ~ResidentClass14FC60()
+    {
+    }
+};
+
+/** Part of g_system at 0x1480 that owns a thread and a semaphore. */
+struct ResidentSystem1480
+{
+    u8 unk000[0x304];
+    ResidentClass14FC60 unk304;
+    ResidentSemaphore semaphore;
+    u8 unk324[0x1C];
+};
+
+/**
+ * The resident system g_system, which outlives every program. It holds the sound system, the resource archive, the
+ * entry table, the release and resource queues and the decoder that loads each program's overlay, and it switches
+ * from one program to the next.
+ */
+struct ResidentSystem
+{
+    /** @brief Destroy every part of the system. */
+    ~ResidentSystem();
+
+    ResidentSound sound;
+    u8 unk_sound_end[0x1480 - sizeof(ResidentSound)];
+    ResidentSystem1480 unk1480;
+    ResidentArchive archive;
+    u8 unk_archive_end[0x1398C - 0x17C0 - sizeof(ResidentArchive)];
 
     /** Decoder that unpacks each program's overlay. */
     ResidentDecodeObject decoder;
 
-    u8 unk1398D[0x22F7];
+    u8 unk1398D[3];
+    u8 unk13990[0x80];
+    ResidentReleaseQueues release_queues;
+    ResidentResourceQueue resource_queue;
+    u8 unk_resource_queue_end[0x38 - sizeof(ResidentResourceQueue)];
+    ResidentSoundStream sound_stream;
+    u8 unk_sound_stream_end[0x228 - sizeof(ResidentSoundStream)];
 
     /** Nonzero for progressive (525p) output. */
     u8 progressive;
@@ -235,7 +306,10 @@ typedef struct ResidentSystem
 
     /** Status byte, allocated on first use; a failed main code check sets it to 0x67. */
     u8* status;
-} ResidentSystem;
+};
+#endif
+
+typedef struct ResidentSystem ResidentSystem;
 
 #ifdef __cplusplus
 extern "C" {

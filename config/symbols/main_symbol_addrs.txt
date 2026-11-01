@@ -611,6 +611,15 @@ func_100B40 = 0x00100B40; // type:func absolute:True allow_duplicated:True
 __dla__FPv = 0x00100BE0; // type:func size:0x94
 __dt__17ResidentSemaphoreFv = 0x00100E70; // type:func size:0xF0
 __vt__17ResidentSemaphore = 0x0014F9E0; // type:u32 size:0xC
+__dt__14ResidentSystemFv = 0x00100D00; // type:func size:0x170
+__dt__21ResidentResourceQueueFv = 0x00104420; // type:func size:0xD0
+__dt__19ResidentSoundStreamFv = 0x001092E0; // type:func size:0x100
+__dt__13ResidentSoundFv = 0x00112F60; // type:func size:0x80
+__dt__14ResidentThreadFv = 0x00114F50; // type:func size:0xAC
+__dt__15ResidentArchiveFv = 0x0011D840; // type:func size:0x108
+__dt__19ResidentClass14FC60Fv = 0x0011DDA0; // type:func size:0x60
+__dt__21ResidentReleaseQueuesFv = 0x0011EE70; // type:func size:0x60
+__vt__19ResidentClass14FC60 = 0x0014FC60; // type:u32 size:0x14
 
 // Resident request slot allocation and dispatch.
 resident_sound_play = 0x00112400; // type:func size:0x208

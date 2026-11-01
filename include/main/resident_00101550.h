@@ -57,6 +57,11 @@ typedef struct ResidentResourceQueue
 {
     u8 unk00[0x30];
     u8 unk30;
+
+#ifdef __cplusplus
+    /** @brief Destroy the queue. */
+    ~ResidentResourceQueue();
+#endif
 } ResidentResourceQueue;
 
 /** Resident decoder used by the resource loading helpers; it keeps no state, so it is one byte. */

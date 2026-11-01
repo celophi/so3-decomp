@@ -184,7 +184,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104370)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001043F0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104420);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", __dt__21ResidentResourceQueueFv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001044F0);
 
@@ -305,7 +305,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108E10)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109000);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001092E0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", __dt__19ResidentSoundStreamFv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001093E0);
 

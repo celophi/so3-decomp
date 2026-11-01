@@ -552,7 +552,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112D80)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112E70);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112F60);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__13ResidentSoundFv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112FE0);
 
@@ -809,7 +809,7 @@ s32 func_00114EB0(void* object)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114EE0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114F50);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__14ResidentThreadFv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115000);
 
@@ -1027,7 +1027,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D320)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D470);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D840);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__15ResidentArchiveFv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D950);
 
@@ -1041,7 +1041,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DC00)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DD40);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DDA0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__19ResidentClass14FC60Fv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DE00);
 
