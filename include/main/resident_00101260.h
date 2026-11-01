@@ -26,8 +26,12 @@ u32 resident_find_entry(void* table, s32 key);
 /** Remove the entry associated with a key. */
 void func_00101480(void* table, s32 key);
 
-/** Return the first pointer argument unchanged. */
-void* func_00101270(void* value);
+/**
+ * @brief Get the resident system's sound system, which starts it.
+ * @param object Resident system.
+ * @return Sound system at offset 0.
+ */
+ResidentSound* func_00101270(void* object);
 
 /**
  * @brief Get the resource archive the runtime owner holds.
@@ -36,8 +40,26 @@ void* func_00101270(void* value);
  */
 ResidentArchive* resident_get_archive(void* owner);
 
-/** Return the receiver address at byte offset 0x1480. */
-void* func_001012D0(void* object);
+/**
+ * @brief Get the resident system's input system.
+ * @param object Resident system.
+ * @return Input system at offset 0x1480.
+ */
+struct ResidentInputSystem* func_001012D0(void* object);
+
+/**
+ * @brief Get the resident system's resource queue.
+ * @param object Resident system.
+ * @return Resource queue at offset 0x15A24.
+ */
+ResidentResourceQueue* func_00101250(void* object);
+
+/**
+ * @brief Get the resident system's overlay decoder.
+ * @param object Resident system.
+ * @return Decoder at offset 0x1398C.
+ */
+ResidentDecodeObject* func_001012B0(void* object);
 
 #ifdef __cplusplus
 }

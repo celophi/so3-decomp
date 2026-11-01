@@ -36,6 +36,11 @@ public:
     /** @brief Queue the object for release. */
     virtual void func_00104740();
 
+    /** @brief Update the object; its list calls this once a frame. */
+    virtual void func_00104770();
+
+    virtual void func_00104780();
+
     s16 list_kind;
     u8 unk0e;
     u8 unk0f;
@@ -52,17 +57,19 @@ typedef struct ResidentRegisteredObject
     const ResidentDispatchTable* dispatch;
 } ResidentRegisteredObject;
 
-/** Partial resident resource queue reached through g_resource_queue. */
-typedef struct ResidentResourceQueue
+#ifdef __cplusplus
+/** Partial resident resource queue reached through g_resource_queue; vtable D_0014FA70. */
+struct ResidentResourceQueue : public ResidentClass14FA40
 {
-    u8 unk00[0x30];
+    u8 unk14[0x1C];
     u8 unk30;
 
-#ifdef __cplusplus
     /** @brief Destroy the queue. */
     ~ResidentResourceQueue();
+};
 #endif
-} ResidentResourceQueue;
+
+typedef struct ResidentResourceQueue ResidentResourceQueue;
 
 /** Resident decoder used by the resource loading helpers; it keeps no state, so it is one byte. */
 typedef struct ResidentDecodeObject

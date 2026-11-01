@@ -95,7 +95,7 @@ s32 func_00121860(void* object);
  * @brief Do nothing.
  * @param object Unused receiver.
  */
-void func_00121870(void* object);
+void func_00121870(void);
 /**
  * @brief Do nothing.
  * @param object Unused receiver.

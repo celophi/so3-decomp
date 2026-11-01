@@ -14,13 +14,13 @@ void* func_00101260(void* object)
 }
 
 /**
- * @brief Return the supplied pointer.
- * @param value Pointer to return.
- * @return The supplied pointer.
+ * @brief Get the resident system's sound system, which starts it.
+ * @param object Resident system.
+ * @return Sound system at offset 0.
  */
-void* func_00101270(void* value)
+ResidentSound* func_00101270(void* object)
 {
-    return value;
+    return (ResidentSound*)object;
 }
 
 /**
@@ -50,13 +50,13 @@ void* func_001012A0(void* object)
 }
 
 /**
- * @brief Return the address at receiver offset 0x1398C.
- * @param object Receiver containing the address.
- * @return Address at offset 0x1398C.
+ * @brief Get the resident system's overlay decoder.
+ * @param object Resident system.
+ * @return Decoder at offset 0x1398C.
  */
-void* func_001012B0(void* object)
+ResidentDecodeObject* func_001012B0(void* object)
 {
-    return (u8*)object + 0x1398C;
+    return (ResidentDecodeObject*)((u8*)object + 0x1398C);
 }
 
 /**
@@ -70,13 +70,13 @@ ResidentArchive* resident_get_archive(void* owner)
 }
 
 /**
- * @brief Return the address at receiver offset 0x1480.
- * @param object Receiver containing the address.
- * @return Address at offset 0x1480.
+ * @brief Get the resident system's input system.
+ * @param object Resident system.
+ * @return Input system at offset 0x1480.
  */
-void* func_001012D0(void* object)
+struct ResidentInputSystem* func_001012D0(void* object)
 {
-    return (u8*)object + 0x1480;
+    return (struct ResidentInputSystem*)((u8*)object + 0x1480);
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101260", func_001012E0);

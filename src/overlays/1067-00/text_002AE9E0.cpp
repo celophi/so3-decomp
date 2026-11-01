@@ -1491,12 +1491,12 @@ void field_run_update_loop(ResidentContext* context)
 
     if (context->unkdd.unk4)
     {
-        resident_system_switch_program(resident_get_system(), context->unk7c, 1);
+        resident_system_switch_program(resident_get_system(), (ResidentResourceHeader*)context->unk7c, 1);
     }
 
     if (context->unkdd.unk5)
     {
-        resident_system_switch_program(resident_get_system(), context->unk80, 1);
+        resident_system_switch_program(resident_get_system(), (ResidentResourceHeader*)context->unk80, 1);
     }
 }
 

@@ -39,6 +39,19 @@ s32 __ptmf_test(const u32* member);
  */
 void mwOverlayInit(void* overlay, u32 size);
 
+/** @brief Register main's exception tables with the C++ runtime. */
+void func_00142AE0(void);
+
+/** @brief Destroy the global objects registered on the destructor chain. */
+void func_00142AC0(void);
+
+/**
+ * @brief Install a new handler, which operator new calls when it can't allocate.
+ * @param handler Handler to install.
+ * @return The previous handler.
+ */
+void (*func_001430D0(void (*handler)(void)))(void);
+
 #ifdef __cplusplus
 }
 #endif

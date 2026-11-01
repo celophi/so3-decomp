@@ -21,10 +21,46 @@ void* operator new(u32 size, s32 unused);
  */
 void* operator new[](u32 size, s32 unused);
 
+/** Partial resident allocation header containing its two ownership markers. */
+struct ResidentAllocationHeader
+{
+    u8 unk00[6];
+    u16 marker;
+    u8 unk08[0x14];
+    u32 tag;
+};
+
+extern "C" void resident_heap_release(void* memory);
+extern "C" void free_guess(void* memory);
+
+/** @brief Release resident heap allocations or use the default free routine. @param memory Allocation, or null. */
+inline void resident_delete(void* memory) throw()
+{
+    if (memory != 0)
+    {
+        ResidentAllocationHeader* header = (ResidentAllocationHeader*)((u8*)memory - 0x20);
+        if (header->tag == 0x4D655279 && header->marker == 0x4058)
+        {
+            resident_heap_release(memory);
+            return;
+        }
+        else
+        {
+            free_guess(memory);
+        }
+    }
+}
+
 /** Kernel semaphore that deletes itself when destroyed; vtable D_0014F9E0. */
 class ResidentSemaphore
 {
 public:
+    /** @brief Free a semaphore through the resident heap. @param memory Allocation, or null. */
+    static void operator delete(void* memory) throw()
+    {
+        resident_delete(memory);
+    }
+
     /** Kernel semaphore ID, or a negative value when none was created. */
     s32 id;
 
@@ -38,6 +74,14 @@ public:
     }
 };
 
+/** The running program, with vtable D_0014F9F0; its constructor registers it in g_current_program. */
+class ResidentProgram
+{
+public:
+    /** @brief Run the program; it ends by switching to the next one, so it never returns. */
+    virtual void run();
+};
+
 extern "C" {
 #endif
 
@@ -45,7 +89,7 @@ extern "C" {
 extern void* g_allocation_heap;
 
 /** The running program; its constructor registers it, and switching programs calls its run(). */
-extern void* g_current_program;
+extern struct ResidentProgram* g_current_program;
 
 /** Object that receives the IOP's SIF commands 0 to 3, or null; the sound system registers its stream. */
 extern void* g_sif_command_receiver;
@@ -124,13 +168,19 @@ s32 resident_system_set_alarm(struct ResidentSystem* system, u16 time, KernelAla
 void resident_system_set_progressive(struct ResidentSystem* system, u8 progressive);
 
 /**
- * @brief Decode an overlay into its slot and delete the loaded resource, then unwind to main's stack and run the
- * new program.
+ * @brief Save main's stack and frame pointers, so each program can start from main's stack depth.
+ * @param system Resident system.
+ */
+void resident_system_save_stack(struct ResidentSystem* system);
+
+/**
+ * @brief Decode an overlay into its slot and delete the loaded resource, then go back to main's stack depth and run
+ * the new program, which never returns.
  * @param system Resident system.
  * @param source Loaded, compressed overlay resource; switching deletes it.
  * @param slot Slot in the resident overlay table D_001B5FB0.
  */
-void resident_system_switch_program(struct ResidentSystem* system, void* source, s32 slot);
+void resident_system_switch_program(struct ResidentSystem* system, struct ResidentResourceHeader* source, s32 slot);
 
 /**
  * @brief Decode an overlay into its slot and run its static initializers.

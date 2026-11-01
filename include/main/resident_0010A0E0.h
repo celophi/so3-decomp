@@ -30,8 +30,17 @@ typedef struct ResidentReleaseQueues
 #endif
 } ResidentReleaseQueues;
 
-/** The two pads (buttons, sticks and vibration) and the vblank counters that time each frame. */
 struct ResidentInputSystem;
+
+/** Clock bytes the archive's clock query fills. */
+typedef struct ResidentClock
+{
+    u8 status;
+    u8 second;
+    u8 minute;
+    u8 hour;
+    u8 unk04[4];
+} ResidentClock;
 
 /**
  * The game's resource archive: the packed entry of every resource, plus the worker that installs the archive to the
@@ -257,8 +266,11 @@ public:
     }
 };
 
-/** Part of g_system at 0x1480 that owns a thread and a semaphore. */
-struct ResidentSystem1480
+/**
+ * The two pads (buttons, sticks and vibration) and the vblank counters that time each frame, at g_system + 0x1480.
+ * It owns a polling thread and a semaphore.
+ */
+struct ResidentInputSystem
 {
     u8 unk000[0x304];
     ResidentClass14FC60 unk304;
@@ -276,9 +288,15 @@ struct ResidentSystem
     /** @brief Destroy every part of the system. */
     ~ResidentSystem();
 
+    /** @brief Free the system through the resident heap. @param memory Allocation, or null. */
+    static void operator delete(void* memory) throw()
+    {
+        resident_delete(memory);
+    }
+
     ResidentSound sound;
     u8 unk_sound_end[0x1480 - sizeof(ResidentSound)];
-    ResidentSystem1480 unk1480;
+    ResidentInputSystem input;
     ResidentArchive archive;
     u8 unk_archive_end[0x1398C - 0x17C0 - sizeof(ResidentArchive)];
 
@@ -340,6 +358,17 @@ s32 func_00114100(ResidentDmaQueue* queue, DmaSubmission* submission);
  * @return g_system.
  */
 ResidentSystem* resident_get_system(void);
+
+/** The resident system. */
+extern ResidentSystem g_system;
+
+/**
+ * @brief Read the clock.
+ * @param archive Resource archive.
+ * @param clock Receives the clock bytes.
+ * @return Nonzero on success.
+ */
+s32 resident_archive_get_clock(ResidentArchive* archive, ResidentClock* clock);
 
 /**
  * @brief Allocate a block from a resident heap.

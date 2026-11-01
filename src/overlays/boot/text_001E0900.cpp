@@ -50,7 +50,6 @@ extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
 void func_4C5B60(s32 first, s32 second);
 void lib_container_attach_widget(BootContainer* container, BootListObject* child);
 void resident_system_create_status(ResidentSystem* system);
-s32 resident_archive_get_clock(ResidentArchive* archive, struct BootClock* clock);
 ResidentResourceQueue* func_101250(void* root);
 void func_45A5D0(void);
 void func_45A770(void);
@@ -66,7 +65,6 @@ void func_4D8AC0(void);
 void func_4D76C0(void* object, u16 x, u16 y);
 void func_4D4BE0(void* object);
 u32 func_4DCFF0(BootDimensionsACD0* display, s32 frame);
-void resident_system_switch_program(ResidentSystem* system, void* source, s32 slot);
 extern const struct BootLabelOffsets D_205170;
 const struct BootTextExtent* lib_text_measure_bounds(BootTextWidget* text);
 extern const struct BootCaption g_opening_captions[];
@@ -157,16 +155,6 @@ struct BootTextExtent
 struct BootLabelOffsets
 {
     s32 values[6];
-};
-
-/** Clock bytes filled by the resident clock query. */
-struct BootClock
-{
-    u8 status;
-    u8 second;
-    u8 minute;
-    u8 hour;
-    u8 unk04[4];
 };
 
 /** Screen rectangle passed to the clear-colour setup. */
@@ -4689,7 +4677,7 @@ void BootProgram::create_pools_and_projection()
 /** @brief Run the boot program. */
 void BootProgram::run()
 {
-    BootClock clock;
+    ResidentClock clock;
     BootScreenRect rect;
     u8* buffer;
     s32 size;
@@ -4863,7 +4851,7 @@ void BootProgram::run()
     {
     }
 
-    resident_system_switch_program(resident_get_system(), next_program, 1);
+    resident_system_switch_program(resident_get_system(), (ResidentResourceHeader*)next_program, 1);
 }
 
 /** @brief Release the track pools and every object, resource and buffer the program owns. */

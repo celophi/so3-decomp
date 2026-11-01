@@ -105,7 +105,6 @@ typedef struct ResidentManagerEF50
 } ResidentManagerEF50;
 
 
-extern ResidentSystem g_system;
 extern s32 D_001B640C;
 extern ResidentManagerEF50* D_001B6410;
 extern u32 D_001CF8E0[56];
