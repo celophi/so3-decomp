@@ -11,7 +11,6 @@
 extern "C" {
 extern BootVector4 D_50CD30;
 void func_4CE4C0(void* destination, const float* source);
-void resident_sound_load_bank(ResidentSound* sound, u8* data, s32 first, s32 second);
 void lib_container_attach_widget(BootContainer* container, BootTextWidget* child);
 void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 }
@@ -478,7 +477,7 @@ void BootInstaller::update()
             resident_cancel_resource_requests(g_resource_queue, BOOT_RES_TIP_IMAGES, 0, 0, -1, 0);
             exiting = 1;
         }
-        else if (resident_update_resource_queue(g_resource_queue) == 0 && g_resource_archive->unk12183 == 0)
+        else if (resident_update_resource_queue(g_resource_queue) == 0 && g_resource_archive->read_busy == 0)
         {
             func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
 

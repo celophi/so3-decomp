@@ -44,7 +44,11 @@ u8* func_001012A0(struct ResidentSystem* system);
  */
 u32 resident_find_entry(void* table, s32 key);
 
-/** Remove the entry associated with a key. */
+/**
+ * @brief Remove every entry stored under a key.
+ * @param table Opaque entry table.
+ * @param key Key to remove.
+ */
 void func_00101480(void* table, s32 key);
 
 /**
@@ -89,6 +93,28 @@ ResidentDecodeObject* func_001012B0(struct ResidentSystem* system);
 #ifdef __cplusplus
 extern "C"
 {
+    /**
+     * @brief Construct the resident system and each of its parts.
+     * @param system Resident system to construct.
+     * @return The constructed system.
+     */
+    ResidentSystem* func_001012E0(ResidentSystem* system);
+
+    /**
+     * @brief Destroy the input system's semaphore and polling thread, then free it when asked.
+     * @param input Input system to destroy, or null.
+     * @param flags Positive to free the input system after destroying it.
+     * @return The input system.
+     */
+    ResidentInputSystem* func_001013A0(ResidentInputSystem* input, s16 flags);
+
+    /**
+     * @brief Store an entry under a key, replacing the key's entry or taking the first free slot.
+     * @param table Opaque entry table.
+     * @param entry Entry to store.
+     * @param key Key to store it under.
+     * @return One when the entry was stored, or zero when the table is full.
+     */
     u32 func_001014B0(void* table, void* entry, s32 key);
 }
 #endif

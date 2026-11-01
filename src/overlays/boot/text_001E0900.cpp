@@ -93,7 +93,6 @@ extern const char g_camera_node_name[];
 extern const char g_face_model_name[];
 void func_10DAA0(ResidentSound* sound, s32 mode);
 s32 resident_sound_stop(ResidentSound* sound, s32 handle, s32 flag);
-s32 resident_sound_play_voice(ResidentSound* sound, s32 id, BootTransformOwner* emitter, s32 first, s32 volume, s32 second);
 s32 resident_sound_is_active(ResidentSound* sound, s32 handle);
 u32 resident_sound_get_voice_level(ResidentSound* sound, s32 handle, float time);
 void lib_text_set_resource(BootTextWidget* text, s32 source, s32 key, u8 flag);
@@ -3502,7 +3501,8 @@ void BootNewGameSettings::update()
                 voice_line = 0;
             }
 
-            voice_line = resident_sound_play_voice(g_sound, g_voice_lines[line], func_473530(girl_scene, g_root_node_name), 0, 0x7F, 0);
+            voice_line = resident_sound_play_voice(g_sound, g_voice_lines[line],
+                                                   (ResidentSoundEmitter*)func_473530(girl_scene, g_root_node_name), 0, 0x7F, 0);
         }
 
         if (button_pressed(input, settings->confirm_buttons))

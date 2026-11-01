@@ -79,7 +79,6 @@ extern "C" {
 extern ResidentStartupState g_startup_state;
 extern u8 D_001CC510[];
 extern ResidentVector D_001CC530;
-extern u8 D_001CC590[];
 
 /** "Memory exhaused.\n" */
 extern const char D_0014D660[];
@@ -99,8 +98,12 @@ extern const char D_0014D610[];
 /** DMA chain that uploads the VU0 microcode. */
 extern u8 D_00143B80[];
 
-extern u8 D_00143C00[];
-extern u8 D_00143D70[];
+/** Every piece of music, by music number minus one. */
+extern const ResidentMusicEntry D_00143C00[];
+
+/** Setup table main sends to the sound stream. */
+extern const ResidentSoundSetupEntry D_00143D70[];
+
 extern u8 D_00144130[];
 }
 
@@ -164,14 +167,14 @@ int main(int argc, char** argv)
     g_startup_state.argv = argv;
     func_0011D470(resident_get_archive(&g_system));
     decoder = func_001012B0(&g_system);
-    func_0010C700(D_001CC590);
+    func_0010C700(&D_001CC590);
 
     modules = (ResidentResourceHeader*)memalign(0x40, 0x80000);
     FlushCache(0);
     func_0011D080(archive, 1);
     func_0011D060(archive, modules, 0);
 
-    while (archive->unk12183)
+    while (archive->read_busy)
     {
         resident_next_random_word();
     }
@@ -275,7 +278,7 @@ int main(int argc, char** argv)
 
     delete blank;
 
-    while (func_0010C640(D_001CC590) < 0)
+    while (func_0010C640(&D_001CC590) < 0)
     {
         resident_next_random_word();
     }
@@ -285,7 +288,7 @@ int main(int argc, char** argv)
     func_00112D70(func_00101270(&g_system), 0x59, D_00143C00);
     func_00120360(D_00144130);
 
-    while (archive->unk12183)
+    while (archive->read_busy)
     {
         resident_next_random_word();
     }

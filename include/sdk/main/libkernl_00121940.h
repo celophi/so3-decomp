@@ -32,6 +32,30 @@ s32 iSignalSema(s32 sema_id);
  */
 s32 DeleteSema(s32 sema_id);
 
+/** Semaphore settings passed to CreateSema (Sony's struct SemaParam). */
+typedef struct SemaParam
+{
+    s32 currentCount;
+    s32 maxCount;
+    s32 initCount;
+    s32 numWaitThreads;
+    u32 attr;
+    u32 option;
+} SemaParam;
+
+/**
+ * @brief Create a semaphore.
+ * @param param Initial and maximum counts.
+ * @return The new semaphore's ID, or a negative value on failure.
+ */
+s32 CreateSema(SemaParam* param);
+
+/**
+ * @brief Enable interrupts (libkernl EIntr).
+ * @return Result from the syscall.
+ */
+s32 EIntr(void);
+
 /** Alarm callback: the alarm ID, the time it was set for, and the argument passed to SetAlarm. */
 typedef void (*KernelAlarmHandler)(s32 alarm_id, u16 time, void* common);
 
@@ -93,6 +117,68 @@ void TerminateLibrary(void);
 
 /** @brief Return the calling thread's ID. @return Thread ID. */
 s32 GetThreadId(void);
+
+s32 WakeupThread(s32 thread_id);
+
+/** Header that starts every SIF command packet. */
+typedef struct SifCommandHeader
+{
+    /** Packet size in the low 8 bits, extra data size in the upper 24. */
+    u32 size;
+
+    /** IOP address of the extra data. */
+    void* destination;
+
+    /** Command ID. */
+    s32 command;
+
+    /** Free word for the sender. */
+    u32 option;
+} SifCommandHeader;
+
+/** @brief Handle a SIF command. @param packet Received packet. @param data Value registered with the handler. */
+typedef void (*SifCommandHandler)(void* packet, void* data);
+
+/** One registered SIF command handler. */
+typedef struct SifCommandHandlerEntry
+{
+    SifCommandHandler handler;
+    void* data;
+} SifCommandHandlerEntry;
+
+/** Server side of a SIF RPC binding. */
+typedef struct SifServeData SifServeData;
+
+/** Client side of a SIF RPC binding. */
+typedef struct SifClientData
+{
+    void* packet;
+    u32 packet_id;
+    s32 semaphore_id;
+    u32 mode;
+    u32 command;
+    void* buffer;
+    void* cache_buffer;
+    void (*end_function)(void* parameter);
+    void* end_parameter;
+
+    /** Server the binding reached, or null until the IOP side is ready. */
+    SifServeData* server;
+} SifClientData;
+
+SifCommandHandlerEntry* sceSifSetCmdBuffer(SifCommandHandlerEntry* entries, s32 count);
+
+void sceSifAddCmdHandler(u32 command, SifCommandHandler handler, void* data);
+
+u32 sceSifSendCmd(s32 command, void* packet, s32 packet_size, void* source, void* destination, s32 size);
+
+u32 isceSifSendCmd(s32 command, void* packet, s32 packet_size, void* source, void* destination, s32 size);
+
+s32 sceSifBindRpc(SifClientData* client, u32 server_id, u32 mode);
+
+s32 DIntr(void);
+
+s32 EIntr(void);
 
 /**
  * @brief Change a thread's priority.
