@@ -98,7 +98,7 @@ static inline void check_main_code()
         {
             ResidentSystem* system = resident_get_system();
 
-            *system->status = 0x67;
+            *system->status = RESIDENT_STATUS_TAMPERED;
             for (;;)
             {
             }

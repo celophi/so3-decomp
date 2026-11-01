@@ -32,6 +32,16 @@ typedef struct ResidentReleaseQueues
 
 struct ResidentInputSystem;
 
+/** Values of g_system's status byte. */
+enum ResidentStatus
+{
+    /** Set when the status byte is allocated. */
+    RESIDENT_STATUS_CLEAN = 0x66,
+
+    /** Set when main's code no longer matches the copy in the program image. */
+    RESIDENT_STATUS_TAMPERED = 0x67
+};
+
 /** Clock bytes the archive's clock query fills. */
 typedef struct ResidentClock
 {
@@ -322,7 +332,7 @@ struct ResidentSystem
 
     u8 unk15CA4[0x1C];
 
-    /** Status byte, allocated on first use; a failed main code check sets it to 0x67. */
+    /** Status byte (a ResidentStatus), allocated on first use at a random heap address. */
     u8* status;
 };
 #endif

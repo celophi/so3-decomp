@@ -402,7 +402,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
         {
             BootTrophyRecord* record = &records[i];
 
-            if (func_457220(record) == 0 || *resident_get_system()->status == 0x67)
+            if (func_457220(record) == 0 || *resident_get_system()->status == RESIDENT_STATUS_TAMPERED)
             {
                 set_resource_bit(bits, i, 0);
                 record->key = 0;
@@ -636,7 +636,7 @@ void BootBattleTrophyViewer::update()
             resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
 
-            if (*resident_get_system()->status != 0x67)
+            if (*resident_get_system()->status != RESIDENT_STATUS_TAMPERED)
             {
                 step++;
             }
@@ -1024,7 +1024,7 @@ void BootBattleTrophyViewer::update()
                 }
             }
 
-            if (*resident_get_system()->status != 0x67)
+            if (*resident_get_system()->status != RESIDENT_STATUS_TAMPERED)
             {
                 if (score < BOOT_TROPHY_FIRST_COLOR_COUNT * BOOT_TROPHY_BROWSE_SCORE_PER_EARNED)
                 {

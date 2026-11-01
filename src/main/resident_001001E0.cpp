@@ -59,6 +59,22 @@ extern "C" u8 _stack_size[];
 #define D_CTRL (*(volatile u32*)0x1000E000)
 #define D_STAT (*(volatile u32*)0x1000E010)
 
+#define TIMER_MODE_CLOCK_HBLANK 0x3
+#define TIMER_MODE_COUNT_ENABLE 0x80
+#define D_CTRL_DMA_ENABLE 0x1
+#define D_CTRL_RELEASE_ENABLE 0x2
+#define D_CTRL_RELEASE_CYCLE_256 0x500
+#define D_CHCR_FROM_MEMORY 0x1
+#define D_CHCR_CHAIN_MODE 0x4
+#define D_CHCR_TRANSFER_TAG 0x40
+#define D_CHCR_START 0x100
+#define D_STAT_CHANNEL_0 0x1
+
+/** End of the EE's 32 MB of main memory; the main thread's stack sits right below it. */
+#define RESIDENT_MEMORY_END 0x2000000
+
+#define RESIDENT_MAIN_THREAD_PRIORITY 0x2D
+
 extern "C" {
 extern ResidentStartupState g_startup_state;
 extern u8 D_001CC510[];
@@ -119,8 +135,8 @@ int main(int argc, char** argv)
     resident_prime_heap();
 
     // Stack canary at the bottom of the stack ("gMtScFpT" in memory).
-    *(u64*)(0x2000000 - (u32)_stack_size) = 0x5470466353744D67;
-    TIMER0_MODE = 0x83;
+    *(u64*)(RESIDENT_MEMORY_END - (u32)_stack_size) = 0x5470466353744D67;
+    TIMER0_MODE = TIMER_MODE_COUNT_ENABLE | TIMER_MODE_CLOCK_HBLANK;
     TIMER0_COUNT = 0;
     func_00142AE0();
     sceSifInitRpc(0);
@@ -139,7 +155,7 @@ int main(int argc, char** argv)
     sceSifInitRpc(0);
     sceSifLoadFileReset();
     sceFsReset();
-    ChangeThreadPriority(GetThreadId(), 0x2D);
+    ChangeThreadPriority(GetThreadId(), RESIDENT_MAIN_THREAD_PRIORITY);
     archive = resident_get_archive(&g_system);
     func_0011DA80(archive);
     sceSifInitIopHeap();
@@ -290,17 +306,17 @@ int main(int argc, char** argv)
     func_001012D0(&g_system);
     ((void (*)(u8))func_00100A40)(1);
 
-    D_CTRL = 0x503;
+    D_CTRL = D_CTRL_RELEASE_CYCLE_256 | D_CTRL_RELEASE_ENABLE | D_CTRL_DMA_ENABLE;
     D0_QWC = 0;
     D0_TADR = (u32)D_00143B80;
-    D_STAT = 1;
-    D0_CHCR = 0x145;
+    D_STAT = D_STAT_CHANNEL_0;
+    D0_CHCR = D_CHCR_START | D_CHCR_TRANSFER_TAG | D_CHCR_CHAIN_MODE | D_CHCR_FROM_MEMORY;
 
-    while (!(D_STAT & 1))
+    while (!(D_STAT & D_STAT_CHANNEL_0))
     {
     }
 
-    D_STAT = 1;
+    D_STAT = D_STAT_CHANNEL_0;
 
     v = &vector;
     func_001058C0(func_00101270(&g_system)->stream, &v->f[0], &v->f[1], &v->f[2], &v->f[3]);
@@ -463,7 +479,7 @@ void* resident_get_allocation_heap(void)
 u32 resident_prime_heap(void)
 {
     u32 stack = (u32)_stack_size + 0x1000;
-    u32 size = 0x2000000 - ((u32)_end + stack + 0x1000);
+    u32 size = RESIDENT_MEMORY_END - ((u32)_end + stack + 0x1000);
     free_guess(malloc_guess(size - 0x10));
     return size - 0x10;
 }
@@ -482,7 +498,7 @@ void resident_system_create_status(ResidentSystem* system)
     // Never freed; it only moves the status byte to a different address on each boot.
     new (0) u8[(resident_rand() & 0x3FF) + 0x40];
     system->status = new (0) u8[0x10];
-    *system->status = 0x66;
+    *system->status = RESIDENT_STATUS_CLEAN;
 }
 
 /**
