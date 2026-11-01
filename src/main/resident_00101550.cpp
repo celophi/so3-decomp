@@ -499,28 +499,27 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", __dt__21Reside
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001044F0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104600);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104680);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001046E0);
-
-s32 func_00104730(void* object)
+/**
+ * @brief Return the object's kind.
+ * @return Three.
+ */
+s32 ResidentClass14FA40::func_00104730()
 {
     return 3;
 }
 
-/** @brief Destroy a resident object through its virtual destructor. @param object Object to destroy, or null. */
-void func_00104740(ResidentClass14FA40* object)
+/** @brief Destroy the object through its virtual destructor. */
+void ResidentClass14FA40::func_00104740()
 {
-    delete object;
+    delete this;
 }
 
-void func_00104770(void* object)
+/** @brief Update the object; the base does nothing. */
+void ResidentClass14FA40::func_00104770()
 {
 }
 
-void func_00104780(void* object)
+void ResidentClass14FA40::func_00104780()
 {
 }
 

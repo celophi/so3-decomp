@@ -1,0 +1,10 @@
+// MWCC this-adjusting thunks, by compiler name, at the address of the copy the
+// original linker kept. tools/so3/build/text_order.py drops every other copy.
+// ResidentClass14FCB0 (vtable D_0014FCB0); its list-object base is at 0x78.
+@120@__dt__19ResidentClass14FCB0Fv = 0x00121850;
+@120@func_00104730__19ResidentClass14FCB0Fv = 0x00121840;
+@120@func_00104770__19ResidentClass14FCB0Fv = 0x00121830;
+// ResidentClass14FD30 (vtable D_0014FD30); its registration part is at 0x210.
+@528@__dt__19ResidentClass14FD30Fv = 0x00121820;
+@528@func_001217E0__19ResidentClass14FD30Fv = 0x00121810;
+@528@func_001217D0__19ResidentClass14FD30Fv = 0x00121800;

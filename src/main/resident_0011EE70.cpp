@@ -1,7 +1,9 @@
 #include "include_asm.h"
 #include "main/resident_0011EE70.h"
 #include "main/resident_00101260.h"
+#include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
+#include "vu0.h"
 
 enum
 {
@@ -50,20 +52,26 @@ enum
 #define SOUND_BANK_SECTOR_SHIFT 11
 
 extern "C" {
-extern u8 D_50CD30[];
+extern const ResidentVector4 D_50CD30;
 extern u8 D_0014FC78[];
 extern const ResidentSoundBankVariants* D_001B6424;
 extern ResidentDisplayContext* D_001B6650;
 extern void* D_001B6640;
+extern ResidentObjectList* D_001B6614;
 extern u8 D_001B65D0;
 extern struct FieldPacketQueue* D_001B65DC;
 
-void func_4CE4C0(void* destination, const float* source);
-void func_4D72A0(void);
+void func_4CE4C0(ResidentVector4* orientation, const ResidentVector4* rotation);
 void func_4486A0(void* object);
 void func_4D0260(void* list, void* object);
-void func_4D0020(void* object);
+void func_4D02E0(void* list, void* object);
 s32 func_4DC4F0(struct FieldPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
+bool func_4D7D40(ResidentImageSequenceChannel* channel, ResidentRenderDataRecord* record, bool use_inline);
+void func_4CBD20(ResidentMatrix* output, const ResidentVector4* position, const ResidentVector4* direction, float roll);
+void func_4CFB20(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
+                 float y_offset);
+void func_4CFC50(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
+                 float y_offset);
 }
 
 /**
@@ -85,22 +93,6 @@ typedef struct ByteTransitionViewOwnerresident_0011EE70
     u8 unk25;
 } ByteTransitionViewOwnerresident_0011EE70;
 
-typedef struct ByteClearOwnerresident_0011EE70
-{
-    u8 unk00[0x60];
-    u8 unk60;
-} ByteClearOwnerresident_0011EE70;
-
-
-
-typedef struct WordSetterOwnerresident_0011EE70
-{
-    u8 unk00[0x70];
-    u32 unk70;
-} WordSetterOwnerresident_0011EE70;
-
-
-
 typedef struct WordGetterOwnerresident_0011EE70
 {
     u32 unk00;
@@ -120,21 +112,6 @@ typedef struct ResidentWordAndFlag2B4Ownerresident_0011EE70
     u8 unk2C3;
     u8 unk2C4;
 } ResidentWordAndFlag2B4Ownerresident_0011EE70;
-
-
-typedef struct FlagQuadwordOwnerresident_0011EE70 { u8 unk00[0x20]; unsigned __int128 slots[3]; u8 ready; } FlagQuadwordOwnerresident_0011EE70;
-
-typedef struct FlagFloatQuadOwnerresident_0011EE70 { u8 pad00[0x30]; float values[4]; u8 pad40[0x10]; u8 flag50; } FlagFloatQuadOwnerresident_0011EE70;
-
-typedef struct FlagFloatQuadOffset20Ownerresident_0011EE70
-{
-    u8 pad00[0x20];
-    float values[4];
-    u8 pad30[0x20];
-    u8 flag50;
-} FlagFloatQuadOffset20Ownerresident_0011EE70;
-
-typedef struct FlagFloatTripleOwnerresident_0011EE70 { u8 pad00[0x40]; float values[3]; u8 pad4C[4]; u8 flag50; } FlagFloatTripleOwnerresident_0011EE70;
 
 /**
  * @brief Get the packet cursor when a number of quadwords still fits.
@@ -167,6 +144,67 @@ static inline void resident_packet_set_cursor(ResidentPacket* packet, u8* cursor
     }
 
     packet->unk08 = cursor;
+}
+
+/**
+ * @brief Replace the image channel with a new one bound to the record, while the object is registered and animated.
+ * @param object Object whose channel is rebuilt; it has no channel when binding fails.
+ */
+static inline void rebuild_image_channel(ResidentClass14FD30* object)
+{
+    if (object->registered)
+    {
+        delete object->channel;
+        object->channel = 0;
+
+        if (object->animated)
+        {
+            object->channel = new (0) ResidentImageSequenceChannel;
+
+            if (object->channel)
+            {
+                if (func_4D7D40(object->channel, &object->record, false))
+                {
+                    object->channel->unk3c = 0x8000;
+                }
+                else
+                {
+                    delete object->channel;
+                    object->channel = 0;
+                }
+            }
+        }
+    }
+}
+
+/**
+ * @brief Subtract one vector's xyz from another's, keeping the first vector's w.
+ * @param output Difference.
+ * @param left Vector to subtract from.
+ * @param right Vector to subtract.
+ */
+static inline void subtract_xyz(ResidentVector4* output, const ResidentVector4* left, const ResidentVector4* right)
+{
+    output->x = left->x - right->x;
+    output->y = left->y - right->y;
+    output->z = left->z - right->z;
+    output->w = left->w;
+}
+
+/**
+ * @brief Test whether a list walk has come back to the list.
+ * @param list List sentinel.
+ * @param node Current node.
+ * @return Whether node is the sentinel.
+ */
+static inline bool at_list_end(const ResidentClass14FA30* list, const ResidentClass14FA30* node)
+{
+    if (list == node)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 /** @brief Drain both release rings. */
@@ -292,7 +330,44 @@ void func_0011F140(ResidentPacket* packet, u64 data)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F1D0);
+/**
+ * @brief Append a flat-coloured rectangle, drawn as a triangle strip, when the packet has room.
+ * @param packet Packet to append to.
+ * @param x0 Left edge, relative to the centre of the viewport.
+ * @param y0 Top edge, relative to the centre of the viewport.
+ * @param x1 Right edge, relative to the centre of the viewport.
+ * @param y1 Bottom edge, relative to the centre of the viewport.
+ * @param z Depth.
+ * @param color RGBA colour.
+ */
+void func_0011F1D0(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, s32 z, u32 color)
+{
+    ResidentRectanglePacket* rectangle = (ResidentRectanglePacket*)resident_packet_space(packet, 4);
+
+    if (rectangle != 0)
+    {
+        s32 offset_x;
+        s32 offset_y;
+
+        rectangle->tag.tag = GIF_TAG_RECTANGLE;
+        rectangle->tag.registers = 0;
+        rectangle->tag.fields.register0 = GIF_REGISTER_PRIM;
+        rectangle->tag.fields.register1 = GIF_REGISTER_RGBAQ;
+        rectangle->tag.fields.register2 = GIF_REGISTER_XYZ2;
+        rectangle->tag.fields.register3 = GIF_REGISTER_XYZ2;
+        rectangle->tag.fields.register4 = GIF_REGISTER_XYZ2;
+        rectangle->tag.fields.register5 = GIF_REGISTER_XYZ2;
+        rectangle->prim = (packet->unk15 ? GS_PRIM_ALPHA_BLEND : 0) | GS_PRIM_TRIANGLE_STRIP;
+        rectangle->rgba = color;
+        offset_x = GS_COORDINATE_CENTRE - D_001B6650->viewport_width / 2;
+        offset_y = GS_COORDINATE_CENTRE - D_001B6650->viewport_height / 2;
+        rectangle->vertices[0] = resident_gs_xyz(x0 + offset_x, y0 + offset_y, z);
+        rectangle->vertices[1] = resident_gs_xyz(x1 + offset_x, y0 + offset_y, z);
+        rectangle->vertices[2] = resident_gs_xyz(x0 + offset_x, y1 + offset_y, z);
+        rectangle->vertices[3] = resident_gs_xyz(x1 + offset_x, y1 + offset_y, z);
+        resident_packet_set_cursor(packet, (u8*)(rectangle + 1));
+    }
+}
 
 /**
  * @brief Append an antialiased, flat-coloured line when the packet has room.
@@ -554,9 +629,8 @@ s32 func_0011FB40(ResidentClass14FC90* set, s32 slot, s32 id, ResidentSoundEmitt
 
 /**
  * @brief Advance the bank loads by one step each frame while loads are in progress.
- * @param set Sound bank set.
  */
-void func_0011FC20(ResidentClass14FC90* set)
+void ResidentClass14FC90::func_00104770()
 {
     ResidentResourceQueue* queue;
     ResidentSound* sound;
@@ -564,7 +638,7 @@ void func_0011FC20(ResidentClass14FC90* set)
     u8* part;
     bool finished;
 
-    if (set->loading == 0)
+    if (loading == 0)
     {
         return;
     }
@@ -572,39 +646,39 @@ void func_0011FC20(ResidentClass14FC90* set)
     queue = func_00101250(resident_get_system());
     sound = func_00101270(resident_get_system());
 
-    if (set->upload_lists == 0)
+    if (upload_lists == 0)
     {
-        if (set->buffer == 0)
+        if (buffer == 0)
         {
             return;
         }
 
-        switch (set->load_step)
+        switch (load_step)
         {
             case 0:
-                if (set->load_index >= set->load_count)
+                if (load_index >= load_count)
                 {
-                    set->loading = 0;
-                    delete set->buffer;
-                    set->buffer = 0;
+                    loading = 0;
+                    delete buffer;
+                    buffer = 0;
                     return;
                 }
 
-                resident_queue_resource_request(queue, set->loads[set->load_index].file_key, set->buffer, 6, 0x34BC0, 0,
+                resident_queue_resource_request(queue, loads[load_index].file_key, buffer, 6, 0x34BC0, 0,
                                                 0, 0, 1);
-                set->load_step = 1;
+                load_step = 1;
                 break;
 
             case 1:
-                if (resident_find_resource_request(queue, set->loads[set->load_index].file_key, (u32)set->buffer, 6,
+                if (resident_find_resource_request(queue, loads[load_index].file_key, (u32)buffer, 6,
                                                    0xFFFFFFFF, 0) != 0)
                 {
                     break;
                 }
 
-                if (func_0010EB90(sound, set->buffer, set->loads[set->load_index].slot * 2 + 1, 0) != 0)
+                if (func_0010EB90(sound, buffer, loads[load_index].slot * 2 + 1, 0) != 0)
                 {
-                    set->load_step = 2;
+                    load_step = 2;
                 }
 
                 break;
@@ -614,9 +688,9 @@ void func_0011FC20(ResidentClass14FC90* set)
 
                 if (sound->state == 0)
                 {
-                    set->variants[set->loads[set->load_index].slot] = set->loads[set->load_index].variant;
-                    set->load_step = 0;
-                    set->load_index++;
+                    variants[loads[load_index].slot] = loads[load_index].variant;
+                    load_step = 0;
+                    load_index++;
                 }
 
                 break;
@@ -628,25 +702,25 @@ void func_0011FC20(ResidentClass14FC90* set)
 
         do
         {
-            switch (set->load_step)
+            switch (load_step)
             {
                 case 0:
                     for (;;)
                     {
-                        if (set->lists[set->list_index][set->load_index] != 0)
+                        if (lists[list_index][load_index] != 0)
                         {
                             break;
                         }
 
-                        if (++set->load_index < RESIDENT_SOUND_BANK_LIST_COUNT)
+                        if (++load_index < RESIDENT_SOUND_BANK_LIST_COUNT)
                         {
                             continue;
                         }
 
-                        set->first_part = 1;
-                        set->load_index = 0;
+                        first_part = 1;
+                        load_index = 0;
 
-                        if (++set->list_index < RESIDENT_SOUND_BANK_SLOT_COUNT)
+                        if (++list_index < RESIDENT_SOUND_BANK_SLOT_COUNT)
                         {
                             continue;
                         }
@@ -655,41 +729,41 @@ void func_0011FC20(ResidentClass14FC90* set)
                         break;
                     }
 
-                    if (set->list_index >= RESIDENT_SOUND_BANK_SLOT_COUNT)
+                    if (list_index >= RESIDENT_SOUND_BANK_SLOT_COUNT)
                     {
-                        set->loading = 0;
+                        loading = 0;
                         return;
                     }
 
-                    set->load_step = 1;
-                    set->part_index = 0;
+                    load_step = 1;
+                    part_index = 0;
                     break;
 
                 case 1:
-                    data = set->lists[set->list_index][set->load_index];
+                    data = lists[list_index][load_index];
 
-                    if (set->part_index >= data[0])
+                    if (part_index >= data[0])
                     {
-                        set->load_step = 0;
+                        load_step = 0;
 
-                        if (++set->load_index >= RESIDENT_SOUND_BANK_LIST_COUNT)
+                        if (++load_index >= RESIDENT_SOUND_BANK_LIST_COUNT)
                         {
-                            set->first_part = 1;
-                            set->list_index++;
-                            set->load_index = 0;
+                            first_part = 1;
+                            list_index++;
+                            load_index = 0;
                         }
 
                         break;
                     }
 
                     part = (u8*)data
-                           + (((ResidentSoundBankPart*)(data + 1))[set->part_index].sector << SOUND_BANK_SECTOR_SHIFT);
+                           + (((ResidentSoundBankPart*)(data + 1))[part_index].sector << SOUND_BANK_SECTOR_SHIFT);
 
-                    if (func_0010EB90(sound, part, set->list_index * 2 + 2, !set->first_part) != 0)
+                    if (func_0010EB90(sound, part, list_index * 2 + 2, !first_part) != 0)
                     {
-                        set->load_step = 2;
-                        set->first_part = 0;
-                        set->list_sizes[set->list_index] += func_00105F90(sound->stream, (const SoundFileHeader*)part);
+                        load_step = 2;
+                        first_part = 0;
+                        list_sizes[list_index] += func_00105F90(sound->stream, (const SoundFileHeader*)part);
                     }
                     else
                     {
@@ -703,8 +777,8 @@ void func_0011FC20(ResidentClass14FC90* set)
 
                     if (sound->state == 0)
                     {
-                        set->load_step = 1;
-                        set->part_index++;
+                        load_step = 1;
+                        part_index++;
                     }
                     else
                     {
@@ -734,7 +808,28 @@ void func_0011FFD0(ResidentClass14FC90* set)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120000);
+/**
+ * @brief Register bank data in the first free entry of a list unless loads are in progress.
+ * @param set Sound bank set.
+ * @param list List to add to.
+ * @param data Bank data.
+ */
+void func_00120000(ResidentClass14FC90* set, s32 list, s32* data)
+{
+    s32 index;
+
+    if (set->loading == 0)
+    {
+        for (index = 0; index < RESIDENT_SOUND_BANK_LIST_COUNT; index++)
+        {
+            if (set->lists[list][index] == 0)
+            {
+                set->lists[list][index] = data;
+                return;
+            }
+        }
+    }
+}
 
 /**
  * @brief Clear every registered data list and its size unless loads are in progress.
@@ -921,9 +1016,30 @@ s32 func_001203C0(ResidentClass14FC90* set, s32 slot, s32 bank)
     return 1;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120410);
+/** @brief Detach the set and free its staging buffer. */
+ResidentClass14FC90::~ResidentClass14FC90()
+{
+    lib_object_detach_owner(this);
+    delete buffer;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001204B0);
+/** @brief Construct an empty set with no banks assigned and register it with the update list. */
+ResidentClass14FC90::ResidentClass14FC90() : buffer(0)
+{
+    s32 slot;
+
+    buffer = 0;
+
+    for (slot = 0; slot < RESIDENT_SOUND_BANK_SLOT_COUNT; slot++)
+    {
+        banks[slot] = 0;
+        variants[slot] = -1;
+    }
+
+    loading = 0;
+    unk24 = 0;
+    D_001B6614->append_node(this, -1);
+}
 
 /**
  * @brief Clamp a value to [0, 999999999] and store it at offset 0x14.
@@ -1069,43 +1185,99 @@ u32 func_001206F0(const void* object)
     return receiver->unk00;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120700);
-
-/** Store the word at receiver offset 0x70. */
-void func_001207B0(void* object, u32 value)
-{
-    WordSetterOwnerresident_0011EE70* receiver = (WordSetterOwnerresident_0011EE70*)object;
-    receiver->unk70 = value;
-}
-
-void func_001207C0(void* object)
+/** @brief Destroy the list. */
+ResidentClass14FCB0::~ResidentClass14FCB0()
 {
 }
 
-s32 func_001207D0(void* object)
+/**
+ * @brief Set the next list in the chain.
+ * @param attached List that follows this list.
+ */
+void ResidentClass14FCB0::func_004295B0(void* attached)
+{
+    next_list = static_cast<ResidentObjectList*>(attached);
+}
+
+/** @brief Do nothing. */
+void ResidentClass14FCB0::func_004295C0()
+{
+}
+
+/**
+ * @brief Return the list's kind.
+ * @return Nine.
+ */
+s32 ResidentClass14FCB0::func_00104730()
 {
     return 9;
 }
 
-/**
- * @brief Unregister the object if it is registered, then detach it and queue it for release.
- * @param object Object to release.
- */
-void func_001207E0(ResidentClass14FD30* object)
+/** @brief Unregister the object if it is registered, then detach it and queue it for release. */
+void ResidentClass14FD30::func_00104740()
 {
-    if (object->registered != 0)
+    if (registered != 0)
     {
-        ResidentClass14FD10& registration = *object;
+        ResidentClass14FD10& registration = *this;
 
         func_4486A0(&registration);
-        func_4D0260(D_001B6640, static_cast<ResidentClass14FD10*>(object));
-        object->registered = 0;
+        func_4D0260(D_001B6640, static_cast<ResidentClass14FD10*>(this));
+        registered = 0;
     }
 
-    func_4D0020(object);
+    ResidentClass14FD30Base::func_00104740();
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120840);
+/**
+ * @brief Copy another object's settings, record and transform state, and rebuild the image channel when it has one.
+ * @param source Object to copy.
+ */
+void ResidentClass14FD30::copy_state(const ResidentClass14FD30* source)
+{
+    unk218 = source->unk218;
+    unk21c = source->unk21c;
+    unk220 = source->unk220;
+    unk224 = source->unk224;
+    elapsed = source->elapsed;
+    hit_mask = source->hit_mask;
+    hit_volume = source->hit_volume;
+    record.next_offset = source->record.next_offset;
+    record.storage_kind = source->record.storage_kind;
+    record.index = source->record.index;
+    record.key08 = source->record.key08;
+    record.key0c = source->record.key0c;
+    record.unk10[0] = source->record.unk10[0];
+    record.unk10[1] = source->record.unk10[1];
+    record.resolved_data = source->record.resolved_data;
+    record.unk24[0] = source->record.unk24[0];
+    record.unk24[1] = source->record.unk24[1];
+    record.unk24[2] = source->record.unk24[2];
+    record.unk24[3] = source->record.unk24[3];
+    record.data = source->record.data;
+    record.unk2c = source->record.unk2c;
+
+    if (source->channel)
+    {
+        animated = 1;
+        rebuild_image_channel(this);
+    }
+
+    position_source = source->position_source;
+    camera = source->camera;
+    faces_target = source->faces_target;
+    unk2bd = source->unk2bd;
+    unk2be = source->unk2be;
+    animated = source->animated;
+    registered = source->registered;
+    unk2c1 = source->unk2c1;
+    shared_image = source->shared_image;
+    follow_position = source->follow_position;
+    follow_camera = source->follow_camera;
+    unk2c5 = source->unk2c5;
+    unk2c6 = source->unk2c6;
+    unk2c7 = source->unk2c7;
+    ResidentClass14FD30Base::copy_offset_transform_state(source);
+}
 
 void func_00120A50(void* object, u8 flag, u32 value)
 {
@@ -1121,156 +1293,466 @@ void func_00120A60(void* object, u8 flag, u32 value)
     receiver->unk2B4 = value;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120A70);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120BF0);
-
-void func_00120EB0(void* object, const unsigned __int128* value)
+/**
+ * @brief Find the first object from a start node whose hit box a sphere touches, turning it to face the sphere.
+ * @param list Object list to walk.
+ * @param mask Bits an object's hit mask must share.
+ * @param point Sphere centre in xyz and radius in w.
+ * @param start Node to start from, or null for the first; the walk also starts from the first while unk8c is set.
+ * @return The object hit, or null.
+ */
+ResidentClass14FD30* func_00120A70(ResidentClass14FCB0* list, u32 mask, const ResidentVector4* point, ResidentClass14FD30* start)
 {
-    FlagQuadwordOwnerresident_0011EE70* receiver = (FlagQuadwordOwnerresident_0011EE70*)object;
-    receiver->ready = 1;
-    receiver->slots[1] = *value;
+    ResidentClass14FD30* node;
+
+    if (start == 0 || list->unk8c != 0)
+    {
+        start = static_cast<ResidentClass14FD30*>(list->sentinel.next);
+    }
+
+    node = start;
+
+    do
+    {
+        if (!at_list_end(&list->sentinel, node) && (mask & node->hit_mask) != 0 && (node->registered || node->shared_image))
+        {
+            ResidentVector4 world;
+            ResidentVector4 local;
+            ResidentHitBox* box = node->hit_volume;
+
+            world = *point;
+            world.w = 1.0f;
+            vu0_apply_matrix(&box->inverse_transform, &world, &local);
+
+            const ResidentVector4* extents = &box->half_extents;
+            float x = extents->x + point->w;
+            float y = extents->y + point->w;
+            float z = extents->z + point->w;
+
+            if (local.x >= -x && local.x <= x && local.z >= -z && local.z <= z && local.y >= -y && local.y <= y)
+            {
+                if (node->faces_target)
+                {
+                    func_001210B0(node, &world);
+                }
+
+                return node;
+            }
+        }
+
+        node = static_cast<ResidentClass14FD30*>(node->next);
+    } while (node != start);
+
+    return 0;
 }
 
-void func_00120ED0(void* object, const unsigned __int128* value)
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00104770__19ResidentClass14FCB0Fv);
+
+/**
+ * @brief Copy the orientation quaternion.
+ * @param value Source quaternion.
+ */
+void ResidentClass14FD30::set_orientation(const ResidentVector4* value)
 {
-    FlagQuadwordOwnerresident_0011EE70* receiver = (FlagQuadwordOwnerresident_0011EE70*)object;
-    receiver->ready = 1;
-    receiver->slots[0] = *value;
+    transform_dirty = 1;
+    orientation = *value;
 }
 
 /**
- * @brief Set the word at offset 0x8C to 2, set bit 0 of the shared flag byte D_001B65D0 and call func_4D72A0.
- * @param object Object containing the word.
+ * @brief Copy the position.
+ * @param value Source vector.
  */
-void func_00120EF0(void* object)
+void ResidentClass14FD30::set_translation_vector(const ResidentVector4* value)
 {
-    u8* bytes = (u8*)object;
+    transform_dirty = 1;
+    translation = *value;
+}
 
-    *(u32*)(bytes + 0x8C) = 2;
+/**
+ * @brief Remove a registered node, and make the next two hit tests start from the first node.
+ * @param object Node to remove.
+ */
+void ResidentClass14FCB0::remove_node(void* object)
+{
+    unk8c = 2;
     D_001B65D0 |= 1;
-    func_4D72A0();
+    ResidentObjectList::remove_node(object);
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120F20);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120FE0);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001210B0);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001212A0);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_001213B0);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121490);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00121520);
-
-s32 func_00121570(void* object)
+/**
+ * @brief Turn the image animation on or off, rebuilding the image channel while the object is registered.
+ * @param object Object to update.
+ * @param animated Nonzero to animate the record through an image channel.
+ */
+void func_00120FE0(ResidentClass14FD30* object, u8 animated)
 {
-    return 0;
-}
-
-void* func_00121580(void* object)
-{
-    return (u8*)object + 0x90;
-}
-
-void* func_00121590(void* object)
-{
-    return (u8*)object + 0x1D0;
-}
-
-void* func_001215A0(void* object)
-{
-    return (u8*)object + 0x1E0;
-}
-
-void* func_001215B0(void* object)
-{
-    return (u8*)object + 0x1F0;
-}
-
-void func_001215C0(void* object)
-{
-    ByteClearOwnerresident_0011EE70* receiver = (ByteClearOwnerresident_0011EE70*)object;
-    receiver->unk60 = 0;
-}
-
-void func_001215D0(void* object)
-{
-}
-
-s32 func_001215E0(void* object)
-{
-    return 0;
-}
-
-s32 func_001215F0(float value)
-{
-    s32 result = 1;
-    if (!(value < 0.0f))
-    {
-        result = 0;
-    }
-    return result;
-}
-
-const void* func_00121610(void)
-{
-    return D_50CD30;
-}
-
-void func_00121620(void* object)
-{
-}
-
-s32 func_00121630(void* object)
-{
-    return 0;
-}
-
-void func_00121640(void* object)
-{
-}
-
-void func_00121650(void* object, const unsigned __int128* value)
-{
-    FlagQuadwordOwnerresident_0011EE70* receiver = (FlagQuadwordOwnerresident_0011EE70*)object;
-    receiver->ready = 1;
-    receiver->slots[0] = *value;
+    object->animated = animated;
+    rebuild_image_channel(object);
 }
 
 /**
- * @brief Store three components and set the fourth to 1.0 at offset 0x20.
- * @param object Object containing the vector and flag.
+ * @brief Update the transform, turning it to face a point when asked to, then build the image's projection matrix.
+ * @param object Object to update.
+ * @param target Point to face, or null for the plain transform.
+ */
+void func_001210B0(ResidentClass14FD30* object, const ResidentVector4* target)
+{
+    ResidentImageHeader* image;
+    s32 width;
+    s32 height;
+
+    if (object->faces_target && target)
+    {
+        ResidentVector4 position;
+        ResidentVector4 direction;
+        ResidentMatrix matrix;
+
+        if (!object->matrix_ready)
+        {
+            object->update_transform_matrix();
+        }
+
+        position.x = object->transform.rows[0].w;
+        position.y = object->transform.rows[1].w;
+        position.z = object->transform.rows[2].w;
+        position.w = 1.0f;
+        subtract_xyz(&direction, target, &position);
+        func_4CBD20(&matrix, &position, &direction, 0.0f);
+        matrix.rows[0].w = position.x;
+        matrix.rows[1].w = position.y;
+        matrix.rows[2].w = position.z;
+        object->transform = matrix;
+    }
+    else
+    {
+        object->update_transform_matrix();
+    }
+
+    if (object->shared_image)
+    {
+        image = &static_cast<ResidentDisplayManager*>(D_001B661C)->images[object->shared_image - 1];
+    }
+    else
+    {
+        u8* data = object->record.data;
+        image = (ResidentImageHeader*)(data + ((u32*)data)[3]);
+    }
+
+    width = 1 << image->width_log2;
+    height = 1 << image->height_log2;
+
+    if (object->unk2c5)
+    {
+        func_4CFB20(&object->unk270, &object->transform, object->unk218, width, height, object->unk220, object->unk224);
+    }
+    else
+    {
+        func_4CFC50(&object->unk270, &object->transform, object->unk218, width, height, object->unk220, object->unk224);
+    }
+}
+
+/**
+ * @brief Point the record at a resource's data, register the object and rebuild its image channel.
+ * @param object Object to update.
+ * @param resource Resource whose data follows a 16-byte prefix.
+ */
+void func_001212A0(ResidentClass14FD30* object, u8* resource)
+{
+    object->record.data = resource + 0x10;
+    object->record.storage_kind = 0;
+    object->record.resolved_data = 0;
+    FlushCache(0);
+    object->record.next_offset = 0;
+    object->registered = 1;
+    func_4D02E0(D_001B6640, static_cast<ResidentClass14FD10*>(object));
+    rebuild_image_channel(object);
+}
+
+/** @brief Unregister the object and destroy its image channel. */
+ResidentClass14FD30::~ResidentClass14FD30()
+{
+    if (registered)
+    {
+        ResidentClass14FD10& registration = *this;
+
+        func_4486A0(&registration);
+        func_4D0260(D_001B6640, static_cast<ResidentClass14FD10*>(this));
+    }
+
+    delete channel;
+}
+
+/** @brief Construct an unregistered object with no channel and the image centred. */
+ResidentClass14FD30::ResidentClass14FD30()
+{
+    unk220 = 0.5f;
+    unk224 = 0.5f;
+    elapsed = 0.0f;
+    unk2bd = 0;
+    registered = 0;
+    shared_image = 0;
+    follow_position = 0;
+    follow_camera = 0;
+    unk2c5 = 0;
+    unk2c6 = 0;
+    unk2c7 = 0;
+    unk6c = 0xD00;
+    channel = 0;
+}
+
+/**
+ * @brief Return zero.
+ * @return Zero.
+ */
+s32 ResidentClass14FD10::func_00121570()
+{
+    return 0;
+}
+
+/**
+ * @brief Read the stored transformation matrix.
+ * @return Matrix pointer.
+ */
+const ResidentMatrix* ResidentClass14FD30::get_transform_matrix()
+{
+    return &transform;
+}
+
+/**
+ * @brief Read the additional local translation.
+ * @return Stored translation.
+ */
+const ResidentVector4* ResidentClass14FD30::get_offset_translation() const
+{
+    return &offset_translation;
+}
+
+/**
+ * @brief Read the additional local rotation.
+ * @return Stored quaternion.
+ */
+const ResidentVector4* ResidentClass14FD30::get_offset_rotation() const
+{
+    return &offset_rotation;
+}
+
+/**
+ * @brief Read the additional local scale.
+ * @return Stored scale.
+ */
+const ResidentVector4* ResidentClass14FD30::get_offset_scale() const
+{
+    return &offset_scale;
+}
+
+/** @brief Draw in the main list (bucket zero). */
+void ResidentClass14FD30::set_default_draw_bucket()
+{
+    draw_bucket = 0;
+}
+
+/** @brief Do nothing. */
+void ResidentClass14FD30::func_00104780()
+{
+}
+
+/**
+ * @brief Give no centre for Lib's oriented-box visibility test.
+ * @param output Unused.
+ * @return Zero, so the test is skipped.
+ */
+s32 ResidentClass14FD30::get_box_cull_center(void* output)
+{
+    return 0;
+}
+
+/**
+ * @brief Don't fade near the camera.
+ * @param value Distance in front of the camera over the fade range.
+ * @param mode Unused.
+ * @return Whether the value is negative.
+ */
+bool ResidentClass14FD30::set_fade_alpha(float value, float mode)
+{
+    return value < 0.0f;
+}
+
+/**
+ * @brief Return Lib's shared default bounding sphere.
+ * @return Bounding sphere.
+ */
+const ResidentVector4* ResidentClass14FD30::get_bounding_sphere()
+{
+    return &D_50CD30;
+}
+
+/**
+ * @brief Do nothing.
+ * @param matrix Unused.
+ * @param context Unused.
+ */
+void ResidentClass14FD30::build_packet(const void* matrix, void* context)
+{
+}
+
+/**
+ * @brief Don't copy this object.
+ * @return Null.
+ */
+ResidentClass14FD30Base* ResidentClass14FD30::clone()
+{
+    return 0;
+}
+
+/** @brief Do nothing; this object has no copies. */
+void ResidentClass14FD30::release_clone()
+{
+}
+
+/**
+ * @brief Copy the position.
+ * @param value Source vector.
+ */
+void ResidentClass14FD30::copy_translation(const ResidentVector4* value)
+{
+    transform_dirty = 1;
+    translation = *value;
+}
+
+/**
+ * @brief Set the position and a w component of one.
  * @param x First component.
  * @param y Second component.
  * @param z Third component.
  */
-void func_00121670(void* object, float x, float y, float z)
+void ResidentClass14FD30::set_translation(float x, float y, float z)
 {
-    FlagFloatQuadOffset20Ownerresident_0011EE70* receiver = (FlagFloatQuadOffset20Ownerresident_0011EE70*)object;
-    receiver->flag50 = 1;
-    receiver->values[0] = x;
-    receiver->values[1] = y;
-    receiver->values[2] = z;
-    receiver->values[3] = 1.0f;
+    transform_dirty = 1;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
-void func_00121690(void* object, float x, float y, float z, float w)
+/**
+ * @brief Set all four orientation components.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
+void ResidentClass14FD30::set_orientation_components(float x, float y, float z, float w)
 {
-    FlagFloatQuadOwnerresident_0011EE70* receiver = (FlagFloatQuadOwnerresident_0011EE70*)object;
-    receiver->flag50 = 1;
-    receiver->values[0] = x;
-    receiver->values[1] = y;
-    receiver->values[2] = z;
-    receiver->values[3] = w;
+    transform_dirty = 1;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
-void func_001216B0(void* object, const unsigned __int128* value)
+/**
+ * @brief Copy the orientation quaternion.
+ * @param value Source quaternion.
+ */
+void ResidentClass14FD30::copy_orientation(const ResidentVector4* value)
 {
-    FlagQuadwordOwnerresident_0011EE70* receiver = (FlagQuadwordOwnerresident_0011EE70*)object;
-    receiver->ready = 1;
-    receiver->slots[1] = *value;
+    transform_dirty = 1;
+    orientation = *value;
+}
+
+/**
+ * @brief Convert a rotation into the orientation.
+ * @param value Source rotation.
+ */
+void ResidentClass14FD30::convert_rotation(const ResidentVector4* value)
+{
+    transform_dirty = 1;
+    func_4CE4C0(&orientation, value);
+}
+
+/**
+ * @brief Convert a rotation into the orientation.
+ * @param value Source rotation.
+ */
+void ResidentClass14FD30::set_rotation_vector(const ResidentVector4* value)
+{
+    transform_dirty = 1;
+    func_4CE4C0(&orientation, value);
+}
+
+/**
+ * @brief Convert three rotation components into the orientation.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void ResidentClass14FD30::set_rotation(float x, float y, float z)
+{
+    ResidentVector4 rotation;
+
+    transform_dirty = 1;
+    rotation.x = x;
+    rotation.y = y;
+    rotation.z = z;
+    rotation.w = 1.0f;
+    func_4CE4C0(&orientation, &rotation);
+}
+
+/**
+ * @brief Copy the scale.
+ * @param value Source vector.
+ */
+void ResidentClass14FD30::copy_scale(const ResidentVector4* value)
+{
+    transform_dirty = 1;
+    scale = *value;
+}
+
+/**
+ * @brief Copy the scale.
+ * @param value Source vector.
+ */
+void ResidentClass14FD30::set_scale_vector(const ResidentVector4* value)
+{
+    transform_dirty = 1;
+    scale = *value;
+}
+
+/**
+ * @brief Set the scale's xyz components.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void ResidentClass14FD30::set_scale(float x, float y, float z)
+{
+    transform_dirty = 1;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
+}
+
+/**
+ * @brief Return zero.
+ * @return Zero.
+ */
+s32 ResidentClass14FD30::func_001217D0()
+{
+    return 0;
+}
+
+/**
+ * @brief Get the record while the object is registered.
+ * @return The record, or null.
+ */
+void* ResidentClass14FD30::func_001217E0()
+{
+    if (registered != 0)
+    {
+        return &record;
+    }
+
+    return 0;
 }

@@ -730,3 +730,92 @@ resident_packet_align_cursor = 0x0011F830; // type:func
 resident_packet_reserve = 0x0011F860; // type:func
 resident_packet_allocate = 0x0011F8A0; // type:func
 g_resource_queue = 0x001B65E8; // absolute:True
+
+// Lib code the resident objects call through their own views of Lib's classes.
+__ct__28ResidentImageSequenceChannelFv = 0x004D80B0; // type:func absolute:True
+__ct__23ResidentClass14FD30BaseFv = 0x004DAD90; // type:func absolute:True
+__dt__23ResidentClass14FD30BaseFv = 0x004DAC70; // type:func absolute:True
+lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
+
+// ResidentClass14FA40 <- ResidentClass14FA30 <- ResidentClass14FA20. The destructors are inline; these are
+// the copies the game kept.
+__vt__19ResidentClass14FA20 = 0x0014FA20; // size:0xC
+__vt__19ResidentClass14FA30 = 0x0014FA30; // size:0xC
+__vt__19ResidentClass14FA40 = 0x0014FA40; // size:0x1C
+__dt__19ResidentClass14FA40Fv = 0x00104600; // type:func size:0x80
+__dt__19ResidentClass14FA30Fv = 0x00104680; // type:func size:0x5C
+__dt__19ResidentClass14FA20Fv = 0x001046E0; // type:func size:0x4C
+func_00104730__19ResidentClass14FA40Fv = 0x00104730; // type:func size:0x8
+func_00104740__19ResidentClass14FA40Fv = 0x00104740; // type:func size:0x2C
+func_00104770__19ResidentClass14FA40Fv = 0x00104770; // type:func size:0x8
+func_00104780__19ResidentClass14FA40Fv = 0x00104780; // type:func size:0x8
+
+// ResidentClass14FC90, the sound bank set.
+__vt__19ResidentClass14FC90 = 0x0014FC90; // size:0x1C
+func_00104770__19ResidentClass14FC90Fv = 0x0011FC20; // type:func size:0x3A4
+__dt__19ResidentClass14FC90Fv = 0x00120410; // type:func size:0xA0
+__ct__19ResidentClass14FC90Fv = 0x001204B0; // type:func size:0xA8
+
+// ResidentClass14FCB0, the resident object list: Lib's object list plus a list-object base at 0x78.
+__vt__19ResidentClass14FCB0 = 0x0014FCB0; // size:0x5C
+__dt__19ResidentClass14FCB0Fv = 0x00120700; // type:func size:0xB0
+func_004295B0__19ResidentClass14FCB0FPv = 0x001207B0; // type:func size:0x8
+func_004295C0__19ResidentClass14FCB0Fv = 0x001207C0; // type:func size:0x8
+func_00104730__19ResidentClass14FCB0Fv = 0x001207D0; // type:func size:0x8
+func_00104770__19ResidentClass14FCB0Fv = 0x00120BF0; // type:func size:0x2C0
+remove_node__19ResidentClass14FCB0FPv = 0x00120EF0; // type:func size:0x2C
+__dt__18ResidentObjectListFv = 0x004D7590; // type:func absolute:True
+append__18ResidentObjectListFPv = 0x004CA020; // type:func absolute:True
+prepend__18ResidentObjectListFPv = 0x004C9FF0; // type:func absolute:True
+insert_after__18ResidentObjectListFPvPv = 0x004C9FC0; // type:func absolute:True
+unlink__18ResidentObjectListFPv = 0x004C9F60; // type:func absolute:True
+remove_node__18ResidentObjectListFPv = 0x004D72A0; // type:func absolute:True
+update_nodes__18ResidentObjectListFv = 0x004D6730; // type:func absolute:True
+append_node__18ResidentObjectListFPvi = 0x004D74F0; // type:func absolute:True
+prepend_node__18ResidentObjectListFPvi = 0x004D7450; // type:func absolute:True
+insert_node_after__18ResidentObjectListFPvPvi = 0x004D73B0; // type:func absolute:True
+
+// ResidentClass14FD30, the resident image object: Lib's transform plus a registration part at 0x210.
+__vt__19ResidentClass14FD10 = 0x0014FD10; // size:0x18
+__dt__19ResidentClass14FD10Fv = 0x00121520; // type:func size:0x4C
+func_00121570__19ResidentClass14FD10Fv = 0x00121570; // type:func size:0x8
+__vt__19ResidentClass14FD30 = 0x0014FD30; // size:0xA8
+func_00104740__19ResidentClass14FD30Fv = 0x001207E0; // type:func size:0x58
+copy_state__19ResidentClass14FD30FPC19ResidentClass14FD30 = 0x00120840; // type:func size:0x208
+set_orientation__19ResidentClass14FD30FPC15ResidentVector4 = 0x00120EB0; // type:func size:0x14
+set_translation_vector__19ResidentClass14FD30FPC15ResidentVector4 = 0x00120ED0; // type:func size:0x14
+__dt__19ResidentClass14FD30Fv = 0x001213B0; // type:func size:0xD8
+__ct__19ResidentClass14FD30Fv = 0x00121490; // type:func size:0x90
+get_transform_matrix__19ResidentClass14FD30Fv = 0x00121580; // type:func size:0x8
+get_offset_translation__19ResidentClass14FD30CFv = 0x00121590; // type:func size:0x8
+get_offset_rotation__19ResidentClass14FD30CFv = 0x001215A0; // type:func size:0x8
+get_offset_scale__19ResidentClass14FD30CFv = 0x001215B0; // type:func size:0x8
+set_default_draw_bucket__19ResidentClass14FD30Fv = 0x001215C0; // type:func size:0x8
+func_00104780__19ResidentClass14FD30Fv = 0x001215D0; // type:func size:0x8
+get_box_cull_center__19ResidentClass14FD30FPv = 0x001215E0; // type:func size:0x8
+set_fade_alpha__19ResidentClass14FD30Fff = 0x001215F0; // type:func size:0x20
+get_bounding_sphere__19ResidentClass14FD30Fv = 0x00121610; // type:func size:0xC
+build_packet__19ResidentClass14FD30FPCvPv = 0x00121620; // type:func size:0x8
+clone__19ResidentClass14FD30Fv = 0x00121630; // type:func size:0x8
+release_clone__19ResidentClass14FD30Fv = 0x00121640; // type:func size:0x8
+copy_translation__19ResidentClass14FD30FPC15ResidentVector4 = 0x00121650; // type:func size:0x14
+set_translation__19ResidentClass14FD30Ffff = 0x00121670; // type:func size:0x20
+set_orientation_components__19ResidentClass14FD30Fffff = 0x00121690; // type:func size:0x1C
+copy_orientation__19ResidentClass14FD30FPC15ResidentVector4 = 0x001216B0; // type:func size:0x14
+convert_rotation__19ResidentClass14FD30FPC15ResidentVector4 = 0x001216D0; // type:func size:0x24
+set_rotation_vector__19ResidentClass14FD30FPC15ResidentVector4 = 0x00121700; // type:func size:0x24
+set_rotation__19ResidentClass14FD30Ffff = 0x00121730; // type:func size:0x3C
+copy_scale__19ResidentClass14FD30FPC15ResidentVector4 = 0x00121770; // type:func size:0x14
+set_scale_vector__19ResidentClass14FD30FPC15ResidentVector4 = 0x00121790; // type:func size:0x14
+set_scale__19ResidentClass14FD30Ffff = 0x001217B0; // type:func size:0x18
+func_001217D0__19ResidentClass14FD30Fv = 0x001217D0; // type:func size:0x8
+func_001217E0__19ResidentClass14FD30Fv = 0x001217E0; // type:func size:0x18
+func_00104740__23ResidentClass14FD30BaseFv = 0x004D0020; // type:func absolute:True
+func_00104770__23ResidentClass14FD30BaseFv = 0x004D9D60; // type:func absolute:True
+update_transform_matrix__23ResidentClass14FD30BaseFv = 0x004DA8B0; // type:func absolute:True
+copy_transform_state__23ResidentClass14FD30BaseFPC23ResidentClass14FD30Base = 0x004CFFA0; // type:func absolute:True
+copy_offset_transform_state__23ResidentClass14FD30BaseFPC23ResidentClass14FD30Base = 0x004D9F40; // type:func absolute:True
+
+// ResidentPacketBuffer, main's GS packet buffer class.
+__vt__20ResidentPacketBuffer = 0x0014FDF0; // size:0xC
+__dt__20ResidentPacketBufferFv = 0x001218A0; // type:func size:0x70
