@@ -81,6 +81,10 @@
     {
       "source": "src/overlays/citem/citem.cpp",
       "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/main/resident_0011EE70.cpp",
+      "flags": ["-O4,p"]
     }
   ],
   "source": "tools/so3/build/probes/main.c",

@@ -5,12 +5,22 @@
 #include "main/resident_001001E0.h"
 
 #ifdef __cplusplus
+extern "C" {
+/**
+ * @brief Detach a resident object from its owner; Lib implements this.
+ * @param object Object to detach.
+ */
+void lib_object_detach_owner(void* object);
+}
+
 /** Resident object root with vtable at 0x14FA20. */
 class ResidentClass14FA20
 {
 public:
     /** @brief Destroy the resident root. */
-    virtual ~ResidentClass14FA20();
+    virtual ~ResidentClass14FA20()
+    {
+    }
 };
 
 /** Partial resident intrusive node with vtable at 0x14FA30. */
@@ -23,7 +33,9 @@ public:
     }
 
     /** @brief Destroy the intrusive node. */
-    virtual ~ResidentClass14FA30();
+    virtual ~ResidentClass14FA30()
+    {
+    }
 
     ResidentClass14FA30* previous;
     ResidentClass14FA30* next;
@@ -38,8 +50,11 @@ public:
     {
     }
 
-    /** @brief Destroy the resident object. */
-    virtual ~ResidentClass14FA40();
+    /** @brief Detach the object from its owner. */
+    virtual ~ResidentClass14FA40()
+    {
+        lib_object_detach_owner(this);
+    }
 
     /** @brief Return the object's kind. @return Object kind. */
     virtual s32 func_00104730();
@@ -371,8 +386,6 @@ void func_001043F0(ResidentResourceQueue* queue);
  */
 void func_001034E0(ResidentResourceQueueListener* listener, ResidentClass14FA40* context);
 
-/** @brief Destroy a resident object through its virtual destructor. @param object Object to destroy, or null. */
-void func_00104740(ResidentClass14FA40* object);
 #endif
 
 /**
@@ -486,13 +499,8 @@ s32 func_00104C90(ResidentDecodeObject* decoder, ResidentDecodeStream* stream, s
 /** @brief Decode the next part of an LZ byte stream. */
 s32 func_00105210(ResidentDecodeObject* decoder, ResidentDecodeStream* stream, s32 limit);
 
-/** Return the fixed integer value 3. */
-s32 func_00104730(void* object);
-
 void func_00101550(void* object);
 void func_00102A90(void* object);
-void func_00104770(void* object);
-void func_00104780(void* object);
 
 /**
  * @brief Set the stream thread's second state to one when the value is positive.

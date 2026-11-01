@@ -116,6 +116,35 @@ static inline void vu0_extend_bounds_vf1(void)
 }
 
 /**
+ * @brief Multiply a four-component vector by a 4x4 matrix through vf1-vf5.
+ *
+ * All four components take part, so a point needs w set to one first.
+ * @param matrix 16-byte aligned matrix of four rows.
+ * @param vector 16-byte aligned source vector.
+ * @param out 16-byte aligned destination vector.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf), sceVu0ApplyMatrix
+ *      in the libvu0 reference. Lib's vu0_transform_emission_point is the same
+ *      sequence with an implicit w of one (overlays/lib/emission_vu0.h).
+ */
+static inline void vu0_apply_matrix(const void* matrix, const void* vector, void* out)
+{
+    asm __volatile__(
+        "lqc2      $vf5, 0x0(%1)\n"
+        "lqc2      $vf1, 0x0(%0)\n"
+        "lqc2      $vf2, 0x10(%0)\n"
+        "lqc2      $vf3, 0x20(%0)\n"
+        "lqc2      $vf4, 0x30(%0)\n"
+        "vmulax.xyzw $ACC, $vf1, $vf5x\n"
+        "vmadday.xyzw $ACC, $vf2, $vf5y\n"
+        "vmaddaz.xyzw $ACC, $vf3, $vf5z\n"
+        "vmaddw.xyzw $vf5, $vf4, $vf5w\n"
+        "sqc2      $vf5, 0x0(%2)\n"
+        :
+        : "r"(matrix), "r"(vector), "r"(out)
+        : "memory");
+}
+
+/**
  * @brief Load a vector into vf5 and start VU0 microprogram 0.
  *
  * TODO: Work out what program 0 does; I've only seen it give a screen position.

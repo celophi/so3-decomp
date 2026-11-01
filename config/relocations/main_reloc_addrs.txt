@@ -17,3 +17,11 @@ rom:0xD738 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
 rom:0xD740 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
 // Uncached ring cursor stride in func_0010A650, not the low half of an address.
 rom:0xADAC reloc:MIPS_NONE symbol:0x4
+// ResidentClass14FCB0's destructor stores the list-object base's vtable, which sits inside the class's own.
+rom:0x20DA0 reloc:MIPS_HI16 symbol:__vt__19ResidentClass14FCB0 addend:0x38
+rom:0x20DA8 reloc:MIPS_LO16 symbol:__vt__19ResidentClass14FCB0 addend:0x38
+// ResidentClass14FD30's constructor and destructor store the registration part's vtable, which sits inside the class's own.
+rom:0x21A50 reloc:MIPS_HI16 symbol:__vt__19ResidentClass14FD30 addend:0x84
+rom:0x21A58 reloc:MIPS_LO16 symbol:__vt__19ResidentClass14FD30 addend:0x84
+rom:0x21B30 reloc:MIPS_HI16 symbol:__vt__19ResidentClass14FD30 addend:0x84
+rom:0x21B40 reloc:MIPS_LO16 symbol:__vt__19ResidentClass14FD30 addend:0x84

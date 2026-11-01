@@ -3,7 +3,7 @@
 #include "main/resident_00101260.h"
 #include "main/resident_0010A0E0.h"
 #include "main/resident_0011EE70.h"
-#include "main/resident_00121730.h"
+#include "main/resident_00121860.h"
 #include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libdma_0012B2C8.h"
