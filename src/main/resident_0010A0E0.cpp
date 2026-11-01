@@ -105,7 +105,6 @@ typedef struct ResidentManagerEF50
 } ResidentManagerEF50;
 
 
-extern u8 D_001B6880[];
 extern s32 D_001B640C;
 extern ResidentManagerEF50* D_001B6410;
 extern u32 D_001CF8E0[56];
@@ -250,10 +249,10 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D100)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D710);
 
-/** @brief Return the resident runtime owner. @return Runtime owner in resident storage. */
-void* resident_get_runtime_owner(void)
+/** @brief Get the resident system. @return g_system. */
+ResidentSystem* resident_get_system(void)
 {
-    return D_001B6880;
+    return &g_system;
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D8F0);
@@ -552,7 +551,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112D80)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112E70);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112F60);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__13ResidentSoundFv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112FE0);
 
@@ -809,7 +808,7 @@ s32 func_00114EB0(void* object)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114EE0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114F50);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__14ResidentThreadFv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115000);
 
@@ -1027,7 +1026,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D320)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D470);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D840);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__15ResidentArchiveFv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D950);
 
@@ -1041,7 +1040,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DC00)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DD40);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DDA0);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__19ResidentClass14FC60Fv);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DE00);
 

@@ -4611,7 +4611,7 @@ void func_00351FD0(ConfigController* object)
     if (window != 0)
     {
         s32 flag = 0;
-        FieldRuntimeSections* sections = func_101290(func_10D8E0());
+        FieldRuntimeSections* sections = func_101290(resident_get_system());
         if (sections != 0)
         {
             ConfigPreviewSection* values = static_cast<ConfigPreviewSection*>(func_101440(sections, 1));

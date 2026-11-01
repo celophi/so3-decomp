@@ -137,6 +137,27 @@ static inline void vu0_start_microprogram_vf5(const void* vector)
 }
 
 /**
+ * @brief Run VU0 microprogram 0 on a vector in place: load it into vf1, start the program, wait, and store vf3.
+ *
+ * Main uses this once, right after uploading boot's VU0 microcode, so program 0 here isn't the one
+ * vu0_start_microprogram_vf5 starts. The load and the store share one address register, so the original kept the
+ * whole sequence in one asm statement; the wait reads into t1 like vu0_wait_microprogram.
+ * @param vector Pointer to a 16-byte aligned vector.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6). Main's main().
+ */
+static inline void vu0_run_microprogram_vf1_vf3(void* vector)
+{
+    asm __volatile__("lqc2 $vf1, 0(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0\n"
+                     "nop\n"
+                     "nop\n"
+                     "cfc2.i $t1, $vi0\n"
+                     "sqc2 $vf3, 0(%0)" : : "r"(vector) : "$t1", "memory");
+}
+
+/**
  * @brief Wait for the running VU0 microprogram to finish.
  *
  * This reads vi0 with the interlocking cfc2.i and throws the value away. All

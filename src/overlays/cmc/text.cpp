@@ -286,7 +286,6 @@ struct Overlay0072List
 
 extern "C" {
 extern u8 D_50CD30[];
-extern void* func_100AC0(s32 size, s32 flags);
 extern void func_4C4960(void* object);
 /** Native table anchors used by the retained constructor entry points. */
 extern u8 __vt__23ItemCreationClass172870[];
@@ -1908,7 +1907,7 @@ s32 func_003596E0(void* object)
 
 void func_003596F0(Overlay0072List* list, void* value)
 {
-    Overlay0072ListNode* node = (Overlay0072ListNode*)func_100AC0(8, 0);
+    Overlay0072ListNode* node = new (0) Overlay0072ListNode;
     Overlay0072ListNode* cursor;
 
     if (node != 0)
@@ -1927,7 +1926,7 @@ void func_003596F0(Overlay0072List* list, void* value)
 
 void func_00359780(Overlay0072List* list, void* value)
 {
-    Overlay0072ListNode* node = (Overlay0072ListNode*)func_100AC0(8, 0);
+    Overlay0072ListNode* node = new (0) Overlay0072ListNode;
     Overlay0072ListNode* cursor;
 
     if (node != 0)
@@ -1962,7 +1961,7 @@ Overlay0072ListNode* func_00359810(Overlay0072List* list, s32 index)
 
 void func_00359850(Overlay0072List* list, void* value)
 {
-    Overlay0072ListNode* node = (Overlay0072ListNode*)func_100AC0(8, 0);
+    Overlay0072ListNode* node = new (0) Overlay0072ListNode;
     Overlay0072ListNode* cursor;
 
     if (node != 0)

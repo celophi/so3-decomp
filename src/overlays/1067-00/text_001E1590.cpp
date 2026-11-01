@@ -1127,7 +1127,7 @@ void FieldResourceRequestHandler::func_001DDB30(void* arg)
         {
             resident_decode_resource_block(g_resident_resource_decoder, source, destination, 0);
             FlushCache(0);
-            func_001011B0(func_10D8E0(), destination, 4, source->decoded_size);
+            resident_system_init_overlay(resident_get_system(), destination, 4, source->decoded_size);
         }
 
         request_mode = 0;

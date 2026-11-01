@@ -260,7 +260,7 @@ void BootTitleMenu::animate_items(u8 snap)
  */
 void BootTitleMenu::get_cursor_position(float* x, float* y)
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     BootClass170F30* node = find_menu_item(this, selected);
 
     if (node == 0)
@@ -375,7 +375,7 @@ void BootTitleMenu::update()
 {
     BootSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (step)
     {
@@ -1246,7 +1246,7 @@ void BootGameLauncher::update()
 {
     BootSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1);
+    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     u32 previous;
 
     switch (step)
@@ -1322,7 +1322,7 @@ void BootGameLauncher::update()
             player->state->set_scale(1.0f, 1.0f);
             player->state->set_words(0x800, 0x800, 1);
 
-            if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen)
+            if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
             {
                 player->state->unk80D8 = 1;
             }

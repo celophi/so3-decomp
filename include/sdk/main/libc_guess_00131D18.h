@@ -27,6 +27,12 @@ s16 func_001329E0(const void* object);
 /** @brief Do nothing. */
 void func_00132DA0(void);
 
+/**
+ * @brief Run the exit handlers and end the program (newlib exit).
+ * @param status Exit status.
+ */
+void exit(s32 status);
+
 #ifdef __cplusplus
 }
 #endif

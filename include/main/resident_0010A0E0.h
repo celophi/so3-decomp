@@ -2,6 +2,8 @@
 #define SO3_MAIN_RESIDENT_0010A0E0_H
 
 #include "types.h"
+#include "main/resident_00101550.h"
+#include "main/resident_001001E0.h"
 
 /**
  * Pointer ring with write_index at the next insertion slot and read_index at the
@@ -21,10 +23,41 @@ typedef struct ResidentReleaseQueues
     ResidentReleaseRing allocations;
     ResidentReleaseRing objects;
     void* vtable;
+
+#ifdef __cplusplus
+    /** @brief Drain both release rings. */
+    ~ResidentReleaseQueues();
+#endif
 } ResidentReleaseQueues;
 
-/** The two pads (buttons, sticks and vibration) and the vblank counters that time each frame. */
 struct ResidentInputSystem;
+
+/** Values of g_system's status byte. */
+enum ResidentStatus
+{
+    /** Set when the status byte is allocated. */
+    RESIDENT_STATUS_CLEAN = 0x66,
+
+    /** Set when main's code no longer matches the copy in the program image. */
+    RESIDENT_STATUS_TAMPERED = 0x67
+};
+
+/** Sixteen keyed full-word entries in the resident system. */
+typedef struct ResidentEntryTable
+{
+    u32 entries[16];
+    s32 keys[16];
+} ResidentEntryTable;
+
+/** Clock bytes the archive's clock query fills. */
+typedef struct ResidentClock
+{
+    u8 status;
+    u8 second;
+    u8 minute;
+    u8 hour;
+    u8 unk04[4];
+} ResidentClock;
 
 /**
  * The game's resource archive: the packed entry of every resource, plus the worker that installs the archive to the
@@ -92,6 +125,11 @@ typedef struct ResidentArchive
     u8 unk1217c[7];
     u8 unk12183;
     u8 unk12184;
+
+#ifdef __cplusplus
+    /** @brief Destroy the archive and its install worker. */
+    ~ResidentArchive();
+#endif
 } ResidentArchive;
 
 /** One of the sixty resident request slots. */
@@ -127,6 +165,11 @@ struct ResidentSoundStream
 
     /** Stream handle. */
     void* handle;
+
+#ifdef __cplusplus
+    /** @brief Destroy the stream. */
+    ~ResidentSoundStream();
+#endif
 };
 
 /**
@@ -169,6 +212,11 @@ struct ResidentSound
 
     /** Angle of each of the four surround speakers. */
     float speaker_angles[4];
+
+#ifdef __cplusplus
+    /** @brief Remove the sound interrupt handler and free the sound buffers. */
+    ~ResidentSound();
+#endif
 };
 
 typedef struct ResidentSound ResidentSound;
@@ -209,6 +257,96 @@ typedef struct DmaSubmission DmaSubmission;
 #endif
 
 #ifdef __cplusplus
+/** Kernel thread with its own stack; vtable D_0014FBA0. Slots 0xC and 0x10 aren't declared yet. */
+class ResidentThread
+{
+public:
+    u8 unk00[4];
+    void* unk04;
+
+    /** Kernel thread ID. */
+    s32 thread_id;
+
+    /** @brief Stop and delete the kernel thread. */
+    virtual ~ResidentThread();
+};
+
+/** Thread owned by g_system at 0x1784; vtable D_0014FC60. */
+class ResidentClass14FC60 : public ResidentThread
+{
+public:
+    u8 unk10[8];
+
+    /** @brief Destroy the thread. */
+    virtual ~ResidentClass14FC60()
+    {
+    }
+};
+
+/**
+ * The two pads (buttons, sticks and vibration) and the vblank counters that time each frame, at g_system + 0x1480.
+ * It owns a polling thread and a semaphore.
+ */
+struct ResidentInputSystem
+{
+    u8 unk000[0x304];
+    ResidentClass14FC60 unk304;
+    ResidentSemaphore semaphore;
+    u8 unk324[0x1C];
+};
+
+/**
+ * The resident system g_system, which outlives every program. It holds the sound system, the resource archive, the
+ * entry table, the release and resource queues and the decoder that loads each program's overlay, and it switches
+ * from one program to the next.
+ */
+struct ResidentSystem
+{
+    /** @brief Destroy every part of the system. */
+    ~ResidentSystem();
+
+    /** @brief Free the system through the resident heap. @param memory Allocation, or null. */
+    static void operator delete(void* memory) throw()
+    {
+        resident_delete(memory);
+    }
+
+    ResidentSound sound;
+    u8 unk_sound_end[0x1480 - sizeof(ResidentSound)];
+    ResidentInputSystem input;
+    ResidentArchive archive;
+    u8 unk_archive_end[0x1398C - 0x17C0 - sizeof(ResidentArchive)];
+
+    /** Decoder that unpacks each program's overlay. */
+    ResidentDecodeObject decoder;
+
+    u8 unk1398D[3];
+    ResidentEntryTable entry_table;
+    ResidentReleaseQueues release_queues;
+    ResidentResourceQueue resource_queue;
+    u8 unk_resource_queue_end[0x38 - sizeof(ResidentResourceQueue)];
+    ResidentSoundStream sound_stream;
+    u8 unk_sound_stream_end[0x228 - sizeof(ResidentSoundStream)];
+
+    /** Nonzero for progressive (525p) output. */
+    u8 progressive;
+
+    u8 unk15C85[0x17];
+
+    /** Main's stack and frame pointers, restored when switching programs. */
+    void* saved_sp;
+    void* saved_fp;
+
+    u8 unk15CA4[0x1C];
+
+    /** Status byte (a ResidentStatus), allocated on first use at a random heap address. */
+    u8* status;
+};
+#endif
+
+typedef struct ResidentSystem ResidentSystem;
+
+#ifdef __cplusplus
 extern "C" {
 #endif
 
@@ -233,10 +371,70 @@ void func_0010ECF0(void* object);
 s32 func_00114100(ResidentDmaQueue* queue, DmaSubmission* submission);
 
 /**
- * @brief Return the resident runtime table owner.
- * @return Opaque table owner.
+ * @brief Get the resident system.
+ * @return g_system.
  */
-void* resident_get_runtime_owner(void);
+ResidentSystem* resident_get_system(void);
+
+/** The resident system. */
+extern ResidentSystem g_system;
+
+/**
+ * @brief Read the clock.
+ * @param archive Resource archive.
+ * @param clock Receives the clock bytes.
+ * @return Nonzero on success.
+ */
+s32 resident_archive_get_clock(ResidentArchive* archive, ResidentClock* clock);
+
+/** @brief Seed the resident random sequence; main seeds it from timer 0. @param seed Seed value. */
+void func_0010D100(u32 seed);
+
+/** @brief Archive setup that main runs right after rebooting the IOP. @param archive Resource archive. */
+void func_0011DA80(ResidentArchive* archive);
+
+/** @brief Archive setup that main runs after storing its arguments. @param archive Resource archive. */
+void func_0011D470(ResidentArchive* archive);
+
+/**
+ * @brief Archive step before func_0011D060 reads a block; main passes 1 for the IOP modules and 2 for the programs.
+ * @param archive Resource archive.
+ * @param mode Block selector.
+ */
+void func_0011D080(ResidentArchive* archive, s32 mode);
+
+/** @brief Archive step that main runs once the IOP modules are loaded. @param archive Resource archive. */
+void func_0011D950(ResidentArchive* archive);
+
+/** @brief Register the handlers for the IOP's SIF commands 0 to 3. @param object SIF command state. */
+void func_0010C700(void* object);
+
+/** @brief Check the SIF command state. @param object SIF command state. @return Negative until it's ready. */
+s32 func_0010C640(void* object);
+
+/** @brief Start the input system. @param input Input system. */
+void func_0011EA80(struct ResidentInputSystem* input);
+
+/** @brief Start the sound system and its stream. @param sound Sound system. */
+void func_00112D80(ResidentSound* sound);
+
+/**
+ * @brief Sound setup step that main runs after starting the sound system.
+ * @param sound Sound system.
+ * @param count Number of entries in data.
+ * @param data Setup table.
+ */
+void func_0010EC00(ResidentSound* sound, s32 count, const void* data);
+
+/** @brief Sound setup step that main runs once the archive is idle. @param sound Sound system. @param value Value. */
+void func_0010EAD0(ResidentSound* sound, s32 value);
+
+/**
+ * @brief Update the sound system; main calls it until sound->state is zero.
+ * @param sound Sound system.
+ * @param mode Mode.
+ */
+void func_0010F250(ResidentSound* sound, s32 mode);
 
 /**
  * @brief Allocate a block from a resident heap.
@@ -322,6 +520,12 @@ s32 func_00114560(void* object, s16 value, s32 size);
  * @return Next unsigned random word.
  */
 u32 resident_next_random_word(void);
+
+/**
+ * @brief Return the next resident random number.
+ * @return Random number.
+ */
+u32 resident_rand(void);
 
 /**
  * @brief Read the byte size associated with a key in the resident descriptor table.

@@ -52,7 +52,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", func_001
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", func_001332B8);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", func_001334A0);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", exit);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", func_001334D0);
 

@@ -4,13 +4,6 @@
 #include "overlays/boot/text_001E0900.h"
 #include "overlays/boot/init.h"
 
-/** Partial resident root whose word at 0x15CC0 points to the status byte. */
-struct BootResidentRoot15CC0
-{
-    u8 unk00[0x15CC0];
-    u8* status;
-};
-
 /** Partial resident display state D_001B6624 that points back at the display manager. */
 struct BootDisplay6624
 {
@@ -103,9 +96,9 @@ static inline void check_main_code()
     {
         if (code[-0x80000] != *copy)
         {
-            BootResidentRoot15CC0* root = (BootResidentRoot15CC0*)resident_get_runtime_owner();
+            ResidentSystem* system = resident_get_system();
 
-            *root->status = 0x67;
+            *system->status = RESIDENT_STATUS_TAMPERED;
             for (;;)
             {
             }

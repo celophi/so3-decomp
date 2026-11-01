@@ -187,6 +187,10 @@ class TextOrderTests(unittest.TestCase):
         original = vtable_fixture()
         self.assertEqual(order_text_sections(original, {}, keep=(0x100, 0x200), reorder=False), original)
 
+    def test_mapped_vtable_in_a_main_unit_becomes_an_external_reference(self):
+        data = order_text_sections(vtable_fixture(), {'second': 0x80}, reorder=False)
+        self.assertEqual(symbol_record(data, 2)[1:], (0, 0, 0x11, 0, 0))
+
     def test_vtable_without_overlay_scope_is_unchanged(self):
         original = vtable_fixture()
         self.assertEqual(order_text_sections(original, {}, reorder=False), original)

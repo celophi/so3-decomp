@@ -82,7 +82,7 @@ s32 func_0021DF30(FieldScriptObject151D40* object, u32 count)
 
 s32 func_0021DF60(FieldScriptObject151D40* object, u32 count)
 {
-    FieldRuntimeValues* values = (FieldRuntimeValues*)func_101440(func_101290(func_10D8E0()), 4);
+    FieldRuntimeValues* values = (FieldRuntimeValues*)func_101440(func_101290(resident_get_system()), 4);
     memset_guess(values->flags_5000, 0, sizeof(values->flags_5000));
     return 1;
 }

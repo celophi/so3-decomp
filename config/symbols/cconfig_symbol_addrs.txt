@@ -46,7 +46,7 @@ func_slot44__16FieldClass15AE70Fv = 0x00348470; // type:func
 __ct__14LibClass178600Fv = 0x004C4960; // absolute:True allow_duplicated:True type:func
 
 __vt__14LibClass178630 = 0x00178630; // absolute:True allow_duplicated:True size:0x24
-func_10D8E0 = 0x0010D8E0; // type:func
+resident_get_system = 0x0010D8E0; // type:func
 func_101290 = 0x00101290; // type:func
 func_101440 = 0x00101440; // type:func
 __vt__23ItemCreationClass175110 = 0x00175110; // size:0x24 absolute:True allow_duplicated:True

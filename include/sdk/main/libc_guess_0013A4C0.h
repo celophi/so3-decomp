@@ -52,6 +52,13 @@ void* func_0013B858(void* memory, u32 size);
  */
 s32 sprintf_guess(char* destination, const char* format, ...);
 
+/**
+ * @brief Print formatted text to standard output (newlib printf).
+ * @param format printf format string.
+ * @return Number of characters written, or a negative value on error.
+ */
+s32 printf(const char* format, ...);
+
 #ifdef __cplusplus
 }
 #endif

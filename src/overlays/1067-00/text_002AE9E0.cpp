@@ -130,7 +130,7 @@ struct FieldRuntimeState
         strcpy_guess(character_names[9], g_field_default_name_mirage);
         memset_guess(unkC7E8, 0, sizeof(unkC7E8));
         memset_guess(unkCF90, 0, sizeof(unkCF90));
-        ResidentCheckedRecord* record = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1));
+        ResidentCheckedRecord* record = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
 
         if (record != 0)
         {
@@ -1430,7 +1430,7 @@ void field_run_update_loop(ResidentContext* context)
         }
 
         resident_drain_release_queues(g_resident_release_queues);
-        resident_get_runtime_owner();
+        resident_get_system();
         s32 overrun = 0;
         void* first_attachment = 0;
         void* second_attachment = 0;
@@ -1491,12 +1491,12 @@ void field_run_update_loop(ResidentContext* context)
 
     if (context->unkdd.unk4)
     {
-        func_001010D0(resident_get_runtime_owner(), context->unk7c, 1);
+        resident_system_switch_program(resident_get_system(), (ResidentResourceHeader*)context->unk7c, 1);
     }
 
     if (context->unkdd.unk5)
     {
-        func_001010D0(resident_get_runtime_owner(), context->unk80, 1);
+        resident_system_switch_program(resident_get_system(), (ResidentResourceHeader*)context->unk80, 1);
     }
 }
 
@@ -1561,7 +1561,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
                 context->unk5c = 0;
             }
 
-            void* directory = resident_get_entry_table(resident_get_runtime_owner());
+            void* directory = resident_get_entry_table(resident_get_system());
             void* storage = reinterpret_cast<void*>(resident_find_entry(directory, 6));
             func_00101480(directory, 6);
             FieldClass152F00::operator delete(storage);
@@ -1645,7 +1645,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
     case 4:
         field_detach_release_context_object(context->input);
         field_detach_release_context_object(context->unk20);
-        func_0011DE00(func_001012D0(resident_get_runtime_owner()), 0, 0);
+        func_0011DE00(func_001012D0(resident_get_system()), 0, 0);
         func_004DBEE0(D_001B65DC, 0);
 
         ResidentDmaQueue* dma_queue = D_001B6610;
@@ -1719,7 +1719,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         }
 
         ResidentCheckedRecord* resource =
-            reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1));
+            reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
         resource->unk25_4_5 = 0;
         D_001B6420 = 1;
         D_001B6510 = 0;
@@ -1830,7 +1830,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     func_00433AA0();
     resident_exchange_allocation_heap(0);
     func_00114650(D_001CFA00, 1);
-    void* directory = resident_get_entry_table(resident_get_runtime_owner());
+    void* directory = resident_get_entry_table(resident_get_system());
     FieldClass150DB0* saved = reinterpret_cast<FieldClass150DB0*>(resident_find_entry(directory, 5));
     ResidentCheckedRecord* checked = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(directory, 1));
 
@@ -1939,7 +1939,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     if (reference != 0)
     {
         reference->context = context;
-        reference->unk04 = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1));
+        reference->unk04 = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
     }
 
     D_001B6430 = reference;

@@ -53,7 +53,7 @@ segments:
       - [0x680, asm, startup]
       - [0x860, cpp, main/resident_001001E0]
       - [0x18D0, c, main/func_00101250]
-      - [0x18E0, c, main/resident_00101260]
+      - [0x18E0, cpp, main/resident_00101260]
       - [0x1B90, c, main/func_00101510]
       - [0x1BD0, cpp, main/resident_00101550]
       - [0xA700, c, main/func_0010A080]

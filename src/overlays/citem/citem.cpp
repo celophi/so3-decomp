@@ -3096,7 +3096,7 @@ void ItemInstanceListWindow::refresh_instances(s32 reset)
             field_replace_model_camera(model, D_001B643C->field_camera);
             field_attach_model_display(model);
 
-            if (reinterpret_cast<ItemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen != 0)
+            if (reinterpret_cast<ItemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen != 0)
             {
                 func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(model), 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
             }
@@ -3564,7 +3564,7 @@ u8 ItemInstanceListWindow::func_slotb8()
                 field_replace_model_camera(model, D_001B643C->field_camera);
                 field_attach_model_display(model);
 
-                if (reinterpret_cast<ItemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 1))->widescreen != 0)
+                if (reinterpret_cast<ItemDisplaySettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen != 0)
                 {
                     func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(model), 0.5235988f, 600.0f, 0.34906584f, 120.0f, 35.0f);
                 }
@@ -4351,7 +4351,7 @@ void ItemController::func_slot5c()
 /** @brief Collect the owned valuables and create the menu windows. @return One. */
 s32 ItemController::init_windows()
 {
-    ItemFlagBlock* flag_block = reinterpret_cast<ItemFlagBlock*>(resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4));
+    ItemFlagBlock* flag_block = reinterpret_cast<ItemFlagBlock*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
 
     if (flag_block != 0)
     {
@@ -4445,7 +4445,7 @@ u8 ItemController::func_00264110()
         return 0;
     }
 
-    resident_find_entry(resident_get_entry_table(resident_get_runtime_owner()), 4);
+    resident_find_entry(resident_get_entry_table(resident_get_system()), 4);
     return 1;
 }
 
@@ -4835,7 +4835,7 @@ ItemGaugeList::~ItemGaugeList()
  */
 void ItemGaugeList::append(void* gauge)
 {
-    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    ItemListNode* node = new (0) ItemListNode;
 
     if (node != 0)
     {
@@ -4907,7 +4907,7 @@ ItemTypeList::~ItemTypeList()
  */
 void ItemTypeList::append(ItemCreationCategoryRecord* record)
 {
-    ItemListNode* node = (ItemListNode*)func_00100AC0(sizeof(ItemListNode), 0);
+    ItemListNode* node = new (0) ItemListNode;
 
     if (node != 0)
     {
@@ -4976,7 +4976,7 @@ ItemListNode* ItemTypeList::at(s32 index)
  */
 void FieldClass15AFE8::append(void* value)
 {
-    FieldListNode* node = (FieldListNode*)func_00100AC0(sizeof(FieldListNode), 0);
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -5001,7 +5001,7 @@ void FieldClass15AFE8::append(void* value)
  */
 void FieldClass15AF88::append(void* value)
 {
-    FieldListNode* node = (FieldListNode*)func_00100AC0(sizeof(FieldListNode), 0);
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -5049,7 +5049,7 @@ FieldListNode* FieldClass15AF88::at(s32 index)
  */
 void FieldClass15AF78::append(void* value)
 {
-    FieldListNode* node = (FieldListNode*)func_00100AC0(sizeof(FieldListNode), 0);
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {
@@ -5074,7 +5074,7 @@ void FieldClass15AF78::append(void* value)
  */
 void FieldClass15AF68::append(void* value)
 {
-    FieldListNode* node = (FieldListNode*)func_00100AC0(sizeof(FieldListNode), 0);
+    FieldListNode* node = new (0) FieldListNode;
 
     if (node != 0)
     {

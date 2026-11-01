@@ -767,3 +767,4 @@ resident_packet_align_cursor = 0x0011F830; // type:func absolute:True
 resident_packet_reserve = 0x0011F860; // type:func absolute:True
 resident_packet_allocate = 0x0011F8A0; // type:func absolute:True
 g_resource_queue = 0x001B65E8; // absolute:True
+g_system = 0x001B6880; // absolute:True

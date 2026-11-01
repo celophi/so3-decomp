@@ -77,7 +77,7 @@ typedef struct FlagFloatQuadOffset20Ownerresident_0011EE70
 
 typedef struct FlagFloatTripleOwnerresident_0011EE70 { u8 pad00[0x40]; float values[3]; u8 pad4C[4]; u8 flag50; } FlagFloatTripleOwnerresident_0011EE70;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011EE70);
+INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", __dt__21ResidentReleaseQueuesFv);
 
 /**
  * @brief Initialize both resident release rings as empty.

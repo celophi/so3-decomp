@@ -42,6 +42,7 @@ SYMBOL_MAPS = Path('config/symbols')
 THUNK_MAPS = Path('config/thunks')
 EXTERNAL_COPY_LISTS = Path('config/copies')
 OVERLAY_CONFIGS = Path('config/overlays')
+MAIN_CONFIG = Path('config/main.us.yaml')
 
 # include/include_asm.h refuses to compile unless this is defined, so game
 # sources can only be built through this script.
@@ -128,17 +129,28 @@ def overlay_config(unit):
     return yaml.safe_load((OVERLAY_CONFIGS / f'{module}.yaml').read_text())
 
 
-def overlay_range(unit):
-    """The unit's VRAM range, or None for main sources."""
+def module_config(unit):
+    """The Splat configuration of the module that owns a source unit, main included."""
     config = overlay_config(unit)
-    return unit_range(config, unit) if config else None
+    if config is not None:
+        return config
+    import yaml
+    return yaml.safe_load(MAIN_CONFIG.read_text())
+
+
+def overlay_range(unit):
+    """The unit's VRAM range, in main or an overlay, or None for a source main doesn't configure."""
+    if overlay_config(unit) is None:
+        try:
+            return unit_range(module_config(unit), unit)
+        except ValueError:
+            return None
+    return unit_range(module_config(unit), unit)
 
 
 def overlay_span(unit):
-    """The VRAM range the unit's whole overlay covers, or None for main sources."""
-    config = overlay_config(unit)
-    if config is None:
-        return None
+    """The VRAM range the unit's whole module covers, in main or an overlay."""
+    config = module_config(unit)
     segments = config['segments']
     spans = [(segment['vram'], segment['vram'] + segment_start(segments[i + 1]) - segment['start'])
              for i, segment in enumerate(segments[:-1])

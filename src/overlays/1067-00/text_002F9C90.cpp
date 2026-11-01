@@ -58,7 +58,7 @@ extern "C" u32 func_40D760(ItemCreationAllocationRecord* allocation);
 
 extern "C" void* memset_guess(void* destination, s32 value, u32 size);
 extern "C" u8 func_40B360(u32 shop_id);
-extern "C" void* func_1012D0(FieldRuntimeRoot* root);
+extern "C" void* func_1012D0(ResidentSystem* system);
 extern "C" u32 func_11DF70(void* clock);
 extern "C" const u16* D_31A500[42];
 
@@ -223,7 +223,7 @@ s32 shop_increase_quantity(ShopTransaction* transaction, u32 code)
             return 0;
         }
     }
-    ResidentCheckedRecord* record = static_cast<ResidentCheckedRecord*>(func_101440(func_101290(func_10D8E0()), 1));
+    ResidentCheckedRecord* record = static_cast<ResidentCheckedRecord*>(func_101440(func_101290(resident_get_system()), 1));
     u16 checksum = record->checksum;
     const u8* end = reinterpret_cast<const u8*>(&record->checksum);
     u32 fol;
@@ -408,7 +408,7 @@ s32 shop_init_transaction(ShopTransaction* transaction, u8 shop_id, u8 discount_
     transaction->shop_index = shop_id - 1;
     transaction->dynamic_inventory_slot = func_40B360(shop_id);
     transaction->discount_percent = discount_percent < 100 ? discount_percent : 99;
-    transaction->play_time_seconds = func_11DF70(func_1012D0(func_10D8E0()));
+    transaction->play_time_seconds = func_11DF70(func_1012D0(resident_get_system()));
     ShopItemList* all_items = &transaction->category_items[7];
     u16* output = all_items->item_codes;
     s32 count = 0;

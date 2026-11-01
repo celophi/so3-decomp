@@ -5758,7 +5758,7 @@
           "aliases": []
         },
         {
-          "name": "func_001334A0",
+          "name": "exit",
           "offset": 211744,
           "address": 1258656,
           "size": 48,
@@ -6757,7 +6757,7 @@
           "aliases": []
         },
         {
-          "name": "func_0013B7A8",
+          "name": "printf",
           "offset": 245288,
           "address": 1292200,
           "size": 80,
