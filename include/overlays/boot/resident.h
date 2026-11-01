@@ -59,12 +59,6 @@ extern float g_frame_ticks;
 
 extern float g_frame_seconds;
 
-s32 resident_random_below(s32 upper);
-s32 resident_random_range(s32 lower, s32 upper);
-u32 resident_rand(void);
-void resident_sound_set_volume_scale(ResidentSound* sound, s32 value);
-void resident_sound_stop_music(ResidentSound* sound, s32 first, s32 second);
-s32 resident_sound_play_music(ResidentSound* sound, s32 music, s32 first, s32 second, s32 third);
 u32 func_113930(BootResident113E40* heap, u32 size);
 s32 func_115270(ResidentArchive* archive, s32 slot);
 void FlushCache(s32 value);

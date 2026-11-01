@@ -1,3 +1,19 @@
 // The random generator addresses its state array with an index offset by 24.
+rom:0xD098 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
+rom:0xD0A0 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
+rom:0xD268 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
+rom:0xD270 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
+rom:0xD420 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
+rom:0xD428 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
+rom:0xD5B8 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
+rom:0xD5C0 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
+rom:0xDAE0 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
+rom:0xDAE8 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
+rom:0xDC20 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
+rom:0xDC28 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
+rom:0xDD60 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
+rom:0xDD68 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
 rom:0xD738 reloc:MIPS_HI16 symbol:D_001CF8E0 addend:-0x60
 rom:0xD740 reloc:MIPS_LO16 symbol:D_001CF8E0 addend:-0x60
+// Uncached ring cursor stride in func_0010A650, not the low half of an address.
+rom:0xADAC reloc:MIPS_NONE symbol:0x4

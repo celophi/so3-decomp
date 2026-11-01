@@ -4,6 +4,29 @@
 #include "types.h"
 #include "sdk/main/libkernl_00121940.h"
 
+#ifndef __cplusplus
+/* C units see the resident C++ classes as opaque types. */
+typedef struct ResidentArchiveWorker ResidentArchiveWorker;
+typedef struct ResidentClass14FA20 ResidentClass14FA20;
+typedef struct ResidentClass14FA30 ResidentClass14FA30;
+typedef struct ResidentClass14FA40 ResidentClass14FA40;
+typedef struct ResidentClass14FC60 ResidentClass14FC60;
+typedef struct ResidentDisplay ResidentDisplay;
+typedef struct ResidentHeap ResidentHeap;
+typedef struct ResidentInterruptLock ResidentInterruptLock;
+typedef struct ResidentListener ResidentListener;
+typedef struct ResidentPadHook ResidentPadHook;
+typedef struct ResidentProgram ResidentProgram;
+typedef struct ResidentResourceQueueListener ResidentResourceQueueListener;
+typedef struct ResidentSemaphore ResidentSemaphore;
+typedef struct ResidentSif ResidentSif;
+typedef struct ResidentStreamDma ResidentStreamDma;
+typedef struct ResidentStreamThread ResidentStreamThread;
+typedef struct ResidentThread ResidentThread;
+typedef struct ResidentThreadScheduler ResidentThreadScheduler;
+typedef struct ResidentTimeSlicedThread ResidentTimeSlicedThread;
+#endif
+
 #ifdef __cplusplus
 /**
  * @brief Allocate memory from the current heap, or from the default allocator when none is set.

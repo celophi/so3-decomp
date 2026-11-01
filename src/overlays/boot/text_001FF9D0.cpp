@@ -10,7 +10,6 @@
 
 extern "C" {
 float sqrtf(float value);
-void resident_packet_add_line(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, u32 z, u32 color);
 float lib_cosine(float angle);
 float lib_sine(float angle);
 void func_109F40(void* handle, void* left, void* right, s32 size);
@@ -852,7 +851,7 @@ void BootMusicPlayer::update()
             case BOOT_MUSIC_ROW_TRACK:
             case BOOT_MUSIC_ROW_PLAY:
                 playing = 1;
-                func_109F40(g_sound->stream->handle, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
+                func_109F40(g_sound->stream->thread, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
 
                 if (play_mode == BOOT_MUSIC_PLAY_SHUFFLED)
                 {
@@ -889,7 +888,7 @@ void BootMusicPlayer::update()
             return;
         }
 
-        if (play_mode > BOOT_MUSIC_PLAY_SINGLE && resident_sound_is_music_playing(g_sound, -1) != 0 && func_109FB0(g_sound->stream->handle) > 0 && playing)
+        if (play_mode > BOOT_MUSIC_PLAY_SINGLE && resident_sound_is_music_playing(g_sound, -1) != 0 && func_109FB0(g_sound->stream->thread) > 0 && playing)
         {
             resident_sound_stop_music(g_sound, 0x1E0, -1);
             next_track_delay = 8.0f;
@@ -914,7 +913,7 @@ void BootMusicPlayer::update()
                 {
                     samples_analysed = 0.0f;
                     samples_played = (float)BOOT_MUSIC_NEXT_TRACK_LEAD_SAMPLES;
-                    func_109F40(g_sound->stream->handle, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
+                    func_109F40(g_sound->stream->thread, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
                     playing = 1;
 
                     switch (play_mode)
@@ -953,16 +952,16 @@ void BootMusicPlayer::update()
         lib_text_set_resource(name_text, g_boot_program.messages, g_music_track_sounds[track] + BOOT_MUSIC_TRACK_NAME_MESSAGE_OFFSET, 0);
         lib_text_set_resource(mode_text, g_boot_program.messages, play_mode + BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE, 0);
 
-        if ((resident_sound_is_music_playing(g_sound, -1) != 0 && (g_sound->disabled ? 1 : g_sound->unk3bc) > 0) || next_track_delay > 0.0f)
+        if ((resident_sound_is_music_playing(g_sound, -1) != 0 && (g_sound->music_disabled ? 1 : g_sound->unk3bc) > 0) || next_track_delay > 0.0f)
         {
             samples_played += (float)BOOT_MUSIC_SAMPLE_RATE * g_frame_ticks / BOOT_MUSIC_FRAME_RATE;
 
             if (samples_analysed < samples_played - (float)BOOT_MUSIC_FFT_SIZE)
             {
                 samples_analysed += (float)BOOT_MUSIC_FFT_SIZE;
-                func_109F20(g_sound->stream->handle, 0, BOOT_MUSIC_FFT_SIZE, spectra[0].real);
+                func_109F20(g_sound->stream->thread, 0, BOOT_MUSIC_FFT_SIZE, spectra[0].real);
 
-                if ((u8)func_109F20(g_sound->stream->handle, 1, BOOT_MUSIC_FFT_SIZE, spectra[1].real))
+                if ((u8)func_109F20(g_sound->stream->thread, 1, BOOT_MUSIC_FFT_SIZE, spectra[1].real))
                 {
                     for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
                     {
@@ -970,7 +969,7 @@ void BootMusicPlayer::update()
                         spectra[1].imag[i] = 0.0f;
                     }
 
-                    if (func_109FD0(g_sound->stream->handle) != 0)
+                    if (func_109FD0(g_sound->stream->thread) != 0)
                     {
                         for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
                         {
@@ -1329,7 +1328,7 @@ BootMusicPlayer::~BootMusicPlayer()
     }
 
     delete fft;
-    func_109F40(g_sound->stream->handle, 0, 0, 0);
+    func_109F40(g_sound->stream->thread, 0, 0, 0);
     resident_sound_set_volume_scale(g_sound, 0x7FFF);
 }
 

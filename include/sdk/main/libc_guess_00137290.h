@@ -59,6 +59,15 @@ void* malloc_guess(u32 size);
  */
 void free_guess(void* ptr);
 
+/**
+ * @brief newlib's memcmp: compare two byte ranges.
+ * @param first First range.
+ * @param second Second range.
+ * @param size Number of bytes to compare.
+ * @return Zero when the ranges are equal, otherwise the difference of the first differing bytes.
+ */
+s32 memcmp(const void* first, const void* second, u32 size);
+
 #ifdef __cplusplus
 }
 #endif

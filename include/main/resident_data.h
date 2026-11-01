@@ -287,7 +287,7 @@ extern u8 D_001B6420;
  */
 static inline bool field_records_blocked()
 {
-    if (g_resource_archive->unk12183 || resident_update_resource_queue(g_resource_queue) || g_resource_queue->unk30)
+    if (g_resource_archive->read_busy || resident_update_resource_queue(g_resource_queue) || g_resource_queue->unk30)
     {
         return true;
     }
