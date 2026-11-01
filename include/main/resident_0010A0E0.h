@@ -370,6 +370,55 @@ extern ResidentSystem g_system;
  */
 s32 resident_archive_get_clock(ResidentArchive* archive, ResidentClock* clock);
 
+/** @brief Seed the resident random sequence; main seeds it from timer 0. @param seed Seed value. */
+void func_0010D100(u32 seed);
+
+/** @brief Archive setup that main runs right after rebooting the IOP. @param archive Resource archive. */
+void func_0011DA80(ResidentArchive* archive);
+
+/** @brief Archive setup that main runs after storing its arguments. @param archive Resource archive. */
+void func_0011D470(ResidentArchive* archive);
+
+/**
+ * @brief Archive step before func_0011D060 reads a block; main passes 1 for the IOP modules and 2 for the programs.
+ * @param archive Resource archive.
+ * @param mode Block selector.
+ */
+void func_0011D080(ResidentArchive* archive, s32 mode);
+
+/** @brief Archive step that main runs once the IOP modules are loaded. @param archive Resource archive. */
+void func_0011D950(ResidentArchive* archive);
+
+/** @brief Register the handlers for the IOP's SIF commands 0 to 3. @param object SIF command state. */
+void func_0010C700(void* object);
+
+/** @brief Check the SIF command state. @param object SIF command state. @return Negative until it's ready. */
+s32 func_0010C640(void* object);
+
+/** @brief Start the input system. @param input Input system. */
+void func_0011EA80(struct ResidentInputSystem* input);
+
+/** @brief Start the sound system and its stream. @param sound Sound system. */
+void func_00112D80(ResidentSound* sound);
+
+/**
+ * @brief Sound setup step that main runs after starting the sound system.
+ * @param sound Sound system.
+ * @param count Number of entries in data.
+ * @param data Setup table.
+ */
+void func_0010EC00(ResidentSound* sound, s32 count, const void* data);
+
+/** @brief Sound setup step that main runs once the archive is idle. @param sound Sound system. @param value Value. */
+void func_0010EAD0(ResidentSound* sound, s32 value);
+
+/**
+ * @brief Update the sound system; main calls it until sound->state is zero.
+ * @param sound Sound system.
+ * @param mode Mode.
+ */
+void func_0010F250(ResidentSound* sound, s32 mode);
+
 /**
  * @brief Allocate a block from a resident heap.
  * @param heap Heap to allocate from.

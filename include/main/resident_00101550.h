@@ -279,6 +279,16 @@ s32 func_0010A0B0(void* object, const s32* value);
 /** @brief Process the supplied resident object. @param object Input object. */
 void func_00109510(void* object);
 
+/**
+ * @brief Read four values from the sound stream.
+ * @param stream Sound stream.
+ * @param x Receives the first value.
+ * @param y Receives the second value.
+ * @param z Receives the third value.
+ * @param w Receives the fourth value.
+ */
+void func_001058C0(struct ResidentSoundStream* stream, float* x, float* y, float* z, float* w);
+
 #ifdef __cplusplus
 }
 #endif

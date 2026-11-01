@@ -4,6 +4,7 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_0011EE70.h"
 #include "main/resident_00121730.h"
+#include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libdma_0012B2C8.h"
 #include "sdk/main/libgraph_0012EAC8.h"
@@ -14,12 +15,11 @@
 #include "sdk/main/mslgcc_00142A40.h"
 #include "vu0.h"
 
-extern u8 D_001B6420;
-
 /** Object that reports running out of memory in place of the default message; null by default. */
 class ResidentMemoryHook
 {
 public:
+    /** @brief First virtual slot; nothing here calls it. */
     virtual void func_slot08();
 
     /** @brief Report running out of memory. @param data D_001CC510. */
@@ -86,24 +86,7 @@ extern u8 D_00143B80[];
 extern u8 D_00143C00[];
 extern u8 D_00143D70[];
 extern u8 D_00144130[];
-
-void func_0010D100(u32 seed);
-void func_0011DA80(ResidentArchive* archive);
-void func_0011D470(ResidentArchive* archive);
-void func_0011D080(ResidentArchive* archive, s32 mode);
-void func_0011D950(ResidentArchive* archive);
-void func_0010C700(void* object);
-s32 func_0010C640(void* object);
-void func_0011EA80(ResidentInputSystem* input);
-void func_00112D80(ResidentSound* sound);
-void func_0010EC00(ResidentSound* sound, s32 count, const void* data);
-void func_0010EAD0(ResidentSound* sound, s32 value);
-void func_0010F250(ResidentSound* sound, s32 mode);
-void func_001058C0(ResidentSoundStream* stream, float* x, float* y, float* z, float* w);
 }
-
-/** @brief The new handler main installs: report through the hook, or print a message and exit. */
-void resident_handle_out_of_memory(void);
 
 /**
  * @brief Start the game: reset the IOP and load its modules, set up the GS, sound and input, then load the overlays
@@ -134,6 +117,8 @@ int main(int argc, char** argv)
     ResidentClock clock;
 
     resident_prime_heap();
+
+    // Stack canary at the bottom of the stack ("gMtScFpT" in memory).
     *(u64*)(0x2000000 - (u32)_stack_size) = 0x5470466353744D67;
     TIMER0_MODE = 0x83;
     TIMER0_COUNT = 0;
@@ -347,7 +332,10 @@ int main(int argc, char** argv)
     return 0;
 }
 
-
+/**
+ * @brief Set the flag at D_001B6420; main sets it once start-up is done, and boot and field set it while they run.
+ * @param value New flag value.
+ */
 void func_00100A40(u8 value)
 {
     D_001B6420 = value;
@@ -367,6 +355,10 @@ void resident_handle_out_of_memory(void)
     }
 }
 
+/**
+ * @brief Do nothing.
+ * @param object Ignored.
+ */
 void func_00100AB0(void* object)
 {
 }
@@ -400,7 +392,6 @@ void* operator new[](u32 size, s32 unused)
     }
     return ::operator new(size);
 }
-
 
 /**
  * @brief Release resident heap allocations or use the default free routine.
@@ -561,9 +552,6 @@ void resident_system_save_stack(ResidentSystem* system)
     asm("sw $sp, 0(%0)" : : "r"(sp_slot));
     asm("sw $fp, 0(%0)" : : "r"(fp_slot));
 }
-
-/** Load address of the overlay in each slot, or null for an empty slot. */
-extern "C" void* D_001B5FB0[];
 
 /**
  * @brief Decode an overlay into its slot and delete the loaded resource, then go back to main's stack depth and run

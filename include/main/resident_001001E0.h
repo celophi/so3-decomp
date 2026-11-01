@@ -94,6 +94,9 @@ extern struct ResidentProgram* g_current_program;
 /** Object that receives the IOP's SIF commands 0 to 3, or null; the sound system registers its stream. */
 extern void* g_sif_command_receiver;
 
+/** Load address of the overlay in each slot, or null for an empty slot. */
+extern void* D_001B5FB0[];
+
 /** Store a byte in the global at address 0x001B6420. */
 void func_00100A40(u8 value);
 
