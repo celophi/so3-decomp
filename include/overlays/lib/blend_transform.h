@@ -21,7 +21,7 @@ public:
     }
 
     /** @brief Set the inherited state byte to two when blending is enabled. */
-    virtual void func_003F4420();
+    virtual void set_default_draw_bucket();
 
     /**
      * @brief Store the blend mode.

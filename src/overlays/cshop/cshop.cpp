@@ -244,7 +244,7 @@ static inline ItemCreationCategoryRecord* shop_item_record(ShopInventoryState* i
 static inline void set_shop_number(LibObject174F20* object, s32 number)
 {
     object->numeric_value = number;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 // These Field list interfaces have no declarations in their owning header.
@@ -320,7 +320,7 @@ u32 FieldClass15AE70::func_slot54()
 }
 
 /** @brief Return the nested display container. @return Stored container. */
-LibObject178660* FieldClass15AE70::func_slot58()
+LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }
@@ -489,13 +489,13 @@ void ShopSellAllConfirmWindow::func_slot74()
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 }
 
@@ -513,13 +513,13 @@ void ShopSellAllConfirmWindow::func_slot70()
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 }
 
@@ -592,26 +592,26 @@ u8 ShopSellAllConfirmWindow::func_slotb0()
 s32 ShopSellAllConfirmWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 120.0f, 170.0f, 14);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 370.0f, 176.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     shop_append_panel(&unk14, panel);
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 370.0f, 48.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     ShopPanelColors colors = D_00351FC0;
     lib_panel_set_colors(panel, &colors.colors);
     shop_append_panel(&unk14, panel);
-    LibObject178750* text = new (0) LibObject178750;
+    LibTextWidget* text = new (0) LibTextWidget;
     text->init_resource_rectangle(0.0f, 12.0f, 370.0f, 24.0f, static_cast<s32>(associated), SHOP_MSG_CONFIRM_SALE, 0);
-    text->set_mode(1);
+    text->set_horizontal_align(1);
     lib_container_attach_widget(unk10, text);
-    text = new (0) LibObject178750;
+    text = new (0) LibTextWidget;
     text->init_resource_rectangle(0.0f, 64.0f, 370.0f, 48.0f, static_cast<s32>(associated), SHOP_MSG_SELL_ALL_PROMPT, 0);
-    text->set_mode(1);
+    text->set_horizontal_align(1);
     lib_container_attach_widget(unk10, text);
-    yes_label = new (0) LibObject178750;
-    no_label = new (0) LibObject178750;
+    yes_label = new (0) LibTextWidget;
+    no_label = new (0) LibTextWidget;
     yes_label->init_resource_rectangle(115.0f, 132.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_YES, 0);
     lib_container_attach_widget(unk10, yes_label);
     no_label->init_resource_rectangle(210.0f, 132.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_NO, 0);
@@ -625,13 +625,13 @@ s32 ShopSellAllConfirmWindow::func_slotf4(u32 associated)
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 
     return 1;
@@ -651,13 +651,13 @@ void ShopSellConfirmWindow::func_slot74()
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 }
 
@@ -675,13 +675,13 @@ void ShopSellConfirmWindow::func_slot70()
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 }
 
@@ -751,26 +751,26 @@ u8 ShopSellConfirmWindow::func_slotb0()
 s32 ShopSellConfirmWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 140.0f, 170.0f, 14);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 320.0f, 176.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     shop_append_panel(&unk14, panel);
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 320.0f, 48.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     ShopPanelColors colors = D_00351FB0;
     lib_panel_set_colors(panel, &colors.colors);
     shop_append_panel(&unk14, panel);
-    LibObject178750* text = new (0) LibObject178750;
+    LibTextWidget* text = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(text, static_cast<s32>(associated), SHOP_MSG_CONFIRM_SALE, 0, 0.0f, 12.0f, 320.0f, 24.0f);
-    text->set_mode(1);
+    text->set_horizontal_align(1);
     lib_container_attach_widget(unk10, text);
-    text = new (0) LibObject178750;
+    text = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(text, static_cast<s32>(associated), SHOP_MSG_SALE_PROMPT, 0, 0.0f, 64.0f, 320.0f, 48.0f);
-    text->set_mode(1);
+    text->set_horizontal_align(1);
     lib_container_attach_widget(unk10, text);
-    yes_label = new (0) LibObject178750;
-    no_label = new (0) LibObject178750;
+    yes_label = new (0) LibTextWidget;
+    no_label = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(yes_label, static_cast<s32>(associated), SHOP_MSG_YES, 0, 82.0f, 132.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, yes_label);
     lib_text_init_resource_rectangle(no_label, static_cast<s32>(associated), SHOP_MSG_NO, 0, 172.0f, 132.0f, 0.0f, 0.0f);
@@ -784,13 +784,13 @@ s32 ShopSellConfirmWindow::func_slotf4(u32 associated)
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 
     return 1;
@@ -822,13 +822,13 @@ void ShopBuyConfirmWindow::func_slot74()
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 }
 
@@ -846,13 +846,13 @@ void ShopBuyConfirmWindow::func_slot70()
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 }
 
@@ -910,26 +910,26 @@ u8 ShopBuyConfirmWindow::func_slotb0()
 s32 ShopBuyConfirmWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 160.0f, 170.0f, 14);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 320.0f, 176.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     shop_append_panel(&unk14, panel);
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 320.0f, 48.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     ShopPanelColors colors = D_00351FA0;
     lib_panel_set_colors(panel, &colors.colors);
     shop_append_panel(&unk14, panel);
-    LibObject178750* text = new (0) LibObject178750;
+    LibTextWidget* text = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(text, static_cast<s32>(associated), SHOP_MSG_CONFIRM_PURCHASE, 0, 0.0f, 12.0f, 320.0f, 24.0f);
-    text->set_mode(1);
+    text->set_horizontal_align(1);
     lib_container_attach_widget(unk10, text);
-    text = new (0) LibObject178750;
+    text = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(text, static_cast<s32>(associated), SHOP_MSG_PURCHASE_PROMPT, 0, 0.0f, 64.0f, 320.0f, 48.0f);
-    text->set_mode(1);
+    text->set_horizontal_align(1);
     lib_container_attach_widget(unk10, text);
-    yes_label = new (0) LibObject178750;
-    no_label = new (0) LibObject178750;
+    yes_label = new (0) LibTextWidget;
+    no_label = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(yes_label, static_cast<s32>(associated), SHOP_MSG_YES, 0, 82.0f, 132.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, yes_label);
     lib_text_init_resource_rectangle(no_label, static_cast<s32>(associated), SHOP_MSG_NO, 0, 172.0f, 132.0f, 0.0f, 0.0f);
@@ -944,13 +944,13 @@ s32 ShopBuyConfirmWindow::func_slotf4(u32 associated)
 
     if (choice->unk114 != 0)
     {
-        yes_label->set_color(0x808080);
-        no_label->set_color(0x288080);
+        yes_label->set_tint(0x808080);
+        no_label->set_tint(0x288080);
     }
     else
     {
-        yes_label->set_color(0x288080);
-        no_label->set_color(0x808080);
+        yes_label->set_tint(0x288080);
+        no_label->set_tint(0x808080);
     }
 
     return 1;
@@ -963,41 +963,41 @@ s32 ShopBuyConfirmWindow::func_slotf4(u32 associated)
  */
 void ShopSaleItemWindow::func_slot10c(u32 value, u32 selected)
 {
-    item_names[0]->unk3f = value;
-    sale_prices[0]->unk3f = value;
-    item_names[1]->unk3f = value;
-    sale_prices[1]->unk3f = value;
-    item_names[2]->unk3f = value;
-    sale_prices[2]->unk3f = value;
-    item_names[3]->unk3f = value;
-    sale_prices[3]->unk3f = value;
+    item_names[0]->visible = value;
+    sale_prices[0]->visible = value;
+    item_names[1]->visible = value;
+    sale_prices[1]->visible = value;
+    item_names[2]->visible = value;
+    sale_prices[2]->visible = value;
+    item_names[3]->visible = value;
+    sale_prices[3]->visible = value;
 
     if (panel != 0)
     {
-        panel->unk3f = 1;
+        panel->visible = 1;
     }
 
     if (FieldClass15AE60::unk04 != 0)
     {
-        FieldClass15AE60::unk04->unk3f = selected;
+        FieldClass15AE60::unk04->visible = selected;
 
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
-            selection_cursor->unk3c = 1;
+            selection_cursor->needs_redraw = 1;
         }
         else
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
-            selection_cursor->unk3c = 1;
+            selection_cursor->needs_redraw = 1;
         }
     }
 
     if (FieldClass15AE60::unk00 != 0)
     {
-        FieldClass15AE60::unk00->unk3f = selected;
+        FieldClass15AE60::unk00->visible = selected;
     }
 }
 
@@ -1072,13 +1072,13 @@ void ShopSaleItemWindow::func_slot5c()
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
         selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
-        selection_cursor->unk3c = 1;
+        selection_cursor->needs_redraw = 1;
     }
     else
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
         selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
-        selection_cursor->unk3c = 1;
+        selection_cursor->needs_redraw = 1;
         return;
     }
 
@@ -1099,20 +1099,20 @@ void ShopSaleItemWindow::func_slot5c()
             {
                 LibObject172440* factor_display = factors[factor_count];
                 factor_display->unkfc = factor_id;
-                factor_display->unk3c = 1;
-                factors[factor_count]->unk3f = 1;
+                factor_display->needs_redraw = 1;
+                factors[factor_count]->visible = 1;
                 factor_count++;
             }
         }
 
         for (; factor_count < 8; factor_count++)
         {
-            factors[factor_count]->unk3f = 0;
+            factors[factor_count]->visible = 0;
         }
 
         state->selected_allocation = unequipped_allocations[selected_allocation_index];
         LibObject172410* item_name = item_names[FieldClass15AE60::unk28];
-        set_selection_marker(item_name, item_name->unk94);
+        set_selection_marker(item_name, item_name->tint);
     }
     else
     {
@@ -1132,12 +1132,12 @@ void ShopSaleItemWindow::set_scroll_position(float scroll_offset)
 
     do
     {
-        LibClass178600* item_name = this->item_names[row];
+        LibWidget* item_name = this->item_names[row];
         item_name->unk18.unk04 = row_y;
-        item_name->unk3c = 1;
-        LibClass178600* sale_price_display = this->sale_prices[row];
+        item_name->needs_redraw = 1;
+        LibWidget* sale_price_display = this->sale_prices[row];
         sale_price_display->unk18.unk04 = row_y;
-        sale_price_display->unk3c = 1;
+        sale_price_display->needs_redraw = 1;
         row_y += 28.0f;
         row++;
     } while (row < 5);
@@ -1175,7 +1175,7 @@ void ShopSaleItemWindow::refresh_rows(s32 offset)
             LibObject172410* item_name = this->item_names[i];
             item_name->unkfc = item_identifier;
             item_name->unkfe = modification_number;
-            item_name->unk3c = 1;
+            item_name->needs_redraw = 1;
             set_shop_number(this->sale_prices[i], shop_get_sale_price(transaction, lib_allocation_get_identifier(unequipped_allocations[offset + i])));
             this->item_names[i]->unk3d = 1;
             this->sale_prices[i]->unk3d = 1;
@@ -1237,7 +1237,7 @@ void shop_refresh_sale_item_range(ShopSaleItemWindow* object)
 static inline void set_shop_item_name_auto_fit(LibObject172410* object, u8 enabled)
 {
     object->unkfa = enabled;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 /**
  * @brief Set the item name glyph spacing and request a refresh.
@@ -1247,7 +1247,7 @@ static inline void set_shop_item_name_auto_fit(LibObject172410* object, u8 enabl
 static inline void set_shop_item_name_spacing(LibObject172410* object, float spacing)
 {
     object->unk88 = spacing;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 /**
  * @brief Configure the separator's display rectangle.
@@ -1269,7 +1269,7 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     FieldClass15AE60::unk3c = 1;
     LibClass1746A0* clip_region = new (0) LibClass1746A0;
     LibClass1746A0* reset_clip = new (0) LibClass1746A0;
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 568.0f, 340.0f, 88.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(clip_region, 16.0f, 16.0f, 560.0f, 110.0f);
@@ -1282,7 +1282,7 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
         item_names[row]->set_scale(SHOP_ITEM_NAME_SCALE, SHOP_ITEM_NAME_SCALE);
         set_shop_item_name_auto_fit(item_names[row], 1);
         set_shop_item_name_spacing(item_names[row], -1.0f);
-        item_names[row]->unk3f = 1;
+        item_names[row]->visible = 1;
         lib_container_attach_widget(FieldClass15AE70::unk10, item_names[row]);
         sale_prices[row] = new (0) LibObject174F20;
         sale_prices[row]->init_numeric_resource_rectangle(490.0f, 12.0f + 30.0f * row, 28.0f, 24.0f, 0, 0, 1);
@@ -1295,7 +1295,7 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     lib_marker_init_rectangle(factor_separator, 24.0f, 135.0f, 520.0f, 4.0f);
     ItemCreationClass172870* separator = factor_separator;
     separator->unk50 = 0xDC6464;
-    separator->unk3c = 1;
+    separator->needs_redraw = 1;
     lib_container_attach_widget(FieldClass15AE70::unk10, factor_separator);
     FieldRuntime* runtime = D_001B657C;
     runtime->factor_resource_slot = static_cast<s32>(associated);
@@ -1306,17 +1306,17 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
         factors[factor_index] = new (0) LibObject172440;
         lib_detail_code_init_rectangle(factors[factor_index], 0, 1, 0, 24.0f, 148 + 22 * factor_index, 0.0f, 0.0f);
         LibObject172440* factor_display = factors[factor_index];
-        factor_display->unk80 = 0.8f;
-        factor_display->unk84 = 0.8f;
-        factor_display->unk3c = 1;
-        factors[factor_index]->unk3f = 0;
+        factor_display->draw_scale = 0.8f;
+        factor_display->draw_scale_y = 0.8f;
+        factor_display->needs_redraw = 1;
+        factors[factor_index]->visible = 0;
         lib_container_attach_widget(FieldClass15AE70::unk10, factors[factor_index]);
     }
 
-    LibObject178750* sell_all_help = new (0) LibObject178750;
+    LibTextWidget* sell_all_help = new (0) LibTextWidget;
     sell_all_help->init_resource_rectangle(435.0f, 270.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_SELL_ALL_HELP, 0);
     lib_container_attach_widget(FieldClass15AE70::unk10, sell_all_help);
-    LibObject178750* back_help = new (0) LibObject178750;
+    LibTextWidget* back_help = new (0) LibTextWidget;
     back_help->init_resource_rectangle(415.0f, 300.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_SELL_BACK_HELP, 0);
     lib_container_attach_widget(FieldClass15AE70::unk10, back_help);
     FieldClass15AE60::unk34 = 28.0f;
@@ -1325,11 +1325,11 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     FieldClass15AE60::unk04 = selection_cursor;
     lib_moving_widget_init_position(static_cast<LibClass175030*>(FieldClass15AE60::unk04), 28.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk04);
-    FieldClass15AE60::unk04->unk3f = 0;
+    FieldClass15AE60::unk04->visible = 0;
     LibClass1725D0* scrollbar = new (0) LibClass1725D0;
     FieldClass15AE60::unk00 = scrollbar;
     lib_list_indicator_init(static_cast<LibClass1725D0*>(FieldClass15AE60::unk00), 540.0f, 14.0f, 110.0f, 10.0f, 0.0f);
-    FieldClass15AE60::unk00->unk3f = 0;
+    FieldClass15AE60::unk00->visible = 0;
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk00);
     func_002CE420(&static_cast<FieldClass15AE60&>(*this), 1, 4, 378, 28);
     FieldClass15AE60::unk2b = 3;
@@ -1354,43 +1354,43 @@ void FieldClass15AD40::func_slot110(u8 value)
  */
 void ShopSellListWindow::func_slot10c(u32 value, u32 selected)
 {
-    item_names[0]->unk3f = value;
-    item_counts[0]->unk3f = value;
-    item_names[1]->unk3f = value;
-    item_counts[1]->unk3f = value;
-    item_names[2]->unk3f = value;
-    item_counts[2]->unk3f = value;
-    item_names[3]->unk3f = value;
-    item_counts[3]->unk3f = value;
-    item_names[4]->unk3f = value;
-    item_counts[4]->unk3f = value;
+    item_names[0]->visible = value;
+    item_counts[0]->visible = value;
+    item_names[1]->visible = value;
+    item_counts[1]->visible = value;
+    item_names[2]->visible = value;
+    item_counts[2]->visible = value;
+    item_names[3]->visible = value;
+    item_counts[3]->visible = value;
+    item_names[4]->visible = value;
+    item_counts[4]->visible = value;
 
     if (panel != 0)
     {
-        panel->unk3f = 1;
+        panel->visible = 1;
     }
 
     if (FieldClass15AE60::unk04 != 0)
     {
-        FieldClass15AE60::unk04->unk3f = selected;
+        FieldClass15AE60::unk04->visible = selected;
 
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
-            selection_cursor->unk3c = 1;
+            selection_cursor->needs_redraw = 1;
         }
         else
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
-            selection_cursor->unk3c = 1;
+            selection_cursor->needs_redraw = 1;
         }
     }
 
     if (FieldClass15AE60::unk00 != 0)
     {
-        FieldClass15AE60::unk00->unk3f = selected;
+        FieldClass15AE60::unk00->visible = selected;
     }
 }
 
@@ -1457,13 +1457,13 @@ void ShopSellListWindow::func_slot5c()
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
         selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
-        selection_cursor->unk3c = 1;
+        selection_cursor->needs_redraw = 1;
     }
     else
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
         selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
-        selection_cursor->unk3c = 1;
+        selection_cursor->needs_redraw = 1;
         return;
     }
 
@@ -1474,7 +1474,7 @@ void ShopSellListWindow::func_slot5c()
     {
         state->selected_item = item_codes[FieldClass15AE60::unk24];
         LibObject172410* item_name = item_names[FieldClass15AE60::unk28];
-        set_selection_marker(item_name, item_name->unk94);
+        set_selection_marker(item_name, item_name->tint);
     }
     else
     {
@@ -1494,12 +1494,12 @@ void ShopSellListWindow::set_scroll_position(float scroll_offset)
 
     do
     {
-        LibClass178600* item_name = this->item_names[row];
+        LibWidget* item_name = this->item_names[row];
         item_name->unk18.unk04 = row_y;
-        item_name->unk3c = 1;
-        LibClass178600* item_count_display = this->item_counts[row];
+        item_name->needs_redraw = 1;
+        LibWidget* item_count_display = this->item_counts[row];
         item_count_display->unk18.unk04 = row_y;
-        item_count_display->unk3c = 1;
+        item_count_display->needs_redraw = 1;
         row_y += 28.0f;
         row++;
     } while (row < 6);
@@ -1535,8 +1535,8 @@ void ShopSellListWindow::refresh_rows(s32 offset)
                 LibObject172410* item_name = this->item_names[i];
                 item_name->unkfc = item_identifier;
                 item_name->unkfe = 0;
-                item_name->unk3c = 1;
-                this->item_names[i]->set_color(color);
+                item_name->needs_redraw = 1;
+                this->item_names[i]->set_tint(color);
                 this->item_names[i]->unk3d = 1;
                 set_shop_number(this->item_counts[i], item_record->inventory_count);
                 this->item_counts[i]->unk3d = 1;
@@ -1662,7 +1662,7 @@ s32 ShopSellListWindow::func_slot104(u32 associated)
     FieldClass15AE60::unk3c = 1;
     LibClass1746A0* clip_region = new (0) LibClass1746A0;
     LibClass1746A0* reset_clip = new (0) LibClass1746A0;
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 608.0f, 178.0f, 88.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(clip_region, 16.0f, 16.0f, 580.0f, 140.0f);
@@ -1675,7 +1675,7 @@ s32 ShopSellListWindow::func_slot104(u32 associated)
         item_names[row]->set_scale(SHOP_ITEM_NAME_SCALE, SHOP_ITEM_NAME_SCALE);
         set_shop_item_name_auto_fit(item_names[row], 1);
         set_shop_item_name_spacing(item_names[row], -1.0f);
-        item_names[row]->unk3f = 1;
+        item_names[row]->visible = 1;
         lib_container_attach_widget(FieldClass15AE70::unk10, item_names[row]);
         item_counts[row] = new (0) LibObject174F20;
         item_counts[row]->init_numeric_resource_rectangle(544.0f, 12.0f + 30.0f * row, 28.0f, 24.0f, 0, 0, 1);
@@ -1689,13 +1689,13 @@ s32 ShopSellListWindow::func_slot104(u32 associated)
     LibClass175030* selection_cursor = new (0) LibClass175030;
     FieldClass15AE60::unk04 = selection_cursor;
     lib_moving_widget_init_position(static_cast<LibClass175030*>(FieldClass15AE60::unk04), 28.0f, 28.0f);
-    FieldClass15AE60::unk04->unk3f = 0;
+    FieldClass15AE60::unk04->visible = 0;
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk04);
     LibClass1725D0* scrollbar = new (0) LibClass1725D0;
     FieldClass15AE60::unk00 = scrollbar;
     lib_list_indicator_init(static_cast<LibClass1725D0*>(FieldClass15AE60::unk00), 580.0f, 14.0f, 145.0f, 10.0f, 0.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk00);
-    FieldClass15AE60::unk00->unk3f = 0;
+    FieldClass15AE60::unk00->visible = 0;
     func_002CE420(&static_cast<FieldClass15AE60&>(*this), 1, 5, 378, 28);
     FieldClass15AE60::unk2b = 3;
     FieldClass15AE60::unk84 = 0;
@@ -1800,7 +1800,7 @@ static inline void set_shop_item_name_code(LibObject172410* object, u16 code)
 {
     object->unkfc = code;
     object->unkfe = 0;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /**
@@ -1811,10 +1811,10 @@ static inline void set_shop_item_name_code(LibObject172410* object, u16 code)
 s32 ShopItemDetailWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 2200, 28.0f, 87.0f, 0.0f);
-    detail_container = new (0) LibObject178660;
+    detail_container = new (0) LibContainer;
     lib_container_init(detail_container, 5, 28.0f, 87.0f, 0, 0.0f, 0);
     lib_queue_display_object(D_001B657C, detail_container);
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 584.0f, 369.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     lib_panel_init_transform(panel, 1500.0f);
@@ -1823,14 +1823,14 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     preview_allocation.reset(0);
     ItemCreationCategoryRecord* item_record = shop_item_record(D_001B64F8, item_code);
     initialize_shop_item_allocation(&preview_allocation, item_record, 0);
-    category_label = new (0) LibObject178750;
+    category_label = new (0) LibTextWidget;
     category_label->init_resource_rectangle(16.0f, 12.0f, 0.0f, 0.0f, associated, shop_definition_category(&D_001B64F0[preview_allocation.definition_index()]) + SHOP_MSG_WEAPONS, 0);
-    LibObject178750* category_heading = category_label;
+    LibTextWidget* category_heading = category_label;
     category_heading->unk88 = -1.0f;
-    category_heading->unk3c = 1;
+    category_heading->needs_redraw = 1;
     category_label->set_scale(0.8f, 0.8f);
-    category_label->set_color(0x805050);
-    category_label->set_mode(0);
+    category_label->set_tint(0x805050);
+    category_label->set_horizontal_align(0);
     lib_container_attach_widget(unk10, category_label);
     item_name = new (0) LibObject172410;
     lib_item_code_init_rectangle(item_name, 24.0f, 34.0f, 0.0f, 0.0f, associated, item_code + SHOP_MSG_ITEM_NAMES, 0);
@@ -1842,24 +1842,24 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     lib_marker_init_rectangle(factor_separator, 8.0f, 66.0f, 568.0f, 3.0f);
     ItemCreationClass172870* separator = factor_separator;
     separator->unk50 = 0x606060;
-    separator->unk3c = 1;
+    separator->needs_redraw = 1;
     lib_container_attach_widget(unk10, factor_separator);
-    description_text = new (0) LibObject178750;
+    description_text = new (0) LibTextWidget;
     description_text->init_resource_rectangle(24.0f, 78.0f, 534.0f, 66.0f, static_cast<s32>(associated), item_code + SHOP_MSG_DETAIL_DESCRIPTIONS, 0);
-    description_text->set_mode(0);
-    description_text->set_vertical_alignment(1);
-    LibObject178750* description = description_text;
+    description_text->set_horizontal_align(0);
+    description_text->set_vertical_align(1);
+    LibTextWidget* description = description_text;
     description->unk88 = -1.0f;
-    description->unk3c = 1;
+    description->needs_redraw = 1;
     description_text->set_scale(0.9f, 0.9f);
     lib_container_attach_widget(detail_container, description_text);
-    factor_heading = new (0) LibObject178750;
+    factor_heading = new (0) LibTextWidget;
     factor_heading->init_resource_rectangle(16.0f, 150.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_FACTOR, 0);
     factor_heading->set_scale(0.8f, 0.8f);
-    factor_heading->set_color(0x805050);
-    LibObject178750* factor_heading_widget = factor_heading;
+    factor_heading->set_tint(0x805050);
+    LibTextWidget* factor_heading_widget = factor_heading;
     factor_heading_widget->unk88 = -1.0f;
-    factor_heading_widget->unk3c = 1;
+    factor_heading_widget->needs_redraw = 1;
     lib_container_attach_widget(unk10, factor_heading);
     FieldRuntime* runtime = D_001B657C;
     runtime->factor_resource_slot = static_cast<s32>(associated);
@@ -1871,9 +1871,9 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
         lib_detail_code_init_rectangle(factors[i], 0, 1, 0, 26.0f, 172.0f + 23 * i, 0.0f, 0.0f);
         LibObject172440* factor_display = factors[i];
         factor_display->unk88 = -1.0f;
-        factor_display->unk3c = 1;
+        factor_display->needs_redraw = 1;
         factors[i]->set_scale(0.8f, 0.8f);
-        factors[i]->unk3f = 0;
+        factors[i]->visible = 0;
         lib_container_attach_widget(detail_container, factors[i]);
     }
 
@@ -1887,16 +1887,16 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
         {
             LibObject172440* factor_display = factors[factor_count];
             factor_display->unkfc = factor_id;
-            factor_display->unk3c = 1;
-            factors[factor_count]->unk3f = 1;
+            factor_display->needs_redraw = 1;
+            factors[factor_count]->visible = 1;
             factor_count++;
         }
     }
 
     ShopFooterPositions positions = D_00351F80;
-    LibObject178750* footer = new (0) LibObject178750;
+    LibTextWidget* footer = new (0) LibTextWidget;
     footer->init_resource_rectangle(12.0f, positions.values[4] - 8.0f, 560.0f, 24.0f, static_cast<s32>(associated), SHOP_MSG_BACK_HELP, 0);
-    footer->set_mode(2);
+    footer->set_horizontal_align(2);
     lib_container_attach_widget(detail_container, footer);
     s32 model_resource_key = static_cast<u16>(D_001B64F0[item_record->catalog_index].model_index) + 0x88;
     closing = 0;
@@ -1920,7 +1920,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
 }
 
 /** @brief Destroy the list receiver and its head node. */
-LibClass178A70::~LibClass178A70()
+LibListReceiver::~LibListReceiver()
 {
 }
 
@@ -1969,40 +1969,40 @@ void ShopBuyListWindow::func_slot10c(u32 value, u32 selected)
 
     for (; i < 5; i++)
     {
-        item_names[i]->unk3f = value;
-        price_displays[i]->unk3f = value;
-        multiply_labels[i]->unk3f = value;
-        quantity_displays[i]->unk3f = value;
-        separator_labels[i]->unk3f = value;
-        buy_limit_displays[i]->unk3f = value;
+        item_names[i]->visible = value;
+        price_displays[i]->visible = value;
+        multiply_labels[i]->visible = value;
+        quantity_displays[i]->visible = value;
+        separator_labels[i]->visible = value;
+        buy_limit_displays[i]->visible = value;
     }
 
     if (panel != 0)
     {
-        panel->unk3f = 1;
+        panel->visible = 1;
     }
 
     if (FieldClass15AE60::unk04 != 0)
     {
-        FieldClass15AE60::unk04->unk3f = selected;
+        FieldClass15AE60::unk04->visible = selected;
 
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
-            selection_cursor->unk3c = 1;
+            selection_cursor->needs_redraw = 1;
         }
         else
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
-            selection_cursor->unk3c = 1;
+            selection_cursor->needs_redraw = 1;
         }
     }
 
     if (FieldClass15AE60::unk00 != 0)
     {
-        FieldClass15AE60::unk00->unk3f = selected;
+        FieldClass15AE60::unk00->visible = selected;
     }
 }
 
@@ -2125,13 +2125,13 @@ void ShopBuyListWindow::func_slot5c()
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
         selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
-        selection_cursor->unk3c = 1;
+        selection_cursor->needs_redraw = 1;
     }
     else
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
         selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
-        selection_cursor->unk3c = 1;
+        selection_cursor->needs_redraw = 1;
         return;
     }
 
@@ -2142,7 +2142,7 @@ void ShopBuyListWindow::func_slot5c()
     if (FieldClass15AE60::unk24 >= 0)
     {
         LibObject172410* item_name = item_names[FieldClass15AE60::unk28];
-        set_selection_marker(item_name, item_name->unk94);
+        set_selection_marker(item_name, item_name->tint);
     }
 
     if (error_sound_timer >= 0)
@@ -2225,24 +2225,24 @@ void ShopBuyListWindow::set_scroll_position(float scroll_offset)
 
     for (s32 row = 0; row < 6; row++)
     {
-        LibClass178600* row_widget = this->item_names[row];
+        LibWidget* row_widget = this->item_names[row];
         row_widget->unk18.unk04 = row_y;
-        row_widget->unk3c = 1;
+        row_widget->needs_redraw = 1;
         row_widget = this->price_displays[row];
         row_widget->unk18.unk04 = row_y;
-        row_widget->unk3c = 1;
+        row_widget->needs_redraw = 1;
         row_widget = this->multiply_labels[row];
         row_widget->unk18.unk04 = row_y;
-        row_widget->unk3c = 1;
+        row_widget->needs_redraw = 1;
         row_widget = this->quantity_displays[row];
         row_widget->unk18.unk04 = row_y;
-        row_widget->unk3c = 1;
+        row_widget->needs_redraw = 1;
         row_widget = this->separator_labels[row];
         row_widget->unk18.unk04 = row_y;
-        row_widget->unk3c = 1;
+        row_widget->needs_redraw = 1;
         row_widget = this->buy_limit_displays[row];
         row_widget->unk18.unk04 = row_y;
-        row_widget->unk3c = 1;
+        row_widget->needs_redraw = 1;
         row_y += 28.0f;
     }
 }
@@ -2306,8 +2306,8 @@ void ShopBuyListWindow::refresh_rows(s32 offset)
                 LibObject172410* item_name = this->item_names[i];
                 item_name->unkfc = item_code;
                 item_name->unkfe = 0;
-                item_name->unk3c = 1;
-                this->item_names[i]->set_color(color);
+                item_name->needs_redraw = 1;
+                this->item_names[i]->set_tint(color);
                 set_shop_number(this->price_displays[i], shop_get_buy_price(transaction, static_cast<u16>(item_code)));
                 set_shop_number(this->quantity_displays[i], shop_purchase_quantity(transaction, item_code));
                 set_shop_number(this->buy_limit_displays[i], shop_get_buy_limit(transaction, item_code));
@@ -2333,7 +2333,7 @@ s32 ShopBuyListWindow::func_slot104(u32 associated)
     FieldClass15AE60::unk3c = 1;
     LibClass1746A0* clip_region = new (0) LibClass1746A0;
     LibClass1746A0* reset_clip = new (0) LibClass1746A0;
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 608.0f, 168.0f, 88.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(clip_region, 16.0f, 16.0f, 580.0f, 140.0f);
@@ -2346,19 +2346,19 @@ s32 ShopBuyListWindow::func_slot104(u32 associated)
         item_names[row]->set_scale(SHOP_ITEM_NAME_SCALE, SHOP_ITEM_NAME_SCALE);
         set_shop_item_name_auto_fit(item_names[row], 1);
         set_shop_item_name_spacing(item_names[row], -1.0f);
-        item_names[row]->unk3f = 1;
+        item_names[row]->visible = 1;
         lib_container_attach_widget(FieldClass15AE70::unk10, item_names[row]);
         price_displays[row] = new (0) LibObject174F20;
         float row_y = 12.0f + 30.0f * row;
         price_displays[row]->init_numeric_resource_rectangle(360.0f, row_y, 126.0f, 24.0f, 0, 0, 0);
         lib_container_attach_widget(FieldClass15AE70::unk10, price_displays[row]);
-        multiply_labels[row] = new (0) LibObject178750;
+        multiply_labels[row] = new (0) LibTextWidget;
         multiply_labels[row]->init_resource_rectangle(486.0f, row_y, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_MULTIPLY, 1);
         lib_container_attach_widget(FieldClass15AE70::unk10, multiply_labels[row]);
         quantity_displays[row] = new (0) LibObject174F20;
         quantity_displays[row]->init_numeric_resource_rectangle(506.0f, row_y, 28.0f, 24.0f, 0, 0, 0);
         lib_container_attach_widget(FieldClass15AE70::unk10, quantity_displays[row]);
-        separator_labels[row] = new (0) LibObject178750;
+        separator_labels[row] = new (0) LibTextWidget;
         separator_labels[row]->init_resource_rectangle(534.0f, row_y, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_QUANTITY_SEPARATOR, 1);
         lib_container_attach_widget(FieldClass15AE70::unk10, separator_labels[row]);
         buy_limit_displays[row] = new (0) LibObject174F20;
@@ -2374,12 +2374,12 @@ s32 ShopBuyListWindow::func_slot104(u32 associated)
     FieldClass15AE60::unk04 = selection_cursor;
     lib_moving_widget_init_position(static_cast<LibClass175030*>(FieldClass15AE60::unk04), 28.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk04);
-    FieldClass15AE60::unk04->unk3f = 0;
+    FieldClass15AE60::unk04->visible = 0;
     LibClass1725D0* scrollbar = new (0) LibClass1725D0;
     FieldClass15AE60::unk00 = scrollbar;
     lib_list_indicator_init(static_cast<LibClass1725D0*>(FieldClass15AE60::unk00), 580.0f, 14.0f, 145.0f, 10.0f, 0.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk00);
-    FieldClass15AE60::unk00->unk3f = 0;
+    FieldClass15AE60::unk00->visible = 0;
     func_002CE420(&static_cast<FieldClass15AE60&>(*this), 1, 5, 378, 28);
     FieldClass15AE60::unk2b = 3;
     FieldClass15AE60::unk84 = 0;
@@ -2463,16 +2463,16 @@ s32 ShopFolWindow::func_slotf4(u32 associated)
     }
 
     FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 428.0f, 0.0f);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 40.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
-    LibObject178750* label = new (0) LibObject178750;
+    LibTextWidget* label = new (0) LibTextWidget;
     label->init_resource_rectangle(24.0f, 8.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_CURRENT_FOL, 1);
     lib_container_attach_widget(unk10, label);
-    label = new (0) LibObject178750;
+    label = new (0) LibTextWidget;
     label->init_resource_rectangle(204.0f, 8.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_TOTAL_FOL, 1);
     lib_container_attach_widget(unk10, label);
-    label = new (0) LibObject178750;
+    label = new (0) LibTextWidget;
     label->init_resource_rectangle(396.0f, 8.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_REMAINING_FOL, 1);
     lib_container_attach_widget(unk10, label);
     current_fol = new (0) LibObject174F20;
@@ -2575,11 +2575,11 @@ void ShopActionWindow::func_slot5c()
         {
             if (selected_action == 0)
             {
-                buy_label->set_color(0x288080);
+                buy_label->set_tint(0x288080);
             }
             else
             {
-                buy_label->set_color(0x808080);
+                buy_label->set_tint(0x808080);
             }
         }
 
@@ -2587,11 +2587,11 @@ void ShopActionWindow::func_slot5c()
         {
             if (selected_action == 1)
             {
-                sell_label->set_color(0x288080);
+                sell_label->set_tint(0x288080);
             }
             else
             {
-                sell_label->set_color(0x808080);
+                sell_label->set_tint(0x808080);
             }
         }
     }
@@ -2607,11 +2607,11 @@ void ShopActionWindow::func_slot5c()
 s32 ShopActionWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 220.0f, 0.0f);
-    LibClass178630* action_panel = new (0) LibClass178630;
+    LibPanel* action_panel = new (0) LibPanel;
     lib_panel_init_rectangle(action_panel, 0, 0.0f, 0.0f, 250.0f, 40.0f, 88.0f);
     lib_container_attach_widget(unk10, action_panel);
-    buy_label = new (0) LibObject178750;
-    sell_label = new (0) LibObject178750;
+    buy_label = new (0) LibTextWidget;
+    sell_label = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(buy_label, static_cast<s32>(associated), SHOP_MSG_BUY, 1, 34.0f, 8.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(sell_label, static_cast<s32>(associated), SHOP_MSG_SELL, 1, 142.0f, 8.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, buy_label);
@@ -2623,16 +2623,16 @@ s32 ShopActionWindow::func_slotf4(u32 associated)
     choice->func_0023CF50(0, 40.0f, 224.0f);
     choice->set_codes_and_z(0, 9, 0.0f, 2000, 0);
     shop_append_choice(&unk74, choice);
-    LibClass178630* category_panel = new (0) LibClass178630;
+    LibPanel* category_panel = new (0) LibPanel;
     lib_panel_init_rectangle(category_panel, 0, 250.0f, 0.0f, 358.0f, 40.0f, 88.0f);
     lib_container_attach_widget(unk10, category_panel);
     previous_category_icon = new (0) LibClass174C40;
     lib_indexed_resource_init(previous_category_icon, 280.0f, 3.0f, 10);
     lib_container_attach_widget(unk10, previous_category_icon);
-    category_label = new (0) LibObject178750;
+    category_label = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(category_label, static_cast<s32>(associated), SHOP_MSG_WEAPONS, 1, 274.0f, 8.0f, 310.0f, 8.0f);
-    category_label->set_color(0x508050);
-    category_label->set_mode(1);
+    category_label->set_tint(0x508050);
+    category_label->set_horizontal_align(1);
     lib_container_attach_widget(unk10, category_label);
     next_category_icon = new (0) LibClass174C40;
     lib_indexed_resource_init(next_category_icon, 554.0f, 3.0f, 11);
@@ -2655,9 +2655,9 @@ void ShopDescriptionWindow::func_slot5c()
     {
         if (show_parameters != 0)
         {
-            help_text->unk3f = 0;
-            description->unk3f = 0;
-            parameters_heading->unk3f = 1;
+            help_text->visible = 0;
+            description->visible = 0;
+            parameters_heading->visible = 1;
             ItemCreationAllocationRecord preview_allocation __attribute__((aligned(16)));
             preview_allocation.reset(0);
             ItemCreationCategoryRecord* item_record = shop_item_record(D_001B64F8, state->selected_item);
@@ -2670,9 +2670,9 @@ void ShopDescriptionWindow::func_slot5c()
 
             for (s32 parameter_index = 0; parameter_index < 5; parameter_index++)
             {
-                parameter_labels[parameter_index]->unk3f = 1;
-                parameter_separators[parameter_index]->unk3f = 1;
-                parameter_values[parameter_index]->unk3f = 1;
+                parameter_labels[parameter_index]->visible = 1;
+                parameter_separators[parameter_index]->visible = 1;
+                parameter_values[parameter_index]->visible = 1;
             }
         }
         else
@@ -2681,39 +2681,39 @@ void ShopDescriptionWindow::func_slot5c()
 
             if (item_description_key != description_key)
             {
-                help_text->unk3f = 0;
-                description->unk3f = 1;
+                help_text->visible = 0;
+                description->visible = 1;
                 lib_multiline_text_set_resource(description, func_slot54(), item_description_key, 8, 1);
                 LibObject174D90* description_text = description;
-                description_text->unk80 = 0.8f;
-                description_text->unk84 = 0.8f;
-                description_text->unk3c = 1;
+                description_text->draw_scale = 0.8f;
+                description_text->draw_scale_y = 0.8f;
+                description_text->needs_redraw = 1;
             }
 
             for (s32 parameter_index = 0; parameter_index < 5; parameter_index++)
             {
-                parameter_labels[parameter_index]->unk3f = 0;
-                parameter_separators[parameter_index]->unk3f = 0;
-                parameter_values[parameter_index]->unk3f = 0;
+                parameter_labels[parameter_index]->visible = 0;
+                parameter_separators[parameter_index]->visible = 0;
+                parameter_values[parameter_index]->visible = 0;
             }
 
-            parameters_heading->unk3f = 0;
+            parameters_heading->visible = 0;
         }
 
-        switch_hint->unk3f = 1;
+        switch_hint->visible = 1;
     }
     else
     {
-        help_text->unk3f = 1;
-        description->unk3f = 0;
-        switch_hint->unk3f = 0;
-        parameters_heading->unk3f = 0;
+        help_text->visible = 1;
+        description->visible = 0;
+        switch_hint->visible = 0;
+        parameters_heading->visible = 0;
 
         for (s32 parameter_index = 0; parameter_index < 5; parameter_index++)
         {
-            parameter_labels[parameter_index]->unk3f = 0;
-            parameter_separators[parameter_index]->unk3f = 0;
-            parameter_values[parameter_index]->unk3f = 0;
+            parameter_labels[parameter_index]->visible = 0;
+            parameter_separators[parameter_index]->visible = 0;
+            parameter_values[parameter_index]->visible = 0;
         }
     }
 }
@@ -2732,7 +2732,7 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
 
     FieldClass15AE70::func_slot14(associated, 0, 9, 1800, 220.0f, 80.0f, 0.0f);
     unk10->set_codes_and_z(0, 9, 0.0f, 1800, 100);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 404.0f, 140.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     description = new (0) LibObject174D90;
@@ -2741,41 +2741,41 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
     description_text->unk52c = 0.0f;
     description_text->unk524 = 0.0f;
     lib_container_attach_widget(unk10, description);
-    description->unk3f = 0;
-    help_text = new (0) LibObject178750;
+    description->visible = 0;
+    help_text = new (0) LibTextWidget;
     help_text->init_resource_rectangle(40.0f, 13.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_DESCRIPTION_HELP, 0);
     lib_container_attach_widget(unk10, help_text);
-    help_text->unk3f = 0;
-    parameters_heading = new (0) LibObject178750;
+    help_text->visible = 0;
+    parameters_heading = new (0) LibTextWidget;
     parameters_heading->init_resource_rectangle(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_BASE_PARAMETERS, 0);
-    parameters_heading->set_color(0x806080);
+    parameters_heading->set_tint(0x806080);
     parameters_heading->set_scale(0.75f, 0.75f);
     lib_container_attach_widget(unk10, parameters_heading);
-    parameters_heading->unk3f = 0;
+    parameters_heading->visible = 0;
 
     for (s32 parameter_index = 0; parameter_index < 5; parameter_index++)
     {
-        parameter_labels[parameter_index] = new (0) LibObject178750;
+        parameter_labels[parameter_index] = new (0) LibTextWidget;
         float parameter_y = 42.0f + static_cast<float>(28 * (parameter_index / 2));
         parameter_labels[parameter_index]->init_resource_rectangle(50.0f + static_cast<float>(190 * (parameter_index % 2)), parameter_y, 0.0f, 0.0f,
                                                      static_cast<s32>(associated), SHOP_MSG_ATK + parameter_index, 0);
-        parameter_labels[parameter_index]->set_color(0x805050);
+        parameter_labels[parameter_index]->set_tint(0x805050);
         lib_container_attach_widget(unk10, parameter_labels[parameter_index]);
-        parameter_labels[parameter_index]->unk3f = 0;
-        parameter_separators[parameter_index] = new (0) LibObject178750;
+        parameter_labels[parameter_index]->visible = 0;
+        parameter_separators[parameter_index] = new (0) LibTextWidget;
         parameter_separators[parameter_index]->init_resource_rectangle(100.0f + static_cast<float>(190 * (parameter_index % 2)), parameter_y, 0.0f, 0.0f,
                                                      static_cast<s32>(associated), SHOP_MSG_PARAMETER_SEPARATOR, 0);
-        parameter_separators[parameter_index]->set_color(0x805050);
+        parameter_separators[parameter_index]->set_tint(0x805050);
         lib_container_attach_widget(unk10, parameter_separators[parameter_index]);
-        parameter_separators[parameter_index]->unk3f = 0;
+        parameter_separators[parameter_index]->visible = 0;
         parameter_values[parameter_index] = new (0) LibObject174F20;
         parameter_values[parameter_index]->init_numeric_resource_rectangle(90.0f + static_cast<float>(190 * (parameter_index % 2)), parameter_y, 80.0f, 30.0f, 0,
                                                     static_cast<s32>(associated), 1);
         lib_container_attach_widget(unk10, parameter_values[parameter_index]);
-        parameter_values[parameter_index]->unk3f = 0;
+        parameter_values[parameter_index]->visible = 0;
     }
 
-    switch_hint = new (0) LibObject178750;
+    switch_hint = new (0) LibTextWidget;
     switch_hint->init_resource_rectangle(285.0f, 104.0f, 0.0f, 0.0f, static_cast<s32>(associated), SHOP_MSG_SWITCH_HELP, 0);
     lib_container_attach_widget(unk10, switch_hint);
     return 1;
@@ -2992,7 +2992,7 @@ static inline void set_shop_character_brightness(ItemCreationOptionResourceDispl
     object->unk50.unk44 = value;
     object->unk50.unk48 = value;
     object->unk50.unk4c = value;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /**
@@ -3081,7 +3081,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
             set_shop_character_brightness(character_display, 128.0f);
         }
 
-        comparison_labels[i]->unk3f = 0;
+        comparison_labels[i]->visible = 0;
     }
 
     pulse_level += pulse_step;
@@ -3153,15 +3153,15 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                 if (already_equipped)
                 {
                     lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_EQUIPPED, 0);
-                    comparison_labels[i]->set_color(0xFF8028);
-                    comparison_labels[i]->unk3f = 1;
+                    comparison_labels[i]->set_tint(0xFF8028);
+                    comparison_labels[i]->visible = 1;
                     continue;
                 }
             }
             else
             {
                 set_shop_character_brightness(character_displays[i], 50.0f);
-                comparison_labels[i]->unk3f = 0;
+                comparison_labels[i]->visible = 0;
                 continue;
             }
 
@@ -3173,12 +3173,12 @@ void ShopEquipmentPreviewWindow::func_slot5c()
             {
             case SHOP_CATEGORY_WEAPONS:
                 lib_character_recalculate_stats(&character_copy, &equipment_copy, &preview_allocation, 0);
-                comparison_labels[i]->unk3f = 1;
+                comparison_labels[i]->visible = 1;
 
                 if (shop_character_attack(character_copy) > shop_character_attack(*character))
                 {
                     lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_INCREASE, 0);
-                    comparison_labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
+                    comparison_labels[i]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
@@ -3189,7 +3189,7 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                 else
                 {
                     lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_DECREASE, 0);
-                    comparison_labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
+                    comparison_labels[i]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
@@ -3197,12 +3197,12 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                 break;
             case SHOP_CATEGORY_ARMOR:
                 lib_character_recalculate_stats(&character_copy, &equipment_copy, &preview_allocation, 1);
-                comparison_labels[i]->unk3f = 1;
+                comparison_labels[i]->visible = 1;
 
                 if (shop_character_defense(character_copy) > shop_character_defense(*character))
                 {
                     lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_INCREASE, 0);
-                    comparison_labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
+                    comparison_labels[i]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
@@ -3213,14 +3213,14 @@ void ShopEquipmentPreviewWindow::func_slot5c()
                 else
                 {
                     lib_text_set_resource(comparison_labels[i], state->get_resource_slot(), SHOP_MSG_STAT_DECREASE, 0);
-                    comparison_labels[i]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
+                    comparison_labels[i]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                          (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
                 }
 
                 break;
             case SHOP_CATEGORY_ACCESSORIES:
-                comparison_labels[i]->unk3f = 0;
+                comparison_labels[i]->visible = 0;
                 break;
             }
         }
@@ -3242,8 +3242,8 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
     pulse_level = 0;
     pulse_step = 1;
     FieldClass15AE70::func_slot14(associated, 0, 9, 2000, 16.0f, 68.0f, 0.0f);
-    unk10->LibClass174610::set_codes_and_z(0, 9, 0.0f, 2000, 200);
-    LibClass178630* panel = new (0) LibClass178630;
+    unk10->LibCallbackTransform::set_codes_and_z(0, 9, 0.0f, 2000, 200);
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 232.0f, 152.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     ShopState* state = D_001B643C->callbacks->shop;
@@ -3272,7 +3272,7 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
             ItemCreationOptionResourceDisplay* character_display = character_displays[i];
             character_display->unk50.unk30 = 0.62f;
             character_display->unk50.unk34 = 0.72f;
-            character_display->unk3c = 1;
+            character_display->needs_redraw = 1;
             character_displays[i]->unk34 = 3;
             lib_container_attach_widget(unk10, character_displays[i]);
         }
@@ -3281,14 +3281,14 @@ s32 ShopEquipmentPreviewWindow::func_slotf4(u32 associated)
             character_displays[i] = 0;
         }
 
-        comparison_labels[i] = new (0) LibObject178750;
+        comparison_labels[i] = new (0) LibTextWidget;
         comparison_labels[i]->init_resource_rectangle(20.0f + 50.0f * column, 43.0f + (12.0f + 68.0f * row), 0.0f, 0.0f,
                                            static_cast<s32>(associated), SHOP_MSG_EQUIPPED, 0);
-        LibObject178750* comparison_label = comparison_labels[i];
-        comparison_label->unk84 = 0.8f;
-        comparison_label->unk80 = 0.8f;
-        comparison_label->unk3c = 1;
-        comparison_labels[i]->unk3f = 0;
+        LibTextWidget* comparison_label = comparison_labels[i];
+        comparison_label->draw_scale_y = 0.8f;
+        comparison_label->draw_scale = 0.8f;
+        comparison_label->needs_redraw = 1;
+        comparison_labels[i]->visible = 0;
         lib_container_attach_widget(unk10, comparison_labels[i]);
     }
 
@@ -3305,7 +3305,7 @@ void shop_set_help_text(ShopScrollingWindow* object, s32 action_index)
     object->scrolling = 0;
     object->scroll_timer = 0;
     lib_text_set_resource(object->help_text, object->func_slot54(), action_index + SHOP_MSG_BUY_HELP, 1);
-    object->help_text_width = static_cast<s32>(lib_text_measure_bounds(object->help_text)->unk08) + 6;
+    object->help_text_width = static_cast<s32>(lib_text_measure_bounds(object->help_text)->width) + 6;
     object->help_action = action_index;
 }
 
@@ -3323,7 +3323,7 @@ void shop_update_help_text(ShopScrollingWindow* object)
         object->func_slot60(state->selected_action);
     }
 
-    LibObject178750* help_text = object->help_text;
+    LibTextWidget* help_text = object->help_text;
     float text_x = help_text->unk18.unk00;
     float text_y = help_text->unk18.unk04;
     float display_width = help_text->unk18.unk08;
@@ -3335,7 +3335,7 @@ void shop_update_help_text(ShopScrollingWindow* object)
         help_text->unk18.unk04 = text_y;
         help_text->unk18.unk08 = display_width;
         help_text->unk18.unk0c = display_height;
-        help_text->unk3c = 1;
+        help_text->needs_redraw = 1;
         object->scroll_timer++;
 
         if (!(static_cast<float>(object->scroll_timer) <= 120.0f))
@@ -3359,7 +3359,7 @@ void shop_update_help_text(ShopScrollingWindow* object)
     help_text->unk18.unk04 = text_y;
     help_text->unk18.unk08 = display_width;
     help_text->unk18.unk0c = display_height;
-    help_text->unk3c = 1;
+    help_text->needs_redraw = 1;
 }
 
 /**
@@ -3370,8 +3370,8 @@ void shop_update_help_text(ShopScrollingWindow* object)
 s32 ShopHelpWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
-    help_text = new (0) LibObject178750;
-    LibObject178750* title_text = new (0) LibObject178750;
+    help_text = new (0) LibTextWidget;
+    LibTextWidget* title_text = new (0) LibTextWidget;
     LibClass1746A0* clip_region = new (0) LibClass1746A0;
     LibClass1746A0* reset_clip = new (0) LibClass1746A0;
 
@@ -3380,10 +3380,10 @@ s32 ShopHelpWindow::func_slotf4(u32 associated)
         return 0;
     }
 
-    LibObject178750* shop_name = new (0) LibObject178750;
+    LibTextWidget* shop_name = new (0) LibTextWidget;
     shop_name->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), D_001B643C->callbacks->shop->shop_id + SHOP_MSG_SHOP_NAMES, 0);
     lib_container_attach_widget(unk10, shop_name);
-    shop_name_width = lib_text_measure_bounds(shop_name)->unk08;
+    shop_name_width = lib_text_measure_bounds(shop_name)->width;
     help_clip_left = 18.0f + shop_name_width;
     float right_padding = 32.0f;
     help_clip_width = 640.0f - (16.0f + (help_clip_left + right_padding));

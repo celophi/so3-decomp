@@ -426,7 +426,7 @@ void func_0023D020(FieldObject23D020* object, float first_float, float second_fl
     object->unk12C = 0;
     object->unk128 = 0;
     func_467570(object, 1, 0, 0, first_float, second_float, 0.0f);
-    lib_queue_display_object(D_001B657C, (LibClass178A90*)object);
+    lib_queue_display_object(D_001B657C, (LibTransformOwner*)object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D0C0);
@@ -443,7 +443,7 @@ inline FieldClass151C50::FieldClass151C50()
 
 inline FieldClass175070::FieldClass175070()
 {
-    unk6c = 0x6FF0;
+    type_id = 0x6FF0;
 }
 
 FieldObject23CEA0::FieldObject23CEA0()

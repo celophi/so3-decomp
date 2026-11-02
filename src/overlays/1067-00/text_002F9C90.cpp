@@ -550,7 +550,7 @@ extern "C" void func_002FD1B0(FieldFloatState5C* object, float first, float seco
     object->values[4] = fifth;
 }
 
-extern "C" LibClass178F30* D_001B6628;
+extern "C" LibDisplayManager* D_001B6628;
 
 /**
  * @brief Attach the window's auxiliary display to the resident display manager.

@@ -5,7 +5,7 @@
 
 typedef struct LibDrawState64 LibDrawState64;
 typedef struct ItemCreationClass174C40 ItemCreationClass174C40;
-typedef struct LibClass174610 LibClass174610;
+typedef struct LibCallbackTransform LibCallbackTransform;
 
 /** Partial receiver whose byte at offset 0x60 is set by func_0044C050. */
 typedef struct LibObjectByte60
@@ -53,13 +53,13 @@ void func_0044C0F0(void* object);
 /** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
 void func_0044D150(void* object);
 /** @brief Detach the transform once and mark it released. @param object Transform receiver. */
-void func_0044B1C0(LibClass174610* object);
+void func_0044B1C0(LibCallbackTransform* object);
 
 /**
  * @brief Detach the transform receiver from its parent container when attached.
  * @param object Transform receiver to detach.
  */
-void func_0044B210(LibClass174610* object);
+void func_0044B210(LibCallbackTransform* object);
 
 /**
  * @brief Apply the saved input mode, slot configuration, and input flag.
@@ -141,7 +141,7 @@ struct LibDrawState64
 #include "overlays/lib/text_004BD360.h"
 
 /** @brief Clear the intrusive owner and invoke the base transform release. @param object Transform owner to detach. */
-extern "C" void func_0044D090(LibClass178A90* object);
+extern "C" void func_0044D090(LibTransformOwner* object);
 
 /** Four scalar components stored in a LibVectorUpdateView. */
 typedef struct LibFloatVector4
@@ -165,7 +165,7 @@ typedef struct LibVectorUpdateView
 extern "C" void func_0044B190(LibVectorUpdateView* state, float x, float y);
 
 /** @brief Queue the receiver's DMA callback interface. @param object Transform receiver. @return Queue insertion result. */
-extern "C" s32 func_0044C110(LibClass174610* object);
+extern "C" s32 func_0044C110(LibCallbackTransform* object);
 
 /** Partial Lib class with vtable D_174C20 in main data; its destructor is func_00452F00. */
 class LibClass174C20
@@ -176,7 +176,7 @@ public:
 };
 
 /** Clipping widget with resident vtable at 0x1746A0. */
-class ItemCreationClass1746A0 : public LibClass178600
+class ItemCreationClass1746A0 : public LibWidget
 {
 public:
     /** @brief Initialize the widget storage and select kind 4. */
@@ -201,7 +201,7 @@ public:
 };
 
 /** Partial widget with resident vtable at 0x175110. */
-class ItemCreationClass175110 : public LibClass178600
+class ItemCreationClass175110 : public LibWidget
 {
 public:
     /** @brief Initialize the owned storage and drawing state for kind 7. */
@@ -251,7 +251,7 @@ public:
     {
         unk50.unk34 = y;
         unk50.unk30 = x;
-        unk3c = 1;
+        needs_redraw = 1;
     }
 };
 

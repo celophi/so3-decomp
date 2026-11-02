@@ -12,7 +12,7 @@
 @168@refresh_rows__18ItemTypeListWindowFi = 0x00354B50;
 @168@set_scroll_position__22ItemInstanceListWindowFf = 0x00354B60;
 @168@refresh_rows__22ItemInstanceListWindowFi = 0x00354B70;
-@144@func_003F4410__13ItemHpMpGaugeFUi = 0x00354B80;
+@144@on_packet_complete__13ItemHpMpGaugeFUi = 0x00354B80;
 @192@__dt__13ItemHpMpGaugeFv = 0x00354B90;
 @64@__dt__22ItemCoordinateSelectorFv = 0x00354BA0;
 @64@__dt__23ItemCreationClass175030Fv = 0x004673B0;

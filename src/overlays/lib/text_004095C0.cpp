@@ -508,7 +508,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413C00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413CC0);
 
-void LibClass178600::func_00413D20()
+void LibWidget::func_00413D20()
 {
 }
 

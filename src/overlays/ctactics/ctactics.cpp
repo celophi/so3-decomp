@@ -372,9 +372,9 @@ public:
  * @param index Node index.
  * @return Display payload stored in the indexed node.
  */
-static inline LibObject178750* strategy_display(TacticsStrategyWindow* object, s32 index)
+static inline LibTextWidget* strategy_display(TacticsStrategyWindow* object, s32 index)
 {
-    return static_cast<LibObject178750*>(get_text_widget_node(
+    return static_cast<LibTextWidget*>(get_text_widget_node(
         &object->unk2c, index)->value);
 }
 
@@ -386,14 +386,14 @@ static inline LibObject178750* strategy_display(TacticsStrategyWindow* object, s
  * @param width Rectangle width.
  * @param height Rectangle height.
  */
-static inline void set_widget_rectangle(LibClass178600* object, float x, float y,
+static inline void set_widget_rectangle(LibWidget* object, float x, float y,
     float width, float height)
 {
     object->unk18.unk00 = x;
     object->unk18.unk04 = y;
     object->unk18.unk08 = width;
     object->unk18.unk0c = height;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /**
@@ -405,7 +405,7 @@ static inline void set_resource_display_scale(ItemCreationOptionResourceDisplay*
 {
     object->unk50.unk34 = scale;
     object->unk50.unk30 = scale;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /** Partial aligned resource header with its size at offset 0x40. */
@@ -552,7 +552,7 @@ static inline void set_display_position(ItemCreationOptionResourceDisplay* displ
 {
     display->unk18.unk00 = x;
     display->unk18.unk04 = y;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
 }
 
 /**
@@ -567,16 +567,16 @@ static inline void highlight_candidate(TacticsLeaderWindow* window, s32 selected
 
     while (node != 0)
     {
-        LibObject175140* name = static_cast<LibObject175140*>(node->value);
+        LibStringLabel* name = static_cast<LibStringLabel*>(node->value);
 
         if (index == selected_entry)
         {
-            name->set_color(0x288080);
-            func_0023B9B0(window->cursor, selected_entry, func_00467950(name)->unk08);
+            name->set_tint(0x288080);
+            func_0023B9B0(window->cursor, selected_entry, func_00467950(name)->width);
         }
         else
         {
-            name->set_color(0x808080);
+            name->set_tint(0x808080);
         }
 
         node = node->next;
@@ -590,9 +590,9 @@ static inline void highlight_candidate(TacticsLeaderWindow* window, s32 selected
  * @param index Display index.
  * @return Name label stored in the selected list node.
  */
-static inline LibObject175140* candidate_display(TacticsLeaderWindow* object, s32 index)
+static inline LibStringLabel* candidate_display(TacticsLeaderWindow* object, s32 index)
 {
-    return static_cast<LibObject175140*>(get_widget_node_at_index(
+    return static_cast<LibStringLabel*>(get_widget_node_at_index(
         &object->unk44, index)->value);
 }
 
@@ -617,10 +617,10 @@ static inline void position_candidate_indicator(TacticsLeaderWindow* object)
     {
         LibUiRect16* position = &candidate_display(object,
             object->candidate_indices_by_slot[object->selected])->unk18;
-        LibBounds4C69B0* bounds = func_00467950(candidate_display(object,
+        LibTextExtent* bounds = func_00467950(candidate_display(object,
             object->candidate_indices_by_slot[object->selected]));
         set_widget_rectangle(object->indicator, position->unk00, position->unk04,
-            bounds->unk08, 24.0f);
+            bounds->width, 24.0f);
     }
 }
 
@@ -636,16 +636,16 @@ static inline void highlight_text(TacticsFormationWindow* window, s32 selected_e
 
     while (node != 0)
     {
-        LibObject178750* text = static_cast<LibObject178750*>(node->value);
+        LibTextWidget* text = static_cast<LibTextWidget*>(node->value);
 
         if (index == selected_entry)
         {
-            text->set_color(0x288080);
-            func_0023B9B0(window->cursor, selected_entry, lib_text_measure_bounds(text)->unk08);
+            text->set_tint(0x288080);
+            func_0023B9B0(window->cursor, selected_entry, lib_text_measure_bounds(text)->width);
         }
         else
         {
-            text->set_color(0x808080);
+            text->set_tint(0x808080);
         }
 
         node = node->next;
@@ -770,15 +770,15 @@ void TacticsExitConfirmWindow::func_slotf8(s16 selected)
 
     while (node != 0)
     {
-        LibObject178750* text = static_cast<LibObject178750*>(node->value);
+        LibTextWidget* text = static_cast<LibTextWidget*>(node->value);
 
         if (index == selected)
         {
-            text->set_color(0x288080);
+            text->set_tint(0x288080);
         }
         else
         {
-            text->set_color(0x808080);
+            text->set_tint(0x808080);
         }
 
         node = node->next;
@@ -828,7 +828,7 @@ u8 TacticsExitConfirmWindow::func_slotb4()
     FieldClass15AE70::func_slot18(0, 0x7F);
     LibClass175030* movement = static_cast<TacticsAssociatedMovementRef*>(func_slot44())->movement;
     movement->unk30 = 128.0f;
-    movement->unk3c = 1;
+    movement->needs_redraw = 1;
     FieldClass153E30* state = D_001B643C->callbacks->state;
     state->func_00263C70(func_slot44());
     field_queue_window_removal(reinterpret_cast<FieldWindowRemovalContext*>(D_001B643C->callbacks), this);
@@ -894,8 +894,8 @@ s32 TacticsExitConfirmWindow::func_slotf4(u32 associated, float x, float y,
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
     LibWidgetColors4C5590 colors = g_tactics_exit_confirm_title_colors;
-    LibClass178630* title_panel = new (0) LibClass178630;
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* title_panel = new (0) LibPanel;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 290.0f, 208.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     append_panel_widget_node(&unk14, panel);
@@ -903,10 +903,10 @@ s32 TacticsExitConfirmWindow::func_slotf4(u32 associated, float x, float y,
     lib_panel_set_colors(title_panel, &colors);
     lib_container_attach_widget(unk10, title_panel);
     append_panel_widget_node(&unk14, title_panel);
-    LibObject178750* first = new (0) LibObject178750;
-    LibObject178750* second = new (0) LibObject178750;
-    LibObject178750* heading = new (0) LibObject178750;
-    LibObject178750* notice = new (0) LibObject178750;
+    LibTextWidget* first = new (0) LibTextWidget;
+    LibTextWidget* second = new (0) LibTextWidget;
+    LibTextWidget* heading = new (0) LibTextWidget;
+    LibTextWidget* notice = new (0) LibTextWidget;
     grid = new (0) FieldObject23CEA0;
 
     if (first == 0 || second == 0 || heading == 0 || grid == 0)
@@ -918,7 +918,7 @@ s32 TacticsExitConfirmWindow::func_slotf4(u32 associated, float x, float y,
     lib_text_init_resource_rectangle(second, associated, TACTICS_MSG_NO, 0, 110.0f, 168.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(heading, associated, text_key, 0, 24.0f, 64.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(notice, associated, TACTICS_MSG_CONFIRM_EXIT, 0, 0.0f, 8.0f, 290.0f, 40.0f);
-    notice->set_mode(1);
+    notice->set_horizontal_align(1);
     lib_container_attach_widget(unk10, first);
     lib_container_attach_widget(unk10, second);
     lib_container_attach_widget(unk10, heading);
@@ -1023,7 +1023,7 @@ u8 TacticsLeaderWindow::func_slotb0()
 s32 TacticsLeaderWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 200.0f, 136.0f, 8);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
 
     if (panel == 0)
     {
@@ -1033,7 +1033,7 @@ s32 TacticsLeaderWindow::func_slotf4(u32 associated)
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 232.0f, 148.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     append_panel_widget_node(&unk14, panel);
-    LibClass178630* title_panel = new (0) LibClass178630;
+    LibPanel* title_panel = new (0) LibPanel;
 
     if (title_panel == 0)
     {
@@ -1045,7 +1045,7 @@ s32 TacticsLeaderWindow::func_slotf4(u32 associated)
     lib_panel_set_colors(title_panel, &colors);
     lib_container_attach_widget(unk10, title_panel);
     append_panel_widget_node(&unk14, title_panel);
-    LibObject178750* title = new (0) LibObject178750;
+    LibTextWidget* title = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(title, associated, TACTICS_MSG_SET_LEADER_TITLE, 1, 42.0f, 8.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, title);
 
@@ -1067,7 +1067,7 @@ s32 TacticsLeaderWindow::func_slotf4(u32 associated)
 
         if (character_id != 0)
         {
-            LibObject175140* name = new (0) LibObject175140;
+            LibStringLabel* name = new (0) LibStringLabel;
             float y = 48.0f + 28.0f * candidate_count;
             name->func_00467AD0(24.0f, y, 0.0f, 0.0f,
                 reinterpret_cast<const char*>(&static_cast<TacticsCharacterEquipment*>(
@@ -1149,7 +1149,7 @@ u8 TacticsFormationWindow::func_slotb8()
     if (widget != 0)
     {
         widget->unkd0 = 0x32;
-        widget->unk3c = 1;
+        widget->needs_redraw = 1;
     }
 
     FieldObject23CEA0* parent_grid = grid;
@@ -1245,11 +1245,11 @@ u8 TacticsFormationWindow::func_slotb0()
 
     selected = grid->unk114;
     D_001B643C->state->formation = selected;
-    LibUiRect16* position = &static_cast<LibObject178750*>(get_text_widget_node(
+    LibUiRect16* position = &static_cast<LibTextWidget*>(get_text_widget_node(
         &unk2c, selected)->value)->unk18;
-    LibBounds4C69B0* bounds = lib_text_measure_bounds(static_cast<LibObject178750*>(get_text_widget_node(
+    LibTextExtent* bounds = lib_text_measure_bounds(static_cast<LibTextWidget*>(get_text_widget_node(
         &unk2c, selected)->value));
-    set_widget_rectangle(indicator, position->unk00, position->unk04, bounds->unk08, 24.0f);
+    set_widget_rectangle(indicator, position->unk00, position->unk04, bounds->width, 24.0f);
     return 1;
 }
 
@@ -1299,7 +1299,7 @@ void TacticsFormationWindow::func_slot64()
     if (widget != 0)
     {
         widget->unkd0 = 0x22;
-        widget->unk3c = 1;
+        widget->needs_redraw = 1;
     }
 }
 
@@ -1381,10 +1381,10 @@ void set_leader(TacticsFormationWindow* object, u32 character_id)
         }
     }
 
-    LibObject175140* label = object->label;
-    label->unkfc =
+    LibStringLabel* label = object->label;
+    label->text =
         static_cast<TacticsCharacterEquipment*>(object->record_selection->unk04)[static_cast<s16>(selected)].character_name;
-    label->unk3c = 1;
+    label->needs_redraw = 1;
 }
 
 /**
@@ -1401,11 +1401,11 @@ void refresh_formation_display(TacticsFormationWindow* object)
         refresh_formation(object, selected_entry);
     }
 
-    LibUiRect16* position = &static_cast<LibObject178750*>(get_text_widget_node(
+    LibUiRect16* position = &static_cast<LibTextWidget*>(get_text_widget_node(
         &object->unk2c, object->selected)->value)->unk18;
-    LibBounds4C69B0* bounds = lib_text_measure_bounds(static_cast<LibObject178750*>(get_text_widget_node(
+    LibTextExtent* bounds = lib_text_measure_bounds(static_cast<LibTextWidget*>(get_text_widget_node(
         &object->unk2c, object->selected)->value));
-    set_widget_rectangle(object->indicator, position->unk00, position->unk04, bounds->unk08, 24.0f);
+    set_widget_rectangle(object->indicator, position->unk00, position->unk04, bounds->width, 24.0f);
 }
 
 /**
@@ -1421,7 +1421,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     }
 
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 9);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
 
     if (panel == 0)
     {
@@ -1431,7 +1431,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 288.0f, 392.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     append_panel_widget_node(&unk14, panel);
-    LibClass178630* resource_panel = new (0) LibClass178630;
+    LibPanel* resource_panel = new (0) LibPanel;
 
     if (resource_panel == 0)
     {
@@ -1444,14 +1444,14 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
 
     for (s32 index = 0; index < 10; index++)
     {
-        LibObject178750* display = new (0) LibObject178750;
+        LibTextWidget* display = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(display, associated, TACTICS_MSG_FORMATION_NAME_BASE + index, 0,
             24.0f, 24.0f + 28.0f * index, 0.0f, 0.0f);
         lib_container_attach_widget(unk10, display);
         append_text_widget_node(&unk2c, display);
     }
 
-    title = new (0) LibObject178750;
+    title = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(title, associated, TACTICS_MSG_FORMATION_HELP_BASE, 0, 256.0f, 16.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, title);
     grid = new (0) FieldObject23CEA0;
@@ -1474,7 +1474,7 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     resource_widget = new (0) ItemCreationClass174C40;
     lib_indexed_resource_init(resource_widget, 32.0f, 348.0f, 0x22);
     lib_container_attach_widget(unk10, resource_widget);
-    LibObject178750* resource_heading = new (0) LibObject178750;
+    LibTextWidget* resource_heading = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(resource_heading, associated, TACTICS_MSG_SET_LEADER, 0, 72.0f, 352.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, resource_heading);
     u8 saved_entry = D_001B643C->state->leader_character_id;
@@ -1494,11 +1494,11 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     base_x = 320.0f;
     base_y = 132.0f;
     float heading_y = base_y - 24.0f;
-    LibObject178750* selected_heading = new (0) LibObject178750;
+    LibTextWidget* selected_heading = new (0) LibTextWidget;
     selected_heading->init_resource_rectangle(322.0f, heading_y, 0.0f, 0.0f, associated, TACTICS_MSG_LEADER, 1);
-    selected_heading->set_color(0x288080);
+    selected_heading->set_tint(0x288080);
     lib_container_attach_widget(unk10, selected_heading);
-    label = new (0) LibObject175140;
+    label = new (0) LibStringLabel;
     label->func_00467AD0(434.0f, heading_y, 0.0f, 0.0f,
         static_cast<TacticsCharacterEquipment*>(record_selection->unk04)[static_cast<s16>(resource_index)].character_name, 0);
     lib_container_attach_widget(unk10, label);
@@ -1752,11 +1752,11 @@ u8 TacticsReplaceWindow::func_slotb4()
         second_target->unk10 = -128.0f;
         second_target->unk14 = -128.0f;
         second_target->unk35 = 1;
-        second_target->unk3c = 1;
-        second_selector->unk3f = 0;
+        second_target->needs_redraw = 1;
+        second_selector->visible = 0;
         LibClass175030* first_target = first_selector;
         first_target->unk30 = 128.0f;
-        first_target->unk3c = 1;
+        first_target->needs_redraw = 1;
         use_second = 0;
         source_record_index = -1;
         destination_record_index = -1;
@@ -1789,7 +1789,7 @@ u8 TacticsReplaceWindow::func_slotb4()
         child->func_slot40(this);
         LibClass175030* first_target = first_selector;
         first_target->unk30 = 64.0f;
-        first_target->unk3c = 1;
+        first_target->needs_redraw = 1;
         D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
     }
@@ -1947,11 +1947,11 @@ u8 TacticsReplaceWindow::func_slotb0()
         second_target->unk10 = -128.0f;
         second_target->unk14 = -128.0f;
         second_target->unk35 = 1;
-        second_target->unk3c = 1;
-        second_selector->unk3f = 0;
+        second_target->needs_redraw = 1;
+        second_selector->visible = 0;
         LibClass175030* first_target = first_selector;
         first_target->unk30 = 128.0f;
-        first_target->unk3c = 1;
+        first_target->needs_redraw = 1;
         use_second = 0;
         source_record_index = -1;
         destination_record_index = -1;
@@ -1965,7 +1965,7 @@ u8 TacticsReplaceWindow::func_slotb0()
         second_target->unk10 = x;
         second_target->unk14 = y;
         second_target->unk35 = 1;
-        second_target->unk3c = 1;
+        second_target->needs_redraw = 1;
         s32 index = (s32)(24.0f + x);
         s32 direct = 1;
 
@@ -1975,12 +1975,12 @@ u8 TacticsReplaceWindow::func_slotb0()
         }
 
         func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(second_selector), index, direct);
-        second_selector->unk3f = 1;
+        second_selector->visible = 1;
         source_record_index = first_selector->selected;
         func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(second_selector), source_record_index, 1);
         first_target = first_selector;
         first_target->unk30 = 64.0f;
-        first_target->unk3c = 1;
+        first_target->needs_redraw = 1;
         use_second = 1;
     }
 
@@ -2003,27 +2003,27 @@ void TacticsReplaceWindow::func_slot5c()
 
         for (s32 i = 0; i < 8; i++)
         {
-            LibObject175140* character_name = static_cast<LibObject175140*>(get_widget_node_at_index(
+            LibStringLabel* character_name = static_cast<LibStringLabel*>(get_widget_node_at_index(
                 &unk44, i)->value);
-            LibObject178750* empty_marker = static_cast<LibObject178750*>(get_text_widget_node(
+            LibTextWidget* empty_marker = static_cast<LibTextWidget*>(get_text_widget_node(
                 &unk2c, i)->value);
-            LibObject178750* level_label = static_cast<LibObject178750*>(get_text_widget_node(
+            LibTextWidget* level_label = static_cast<LibTextWidget*>(get_text_widget_node(
                 &level_label_list, i)->value);
             LibObject174F20* level_value = static_cast<LibObject174F20*>(get_stat_value_node(
                 &level_value_list, i)->value);
-            LibObject178750* hp_label = static_cast<LibObject178750*>(get_text_widget_node(
+            LibTextWidget* hp_label = static_cast<LibTextWidget*>(get_text_widget_node(
                 &hp_label_list, i)->value);
-            LibObject178750* mp_label = static_cast<LibObject178750*>(get_text_widget_node(
+            LibTextWidget* mp_label = static_cast<LibTextWidget*>(get_text_widget_node(
                 &mp_label_list, i)->value);
             LibObject174F20* current_hp_value = static_cast<LibObject174F20*>(get_stat_value_node(
                 &hp_value_list, i)->value);
-            LibObject178750* hp_separator = static_cast<LibObject178750*>(get_text_widget_node(
+            LibTextWidget* hp_separator = static_cast<LibTextWidget*>(get_text_widget_node(
                 &hp_separator_text_list, i)->value);
             LibObject174F20* max_hp_value = static_cast<LibObject174F20*>(get_stat_value_node(
                 &max_hp_value_list, i)->value);
             LibObject174F20* current_mp_value = static_cast<LibObject174F20*>(get_stat_value_node(
                 &mp_value_list, i)->value);
-            LibObject178750* mp_separator = static_cast<LibObject178750*>(get_text_widget_node(
+            LibTextWidget* mp_separator = static_cast<LibTextWidget*>(get_text_widget_node(
                 &mp_separator_text_list, i)->value);
             LibObject174F20* max_mp_value = static_cast<LibObject174F20*>(get_stat_value_node(
                 &max_mp_value_list, i)->value);
@@ -2031,30 +2031,30 @@ void TacticsReplaceWindow::func_slot5c()
 
             if (character_records[i].stat_limit_type == 0 && character_id != 0)
             {
-                character_name->unkfc = equipment_records[i].character_name;
-                character_name->unk3c = 1;
-                character_name->unk3f = 1;
-                empty_marker->unk3f = 0;
-                level_label->unk3f = 1;
+                character_name->text = equipment_records[i].character_name;
+                character_name->needs_redraw = 1;
+                character_name->visible = 1;
+                empty_marker->visible = 0;
+                level_label->visible = 1;
                 level_value->numeric_value = character_records[i].get_level();
-                level_value->unk3c = 1;
-                level_value->unk3f = 1;
-                hp_label->unk3f = 1;
-                mp_label->unk3f = 1;
+                level_value->needs_redraw = 1;
+                level_value->visible = 1;
+                hp_label->visible = 1;
+                mp_label->visible = 1;
                 current_hp_value->numeric_value = character_records[i].get_hp();
-                current_hp_value->unk3c = 1;
-                current_hp_value->unk3f = 1;
-                hp_separator->unk3f = 1;
+                current_hp_value->needs_redraw = 1;
+                current_hp_value->visible = 1;
+                hp_separator->visible = 1;
                 max_hp_value->numeric_value = character_records[i].get_max_hp();
-                max_hp_value->unk3c = 1;
-                max_hp_value->unk3f = 1;
+                max_hp_value->needs_redraw = 1;
+                max_hp_value->visible = 1;
                 current_mp_value->numeric_value = character_records[i].get_mp();
-                current_mp_value->unk3c = 1;
-                current_mp_value->unk3f = 1;
-                mp_separator->unk3f = 1;
+                current_mp_value->needs_redraw = 1;
+                current_mp_value->visible = 1;
+                mp_separator->visible = 1;
                 max_mp_value->numeric_value = character_records[i].get_max_mp();
-                max_mp_value->unk3c = 1;
-                max_mp_value->unk3f = 1;
+                max_mp_value->needs_redraw = 1;
+                max_mp_value->visible = 1;
                 void* allocation;
                 FieldResourceRecord* record;
 
@@ -2062,43 +2062,43 @@ void TacticsReplaceWindow::func_slot5c()
                 {
                     allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id + 0x30));
                     record = field_find_resource_record(D_001B643C->resources, 4);
-                    character_name->set_color(0x505080);
+                    character_name->set_tint(0x505080);
                 }
                 else
                 {
                     allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id));
                     record = field_find_resource_record(D_001B643C->resources, 4);
-                    character_name->set_color(0x808080);
+                    character_name->set_tint(0x808080);
                 }
 
                 func_002D5CF0(resource_displays[i], allocation, record, static_cast<u8>(character_id));
-                resource_displays[i]->unk3f = 1;
+                resource_displays[i]->visible = 1;
                 row_character_ids[i] = character_id;
             }
             else
             {
-                character_name->unk3f = 0;
-                empty_marker->unk3f = 1;
-                level_label->unk3f = 0;
-                level_value->unk3f = 0;
-                hp_label->unk3f = 0;
-                mp_label->unk3f = 0;
-                current_hp_value->unk3f = 0;
-                hp_separator->unk3f = 0;
-                max_hp_value->unk3f = 0;
-                current_mp_value->unk3f = 0;
-                mp_separator->unk3f = 0;
-                max_mp_value->unk3f = 0;
-                resource_displays[i]->unk3f = 0;
+                character_name->visible = 0;
+                empty_marker->visible = 1;
+                level_label->visible = 0;
+                level_value->visible = 0;
+                hp_label->visible = 0;
+                mp_label->visible = 0;
+                current_hp_value->visible = 0;
+                hp_separator->visible = 0;
+                max_hp_value->visible = 0;
+                current_mp_value->visible = 0;
+                mp_separator->visible = 0;
+                max_mp_value->visible = 0;
+                resource_displays[i]->visible = 0;
                 row_character_ids[i] = 0;
             }
 
             if (i >= 3)
             {
-                hp_separator->unk3f = 0;
-                max_hp_value->unk3f = 0;
-                mp_separator->unk3f = 0;
-                max_mp_value->unk3f = 0;
+                hp_separator->visible = 0;
+                max_hp_value->visible = 0;
+                mp_separator->visible = 0;
+                max_mp_value->visible = 0;
             }
         }
 
@@ -2130,7 +2130,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
 
     for (s32 index = 0; index < 8; index++)
     {
-        LibClass178630* panel = new (0) LibClass178630;
+        LibPanel* panel = new (0) LibPanel;
 
         if (panel == 0)
         {
@@ -2166,17 +2166,17 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
 
         append_panel_widget_node(&unk14, panel);
         lib_container_attach_widget(unk10, panel);
-        LibObject175140* character_name_label = new (0) LibObject175140;
-        LibObject178750* empty_marker = new (0) LibObject178750;
-        LibObject178750* level_label = new (0) LibObject178750;
+        LibStringLabel* character_name_label = new (0) LibStringLabel;
+        LibTextWidget* empty_marker = new (0) LibTextWidget;
+        LibTextWidget* level_label = new (0) LibTextWidget;
         LibObject174F20* level_value = new (0) LibObject174F20;
-        LibObject178750* hp_label = new (0) LibObject178750;
-        LibObject178750* mp_label = new (0) LibObject178750;
+        LibTextWidget* hp_label = new (0) LibTextWidget;
+        LibTextWidget* mp_label = new (0) LibTextWidget;
         LibObject174F20* current_hp_value = new (0) LibObject174F20;
-        LibObject178750* hp_separator = new (0) LibObject178750;
+        LibTextWidget* hp_separator = new (0) LibTextWidget;
         LibObject174F20* max_hp_value = new (0) LibObject174F20;
         LibObject174F20* current_mp_value = new (0) LibObject174F20;
-        LibObject178750* mp_separator = new (0) LibObject178750;
+        LibTextWidget* mp_separator = new (0) LibTextWidget;
         LibObject174F20* max_mp_value = new (0) LibObject174F20;
         resource_displays[index] = new (0) ItemCreationOptionResourceDisplay;
 
@@ -2233,10 +2233,10 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         character_name_label->func_00467AD0(label_x, label_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
         character_name_label->set_scale(0.8f, 0.8f);
         set_widget_rectangle(empty_marker, column_x, empty_y, width, 24.0f);
-        empty_marker->set_mode(1);
+        empty_marker->set_horizontal_align(1);
         level_label->init_resource_rectangle(first_x, first_y, 0.0f, 0.0f, source, TACTICS_MSG_LEVEL, 0);
         level_label->set_scale(0.8f, 0.8f);
-        level_label->set_color(0x806080);
+        level_label->set_tint(0x806080);
 
         if (index < 3)
         {
@@ -2250,7 +2250,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         level_value->set_scale(0.8f, 0.8f);
         hp_label->init_resource_rectangle(second_x, second_y, 0.0f, 0.0f, source, TACTICS_MSG_HP, 0);
         hp_label->set_scale(0.8f, 0.8f);
-        hp_label->set_color(0x806080);
+        hp_label->set_tint(0x806080);
         float value_width;
 
         if (index < 3)
@@ -2271,7 +2271,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         max_hp_value->set_scale(0.8f, 0.8f);
         mp_label->init_resource_rectangle(third_x, third_y, 0.0f, 0.0f, source, TACTICS_MSG_MP, 0);
         mp_label->set_scale(0.8f, 0.8f);
-        mp_label->set_color(0x806080);
+        mp_label->set_tint(0x806080);
 
         if (index < 3)
         {
@@ -2291,30 +2291,30 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
 
         if (character_records[index].stat_limit_type == 0 && character_id != 0)
         {
-            character_name_label->unkfc = equipment_records[index].character_name;
-            character_name_label->unk3c = 1;
-            character_name_label->unk3f = 1;
-            empty_marker->unk3f = 0;
-            level_label->unk3f = 1;
+            character_name_label->text = equipment_records[index].character_name;
+            character_name_label->needs_redraw = 1;
+            character_name_label->visible = 1;
+            empty_marker->visible = 0;
+            level_label->visible = 1;
             level_value->numeric_value = character_records[index].get_level();
-            level_value->unk3c = 1;
-            level_value->unk3f = 1;
-            hp_label->unk3f = 1;
-            mp_label->unk3f = 1;
+            level_value->needs_redraw = 1;
+            level_value->visible = 1;
+            hp_label->visible = 1;
+            mp_label->visible = 1;
             current_hp_value->numeric_value = character_records[index].get_hp();
-            current_hp_value->unk3c = 1;
-            current_hp_value->unk3f = 1;
-            hp_separator->unk3f = 1;
+            current_hp_value->needs_redraw = 1;
+            current_hp_value->visible = 1;
+            hp_separator->visible = 1;
             max_hp_value->numeric_value = character_records[index].get_max_hp();
-            max_hp_value->unk3c = 1;
-            max_hp_value->unk3f = 1;
+            max_hp_value->needs_redraw = 1;
+            max_hp_value->visible = 1;
             current_mp_value->numeric_value = character_records[index].get_mp();
-            current_mp_value->unk3c = 1;
-            current_mp_value->unk3f = 1;
-            mp_separator->unk3f = 1;
+            current_mp_value->needs_redraw = 1;
+            current_mp_value->visible = 1;
+            mp_separator->visible = 1;
             max_mp_value->numeric_value = character_records[index].get_max_mp();
-            max_mp_value->unk3c = 1;
-            max_mp_value->unk3f = 1;
+            max_mp_value->needs_redraw = 1;
+            max_mp_value->visible = 1;
             void* allocation;
             FieldResourceRecord* record;
 
@@ -2322,13 +2322,13 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
             {
                 allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id + 0x30));
                 record = field_find_resource_record(D_001B643C->resources, 4);
-                character_name_label->set_color(0x505080);
+                character_name_label->set_tint(0x505080);
             }
             else
             {
                 allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id));
                 record = static_cast<FieldResourceRecord*>(field_get_builtin_resource_data(D_001B643C->resources, 0));
-                character_name_label->set_color(0x808080);
+                character_name_label->set_tint(0x808080);
             }
 
             resource_displays[index]->unkcc = allocation;
@@ -2348,18 +2348,18 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         }
         else
         {
-            character_name_label->unk3f = 0;
-            empty_marker->unk3f = 1;
-            level_label->unk3f = 0;
-            level_value->unk3f = 0;
-            hp_label->unk3f = 0;
-            mp_label->unk3f = 0;
-            current_hp_value->unk3f = 0;
-            hp_separator->unk3f = 0;
-            max_hp_value->unk3f = 0;
-            current_mp_value->unk3f = 0;
-            mp_separator->unk3f = 0;
-            max_mp_value->unk3f = 0;
+            character_name_label->visible = 0;
+            empty_marker->visible = 1;
+            level_label->visible = 0;
+            level_value->visible = 0;
+            hp_label->visible = 0;
+            mp_label->visible = 0;
+            current_hp_value->visible = 0;
+            hp_separator->visible = 0;
+            max_hp_value->visible = 0;
+            current_mp_value->visible = 0;
+            mp_separator->visible = 0;
+            max_mp_value->visible = 0;
             void* allocation = field_get_aligned_allocation(D_001B643C->resources, 1);
             FieldResourceRecord* record = static_cast<FieldResourceRecord*>(field_get_builtin_resource_data(D_001B643C->resources, 0));
             resource_displays[index]->unkcc = allocation;
@@ -2375,7 +2375,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
                 set_resource_display_scale(resource_displays[index], 0.68f);
             }
 
-            resource_displays[index]->unk3f = 0;
+            resource_displays[index]->visible = 0;
         }
 
         if (index < 3)
@@ -2385,10 +2385,10 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         }
         else
         {
-            hp_separator->unk3f = 0;
-            max_hp_value->unk3f = 0;
-            mp_separator->unk3f = 0;
-            max_mp_value->unk3f = 0;
+            hp_separator->visible = 0;
+            max_hp_value->visible = 0;
+            mp_separator->visible = 0;
+            max_mp_value->visible = 0;
             append_position(first_selector, 20.0f + column_x, 18.0f + label_y);
             append_position(second_selector, 20.0f + column_x, 18.0f + label_y);
         }
@@ -2420,8 +2420,8 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, resource_displays[index]);
     }
 
-    LibObject178750* first_title = new (0) LibObject178750;
-    LibObject178750* second_title = new (0) LibObject178750;
+    LibTextWidget* first_title = new (0) LibTextWidget;
+    LibTextWidget* second_title = new (0) LibTextWidget;
 
     if (first_title == 0 || second_title == 0)
     {
@@ -2430,19 +2430,19 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
 
     first_title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, TACTICS_MSG_LEFT_COLUMN_TITLE, 1);
     set_widget_rectangle(first_title, 16.0f, -20.0f, 304.0f, 16.0f);
-    first_title->set_mode(0);
-    first_title->set_color(0x288080);
+    first_title->set_horizontal_align(0);
+    first_title->set_tint(0x288080);
     second_title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, source, TACTICS_MSG_RIGHT_COLUMN_TITLE, 1);
     set_widget_rectangle(second_title, 320.0f, -20.0f, 304.0f, 16.0f);
-    second_title->set_mode(0);
-    second_title->set_color(0x288080);
+    second_title->set_horizontal_align(0);
+    second_title->set_tint(0x288080);
     lib_container_attach_widget(unk10, first_title);
     lib_container_attach_widget(unk10, second_title);
     append_text_widget_node(&unk2c, first_title);
     append_text_widget_node(&unk2c, second_title);
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(first_selector), 0, 1);
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(second_selector), 0, 1);
-    second_selector->unk3f = 0;
+    second_selector->visible = 0;
     return 1;
 }
 
@@ -2543,17 +2543,17 @@ void highlight_strategy(TacticsStrategyWindow* object)
             break;
         }
 
-        LibObject178750* display = static_cast<LibObject178750*>(node->value);
+        LibTextWidget* display = static_cast<LibTextWidget*>(node->value);
 
         if (index == selected)
         {
-            display->set_color(0x288080);
+            display->set_tint(0x288080);
             func_0023B9B0(object->cursor, index,
-                lib_text_measure_bounds(display)->unk08);
+                lib_text_measure_bounds(display)->width);
         }
         else
         {
-            display->set_color(0x808080);
+            display->set_tint(0x808080);
         }
 
         node = node->next;
@@ -2589,8 +2589,8 @@ void TacticsStrategyWindow::func_slot68()
  */
 u8 TacticsStrategyWindow::func_slotb4()
 {
-    cursor->unk3f = 0;
-    selection_indicator->unk3f = 0;
+    cursor->visible = 0;
+    selection_indicator->visible = 0;
     FieldClass15AE70::func_slot18(0, 0x7F);
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot64();
     FieldClass153E30* state = D_001B643C->callbacks->state;
@@ -2608,7 +2608,7 @@ u8 TacticsStrategyWindow::func_slotb0()
     TacticsChangeWindow* parent = static_cast<TacticsChangeWindow*>(func_slot44());
     TacticsCharacterEquipment* record = &parent->equipment_records[parent->selected];
     record->battle_strategy = grid->unk114;
-    LibObject178750* display = static_cast<LibObject178750*>(get_text_widget_node(
+    LibTextWidget* display = static_cast<LibTextWidget*>(get_text_widget_node(
         &parent->unk2c, parent->selected)->value);
     TacticsCharacterRecord* records = parent->character_records;
     s16 record_index = parent->selected;
@@ -2625,8 +2625,8 @@ u8 TacticsStrategyWindow::func_slotb0()
 
     u32 key = parent->get_strategy_text_key(character_id, record_index);
     lib_text_set_resource(display, parent->func_slot54(), key, 0);
-    cursor->unk3f = 0;
-    selection_indicator->unk3f = 0;
+    cursor->visible = 0;
+    selection_indicator->visible = 0;
     FieldClass15AE70::func_slot18(0, 0x7F);
     static_cast<FieldClass15AE70*>(func_slot44())->func_slot64();
     FieldClass153E30* state = D_001B643C->callbacks->state;
@@ -2662,28 +2662,28 @@ s32 TacticsStrategyWindow::set_character(s16 record_index, u8 initial_entry)
         for (s32 index = 0; index < 6; index++)
         {
             keys[index] = first_key + index;
-            LibObject178750* display = strategy_display(this, index);
+            LibTextWidget* display = strategy_display(this, index);
             lib_text_set_resource(display, func_slot54(), keys[index], 0);
         }
     }
 
     for (s32 index = 0; index < 6; index++)
     {
-        LibObject178750* display = strategy_display(this, index);
-        display->set_color(0x808080);
+        LibTextWidget* display = strategy_display(this, index);
+        display->set_tint(0x808080);
     }
 
     LibUiRect16* rectangle = &strategy_display(this, selected_entry)->unk18;
-    LibBounds4C69B0* bounds = lib_text_measure_bounds(strategy_display(this, selected_entry));
+    LibTextExtent* bounds = lib_text_measure_bounds(strategy_display(this, selected_entry));
     FieldObject23CEA0* selection = grid;
     selection->index = selected_entry;
     func_0023CB30(selection);
     func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(grid));
     set_widget_rectangle(selection_indicator, rectangle->unk00, rectangle->unk04,
-        bounds->unk08, bounds->unk0c);
-    LibObject178750* selected = strategy_display(this, selected_entry);
-    selected->set_color(0x288080);
-    return func_0023B9B0(cursor, selected_entry, bounds->unk08);
+        bounds->width, bounds->height);
+    LibTextWidget* selected = strategy_display(this, selected_entry);
+    selected->set_tint(0x288080);
+    return func_0023B9B0(cursor, selected_entry, bounds->width);
 }
 
 /**
@@ -2702,16 +2702,16 @@ s32 TacticsStrategyWindow::func_slotf4(u32 associated)
     }
 
     FieldClass15AE70::func_slot10(associated, 138.0f, 148.0f, 7);
-    LibClass178630* panel = new (0) LibClass178630;
-    text[0] = new (0) LibObject178750;
-    text[1] = new (0) LibObject178750;
-    text[2] = new (0) LibObject178750;
-    text[3] = new (0) LibObject178750;
-    text[4] = new (0) LibObject178750;
-    text[5] = new (0) LibObject178750;
+    LibPanel* panel = new (0) LibPanel;
+    text[0] = new (0) LibTextWidget;
+    text[1] = new (0) LibTextWidget;
+    text[2] = new (0) LibTextWidget;
+    text[3] = new (0) LibTextWidget;
+    text[4] = new (0) LibTextWidget;
+    text[5] = new (0) LibTextWidget;
     grid = new (0) FieldObject23CEA0;
-    LibClass178630* title_panel = new (0) LibClass178630;
-    LibObject178750* title = new (0) LibObject178750;
+    LibPanel* title_panel = new (0) LibPanel;
+    LibTextWidget* title = new (0) LibTextWidget;
     selection_indicator = new (0) ItemCreationClass172600;
     cursor = new (0) FieldObject23BE00;
 
@@ -2755,12 +2755,12 @@ s32 TacticsStrategyWindow::func_slotf4(u32 associated)
     append_text_widget_node(&unk2c, text[4]);
     append_text_widget_node(&unk2c, text[5]);
     lib_text_init_resource_rectangle(title, associated, TACTICS_MSG_TACTICS_MENU, 1, 0.0f, 12.0f, 364.0f, 48.0f);
-    title->unk9c = 1;
-    title->unk3c = 1;
+    title->horizontal_align = 1;
+    title->needs_redraw = 1;
     lib_container_attach_widget(unk10, title);
     append_text_widget_node(&unk2c, title);
-    LibBounds4C69B0* bounds = lib_text_measure_bounds(text[0]);
-    func_0041AD10(selection_indicator, bounds->unk00, bounds->unk04, bounds->unk08, 24.0f);
+    LibTextExtent* bounds = lib_text_measure_bounds(text[0]);
+    func_0041AD10(selection_indicator, bounds->unk00, bounds->unk04, bounds->width, 24.0f);
     lib_container_attach_widget(unk10, selection_indicator);
     grid->func_0023CE80(1, 6);
     grid->func_0023CE60(0.0f, 30.0f);
@@ -2773,8 +2773,8 @@ s32 TacticsStrategyWindow::func_slotf4(u32 associated)
     append_grid_widget_node(&unk74, grid);
     cursor->func_0023BB20(28.0f, 60.0f, 192.0f, 1.0f, grid, 0x288080);
     lib_container_attach_widget(unk10, cursor);
-    cursor->unk3f = 0;
-    selection_indicator->unk3f = 0;
+    cursor->visible = 0;
+    selection_indicator->visible = 0;
     FieldClass15AE70::func_slot18(0, 0x7F);
     return 1;
 }
@@ -2811,13 +2811,13 @@ void TacticsChangeWindow::func_slot64()
 
     if (state == 3 || state == 4)
     {
-        selection->unk3f = 1;
+        selection->visible = 1;
     }
     else
     {
         target = selection;
         target->unk30 = 128.0f;
-        target->unk3c = 1;
+        target->needs_redraw = 1;
     }
 }
 
@@ -2980,19 +2980,19 @@ u8 TacticsChangeWindow::func_slotb0()
 
         if (selected == 3 || selected == 4)
         {
-            selection->unk3f = 0;
+            selection->visible = 0;
         }
         else
         {
             LibClass175030* target = selection;
             target->unk30 = 64.0f;
-            target->unk3c = 1;
+            target->needs_redraw = 1;
         }
 
         TacticsStrategyWindow* child = static_cast<TacticsStrategyWindow*>(func_slot44());
         child->set_character(selected, initial_entry);
-        child->cursor->unk3f = 1;
-        child->selection_indicator->unk3f = 1;
+        child->cursor->visible = 1;
+        child->selection_indicator->visible = 1;
         child->FieldClass15AE70::func_slot18(1, 0x7F);
         FieldClass153E30* state = D_001B643C->callbacks->state;
         state->func_00263C70(func_slot44());
@@ -3093,14 +3093,14 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
 
     for (s32 index = 0; index < 8; index++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         lib_container_attach_widget(unk10, text);
         append_text_widget_node(&unk2c, text);
     }
 
     for (s32 index = 0; index < 8; index++)
     {
-        LibClass178630* panel = new (0) LibClass178630;
+        LibPanel* panel = new (0) LibPanel;
 
         if (panel == 0)
         {
@@ -3127,8 +3127,8 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
 
         append_panel_widget_node(&unk14, panel);
         lib_container_attach_widget(unk10, panel);
-        LibObject175140* label = new (0) LibObject175140;
-        LibObject178750* empty = new (0) LibObject178750;
+        LibStringLabel* label = new (0) LibStringLabel;
+        LibTextWidget* empty = new (0) LibTextWidget;
 
         if (label == 0 || empty == 0)
         {
@@ -3153,17 +3153,17 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
             empty->set_scale(0.8f, 0.8f);
         }
 
-        empty->set_mode(1);
+        empty->set_horizontal_align(1);
         label->set_scale(0.82f, 0.82f);
-        LibObject178750* text = static_cast<LibObject178750*>(get_text_widget_node(&unk2c, index)->value);
+        LibTextWidget* text = static_cast<LibTextWidget*>(get_text_widget_node(&unk2c, index)->value);
         s32 character_id = character_records[index].character_id;
 
         if (character_records[index].stat_limit_type == 0 && character_id != 0)
         {
-            label->unkfc = equipment_records[index].character_name;
-            label->unk3c = 1;
-            label->unk3f = 1;
-            empty->unk3f = 0;
+            label->text = equipment_records[index].character_name;
+            label->needs_redraw = 1;
+            label->visible = 1;
+            empty->visible = 0;
             record_enabled[index] = 1;
             ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
             void* allocation = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character_id));
@@ -3186,15 +3186,15 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
             TacticsPresetPosition* preset = set_strategy_text_position(this, index);
             lib_text_init_resource_rectangle(text, source, text_key, 0, preset->x, preset->y, 0.0f, 0.0f);
             text->unk88 = -1.0f;
-            text->unk3c = 1;
+            text->needs_redraw = 1;
             text->set_scale(0.7f, 0.7f);
         }
         else
         {
             lib_text_init_resource_rectangle(text, source, TACTICS_MSG_DUMMY, 0, 0.0f, 0.0f, 0.0f, 0.0f);
-            text->unk3f = 0;
-            label->unk3f = 0;
-            empty->unk3f = 1;
+            text->visible = 0;
+            label->visible = 0;
+            empty->visible = 1;
         }
 
         if (index < 3)
@@ -3212,8 +3212,8 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, empty);
     }
 
-    LibObject178750* first_title = new (0) LibObject178750;
-    LibObject178750* second_title = new (0) LibObject178750;
+    LibTextWidget* first_title = new (0) LibTextWidget;
+    LibTextWidget* second_title = new (0) LibTextWidget;
 
     if (first_title == 0 || second_title == 0)
     {
@@ -3222,12 +3222,12 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
 
     lib_text_init_resource_rectangle(first_title, source, TACTICS_MSG_LEFT_COLUMN_TITLE, 1, 16.0f, 16.0f, 0.0f, 0.0f);
     set_widget_rectangle(first_title, 16.0f, -20.0f, 304.0f, 16.0f);
-    first_title->set_mode(0);
-    first_title->set_color(0x288080);
+    first_title->set_horizontal_align(0);
+    first_title->set_tint(0x288080);
     lib_text_init_resource_rectangle(second_title, source, TACTICS_MSG_RIGHT_COLUMN_TITLE, 1, 16.0f, 16.0f, 0.0f, 0.0f);
     set_widget_rectangle(second_title, 320.0f, -20.0f, 304.0f, 16.0f);
-    second_title->set_mode(0);
-    second_title->set_color(0x288080);
+    second_title->set_horizontal_align(0);
+    second_title->set_tint(0x288080);
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selection), 0, 1);
     lib_container_attach_widget(unk10, first_title);
     lib_container_attach_widget(unk10, second_title);
@@ -3252,14 +3252,14 @@ void TacticsHelpWindow::func_slot60(s32 text_key)
         scroll_phase = 0;
         initial_pause_frames = 0;
         lib_text_set_resource(text, func_slot54(), text_key, 1);
-        scroll_span = static_cast<s32>(lib_text_measure_bounds(text)->unk08) + 6;
+        scroll_span = static_cast<s32>(lib_text_measure_bounds(text)->width) + 6;
     }
 }
 
 /** @brief Hold the text position, then scroll and wrap it after the timer expires. */
 void TacticsHelpWindow::func_slot5c()
 {
-    LibObject178750* target = text;
+    LibTextWidget* target = text;
     float x = target->unk18.unk00;
     float y = target->unk18.unk04;
     float z = target->unk18.unk08;
@@ -3298,9 +3298,9 @@ s32 TacticsHelpWindow::func_slotf4(u32 associated)
 {
     u32 resource_source = associated;
     FieldClass15AE70::func_slot10(resource_source, 16.0f, 16.0f, 19);
-    LibObject178750* heading = new (0) LibObject178750;
-    LibObject178750* label = new (0) LibObject178750;
-    LibObject178750* hint = new (0) LibObject178750;
+    LibTextWidget* heading = new (0) LibTextWidget;
+    LibTextWidget* label = new (0) LibTextWidget;
+    LibTextWidget* hint = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(heading, resource_source, TACTICS_MSG_TITLE, 0, 16.0f, 10.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, heading);
     append_text_widget_node(&unk2c, heading);
@@ -3329,7 +3329,7 @@ s32 TacticsHelpWindow::func_slotf4(u32 associated)
     hint->set_scale(0.65f, 0.65f);
     lib_container_attach_widget(unk10, hint);
     append_text_widget_node(&unk2c, hint);
-    text = new (0) LibObject178750;
+    text = new (0) LibTextWidget;
     ItemCreationClass1746A0* clip = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* reset_clip = new (0) ItemCreationClass1746A0;
 
@@ -3338,7 +3338,7 @@ s32 TacticsHelpWindow::func_slotf4(u32 associated)
         return 0;
     }
 
-    label_right_edge = 80.0f + lib_text_measure_bounds(label)->unk08;
+    label_right_edge = 80.0f + lib_text_measure_bounds(label)->width;
     clip_x = 18.0f + label_right_edge;
     clip_width = 640.0f - (16.0f + shifted_position(clip_x, 32.0f));
     initial_text_x = 24.0f + label_right_edge;
@@ -3661,7 +3661,7 @@ void FieldClass15AE70::func_slot50(u32 value)
 }
 
 /** @brief Return the nested display container. @return Stored container. */
-LibObject178660* FieldClass15AE70::func_slot58()
+LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }

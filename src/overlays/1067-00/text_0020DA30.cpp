@@ -108,7 +108,7 @@ extern "C" void func_0020DE80(FieldClass151640* object)
             break;
         }
         memcpy_guess(node->unk84, node->unk84, 0x11);
-        node->shape.unk04 = (LibClass178A90*)func_00473390(D_001B6430->context->unk08->current_object->unk7c, node->unk84);
+        node->shape.unk04 = (LibTransformOwner*)func_00473390(D_001B6430->context->unk08->current_object->unk7c, node->unk84);
     }
 }
 
@@ -117,7 +117,7 @@ extern "C" void func_0020DE80(FieldClass151640* object)
  * @param object Shape resource receiving the nodes.
  * @param source List supplying the nodes.
  */
-extern "C" void func_0020DEF0(FieldClass151640* object, LibClass178DD0* source)
+extern "C" void func_0020DEF0(FieldClass151640* object, LibUpdateList* source)
 {
     FieldClass150060* current;
     FieldClass150060* node = ((FieldClass150060*)source)->unk08;
@@ -139,7 +139,7 @@ extern "C" void func_0020DEF0(FieldClass151640* object, LibClass178DD0* source)
  * @param object Shape resource supplying the nodes.
  * @param destination List receiving the nodes.
  */
-extern "C" void func_0020DF80(FieldClass151640* object, LibClass178DD0* destination)
+extern "C" void func_0020DF80(FieldClass151640* object, LibUpdateList* destination)
 {
     FieldClass150060* current;
     FieldClass150060* node = (reinterpret_cast<FieldClass150060*>(&object->FieldClass1502A0::sentinel))->unk08;

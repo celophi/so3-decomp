@@ -8,7 +8,7 @@
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/lib/text_0045AD10.h"
 struct FieldRecordSelection;
-struct LibObject178750;
+struct LibTextWidget;
 class TacticsFormationWindow;
 class TacticsChangeWindow;
 class TacticsCharacterNameWidgetList;
@@ -145,7 +145,7 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    LibObject178750* text;
+    LibTextWidget* text;
     s32 scroll_span;
     s16 initial_pause_frames;
     u8 scroll_phase;
@@ -318,7 +318,7 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    LibObject178750* title;
+    LibTextWidget* title;
     struct ItemCreationClass172600* indicator;
     class ItemCreationClass174C40* resource_widget;
     struct FieldObject23CEA0* grid;
@@ -329,7 +329,7 @@ public:
     u8 selected;
     float base_x;
     float base_y;
-    LibObject175140* label;
+    LibStringLabel* label;
 };
 
 /** 0xC8-byte "Change Tactics" window: eight character rows with each one's battle strategy. */
@@ -453,7 +453,7 @@ public:
     struct FieldObject23CEA0* grid;
     s16 selected;
     u8 unkb6[2];
-    LibObject178750* text[6];
+    LibTextWidget* text[6];
     u8 unkd0[4];
     struct ItemCreationClass172600* selection_indicator;
     struct FieldObject23BE00* cursor;

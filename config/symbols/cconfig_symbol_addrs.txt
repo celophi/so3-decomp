@@ -43,9 +43,9 @@ __throw = 0x001330D8; // type:func absolute:True
 func_slot18__16FieldClass15AE70FUiUi = 0x002CE530; // type:func absolute:True
 func_slot44__16FieldClass15AE70Fv = 0x00348470; // type:func
 
-__ct__14LibClass178600Fv = 0x004C4960; // absolute:True allow_duplicated:True type:func
+__ct__9LibWidgetFv = 0x004C4960; // absolute:True allow_duplicated:True type:func
 
-__vt__14LibClass178630 = 0x00178630; // absolute:True allow_duplicated:True size:0x24
+__vt__8LibPanel = 0x00178630; // absolute:True allow_duplicated:True size:0x24
 resident_get_system = 0x0010D8E0; // type:func
 func_101290 = 0x00101290; // type:func
 func_101440 = 0x00101440; // type:func
@@ -53,14 +53,14 @@ __vt__23ItemCreationClass175110 = 0x00175110; // size:0x24 absolute:True allow_d
 __vt__33ItemCreationOptionResourceDisplay = 0x0015B240; // size:0x24
 lib_draw_state_init = 0x00453FF0; // type:func absolute:True
 __dt__17LibStorageBlock0CFv = 0x004618F0; // absolute:True allow_duplicated:True type:func
-__dt__14LibClass178600Fv = 0x004C48B0; // absolute:True allow_duplicated:True type:func
+__dt__9LibWidgetFv = 0x004C48B0; // absolute:True allow_duplicated:True type:func
 __dt__23ItemCreationClass175110Fv = 0x0034EAD0; // type:func
 __dt__23ItemCreationClass185050Fv = 0x003510A0; // type:func
 func_slot0c__23ItemCreationClass185050Fv = 0x003524A0; // type:func
 get_default_list_kind__13LibListObjectFv = 0x003EEBC0; // type:func absolute:True allow_duplicated:True
 update__13LibListObjectFv = 0x003EEBD0; // type:func absolute:True allow_duplicated:True
 render__13LibListObjectFv = 0x003EEBE0; // type:func absolute:True allow_duplicated:True
-destroy__14LibClass178600Fv = 0x004C4860; // type:func absolute:True allow_duplicated:True
+destroy__9LibWidgetFv = 0x004C4860; // type:func absolute:True allow_duplicated:True
 func_00413D20__23ItemCreationClass175110Fv = 0x00467750; // type:func absolute:True allow_duplicated:True
 draw__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:True allow_duplicated:True
 __ct__13ConfigOptionsFv = 0x003512E0; // type:func
@@ -174,16 +174,16 @@ func_slot0c__16FieldClass15AE70Fv = 0x002CEA20; // absolute:True allow_duplicate
 
 __vt__23ItemCreationClass1725D0 = 0x001725D0; // size:0x24 absolute:True allow_duplicated:True
 __vt__23ItemCreationClass1746A0 = 0x001746A0; // size:0x24 absolute:True allow_duplicated:True
-__vt__15LibObject178750 = 0x00178750; // size:0x24 absolute:True allow_duplicated:True
+__vt__13LibTextWidget = 0x00178750; // size:0x24 absolute:True allow_duplicated:True
 __vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True allow_duplicated:True
 lib_list_indicator_init = 0x0041A930; // type:func absolute:True allow_duplicated:True
-__ct__14LibClass174EF0Fv = 0x00464B10; // type:func absolute:True allow_duplicated:True
-init_resource_rectangle__15LibObject178750FffffiiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
-init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+__ct__13LibDrawWidgetFv = 0x00464B10; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__13LibTextWidgetFffffiiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__13LibTextWidgetFffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 fptodp = 0x001361C0; // type:func absolute:True allow_duplicated:True
 dpadd = 0x00134D38; // type:func absolute:True allow_duplicated:True
 dptofp = 0x001355C8; // type:func absolute:True allow_duplicated:True
-__dt__14LibClass174EF0Fv = 0x00464A80; // type:func absolute:True allow_duplicated:True
+__dt__13LibDrawWidgetFv = 0x00464A80; // type:func absolute:True allow_duplicated:True
 __vt__23ItemCreationClass172600 = 0x00172600; // size:0x24 absolute:True allow_duplicated:True
 
 // Resident and Field interfaces used by option input callbacks.
@@ -232,7 +232,7 @@ lib_panel_init_rectangle = 0x004C5A80; // type:func size:0xD8 absolute:True allo
 
 func_slot5c__16FieldClass15AD40Fv = 0x002CD7C0; // type:func absolute:True allow_duplicated:True
 
-set_selection_marker__16FieldClass15AD40FP14LibClass174EF0Ui = 0x002CD8B0; // type:func absolute:True allow_duplicated:True
+set_selection_marker__16FieldClass15AD40FP13LibDrawWidgetUi = 0x002CD8B0; // type:func absolute:True allow_duplicated:True
 
 configure_selection__16FieldClass15AE60Fiii = 0x002CE220; // type:func absolute:True allow_duplicated:True
 

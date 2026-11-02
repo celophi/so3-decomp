@@ -348,7 +348,7 @@ void FieldClass15AD40::func_slot5c()
     }
 }
 
-void FieldClass15AD40::set_selection_marker(LibClass174EF0* target, u32 color)
+void FieldClass15AD40::set_selection_marker(LibDrawWidget* target, u32 color)
 {
     if (!this->selection_marker)
     {
@@ -364,10 +364,10 @@ void FieldClass15AD40::set_selection_marker(LibClass174EF0* target, u32 color)
     {
         if (this->FieldClass15AE60::pad29[1] == 0 || this->FieldClass15AE60::unk3c)
         {
-            this->selection_marker->unk3f = 1;
+            this->selection_marker->visible = 1;
             if (this->FieldClass15AE60::unk3c && this->FieldClass15AE60::pad29[1] == 2 && (s8)this->FieldClass15AE60::pad29[0] > 0)
             {
-                this->selection_marker->unk3f = 0;
+                this->selection_marker->visible = 0;
             }
             func_0023B7E0((FieldObject23B950*)this->selection_marker, (FieldTarget23B850*)target);
             func_420D20(this->selection_marker, color);
@@ -376,7 +376,7 @@ void FieldClass15AD40::set_selection_marker(LibClass174EF0* target, u32 color)
     }
     else
     {
-        this->selection_marker->unk3f = 0;
+        this->selection_marker->visible = 0;
     }
 }
 
@@ -424,7 +424,7 @@ static inline void set_selector_position(ItemCreationClass175030* selector, floa
     selector->ItemCreationClass185050::unk10 = x;
     selector->ItemCreationClass185050::unk14 = y;
     selector->unk35 = 1;
-    selector->unk3c = 1;
+    selector->needs_redraw = 1;
 }
 void FieldClass15AE60::configure_selection(s32 count, s32 start, s32 selected)
 {
@@ -446,13 +446,13 @@ void FieldClass15AE60::configure_selection(s32 count, s32 start, s32 selected)
     set_selector_position(selector,
                           this->unk08 + (float)(this->unk1a * (this->unk28 % this->unk26)),
                           this->unk0c + (float)(this->unk1c * (this->unk28 / this->unk26)));
-    this->unk04->unk3c = 1;
+    this->unk04->needs_redraw = 1;
     ItemCreationClass1725D0* indicator = (ItemCreationClass1725D0*)this->unk00;
     indicator->unk50 = 100.0f * (u32)this->unk27 / (u32)this->unk1e;
-    indicator->unk3c = 1;
+    indicator->needs_redraw = 1;
     indicator = (ItemCreationClass1725D0*)this->unk00;
     indicator->unk54 = 100.0f * (this->unk14 + (float)(this->unk22 * this->unk1c)) / (float)(this->unk1e * this->unk1c);
-    indicator->unk3c = 1;
+    indicator->needs_redraw = 1;
 }
 
 extern "C" void func_002CE420(FieldStateCE420* object, u8 first, u32 second, u16 third, u16 fourth)
@@ -513,7 +513,7 @@ extern "C" void func_002CE510(FieldBytePtr10* object, u32 value)
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE530);
 
 /** @brief Queue a constructed container. @param container Container to queue. @return Zero for a null container, otherwise one. */
-static inline u8 queue_container(LibObject178660* container)
+static inline u8 queue_container(LibContainer* container)
 {
     if (!container)
     {
@@ -526,7 +526,7 @@ static inline u8 queue_container(LibObject178660* container)
 /** @brief Allocate and queue the container, configure its transform, and associate it with the window. */
 s32 FieldClass15AE70::func_slot14(u32 associated, s32 first, s32 second, s32 third, float x, float y, float z)
 {
-    unk10 = new (0) LibObject178660;
+    unk10 = new (0) LibContainer;
     if (queue_container(unk10) == 0 || !associated)
     {
         return 0;
@@ -541,7 +541,7 @@ s32 FieldClass15AE70::func_slot14(u32 associated, s32 first, s32 second, s32 thi
 /** @brief Allocate and queue the container with default mode words and zero depth. */
 s32 FieldClass15AE70::func_slot10(u32 associated, float x, float y, s32 code)
 {
-    unk10 = new (0) LibObject178660;
+    unk10 = new (0) LibContainer;
     if (queue_container(unk10) == 0 || !associated)
     {
         return 0;
@@ -567,7 +567,7 @@ void FieldClass15AE70::func_slot0c()
     }
     if (unk10)
     {
-        static_cast<LibClass174610&>(*unk10).destroy();
+        static_cast<LibCallbackTransform&>(*unk10).destroy();
     }
     resident_enqueue_object(g_resident_release_queues, this);
 }

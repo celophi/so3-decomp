@@ -17,5 +17,5 @@ rom:0x13C1C reloc:MIPS_LO16 symbol:__vt__15SkillController
 
 rom:0x13C20 reloc:MIPS_LO16 symbol:__vt__15SkillController addend:0x10
 
-rom:0x13BF4 reloc:MIPS_HI16 symbol:__vt__14LibClass171FF0
-rom:0x13BFC reloc:MIPS_LO16 symbol:__vt__14LibClass171FF0
+rom:0x13BF4 reloc:MIPS_HI16 symbol:__vt__15LibDmaCallbacks
+rom:0x13BFC reloc:MIPS_LO16 symbol:__vt__15LibDmaCallbacks

@@ -28,7 +28,7 @@ u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 un
 
 extern void func_4D00B0(void* object);
 void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
-extern void* D_001B6630;
+extern LibDisplayManager* D_001B6630;
 void func_4333A0(BootImageStrip* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
 
 extern const char g_new_game_node_name[];
@@ -400,7 +400,7 @@ void BootTitleMenu::update()
         delete[] game_data;
         game_data = 0;
         camera = lib_find_camera_entry(scene, g_title_camera_node_name);
-        D_001B6628->current_display = camera;
+        D_001B6628->current_display = static_cast<LibListObject*>(camera);
 
         if (initial_item != BOOT_TITLE_ITEM_AUTO)
         {
@@ -422,7 +422,7 @@ void BootTitleMenu::update()
         get_cursor_position(&x, &y);
         cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, x, y, 0.0f);
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
+        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         step++;
         break;
     }
@@ -803,7 +803,7 @@ void progress_bar_reset(BootProgressBar* bar, s32 width, s32 height, u32 color, 
     progress_bar_draw(bar, 0, 1);
     func_4D6430(bar->model, bar->draw_buffer);
     bar->model->unk80 = D_001B6630;
-    bar->model->draw_flags |= BOOT_DRAW_FLAG_0400;
+    bar->model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(bar->model, -1);
 }
 
@@ -859,7 +859,7 @@ void BootScreenFade::on_packet_complete(u32 value)
 void BootScreenFade::render()
 {
     dma_pending = 1;
-    func_0011F510(packet, static_cast<BootDmaCallbacks*>(this));
+    func_0011F510(packet, static_cast<LibDmaCallbacks*>(this));
 }
 
 /**
@@ -999,7 +999,7 @@ BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
 
     set_type_id(0x4000);
     unk65 = 1;
-    set_draw_flags(BOOT_DRAW_FLAG_0400);
+    set_draw_flags(LIB_DRAW_FLAG_0400);
     packet = new (0) BootPacketBuffer(0x400);
     alpha = 1.0f;
     fade_speed = 1.0f;
@@ -1117,7 +1117,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     func_455BD0(image->draw_buffer, image->unk2c, 500.0f, 0);
     func_4D6430(image->model, image->draw_buffer);
     image->model->unk80 = D_001B6630;
-    image->model->draw_flags |= BOOT_DRAW_FLAG_0400;
+    image->model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(image->model, -1);
 }
 
@@ -1171,7 +1171,7 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
     func_455BD0(draw_buffer, unk2c, 500.0f, 0);
     func_4D6430(model, draw_buffer);
     model->unk80 = D_001B6630;
-    model->draw_flags |= BOOT_DRAW_FLAG_0400;
+    model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(model, -1);
 }
 

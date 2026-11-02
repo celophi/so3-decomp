@@ -12,8 +12,6 @@ extern "C" {
 float sqrtf(float value);
 float lib_cosine(float angle);
 float lib_sine(float angle);
-void lib_container_attach_widget(BootContainer* container, BootDrawWidget* child);
-void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 
 /** Sound played for each track. */
 extern const s32 g_music_track_sounds[];
@@ -65,7 +63,7 @@ void BootNeedleMeter::on_packet_complete(u32 value)
 void BootNeedleMeter::render()
 {
     dma_pending = 1;
-    resident_packet_submit(packet, static_cast<BootDmaCallbacks*>(this));
+    resident_packet_submit(packet, static_cast<LibDmaCallbacks*>(this));
 }
 
 /**
@@ -710,9 +708,9 @@ void BootMusicPlayer::update()
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             step++;
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
-            container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
+            container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
             lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
-                                     reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
+                                     reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         }
 
         break;
@@ -740,7 +738,7 @@ void BootMusicPlayer::update()
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, 54.0f, y, 0.0f);
         }
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
+        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         D_001B661C->append_node(meters[0], -1);
         D_001B661C->append_node(meters[1], -1);
         D_001B661C->append_node(meters[2], -1);
@@ -750,22 +748,22 @@ void BootMusicPlayer::update()
 
         if (resource->widescreen)
         {
-            number_text = new (0) BootStringLabel(g_first_track_number, 1, 150.0f, 71.0f, 512.0f, 24.0f);
-            name_text = new (0) BootTextWidget(g_boot_program.messages, 0x44C, 1, 185.0f, 71.0f, 512.0f, 24.0f);
-            mode_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE, 1, 270.0f, 186.0f, 512.0f, 224.0f);
+            number_text = new (0) LibStringLabel(g_first_track_number, 1, 150.0f, 71.0f, 512.0f, 24.0f);
+            name_text = new (0) LibTextWidget(g_boot_program.messages, 0x44C, 1, 185.0f, 71.0f, 512.0f, 24.0f);
+            mode_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE, 1, 270.0f, 186.0f, 512.0f, 224.0f);
         }
         else
         {
-            number_text = new (0) BootStringLabel(g_first_track_number, 1, 175.0f, 74.0f, 512.0f, 24.0f);
-            name_text = new (0) BootTextWidget(g_boot_program.messages, 0x44C, 1, 210.0f, 74.0f, 512.0f, 24.0f);
-            mode_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE, 1, 330.0f, 186.0f, 512.0f, 224.0f);
+            number_text = new (0) LibStringLabel(g_first_track_number, 1, 175.0f, 74.0f, 512.0f, 24.0f);
+            name_text = new (0) LibTextWidget(g_boot_program.messages, 0x44C, 1, 210.0f, 74.0f, 512.0f, 24.0f);
+            mode_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE, 1, 330.0f, 186.0f, 512.0f, 224.0f);
         }
 
-        labels[0] = new (0) BootTextWidget(g_boot_program.messages, 0x96, 1, 50.0f, 435.0f, 128.0f, 24.0f);
-        labels[1] = new (0) BootTextWidget(g_boot_program.messages, 0x97, 1, 160.0f, 435.0f, 128.0f, 24.0f);
-        labels[2] = new (0) BootTextWidget(g_boot_program.messages, 0x98, 1, 270.0f, 435.0f, 128.0f, 24.0f);
-        labels[3] = new (0) BootTextWidget(g_boot_program.messages, 0x99, 1, 380.0f, 435.0f, 128.0f, 24.0f);
-        labels[4] = new (0) BootTextWidget(g_boot_program.messages, 0x9A, 1, 490.0f, 435.0f, 128.0f, 24.0f);
+        labels[0] = new (0) LibTextWidget(g_boot_program.messages, 0x96, 1, 50.0f, 435.0f, 128.0f, 24.0f);
+        labels[1] = new (0) LibTextWidget(g_boot_program.messages, 0x97, 1, 160.0f, 435.0f, 128.0f, 24.0f);
+        labels[2] = new (0) LibTextWidget(g_boot_program.messages, 0x98, 1, 270.0f, 435.0f, 128.0f, 24.0f);
+        labels[3] = new (0) LibTextWidget(g_boot_program.messages, 0x99, 1, 380.0f, 435.0f, 128.0f, 24.0f);
+        labels[4] = new (0) LibTextWidget(g_boot_program.messages, 0x9A, 1, 490.0f, 435.0f, 128.0f, 24.0f);
         name_text->set_vertical_align(2);
         number_text->set_color(0x34130F);
         name_text->set_color(0x34130F);
@@ -1404,7 +1402,7 @@ BootNeedleMeter::BootNeedleMeter()
 {
     set_type_id(0x4001);
     unk65 = 1;
-    set_draw_flags(BOOT_DRAW_FLAG_0400);
+    set_draw_flags(LIB_DRAW_FLAG_0400);
     packet = new (0) BootPacketBuffer(0x800);
     levels[0] = 0.0f;
     levels[1] = 0.0f;

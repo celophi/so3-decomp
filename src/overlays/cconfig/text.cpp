@@ -155,8 +155,8 @@ struct ConfigMessageWindow : public FieldClass15AE70
         unkcd = 0;
     }
 
-    u32 source;
-    LibObject178750* text;
+    s32 source;
+    LibTextWidget* text;
     s16 initial_pause_frames;
     u8 scroll_phase;
     u8 unkb3;
@@ -184,7 +184,7 @@ struct ConfigFrameWindow : public FieldClass15AE70
     {
     }
 
-    LibClass178630* frame;
+    LibPanel* frame;
 };
 
 /** Partial configuration selector window with a signed grid selection. */
@@ -239,7 +239,7 @@ struct ConfigBindingWindow : public FieldClass15AE70
     u8 unkb0[2];
     u16 values[4];
     u8 unkba[2];
-    LibObject178750* entries[4];
+    LibTextWidget* entries[4];
     u8 dirty;
     u8 unkcd[3];
     float spacing;
@@ -289,7 +289,7 @@ struct ConfigColorWindow : public FieldClass15AE70
 
     LibWidgetColors4C5590* colors;
     FieldObject23CEA0* selection;
-    LibClass178630* preview;
+    LibPanel* preview;
     LibWidgetColors4C5590 preview_colors;
 };
 
@@ -314,7 +314,7 @@ struct ConfigCornerWindow : public FieldClass15AE70
         height = 0;
     }
 
-    LibClass178630* frame;
+    LibPanel* frame;
     FieldObject23CEA0* grid;
     s16 selected;
     u8 unkb2[2];
@@ -534,7 +534,7 @@ static inline void set_preview_origin(ItemCreationOptionResourceDisplay* display
 {
     display->unk50.unk20 = x;
     display->unk50.unk24 = y;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
 }
 /**
  * @brief Set the widget rectangle position and mark its state dirty.
@@ -542,18 +542,18 @@ static inline void set_preview_origin(ItemCreationOptionResourceDisplay* display
  * @param x Horizontal position.
  * @param y Vertical position.
  */
-static inline void set_widget_position(LibClass178600* display, float x, float y)
+static inline void set_widget_position(LibWidget* display, float x, float y)
 {
     display->unk18.unk00 = x;
     display->unk18.unk04 = y;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
 }
 /** @brief Set the preview drawing scale and mark its state dirty. */
 static inline void set_preview_scale(ItemCreationOptionResourceDisplay* display, float x, float y)
 {
     display->unk50.unk30 = x;
     display->unk50.unk34 = y;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
 }
 
 /**
@@ -596,13 +596,13 @@ static inline float viewport_aspect()
  * @param width Rectangle width.
  * @param height Rectangle height.
  */
-static inline void set_widget_rectangle(LibClass178600* object, float x, float y, float width, float height)
+static inline void set_widget_rectangle(LibWidget* object, float x, float y, float width, float height)
 {
     object->unk18.unk00 = x;
     object->unk18.unk04 = y;
     object->unk18.unk08 = width;
     object->unk18.unk0c = height;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /**
@@ -624,7 +624,7 @@ static inline float shifted_position(const float& origin, float offset)
 static inline void set_component_value(LibObject174F20* display, u32 value)
 {
     display->numeric_value = value;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
 }
 
 /**
@@ -634,8 +634,8 @@ static inline void set_component_value(LibObject174F20* display, u32 value)
  */
 static inline void set_resource_level(ItemCreationOptionResourceDisplay* display, float level)
 {
-    display->unk28 = level;
-    display->unk3c = 1;
+    display->draw_alpha = level;
+    display->needs_redraw = 1;
 }
 
 
@@ -1075,7 +1075,7 @@ s32 func_003488D0(ConfigGridWindow* object)
 s32 func_00348950(ConfigGridWindow* object, u32 associated, float x, float y, s32 code)
 {
     object->FieldClass15AE70::func_slot10(associated, x, y, code);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
 
     if (panel == 0)
     {
@@ -1085,9 +1085,9 @@ s32 func_00348950(ConfigGridWindow* object, u32 associated, float x, float y, s3
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 316.0f, 160.0f, 88.0f);
     lib_container_attach_widget(object->unk10, panel);
     func_00352CD0(reinterpret_cast<ConfigListOwner*>(&object->unk14), panel);
-    LibObject178750* yes = new (0) LibObject178750;
-    LibObject178750* no = new (0) LibObject178750;
-    LibObject178750* prompt = new (0) LibObject178750;
+    LibTextWidget* yes = new (0) LibTextWidget;
+    LibTextWidget* no = new (0) LibTextWidget;
+    LibTextWidget* prompt = new (0) LibTextWidget;
 
     if (yes == 0 || no == 0 || prompt == 0)
     {
@@ -1285,7 +1285,7 @@ u8 func_00349230(ConfigColorWindow* object)
 s32 func_00349320(ConfigColorWindow* object, u32 associated, float x, float y)
 {
     object->FieldClass15AE70::func_slot10(associated, x, y, 7);
-    object->preview = new (0) LibClass178630;
+    object->preview = new (0) LibPanel;
 
     if (object->preview == 0 || object->corner == -1)
     {
@@ -1298,7 +1298,7 @@ s32 func_00349320(ConfigColorWindow* object, u32 associated, float x, float y)
 
     for (s32 i = 0; i < 3; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
 
         if (text == 0)
         {
@@ -1450,8 +1450,8 @@ s32 func_00349C70(ConfigCornerWindow* object, u32 associated)
     object->width = 320.0f;
     object->height = 160.0f;
     object->FieldClass15AE70::func_slot10(associated, object->x, object->y, 8);
-    LibClass178630* background = new (0) LibClass178630;
-    object->frame = new (0) LibClass178630;
+    LibPanel* background = new (0) LibPanel;
+    object->frame = new (0) LibPanel;
 
     if (background == 0 || object->frame == 0)
     {
@@ -1469,7 +1469,7 @@ s32 func_00349C70(ConfigCornerWindow* object, u32 associated)
 
     for (s32 i = 0; i < 4; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
 
         if (text == 0)
         {
@@ -1545,11 +1545,11 @@ void func_0034A0E0(ConfigBindingWindow* object)
         {
             for (s32 i = 0; i < 4; i++)
             {
-                LibObject178750* entry = object->entries[i];
+                LibTextWidget* entry = object->entries[i];
                 float y = 16.0f + object->spacing * i;
                 entry->unk18.unk00 = object->x;
                 entry->unk18.unk04 = y;
-                entry->unk3c = 1;
+                entry->needs_redraw = 1;
             }
             object->dirty = 0;
         }
@@ -1574,7 +1574,7 @@ void func_0034A270(ConfigBindingWindow* object, u32 value)
     object->values[value] = object->values[found];
     object->values[found] = previous;
     object->dirty = 1;
-    LibObject178750* previous_entry = object->entries[value];
+    LibTextWidget* previous_entry = object->entries[value];
     object->entries[value] = object->entries[found];
     object->entries[found] = previous_entry;
 }
@@ -1617,7 +1617,7 @@ void func_0034A470(ConfigBindingWindow* object)
 s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated)
 {
     object->FieldClass15AE70::func_slot10(associated, 240.0f, 208.0f, 8);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
 
     if (panel == 0)
     {
@@ -1635,7 +1635,7 @@ s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated)
 
     for (s32 i = 0; i < 4; i++)
     {
-        LibObject178750* entry = new (0) LibObject178750;
+        LibTextWidget* entry = new (0) LibTextWidget;
 
         if (entry == 0)
         {
@@ -1670,7 +1670,7 @@ s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated)
     {
         for (s32 column = 0; column < 3; column++)
         {
-            LibObject178750* text = new (0) LibObject178750;
+            LibTextWidget* text = new (0) LibTextWidget;
 
             if (text == 0)
             {
@@ -1709,8 +1709,8 @@ s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated)
         }
     }
 
-    LibObject178750* function_heading = new (0) LibObject178750;
-    LibObject178750* button_heading = new (0) LibObject178750;
+    LibTextWidget* function_heading = new (0) LibTextWidget;
+    LibTextWidget* button_heading = new (0) LibTextWidget;
 
     if (function_heading == 0 || button_heading == 0)
     {
@@ -1719,10 +1719,10 @@ s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated)
 
     button_heading->init_resource_rectangle(object->x, -12.0f, 0.0f, 0.0f, associated, 0x1FE2, 1);
     button_heading->set_scale(0.9f, 0.9f);
-    button_heading->set_color(0x806080);
+    button_heading->set_tint(0x806080);
     function_heading->init_resource_rectangle(80.0f, -12.0f, 0.0f, 0.0f, associated, 0x1FE1, 1);
     function_heading->set_scale(0.9f, 0.9f);
-    function_heading->set_color(0x806080);
+    function_heading->set_tint(0x806080);
     lib_container_attach_widget(object->unk10, button_heading);
     lib_container_attach_widget(object->unk10, function_heading);
     func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), button_heading);
@@ -1739,7 +1739,7 @@ s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated)
     object->grid->unkF2 = 0;
     object->grid->func_0023CF50(0, 268.0f, 224.0f);
     func_00352600(reinterpret_cast<ConfigListOwner*>(&object->unk74), object->grid);
-    LibObject178750* hint = new (0) LibObject178750;
+    LibTextWidget* hint = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(hint, associated, 0x1FE3, 0, 96.0f, 16.0f + (16.0f + (1.0f + 4.0f * object->spacing)), 0.0f, 0.0f);
     lib_container_attach_widget(object->unk10, hint);
     func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), hint);
@@ -1768,7 +1768,7 @@ void func_0034AD30(ConfigOptions* object)
     {
         for (ConfigNode* node = object->list0_first.head->next; node != 0; node = node->next)
         {
-            LibClass178600* widget = static_cast<LibClass178600*>(node->value);
+            LibWidget* widget = static_cast<LibWidget*>(node->value);
             if (widget != 0)
             {
                 set_widget_position(widget,widget->unk18.unk00,widget->unk18.unk04 + object->unk29c);
@@ -1776,7 +1776,7 @@ void func_0034AD30(ConfigOptions* object)
         }
         for (ConfigNode* node = object->list0_second.head->next; node != 0; node = node->next)
         {
-            LibClass178600* widget = static_cast<LibClass178600*>(node->value);
+            LibWidget* widget = static_cast<LibWidget*>(node->value);
             if (widget != 0)
             {
                 set_widget_position(widget,widget->unk18.unk00,widget->unk18.unk04 + object->unk29c);
@@ -1802,7 +1802,7 @@ void func_0034AD30(ConfigOptions* object)
         }
         ItemCreationClass1725D0* indicator = object->unk28c;
         indicator->unk54 = object->unk294;
-        indicator->unk3c = 1;
+        indicator->needs_redraw = 1;
     }
 }
 
@@ -1993,13 +1993,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list1_second), 1)->value);
         if (key == 0x1fa4)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2011,31 +2011,31 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* fourth = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), 3)->value);
         if (key == 0x1fa6)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
-            third->unk3f = 0;
-            fourth->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
+            third->visible = 0;
+            fourth->visible = 0;
         }
         else if (key == 0x1fa7)
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
-            third->unk3f = 0;
-            fourth->unk3f = 0;
+            first->visible = 0;
+            second->visible = 1;
+            third->visible = 0;
+            fourth->visible = 0;
         }
         else if (key == 0x1fa8)
         {
-            first->unk3f = 0;
-            second->unk3f = 0;
-            third->unk3f = 1;
-            fourth->unk3f = 0;
+            first->visible = 0;
+            second->visible = 0;
+            third->visible = 1;
+            fourth->visible = 0;
         }
         else if (key == 0x1fa9)
         {
-            first->unk3f = 0;
-            second->unk3f = 0;
-            third->unk3f = 0;
-            fourth->unk3f = 1;
+            first->visible = 0;
+            second->visible = 0;
+            third->visible = 0;
+            fourth->visible = 1;
         }
         break;
     }
@@ -2045,13 +2045,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list3_second), 1)->value);
         if (key == 0x1faa)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2061,13 +2061,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list4_second), 1)->value);
         if (key == 0x1fac)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2077,13 +2077,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list6_second), 1)->value);
         if (key == 0x1fb0)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2093,13 +2093,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list7_second), 1)->value);
         if (key == 0x1fb2)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2109,13 +2109,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list8_second), 1)->value);
         if (key == 0x1fb4)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2127,10 +2127,10 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* fourth = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), 3)->value);
         if (key == 0x1fb6)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
-            third->unk3f = 0;
-            fourth->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
+            third->visible = 0;
+            fourth->visible = 0;
             if (object->unkf4 != 0)
             {
                 set_resource_level(object->unkf4, 48.0f);
@@ -2138,10 +2138,10 @@ void func_0034B430(ConfigOptions* object, u16 row)
         }
         else if (key == 0x1fb7)
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
-            third->unk3f = 0;
-            fourth->unk3f = 0;
+            first->visible = 0;
+            second->visible = 1;
+            third->visible = 0;
+            fourth->visible = 0;
             if (object->unkf4 != 0)
             {
                 set_resource_level(object->unkf4, 48.0f);
@@ -2149,10 +2149,10 @@ void func_0034B430(ConfigOptions* object, u16 row)
         }
         else if (key == 0x1fb9)
         {
-            first->unk3f = 0;
-            second->unk3f = 0;
-            third->unk3f = 1;
-            fourth->unk3f = 0;
+            first->visible = 0;
+            second->visible = 0;
+            third->visible = 1;
+            fourth->visible = 0;
             if (object->unkf4 != 0)
             {
                 set_resource_level(object->unkf4, 48.0f);
@@ -2160,10 +2160,10 @@ void func_0034B430(ConfigOptions* object, u16 row)
         }
         else if (key == 0x1fb8)
         {
-            first->unk3f = 0;
-            second->unk3f = 0;
-            third->unk3f = 0;
-            fourth->unk3f = 1;
+            first->visible = 0;
+            second->visible = 0;
+            third->visible = 0;
+            fourth->visible = 1;
             if (object->unkf4 != 0)
             {
                 set_resource_level(object->unkf4, 128.0f);
@@ -2177,13 +2177,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list10_second), 1)->value);
         if (key == 0x1fbb)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2193,13 +2193,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list11_second), 1)->value);
         if (key == 0x1fbd)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2209,13 +2209,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list12_second), 1)->value);
         if (key == 0x1fbf)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2225,18 +2225,18 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list13_second), 1)->value);
         if (key == 0)
         {
-            first->unk3f = 0;
-            second->unk3f = 0;
+            first->visible = 0;
+            second->visible = 0;
         }
         else if (key == 0x1fc1)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2246,13 +2246,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list14_second), 1)->value);
         if (key == 0x1fc5)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2262,13 +2262,13 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list5_second), 1)->value);
         if (key == 0x1fae)
         {
-            first->unk3f = 1;
-            second->unk3f = 0;
+            first->visible = 1;
+            second->visible = 0;
         }
         else
         {
-            first->unk3f = 0;
-            second->unk3f = 1;
+            first->visible = 0;
+            second->visible = 1;
         }
         break;
     }
@@ -2277,8 +2277,8 @@ void func_0034B430(ConfigOptions* object, u16 row)
 
 void func_0034BA10(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list5_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list5_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list5_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list5_first), 1)->value);
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = config_pair_key(settings);
     bool selected = false;
@@ -2307,21 +2307,21 @@ void func_0034BA10(ConfigOptions* object, u16 input)
     if (selected)
     {
         settings->unk24 = 1;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
     else
     {
         settings->unk24 = 0;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
 }
 
 void func_0034BB60(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 1)->value);
     s32 key;
     if (config_extra(D_001B643C->settings) == 0)
     {
@@ -2334,14 +2334,14 @@ void func_0034BB60(ConfigOptions* object, u16 input)
     if (key == 0x1fc5)
     {
         config_set_mode(D_001B643C->settings, 0);
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
     else
     {
         config_set_mode(D_001B643C->settings, 1);
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
 }
 
@@ -2359,12 +2359,12 @@ void func_0034BD70(ConfigOptions* object, u16 input)
         object->unk101 = 1;
         key = D_001B643C->settings->unk18d ? 0x1fc1 : 0x1fc2;
     }
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list13_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list13_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list13_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list13_first), 1)->value);
     if (key == 0)
     {
-        first->set_color(0x505050);
-        second->set_color(0x505050);
+        first->set_tint(0x505050);
+        second->set_tint(0x505050);
     }
     else
     {
@@ -2394,25 +2394,25 @@ void func_0034BD70(ConfigOptions* object, u16 input)
         if (selected)
         {
             D_001B643C->settings->unk18d = 0;
-            first->set_color(0x505050);
-            second->set_color(0x808080);
+            first->set_tint(0x505050);
+            second->set_tint(0x808080);
         }
         else
         {
             D_001B643C->settings->unk18d = 1;
-            first->set_color(0x808080);
-            second->set_color(0x505050);
+            first->set_tint(0x808080);
+            second->set_tint(0x505050);
         }
     }
 }
 
 void func_0034BF40(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list12_first), 0)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list12_first), 0)->value);
     ConfigNode* second_node = func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list12_first), 1);
     s32 key = D_001B643C->settings->widescreen ? 0x1fc0 : 0x1fbf;
     bool selected = false;
-    LibObject178750* second = static_cast<LibObject178750*>(second_node->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(second_node->value);
 
     if (input == 0x80)
     {
@@ -2443,14 +2443,14 @@ void func_0034BF40(ConfigOptions* object, u16 input)
     if (selected)
     {
         settings->widescreen = 1;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
     else
     {
         settings->widescreen = 0;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
 
     if (object->controller != 0)
@@ -2476,9 +2476,9 @@ void func_0034BF40(ConfigOptions* object, u16 input)
 
 void func_0034C140(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list11_first), 0)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list11_first), 0)->value);
     bool selected;
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list11_first), 1)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list11_first), 1)->value);
     selected = false;
     if (input == 0x80)
     {
@@ -2505,22 +2505,22 @@ void func_0034C140(ConfigOptions* object, u16 input)
     if (selected)
     {
         object->unkf8 = 0x1fbe;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
     else
     {
         object->unkf8 = 0x1fbd;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
 }
 
 void func_0034C260(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list10_first), 0)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list10_first), 0)->value);
     bool selected;
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list10_first), 1)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list10_first), 1)->value);
     selected = false;
     if (input == 0x80)
     {
@@ -2547,23 +2547,23 @@ void func_0034C260(ConfigOptions* object, u16 input)
     if (selected)
     {
         object->unkfc = 0x1fbc;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
     else
     {
         object->unkfc = 0x1fbb;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
 }
 
 void func_0034C380(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 1)->value);
-    LibObject178750* third = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 2)->value);
-    LibObject178750* fourth = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 3)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 1)->value);
+    LibTextWidget* third = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 2)->value);
+    LibTextWidget* fourth = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 3)->value);
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = 0;
     switch (settings->unk18e)
@@ -2626,23 +2626,23 @@ void func_0034C380(ConfigOptions* object, u16 input)
             break;
         }
     }
-    first->set_color(0x505050);
-    second->set_color(0x505050);
-    third->set_color(0x505050);
-    fourth->set_color(0x505050);
+    first->set_tint(0x505050);
+    second->set_tint(0x505050);
+    third->set_tint(0x505050);
+    fourth->set_tint(0x505050);
     switch (selected)
     {
     case 0:
-        first->set_color(0x808080);
+        first->set_tint(0x808080);
         break;
     case 1:
-        second->set_color(0x808080);
+        second->set_tint(0x808080);
         break;
     case 2:
-        third->set_color(0x808080);
+        third->set_tint(0x808080);
         break;
     case 3:
-        fourth->set_color(0x808080);
+        fourth->set_tint(0x808080);
         break;
     }
     func_004587C0(settings);
@@ -2650,8 +2650,8 @@ void func_0034C380(ConfigOptions* object, u16 input)
 
 void func_0034C600(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list8_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list8_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list8_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list8_first), 1)->value);
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = settings->unk24_bit5 ? 0x1fb4 : 0x1fb5;
     bool selected = false;
@@ -2682,8 +2682,8 @@ void func_0034C600(ConfigOptions* object, u16 input)
         settings->unk24_bit5 = 0;
         resident_pad_set_vibration_enabled(g_input_system, 0, 0);
         resident_pad_set_vibration_enabled(g_input_system, 1, 0);
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
     else
     {
@@ -2691,15 +2691,15 @@ void func_0034C600(ConfigOptions* object, u16 input)
         resident_pad_set_vibration_enabled(g_input_system, 0, 1);
         resident_pad_set_vibration_enabled(g_input_system, 1, 1);
         func_0020F110(D_001B6430->context->unk38, 1, 128, 10.0f, 5.0f);
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
 }
 
 void func_0034C7C0(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list7_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list7_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list7_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list7_first), 1)->value);
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = settings->unk25_bit1 ? 0x1fb3 : 0x1fb2;
     bool selected = false;
@@ -2728,21 +2728,21 @@ void func_0034C7C0(ConfigOptions* object, u16 input)
     if (selected)
     {
         settings->unk25_bit1 = 1;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
     else
     {
         settings->unk25_bit1 = 0;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
 }
 
 void func_0034C900(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list6_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list6_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list6_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list6_first), 1)->value);
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = settings->unk24_bit4 ? 0x1fb0 : 0x1fb1;
     bool selected = false;
@@ -2771,21 +2771,21 @@ void func_0034C900(ConfigOptions* object, u16 input)
     if (selected)
     {
         settings->unk24_bit4 = 1;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
     else
     {
         settings->unk24_bit4 = 0;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
 }
 
 void func_0034CA40(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list4_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list4_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list4_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list4_first), 1)->value);
     ConfigSettings* settings = D_001B643C->settings;
     bool selected;
     s32 key = -1;
@@ -2824,21 +2824,21 @@ void func_0034CA40(ConfigOptions* object, u16 input)
     if (selected)
     {
         settings->unk24_low = 0;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
     else
     {
         settings->unk24_low = 1;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
 }
 
 void func_0034CBB0(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list3_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list3_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list3_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list3_first), 1)->value);
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = config_bit6(settings) == 0 ? 0x1faa : 0x1fab;
     bool selected = false;
@@ -2867,14 +2867,14 @@ void func_0034CBB0(ConfigOptions* object, u16 input)
     if (selected)
     {
         settings->unk24_bit6 = 0;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
     else
     {
         settings->unk24_bit6 = 1;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
 }
 
@@ -2886,10 +2886,10 @@ void func_0034CD00(ConfigOptions* object, u16 input)
     ConfigNode* fourth_node = func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list2_first), 3);
     s32 selected;
     s32 key;
-    LibObject178750* first = static_cast<LibObject178750*>(first_node->value);
-    LibObject178750* second = static_cast<LibObject178750*>(second_node->value);
-    LibObject178750* third = static_cast<LibObject178750*>(third_node->value);
-    LibObject178750* fourth = static_cast<LibObject178750*>(fourth_node->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(first_node->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(second_node->value);
+    LibTextWidget* third = static_cast<LibTextWidget*>(third_node->value);
+    LibTextWidget* fourth = static_cast<LibTextWidget*>(fourth_node->value);
     ConfigSettings* settings = D_001B643C->settings;
     key = -1;
     switch (config_four_mode(settings))
@@ -2953,31 +2953,31 @@ void func_0034CD00(ConfigOptions* object, u16 input)
         }
         break;
     }
-    first->set_color(0x505050);
-    second->set_color(0x505050);
-    third->set_color(0x505050);
-    fourth->set_color(0x505050);
+    first->set_tint(0x505050);
+    second->set_tint(0x505050);
+    third->set_tint(0x505050);
+    fourth->set_tint(0x505050);
     switch (selected)
     {
     case 0:
-        first->set_color(0x808080);
+        first->set_tint(0x808080);
         break;
     case 1:
-        second->set_color(0x808080);
+        second->set_tint(0x808080);
         break;
     case 2:
-        third->set_color(0x808080);
+        third->set_tint(0x808080);
         break;
     case 3:
-        fourth->set_color(0x808080);
+        fourth->set_tint(0x808080);
         break;
     }
 }
 
 void func_0034D040(ConfigOptions* object, u16 input)
 {
-    LibObject178750* first = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list1_first), 0)->value);
-    LibObject178750* second = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list1_first), 1)->value);
+    LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list1_first), 0)->value);
+    LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list1_first), 1)->value);
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = settings->unk24_bit7 ? 0x1fa4 : 0x1fa5;
     bool selected = false;
@@ -3006,14 +3006,14 @@ void func_0034D040(ConfigOptions* object, u16 input)
     if (selected)
     {
         settings->unk24_bit7 = 1;
-        first->set_color(0x808080);
-        second->set_color(0x505050);
+        first->set_tint(0x808080);
+        second->set_tint(0x505050);
     }
     else
     {
         settings->unk24_bit7 = 0;
-        first->set_color(0x505050);
-        second->set_color(0x808080);
+        first->set_tint(0x505050);
+        second->set_tint(0x808080);
     }
 }
 
@@ -3115,7 +3115,7 @@ void ConfigOptions::func_slot64()
 {
     LibClass175030* widget = scroll;
     widget->unk30 = 128.0f;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
     s32 key = func_00350270(this, selected);
     if (key != unkb8)
     {
@@ -3188,7 +3188,7 @@ u8 ConfigOptions::func_slotb0()
     {
         LibClass175030* indicator = scroll;
         indicator->ItemCreationClass185050::unk30 = 64.0f;
-        indicator->unk3c = 1;
+        indicator->needs_redraw = 1;
         return 1;
     }
 
@@ -3211,7 +3211,7 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 13);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3219,16 +3219,16 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2037, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fc5)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3236,16 +3236,16 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2038, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fc6)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3271,7 +3271,7 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 12);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3279,16 +3279,16 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2033, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fc1)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3296,16 +3296,16 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2034, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fc2)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3331,7 +3331,7 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 11);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3339,16 +3339,16 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2031, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fbf)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3356,16 +3356,16 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2032, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fc0)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3391,7 +3391,7 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 10);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3399,16 +3399,16 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202f, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fbd)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3416,16 +3416,16 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2030, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fbe)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3451,7 +3451,7 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 9);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3459,16 +3459,16 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202d, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fbb)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3476,16 +3476,16 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202e, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fbc)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3512,26 +3512,26 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 8);
     for (s32 i = 0; i < 4; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         text->unk88 = -1.0f;
-        text->unk3c = 1;
+        text->needs_redraw = 1;
         switch (i)
         {
         case 0:
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2029, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1FB6)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3539,16 +3539,16 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202A, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1FB7)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3557,16 +3557,16 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             object->unka4 += object->unk10c;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202C, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1FB9)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3574,7 +3574,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202B, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             object->unkf4 = new (0) ItemCreationOptionResourceDisplay;
             void* allocation = field_get_aligned_allocation(D_001B643C->resources, 0);
             FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 13);
@@ -3584,18 +3584,18 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
             lib_container_attach_widget(object->unk10, object->unkf4);
             if (key == 0x1FB8)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
                 set_resource_level(object->unkf4, 128.0f);
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
                 set_resource_level(object->unkf4, 48.0f);
             }
             object->unkf4->unk3d = 0;
-            text->unk3f = 1;
+            text->visible = 1;
             break;
         }
         }
@@ -3624,7 +3624,7 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 7);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3632,16 +3632,16 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2027, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fb4)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3649,16 +3649,16 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2028, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fb5)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3684,7 +3684,7 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 6);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3692,18 +3692,18 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2025, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 32.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 32.0f);
             if (key == 0x1FB2)
             {
-                text->set_color(0x808080);
+                text->set_tint(0x808080);
                 text->unk88 = -1.0f;
-                text->unk3c = 1;
-                marker->unk3f = 1;
+                text->needs_redraw = 1;
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3711,16 +3711,16 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
         {
             float x = 264.0f + object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2026, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 32.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 32.0f);
             if (key == 0x1FB3)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3746,7 +3746,7 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 5);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3754,16 +3754,16 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2023, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fb0)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3771,16 +3771,16 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2024, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fb1)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3806,7 +3806,7 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 3);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3814,16 +3814,16 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201f, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fac)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3831,16 +3831,16 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2020, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fad)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3866,7 +3866,7 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 2);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3874,16 +3874,16 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201d, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1faa)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3891,16 +3891,16 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201e, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fab)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3926,7 +3926,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 1);
     for (s32 i = 0; i < 4; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -3934,16 +3934,16 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2019, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1FA6)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3951,16 +3951,16 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201A, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1FA7)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3969,16 +3969,16 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             object->unka4 += object->unk10c;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201B, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1FA8)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -3986,16 +3986,16 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201C, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1FA9)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -4021,7 +4021,7 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 0);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -4029,16 +4029,16 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2017, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fa4)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -4046,16 +4046,16 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2018, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fa5)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -4081,7 +4081,7 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
     s32 key = func_00350270(object, 4);
     for (s32 i = 0; i < 2; i++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         switch (i)
         {
@@ -4089,16 +4089,16 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2021, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1fae)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -4106,16 +4106,16 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
         {
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2022, 0);
-            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->unk08, 24.0f);
+            func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
             if (key == 0x1faf)
             {
-                text->set_color(0x808080);
-                marker->unk3f = 1;
+                text->set_tint(0x808080);
+                marker->visible = 1;
             }
             else
             {
-                text->set_color(0x505050);
-                marker->unk3f = 0;
+                text->set_tint(0x505050);
+                marker->visible = 0;
             }
             break;
         }
@@ -4291,7 +4291,7 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     float spacing = 22.0f;
     for (s32 i = 0; i < 8; i++, position++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         switch (i)
         {
         case 0:
@@ -4305,9 +4305,9 @@ s32 ConfigOptions::func_slotf4(u32 associated)
             break;
         }
         text->init_resource_rectangle(24.0f, positions[position], 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2008, 1);
-        text->set_color(0x806080);
+        text->set_tint(0x806080);
         text->unk88 = -1.0f;
-        text->unk3c = 1;
+        text->needs_redraw = 1;
         lib_container_attach_widget(unk10, text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list0_first), text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list), text);
@@ -4318,7 +4318,7 @@ s32 ConfigOptions::func_slotf4(u32 associated)
         {
             break;
         }
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         switch (i)
         {
         case 0:
@@ -4343,9 +4343,9 @@ s32 ConfigOptions::func_slotf4(u32 associated)
         {
             text->init_resource_rectangle(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2010, 1);
         }
-        text->set_color(0x806080);
+        text->set_tint(0x806080);
         text->unk88 = -1.0f;
-        text->unk3c = 1;
+        text->needs_redraw = 1;
         lib_container_attach_widget(unk10, text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list0_first), text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list), text);
@@ -4364,8 +4364,8 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     }
     if (enabled_key == 0)
     {
-        LibObject178750* text = static_cast<LibObject178750*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&list), 11)->value);
-        text->set_color(0x505050);
+        LibTextWidget* text = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&list), 11)->value);
+        text->set_tint(0x505050);
     }
     func_0034FC70(this, associated);
     func_0034F880(this, associated);
@@ -4445,7 +4445,7 @@ ConfigOptions::ConfigOptions()
 s32 func_003514E0(ConfigFrameWindow* object, u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(object), associated, 16.0f, 72.0f, 11);
-    object->frame = new (0) LibClass178630;
+    object->frame = new (0) LibPanel;
     lib_panel_init_rectangle(object->frame, 0, 0.0f, 0.0f, 608.0f, 400.0f, 88.0f);
     lib_container_attach_widget(object->unk10, object->frame);
     return 1;
@@ -4462,7 +4462,7 @@ void func_00351610(ConfigMessageWindow* object, s32 key)
         object->scroll_phase = 0;
         object->initial_pause_frames = 0;
         lib_text_set_resource(object->text, object->source, key, 1);
-        object->extent = lib_text_measure_bounds(object->text)->unk08;
+        object->extent = lib_text_measure_bounds(object->text)->width;
         if (key == 0x1FB8 || key == 0x1FBA)
         {
             object->key = key;
@@ -4477,7 +4477,7 @@ void func_00351610(ConfigMessageWindow* object, s32 key)
 
 void func_003516B0(ConfigMessageWindow* object)
 {
-    LibObject178750* text = object->text;
+    LibTextWidget* text = object->text;
     float x = text->unk18.unk00;
     float y = text->unk18.unk04;
     float width = text->unk18.unk08;
@@ -4531,7 +4531,7 @@ s32 func_00351820(ConfigMessageWindow* object, u32 associated)
     }
 
     object->FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 19);
-    object->text = new (0) LibObject178750;
+    object->text = new (0) LibTextWidget;
     ItemCreationClass1746A0* clip = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* reset_clip = new (0) ItemCreationClass1746A0;
 
@@ -4540,16 +4540,16 @@ s32 func_00351820(ConfigMessageWindow* object, u32 associated)
         return 0;
     }
 
-    LibObject178750* label = new (0) LibObject178750;
+    LibTextWidget* label = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(label, associated, 0x1F40, 0, 16.0f, 6.0f, 0.0f, 0.0f);
     lib_container_attach_widget(object->unk10, label);
     func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), label);
-    LibObject178750* hint = new (0) LibObject178750;
+    LibTextWidget* hint = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(hint, associated, 0x1F41, 0, 36.0f, 40.0f, 0.0f, 0.0f);
     hint->set_scale(0.65f, 0.65f);
     lib_container_attach_widget(object->unk10, hint);
     func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->unk2c), hint);
-    object->label_width = lib_text_measure_bounds(label)->unk08;
+    object->label_width = lib_text_measure_bounds(label)->width;
     object->clip_x = 18.0f + object->label_width;
     object->clip_width = 640.0f - (16.0f + shifted_position(object->clip_x, 32.0f));
     object->initial_text_x = 24.0f + object->label_width;
@@ -4596,7 +4596,7 @@ s32 func_00351C30(ConfigPreviewWindow* object, u32 associated)
     ItemCreationOptionResourceDisplay* display = object->display;
     display->unk50.unk34 = 1.4f;
     display->unk50.unk30 = 1.4f;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
     lib_container_attach_widget(object->unk10, object->display);
     return 1;
 }

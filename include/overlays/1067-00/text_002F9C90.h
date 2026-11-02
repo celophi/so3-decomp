@@ -281,7 +281,7 @@ void func_002FED50(void* object);
 #include "overlays/lib/text_004CD3A0.h"
 
 /** Camera transform with queued DMA and field context callbacks. */
-class FieldClass15BBB0 : public LibClass178A90, public DmaSubmission, public FieldClass1DD400
+class FieldClass15BBB0 : public LibTransformOwner, public DmaSubmission, public FieldClass1DD400
 {
 public:
     FieldClass15BBB0();

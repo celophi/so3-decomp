@@ -145,75 +145,84 @@ extern "C"
     LibMatrix44Value func_004CE980(const FieldVec4B& quaternion);
 }
 
-class LibClass178F30;
+class LibDisplayManager;
+
+extern "C" u32 D_001B65BC;
+extern "C" u8 D_001B65C0;
+
+/** Bits of LibTransformOwner::draw_flags. */
+enum
+{
+    /** Don't draw the object. */
+    LIB_DRAW_HIDDEN = 0x0001,
+    LIB_DRAW_FLAG_0010 = 0x0010,
+    LIB_DRAW_FLAG_0400 = 0x0400
+};
 
 /** Partial 0x90-byte transform owner with vtable D_178A90 in main data. */
-class LibClass178A90 : public LibOrientedTransform
+class LibTransformOwner : public LibOrientedTransform
 {
 public:
-    /** @brief Destroy the transform owner. */
-    virtual ~LibClass178A90();
+    /** @brief Initialize the owner's state bytes and tracking words. */
+    inline LibTransformOwner();
 
-    /** @brief Detach and queue the transform owner, then clear its tracking mask. */
-    virtual void destroy();
+    /** @brief Remove this object's mask from the resident flags, then destroy the transform. */
+    virtual ~LibTransformOwner()
+    {
+        u32 mask = ~unk8c;
+        u32 previous = D_001B65BC;
+        unk8c &= mask;
+        D_001B65BC &= mask;
 
-    /** @brief Run the default transform update hook. */
+        if (previous != D_001B65BC)
+        {
+            D_001B65C0 = 1;
+        }
+    }
+
+    /** @brief Virtual slot 4; the owner's implementation does nothing. */
     virtual void render();
 
+    /** @brief Detach and queue the owner. */
+    virtual void destroy();
+
+    /** @brief Draw in the main list (bucket zero). */
+    virtual void set_default_draw_bucket();
+
     /**
-     * @brief Set the translation coordinates and mark the transform dirty.
-     * @param x Horizontal translation.
-     * @param y Vertical translation.
-     * @param z Third translation component.
+     * @brief Give the centre for Lib's oriented-box visibility test; this owner has none.
+     * @param output Receives the centre in local space.
+     * @return Nonzero when a centre was written; zero here, so the test is skipped.
      */
-    virtual void set_translation(float x, float y, float z);
+    virtual s32 get_box_cull_center(void* output);
 
     /**
-     * @brief Copy the translation vector and mark the transform dirty.
-     * @param value Translation vector to copy.
-     */
-    virtual void set_translation_vector(const LibVector4* value);
-
-    /**
-     * @brief Copy the translation vector and mark the transform dirty.
-     * @param value Translation vector to copy.
-     */
-    virtual void copy_translation(const LibVector4* value);
-
-    /** @brief Clear the byte at offset 0x60. */
-    virtual void func_003F4420();
-
-    /**
-     * @brief Default output handler.
-     * @param output Opaque output object.
-     * @return Zero in the base implementation.
-     */
-    virtual s32 func_003EEE20(void* output);
-
-    /**
-     * @brief Test the supplied value in the base implementation.
-     * @param value Value to test.
-     * @param mode Additional mode used by derived implementations.
+     * @brief Fade the owner as it nears the camera; Lib calls this for owners with draw flag 0x800. This owner doesn't fade.
+     * @param value Distance in front of the camera over the fade range, clamped to one.
+     * @param mode Two from Lib's caller; unused here.
      * @return Whether the value is negative.
      */
-    virtual s32 func_003EEE30(float value, float mode);
-
-    /** @brief Return the transform's vector. @return Vector pointer. */
-    virtual const LibVector4* func_003EFAA0();
+    virtual s32 set_fade_alpha(float value, float mode);
 
     /**
-     * @brief Default matrix handler.
+     * @brief Return the bounding sphere Lib culls against (centre in xyz, radius in w); this owner has Lib's shared default.
+     * @return Bounding sphere.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Default matrix handler; does nothing.
      * @param matrix Matrix supplied by the caller.
      * @param context Opaque caller context.
      */
-    virtual void func_003F4440(const void* matrix, void* context);
+    virtual void build_packet(const void* matrix, void* context);
 
-    /** @brief Mark the base transform's matrix state ready. */
+    /** @brief Mark the matrix state ready. */
     virtual void update_transform_matrix();
 
     /**
-     * @brief Read the stored transformation matrix without updating it.
-     * @return Null in the base implementation.
+     * @brief Read the stored transformation matrix.
+     * @return Matrix pointer.
      */
     virtual const LibMatrix44Value* get_transform_matrix();
 
@@ -221,45 +230,94 @@ public:
      * @brief Copy the source transformation state.
      * @param source Transform source.
      */
-    virtual void func_004CFFA0(const LibClass178A90* source);
+    virtual void copy_transform_state(const LibTransformOwner* source);
 
     /**
-     * @brief Produce a transformation receiver, or null.
-     * @return New transform receiver, or null.
+     * @brief Make a copy of this object that stays linked to it; this owner can't be copied.
+     * @return The copy, or null.
      */
-    virtual LibClass178A90* func_003EEE50();
+    virtual LibTransformOwner* clone();
 
-    /** @brief Detach and queue the transform receiver. */
-    virtual void func_003EEE60();
+    /** @brief Unlink a copy from its original and queue it for release; this owner never has copies, so it does nothing. */
+    virtual void release_clone();
 
-    u8 unk60;
+    /**
+     * @brief Set the draw flags (LIB_DRAW_*).
+     * @param value New flags.
+     */
+    inline void set_draw_flags(u16 value);
+
+    /**
+     * @brief Set the object's type ID.
+     * @param value Type ID.
+     */
+    inline void set_type_id(u16 value);
+
+    /** Lib's renderer draws objects with zero in its main list and the rest in bucket[draw_bucket]. */
+    u8 draw_bucket;
+
     /** Nonzero when callers can reuse the cached matrix without an update. */
     u8 matrix_ready;
+
     u8 unk62;
     u8 unk63;
+
     /** Nonzero while the submitted packet awaits its DMA notification. */
     u8 dma_pending;
-    u8 unk65[5];
-    u16 unk6a;
-    u16 unk6c;
+
+    u8 unk65;
+    u8 unk66;
+    u8 unk67;
+    u8 unk68;
+    u8 unk69;
+    u16 draw_flags;
+
+    /** Type ID that Lib and scene code compare against (0x100 for scene models, 0x110 in Lib's scene setup). */
+    u16 type_id;
+
     u8 unk6e[0x12];
-    LibClass178F30* unk80;
-    u8 unk84[0xC];
+    LibDisplayManager* unk80;
+    u8 unk84[4];
+    u32 unk88;
+    u32 unk8c;
 };
 
-/** Transform subclass with resident vtable D_172000. */
-class LibClass172000 : public LibClass178A90
+
+/** Two-callback DMA interface, with vtable D_171FF0 in main data. */
+class LibDmaCallbacks
+{
+public:
+    /** @brief Install the interface's vtable. */
+    inline LibDmaCallbacks();
+
+    /**
+     * @brief Default DMA notification hook; does nothing.
+     * @param value Notification value.
+     */
+    virtual void on_packet_notify(u32 value);
+
+    /**
+     * @brief Default preparation hook; does nothing.
+     * @param value Notification word or packet address.
+     */
+    virtual void on_packet_complete(u32 value);
+};
+
+/** Transform subclass between D_178A90 and D_174610, with vtable D_172000 in main data. */
+class LibClass172000 : public LibTransformOwner
 {
 public:
     /** @brief Initialize the transform subclass. */
     LibClass172000();
 
     /** @brief Destroy the transform subclass. */
-    virtual ~LibClass172000();
+    virtual ~LibClass172000()
+    {
+    }
 };
 
 /** Partial list owner with resident vtable at 0x178DD0 and an owned node buffer. */
-class LibClass178DD0 : public LibClass178A70
+class LibUpdateList : public LibListReceiver
 {
 public:
     enum
@@ -269,9 +327,9 @@ public:
     };
 
     /** @brief Initialize the list owner, kind counts, and node-buffer state. */
-    LibClass178DD0();
+    LibUpdateList();
     /** @brief Release the owned node buffer and destroy the list base. */
-    virtual ~LibClass178DD0();
+    virtual ~LibUpdateList();
 
     /** @brief Remove a registered node and clear its pending buffer entries. @param object Node to remove. */
     virtual void remove_node(void* object);
@@ -297,7 +355,7 @@ public:
      */
     virtual void func_004295B0(void* attached)
     {
-        next_list = static_cast<LibClass178DD0*>(attached);
+        next_list = static_cast<LibUpdateList*>(attached);
     }
 
     /** @brief Default handler that performs no work. */
@@ -312,8 +370,8 @@ public:
     s32 node_buffer_capacity;
     void** owned_node_buffer;
     void** active_node_buffer;
-    LibClass178DD0* next_list;
-    LibClass178DD0* active_buffer_owner;
+    LibUpdateList* next_list;
+    LibUpdateList* active_buffer_owner;
 };
 
 /**
@@ -321,14 +379,14 @@ public:
  * @param owner List that owns the buffer.
  * @param node_count Number of node pointers to allocate.
  */
-extern "C" void lib_list_allocate_node_buffer(LibClass178DD0* owner, s32 node_count);
+extern "C" void lib_list_allocate_node_buffer(LibUpdateList* owner, s32 node_count);
 
 /**
  * @brief Release the owned node buffer when no node buffer is active.
  * @param owner List that owns the buffer.
  * @return One if the buffer was released, or zero while a buffer is active.
  */
-extern "C" s32 lib_list_release_node_buffer(LibClass178DD0* owner);
+extern "C" s32 lib_list_release_node_buffer(LibUpdateList* owner);
 
 /**
  * @brief Transfer one node count from the node's stored kind to a new kind.
@@ -336,7 +394,7 @@ extern "C" s32 lib_list_release_node_buffer(LibClass178DD0* owner);
  * @param node Node supplying the old kind.
  * @param new_kind Kind whose count is incremented.
  */
-extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibListObject* node, s32 new_kind);
+extern "C" void lib_list_change_node_kind_counts(LibUpdateList* owner, const LibListObject* node, s32 new_kind);
 
 /**
  * @brief Update the owner's kind counts, then store the node's list kind.
@@ -350,23 +408,23 @@ extern "C" void lib_object_set_list_kind(LibListObject* node, s32 kind);
  * @param list First list whose nodes are collected.
  * @param items Array with room for every node in the chain.
  */
-extern "C" void lib_list_collect_nodes_by_kind(LibClass178DD0* list, void** items);
+extern "C" void lib_list_collect_nodes_by_kind(LibUpdateList* list, void** items);
 
 /**
  * @brief Add each list's per-kind prefix sums to the chain's kind offsets.
  * @param list First list whose counts are added.
  * @param offsets Array of NODE_KIND_COUNT offsets to update.
  */
-extern "C" void lib_list_add_chain_kind_offsets(LibClass178DD0* list, u32* offsets);
+extern "C" void lib_list_add_chain_kind_offsets(LibUpdateList* list, u32* offsets);
 
 /** 0x98-byte display manager with a list interface and secondary intrusive receiver. */
-class LibClass178F30 : public LibClass178DD0, public LibListObject
+class LibDisplayManager : public LibUpdateList, public LibListObject
 {
 public:
     /** @brief Initialize the manager interfaces and current display. */
-    LibClass178F30();
+    LibDisplayManager();
     /** @brief Destroy both manager interfaces. */
-    virtual ~LibClass178F30();
+    virtual ~LibDisplayManager();
     /** @brief Report the manager type. @return Manager type value. */
     virtual s32 get_default_list_kind();
     /** @brief Update the manager's intrusive receiver. */
@@ -379,7 +437,7 @@ public:
 };
 
 /** Transform with local vectors, a cached matrix, and a parent link. */
-class LibTransform : public LibClass178A90
+class LibTransform : public LibTransformOwner
 {
 public:
     /** @brief Initialize the object and its transform state. */
@@ -410,7 +468,7 @@ public:
      * @brief Copy local transform state and its inherited state.
      * @param source Transform to copy.
      */
-    virtual void copy_transform_state(const LibTransform* source);
+    virtual void copy_offset_transform_state(const LibTransform* source);
     /** @brief Update transform state relative to the current camera. */
     virtual void update();
     /** @brief Update the cached transformation matrices. */

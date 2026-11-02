@@ -49,11 +49,11 @@ rom:0x8418 reloc:MIPS_LO16 symbol:__vt__24FieldKeyedResourceLoader addend:0x2C
 rom:0x7BE0 reloc:MIPS_HI16 symbol:D_001B5FC0
 rom:0x7BE4 reloc:MIPS_LO16 symbol:D_001B5FC0
 
-// LibObject178660 secondary transform and callback tables in the Field constructor.
-rom:0x10614 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
-rom:0x1061C reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
-rom:0x10628 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
-rom:0x10630 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
+// LibContainer secondary transform and callback tables in the Field constructor.
+rom:0x10614 reloc:MIPS_HI16 symbol:__vt__12LibContainer addend:0x1C
+rom:0x1061C reloc:MIPS_LO16 symbol:__vt__12LibContainer addend:0x1C
+rom:0x10628 reloc:MIPS_HI16 symbol:__vt__12LibContainer addend:0x90
+rom:0x10630 reloc:MIPS_LO16 symbol:__vt__12LibContainer addend:0x90
 
 // FieldClass151640 secondary list table in its destructor and constructor.
 rom:0x30FD0 reloc:MIPS_HI16 symbol:__vt__16FieldClass151640 addend:0x1C
@@ -102,14 +102,14 @@ rom:0xF070C reloc:MIPS_HI16 symbol:__vt__16FieldClass15AD40 addend:0xF4
 rom:0xF0714 reloc:MIPS_LO16 symbol:__vt__16FieldClass15AD40 addend:0xF4
 
 // Container transform and callback tables in window setup.
-rom:0xF1454 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
-rom:0xF145C reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
-rom:0xF1464 reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
-rom:0xF146C reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
-rom:0xF15AC reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x1C
-rom:0xF15B4 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x1C
-rom:0xF15BC reloc:MIPS_HI16 symbol:__vt__15LibObject178660 addend:0x90
-rom:0xF15C4 reloc:MIPS_LO16 symbol:__vt__15LibObject178660 addend:0x90
+rom:0xF1454 reloc:MIPS_HI16 symbol:__vt__12LibContainer addend:0x1C
+rom:0xF145C reloc:MIPS_LO16 symbol:__vt__12LibContainer addend:0x1C
+rom:0xF1464 reloc:MIPS_HI16 symbol:__vt__12LibContainer addend:0x90
+rom:0xF146C reloc:MIPS_LO16 symbol:__vt__12LibContainer addend:0x90
+rom:0xF15AC reloc:MIPS_HI16 symbol:__vt__12LibContainer addend:0x1C
+rom:0xF15B4 reloc:MIPS_LO16 symbol:__vt__12LibContainer addend:0x1C
+rom:0xF15BC reloc:MIPS_HI16 symbol:__vt__12LibContainer addend:0x90
+rom:0xF15C4 reloc:MIPS_LO16 symbol:__vt__12LibContainer addend:0x90
 
 // Secondary list parts of the field list tables.
 rom:0x42710 reloc:MIPS_HI16 symbol:__vt__16FieldClass1522C0 addend:0x1C

@@ -7,7 +7,7 @@
 
 extern "C" LibVector4 D_50CD30;
 extern "C" void resident_packet_submit(void* owner, void* object);
-extern "C" void func_004D00B0(LibClass178A90* object);
+extern "C" void func_004D00B0(LibTransformOwner* object);
 
 struct LibStateByteB4View
 {
@@ -66,13 +66,13 @@ void* func_003EEDF0(void)
 }
 
 /** @brief Return the default output-handler result. @param output Unused output object. @return Zero. */
-s32 LibClass178A90::func_003EEE20(void* output)
+s32 LibTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
 
 /** @brief Test whether the supplied value is negative. @param value Value to test. @param mode Unused mode. @return One if negative, otherwise zero. */
-s32 LibClass178A90::func_003EEE30(float value, float mode)
+s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
     s32 result = 1;
     if (!(value < 0.0f))
@@ -83,13 +83,13 @@ s32 LibClass178A90::func_003EEE30(float value, float mode)
 }
 
 /** @brief Return no replacement transform receiver. @return Null. */
-LibClass178A90* LibClass178A90::func_003EEE50()
+LibTransformOwner* LibTransformOwner::clone()
 {
     return 0;
 }
 
 /** @brief Leave the base transform receiver unchanged. */
-void LibClass178A90::func_003EEE60()
+void LibTransformOwner::release_clone()
 {
 }
 
@@ -200,7 +200,7 @@ void func_003EF030(u8* object)
 }
 
 /** @brief Forward the transform receiver to its state-update handler. @param object Transform owner. */
-extern "C" void func_003EF070(LibClass178A90* object)
+extern "C" void func_003EF070(LibTransformOwner* object)
 {
     func_004D00B0(object);
 }
@@ -223,8 +223,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF200);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF320);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF390);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF490);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", destroy__13LibListObjectFv);
 
@@ -264,21 +262,22 @@ extern "C" s32 func_003EF900(void* object)
 }
 
 /** @brief Store state value 9 in the transform's byte at offset 0x60. @param object Transform owner. */
-extern "C" void func_003EF910(LibClass178A90* object)
+extern "C" void func_003EF910(LibTransformOwner* object)
 {
-    object->unk60 = 9;
+    object->draw_bucket = 9;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF920);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF960);
 
-extern "C" void func_003EFA90(void* object)
+/** @brief Default DMA notification hook; does nothing. */
+void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
 /** @brief Return the shared fallback transform vector. @return Address of D_50CD30. */
-const LibVector4* LibClass178A90::func_003EFAA0()
+const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
     return &D_50CD30;
 }
@@ -315,7 +314,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1330);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2510);
 
 /** Forward the receiver to func_004D00B0. */
-void func_003F2550(LibClass178A90* object)
+void func_003F2550(LibTransformOwner* object)
 {
     func_004D00B0(object);
 }
@@ -335,7 +334,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F25A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2CB0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F3D70);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __dt__14LibClass172000Fv);
 
 extern "C" void func_003F3E60(void* object, u32 value)
 {
@@ -393,24 +392,24 @@ extern "C" s32 func_003F4370(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4380);
 
-/** @brief Provide the empty default hook. */
-extern "C" void func_003F4410(void)
+/** @brief Default preparation hook; does nothing. */
+void LibDmaCallbacks::on_packet_complete(u32 value)
 {
 }
 
 /** @brief Clear the transform's first state byte. */
-void LibClass178A90::func_003F4420()
+void LibTransformOwner::set_default_draw_bucket()
 {
-    unk60 = 0;
+    draw_bucket = 0;
 }
 
 /** @brief Leave the default transform update hook unchanged. */
-void LibClass178A90::render()
+void LibTransformOwner::render()
 {
 }
 
 /** @brief Leave the default transform output handler unchanged. @param matrix Unused matrix. @param context Unused caller context. */
-void LibClass178A90::func_003F4440(const void* matrix, void* context)
+void LibTransformOwner::build_packet(const void* matrix, void* context)
 {
 }
 
@@ -422,9 +421,9 @@ extern "C" void func_003F44E0(void* object)
     func_0044D0D0(object);
 }
 
-extern "C" void func_003F4500(LibClass178A90* object)
+extern "C" void func_003F4500(LibTransformOwner* object)
 {
-    object->unk60 = 8;
+    object->draw_bucket = 8;
 }
 
 /**
@@ -469,9 +468,9 @@ extern "C" s32 func_003F4550(void* object)
     return 14;
 }
 
-extern "C" void func_003F4560(LibClass178A90* object)
+extern "C" void func_003F4560(LibTransformOwner* object)
 {
-    object->unk60 = 7;
+    object->draw_bucket = 7;
 }
 
 /** Build a four-word stack value and return its address. */

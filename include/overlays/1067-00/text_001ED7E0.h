@@ -288,7 +288,7 @@ struct FieldVec4B;
 struct FieldClass150590;
 struct FieldClass150570;
 struct FieldClass150530;
-struct LibClass178DD0;
+struct LibUpdateList;
 struct FieldClass151510;
 struct FieldClass150060;
 #ifdef __cplusplus
@@ -298,7 +298,7 @@ extern "C" {
 /** @brief Test listed conditional shapes and dispatch their events. @param list Circular shape sentinel. @param actor Query receiver. @param mask Condition selection mask. @return One when an event was dispatched, otherwise zero. */
 s32 func_001EF150(struct FieldClass150060* list, struct FieldClass151510* actor, u32 mask);
 /** @brief Test listed script shapes and dispatch their events. @param list Circular shape list. @param actor Query receiver. @param kind Shape flag selector. @return Whether an event was dispatched. */
-bool func_001EF4A0(struct LibClass178DD0* list, struct FieldClass151510* actor, u8 kind);
+bool func_001EF4A0(struct LibUpdateList* list, struct FieldClass151510* actor, u8 kind);
 #ifdef __cplusplus
 }
 #endif

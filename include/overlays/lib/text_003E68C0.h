@@ -24,15 +24,15 @@ public:
     ~LibBufferOwner();
 };
 
-class LibClass178A90;
+class LibTransformOwner;
 class LibPositionTransform;
 class LibOrientedTransform;
 struct LibVector4;
 
 /** @brief Store state value 8 in the transform's byte at offset 0x60. @param object Transform owner. */
-extern "C" void func_003F4500(LibClass178A90* object);
+extern "C" void func_003F4500(LibTransformOwner* object);
 /** @brief Store state value 7 in the transform's byte at offset 0x60. @param object Transform owner. */
-extern "C" void func_003F4560(LibClass178A90* object);
+extern "C" void func_003F4560(LibTransformOwner* object);
 /** @brief Return the fixed value 14. @param object Receiver or first argument; unused. @return Always 14. */
 extern "C" s32 func_003F4550(void* object);
 /** @brief Return the fixed value 9. @param object Unused receiver. @return Always 9. */
@@ -40,13 +40,9 @@ extern "C" s32 func_003EF900(void* object);
 /** @brief Return the fixed value 9. @param object Unused receiver. @return Always 9. */
 extern "C" s32 func_003F4370(void* object);
 /** @brief Store state value 9 in the transform's byte at offset 0x60. @param object Transform owner. */
-extern "C" void func_003EF910(LibClass178A90* object);
-/** @brief Provide the empty default hook. */
-extern "C" void func_003F4410(void);
+extern "C" void func_003EF910(LibTransformOwner* object);
 /** @brief Forward the transform receiver to its state-update handler. @param object Transform owner. */
-extern "C" void func_003EF070(LibClass178A90* object);
-/** @brief Provide the empty default handler. @param object Unused receiver. */
-extern "C" void func_003EFA90(void* object);
+extern "C" void func_003EF070(LibTransformOwner* object);
 
 /** @brief Store a word at receiver offset 0x14. @param object Receiver. @param value Word value. */
 extern "C" void func_003F3E60(void* object, u32 value);
@@ -194,7 +190,7 @@ public:
     LibListSentinel* previous;
     LibListSentinel* next;
 };
-class LibClass178DD0;
+class LibUpdateList;
 /** @brief Detach an object from its owner. @param object Intrusive receiver. */
 extern "C" void lib_object_detach_owner(void* object);
 
@@ -229,7 +225,7 @@ public:
     /** Type tag; zero by default, two for transform owners. */
     u8 object_kind;
 
-    LibClass178DD0* owner;
+    LibUpdateList* owner;
 };
 
 /** Position transform, with vtable D_171EC0 in main data. */
@@ -371,7 +367,7 @@ public:
 
 #ifdef __cplusplus
 /** Forward the receiver to func_004D00B0. */
-extern "C" void func_003F2550(LibClass178A90* object);
+extern "C" void func_003F2550(LibTransformOwner* object);
 #endif
 
 

@@ -173,10 +173,10 @@ void* func_0041AD90(void)
 }
 
 /** @brief Clear the intrusive owner and call the transform release hook. */
-extern "C" void func_0041ADC0(LibClass178A90* object)
+extern "C" void func_0041ADC0(LibTransformOwner* object)
 {
     object->owner = 0;
-    object->LibClass178A90::destroy();
+    object->LibTransformOwner::destroy();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041ADE0);
@@ -279,10 +279,10 @@ void* func_0041F140(void)
 }
 
 /** @brief Clear the intrusive owner and call the transform release hook. */
-extern "C" void func_0041F170(LibClass178A90* object)
+extern "C" void func_0041F170(LibTransformOwner* object)
 {
     object->owner = 0;
-    object->LibClass178A90::destroy();
+    object->LibTransformOwner::destroy();
 }
 
 void func_0041F190(void* object)
@@ -303,10 +303,10 @@ void* func_0041F1A0(void)
 }
 
 /** @brief Clear the intrusive owner and call the transform release hook. */
-extern "C" void func_0041F1D0(LibClass178A90* object)
+extern "C" void func_0041F1D0(LibTransformOwner* object)
 {
     object->owner = 0;
-    object->LibClass178A90::destroy();
+    object->LibTransformOwner::destroy();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F1F0);
@@ -339,10 +339,10 @@ void* func_0041F260(void)
 }
 
 /** @brief Clear the intrusive owner and call the transform release hook. */
-extern "C" void func_0041F290(LibClass178A90* object)
+extern "C" void func_0041F290(LibTransformOwner* object)
 {
     object->owner = 0;
-    object->LibClass178A90::destroy();
+    object->LibTransformOwner::destroy();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F2B0);
@@ -484,7 +484,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424610);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424760);
 
 /** @brief Destroy the list receiver and its embedded sentinel. */
-LibClass178A70::~LibClass178A70()
+LibListReceiver::~LibListReceiver()
 {
 }
 

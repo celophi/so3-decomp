@@ -1,6 +1,6 @@
 @64@__dt__23ItemCreationClass175030Fv = 0x004673B0;
 @64@__dt__23SkillCoordinateSelectorFv = 0x00364D50;
-@144@func_003F4410__14SkillHpMpGaugeFUi = 0x00364D30;
+@144@on_packet_complete__14SkillHpMpGaugeFUi = 0x00364D30;
 @192@__dt__14SkillHpMpGaugeFv = 0x00364D40;
 @4@func_001DF3D0__15SkillControllerFv = 0x0035CC40;
 @4@get_default_list_kind__15SkillControllerFv = 0x0035CC40;

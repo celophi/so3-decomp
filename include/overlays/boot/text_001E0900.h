@@ -402,8 +402,8 @@ class BootStartupChecks : public LibListObject
         /** Slot 2 state the warning was chosen for. */
         s32 shown_slot2;
 
-        BootContainer* container;
-        BootTextWidget* text;
+        LibContainer* container;
+        LibTextWidget* text;
 };
 
 /**
@@ -435,63 +435,7 @@ class BootFlatFloor : public BootFloorQuery
         }
 };
 
-extern "C" void lib_animation_release_channels(class BootAnimation* animation);
-
-/** Partial 0x70-byte Lib animation with vtable D_178220 in main data; boot calls the Lib constructor. */
-class BootAnimation : public LibListObject
-{
-    public:
-        /** @brief Construct an empty animation. */
-        BootAnimation();
-
-        /**
-         * @brief Release the current channels and resource, then play from borrowed data.
-         * @param data Animation data the caller keeps.
-         */
-        void set_resource(void* data)
-        {
-            if (entries)
-            {
-                lib_animation_release_channels(this);
-                delete[] entries;
-            }
-
-            targets_bound = 0;
-
-            if (!resource_is_borrowed)
-            {
-                operator delete(resource_data);
-            }
-
-            resource_is_borrowed = 1;
-            resource_data = data;
-        }
-
-        u8 unk14[0x1C];
-        void* resource_data;
-        u8 unk34[0xC];
-        u8* entries;
-        u8 unk44[0x24];
-        u8 resource_is_borrowed;
-        u8 unk69;
-
-        /** Cleared to restart the animation from its first frame. */
-        u8 unk6A;
-
-        u8 unk6B[3];
-        u8 targets_bound;
-        u8 unk6F;
-};
-
-/** Partial 0xD0-byte Lib animation target with vtable D_178370 in main data; boot calls the Lib constructor. */
-class BootAnimationTarget : public LibListObject
-{
-    public:
-        /** @brief Construct an empty target. */
-        BootAnimationTarget();
-
-        u8 unk14[0xBC];
-};
+extern "C" void lib_animation_release_channels(class LibAnimation* animation);
 
 /** Partial 0xB0-byte Lib scene with vtable D_175320 in main data; boot calls the Lib constructor. */
 class BootScene : public LibListObject
@@ -669,17 +613,17 @@ class BootNewGameSettings : public LibListObject
         BootClass170F30* girl_models[10];
 
         /** Walk animations, one per walk_state. */
-        BootAnimation* girl_animations[6];
+        LibAnimation* girl_animations[6];
 
-        BootAnimationTarget* animation_targets[6];
+        LibAnimationTarget* animation_targets[6];
 
         /** Installed in g_floor_query while the screen runs, so Lib sees a floor at height zero. */
         BootFlatFloor flat_floor;
 
-        BootContainer* container;
+        LibContainer* container;
 
         /** Description of the selected option. */
-        BootTextWidget* description_text;
+        LibTextWidget* description_text;
 
         BootSelectionCursor* cursor;
 };
@@ -881,8 +825,8 @@ class BootOpeningMovie : public LibListObject
         BootResident113E40* movie_heap;
         BootMoviePlayer* player;
         BootImage* caption_image;
-        BootContainer* container;
-        BootTextWidget* caption_text;
+        LibContainer* container;
+        LibTextWidget* caption_text;
 };
 
 /** Blocks decoded from the boot program's common UI resource. */
@@ -4039,7 +3983,7 @@ s32 func_432720(BootModeOwner0910* owner, void* queue);
 void func_432660(BootModeOwner0910* owner, s32 mode, u32 enabled, u32 flags);
 s32 func_432310(BootModeOwner0910* owner, u32 mode, BootCardFileRequest* request);
 s32 func_432270(BootModeOwner0910* owner, s32 mode, s32* result);
-extern BootUpdateList* D_001B6614;
+extern LibUpdateList* D_001B6614;
 /** Product code at the start of every save name: "BASLUS-20488". */
 extern const char g_card_product_code[];
 /** Save name suffix of the battle trophy file: "BTLCOL". */

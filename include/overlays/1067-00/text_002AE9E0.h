@@ -1821,7 +1821,7 @@ typedef struct FieldSequenceVectorC0
 
 #ifdef __cplusplus
 /** Transform and DMA notification receiver with MAIN tables D_1599E0 and D_159A54. */
-class FieldClass1599E0 : public LibClass174610
+class FieldClass1599E0 : public LibCallbackTransform
 {
 public:
     /** @brief Initialize the transform receiver and clear its three added words. */
@@ -1837,7 +1837,7 @@ public:
     /** @brief Run the default transform update hook. @param first First state value. @param second Second state value. @param third Third state value. */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
     /** @brief Run the default DMA completion hook. @param value Notification value. */
-    virtual void func_003F4410(u32 value);
+    virtual void on_packet_complete(u32 value);
     u32 unkb0;
     u32 unkb4;
     u32 unkb8;
@@ -1848,7 +1848,7 @@ class FieldClass159A70
 {
 public:
     u32 unk00;
-    LibObject178660* unk04;
+    LibContainer* unk04;
     FieldClass1525F0* unk08;
     float unk0c;
     float unk10;

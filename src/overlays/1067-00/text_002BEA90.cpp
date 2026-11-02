@@ -677,8 +677,8 @@ extern "C" void func_002C0390(FieldState100* state)
     }
 }
 
-/** Partial LibClass178600 widget with vtable D_159FE0 in main data. */
-class FieldClass159FE0 : public LibClass178600
+/** Partial LibWidget widget with vtable D_159FE0 in main data. */
+class FieldClass159FE0 : public LibWidget
 {
 public:
     /** @brief Release the widget storage and destroy its base. */
@@ -690,8 +690,8 @@ FieldClass159FE0::~FieldClass159FE0()
 {
 }
 
-/** Partial LibObject178750 text widget with vtable D_15A010 in main data. */
-class FieldClass15A010 : public LibObject178750
+/** Partial LibTextWidget text widget with vtable D_15A010 in main data. */
+class FieldClass15A010 : public LibTextWidget
 {
 public:
     /** @brief Destroy the object. */

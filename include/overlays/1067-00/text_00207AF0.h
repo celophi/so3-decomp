@@ -30,8 +30,8 @@ struct FieldClass1515B0;
 struct FieldClass151570;
 struct FieldClass151620;
 
-struct LibClass178A90;
-struct LibClass178220;
+struct LibTransformOwner;
+struct LibAnimation;
 
 #ifdef __cplusplus
 extern "C" {
@@ -93,10 +93,10 @@ s32 func_0020D060(FieldShapeListOwner20* object, void* query);
 void func_0020D4C0(struct FieldClass151640* object, struct FieldShapeOwner18* shape);
 
 /** @brief Copy the shape entry name and look up its transform. @param entry Entry to update. @param name Seventeen name bytes. @return Located transform, or null. */
-struct LibClass178A90* func_0020CA10(struct FieldClass151620* entry, const char* name);
+struct LibTransformOwner* func_0020CA10(struct FieldClass151620* entry, const char* name);
 
 /** @brief Append attachments for descriptors with animation channels. @param object Attachment list owner. @param manager Animation manager. @param shape First descriptor in the terminated array. @return Last attachment created, or null. */
-struct FieldClass151570* func_0020D5E0(struct FieldClass151640* object, struct LibClass178220* manager, struct FieldShapeOwner18* shape);
+struct FieldClass151570* func_0020D5E0(struct FieldClass151640* object, struct LibAnimation* manager, struct FieldShapeOwner18* shape);
 
 /**
  * @brief Test a specialized node against a shape descriptor.
@@ -580,7 +580,7 @@ class FieldClass151570;
 struct FieldTransformParentLink20C
 {
     u8 unk00[0x208];
-    LibClass178A90* unk208;
+    LibTransformOwner* unk208;
 };
 
 class FieldClass151620;
@@ -603,8 +603,8 @@ public:
     /** @brief Update both matrices from the attached transform. */
     virtual void update();
 
-    LibClass178A90* unk14;
-    LibClass178A90* unk18;
+    LibTransformOwner* unk14;
+    LibTransformOwner* unk18;
     FieldShapeOwner18* unk1c;
     FieldClass151620* unk20;
     u8 unk24[0xC];

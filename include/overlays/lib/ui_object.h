@@ -10,35 +10,37 @@ typedef struct LibUiRect16
     float unk08;
     float unk0c;
 } LibUiRect16;
-typedef struct LibClass178600 LibClass178600;
+typedef struct LibWidget LibWidget;
 #ifdef __cplusplus
-struct LibObject178660;
+struct LibContainer;
 /** Partial 0x40-byte widget base, with MAIN vtable D_178600. */
-struct LibClass178600 : public LibListObject
+struct LibWidget : public LibListObject
 {
     /** @brief Initialize the widget rectangle and state bytes. */
-    LibClass178600();
+    LibWidget();
     /** @brief Destroy the widget. */
-    virtual ~LibClass178600();
+    virtual ~LibWidget();
     /** @brief Delete the widget through its virtual destructor. */
     virtual void destroy();
     /** @brief Virtual widget slot at 0x1C; its base implementation does no work. */
     virtual void func_00413D20();
     /** @brief Draw the widget; the base implementation does no work. */
     virtual void draw();
-    LibObject178660* container;
+    LibContainer* container;
     LibUiRect16 unk18;
-    float unk28;
+    float draw_alpha;
     u32 unk2c[2];
     u32 unk34;
     u8 unk38;
     u8 unk39;
     u8 unk3a;
     u8 unk3b;
-    u8 unk3c;
+    /** Nonzero when the widget needs redrawing. */
+    u8 needs_redraw;
+
     u8 unk3d;
     u8 unk3e;
-    u8 unk3f;
+    u8 visible;
 };
 #endif
 #endif

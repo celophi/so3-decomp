@@ -438,7 +438,7 @@ void LibLodController::copy_state(const LibLodController* source)
         objects[index] = source->objects[index];
     }
     position_offset = source->position_offset;
-    LibTransform::copy_transform_state(source);
+    LibTransform::copy_offset_transform_state(source);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8B10);
@@ -470,7 +470,7 @@ void LibLodController::apply_position_offset(const FieldVec4A& offset)
 /** @brief Initialize the controller's offset flag, object count, and selected level. */
 LibLodController::LibLodController()
 {
-    unk6c = 6;
+    type_id = 6;
     position_offset_applied = 0;
     object_count = 0;
     active_level = -1;

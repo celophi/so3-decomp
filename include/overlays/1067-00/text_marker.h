@@ -17,9 +17,9 @@ public:
      * @param target Text display used for the marker bounds.
      * @param color Packed marker color.
      */
-    void func_0023B850(LibObject178750* target, u32 color);
+    void func_0023B850(LibTextWidget* target, u32 color);
     /** @brief Update the marker bounds. @param target Text display to follow. */
-    void func_0023B7E0(LibObject178750* target);
+    void func_0023B7E0(LibTextWidget* target);
     /** @brief Refresh the marker bounds when target tracking is enabled. */
     virtual void func_00413D20();
     void* unk58;

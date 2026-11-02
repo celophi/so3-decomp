@@ -94,8 +94,8 @@ struct LibRenderDataRecord
     u32 unk2c;
 };
 
-extern "C" void func_004D6C20(LibClass178DD0* list, void** items, u32* offsets);
-extern "C" void func_004D00B0(LibClass178A90* object);
+extern "C" void func_004D6C20(LibUpdateList* list, void** items, u32* offsets);
+extern "C" void func_004D00B0(LibTransformOwner* object);
 extern "C" LibRenderDataRecord* func_00448910(u32 first_key, u32 second_key);
 
 struct LibFieldPointer634
@@ -106,7 +106,7 @@ struct LibFieldPointer634
 
 #define HALF_PI 1.57079637050628662109375f
 
-extern "C" LibClass178F30* D_001B6628;
+extern "C" LibDisplayManager* D_001B6628;
 extern "C" ResidentDmaQueue* D_001B660C;
 
 struct LibHalfwordToggleFields3E78
@@ -798,19 +798,19 @@ extern "C" void func_004CFF80(LibMatrix44Value* matrix)
 }
 
 /** @brief Copy the source transform through its virtual setters, then copy its manager and flags. @param source Transform source. */
-void LibClass178A90::func_004CFFA0(const LibClass178A90* source)
+void LibTransformOwner::copy_transform_state(const LibTransformOwner* source)
 {
     set_translation_vector(&source->translation);
     set_orientation(&source->orientation);
     set_scale_vector(&source->scale);
     unk80 = source->unk80;
-    unk6a = source->unk6a;
+    draw_flags = source->draw_flags;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", destroy__14LibClass178A90Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", destroy__17LibTransformOwnerFv);
 
 /** @brief Mark the base transform's matrix state ready. */
-void LibClass178A90::update_transform_matrix()
+void LibTransformOwner::update_transform_matrix()
 {
     matrix_ready = 1;
 }
@@ -819,7 +819,7 @@ void LibClass178A90::update_transform_matrix()
  * @brief Return the base transform's null matrix pointer.
  * @return Null; the base has no matrix storage.
  */
-const LibMatrix44Value* LibClass178A90::get_transform_matrix()
+const LibMatrix44Value* LibTransformOwner::get_transform_matrix()
 {
     return 0;
 }
@@ -847,7 +847,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0460);
  * @brief Forward the transform receiver to its state-update handler.
  * @param object Transform owner.
  */
-extern "C" void func_004D04A0(LibClass178A90* object)
+extern "C" void func_004D04A0(LibTransformOwner* object)
 {
     func_004D00B0(object);
 }
@@ -873,7 +873,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D06E0);
  * @brief Forward the transform receiver to its state-update handler.
  * @param object Transform owner.
  */
-extern "C" void func_004D0720(LibClass178A90* object)
+extern "C" void func_004D0720(LibTransformOwner* object)
 {
     func_004D00B0(object);
 }
@@ -944,17 +944,17 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5650);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D56B0);
 
 /** @brief Clear the intrusive owner and invoke the base removal hook. @param object Transform owner to detach. */
-extern "C" void func_004D5740(LibClass178A90* object)
+extern "C" void func_004D5740(LibTransformOwner* object)
 {
     object->owner = 0;
-    object->LibClass178A90::destroy();
+    object->LibTransformOwner::destroy();
 }
 
 /** @brief Clear the intrusive owner and invoke the base removal hook. @param object Transform owner to detach. */
-extern "C" void func_004D5760(LibClass178A90* object)
+extern "C" void func_004D5760(LibTransformOwner* object)
 {
     object->owner = 0;
-    object->LibClass178A90::destroy();
+    object->LibTransformOwner::destroy();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5780);
@@ -1121,7 +1121,7 @@ extern "C" void lib_object_set_list_kind(LibListObject* node, s32 kind)
  * @param owner List that owns the buffer.
  * @return One if the buffer was released, or zero while a buffer is active.
  */
-extern "C" s32 lib_list_release_node_buffer(LibClass178DD0* owner)
+extern "C" s32 lib_list_release_node_buffer(LibUpdateList* owner)
 {
     if (owner->active_node_buffer)
     {
@@ -1138,7 +1138,7 @@ extern "C" s32 lib_list_release_node_buffer(LibClass178DD0* owner)
  * @param owner List that owns the buffer.
  * @param node_count Number of node pointers to allocate.
  */
-extern "C" void lib_list_allocate_node_buffer(LibClass178DD0* owner, s32 node_count)
+extern "C" void lib_list_allocate_node_buffer(LibUpdateList* owner, s32 node_count)
 {
     owner->owned_node_buffer = new (0) void*[node_count];
     owner->node_buffer_capacity = node_count;
@@ -1150,7 +1150,7 @@ extern "C" void func_004D66F0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6700);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_nodes__14LibClass178DD0Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_nodes__13LibUpdateListFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D68F0);
 
@@ -1161,11 +1161,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D69A0);
  * @param list First list whose nodes are collected.
  * @param items Array with room for every node in the chain.
  */
-extern "C" void lib_list_collect_nodes_by_kind(LibClass178DD0* list, void** items)
+extern "C" void lib_list_collect_nodes_by_kind(LibUpdateList* list, void** items)
 {
-    u32 offsets[LibClass178DD0::NODE_KIND_COUNT];
+    u32 offsets[LibUpdateList::NODE_KIND_COUNT];
     u32 count = 0;
-    for (s32 kind = 0; kind < LibClass178DD0::NODE_KIND_COUNT; ++kind)
+    for (s32 kind = 0; kind < LibUpdateList::NODE_KIND_COUNT; ++kind)
     {
         offsets[kind] = count;
         count += list->node_counts_by_kind[kind];
@@ -1218,10 +1218,10 @@ extern "C" void* func_004D6DE0(void* object)
  * @param list First list whose counts are added.
  * @param offsets Array of NODE_KIND_COUNT offsets to update.
  */
-extern "C" inline void lib_list_add_chain_kind_offsets(LibClass178DD0* list, u32* offsets)
+extern "C" inline void lib_list_add_chain_kind_offsets(LibUpdateList* list, u32* offsets)
 {
     u32 count = 0;
-    for (s32 kind = 0; kind < LibClass178DD0::NODE_KIND_COUNT; ++kind)
+    for (s32 kind = 0; kind < LibUpdateList::NODE_KIND_COUNT; ++kind)
     {
         offsets[kind] += count;
         count += list->node_counts_by_kind[kind];
@@ -1236,7 +1236,7 @@ extern "C" inline void lib_list_add_chain_kind_offsets(LibClass178DD0* list, u32
  * @brief Remove a registered node and clear its pending buffer entries.
  * @param object Node to remove.
  */
-void LibClass178DD0::remove_node(void* object)
+void LibUpdateList::remove_node(void* object)
 {
     LibListObject* node = static_cast<LibListObject*>(object);
     --node_counts_by_kind[node->list_kind];
@@ -1268,7 +1268,7 @@ void LibClass178DD0::remove_node(void* object)
             }
         }
     }
-    LibClass178A70::unlink(object);
+    LibListReceiver::unlink(object);
 }
 
 /**
@@ -1277,22 +1277,22 @@ void LibClass178DD0::remove_node(void* object)
  * @param node Node supplying the old kind.
  * @param new_kind Kind whose count is incremented.
  */
-extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibListObject* node, s32 new_kind)
+extern "C" void lib_list_change_node_kind_counts(LibUpdateList* owner, const LibListObject* node, s32 new_kind)
 {
     --owner->node_counts_by_kind[node->list_kind];
     ++owner->node_counts_by_kind[new_kind];
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", insert_node_after__14LibClass178DD0FPvPvi);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", insert_node_after__13LibUpdateListFPvPvi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", prepend_node__14LibClass178DD0FPvi);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", prepend_node__13LibUpdateListFPvi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", append_node__14LibClass178DD0FPvi);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", append_node__13LibUpdateListFPvi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__14LibClass178DD0Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__13LibUpdateListFv);
 
 /** @brief Initialize the inherited list, kind counts, and node-buffer state. */
-LibClass178DD0::LibClass178DD0()
+LibUpdateList::LibUpdateList()
 {
     for (s32 i = 0; i < NODE_KIND_COUNT; ++i)
     {
@@ -1809,7 +1809,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9CD0);
 /** @brief Apply the enabled camera-facing rotation components. */
 void LibTransform::update()
 {
-    if (unk6a & 0x380)
+    if (draw_flags & 0x380)
     {
         LibClass179080* camera;
         if (unk80 != 0)
@@ -1829,15 +1829,15 @@ void LibTransform::update()
             LibVector4 angles;
             const float* camera_angles = camera->rotation_angles;
             func_004CDA40(&angles, &orientation);
-            if (unk6a & 0x80)
+            if (draw_flags & 0x80)
             {
                 angles.x = -camera_angles[0];
             }
-            if (unk6a & 0x100)
+            if (draw_flags & 0x100)
             {
                 angles.y = camera_angles[1];
             }
-            if (unk6a & 0x200)
+            if (draw_flags & 0x200)
             {
                 angles.z = -camera_angles[2];
             }
@@ -1854,11 +1854,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9E70);
  * @brief Copy local transform state and its inherited state.
  * @param source Transform to copy.
  */
-void LibTransform::copy_transform_state(const LibTransform* source)
+void LibTransform::copy_offset_transform_state(const LibTransform* source)
 {
-    if (source->unk6a & 0x20)
+    if (source->draw_flags & 0x20)
     {
-        unk6a |= 0x20;
+        draw_flags |= 0x20;
     }
     func_004DA050(this, source->unk200);
     func_00479090(&offset_translation, source->get_offset_translation());
@@ -1872,7 +1872,7 @@ void LibTransform::copy_transform_state(const LibTransform* source)
     lib_transform_set_dirty(this, 1);
     unk20c = source->unk20c;
     parent_transform = source->parent_transform;
-    LibClass178A90::func_004CFFA0(source);
+    LibTransformOwner::copy_transform_state(source);
 }
 
 /** @brief Copy a complete local vector. @param output Destination vector. @param input Source vector. */

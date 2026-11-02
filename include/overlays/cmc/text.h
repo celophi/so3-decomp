@@ -73,9 +73,9 @@ public:
     virtual ~CmcClass18AD20();
     /** @brief Update widget state and advance the text rectangle animation. */
     virtual void func_slot5c();
-    LibObject178750* unkA8;
-    LibObject178750* unkAc;
-    LibObject178750* unkB0;
+    LibTextWidget* unkA8;
+    LibTextWidget* unkAc;
+    LibTextWidget* unkB0;
     s32 unkB4;
     s8 unkB8;
     u8 unkB9;
@@ -210,14 +210,14 @@ public:
      * @param y Vertical position.
      */
     virtual void position_row(void* owner, float x, float y);
-    LibClass178630 panel;
-    LibObject178750 first_text;
-    LibObject175140 string_widget;
-    LibObject178750 second_text;
+    LibPanel panel;
+    LibTextWidget first_text;
+    LibStringLabel string_widget;
+    LibTextWidget second_text;
     LibObject174F20 numbers[5];
-    LibObject178750 array_text[2];
-    LibObject178750 third_text;
-    LibObject178750 fourth_text;
+    LibTextWidget array_text[2];
+    LibTextWidget third_text;
+    LibTextWidget fourth_text;
 };
 
 /** Partial 0xB0-byte window interface, with MAIN vtable at 0x189920. */

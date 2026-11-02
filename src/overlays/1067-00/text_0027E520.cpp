@@ -151,14 +151,14 @@ public:
     /**
      * @brief Clear the inherited state byte.
      */
-    virtual void func_003F4420();
+    virtual void set_default_draw_bucket();
 
     /**
      * @brief Default output hook that returns zero.
      * @param output Caller output; unused.
      * @return Zero.
      */
-    virtual s32 func_003EEE20(void* output);
+    virtual s32 get_box_cull_center(void* output);
 
     /**
      * @brief Test whether the supplied value is negative.
@@ -166,31 +166,31 @@ public:
      * @param mode Additional caller mode; unused.
      * @return One if the value is negative, otherwise zero.
      */
-    virtual s32 func_003EEE30(float value, float mode);
+    virtual s32 set_fade_alpha(float value, float mode);
 
     /**
      * @brief Read the stored translation vector.
      * @return Pointer to the translation vector.
      */
-    virtual const LibVector4* func_003EFAA0();
+    virtual const LibVector4* get_bounding_sphere();
 
     /**
      * @brief Default matrix hook that performs no work.
      * @param matrix Caller matrix; unused.
      * @param context Caller context; unused.
      */
-    virtual void func_003F4440(const void* matrix, void* context);
+    virtual void build_packet(const void* matrix, void* context);
 
     /**
      * @brief Return the default transform creation result.
      * @return Null.
      */
-    virtual LibClass178A90* func_003EEE50();
+    virtual LibTransformOwner* clone();
 
     /**
      * @brief Default receiver hook that performs no work.
      */
-    virtual void func_003EEE60();
+    virtual void release_clone();
 
     /**
      * @brief Read the additional local translation.

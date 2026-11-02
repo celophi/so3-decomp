@@ -221,10 +221,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A8F0);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A920);
 
 /** @brief Clear the intrusive owner and call the transform release hook. */
-void func_0042AA00(LibClass178A90* object)
+void func_0042AA00(LibTransformOwner* object)
 {
     object->owner = 0;
-    object->LibClass178A90::destroy();
+    object->LibTransformOwner::destroy();
 }
 
 s32 func_0042AA20(void* object)
@@ -334,7 +334,7 @@ void func_0042AB30(LibTextBufferState* object, u32 value) {
 void LibBlendTransform::copy_blend_state(const LibBlendTransform* source)
 {
     set_blend_mode(source->blend_mode);
-    LibTransform::copy_transform_state(source);
+    LibTransform::copy_offset_transform_state(source);
 }
 
 /**

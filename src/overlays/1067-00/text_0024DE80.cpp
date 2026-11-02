@@ -75,7 +75,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_0024E7
 struct FieldOwner24E860
 {
     u8 unk00[0x12C];
-    LibObject178660* unk12c;
+    LibContainer* unk12c;
     FieldListObject* child;
     u32 unk134;
     u8 unk138[0x10D4];

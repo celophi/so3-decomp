@@ -153,11 +153,11 @@ extern "C" void lib_factor_tooltip_show(EquipFactorTooltip* tooltip, float x, fl
 /** @brief Create the tooltip frame and factor lines, starting hidden. @param tooltip Factor tooltip. @return One after initialization, otherwise zero. */
 extern "C" s32 lib_factor_tooltip_init(EquipFactorTooltip* tooltip);
 
-static inline void set_visibility(LibClass178600* display, const u8& flag);
+static inline void set_visibility(LibWidget* display, const u8& flag);
 
 static inline void set_equipment_icon(LibObject172410* icon, s32 category, u8 variant);
 
-static inline void set_display_depth(LibClass174EF0* icon, float depth);
+static inline void set_display_depth(LibDrawWidget* icon, float depth);
 
 static inline void set_resource_scale(ItemCreationOptionResourceDisplay* display, float x, float y);
 
@@ -173,7 +173,7 @@ static inline void initialize_equip_allocation(ItemCreationAllocationRecord* all
 
 static inline void reset_scroll(LibObject174D90* display);
 
-static inline void set_resource_text(LibObject175140* display, const char* text);
+static inline void set_resource_text(LibStringLabel* display, const char* text);
 
 static inline s16 equipped_item(const EquipCharacterEquipment& equipment, s32 index);
 
@@ -192,7 +192,7 @@ static inline EquipAlignedResource* aligned_resource(void* buffer)
 static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
 {
     icon->unkfa = enabled;
-    icon->unk3c = 1;
+    icon->needs_redraw = 1;
 }
 
 /** @brief Return the equipment menu's active State. @return Active equipment controller. */
@@ -218,14 +218,14 @@ static inline void equip_refresh_record_display(EquipCharacterWindow* associated
 {
     if (associated->selection != 0)
     {
-        LibObject175140* text = associated->name_text;
-        text->unkfc = selected_equipment(associated->selection)->character_name;
-        text->unk3c = 1;
+        LibStringLabel* text = associated->name_text;
+        text->text = selected_equipment(associated->selection)->character_name;
+        text->needs_redraw = 1;
         EquipCharacterRecord* record = selected_character(associated->selection);
         s32 result = record->get_level();
         LibObject174F20* number = associated->level_value;
         number->numeric_value = result;
-        number->unk3c = 1;
+        number->needs_redraw = 1;
         associated->show_current_portrait();
     }
 }
@@ -278,7 +278,7 @@ static inline ItemCreationAllocationRecord* allocation_record(s32 value)
 static inline void set_number(LibObject174F20* widget, u32 value)
 {
     widget->numeric_value = value;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 /**
@@ -289,13 +289,13 @@ static inline void set_number(LibObject174F20* widget, u32 value)
  * @param z Third position component.
  * @param w Fourth position component.
  */
-static inline void equip_set_position(LibClass178600* target, float x, float y, float z, float w)
+static inline void equip_set_position(LibWidget* target, float x, float y, float z, float w)
 {
     target->unk18.unk00 = x;
     target->unk18.unk04 = y;
     target->unk18.unk08 = z;
     target->unk18.unk0c = w;
-    target->unk3c = 1;
+    target->needs_redraw = 1;
 }
 
 /** @brief Store the window byte at offset 0xC. @param value Unsigned byte to store. */
@@ -359,7 +359,7 @@ u32 FieldClass15AE70::func_slot54()
 }
 
 /** @brief Return the nested display container. @return Stored container. */
-LibObject178660* FieldClass15AE70::func_slot58()
+LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }
@@ -519,15 +519,15 @@ void EquipExitConfirmWindow::func_slotf4(s16 selected)
     {
         do
         {
-            LibClass174EF0* icon = static_cast<LibClass174EF0*>(node->value);
+            LibDrawWidget* icon = static_cast<LibDrawWidget*>(node->value);
 
             if (index == selected)
             {
-                icon->set_color(0x288080);
+                icon->set_tint(0x288080);
             }
             else
             {
-                icon->set_color(0x808080);
+                icon->set_tint(0x808080);
             }
 
             node = node->next;
@@ -612,7 +612,7 @@ u8 EquipExitConfirmWindow::func_slotb0()
 s32 EquipExitConfirmWindow::func_slot10(u32 associated, float x, float y, s32 code)
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
-    LibClass178630* frame = new (0) LibClass178630;
+    LibPanel* frame = new (0) LibPanel;
 
     if (frame == 0)
     {
@@ -622,9 +622,9 @@ s32 EquipExitConfirmWindow::func_slot10(u32 associated, float x, float y, s32 co
     lib_panel_init_rectangle(frame, 1, 0.0f, 0.0f, 240.0f, 160.0f, 88.0f);
     lib_container_attach_widget(unk10, frame);
     append_panel_widget_node(&unk14, frame);
-    LibObject178750* first = new (0) LibObject178750;
-    LibObject178750* second = new (0) LibObject178750;
-    LibObject178750* title = new (0) LibObject178750;
+    LibTextWidget* first = new (0) LibTextWidget;
+    LibTextWidget* second = new (0) LibTextWidget;
+    LibTextWidget* title = new (0) LibTextWidget;
     grid = new (0) FieldObject23CEA0;
 
     if (first == 0 || second == 0 || title == 0 || grid == 0)
@@ -655,7 +655,7 @@ EquipExitConfirmWindow::~EquipExitConfirmWindow()
 
 void EquipHelpWindow::func_slot5c()
 {
-    LibClass178600* target = text;
+    LibWidget* target = text;
     float x = target->unk18.unk00;
     float y = target->unk18.unk04;
     float z = target->unk18.unk08;
@@ -692,14 +692,14 @@ void EquipHelpWindow::func_slot60(s32 text_key)
         initial_pause_frames = 0;
         scroll_phase = 0;
         lib_text_set_resource(text, func_slot54(), text_key, 1);
-        scroll_span = static_cast<s32>(lib_text_measure_bounds(text)->unk08) + 6;
+        scroll_span = static_cast<s32>(lib_text_measure_bounds(text)->width) + 6;
     }
 }
 
 s32 EquipHelpWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 19);
-    text = new (0) LibObject178750;
+    text = new (0) LibTextWidget;
     ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
 
@@ -708,16 +708,16 @@ s32 EquipHelpWindow::func_slotf4(u32 associated)
         return 0;
     }
 
-    LibObject178750* title = new (0) LibObject178750;
+    LibTextWidget* title = new (0) LibTextWidget;
     title->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_TITLE, 0);
     lib_container_attach_widget(unk10, title);
     append_text_widget_node(&unk2c, title);
-    LibObject178750* label = new (0) LibObject178750;
+    LibTextWidget* label = new (0) LibTextWidget;
     label->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_MENU_LABEL, 0);
     label->set_scale(0.65f, 0.65f);
     lib_container_attach_widget(unk10, label);
     append_text_widget_node(&unk2c, label);
-    label_right_edge = lib_text_measure_bounds(title)->unk08;
+    label_right_edge = lib_text_measure_bounds(title)->width;
     clip_x = 18.0f + label_right_edge;
     float right_margin = 32.0f;
     clip_width = 640.0f - (16.0f + (clip_x + right_margin));
@@ -770,9 +770,9 @@ EquipResourceWindow::~EquipResourceWindow()
 }
 
 /** @brief Write a stored display flag. @param display Display to update. @param flag Low-byte flag to store. */
-static inline void set_visibility(LibClass178600* display, const u8& flag)
+static inline void set_visibility(LibWidget* display, const u8& flag)
 {
-    display->unk3f = flag;
+    display->visible = flag;
 }
 
 void EquipItemInstanceListWindow::func_slot10c(u32 rows, u32 cursor)
@@ -793,25 +793,25 @@ void EquipItemInstanceListWindow::func_slot10c(u32 rows, u32 cursor)
 
     if (FieldStateCE420::unk04 != 0)
     {
-        FieldStateCE420::unk04->unk3f = cursor;
+        FieldStateCE420::unk04->visible = cursor;
 
         if (cursor != 0)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 128.0f;
-            nested->unk3c = 1;
+            nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 64.0f;
-            nested->unk3c = 1;
+            nested->needs_redraw = 1;
         }
     }
 
     if (FieldStateCE420::unk00 != 0)
     {
-        FieldStateCE420::unk00->unk3f = cursor;
+        FieldStateCE420::unk00->visible = cursor;
     }
 }
 
@@ -893,13 +893,13 @@ void EquipItemInstanceListWindow::func_slot5c()
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 128.0f;
-            nested->unk3c = 1;
+            nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 64.0f;
-            nested->unk3c = 1;
+            nested->needs_redraw = 1;
         }
 
         s32 count = lib_collect_unequipped_allocations(D_001B64F8, records, static_cast<u16>(controller->selected_item_type));
@@ -910,7 +910,7 @@ void EquipItemInstanceListWindow::func_slot5c()
         {
             preview_item_stats(detail, lib_allocation_get_identifier(records[selected]));
             LibObject172410* icon = item_icons[FieldStateCE420::unk28];
-            set_selection_marker(icon, icon->unk94);
+            set_selection_marker(icon, icon->tint);
             const LibUiRect16* position = &item_icons[FieldStateCE420::unk28]->unk18;
             s32 x = static_cast<s32>(283.0f + position->unk00);
             s32 y = static_cast<s32>(224.0f + (30.0f + position->unk04));
@@ -946,14 +946,14 @@ void EquipItemInstanceListWindow::set_scroll_position(float offset)
 
     do
     {
-        LibClass178600* target_third;
-        LibClass178600* target_second;
+        LibWidget* target_third;
+        LibWidget* target_second;
         target_third = item_icons[index];
         target_third->unk18.unk04 = position;
-        target_third->unk3c = 1;
+        target_third->needs_redraw = 1;
         target_second = factor_marks[index];
         target_second->unk18.unk04 = position;
-        target_second->unk3c = 1;
+        target_second->needs_redraw = 1;
         position += 28.0f;
         index++;
     } while (index < 9);
@@ -964,7 +964,7 @@ static inline void set_equipment_icon(LibObject172410* icon, s32 category, u8 va
 {
     icon->unkfc = category;
     icon->unkfe = variant;
-    icon->unk3c = 1;
+    icon->needs_redraw = 1;
 }
 
 void EquipItemInstanceListWindow::refresh_rows(s32 start)
@@ -1049,10 +1049,10 @@ void EquipItemInstanceListWindow::recount_rows()
 }
 
 /** @brief Set the drawing depth and mark the display dirty. @param icon Drawing widget. @param depth Drawing depth. */
-static inline void set_display_depth(LibClass174EF0* icon, float depth)
+static inline void set_display_depth(LibDrawWidget* icon, float depth)
 {
     icon->unk88 = depth;
-    icon->unk3c = 1;
+    icon->needs_redraw = 1;
 }
 
 /** @brief Set both resource drawing scales and mark the display dirty. @param display Resource display. @param x Horizontal scale. @param y Vertical scale. */
@@ -1060,7 +1060,7 @@ static inline void set_resource_scale(ItemCreationOptionResourceDisplay* display
 {
     display->unk50.unk34 = y;
     display->unk50.unk30 = x;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
 }
 
 s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
@@ -1069,7 +1069,7 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
     FieldStateCE420::unk3c = 1;
     ItemCreationClass1746A0* frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* overlay = new (0) ItemCreationClass1746A0;
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_scissor_init_rectangle(frame, 8.0f, 10.0f, 302.0f, 224.0f);
@@ -1093,7 +1093,7 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
         factor_marks[index]->func_002D6440(13.0f, y, record);
         set_resource_scale(factor_marks[index], 0.9f, 0.9f);
         lib_container_attach_widget(FieldClass15AE70::unk10, factor_marks[index]);
-        factor_marks[index]->unk3f = 0;
+        factor_marks[index]->visible = 0;
     }
 
     lib_scissor_init_reset(overlay, 1);
@@ -1103,7 +1103,7 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
     FieldStateCE420::unk04 = new (0) ItemCreationClass175030;
     lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 10.0f, 24.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
-    FieldStateCE420::unk04->unk3f = 0;
+    FieldStateCE420::unk04->visible = 0;
     FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
     lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 12.0f, 224.0f, 10.0f, 0);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
@@ -1191,7 +1191,7 @@ u8 EquipItemListWindow::func_slotb0()
             equip_item_in_active_slot(static_cast<EquipSlotWindow*>(associated), 0);
             associated->func_slot20(1);
             associated->func_slot64();
-            FieldStateCE420::unk04->unk3f = 0;
+            FieldStateCE420::unk04->visible = 0;
             D_001B643C->callbacks->state->func_00263C70(associated);
             refresh_rows(FieldStateCE420::unk22);
         }
@@ -1218,7 +1218,7 @@ u8 EquipItemListWindow::func_slotb0()
         return 3;
     }
 
-    FieldStateCE420::unk04->unk3f = 0;
+    FieldStateCE420::unk04->visible = 0;
     return 1;
 }
 
@@ -1237,19 +1237,19 @@ void EquipItemListWindow::func_slot10c(u32 unused, u32 cursor)
 {
     if (FieldStateCE420::unk04 != 0)
     {
-        FieldStateCE420::unk04->unk3f = cursor;
+        FieldStateCE420::unk04->visible = cursor;
 
         if (cursor != 0)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 128.0f;
-            nested->unk3c = 1;
+            nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
             nested->ItemCreationClass185050::unk30 = 64.0f;
-            nested->unk3c = 1;
+            nested->needs_redraw = 1;
         }
     }
 }
@@ -1262,18 +1262,18 @@ void EquipItemListWindow::set_scroll_position(float offset)
 
     do
     {
-        LibClass178600* target_first;
-        LibClass178600* target_second;
-        LibClass178600* target_third;
+        LibWidget* target_first;
+        LibWidget* target_second;
+        LibWidget* target_third;
         target_first = unk48[index];
         target_first->unk18.unk04 = position;
-        target_first->unk3c = 1;
+        target_first->needs_redraw = 1;
         target_second = separators[index];
         target_second->unk18.unk04 = position;
-        target_second->unk3c = 1;
+        target_second->needs_redraw = 1;
         target_third = counts[index];
         target_third->unk18.unk04 = position;
-        target_third->unk3c = 1;
+        target_third->needs_redraw = 1;
         position += 28.0f;
         index++;
     } while (index < 9);
@@ -1313,25 +1313,25 @@ void EquipItemListWindow::refresh_rows(s32 start)
 
                     if (found)
                     {
-                        static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x508050);
+                        static_cast<LibDrawWidget*>(FieldClass15AE60::unk48[row])->set_tint(0x508050);
                     }
                     else
                     {
-                        static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x808080);
+                        static_cast<LibDrawWidget*>(FieldClass15AE60::unk48[row])->set_tint(0x808080);
                     }
 
-                    lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), key, 0);
+                    lib_text_set_resource(static_cast<LibTextWidget*>(FieldClass15AE60::unk48[row]), func_slot54(), key, 0);
                     LibObject174F20* image = counts[row];
                     image->numeric_value = record->inventory_count;
-                    image->unk3c = 1;
+                    image->needs_redraw = 1;
                     FieldClass15AE60::unk48[row]->unk3d = 1;
                     separators[row]->unk3d = 1;
                     counts[row]->unk3d = 1;
                 }
                 else
                 {
-                    static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[row])->set_color(0x808080);
-                    lib_text_set_resource(static_cast<LibObject178750*>(FieldClass15AE60::unk48[row]), func_slot54(), EQUIP_MSG_NONE, 0);
+                    static_cast<LibDrawWidget*>(FieldClass15AE60::unk48[row])->set_tint(0x808080);
+                    lib_text_set_resource(static_cast<LibTextWidget*>(FieldClass15AE60::unk48[row]), func_slot54(), EQUIP_MSG_NONE, 0);
                     FieldClass15AE60::unk48[row]->unk3d = 1;
                     separators[row]->unk3d = 0;
                     counts[row]->unk3d = 0;
@@ -1448,8 +1448,8 @@ void EquipItemListWindow::func_slot5c()
 
         if (FieldStateCE420::unk24 >= 0 && FieldClass15AE60::unk88 != 0)
         {
-            LibClass174EF0* display = static_cast<LibClass174EF0*>(FieldClass15AE60::unk48[FieldStateCE420::unk28]);
-            set_selection_marker(display, display->unk94);
+            LibDrawWidget* display = static_cast<LibDrawWidget*>(FieldClass15AE60::unk48[FieldStateCE420::unk28]);
+            set_selection_marker(display, display->tint);
         }
         else
         {
@@ -1475,15 +1475,15 @@ s32 EquipItemListWindow::func_slot104(u32 associated)
 
     for (s32 index = 0; index < 9; index++)
     {
-        unk48[index] = new (0) LibObject178750;
-        separators[index] = new (0) LibObject178750;
+        unk48[index] = new (0) LibTextWidget;
+        separators[index] = new (0) LibTextWidget;
         counts[index] = new (0) LibObject174F20;
         float y = 16.0f + 28.0f * static_cast<float>(index);
-        static_cast<LibObject178750*>(unk48[index])->init_resource_rectangle(13.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_ITEM_NAME_BASE, 0);
+        static_cast<LibTextWidget*>(unk48[index])->init_resource_rectangle(13.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_ITEM_NAME_BASE, 0);
         separators[index]->init_resource_rectangle(268.0f, y - 4.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 1);
         counts[index]->init_numeric_resource_rectangle(276.0f, y, 28.0f, 24.0f, index, 0, 0);
-        set_display_depth(static_cast<LibObject178750*>(unk48[index]), -1.0f);
-        static_cast<LibObject178750*>(unk48[index])->set_scale(0.9f, 0.9f);
+        set_display_depth(static_cast<LibTextWidget*>(unk48[index]), -1.0f);
+        static_cast<LibTextWidget*>(unk48[index])->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(FieldClass15AE70::unk10, unk48[index]);
         lib_container_attach_widget(FieldClass15AE70::unk10, separators[index]);
         lib_container_attach_widget(FieldClass15AE70::unk10, counts[index]);
@@ -1496,7 +1496,7 @@ s32 EquipItemListWindow::func_slot104(u32 associated)
     FieldStateCE420::unk04 = new (0) ItemCreationClass175030;
     lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 8.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
-    FieldStateCE420::unk04->unk3f = 0;
+    FieldStateCE420::unk04->visible = 0;
     FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
     lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 16.0f, 220.0f, 10.0f, 0.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
@@ -1529,7 +1529,7 @@ EquipItemListWindow::EquipItemListWindow(EquipController* state)
 s32 EquipItemListPanel::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 283.0f, 224.0f, 10);
-    LibClass178630* widget = new (0) LibClass178630;
+    LibPanel* widget = new (0) LibPanel;
     lib_panel_init_rectangle(widget, 1, 0.0f, 0.0f, 340.0f, 248.0f, 88.0f);
     lib_container_attach_widget(unk10, widget);
     return 1;
@@ -1550,17 +1550,17 @@ static inline void set_comparison_number(LibObject174F20*& widget, s32 value, s3
     if (value == previous)
     {
         set_number(widget, value);
-        widget->set_color(0x808080);
+        widget->set_tint(0x808080);
     }
     else if (value > previous)
     {
         set_number(widget, value);
-        widget->set_color(0x508050);
+        widget->set_tint(0x508050);
     }
     else if (value < previous)
     {
         set_number(widget, value);
-        widget->set_color(0x505080);
+        widget->set_tint(0x505080);
     }
 }
 
@@ -1594,11 +1594,11 @@ extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 select
 {
     if (selected == 0)
     {
-        window->preview_values[0]->unk3f = 0;
-        window->preview_values[1]->unk3f = 0;
-        window->preview_values[2]->unk3f = 0;
-        window->preview_values[3]->unk3f = 0;
-        window->preview_values[4]->unk3f = 0;
+        window->preview_values[0]->visible = 0;
+        window->preview_values[1]->visible = 0;
+        window->preview_values[2]->visible = 0;
+        window->preview_values[3]->visible = 0;
+        window->preview_values[4]->visible = 0;
         return;
     }
 
@@ -1618,11 +1618,11 @@ extern "C" void preview_item_stats(EquipStatComparisonWindow* window, s16 select
     set_comparison_number(window->preview_values[2], value2, previous2);
     set_comparison_number(window->preview_values[3], value3, previous3);
     set_comparison_number(window->preview_values[4], value4, previous4);
-    window->preview_values[0]->unk3f = 1;
-    window->preview_values[1]->unk3f = 1;
-    window->preview_values[2]->unk3f = 1;
-    window->preview_values[3]->unk3f = 1;
-    window->preview_values[4]->unk3f = 1;
+    window->preview_values[0]->visible = 1;
+    window->preview_values[1]->visible = 1;
+    window->preview_values[2]->visible = 1;
+    window->preview_values[3]->visible = 1;
+    window->preview_values[4]->visible = 1;
 }
 
 void EquipStatComparisonWindow::refresh_item_details(u8 category, s16 selected)
@@ -1637,11 +1637,11 @@ void EquipStatComparisonWindow::refresh_item_details(u8 category, s16 selected)
         u16 code = packed->definition_index();
         u8 variant = packed->modification_number;
         set_equipment_icon(item_icon, code + 1, variant);
-        item_icon->unk3f = 1;
+        item_icon->visible = 1;
     }
     else
     {
-        item_icon->unk3f = 0;
+        item_icon->visible = 0;
     }
 
     FieldRecordSelection* selection = controller->selected_records();
@@ -1665,11 +1665,11 @@ void EquipStatComparisonWindow::refresh_item_details(u8 category, s16 selected)
 s32 EquipStatComparisonWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 220.0f, 18);
-    slot_label = new (0) LibObject178750;
+    slot_label = new (0) LibTextWidget;
     slot_label->init_resource_rectangle(14.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_SLOT_NAME_BASE, 1);
     lib_container_attach_widget(unk10, slot_label);
     slot_label->set_scale(0.8f, 0.8f);
-    slot_label->set_color(0x806080);
+    slot_label->set_tint(0x806080);
     item_icon = new (0) LibObject172410;
     lib_item_code_init_rectangle(item_icon, 12.0f, 38.0f, 244.0f, 24.0f, 0, 0, 0);
     equip_set_icon_enabled(item_icon, 1);
@@ -1679,26 +1679,26 @@ s32 EquipStatComparisonWindow::func_slotf4(u32 associated)
     for (s32 index = 0; index < 5; index++)
     {
         float y = 78.0f + 32.0f * static_cast<float>(index);
-        stat_labels[index] = new (0) LibObject178750;
+        stat_labels[index] = new (0) LibTextWidget;
         stat_labels[index]->init_resource_rectangle(28.0f, y - 2.0f, 0.0f, 0.0f, static_cast<s32>(associated), index + EQUIP_MSG_STAT_NAME_BASE, 0);
-        stat_labels[index]->set_color(0x805050);
+        stat_labels[index]->set_tint(0x805050);
         lib_container_attach_widget(unk10, stat_labels[index]);
-        separators[index] = new (0) LibObject178750;
+        separators[index] = new (0) LibTextWidget;
         separators[index]->init_resource_rectangle(73.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 0);
-        separators[index]->set_color(0x805050);
+        separators[index]->set_tint(0x805050);
         lib_container_attach_widget(unk10, separators[index]);
         current_values[index] = new (0) LibObject174F20;
         current_values[index]->init_numeric_resource_rectangle(92.0f, y, 48.0f, 22.8f, 9999, 0, 0);
         current_values[index]->set_scale(0.95f, 0.95f);
         lib_container_attach_widget(unk10, current_values[index]);
-        arrows[index] = new (0) LibObject178750;
+        arrows[index] = new (0) LibTextWidget;
         arrows[index]->init_resource_rectangle(158.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_ARROW, 0);
         arrows[index]->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(unk10, arrows[index]);
         preview_values[index] = new (0) LibObject174F20;
         preview_values[index]->init_numeric_resource_rectangle(196.0f, y, 48.0f, 22.8f, 9999, 0, 0);
         preview_values[index]->set_scale(0.95f, 0.95f);
-        preview_values[index]->unk3f = 0;
+        preview_values[index]->visible = 0;
         lib_container_attach_widget(unk10, preview_values[index]);
     }
 
@@ -1843,12 +1843,12 @@ u8 EquipSlotWindow::func_slotb0()
 
     if (associated->left_indicator != 0)
     {
-        associated->left_indicator->unk3f = 0;
+        associated->left_indicator->visible = 0;
     }
 
     if (associated->right_indicator != 0)
     {
-        associated->right_indicator->unk3f = 0;
+        associated->right_indicator->visible = 0;
     }
 
     item_list = static_cast<FieldClass15AD40*>(func_slot4c());
@@ -1877,7 +1877,7 @@ u8 EquipSlotWindow::func_slotb0()
     active_slot = category;
     FieldClass153130* selector = equipment_slot_selector;
     selector->ItemCreationClass185050::unk30 = 64.0f;
-    selector->LibClass178600::unk3c = 1;
+    selector->LibWidget::needs_redraw = 1;
     func_slot20(0);
     lib_factor_tooltip_hide(controller->tooltip);
     return 1;
@@ -1921,18 +1921,18 @@ void EquipSlotWindow::func_slot64()
 
     if (associated->left_indicator != 0)
     {
-        associated->left_indicator->unk3f = 1;
+        associated->left_indicator->visible = 1;
     }
 
     if (associated->right_indicator != 0)
     {
-        associated->right_indicator->unk3f = 1;
+        associated->right_indicator->visible = 1;
     }
 
     equip_refresh_record_display(associated);
     FieldClass153130* selector = equipment_slot_selector;
     selector->ItemCreationClass185050::unk30 = 128.0f;
-    selector->LibClass178600::unk3c = 1;
+    selector->LibWidget::needs_redraw = 1;
 }
 
 u8 EquipSlotWindow::func_slotb8()
@@ -1941,12 +1941,12 @@ u8 EquipSlotWindow::func_slotb8()
 
     if (associated->left_indicator != 0)
     {
-        associated->left_indicator->unk3f = 0;
+        associated->left_indicator->visible = 0;
     }
 
     if (associated->right_indicator != 0)
     {
-        associated->right_indicator->unk3f = 0;
+        associated->right_indicator->visible = 0;
     }
 
     EquipCharacterRecord* record = selected_character(selection);
@@ -1967,12 +1967,12 @@ u8 EquipSlotWindow::func_slotb8()
 
     if (associated->left_indicator != 0)
     {
-        associated->left_indicator->unk3f = 1;
+        associated->left_indicator->visible = 1;
     }
 
     if (associated->right_indicator != 0)
     {
-        associated->right_indicator->unk3f = 1;
+        associated->right_indicator->visible = 1;
     }
 
     return 1;
@@ -2096,17 +2096,17 @@ extern "C" void refresh_equipment_slots(EquipSlotWindow* object)
     for (s32 index = 0; index < 4; index++)
     {
         object->equipped_items[index] = 0;
-        object->slot_labels[index]->set_color(0x505050);
+        object->slot_labels[index]->set_tint(0x505050);
     }
 
     for (s32 index = 0; index < object->usable_slot_count; index++)
     {
-        object->slot_labels[index]->set_color(0x806080);
+        object->slot_labels[index]->set_tint(0x806080);
     }
 
     for (s32 index = 0; index < object->usable_slot_count; index++)
     {
-        object->item_icons[index]->unk3f = 0;
+        object->item_icons[index]->visible = 0;
         object->equipped_items[index] = selected_equipment(object->selection)->get_equipment_id(index);
 
         if (object->equipped_items[index] != 0)
@@ -2115,12 +2115,12 @@ extern "C" void refresh_equipment_slots(EquipSlotWindow* object)
             u16 code = object->current_item->definition_index();
             u8 variant = object->current_item->modification_number;
             set_equipment_icon(object->item_icons[index], static_cast<u16>(code) + 1, variant);
-            object->item_icons[index]->unk3f = 1;
-            object->empty_labels[index]->unk3f = 0;
+            object->item_icons[index]->visible = 1;
+            object->empty_labels[index]->visible = 0;
         }
         else
         {
-            object->empty_labels[index]->unk3f = 1;
+            object->empty_labels[index]->visible = 1;
         }
     }
 }
@@ -2142,22 +2142,22 @@ s32 EquipSlotWindow::func_slotf4(u32 associated)
     for (s32 index = 0; index < 4; index++)
     {
         float y = 16.0f + static_cast<float>(index) * row_spacing;
-        slot_labels[index] = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(slot_labels[index]), static_cast<s32>(associated), index + EQUIP_MSG_SLOT_NAME_BASE, 1,
+        slot_labels[index] = new (0) LibTextWidget;
+        lib_text_init_resource_rectangle(static_cast<LibTextWidget*>(slot_labels[index]), static_cast<s32>(associated), index + EQUIP_MSG_SLOT_NAME_BASE, 1,
                                          14.0f, y, 0.0f, 0.0f);
         lib_container_attach_widget(unk10, slot_labels[index]);
         slot_labels[index]->set_scale(0.8f, 0.8f);
-        slot_labels[index]->set_color(0x806080);
+        slot_labels[index]->set_tint(0x806080);
         item_icons[index] = new (0) LibObject172410;
         lib_item_code_init_rectangle(item_icons[index], 12.0f, 38.0f + row_spacing * static_cast<float>(index), 244.0f, 24.0f, 0, 0, 0);
         equip_set_icon_enabled(item_icons[index], 1);
         item_icons[index]->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(unk10, item_icons[index]);
-        empty_labels[index] = new (0) LibObject178750;
-        lib_text_init_resource_rectangle(static_cast<LibObject178750*>(empty_labels[index]), static_cast<s32>(associated), EQUIP_MSG_NONE, 0, 12.0f,
+        empty_labels[index] = new (0) LibTextWidget;
+        lib_text_init_resource_rectangle(static_cast<LibTextWidget*>(empty_labels[index]), static_cast<s32>(associated), EQUIP_MSG_NONE, 0, 12.0f,
                                          38.0f + row_spacing * static_cast<float>(index), 284.0f, 24.0f);
         empty_labels[index]->set_scale(0.9f, 0.9f);
-        empty_labels[index]->unk3f = 0;
+        empty_labels[index]->visible = 0;
         lib_container_attach_widget(unk10, empty_labels[index]);
     }
 
@@ -2198,7 +2198,7 @@ EquipSlotWindow::EquipSlotWindow(EquipController* state)
 s32 EquipSlotPanel::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot10(associated, 16.0f, 224.0f, 19);
-    LibClass178630* widget = new (0) LibClass178630;
+    LibPanel* widget = new (0) LibPanel;
     lib_panel_init_rectangle(widget, 0, 0.0f, 0.0f, 270.0f, 248.0f, 88.0f);
     lib_container_attach_widget(unk10, widget);
     return 1;
@@ -2231,8 +2231,8 @@ void EquipParameterWindow::func_slot5c()
     {
         if (show_parameters != 0)
         {
-            description->unk3f = 0;
-            title->unk3f = 1;
+            description->visible = 0;
+            title->visible = 1;
             ItemCreationAllocationRecord preview __attribute__((aligned(16)));
             preview.reset(0);
             ItemCreationCategoryRecord* item_record = equip_category_record(state->selected_item_type);
@@ -2245,9 +2245,9 @@ void EquipParameterWindow::func_slot5c()
 
             for (s32 row = 0; row < 5; row++)
             {
-                parameter_labels[row]->unk3f = 1;
-                separators[row]->unk3f = 1;
-                parameter_values[row]->unk3f = 1;
+                parameter_labels[row]->visible = 1;
+                separators[row]->visible = 1;
+                parameter_values[row]->visible = 1;
             }
         }
         else
@@ -2256,34 +2256,34 @@ void EquipParameterWindow::func_slot5c()
 
             if (key != description_key)
             {
-                description->unk3f = 1;
+                description->visible = 1;
                 lib_multiline_text_set_resource(description, func_slot54(), key, 8, 1);
                 LibObject174D90* text = description;
-                text->unk80 = 0.8f;
-                text->unk84 = 0.8f;
-                text->unk3c = 1;
+                text->draw_scale = 0.8f;
+                text->draw_scale_y = 0.8f;
+                text->needs_redraw = 1;
             }
 
             for (s32 row = 0; row < 5; row++)
             {
-                parameter_labels[row]->unk3f = 0;
-                separators[row]->unk3f = 0;
-                parameter_values[row]->unk3f = 0;
+                parameter_labels[row]->visible = 0;
+                separators[row]->visible = 0;
+                parameter_values[row]->visible = 0;
             }
 
-            title->unk3f = 0;
+            title->visible = 0;
         }
     }
     else
     {
-        title->unk3f = 0;
-        description->unk3f = 0;
+        title->visible = 0;
+        description->visible = 0;
 
         for (s32 row = 0; row < 5; row++)
         {
-            parameter_labels[row]->unk3f = 0;
-            separators[row]->unk3f = 0;
-            parameter_values[row]->unk3f = 0;
+            parameter_labels[row]->visible = 0;
+            separators[row]->visible = 0;
+            parameter_values[row]->visible = 0;
         }
     }
 }
@@ -2303,39 +2303,39 @@ s32 EquipParameterWindow::func_slotf4(u32 associated)
     }
 
     FieldClass15AE70::func_slot10(associated, 220.0f, 80.0f, 18);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 404.0f, 145.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     description = new (0) LibObject174D90;
     description->init_multiline_resource_rectangle(32.0f, 13.0f, 362.0f, 140.0f, static_cast<s32>(associated), EQUIP_MSG_CHANGE_HELP, 8, 0);
     reset_scroll(description);
     lib_container_attach_widget(unk10, description);
-    description->unk3f = 0;
-    title = new (0) LibObject178750;
+    description->visible = 0;
+    title = new (0) LibTextWidget;
     title->init_resource_rectangle(40.0f, 16.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_PARAMETER_CHANGES, 0);
-    title->set_color(0x806080);
+    title->set_tint(0x806080);
     title->set_scale(0.75f, 0.75f);
     lib_container_attach_widget(unk10, title);
-    title->unk3f = 0;
+    title->visible = 0;
 
     for (s32 index = 0; index < 5; index++)
     {
-        parameter_labels[index] = new (0) LibObject178750;
+        parameter_labels[index] = new (0) LibTextWidget;
         float y = 42.0f + 28 * (index / 2);
         parameter_labels[index]->init_resource_rectangle(50.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated),
                                                          EQUIP_MSG_PARAMETER_NAME_BASE + index, 0);
-        parameter_labels[index]->set_color(0x805050);
+        parameter_labels[index]->set_tint(0x805050);
         lib_container_attach_widget(unk10, parameter_labels[index]);
-        parameter_labels[index]->unk3f = 0;
-        separators[index] = new (0) LibObject178750;
+        parameter_labels[index]->visible = 0;
+        separators[index] = new (0) LibTextWidget;
         separators[index]->init_resource_rectangle(100.0f + 190 * (index % 2), y, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LABEL_SEPARATOR, 0);
-        separators[index]->set_color(0x805050);
+        separators[index]->set_tint(0x805050);
         lib_container_attach_widget(unk10, separators[index]);
-        separators[index]->unk3f = 0;
+        separators[index]->visible = 0;
         parameter_values[index] = new (0) LibObject174F20;
         parameter_values[index]->init_numeric_resource_rectangle(90.0f + 190 * (index % 2), y, 80.0f, 30.0f, 0, static_cast<s32>(associated), 1);
         lib_container_attach_widget(unk10, parameter_values[index]);
-        parameter_values[index]->unk3f = 0;
+        parameter_values[index]->visible = 0;
     }
 
     return 1;
@@ -2352,7 +2352,7 @@ void EquipCharacterWindow::show_current_portrait()
     {
         if (portraits[clear_index])
         {
-            portraits[clear_index]->unk3f = 0;
+            portraits[clear_index]->visible = 0;
         }
     }
 
@@ -2368,7 +2368,7 @@ void EquipCharacterWindow::show_current_portrait()
 
     if (portraits[selected])
     {
-        portraits[selected]->unk3f = 1;
+        portraits[selected]->visible = 1;
     }
 }
 
@@ -2379,19 +2379,19 @@ void EquipCharacterWindow::func_slot5c()
 
     if (state->func_00261150() == window)
     {
-        optimize_prompt->unk3f = 1;
+        optimize_prompt->visible = 1;
     }
     else
     {
-        optimize_prompt->unk3f = 0;
+        optimize_prompt->visible = 0;
     }
 }
 
 /** @brief Update a resource display string. @param display String display. @param text String to display. */
-static inline void set_resource_text(LibObject175140* display, const char* text)
+static inline void set_resource_text(LibStringLabel* display, const char* text)
 {
-    display->unkfc = text;
-    display->unk3c = 1;
+    display->text = text;
+    display->needs_redraw = 1;
 }
 
 s32 EquipCharacterWindow::func_slotf4(u32 associated)
@@ -2403,31 +2403,31 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
 
     character_slot = selection->slots[selection->current];
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 17);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 232.0f, 144.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     append_panel_widget_node(&unk14, panel);
-    name_text = new (0) LibObject175140;
+    name_text = new (0) LibStringLabel;
     const char* text = selected_equipment(selection)->character_name;
     name_text->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
     lib_container_attach_widget(unk10, name_text);
     append_icon_widget_node(&unk44, name_text);
     name_text->set_scale(0.8f, 0.8f);
-    level_label = new (0) LibObject178750;
+    level_label = new (0) LibTextWidget;
     level_value = new (0) LibObject174F20;
     level_label->init_resource_rectangle(120.0f, 48.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_LEVEL, 0);
     level_value->init_numeric_resource_rectangle(170.0f, 48.0f, 42.0f, 24.0f, selected_character(selection)->get_level(), 0, 0);
     lib_container_attach_widget(unk10, level_label);
     append_text_widget_node(&unk2c, level_label);
-    level_label->set_color(0x806080);
+    level_label->set_tint(0x806080);
     lib_container_attach_widget(unk10, level_value);
     append_stat_value_node(&unk38, level_value);
     level_value->set_scale(0.9f, 0.9f);
-    optimize_prompt = new (0) LibObject178750;
+    optimize_prompt = new (0) LibTextWidget;
     optimize_prompt->init_resource_rectangle(105.0f, 80.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_OPTIMIZE_PROMPT, 0);
     optimize_prompt->set_scale(0.8f, 0.8f);
     lib_container_attach_widget(unk10, optimize_prompt);
-    switch_prompt = new (0) LibObject178750;
+    switch_prompt = new (0) LibTextWidget;
     switch_prompt->init_resource_rectangle(105.0f, 110.0f, 0.0f, 0.0f, static_cast<s32>(associated), EQUIP_MSG_SWITCH_PROMPT, 0);
     switch_prompt->set_scale(0.8f, 0.8f);
     lib_container_attach_widget(unk10, switch_prompt);
@@ -2448,7 +2448,7 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
 
     while (node != 0)
     {
-        static_cast<LibObject178750*>(node->value)->set_scale(0.9f, 0.9f);
+        static_cast<LibTextWidget*>(node->value)->set_scale(0.9f, 0.9f);
         node = node->next;
     }
 
@@ -2465,7 +2465,7 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
             portraits[index]->unkcc = allocation;
             portraits[index]->unkd0 = slot;
             portraits[index]->func_002D6440(20.0f, 50.0f, record);
-            portraits[index]->unk3f = 0;
+            portraits[index]->visible = 0;
             lib_container_attach_widget(unk10, portraits[index]);
         }
     }
@@ -2643,11 +2643,11 @@ extern "C" void optimize_equipment(EquipController* state, const EquipCharacterR
 
 void EquipController::func_slot5c()
 {
-    LibObject178660* container = static_cast<LibObject178660*>(tooltip);
+    LibContainer* container = static_cast<LibContainer*>(tooltip);
 
     if (container != 0)
     {
-        static_cast<LibClass174610&>(*container).destroy();
+        static_cast<LibCallbackTransform&>(*container).destroy();
     }
 
     if (resource_slot != 0)
@@ -2738,7 +2738,7 @@ EquipTooltipFrame::~EquipTooltipFrame()
 {
 }
 
-LibClass178A70::~LibClass178A70()
+LibListReceiver::~LibListReceiver()
 {
 }
 

@@ -236,7 +236,7 @@ void FieldClass150E10::update()
     {
         return;
     }
-    LibClass178DD0& list = *this;
+    LibUpdateList& list = *this;
     list.update_nodes();
 }
 

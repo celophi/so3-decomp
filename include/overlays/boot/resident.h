@@ -9,7 +9,7 @@
 struct BootDisplay6624
 {
     u8 unk00[0x360];
-    BootDisplayManager* manager;
+    LibDisplayManager* manager;
 };
 
 /** Partial resident object whose display pointer is at offset 0x8C. */
@@ -34,9 +34,9 @@ struct BootDisplayUser128
 };
 
 /** Partial resident manager D_001B661C and the objects that draw through the display. */
-struct BootDisplayLinks661C : public BootUpdateList
+struct BootDisplayLinks661C : public LibUpdateList
 {
-    u8 unk14[0x406C];
+    u8 unk78[0x4008];
     BootDisplayUser8C* unk4080;
     void* unk4084;
     BootDimensionsACD0* unk4088;
@@ -65,7 +65,7 @@ void func_419A70(BootMoviePlayer* player, s32 first, s32 second);
 void func_41A210(BootMoviePlayer* player);
 void func_467570(BootSelectionCursor* object, s32 first, s32 second, s32 third, float x, float y, float z);
 void func_479190(BootScene* scene, void* data);
-void func_474010(BootScene* scene, BootDimensionsACD0* display, BootUpdateList* list, BootDisplay6624* state, BootDisplayManager* manager,
+void func_474010(BootScene* scene, BootDimensionsACD0* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
                  BootDisplayLinks661C* links, s32 flag);
 BootClass170F30* lib_find_renderable_entry(LibListObject* models, const char* name);
 void* lib_find_camera_entry(LibListObject* models, const char* name);

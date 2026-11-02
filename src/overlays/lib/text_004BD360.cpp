@@ -112,7 +112,7 @@ struct LibTrigQuotients
 struct LibWidgetContainerLink
 {
     u8 unk00[0x14];
-    LibObject178660* container;
+    LibContainer* container;
 };
 
 extern "C" LibTrigTable D_50CC80;
@@ -138,7 +138,7 @@ static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 row)
 }
 
 /** @brief Unlink a container child. @param object Container. @param child Widget to unlink. */
-extern "C" void func_004C6120(LibObject178660* object, LibClass178600* child);
+extern "C" void func_004C6120(LibContainer* object, LibWidget* child);
 
 /** Partial text resource fields and the inherited redraw flag. */
 typedef struct LibTextResourceState
@@ -155,7 +155,7 @@ typedef struct LibTextResourceState
 typedef struct LibPanelAssociation
 {
     u8 pad00[0x9C];
-    LibClass178630* panel;
+    LibPanel* panel;
 } LibPanelAssociation;
 
 typedef struct LibPanelAssociationState
@@ -286,7 +286,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD990);
  * @param type Entry type.
  * @param flags Entry flags.
  */
-extern "C" void lib_animation_set_entry_channel(LibClass178220* object, s32 index, LibClass173180* channel, u8 kind, s16 type, u8 flags)
+extern "C" void lib_animation_set_entry_channel(LibAnimation* object, s32 index, LibClass173180* channel, u8 kind, s16 type, u8 flags)
 {
     if (index < object->entry_count)
     {
@@ -304,7 +304,7 @@ extern "C" void lib_animation_set_entry_channel(LibClass178220* object, s32 inde
  * @param nibble Flag value to match against the entry's low nibble.
  * @return Matching channel, or null.
  */
-extern "C" LibClass173180* lib_animation_channel_at(LibClass178220* object, s32 index, u8 nibble)
+extern "C" LibClass173180* lib_animation_channel_at(LibAnimation* object, s32 index, u8 nibble)
 {
     if (!object->entries)
     {
@@ -327,7 +327,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDAA0);
  * @param target Vector state to bind.
  * @param name State name to match.
  */
-extern "C" void lib_animation_bind_state(LibClass178220* object, LibClass178370* target, const char* name)
+extern "C" void lib_animation_bind_state(LibAnimation* object, LibAnimationTarget* target, const char* name)
 {
     s32 count = object->entry_count;
     for (s32 index = 0; index < count; index++)
@@ -344,7 +344,7 @@ extern "C" void lib_animation_bind_state(LibClass178220* object, LibClass178370*
  * @brief Clear populated animation entries' targets and mark their bindings incomplete.
  * @param object Animation object.
  */
-extern "C" void lib_animation_clear_targets(LibClass178220* object)
+extern "C" void lib_animation_clear_targets(LibAnimation* object)
 {
     s32 count = object->entry_count;
     for (s32 index = 0; index < count; index++)
@@ -362,7 +362,7 @@ extern "C" void lib_animation_clear_targets(LibClass178220* object)
  * @param object Animation object.
  * @param kind Entry kind to clear.
  */
-extern "C" void lib_animation_clear_targets_by_kind(LibClass178220* object, u8 kind)
+extern "C" void lib_animation_clear_targets_by_kind(LibAnimation* object, u8 kind)
 {
     s32 count = object->entry_count;
     for (s32 index = 0; index < count; index++)
@@ -379,7 +379,7 @@ extern "C" void lib_animation_clear_targets_by_kind(LibClass178220* object, u8 k
  * @param object Animation object.
  * @param target Bound target to remove.
  */
-extern "C" void lib_animation_clear_matching_target(LibClass178220* object, const void* target)
+extern "C" void lib_animation_clear_matching_target(LibAnimation* object, const void* target)
 {
     s32 count = object->entry_count;
     for (s32 index = 0; index < count; index++)
@@ -395,7 +395,7 @@ extern "C" void lib_animation_clear_matching_target(LibClass178220* object, cons
  * @brief Delete populated channels and unregister their binding-owner links.
  * @param object Animation object.
  */
-extern "C" void lib_animation_release_channels(LibClass178220* object)
+extern "C" void lib_animation_release_channels(LibAnimation* object)
 {
     if (object->entries)
     {
@@ -442,7 +442,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BFE10);
  * @param object Animation object.
  * @param source Resource header to decode.
  */
-extern "C" void lib_animation_load_resource(LibClass178220* object, ResidentResourceHeader* source)
+extern "C" void lib_animation_load_resource(LibAnimation* object, ResidentResourceHeader* source)
 {
     if (object->entries)
     {
@@ -465,7 +465,7 @@ extern "C" void lib_animation_load_resource(LibClass178220* object, ResidentReso
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0370);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __ct__14LibClass178220Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __ct__12LibAnimationFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0530);
 
@@ -658,7 +658,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2C40);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2CD0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __ct__14LibClass178370Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __ct__18LibAnimationTargetFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2F50);
 
@@ -854,10 +854,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4620);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4780);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", destroy__14LibClass178600Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", destroy__9LibWidgetFv);
 
 /** @brief Unlink the widget from its container before detaching its owner. */
-LibClass178600::~LibClass178600()
+LibWidget::~LibWidget()
 {
     if (container)
     {
@@ -866,7 +866,7 @@ LibClass178600::~LibClass178600()
 }
 
 /** @brief Initialize the widget rectangle, container reference, and state bytes. */
-LibClass178600::LibClass178600()
+LibWidget::LibWidget()
 {
     unk18.unk0c = 0.0f;
     unk18.unk08 = 0.0f;
@@ -874,7 +874,7 @@ LibClass178600::LibClass178600()
     unk18.unk00 = 0.0f;
     unk38 = 0;
     container = 0;
-    unk28 = 128.0f;
+    draw_alpha = 128.0f;
     unk2c[1] = 0;
     unk2c[0] = 0;
     unk34 = 0;
@@ -882,14 +882,14 @@ LibClass178600::LibClass178600()
     unk3a = 0;
     unk3d = 1;
     unk3e = 1;
-    unk3f = 1;
+    visible = 1;
     unk3b = 0;
-    unk3c = 0;
+    needs_redraw = 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4A00);
 
-extern "C" void lib_panel_detach(LibClass178630* object)
+extern "C" void lib_panel_detach(LibPanel* object)
 {
     LibPanelAssociationState* state = (LibPanelAssociationState*)object;
     if (state->association != 0)
@@ -900,7 +900,7 @@ extern "C" void lib_panel_detach(LibClass178630* object)
 }
 
 /** Panel transform with its callback interface at 0x90. */
-class FieldClass15BA90 : public LibClass178A90, public LibClass171FF0
+class FieldClass15BA90 : public LibTransformOwner, public LibDmaCallbacks
 {
 public:
     /** @brief Initialize the panel transform and its callback interface. */
@@ -911,13 +911,13 @@ public:
     virtual void set_translation(float x, float y, float z);
     void* unk94;
     u8 unk98[4];
-    LibClass178630* panel;
+    LibPanel* panel;
     u8 pending;
     u8 unka1[0xF];
 };
-extern "C" s32 func_002F99F0(FieldClass15BA90*, LibClass178630*);
+extern "C" s32 func_002F99F0(FieldClass15BA90*, LibPanel*);
 
-extern "C" s32 lib_panel_init_transform(LibClass178630* object, float z)
+extern "C" s32 lib_panel_init_transform(LibPanel* object, float z)
 {
     object->unk60 = new (0) FieldClass15BA90;
     if (object->unk60 == 0)
@@ -930,7 +930,7 @@ extern "C" s32 lib_panel_init_transform(LibClass178630* object, float z)
         ((FieldClass15BA90*)object->unk60)->pending = 1;
         object->unk8c = 0;
     }
-    ((LibClass178DD0*)D_001B661C)->append_node(object->unk60, -1);
+    ((LibUpdateList*)D_001B661C)->append_node(object->unk60, -1);
     return 1;
 }
 
@@ -949,7 +949,7 @@ typedef struct LibPanelColorState
  * @param object Panel widget.
  * @param colors Packed colors whose low 24 bits are stored.
  */
-extern "C" void lib_panel_set_colors(LibClass178630* object, const LibWidgetColors4C5590* colors)
+extern "C" void lib_panel_set_colors(LibPanel* object, const LibWidgetColors4C5590* colors)
 {
     LibPanelColorState* state = (LibPanelColorState*)object;
     state->colors[0] = colors->values[0] & 0xFFFFFF;
@@ -997,7 +997,7 @@ struct LibPanelInitState
  * @param extra Additional drawing coordinate.
  * @return One on successful setup, or zero if storage cannot be allocated.
  */
-extern "C" s32 lib_panel_init_rectangle(LibClass178630* object, s32 mode, float x, float y, float width, float height, float extra)
+extern "C" s32 lib_panel_init_rectangle(LibPanel* object, s32 mode, float x, float y, float width, float height, float extra)
 {
     object->unk18.unk00 = x;
     object->unk18.unk04 = y;
@@ -1013,7 +1013,7 @@ extern "C" s32 lib_panel_init_rectangle(LibClass178630* object, s32 mode, float 
     state->colors[1] = defaults->colors[1] & 0xFFFFFF;
     state->colors[2] = defaults->colors[2] & 0xFFFFFF;
     state->colors[3] = defaults->colors[3] & 0xFFFFFF;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
     object->unk34 = 0;
     state->extra = extra;
     state->mode = mode;
@@ -1037,9 +1037,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6150);
  * @param object Container receiver.
  * @param child Widget to attach.
  */
-extern "C" void lib_container_attach_widget(LibObject178660* object, LibClass178600* child)
+extern "C" void lib_container_attach_widget(LibContainer* object, LibWidget* child)
 {
-    object->LibClass178A70::append(child);
+    object->LibListReceiver::append(child);
     reinterpret_cast<LibWidgetContainerLink*>(child)->container = object;
 }
 
@@ -1074,16 +1074,16 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6230);
  * @param z Third coordinate.
  * @return One on success, or zero if storage cannot be allocated.
  */
-extern "C" s32 lib_container_init(LibObject178660* object, s32 code, float x, float y, s32 first, float z, s32 second)
+extern "C" s32 lib_container_init(LibContainer* object, s32 code, float x, float y, s32 first, float z, s32 second)
 {
     if (!lib_allocate_drawing_storage(&object->unkD0, 12))
     {
         return 0;
     }
-    object->LibClass174610::translation.x = x;
-    object->LibClass174610::translation.y = y;
-    object->LibClass174610::translation.z = 0.0f;
-    object->LibClass174610::translation.w = 1.0f;
+    object->LibCallbackTransform::translation.x = x;
+    object->LibCallbackTransform::translation.y = y;
+    object->LibCallbackTransform::translation.z = 0.0f;
+    object->LibCallbackTransform::translation.w = 1.0f;
     object->set_codes_and_z(code, first, z, second, 0);
     object->unkE0 = 128.0f;
     return 1;
@@ -1108,23 +1108,23 @@ typedef struct LibTextBoundsState
     u8 pad74[0x40];
     u32 count;
     u8 padb8[0x30];
-    LibBounds4C69B0 bounds;
+    LibTextExtent bounds;
     u8 padf8[0x10];
     u32 source;
     u32 key;
     u8 flag;
     u8 pending;
 } LibTextBoundsState;
-extern "C" s32 func_004C7D40(LibObject178750* object, u32 source, u32 key, u8 flag);
+extern "C" s32 func_004C7D40(LibTextWidget* object, u32 source, u32 key, u8 flag);
 extern "C" void* func_100B00(u32 size, s32 flags);
-extern "C" void func_004C74E0(LibObject178750* object);
+extern "C" void func_004C74E0(LibTextWidget* object);
 
 /**
  * @brief Refresh the text layout and return its measured bounds.
  * @param object Text widget.
  * @return Stored bounds, or null when resource loading or allocation fails.
  */
-extern "C" LibBounds4C69B0* lib_text_measure_bounds(LibObject178750* object)
+extern "C" LibTextExtent* lib_text_measure_bounds(LibTextWidget* object)
 {
     LibTextBoundsState* state = (LibTextBoundsState*)object;
     if (state->pending)
@@ -1146,10 +1146,10 @@ extern "C" LibBounds4C69B0* lib_text_measure_bounds(LibObject178750* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6A40);
 
-extern "C" void lib_text_set_resource(LibObject178750* object, u32 source, u32 key, u8 flag)
+extern "C" void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, u8 flag)
 {
     LibTextResourceState* state = (LibTextResourceState*)object;
-    state->source = source;
+    state->source = slot;
     state->key = key;
     state->flag = flag;
     state->pending = 1;
@@ -1185,7 +1185,7 @@ typedef struct LibTextRectangleState
     u8 pad100[0x11];
     u8 pending;
 } LibTextRectangleState;
-extern "C" void func_00464870(LibObject178750* object, float x, float y, float width, float height);
+extern "C" void func_00464870(LibTextWidget* object, float x, float y, float width, float height);
 /**
  * @brief Initialize the text rectangle and clear its allocation and pending flag.
  * @param object Text widget.
@@ -1194,7 +1194,7 @@ extern "C" void func_00464870(LibObject178750* object, float x, float y, float w
  * @param width Rectangle width.
  * @param height Rectangle height.
  */
-extern "C" void lib_text_init_rectangle(LibObject178750* object, float x, float y, float width, float height)
+extern "C" void lib_text_init_rectangle(LibTextWidget* object, float x, float y, float width, float height)
 {
     LibTextRectangleState* state = (LibTextRectangleState*)object;
     func_00464870(object, x, y, width, height);
@@ -1214,7 +1214,7 @@ extern "C" void lib_text_init_rectangle(LibObject178750* object, float x, float 
  * @param height Rectangle height.
  * @return Resource initialization status.
  */
-extern "C" s32 lib_text_init_resource_rectangle(LibObject178750* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height)
+extern "C" s32 lib_text_init_resource_rectangle(LibTextWidget* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height)
 {
     LibTextRectangleState* state = (LibTextRectangleState*)object;
     state->flag = flag;
@@ -1338,7 +1338,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9F00);
  * @brief Detach a node and clear its links, ignoring the list sentinel and null.
  * @param node Intrusive node to detach.
  */
-void LibClass178A70::unlink(void* node)
+void LibListReceiver::unlink(void* node)
 {
     LibListSentinel* removed = static_cast<LibListSentinel*>(node);
     if (removed == &sentinel)
@@ -1372,7 +1372,7 @@ void LibClass178A70::unlink(void* node)
  * @param position List position preceding the inserted node.
  * @param node Intrusive node to insert.
  */
-void LibClass178A70::insert_after(void* position, void* node)
+void LibListReceiver::insert_after(void* position, void* node)
 {
     LibListSentinel* after = static_cast<LibListSentinel*>(position);
     LibListSentinel* inserted = static_cast<LibListSentinel*>(node);
@@ -1391,7 +1391,7 @@ void LibClass178A70::insert_after(void* position, void* node)
  * @brief Prepend a node to the beginning of the list and increment its count.
  * @param node Intrusive node to prepend.
  */
-void LibClass178A70::prepend(void* node)
+void LibListReceiver::prepend(void* node)
 {
     LibListSentinel* inserted = static_cast<LibListSentinel*>(node);
     LibListSentinel* first = sentinel.next;
@@ -1406,7 +1406,7 @@ void LibClass178A70::prepend(void* node)
  * @brief Append a node to the end of the list and increment its count.
  * @param node Intrusive node to append.
  */
-void LibClass178A70::append(void* node)
+void LibListReceiver::append(void* node)
 {
     LibListSentinel* inserted = static_cast<LibListSentinel*>(node);
     LibListSentinel* last = sentinel.previous;
@@ -1418,7 +1418,7 @@ void LibClass178A70::append(void* node)
 }
 
 /** @brief Initialize an empty intrusive list whose sentinel links point to itself. */
-LibClass178A70::LibClass178A70()
+LibListReceiver::LibListReceiver()
 {
     node_count = 0;
     sentinel.previous = &sentinel;

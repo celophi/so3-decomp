@@ -579,9 +579,9 @@ float func_00447DC0(void* object)
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447DD0);
 
 /** @brief Set the inherited state byte to two when blending is enabled. */
-void LibBlendTransform::func_003F4420()
+void LibBlendTransform::set_default_draw_bucket()
 {
-    unk60 = blend_mode ? 2 : 0;
+    draw_bucket = blend_mode ? 2 : 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447E10);

@@ -6,7 +6,7 @@
 
 #ifdef __cplusplus
 /** Partial widget with resident vtable at 0x1725D0. */
-class ItemCreationClass1725D0 : public LibClass178600
+class ItemCreationClass1725D0 : public LibWidget
 {
 public:
     /** @brief Initialize the widget storage and select kind 3. */
@@ -22,7 +22,7 @@ public:
 };
 
 /** Partial widget with resident vtable at 0x172870. */
-class ItemCreationClass172870 : public LibClass178600
+class ItemCreationClass172870 : public LibWidget
 {
 public:
     /** @brief Initialize the widget storage and select kind 6. */
@@ -38,7 +38,7 @@ public:
 };
 
 /** Partial widget with resident vtable at 0x172600. */
-class ItemCreationClass172600 : public LibClass178600
+class ItemCreationClass172600 : public LibWidget
 {
 public:
     /** @brief Initialize the widget storage and select kind 5. */
@@ -56,7 +56,7 @@ public:
 
 
 /** Partial Lib widget with vtable D_174790 in main data. */
-class LibClass174790 : public LibClass178600
+class LibClass174790 : public LibWidget
 {
 public:
     /** @brief Release the widget storage and destroy its base. */
@@ -65,7 +65,7 @@ public:
 };
 
 /** Partial Lib widget with vtable D_175170 in main data. */
-class LibClass175170 : public LibClass178600
+class LibClass175170 : public LibWidget
 {
 public:
     /** @brief Release the widget storage and destroy its base. */
@@ -132,7 +132,7 @@ s32 func_0041AD10(ItemCreationClass172600* object, float x, float y, float width
 void func_0041AD80(void* object);
 
 /** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
-void func_0041ADC0(LibClass178A90* object);
+void func_0041ADC0(LibTransformOwner* object);
 
 /**
  * @brief Set the receiver's byte at offset 0x60 to seven.
@@ -147,11 +147,11 @@ void func_0041F130(void* object);
 void func_0041F190(void* object);
 
 /** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
-void func_0041F170(LibClass178A90* object);
+void func_0041F170(LibTransformOwner* object);
 /** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
-void func_0041F1D0(LibClass178A90* object);
+void func_0041F1D0(LibTransformOwner* object);
 /** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
-void func_0041F290(LibClass178A90* object);
+void func_0041F290(LibTransformOwner* object);
 
 /**
  * @brief Set the receiver's byte at offset 0x60 to seven.

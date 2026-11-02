@@ -28,8 +28,6 @@ extern const u32 g_trophy_keys[];
 /** Text of the number label before the grid first updates it. */
 extern const char g_first_trophy_number[];
 
-void lib_container_attach_widget(BootContainer* container, LibListObject* child);
-void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 }
 
 /** Stages of the Battle Trophies screen's card selection, transfer, and viewer flow. */
@@ -642,9 +640,9 @@ void BootBattleTrophyViewer::update()
             }
 
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
-            container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
+            container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
             lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
-                                     reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
+                                     reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         }
 
         break;
@@ -682,9 +680,9 @@ void BootBattleTrophyViewer::update()
             cursor->destroy();
         }
 
-        message_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x65, 1, 32.0f, 88.0f, 576.0f, 224.0f);
-        slot1_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x66, 1, 180.0f, 144.0f, 512.0f, 224.0f);
-        slot2_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x67, 1, 180.0f, 184.0f, 512.0f, 224.0f);
+        message_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x65, 1, 32.0f, 88.0f, 576.0f, 224.0f);
+        slot1_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x66, 1, 180.0f, 144.0f, 512.0f, 224.0f);
+        slot2_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x67, 1, 180.0f, 184.0f, 512.0f, 224.0f);
         lib_container_attach_widget(container, message_text);
         lib_container_attach_widget(container, slot1_text);
         lib_container_attach_widget(container, slot2_text);
@@ -695,7 +693,7 @@ void BootBattleTrophyViewer::update()
         slot = 0;
         cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, 170.0f, 156.0f, 0.0f);
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
+        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_WAIT_FOR_EXIT:
         if (input->pressed & settings->confirm_buttons)
@@ -900,24 +898,24 @@ void BootBattleTrophyViewer::update()
         scroll_step = 0;
         input_delay = 0;
         step++;
-        sort_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x6F, 1, 430.0f, 55.0f, 512.0f, 224.0f);
+        sort_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6F, 1, 430.0f, 55.0f, 512.0f, 224.0f);
         sort_text->set_color(0x34130F);
 
         if (settings->widescreen)
         {
-            percentage_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x6A, 1, 96.0f, 22.0f, 512.0f, 16.0f);
+            percentage_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6A, 1, 96.0f, 22.0f, 512.0f, 16.0f);
             scroll_indicator = new (0) BootListIndicator(531.0f, 82.0f, 329.0f, 300.0f / (float)BOOT_TROPHY_GRID_ROWS, 0.0f);
-            number_label = new (0) BootStringLabel(g_first_trophy_number, 1, 48.0f, 414.0f, 512.0f, 224.0f);
-            name_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x6B, 1, 96.0f, 414.0f, 512.0f, 224.0f);
-            date_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x6C, 1, 96.0f, 438.0f, 512.0f, 224.0f);
+            number_label = new (0) LibStringLabel(g_first_trophy_number, 1, 48.0f, 414.0f, 512.0f, 224.0f);
+            name_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6B, 1, 96.0f, 414.0f, 512.0f, 224.0f);
+            date_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6C, 1, 96.0f, 438.0f, 512.0f, 224.0f);
         }
         else
         {
-            percentage_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x6A, 1, 96.0f, 24.0f, 512.0f, 224.0f);
+            percentage_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6A, 1, 96.0f, 24.0f, 512.0f, 224.0f);
             scroll_indicator = new (0) BootListIndicator(595.0f, 84.0f, 323.0f, 300.0f / (float)BOOT_TROPHY_GRID_ROWS, 0.0f);
-            number_label = new (0) BootStringLabel(g_first_trophy_number, 1, 48.0f, 411.0f, 512.0f, 224.0f);
-            name_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x6B, 1, 96.0f, 411.0f, 512.0f, 224.0f);
-            date_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x6C, 1, 96.0f, 435.0f, 512.0f, 224.0f);
+            number_label = new (0) LibStringLabel(g_first_trophy_number, 1, 48.0f, 411.0f, 512.0f, 224.0f);
+            name_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6B, 1, 96.0f, 411.0f, 512.0f, 224.0f);
+            date_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6C, 1, 96.0f, 435.0f, 512.0f, 224.0f);
         }
 
         sort_text->set_color(0x34130F);
@@ -949,7 +947,7 @@ void BootBattleTrophyViewer::update()
 
             if (score >= BOOT_TROPHY_FIRST_COLOR_COUNT * BOOT_TROPHY_LOAD_SCORE_PER_EARNED)
             {
-                rank_text = new (0) BootTextWidget(g_boot_program.get_messages(), 0x71, 1, 32.0f, 55.0f, 512.0f, 22.0f);
+                rank_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x71, 1, 32.0f, 55.0f, 512.0f, 22.0f);
                 rank_text->set_vertical_align(2);
                 lib_container_attach_widget(container, rank_text);
                 rank_text->set_color(0x34130F);
@@ -1003,7 +1001,7 @@ void BootBattleTrophyViewer::update()
         D_001B657C->message_values[2] = earned_count * 100 / BOOT_TROPHY_COUNT;
         cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, grid_cursor_x(this), cursor_row * 100 + 170, 0.0f);
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
+        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_BROWSE:
     {

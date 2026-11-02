@@ -5,7 +5,7 @@
 
 #ifdef __cplusplus
 /** Base-list view of the native Lib object registry at 0x00507C40. */
-extern "C" LibClass178DD0 lib_object_list_00507c40;
+extern "C" LibUpdateList lib_object_list_00507c40;
 #endif
 
 #endif

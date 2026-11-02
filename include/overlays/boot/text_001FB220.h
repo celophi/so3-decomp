@@ -6,7 +6,7 @@
 #ifdef __cplusplus
 #include "overlays/boot/text_001DD3C0.h"
 
-class BootStringLabel;
+class LibStringLabel;
 
 /** Time a trophy was earned, laid out like the console clock: stat, second, minute, hour, pad, day, month, year. */
 struct BootTrophyTime
@@ -152,39 +152,39 @@ class BootBattleTrophyViewer : public LibListObject
         s32 page_delay;
 
         u8 unk84[4];
-        BootContainer* container;
+        LibContainer* container;
 
         /** Prompt and status message. */
-        BootTextWidget* message_text;
+        LibTextWidget* message_text;
 
         BootSelectionCursor* cursor;
 
         /** Slot 1 choice. */
-        BootTextWidget* slot1_text;
+        LibTextWidget* slot1_text;
 
         /** Slot 2 choice. */
-        BootTextWidget* slot2_text;
+        LibTextWidget* slot2_text;
 
         /** Label showing the number of the trophy under the cursor. */
-        BootStringLabel* number_label;
+        LibStringLabel* number_label;
 
         /** Name of the trophy under the cursor. */
-        BootTextWidget* name_text;
+        LibTextWidget* name_text;
 
         /** When the trophy under the cursor was earned. */
-        BootTextWidget* date_text;
+        LibTextWidget* date_text;
 
         /** "Percentage Achieved" line (message 0x6A). */
-        BootTextWidget* percentage_text;
+        LibTextWidget* percentage_text;
 
         /** Sort order. */
-        BootTextWidget* sort_text;
+        LibTextWidget* sort_text;
 
         /** Shows how far the grid is scrolled. */
         BootListIndicator* scroll_indicator;
 
         /** Rank title, shown once enough trophies are earned. */
-        BootTextWidget* rank_text;
+        LibTextWidget* rank_text;
 
         /** Clips the trophy grid to the area between the header and footer. */
         BootClipRegion* grid_clip;

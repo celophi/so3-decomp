@@ -637,15 +637,15 @@ void CmcClass189900::position_row(void* owner, float x, float y)
     panel.unk18.unk04 = y;
     panel.unk18.unk08 = 560.0f;
     panel.unk18.unk0c = 64.0f;
-    panel.unk3c = 1;
+    panel.needs_redraw = 1;
     first_text.unk18.unk00 = 22.0f + x;
     text_y = 8.0f + y;
     first_text.unk18.unk04 = text_y;
-    first_text.unk3c = 1;
+    first_text.needs_redraw = 1;
     value_x = 160.0f + x;
     string_widget.unk18.unk00 = value_x;
     string_widget.unk18.unk04 = text_y;
-    string_widget.unk3c = 1;
+    string_widget.needs_redraw = 1;
     number_y = 32.0f + y;
     first_number_x = 382.0f + x;
     second_number_x = 454.0f + x;
@@ -659,27 +659,27 @@ void CmcClass189900::position_row(void* owner, float x, float y)
         case 0:
             numbers[0].unk18.unk00 = first_number_x;
             numbers[0].unk18.unk04 = number_y;
-            numbers[0].unk3c = 1;
+            numbers[0].needs_redraw = 1;
             break;
         case 1:
             numbers[1].unk18.unk00 = second_number_x;
             numbers[1].unk18.unk04 = number_y;
-            numbers[1].unk3c = 1;
+            numbers[1].needs_redraw = 1;
             break;
         case 2:
             numbers[2].unk18.unk00 = third_number_x;
             numbers[2].unk18.unk04 = number_y;
-            numbers[2].unk3c = 1;
+            numbers[2].needs_redraw = 1;
             break;
         case 3:
             numbers[3].unk18.unk00 = fourth_number_x;
             numbers[3].unk18.unk04 = number_y;
-            numbers[3].unk3c = 1;
+            numbers[3].needs_redraw = 1;
             break;
         case 4:
             numbers[4].unk18.unk00 = fifth_number_x;
             numbers[4].unk18.unk04 = number_y;
-            numbers[4].unk3c = 1;
+            numbers[4].needs_redraw = 1;
             break;
         }
     }
@@ -694,25 +694,25 @@ void CmcClass189900::position_row(void* owner, float x, float y)
         case 0:
             array_text[0].unk18.unk00 = first_array_x;
             array_text[0].unk18.unk04 = array_y;
-            array_text[0].unk3c = 1;
+            array_text[0].needs_redraw = 1;
             break;
         case 1:
             array_text[1].unk18.unk00 = second_array_x;
             array_text[1].unk18.unk04 = array_y;
-            array_text[1].unk3c = 1;
+            array_text[1].needs_redraw = 1;
             break;
         }
         array_index++;
     } while (array_index < 2);
     second_text.unk18.unk00 = value_x;
     second_text.unk18.unk04 = number_y;
-    second_text.unk3c = 1;
+    second_text.needs_redraw = 1;
     fourth_text.unk18.unk00 = 140.0f + x;
     fourth_text.unk18.unk04 = text_y;
-    fourth_text.unk3c = 1;
+    fourth_text.needs_redraw = 1;
     third_text.unk18.unk00 = 472.0f + x;
     third_text.unk18.unk04 = text_y;
-    third_text.unk3c = 1;
+    third_text.needs_redraw = 1;
 }
 
 /**
@@ -731,19 +731,19 @@ void CmcClass189900::refresh_row(void* owner, s32 index)
 
     if (unk04 == 3)
     {
-        string_widget.unkfc = &record->display_text;
-        string_widget.unk3c = 1;
+        string_widget.text = &record->display_text;
+        string_widget.needs_redraw = 1;
         duration.set_seconds(record->elapsed_seconds);
         numbers[0].numeric_value = duration.hour_digit(0);
-        numbers[0].unk3c = 1;
+        numbers[0].needs_redraw = 1;
         numbers[1].numeric_value = duration.minute_digit(2);
-        numbers[1].unk3c = 1;
+        numbers[1].needs_redraw = 1;
         numbers[2].numeric_value = duration.minute_digit(1);
-        numbers[2].unk3c = 1;
+        numbers[2].needs_redraw = 1;
         numbers[3].numeric_value = duration.second_digit(2);
-        numbers[3].unk3c = 1;
+        numbers[3].needs_redraw = 1;
         numbers[4].numeric_value = duration.second_digit(1);
-        numbers[4].unk3c = 1;
+        numbers[4].needs_redraw = 1;
         lib_text_set_resource(&second_text, source, record->text_resource_key + 1, 0);
         if (record->unk7d == 1)
         {
@@ -753,27 +753,27 @@ void CmcClass189900::refresh_row(void* owner, s32 index)
     else if (unk04 == 5)
     {
         lib_text_set_resource(&fourth_text, source, 9021, 0);
-        fourth_text.unk94 = 0x505050;
-        fourth_text.unk3c = 1;
+        fourth_text.tint = 0x505050;
+        fourth_text.needs_redraw = 1;
     }
     else if (unk04 == 6)
     {
         lib_text_set_resource(&fourth_text, source, 9022, 0);
-        fourth_text.unk94 = 0x505050;
-        fourth_text.unk3c = 1;
+        fourth_text.tint = 0x505050;
+        fourth_text.needs_redraw = 1;
     }
     else if (unk04 == 2)
     {
         lib_text_set_resource(&fourth_text, source, 9023, 0);
         if (unk05)
         {
-            fourth_text.unk94 = 0x808080;
-            fourth_text.unk3c = 1;
+            fourth_text.tint = 0x808080;
+            fourth_text.needs_redraw = 1;
         }
         else
         {
-            fourth_text.unk94 = 0x505050;
-            fourth_text.unk3c = 1;
+            fourth_text.tint = 0x505050;
+            fourth_text.needs_redraw = 1;
         }
     }
 
@@ -840,7 +840,7 @@ CmcClass189900::CmcClass189900()
 }
 
 /** @brief Destroy the string widget and its drawing-widget base. */
-inline LibObject175140::~LibObject175140()
+inline LibStringLabel::~LibStringLabel()
 {
 }
 
@@ -1293,22 +1293,22 @@ void CmcClass18AD20::func_slot5c()
         switch (unkB8)
         {
         case 0:
-            unkAc->unk3f = 1;
-            unkD0->unk3f = 1;
+            unkAc->visible = 1;
+            unkD0->visible = 1;
             break;
         case 1:
-            unkB0->unk3f = 1;
-            unkD0->unk3f = 1;
+            unkB0->visible = 1;
+            unkD0->visible = 1;
             break;
         default:
-            unkAc->unk3f = 0;
-            unkB0->unk3f = 0;
-            unkD0->unk3f = 0;
+            unkAc->visible = 0;
+            unkB0->visible = 0;
+            unkD0->visible = 0;
             break;
         }
         unkB9 = 0;
     }
-    LibObject178750* widget = unkA8;
+    LibTextWidget* widget = unkA8;
     LibUiRect16* rectangle = &widget->unk18;
     float x;
     float y;
@@ -1331,7 +1331,7 @@ void CmcClass18AD20::func_slot5c()
         widget->unk18.unk04 = y;
         widget->unk18.unk08 = width;
         widget->unk18.unk0c = height;
-        widget->unk3c = 1;
+        widget->needs_redraw = 1;
         ++unkBc;
         if (!(static_cast<float>(unkBc) <= 120.0f))
         {
@@ -1349,7 +1349,7 @@ void CmcClass18AD20::func_slot5c()
     widget->unk18.unk04 = y;
     widget->unk18.unk08 = width;
     widget->unk18.unk0c = height;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_00357190);

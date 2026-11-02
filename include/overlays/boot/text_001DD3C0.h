@@ -9,6 +9,8 @@
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_003E68C0.h"
+#include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_004BD360.h"
 
 /** Marker byte of an encoded BootSealedRecord. */
 #define BOOT_RECORD_SEALED 0x69
@@ -380,12 +382,10 @@ static inline void set_resource_bit(BootTrophyFlags* bits, u32 index, s32 enable
  */
 extern "C" void lib_object_detach_owner(void* object);
 
-class BootContainer;
+class LibContainer;
 class BootClass179150;
 class BootClass170F30;
-extern "C" s32 lib_container_init(BootContainer* container, s32 code, float x, float y, s32 first, float z, s32 second);
-extern "C" s32 lib_text_init_resource_rectangle(void* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
-extern "C" s32 lib_panel_init_rectangle(void* object, s32 mode, float x, float y, float width, float height, float extra);
+extern "C" s32 lib_container_init(LibContainer* container, s32 code, float x, float y, s32 first, float z, s32 second);
 
 /**
  * @brief Place a list indicator and set its scroll extent and position.
@@ -434,296 +434,7 @@ class BootProjectionACD0 : public LibListObject
         u8 unk27C[0x604];
 };
 
-extern "C" u32 D_001B65BC;
-extern "C" u8 D_001B65C0;
-
-/** Bits of BootTransformOwner::draw_flags. */
-enum
-{
-    /** Don't draw the object. */
-    BOOT_DRAW_HIDDEN = 0x0001,
-    BOOT_DRAW_FLAG_0010 = 0x0010,
-    BOOT_DRAW_FLAG_0400 = 0x0400
-};
-
-/** Boot's view of the transform owner with the shared vtable D_178A90 in main data. */
-class BootTransformOwner : public LibOrientedTransform
-{
-    public:
-        /** @brief Initialize the owner's state bytes and tracking words. */
-        inline BootTransformOwner();
-
-        /** @brief Remove this object's mask from the resident flags, then destroy the transform. */
-        virtual ~BootTransformOwner()
-        {
-            u32 mask = ~unk8c;
-            u32 previous = D_001B65BC;
-            unk8c &= mask;
-            D_001B65BC &= mask;
-
-            if (previous != D_001B65BC)
-            {
-                D_001B65C0 = 1;
-            }
-        }
-
-        /** @brief Virtual slot 4; the owner's implementation does nothing. */
-        virtual void render();
-
-        /** @brief Detach and queue the owner; boot uses the Lib implementation. */
-        virtual void destroy();
-
-        /** @brief Draw in the main list (bucket zero). */
-        virtual void set_default_draw_bucket();
-
-        /**
-         * @brief Give the centre for Lib's oriented-box visibility test; this owner has none.
-         * @param output Receives the centre in local space.
-         * @return Nonzero when a centre was written; zero here, so the test is skipped.
-         */
-        virtual s32 get_box_cull_center(void* output);
-
-        /**
-         * @brief Fade the owner as it nears the camera; Lib calls this for owners with draw flag 0x800. This owner doesn't fade.
-         * @param value Distance in front of the camera over the fade range, clamped to one.
-         * @param mode Two from Lib's caller; unused here.
-         * @return Whether the value is negative.
-         */
-        virtual bool set_fade_alpha(float value, float mode);
-
-        /**
-         * @brief Return the bounding sphere Lib culls against (centre in xyz, radius in w); this owner has Lib's shared default.
-         * @return Bounding sphere.
-         */
-        virtual const LibVector4* get_bounding_sphere();
-
-        /**
-         * @brief Default matrix handler; does nothing.
-         * @param matrix Matrix supplied by the caller.
-         * @param context Opaque caller context.
-         */
-        virtual void build_packet(const void* matrix, void* context);
-
-        /** @brief Mark the matrix state ready; boot uses the Lib implementation. */
-        virtual void update_transform_matrix();
-
-        /**
-         * @brief Read the stored transformation matrix; boot uses the Lib implementation.
-         * @return Matrix pointer.
-         */
-        virtual const void* get_transform_matrix();
-
-        /**
-         * @brief Copy the source transformation state; boot uses the Lib implementation.
-         * @param source Transform source.
-         */
-        virtual void copy_transform_state(const BootTransformOwner* source);
-
-        /**
-         * @brief Make a copy of this object that stays linked to it; this owner can't be copied.
-         * @return The copy, or null.
-         */
-        virtual BootTransformOwner* clone();
-
-        /** @brief Unlink a copy from its original and queue it for release; this owner never has copies, so it does nothing. */
-        virtual void release_clone();
-
-        /**
-         * @brief Set the draw flags (BOOT_DRAW_*).
-         * @param value New flags.
-         */
-        inline void set_draw_flags(u16 value);
-
-        /**
-         * @brief Set the object's type ID.
-         * @param value Type ID.
-         */
-        inline void set_type_id(u16 value);
-
-        /** Lib's renderer draws objects with zero in its main list and the rest in bucket[draw_bucket]. */
-        u8 draw_bucket;
-
-        u8 matrix_ready;
-        u8 unk62;
-        u8 unk63;
-        u8 dma_pending;
-        u8 unk65;
-        u8 unk66;
-        u8 unk67;
-        u8 unk68;
-        u8 unk69;
-        u16 draw_flags;
-
-        /** Type ID that Lib and scene code compare against (0x100 for scene models, 0x110 in Lib's scene setup). */
-        u16 type_id;
-
-        u8 unk6e[0x12];
-        void* unk80;
-        u8 unk84[4];
-        u32 unk88;
-        u32 unk8c;
-};
-
-/** Boot's copy of the transform subclass between D_178A90 and D_174610, with vtable D_170DE0 in main data. */
-class BootClass170DE0 : public BootTransformOwner
-{
-    public:
-        /** @brief Destroy the transform subclass. */
-        virtual ~BootClass170DE0()
-        {
-        }
-};
-
-/** Boot's copy of the two-callback DMA interface, with vtable D_170D50 in main data. */
-class BootDmaCallbacks
-{
-    public:
-        /** @brief Install the interface's vtable. */
-        inline BootDmaCallbacks();
-
-        /**
-         * @brief Default DMA notification hook; does nothing.
-         * @param value Notification value.
-         */
-        virtual void on_packet_notify(u32 value);
-
-        /**
-         * @brief Default preparation hook; does nothing.
-         * @param value Notification word or packet address.
-         */
-        virtual void on_packet_complete(u32 value);
-};
-
-/** Boot's view of the transform with callback interface, with the shared vtable D_174610 in main data. */
-class BootCallbackTransform : public BootClass170DE0, public BootDmaCallbacks
-{
-    public:
-        /** @brief Initialize the transform and callback interface; boot calls the Lib constructor. */
-        BootCallbackTransform();
-
-        /** @brief Destroy the transform receiver. */
-        virtual ~BootCallbackTransform()
-        {
-        }
-
-        /**
-         * @brief Run the default transform state hook.
-         * @param first First state value.
-         * @param second Second state value.
-         * @param third Third state value.
-         */
-        virtual void func_0044B100(u32 first, u32 second, u32 third);
-
-        u8 unk94[0x1A];
-        u8 unkae;
-        u8 unkaf;
-};
-
-/** Boot's view of the 0x14-byte list receiver with the shared vtable D_178A70 in main data. */
-class BootListReceiver
-{
-    public:
-        LibListSentinel sentinel;
-        u32 node_count;
-
-        /** @brief Initialize the list receiver; boot calls the Lib constructor. */
-        BootListReceiver();
-
-        /** @brief Destroy the list receiver. */
-        virtual ~BootListReceiver();
-
-        /**
-         * @brief Append a node to the end of the list.
-         * @param node Node to append.
-         */
-        virtual void append(void* node);
-
-        /**
-         * @brief Prepend a node to the beginning of the list.
-         * @param node Node to prepend.
-         */
-        virtual void prepend(void* node);
-
-        /**
-         * @brief Link a node after a list position.
-         * @param position Insertion position.
-         * @param node Node to insert.
-         */
-        virtual void insert_after(void* position, void* node);
-
-        /**
-         * @brief Unlink a node and clear its list links.
-         * @param node Node to remove.
-         */
-        virtual void unlink(void* node);
-};
-
-/** Resident manager list that updates its nodes, with the Lib vtable D_178DD0. */
-class BootUpdateList : public BootListReceiver
-{
-    public:
-        /** @brief Destroy the manager list. */
-        virtual ~BootUpdateList();
-
-        /**
-         * @brief Remove a node.
-         * @param object Node to remove.
-         */
-        virtual void remove_node(void* object);
-
-        /** @brief Update every node. */
-        virtual void update_nodes();
-
-        /**
-         * @brief Append a node of a kind.
-         * @param object Node.
-         * @param kind Node kind, or -1 for the node's default.
-         */
-        virtual void append_node(void* object, s32 kind);
-
-        /**
-         * @brief Prepend a node of a kind.
-         * @param object Node.
-         * @param kind Node kind, or -1 for the node's default.
-         */
-        virtual void prepend_node(void* object, s32 kind);
-};
-
-/** Partial resident display manager D_001B6628 with the Lib vtable D_178F30. */
-class BootDisplayManager : public BootUpdateList
-{
-    public:
-        u8 unk14[0x7C];
-
-        /** Display object the manager draws through. */
-        void* current_display;
-};
-
-extern "C" BootDisplayManager* D_001B6628;
-
-/** Boot's view of the 0xF0-byte container with the Lib vtable D_178660. */
-class BootContainer : public BootListReceiver, public BootCallbackTransform
-{
-    public:
-        /**
-         * @brief Initialize the container with its mode and transform.
-         * @param code Container mode.
-         * @param x First transform component.
-         * @param y Second transform component.
-         * @param z Third transform component.
-         */
-        BootContainer(s32 code, float x, float y, float z)
-        {
-            type_id = 0x6FF1;
-            lib_container_init(this, code, x, y, 0, z, 0);
-        }
-
-        /** @brief Destroy the container. */
-        virtual ~BootContainer();
-
-        LibStorageBlock0C unkd0;
-        u8 unkdc[0x14];
-};
+extern "C" LibDisplayManager* D_001B6628;
 
 /** Four words cleared by an out-of-line constructor. */
 class BootWordQuad
@@ -739,7 +450,7 @@ class BootWordQuad
 };
 
 /** Partial 0xC0-byte transform with the Lib vtable D_179150. */
-class BootClass179150 : public BootTransformOwner, public BootDmaCallbacks
+class BootClass179150 : public LibTransformOwner, public LibDmaCallbacks
 {
     public:
         /** @brief Initialize the transform's modes and timing. */
@@ -752,7 +463,7 @@ class BootClass179150 : public BootTransformOwner, public BootDmaCallbacks
             unka4 = 30.0f;
             set_type_id(0x300);
             unk65 = 1;
-            set_draw_flags(BOOT_DRAW_FLAG_0400);
+            set_draw_flags(LIB_DRAW_FLAG_0400);
         }
 
         /** @brief Destroy the transform. */
@@ -768,7 +479,7 @@ class BootClass179150 : public BootTransformOwner, public BootDmaCallbacks
 };
 
 /** Partial 0xC0-byte Lib transform with vtable D_171DD0 in main data; boot calls its Lib constructor. */
-class BootClipRegion : public BootTransformOwner, public BootDmaCallbacks
+class BootClipRegion : public LibTransformOwner, public LibDmaCallbacks
 {
     public:
         /** @brief Initialize the object; boot calls the Lib constructor. */
@@ -788,7 +499,7 @@ class BootClipRegion : public BootTransformOwner, public BootDmaCallbacks
 };
 
 /** Partial 0xF0-byte selection cursor with the Lib vtable D_175070. */
-class BootSelectionCursor : public BootCallbackTransform, public ItemCreationClass185050
+class BootSelectionCursor : public LibCallbackTransform, public ItemCreationClass185050
 {
     public:
         /** @brief Initialize the cursor transform. */
@@ -801,139 +512,8 @@ class BootSelectionCursor : public BootCallbackTransform, public ItemCreationCla
         virtual ~BootSelectionCursor();
 };
 
-/** Boot's view of the 0xFC-byte Lib drawing widget with vtable D_174EF0. */
-class BootDrawWidget : public LibListObject
-{
-    public:
-        /** @brief Initialize the widget; boot calls the Lib constructor. */
-        BootDrawWidget();
-
-        /** @brief Destroy the widget. */
-        virtual ~BootDrawWidget();
-
-        /**
-         * @brief Set the draw color and mark the widget visible.
-         * @param color Packed color.
-         */
-        void set_color(u32 color)
-        {
-            draw_color = color;
-            needs_redraw = 1;
-        }
-
-        /**
-         * @brief Set the text scale and mark the widget for redraw.
-         * @param scale Scale factor.
-         */
-        void set_scale(float scale)
-        {
-            draw_scale = scale;
-            needs_redraw = 1;
-        }
-
-        /**
-         * @brief Set the alpha and mark the widget for redraw.
-         * @param alpha Alpha, 128 for opaque.
-         */
-        void set_alpha(float alpha)
-        {
-            draw_alpha = alpha;
-            needs_redraw = 1;
-        }
-
-        /**
-         * @brief Set the color the widget is modulated by and mark it for redraw.
-         * @param color Packed color, 0x808080 for unchanged.
-         */
-        void set_tint(u32 color)
-        {
-            tint = color;
-            needs_redraw = 1;
-        }
-
-        /**
-         * @brief Set the horizontal alignment and mark the widget for redraw.
-         * @param align Alignment.
-         */
-        void set_horizontal_align(s32 align)
-        {
-            horizontal_align = align;
-            needs_redraw = 1;
-        }
-
-        /**
-         * @brief Set the vertical alignment and mark the widget for redraw.
-         * @param align Alignment.
-         */
-        void set_vertical_align(s32 align)
-        {
-            vertical_align = align;
-            needs_redraw = 1;
-        }
-
-        u8 unk14[0x14];
-        float draw_alpha;
-        u8 unk2c[0xC];
-        u8 unk38;
-        u8 unk39[3];
-        u8 needs_redraw;
-        u8 unk3d[2];
-        u8 visible;
-        u8 unk40[0x40];
-        float draw_scale;
-        u8 unk84[0x10];
-        u32 tint;
-        u32 draw_color;
-        s32 horizontal_align;
-        s32 vertical_align;
-        u8 unka4[0x58];
-};
-
-/** Boot's view of the 0x114-byte Lib text widget with vtable D_178750. */
-class BootTextWidget : public BootDrawWidget
-{
-    public:
-        /**
-         * @brief Initialize the text widget with a resource string and rectangle.
-         * @param slot Resource slot.
-         * @param key Resource key.
-         * @param flag Slot state flag.
-         * @param x Origin x.
-         * @param y Origin y.
-         * @param width Rectangle width.
-         * @param height Rectangle height.
-         */
-        BootTextWidget(s32 slot, s32 key, u8 flag, float x, float y, float width, float height)
-        {
-            unk38 = 11;
-            lib_text_init_resource_rectangle(this, slot, key, flag, x, y, width, height);
-        }
-
-        /** @brief Destroy the text widget. */
-        virtual ~BootTextWidget();
-
-        u8 unkfc[0x18];
-};
-
-/** Boot's view of the 0x40-byte Lib widget base with vtable D_178600; boot calls the Lib constructor. */
-class BootWidget : public LibListObject
-{
-    public:
-        /** @brief Initialize the widget rectangle and state bytes. */
-        BootWidget();
-
-        /** @brief Destroy the widget. */
-        virtual ~BootWidget();
-
-        u8 unk14[0x24];
-        u8 unk38;
-        u8 unk39[3];
-        u8 unk3c;
-        u8 unk3d[3];
-};
-
 /** Boot's view of the 0x58-byte Lib list indicator with vtable D_1725D0, a bar showing how far a list is scrolled. */
-class BootListIndicator : public BootWidget
+class BootListIndicator : public LibWidget
 {
     public:
         /**
@@ -960,7 +540,7 @@ class BootListIndicator : public BootWidget
         void set_position(float value)
         {
             position = value;
-            unk3c = 1;
+            needs_redraw = 1;
         }
 
         LibStorageBlock0C unk40;
@@ -980,43 +560,10 @@ struct BootPanelRect50
     float unk0c;
 };
 
-/** Boot's view of the 0x90-byte Lib panel with vtable D_178630. */
-class BootPanel : public BootWidget
-{
-    public:
-        /**
-         * @brief Initialize the panel state and drawing rectangle.
-         * @param mode Drawing mode.
-         * @param x Horizontal position.
-         * @param y Vertical position.
-         * @param width Drawing width.
-         * @param height Drawing height.
-         * @param extra Extra drawing coordinate.
-         */
-        BootPanel(s32 mode, float x, float y, float width, float height, float extra)
-        {
-            unk50.unk0c = 0.0f;
-            unk50.unk08 = 0.0f;
-            unk50.unk04 = 0.0f;
-            unk50.unk00 = 0.0f;
-            unk38 = 1;
-            lib_panel_init_rectangle(this, mode, x, y, width, height, extra);
-        }
-
-        /** @brief Destroy the panel. */
-        virtual ~BootPanel();
-
-        LibStorageBlock0C unk40;
-        u8 unk4c[4];
-        BootPanelRect50 unk50;
-        void* unk60;
-        u8 unk64[0x2C];
-};
-
 class BootPacketBuffer;
 
 /** Partial 0x210-byte Lib image strip with vtable D_1735A0 in main data; boot calls the Lib constructor. */
-class BootImageStrip : public BootTransformOwner, public BootDmaCallbacks
+class BootImageStrip : public LibTransformOwner, public LibDmaCallbacks
 {
     public:
         /** @brief Construct the strip. */
@@ -1026,7 +573,7 @@ class BootImageStrip : public BootTransformOwner, public BootDmaCallbacks
 };
 
 /** 0xE0-byte screen fade with vtable D_171C00 in main data: ten strips copied from the display, faded out. */
-class BootScreenFade : public BootTransformOwner, public BootDmaCallbacks
+class BootScreenFade : public LibTransformOwner, public LibDmaCallbacks
 {
     public:
         /**
@@ -1212,7 +759,7 @@ class BootProgressBar : public LibListObject
 };
 
 /** Boot's view of the Lib model base that adds a matrix and three vectors, with the Lib vtable D_172080. */
-class BootModelBase : public BootTransformOwner
+class BootModelBase : public LibTransformOwner
 {
     public:
         /** @brief Destroy the model base; boot uses the Lib implementation. */
@@ -1225,9 +772,9 @@ class BootModelBase : public BootTransformOwner
          * @brief Read the transformation matrix.
          * @return The matrix.
          */
-        virtual const void* get_transform_matrix()
+        virtual const LibMatrix44Value* get_transform_matrix()
         {
-            return &unk90;
+            return reinterpret_cast<const LibMatrix44Value*>(&unk90);
         }
 
         /**
@@ -1443,7 +990,7 @@ class BootModel : public BootModelPrimaryBase, public BootModelSecondaryBase
          * @param mode Two from Lib's caller.
          * @return Whether the value is negative.
          */
-        virtual bool set_fade_alpha(float value, float mode);
+        virtual s32 set_fade_alpha(float value, float mode);
 
         /**
          * @brief Return the bounding sphere from the mesh, with the radius scaled by the model; Lib implements this.
@@ -1462,7 +1009,7 @@ class BootModel : public BootModelPrimaryBase, public BootModelSecondaryBase
          * @brief Make a copy of the model built from this one and linked to it; Lib implements this.
          * @return The copy, or null when it couldn't be built.
          */
-        virtual BootTransformOwner* clone();
+        virtual LibTransformOwner* clone();
 
         /** @brief Unlink this copy from its original's copies and queue it for release; Lib implements this. */
         virtual void release_clone();
@@ -1564,7 +1111,7 @@ class BootModel : public BootModelPrimaryBase, public BootModelSecondaryBase
          * @param links Display list the model draws through.
          * @param source Scene model to copy.
          */
-        virtual void func_4A37C0(BootUpdateList* links, BootClass170F30* source);
+        virtual void func_4A37C0(LibUpdateList* links, BootClass170F30* source);
 
         /** @brief Boot uses the Lib implementation. */
         virtual void func_4A7E80();
@@ -1751,11 +1298,11 @@ class BootUnitErrorPopup : public LibListObject
 
         u8 enabled;
         u8 unk19[3];
-        BootContainer* container;
-        LibListObject* text;
+        LibContainer* container;
+        LibTextWidget* text;
 
         /** Frame behind the text. */
-        LibListObject* panel;
+        LibPanel* panel;
 };
 
 /** Message keys in boot's English message bank (resource 38, block 0). */
@@ -1902,10 +1449,10 @@ class BootInstaller : public LibListObject
         /** 0x200-byte buffer the resident install code fills with the icon.sys header. */
         u8* icon_header;
 
-        BootContainer* container;
-        BootTextWidget* message_text;
-        BootTextWidget* progress_text;
-        BootTextWidget* tip_text;
+        LibContainer* container;
+        LibTextWidget* message_text;
+        LibTextWidget* progress_text;
+        LibTextWidget* tip_text;
         BootSelectionCursor* cursor;
 };
 

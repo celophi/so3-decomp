@@ -11,8 +11,6 @@
 extern "C" {
 extern LibVector4 D_50CD30;
 void func_4CE4C0(void* destination, const float* source);
-void lib_container_attach_widget(BootContainer* container, BootTextWidget* child);
-void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 }
 
 /** Stages of the installer screen's resource loading, unit checks, copy, and exit paths. */
@@ -391,16 +389,16 @@ void BootInstaller::update()
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
             step++;
-            container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
+            container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
             lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
-                                     reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
-            message_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
+                                     reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
+            message_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
             message_text->set_color(0x34130F);
             lib_container_attach_widget(container, message_text);
             x = menu_cursor_x(selection);
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
 
         break;
@@ -538,7 +536,7 @@ void BootInstaller::update()
                 progress_bar = 0;
             }
 
-            static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_INSTALL), -1);
+            static_cast<LibUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_INSTALL), -1);
             lib_object_detach_owner(this);
             destroy();
             return;
@@ -666,7 +664,7 @@ void BootInstaller::update()
         icon_header = (u8*)memalign(0x40, 0x200);
         progress_bar = new (0) BootProgressBar;
         progress_bar_reset(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
-        tip_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
+        tip_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
         tip_text->set_color(0x34130F);
         lib_container_attach_widget(container, tip_text);
         show_tip_image(0);
@@ -677,13 +675,13 @@ void BootInstaller::update()
         if (resource->widescreen)
         {
             progress_bar->model->set_translation(-366.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
+            progress_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
         else
         {
             progress_bar->model->set_translation(-280.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
+            progress_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
 
@@ -799,9 +797,9 @@ void BootInstaller::update()
                 cursor = new (0) BootSelectionCursor;
                 func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
                 lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
-                                         reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
+                                         reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
                 tip_text->visible = 0;
-                tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
+                tip_image->model->draw_flags |= LIB_DRAW_HIDDEN;
                 step = BOOT_INSTALL_HANDLE_CHOICE;
                 yes_step = BOOT_INSTALL_ABORT_COPY;
                 no_step = BOOT_INSTALL_RESUME_COPY;
@@ -836,7 +834,7 @@ void BootInstaller::update()
     case BOOT_INSTALL_SHOW_COMPLETE:
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_COMPLETE, 0);
         tip_text->visible = 0;
-        tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
+        tip_image->model->draw_flags |= LIB_DRAW_HIDDEN;
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_SHOW_ERROR:
@@ -932,13 +930,13 @@ void BootInstaller::update()
             tip_image = 0;
         }
 
-        static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
+        static_cast<LibUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
     case BOOT_INSTALL_RESUME_COPY:
         tip_text->visible = 1;
-        tip_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
+        tip_image->model->draw_flags &= ~LIB_DRAW_HIDDEN;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         g_resource_archive->copy_paused = 0;
         step = BOOT_INSTALL_COPY_PROGRESS;
@@ -1004,7 +1002,7 @@ void BootInstaller::update()
             x = menu_cursor_x(selection);
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
         else
         {
@@ -1050,8 +1048,13 @@ void BootInstaller::update()
     update_choice_images();
 }
 
+/** @brief Destroy the transform receiver. */
+LibCallbackTransform::~LibCallbackTransform()
+{
+}
+
 /** @brief Destroy the list receiver. */
-BootListReceiver::~BootListReceiver()
+LibListReceiver::~LibListReceiver()
 {
 }
 
@@ -1196,7 +1199,7 @@ BootInstaller::BootInstaller()
  * @brief Default DMA notification hook; does nothing.
  * @param value Notification value.
  */
-void BootDmaCallbacks::on_packet_notify(u32 value)
+void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
@@ -1204,7 +1207,7 @@ void BootDmaCallbacks::on_packet_notify(u32 value)
  * @brief Default preparation hook; does nothing.
  * @param value Notification word or packet address.
  */
-void BootDmaCallbacks::on_packet_complete(u32 value)
+void LibDmaCallbacks::on_packet_complete(u32 value)
 {
 }
 
@@ -1368,13 +1371,13 @@ void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 }
 
 /** @brief Draw in the main list (bucket zero). */
-void BootTransformOwner::set_default_draw_bucket()
+void LibTransformOwner::set_default_draw_bucket()
 {
     draw_bucket = 0;
 }
 
 /** @brief Virtual slot 4; the owner's implementation does nothing. */
-void BootTransformOwner::render()
+void LibTransformOwner::render()
 {
 }
 
@@ -1383,7 +1386,7 @@ void BootTransformOwner::render()
  * @param output Receives the centre in local space.
  * @return Nonzero when a centre was written; zero here, so the test is skipped.
  */
-s32 BootTransformOwner::get_box_cull_center(void* output)
+s32 LibTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
@@ -1394,16 +1397,21 @@ s32 BootTransformOwner::get_box_cull_center(void* output)
  * @param mode Two from Lib's caller; unused here.
  * @return Whether the value is negative.
  */
-bool BootTransformOwner::set_fade_alpha(float value, float mode)
+s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
-    return value < 0.0f;
+    s32 result = 1;
+    if (!(value < 0.0f))
+    {
+        result = 0;
+    }
+    return result;
 }
 
 /**
  * @brief Return the bounding sphere Lib culls against (centre in xyz, radius in w); this owner has Lib's shared default.
  * @return Bounding sphere.
  */
-const LibVector4* BootTransformOwner::get_bounding_sphere()
+const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
     return &D_50CD30;
 }
@@ -1413,7 +1421,7 @@ const LibVector4* BootTransformOwner::get_bounding_sphere()
  * @param matrix Matrix supplied by the caller.
  * @param context Opaque caller context.
  */
-void BootTransformOwner::build_packet(const void* matrix, void* context)
+void LibTransformOwner::build_packet(const void* matrix, void* context)
 {
 }
 
@@ -1421,13 +1429,13 @@ void BootTransformOwner::build_packet(const void* matrix, void* context)
  * @brief Make a copy of this object that stays linked to it; this owner can't be copied.
  * @return The copy, or null.
  */
-BootTransformOwner* BootTransformOwner::clone()
+LibTransformOwner* LibTransformOwner::clone()
 {
     return 0;
 }
 
 /** @brief Unlink a copy from its original and queue it for release; this owner never has copies, so it does nothing. */
-void BootTransformOwner::release_clone()
+void LibTransformOwner::release_clone()
 {
 }
 

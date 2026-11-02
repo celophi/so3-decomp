@@ -1002,7 +1002,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_1:
         {
             FieldClass154AD0* controller = new (0) FieldClass154AD0;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1010,7 +1010,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_ITEM:
         {
             ItemController* controller = new (0) ItemController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1018,7 +1018,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_EQUIP:
         {
             EquipController* controller = new (0) EquipController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1026,7 +1026,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_SKILL:
         {
             SkillController* controller = new (0) SkillController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1034,7 +1034,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_STATUS:
         {
             StatusResourceState* controller = new (0) StatusResourceState;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1042,7 +1042,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_CONFIG:
         {
             ConfigController* controller = new (0) ConfigController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1050,7 +1050,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_TACTICS:
         {
             TacticsController* controller = new (0) TacticsController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1058,7 +1058,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_7:
         {
             CmcClass18AF20* controller = new (0) CmcClass18AF20;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             controller->func_00263CA0(manager->argument);
             result = controller->func_00264110();
@@ -1067,7 +1067,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_SHOP:
         {
             ShopState* controller = new (0) ShopState;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             shop_set_id(controller, manager->argument);
             manager->state = controller;
             result = controller->func_00264110();
@@ -1076,7 +1076,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_ITEM_CREATION:
         {
             ItemCreationSelectedDisplayState* controller = new (0) ItemCreationSelectedDisplayState;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibClass178DD0::DEFAULT_NODE_KIND);
+            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1684,7 +1684,7 @@ FieldClass15B090::FieldClass15B090()
 }
 
 /** Partial Lib display object with vtables D_1538D0, D_1538EC and D_153960 in main data. */
-class FieldClass1538D0 : public LibClass178A70, public LibClass174610
+class FieldClass1538D0 : public LibListReceiver, public LibCallbackTransform
 {
 };
 
@@ -1883,7 +1883,7 @@ s32 FieldClass15B0E0::func_002D22B0(const FieldVec4A* position)
     }
 
     child->func_00205710(position);
-    static_cast<LibClass178DD0*>(D_001B6430->context->unk04)->append_node(child, LibClass178DD0::DEFAULT_NODE_KIND);
+    static_cast<LibUpdateList*>(D_001B6430->context->unk04)->append_node(child, LibUpdateList::DEFAULT_NODE_KIND);
     FieldResidentEntry4* entry = resident_entry4();
     entry->flags = (entry->flags & ~1) | 1;
     entry->unk1c4++;

@@ -23,8 +23,8 @@ extern "C" void func_4D00B0(FieldFlagState2D7AA0* object);
 struct FieldRegistry1B66A0
 {
     u8 unk00[0x20];
-    LibObject178660* unk20[32];
-    LibObject178660* unka0[32];
+    LibContainer* unk20[32];
+    LibContainer* unka0[32];
 };
 
 extern "C" FieldRegistry1B66A0* D_001B66A0;
@@ -93,7 +93,7 @@ public:
     virtual void func_00413020();
 };
 /** Widget container with an object base and a selection aggregate. */
-class LibClass172320 : public LibObject178660, public LibClass1723F0
+class LibClass172320 : public LibContainer, public LibClass1723F0
 {
 public:
     /** @brief Initialize the container and its widget aggregate. */
@@ -144,7 +144,7 @@ public:
 };
 
 /** Partial Field container with its secondary scalar transition state. */
-class FieldClass15B670 : public LibObject178660, public FieldScalarTransition2D6AF0
+class FieldClass15B670 : public LibContainer, public FieldScalarTransition2D6AF0
 {
 };
 
@@ -171,10 +171,10 @@ extern "C" s32 resident_sound_play(ResidentSound* receiver, s32 arg1, s32 arg2, 
 extern "C" void func_466E40(ItemCreationClass185050* object, float x, float y, float duration);
 
 /** Partial container state with the panel constructed at offset 0x100. */
-struct FieldPanelState2D7820 : public LibObject178660
+struct FieldPanelState2D7820 : public LibContainer
 {
     u8 unkf0[0x10];
-    LibClass178630 unk100;
+    LibPanel unk100;
     u32 unk190;
 };
 
@@ -186,12 +186,12 @@ struct FieldPanelState2D7820 : public LibObject178660
  */
 void func_002D5260(FieldClass15B200* object, float first, float second)
 {
-    LibClass178600* state = object->unk30;
+    LibWidget* state = object->unk30;
     if (state != 0)
     {
         state->unk18.unk08 = first;
         state->unk18.unk0c = second;
-        state->unk3c = 1;
+        state->needs_redraw = 1;
     }
 }
 
@@ -210,9 +210,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D5A
  * @brief Set the receiver's byte at offset 0x3C.
  * @param object Receiver to update.
  */
-void func_002D5CE0(LibClass178600* object)
+void func_002D5CE0(LibWidget* object)
 {
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /** Eight-byte resource descriptor copied by the resource drawing widget. */
@@ -247,7 +247,7 @@ static inline void set_resource_record(ItemCreationClass175110* object, FieldRes
     }
     object->unkc4 = 0;
     object->unkc9 = 1;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /**
@@ -282,7 +282,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D5D
 /** @brief Mark the resource widget updated and refresh its base drawing state. */
 void ItemCreationOptionResourceDisplay::func_00413D20()
 {
-    unk3c = 1;
+    needs_redraw = 1;
     ItemCreationClass175110::func_00413D20();
 }
 
@@ -340,8 +340,8 @@ s32 ItemCreationOptionResourceDisplay::func_002D6440(float x, float y, FieldReso
     return 1;
 }
 
-/** Partial LibClass178600 widget with vtable D_15B210 in main data. */
-class FieldClass15B210 : public LibClass178600
+/** Partial LibWidget widget with vtable D_15B210 in main data. */
+class FieldClass15B210 : public LibWidget
 {
 public:
     /** @brief Release the widget storage and destroy its base. */
@@ -452,14 +452,14 @@ public:
     /**
      * @brief Clear the inherited state byte.
      */
-    virtual void func_003F4420();
+    virtual void set_default_draw_bucket();
 
     /**
      * @brief Default output hook that returns zero.
      * @param output Caller output; unused.
      * @return Zero.
      */
-    virtual s32 func_003EEE20(void* output);
+    virtual s32 get_box_cull_center(void* output);
 
     /**
      * @brief Test whether the supplied value is negative.
@@ -467,31 +467,31 @@ public:
      * @param mode Additional caller mode; unused.
      * @return One if the value is negative, otherwise zero.
      */
-    virtual s32 func_003EEE30(float value, float mode);
+    virtual s32 set_fade_alpha(float value, float mode);
 
     /**
      * @brief Read the stored translation vector.
      * @return Pointer to the translation vector.
      */
-    virtual const LibVector4* func_003EFAA0();
+    virtual const LibVector4* get_bounding_sphere();
 
     /**
      * @brief Default matrix hook that performs no work.
      * @param matrix Caller matrix; unused.
      * @param context Caller context; unused.
      */
-    virtual void func_003F4440(const void* matrix, void* context);
+    virtual void build_packet(const void* matrix, void* context);
 
     /**
      * @brief Return the default transform creation result.
      * @return Null.
      */
-    virtual LibClass178A90* func_003EEE50();
+    virtual LibTransformOwner* clone();
 
     /**
      * @brief Default receiver hook that performs no work.
      */
-    virtual void func_003EEE60();
+    virtual void release_clone();
 
     /**
      * @brief Read the additional local translation.
@@ -778,7 +778,7 @@ bool func_002D6CB0(FieldClass15B300* object)
  * @brief Remove the first matching entry from the second registry list and queue the container for release.
  * @param object Container to remove and release.
  */
-void func_002D70F0(LibObject178660* object)
+void func_002D70F0(LibContainer* object)
 {
     FieldRegistry1B66A0* registry = D_001B66A0;
     if (registry != 0)
@@ -792,7 +792,7 @@ void func_002D70F0(LibObject178660* object)
             }
         }
     }
-    object->LibClass174610::destroy();
+    object->LibCallbackTransform::destroy();
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D7150);
@@ -814,7 +814,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D75
  * @brief Remove the first matching entry from the first registry list and queue the container for release.
  * @param object Container to remove and release.
  */
-void func_002D7630(LibObject178660* object)
+void func_002D7630(LibContainer* object)
 {
     FieldRegistry1B66A0* registry = D_001B66A0;
     if (registry != 0)
@@ -828,7 +828,7 @@ void func_002D7630(LibObject178660* object)
             }
         }
     }
-    object->LibClass174610::destroy();
+    object->LibCallbackTransform::destroy();
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D7690);
@@ -849,7 +849,7 @@ s32 func_002D7820(FieldPanelState2D7820* object, u32 value, s8 mode, s32 transfo
                   float x, float y, float width, float height)
 {
     lib_container_init(object, mode, x, y, 9, 0.0f, transform);
-    object->unk6c = 0x400E;
+    object->type_id = 0x400E;
     if (lib_panel_init_rectangle(&object->unk100, 0, 0.0f, 0.0f, width, height, 88.0f) == 0)
     {
         return 0;

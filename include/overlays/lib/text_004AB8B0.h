@@ -6,8 +6,8 @@
 
 #ifdef __cplusplus
 struct FieldFloatSpan1C;
-class LibClass178220;
-class LibClass178370;
+class LibAnimation;
+class LibAnimationTarget;
 /** 32-byte key and aligned vector entry. Its constructor leaves the fields uninitialized. */
 struct LibVectorChannelEntry20
 {
@@ -105,14 +105,14 @@ float func_4B16C0(FieldFloatSpan1C* span, float key);
  * @param flag Update flag.
  * @return Processing result.
  */
-s32 func_004B4550(LibClass178220* object, float frame, s32 flag);
+s32 func_004B4550(LibAnimation* object, float frame, s32 flag);
 
 /**
  * @brief Evaluate the animation into its vector state.
  * @param object Animation object.
  * @param target Vector state.
  */
-void func_004B3DE0(LibClass178220* object, LibClass178370* target);
+void func_004B3DE0(LibAnimation* object, LibAnimationTarget* target);
 
 /**
  * @brief Process the animation at a requested frame.
@@ -121,7 +121,7 @@ void func_004B3DE0(LibClass178220* object, LibClass178370* target);
  * @param mode Processing mode.
  * @return Processing status.
  */
-s32 func_004B43C0(LibClass178220* object, float frame, s32 mode);
+s32 func_004B43C0(LibAnimation* object, float frame, s32 mode);
 
 /**
  * @brief Process the animation into a vector state at a requested frame.
@@ -131,7 +131,7 @@ s32 func_004B43C0(LibClass178220* object, float frame, s32 mode);
  * @param mode Processing mode.
  * @return Processing status.
  */
-s32 func_004B46E0(LibClass178220* object, LibClass178370* target, float frame, s32 mode);
+s32 func_004B46E0(LibAnimation* object, LibAnimationTarget* target, float frame, s32 mode);
 
 /**
  * @brief Return the floating-point value 0.
