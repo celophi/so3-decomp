@@ -52,7 +52,7 @@ class EquipItemTypeList
 };
 
 /** Contextual tooltip widget with its owned DMA storage and resident table. */
-class EquipTooltipFrame : public LibClass178600
+class EquipTooltipFrame : public LibWidget
 {
     public:
         /** @brief Initialize the tooltip display and drawing storage. */
@@ -72,13 +72,13 @@ class EquipTooltipFrame : public LibClass178600
 };
 
 /** Resident tooltip container with one tooltip and eight owned text widgets. */
-class EquipFactorTooltip : public LibObject178660
+class EquipFactorTooltip : public LibContainer
 {
     public:
         /** @brief Initialize the tooltip container and its embedded displays. */
         EquipFactorTooltip()
         {
-            unk6c = 0x6FF8;
+            type_id = 0x6FF8;
         }
 
         /** @brief Destroy the text array, tooltip, and container bases. */
@@ -90,7 +90,7 @@ class EquipFactorTooltip : public LibObject178660
         EquipTooltipFrame frame;
 
         /** One line per factor slot of the item allocation. */
-        LibObject178750 factor_texts[8];
+        LibTextWidget factor_texts[8];
 
         u8 unk9e0[0x30];
 };
@@ -129,7 +129,7 @@ class EquipHelpWindow : public FieldClass15AE70
          */
         virtual s32 func_slotf4(u32 associated);
 
-        LibObject178750* text;
+        LibTextWidget* text;
         s32 scroll_span;
         u8 unkb0[2];
         s16 initial_pause_frames;
@@ -209,15 +209,15 @@ class EquipCharacterWindow : public FieldClass15AE70
         s16 character_slot;
         u8 unkaa[2];
         FieldRecordSelection* selection;
-        LibObject175140* name_text;
-        LibObject178750* level_label;
+        LibStringLabel* name_text;
+        LibTextWidget* level_label;
         LibObject174F20* level_value;
         ItemCreationClass174C40* left_indicator;
         ItemCreationClass174C40* right_indicator;
         ItemCreationOptionResourceDisplay* portraits[8];
         u8 portrait_slots[8];
-        LibObject178750* optimize_prompt;
-        LibObject178750* switch_prompt;
+        LibTextWidget* optimize_prompt;
+        LibTextWidget* switch_prompt;
 };
 
 /** Background window owning three displays of resource 11. */
@@ -564,11 +564,11 @@ class EquipStatComparisonWindow : public FieldClass15AE70
         /** Encoded resource record used for the comparison. */
         EquipCharacterEquipment preview_equipment;
 
-        LibObject178750* slot_label;
+        LibTextWidget* slot_label;
         LibObject172410* item_icon;
-        LibObject178750* stat_labels[5];
-        LibObject178750* separators[5];
-        LibObject178750* arrows[5];
+        LibTextWidget* stat_labels[5];
+        LibTextWidget* separators[5];
+        LibTextWidget* arrows[5];
         LibObject174F20* current_values[5];
         LibObject174F20* preview_values[5];
 };
@@ -683,9 +683,9 @@ class EquipParameterWindow : public FieldClass15AE70
         virtual s32 func_slotf4(u32 associated);
 
         LibObject174D90* description;
-        LibObject178750* title;
-        LibObject178750* parameter_labels[5];
-        LibObject178750* separators[5];
+        LibTextWidget* title;
+        LibTextWidget* parameter_labels[5];
+        LibTextWidget* separators[5];
         LibObject174F20* parameter_values[5];
         s32 description_key;
         u8 show_parameters;
@@ -741,9 +741,9 @@ class EquipSlotWindow : public FieldClass15AE70
         s16 equipped_items[4];
         u8 usable_slot_count;
         u8 unkc1[3];
-        LibClass174EF0* slot_labels[4];
+        LibDrawWidget* slot_labels[4];
         LibObject172410* item_icons[4];
-        LibClass174EF0* empty_labels[4];
+        LibDrawWidget* empty_labels[4];
         void* unkf4;
         void* parameter_window;
         FieldClass153130* equipment_slot_selector;
@@ -798,7 +798,7 @@ class EquipItemInstanceListWindow : public FieldClass15AD40
 
         ItemCreationOptionResourceDisplay* factor_marks[9];
         LibObject172410* item_icons[9];
-        LibClass178630* panel;
+        LibPanel* panel;
         void* mark_allocation;
         EquipController* controller;
         EquipFactorTooltip* tooltip;
@@ -846,7 +846,7 @@ class EquipItemListWindow : public FieldClass15AD40
          */
         virtual void func_slot10c(u32 unused, u32 cursor);
 
-        LibObject178750* separators[9];
+        LibTextWidget* separators[9];
         LibObject174F20* counts[9];
         EquipController* controller;
         void* unk184;

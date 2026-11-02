@@ -12,7 +12,7 @@
 typedef struct N54Owner84_004BD360 N54Owner84_004BD360;
 
 /** Opaque Lib text receiver using the main table D_178750. */
-typedef struct LibObject178750 LibObject178750;
+typedef struct LibTextWidget LibTextWidget;
 
 /** Opaque channel implementation with the shared channel word. */
 typedef struct LibChannelWordState LibChannelWordState;
@@ -22,7 +22,7 @@ struct ResidentResourceHeader;
 
 
 /** Partial widget receiver using the main table D_178630. */
-typedef struct LibClass178630 LibClass178630;
+typedef struct LibPanel LibPanel;
 
 /** Four packed panel colors used by the resident panel API. */
 typedef struct LibWidgetColors4C5590
@@ -30,7 +30,7 @@ typedef struct LibWidgetColors4C5590
     u32 values[4];
 } LibWidgetColors4C5590;
 /** Container receiver with list and transform interfaces. */
-typedef struct LibObject178660 LibObject178660;
+typedef struct LibContainer LibContainer;
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,7 +82,7 @@ extern u8 D_178750[];
  * @param object Storage for the 0x40-byte widget base.
  * @return The constructed base.
  */
-LibClass178600* func_004C4960(LibClass178600* object);
+LibWidget* func_004C4960(LibWidget* object);
 
 /**
  * @brief Configure a text slot and its rectangle.
@@ -96,26 +96,26 @@ LibClass178600* func_004C4960(LibClass178600* object);
  * @param height Rectangle height.
  * @return Configuration status.
  */
-s32 lib_text_init_resource_rectangle(LibObject178750* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
+s32 lib_text_init_resource_rectangle(LibTextWidget* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
 /**
  * @brief Set the text widget's source and resource key.
  * @param object Text widget.
- * @param source Full resource source word.
+ * @param slot Resource slot, as returned by lib_load_resource_slot.
  * @param key Resource key.
  * @param flag Resource state flag.
  */
-void lib_text_set_resource(LibObject178750* object, u32 source, u32 key, u8 flag);
+void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, u8 flag);
 /**
  * @brief Attach a widget to the container.
  * @param object Container receiver.
  * @param child Widget to attach.
  */
-void lib_container_attach_widget(LibObject178660* object, LibClass178600* child);
+void lib_container_attach_widget(LibContainer* object, LibWidget* child);
 /**
  * @brief Detach the widget from its associated object.
  * @param object Widget receiver.
  */
-void lib_panel_detach(LibClass178630* object);
+void lib_panel_detach(LibPanel* object);
 
 /**
  * @brief Allocate and initialize the panel transform, then set its third component.
@@ -123,7 +123,7 @@ void lib_panel_detach(LibClass178630* object);
  * @param z Third transform component.
  * @return One on successful setup, otherwise zero.
  */
-s32 lib_panel_init_transform(LibClass178630* object, float z);
+s32 lib_panel_init_transform(LibPanel* object, float z);
 
 /**
  * @brief Configure the widget mode and rectangle.
@@ -136,9 +136,9 @@ s32 lib_panel_init_transform(LibClass178630* object, float z);
  * @param extra Additional widget component.
  * @return Configuration status.
  */
-s32 lib_panel_init_rectangle(LibClass178630* object, s32 mode, float x, float y, float width, float height, float extra);
+s32 lib_panel_init_rectangle(LibPanel* object, s32 mode, float x, float y, float width, float height, float extra);
 /** @brief Set the four packed panel colors. @param object Panel widget. @param colors Four packed colors. */
-void lib_panel_set_colors(LibClass178630* object, const LibWidgetColors4C5590* colors);
+void lib_panel_set_colors(LibPanel* object, const LibWidgetColors4C5590* colors);
 /** Return the fixed integer value 11. */
 s32 func_004C8370(void* object);
 
@@ -185,14 +185,14 @@ s32 func_004C8360(void* object);
 }
 #endif
 
-/** Four scalar float bounds returned from the receiver at offset 0xE8. */
-typedef struct LibBounds4C69B0
+/** Text extent kept at a text widget's offset 0xE8. */
+typedef struct LibTextExtent
 {
     float unk00;
     float unk04;
-    float unk08;
-    float unk0c;
-} LibBounds4C69B0;
+    float width;
+    float height;
+} LibTextExtent;
 
 /**
  * @brief Initialize the text widget rectangle and clear its allocation and pending flag.
@@ -205,7 +205,7 @@ typedef struct LibBounds4C69B0
 #ifdef __cplusplus
 extern "C"
 #endif
-void lib_text_init_rectangle(LibObject178750* object, float x, float y, float width, float height);
+void lib_text_init_rectangle(LibTextWidget* object, float x, float y, float width, float height);
 
 #ifdef __cplusplus
 /** Local perspective volume used by visibility tests. */
@@ -227,40 +227,24 @@ struct LibProjectionVolume
     float unk58;
 };
 
-/** Two-callback DMA interface identified by MAIN vtable D_171FF0. */
-class LibClass171FF0
-{
-public:
-    /**
-     * @brief Run the default DMA notification hook.
-     * @param value Notification value.
-     */
-    virtual void func_003EFA90(u32 value);
-    /**
-     * @brief Prepare the receiver after a DMA notification.
-     * @param value Notification word or packet address.
-     */
-    virtual void func_003F4410(u32 value);
-};
-
 /** Partial transform and secondary interface, constructed by func_0044B2D0. */
-class LibClass174610 : public LibClass172000, public LibClass171FF0
+class LibCallbackTransform : public LibClass172000, public LibDmaCallbacks
 {
 public:
     /** @brief Initialize the transform and callback interface. */
-    LibClass174610();
+    LibCallbackTransform();
     /** @brief Destroy the transform receiver. */
-    virtual ~LibClass174610();
+    virtual ~LibCallbackTransform();
     /** @brief Copy the stored transform state byte into the active state. */
-    virtual void func_003F4420();
+    virtual void set_default_draw_bucket();
     /** @brief Queue the transform receiver for release. */
-    virtual void func_003EF740();
+    virtual void destroy();
     /**
      * @brief Dispatch the transform state flags.
      * @param matrix Unused matrix argument.
      * @param context Unused context argument.
      */
-    virtual void func_003F4440(const void* matrix, void* context);
+    virtual void build_packet(const void* matrix, void* context);
     /**
      * @brief Run the default transform state hook.
      * @param first First state value.
@@ -291,7 +275,7 @@ public:
     u8 unkaf;
 };
 
-class LibObject178660;
+class LibContainer;
 /**
  * @brief Configure the container transform and modes.
  * @param object Container receiver.
@@ -314,16 +298,16 @@ class LibObject178660;
  * @param z Third coordinate.
  * @return One on success, or zero if storage cannot be allocated.
  */
-extern "C" s32 lib_container_init(LibObject178660* object, s32 code, float x, float y, s32 first, float z, s32 second);
+extern "C" s32 lib_container_init(LibContainer* object, s32 code, float x, float y, s32 first, float z, s32 second);
 
 /** 0xF0-byte container, with a list base and a secondary transform base. */
-class LibObject178660 : public LibClass178A70, public LibClass174610
+class LibContainer : public LibListReceiver, public LibCallbackTransform
 {
 public:
     /** @brief Initialize the container transform state. */
-    LibObject178660()
+    LibContainer()
     {
-        unk6c = 0x6FF1;
+        type_id = 0x6FF1;
     }
     /**
      * @brief Initialize the container with its default mode and supplied transform.
@@ -331,13 +315,26 @@ public:
      * @param y Second transform component.
      * @param z Third transform component.
      */
-    LibObject178660(float x, float y, float z)
+    LibContainer(float x, float y, float z)
     {
-        unk6c = 0x6FF1;
+        type_id = 0x6FF1;
         lib_container_init(this, 5, x, y, 0, z, 0);
     }
+
+    /**
+     * @brief Initialize the container with its mode and transform.
+     * @param code Container mode.
+     * @param x Transform x.
+     * @param y Transform y.
+     * @param z Transform z.
+     */
+    LibContainer(s32 code, float x, float y, float z)
+    {
+        type_id = 0x6FF1;
+        lib_container_init(this, code, x, y, 0, z, 0);
+    }
     /** @brief Destroy the container. */
-    virtual ~LibObject178660();
+    virtual ~LibContainer();
     /**
      * @brief Update the container and its widgets.
      * @param first First update flag.
@@ -346,9 +343,9 @@ public:
      */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
     /** @brief Prepare the container storage. */
-    virtual void func_003EEBE0();
+    virtual void render();
     /** @brief Prepare the container transform. @param value Notification value. */
-    virtual void func_003F4410(u32 value);
+    virtual void on_packet_complete(u32 value);
     /**
      * @brief Run the default container state hook.
      * @param first First update flag.
@@ -363,16 +360,32 @@ public:
 };
 
 /** Partial 0x114-byte text widget, with MAIN vtable D_178750. */
-struct LibObject178750 : public LibClass174EF0
+struct LibTextWidget : public LibDrawWidget
 {
     /** @brief Initialize the text widget with an empty rectangle. */
-    LibObject178750()
+    LibTextWidget()
     {
         unk38 = 11;
         lib_text_init_rectangle(this, 0.0f, 0.0f, 0.0f, 0.0f);
     }
+
+    /**
+     * @brief Initialize the text widget with a resource string and rectangle.
+     * @param slot Resource slot.
+     * @param key String key.
+     * @param flag Text flag.
+     * @param x Left edge.
+     * @param y Top edge.
+     * @param width Width.
+     * @param height Height.
+     */
+    LibTextWidget(s32 slot, s32 key, u8 flag, float x, float y, float width, float height)
+    {
+        unk38 = 11;
+        lib_text_init_resource_rectangle(this, slot, key, flag, x, y, width, height);
+    }
     /** @brief Destroy the text widget. */
-    virtual ~LibObject178750();
+    virtual ~LibTextWidget();
     /** @brief Refresh the text widget drawing state. */
     virtual void func_00413D20();
     /** @brief Draw the text widget. */
@@ -389,12 +402,12 @@ struct LibObject178750 : public LibClass174EF0
      * @return Configuration status.
      */
     s32 init_resource_rectangle(float x, float y, float width, float height, s32 slot, u32 key, u8 flag);
-    LibClass171EA0* unkfc;
+    LibListObject* unkfc;
     u8 unk100[0x14];
 };
 
 /** 0x57C-byte multiline text widget with trailing scroll state. */
-struct LibObject174D90 : public LibObject178750
+struct LibObject174D90 : public LibTextWidget
 {
     /** @brief Initialize the multiline text widget with an empty rectangle. */
     LibObject174D90()
@@ -428,11 +441,11 @@ struct LibObject174D90 : public LibObject178750
     u8 unk530[0x4C];
 };
 
-/** 0x90-byte widget, constructed inline over LibClass178600. */
-struct LibClass178630 : public LibClass178600
+/** 0x90-byte widget, constructed inline over LibWidget. */
+struct LibPanel : public LibWidget
 {
     /** @brief Initialize widget state and select kind 1. */
-    LibClass178630()
+    LibPanel()
     {
         unk50.unk0c = 0.0f;
         unk50.unk08 = 0.0f;
@@ -450,7 +463,7 @@ struct LibClass178630 : public LibClass178600
      * @param height Drawing height.
      * @param extra Extra drawing coordinate.
      */
-    LibClass178630(s32 mode, float x, float y, float width, float height, float extra)
+    LibPanel(s32 mode, float x, float y, float width, float height, float extra)
     {
         unk50.unk0c = 0.0f;
         unk50.unk08 = 0.0f;
@@ -460,7 +473,7 @@ struct LibClass178630 : public LibClass178600
         lib_panel_init_rectangle(this, mode, x, y, width, height, extra);
     }
     /** @brief Destroy the widget. */
-    virtual ~LibClass178630()
+    virtual ~LibPanel()
     {
         lib_panel_detach(this);
     }
@@ -615,16 +628,40 @@ struct LibAnimationEntry14
     const char* state_name;
 };
 
+class LibAnimation;
+extern "C" void lib_animation_release_channels(LibAnimation* object);
+
 /**
  * Partial 0x70-byte Lib animation object, with vtable D_178220 in main data.
  * It holds a data block at offset 0x30 (owned unless the byte at 0x68 is set)
  * and an array at offset 0x40.
  */
-class LibClass178220 : public LibClass171EA0
+class LibAnimation : public LibListObject
 {
 public:
     /** @brief Construct an empty object. */
-    LibClass178220();
+    LibAnimation();
+
+    /**
+     * @brief Release the current channels and resource, then play from borrowed data.
+     * @param data Animation data the caller keeps.
+     */
+    void set_resource(void* data)
+    {
+        if (entries)
+        {
+            lib_animation_release_channels(this);
+            delete[] entries;
+        }
+        targets_bound = 0;
+        if (!resource_is_borrowed)
+        {
+            operator delete(resource_data);
+        }
+        resource_is_borrowed = 1;
+        resource_data = data;
+    }
+
 
     u8 unk14[0x1C];
     void* resource_data;
@@ -641,18 +678,21 @@ public:
     float unk64;
     u8 resource_is_borrowed;
     u8 unk69;
+
+    /** Cleared to restart the animation from its first frame. */
     u8 unk6a;
+
     u8 unk6b[3];
     u8 targets_bound;
     u8 unk6f;
 };
 
 /** Partial 0xD0-byte Lib object, with vtable D_178370 in main data. */
-class LibClass178370 : public LibClass171EF0
+class LibAnimationTarget : public LibOrientedTransform
 {
 public:
     /** @brief Construct an empty object. */
-    LibClass178370();
+    LibAnimationTarget();
 
     /**
      * @brief Store the three scalar components of the vector state.
@@ -660,13 +700,13 @@ public:
      * @param y Second component.
      * @param z Third component.
      */
-    virtual void func_003EF790(float x, float y, float z);
+    virtual void set_translation(float x, float y, float z);
 
     /**
      * @brief Store a vector and update the vector state delta.
      * @param value New vector.
      */
-    virtual void func_003EF780(const LibVector4* value);
+    virtual void set_translation_vector(const LibVector4* value);
 
     LibVector4 unk60;
     LibVector4 unk70;
@@ -756,7 +796,7 @@ float func_004CCD90(float value);
  * @param flags Low flag bits to match.
  * @return Matching channel, or null.
  */
-LibClass173180* func_004BDAA0(LibClass178220* object, const void* target, u8 kind, u8 flags);
+LibClass173180* func_004BDAA0(LibAnimation* object, const void* target, u8 kind, u8 flags);
 
 /**
  * @brief Prepare a transition between animation objects.
@@ -766,7 +806,7 @@ LibClass173180* func_004BDAA0(LibClass178220* object, const void* target, u8 kin
  * @param duration Transition duration.
  * @return Destination frame selected by the transition.
  */
-float func_004BDE00(LibClass178220* object, void* target, LibClass178220* previous, float duration);
+float func_004BDE00(LibAnimation* object, void* target, LibAnimation* previous, float duration);
 
 /**
  * @brief Bind the animation object to a target.
@@ -775,7 +815,7 @@ float func_004BDE00(LibClass178220* object, void* target, LibClass178220* previo
  * @param optional Optional object passed to the binder.
  * @return Binding status.
  */
-s32 func_004BF100(LibClass178220* object, void* target, void* optional);
+s32 func_004BF100(LibAnimation* object, void* target, void* optional);
 
 /**
  * @brief Bind populated animation entries whose state names match over up to sixteen characters.
@@ -783,13 +823,13 @@ s32 func_004BF100(LibClass178220* object, void* target, void* optional);
  * @param target Vector state to bind.
  * @param name State name to match.
  */
-void lib_animation_bind_state(LibClass178220* object, LibClass178370* target, const char* name);
+void lib_animation_bind_state(LibAnimation* object, LibAnimationTarget* target, const char* name);
 
 /**
  * @brief Normalize the vector state delta in place.
  * @param object Vector state.
  */
-void func_004C2CD0(LibClass178370* object);
+void func_004C2CD0(LibAnimationTarget* object);
 
 /**
  * @brief Read and cache an indexed animation channel matching the entry's low flag nibble.
@@ -798,7 +838,7 @@ void func_004C2CD0(LibClass178370* object);
  * @param nibble Flag value to match against the entry's low nibble.
  * @return Matching channel, or null.
  */
-LibClass173180* lib_animation_channel_at(LibClass178220* object, s32 index, u8 nibble);
+LibClass173180* lib_animation_channel_at(LibAnimation* object, s32 index, u8 nibble);
 
 /**
  * @brief Replace an animation entry's channel and descriptor when its index is below the entry count.
@@ -809,34 +849,34 @@ LibClass173180* lib_animation_channel_at(LibClass178220* object, s32 index, u8 n
  * @param type Entry type.
  * @param flags Entry flags.
  */
-void lib_animation_set_entry_channel(LibClass178220* object, s32 index, LibClass173180* channel, u8 kind, s16 type, u8 flags);
+void lib_animation_set_entry_channel(LibAnimation* object, s32 index, LibClass173180* channel, u8 kind, s16 type, u8 flags);
 
 /**
  * @brief Clear populated animation entries' targets and mark their bindings incomplete.
  * @param object Animation object.
  */
-void lib_animation_clear_targets(LibClass178220* object);
+void lib_animation_clear_targets(LibAnimation* object);
 
 /**
  * @brief Clear targets for populated animation entries of the requested kind.
  * @param object Animation object.
  * @param kind Entry kind to clear.
  */
-void lib_animation_clear_targets_by_kind(LibClass178220* object, u8 kind);
+void lib_animation_clear_targets_by_kind(LibAnimation* object, u8 kind);
 
 /**
  * @brief Clear populated animation entries referencing a particular target.
  * @param object Animation object.
  * @param target Bound target to remove.
  */
-void lib_animation_clear_matching_target(LibClass178220* object, const void* target);
+void lib_animation_clear_matching_target(LibAnimation* object, const void* target);
 
 /**
  * @brief Replace the animation data with a decoded resource buffer.
  * @param object Animation object.
  * @param source Resource header to decode.
  */
-void lib_animation_load_resource(LibClass178220* object, struct ResidentResourceHeader* source);
+void lib_animation_load_resource(LibAnimation* object, struct ResidentResourceHeader* source);
 #endif
 
 /**
@@ -844,18 +884,18 @@ void lib_animation_load_resource(LibClass178220* object, struct ResidentResource
  * @param object Lib text receiver to rebuild.
  * @return Bounds at offset 0xE8, or null when rebuilding fails.
  */
-LibBounds4C69B0* lib_text_measure_bounds(LibObject178750* object);
+LibTextExtent* lib_text_measure_bounds(LibTextWidget* object);
 
 #ifdef __cplusplus
 /**
  * @brief Delete populated channels and unregister their binding-owner links.
  * @param object Animation object.
  */
-void lib_animation_release_channels(LibClass178220* object);
+void lib_animation_release_channels(LibAnimation* object);
 #endif
 
 /**
- * @brief Bind a LibClass178220 to a second object.
+ * @brief Bind a LibAnimation to a second object.
  * @param object Object to update.
  * @param target Object to bind; FieldClass150EB0 passes its object at offset 0x7C.
  * @return Binding status.

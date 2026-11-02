@@ -84,8 +84,8 @@ func_slot60__17TacticsHelpWindowFi = 0x0034FCD0; // type:func
 
 func_slotf4__21TacticsResourceWindowFUi = 0x00350490; // type:func
 func_slot10__16FieldClass15AE70FUiffi = 0x002CE8D0; // type:func absolute:True allow_duplicated:True
-__ct__14LibClass178600Fv = 0x004C4960; // type:func absolute:True
-__dt__14LibClass178600Fv = 0x004C48B0; // type:func absolute:True
+__ct__9LibWidgetFv = 0x004C4960; // type:func absolute:True
+__dt__9LibWidgetFv = 0x004C48B0; // type:func absolute:True
 __dt__17LibStorageBlock0CFv = 0x004618F0; // type:func absolute:True
 __vt__23ItemCreationClass175110 = 0x00175110; // size:0x24 absolute:True
 __vt__33ItemCreationOptionResourceDisplay = 0x0015B240; // size:0x24 absolute:True
@@ -96,10 +96,10 @@ on_resource_loaded__17TacticsControllerFPv = 0x00350D20; // type:func
 func_00264110__17TacticsControllerFv = 0x00350DE0; // type:func
 
 func_slot5c__17TacticsControllerFv = 0x00350740; // type:func
-get_default_list_kind__14LibClass171EA0Fv = 0x003EEBC0; // type:func absolute:True
-update__14LibClass171EA0Fv = 0x003EEBD0; // type:func absolute:True
-func_003EEBE0__14LibClass171EA0Fv = 0x003EEBE0; // type:func absolute:True
-func_003EF740__14LibClass178600Fv = 0x004C4860; // type:func absolute:True
+get_default_list_kind__13LibListObjectFv = 0x003EEBC0; // type:func absolute:True
+update__13LibListObjectFv = 0x003EEBD0; // type:func absolute:True
+render__13LibListObjectFv = 0x003EEBE0; // type:func absolute:True
+destroy__9LibWidgetFv = 0x004C4860; // type:func absolute:True
 func_00413D20__23ItemCreationClass175110Fv = 0x00467750; // type:func absolute:True
 draw__23ItemCreationClass175110Fv = 0x00467670; // type:func absolute:True
 func_slotf0__16FieldClass15AE70Fv = 0x003512C0; // type:func
@@ -217,14 +217,14 @@ __dt__25TacticsCoordinateSelectorFv = 0x00350F60; // type:func
 @64@__dt__25TacticsCoordinateSelectorFv = 0x00351F90; // type:func absolute:True
 get_default_list_kind__25TacticsCoordinateSelectorFv = 0x00351030; // type:func
 update__25TacticsCoordinateSelectorFv = 0x00348400; // type:func
-func_003EEBE0__25TacticsCoordinateSelectorFv = 0x00351040; // type:func allow_duplicated:True
+render__25TacticsCoordinateSelectorFv = 0x00351040; // type:func allow_duplicated:True
 func_001DD410__15FieldListObjectFv = 0x00351040; // type:func absolute:True allow_duplicated:True
 __dt__23ItemCreationClass185050Fv = 0x0034D990; // type:func
 func_slot0c__23ItemCreationClass185050Fv = 0x00351020; // type:func
 
-__vt__14LibClass178630 = 0x00178630; // size:0x24 absolute:True allow_duplicated:True
-__ct__14LibClass174EF0Fv = 0x00464B10; // type:func absolute:True allow_duplicated:True
-__vt__15LibObject178750 = 0x00178750; // size:0x24 absolute:True allow_duplicated:True
+__vt__8LibPanel = 0x00178630; // size:0x24 absolute:True allow_duplicated:True
+__ct__13LibDrawWidgetFv = 0x00464B10; // type:func absolute:True allow_duplicated:True
+__vt__13LibTextWidget = 0x00178750; // size:0x24 absolute:True allow_duplicated:True
 __ct__17FieldObject23CEA0Fv = 0x0023D170; // type:func absolute:True allow_duplicated:True
 __vt__23ItemCreationClass172600 = 0x00172600; // size:0x24 absolute:True allow_duplicated:True
 __ct__17FieldObject23BE00Fv = 0x0023BE00; // type:func absolute:True allow_duplicated:True
@@ -235,7 +235,7 @@ func_0023CF50__17FieldObject23CEA0Fsff = 0x0023CF50; // type:func absolute:True 
 func_0023CB30 = 0x0023CB30; // type:func absolute:True allow_duplicated:True
 func_0023CEE0 = 0x0023CEE0; // type:func absolute:True allow_duplicated:True
 func_0023BB20__17FieldObject23BE00FffffP17FieldObject23CEA0Ui = 0x0023BB20; // type:func absolute:True allow_duplicated:True
-__dt__14LibClass174EF0Fv = 0x00464A80; // type:func absolute:True allow_duplicated:True
+__dt__13LibDrawWidgetFv = 0x00464A80; // type:func absolute:True allow_duplicated:True
 
 set_character__21TacticsStrategyWindowFsUc = 0x0034E0E0; // type:func
 
@@ -254,8 +254,8 @@ init_windows__17TacticsControllerFv = 0x003507C0; // type:func
 __ct__17TacticsControllerFv = 0x00350F00; // type:func
 
 
-__vt__15LibObject175140 = 0x00175140; // size:0x24 absolute:True allow_duplicated:True
-func_00467AD0__15LibObject175140FffffPCcUc = 0x00467AD0; // type:func absolute:True allow_duplicated:True
+__vt__14LibStringLabel = 0x00175140; // size:0x24 absolute:True allow_duplicated:True
+func_00467AD0__14LibStringLabelFffffPCcUc = 0x00467AD0; // type:func absolute:True allow_duplicated:True
 func_00467AD0 = 0x00467AD0; // type:func absolute:True allow_duplicated:True
 
 resident_exchange_allocation_heap = 0x00100C80; // type:func absolute:True
@@ -293,7 +293,7 @@ lib_panel_init_rectangle = 0x004C5A80; // type:func size:0xD8 absolute:True allo
 
 func_slot5c__16FieldClass15AD40Fv = 0x002CD7C0; // type:func absolute:True allow_duplicated:True
 
-set_selection_marker__16FieldClass15AD40FP14LibClass174EF0Ui = 0x002CD8B0; // type:func absolute:True allow_duplicated:True
+set_selection_marker__16FieldClass15AD40FP13LibDrawWidgetUi = 0x002CD8B0; // type:func absolute:True allow_duplicated:True
 
 configure_selection__16FieldClass15AE60Fiii = 0x002CE220; // type:func absolute:True allow_duplicated:True
 
@@ -317,7 +317,7 @@ D_00174C40 = 0x00174C40; // type:u32 absolute:True allow_duplicated:True
 __vt__23ItemCreationClass174C40 = 0x00174C40; // type:u32 absolute:True allow_duplicated:True
 func_004530E0 = 0x004530E0; // type:func absolute:True allow_duplicated:True
 lib_indexed_resource_init = 0x004530E0; // type:func absolute:True allow_duplicated:True
-init_resource_rectangle__15LibObject178750FffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
+init_resource_rectangle__13LibTextWidgetFffffiUiUc = 0x004C7FE0; // type:func absolute:True allow_duplicated:True
 func_002D3EB0 = 0x002D3EB0; // type:func absolute:True allow_duplicated:True
 __vt__15LibObject174F20 = 0x00174F20; // size:0x24 absolute:True
 init_numeric_resource_rectangle__15LibObject174F20FffffUiiUc = 0x00464D90; // type:func absolute:True allow_duplicated:True

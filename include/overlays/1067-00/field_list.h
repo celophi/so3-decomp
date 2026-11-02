@@ -6,9 +6,9 @@
 #ifdef __cplusplus
 /**
  * Lib list class with vtable D_1502A0 in main data. It adds no data to
- * LibClass178DD0; its sentinel is the list's first 12 bytes (unk00).
+ * LibUpdateList; its sentinel is the list's first 12 bytes (unk00).
  */
-class FieldClass1502A0 : public LibClass178DD0
+class FieldClass1502A0 : public LibUpdateList
 {
 public:
     /** @brief Destroy the object. */

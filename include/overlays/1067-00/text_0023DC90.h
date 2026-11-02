@@ -168,7 +168,7 @@ public:
     /** @brief Initialize the transform list and its packet buffer. */
     FieldClass1534B0()
     {
-        unk6c = 0x4100;
+        type_id = 0x4100;
 
         func_004E13D0();
 
@@ -179,7 +179,7 @@ public:
 
     virtual void update();
 
-    virtual const LibVector4* func_003EFAA0();
+    virtual const LibVector4* get_bounding_sphere();
 
     LibVector4 unk120;
 };

@@ -885,7 +885,7 @@ extern "C" u8 field_reclaim_loader_buffers(FieldResourceLoaderList* owner, Field
 {
     owner->active_node_count = owner->node_count;
     owner->active_node_buffer = new(0) void*[owner->active_node_count];
-    LibClass178DD0& list = *owner;
+    LibUpdateList& list = *owner;
     lib_list_collect_nodes_by_kind(&list, owner->active_node_buffer);
     u8 released = 0;
     for (owner->active_node_index = owner->active_node_count - 1; owner->active_node_index >= 0; owner->active_node_index--)
@@ -925,7 +925,7 @@ void FieldResourceLoaderList::update_nodes()
         func_00113180(resident_get_allocation_heap());
         return;
     }
-    LibClass178DD0& list = *this;
+    LibUpdateList& list = *this;
     lib_list_collect_nodes_by_kind(&list, items);
     for (s32 index = 0; index < active_node_count; index++)
     {

@@ -327,7 +327,13 @@ extern "C" void func_00102AE0(ResidentResourceQueue* queue)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102B30);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102C90);
+ResidentInterruptLock::~ResidentInterruptLock()
+{
+    if (disabled)
+    {
+        EIntr();
+    }
+}
 
 /**
  * @brief Process completed work, then report whether any request is still queued.
@@ -1233,9 +1239,9 @@ extern "C" s32 func_00109FB0(ResidentStreamThread* thread)
 /**
  * @brief Read the stream thread's signed byte at offset 0xBC.
  * @param thread Stream thread.
- * @return The byte.
+ * @return The signed byte, promoted to a word.
  */
-extern "C" s8 func_00109FD0(const ResidentStreamThread* thread)
+extern "C" s32 func_00109FD0(const ResidentStreamThread* thread)
 {
     return thread->unkBC;
 }

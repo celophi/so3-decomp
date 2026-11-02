@@ -7,7 +7,7 @@
 #include "overlays/lib/vector.h"
 
 #ifdef __cplusplus
-class LibClass171E90;
+class LibListSentinel;
 
 /** Partially known payload header with an offset to its data. */
 struct LibResourcePayloadHeader
@@ -86,7 +86,7 @@ public:
     u32 unk14;
 
     /** Intrusive sentinel for the channels supplying child entries. */
-    LibClass171E90* children;
+    LibListSentinel* children;
 
     /** Nonzero when data is borrowed and must not be freed. */
     u8 external_data;

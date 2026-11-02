@@ -58,12 +58,12 @@ public:
 
 #endif
 
-struct LibClass178220;
+struct LibAnimation;
 /** Partial context containing its animation manager. */
 typedef struct FieldContext26FF70
 {
     u8 unk00[0x8C];
-    struct LibClass178220* unk8c;
+    struct LibAnimation* unk8c;
 } FieldContext26FF70;
 
 /** Partial field receiver containing the active shape resource and context. */

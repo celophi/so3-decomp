@@ -91,9 +91,9 @@ void FieldClass157E30::position_secondary_row(FieldClass158A38* cell, FieldClass
             radii.packed = axis_radii->packed;
             lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
             lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
-            float previous_x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
-            float previous_y = radii.floats[1] * first_trig.components[3];
-            float previous_z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+            float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
+            float previous_y = radii.floats[1] * first_trig.w;
+            float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
             position.packed = source_cell->position().packed;
             position.floats[3] = 1.0f;
 
@@ -106,13 +106,13 @@ void FieldClass157E30::position_secondary_row(FieldClass158A38* cell, FieldClass
                 radii.floats[2] -= radius_step->floats[2];
                 lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
                 lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
-                float x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+                float x = first_trig.z * (radii.floats[0] * second_trig.z);
                 position.floats[0] += x - previous_x;
                 previous_x = x;
-                float y = radii.floats[1] * first_trig.components[3];
+                float y = radii.floats[1] * first_trig.w;
                 position.floats[1] += y - previous_y;
                 previous_y = y;
-                float z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+                float z = first_trig.z * (radii.floats[2] * second_trig.w);
                 position.floats[2] += z - previous_z;
                 previous_z = z;
                 position.floats[0] -= position_step->floats[0];
@@ -546,9 +546,9 @@ void FieldClass158170::position_secondary_row(FieldClass158A58* cell, FieldClass
             radii.packed = axis_radii->packed;
             lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
             lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
-            float previous_x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
-            float previous_y = radii.floats[1] * first_trig.components[3];
-            float previous_z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+            float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
+            float previous_y = radii.floats[1] * first_trig.w;
+            float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
             position.packed = source_cell->position().packed;
             position.floats[3] = 1.0f;
 
@@ -561,13 +561,13 @@ void FieldClass158170::position_secondary_row(FieldClass158A58* cell, FieldClass
                 radii.floats[2] -= radius_step->floats[2];
                 lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
                 lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
-                float x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+                float x = first_trig.z * (radii.floats[0] * second_trig.z);
                 position.floats[0] += x - previous_x;
                 previous_x = x;
-                float y = radii.floats[1] * first_trig.components[3];
+                float y = radii.floats[1] * first_trig.w;
                 position.floats[1] += y - previous_y;
                 previous_y = y;
-                float z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+                float z = first_trig.z * (radii.floats[2] * second_trig.w);
                 position.floats[2] += z - previous_z;
                 previous_z = z;
                 position.floats[0] -= position_step->floats[0];
@@ -1001,9 +1001,9 @@ void FieldClass158720::position_secondary_row(FieldClass158A78* cell, FieldClass
             radii.packed = axis_radii->packed;
             lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
             lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
-            float previous_x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
-            float previous_y = radii.floats[1] * first_trig.components[3];
-            float previous_z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+            float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
+            float previous_y = radii.floats[1] * first_trig.w;
+            float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
             position.packed = source_cell->position().packed;
             position.floats[3] = 1.0f;
 
@@ -1016,13 +1016,13 @@ void FieldClass158720::position_secondary_row(FieldClass158A78* cell, FieldClass
                 radii.floats[2] -= radius_step->floats[2];
                 lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
                 lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
-                float x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+                float x = first_trig.z * (radii.floats[0] * second_trig.z);
                 position.floats[0] += x - previous_x;
                 previous_x = x;
-                float y = radii.floats[1] * first_trig.components[3];
+                float y = radii.floats[1] * first_trig.w;
                 position.floats[1] += y - previous_y;
                 previous_y = y;
-                float z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+                float z = first_trig.z * (radii.floats[2] * second_trig.w);
                 position.floats[2] += z - previous_z;
                 previous_z = z;
                 position.floats[0] -= position_step->floats[0];
@@ -2677,9 +2677,9 @@ void FieldClass158860::position_secondary_row(FieldClass1589F8* cell, FieldClass
             radii.packed = axis_radii->packed;
             lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
             lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
-            float previous_x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
-            float previous_y = radii.floats[1] * first_trig.components[3];
-            float previous_z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+            float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
+            float previous_y = radii.floats[1] * first_trig.w;
+            float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
             position.packed = source_cell->position().packed;
             position.floats[3] = 1.0f;
 
@@ -2692,13 +2692,13 @@ void FieldClass158860::position_secondary_row(FieldClass1589F8* cell, FieldClass
                 radii.floats[2] -= radius_step->floats[2];
                 lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
                 lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
-                float x = first_trig.components[2] * (radii.floats[0] * second_trig.components[2]);
+                float x = first_trig.z * (radii.floats[0] * second_trig.z);
                 position.floats[0] += x - previous_x;
                 previous_x = x;
-                float y = radii.floats[1] * first_trig.components[3];
+                float y = radii.floats[1] * first_trig.w;
                 position.floats[1] += y - previous_y;
                 previous_y = y;
-                float z = first_trig.components[2] * (radii.floats[2] * second_trig.components[3]);
+                float z = first_trig.z * (radii.floats[2] * second_trig.w);
                 position.floats[2] += z - previous_z;
                 previous_z = z;
                 position.floats[0] -= position_step->floats[0];
@@ -2921,9 +2921,9 @@ void FieldClass158860::emit_secondary_entries(const LibVector4* position, LibVec
             vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
             float scale = secondary_emission_scale;
-            transformed_first.components[0] *= scale;
-            transformed_first.components[1] *= scale;
-            transformed_first.components[2] *= scale;
+            transformed_first.x *= scale;
+            transformed_first.y *= scale;
+            transformed_first.z *= scale;
         }
         else
         {
@@ -2955,7 +2955,7 @@ void FieldClass158860::emit_secondary_entries(const LibVector4* position, LibVec
         vu0_reset_emission_state();
         vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = unk3C;
+        first_offset->w = unk3C;
     }
 }
 

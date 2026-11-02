@@ -23,7 +23,7 @@ struct ShopSaleItemWindow : public FieldClass15AD40
     LibObject174F20* sale_prices[5];
     LibObject172440* factors[8];
     ItemCreationClass172870* factor_separator;
-    LibClass178630* panel;
+    LibPanel* panel;
     /** @brief Initialize the sale item window. */
     ShopSaleItemWindow()
     {
@@ -69,7 +69,7 @@ struct ShopSellListWindow : public FieldClass15AD40
     }
     LibObject172410* item_names[6];
     LibObject174F20* item_counts[6];
-    LibClass178630* panel;
+    LibPanel* panel;
     u16 item_codes[750];
     /** @brief Destroy the Field list window. */
     virtual ~ShopSellListWindow();
@@ -99,11 +99,11 @@ struct ShopBuyListWindow : public FieldClass15AD40
 {
     LibObject172410* item_names[6];
     LibObject174F20* price_displays[6];
-    LibObject178750* multiply_labels[6];
+    LibTextWidget* multiply_labels[6];
     LibObject174F20* quantity_displays[6];
-    LibObject178750* separator_labels[6];
+    LibTextWidget* separator_labels[6];
     LibObject174F20* buy_limit_displays[6];
-    LibClass178630* panel;
+    LibPanel* panel;
     s32 error_sound_timer;
     /** @brief Initialize the buy list window. */
     ShopBuyListWindow();
@@ -152,14 +152,14 @@ struct ShopItemDetailWindow : public FieldClass15AE70
     virtual s32 func_slotf4(u32 associated);
     /** @brief Initialize the item detail window. */
     ShopItemDetailWindow();
-    LibObject178750* category_label;
+    LibTextWidget* category_label;
     LibObject172410* item_name;
     ItemCreationClass172870* factor_separator;
-    LibObject178750* description_text;
-    LibObject178750* factor_heading;
+    LibTextWidget* description_text;
+    LibTextWidget* factor_heading;
     LibObject172440* factors[8];
-    LibClass178630* panel;
-    LibObject178660* detail_container;
+    LibPanel* panel;
+    LibContainer* detail_container;
     FieldClass15BB90* item_model;
     u8 closing;
 };
@@ -204,9 +204,9 @@ struct ShopActionWindow : public FieldClass15AE70
     /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;
-    LibObject178750* category_label;
-    LibObject178750* buy_label;
-    LibObject178750* sell_label;
+    LibTextWidget* category_label;
+    LibTextWidget* buy_label;
+    LibTextWidget* sell_label;
     LibClass174C40* previous_category_icon;
     LibClass174C40* next_category_icon;
 };
@@ -215,11 +215,11 @@ struct ShopActionWindow : public FieldClass15AE70
 struct ShopDescriptionWindow : public FieldClass15AE70
 {
     LibObject174D90* description;
-    LibObject178750* help_text;
-    LibObject178750* switch_hint;
-    LibObject178750* parameters_heading;
-    LibObject178750* parameter_labels[5];
-    LibObject178750* parameter_separators[5];
+    LibTextWidget* help_text;
+    LibTextWidget* switch_hint;
+    LibTextWidget* parameters_heading;
+    LibTextWidget* parameter_labels[5];
+    LibTextWidget* parameter_separators[5];
     LibObject174F20* parameter_values[5];
     u32 description_key;
     u8 show_parameters;
@@ -244,7 +244,7 @@ struct ShopEquipmentPreviewWindow : public FieldClass15AE70
 {
     void* unka8;
     ItemCreationOptionResourceDisplay* character_displays[8];
-    LibObject178750* comparison_labels[8];
+    LibTextWidget* comparison_labels[8];
     s32 pulse_level;
     s32 pulse_step;
     /** @brief Clear the window display pointer. */
@@ -283,7 +283,7 @@ struct ShopHelpWindow : public FieldClass15AE70
     virtual void func_slot60(s32 text_key);
     /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* help_text;
+    LibTextWidget* help_text;
     s32 help_text_width;
     s16 scroll_timer;
     u8 scrolling;
@@ -327,8 +327,8 @@ struct ShopSellAllConfirmWindow : public FieldClass15AE70
     /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;
-    LibObject178750* yes_label;
-    LibObject178750* no_label;
+    LibTextWidget* yes_label;
+    LibTextWidget* no_label;
 };
 
 /** Confirmation for purchasing the selected items. */
@@ -356,8 +356,8 @@ struct ShopBuyConfirmWindow : public FieldClass15AE70
     /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;
-    LibObject178750* yes_label;
-    LibObject178750* no_label;
+    LibTextWidget* yes_label;
+    LibTextWidget* no_label;
 };
 
 /** Confirmation for selling the selected item instance. */
@@ -383,17 +383,17 @@ struct ShopSellConfirmWindow : public FieldClass15AE70
     /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
     virtual s32 func_slotf4(u32 associated);
     FieldObject23CEA0* choice;
-    LibObject178750* yes_label;
-    LibObject178750* no_label;
+    LibTextWidget* yes_label;
+    LibTextWidget* no_label;
 };
 
 /** Shop copy of the shared movement storage receiver. */
 typedef LibMovementState ShopClass187B90;
 
 /** Shop copy of the shared intrusive-link root. */
-typedef LibClass171E80 ShopClass187B68;
+typedef LibLink ShopClass187B68;
 /** Shop copy of the shared intrusive-list sentinel. */
-typedef LibClass171E90 ShopClass187B78;
+typedef LibListSentinel ShopClass187B78;
 
 /** Shop resources, windows, selected items and transaction state. */
 struct ShopState : FieldClass153E30

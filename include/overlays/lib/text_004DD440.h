@@ -74,7 +74,7 @@ public:
     /** @brief Release camera resources and its transform base. */
     virtual ~LibClass179080();
     /** @brief Clear the manager camera reference, then detach and queue the transform. */
-    virtual void func_003EF740();
+    virtual void destroy();
     /** @brief Initialize viewport bounds and default projection settings. @param context Resident viewport context. */
     void initialize_projection(const LibCameraContext* context);
     /** @brief Build the local perspective volume for visibility tests. @param volume Destination volume. */
@@ -408,7 +408,7 @@ void func_004E33B0(void);
 #ifdef __cplusplus
 
 /** Transform owner with an intrusive list and DMA notification interface. */
-class LibClass178FC0 : public LibClass172000, public LibClass178DD0, public LibClass171FF0
+class LibClass178FC0 : public LibClass172000, public LibUpdateList, public LibDmaCallbacks
 {
 public:
     LibClass178FC0();
@@ -417,13 +417,13 @@ public:
 
     virtual void update();
 
-    virtual void func_003EEBE0();
+    virtual void render();
 
-    virtual const LibVector4* func_003EFAA0();
+    virtual const LibVector4* get_bounding_sphere();
 
-    virtual void func_003F4440(const void* matrix, void* context);
+    virtual void build_packet(const void* matrix, void* context);
 
-    virtual void func_003F4410(u32 value);
+    virtual void on_packet_complete(u32 value);
 
     void func_004E13D0();
 

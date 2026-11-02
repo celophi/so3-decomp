@@ -20,8 +20,8 @@ typedef struct FieldStateCD390 FieldStateCD390;
 /** Field list parameters preceding the callback base. */
 typedef struct FieldStateCE420
 {
-    struct LibClass178600* unk00;
-    struct LibClass178600* unk04;
+    struct LibWidget* unk00;
+    struct LibWidget* unk04;
     float unk08;
     float unk0c;
     float unk10;
@@ -235,8 +235,8 @@ public:
     virtual ~FieldClass15B9F8();
 };
 
-struct LibObject178660;
-struct LibClass174EF0;
+struct LibContainer;
+struct LibDrawWidget;
 
 /** Partial interface of Field's window base, primary vtable 0x15AE70 (destructor in Field). */
 class FieldClass15AE70 : public FieldClass150050
@@ -317,7 +317,7 @@ public:
     /** @brief Return the stored resource source word. @return Stored word. */
     virtual u32 func_slot54();
     /** @brief Return the nested display container. @return Stored container. */
-    virtual LibObject178660* func_slot58();
+    virtual LibContainer* func_slot58();
     virtual void func_slot5c();
     /** @brief Set the window message by signed text key. @param text_key Message key or relative index. */
     virtual void func_slot60(s32 text_key);
@@ -364,7 +364,7 @@ public:
     u8 unk0c;
     u8 unk0d;
     u8 unk0e[2];
-    LibObject178660* unk10;
+    LibContainer* unk10;
     FieldClass15AF68 unk14;
     FieldClass15AF78 unk20;
     FieldClass15AF88 unk2c;
@@ -399,7 +399,7 @@ public:
      */
     void configure_selection(s32 count, s32 start, s32 selected);
     FieldClass153170* selection_marker;
-    LibClass178600* unk48[15];
+    LibWidget* unk48[15];
     u8 unk84;
     u8 unk85;
     u8 unk86[2];
@@ -423,7 +423,7 @@ public:
      * @param target Display to mark, or null to hide the marker.
      * @param color Packed marker color.
      */
-    void set_selection_marker(LibClass174EF0* target, u32 color);
+    void set_selection_marker(LibDrawWidget* target, u32 color);
     virtual s32 func_slot104(u32 associated);
     /** @brief Refresh the list for a category. @param category Category byte supplied by the associated state. */
     virtual void func_slot108(u8 category);

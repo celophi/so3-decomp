@@ -236,7 +236,7 @@ typedef struct LibMultilineRectangleState
 extern "C" void lib_multiline_text_init_rectangle(LibObject174D90* object, float x, float y, float width, float height)
 {
     LibMultilineRectangleState* state = (LibMultilineRectangleState*)object;
-    lib_text_init_rectangle((LibObject178750*)object, x, y, width, height);
+    lib_text_init_rectangle((LibTextWidget*)object, x, y, width, height);
     state->allocation = 0;
     state->display = 0;
     state->unk524 = 0.05f;
@@ -265,7 +265,7 @@ extern "C" s32 lib_multiline_text_init_resource_rectangle(LibObject174D90* objec
 {
     LibMultilineRectangleState* state = (LibMultilineRectangleState*)object;
     state->flag = flag;
-    lib_text_init_rectangle((LibObject178750*)object, x, y, width, height);
+    lib_text_init_rectangle((LibTextWidget*)object, x, y, width, height);
     state->allocation = 0;
     state->display = 0;
     state->unk524 = 0.05f;
@@ -380,7 +380,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004622F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462300);
 
-void LibClass178600::draw()
+void LibWidget::draw()
 {
 }
 
@@ -438,10 +438,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464900);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464A30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", __dt__14LibClass174EF0Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", __dt__13LibDrawWidgetFv);
 
 /** @brief Initialize drawing storage, bounds, scale, colors, and display flags. */
-LibClass174EF0::LibClass174EF0()
+LibDrawWidget::LibDrawWidget()
 {
     unkf4 = 0.0f;
     unkf0 = 0.0f;
@@ -454,15 +454,15 @@ LibClass174EF0::LibClass174EF0()
     allocation = 0;
     unk7c = 0;
     unk78 = 0;
-    unk84 = 1.0f;
-    unk80 = 1.0f;
+    draw_scale_y = 1.0f;
+    draw_scale = 1.0f;
     unk88 = 0.0f;
     unk8c = 2.0f;
     unk90 = 0;
-    unk94 = 0x808080;
-    unk98 = 0x020202;
-    unk9c = 0;
-    unka0 = 0;
+    tint = 0x808080;
+    draw_color = 0x020202;
+    horizontal_align = 0;
+    vertical_align = 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464BC0);
@@ -715,7 +715,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465A90);
  * @param object Transform receiver.
  * @return One when queued, or zero if the receiver already has an owner.
  */
-extern "C" s32 lib_queue_display_object(FieldRuntime* runtime, LibClass178A90* object)
+extern "C" s32 lib_queue_display_object(FieldRuntime* runtime, LibTransformOwner* object)
 {
     LibRuntimeListState* list = (LibRuntimeListState*)runtime;
     LibRuntimeListNode* node = (LibRuntimeListNode*)object;

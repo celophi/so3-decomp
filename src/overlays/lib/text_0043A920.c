@@ -1,7 +1,7 @@
 #include "include_asm.h"
 #include "overlays/lib/text_0043A920.h"
 
-extern void* __vt__14LibClass171E80;
+extern void* __vt__7LibLink;
 extern u8 D_00173A28[];
 extern u8 D_00173F48[];
 extern u8 D_00173F38[];
@@ -1057,7 +1057,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043A920", func_0043DA10);
 
 void* func_0043DF70(void* receiver)
 {
-    *(void**)receiver = &__vt__14LibClass171E80;
+    *(void**)receiver = &__vt__7LibLink;
     *(void**)receiver = D_00173A28;
     *(void**)receiver = D_00173F48;
     *(void**)receiver = D_00173F38;

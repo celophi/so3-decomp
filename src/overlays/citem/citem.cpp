@@ -1,3 +1,4 @@
+#include "overlays/lib/dma_callbacks_inlines.h"
 #include "overlays/citem/citem.h"
 #include "include_asm.h"
 #include "main/resident_001001E0.h"
@@ -512,37 +513,37 @@ static inline void set_item_window_message(ItemHelpWindow* window, s16 key)
 }
 
 /** @brief Allocate and construct the native panel widget. @return The panel storage, or null. */
-static inline LibClass178630* allocate_panel(void)
+static inline LibPanel* allocate_panel(void)
 {
-    return new (0) LibClass178630;
+    return new (0) LibPanel;
 }
 
 /** @brief Allocate the native text widget with an empty rectangle. @return The text-widget storage, or null. */
-static inline LibObject178750* allocate_text_widget(void)
+static inline LibTextWidget* allocate_text_widget(void)
 {
-    return new (0) LibObject178750;
+    return new (0) LibTextWidget;
 }
 
 /** @brief Set the text mode and mark the widget for update. @param widget Text widget. @param mode Text mode. */
-static inline void set_text_mode(LibObject178750* widget, u32 mode)
+static inline void set_text_mode(LibTextWidget* widget, u32 mode)
 {
-    widget->set_mode(mode);
+    widget->set_horizontal_align(mode);
 }
 
 /** @brief Set the packed text color and mark the widget for update. @param widget Text widget. @param color Packed color. */
-static inline void set_text_color(LibObject178750* widget, u32 color)
+static inline void set_text_color(LibTextWidget* widget, u32 color)
 {
-    widget->set_color(color);
+    widget->set_tint(color);
 }
 
 /** @brief Apply the window's text scale to one prompt. @param window Control help window. @param index Prompt index. */
 static inline void scale_prompt(ItemControlHelpWindow* window, u32 index)
 {
-    LibObject178750* prompt = window->prompts[index];
+    LibTextWidget* prompt = window->prompts[index];
     float scale = window->scale;
-    prompt->unk84 = scale;
-    prompt->unk80 = scale;
-    prompt->unk3c = 1;
+    prompt->draw_scale_y = scale;
+    prompt->draw_scale = scale;
+    prompt->needs_redraw = 1;
 }
 
 /**
@@ -613,13 +614,13 @@ static inline ItemCoordinateNode* allocate_coordinate_node(void)
  * @param width Display width.
  * @param height Display height.
  */
-static inline void set_text_bounds(LibObject178750* display, float x, float y, float width, float height)
+static inline void set_text_bounds(LibTextWidget* display, float x, float y, float width, float height)
 {
     display->unk18.unk00 = x;
     display->unk18.unk04 = y;
     display->unk18.unk08 = width;
     display->unk18.unk0c = height;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
 }
 
 /**
@@ -705,7 +706,7 @@ static inline void set_display_brightness(ItemCreationOptionResourceDisplay* obj
     object->unk50.unk44 = value;
     object->unk50.unk48 = value;
     object->unk50.unk4c = value;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /**
@@ -761,13 +762,13 @@ static inline s32 character_intelligence(const ItemCharacterStats& character)
  * @param width Rectangle width.
  * @param height Rectangle height.
  */
-static inline void set_widget_rectangle(LibClass178600* object, float x, float y, float width, float height)
+static inline void set_widget_rectangle(LibWidget* object, float x, float y, float width, float height)
 {
     object->unk18.unk00 = x;
     object->unk18.unk04 = y;
     object->unk18.unk08 = width;
     object->unk18.unk0c = height;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /**
@@ -789,7 +790,7 @@ static inline void append_selector_position(ItemCoordinateSelector* selector, fl
 static inline void set_numeric_value(LibObject174F20* widget, s32 value)
 {
     widget->numeric_value = value;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 /**
@@ -813,7 +814,7 @@ static inline void set_selector_brightness(FieldClass153130* selector, float bri
     if (selector != 0)
     {
         selector->ItemCreationClass185050::unk30 = brightness;
-        selector->unk3c = 1;
+        selector->needs_redraw = 1;
     }
 }
 
@@ -894,7 +895,7 @@ u32 FieldClass15AE70::func_slot54()
 }
 
 /** @brief Return the nested widget container. @return Stored container. */
-LibObject178660* FieldClass15AE70::func_slot58()
+LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }
@@ -1091,13 +1092,13 @@ void ItemDropConfirmWindow::func_slot74()
         {
             if (grid->unk114 != 0)
             {
-                yes_text->set_color(ITEM_COLOR_NORMAL);
-                no_text->set_color(ITEM_COLOR_SELECTED);
+                yes_text->set_tint(ITEM_COLOR_NORMAL);
+                no_text->set_tint(ITEM_COLOR_SELECTED);
             }
             else
             {
-                yes_text->set_color(ITEM_COLOR_SELECTED);
-                no_text->set_color(ITEM_COLOR_NORMAL);
+                yes_text->set_tint(ITEM_COLOR_SELECTED);
+                no_text->set_tint(ITEM_COLOR_NORMAL);
             }
         }
     }
@@ -1112,13 +1113,13 @@ void ItemDropConfirmWindow::func_slot70()
         {
             if (grid->unk114 != 0)
             {
-                yes_text->set_color(ITEM_COLOR_NORMAL);
-                no_text->set_color(ITEM_COLOR_SELECTED);
+                yes_text->set_tint(ITEM_COLOR_NORMAL);
+                no_text->set_tint(ITEM_COLOR_SELECTED);
             }
             else
             {
-                yes_text->set_color(ITEM_COLOR_SELECTED);
-                no_text->set_color(ITEM_COLOR_NORMAL);
+                yes_text->set_tint(ITEM_COLOR_SELECTED);
+                no_text->set_tint(ITEM_COLOR_NORMAL);
             }
         }
     }
@@ -1181,11 +1182,11 @@ void ItemHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
  */
 s32 ItemHpMpGauge::initialize(s32 code, s32 first, void* source, float x, float y, float z)
 {
-    unk6c = 0x6006;
-    LibClass171EC0::unk20.components[0] = 0.0f;
-    LibClass171EC0::unk20.components[1] = 0.0f;
-    LibClass171EC0::unk20.components[2] = 0.0f;
-    LibClass171EC0::unk20.components[3] = 1.0f;
+    type_id = 0x6006;
+    LibPositionTransform::translation.x = 0.0f;
+    LibPositionTransform::translation.y = 0.0f;
+    LibPositionTransform::translation.z = 0.0f;
+    LibPositionTransform::translation.w = 1.0f;
     set_codes_and_z(code, first, z, reinterpret_cast<u32>(source), 0);
     unkb4 = 0;
     unkb8 = 0;
@@ -1193,19 +1194,19 @@ s32 ItemHpMpGauge::initialize(s32 code, s32 first, void* source, float x, float 
 }
 
 /** @brief Complete DMA notification processing. @param value Unused notification value. */
-void ItemHpMpGauge::func_003F4410(u32 value)
+void ItemHpMpGauge::on_packet_complete(u32 value)
 {
     func_4D00B0(this);
 }
 
 /** @brief Submit the drawing packet for DMA notification. */
-void ItemHpMpGauge::func_003EEBE0()
+void ItemHpMpGauge::render()
 {
     dma_pending = 1;
 
     if (unk08 != 0)
     {
-        resident_packet_submit(unk08, static_cast<LibClass171FF0*>(this));
+        resident_packet_submit(unk08, static_cast<LibDmaCallbacks*>(this));
     }
 }
 
@@ -1255,7 +1256,7 @@ u32 ItemController::get_resource_slot()
  */
 s32 ItemControlHelpWindow::func_slotf4(u32 associated)
 {
-    LibClass178630* panel;
+    LibPanel* panel;
     this->width = 192.0f;
     this->height = 104.0f;
     FieldClass15AE70::func_slot14(associated, 0, 9, 0x578, 16.0f, 360.0f, 0.0f);
@@ -1280,7 +1281,7 @@ s32 ItemControlHelpWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(this->unk10, this->prompts[0]);
     lib_container_attach_widget(this->unk10, this->prompts[1]);
     lib_container_attach_widget(this->unk10, this->prompts[2]);
-    this->prompts[0]->unk3f = 0;
+    this->prompts[0]->visible = 0;
     return 1;
 }
 
@@ -1311,10 +1312,10 @@ void ItemEquipWindow::func_slot5c()
             continue;
         }
 
-        portraits[row]->unk3f = 1;
-        stat_results[row][0]->unk3f = 1;
-        stat_results[row][1]->unk3f = 1;
-        stat_results[row][2]->unk3f = 1;
+        portraits[row]->visible = 1;
+        stat_results[row][0]->visible = 1;
+        stat_results[row][1]->visible = 1;
+        stat_results[row][2]->visible = 1;
         ItemCreationAllocationRecord* allocation = owner->selected_allocation;
 
         if (allocation == 0)
@@ -1364,7 +1365,7 @@ void ItemEquipWindow::func_slot5c()
         if (character_attack(character_copy) > character_attack(*character))
         {
             lib_text_set_resource(stat_results[row][0], owner->get_resource_slot(), ITEM_MSG_STAT_UP, 0);
-            stat_results[row][0]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
+            stat_results[row][0]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
         }
@@ -1375,7 +1376,7 @@ void ItemEquipWindow::func_slot5c()
         else
         {
             lib_text_set_resource(stat_results[row][0], owner->get_resource_slot(), ITEM_MSG_STAT_DOWN, 0);
-            stat_results[row][0]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
+            stat_results[row][0]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
         }
@@ -1383,7 +1384,7 @@ void ItemEquipWindow::func_slot5c()
         if (character_defense(character_copy) > character_defense(*character))
         {
             lib_text_set_resource(stat_results[row][1], owner->get_resource_slot(), ITEM_MSG_STAT_UP, 0);
-            stat_results[row][1]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
+            stat_results[row][1]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
         }
@@ -1394,7 +1395,7 @@ void ItemEquipWindow::func_slot5c()
         else
         {
             lib_text_set_resource(stat_results[row][1], owner->get_resource_slot(), ITEM_MSG_STAT_DOWN, 0);
-            stat_results[row][1]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
+            stat_results[row][1]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
         }
@@ -1402,7 +1403,7 @@ void ItemEquipWindow::func_slot5c()
         if (character_intelligence(character_copy) > character_intelligence(*character))
         {
             lib_text_set_resource(stat_results[row][2], owner->get_resource_slot(), ITEM_MSG_STAT_UP, 0);
-            stat_results[row][2]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
+            stat_results[row][2]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) << 8) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
         }
@@ -1413,7 +1414,7 @@ void ItemEquipWindow::func_slot5c()
         else
         {
             lib_text_set_resource(stat_results[row][2], owner->get_resource_slot(), ITEM_MSG_STAT_DOWN, 0);
-            stat_results[row][2]->set_color(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
+            stat_results[row][2]->set_tint(static_cast<u64>(static_cast<u8>(static_cast<s32>(80.0f + 2.6666667f * pulse_level))) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 8) |
                                           (static_cast<u64>(static_cast<u8>(static_cast<s32>(40.0f + 2.2222223f * pulse_level))) << 16));
         }
@@ -1719,7 +1720,7 @@ s32 ItemEquipWindow::func_slotf4(u32 associated)
             column_width = 117.0f;
         }
 
-        LibClass178630* panel = new (0) LibClass178630;
+        LibPanel* panel = new (0) LibPanel;
         panel_x = 8.0f + column_width * (float)column;
         lib_panel_init_rectangle(panel, 1, panel_x, panel_y, 3.0f + column_width, 2.0f + this->row_height, 88.0f);
         lib_container_attach_widget(this->unk10, panel);
@@ -1742,7 +1743,7 @@ s32 ItemEquipWindow::func_slotf4(u32 associated)
         {
             if (row < 3)
             {
-                LibObject175140* name = new (0) LibObject175140;
+                LibStringLabel* name = new (0) LibStringLabel;
                 name->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
                     static_cast<ItemCharacterEquipment*>(this->party->unk04)[index].character_name, 0);
                 lib_container_attach_widget(this->unk10, name);
@@ -1762,7 +1763,7 @@ s32 ItemEquipWindow::func_slotf4(u32 associated)
                 ItemCreationOptionResourceDisplay* portrait = this->portraits[row];
                 portrait->unk50.unk34 = 0.8f;
                 portrait->unk50.unk30 = 0.8f;
-                portrait->unk3c = 1;
+                portrait->needs_redraw = 1;
             }
             else
             {
@@ -1770,18 +1771,18 @@ s32 ItemEquipWindow::func_slotf4(u32 associated)
                 ItemCreationOptionResourceDisplay* portrait = this->portraits[row];
                 portrait->unk50.unk34 = 0.65f;
                 portrait->unk50.unk30 = 0.65f;
-                portrait->unk3c = 1;
+                portrait->needs_redraw = 1;
             }
 
             this->portraits[row]->unk34 = 3;
-            this->portraits[row]->unk3f = 0;
+            this->portraits[row]->visible = 0;
             lib_container_attach_widget(this->unk10, this->portraits[row]);
-            LibObject178750* atk_label = new (0) LibObject178750;
-            LibObject178750* def_label = new (0) LibObject178750;
-            LibObject178750* int_label = new (0) LibObject178750;
-            this->stat_results[row][0] = new (0) LibObject178750;
-            this->stat_results[row][1] = new (0) LibObject178750;
-            this->stat_results[row][2] = new (0) LibObject178750;
+            LibTextWidget* atk_label = new (0) LibTextWidget;
+            LibTextWidget* def_label = new (0) LibTextWidget;
+            LibTextWidget* int_label = new (0) LibTextWidget;
+            this->stat_results[row][0] = new (0) LibTextWidget;
+            this->stat_results[row][1] = new (0) LibTextWidget;
+            this->stat_results[row][2] = new (0) LibTextWidget;
 
             if (row < 3)
             {
@@ -1811,9 +1812,9 @@ s32 ItemEquipWindow::func_slotf4(u32 associated)
                 this->stat_results[row][2]->set_scale(0.9f, 0.9f);
             }
 
-            this->stat_results[row][0]->unk3f = 0;
-            this->stat_results[row][1]->unk3f = 0;
-            this->stat_results[row][2]->unk3f = 0;
+            this->stat_results[row][0]->visible = 0;
+            this->stat_results[row][1]->visible = 0;
+            this->stat_results[row][2]->visible = 0;
             lib_container_attach_widget(this->unk10, atk_label);
             lib_container_attach_widget(this->unk10, def_label);
             lib_container_attach_widget(this->unk10, int_label);
@@ -1823,10 +1824,10 @@ s32 ItemEquipWindow::func_slotf4(u32 associated)
         }
         else
         {
-            LibObject178750* empty = new (0) LibObject178750;
+            LibTextWidget* empty = new (0) LibTextWidget;
             empty->init_resource_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f, source, ITEM_MSG_EMPTY, 0);
             set_widget_rectangle(empty, panel_x, (panel_y + this->row_height / 2.0f) - 9.6f, column_width, 24.0f);
-            empty->set_mode(1);
+            empty->set_horizontal_align(1);
 
             if (row < 3)
             {
@@ -1851,8 +1852,8 @@ s32 ItemEquipWindow::func_slotf4(u32 associated)
     }
 
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(this->selector), 0, 1);
-    this->selector->unk3f = 0;
-    this->unk10->LibClass174610::unkab = 0;
+    this->selector->visible = 0;
+    this->unk10->LibCallbackTransform::unkab = 0;
     ItemCreationAllocationRecord* allocation = owner->selected_allocation;
 
     if (allocation != 0)
@@ -1914,50 +1915,50 @@ void ItemUseWindow::func_slot5c()
             u32 hp = character_hp(character);
             LibObject174F20* hp_display = hp_values[row];
             hp_display->numeric_value = hp;
-            hp_display->unk3c = 1;
+            hp_display->needs_redraw = 1;
             u32 mp = character_mp(character);
             LibObject174F20* mp_display = mp_values[row];
             mp_display->numeric_value = mp;
-            mp_display->unk3c = 1;
+            mp_display->needs_redraw = 1;
 
             if (row < 3)
             {
                 u32 max_hp = character_max_hp(character);
                 LibObject174F20* max_hp_display = max_hp_values[row];
                 max_hp_display->numeric_value = max_hp;
-                max_hp_display->unk3c = 1;
+                max_hp_display->needs_redraw = 1;
                 u32 max_mp = character_max_mp(character);
                 LibObject174F20* max_mp_display = max_mp_values[row];
                 max_mp_display->numeric_value = max_mp;
-                max_mp_display->unk3c = 1;
+                max_mp_display->needs_redraw = 1;
             }
 
-            status_badges[row][0]->unk3f = character_flags(character) & 2;
-            status_badges[row][1]->unk3f = character_flags(character) & 8;
-            status_badges[row][2]->unk3f = character_flags(character) & 4;
+            status_badges[row][0]->visible = character_flags(character) & 2;
+            status_badges[row][1]->visible = character_flags(character) & 8;
+            status_badges[row][2]->visible = character_flags(character) & 4;
 
             if (character_flags(character) & 5)
             {
-                portraits[row]->unk3f = 0;
-                status_badges[row][3]->unk3f = 1;
+                portraits[row]->visible = 0;
+                status_badges[row][3]->visible = 1;
 
                 if (row < 3)
                 {
-                    LibObject175140* name = names[row];
-                    name->unk94 = ITEM_COLOR_DISABLED;
-                    name->unk3c = 1;
+                    LibStringLabel* name = names[row];
+                    name->tint = ITEM_COLOR_DISABLED;
+                    name->needs_redraw = 1;
                 }
             }
             else
             {
-                portraits[row]->unk3f = 1;
-                status_badges[row][3]->unk3f = 0;
+                portraits[row]->visible = 1;
+                status_badges[row][3]->visible = 0;
 
                 if (row < 3)
                 {
-                    LibObject175140* name = names[row];
-                    name->unk94 = ITEM_COLOR_NORMAL;
-                    name->unk3c = 1;
+                    LibStringLabel* name = names[row];
+                    name->tint = ITEM_COLOR_NORMAL;
+                    name->needs_redraw = 1;
                 }
             }
         }
@@ -2182,7 +2183,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             column_width = 117.0f;
         }
 
-        LibClass178630* panel = new (0) LibClass178630;
+        LibPanel* panel = new (0) LibPanel;
         panel_x = 8.0f + column_width * (float)column;
         lib_panel_init_rectangle(panel, 1, panel_x, panel_y, 3.0f + column_width, 2.0f + this->row_height, 88.0f);
         lib_container_attach_widget(this->unk10, panel);
@@ -2209,7 +2210,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
         {
             if (row < 3)
             {
-                this->names[row] = new (0) LibObject175140;
+                this->names[row] = new (0) LibStringLabel;
                 this->names[row]->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
                     slot > 0 ? static_cast<ItemCharacterEquipment*>(this->party->unk04)[index].character_name : g_item_empty_name, 0);
                 lib_container_attach_widget(this->unk10, this->names[row]);
@@ -2217,11 +2218,11 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
 
                 if (reinterpret_cast<ItemCharacterStats*>(this->party->records)[index].get_flags() & 5)
                 {
-                    this->names[row]->set_color(ITEM_COLOR_DISABLED);
+                    this->names[row]->set_tint(ITEM_COLOR_DISABLED);
                 }
                 else
                 {
-                    this->names[row]->set_color(ITEM_COLOR_NORMAL);
+                    this->names[row]->set_tint(ITEM_COLOR_NORMAL);
                 }
             }
 
@@ -2251,7 +2252,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
 
             if (row < 3)
             {
-                LibObject178750* separator = new (0) LibObject178750;
+                LibTextWidget* separator = new (0) LibTextWidget;
                 separator->init_resource_rectangle(60.0f + value_x, hp_y, 0.0f, 0.0f, source, ITEM_MSG_HP_MP_SEPARATOR, 0);
                 separator->set_scale(0.8f, 0.8f);
                 lib_container_attach_widget(this->unk10, separator);
@@ -2281,7 +2282,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
 
             if (row < 3)
             {
-                LibObject178750* separator = new (0) LibObject178750;
+                LibTextWidget* separator = new (0) LibTextWidget;
                 separator->init_resource_rectangle(60.0f + value_x, column_width, 0.0f, 0.0f, source, ITEM_MSG_HP_MP_SEPARATOR, 0);
                 separator->set_scale(0.8f, 0.8f);
                 lib_container_attach_widget(this->unk10, separator);
@@ -2306,7 +2307,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
                 ItemCreationOptionResourceDisplay* portrait = this->portraits[row];
                 portrait->unk50.unk34 = 0.8f;
                 portrait->unk50.unk30 = 0.8f;
-                portrait->unk3c = 1;
+                portrait->needs_redraw = 1;
             }
             else
             {
@@ -2315,7 +2316,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
                 ItemCreationOptionResourceDisplay* portrait = this->portraits[row];
                 portrait->unk50.unk34 = 0.65f;
                 portrait->unk50.unk30 = 0.65f;
-                portrait->unk3c = 1;
+                portrait->needs_redraw = 1;
             }
 
             lib_container_attach_widget(this->unk10, this->portraits[row]);
@@ -2327,9 +2328,9 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             ItemCreationOptionResourceDisplay* badge = this->status_badges[row][0];
             badge->unk50.unk34 = 0.8f;
             badge->unk50.unk30 = 0.8f;
-            badge->unk3c = 1;
+            badge->needs_redraw = 1;
             this->status_badges[row][0]->func_002D6440(badge_x, badge_y, record);
-            this->status_badges[row][0]->unk3f = 0;
+            this->status_badges[row][0]->visible = 0;
             lib_container_attach_widget(this->unk10, this->status_badges[row][0]);
             record = field_find_resource_record(D_001B643C->resources, 39);
             this->status_badges[row][1] = new (0) ItemCreationOptionResourceDisplay;
@@ -2338,7 +2339,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             badge = this->status_badges[row][1];
             badge->unk50.unk34 = 0.8f;
             badge->unk50.unk30 = 0.8f;
-            badge->unk3c = 1;
+            badge->needs_redraw = 1;
 
             if (row < 3)
             {
@@ -2349,7 +2350,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
                 this->status_badges[row][1]->func_002D6440(25.0f + badge_x, badge_y, record);
             }
 
-            this->status_badges[row][1]->unk3f = 0;
+            this->status_badges[row][1]->visible = 0;
             lib_container_attach_widget(this->unk10, this->status_badges[row][1]);
             record = field_find_resource_record(D_001B643C->resources, 38);
             this->status_badges[row][2] = new (0) ItemCreationOptionResourceDisplay;
@@ -2358,7 +2359,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             badge = this->status_badges[row][2];
             badge->unk50.unk34 = 0.8f;
             badge->unk50.unk30 = 0.8f;
-            badge->unk3c = 1;
+            badge->needs_redraw = 1;
 
             if (row < 3)
             {
@@ -2369,7 +2370,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
                 this->status_badges[row][2]->func_002D6440(25.0f + badge_x, 30.0f + badge_y, record);
             }
 
-            this->status_badges[row][2]->unk3f = 0;
+            this->status_badges[row][2]->visible = 0;
             lib_container_attach_widget(this->unk10, this->status_badges[row][2]);
             resource = field_get_aligned_allocation(D_001B643C->resources, (u8)(slot + 0x30));
             record = field_find_resource_record(D_001B643C->resources, 4);
@@ -2383,7 +2384,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
                 badge = this->status_badges[row][3];
                 badge->unk50.unk34 = 0.8f;
                 badge->unk50.unk30 = 0.8f;
-                badge->unk3c = 1;
+                badge->needs_redraw = 1;
             }
             else
             {
@@ -2391,10 +2392,10 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
                 badge = this->status_badges[row][3];
                 badge->unk50.unk34 = 0.65f;
                 badge->unk50.unk30 = 0.65f;
-                badge->unk3c = 1;
+                badge->needs_redraw = 1;
             }
 
-            this->status_badges[row][3]->unk3f = reinterpret_cast<ItemCharacterStats*>(this->party->records)[index].get_flags() & 5;
+            this->status_badges[row][3]->visible = reinterpret_cast<ItemCharacterStats*>(this->party->records)[index].get_flags() & 5;
             lib_container_attach_widget(this->unk10, this->status_badges[row][3]);
             ItemHpMpGauge* gauge = new (0) ItemHpMpGauge;
             gauge->character_id = slot;
@@ -2425,14 +2426,14 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             gauge->FieldClass159A70::unk04 = this->unk10;
             lib_queue_display_object(D_001B657C, gauge);
             this->gauges.append(gauge);
-            gauge->LibClass174610::unkab = 0;
+            gauge->LibCallbackTransform::unkab = 0;
         }
         else
         {
-            LibObject178750* empty = new (0) LibObject178750;
+            LibTextWidget* empty = new (0) LibTextWidget;
             empty->init_resource_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f, source, ITEM_MSG_EMPTY, 0);
             set_widget_rectangle(empty, panel_x, (panel_y + this->row_height / 2.0f) - 9.6f, column_width, 24.0f);
-            empty->set_mode(1);
+            empty->set_horizontal_align(1);
 
             if (row < 3)
             {
@@ -2443,7 +2444,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
                 empty->set_scale(0.8f * 0.8f, 0.8f * 0.8f);
             }
 
-            empty->unk3f = 1;
+            empty->visible = 1;
             lib_container_attach_widget(this->unk10, empty);
         }
 
@@ -2458,12 +2459,12 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
     }
 
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(this->selector), 0, 1);
-    this->selector->unk3f = 0;
-    this->unk10->LibClass174610::unkab = 0;
+    this->selector->visible = 0;
+    this->unk10->LibCallbackTransform::unkab = 0;
 
     for (ItemListNode* node = this->gauges.head->next; node != 0; node = node->next)
     {
-        static_cast<LibClass174610*>(node->value)->unkab = 0;
+        static_cast<LibCallbackTransform*>(node->value)->unkab = 0;
     }
 
     if (owner->selected_allocation != 0)
@@ -2480,14 +2481,14 @@ void ItemUseWindow::func_slot0c()
 {
     for (ItemListNode* node = this->gauges.head->next; node != 0; node = node->next)
     {
-        static_cast<LibClass171EA0*>(node->value)->func_003EF740();
+        static_cast<LibListObject*>(node->value)->destroy();
     }
 
     FieldClass15AE70::func_slot0c();
 }
 
 /** @brief Detach and queue the gauge for release. */
-void ItemHpMpGauge::func_003EF740()
+void ItemHpMpGauge::destroy()
 {
     queued_for_release = 1;
     func_0044B210(this);
@@ -2533,7 +2534,7 @@ u8 ItemInstanceListWindow::func_slotb0()
             ItemEquipWindow* window = new (0) ItemEquipWindow;
             window->func_slotf4(owner->get_resource_slot());
             window->func_slot40(this);
-            window->selector->unk3f = 1;
+            window->selector->visible = 1;
             window->unk10->unkab = 1;
             owner->add_child(window);
             owner->func_00263C70(window);
@@ -2555,12 +2556,12 @@ u8 ItemInstanceListWindow::func_slotb0()
             ItemUseWindow* window = new (0) ItemUseWindow;
             window->func_slotf4(owner->get_resource_slot());
             window->func_slot40(this);
-            window->selector->unk3f = 1;
+            window->selector->visible = 1;
             window->unk10->unkab = 1;
 
             for (ItemListNode* node = window->gauges.head->next; node != 0; node = node->next)
             {
-                static_cast<LibClass174610*>(node->value)->unkab = 1;
+                static_cast<LibCallbackTransform*>(node->value)->unkab = 1;
             }
 
             owner->add_child(window);
@@ -2590,13 +2591,13 @@ void ItemInstanceListWindow::func_slot5c()
     {
         ItemCreationClass175030* display = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
         display->unk30 = 128.0f;
-        display->unk3c = 1;
+        display->needs_redraw = 1;
     }
     else
     {
         ItemCreationClass175030* display = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
         display->unk30 = 64.0f;
-        display->unk3c = 1;
+        display->needs_redraw = 1;
     }
 
     ItemController* owner = static_cast<ItemController*>(D_001B643C->callbacks->state);
@@ -2622,19 +2623,19 @@ void ItemInstanceListWindow::func_slot5c()
                 {
                     LibObject172440* factor_widget = factors[shown];
                     factor_widget->unkfc = factor;
-                    factor_widget->unk3c = 1;
-                    factors[shown]->unk3f = 1;
+                    factor_widget->needs_redraw = 1;
+                    factors[shown]->visible = 1;
                     shown++;
                 }
             }
 
             for (; shown < 8; shown++)
             {
-                factors[shown]->unk3f = 0;
+                factors[shown]->visible = 0;
             }
 
             LibObject172410* row = item_rows[unk28];
-            set_selection_marker(row, row->unk94);
+            set_selection_marker(row, row->tint);
             u8 modification;
             ItemCreationAllocationRecord* record = records[selected];
             modification = record->modification_number;
@@ -2642,14 +2643,14 @@ void ItemInstanceListWindow::func_slot5c()
             LibObject172410* name = selected_item;
             name->unkfc = identifier + 1;
             name->unkfe = modification;
-            name->unk3c = 1;
+            name->needs_redraw = 1;
             owner->selected_allocation = records[selected];
         }
         else
         {
             for (s32 index = 0; index < 8; index++)
             {
-                factors[index]->unk3f = 0;
+                factors[index]->visible = 0;
             }
 
             set_selection_marker(0, ITEM_COLOR_NORMAL);
@@ -2663,39 +2664,39 @@ void ItemInstanceListWindow::func_slot5c()
 
     for (s32 index = 0; index < 6; index++)
     {
-        item_rows[index]->unk3f = 0;
-        factor_marks[index]->unk3f = 0;
+        item_rows[index]->visible = 0;
+        factor_marks[index]->visible = 0;
     }
 
     if (details_shown != 0)
     {
-        category_label->unk3f = 1;
-        selected_item->unk3f = 1;
-        description->unk3f = 1;
-        factor_heading->unk3f = 1;
+        category_label->visible = 1;
+        selected_item->visible = 1;
+        description->visible = 1;
+        factor_heading->visible = 1;
 
         if (owner->selected_category == ITEM_CATEGORY_VALUABLES)
         {
-            selected_item->unk3f = 0;
+            selected_item->visible = 0;
         }
 
-        FieldStateCE420::unk04->unk3f = 0;
-        FieldStateCE420::unk00->unk3f = 0;
+        FieldStateCE420::unk04->visible = 0;
+        FieldStateCE420::unk00->visible = 0;
         ItemCreationClass172870* marker = divider;
         marker->unk18.unk04 = 66.0f;
-        marker->unk3c = 1;
+        marker->needs_redraw = 1;
         set_selection_marker(0, ITEM_COLOR_NORMAL);
 
         if (closing_details != 0 && func_002FD480(model) != 0)
         {
             details_shown = 0;
             closing_details = 0;
-            details_prompt->unk3f = 1;
+            details_prompt->visible = 1;
             lib_text_set_resource(details_prompt, owner->get_resource_slot(), ITEM_MSG_DROP_DETAILS_PROMPT, 0);
-            LibObject178750* text = action_prompt;
+            LibTextWidget* text = action_prompt;
             text->unk18.unk00 = 448.0f;
             text->unk18.unk04 = 330.0f;
-            text->unk3c = 1;
+            text->needs_redraw = 1;
             lib_text_set_resource(action_prompt, owner->get_resource_slot(), ITEM_MSG_BACK_USE_PROMPT, 0);
 
             if (model != 0)
@@ -2717,27 +2718,27 @@ void ItemInstanceListWindow::func_slot5c()
     }
     else
     {
-        category_label->unk3f = 0;
-        selected_item->unk3f = 0;
-        description->unk3f = 0;
-        factor_heading->unk3f = 0;
+        category_label->visible = 0;
+        selected_item->visible = 0;
+        description->visible = 0;
+        factor_heading->visible = 0;
 
         for (s32 index = 0; index < 6; index++)
         {
-            item_rows[index]->unk3f = 1;
-            factor_marks[index]->unk3f = 1;
+            item_rows[index]->visible = 1;
+            factor_marks[index]->visible = 1;
         }
 
-        FieldStateCE420::unk04->unk3f = 1;
-        FieldStateCE420::unk00->unk3f = 1;
+        FieldStateCE420::unk04->visible = 1;
+        FieldStateCE420::unk00->visible = 1;
         ItemCreationClass172870* marker = divider;
         marker->unk18.unk04 = 160.0f;
-        marker->unk3c = 1;
+        marker->needs_redraw = 1;
     }
 }
 
 /** @brief Destroy the list receiver and its head node. */
-LibClass178A70::~LibClass178A70()
+LibListReceiver::~LibListReceiver()
 {
 }
 
@@ -2930,12 +2931,12 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 2400, 20.0f, 83.0f, 0.0f);
     FieldClass15AE60::unk3c = 1;
-    detail_container = new (0) LibObject178660;
+    detail_container = new (0) LibContainer;
     lib_container_init(detail_container, 14, 20.0f, 83.0f, 0, 0.0f, 0);
     lib_queue_display_object(D_001B657C, detail_container);
     LibClass1746A0* clip = new (0) LibClass1746A0;
     LibClass1746A0* reset = new (0) LibClass1746A0;
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 590.0f, 370.0f, 88.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, panel);
     lib_panel_init_transform(panel, 1500.0f);
@@ -2954,7 +2955,7 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
         ItemCreationOptionResourceDisplay* mark = factor_marks[index];
         mark->unk50.unk34 = 0.95f;
         mark->unk50.unk30 = 0.95f;
-        mark->unk3c = 1;
+        mark->needs_redraw = 1;
         factor_marks[index]->unk3d = 0;
         lib_container_attach_widget(FieldClass15AE70::unk10, factor_marks[index]);
         item_rows[index] = new (0) LibObject172410;
@@ -2962,10 +2963,10 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
         item_rows[index]->set_scale(0.9f, 0.9f);
         LibObject172410* text = item_rows[index];
         text->unkfa = 1;
-        text->unk3c = 1;
+        text->needs_redraw = 1;
         text = item_rows[index];
         text->unk88 = -1.0f;
-        text->unk3c = 1;
+        text->needs_redraw = 1;
         item_rows[index]->unk3d = 0;
         lib_container_attach_widget(FieldClass15AE70::unk10, item_rows[index]);
     }
@@ -2976,7 +2977,7 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
     lib_marker_init_rectangle(divider, 24.0f, 160.0f, 550.0f, 4.0f);
     ItemCreationClass172870* marker = divider;
     marker->unk50 = 0xDC6464;
-    marker->unk3c = 1;
+    marker->needs_redraw = 1;
     lib_container_attach_widget(FieldClass15AE70::unk10, divider);
     FieldRuntime* runtime = D_001B657C;
     runtime->detail_resource_slot = associated;
@@ -2988,69 +2989,69 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
         factors[index] = new (0) LibObject172440;
         lib_detail_code_init_rectangle(factors[index], 0, 1, 0, 24.0f, static_cast<float>(175 + 22 * index), 0.0f, 0.0f);
         LibObject172440* text = factors[index];
-        text->unk80 = 0.8f;
-        text->unk84 = 0.8f;
-        text->unk3c = 1;
-        factors[index]->unk3f = 0;
+        text->draw_scale = 0.8f;
+        text->draw_scale_y = 0.8f;
+        text->needs_redraw = 1;
+        factors[index]->visible = 0;
         lib_container_attach_widget(detail_container, factors[index]);
     }
 
     ItemController* owner = static_cast<ItemController*>(D_001B643C->callbacks->state);
-    category_label = new (0) LibObject178750;
+    category_label = new (0) LibTextWidget;
     category_label->init_resource_rectangle(16.0f, 12.0f, 0.0f, 0.0f, associated, owner->selected_category + ITEM_MSG_CATEGORY_NAME_BASE, 0);
-    LibObject178750* text = category_label;
+    LibTextWidget* text = category_label;
     text->unk88 = -1.0f;
-    text->unk3c = 1;
+    text->needs_redraw = 1;
     category_label->set_scale(0.8f, 0.8f);
-    category_label->set_color(ITEM_COLOR_HEADING);
-    category_label->unk3f = 0;
+    category_label->set_tint(ITEM_COLOR_HEADING);
+    category_label->visible = 0;
     lib_container_attach_widget(FieldClass15AE70::unk10, category_label);
     selected_item = new (0) LibObject172410;
     lib_item_code_init_rectangle(selected_item, 24.0f, 34.0f, 561.6f, 31.199999f, 0, 0, 0);
     LibObject172410* code = selected_item;
     code->unkfc = owner->selected_item_type;
     code->unkfe = 0;
-    code->unk3c = 1;
+    code->needs_redraw = 1;
     selected_item->set_scale(1.3f, 1.3f);
-    selected_item->unk3f = 0;
+    selected_item->visible = 0;
     lib_container_attach_widget(FieldClass15AE70::unk10, selected_item);
 
     if (owner->selected_category == ITEM_CATEGORY_VALUABLES)
     {
-        LibObject178750* name = new (0) LibObject178750;
+        LibTextWidget* name = new (0) LibTextWidget;
         name->init_resource_rectangle(24.0f, 34.0f, 0.0f, 0.0f, associated, owner->selected_item_type + ITEM_MSG_VALUABLE_NAME_BASE, 0);
         name->set_scale(1.3f, 1.3f);
         lib_container_attach_widget(FieldClass15AE70::unk10, name);
-        description = new (0) LibObject178750;
+        description = new (0) LibTextWidget;
         description->init_resource_rectangle(24.0f, 78.0f, 534.0f, 66.0f, associated, owner->selected_item_type + ITEM_MSG_VALUABLE_DESCRIPTION_BASE, 0);
     }
     else
     {
-        description = new (0) LibObject178750;
+        description = new (0) LibTextWidget;
         description->init_resource_rectangle(24.0f, 78.0f, 534.0f, 66.0f, associated, owner->selected_item_type + ITEM_MSG_ITEM_DESCRIPTION_BASE, 0);
     }
 
-    description->set_mode(0);
-    description->set_vertical_alignment(1);
+    description->set_horizontal_align(0);
+    description->set_vertical_align(1);
     text = description;
     text->unk88 = -1.0f;
-    text->unk3c = 1;
+    text->needs_redraw = 1;
     description->set_scale(0.9f, 0.9f);
-    description->unk3f = 0;
+    description->visible = 0;
     lib_container_attach_widget(detail_container, description);
-    factor_heading = new (0) LibObject178750;
+    factor_heading = new (0) LibTextWidget;
     factor_heading->init_resource_rectangle(16.0f, 150.0f, 0.0f, 0.0f, associated, ITEM_MSG_FACTOR_HEADING, 0);
     factor_heading->set_scale(0.8f, 0.8f);
-    factor_heading->set_color(ITEM_COLOR_HEADING);
+    factor_heading->set_tint(ITEM_COLOR_HEADING);
     text = factor_heading;
     text->unk88 = -1.0f;
-    text->unk3c = 1;
-    factor_heading->unk3f = 0;
+    text->needs_redraw = 1;
+    factor_heading->visible = 0;
     lib_container_attach_widget(FieldClass15AE70::unk10, factor_heading);
-    details_prompt = new (0) LibObject178750;
+    details_prompt = new (0) LibTextWidget;
     details_prompt->init_resource_rectangle(400.0f, 295.0f, 0.0f, 0.0f, associated, ITEM_MSG_DROP_DETAILS_PROMPT, 1);
     lib_container_attach_widget(detail_container, details_prompt);
-    action_prompt = new (0) LibObject178750;
+    action_prompt = new (0) LibTextWidget;
     action_prompt->init_resource_rectangle(448.0f, 330.0f, 0.0f, 0.0f, associated, ITEM_MSG_BACK_USE_PROMPT, 1);
     lib_container_attach_widget(detail_container, action_prompt);
     FieldClass15AE60::unk34 = 28.0f;
@@ -3058,10 +3059,10 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
     FieldStateCE420::unk04 = new (0) LibClass175030;
     lib_moving_widget_init_position(static_cast<LibClass175030*>(FieldStateCE420::unk04), 28.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
-    FieldStateCE420::unk04->unk3f = 0;
+    FieldStateCE420::unk04->visible = 0;
     FieldStateCE420::unk00 = new (0) LibClass1725D0;
     lib_list_indicator_init(static_cast<LibClass1725D0*>(FieldStateCE420::unk00), 558.0f, 14.0f, 140.0f, 10.0f, 0.0f);
-    FieldStateCE420::unk00->unk3f = 0;
+    FieldStateCE420::unk00->visible = 0;
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 6, 378, 28);
     FieldClass15AE60::unk2b = 3;
@@ -3109,18 +3110,18 @@ void ItemInstanceListWindow::refresh_instances(s32 reset)
         }
 
         details_shown = 1;
-        details_prompt->unk3f = 0;
+        details_prompt->visible = 0;
         lib_text_set_resource(details_prompt, owner->get_resource_slot(), ITEM_MSG_DROP_DETAILS_PROMPT, 0);
-        LibObject178750* prompt = action_prompt;
+        LibTextWidget* prompt = action_prompt;
         prompt->unk18.unk00 = 518.0f;
-        prompt->unk3c = 1;
+        prompt->needs_redraw = 1;
         lib_text_set_resource(action_prompt, owner->get_resource_slot(), ITEM_MSG_DETAILS_BACK_PROMPT, 0);
-        selected_item->unk3f = 0;
+        selected_item->visible = 0;
         FieldStateCE420::unk04->unk3d = 0;
         FieldStateCE420::unk00->unk3d = 0;
-        LibClass178600* marker = divider;
+        LibWidget* marker = divider;
         marker->unk18.unk04 = 66.0f;
-        marker->unk3c = 1;
+        marker->needs_redraw = 1;
     }
     else
     {
@@ -3249,8 +3250,8 @@ void ItemDropConfirmWindow::func_slot5c()
  */
 s32 ItemDropConfirmWindow::func_slotf4(u32 associated)
 {
-    LibClass178630* panel;
-    LibObject178750* text;
+    LibPanel* panel;
+    LibTextWidget* text;
     FieldObject23CEA0* grid;
     LibWidgetColors4C5590 colors;
     FieldClass15AE70::func_slot10(associated, 145.0f, 170.0f, 13);
@@ -3351,7 +3352,7 @@ ItemInstanceListWindow::~ItemInstanceListWindow()
 /** @brief Release the detail container and the window's widgets. */
 void ItemInstanceListWindow::func_slot0c()
 {
-    detail_container->func_003EF740();
+    detail_container->destroy();
     FieldClass15AE70::func_slot0c();
 }
 
@@ -3406,45 +3407,45 @@ void ItemInstanceListWindow::func_slot68()
  */
 void ItemInstanceListWindow::func_slot10c(u32 value, u32 alternate)
 {
-    item_rows[0]->unk3f = value;
-    factor_marks[0]->unk3f = value;
-    item_rows[1]->unk3f = value;
-    factor_marks[1]->unk3f = value;
-    item_rows[2]->unk3f = value;
-    factor_marks[2]->unk3f = value;
-    item_rows[3]->unk3f = value;
-    factor_marks[3]->unk3f = value;
-    item_rows[4]->unk3f = value;
-    factor_marks[4]->unk3f = value;
-    item_rows[5]->unk3f = value;
-    factor_marks[5]->unk3f = value;
+    item_rows[0]->visible = value;
+    factor_marks[0]->visible = value;
+    item_rows[1]->visible = value;
+    factor_marks[1]->visible = value;
+    item_rows[2]->visible = value;
+    factor_marks[2]->visible = value;
+    item_rows[3]->visible = value;
+    factor_marks[3]->visible = value;
+    item_rows[4]->visible = value;
+    factor_marks[4]->visible = value;
+    item_rows[5]->visible = value;
+    factor_marks[5]->visible = value;
 
     if (panel != 0)
     {
-        panel->unk3f = 1;
+        panel->visible = 1;
     }
 
     if (FieldClass15AE60::unk04 != 0)
     {
-        FieldClass15AE60::unk04->unk3f = alternate;
+        FieldClass15AE60::unk04->visible = alternate;
 
         if (alternate != 0)
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             control->ItemCreationClass185050::unk30 = 128.0f;
-            control->unk3c = 1;
+            control->needs_redraw = 1;
         }
         else
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             control->ItemCreationClass185050::unk30 = 64.0f;
-            control->unk3c = 1;
+            control->needs_redraw = 1;
         }
     }
 
     if (FieldClass15AE60::unk00 != 0)
     {
-        FieldClass15AE60::unk00->unk3f = alternate;
+        FieldClass15AE60::unk00->visible = alternate;
     }
 }
 
@@ -3461,12 +3462,12 @@ void ItemInstanceListWindow::set_scroll_position(float offset)
 
         do
         {
-            LibClass178600* screen = item_rows[row];
+            LibWidget* screen = item_rows[row];
             screen->unk18.unk04 = y;
-            screen->unk3c = 1;
+            screen->needs_redraw = 1;
             screen = factor_marks[row];
             screen->unk18.unk04 = y;
-            screen->unk3c = 1;
+            screen->needs_redraw = 1;
             y += 28.0f;
             row++;
         } while (row < 6);
@@ -3498,7 +3499,7 @@ void ItemInstanceListWindow::refresh_rows(s32 start)
                 FieldResourceRecord* record;
                 row->unkfc = item_type;
                 row->unkfe = modification;
-                row->unk3c = 1;
+                row->needs_redraw = 1;
 
                 for (slot = 0; slot < 8; slot++)
                 {
@@ -3577,12 +3578,12 @@ u8 ItemInstanceListWindow::func_slotb8()
             }
 
             details_shown = 1;
-            details_prompt->unk3f = 0;
+            details_prompt->visible = 0;
             lib_text_set_resource(details_prompt, owner->get_resource_slot(), ITEM_MSG_DROP_DETAILS_PROMPT, 0);
-            LibObject178750* text = action_prompt;
+            LibTextWidget* text = action_prompt;
             text->unk18.unk00 = 425.0f;
             text->unk18.unk04 = 337.0f;
-            text->unk3c = 1;
+            text->needs_redraw = 1;
             lib_text_set_resource(action_prompt, owner->get_resource_slot(), ITEM_MSG_SWITCH_BACK_PROMPT, 0);
             resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
         }
@@ -3643,7 +3644,7 @@ u8 ItemTypeListWindow::func_slotb0()
     {
         LibClass175030* selector = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
         selector->ItemCreationClass185050::unk30 = 64.0f;
-        selector->unk3c = 1;
+        selector->needs_redraw = 1;
     }
 
     if (controller->selected_category == ITEM_CATEGORY_VALUABLES)
@@ -3672,18 +3673,18 @@ s32 ItemTypeListWindow::func_slot104(u32 associated)
 
     for (s32 index = 0; index < 14; index++)
     {
-        unk48[index] = new (0) LibObject178750;
-        separators[index] = new (0) LibObject178750;
+        unk48[index] = new (0) LibTextWidget;
+        separators[index] = new (0) LibTextWidget;
         counts[index] = new (0) LibObject174F20;
         float y = 16.0f + 28.0f * (float)index;
-        reinterpret_cast<LibObject178750*>(unk48[index])->init_resource_rectangle(22.0f, y, 0.0f, 0.0f, associated, ITEM_MSG_ITEM_NAME_BASE, 0);
+        reinterpret_cast<LibTextWidget*>(unk48[index])->init_resource_rectangle(22.0f, y, 0.0f, 0.0f, associated, ITEM_MSG_ITEM_NAME_BASE, 0);
         separators[index]->init_resource_rectangle(326.0f, y - 4.0f, 0.0f, 0.0f, associated, ITEM_MSG_SEPARATOR, 1);
         lib_numeric_widget_init_rectangle(counts[index], index, associated, 1, 334.0f, y, 28.0f, 24.0f);
 
-        LibClass174EF0* name = static_cast<LibClass174EF0*>(unk48[index]);
+        LibDrawWidget* name = static_cast<LibDrawWidget*>(unk48[index]);
         name->unk88 = -1.0f;
-        name->unk3c = 1;
-        static_cast<LibClass174EF0*>(unk48[index])->set_scale(0.9f, 0.9f);
+        name->needs_redraw = 1;
+        static_cast<LibDrawWidget*>(unk48[index])->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(FieldClass15AE70::unk10, unk48[index]);
         lib_container_attach_widget(FieldClass15AE70::unk10, separators[index]);
         lib_container_attach_widget(FieldClass15AE70::unk10, counts[index]);
@@ -3696,7 +3697,7 @@ s32 ItemTypeListWindow::func_slot104(u32 associated)
     FieldClass15AE60::unk04 = new (0) LibClass175030;
     lib_moving_widget_init_position(static_cast<LibClass175030*>(FieldClass15AE60::unk04), 20.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk04);
-    FieldClass15AE60::unk04->unk3f = 0;
+    FieldClass15AE60::unk04->visible = 0;
     FieldClass15AE60::unk00 = new (0) LibClass1725D0;
     lib_list_indicator_init(static_cast<LibClass1725D0*>(FieldClass15AE60::unk00), 376.0f, 16.0f, 362.0f, 10.0f, 0.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldClass15AE60::unk00);
@@ -3755,8 +3756,8 @@ void ItemTypeListWindow::func_slot5c()
 
         if (unk24 >= 0 && unk88 != 0)
         {
-            LibClass174EF0* display = static_cast<LibClass174EF0*>(unk48[unk28]);
-            set_selection_marker(display, display->unk94);
+            LibDrawWidget* display = static_cast<LibDrawWidget*>(unk48[unk28]);
+            set_selection_marker(display, display->tint);
         }
         else
         {
@@ -3791,11 +3792,11 @@ void ItemTypeListWindow::refresh_rows(s32 start)
 
                 if (entry >= 0)
                 {
-                    lib_text_set_resource(reinterpret_cast<LibObject178750*>(unk48[index]), func_slot54(), entry + ITEM_MSG_VALUABLE_NAME_BASE, 0);
-                    static_cast<LibClass174EF0*>(unk48[index])->set_color(ITEM_COLOR_NORMAL);
+                    lib_text_set_resource(reinterpret_cast<LibTextWidget*>(unk48[index]), func_slot54(), entry + ITEM_MSG_VALUABLE_NAME_BASE, 0);
+                    static_cast<LibDrawWidget*>(unk48[index])->set_tint(ITEM_COLOR_NORMAL);
                     LibObject174F20* numeric = counts[index];
                     numeric->numeric_value = 1;
-                    numeric->unk3c = 1;
+                    numeric->needs_redraw = 1;
                     unk48[index]->unk3d = 1;
                     counts[index]->unk3d = 1;
                     separators[index]->unk3d = 1;
@@ -3826,17 +3827,17 @@ void ItemTypeListWindow::refresh_rows(s32 start)
 
                         if ((new_item_types[identifier / 32] & (1 << (identifier % 32))) != 0)
                         {
-                            static_cast<LibClass174EF0*>(unk48[index])->set_color(ITEM_COLOR_NEW_ITEM);
+                            static_cast<LibDrawWidget*>(unk48[index])->set_tint(ITEM_COLOR_NEW_ITEM);
                         }
                         else
                         {
-                            static_cast<LibClass174EF0*>(unk48[index])->set_color(ITEM_COLOR_NORMAL);
+                            static_cast<LibDrawWidget*>(unk48[index])->set_tint(ITEM_COLOR_NORMAL);
                         }
 
-                        lib_text_set_resource(reinterpret_cast<LibObject178750*>(unk48[index]), func_slot54(), text_key, 0);
+                        lib_text_set_resource(reinterpret_cast<LibTextWidget*>(unk48[index]), func_slot54(), text_key, 0);
                         LibObject174F20* numeric = counts[index];
                         numeric->numeric_value = record->inventory_count;
-                        numeric->unk3c = 1;
+                        numeric->needs_redraw = 1;
                         unk48[index]->unk3d = 1;
                         counts[index]->unk3d = 1;
                         separators[index]->unk3d = 1;
@@ -3908,19 +3909,19 @@ void ItemTypeListWindow::func_slot10c(u32 unused, u32 cursor)
 {
     if (FieldClass15AE60::unk04 != 0)
     {
-        FieldClass15AE60::unk04->unk3f = cursor;
+        FieldClass15AE60::unk04->visible = cursor;
 
         if (cursor != 0)
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             control->ItemCreationClass185050::unk30 = 128.0f;
-            control->unk3c = 1;
+            control->needs_redraw = 1;
         }
         else
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
             control->ItemCreationClass185050::unk30 = 64.0f;
-            control->unk3c = 1;
+            control->needs_redraw = 1;
         }
     }
 }
@@ -3933,18 +3934,18 @@ void ItemTypeListWindow::set_scroll_position(float start)
 
     for (index = 0; index < 14; index++)
     {
-        LibClass178600* slot = unk48[index];
+        LibWidget* slot = unk48[index];
         slot->unk18.unk00 = 24.0f;
         slot->unk18.unk04 = value;
-        slot->unk3c = 1;
+        slot->needs_redraw = 1;
         slot = separators[index];
         slot->unk18.unk00 = 326.0f;
         slot->unk18.unk04 = value;
-        slot->unk3c = 1;
+        slot->needs_redraw = 1;
         slot = counts[index];
         slot->unk18.unk00 = 334.0f;
         slot->unk18.unk04 = value;
-        slot->unk3c = 1;
+        slot->needs_redraw = 1;
         value += 28.0f;
     }
 }
@@ -3956,7 +3957,7 @@ void ItemTypeListWindow::set_scroll_position(float start)
  */
 s32 ItemListPanel::func_slotf4(u32 associated)
 {
-    LibClass178630* panel;
+    LibPanel* panel;
     FieldClass15AE70::func_slot14(associated, 0, 9, 0x578, 204.0f, 72.0f, 0.0f);
     panel = allocate_panel();
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 412.0f, 396.0f, 88.0f);
@@ -4010,7 +4011,7 @@ u8 ItemCategoryWindow::func_slotb0()
     {
         if (controller->control_help_window != 0)
         {
-            controller->control_help_window->prompts[0]->unk3f = 0;
+            controller->control_help_window->prompts[0]->visible = 0;
         }
     }
     else
@@ -4024,7 +4025,7 @@ u8 ItemCategoryWindow::func_slotb0()
             lib_text_set_resource(control_help->prompts[0], owner->get_resource_slot(), ITEM_MSG_SORT_PROMPT, 0);
             lib_text_set_resource(control_help->prompts[1], owner->get_resource_slot(), ITEM_MSG_BACK_PROMPT, 0);
             lib_text_set_resource(control_help->prompts[2], owner->get_resource_slot(), ITEM_MSG_SELECT_PROMPT, 0);
-            control_help->prompts[0]->unk3f = 1;
+            control_help->prompts[0]->visible = 1;
         }
     }
 
@@ -4049,7 +4050,7 @@ void ItemCategoryWindow::func_slot6c()
         {
             for (s32 index = 0; index < label_count; index++)
             {
-                LibObject178750* label = static_cast<LibObject178750*>(unk2c.at(index)->value);
+                LibTextWidget* label = static_cast<LibTextWidget*>(unk2c.at(index)->value);
 
                 if (index == row)
                 {
@@ -4082,7 +4083,7 @@ void ItemCategoryWindow::func_slot68()
         {
             for (s32 index = 0; index < label_count; index++)
             {
-                LibObject178750* label = static_cast<LibObject178750*>(unk2c.at(index)->value);
+                LibTextWidget* label = static_cast<LibTextWidget*>(unk2c.at(index)->value);
 
                 if (index == row)
                 {
@@ -4113,7 +4114,7 @@ void ItemCategoryWindow::func_slot5c()
 
         if (owner->control_help_window != 0)
         {
-            owner->control_help_window->prompts[0]->unk3f = 0;
+            owner->control_help_window->prompts[0]->visible = 0;
         }
     }
 }
@@ -4133,18 +4134,18 @@ s32 ItemCategoryWindow::func_slotf4(u32 associated)
     }
 
     FieldClass15AE70::func_slot14(associated, 0, 9, 0x708, 16.0f, 72.0f, 0.0f);
-    LibClass178630* panel = allocate_panel();
+    LibPanel* panel = allocate_panel();
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 192.0f, 288.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     label_count = 10;
 
     for (s32 index = 0; index < label_count; index++)
     {
-        LibObject178750* label = allocate_text_widget();
+        LibTextWidget* label = allocate_text_widget();
         float y = 16.0f + 26.0f * static_cast<float>(index);
         label->init_resource_rectangle(42.0f, y, 0.0f, 0.0f, associated, index + ITEM_MSG_CATEGORY_NAME_BASE, 0);
         label->unk88 = -1.0f;
-        label->unk3c = 1;
+        label->needs_redraw = 1;
         label->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(unk10, label);
         unk2c.append(label);
@@ -4165,7 +4166,7 @@ s32 ItemCategoryWindow::func_slotf4(u32 associated)
     selector->func_0023B530(columns, label_count, 1, 0, 1, 20.0f, top, 0.0f, 26.0f);
     lib_container_attach_widget(unk10, selector);
 
-    LibObject178750* first_label = static_cast<LibObject178750*>(unk2c.at(0)->value);
+    LibTextWidget* first_label = static_cast<LibTextWidget*>(unk2c.at(0)->value);
     highlight = new (0) FieldClass153170;
     highlight->func_0023B850(first_label, ITEM_COLOR_SELECTED);
     lib_container_attach_widget(unk10, highlight);
@@ -4174,7 +4175,7 @@ s32 ItemCategoryWindow::func_slotf4(u32 associated)
     {
         for (s32 index = 0; index < label_count; index++)
         {
-            LibObject178750* label = static_cast<LibObject178750*>(unk2c.at(index)->value);
+            LibTextWidget* label = static_cast<LibTextWidget*>(unk2c.at(index)->value);
 
             if (index == 0)
             {
@@ -4199,7 +4200,7 @@ ItemCategoryWindow::~ItemCategoryWindow()
 /** @brief Hold the help line at its start for 120 frames, then scroll it left and wrap. */
 void ItemHelpWindow::func_slot5c()
 {
-    LibObject178750* display = this->text_display;
+    LibTextWidget* display = this->text_display;
     float x = display->unk18.unk00;
     float y = display->unk18.unk04;
     float width = display->unk18.unk08;
@@ -4241,7 +4242,7 @@ void ItemHelpWindow::func_slot60(s32 text_key)
         scrolling = 0;
         delay_frames = 0;
         lib_text_set_resource(text_display, func_slot54(), text_key, 1);
-        scroll_extent = (s32)lib_text_measure_bounds(text_display)->unk08 + 6;
+        scroll_extent = (s32)lib_text_measure_bounds(text_display)->width + 6;
     }
 }
 
@@ -4254,18 +4255,18 @@ s32 ItemHelpWindow::func_slotf4(u32 associated)
 {
     FieldClass15AE70::func_slot14(associated, 0, 9, 0x578, 16.0f, 16.0f, 0.0f);
 
-    LibObject178750* label = new (0) LibObject178750;
+    LibTextWidget* label = new (0) LibTextWidget;
     label->init_resource_rectangle(16.0f, 6.0f, 0.0f, 0.0f, associated, ITEM_MSG_TITLE, 0);
     lib_container_attach_widget(unk10, label);
     unk2c.append(label);
 
-    LibObject178750* caption = new (0) LibObject178750;
+    LibTextWidget* caption = new (0) LibTextWidget;
     caption->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, associated, ITEM_MSG_CAPTION, 0);
     caption->set_scale(0.65f, 0.65f);
     lib_container_attach_widget(unk10, caption);
     unk2c.append(caption);
 
-    text_display = new (0) LibObject178750;
+    text_display = new (0) LibTextWidget;
     LibClass1746A0* clip = new (0) LibClass1746A0;
     LibClass1746A0* reset = new (0) LibClass1746A0;
 
@@ -4274,7 +4275,7 @@ s32 ItemHelpWindow::func_slotf4(u32 associated)
         return 0;
     }
 
-    label_width = lib_text_measure_bounds(label)->unk08;
+    label_width = lib_text_measure_bounds(label)->width;
     clip_x = 18.0f + label_width;
     // TODO: Adding through a const reference is the only way I found to get the original's load order.
     clip_width = 640.0f - (16.0f + shifted_position(clip_x, 32.0f));
@@ -4510,12 +4511,12 @@ ItemController::ItemController()
 }
 
 /** @brief Leave the default DMA notification hook unchanged. @param value Unused notification value. */
-void LibClass171FF0::func_003EFA90(u32 value)
+void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
 /** @brief Leave the default DMA completion hook unchanged. @param value Unused notification value. */
-void LibClass171FF0::func_003F4410(u32 value)
+void LibDmaCallbacks::on_packet_complete(u32 value)
 {
 }
 
@@ -4531,115 +4532,115 @@ void ItemCoordinateSelector::update()
 }
 
 /** @brief Leave the default notification hook unchanged. */
-void ItemCoordinateSelector::func_003EEBE0()
+void ItemCoordinateSelector::render()
 {
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
-void LibClass178A90::func_003EF770(const LibVector4* value)
+void LibOrientedTransform::copy_translation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
-void LibClass178A90::func_003EF780(const LibVector4* value)
+void LibOrientedTransform::set_translation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
 /** @brief Set the translation coordinates and mark the transform dirty. @param x Horizontal translation. @param y Vertical translation. @param z Third translation component. */
-void LibClass178A90::func_003EF790(float x, float y, float z)
+void LibOrientedTransform::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk20.components[0] = x;
-    unk20.components[1] = y;
-    unk20.components[2] = z;
-    unk20.components[3] = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /** @brief Set all quaternion components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
-void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
+void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
-    unk30.components[0] = x;
-    unk30.components[1] = y;
-    unk30.components[2] = z;
-    unk30.components[3] = w;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
-void LibClass171EF0::func_003EEEF0(const LibVector4* value)
+void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
-void LibClass171EF0::func_003EEF10(const LibVector4* value)
+void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
-void LibClass171EF0::func_003EEF30(const LibVector4* value)
+void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(unk30.components, value->components);
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
-void LibClass171EF0::func_003EEF60(const LibVector4* value)
+void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(unk30.components, value->components);
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
 /** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
-void LibClass171EF0::func_003EEF90(float x, float y, float z)
+void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
     LibVector4 value;
-    value.components[0] = x;
-    value.components[1] = y;
-    value.components[2] = z;
-    value.components[3] = 1.0f;
-    func_004CE4C0(unk30.components, value.components);
+    value.x = x;
+    value.y = y;
+    value.z = z;
+    value.w = 1.0f;
+    func_004CE4C0(&orientation.x, &value.x);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
-void LibClass171EF0::func_003EEFD0(const LibVector4* value)
+void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
-void LibClass171EF0::func_003EEFF0(const LibVector4* value)
+void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Set the scale coordinates and mark the transform dirty. @param x First scale component. @param y Second scale component. @param z Third scale component. */
-void LibClass171EF0::func_003EF010(float x, float y, float z)
+void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk40.components[0] = x;
-    unk40.components[1] = y;
-    unk40.components[2] = z;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
 }
 
 /** @brief Return the default output status. @param output Unused output object. @return Zero. */
-s32 LibClass178A90::func_003EEE20(void* output)
+s32 LibTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
 
 /** @brief Test whether the supplied value is negative. @param value Value to test. @param mode Unused mode. @return One if negative, otherwise zero. */
-s32 LibClass178A90::func_003EEE30(float value, float mode)
+s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
     s32 result = 1;
 
@@ -4652,19 +4653,19 @@ s32 LibClass178A90::func_003EEE30(float value, float mode)
 }
 
 /** @brief Return the default transform vector. @return Resident vector pointer. */
-const LibVector4* LibClass178A90::func_003EFAA0()
+const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
     return &D_50CD30;
 }
 
 /** @brief Return the default transform receiver. @return Null. */
-LibClass178A90* LibClass178A90::func_003EEE50()
+LibTransformOwner* LibTransformOwner::clone()
 {
     return 0;
 }
 
 /** @brief Leave the default transform release hook unchanged. */
-void LibClass178A90::func_003EEE60()
+void LibTransformOwner::release_clone()
 {
 }
 
@@ -4680,9 +4681,9 @@ s32 ItemHpMpGauge::get_default_list_kind()
 }
 
 /** @brief Restore the saved transform state. */
-void ItemHpMpGauge::func_003F4420()
+void ItemHpMpGauge::set_default_draw_bucket()
 {
-    unk60 = unka8;
+    draw_bucket = unka8;
 }
 
 /** @brief Destroy the window. */

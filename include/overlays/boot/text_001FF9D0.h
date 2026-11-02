@@ -28,7 +28,7 @@ void resident_packet_allocate(ResidentPacket* packet, s32 size);
 #ifdef __cplusplus
 #include "overlays/boot/text_001E0900.h"
 
-class BootStringLabel;
+class LibStringLabel;
 
 /**
  * @brief Set a string label's rectangle and string.
@@ -41,7 +41,7 @@ class BootStringLabel;
  * @param height Rectangle height.
  * @return Lib status.
  */
-extern "C" s32 func_467AD0(BootStringLabel* object, const char* text, u8 flag, float x, float y, float width, float height);
+extern "C" s32 func_467AD0(LibStringLabel* object, const char* text, u8 flag, float x, float y, float width, float height);
 
 /** GS packet buffer with vtable D_171BF0 in main data; its data comes before the vptr. */
 class BootPacketBuffer : public ResidentPacket
@@ -137,7 +137,7 @@ class BootFft
  * Stereo needle meter with vtable D_171CF0 in main data. It eases a needle towards each channel's level and keeps a
  * third needle on the decaying peak, drawing all three as GS lines into its own packet.
  */
-class BootNeedleMeter : public BootTransformOwner, public BootDmaCallbacks
+class BootNeedleMeter : public LibTransformOwner, public LibDmaCallbacks
 {
     public:
         /** @brief Set up the meter's transform and packet, with every needle at rest. */
@@ -197,42 +197,6 @@ class BootNeedleMeter : public BootTransformOwner, public BootDmaCallbacks
         s32 y;
 };
 
-/** Boot's view of the 0x100-byte Lib string label with vtable D_175140 in main data. */
-class BootStringLabel : public BootDrawWidget
-{
-    public:
-        /**
-         * @brief Initialize the label with its string and rectangle.
-         * @param text String to draw.
-         * @param flag Drawing flag.
-         * @param x Origin x.
-         * @param y Origin y.
-         * @param width Rectangle width.
-         * @param height Rectangle height.
-         */
-        BootStringLabel(const char* text, u8 flag, float x, float y, float width, float height)
-        {
-            unk38 = 14;
-            func_467AD0(this, text, flag, x, y, width, height);
-        }
-
-        /** @brief Destroy the label. */
-        virtual ~BootStringLabel();
-
-        /**
-         * @brief Change the string and mark the label for redraw.
-         * @param value String to draw.
-         */
-        void set_text(const char* value)
-        {
-            text = value;
-            needs_redraw = 1;
-        }
-
-        /** String the label draws. */
-        const char* text;
-};
-
 /** Music player limits. */
 enum BootMusicConstants
 {
@@ -281,7 +245,7 @@ enum BootMusicPlayMode
  * Music player with vtable D_171D80 in main data, opened from the Battle Trophies screen. It can stop after one track,
  * continue through its 87 tracks in order or shuffle them, and shows five frequency bands per channel on needle meters.
  */
-class BootMusicPlayer : public BootListObject
+class BootMusicPlayer : public LibListObject
 {
     public:
         /** @brief Start loading resource 0x2C, create the meters and build the analysis window. */
@@ -362,21 +326,21 @@ class BootMusicPlayer : public BootListObject
         /** Hann window over one block of samples. */
         float window[BOOT_MUSIC_FFT_SIZE];
 
-        BootContainer* container;
-        BootListObject* unk4050f4;
+        LibContainer* container;
+        LibListObject* unk4050f4;
         BootSelectionCursor* cursor;
 
         /** Track number. */
-        BootStringLabel* number_text;
+        LibStringLabel* number_text;
 
         /** Track name. */
-        BootTextWidget* name_text;
+        LibTextWidget* name_text;
 
         /** Play mode. */
-        BootTextWidget* mode_text;
+        LibTextWidget* mode_text;
 
         /** Row labels. */
-        BootTextWidget* labels[5];
+        LibTextWidget* labels[5];
 
         /** One meter per frequency band. */
         BootNeedleMeter* meters[5];

@@ -1,3 +1,4 @@
+#include "overlays/lib/dma_callbacks_inlines.h"
 #include "include_asm.h"
 #include "clamp.h"
 #include "overlays/cskill/text.h"
@@ -195,9 +196,9 @@ struct SkillSymbologyHelpWindow : public FieldClass15AE70
     virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* selection;
     LibObject174D90* description;
-    LibObject178750* mastery_label;
+    LibTextWidget* mastery_label;
     LibObject174F20* mastery_value;
-    LibObject178750* mp_cost_label;
+    LibTextWidget* mp_cost_label;
     LibObject174F20* mp_cost_value;
 };
 
@@ -215,10 +216,10 @@ struct SkillSymbologyCharacterWindow : public FieldClass15AE70
     /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
     virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* selection;
-    LibObject175140* character_name;
-    LibObject178750* mp_label;
+    LibStringLabel* character_name;
+    LibTextWidget* mp_label;
     LibObject174F20* mp_value;
-    LibObject178750* symbology_level_label;
+    LibTextWidget* symbology_level_label;
     LibObject174F20* symbology_level_value;
     ItemCreationClass174C40* left_character_icon;
     ItemCreationClass174C40* right_character_icon;
@@ -386,7 +387,7 @@ struct SkillModeSelection : public FieldClass15AE70
     u32 candidate_skill_ids[42];
     s32 item_count;
     s32 count;
-    LibObject178750* cp_heading;
+    LibTextWidget* cp_heading;
     u8 visible;
     u8 unk2e5[3];
     SkillController* owner;
@@ -513,13 +514,13 @@ struct SkillStatusSkillWindow : public FieldClass15AE70
     SkillCharacterWindow* status;
     float row_spacing;
     float first_row_y;
-    LibObject178750* level_heading;
-    LibObject178750* next_level_heading;
+    LibTextWidget* level_heading;
+    LibTextWidget* next_level_heading;
     LibClass172870* heading_separator;
     FieldObject23BE00* cursor;
     LibObject174F20* skill_levels[4];
     LibObject174F20* next_level_costs[4];
-    LibObject178750* max_level_labels[4];
+    LibTextWidget* max_level_labels[4];
     u8 visible;
 };
 
@@ -592,18 +593,18 @@ typedef struct SkillCharacterWindow : public FieldClass15AE70
     /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
     virtual s32 func_slotf4(u32 associated);
     FieldRecordSelection* selection;
-    LibObject175140* character_name;
-    LibObject178750* sp_label;
-    LibObject178750* level_label;
-    LibObject178750* mastery_label;
-    LibObject178750* next_level_label;
-    LibObject178750* cp_label;
+    LibStringLabel* character_name;
+    LibTextWidget* sp_label;
+    LibTextWidget* level_label;
+    LibTextWidget* mastery_label;
+    LibTextWidget* next_level_label;
+    LibTextWidget* cp_label;
     LibObject174F20* assigned_cp_value;
-    LibObject178750* cp_separator;
+    LibTextWidget* cp_separator;
     LibObject174F20* available_cp_value;
     LibObject174F20* sp_value;
     LibObject174F20* mastery_values[3];
-    LibObject178750* max_level_label;
+    LibTextWidget* max_level_label;
     u32 unke4[3];
     /** SP shown when the window was opened. */
     s32 cached_sp;
@@ -614,8 +615,8 @@ typedef struct SkillCharacterWindow : public FieldClass15AE70
     SkillTacticalWindow* mode_query;
     SkillModeSelection* mode_window;
     SkillTacticalDetailWindow* tactical_details;
-    LibClass178600* first_display;
-    LibClass178600* second_display;
+    LibWidget* first_display;
+    LibWidget* second_display;
     ItemCreationOptionResourceDisplay* icons[8];
     u8 codes[8];
     u8 active;
@@ -683,7 +684,7 @@ struct SkillCoordinateSelector : public LibClass175030
     /** @brief Leave the default update hook unchanged. */
     virtual void update();
     /** @brief Leave the default notification hook unchanged. */
-    virtual void func_003EEBE0();
+    virtual void render();
     SkillPairList184258 nodes;
     s32 selected;
 };
@@ -726,7 +727,7 @@ struct SkillOptionsWindow : public FieldClass15AE70
     LibObject174F20* mp_values[8];
     LibObject174F20* max_hp_values[8];
     LibObject174F20* max_mp_values[8];
-    LibObject175140* labels[8];
+    LibStringLabel* labels[8];
     ItemCreationOptionResourceDisplay* indicators[8];
     ItemCreationOptionResourceDisplay* badges[8][4];
     s32 selected_kind;
@@ -837,19 +838,19 @@ struct SkillHpMpGauge : public FieldClass1599E0, public SkillHpMpGaugeDrawer
     /** @brief Release the drawing and transform bases. */
     virtual ~SkillHpMpGauge();
     /** @brief Submit the drawing packet for DMA notification. */
-    virtual void func_003EEBE0();
+    virtual void render();
     /** @brief Leave the default update state unchanged. */
     virtual void update();
     /** @brief Report the transform kind. @return Fourteen. */
     virtual s32 get_default_list_kind();
     /** @brief Detach and queue the gauge for release. */
-    virtual void func_003EF740();
+    virtual void destroy();
     /** @brief Restore the saved transform state. */
-    virtual void func_003F4420();
+    virtual void set_default_draw_bucket();
     /** @brief Update gauge visibility and rebuild changed packets. @param first Update enabled. @param second Mark the packet changed. @param third Allow drawing. */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
     /** @brief Complete DMA notification processing. @param value Unused notification value. */
-    virtual void func_003F4410(u32 value);
+    virtual void on_packet_complete(u32 value);
     /** @brief Initialize the gauge transform. @param code Transform code. @param first First transform flag. @param source Transform source. @param x Unused first coordinate. @param y Unused second coordinate. @param z Third coordinate. @return One. */
     virtual s32 initialize(s32 code, s32 first, void* source, float x, float y, float z);
     u8 queued_for_release;
@@ -927,7 +928,7 @@ typedef struct SkillSymbologyWindow : public FieldClass15AE70
     FieldObject23CEA0* selection;
     ItemCreationClass1725D0* scroll_indicator;
     ItemCreationOptionResourceDisplay* spell_icons[30];
-    LibObject178750* spell_labels[30];
+    LibTextWidget* spell_labels[30];
     FieldClass153170* cursor;
     s32 selected;
     s32 position;
@@ -981,7 +982,7 @@ typedef struct SkillBattleSetupWindow : public FieldClass15AE70
     SkillList183C38 slot_separators;
     SkillList183C38 skill_name_labels;
     s32 skill_name_keys[6];
-    LibObject178750* cp_heading;
+    LibTextWidget* cp_heading;
     LibObject174F20* cp_values[6];
     float clip_width;
     s32 cp_costs[6];
@@ -1012,7 +1013,7 @@ typedef struct SkillHelpWindow : public FieldClass15AE70
     virtual void func_slot60(s32 key);
     /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* help_text;
+    LibTextWidget* help_text;
     s32 text_width;
     u8 unkb0;
     u8 unkb1;
@@ -1030,7 +1031,7 @@ typedef struct SkillHelpWindow : public FieldClass15AE70
 } SkillHelpWindow;
 
 /** Partial storage widget embedded in the battle setup display. */
-class FieldClass159FE0 : public LibClass178600
+class FieldClass159FE0 : public LibWidget
 {
 public:
     /** @brief Release the widget storage and destroy its base. */
@@ -1040,7 +1041,7 @@ public:
     /** @brief Leave the default update hook unchanged. */
     virtual void update();
     /** @brief Leave the default notification hook unchanged. */
-    virtual void func_003EEBE0();
+    virtual void render();
     /** @brief Update the widget drawing state. */
     virtual void func_00413D20();
     /** @brief Draw the widget. */
@@ -1049,7 +1050,7 @@ public:
 };
 
 /** Text widget embedded in the battle status attachment. */
-struct FieldClass15A010 : public LibObject178750
+struct FieldClass15A010 : public LibTextWidget
 {
     /** @brief Release the text drawing storage and widget base. */
     virtual ~FieldClass15A010();
@@ -1058,7 +1059,7 @@ struct FieldClass15A010 : public LibObject178750
 };
 
 /** Fading container with an embedded panel and text widget. */
-struct SkillStatusAttachment : public LibObject178660
+struct SkillStatusAttachment : public LibContainer
 {
     /** @brief Construct the embedded widgets and clear the resource and fade state. */
     SkillStatusAttachment()
@@ -1095,19 +1096,19 @@ struct SkillCostWindow : FieldClass15AE70
     virtual void func_slot60(s32 key);
     /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* title;
+    LibTextWidget* title;
     u32 unkac;
-    LibObject178750* multiplier_label;
-    LibObject178750* damage_label;
-    LibObject178750* decimal_point;
+    LibTextWidget* multiplier_label;
+    LibTextWidget* damage_label;
+    LibTextWidget* decimal_point;
     LibObject174F20* multiplier_units;
     LibObject174F20* multiplier_tenths;
     LibObject174F20* multiplier_hundredths;
-    LibObject178750* cp_label;
+    LibTextWidget* cp_label;
     LibObject174F20* cp_value;
-    LibObject178750* fury_label;
+    LibTextWidget* fury_label;
     LibObject174F20* fury_value;
-    LibObject178750* hp_mp_label;
+    LibTextWidget* hp_mp_label;
     LibObject174F20* hp_mp_value;
     SkillController* owner;
 };
@@ -1132,13 +1133,13 @@ struct SkillTacticalPromptWindow : FieldClass15AE70
     virtual void func_slot60(s32 key);
     /** @brief Initialize the initiate_label widgets. @param associated Full resource source word. @return Initialization result. */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* initiate_label;
-    LibObject178750* yes_label;
-    LibObject178750* no_label;
+    LibTextWidget* initiate_label;
+    LibTextWidget* yes_label;
+    LibTextWidget* no_label;
     ItemCreationClass174C40* toggle_icon;
-    LibObject178750* toggle_hint;
+    LibTextWidget* toggle_hint;
     ItemCreationClass174C40* details_icon;
-    LibObject178750* details_hint;
+    LibTextWidget* details_hint;
 };
 
 extern "C" SkillRuntime* D_001B643C;
@@ -1361,11 +1362,11 @@ static inline u32 character_checksum_salt(SkillCharacterStats* record)
  */
 static inline void cost_labels(SkillCostWindow* object, u8 visible)
 {
-    object->multiplier_label->unk3f = visible;
-    object->damage_label->unk3f = visible;
-    object->cp_label->unk3f = visible;
-    object->fury_label->unk3f = visible;
-    object->hp_mp_label->unk3f = visible;
+    object->multiplier_label->visible = visible;
+    object->damage_label->visible = visible;
+    object->cp_label->visible = visible;
+    object->fury_label->visible = visible;
+    object->hp_mp_label->visible = visible;
 }
 
 /**
@@ -1375,14 +1376,14 @@ static inline void cost_labels(SkillCostWindow* object, u8 visible)
  */
 static inline void cost_values(SkillCostWindow* object, u8 visible)
 {
-    object->multiplier_label->unk3f = visible;
-    object->multiplier_units->unk3f = visible;
-    object->decimal_point->unk3f = visible;
-    object->multiplier_tenths->unk3f = visible;
-    object->multiplier_hundredths->unk3f = visible;
-    object->cp_value->unk3f = visible;
-    object->fury_value->unk3f = visible;
-    object->hp_mp_value->unk3f = visible;
+    object->multiplier_label->visible = visible;
+    object->multiplier_units->visible = visible;
+    object->decimal_point->visible = visible;
+    object->multiplier_tenths->visible = visible;
+    object->multiplier_hundredths->visible = visible;
+    object->cp_value->visible = visible;
+    object->fury_value->visible = visible;
+    object->hp_mp_value->visible = visible;
 }
 
 /**
@@ -1392,14 +1393,14 @@ static inline void cost_values(SkillCostWindow* object, u8 visible)
  */
 static inline void cost_colors(SkillCostWindow* object, u32 color)
 {
-    object->multiplier_label->set_color(color);
-    object->multiplier_units->set_color(color);
-    object->decimal_point->set_color(color);
-    object->multiplier_tenths->set_color(color);
-    object->multiplier_hundredths->set_color(color);
-    object->cp_value->set_color(color);
-    object->fury_value->set_color(color);
-    object->hp_mp_value->set_color(color);
+    object->multiplier_label->set_tint(color);
+    object->multiplier_units->set_tint(color);
+    object->decimal_point->set_tint(color);
+    object->multiplier_tenths->set_tint(color);
+    object->multiplier_hundredths->set_tint(color);
+    object->cp_value->set_tint(color);
+    object->fury_value->set_tint(color);
+    object->hp_mp_value->set_tint(color);
 }
 
 /**
@@ -1408,12 +1409,12 @@ static inline void cost_colors(SkillCostWindow* object, u32 color)
  */
 static inline void hide_damage_multiplier(SkillCostWindow* object)
 {
-    object->damage_label->unk3f = 0;
-    object->multiplier_label->unk3f = 0;
-    object->multiplier_units->unk3f = 0;
-    object->decimal_point->unk3f = 0;
-    object->multiplier_tenths->unk3f = 0;
-    object->multiplier_hundredths->unk3f = 0;
+    object->damage_label->visible = 0;
+    object->multiplier_label->visible = 0;
+    object->multiplier_units->visible = 0;
+    object->decimal_point->visible = 0;
+    object->multiplier_tenths->visible = 0;
+    object->multiplier_hundredths->visible = 0;
 }
 
 /**
@@ -1424,7 +1425,7 @@ static inline void hide_damage_multiplier(SkillCostWindow* object)
 static inline void set_cost_value(LibObject174F20* image, s32 value)
 {
     image->numeric_value = value;
-    image->unk3c = 1;
+    image->needs_redraw = 1;
 }
 
 /**
@@ -1456,7 +1457,7 @@ static inline void set_list_display_flags(SkillList183C38* list, u32 flag)
 {
     for (SkillListNode* node = list->head->next; node != 0; node = node->next)
     {
-        static_cast<LibClass178600*>(node->value)->unk3f = flag & 0xFF;
+        static_cast<LibWidget*>(node->value)->visible = flag & 0xFF;
     }
 }
 
@@ -2027,8 +2028,8 @@ static inline void collect_tactical_rows(SkillTacticalWindow* window)
     }
     for (s32 row = 0; row < 5; row++)
     {
-        LibObject178750* label = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&window->unk2c), row)->value);
-        label->unk3f = 0;
+        LibTextWidget* label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&window->unk2c), row)->value);
+        label->visible = 0;
     }
     FieldObject23CEA0* selection = window->selection;
     selection->index = window->character_rows[character];
@@ -2055,15 +2056,15 @@ static inline void refresh_query_cursor(SkillTacticalWindow* object)
     if (D_001B643C->callbacks->controller->func_00261150() == object)
     {
         s32 opacity = object->row_count ? 128 : 0;
-        LibClass178600* cursor = object->cursor;
-        cursor->unk28 = (float)opacity;
-        cursor->unk3c = 1;
+        LibWidget* cursor = object->cursor;
+        cursor->draw_alpha = (float)opacity;
+        cursor->needs_redraw = 1;
     }
     else
     {
-        LibClass178600* cursor = object->cursor;
-        cursor->unk28 = 0.0f;
-        cursor->unk3c = 1;
+        LibWidget* cursor = object->cursor;
+        cursor->draw_alpha = 0.0f;
+        cursor->needs_redraw = 1;
     }
 }
 
@@ -2085,8 +2086,8 @@ static inline float shifted_position(const float& origin, float offset)
  */
 static inline void status_primary_group(SkillCharacterWindow* object, u8 visible)
 {
-    object->sp_label->unk3f = visible;
-    object->sp_value->unk3f = visible;
+    object->sp_label->visible = visible;
+    object->sp_value->visible = visible;
 }
 
 /**
@@ -2096,17 +2097,17 @@ static inline void status_primary_group(SkillCharacterWindow* object, u8 visible
  */
 static inline void status_detail_group(SkillCharacterWindow* object, u8 visible)
 {
-    object->level_label->unk3f = visible;
-    object->mastery_label->unk3f = visible;
-    object->next_level_label->unk3f = visible;
-    object->mastery_values[0]->unk3f = visible;
-    object->mastery_values[1]->unk3f = visible;
-    object->mastery_values[2]->unk3f = visible;
-    object->max_level_label->unk3f = 0;
-    object->cp_label->unk3f = visible;
-    object->assigned_cp_value->unk3f = visible;
-    object->cp_separator->unk3f = visible;
-    object->available_cp_value->unk3f = visible;
+    object->level_label->visible = visible;
+    object->mastery_label->visible = visible;
+    object->next_level_label->visible = visible;
+    object->mastery_values[0]->visible = visible;
+    object->mastery_values[1]->visible = visible;
+    object->mastery_values[2]->visible = visible;
+    object->max_level_label->visible = 0;
+    object->cp_label->visible = visible;
+    object->assigned_cp_value->visible = visible;
+    object->cp_separator->visible = visible;
+    object->available_cp_value->visible = visible;
 }
 
 /** @brief Decode maximum HP after validating its checksum. @param record Character stats. @return Maximum HP, or zero after corruption. */
@@ -2266,7 +2267,7 @@ u32 FieldClass15AE70::func_slot54()
  * @brief Return the nested display container.
  * @return Stored container pointer.
  */
-LibObject178660* FieldClass15AE70::func_slot58()
+LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }
@@ -2560,10 +2561,10 @@ void skill_refresh_costs(FieldClass15AE70* receiver)
     if (code >= 131 && code < 155)
     {
         hide_damage_multiplier(object);
-        object->fury_label->unk3f = 0;
-        object->fury_value->unk3f = 0;
-        object->hp_mp_label->unk3f = 0;
-        object->hp_mp_value->unk3f = 0;
+        object->fury_label->visible = 0;
+        object->fury_value->visible = 0;
+        object->hp_mp_label->visible = 0;
+        object->hp_mp_value->visible = 0;
     }
 }
 
@@ -2583,120 +2584,120 @@ s32 SkillCostWindow::func_slotf4(u32 associated)
         return 0;
     }
     FieldClass15AE70::func_slot10(associated, 16.0f, 384.0f, 16);
-    LibClass178630* frame = new (0) LibClass178630;
-    this->title = new (0) LibObject178750;
-    this->multiplier_label = new (0) LibObject178750;
-    this->damage_label = new (0) LibObject178750;
+    LibPanel* frame = new (0) LibPanel;
+    this->title = new (0) LibTextWidget;
+    this->multiplier_label = new (0) LibTextWidget;
+    this->damage_label = new (0) LibTextWidget;
     this->multiplier_units = new (0) LibObject174F20;
-    this->decimal_point = new (0) LibObject178750;
+    this->decimal_point = new (0) LibTextWidget;
     this->multiplier_tenths = new (0) LibObject174F20;
     this->multiplier_hundredths = new (0) LibObject174F20;
-    this->cp_label = new (0) LibObject178750;
+    this->cp_label = new (0) LibTextWidget;
     this->cp_value = new (0) LibObject174F20;
-    this->fury_label = new (0) LibObject178750;
+    this->fury_label = new (0) LibTextWidget;
     this->fury_value = new (0) LibObject174F20;
-    this->hp_mp_label = new (0) LibObject178750;
+    this->hp_mp_label = new (0) LibTextWidget;
     this->hp_mp_value = new (0) LibObject174F20;
     lib_panel_init_rectangle(frame, 0, 0.0f, 0.0f, 608.0f, 80.0f, 88.0f);
     lib_container_attach_widget(this->unk10, frame);
     this->title->init_resource_rectangle(16.0f, 16.0f, 0.0f, 0.0f, associated, SKILL_MSG_BLANK, 0);
-    LibObject178750* heading = this->title;
+    LibTextWidget* heading = this->title;
     heading->unk88 = -1.0f;
-    heading->unk3c = 1;
+    heading->needs_redraw = 1;
     lib_container_attach_widget(this->unk10, this->title);
     this->damage_label->init_resource_rectangle(442.0f, 18.0f, 0.0f, 0.0f, associated, 0x17C1, 1);
-    this->damage_label->set_color(0x248CFA);
+    this->damage_label->set_tint(0x248CFA);
     this->damage_label->set_scale(0.7f, 0.7f);
-    LibObject178750* damage = this->damage_label;
+    LibTextWidget* damage = this->damage_label;
     damage->unk88 = 2.0f;
-    damage->unk3c = 1;
-    this->damage_label->unk3f = 0;
+    damage->needs_redraw = 1;
+    this->damage_label->visible = 0;
     lib_container_attach_widget(this->unk10, this->damage_label);
     this->multiplier_label->init_resource_rectangle(423.0f, 46.0f, 0.0f, 0.0f, associated, 0x17C0, 1);
-    this->multiplier_label->set_color(0x248CFA);
+    this->multiplier_label->set_tint(0x248CFA);
     this->multiplier_label->set_scale(0.7f, 0.7f);
-    LibObject178750* multiplier = this->multiplier_label;
+    LibTextWidget* multiplier = this->multiplier_label;
     multiplier->unk88 = 2.0f;
-    multiplier->unk3c = 1;
-    this->multiplier_label->unk3f = 0;
+    multiplier->needs_redraw = 1;
+    this->multiplier_label->visible = 0;
     lib_container_attach_widget(this->unk10, this->multiplier_label);
     lib_numeric_widget_init_rectangle(this->multiplier_units, 9, associated, 1, 436.0f, 42.0f, 12.0f, 20.0f);
     this->multiplier_units->set_scale(0.85f, 0.85f);
-    this->multiplier_units->set_color(0x288080);
-    this->multiplier_units->set_mode(1);
-    this->multiplier_units->set_vertical_alignment(1);
-    this->multiplier_units->unk3f = 0;
+    this->multiplier_units->set_tint(0x288080);
+    this->multiplier_units->set_horizontal_align(1);
+    this->multiplier_units->set_vertical_align(1);
+    this->multiplier_units->visible = 0;
     lib_container_attach_widget(this->unk10, this->multiplier_units);
     this->decimal_point->init_resource_rectangle(448.0f, 45.0f, 0.0f, 0.0f, associated, 0x17C5, 1);
-    this->decimal_point->set_color(0x248CFA);
+    this->decimal_point->set_tint(0x248CFA);
     this->decimal_point->set_scale(0.7f, 0.7f);
-    LibObject178750* point = this->decimal_point;
+    LibTextWidget* point = this->decimal_point;
     point->unk88 = 2.0f;
-    point->unk3c = 1;
-    this->decimal_point->unk3f = 0;
+    point->needs_redraw = 1;
+    this->decimal_point->visible = 0;
     lib_container_attach_widget(this->unk10, this->decimal_point);
     lib_numeric_widget_init_rectangle(this->multiplier_tenths, 8, associated, 1, 454.0f, 42.0f, 12.0f, 20.0f);
     this->multiplier_tenths->set_scale(0.85f, 0.85f);
-    this->multiplier_tenths->set_color(0x288080);
-    this->multiplier_tenths->set_mode(1);
-    this->multiplier_tenths->set_vertical_alignment(1);
-    this->multiplier_tenths->unk3f = 0;
+    this->multiplier_tenths->set_tint(0x288080);
+    this->multiplier_tenths->set_horizontal_align(1);
+    this->multiplier_tenths->set_vertical_align(1);
+    this->multiplier_tenths->visible = 0;
     lib_container_attach_widget(this->unk10, this->multiplier_tenths);
     lib_numeric_widget_init_rectangle(this->multiplier_hundredths, 7, associated, 1, 466.0f, 42.0f, 12.0f, 20.0f);
     this->multiplier_hundredths->set_scale(0.85f, 0.85f);
-    this->multiplier_hundredths->set_color(0x288080);
-    this->multiplier_hundredths->set_mode(1);
-    this->multiplier_hundredths->set_vertical_alignment(1);
-    this->multiplier_hundredths->unk3f = 0;
+    this->multiplier_hundredths->set_tint(0x288080);
+    this->multiplier_hundredths->set_horizontal_align(1);
+    this->multiplier_hundredths->set_vertical_align(1);
+    this->multiplier_hundredths->visible = 0;
     lib_container_attach_widget(this->unk10, this->multiplier_hundredths);
     this->cp_label->init_resource_rectangle(572.0f, 18.0f, 0.0f, 0.0f, associated, SKILL_MSG_CP, 1);
-    this->cp_label->set_color(0x248CFA);
+    this->cp_label->set_tint(0x248CFA);
     this->cp_label->set_scale(0.7f, 0.7f);
-    LibObject178750* cp = this->cp_label;
+    LibTextWidget* cp = this->cp_label;
     cp->unk88 = 2.0f;
-    cp->unk3c = 1;
-    this->cp_label->unk3f = 0;
+    cp->needs_redraw = 1;
+    this->cp_label->visible = 0;
     lib_container_attach_widget(this->unk10, this->cp_label);
     this->fury_label->init_resource_rectangle(532.0f, 18.0f, 0.0f, 0.0f, associated, 0x17C2, 1);
-    this->fury_label->set_color(0x248CFA);
+    this->fury_label->set_tint(0x248CFA);
     this->fury_label->set_scale(0.7f, 0.7f);
-    LibObject178750* fury = this->fury_label;
+    LibTextWidget* fury = this->fury_label;
     fury->unk88 = 2.0f;
-    fury->unk3c = 1;
-    this->fury_label->unk3f = 0;
+    fury->needs_redraw = 1;
+    this->fury_label->visible = 0;
     lib_container_attach_widget(this->unk10, this->fury_label);
     this->hp_mp_label->init_resource_rectangle(498.0f, 18.0f, 0.0f, 0.0f, associated, SKILL_MSG_HP_COST, 1);
-    this->hp_mp_label->set_color(0x248CFA);
+    this->hp_mp_label->set_tint(0x248CFA);
     this->hp_mp_label->set_scale(0.7f, 0.7f);
-    LibObject178750* hp_mp = this->hp_mp_label;
+    LibTextWidget* hp_mp = this->hp_mp_label;
     hp_mp->unk88 = 2.0f;
-    hp_mp->unk3c = 1;
-    this->hp_mp_label->unk3f = 0;
+    hp_mp->needs_redraw = 1;
+    this->hp_mp_label->visible = 0;
     lib_container_attach_widget(this->unk10, this->hp_mp_label);
     lib_text_measure_bounds(this->damage_label);
-    float cp_width = lib_text_measure_bounds(this->cp_label)->unk08;
+    float cp_width = lib_text_measure_bounds(this->cp_label)->width;
     lib_numeric_widget_init_rectangle(this->cp_value, 0x58, associated, 1, 572.0f, 42.0f, cp_width, 20.0f);
     this->cp_value->set_scale(0.85f, 0.85f);
-    this->cp_value->set_color(0x288080);
-    this->cp_value->set_mode(1);
-    this->cp_value->set_vertical_alignment(1);
-    this->cp_value->unk3f = 0;
+    this->cp_value->set_tint(0x288080);
+    this->cp_value->set_horizontal_align(1);
+    this->cp_value->set_vertical_align(1);
+    this->cp_value->visible = 0;
     lib_container_attach_widget(this->unk10, this->cp_value);
-    float fury_width = lib_text_measure_bounds(this->fury_label)->unk08;
+    float fury_width = lib_text_measure_bounds(this->fury_label)->width;
     lib_numeric_widget_init_rectangle(this->fury_value, 0x58, associated, 1, 540.0f, 42.0f, fury_width, 20.0f);
     this->fury_value->set_scale(0.85f, 0.85f);
-    this->fury_value->set_color(0x288080);
-    this->fury_value->set_mode(1);
-    this->fury_value->set_vertical_alignment(1);
-    this->fury_value->unk3f = 0;
+    this->fury_value->set_tint(0x288080);
+    this->fury_value->set_horizontal_align(1);
+    this->fury_value->set_vertical_align(1);
+    this->fury_value->visible = 0;
     lib_container_attach_widget(this->unk10, this->fury_value);
-    float hp_mp_width = lib_text_measure_bounds(this->hp_mp_label)->unk08;
+    float hp_mp_width = lib_text_measure_bounds(this->hp_mp_label)->width;
     lib_numeric_widget_init_rectangle(this->hp_mp_value, 0x22B8, associated, 1, 498.0f, 42.0f, hp_mp_width, 20.0f);
     this->hp_mp_value->set_scale(0.85f, 0.85f);
-    this->hp_mp_value->set_color(0x288080);
-    this->hp_mp_value->set_mode(1);
-    this->hp_mp_value->set_vertical_alignment(1);
-    this->hp_mp_value->unk3f = 0;
+    this->hp_mp_value->set_tint(0x288080);
+    this->hp_mp_value->set_horizontal_align(1);
+    this->hp_mp_value->set_vertical_align(1);
+    this->hp_mp_value->visible = 0;
     lib_container_attach_widget(this->unk10, this->hp_mp_value);
     return 1;
 }
@@ -2728,41 +2729,41 @@ void skill_set_tactical_prompt_state(SkillTacticalPromptWindow* object, s32 stat
 {
     if (state == 0)
     {
-        object->initiate_label->unk3f = 0;
-        object->toggle_hint->unk3f = 0;
-        object->details_hint->unk3f = 0;
-        object->yes_label->unk3f = 0;
-        object->no_label->unk3f = 0;
-        object->toggle_icon->unk3f = 0;
-        object->details_icon->unk3f = 0;
+        object->initiate_label->visible = 0;
+        object->toggle_hint->visible = 0;
+        object->details_hint->visible = 0;
+        object->yes_label->visible = 0;
+        object->no_label->visible = 0;
+        object->toggle_icon->visible = 0;
+        object->details_icon->visible = 0;
     }
     else if (state > 0)
     {
-        object->yes_label->unk3f = 1;
-        object->no_label->unk3f = 0;
+        object->yes_label->visible = 1;
+        object->no_label->visible = 0;
     }
     else
     {
-        object->yes_label->unk3f = 0;
-        object->no_label->unk3f = 1;
+        object->yes_label->visible = 0;
+        object->no_label->visible = 1;
     }
 }
 
 s32 SkillTacticalPromptWindow::func_slotf4(u32 associated)
 {
     this->FieldClass15AE70::func_slot10(associated, 320.0f, 176.0f, 15);
-    this->initiate_label = new (0) LibObject178750;
-    this->yes_label = new (0) LibObject178750;
-    this->no_label = new (0) LibObject178750;
+    this->initiate_label = new (0) LibTextWidget;
+    this->yes_label = new (0) LibTextWidget;
+    this->no_label = new (0) LibTextWidget;
     this->toggle_icon = new (0) ItemCreationClass174C40;
-    this->toggle_hint = new (0) LibObject178750;
+    this->toggle_hint = new (0) LibTextWidget;
     this->details_icon = new (0) ItemCreationClass174C40;
-    this->details_hint = new (0) LibObject178750;
+    this->details_hint = new (0) LibTextWidget;
     this->initiate_label->init_resource_rectangle(64.0f, 38.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_INITIATE, 0);
     this->yes_label->init_resource_rectangle(140.0f, 38.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_YES, 0);
     this->no_label->init_resource_rectangle(140.0f, 38.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_NO, 0);
-    this->yes_label->unk3f = 0;
-    this->no_label->unk3f = 0;
+    this->yes_label->visible = 0;
+    this->no_label->visible = 0;
     lib_indexed_resource_init(this->toggle_icon, 64.0f, 86.0f, 35);
     this->toggle_hint->init_resource_rectangle(100.0f, 90.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_SWITCH_ON_OFF, 0);
     lib_indexed_resource_init(this->details_icon, 64.0f, 122.0f, 32);
@@ -2806,19 +2807,19 @@ void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mo
     if (object->mode == SKILL_TACTICAL_DETAILS_AURA)
     {
         FieldObject23BE00* aura_cursor = object->aura_cursor;
-        aura_cursor->unk28 = 128.0f;
-        aura_cursor->unk3c = 1;
+        aura_cursor->draw_alpha = 128.0f;
+        aura_cursor->needs_redraw = 1;
         func_0023CEA0(object->aura_grid, 1);
         object->func_slot18(1, 2);
         FieldObject23BE00* conversion_cursor = object->conversion_cursor;
-        conversion_cursor->unk28 = 0.0f;
-        conversion_cursor->unk3c = 1;
+        conversion_cursor->draw_alpha = 0.0f;
+        conversion_cursor->needs_redraw = 1;
         func_0023CEA0(object->conversion_grid, 0);
         for (s32 row = 0; row < 2; row++)
         {
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->conversion_labels), row);
-            LibObject178750* label = static_cast<LibObject178750*>(node->value);
-            label->unk3f = 0;
+            LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
+            label->visible = 0;
         }
         skill_refresh_aura_rows(object, 1);
         skill_refresh_tactical_detail_help(object);
@@ -2826,18 +2827,18 @@ void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mo
     else if (object->mode == SKILL_TACTICAL_DETAILS_CONVERSION)
     {
         FieldObject23BE00* conversion_cursor = object->conversion_cursor;
-        conversion_cursor->unk28 = 128.0f;
-        conversion_cursor->unk3c = 1;
+        conversion_cursor->draw_alpha = 128.0f;
+        conversion_cursor->needs_redraw = 1;
         func_0023CEA0(object->conversion_grid, 1);
         for (s32 row = 0; row < 2; row++)
         {
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->conversion_labels), row);
-            LibObject178750* label = static_cast<LibObject178750*>(node->value);
-            label->unk3f = 1;
+            LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
+            label->visible = 1;
         }
         FieldObject23BE00* aura_cursor = object->aura_cursor;
-        aura_cursor->unk28 = 0.0f;
-        aura_cursor->unk3c = 1;
+        aura_cursor->draw_alpha = 0.0f;
+        aura_cursor->needs_redraw = 1;
         func_0023CEA0(object->aura_grid, 0);
         object->func_slot18(0, 2);
         skill_refresh_damage_conversion_rows(object, 1);
@@ -2846,20 +2847,20 @@ void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mo
     else if (object->mode == SKILL_TACTICAL_DETAILS_HIDDEN)
     {
         FieldObject23BE00* aura_cursor = object->aura_cursor;
-        aura_cursor->unk28 = 0.0f;
-        aura_cursor->unk3c = 1;
+        aura_cursor->draw_alpha = 0.0f;
+        aura_cursor->needs_redraw = 1;
         func_0023CEA0(object->aura_grid, 0);
         object->func_slot18(0, 2);
         object->aura_selection_marker->unk3d = 0;
         FieldObject23BE00* conversion_cursor = object->conversion_cursor;
-        conversion_cursor->unk28 = 0.0f;
-        conversion_cursor->unk3c = 1;
+        conversion_cursor->draw_alpha = 0.0f;
+        conversion_cursor->needs_redraw = 1;
         func_0023CEA0(object->conversion_grid, 0);
         for (s32 row = 0; row < 2; row++)
         {
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->conversion_labels), row);
-            LibObject178750* label = static_cast<LibObject178750*>(node->value);
-            label->unk3f = 0;
+            LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
+            label->visible = 0;
         }
         object->conversion_selection_marker->unk3d = 0;
     }
@@ -2873,22 +2874,22 @@ void skill_refresh_damage_conversion_rows(SkillTacticalDetailWindow* object, s32
         {
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->conversion_labels), row);
             u8& selected = object->conversion_selected[row];
-            LibObject178750* label = static_cast<LibObject178750*>(node->value);
+            LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
             if (selected == 1)
             {
-                label->unk94 = 0x808080;
-                label->unk3c = 1;
+                label->tint = 0x808080;
+                label->needs_redraw = 1;
                 object->conversion_selection_marker->unk3d = 1;
-                LibBounds4C69B0* bounds = lib_text_measure_bounds(label);
-                LibClass178600* marker = object->conversion_selection_marker;
-                float width = bounds->unk08;
+                LibTextExtent* bounds = lib_text_measure_bounds(label);
+                LibWidget* marker = object->conversion_selection_marker;
+                float width = bounds->width;
                 float y = object->conversion_y + object->conversion_row_spacing * static_cast<float>(row);
                 float x = object->conversion_x;
                 marker->unk18.unk00 = x;
                 marker->unk18.unk04 = y;
                 marker->unk18.unk08 = width;
                 marker->unk18.unk0c = 24.0f;
-                marker->unk3c = 1;
+                marker->needs_redraw = 1;
                 if (reset)
                 {
                     FieldObject23CEA0* grid = object->conversion_grid;
@@ -2899,14 +2900,14 @@ void skill_refresh_damage_conversion_rows(SkillTacticalDetailWindow* object, s32
             }
             else
             {
-                label->unk94 = 0x505050;
-                label->unk3c = 1;
+                label->tint = 0x505050;
+                label->needs_redraw = 1;
             }
             if (row == object->conversion_grid->unk114)
             {
-                LibBounds4C69B0* bounds = lib_text_measure_bounds(label);
+                LibTextExtent* bounds = lib_text_measure_bounds(label);
                 lib_marker_set_bright_color(object->conversion_cursor, static_cast<s32>(selected ? 0x808080 : 0x505050));
-                func_0023B9B0(object->conversion_cursor, row, bounds->unk08);
+                func_0023B9B0(object->conversion_cursor, row, bounds->width);
             }
         }
     }
@@ -2919,8 +2920,8 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
         for (s32 row = 0; row < 7; row++)
         {
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), row);
-            LibObject178750* label = static_cast<LibObject178750*>(node->value);
-            label->unk3f = 0;
+            LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
+            label->visible = 0;
         }
         SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current];
         s32 state = saved_tactical_state(record, SKILL_TACTICAL_ANTI_ATTACK_AURA);
@@ -2928,7 +2929,7 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
         {
             s32 aura;
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), row);
-            LibObject178750* label = static_cast<LibObject178750*>(node->value);
+            LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
             u8 value = object->aura_indices[row];
             aura = -1;
             if (value != 0)
@@ -2936,24 +2937,24 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
                 aura = value & 0xFF;
                 s32 source = static_cast<s32>(object->func_slot54());
                 lib_text_set_resource(label, source, SKILL_MSG_AURA_NAME_BASE + aura - 1, 0);
-                label->unk3f = 1;
-                label->unk94 = 0x505050;
-                label->unk3c = 1;
+                label->visible = 1;
+                label->tint = 0x505050;
+                label->needs_redraw = 1;
                 if (state == aura || state == -aura)
                 {
                     object->aura_selection_marker->unk3d = 1;
-                    LibBounds4C69B0* bounds = lib_text_measure_bounds(label);
-                    LibClass178600* marker = object->aura_selection_marker;
-                    float width = bounds->unk08;
+                    LibTextExtent* bounds = lib_text_measure_bounds(label);
+                    LibWidget* marker = object->aura_selection_marker;
+                    float width = bounds->width;
                     float y = object->aura_y + object->aura_row_spacing * static_cast<float>(row);
                     float x = object->aura_x;
                     marker->unk18.unk00 = x;
                     marker->unk18.unk04 = y;
                     marker->unk18.unk08 = width;
                     marker->unk18.unk0c = 24.0f;
-                    marker->unk3c = 1;
-                    label->unk94 = 0x808080;
-                    label->unk3c = 1;
+                    marker->needs_redraw = 1;
+                    label->tint = 0x808080;
+                    label->needs_redraw = 1;
                     if (reset)
                     {
                         FieldObject23CEA0* grid = object->aura_grid;
@@ -2965,8 +2966,8 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
             }
             if (row == object->aura_grid->unk114)
             {
-                LibBounds4C69B0* bounds = lib_text_measure_bounds(label);
-                func_0023B9B0(object->aura_cursor, static_cast<s16>(row), bounds->unk08);
+                LibTextExtent* bounds = lib_text_measure_bounds(label);
+                func_0023B9B0(object->aura_cursor, static_cast<s16>(row), bounds->width);
                 s32 color = (state == aura || state == -aura) ? 0x808080 : 0x505050;
                 lib_marker_set_bright_color(object->aura_cursor, color);
             }
@@ -2991,15 +2992,15 @@ u8 SkillTacticalDetailWindow::func_slotb4()
     {
         return 3;
     }
-    LibClass178600* first = this->owner->status->first_display;
+    LibWidget* first = this->owner->status->first_display;
     if (first != 0)
     {
-        first->unk3f = 1;
+        first->visible = 1;
     }
-    LibClass178600* second = this->owner->status->second_display;
+    LibWidget* second = this->owner->status->second_display;
     if (second != 0)
     {
-        second->unk3f = 1;
+        second->visible = 1;
     }
     skill_select_tactical_detail_mode(this, SKILL_TACTICAL_DETAILS_HIDDEN);
     window->func_slot64();
@@ -3176,8 +3177,8 @@ s32 skill_initialize_damage_conversion_grid(SkillTacticalDetailWindow* record)
     {
         return 0;
     }
-    x = record->unk10->unk20.components[0] + record->conversion_x;
-    y = record->unk10->unk20.components[1] + record->conversion_y;
+    x = record->unk10->translation.x + record->conversion_x;
+    y = record->unk10->translation.y + record->conversion_y;
     record->conversion_cursor = new (0) FieldObject23BE00;
     record->conversion_cursor->func_0023BB20(record->conversion_x, record->conversion_y, 96.0f, 1.0f, record->conversion_grid, 0x808080);
     lib_container_attach_widget(record->unk10, record->conversion_cursor);
@@ -3205,8 +3206,8 @@ s32 skill_initialize_aura_grid(SkillTacticalDetailWindow* record)
     {
         return 0;
     }
-    x = record->unk10->unk20.components[0] + record->aura_x;
-    y = record->unk10->unk20.components[1] + record->aura_y;
+    x = record->unk10->translation.x + record->aura_x;
+    y = record->unk10->translation.y + record->aura_y;
     record->aura_cursor = new (0) FieldObject23BE00;
     record->aura_cursor->func_0023BB20(record->aura_x, record->aura_y, 48.0f, 1.0f, record->aura_grid, 0x808080);
     lib_container_attach_widget(record->unk10, record->aura_cursor);
@@ -3229,7 +3230,7 @@ void skill_refresh_tactical_detail_choices(SkillTacticalDetailWindow* object)
         SkillTacticalPromptWindow* prompt = tactical->attachment;
         if (prompt != 0)
         {
-            LibObject178660* container = prompt->unk10;
+            LibContainer* container = prompt->unk10;
             if (container != 0)
             {
                 container->unkab = 0;
@@ -3289,7 +3290,7 @@ u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object)
     object->aura_y = 14.0f;
     for (s32 index = 0; index < 7; index++)
     {
-        LibObject178750* item = new (0) LibObject178750;
+        LibTextWidget* item = new (0) LibTextWidget;
         if (item == 0)
         {
             return 0;
@@ -3297,7 +3298,7 @@ u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object)
         s32 slot = static_cast<s32>(object->func_slot54());
         lib_text_init_resource_rectangle(item, slot, index + SKILL_MSG_AURA_NAME_BASE, 0, object->aura_x, object->aura_y + object->aura_row_spacing * (float)index, 0.0f, 0.0f);
         item->unk88 = -1.0f;
-        item->unk3c = 1;
+        item->needs_redraw = 1;
         lib_container_attach_widget(object->unk10, item);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), item);
     }
@@ -3310,7 +3311,7 @@ u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object)
     object->conversion_y = 8.0f + (104.0f - object->conversion_row_spacing);
     for (s32 index = 0; index < 2; index++)
     {
-        LibObject178750* item = new (0) LibObject178750;
+        LibTextWidget* item = new (0) LibTextWidget;
         if (item == 0)
         {
             return 0;
@@ -3318,7 +3319,7 @@ u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object)
         s32 slot = static_cast<s32>(object->func_slot54());
         lib_text_init_resource_rectangle(item, slot, index + SKILL_MSG_DAMAGE_CONVERSION_NAME_BASE, 0, object->conversion_x, object->conversion_y + object->conversion_row_spacing * (float)index, 0.0f, 0.0f);
         item->unk88 = -1.0f;
-        item->unk3c = 1;
+        item->needs_redraw = 1;
         lib_container_attach_widget(object->unk10, item);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->conversion_labels), item);
     }
@@ -3468,7 +3469,7 @@ void skill_refresh_selection_rows(SkillModeSelection* record)
                 cp_label->unk3c = 1;
             }
             func_0034BD30(record, index);
-            lib_text_measure_bounds(reinterpret_cast<LibObject178750*>(name_label));
+            lib_text_measure_bounds(reinterpret_cast<LibTextWidget*>(name_label));
             func_4C6A40(name_label);
         }
         else if (record->row_enabled[index] != 0)
@@ -3495,7 +3496,7 @@ void skill_refresh_selection_rows(SkillModeSelection* record)
  */
 static inline void scroll_row(SkillModeSelection* object, SkillListNode* node)
 {
-    LibClass178600* row = static_cast<LibClass178600*>(node->value);
+    LibWidget* row = static_cast<LibWidget*>(node->value);
     float x = row->unk18.unk00;
     float y = row->unk18.unk04;
     float z = row->unk18.unk08;
@@ -3505,7 +3506,7 @@ static inline void scroll_row(SkillModeSelection* object, SkillListNode* node)
     row->unk18.unk04 = y;
     row->unk18.unk08 = z;
     row->unk18.unk0c = w;
-    row->unk3c = 1;
+    row->needs_redraw = 1;
 }
 
 float skill_step_mode_scroll(SkillModeSelection* object)
@@ -3606,7 +3607,7 @@ void skill_refresh_selection_marker(SkillModeSelection* record)
         {
             record->selection_marker = (FieldObject23B950*)new (0) FieldClass153170;
             func_0023B850((FieldObject23B850*)record->selection_marker, (FieldTarget23B850*)node->value, 0x288080);
-            lib_container_attach_widget(record->unk10, reinterpret_cast<LibClass178600*>(record->selection_marker));
+            lib_container_attach_widget(record->unk10, reinterpret_cast<LibWidget*>(record->selection_marker));
         }
         func_0023B7E0(record->selection_marker, (FieldTarget23B850*)node->value);
         if (record->row_enabled[record->selection->unk114] != 0)
@@ -3677,17 +3678,17 @@ void SkillModeSelection::func_slot5c()
     }
     if (this->count > 0)
     {
-        this->scroll_indicator->unk3f = 1;
+        this->scroll_indicator->visible = 1;
         LibClass1725D0* marker = this->scroll_indicator;
         marker->unk50 = 100.0f * (6.0f / this->scroll_range);
-        marker->unk3c = 1;
+        marker->needs_redraw = 1;
         marker = this->scroll_indicator;
         marker->unk54 = 100.0f * ((float)this->selection->row_count / this->scroll_range);
-        marker->unk3c = 1;
+        marker->needs_redraw = 1;
     }
     else
     {
-        this->scroll_indicator->unk3f = 0;
+        this->scroll_indicator->visible = 0;
     }
     skill_refresh_selection_marker(this);
 }
@@ -3764,8 +3765,8 @@ u8 SkillModeSelection::func_slotb4()
     skill_set_selection_visibility(this, 0, 0);
     if (this->owner->status->first_display != 0 && this->owner->selected_records()->count > 1)
     {
-        this->owner->status->first_display->unk3f = 1;
-        this->owner->status->second_display->unk3f = 1;
+        this->owner->status->first_display->visible = 1;
+        this->owner->status->second_display->visible = 1;
     }
     return 2;
 }
@@ -3939,7 +3940,7 @@ u8 SkillModeSelection::func_slotb0()
                 value = 0;
             }
             item->numeric_value = value;
-            item->unk3c = 1;
+            item->needs_redraw = 1;
         }
         FieldRecordSelection* selection = status->selection;
         if (selection != 0)
@@ -3950,7 +3951,7 @@ u8 SkillModeSelection::func_slotb0()
                 s32 value = character_cp(record);
                 item = status->available_cp_value;
                 item->numeric_value = value;
-                item->unk3c = 1;
+                item->needs_redraw = 1;
             }
         }
     }
@@ -3992,8 +3993,8 @@ u8 SkillModeSelection::func_slotb0()
     skill_set_selection_visibility(this, 0, 0);
     if (this->owner->status->first_display != 0 && this->owner->selected_records()->count > 1)
     {
-        this->owner->status->first_display->unk3f = 1;
-        this->owner->status->second_display->unk3f = 1;
+        this->owner->status->first_display->visible = 1;
+        this->owner->status->second_display->visible = 1;
     }
     return 1;
 }
@@ -4193,8 +4194,8 @@ s32 skill_initialize_selection_grid(SkillModeSelection* record, s16 row_count)
     {
         return 0;
     }
-    x = record->unk10->unk20.components[0] + record->list_x;
-    y = 16.0f + record->unk10->unk20.components[1];
+    x = record->unk10->translation.x + record->list_x;
+    y = 16.0f + record->unk10->translation.y;
     func_0023CE80((FieldObject23CE80*)record->selection, 1, row_count);
     func_0023CE60((FieldObject23CE80*)record->selection, 0.0f, record->row_spacing);
     record->selection->unkF2 = 0;
@@ -4691,7 +4692,7 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
 {
     for (s32 row = 0; row < 42; row++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         if (text == 0)
         {
             return 0;
@@ -4699,7 +4700,7 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
         float y = object->row_height + object->row_spacing * (float)row;
         text->init_resource_rectangle(4.0f + object->list_x, y, 180.0f, 22.0f, (s32)object->func_slot54(), SKILL_MSG_NONE, 0);
         text->unk88 = -1.0f;
-        text->unk3c = 1;
+        text->needs_redraw = 1;
         text->set_scale(0.92f, 0.92f);
         lib_container_attach_widget(object->unk10, text);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), text);
@@ -4711,15 +4712,15 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
         y = (8.0f + object->row_height) + object->row_spacing * (float)row;
         lib_numeric_widget_init_rectangle(cost, 0, (s32)object->func_slot54(), 1, 250.0f, y, 16.0f, 8.0f);
         cost->set_scale(0.9f, 0.9f);
-        cost->set_color(0x288080);
-        cost->set_mode(1);
-        cost->set_vertical_alignment(1);
-        cost->unk3f = 0;
+        cost->set_tint(0x288080);
+        cost->set_horizontal_align(1);
+        cost->set_vertical_align(1);
+        cost->visible = 0;
         lib_container_attach_widget(object->unk10, cost);
         func_0035C780(reinterpret_cast<SkillList*>(&object->cp_rows), cost);
     }
     SkillListNode* node = reinterpret_cast<SkillListNode*>(object->unk2c.head->next);
-    const LibUiRect16* position = &static_cast<LibClass178600*>(node->value)->unk18;
+    const LibUiRect16* position = &static_cast<LibWidget*>(node->value)->unk18;
     if (node == 0 || position == 0)
     {
         return 0;
@@ -4733,7 +4734,7 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
     object->name_column_position.z = z;
     object->name_column_position.w = w;
     node = object->cp_rows.head->next;
-    position = &static_cast<LibClass178600*>(node->value)->unk18;
+    position = &static_cast<LibWidget*>(node->value)->unk18;
     if (node == 0 || position == 0)
     {
         return 0;
@@ -4756,18 +4757,18 @@ void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 ac
     object->func_slot18(flag, 2);
     if (object->selection != 0)
     {
-        LibClass178600* recipient = reinterpret_cast<LibClass178600*>(object->selection_marker);
+        LibWidget* recipient = reinterpret_cast<LibWidget*>(object->selection_marker);
         if (recipient != 0)
         {
             if (active != 0)
             {
-                recipient->unk28 = 128.0f;
-                recipient->unk3c = 1;
+                recipient->draw_alpha = 128.0f;
+                recipient->needs_redraw = 1;
             }
             else
             {
-                recipient->unk28 = 0.0f;
-                recipient->unk3c = 1;
+                recipient->draw_alpha = 0.0f;
+                recipient->needs_redraw = 1;
             }
         }
         func_0023CEA0(object->selection, active);
@@ -4778,21 +4779,21 @@ void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 ac
     {
         if (index == 0)
         {
-            static_cast<LibClass178600*>(node->value)->unk3f = 0;
+            static_cast<LibWidget*>(node->value)->visible = 0;
         }
         else
         {
-            static_cast<LibClass178600*>(node->value)->unk3f = flag & 0xFF;
+            static_cast<LibWidget*>(node->value)->visible = flag & 0xFF;
         }
     }
-    object->cp_heading->unk3f = flag;
+    object->cp_heading->visible = flag;
     if ((u8)flag == 1 && (u8)active == 1)
     {
         skill_refresh_selection_rows(object);
     }
     if ((u8)flag == 0)
     {
-        object->scroll_indicator->unk3f = 0;
+        object->scroll_indicator->visible = 0;
     }
 }
 
@@ -4801,17 +4802,17 @@ void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 ac
 s32 SkillModeSelection::func_slotf4(u32 associated)
 {
     this->FieldClass15AE70::func_slot10(associated, 320.0f, 176.0f, 15);
-    this->cp_heading = new (0) LibObject178750;
+    this->cp_heading = new (0) LibTextWidget;
     this->cp_heading->init_resource_rectangle(248.0f, 9.0f, 0.0f, 0.0f, static_cast<s32>(associated), SKILL_MSG_CP, 1);
     lib_container_attach_widget(this->unk10, this->cp_heading);
-    this->cp_heading->set_color(0x288CFF);
+    this->cp_heading->set_tint(0x288CFF);
     this->cp_heading->set_scale(0.6f, 0.6f);
     {
-        LibObject178750* display = this->cp_heading;
+        LibTextWidget* display = this->cp_heading;
         display->unk88 = 2.0f;
-        display->unk3c = 1;
+        display->needs_redraw = 1;
     }
-    this->cp_heading->unk3f = 0;
+    this->cp_heading->visible = 0;
     LibClass1746A0* first = new (0) LibClass1746A0;
     LibClass1746A0* second = new (0) LibClass1746A0;
     this->selection = new (0) FieldObject23CEA0;
@@ -4829,7 +4830,7 @@ s32 SkillModeSelection::func_slotf4(u32 associated)
     this->scroll_indicator = new (0) LibClass1725D0;
     lib_list_indicator_init(this->scroll_indicator, 280.0f, 18.0f, 178.0f, 100.0f, 0.0f);
     lib_container_attach_widget(this->unk10, this->scroll_indicator);
-    this->scroll_indicator->unk3f = 0;
+    this->scroll_indicator->visible = 0;
     lib_scissor_init_reset(second, 1);
     lib_container_attach_widget(this->unk10, second);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), second);
@@ -4873,7 +4874,7 @@ SkillModeSelection::SkillModeSelection(SkillController* controller)
 s32 SkillModeMessageWindow::func_slotf4(u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(this), associated, 320.0f, 176.0f, 0xF);
-    LibClass178630* widget = new (0) LibClass178630;
+    LibPanel* widget = new (0) LibPanel;
     if (widget == 0)
     {
         return 0;
@@ -4902,7 +4903,7 @@ void SkillTacticalWindow::func_slot64()
     FieldObject23CEA0* selection = this->selection;
     selection->FieldClass151C50::unk30 = 128.0f;
     selection->unkae = 1;
-    LibObject178660* display = this->attachment->unk10;
+    LibContainer* display = this->attachment->unk10;
     if (display != 0)
     {
         display->unkab = 1;
@@ -4926,16 +4927,16 @@ void SkillTacticalWindow::func_slot64()
  */
 static inline void show_tactical_prompt(SkillTacticalPromptWindow* prompt, s32 state)
 {
-    prompt->initiate_label->unk3f = 1;
+    prompt->initiate_label->visible = 1;
     if (state > 0)
     {
-        prompt->yes_label->unk3f = 1;
-        prompt->no_label->unk3f = 0;
+        prompt->yes_label->visible = 1;
+        prompt->no_label->visible = 0;
     }
     else
     {
-        prompt->yes_label->unk3f = 0;
-        prompt->no_label->unk3f = 1;
+        prompt->yes_label->visible = 0;
+        prompt->no_label->visible = 1;
     }
 }
 
@@ -4945,32 +4946,32 @@ static inline void show_tactical_prompt(SkillTacticalPromptWindow* prompt, s32 s
  * @param index Row index.
  * @return Label text widget.
  */
-static inline LibObject178750* tactical_row_label(SkillTacticalWindow* object, s32 index)
+static inline LibTextWidget* tactical_row_label(SkillTacticalWindow* object, s32 index)
 {
-    return static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
+    return static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value);
 }
 
 void func_00351BE0(SkillTacticalWindow* object)
 {
     for (s32 index = 0; index < 5; index++)
     {
-        static_cast<LibClass178600*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value)->unk3f = 0;
+        static_cast<LibWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value)->visible = 0;
     }
     if (object->row_count > 0)
     {
         lib_marker_set_bright_color(object->cursor, 0x808080);
         for (s32 index = 0; index < object->row_count; index++)
         {
-            LibObject178750* text = tactical_row_label(object, index);
-            text->unk3f = object->active;
+            LibTextWidget* text = tactical_row_label(object, index);
+            text->visible = object->active;
             s32 value = tactical_mode_state(&static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current], object->row_modes[index]);
             if (value > 0)
             {
-                text->set_color(0x808080);
+                text->set_tint(0x808080);
             }
             else
             {
-                text->set_color(0x505050);
+                text->set_tint(0x505050);
             }
             if (index == object->selection->unk114)
             {
@@ -4978,14 +4979,14 @@ void func_00351BE0(SkillTacticalWindow* object)
                 {
                     if (value > 0)
                     {
-                        text->set_color(0x288080);
+                        text->set_tint(0x288080);
                         lib_marker_set_bright_color(object->cursor, 0x288080);
                     }
                     else
                     {
                         lib_marker_set_bright_color(object->cursor, 0x505050);
                     }
-                    func_0023B9B0(object->cursor, (s16)index, lib_text_measure_bounds(text)->unk08);
+                    func_0023B9B0(object->cursor, (s16)index, lib_text_measure_bounds(text)->width);
                 }
             }
             if (object == D_001B643C->callbacks->controller->func_00261150())
@@ -5010,30 +5011,30 @@ void func_00351BE0(SkillTacticalWindow* object)
             {
                 SkillTacticalPromptWindow* prompt = object->attachment;
                 show_tactical_prompt(prompt, value);
-                prompt->details_icon->unk3f = 0;
-                prompt->details_hint->unk3f = 0;
-                prompt->toggle_icon->unk3f = 1;
-                prompt->toggle_hint->unk3f = 1;
-                prompt->details_icon->unk3f = 0;
-                prompt->details_hint->unk3f = 0;
+                prompt->details_icon->visible = 0;
+                prompt->details_hint->visible = 0;
+                prompt->toggle_icon->visible = 1;
+                prompt->toggle_hint->visible = 1;
+                prompt->details_icon->visible = 0;
+                prompt->details_hint->visible = 0;
             }
             if (mode == SKILL_TACTICAL_DAMAGE_CONVERSION)
             {
                 SkillTacticalPromptWindow* prompt = object->attachment;
                 show_tactical_prompt(prompt, value);
-                prompt->toggle_icon->unk3f = 1;
-                prompt->toggle_hint->unk3f = 1;
-                prompt->details_icon->unk3f = 1;
-                prompt->details_hint->unk3f = 1;
+                prompt->toggle_icon->visible = 1;
+                prompt->toggle_hint->visible = 1;
+                prompt->details_icon->visible = 1;
+                prompt->details_hint->visible = 1;
             }
             if (mode == SKILL_TACTICAL_ANTI_ATTACK_AURA)
             {
                 SkillTacticalPromptWindow* prompt = object->attachment;
                 show_tactical_prompt(prompt, value);
-                prompt->toggle_icon->unk3f = 1;
-                prompt->toggle_hint->unk3f = 1;
-                prompt->details_icon->unk3f = 1;
-                prompt->details_hint->unk3f = 1;
+                prompt->toggle_icon->visible = 1;
+                prompt->toggle_hint->visible = 1;
+                prompt->details_icon->visible = 1;
+                prompt->details_hint->visible = 1;
             }
         }
         else
@@ -5105,7 +5106,7 @@ void skill_open_tactical_details(SkillTacticalWindow* object)
     FieldObject23CEA0* selection = object->selection;
     selection->FieldClass151C50::unk30 = 64.0f;
     selection->unkae = 1;
-    LibObject178660* display = object->attachment->unk10;
+    LibContainer* display = object->attachment->unk10;
     if (display != 0)
     {
         display->unkab = 0;
@@ -5224,7 +5225,7 @@ u8 SkillTacticalWindow::func_slotb4()
     }
     this->character_rows[(u8)this->records->slots[this->records->current]] = this->selection->index;
     clear_tactical_choices(this);
-    LibObject178660* display = this->attachment->unk10;
+    LibContainer* display = this->attachment->unk10;
     if (display != 0)
     {
         display->unkab = 0;
@@ -5237,15 +5238,15 @@ u8 SkillTacticalWindow::func_slotb4()
     if (D_001B643C->callbacks->controller->func_00261150() == this)
     {
         s32 opacity = this->row_count ? 128 : 0;
-        LibClass178600* cursor = this->cursor;
-        cursor->unk28 = (float)opacity;
-        cursor->unk3c = 1;
+        LibWidget* cursor = this->cursor;
+        cursor->draw_alpha = (float)opacity;
+        cursor->needs_redraw = 1;
     }
     else
     {
-        LibClass178600* cursor = this->cursor;
-        cursor->unk28 = 0.0f;
-        cursor->unk3c = 1;
+        LibWidget* cursor = this->cursor;
+        cursor->draw_alpha = 0.0f;
+        cursor->needs_redraw = 1;
     }
     func_0023CEA0(this->selection, 0);
     return 2;
@@ -5277,7 +5278,7 @@ u8 SkillTacticalWindow::func_slotb0()
     u8 inactive = !selection->unk35;
     s16 index;
     s16 mode;
-    LibClass178600* display;
+    LibWidget* display;
 
     if (inactive == 1)
     {
@@ -5295,12 +5296,12 @@ u8 SkillTacticalWindow::func_slotb0()
         display = this->parent->status->first_display;
         if (display != 0)
         {
-            display->unk3f = 0;
+            display->visible = 0;
         }
         display = this->parent->status->second_display;
         if (display != 0)
         {
-            display->unk3f = 0;
+            display->visible = 0;
         }
         return 1;
     }
@@ -5324,10 +5325,10 @@ void skill_refresh_tactical_rows(SkillTacticalWindow* object)
     {
         for (s32 row = 0; row < object->row_count; row++)
         {
-            LibObject178750* label = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), row)->value);
+            LibTextWidget* label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), row)->value);
             u32 source = object->func_slot54();
             lib_text_set_resource(label, source, object->row_modes[row] + SKILL_MSG_TACTICAL_NAME_BASE, 0);
-            label->unk3f = object->active;
+            label->visible = object->active;
         }
         if (object->active != 0)
         {
@@ -5341,7 +5342,7 @@ void skill_refresh_tactical_rows(SkillTacticalWindow* object)
                 {
                     if (object->row_count != 0)
                     {
-                        LibObject178660* display = object->attachment->unk10;
+                        LibContainer* display = object->attachment->unk10;
                         if (display != 0)
                         {
                             display->unkab = 1;
@@ -5349,30 +5350,30 @@ void skill_refresh_tactical_rows(SkillTacticalWindow* object)
                     }
                     else
                     {
-                        LibObject178660* display = object->attachment->unk10;
+                        LibContainer* display = object->attachment->unk10;
                         if (display != 0)
                         {
                             display->unkab = 0;
                         }
                     }
                 }
-                object->cursor->unk3f = 1;
+                object->cursor->visible = 1;
                 s32 opacity = object->row_count ? 128 : 0;
-                LibClass178600* cursor = object->cursor;
-                cursor->unk28 = (float)opacity;
-                cursor->unk3c = 1;
+                LibWidget* cursor = object->cursor;
+                cursor->draw_alpha = (float)opacity;
+                cursor->needs_redraw = 1;
                 func_00351BE0(object);
             }
             else
             {
-                object->cursor->unk3f = 0;
+                object->cursor->visible = 0;
             }
         }
     }
     else
     {
         skill_set_tactical_prompt_state(object->attachment, 0);
-        object->cursor->unk3f = 0;
+        object->cursor->visible = 0;
         SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
         FieldClass15AE70* window = owner->window;
         if (object->row_count > 0)
@@ -5394,13 +5395,13 @@ static inline void create_tactical_labels(SkillTacticalWindow* window)
 {
     for (s32 row = 0; row < 5; row++)
     {
-        LibObject178750* label = new (0) LibObject178750;
+        LibTextWidget* label = new (0) LibTextWidget;
         label->unk88 = -1.0f;
-        label->unk3c = 1;
+        label->needs_redraw = 1;
         s32 source = static_cast<s32>(window->func_slot54());
         label->init_resource_rectangle(window->row_x, window->row_y + window->row_spacing * (float)row,
             0.0f, 0.0f, source, row + 0x1A9E, 0);
-        label->unk3f = 0;
+        label->visible = 0;
         lib_container_attach_widget(window->unk10, label);
         func_0035C9D0(reinterpret_cast<SkillList*>(&window->unk2c), label);
     }
@@ -5427,7 +5428,7 @@ s32 SkillTacticalWindow::func_slotf4(u32 associated)
     cursor->func_0023BB20(row_x, row_y, 144.0f, 1.0f, selection, 0x288080);
     lib_container_attach_widget(unk10, cursor);
     func_0035C440(reinterpret_cast<SkillList*>(&unk8c), cursor);
-    const float* position = unk10->unk20.components;
+    const float* position = &unk10->translation.x;
     float grid_x = 24.0f + position[0];
     float grid_y = position[1] + row_y;
     selection->func_0023CE80(1, 5);
@@ -5479,7 +5480,7 @@ s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode)
 {
     s32 sum = 0;
     s32 i;
-    owner->cp_heading->unk3f = mode;
+    owner->cp_heading->visible = mode;
     if (mode != 0)
     {
         for (i = 0; i < 6; i++)
@@ -5487,15 +5488,15 @@ s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode)
             s32 value = owner->cp_costs[i];
             LibObject174F20* item = owner->cp_values[i];
             item->numeric_value = value;
-            item->unk3c = 1;
+            item->needs_redraw = 1;
             if (value == -1)
             {
-                owner->cp_values[i]->unk3f = 0;
+                owner->cp_values[i]->visible = 0;
                 value = 0;
             }
             else
             {
-                owner->cp_values[i]->unk3f = 1;
+                owner->cp_values[i]->visible = 1;
             }
             sum += value;
         }
@@ -5504,7 +5505,7 @@ s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode)
     {
         for (i = 0; i < 6; i++)
         {
-            owner->cp_values[i]->unk3f = 0;
+            owner->cp_values[i]->visible = 0;
         }
     }
     return sum;
@@ -5525,15 +5526,15 @@ void skill_set_battle_setup_visibility(SkillBattleSetupWindow* object, u32 flag,
     set_list_display_flags(&object->skill_name_labels, flag);
     if (active != 0)
     {
-        LibClass178600* display = reinterpret_cast<LibClass178600*>(object->display);
-        display->unk28 = 128.0f;
-        display->unk3c = 1;
+        LibWidget* display = reinterpret_cast<LibWidget*>(object->display);
+        display->draw_alpha = 128.0f;
+        display->needs_redraw = 1;
     }
     else
     {
-        LibClass178600* display = reinterpret_cast<LibClass178600*>(object->display);
-        display->unk28 = 0.0f;
-        display->unk3c = 1;
+        LibWidget* display = reinterpret_cast<LibWidget*>(object->display);
+        display->draw_alpha = 0.0f;
+        display->needs_redraw = 1;
     }
     func_0023CEA0(object->selection, active);
     skill_refresh_battle_cp_displays(object, flag);
@@ -5612,14 +5613,14 @@ void skill_refresh_battle_selection(SkillBattleSetupWindow* record)
         ListItem0035CCE0* separator = (ListItem0035CCE0*)func_0035CAE0(reinterpret_cast<SkillList*>(&record->slot_separators), index)->value;
         if (index == record->selection->unk114)
         {
-            LibBounds4C69B0* metrics;
+            LibTextExtent* metrics;
             slot_label->unk94 = 0x288080;
             slot_label->unk3c = 1;
             separator->unk94 = 0x288080;
             separator->unk3c = 1;
-            metrics = lib_text_measure_bounds(reinterpret_cast<LibObject178750*>(slot_label));
+            metrics = lib_text_measure_bounds(reinterpret_cast<LibTextWidget*>(slot_label));
             func_0023BAB0(record->display, slot_label->position.x,
-                         1.0f + (24.0f + slot_label->position.y), 16.0f + metrics->unk08);
+                         1.0f + (24.0f + slot_label->position.y), 16.0f + metrics->width);
         }
         else
         {
@@ -5814,8 +5815,8 @@ u8 SkillBattleSetupWindow::func_slotb0()
     SkillCharacterWindow* status = this->owner->status;
     if (status->first_display != 0)
     {
-        status->first_display->unk3f = 0;
-        this->owner->status->second_display->unk3f = 0;
+        status->first_display->visible = 0;
+        this->owner->status->second_display->visible = 0;
     }
     return 1;
 }
@@ -5836,7 +5837,7 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
     s32 remaining = -1;
     FieldRecord* entry = &object->record_selection->records[object->record_selection->current];
     SkillCharacterEquipment* record = selected_equipment(object->record_selection);
-    LibObject178750* label;
+    LibTextWidget* label;
     s32 minor_mp = 0;
     s32 minor_hp = 0;
     s32 cp_cost = 0;
@@ -5844,22 +5845,22 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
     s32 major_damage_scale = 0;
     for (s32 i = 0; i <= 5; i++)
     {
-        label = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->skill_name_labels), i)->value);
+        label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->skill_name_labels), i)->value);
         saved_index = battle_skill_index(record, i);
         if (saved_index == 0)
         {
             object->skill_name_keys[i] = SKILL_MSG_NONE;
             lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[i], 0);
-            label->unk80 = 0.9f;
-            label->unk3c = 1;
+            label->draw_scale = 0.9f;
+            label->needs_redraw = 1;
             object->cp_costs[i] = -1;
         }
         else if (func_00408850(record, character, --saved_index, &skill_id, &mastery, &level, &remaining) == 0)
         {
             object->skill_name_keys[i] = SKILL_MSG_NONE;
             lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[i], 0);
-            label->unk80 = 0.9f;
-            label->unk3c = 1;
+            label->draw_scale = 0.9f;
+            label->needs_redraw = 1;
             object->cp_costs[i] = -1;
         }
         else
@@ -5881,12 +5882,12 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
             }
             if (label != 0)
             {
-                label->unk80 = 0.9f;
-                label->unk3c = 1;
-                float scale = 178.0f / lib_text_measure_bounds(label)->unk08;
+                label->draw_scale = 0.9f;
+                label->needs_redraw = 1;
+                float scale = 178.0f / lib_text_measure_bounds(label)->width;
                 scale = ee_min(scale, 1.0f);
-                label->unk80 = 0.9f * scale;
-                label->unk3c = 1;
+                label->draw_scale = 0.9f * scale;
+                label->needs_redraw = 1;
             }
             object->skill_levels[i] = level;
             object->mastery_values[i] = mastery;
@@ -5931,7 +5932,7 @@ s32 func_003547C0(SkillBattleSetupWindow* object)
     s32 key;
     for (key = 0x1780; key < 0x1786; key++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         if (text == 0)
         {
             return 0;
@@ -5952,7 +5953,7 @@ s32 func_003547C0(SkillBattleSetupWindow* object)
     }
     for (s32 index = 0; index < 6; index++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         if (index < 4)
         {
             s32 source = static_cast<s32>(object->func_slot54());
@@ -5965,7 +5966,7 @@ s32 func_003547C0(SkillBattleSetupWindow* object)
         }
         lib_container_attach_widget(object->unk10, text);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->slot_separators), text);
-        text->unk3f = 0;
+        text->visible = 0;
     }
     s32 resource = 0;
     for (s32 index = 0; index < 4; index++)
@@ -5987,7 +5988,7 @@ s32 func_003547C0(SkillBattleSetupWindow* object)
     }
     for (s32 index = 0; index < 6; index++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         if (text == 0)
         {
             return 0;
@@ -6006,7 +6007,7 @@ s32 func_003547C0(SkillBattleSetupWindow* object)
             text->init_resource_rectangle(shifted_position(object->row_x, 34.0f), object->row_y + (object->support_row_gap + object->row_spacing * (float)index), 0.0f, 0.0f, source, key, 0);
         }
         text->unk88 = -1.0f;
-        text->unk3c = 1;
+        text->needs_redraw = 1;
         text->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(object->unk10, text);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->skill_name_labels), text);
@@ -6034,19 +6035,19 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
     this->row_spacing = 28.0f;
     this->support_row_gap = 8.0f;
     float cp_x = 10.0f + this->clip_width;
-    this->cp_heading = new (0) LibObject178750;
+    this->cp_heading = new (0) LibTextWidget;
     u32 source = this->func_slot54();
     this->cp_heading->init_resource_rectangle(cp_x, 8.0f, 0.0f, 0.0f, (s32)source, SKILL_MSG_CP, 1);
-    LibObject178750* heading = this->cp_heading;
-    heading->unk94 = 0x288CFF;
-    heading->unk3c = 1;
+    LibTextWidget* heading = this->cp_heading;
+    heading->tint = 0x288CFF;
+    heading->needs_redraw = 1;
     heading = this->cp_heading;
     heading->set_scale(0.6f, 0.6f);
     heading = this->cp_heading;
     heading->unk88 = 2.0f;
-    heading->unk3c = 1;
+    heading->needs_redraw = 1;
     lib_container_attach_widget(this->unk10, this->cp_heading);
-    LibBounds4C69B0* bounds = lib_text_measure_bounds(this->cp_heading);
+    LibTextExtent* bounds = lib_text_measure_bounds(this->cp_heading);
     for (s32 row = 0; row < 6; row++)
     {
         this->cp_values[row] = new (0) LibObject174F20;
@@ -6061,18 +6062,18 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
         }
         s32 resource = (s32)this->func_slot54();
         lib_numeric_widget_init_rectangle(this->cp_values[row], 0, resource, 1,
-                                          cp_x, y, bounds->unk08, 19.2f);
+                                          cp_x, y, bounds->width, 19.2f);
         LibObject174F20* value = this->cp_values[row];
         value->set_scale(0.9f, 0.9f);
         value = this->cp_values[row];
-        value->unk94 = 0x288080;
-        value->unk3c = 1;
+        value->tint = 0x288080;
+        value->needs_redraw = 1;
         value = this->cp_values[row];
-        value->unk9c = 1;
-        value->unk3c = 1;
+        value->horizontal_align = 1;
+        value->needs_redraw = 1;
         value = this->cp_values[row];
-        value->unka0 = 1;
-        value->unk3c = 1;
+        value->vertical_align = 1;
+        value->needs_redraw = 1;
         lib_container_attach_widget(this->unk10, this->cp_values[row]);
     }
     lib_scissor_init_rectangle(clip, 8.0f, 8.0f, this->clip_width, 192.0f);
@@ -6104,10 +6105,10 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
     }
     this->attachment->set_codes_and_z(0, 9, 0.0f, this->unk10->unka4 + 0x20, 0);
     this->attachment->resource_source = associated;
-    lib_queue_display_object(D_001B657C, static_cast<LibClass174610*>(this->attachment));
+    lib_queue_display_object(D_001B657C, static_cast<LibCallbackTransform*>(this->attachment));
     SkillController* controller = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     controller->status_attachment = this->attachment;
-    const float* position = this->unk10->unk20.components;
+    const float* position = &this->unk10->translation.x;
     this->selection->func_0023CE80(1, 6);
     this->selection->func_0023CE60(0.0f, this->row_spacing);
     this->selection->unkF2 = 0;
@@ -6126,7 +6127,7 @@ FieldClass159FE0::~FieldClass159FE0()
 }
 
 /** @brief Destroy the embedded intrusive links. */
-LibClass178A70::~LibClass178A70()
+LibListReceiver::~LibListReceiver()
 {
 }
 
@@ -6204,21 +6205,21 @@ void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag,
 {
     object->visible = flag;
     object->func_slot18(flag, 10);
-    object->level_heading->unk3f = flag;
-    object->next_level_heading->unk3f = flag;
-    object->heading_separator->unk3f = flag;
-    object->cursor->unk3f = flag;
+    object->level_heading->visible = flag;
+    object->next_level_heading->visible = flag;
+    object->heading_separator->visible = flag;
+    object->cursor->visible = flag;
     if (active != 0)
     {
-        LibClass178600* cursor = object->cursor;
-        cursor->unk28 = 128.0f;
-        cursor->unk3c = 1;
+        LibWidget* cursor = object->cursor;
+        cursor->draw_alpha = 128.0f;
+        cursor->needs_redraw = 1;
     }
     else
     {
-        LibClass178600* cursor = object->cursor;
-        cursor->unk28 = 0.0f;
-        cursor->unk3c = 1;
+        LibWidget* cursor = object->cursor;
+        cursor->draw_alpha = 0.0f;
+        cursor->needs_redraw = 1;
     }
     func_0023CEA0(object->selection, active);
     if (active != 0)
@@ -6229,9 +6230,9 @@ void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag,
     {
         for (s32 index = 0; index < 4; index++)
         {
-            object->skill_levels[index]->unk3f = 0;
-            object->next_level_costs[index]->unk3f = 0;
-            object->max_level_labels[index]->unk3f = 0;
+            object->skill_levels[index]->visible = 0;
+            object->next_level_costs[index]->visible = 0;
+            object->max_level_labels[index]->visible = 0;
         }
     }
 }
@@ -6241,9 +6242,9 @@ void func_003559F0(SkillStatusSkillWindow* object)
     s32 index;
     for (index = 0; index < 4; index++)
     {
-        object->skill_levels[index]->unk3f = 0;
-        object->next_level_costs[index]->unk3f = 0;
-        object->max_level_labels[index]->unk3f = 0;
+        object->skill_levels[index]->visible = 0;
+        object->next_level_costs[index]->visible = 0;
+        object->max_level_labels[index]->visible = 0;
     }
     for (index = 0; index < 4; index++)
     {
@@ -6252,20 +6253,20 @@ void func_003559F0(SkillStatusSkillWindow* object)
         s32 cost = func_4087A0(index + 1, status_skill_level(selected_equipment(records), index), selected_equipment(records));
         LibObject174F20* value = object->skill_levels[index];
         value->numeric_value = level;
-        value->unk3c = 1;
-        object->skill_levels[index]->unk3f = object->visible;
+        value->needs_redraw = 1;
+        object->skill_levels[index]->visible = object->visible;
         if (cost == -1)
         {
-            object->next_level_costs[index]->unk3f = 0;
-            object->max_level_labels[index]->unk3f = object->visible;
+            object->next_level_costs[index]->visible = 0;
+            object->max_level_labels[index]->visible = object->visible;
         }
         else
         {
             LibObject174F20* next = object->next_level_costs[index];
             next->numeric_value = cost;
-            next->unk3c = 1;
-            object->next_level_costs[index]->unk3f = object->visible;
-            object->max_level_labels[index]->unk3f = 0;
+            next->needs_redraw = 1;
+            object->next_level_costs[index]->visible = object->visible;
+            object->max_level_labels[index]->visible = 0;
         }
     }
 }
@@ -6284,18 +6285,18 @@ void SkillStatusSkillWindow::func_slot6c()
     }
     for (s32 index = 0; index < 4; index++)
     {
-        LibObject178750* item = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
+        LibTextWidget* item = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
         if (index == this->selection->unk114)
         {
-            item->unk94 = 0x288080;
-            item->unk3c = 1;
-            LibBounds4C69B0* metrics = lib_text_measure_bounds(item);
-            func_0023B9B0(this->cursor, (s16)index, metrics->unk08);
+            item->tint = 0x288080;
+            item->needs_redraw = 1;
+            LibTextExtent* metrics = lib_text_measure_bounds(item);
+            func_0023B9B0(this->cursor, (s16)index, metrics->width);
         }
         else
         {
-            item->unk94 = 0x808080;
-            item->unk3c = 1;
+            item->tint = 0x808080;
+            item->needs_redraw = 1;
         }
     }
 }
@@ -6314,18 +6315,18 @@ void SkillStatusSkillWindow::func_slot68()
     }
     for (s32 index = 0; index < 4; index++)
     {
-        LibObject178750* item = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
+        LibTextWidget* item = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
         if (index == this->selection->unk114)
         {
-            item->unk94 = 0x288080;
-            item->unk3c = 1;
-            LibBounds4C69B0* metrics = lib_text_measure_bounds(item);
-            func_0023B9B0(this->cursor, (s16)index, metrics->unk08);
+            item->tint = 0x288080;
+            item->needs_redraw = 1;
+            LibTextExtent* metrics = lib_text_measure_bounds(item);
+            func_0023B9B0(this->cursor, (s16)index, metrics->width);
         }
         else
         {
-            item->unk94 = 0x808080;
-            item->unk3c = 1;
+            item->tint = 0x808080;
+            item->needs_redraw = 1;
         }
     }
 }
@@ -6371,9 +6372,9 @@ u8 SkillStatusSkillWindow::func_slotb4()
     }
     for (s32 index = 0; index < 4; index++)
     {
-        LibObject178750* item = static_cast<LibObject178750*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
-        item->unk94 = 0x808080;
-        item->unk3c = 1;
+        LibTextWidget* item = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
+        item->tint = 0x808080;
+        item->needs_redraw = 1;
     }
     skill_set_status_skill_visibility(this, 1, 0);
     static_cast<FieldClass15AE70*>(this->func_slot44())->func_slot64();
@@ -6399,8 +6400,8 @@ u8 SkillStatusSkillWindow::func_slotb0()
     }
     if (level == 10)
     {
-        LibObject178750* label = this->max_level_labels[row];
-        label->unk3f = 1;
+        LibTextWidget* label = this->max_level_labels[row];
+        label->visible = 1;
     }
     if (cost <= sp)
     {
@@ -6536,7 +6537,7 @@ s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object)
 {
     for (s32 key = 0x1779; key < 0x177F; key++)
     {
-        LibObject178750* text = new (0) LibObject178750;
+        LibTextWidget* text = new (0) LibTextWidget;
         if (text == 0)
         {
             return 0;
@@ -6545,12 +6546,12 @@ s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object)
         {
         case 0x1779:
             text->init_resource_rectangle(158.0f, 14.0f, 0.0f, 0.0f, (s32)object->func_slot54(), 0x1779, 1);
-            text->set_color(0x6C6C6C);
+            text->set_tint(0x6C6C6C);
             object->level_heading = text;
             break;
         case 0x177A:
             text->init_resource_rectangle(224.0f, 14.0f, 0.0f, 0.0f, (s32)object->func_slot54(), 0x177A, 1);
-            text->set_color(0x6C6C6C);
+            text->set_tint(0x6C6C6C);
             object->next_level_heading = text;
             break;
         case 0x177B:
@@ -6588,15 +6589,15 @@ s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object)
         lib_numeric_widget_init_rectangle(cost, value, 0, 0, 208.0f, object->first_row_y + 32.0f * (float)index, 64.0f, 24.0f);
         lib_container_attach_widget(object->unk10, cost);
         object->next_level_costs[index] = cost;
-        object->max_level_labels[index] = new (0) LibObject178750;
+        object->max_level_labels[index] = new (0) LibTextWidget;
         object->max_level_labels[index]->init_resource_rectangle(224.0f, object->first_row_y + 32.0f * (float)index, 0.0f, 0.0f, (s32)object->func_slot54(), 0x17C6, 0);
-        object->max_level_labels[index]->set_color(0x508050);
+        object->max_level_labels[index]->set_tint(0x508050);
         lib_container_attach_widget(object->unk10, object->max_level_labels[index]);
-        object->max_level_labels[index]->unk3f = 0;
+        object->max_level_labels[index]->visible = 0;
         if (value == -1)
         {
-            object->next_level_costs[index]->unk3f = 0;
-            object->max_level_labels[index]->unk3f = 1;
+            object->next_level_costs[index]->visible = 0;
+            object->max_level_labels[index]->visible = 1;
         }
     }
     return 1;
@@ -6627,7 +6628,7 @@ s32 SkillStatusSkillWindow::func_slotf4(u32 associated)
     func_0023BB20(this->cursor, reinterpret_cast<FieldObject23CEB0*>(this->selection), 0x288080, 32.0f, this->first_row_y, 144.0f, 1.0f);
     lib_container_attach_widget(this->unk10, this->cursor);
     func_0035C440(reinterpret_cast<SkillList*>(&this->unk8c), this->cursor);
-    const float* position = this->unk10->unk20.components;
+    const float* position = &this->unk10->translation.x;
     this->selection->func_0023CE80(1, 4);
     this->selection->func_0023CE60(0.0f, this->row_spacing);
     this->selection->unkF2 = 0;
@@ -6665,7 +6666,7 @@ SkillStatusSkillWindow::SkillStatusSkillWindow()
 s32 SkillStatusMessageWindow::func_slotf4(u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(this), associated, 16.0f, 176.0f, 0x11);
-    LibClass178630* widget = new (0) LibClass178630;
+    LibPanel* widget = new (0) LibPanel;
     if (widget == 0)
     {
         return 0;
@@ -6691,43 +6692,43 @@ void skill_refresh_mastery_display(SkillCharacterWindow* owner, s32 level, s32 m
 {
     if (mastery == -1)
     {
-        owner->mastery_values[1]->unk3f = 0;
+        owner->mastery_values[1]->visible = 0;
     }
     else
     {
         LibObject174F20* item = owner->mastery_values[1];
         item->numeric_value = mastery - 1;
-        item->unk3c = 1;
-        owner->mastery_values[1]->unk3f = 1;
+        item->needs_redraw = 1;
+        owner->mastery_values[1]->visible = 1;
     }
     if (level == -1)
     {
-        owner->mastery_values[0]->unk3f = 0;
+        owner->mastery_values[0]->visible = 0;
     }
     else
     {
         LibObject174F20* item = owner->mastery_values[0];
         item->numeric_value = level;
-        item->unk3c = 1;
-        owner->mastery_values[0]->unk3f = 1;
+        item->needs_redraw = 1;
+        owner->mastery_values[0]->visible = 1;
     }
     if (remaining == -1)
     {
-        owner->mastery_values[2]->unk3f = 0;
-        owner->max_level_label->unk3f = 0;
+        owner->mastery_values[2]->visible = 0;
+        owner->max_level_label->visible = 0;
     }
     else if (level == 10)
     {
-        owner->mastery_values[2]->unk3f = 0;
-        owner->max_level_label->unk3f = 1;
+        owner->mastery_values[2]->visible = 0;
+        owner->max_level_label->visible = 1;
     }
     else
     {
         LibObject174F20* item = owner->mastery_values[2];
         item->numeric_value = remaining;
-        item->unk3c = 1;
-        owner->mastery_values[2]->unk3f = 1;
-        owner->max_level_label->unk3f = 0;
+        item->needs_redraw = 1;
+        owner->mastery_values[2]->visible = 1;
+        owner->max_level_label->visible = 0;
     }
 }
 
@@ -6749,18 +6750,18 @@ void func_00358200(SkillCharacterWindow* record)
     SkillCharacterEquipment* detail;
     u32 key;
     s32 value;
-    LibObject175140* name_display;
+    LibStringLabel* name_display;
     LibObject174F20* item;
 
     name_display = record->character_name;
-    name_display->unkfc = static_cast<SkillCharacterEquipment*>(record->selection->unk04)[record->selection->current].character_name;
-    name_display->unk3c = 1;
+    name_display->text = static_cast<SkillCharacterEquipment*>(record->selection->unk04)[record->selection->current].character_name;
+    name_display->needs_redraw = 1;
     detail = &static_cast<SkillCharacterEquipment*>(record->selection->unk04)[record->selection->current];
     key = detail->checksum_salt;
     value = (detail->sp_cp_checksum != (((detail->encoded_cp + key) ^ detail->encoded_sp) ^ key)) ? 0 : (detail->encoded_sp ^ 0x7E93);
     item = record->sp_value;
     item->numeric_value = value;
-    item->unk3c = 1;
+    item->needs_redraw = 1;
     if (record->selection != 0)
     {
         detail = &static_cast<SkillCharacterEquipment*>(record->selection->unk04)[record->selection->current];
@@ -6770,7 +6771,7 @@ void func_00358200(SkillCharacterWindow* record)
             value = (detail->sp_cp_checksum != (((detail->encoded_cp + key) ^ detail->encoded_sp) ^ key)) ? 0 : (detail->encoded_cp ^ 0x7E93);
             item = record->available_cp_value;
             item->numeric_value = value;
-            item->unk3c = 1;
+            item->needs_redraw = 1;
         }
     }
 }
@@ -6783,10 +6784,10 @@ void func_00358310(SkillCharacterWindow* object)
         s32 selected = 0;
         for (s32 i = 0; i < 8; i++)
         {
-            LibClass178600* icon = object->icons[i];
+            LibWidget* icon = object->icons[i];
             if (icon != 0)
             {
-                icon->unk3f = 0;
+                icon->visible = 0;
             }
         }
         for (s32 i = 0; i < 8; i++)
@@ -6797,10 +6798,10 @@ void func_00358310(SkillCharacterWindow* object)
             }
             selected++;
         }
-        LibClass178600* icon = object->icons[selected];
+        LibWidget* icon = object->icons[selected];
         if (icon != 0)
         {
-            icon->unk3f = 1;
+            icon->visible = 1;
         }
         SkillController* record = object->owner;
         if (record != 0)
@@ -6841,20 +6842,20 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
 {
     this->selection = D_001B643C->callbacks->controller->selected_records();
     FieldClass15AE70::func_slot10(associated, 216.0f, 72.0f, 16);
-    LibClass178630* panel = new (0) LibClass178630;
-    this->character_name = new (0) LibObject175140;
-    this->sp_label = new (0) LibObject178750;
-    this->level_label = new (0) LibObject178750;
-    this->mastery_label = new (0) LibObject178750;
-    this->next_level_label = new (0) LibObject178750;
+    LibPanel* panel = new (0) LibPanel;
+    this->character_name = new (0) LibStringLabel;
+    this->sp_label = new (0) LibTextWidget;
+    this->level_label = new (0) LibTextWidget;
+    this->mastery_label = new (0) LibTextWidget;
+    this->next_level_label = new (0) LibTextWidget;
     this->sp_value = new (0) LibObject174F20;
     this->mastery_values[1] = new (0) LibObject174F20;
     this->mastery_values[0] = new (0) LibObject174F20;
     this->mastery_values[2] = new (0) LibObject174F20;
-    this->max_level_label = new (0) LibObject178750;
-    this->cp_label = new (0) LibObject178750;
+    this->max_level_label = new (0) LibTextWidget;
+    this->cp_label = new (0) LibTextWidget;
     this->assigned_cp_value = new (0) LibObject174F20;
-    this->cp_separator = new (0) LibObject178750;
+    this->cp_separator = new (0) LibTextWidget;
     this->available_cp_value = new (0) LibObject174F20;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 408.0f, 104.0f, 88.0f);
     func_0035CBB0(reinterpret_cast<SkillList*>(&this->unk14), panel);
@@ -6863,70 +6864,70 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
     func_0035C5F0(reinterpret_cast<SkillList*>(&this->unk44), this->character_name);
     lib_container_attach_widget(this->unk10, this->character_name);
     this->sp_label->init_resource_rectangle(236.0f, 72.0f, 0.0f, 0.0f, associated, 0x178B, 1);
-    LibObject178750* label = this->sp_label;
-    label->unk94 = 0x806080;
-    label->unk3c = 1;
+    LibTextWidget* label = this->sp_label;
+    label->tint = 0x806080;
+    label->needs_redraw = 1;
     lib_container_attach_widget(this->unk10, this->sp_label);
     this->cached_sp = character_sp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]);
     init_numeric_display(this->sp_value, 308.0f, 72.0f, 72.0f, 24.0f, character_sp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]), associated);
     lib_container_attach_widget(this->unk10, this->sp_value);
     this->mastery_label->init_resource_rectangle(235.0f, 48.0f, 0.0f, 0.0f, associated, 0x178E, 1);
     label = this->mastery_label;
-    label->unk94 = 0x806080;
-    label->unk3c = 1;
-    this->mastery_label->unk3f = 0;
+    label->tint = 0x806080;
+    label->needs_redraw = 1;
+    this->mastery_label->visible = 0;
     lib_container_attach_widget(this->unk10, this->mastery_label);
     this->level_label->init_resource_rectangle(104.0f, 72.0f, 0.0f, 0.0f, associated, 0x178C, 1);
     label = this->level_label;
-    label->unk94 = 0x806080;
-    label->unk3c = 1;
-    this->level_label->unk3f = 0;
+    label->tint = 0x806080;
+    label->needs_redraw = 1;
+    this->level_label->visible = 0;
     lib_container_attach_widget(this->unk10, this->level_label);
     this->next_level_label->init_resource_rectangle(236.0f, 72.0f, 0.0f, 0.0f, associated, 0x178D, 1);
     label = this->next_level_label;
-    label->unk94 = 0x806080;
-    label->unk3c = 1;
-    this->next_level_label->unk3f = 0;
+    label->tint = 0x806080;
+    label->needs_redraw = 1;
+    this->next_level_label->visible = 0;
     lib_container_attach_widget(this->unk10, this->next_level_label);
     this->mastery_values[0]->init_numeric_resource_rectangle(152.0f, 72.0f, 72.0f, 24.0f, 1, associated, 0);
     lib_container_attach_widget(this->unk10, this->mastery_values[0]);
-    this->mastery_values[0]->unk3f = 0;
+    this->mastery_values[0]->visible = 0;
     this->mastery_values[1]->init_numeric_resource_rectangle(308.0f, 48.0f, 72.0f, 24.0f, 1, associated, 0);
     lib_container_attach_widget(this->unk10, this->mastery_values[1]);
-    this->mastery_values[1]->unk3f = 0;
+    this->mastery_values[1]->visible = 0;
     this->mastery_values[2]->init_numeric_resource_rectangle(308.0f, 72.0f, 72.0f, 24.0f, 10, associated, 0);
     lib_container_attach_widget(this->unk10, this->mastery_values[2]);
-    this->mastery_values[2]->unk3f = 0;
+    this->mastery_values[2]->visible = 0;
     this->max_level_label->init_resource_rectangle(332.0f, 72.0f, 72.0f, 24.0f, associated, 0x17C6, 1);
     lib_container_attach_widget(this->unk10, this->max_level_label);
-    this->max_level_label->unk3f = 0;
+    this->max_level_label->visible = 0;
     label = this->max_level_label;
-    label->unk94 = 0x508050;
-    label->unk3c = 1;
+    label->tint = 0x508050;
+    label->needs_redraw = 1;
     this->cp_label->init_resource_rectangle(104.0f, 48.0f, 0.0f, 0.0f, associated, 0x1788, 1);
     lib_container_attach_widget(this->unk10, this->cp_label);
     label = this->cp_label;
-    label->unk94 = 0x806080;
-    label->unk3c = 1;
-    this->cp_label->unk3f = 0;
+    label->tint = 0x806080;
+    label->needs_redraw = 1;
+    this->cp_label->visible = 0;
     this->assigned_cp_value->init_numeric_resource_rectangle(154.0f, 48.0f, 72.0f, 24.0f, 0, associated, 0);
     lib_container_attach_widget(this->unk10, this->assigned_cp_value);
     LibObject174F20* value = this->assigned_cp_value;
-    value->unk9c = 0;
-    value->unk3c = 1;
-    this->assigned_cp_value->unk3f = 0;
+    value->horizontal_align = 0;
+    value->needs_redraw = 1;
+    this->assigned_cp_value->visible = 0;
     this->cp_separator->init_resource_rectangle(152.0f, 48.0f, 72.0f, 24.0f, associated, 0x1789, 1);
     lib_container_attach_widget(this->unk10, this->cp_separator);
     label = this->cp_separator;
-    label->unk9c = 1;
-    label->unk3c = 1;
-    this->cp_separator->unk3f = 0;
+    label->horizontal_align = 1;
+    label->needs_redraw = 1;
+    this->cp_separator->visible = 0;
     this->available_cp_value->init_numeric_resource_rectangle(152.0f, 48.0f, 72.0f, 24.0f, character_cp(&static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current]), associated, 0);
     lib_container_attach_widget(this->unk10, this->available_cp_value);
     value = this->available_cp_value;
-    value->unk9c = 2;
-    value->unk3c = 1;
-    this->available_cp_value->unk3f = 0;
+    value->horizontal_align = 2;
+    value->needs_redraw = 1;
+    this->available_cp_value->visible = 0;
     if (this->selection->count > 1)
     {
         ItemCreationClass174C40* left = new (0) ItemCreationClass174C40;
@@ -6960,11 +6961,11 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
             if (hidden)
             {
                 hidden = 0;
-                this->icons[index]->unk3f = 0;
+                this->icons[index]->visible = 0;
             }
             else
             {
-                this->icons[index]->unk3f = 1;
+                this->icons[index]->visible = 1;
             }
             lib_container_attach_widget(this->unk10, this->icons[index]);
         }
@@ -6983,19 +6984,19 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
         owner->code = code;
     }
     func_00358310(this);
-    this->sp_label->unk3f = 0;
-    this->sp_value->unk3f = 0;
-    this->level_label->unk3f = 1;
-    this->mastery_label->unk3f = 1;
-    this->next_level_label->unk3f = 1;
-    this->mastery_values[0]->unk3f = 1;
-    this->mastery_values[1]->unk3f = 1;
-    this->mastery_values[2]->unk3f = 1;
-    this->max_level_label->unk3f = 0;
-    this->cp_label->unk3f = 1;
-    this->assigned_cp_value->unk3f = 1;
-    this->cp_separator->unk3f = 1;
-    this->available_cp_value->unk3f = 1;
+    this->sp_label->visible = 0;
+    this->sp_value->visible = 0;
+    this->level_label->visible = 1;
+    this->mastery_label->visible = 1;
+    this->next_level_label->visible = 1;
+    this->mastery_values[0]->visible = 1;
+    this->mastery_values[1]->visible = 1;
+    this->mastery_values[2]->visible = 1;
+    this->max_level_label->visible = 0;
+    this->cp_label->visible = 1;
+    this->assigned_cp_value->visible = 1;
+    this->cp_separator->visible = 1;
+    this->available_cp_value->visible = 1;
     return 1;
 }
 
@@ -7072,8 +7073,8 @@ void SkillSecondarySelection::func_slot5c()
         {
             item->unk94 = 0x288080;
             item->unk3c = 1;
-            LibBounds4C69B0* metrics = lib_text_measure_bounds(reinterpret_cast<LibObject178750*>(item));
-            func_0023B9B0(this->cursor, (s16)index, metrics->unk08);
+            LibTextExtent* metrics = lib_text_measure_bounds(reinterpret_cast<LibTextWidget*>(item));
+            func_0023B9B0(this->cursor, (s16)index, metrics->width);
         }
         else
         {
@@ -7168,18 +7169,18 @@ u8 SkillSecondarySelection::func_slotb0()
         SkillStatusSkillWindow* window = this->status_skills;
         for (s32 index = 0; index < 4; index++)
         {
-            LibClass174EF0* item = static_cast<LibClass174EF0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&window->unk2c), index)->value);
+            LibDrawWidget* item = static_cast<LibDrawWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&window->unk2c), index)->value);
             if (index == window->selection->unk114)
             {
-                item->unk94 = 0x288080;
-                item->unk3c = 1;
-                LibBounds4C69B0* metrics = lib_text_measure_bounds(reinterpret_cast<LibObject178750*>(item));
-                func_0023B9B0(window->cursor, (s16)index, metrics->unk08);
+                item->tint = 0x288080;
+                item->needs_redraw = 1;
+                LibTextExtent* metrics = lib_text_measure_bounds(reinterpret_cast<LibTextWidget*>(item));
+                func_0023B9B0(window->cursor, (s16)index, metrics->width);
             }
             else
             {
-                item->unk94 = 0x808080;
-                item->unk3c = 1;
+                item->tint = 0x808080;
+                item->needs_redraw = 1;
             }
         }
         skill_set_status_skill_visibility(this->status_skills, 1, 1);
@@ -7239,7 +7240,7 @@ u8 SkillSecondarySelection::func_slotb0()
         {
             if (query->row_count != 0)
             {
-                LibObject178660* display = query->attachment->unk10;
+                LibContainer* display = query->attachment->unk10;
                 if (display != 0)
                 {
                     display->unkab = 1;
@@ -7247,7 +7248,7 @@ u8 SkillSecondarySelection::func_slotb0()
             }
             else
             {
-                LibObject178660* display = query->attachment->unk10;
+                LibContainer* display = query->attachment->unk10;
                 if (display != 0)
                 {
                     display->unkab = 0;
@@ -7330,10 +7331,10 @@ s32 SkillSecondarySelection::func_slotf4(u32 associated)
 {
     this->FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 8);
     this->owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
-    LibClass178630* panel = new (0) LibClass178630;
-    LibObject178750* first = new (0) LibObject178750;
-    LibObject178750* second = new (0) LibObject178750;
-    LibObject178750* third = new (0) LibObject178750;
+    LibPanel* panel = new (0) LibPanel;
+    LibTextWidget* first = new (0) LibTextWidget;
+    LibTextWidget* second = new (0) LibTextWidget;
+    LibTextWidget* third = new (0) LibTextWidget;
     this->selection = new (0) FieldObject23CEA0;
     if (this->owner == 0 || panel == 0 || first == 0 || second == 0 || third == 0 || this->selection == 0)
     {
@@ -7351,8 +7352,8 @@ s32 SkillSecondarySelection::func_slotf4(u32 associated)
     func_0035C9D0(reinterpret_cast<SkillList*>(&this->unk2c), first);
     lib_container_attach_widget(this->unk10, third);
     func_0035C9D0(reinterpret_cast<SkillList*>(&this->unk2c), third);
-    second->unk94 = 0x288080;
-    second->unk3c = 1;
+    second->tint = 0x288080;
+    second->needs_redraw = 1;
     ItemCreationOptionResourceDisplay* icon_first = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* icon_second = new (0) ItemCreationOptionResourceDisplay;
     ItemCreationOptionResourceDisplay* icon_third = new (0) ItemCreationOptionResourceDisplay;
@@ -7369,9 +7370,9 @@ s32 SkillSecondarySelection::func_slotf4(u32 associated)
     lib_container_attach_widget(this->unk10, icon_first);
     lib_container_attach_widget(this->unk10, icon_second);
     lib_container_attach_widget(this->unk10, icon_third);
-    LibBounds4C69B0* metrics = lib_text_measure_bounds(first);
+    LibTextExtent* metrics = lib_text_measure_bounds(first);
     this->cursor = new (0) FieldObject23BE00;
-    this->cursor->func_0023BB20(70.0f, 13.0f, metrics->unk08, 1.0f, this->selection, 0x288080);
+    this->cursor->func_0023BB20(70.0f, 13.0f, metrics->width, 1.0f, this->selection, 0x288080);
     lib_container_attach_widget(this->unk10, this->cursor);
     func_0035C440(reinterpret_cast<SkillList*>(&this->unk8c), this->cursor);
     this->selection->func_0023CE80(1, 3);
@@ -7389,7 +7390,7 @@ SkillSecondarySelection::~SkillSecondarySelection()
 
 void SkillHelpWindow::func_slot5c()
 {
-    LibObject178750* help_text = this->help_text;
+    LibTextWidget* help_text = this->help_text;
     float x = help_text->unk18.unk00;
     float y = help_text->unk18.unk04;
     float z = help_text->unk18.unk08;
@@ -7400,7 +7401,7 @@ void SkillHelpWindow::func_slot5c()
         help_text->unk18.unk04 = y;
         help_text->unk18.unk08 = z;
         help_text->unk18.unk0c = w;
-        help_text->unk3c = 1;
+        help_text->needs_redraw = 1;
         this->scroll_delay_frames++;
         if (!((float)this->scroll_delay_frames <= 120.0f))
         {
@@ -7420,7 +7421,7 @@ void SkillHelpWindow::func_slot5c()
         help_text->unk18.unk04 = y;
         help_text->unk18.unk08 = z;
         help_text->unk18.unk0c = w;
-        help_text->unk3c = 1;
+        help_text->needs_redraw = 1;
     }
 }
 
@@ -7432,16 +7433,16 @@ void SkillHelpWindow::func_slot60(s32 key)
         this->scroll_delay_frames = 0;
         u32 source = this->func_slot54();
         lib_text_set_resource(this->help_text, source, key, 0);
-        LibBounds4C69B0* bounds = lib_text_measure_bounds(this->help_text);
-        this->text_width = (s32)bounds->unk08 + 6;
+        LibTextExtent* bounds = lib_text_measure_bounds(this->help_text);
+        this->text_width = (s32)bounds->width + 6;
     }
 }
 
 s32 SkillHelpWindow::func_slotf4(u32 associated)
 {
     this->FieldClass15AE70::func_slot10(associated, 16.0f, 16.0f, 19);
-    LibObject178750* first = new (0) LibObject178750;
-    LibObject178750* second = new (0) LibObject178750;
+    LibTextWidget* first = new (0) LibTextWidget;
+    LibTextWidget* second = new (0) LibTextWidget;
     s32 menu_kind = this->menu_kind;
     if (menu_kind == 1)
     {
@@ -7464,14 +7465,14 @@ s32 SkillHelpWindow::func_slotf4(u32 associated)
     second->set_scale(0.65f, 0.65f);
     lib_container_attach_widget(this->unk10, second);
     func_0035C9D0(reinterpret_cast<SkillList*>(&this->unk2c), second);
-    this->help_text = new (0) LibObject178750;
+    this->help_text = new (0) LibTextWidget;
     ItemCreationClass1746A0* first_frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* second_frame = new (0) ItemCreationClass1746A0;
     if (this->help_text == 0 || first_frame == 0 || second_frame == 0)
     {
         return 0;
     }
-    this->title_width = lib_text_measure_bounds(first)->unk08;
+    this->title_width = lib_text_measure_bounds(first)->width;
     this->clip_left = 18.0f + this->title_width;
     this->clip_width = 640.0f - (16.0f + shifted_position(this->clip_left, 32.0f));
     this->text_start_x = 24.0f + this->title_width;
@@ -7553,7 +7554,7 @@ void func_0035AF00(SkillController* owner, s32 code, u8 enabled)
         s32 value = (detail->sp_cp_checksum != (((detail->encoded_cp + key) ^ detail->encoded_sp) ^ key)) ? 0 : (detail->encoded_sp ^ 0x7E93);
         LibObject174F20* item = status->sp_value;
         item->numeric_value = value;
-        item->unk3c = 1;
+        item->needs_redraw = 1;
         status_detail_group(owner->status, 0);
         SkillTacticalWindow* query = owner->mode_query;
         query->active = 0;
@@ -7578,7 +7579,7 @@ void func_0035AF00(SkillController* owner, s32 code, u8 enabled)
                 value = 0;
             }
             item->numeric_value = value;
-            item->unk3c = 1;
+            item->needs_redraw = 1;
         }
         FieldRecordSelection* selection = status->selection;
         if (selection != 0)
@@ -7598,7 +7599,7 @@ void func_0035AF00(SkillController* owner, s32 code, u8 enabled)
                 }
                 LibObject174F20* item = status->available_cp_value;
                 item->numeric_value = value;
-                item->unk3c = 1;
+                item->needs_redraw = 1;
             }
         }
         status_primary_group(owner->status, 0);
@@ -7645,7 +7646,7 @@ void SkillController::func_slot5c()
     SkillStatusAttachment* attachment = this->status_attachment;
     if (attachment != 0)
     {
-        attachment->func_003EF740();
+        attachment->destroy();
     }
     s32 resource = this->resource_slot;
     if (resource != 0)
@@ -7748,10 +7749,10 @@ s32 SkillController::init_windows()
         tactical_prompt->func_slotf4(resource_slot);
         FieldClass153E30::add_child(tactical_prompt);
         tactical_prompt->func_slot40(mode_query);
-        LibObject178660* attachment = tactical_prompt->unk10;
+        LibContainer* attachment = tactical_prompt->unk10;
         if (attachment != 0)
         {
-            attachment->LibClass174610::unkab = 0;
+            attachment->LibCallbackTransform::unkab = 0;
         }
         mode_query->func_slot40(secondary);
         mode_query->func_slot48(tactical_details);
@@ -7864,11 +7865,11 @@ SkillController::SkillController()
 }
 
 /** @brief Leave the default DMA notification hook unchanged. @param value Unused notification value. */
-void LibClass171FF0::func_003EFA90(u32 value)
+void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
-void LibClass171FF0::func_003F4410(u32 value)
+void LibDmaCallbacks::on_packet_complete(u32 value)
 {
 }
 
@@ -7881,115 +7882,115 @@ void SkillCoordinateSelector::update()
 {
 }
 
-void SkillCoordinateSelector::func_003EEBE0()
+void SkillCoordinateSelector::render()
 {
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
-void LibClass178A90::func_003EF770(const LibVector4* value)
+void LibOrientedTransform::copy_translation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
-void LibClass178A90::func_003EF780(const LibVector4* value)
+void LibOrientedTransform::set_translation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
 /** @brief Set the translation coordinates and mark the transform dirty. @param x Horizontal translation. @param y Vertical translation. @param z Third translation component. */
-void LibClass178A90::func_003EF790(float x, float y, float z)
+void LibOrientedTransform::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk20.components[0] = x;
-    unk20.components[1] = y;
-    unk20.components[2] = z;
-    unk20.components[3] = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /** @brief Set all quaternion components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
-void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
+void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
-    unk30.components[0] = x;
-    unk30.components[1] = y;
-    unk30.components[2] = z;
-    unk30.components[3] = w;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
-void LibClass171EF0::func_003EEEF0(const LibVector4* value)
+void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
-void LibClass171EF0::func_003EEF10(const LibVector4* value)
+void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
-void LibClass171EF0::func_003EEF30(const LibVector4* value)
+void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&unk30, value);
+    func_4CE4C0(&orientation, value);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
-void LibClass171EF0::func_003EEF60(const LibVector4* value)
+void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&unk30, value);
+    func_4CE4C0(&orientation, value);
 }
 
 /** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
-void LibClass171EF0::func_003EEF90(float x, float y, float z)
+void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
     LibVector4 value;
-    value.components[0] = x;
-    value.components[1] = y;
-    value.components[2] = z;
-    value.components[3] = 1.0f;
-    func_4CE4C0(&unk30, &value);
+    value.x = x;
+    value.y = y;
+    value.z = z;
+    value.w = 1.0f;
+    func_4CE4C0(&orientation, &value);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
-void LibClass171EF0::func_003EEFD0(const LibVector4* value)
+void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
-void LibClass171EF0::func_003EEFF0(const LibVector4* value)
+void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Set the scale coordinates and mark the transform dirty. @param x First scale component. @param y Second scale component. @param z Third scale component. */
-void LibClass171EF0::func_003EF010(float x, float y, float z)
+void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk40.components[0] = x;
-    unk40.components[1] = y;
-    unk40.components[2] = z;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
 }
 
 /** @brief Return the default output status. @param output Unused output object. @return Zero. */
-s32 LibClass178A90::func_003EEE20(void* output)
+s32 LibTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
 
 /** @brief Test whether the supplied value is negative. @param value Value to test. @param mode Unused mode. @return One if negative, otherwise zero. */
-s32 LibClass178A90::func_003EEE30(float value, float mode)
+s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
     s32 result = 1;
     if (!(value < 0.0f))
@@ -8000,19 +8001,19 @@ s32 LibClass178A90::func_003EEE30(float value, float mode)
 }
 
 /** @brief Return the default transform vector. @return Resident vector pointer. */
-const LibVector4* LibClass178A90::func_003EFAA0()
+const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
     return &D_50CD30;
 }
 
 /** @brief Return the default transform receiver. @return Null. */
-LibClass178A90* LibClass178A90::func_003EEE50()
+LibTransformOwner* LibTransformOwner::clone()
 {
     return 0;
 }
 
 /** @brief Leave the default transform release hook unchanged. */
-void LibClass178A90::func_003EEE60()
+void LibTransformOwner::release_clone()
 {
 }
 
@@ -8392,16 +8393,16 @@ void SkillGridChoice::func_slotf4(s16 selected)
     SkillListNode* node = reinterpret_cast<SkillListNode*>(unk2c.head->next);
     while (node != 0)
     {
-        LibObject178750* item = static_cast<LibObject178750*>(node->value);
+        LibTextWidget* item = static_cast<LibTextWidget*>(node->value);
         if (index == selected)
         {
-            item->unk94 = 0x288080;
-            item->unk3c = 1;
+            item->tint = 0x288080;
+            item->needs_redraw = 1;
         }
         else
         {
-            item->unk94 = 0x808080;
-            item->unk3c = 1;
+            item->tint = 0x808080;
+            item->needs_redraw = 1;
         }
         node = node->next;
         index++;
@@ -8468,7 +8469,7 @@ u8 SkillGridChoice::func_slotb0()
 s32 SkillGridChoice::func_slot10(u32 associated, float x, float y, s32 code)
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     if (panel == 0)
     {
         return 0;
@@ -8476,9 +8477,9 @@ s32 SkillGridChoice::func_slot10(u32 associated, float x, float y, s32 code)
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 256.0f, 160.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     func_0035CBB0(reinterpret_cast<SkillList*>(&unk14), panel);
-    LibObject178750* first = new (0) LibObject178750;
-    LibObject178750* second = new (0) LibObject178750;
-    LibObject178750* title = new (0) LibObject178750;
+    LibTextWidget* first = new (0) LibTextWidget;
+    LibTextWidget* second = new (0) LibTextWidget;
+    LibTextWidget* title = new (0) LibTextWidget;
     if (first == 0 || second == 0 || title == 0)
     {
         return 0;
@@ -8544,28 +8545,28 @@ void SkillHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
 
 s32 SkillHpMpGauge::initialize(s32 code, s32 first, void* source, float x, float y, float z)
 {
-    unk6c = 0x6006;
-    LibClass171EC0::unk20.components[0] = 0.0f;
-    LibClass171EC0::unk20.components[1] = 0.0f;
-    LibClass171EC0::unk20.components[2] = 0.0f;
-    LibClass171EC0::unk20.components[3] = 1.0f;
+    type_id = 0x6006;
+    LibPositionTransform::translation.x = 0.0f;
+    LibPositionTransform::translation.y = 0.0f;
+    LibPositionTransform::translation.z = 0.0f;
+    LibPositionTransform::translation.w = 1.0f;
     func_44B110(this, code, first, source, z, 0);
     unkb4 = 0;
     unkb8 = 0;
     return 1;
 }
 
-void SkillHpMpGauge::func_003F4410(u32 value)
+void SkillHpMpGauge::on_packet_complete(u32 value)
 {
     func_4D00B0(this);
 }
 
-void SkillHpMpGauge::func_003EEBE0()
+void SkillHpMpGauge::render()
 {
     dma_pending = 1;
     if (unk08 != 0)
     {
-        resident_packet_submit(unk08, static_cast<LibClass171FF0*>(this));
+        resident_packet_submit(unk08, static_cast<LibDmaCallbacks*>(this));
     }
 }
 
@@ -8603,45 +8604,45 @@ void SkillOptionsWindow::func_slot5c()
             u32 hp = character_hp(entry);
             LibObject174F20* hp_display = hp_values[row];
             hp_display->numeric_value = hp;
-            hp_display->unk3c = 1;
+            hp_display->needs_redraw = 1;
             u32 mp = character_mp(entry);
             LibObject174F20* mp_display = mp_values[row];
             mp_display->numeric_value = mp;
-            mp_display->unk3c = 1;
+            mp_display->needs_redraw = 1;
             if (row < 3)
             {
                 u32 max_hp = character_max_hp(entry);
                 LibObject174F20* max_hp_display = max_hp_values[row];
                 max_hp_display->numeric_value = max_hp;
-                max_hp_display->unk3c = 1;
+                max_hp_display->needs_redraw = 1;
                 u32 max_mp = character_max_mp(entry);
                 LibObject174F20* max_mp_display = max_mp_values[row];
                 max_mp_display->numeric_value = max_mp;
-                max_mp_display->unk3c = 1;
+                max_mp_display->needs_redraw = 1;
             }
-            badges[row][0]->unk3f = character_flags(entry) & 2;
-            badges[row][1]->unk3f = character_flags(entry) & 8;
-            badges[row][2]->unk3f = character_flags(entry) & 4;
+            badges[row][0]->visible = character_flags(entry) & 2;
+            badges[row][1]->visible = character_flags(entry) & 8;
+            badges[row][2]->visible = character_flags(entry) & 4;
             if (character_flags(entry) & 5)
             {
-                indicators[row]->unk3f = 0;
-                badges[row][3]->unk3f = 1;
+                indicators[row]->visible = 0;
+                badges[row][3]->visible = 1;
                 if (row < 3)
                 {
-                    LibObject175140* label = labels[row];
-                    label->unk94 = 0x505080;
-                    label->unk3c = 1;
+                    LibStringLabel* label = labels[row];
+                    label->tint = 0x505080;
+                    label->needs_redraw = 1;
                 }
             }
             else
             {
-                indicators[row]->unk3f = 1;
-                badges[row][3]->unk3f = 0;
+                indicators[row]->visible = 1;
+                badges[row][3]->visible = 0;
                 if (row < 3)
                 {
-                    LibObject175140* label = labels[row];
-                    label->unk94 = 0x808080;
-                    label->unk3c = 1;
+                    LibStringLabel* label = labels[row];
+                    label->tint = 0x808080;
+                    label->needs_redraw = 1;
                 }
             }
         }
@@ -8740,18 +8741,18 @@ void SkillOptionsWindow::func_slot68()
  */
 u8 SkillOptionsWindow::func_slotb4()
 {
-    this->child->unk3f = 0;
-    this->unk10->LibClass174610::unkab = 0;
+    this->child->visible = 0;
+    this->unk10->LibCallbackTransform::unkab = 0;
     SkillListNode* node = this->nested.head->next;
     while (node != 0)
     {
-        static_cast<LibClass174610*>(node->value)->unkab = 0;
+        static_cast<LibCallbackTransform*>(node->value)->unkab = 0;
         node = node->next;
     }
     node = this->nested.head->next;
     while (node != 0)
     {
-        static_cast<LibClass174610*>(node->value)->func_0044B100(1, 1, 1);
+        static_cast<LibCallbackTransform*>(node->value)->func_0044B100(1, 1, 1);
         node = node->next;
     }
     FieldClass15AE70* window = static_cast<FieldClass15AE70*>(this->func_slot44());
@@ -8760,11 +8761,11 @@ u8 SkillOptionsWindow::func_slotb4()
     SkillSymbologyCharacterWindow* symbology_character = static_cast<SkillController*>(D_001B643C->callbacks->controller)->symbology_character;
     if (symbology_character->left_character_icon != 0)
     {
-        symbology_character->left_character_icon->unk3f = 1;
+        symbology_character->left_character_icon->visible = 1;
     }
     if (symbology_character->right_character_icon != 0)
     {
-        symbology_character->right_character_icon->unk3f = 1;
+        symbology_character->right_character_icon->visible = 1;
     }
     static_cast<FieldClass15AE70*>(D_001B643C->callbacks->controller->func_00263C90())->func_slot60(SKILL_MSG_SYMBOLOGY_ENABLE_HELP);
     return 2;
@@ -8777,13 +8778,13 @@ u32 skill_mask_character_flags(SkillCharacterStats* record, u32 flags)
     return mask_character_flags(record, flags);
 }
 
-static inline void set_widget_rectangle(LibClass178600* object, float x, float y, float width, float height)
+static inline void set_widget_rectangle(LibWidget* object, float x, float y, float width, float height)
 {
     object->unk18.unk00 = x;
     object->unk18.unk04 = y;
     object->unk18.unk08 = width;
     object->unk18.unk0c = height;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
 }
 
 /**
@@ -8838,7 +8839,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             column = row - 3;
             column_width = 118.0f;
         }
-        LibClass178630* panel = new (0) LibClass178630;
+        LibPanel* panel = new (0) LibPanel;
         panel_x = 8.0f + column_width * (float)column;
         lib_panel_init_rectangle(panel, 1, panel_x, panel_y, 3.0f + column_width, 2.0f + this->row_height, 88.0f);
         lib_container_attach_widget(this->unk10, panel);
@@ -8862,18 +8863,18 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
         {
             if (row < 3)
             {
-                this->labels[row] = new (0) LibObject175140;
+                this->labels[row] = new (0) LibStringLabel;
                 this->labels[row]->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
                     slot > 0 ? static_cast<SkillCharacterEquipment*>(this->records->unk04)[index].character_name : D_364EF8, 0);
                 lib_container_attach_widget(this->unk10, this->labels[row]);
                 this->labels[row]->set_scale(0.8f, 0.8f);
                 if (reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5)
                 {
-                    this->labels[row]->set_color(0x505080);
+                    this->labels[row]->set_tint(0x505080);
                 }
                 else
                 {
-                    this->labels[row]->set_color(0x808080);
+                    this->labels[row]->set_tint(0x808080);
                 }
             }
             this->hp_values[row] = new (0) LibObject174F20;
@@ -8896,7 +8897,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             lib_container_attach_widget(this->unk10, this->hp_values[row]);
             if (row < 3)
             {
-                LibObject178750* separator = new (0) LibObject178750;
+                LibTextWidget* separator = new (0) LibTextWidget;
                 separator->init_resource_rectangle(60.0f + value_x, hp_y, 0.0f, 0.0f, source, 0x17A2, 0);
                 separator->set_scale(0.8f, 0.8f);
                 lib_container_attach_widget(this->unk10, separator);
@@ -8922,7 +8923,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             lib_container_attach_widget(this->unk10, this->mp_values[row]);
             if (row < 3)
             {
-                LibObject178750* separator = new (0) LibObject178750;
+                LibTextWidget* separator = new (0) LibTextWidget;
                 separator->init_resource_rectangle(60.0f + value_x, value_height, 0.0f, 0.0f, source, 0x17A2, 0);
                 separator->set_scale(0.8f, 0.8f);
                 lib_container_attach_widget(this->unk10, separator);
@@ -8945,7 +8946,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
                 indicator->unk50.unk34 = 0.8f;
                 indicator->unk50.unk30 = 0.8f;
-                indicator->unk3c = 1;
+                indicator->needs_redraw = 1;
             }
             else
             {
@@ -8954,9 +8955,9 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 ItemCreationOptionResourceDisplay* indicator = this->indicators[row];
                 indicator->unk50.unk34 = 0.65f;
                 indicator->unk50.unk30 = 0.65f;
-                indicator->unk3c = 1;
+                indicator->needs_redraw = 1;
             }
-            this->indicators[row]->unk3f = 0;
+            this->indicators[row]->visible = 0;
             lib_container_attach_widget(this->unk10, this->indicators[row]);
             resource = field_get_aligned_allocation(D_001B643C->resources, 0);
             record = field_find_resource_record(D_001B643C->resources, 40);
@@ -8966,9 +8967,9 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             ItemCreationOptionResourceDisplay* badge = this->badges[row][0];
             badge->unk50.unk34 = 0.8f;
             badge->unk50.unk30 = 0.8f;
-            badge->unk3c = 1;
+            badge->needs_redraw = 1;
             this->badges[row][0]->func_002D6440(badge_x, badge_y, record);
-            this->badges[row][0]->unk3f = 0;
+            this->badges[row][0]->visible = 0;
             lib_container_attach_widget(this->unk10, this->badges[row][0]);
             record = field_find_resource_record(D_001B643C->resources, 39);
             this->badges[row][1] = new (0) ItemCreationOptionResourceDisplay;
@@ -8977,7 +8978,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             badge = this->badges[row][1];
             badge->unk50.unk34 = 0.8f;
             badge->unk50.unk30 = 0.8f;
-            badge->unk3c = 1;
+            badge->needs_redraw = 1;
             if (row < 3)
             {
                 this->badges[row][1]->func_002D6440(35.0f + badge_x, badge_y, record);
@@ -8986,7 +8987,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             {
                 this->badges[row][1]->func_002D6440(25.0f + badge_x, badge_y, record);
             }
-            this->badges[row][1]->unk3f = 0;
+            this->badges[row][1]->visible = 0;
             lib_container_attach_widget(this->unk10, this->badges[row][1]);
             record = field_find_resource_record(D_001B643C->resources, 38);
             this->badges[row][2] = new (0) ItemCreationOptionResourceDisplay;
@@ -8995,7 +8996,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             badge = this->badges[row][2];
             badge->unk50.unk34 = 0.8f;
             badge->unk50.unk30 = 0.8f;
-            badge->unk3c = 1;
+            badge->needs_redraw = 1;
             if (row < 3)
             {
                 this->badges[row][2]->func_002D6440(70.0f + badge_x, badge_y, record);
@@ -9004,7 +9005,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             {
                 this->badges[row][2]->func_002D6440(25.0f + badge_x, 30.0f + badge_y, record);
             }
-            this->badges[row][2]->unk3f = 0;
+            this->badges[row][2]->visible = 0;
             lib_container_attach_widget(this->unk10, this->badges[row][2]);
             resource = field_get_aligned_allocation(D_001B643C->resources, (u8)(slot + 0x30));
             record = field_find_resource_record(D_001B643C->resources, 4);
@@ -9017,7 +9018,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 badge = this->badges[row][3];
                 badge->unk50.unk34 = 0.8f;
                 badge->unk50.unk30 = 0.8f;
-                badge->unk3c = 1;
+                badge->needs_redraw = 1;
             }
             else
             {
@@ -9025,9 +9026,9 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 badge = this->badges[row][3];
                 badge->unk50.unk34 = 0.65f;
                 badge->unk50.unk30 = 0.65f;
-                badge->unk3c = 1;
+                badge->needs_redraw = 1;
             }
-            this->badges[row][3]->unk3f = reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5;
+            this->badges[row][3]->visible = reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5;
             lib_container_attach_widget(this->unk10, this->badges[row][3]);
             SkillHpMpGauge* gauge = new (0) SkillHpMpGauge;
             gauge->character_id = slot;
@@ -9056,14 +9057,14 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             gauge->FieldClass159A70::unk04 = this->unk10;
             lib_queue_display_object(D_001B657C, gauge);
             func_003649E0(reinterpret_cast<SkillList*>(&this->nested), gauge);
-            gauge->LibClass174610::unkab = 0;
+            gauge->LibCallbackTransform::unkab = 0;
         }
         else
         {
-            LibObject178750* empty = new (0) LibObject178750;
+            LibTextWidget* empty = new (0) LibTextWidget;
             empty->init_resource_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f, source, 0x179E, 0);
             set_widget_rectangle(empty, panel_x, (panel_y + this->row_height / 2.0f) - 9.6f, column_width, 24.0f);
-            empty->set_mode(1);
+            empty->set_horizontal_align(1);
             if (row < 3)
             {
                 empty->set_scale(0.8f, 0.8f);
@@ -9072,7 +9073,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             {
                 empty->set_scale(0.8f * 0.8f, 0.8f * 0.8f);
             }
-            empty->unk3f = 1;
+            empty->visible = 1;
             lib_container_attach_widget(this->unk10, empty);
         }
         if (row < 3)
@@ -9085,18 +9086,18 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
         }
     }
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(this->child), 0, 1);
-    this->child->unk3f = 0;
-    this->unk10->LibClass174610::unkab = 0;
+    this->child->visible = 0;
+    this->unk10->LibCallbackTransform::unkab = 0;
     SkillListNode* node = this->nested.head->next;
     while (node != 0)
     {
-        static_cast<LibClass174610*>(node->value)->unkab = 0;
+        static_cast<LibCallbackTransform*>(node->value)->unkab = 0;
         node = node->next;
     }
     node = this->nested.head->next;
     while (node != 0)
     {
-        static_cast<LibClass174610*>(node->value)->func_0044B100(1, 1, 1);
+        static_cast<LibCallbackTransform*>(node->value)->func_0044B100(1, 1, 1);
         node = node->next;
     }
     return 1;
@@ -9112,14 +9113,14 @@ void SkillOptionsWindow::func_slot0c()
     SkillListNode* node = this->nested.head->next;
     while (node != 0)
     {
-        LibClass171EA0* display = (LibClass171EA0*)node->value;
-        display->func_003EF740();
+        LibListObject* display = (LibListObject*)node->value;
+        display->destroy();
         node = node->next;
     }
     this->FieldClass15AE70::func_slot0c();
 }
 
-void SkillHpMpGauge::func_003EF740()
+void SkillHpMpGauge::destroy()
 {
     queued_for_release = 1;
     func_44B210(this);
@@ -9142,13 +9143,13 @@ void SkillSymbologyWindow::func_slot5c()
     {
         for (s32 entry = 0; entry < 30; entry++)
         {
-            LibClass178600* item = spell_labels[entry];
+            LibWidget* item = spell_labels[entry];
             float y = (float)(s32)(11.0f + item->unk18.unk04);
             item->unk18.unk04 = y;
-            item->unk3c = 1;
+            item->needs_redraw = 1;
             item = spell_icons[entry];
             item->unk18.unk04 = y;
-            item->unk3c = 1;
+            item->needs_redraw = 1;
         }
         shift -= 11;
         if (shift < 0)
@@ -9160,13 +9161,13 @@ void SkillSymbologyWindow::func_slot5c()
     {
         for (s32 entry = 0; entry < 30; entry++)
         {
-            LibClass178600* item = spell_labels[entry];
+            LibWidget* item = spell_labels[entry];
             float y = (float)(s32)(item->unk18.unk04 - 11.0f);
             item->unk18.unk04 = y;
-            item->unk3c = 1;
+            item->needs_redraw = 1;
             item = spell_icons[entry];
             item->unk18.unk04 = y;
-            item->unk3c = 1;
+            item->needs_redraw = 1;
         }
         shift += 11;
         if (shift > 0)
@@ -9176,17 +9177,17 @@ void SkillSymbologyWindow::func_slot5c()
     }
     ItemCreationClass1725D0* indicator = scroll_indicator;
     indicator->unk50 = 100.0f * (14.0f / 30.0f);
-    indicator->unk3c = 1;
+    indicator->needs_redraw = 1;
     indicator = scroll_indicator;
     indicator->unk54 = 100.0f * ((float)position / 30.0f);
-    indicator->unk3c = 1;
+    indicator->needs_redraw = 1;
     FieldRecordSelection* current = records;
     SkillCharacterStats* stats = &reinterpret_cast<SkillCharacterStats*>(current->records)[current->current];
     SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(current->unk04)[current->current];
     for (s32 entry = 0; entry < 30; entry++)
     {
-        spell_icons[entry]->unk3f = 0;
-        spell_labels[entry]->unk3f = 0;
+        spell_icons[entry]->visible = 0;
+        spell_labels[entry]->visible = 0;
     }
     s32 skill_id, mastery, result_index, remainder;
     for (s32 row = 0; row < 14; row++)
@@ -9203,8 +9204,8 @@ void SkillSymbologyWindow::func_slot5c()
         }
         else
         {
-            LibObject178750*& label = spell_labels[entry];
-            label->unk3f = 1;
+            LibTextWidget*& label = spell_labels[entry];
+            label->visible = 1;
             lib_text_set_resource(label, static_cast<s32>(static_cast<SkillController*>(D_001B643C->callbacks->controller)->get_resource_slot()),
                 skill_id + SKILL_MSG_NAME_BASE, 0);
             if (skill_id == 3 || skill_id == 18 || skill_id == 19 || skill_id == 20 || skill_id == 27)
@@ -9213,24 +9214,24 @@ void SkillSymbologyWindow::func_slot5c()
                 func_4095C0(skill_id, reinterpret_cast<FieldRecord*>(stats), equipment, &mp_cost, 0, 0, 0, 0, 0, 0, 0);
                 if ((s32)character_mp(stats) <= mp_cost)
                 {
-                    label->set_color(0x505050);
+                    label->set_tint(0x505050);
                 }
                 else
                 {
-                    label->set_color(0x808080);
+                    label->set_tint(0x808080);
                 }
             }
             else
             {
-                label->set_color(0x505050);
+                label->set_tint(0x505050);
             }
             if (skill_id == 17)
             {
-                spell_icons[entry]->unk3f = 0;
+                spell_icons[entry]->visible = 0;
             }
             else
             {
-                spell_icons[entry]->unk3f = result == 1;
+                spell_icons[entry]->visible = result == 1;
             }
             if (row == selected)
             {
@@ -9243,7 +9244,7 @@ void SkillSymbologyWindow::func_slot5c()
                     s32 colour = 0;
                     if (colour == 0)
                     {
-                        colour = spell_labels[entry]->unk94;
+                        colour = spell_labels[entry]->tint;
                     }
                     lib_marker_set_bright_color(cursor, colour);
                     func_0023B780(reinterpret_cast<FieldObject23B950*>(cursor));
@@ -9265,14 +9266,14 @@ void SkillSymbologyWindow::func_slot5c()
     if (func_408EA0(detail, character->selection->slots[character->selection->current], entry,
         &selected_skill, &selected_mastery, &symbology_level, &selected_remainder, 1) == 0 || entry == 29)
     {
-        character->symbology_level_value->unk3f = 0;
+        character->symbology_level_value->visible = 0;
     }
     else
     {
         LibObject174F20* display = character->symbology_level_value;
         display->numeric_value = symbology_level;
-        display->unk3c = 1;
-        character->symbology_level_value->unk3f = 1;
+        display->needs_redraw = 1;
+        character->symbology_level_value->visible = 1;
     }
     skill_refresh_symbology_help(owner->symbology_help, position + selected);
 }
@@ -9303,13 +9304,13 @@ s32 SkillSymbologyWindow::func_slotc4()
             offset = ((this->position - old_position) / 2) * 33;
             for (i = 0; i < 30; i++)
             {
-                LibClass178600* item = this->spell_labels[i];
+                LibWidget* item = this->spell_labels[i];
                 float y = (float)(s32)(item->unk18.unk04 - (float)offset);
                 item->unk18.unk04 = y;
-                item->unk3c = 1;
+                item->needs_redraw = 1;
                 item = this->spell_icons[i];
                 item->unk18.unk04 = y;
-                item->unk3c = 1;
+                item->needs_redraw = 1;
             }
         }
     }
@@ -9343,13 +9344,13 @@ s32 SkillSymbologyWindow::func_slotc0()
             offset = ((this->position - old_position) / 2) * 33;
             for (i = 0; i < 30; i++)
             {
-                LibClass178600* item = this->spell_labels[i];
+                LibWidget* item = this->spell_labels[i];
                 float y = (float)(s32)(item->unk18.unk04 - (float)offset);
                 item->unk18.unk04 = y;
-                item->unk3c = 1;
+                item->needs_redraw = 1;
                 item = this->spell_icons[i];
                 item->unk18.unk04 = y;
-                item->unk3c = 1;
+                item->needs_redraw = 1;
             }
         }
     }
@@ -9654,25 +9655,25 @@ u8 SkillSymbologyWindow::func_slotb0()
     SkillSymbologyCharacterWindow* symbology_character = static_cast<SkillController*>(D_001B643C->callbacks->controller)->symbology_character;
     if (symbology_character->left_character_icon != 0)
     {
-        symbology_character->left_character_icon->unk3f = 0;
+        symbology_character->left_character_icon->visible = 0;
     }
     if (symbology_character->right_character_icon != 0)
     {
-        symbology_character->right_character_icon->unk3f = 0;
+        symbology_character->right_character_icon->visible = 0;
     }
     SkillOptionsWindow* options = static_cast<SkillOptionsWindow*>(this->func_slot4c());
-    options->child->unk3f = 1;
-    options->unk10->LibClass174610::unkab = 1;
+    options->child->visible = 1;
+    options->unk10->LibCallbackTransform::unkab = 1;
     SkillListNode* node = options->nested.head->next;
     while (node != 0)
     {
-        static_cast<LibClass174610*>(node->value)->unkab = 1;
+        static_cast<LibCallbackTransform*>(node->value)->unkab = 1;
         node = node->next;
     }
     node = options->nested.head->next;
     while (node != 0)
     {
-        static_cast<LibClass174610*>(node->value)->func_0044B100(1, 1, 1);
+        static_cast<LibCallbackTransform*>(node->value)->func_0044B100(1, 1, 1);
         node = node->next;
     }
     s32 option_index = result_index;
@@ -9698,7 +9699,7 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
         return 0;
     }
     FieldClass15AE70::func_slot10(associated, 16.0f, 216.0f, 16);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 264.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     ItemCreationClass1746A0* clip_begin = new (0) ItemCreationClass1746A0;
@@ -9709,14 +9710,14 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
     void* icon_resource = field_get_aligned_allocation(resources, 0);
     for (s32 entry = 0; entry < 30; entry++)
     {
-        spell_labels[entry] = new (0) LibObject178750;
+        spell_labels[entry] = new (0) LibTextWidget;
         float y = 22.0f + 33.0f * (float)(entry / 2);
         float x = 62.0f + 256.0f * (float)(entry % 2);
         spell_labels[entry]->init_resource_rectangle(x, y, 0.0f, 0.0f, static_cast<s32>(associated), SKILL_MSG_NAME_BASE + entry + 1, 0);
-        LibObject178750* label = spell_labels[entry];
+        LibTextWidget* label = spell_labels[entry];
         label->unk88 = -1.0f;
-        label->unk3c = 1;
-        spell_labels[entry]->unk3f = 0;
+        label->needs_redraw = 1;
+        spell_labels[entry]->visible = 0;
         lib_container_attach_widget(unk10, spell_labels[entry]);
         spell_icons[entry] = new (0) ItemCreationOptionResourceDisplay;
         spell_icons[entry]->unkcc = icon_resource;
@@ -9725,8 +9726,8 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
         ItemCreationOptionResourceDisplay* icon = spell_icons[entry];
         icon->unk50.unk34 = 0.85f;
         icon->unk50.unk30 = 0.85f;
-        icon->unk3c = 1;
-        spell_icons[entry]->unk3f = 0;
+        icon->needs_redraw = 1;
+        spell_icons[entry]->visible = 0;
         lib_container_attach_widget(unk10, spell_icons[entry]);
     }
     lib_scissor_init_reset(clip_end, 1);
@@ -9778,24 +9779,24 @@ void skill_refresh_symbology_help(SkillSymbologyHelpWindow* object, s32 selected
     if (func_408EA0(equipment, object->selection->slots[object->selection->current], selected_index,
                    &skill_id, &mastery, &result_index, &remainder, 1) == 0 || selected_index == 29)
     {
-        object->description->unk3f = 0;
-        object->mastery_value->unk3f = 0;
-        object->mp_cost_value->unk3f = 0;
+        object->description->visible = 0;
+        object->mastery_value->visible = 0;
+        object->mp_cost_value->visible = 0;
         return;
     }
-    object->description->unk3f = 1;
+    object->description->visible = 1;
     lib_multiline_text_set_resource(object->description, object->func_slot54(), SKILL_MSG_SKILL_DESCRIPTION_BASE + skill_id, 8, 1);
     s32 mastery_value = abs(mastery);
     LibObject174F20* mastery_display = object->mastery_value;
     mastery_display->numeric_value = mastery_value - 1;
-    mastery_display->unk3c = 1;
+    mastery_display->needs_redraw = 1;
     s32 mp_cost = 0;
     func_4095C0(skill_id, record, equipment, &mp_cost, 0, 0, 0, 0, 0, 0, 0);
     LibObject174F20* cost_display = object->mp_cost_value;
     cost_display->numeric_value = mp_cost;
-    cost_display->unk3c = 1;
-    object->mastery_value->unk3f = 1;
-    object->mp_cost_value->unk3f = 1;
+    cost_display->needs_redraw = 1;
+    object->mastery_value->visible = 1;
+    object->mp_cost_value->visible = 1;
 }
 
 /**
@@ -9809,11 +9810,11 @@ s32 SkillSymbologyHelpWindow::func_slotf4(u32 associated)
     selection = owner->selected_records();
     FieldClass15AE70::func_slot10(associated, 232.0f, 88.0f, 17);
     description = new (0) LibObject174D90;
-    mastery_label = new (0) LibObject178750;
+    mastery_label = new (0) LibTextWidget;
     mastery_value = new (0) LibObject174F20;
-    mp_cost_label = new (0) LibObject178750;
+    mp_cost_label = new (0) LibTextWidget;
     mp_cost_value = new (0) LibObject174F20;
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 392.0f, 128.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     lib_multiline_text_init_resource_rectangle(description, 50.0f, 16.0f, 330.0f, 80.0f, static_cast<s32>(associated), SKILL_MSG_BLANK, 0, 0);
@@ -9824,12 +9825,12 @@ s32 SkillSymbologyHelpWindow::func_slotf4(u32 associated)
     lib_numeric_widget_init_rectangle(mastery_value, 9999, 0, 0, 144.0f, 96.0f, 70.0f, 24.0f);
     mp_cost_label->init_resource_rectangle(220.0f, 100.0f, 0.0f, 0.0f, static_cast<s32>(associated), SKILL_MSG_MP_EXPENDITURE, 0);
     lib_numeric_widget_init_rectangle(mp_cost_value, 9999, 0, 0, 308.0f, 96.0f, 70.0f, 24.0f);
-    mastery_value->unk3f = 0;
-    mp_cost_value->unk3f = 0;
-    LibObject178750* label = mastery_label;
-    label->set_color(0x806080);
+    mastery_value->visible = 0;
+    mp_cost_value->visible = 0;
+    LibTextWidget* label = mastery_label;
+    label->set_tint(0x806080);
     label = mp_cost_label;
-    label->set_color(0x806080);
+    label->set_tint(0x806080);
     lib_container_attach_widget(unk10, description);
     lib_container_attach_widget(unk10, mastery_label);
     lib_container_attach_widget(unk10, mastery_value);
@@ -9858,8 +9859,8 @@ void SkillSymbologyCharacterWindow::func_slot5c()
     u32 value = character_mp(record);
     LibObject174F20* display = this->mp_value;
     display->numeric_value = value;
-    display->unk3c = 1;
-    this->mp_value->unk3f = 1;
+    display->needs_redraw = 1;
+    this->mp_value->visible = 1;
 }
 
 s32 skill_cycle_symbology_character(SkillSymbologyCharacterWindow* object, s32 forward)
@@ -9870,14 +9871,14 @@ s32 skill_cycle_symbology_character(SkillSymbologyCharacterWindow* object, s32 f
     }
     object->selection->active = 0;
     func_0028E2B0(object->selection, forward);
-    LibObject175140* text = object->character_name;
-    text->unkfc = static_cast<SkillCharacterEquipment*>(object->selection->unk04)[object->selection->current].character_name;
-    text->unk3c = 1;
+    LibStringLabel* text = object->character_name;
+    text->text = static_cast<SkillCharacterEquipment*>(object->selection->unk04)[object->selection->current].character_name;
+    text->needs_redraw = 1;
     SkillCharacterStats* record = &reinterpret_cast<SkillCharacterStats*>(object->selection->records)[object->selection->current];
     u32 value = character_mp(record);
     LibObject174F20* display = object->mp_value;
     display->numeric_value = value;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
     skill_refresh_symbology_character_markers(object);
     return 4;
 }
@@ -9898,8 +9899,8 @@ void skill_refresh_symbology_character_markers(SkillSymbologyCharacterWindow* ob
         {
             if ((u16)object->selection->slots[(s16)slot] != 0)
             {
-                object->character_markers[slot].available->unk3f = 0;
-                object->character_markers[slot].unavailable->unk3f = 0;
+                object->character_markers[slot].available->visible = 0;
+                object->character_markers[slot].unavailable->visible = 0;
             }
         }
         for (s32 slot = 0; slot < 8; slot++)
@@ -9913,17 +9914,17 @@ void skill_refresh_symbology_character_markers(SkillSymbologyCharacterWindow* ob
         SkillCharacterStats* record = &reinterpret_cast<SkillCharacterStats*>(object->selection->records)[object->selection->current];
         if (character_flags(record) & 5)
         {
-            object->character_markers[marker].available->unk3f = 0;
-            object->character_markers[marker].unavailable->unk3f = 1;
+            object->character_markers[marker].available->visible = 0;
+            object->character_markers[marker].unavailable->visible = 1;
         }
         else
         {
-            object->character_markers[marker].available->unk3f = 1;
-            object->character_markers[marker].unavailable->unk3f = 0;
+            object->character_markers[marker].available->visible = 1;
+            object->character_markers[marker].unavailable->visible = 0;
         }
-        object->condition_markers[0]->unk3f = character_flags(record) & 2;
-        object->condition_markers[1]->unk3f = character_flags(record) & 8;
-        object->condition_markers[2]->unk3f = character_flags(record) & 4;
+        object->condition_markers[0]->visible = character_flags(record) & 2;
+        object->condition_markers[1]->visible = character_flags(record) & 8;
+        object->condition_markers[2]->visible = character_flags(record) & 4;
     }
 }
 
@@ -9941,40 +9942,40 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
         return 0;
     }
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 16);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 256.0f, 136.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     func_0035CBB0(reinterpret_cast<SkillList*>(&unk14), panel);
 
-    character_name = new (0) LibObject175140;
+    character_name = new (0) LibStringLabel;
     character_name->func_00467AD0(36.0f, 20.0f, 0.0f, 0.0f,
         static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current].character_name, 0);
     character_name->set_scale(0.9f, 0.9f);
     lib_container_attach_widget(unk10, character_name);
 
-    symbology_level_label = new (0) LibObject178750;
+    symbology_level_label = new (0) LibTextWidget;
     symbology_level_label->init_resource_rectangle(125.0f, 70.0f, 0.0f, 0.0f, static_cast<s32>(associated), SKILL_MSG_SYMBOLOGY_LEVEL, 0);
     symbology_level_label->set_scale(1.0f, 1.0f);
-    symbology_level_label->set_color(0x806080);
+    symbology_level_label->set_tint(0x806080);
     lib_container_attach_widget(unk10, symbology_level_label);
 
     symbology_level_value = new (0) LibObject174F20;
     lib_numeric_widget_init_rectangle(symbology_level_value, 0, 0, 0, 156.0f, 70.0f, 70.0f, 24.0f);
     symbology_level_value->set_scale(1.0f, 1.0f);
-    symbology_level_value->unk3f = 0;
+    symbology_level_value->visible = 0;
     lib_container_attach_widget(unk10, symbology_level_value);
 
-    mp_label = new (0) LibObject178750;
+    mp_label = new (0) LibTextWidget;
     mp_label->init_resource_rectangle(125.0f, 100.0f, 0.0f, 0.0f, static_cast<s32>(associated), SKILL_MSG_MP, 0);
     mp_label->set_scale(1.0f, 1.0f);
-    mp_label->set_color(0x806080);
+    mp_label->set_tint(0x806080);
     lib_container_attach_widget(unk10, mp_label);
 
     mp_value = new (0) LibObject174F20;
     SkillCharacterStats* record = &reinterpret_cast<SkillCharacterStats*>(selection->records)[selection->current];
     lib_numeric_widget_init_rectangle(mp_value, character_mp(record), 0, 0, 156.0f, 100.0f, 70.0f, 24.0f);
     mp_value->set_scale(1.0f, 1.0f);
-    mp_value->unk3f = 0;
+    mp_value->visible = 0;
     lib_container_attach_widget(unk10, mp_value);
 
     void* marker_resource;
@@ -9992,7 +9993,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
             character_markers[slot].available->unkcc = marker_resource;
             character_markers[slot].available->unkd0 = character;
             character_markers[slot].available->func_002D6440(36.0f, 46.0f, marker_record);
-            character_markers[slot].available->unk3f = 0;
+            character_markers[slot].available->visible = 0;
             lib_container_attach_widget(unk10, character_markers[slot].available);
 
             marker_resource = field_get_aligned_allocation(D_001B643C->resources, static_cast<u8>(character + 48));
@@ -10001,18 +10002,18 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
             character_markers[slot].unavailable->unkcc = marker_resource;
             character_markers[slot].unavailable->unkd0 = 0;
             character_markers[slot].unavailable->func_002D6440(36.0f, 46.0f, marker_record);
-            character_markers[slot].unavailable->unk3f = 0;
+            character_markers[slot].unavailable->visible = 0;
             lib_container_attach_widget(unk10, character_markers[slot].unavailable);
             if (first_character)
             {
                 first_character = false;
-                character_markers[slot].available->unk3f = 0;
-                character_markers[slot].unavailable->unk3f = 0;
+                character_markers[slot].available->visible = 0;
+                character_markers[slot].unavailable->visible = 0;
             }
             else
             {
-                character_markers[slot].available->unk3f = 1;
-                character_markers[slot].unavailable->unk3f = 1;
+                character_markers[slot].available->visible = 1;
+                character_markers[slot].unavailable->visible = 1;
             }
         }
     }
@@ -10025,9 +10026,9 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     ItemCreationOptionResourceDisplay* marker0 = condition_markers[0];
     marker0->unk50.unk34 = 0.8f;
     marker0->unk50.unk30 = 0.8f;
-    marker0->unk3c = 1;
+    marker0->needs_redraw = 1;
     condition_markers[0]->func_002D6440(125.0f, 42.0f, condition_record);
-    condition_markers[0]->unk3f = 0;
+    condition_markers[0]->visible = 0;
     lib_container_attach_widget(unk10, condition_markers[0]);
 
     condition_record = field_find_resource_record(D_001B643C->resources, 39);
@@ -10037,9 +10038,9 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     ItemCreationOptionResourceDisplay* marker1 = condition_markers[1];
     marker1->unk50.unk34 = 0.8f;
     marker1->unk50.unk30 = 0.8f;
-    marker1->unk3c = 1;
+    marker1->needs_redraw = 1;
     condition_markers[1]->func_002D6440(157.0f, 42.0f, condition_record);
-    condition_markers[1]->unk3f = 0;
+    condition_markers[1]->visible = 0;
     lib_container_attach_widget(unk10, condition_markers[1]);
 
     condition_record = field_find_resource_record(D_001B643C->resources, 38);
@@ -10049,9 +10050,9 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     ItemCreationOptionResourceDisplay* marker2 = condition_markers[2];
     marker2->unk50.unk34 = 0.8f;
     marker2->unk50.unk30 = 0.8f;
-    marker2->unk3c = 1;
+    marker2->needs_redraw = 1;
     condition_markers[2]->func_002D6440(189.0f, 42.0f, condition_record);
-    condition_markers[2]->unk3f = 0;
+    condition_markers[2]->visible = 0;
     lib_container_attach_widget(unk10, condition_markers[2]);
 
     if (selection->count > 1)
@@ -10104,9 +10105,9 @@ s32 SkillHpMpGauge::get_default_list_kind()
     return 14;
 }
 
-void SkillHpMpGauge::func_003F4420()
+void SkillHpMpGauge::set_default_draw_bucket()
 {
-    unk60 = unka8;
+    draw_bucket = unka8;
 }
 
 SkillOptionsWindow::~SkillOptionsWindow()

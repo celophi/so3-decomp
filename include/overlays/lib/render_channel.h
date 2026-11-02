@@ -7,7 +7,7 @@
 class LibTransform;
 
 /** Intrusive rendering channel with packet and indexed-entry hooks. */
-class LibRenderChannel : public LibClass171E90
+class LibRenderChannel : public LibListSentinel
 {
 public:
     /** @brief Clear the links and initial channel state. */

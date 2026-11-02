@@ -167,7 +167,7 @@ struct FieldScriptCursorU32
 struct FieldCommandList8
 {
     u8 unk00[4];
-    LibClass178DD0* list;
+    LibUpdateList* list;
 };
 struct FieldContext14Commands
 {
@@ -547,13 +547,13 @@ FieldClass1504F0::FieldClass1504F0()
     }
     D_001B6430->context->unk64->unk48 = this;
     D_001B6430->context->unkde_3 = 1;
-    unk18 = new (0) LibObject178660(24.0f, 368.0f, 0.0f);
+    unk18 = new (0) LibContainer(24.0f, 368.0f, 0.0f);
     if (!unk18)
     {
         return;
     }
     lib_queue_display_object(D_001B657C, unk18);
-    unk1c = new(0) LibClass178630;
+    unk1c = new(0) LibPanel;
     if (!unk1c)
     {
         return;
@@ -566,7 +566,7 @@ FieldClass1504F0::FieldClass1504F0()
     lib_container_attach_widget(unk18, unk1c);
     for (s32 i = 0; i < 2; i++)
     {
-        unk24[i] = new(0) LibClass178630;
+        unk24[i] = new(0) LibPanel;
         if (unk24[i])
         {
             if (lib_panel_init_rectangle(unk24[i], 0, 0.0f, 20.0f, i == 0 ? 132.0f : 120.0f, 40.0f, 88.0f))
@@ -580,7 +580,7 @@ FieldClass1504F0::FieldClass1504F0()
     if (data)
     {
         unk3c = lib_load_resource_slot(D_001B657C, (void*)(((u32)data + 127) & ~127));
-        unk20 = new(0) LibObject178750;
+        unk20 = new(0) LibTextWidget;
         if (unk20 && lib_text_init_resource_rectangle(unk20, unk3c, 1, 0, 16.0f, 56.0f, 352.0f, 48.0f))
         {
             lib_container_attach_widget(unk18, unk20);
@@ -595,10 +595,10 @@ FieldClass1504F0::FieldClass1504F0()
 }
 
 // Deleting destructor; needs recovered classes and global state.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", __dt__14LibClass174610Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", __dt__20LibCallbackTransformFv);
 
 // Deleting destructor; needs recovered classes.
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", __dt__14LibClass178A70Fv);
+INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", __dt__15LibListReceiverFv);
 
 void func_001EDE60(FieldVectorState50* state, const FieldQword* input)
 {
@@ -1165,7 +1165,7 @@ extern "C" s32 func_001EF150(FieldClass150060* head, FieldClass151510* actor, u3
  * @param kind Shape flag selector.
  * @return Whether a new overlapping entry dispatched a command.
  */
-extern "C" bool func_001EF4A0(LibClass178DD0* list, FieldClass151510* actor, u8 kind)
+extern "C" bool func_001EF4A0(LibUpdateList* list, FieldClass151510* actor, u8 kind)
 {
     FieldClass1505B0* current = reinterpret_cast<FieldClass1505B0*>(list);
     bool result = false;
@@ -1223,9 +1223,9 @@ FieldClass1505F0::~FieldClass1505F0()
 /** @brief Remove and queue shapes associated with the script's current owner word. */
 extern "C" s32 func_001EF6C0(FieldScriptCursorU32* cursor)
 {
-    LibClass178DD0* list;
+    LibUpdateList* list;
     void* owner = (void*)*cursor->current;
-    list = (LibClass178DD0*)D_001B6430->context->unk3c;
+    list = (LibUpdateList*)D_001B6430->context->unk3c;
     LibListNode* node;
     LibListNode* next = ((LibListNode*)list)->next;
     for (;;)
@@ -1270,7 +1270,7 @@ extern "C" s32 func_001EFA20(FieldScriptCursorU32* cursor)
     u32 word38 = *cursor->current++;
     word34 = *cursor->current;
     FieldClass150570* shape = new FieldClass150570(owner, position, dimensions, flags, word38, word34);
-    LibClass178DD0* list = (LibClass178DD0*)D_001B6430->context->unk3c;
+    LibUpdateList* list = (LibUpdateList*)D_001B6430->context->unk3c;
     list->append_node(shape, -1);
     return 1;
 }
@@ -1302,7 +1302,7 @@ extern "C" s32 func_001EFC80(FieldScriptCursorU32* cursor)
     word38 = *cursor->current++;
     word34 = *cursor->current;
     FieldClass150550* shape = new FieldClass150550(owner, position, dimensions, word38, word34, mask, flags);
-    LibClass178DD0* list = (LibClass178DD0*)D_001B6430->context->unk3c;
+    LibUpdateList* list = (LibUpdateList*)D_001B6430->context->unk3c;
     list->append_node(shape, -1);
     return 1;
 }
@@ -1328,7 +1328,7 @@ extern "C" s32 func_001EFEC0(FieldScriptCursorU32* cursor)
     u32 word38 = *cursor->current++;
     word34 = *cursor->current;
     FieldClass150530* shape = new FieldClass150530(owner, position, dimensions, flags, word38, word34);
-    LibClass178DD0* list = (LibClass178DD0*)D_001B6430->context->unk3c;
+    LibUpdateList* list = (LibUpdateList*)D_001B6430->context->unk3c;
     list->append_node(shape, -1);
     return 1;
 }
@@ -2182,7 +2182,7 @@ extern "C" s32 func_001F2B00(FieldScriptCursorU32* cursor)
     FieldClass152220* loader = new FieldClass152220;
     func_0021F530(loader, key);
     FieldResourceLoaderList* manager = (FieldResourceLoaderList*)D_001B6430->context->unk30;
-    LibClass178DD0& list = *manager;
+    LibUpdateList& list = *manager;
     list.append_node(loader, -1);
     return 1;
 }
@@ -2659,7 +2659,7 @@ extern "C" s32 func_001F7EE0(FieldScriptCursorU32* cursor)
         }
     }
     actor->func_00205710(&position);
-    ((LibClass178DD0*)D_001B6430->context->unk04)->append_node(actor, -1);
+    ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
     return 1;
 }
 
@@ -2680,7 +2680,7 @@ extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
         FieldClass155580* actor = new FieldClass155580;
         actor->unk70 = key;
         actor->func_0024D1C0(name);
-        ((LibClass178DD0*)D_001B6430->context->unk04)->append_node(actor, -1);
+        ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
         return 1;
     }
     cursor->unk14 = 1.0f;
@@ -2714,7 +2714,7 @@ extern "C" s32 func_001F8230(FieldScriptCursorU32* cursor)
             cursor->unk14 = 1.0f;
             return 1;
         }
-        ((LibClass178DD0*)D_001B6430->context->unk04)->append_node(actor, -1);
+        ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
     }
     else
     {
@@ -2751,7 +2751,7 @@ extern "C" s32 func_001F83A0(FieldScriptCursorU32* cursor, u32 count)
         {
             actor->unk334_2 = 1;
         }
-        ((LibClass178DD0*)D_001B6430->context->unk04)->append_node(actor, -1);
+        ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
         return 1;
     }
     cursor->unk14 = 1.0f;
@@ -2828,7 +2828,7 @@ extern "C" s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* act
     }
     actor->func_00205710(&position);
     func_00227610(actor, heading, 0.0f);
-    ((LibClass178DD0*)D_001B6430->context->unk04)->append_node(actor, -1);
+    ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
     return 1;
 }
 

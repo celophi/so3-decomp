@@ -517,7 +517,7 @@ struct StatusNameSection
 /** Typed display payload and forward link in a status list. */
 struct StatusDisplayNode
 {
-    LibClass178600* value;
+    LibWidget* value;
     StatusDisplayNode* next;
 };
 
@@ -660,13 +660,13 @@ static inline s32 status_battle_skill_index(StatusCharacterEquipment* record, s3
  * @param width Caption width.
  * @param height Caption height.
  */
-static inline void set_status_record_rectangle(LibObject178750* target, float x, float y, float width, float height)
+static inline void set_status_record_rectangle(LibTextWidget* target, float x, float y, float width, float height)
 {
     target->unk18.unk00 = x;
     target->unk18.unk04 = y;
     target->unk18.unk08 = width;
     target->unk18.unk0c = height;
-    target->unk3c = 1;
+    target->needs_redraw = 1;
 }
 
 /**
@@ -682,11 +682,11 @@ static inline void initialize_status_resource(ItemCreationOptionResourceDisplay*
 }
 
 /** @brief Set widget coordinates and request refresh. @param widget Display widget. @param x Horizontal coordinate. @param y Vertical coordinate. */
-static inline void set_status_widget_position(LibClass178600* widget, float x, float y)
+static inline void set_status_widget_position(LibWidget* widget, float x, float y)
 {
     widget->unk18.unk00 = x;
     widget->unk18.unk04 = y;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 /** @brief Move each non-null display by the current scroll delta. @param list Display list to move. @param object Window supplying the delta. */
@@ -697,7 +697,7 @@ static inline void move_status_display_list(List* list, StatusCharacterWindow* o
 
     while (node != 0)
     {
-        LibClass178600* widget = static_cast<LibClass178600*>(node->value);
+        LibWidget* widget = static_cast<LibWidget*>(node->value);
 
         if (widget != 0)
         {
@@ -714,7 +714,7 @@ static inline void set_status_resource_scale(LibClass175110* display, float x, f
 {
     display->unk50.unk34 = y;
     display->unk50.unk30 = x;
-    display->unk3c = 1;
+    display->needs_redraw = 1;
 }
 
 /** @brief Align a resource descriptor to 128 bytes. @param buffer Raw resource buffer. @return Aligned resource descriptor. */
@@ -736,10 +736,10 @@ static inline void close_status_selection(StatusNameWindow* object)
 }
 
 /** @brief Set vertical glyph spacing and request refresh. @param label Text widget. @param value Vertical spacing. */
-static inline void set_label_spacing_y(LibObject178750* label, float value)
+static inline void set_label_spacing_y(LibTextWidget* label, float value)
 {
     label->unk8c = value;
-    label->unk3c = 1;
+    label->needs_redraw = 1;
 }
 
 /** @brief Get the current character record. @param selection Current record selection. @return Selected character record. */
@@ -770,7 +770,7 @@ static inline StatusCharacterEquipment* status_equipment(FieldRecordSelection* s
 static inline void status_set_numeric(LibObject174F20* widget, u32 value)
 {
     widget->numeric_value = value;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 /** @brief Find a one-based item allocation. @param index Signed allocation ID. @return Allocation record, or null outside one through three thousand. */
@@ -792,28 +792,28 @@ static inline void status_set_item(LibObject172410* widget, u16 item, u8 modific
 {
     widget->unkfc = item;
     widget->unkfe = modification;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 /** @brief Set text spacing and mark the widget dirty. @param widget Text widget. @param spacing Character spacing. */
-static inline void status_set_spacing(LibClass174EF0* widget, float spacing)
+static inline void status_set_spacing(LibDrawWidget* widget, float spacing)
 {
     widget->unk88 = spacing;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 /** @brief Set a divider color and mark the widget dirty. @param widget Divider widget. @param color Packed color. */
 static inline void status_set_marker_color(ItemCreationClass172870* widget, u32 color)
 {
     widget->unk50 = color;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 /** @brief Set the item display flag and mark the widget dirty. @param widget Item widget. @param flag Display flag. */
 static inline void status_set_item_flag(LibObject172410* widget, u8 flag)
 {
     widget->unkfa = flag;
-    widget->unk3c = 1;
+    widget->needs_redraw = 1;
 }
 
 /** @brief Find a stat row position. @param origin First row position. @param row Row index. @return Row position. */
@@ -897,7 +897,7 @@ u32 FieldClass15AE70::func_slot54()
 }
 
 /** @brief Read the inherited window container. @return Stored value. */
-LibObject178660* FieldClass15AE70::func_slot58()
+LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }
@@ -1221,25 +1221,25 @@ void status_refresh_name_markers(StatusNameWindow* object)
     for (s32 i = object->first_name_marker; i < object->first_name_marker + 7; ++i)
     {
         StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, i));
-        LibClass178600* marker = node->value;
-        marker->unk3f = 0;
+        LibWidget* marker = node->value;
+        marker->visible = 0;
 
         if (i == object->first_name_marker + object->selected_name_glyph)
         {
-            marker->unk3f = 1;
+            marker->visible = 1;
         }
     }
 
     if (object->selected_name_glyph >= 6)
     {
         StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, object->first_name_marker + 6));
-        node->value->unk3f = 1;
+        node->value->visible = 1;
     }
 
     if (object->selected_name_glyph <= 0)
     {
         StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, object->first_name_marker));
-        node->value->unk3f = 1;
+        node->value->visible = 1;
     }
 }
 
@@ -1249,17 +1249,17 @@ void status_refresh_name_glyphs(StatusNameWindow* object)
 
     if (empty == 0)
     {
-        LibObject175140* text = object->name_text;
-        text->unkfc = reinterpret_cast<const char*>(object->name_bytes);
-        text->unk3c = 1;
-        object->name_text->unk3f = 0;
+        LibStringLabel* text = object->name_text;
+        text->text = reinterpret_cast<const char*>(object->name_bytes);
+        text->needs_redraw = 1;
+        object->name_text->visible = 0;
     }
 
     status_decode_name_glyphs(object);
 
     for (s32 i = 0; i < 7; ++i)
     {
-        object->name_glyph_widgets[i]->unk3f = 0;
+        object->name_glyph_widgets[i]->visible = 0;
     }
 
     for (s32 i = 0; i < 7; ++i)
@@ -1270,13 +1270,13 @@ void status_refresh_name_glyphs(StatusNameWindow* object)
         {
             u32 source = object->func_slot54();
             lib_text_set_resource(object->name_glyph_widgets[i], source, key, 0);
-            object->name_glyph_widgets[i]->unk3f = 1;
+            object->name_glyph_widgets[i]->visible = 1;
         }
         else
         {
             u32 source = object->func_slot54();
             lib_text_set_resource(object->name_glyph_widgets[i], source, STATUS_TEXT_BLANK, 0);
-            object->name_glyph_widgets[i]->unk3f = 1;
+            object->name_glyph_widgets[i]->visible = 1;
         }
     }
 }
@@ -1431,8 +1431,8 @@ extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mod
     for (s32 i = 0; i < STATUS_NAME_GRID_LABEL_COUNT; ++i)
     {
         StatusDisplayNode* node = static_cast<StatusDisplayNode*>(status_list_node_at(&object->unk2c, i));
-        LibClass178600* display = node->value;
-        display->unk3f = 0;
+        LibWidget* display = node->value;
+        display->visible = 0;
 
         switch (object->grid_mode)
         {
@@ -1442,7 +1442,7 @@ extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mod
             case STATUS_NAME_GRID_HIRAGANA_MAIN:
             case STATUS_NAME_GRID_HIRAGANA_TAIL:
             case STATUS_NAME_GRID_HIRAGANA_DIACRITICS:
-                display->unk3f = 1;
+                display->visible = 1;
                 break;
             }
 
@@ -1451,11 +1451,11 @@ extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mod
             switch (i)
             {
             case STATUS_NAME_GRID_KATAKANA_MAIN:
-                display->unk3f = 1;
+                display->visible = 1;
                 break;
             case STATUS_NAME_GRID_KATAKANA_TAIL:
             case STATUS_NAME_GRID_KATAKANA_SPACE:
-                display->unk3f = 0;
+                display->visible = 0;
                 break;
             }
 
@@ -1469,11 +1469,11 @@ extern "C" void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mod
             case STATUS_NAME_GRID_LETTERS_RIGHT:
             case STATUS_NAME_GRID_SYMBOLS_LEFT:
             case STATUS_NAME_GRID_SYMBOLS_RIGHT:
-                display->unk3f = 1;
+                display->visible = 1;
 
                 if (object->alphabet_symbol_grid != 0)
                 {
-                    object->alphabet_symbol_grid->unk3f = 1;
+                    object->alphabet_symbol_grid->visible = 1;
                 }
 
                 break;
@@ -1500,12 +1500,12 @@ void StatusNameWindow::func_slot5c()
             this->selected_name_glyph = 6;
         }
 
-        LibClass178600* name_cursor = this->name_cursor;
+        LibWidget* name_cursor = this->name_cursor;
         float cursor_x = this->name_x + 36.0f * this->selected_name_glyph;
         float cursor_y = this->name_y;
         name_cursor->unk18.unk00 = cursor_x;
         name_cursor->unk18.unk04 = cursor_y;
-        name_cursor->unk3c = 1;
+        name_cursor->needs_redraw = 1;
     }
 }
 
@@ -1812,13 +1812,13 @@ s32 StatusNameWindow::func_slotf4(void* associated)
     selection = D_001B643C->callbacks->status_receiver->selected_records();
     selected_character_id = selection->slots[selection->current];
     FieldClass15AE70::func_slot10(reinterpret_cast<u32>(associated), 16.0f, 72.0f, 16);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 110.0f, 608.0f, 268.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
 
     for (s32 index = 0; index < STATUS_NAME_GRID_LABEL_COUNT; index++)
     {
-        LibObject178750* label = new (0) LibObject178750;
+        LibTextWidget* label = new (0) LibTextWidget;
 
         if (label == 0)
         {
@@ -1844,54 +1844,54 @@ s32 StatusNameWindow::func_slotf4(void* associated)
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_KATAKANA_GRID, 0, 184.0f, 118.0f, 0.0f, 0.0f);
             status_set_spacing(label, 10.0f);
             set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         case STATUS_NAME_GRID_KATAKANA_TAIL:
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_KATAKANA_GRID_TAIL, 0, 406.0f, 230.0f, 0.0f, 0.0f);
             status_set_spacing(label, 44.0f);
             set_label_spacing_y(label, 32.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         case STATUS_NAME_GRID_KATAKANA_SPACE:
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_KATAKANA_GRID_SPACE, 0, 406.0f, 314.0f, 0.0f, 0.0f);
             status_set_spacing(label, 112.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         case STATUS_NAME_GRID_DIGITS_LEFT:
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_DIGIT_GRID_LEFT, 0, 184.0f, 118.0f, 0.0f, 0.0f);
             status_set_spacing(label, 22.0f);
             set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         case STATUS_NAME_GRID_DIGITS_RIGHT:
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_DIGIT_GRID_RIGHT, 0, 406.0f, 118.0f, 0.0f, 0.0f);
             status_set_spacing(label, 22.0f);
             set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         case STATUS_NAME_GRID_LETTERS_LEFT:
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_LETTER_GRID_LEFT, 0, 184.0f, 146.0f, 0.0f, 0.0f);
             status_set_spacing(label, 18.0f);
             set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         case STATUS_NAME_GRID_LETTERS_RIGHT:
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_LETTER_GRID_RIGHT, 0, 406.0f, 146.0f, 0.0f, 0.0f);
             status_set_spacing(label, 18.0f);
             set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         case STATUS_NAME_GRID_SYMBOLS_LEFT:
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_SYMBOL_GRID_LEFT, 0, 184.0f, 230.0f, 0.0f, 0.0f);
             status_set_spacing(label, 26.0f);
             set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         case STATUS_NAME_GRID_SYMBOLS_RIGHT:
             lib_text_init_resource_rectangle(label, reinterpret_cast<s32>(associated), STATUS_TEXT_SYMBOL_GRID_RIGHT, 0, 406.0f, 230.0f, 0.0f, 0.0f);
             status_set_spacing(label, 26.0f);
             set_label_spacing_y(label, 4.0f);
-            label->unk3f = 0;
+            label->visible = 0;
             break;
         }
 
@@ -1909,10 +1909,10 @@ s32 StatusNameWindow::func_slotf4(void* associated)
         }
     }
 
-    alphabet_symbol_grid = new (0) LibObject178750;
+    alphabet_symbol_grid = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(alphabet_symbol_grid, reinterpret_cast<s32>(associated), STATUS_TEXT_ALPHABET_SYMBOL_GRID, 0, 184.0f, 146.0f, 0.0f, 0.0f);
     set_label_spacing_y(alphabet_symbol_grid, 4.0f);
-    alphabet_symbol_grid->unk3f = 0;
+    alphabet_symbol_grid->visible = 0;
     lib_container_attach_widget(unk10, alphabet_symbol_grid);
     command_x = 32.0f;
     row_height = 28.0f;
@@ -1921,10 +1921,10 @@ s32 StatusNameWindow::func_slotf4(void* associated)
 
     for (s32 index = 0; index < 6; index++)
     {
-        command_labels[index] = new (0) LibObject178750;
+        command_labels[index] = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(command_labels[index], reinterpret_cast<s32>(associated), index + STATUS_TEXT_HIRAGANA, 1,
                                          command_x, 9.0f + (110.0f + row_height * index), 0.0f, 0.0f);
-        LibObject178750* label = command_labels[index];
+        LibTextWidget* label = command_labels[index];
         label->set_scale(glyph_scale, glyph_scale);
         lib_container_attach_widget(unk10, command_labels[index]);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), command_labels[index]);
@@ -1935,15 +1935,15 @@ s32 StatusNameWindow::func_slotf4(void* associated)
         }
     }
 
-    command_labels[6] = new (0) LibObject178750;
+    command_labels[6] = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(command_labels[6], reinterpret_cast<s32>(associated), STATUS_TEXT_CONFIRM, 1, command_x, 334.0f, 0.0f, 0.0f);
     command_labels[6]->set_scale(0.9f, 0.9f);
     lib_container_attach_widget(unk10, command_labels[6]);
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), command_labels[6]);
-    panel = new (0) LibClass178630;
+    panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 110.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
-    surname_caption = new (0) LibObject178750;
+    surname_caption = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(surname_caption, reinterpret_cast<s32>(associated), selection->slots[selection->current] + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0,
                                      404.0f, 43.0f, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, surname_caption);
@@ -1951,7 +1951,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
 
     for (s32 index = 0; index < 7; index++)
     {
-        LibObject178750* marker = new (0) LibObject178750;
+        LibTextWidget* marker = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(marker, reinterpret_cast<s32>(associated), STATUS_TEXT_NAME_UNDERLINE, 0,
                                          (152.0f + 36.0f * index) - 2.0f, 57.0f, 0.0f, 0.0f);
         if (first_name_marker == 0)
@@ -1961,21 +1961,21 @@ s32 StatusNameWindow::func_slotf4(void* associated)
 
         lib_container_attach_widget(unk10, marker);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), marker);
-        marker->set_color(0x288080);
+        marker->set_tint(0x288080);
         marker->set_scale(1.2f, 1.2f);
-        marker->unk80 = 3.6f;
-        marker->unk3c = 1;
+        marker->draw_scale = 3.6f;
+        marker->needs_redraw = 1;
     }
 
     for (s32 index = 0; index < 7; index++)
     {
-        LibObject178750* marker = new (0) LibObject178750;
+        LibTextWidget* marker = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(marker, reinterpret_cast<s32>(associated), STATUS_TEXT_NAME_SHADOW, 0, 152.0f + 36.0f * index, 59.0f, 0.0f, 0.0f);
-        marker->unk80 = 1.8f;
-        marker->unk3c = 1;
+        marker->draw_scale = 1.8f;
+        marker->needs_redraw = 1;
         lib_container_attach_widget(unk10, marker);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), marker);
-        marker->set_color(0x505050);
+        marker->set_tint(0x505050);
     }
 
     name_x = 152.0f;
@@ -1983,14 +1983,14 @@ s32 StatusNameWindow::func_slotf4(void* associated)
 
     for (s32 index = 0; index < 7; index++)
     {
-        name_glyph_widgets[index] = new (0) LibObject178750;
+        name_glyph_widgets[index] = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(name_glyph_widgets[index], reinterpret_cast<s32>(associated), STATUS_TEXT_BLANK, 0, name_x + 36.0f * index, name_y, 0.0f, 0.0f);
         lib_container_attach_widget(unk10, name_glyph_widgets[index]);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&unk2c), name_glyph_widgets[index]);
-        name_glyph_widgets[index]->unk3f = 0;
+        name_glyph_widgets[index]->visible = 0;
     }
 
-    name_text = new (0) LibObject175140;
+    name_text = new (0) LibStringLabel;
     const char* name = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name;
     name_text->func_00467AD0(name_x, name_y, 0.0f, 0.0f, name, 0);
     lib_container_attach_widget(unk10, name_text);
@@ -2146,7 +2146,7 @@ void status_update_scroll(StatusCharacterWindow* object)
 
         LibClass1725D0* marker = object->scroll_marker;
         marker->unk54 = object->scroll_position;
-        marker->unk3c = 1;
+        marker->needs_redraw = 1;
     }
 }
 
@@ -2200,9 +2200,9 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
     s8 current = selection->current;
     lib_character_recalculate_stats(&reinterpret_cast<StatusCharacterRecord*>(selection->records)[current],
                  &static_cast<StatusCharacterEquipment*>(selection->unk04)[current], 0, -1);
-    LibObject175140* record = object->character_name_widget;
-    record->unkfc = status_equipment(object->selection)->character_name;
-    record->unk3c = 1;
+    LibStringLabel* record = object->character_name_widget;
+    record->text = status_equipment(object->selection)->character_name;
+    record->needs_redraw = 1;
     status_set_numeric(object->hp_value, status_character(object->selection)->get_hp());
     status_set_numeric(object->max_hp_value, status_character(object->selection)->get_max_hp());
     status_set_numeric(object->mp_value, status_character(object->selection)->get_mp());
@@ -2223,13 +2223,13 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
             delete experience;
         }
 
-        object->next_level_experience_value->unk3f = 1;
-        object->max_level_caption->unk3f = 0;
+        object->next_level_experience_value->visible = 1;
+        object->max_level_caption->visible = 0;
     }
     else
     {
-        object->next_level_experience_value->unk3f = 0;
-        object->max_level_caption->unk3f = 1;
+        object->next_level_experience_value->visible = 0;
+        object->max_level_caption->visible = 1;
     }
 
     status_set_numeric(object->attack_value, status_character(object->selection)->get_attack());
@@ -2244,8 +2244,8 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
 
         if (identifier == 0)
         {
-            object->equipment_values[index]->unk3f = 0;
-            object->empty_equipment_captions[index]->unk3f = 1;
+            object->equipment_values[index]->visible = 0;
+            object->empty_equipment_captions[index]->visible = 1;
         }
         else
         {
@@ -2253,24 +2253,24 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
 
             if (allocation == 0)
             {
-                object->equipment_values[index]->unk3f = 0;
-                object->empty_equipment_captions[index]->unk3f = 1;
+                object->equipment_values[index]->visible = 0;
+                object->empty_equipment_captions[index]->visible = 1;
             }
             else
             {
                 u16 item = allocation->definition_index();
                 u8 modification = allocation->modification_number;
                 status_set_item(object->equipment_values[index], item + 1, modification);
-                object->equipment_values[index]->unk3f = 1;
-                object->empty_equipment_captions[index]->unk3f = 0;
+                object->equipment_values[index]->visible = 1;
+                object->empty_equipment_captions[index]->visible = 0;
             }
         }
     }
 
     object->selected_slot = object->selection->slots[object->selection->current];
-    LibBounds4C69B0* name_bounds = func_00467950(object->character_name_widget);
-    LibBounds4C69B0* surname_bounds = lib_text_measure_bounds(object->surname_caption);
-    set_status_record_rectangle(object->surname_caption, object->name_x + name_bounds->unk08, object->name_y, surname_bounds->unk08, 24.0f);
+    LibTextExtent* name_bounds = func_00467950(object->character_name_widget);
+    LibTextExtent* surname_bounds = lib_text_measure_bounds(object->surname_caption);
+    set_status_record_rectangle(object->surname_caption, object->name_x + name_bounds->width, object->name_y, surname_bounds->width, 24.0f);
     lib_text_set_resource(object->surname_caption, object->func_slot54(), object->selected_slot + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0);
     status_refresh_portrait(object);
     status_refresh_battle_skill_keys(object);
@@ -2293,18 +2293,18 @@ extern "C" void status_refresh_character_display(StatusCharacterWindow* object)
 
 void StatusCharacterWindow::func_slot64()
 {
-    LibObject175140* character_name_widget = this->character_name_widget;
-    character_name_widget->unkfc = static_cast<StatusCharacterEquipment*>(this->selection->unk04)[this->selection->current].character_name;
-    character_name_widget->unk3c = 1;
+    LibStringLabel* character_name_widget = this->character_name_widget;
+    character_name_widget->text = static_cast<StatusCharacterEquipment*>(this->selection->unk04)[this->selection->current].character_name;
+    character_name_widget->needs_redraw = 1;
     this->selected_slot = this->selection->slots[this->selection->current];
-    LibBounds4C69B0* name_bounds = func_00467950(this->character_name_widget);
+    LibTextExtent* name_bounds = func_00467950(this->character_name_widget);
     u32 source = this->func_slot54();
     lib_text_set_resource(this->surname_caption, source, this->selected_slot + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0);
-    LibBounds4C69B0* surname_bounds = lib_text_measure_bounds(this->surname_caption);
-    set_status_record_rectangle(this->surname_caption, this->name_x + name_bounds->unk08,
-                                this->name_y, surname_bounds->unk08, 24.0f);
-    this->name_entry_hint->unk3f = 1;
-    this->name_divider->unk3f = 1;
+    LibTextExtent* surname_bounds = lib_text_measure_bounds(this->surname_caption);
+    set_status_record_rectangle(this->surname_caption, this->name_x + name_bounds->width,
+                                this->name_y, surname_bounds->width, 24.0f);
+    this->name_entry_hint->visible = 1;
+    this->name_divider->visible = 1;
     this->unk10->unkab = 1;
 }
 
@@ -2328,7 +2328,7 @@ void StatusCharacterWindow::func_slot5c()
         }
         else
         {
-            this->portrait->unk3f = 1;
+            this->portrait->visible = 1;
             lib_text_set_resource(this->color_setup_hint, this->func_slot54(), STATUS_TEXT_COLOR_SETUP_HINT, 0);
         }
 
@@ -2486,7 +2486,7 @@ u8 StatusCharacterWindow::func_slotb8()
     }
 
     status_create_character_model(this);
-    this->portrait->unk3f = 0;
+    this->portrait->visible = 0;
     lib_text_set_resource(this->color_setup_hint, this->func_slot54(), STATUS_TEXT_COLOR_CHANGE_HINT, 0);
     return 1;
 }
@@ -2634,22 +2634,22 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
 
     selected_slot = selection->slots[selection->current];
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 14);
-    container = new (0) LibObject178660;
+    container = new (0) LibContainer;
     lib_container_init(container, 0, 16.0f, 72.0f, 9, 0.0f, 0x898);
     lib_queue_display_object(D_001B657C, container);
-    LibClass178630* panel = new (0) LibClass178630;
+    LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 392.0f, 88.0f);
     lib_container_attach_widget(container, panel);
     name_x = 12.0f;
     name_y = 12.0f;
-    character_name_widget = new (0) LibObject175140;
-    surname_caption = new (0) LibObject178750;
+    character_name_widget = new (0) LibStringLabel;
+    surname_caption = new (0) LibTextWidget;
     name_divider = new (0) ItemCreationClass172870;
     character_name_widget->func_00467AD0(name_x, name_y, 0.0f, 0.0f, status_equipment(selection)->character_name, 0);
     lib_container_attach_widget(unk10, character_name_widget);
     status_append_name_widget(reinterpret_cast<StatusWidgetList*>(&unk44), character_name_widget);
-    LibBounds4C69B0* bounds = func_00467950(character_name_widget);
-    lib_text_init_resource_rectangle(surname_caption, associated, selected_slot + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0, name_x + bounds->unk08, name_y, 0.0f, 0.0f);
+    LibTextExtent* bounds = func_00467950(character_name_widget);
+    lib_text_init_resource_rectangle(surname_caption, associated, selected_slot + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0, name_x + bounds->width, name_y, 0.0f, 0.0f);
     status_set_spacing(surname_caption, -1.0f);
     lib_container_attach_widget(unk10, surname_caption);
     lib_text_measure_bounds(surname_caption);
@@ -2660,12 +2660,12 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
 
     if (selection->count > 1)
     {
-        LibObject178750* hint = new (0) LibObject178750;
+        LibTextWidget* hint = new (0) LibTextWidget;
         hint->init_resource_rectangle(384.0f, name_y, 0.0f, 0.0f, associated, STATUS_TEXT_MEMBER_HINT, 0);
         lib_container_attach_widget(unk10, hint);
     }
 
-    name_entry_hint = new (0) LibObject178750;
+    name_entry_hint = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(name_entry_hint, associated, STATUS_TEXT_NAME_HINT, 0, 520.0f, name_y, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, name_entry_hint);
     ItemCreationClass1746A0* scissor = new (0) ItemCreationClass1746A0;
@@ -2712,7 +2712,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
 
     if (variant > 0)
     {
-        color_setup_hint = new (0) LibObject178750;
+        color_setup_hint = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(color_setup_hint, associated, STATUS_TEXT_COLOR_SETUP_HINT, 0, 467.0f, 350.0f, 0.0f, 0.0f);
         lib_container_attach_widget(unk10, color_setup_hint);
     }
@@ -2736,7 +2736,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     level_value = new (0) LibObject174F20;
     experience_value = new (0) LibObject174F20;
     next_level_experience_value = new (0) LibObject174F20;
-    max_level_caption = new (0) LibObject178750;
+    max_level_caption = new (0) LibTextWidget;
     attack_value = new (0) LibObject174F20;
     defense_value = new (0) LibObject174F20;
     agility_value = new (0) LibObject174F20;
@@ -2745,26 +2745,26 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     sp_value = new (0) LibObject174F20;
     assigned_cp_value = new (0) LibObject174F20;
     cp_value = new (0) LibObject174F20;
-    skills_label = new (0) LibObject178750;
-    sp_label = new (0) LibObject178750;
-    cp_label = new (0) LibObject178750;
-    cp_separator = new (0) LibObject178750;
-    short_minor_attack_button = new (0) LibObject178750;
-    short_minor_attack_label = new (0) LibObject178750;
-    long_minor_attack_button = new (0) LibObject178750;
-    long_minor_attack_label = new (0) LibObject178750;
-    short_major_attack_button = new (0) LibObject178750;
-    short_major_attack_label = new (0) LibObject178750;
-    long_major_attack_button = new (0) LibObject178750;
-    long_major_attack_label = new (0) LibObject178750;
-    support_skill_1_label = new (0) LibObject178750;
-    support_skill_1_caption = new (0) LibObject178750;
-    support_skill_2_label = new (0) LibObject178750;
-    support_skill_2_caption = new (0) LibObject178750;
-    short_minor_attack_skill_caption = new (0) LibObject178750;
-    long_minor_attack_skill_caption = new (0) LibObject178750;
-    short_major_attack_skill_caption = new (0) LibObject178750;
-    long_major_attack_skill_caption = new (0) LibObject178750;
+    skills_label = new (0) LibTextWidget;
+    sp_label = new (0) LibTextWidget;
+    cp_label = new (0) LibTextWidget;
+    cp_separator = new (0) LibTextWidget;
+    short_minor_attack_button = new (0) LibTextWidget;
+    short_minor_attack_label = new (0) LibTextWidget;
+    long_minor_attack_button = new (0) LibTextWidget;
+    long_minor_attack_label = new (0) LibTextWidget;
+    short_major_attack_button = new (0) LibTextWidget;
+    short_major_attack_label = new (0) LibTextWidget;
+    long_major_attack_button = new (0) LibTextWidget;
+    long_major_attack_label = new (0) LibTextWidget;
+    support_skill_1_label = new (0) LibTextWidget;
+    support_skill_1_caption = new (0) LibTextWidget;
+    support_skill_2_label = new (0) LibTextWidget;
+    support_skill_2_caption = new (0) LibTextWidget;
+    short_minor_attack_skill_caption = new (0) LibTextWidget;
+    long_minor_attack_skill_caption = new (0) LibTextWidget;
+    short_major_attack_skill_caption = new (0) LibTextWidget;
+    long_major_attack_skill_caption = new (0) LibTextWidget;
     status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), hp_value);
     status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), max_hp_value);
     status_append_numeric_widget(reinterpret_cast<StatusWidgetList*>(&numeric_widgets), mp_value);
@@ -2803,9 +2803,9 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
 
     for (s32 index = 0; index <= 4; index++)
     {
-        LibObject178750* label = new (0) LibObject178750;
+        LibTextWidget* label = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(label, associated, STATUS_TEXT_HP + index, 1, 16.0f, base_y + 24.0f * static_cast<float>(index), 0.0f, 0.0f);
-        label->set_color(0x806080);
+        label->set_tint(0x806080);
         label->set_scale(0.85f, 0.85f);
         lib_container_attach_widget(unk10, label);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), label);
@@ -2858,15 +2858,15 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
 
     lib_text_init_resource_rectangle(max_level_caption, associated, STATUS_TEXT_MAX_LEVEL, 0, 158.0f, next_y, 0.0f, 0.0f);
     max_level_caption->set_scale(0.9f, 0.9f);
-    max_level_caption->set_color(0x508050);
+    max_level_caption->set_tint(0x508050);
     lib_container_attach_widget(unk10, max_level_caption);
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), max_level_caption);
 
     for (s32 index = 0; index < 2; index++)
     {
-        LibObject178750* separator = new (0) LibObject178750;
+        LibTextWidget* separator = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(separator, associated, STATUS_TEXT_SLASH, 0, 128.0f, base_y + 24.0f * static_cast<float>(index), 0.0f, 0.0f);
-        separator->set_color(0x806080);
+        separator->set_tint(0x806080);
         separator->set_scale(0.85f, 0.85f);
         lib_container_attach_widget(unk10, separator);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), separator);
@@ -2874,7 +2874,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
 
     for (s32 key = STATUS_TEXT_ATTACK; key <= STATUS_TEXT_ACCESSORY_2; key++)
     {
-        LibObject178750* label = new (0) LibObject178750;
+        LibTextWidget* label = new (0) LibTextWidget;
 
         if (label == 0)
         {
@@ -2900,7 +2900,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
             break;
         }
 
-        label->set_color(0x806080);
+        label->set_tint(0x806080);
         lib_container_attach_widget(unk10, label);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), label);
     }
@@ -2928,7 +2928,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     for (s32 index = 0; index < 4; index++)
     {
         equipment_values[index] = new (0) LibObject172410;
-        empty_equipment_captions[index] = new (0) LibObject178750;
+        empty_equipment_captions[index] = new (0) LibTextWidget;
         status_append_item_widget(reinterpret_cast<StatusWidgetList*>(&item_widgets), equipment_values[index]);
         status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&text_widgets), empty_equipment_captions[index]);
     }
@@ -2948,15 +2948,15 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     status_refresh_battle_skill_keys(this);
     float lower_y = 392.0f + base_y;
     lib_text_init_resource_rectangle(skills_label, associated, STATUS_TEXT_SKILLS, 1, 16.0f, lower_y, 0.0f, 0.0f);
-    skills_label->set_color(0x806080);
+    skills_label->set_tint(0x806080);
     skills_label->set_scale(0.85f, 0.85f);
     lib_container_attach_widget(unk10, skills_label);
     lib_text_init_resource_rectangle(sp_label, associated, STATUS_TEXT_SP, 1, 16.0f, lower_y + 24.0f, 0.0f, 0.0f);
-    sp_label->set_color(0x806080);
+    sp_label->set_tint(0x806080);
     sp_label->set_scale(0.85f, 0.85f);
     lib_container_attach_widget(unk10, sp_label);
     lib_text_init_resource_rectangle(cp_label, associated, STATUS_TEXT_CP, 1, 16.0f, lower_y + 48.0f, 0.0f, 0.0f);
-    cp_label->set_color(0x806080);
+    cp_label->set_tint(0x806080);
     cp_label->set_scale(0.85f, 0.85f);
     lib_container_attach_widget(unk10, cp_label);
     sp_value->init_numeric_resource_rectangle(158.0f, lower_y + 24.0f, 48.0f, 24.0f, 8888, 0, 0);
@@ -2977,9 +2977,9 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     short_minor_attack_button->set_scale(0.8f, 0.8f);
     lib_container_attach_widget(unk10, short_minor_attack_button);
     short_minor_attack_label->set_scale(0.8f, 0.8f);
-    short_minor_attack_label->set_color(0x806080);
-    short_minor_attack_label->set_mode(0);
-    short_minor_attack_label->set_vertical_alignment(1);
+    short_minor_attack_label->set_tint(0x806080);
+    short_minor_attack_label->set_horizontal_align(0);
+    short_minor_attack_label->set_vertical_align(1);
     lib_container_attach_widget(unk10, short_minor_attack_label);
     short_minor_attack_skill_caption->set_scale(0.9f, 0.9f);
     status_set_spacing(short_minor_attack_skill_caption, -1.0f);
@@ -2990,9 +2990,9 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     long_minor_attack_button->set_scale(0.8f, 0.8f);
     lib_container_attach_widget(unk10, long_minor_attack_button);
     long_minor_attack_label->set_scale(0.8f, 0.8f);
-    long_minor_attack_label->set_color(0x806080);
-    long_minor_attack_label->set_mode(0);
-    long_minor_attack_label->set_vertical_alignment(1);
+    long_minor_attack_label->set_tint(0x806080);
+    long_minor_attack_label->set_horizontal_align(0);
+    long_minor_attack_label->set_vertical_align(1);
     lib_container_attach_widget(unk10, long_minor_attack_label);
     long_minor_attack_skill_caption->set_scale(0.9f, 0.9f);
     status_set_spacing(long_minor_attack_skill_caption, -1.0f);
@@ -3003,9 +3003,9 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     short_major_attack_button->set_scale(0.8f, 0.8f);
     lib_container_attach_widget(unk10, short_major_attack_button);
     short_major_attack_label->set_scale(0.8f, 0.8f);
-    short_major_attack_label->set_color(0x806080);
-    short_major_attack_label->set_mode(0);
-    short_major_attack_label->set_vertical_alignment(1);
+    short_major_attack_label->set_tint(0x806080);
+    short_major_attack_label->set_horizontal_align(0);
+    short_major_attack_label->set_vertical_align(1);
     lib_container_attach_widget(unk10, short_major_attack_label);
     short_major_attack_skill_caption->set_scale(0.9f, 0.9f);
     status_set_spacing(short_major_attack_skill_caption, -1.0f);
@@ -3016,27 +3016,27 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     long_major_attack_button->set_scale(0.8f, 0.8f);
     lib_container_attach_widget(unk10, long_major_attack_button);
     long_major_attack_label->set_scale(0.8f, 0.8f);
-    long_major_attack_label->set_color(0x806080);
-    long_major_attack_label->set_mode(0);
-    long_major_attack_label->set_vertical_alignment(1);
+    long_major_attack_label->set_tint(0x806080);
+    long_major_attack_label->set_horizontal_align(0);
+    long_major_attack_label->set_vertical_align(1);
     lib_container_attach_widget(unk10, long_major_attack_label);
     long_major_attack_skill_caption->set_scale(0.9f, 0.9f);
     status_set_spacing(long_major_attack_skill_caption, -1.0f);
     lib_container_attach_widget(unk10, long_major_attack_skill_caption);
     lib_text_init_resource_rectangle(support_skill_1_label, associated, STATUS_TEXT_SUPPORT_1, 1, 16.0f, 708.0f, 96.0f, 24.0f);
     support_skill_1_label->set_scale(0.8f, 0.8f);
-    support_skill_1_label->set_color(0x806080);
-    support_skill_1_label->set_mode(0);
-    support_skill_1_label->set_vertical_alignment(1);
+    support_skill_1_label->set_tint(0x806080);
+    support_skill_1_label->set_horizontal_align(0);
+    support_skill_1_label->set_vertical_align(1);
     lib_container_attach_widget(unk10, support_skill_1_label);
     support_skill_1_caption->init_resource_rectangle(124.0f, 708.0f, 0.0f, 0.0f, associated, battle_skill_caption_keys[4], 0);
     support_skill_1_caption->set_scale(0.9f, 0.9f);
     lib_container_attach_widget(unk10, support_skill_1_caption);
     lib_text_init_resource_rectangle(support_skill_2_label, associated, STATUS_TEXT_SUPPORT_2, 1, 16.0f, 746.0f, 96.0f, 24.0f);
     support_skill_2_label->set_scale(0.8f, 0.8f);
-    support_skill_2_label->set_color(0x806080);
-    support_skill_2_label->set_mode(0);
-    support_skill_2_label->set_vertical_alignment(1);
+    support_skill_2_label->set_tint(0x806080);
+    support_skill_2_label->set_horizontal_align(0);
+    support_skill_2_label->set_vertical_align(1);
     lib_container_attach_widget(unk10, support_skill_2_label);
     support_skill_2_caption->init_resource_rectangle(124.0f, 746.0f, 0.0f, 0.0f, associated, battle_skill_caption_keys[5], 0);
     support_skill_2_caption->set_scale(0.9f, 0.9f);
@@ -3050,13 +3050,13 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     return 1;
 }
 
-LibClass178A70::~LibClass178A70()
+LibListReceiver::~LibListReceiver()
 {
 }
 
 void StatusCharacterWindow::func_slot0c()
 {
-    container->func_003EF740();
+    container->destroy();
     FieldClass15AE70::func_slot0c();
 }
 
@@ -3155,7 +3155,7 @@ StatusCharacterWindow::StatusCharacterWindow()
 void StatusHelpWindow::func_slot5c()
 {
     StatusHelpWindow* object = this;
-    LibObject178750* target = object->help_caption;
+    LibTextWidget* target = object->help_caption;
     float x = target->unk18.unk00;
     float y = target->unk18.unk04;
     float width = target->unk18.unk08;
@@ -3198,7 +3198,7 @@ void StatusHelpWindow::func_slot60(s32 key)
         object->hold_timer = 0;
         object->scroll_active = 0;
         lib_text_set_resource(object->help_caption, object->func_slot54(), key, 1);
-        object->scroll_distance = (s32)lib_text_measure_bounds(object->help_caption)->unk08 + 6;
+        object->scroll_distance = (s32)lib_text_measure_bounds(object->help_caption)->width + 6;
     }
 }
 
@@ -3211,16 +3211,16 @@ s32 StatusHelpWindow::func_slotf4(u32 associated)
 {
     StatusHelpWindow* object = this;
     object->FieldClass15AE70::func_slot14(associated, 0, 9, 1400, 16.0f, 16.0f, 0.0f);
-    LibObject178750* label = new (0) LibObject178750;
+    LibTextWidget* label = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(label, static_cast<s32>(associated), STATUS_TEXT_HEADING, 0, 16.0f, 6.0f, 0.0f, 0.0f);
     lib_container_attach_widget(object->unk10, label);
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&object->unk2c), label);
-    LibObject178750* caption = new (0) LibObject178750;
+    LibTextWidget* caption = new (0) LibTextWidget;
     lib_text_init_resource_rectangle(caption, static_cast<s32>(associated), STATUS_TEXT_STATUS, 0, 36.0f, 40.0f, 0.0f, 0.0f);
     caption->set_scale(0.65f, 0.65f);
     lib_container_attach_widget(object->unk10, caption);
     status_append_text_widget(reinterpret_cast<StatusWidgetList*>(&object->unk2c), caption);
-    object->help_caption = new (0) LibObject178750;
+    object->help_caption = new (0) LibTextWidget;
     LibClass1746A0* frame = new (0) LibClass1746A0;
     LibClass1746A0* background = new (0) LibClass1746A0;
 
@@ -3229,7 +3229,7 @@ s32 StatusHelpWindow::func_slotf4(u32 associated)
         return 0;
     }
 
-    object->heading_width = lib_text_measure_bounds(label)->unk08;
+    object->heading_width = lib_text_measure_bounds(label)->width;
     object->clip_x = 18.0f + object->heading_width;
     float frame_padding = 32.0f;
     object->clip_width = 640.0f - (16.0f + (object->clip_x + frame_padding));

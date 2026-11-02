@@ -191,7 +191,7 @@ public:
 };
 
 /** Field-context transform with secondary field storage, using table 0x175070. */
-class FieldClass175070 : public LibClass174610, public FieldClass151C50
+class FieldClass175070 : public LibCallbackTransform, public FieldClass151C50
 {
 public:
     /** @brief Initialize the Field transform and its drawing code. */
@@ -199,7 +199,7 @@ public:
     /** @brief Destroy the field storage and transform bases. */
     virtual ~FieldClass175070();
     /** @brief Prepare the field transform after notification. @param value Notification word. */
-    virtual void func_003F4410(u32 value);
+    virtual void on_packet_complete(u32 value);
 };
 
 /** Partial field grid interface using MAIN table 0x153290. */

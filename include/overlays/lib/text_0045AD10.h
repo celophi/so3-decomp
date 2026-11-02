@@ -8,13 +8,13 @@ typedef struct N54Owner64_0045AD10 N54Owner64_0045AD10;
 
 struct FieldShapeRecord20;
 
-typedef struct LibClass174EF0 LibClass174EF0;
+typedef struct LibDrawWidget LibDrawWidget;
 typedef struct LibObject174D90 LibObject174D90;
 typedef struct LibObject174F20 LibObject174F20;
 typedef struct LibObject172410 LibObject172410;
 typedef struct LibObject172440 LibObject172440;
-typedef struct LibObject175140 LibObject175140;
-typedef struct LibBounds4C69B0 LibBounds4C69B0;
+typedef struct LibStringLabel LibStringLabel;
+typedef struct LibTextExtent LibTextExtent;
 #ifndef __cplusplus
 typedef struct ItemCreationClass175030 LibClass175030;
 #endif
@@ -43,13 +43,13 @@ public:
  */
 extern "C" s32 lib_allocate_drawing_storage(LibStorageBlock0C* storage, s32 word_count);
 
-/** Partial 0xFC-byte drawing widget, with MAIN vtable D_174EF0. */
-struct LibClass174EF0 : public LibClass178600
+/** Partial 0xFC-byte drawing widget, with vtable D_174EF0 in main data. */
+struct LibDrawWidget : public LibWidget
 {
     /** @brief Initialize the drawing widget. */
-    LibClass174EF0();
+    LibDrawWidget();
     /** @brief Destroy the drawing widget. */
-    virtual ~LibClass174EF0();
+    virtual ~LibDrawWidget();
     /** Backing drawing-storage allocation. */
     void* allocation;
     u8 unk44[0x2C];
@@ -57,15 +57,17 @@ struct LibClass174EF0 : public LibClass178600
     u8 unk74[4];
     u32 unk78;
     u32 unk7c;
-    float unk80;
-    float unk84;
+    float draw_scale;
+    float draw_scale_y;
     float unk88;
     float unk8c;
     u32 unk90;
-    u32 unk94;
-    u32 unk98;
-    u32 unk9c;
-    u32 unka0;
+    /** Colour the widget is modulated by (0x80 per channel is full brightness). */
+    u32 tint;
+
+    u32 draw_color;
+    s32 horizontal_align;
+    s32 vertical_align;
     u8 unka4[0x44];
     float unke8;
     float unkec;
@@ -78,30 +80,51 @@ struct LibClass174EF0 : public LibClass178600
     /** @brief Set the display scale. @param x Horizontal scale. @param y Vertical scale. */
     void set_scale(float x, float y)
     {
-        unk84 = y;
-        unk80 = x;
-        unk3c = 1;
+        draw_scale_y = y;
+        draw_scale = x;
+        needs_redraw = 1;
     }
-    /** @brief Set the packed display color. @param color Packed color. */
+    /** @brief Set the draw colour and mark the widget for redraw. @param color Packed colour. */
     void set_color(u32 color)
     {
-        unk94 = color;
-        unk3c = 1;
+        draw_color = color;
+        needs_redraw = 1;
+    }
+
+    /** @brief Set the scale and mark the widget for redraw. @param scale Horizontal scale. */
+    void set_scale(float scale)
+    {
+        draw_scale = scale;
+        needs_redraw = 1;
+    }
+
+    /** @brief Set the alpha and mark the widget for redraw. @param alpha Alpha. */
+    void set_alpha(float alpha)
+    {
+        draw_alpha = alpha;
+        needs_redraw = 1;
+    }
+
+    /** @brief Set the colour the widget is modulated by and mark it for redraw. @param color Packed colour. */
+    void set_tint(u32 color)
+    {
+        tint = color;
+        needs_redraw = 1;
     }
     /**
      * @brief Select vertical alignment within the display rectangle.
      * @param alignment Zero uses the origin; one centers; other values align to the end.
      */
-    void set_vertical_alignment(u32 alignment)
+    void set_vertical_align(s32 alignment)
     {
-        unka0 = alignment;
-        unk3c = 1;
+        vertical_align = alignment;
+        needs_redraw = 1;
     }
-    /** @brief Set the display mode. @param mode Mode value. */
-    void set_mode(u32 mode)
+    /** @brief Set the horizontal alignment and mark the widget for redraw. @param align Alignment. */
+    void set_horizontal_align(s32 align)
     {
-        unk9c = mode;
-        unk3c = 1;
+        horizontal_align = align;
+        needs_redraw = 1;
     }
 };
 /** 0x3C-byte storage receiver, with its dispatch pointer after the stored state. */
@@ -148,7 +171,7 @@ public:
 };
 
 /** Partial kind-9 widget with a storage base at offset 0x40. */
-class ItemCreationClass175030 : public LibClass178600, public ItemCreationClass185050
+class ItemCreationClass175030 : public LibWidget, public ItemCreationClass185050
 {
 public:
     /** @brief Initialize the widget and select kind 9. */
@@ -165,15 +188,40 @@ typedef ItemCreationClass185050 LibMovementState;
 typedef ItemCreationClass175030 LibClass175030;
 
 /** String-backed drawing widget with MAIN vtable at 0x175140. */
-struct LibObject175140 : public LibClass174EF0
+struct LibStringLabel : public LibDrawWidget
 {
     /** @brief Initialize the string-backed drawing widget. */
-    LibObject175140()
+    LibStringLabel()
     {
         unk38 = 14;
     }
+
+    /**
+     * @brief Initialize the label with its string and rectangle.
+     * @param value String to draw.
+     * @param flag Text flag.
+     * @param x Left edge.
+     * @param y Top edge.
+     * @param width Width.
+     * @param height Height.
+     */
+    LibStringLabel(const char* value, u8 flag, float x, float y, float width, float height)
+    {
+        unk38 = 14;
+        func_00467AD0(x, y, width, height, value, flag);
+    }
+
+    /**
+     * @brief Change the string and mark the label for redraw.
+     * @param value New string.
+     */
+    void set_text(const char* value)
+    {
+        text = value;
+        needs_redraw = 1;
+    }
     /** @brief Destroy the string-backed drawing widget. */
-    virtual ~LibObject175140();
+    virtual ~LibStringLabel();
     /** @brief Draw the string-backed widget. */
     virtual void draw();
     /**
@@ -187,11 +235,12 @@ struct LibObject175140 : public LibClass174EF0
      * @return Configuration status.
      */
     s32 func_00467AD0(float x, float y, float width, float height, const char* value, u8 flag);
-    const char* unkfc;
+    /** String the label draws. */
+    const char* text;
 };
 
 /** Partial 0x100-byte numeric widget, with MAIN vtable D_174F20. */
-struct LibObject174F20 : public LibClass174EF0
+struct LibObject174F20 : public LibDrawWidget
 {
     /** @brief Initialize the numeric widget and select widget kind 13. */
     LibObject174F20()
@@ -217,7 +266,7 @@ struct LibObject174F20 : public LibClass174EF0
     u32 numeric_value;
 };
 /** Item code widget with MAIN vtable at 0x172410. */
-struct LibObject172410 : public LibClass174EF0
+struct LibObject172410 : public LibDrawWidget
 {
     /** @brief Initialize the item code widget and select kind 15. */
     LibObject172410()
@@ -233,7 +282,7 @@ struct LibObject172410 : public LibClass174EF0
     u8 unkff;
 };
 /** Detail code widget with MAIN vtable at 0x172440. */
-struct LibObject172440 : public LibClass174EF0
+struct LibObject172440 : public LibDrawWidget
 {
     /** @brief Initialize the detail code widget and select kind 16. */
     LibObject172440()
@@ -253,7 +302,7 @@ struct LibObject172440 : public LibClass174EF0
 
 #ifdef __cplusplus
 /** Partial native runtime interface with resident vtable at 0x174F50. */
-class LibClass174F50 : public LibClass171EA0
+class LibClass174F50 : public LibListObject
 {
 public:
     /** @brief Release the runtime's retained objects and storage. */
@@ -262,7 +311,7 @@ public:
 #endif
 
 typedef struct FieldRuntime FieldRuntime;
-typedef struct LibClass178A90 LibClass178A90;
+typedef struct LibTransformOwner LibTransformOwner;
 
 /** Partial 0x1C-byte prefix of the result selected by Lib shape predicates. */
 typedef struct LibShapeTestResult1C
@@ -272,8 +321,8 @@ typedef struct LibShapeTestResult1C
     void* unk08; /**< Second matched descriptor. */
     void* unk0c; /**< First matched 0x20-byte record. */
     void* unk10; /**< Second matched 0x20-byte record. */
-    struct LibClass178A90* unk14; /**< Transform for the first record. */
-    struct LibClass178A90* unk18; /**< Transform for the second record. */
+    struct LibTransformOwner* unk14; /**< Transform for the first record. */
+    struct LibTransformOwner* unk18; /**< Transform for the second record. */
 } LibShapeTestResult1C;
 
 
@@ -324,7 +373,7 @@ void lib_multiline_text_set_resource(LibObject174D90* object, u32 source, s32 ke
  * @param object Storage for the 0xFC-byte drawing widget.
  * @return The constructed drawing widget.
  */
-LibClass174EF0* func_00464B10(LibClass174EF0* object);
+LibDrawWidget* func_00464B10(LibDrawWidget* object);
 
 /**
  * @brief Reset the multiline widget rectangle, allocation, and scrolling state.
@@ -374,9 +423,9 @@ s32 lib_moving_widget_init_position(LibClass175030* object, float x, float y);
  * @param object Record widget holding the display data.
  * @return Four bounds components stored at offset 0xE8.
  */
-LibBounds4C69B0* func_00467950(LibObject175140* object);
+LibTextExtent* func_00467950(LibStringLabel* object);
 /** @brief Count glyphs in the widget's current text. @param object String-backed widget. @return Converted glyph count. */
-s32 func_004679B0(LibObject175140* object);
+s32 func_004679B0(LibStringLabel* object);
 
 /** Last result selected by the Lib shape predicates. */
 extern LibShapeTestResult1C D_0050CB30;
@@ -427,7 +476,7 @@ s32 func_0045CBE0(void* shape, void* query);
  * @param object Transform receiver.
  * @return One when queued, or zero if the receiver already has an owner.
  */
-s32 lib_queue_display_object(FieldRuntime* runtime, LibClass178A90* object);
+s32 lib_queue_display_object(FieldRuntime* runtime, LibTransformOwner* object);
 /**
  * @brief Load resource data into an owned runtime slot.
  * @param runtime Runtime manager.

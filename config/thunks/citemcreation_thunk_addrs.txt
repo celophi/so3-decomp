@@ -1,7 +1,7 @@
 @64@__dt__23ItemCreationClass175030Fv = 0x004673B0;
-@32@func_003EEBE0__15LibObject178660Fv = 0x0036F380;
-@176@func_003F4410__15LibObject178660FUi = 0x0036F390;
-@32@func_0044B100__15LibObject178660FUiUiUi = 0x0036F3A0;
+@32@render__12LibContainerFv = 0x0036F380;
+@176@on_packet_complete__12LibContainerFUi = 0x0036F390;
+@32@func_0044B100__12LibContainerFUiUiUi = 0x0036F3A0;
 @32@__dt__23ItemCreationClass184F60Fv = 0x0036F3B0;
 @168@refresh_rows__25InventoryItemInstanceListFi = 0x0036F330;
 @168@set_scroll_position__25InventoryItemInstanceListFf = 0x0036F320;

@@ -5,15 +5,15 @@
 
 #ifdef __cplusplus
 /** 0x14-byte list receiver with the virtual pointer after its sentinel and count. */
-class LibClass178A70
+class LibListReceiver
 {
 public:
-    LibClass171E90 sentinel;
+    LibListSentinel sentinel;
     u32 node_count;
     /** @brief Initialize the list receiver. */
-    LibClass178A70();
+    LibListReceiver();
     /** @brief Destroy the list receiver. */
-    virtual ~LibClass178A70();
+    virtual ~LibListReceiver();
     /** @brief Append a node to the end of the list. @param node Node to append. */
     virtual void append(void* node);
     /** @brief Prepend a node to the beginning of the list. @param node Node to prepend. */

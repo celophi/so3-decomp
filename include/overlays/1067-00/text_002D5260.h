@@ -9,13 +9,13 @@
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/lib/text_0044ABE0.h"
 
-class LibObject178660;
+class LibContainer;
 
 /** Resource owner with MAIN vtable at 0x15B200. */
 class FieldClass15B200
 {
 public:
-    LibObject178660* unk00;
+    LibContainer* unk00;
     float unk04;
     float unk08;
     float unk0c;
@@ -30,9 +30,9 @@ public:
     u8 unk28;
     u8 unk29[3];
     float unk2c;
-    LibClass178600* unk30;
+    LibWidget* unk30;
     /** @brief Initialize the resource owner. @param parent Associated owner. @param flag Initial resource flag. */
-    FieldClass15B200(LibObject178660* parent, u8 flag);
+    FieldClass15B200(LibContainer* parent, u8 flag);
     /** @brief Destroy the resource owner. */
     virtual ~FieldClass15B200();
 };
@@ -66,13 +66,13 @@ extern "C" s32 func_002D5290(FieldClass15B200* object, u8 first, u8 second, cons
  * @brief Remove the first matching entry from the second registry list and queue the container for release.
  * @param object Container to remove and release.
  */
-extern "C" void func_002D70F0(LibObject178660* object);
+extern "C" void func_002D70F0(LibContainer* object);
 
 /**
  * @brief Remove the first matching entry from the first registry list and queue the container for release.
  * @param object Container to remove and release.
  */
-extern "C" void func_002D7630(LibObject178660* object);
+extern "C" void func_002D7630(LibContainer* object);
 
 
 struct FieldPanelState2D7820;
@@ -242,7 +242,7 @@ s32 func_002D6440(ItemCreationOptionResourceDisplay* object, float x, float y, F
  * @brief Set the receiver's byte at offset 0x3C.
  * @param object Receiver to update.
  */
-void func_002D5CE0(LibClass178600* object);
+void func_002D5CE0(LibWidget* object);
 
 /**
  * @brief Store the row container's transform byte.

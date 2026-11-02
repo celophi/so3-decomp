@@ -99,7 +99,7 @@ static inline bool null_node(const FieldClass150060* node)
 void FieldResourceRequestHandler::update()
 {
     FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30);
-    FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&static_cast<LibClass178DD0&>(*manager));
+    FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&static_cast<LibUpdateList&>(*manager));
     bool found = false;
     if (unk1c != 1 && (unk1c != 0 || request_mode != 1 || unk1e != 1))
     {
@@ -109,7 +109,7 @@ void FieldResourceRequestHandler::update()
             for (;;)
             {
                 node = node->unk08;
-                if (null_node(node) || static_cast<void*>(&static_cast<LibClass178DD0&>(*manager)) == node)
+                if (null_node(node) || static_cast<void*>(&static_cast<LibUpdateList&>(*manager)) == node)
                 {
                     break;
                 }

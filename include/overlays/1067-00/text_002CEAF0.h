@@ -97,9 +97,9 @@ s32 field_launch_menu(FieldMenuManager* manager, u8 menu);
 
 class FieldClass1504F0;
 class FieldClass1538D0;
-class LibClass171EA0;
+class LibListObject;
 class LibDrawBuffer;
-class LibObject178660;
+class LibContainer;
 struct FieldVec4A;
 
 /** Resource loader with vtable D_15B040 in main data, attached to the field context's object at offset 0x58. */
@@ -195,9 +195,9 @@ class FieldClass15B0E0 : public FieldListObject, public FieldClass1DD400
         s32 unk38;
         u32 unk3c;
         LibDrawBuffer* unk40;
-        LibClass171EA0* unk44;
+        LibListObject* unk44;
         FieldClass1504F0* unk48;
-        LibObject178660* unk4c;
+        LibContainer* unk4c;
         u32 unk50;
         s8 unk54;
         u8 unk55_0 : 1;

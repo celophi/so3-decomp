@@ -740,10 +740,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020DB
  * @param name Source of the 17-byte name buffer.
  * @return Matching transform, or null.
  */
-extern "C" LibClass178A90* func_0020CA10(FieldClass151620* entry, const char* name)
+extern "C" LibTransformOwner* func_0020CA10(FieldClass151620* entry, const char* name)
 {
     memcpy_guess(entry->unk84, name, sizeof(entry->unk84));
-    LibClass178A90* transform = (LibClass178A90*)func_00473390(
+    LibTransformOwner* transform = (LibTransformOwner*)func_00473390(
         D_001B6430->context->unk08->current_object->unk7c, entry->unk84);
     entry->shape.unk04 = transform;
     return transform;
@@ -1098,7 +1098,7 @@ static inline bool field_owner_is_last(const FieldShapeOwner18* shape)
  * @param shape First descriptor in the terminated descriptor array.
  * @return Last attachment created in this array, or null.
  */
-extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibClass178220* manager, FieldShapeOwner18* shape)
+extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibAnimation* manager, FieldShapeOwner18* shape)
 {
     if (manager == 0)
     {
@@ -1107,7 +1107,7 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibClass178
     FieldClass151570* node = 0;
     for (;; shape++)
     {
-        LibClass178A90* transform = shape->unk04;
+        LibTransformOwner* transform = shape->unk04;
         if (shape->unk0e != -1 && transform)
         {
             bool found;

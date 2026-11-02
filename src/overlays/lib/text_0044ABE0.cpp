@@ -1,3 +1,4 @@
+#include "overlays/lib/dma_callbacks_inlines.h"
 #include "include_asm.h"
 #include "overlays/lib/render_buffer.h"
 #include "overlays/lib/text_0044ABE0.h"
@@ -15,7 +16,7 @@ typedef struct LibIndexedResourceState
 } LibIndexedResourceState;
 extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 index);
 extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 first, s32 second, s32 third, s32 fourth, float x, float y);
-extern "C" void func_00465A90(void* owner, LibClass174610* object);
+extern "C" void func_00465A90(void* owner, LibCallbackTransform* object);
 extern "C" ResidentDmaQueue* g_vif1_dma_queue;
 
 /**
@@ -38,10 +39,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AD80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AE70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AFF0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", __dt__20LibCallbackTransformFv);
 
 /** @brief Run the default transform state hook. */
-void LibClass174610::func_0044B100(u32 first, u32 second, u32 third)
+void LibCallbackTransform::func_0044B100(u32 first, u32 second, u32 third)
 {
 }
 
@@ -53,7 +54,7 @@ void LibClass174610::func_0044B100(u32 first, u32 second, u32 third)
  * @param second Word value.
  * @param third Second byte value.
  */
-void LibClass174610::set_codes_and_z(s32 code, u32 first, float z, u32 second, u32 third)
+void LibCallbackTransform::set_codes_and_z(s32 code, u32 first, float z, u32 second, u32 third)
 {
     if (code != 0)
     {
@@ -69,12 +70,12 @@ void LibClass174610::set_codes_and_z(s32 code, u32 first, float z, u32 second, u
         third = 255 - (code - 13);
     }
     unka9 = third;
-    float x = unk20.components[0];
-    float y = unk20.components[1];
-    unk20.components[0] = x;
-    unk20.components[1] = y;
-    unk20.components[2] = z;
-    unk20.components[3] = 1.0f;
+    float x = translation.x;
+    float y = translation.y;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
     unkae = 1;
 }
 
@@ -90,7 +91,7 @@ extern "C" void func_0044B190(LibVectorUpdateView* state, float x, float y)
 }
 
 /** @brief Detach the transform once and mark it released. */
-extern "C" void func_0044B1C0(LibClass174610* object)
+extern "C" void func_0044B1C0(LibCallbackTransform* object)
 {
     if (object->unkaf == 0)
     {
@@ -98,13 +99,13 @@ extern "C" void func_0044B1C0(LibClass174610* object)
         {
             func_00465A90(object->unk94, object);
         }
-        object->LibClass178A90::func_003EF740();
+        object->LibTransformOwner::destroy();
         object->unkaf = 1;
     }
 }
 
 /** @brief Detach this transform from its owner when attached. */
-extern "C" void func_0044B210(LibClass174610* object)
+extern "C" void func_0044B210(LibCallbackTransform* object)
 {
     if (object->unk94 != 0)
     {
@@ -115,9 +116,9 @@ extern "C" void func_0044B210(LibClass174610* object)
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B240);
 
 /** @brief Initialize transform flags and drawing modes after the base receivers. */
-LibClass174610::LibClass174610()
+LibCallbackTransform::LibCallbackTransform()
 {
-    unk6a |= 0x400;
+    draw_flags |= 0x400;
     unk94 = 0;
     unkaf = 0;
     unkae = 1;
@@ -138,7 +139,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B350);
 extern "C" bool lib_scissor_init_reset(ItemCreationClass1746A0* object, s32 code)
 {
     object->unk50 = 1;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
     bool success;
     if (!lib_allocate_drawing_storage(&object->unk40, 6))
     {
@@ -168,7 +169,7 @@ extern "C" bool lib_scissor_init_rectangle(ItemCreationClass1746A0* object, floa
     object->unk18.unk08 = width;
     object->unk18.unk0c = height;
     object->unk50 = 0;
-    object->unk3c = 1;
+    object->needs_redraw = 1;
     bool success;
     if (!lib_allocate_drawing_storage(&object->unk40, 6))
     {
@@ -237,9 +238,9 @@ void func_0044C0F0(void* object)
 }
 
 /** @brief Queue the receiver's DMA callback interface. */
-extern "C" s32 func_0044C110(LibClass174610* object)
+extern "C" s32 func_0044C110(LibCallbackTransform* object)
 {
-    LibClass171FF0* submission = static_cast<LibClass171FF0*>(object);
+    LibDmaCallbacks* submission = static_cast<LibDmaCallbacks*>(object);
     return func_00114100(g_vif1_dma_queue, reinterpret_cast<DmaSubmission*>(submission));
 }
 
@@ -264,10 +265,10 @@ extern "C" const void* func_0044D080(void)
 }
 
 /** @brief Clear the intrusive owner and invoke the base transform release. @param object Transform owner to detach. */
-extern "C" void func_0044D090(LibClass178A90* object)
+extern "C" void func_0044D090(LibTransformOwner* object)
 {
     object->owner = 0;
-    object->LibClass178A90::func_003EF740();
+    object->LibTransformOwner::destroy();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0B0);

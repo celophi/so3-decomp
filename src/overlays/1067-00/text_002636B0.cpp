@@ -350,7 +350,7 @@ u32 FieldClass15AE70::func_slot54()
 }
 
 /** @brief Return the nested display container. @return Stored value. */
-LibObject178660* FieldClass15AE70::func_slot58()
+LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }

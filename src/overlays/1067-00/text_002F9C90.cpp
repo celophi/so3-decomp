@@ -550,7 +550,7 @@ extern "C" void func_002FD1B0(FieldFloatState5C* object, float first, float seco
     object->values[4] = fifth;
 }
 
-extern "C" LibClass178F30* D_001B6628;
+extern "C" LibDisplayManager* D_001B6628;
 
 /**
  * @brief Attach the window's auxiliary display to the resident display manager.
@@ -569,7 +569,7 @@ extern "C" void field_replace_model_camera(FieldStatus14* object, void* attached
     if (object->display != 0)
     {
         D_001B6628->current_display = object->previous_display;
-        object->display->func_003EF740();
+        object->display->destroy();
         object->display = 0;
     }
     object->previous_display = D_001B6628->current_display;
@@ -631,7 +631,7 @@ void field_cancel_model_request(FieldStatus14* object)
                 object->display_attached = 0;
                 D_001B6628->current_display = object->previous_display;
                 lib_object_detach_owner(object->display);
-                object->display->func_003EF740();
+                object->display->destroy();
                 object->display = 0;
             }
             return;
@@ -694,7 +694,7 @@ void FieldClass15BB90::func_001DD7B0()
         display_attached = 0;
         D_001B6628->current_display = previous_display;
         lib_object_detach_owner(display);
-        display->func_003EF740();
+        display->destroy();
         display = 0;
     }
     lib_object_detach_owner(this);
@@ -731,10 +731,10 @@ FieldClass15BB90::FieldClass15BB90()
     unk5c = 0;
     display = 0;
     unk78 = 0;
-    unk80.packed = 0;
-    unk80.components[3] = 1.0f;
-    unk90.packed = 0;
-    unk90.components[3] = 1.0f;
+    clear_vector(&unk80);
+    unk80.w = 1.0f;
+    clear_vector(&unk90);
+    unk90.w = 1.0f;
 }
 
 /**

@@ -272,7 +272,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FED
 struct FieldOwner1FEDF0
 {
     u8 unk00[0x5C8];
-    LibObject178660* unk5c8;
+    LibContainer* unk5c8;
 };
 
 /**
@@ -283,7 +283,7 @@ extern "C" void func_001FEDF0(FieldOwner1FEDF0* owner)
 {
     if (owner->unk5c8 != 0)
     {
-        owner->unk5c8->func_003EF740();
+        owner->unk5c8->destroy();
         owner->unk5c8 = 0;
     }
 }

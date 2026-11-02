@@ -9,10 +9,8 @@
 #include "vu0.h"
 
 extern "C" {
-extern BootVector4 D_50CD30;
+extern LibVector4 D_50CD30;
 void func_4CE4C0(void* destination, const float* source);
-void lib_container_attach_widget(BootContainer* container, BootTextWidget* child);
-void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 }
 
 /** Stages of the installer screen's resource loading, unit checks, copy, and exit paths. */
@@ -91,13 +89,13 @@ s32 BootInstaller::get_default_list_kind()
 }
 
 /** @brief Delete the object through its virtual destructor; null is ignored. */
-void BootListObject::destroy()
+void LibListObject::destroy()
 {
     delete this;
 }
 
 /** @brief Virtual slot 4; the base implementation does nothing. */
-void BootListObject::render()
+void LibListObject::render()
 {
 }
 
@@ -120,8 +118,9 @@ void BootInstaller::show_tip_image(s32 index)
         tip_image_buffer = 0;
     }
 
-    tip_image_buffer = func_102920(g_resident_resource_decoder, tip_image_data, index, 1);
-    func_1025A0(g_resident_resource_decoder, tip_image_data, (void*)BOOT_ALIGN_RESOURCE(tip_image_buffer), index);
+    tip_image_buffer = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(tip_image_data), index, 1);
+    resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(tip_image_data),
+                                   (void*)BOOT_ALIGN_RESOURCE(tip_image_buffer), index);
     tip_image = new (0) BootImage;
     tip_image->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(tip_image_buffer), 0);
     resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
@@ -135,7 +134,7 @@ void BootInstaller::show_tip_image(s32 index)
  * @param y Second component.
  * @param z Third component.
  */
-void BootTransform::set_translation(float x, float y, float z)
+void LibOrientedTransform::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
     translation.x = x;
@@ -213,7 +212,7 @@ void BootInstaller::update_choice_images()
 
             if (selection == i)
             {
-                BootVector4 scale;
+                LibVector4 scale;
                 copy_vector(&scale, &model->base_color_factor);
 
                 if (choice_growing == 0)
@@ -254,7 +253,7 @@ void BootInstaller::update_choice_images()
             }
             else
             {
-                BootVector4 scale;
+                LibVector4 scale;
                 scale.x = 1.0f;
                 scale.y = 1.0f;
                 scale.z = 1.0f;
@@ -354,7 +353,7 @@ void BootInstaller::place_screen_images()
  * @param y Second component.
  * @param z Third component.
  */
-void BootTransform::set_scale(float x, float y, float z)
+void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
     scale.x = x;
@@ -376,7 +375,7 @@ void BootInstaller::update()
     switch (step)
     {
     case BOOT_INSTALL_WAIT_FOR_RESOURCES:
-        if (func_102D00(g_resource_queue) != 0)
+        if (func_00102D00(g_resource_queue) != 0)
         {
             resident_queue_resource_request(g_resource_queue, BOOT_RES_SOUND, sound_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
@@ -390,21 +389,24 @@ void BootInstaller::update()
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
             step++;
-            container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
-            func_465B20(D_001B657C, container);
-            message_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
+            container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                     reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
+            message_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
             message_text->set_color(0x34130F);
             lib_container_attach_widget(container, message_text);
             x = menu_cursor_x(selection);
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-            func_465B20(D_001B657C, cursor);
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
 
         break;
     case BOOT_INSTALL_DECODE_SCREEN_IMAGES:
-        screen_image_buffers[screen_images_loaded] = func_102920(g_resident_resource_decoder, screen_image_data, screen_images_loaded, 1);
-        func_1025A0(g_resident_resource_decoder, screen_image_data, (void*)BOOT_ALIGN_RESOURCE(screen_image_buffers[screen_images_loaded]), screen_images_loaded);
+        screen_image_buffers[screen_images_loaded] =
+            resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(screen_image_data), screen_images_loaded, 1);
+        resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(screen_image_data),
+                                       (void*)BOOT_ALIGN_RESOURCE(screen_image_buffers[screen_images_loaded]), screen_images_loaded);
 
         if (++screen_images_loaded >= 2)
         {
@@ -534,7 +536,7 @@ void BootInstaller::update()
                 progress_bar = 0;
             }
 
-            static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_INSTALL), -1);
+            static_cast<LibUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_INSTALL), -1);
             lib_object_detach_owner(this);
             destroy();
             return;
@@ -542,7 +544,7 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_WAIT_FOR_UNIT_RESOURCES:
-        if (func_102D00(g_resource_queue) != 0)
+        if (func_00102D00(g_resource_queue) != 0)
         {
             step++;
         }
@@ -648,7 +650,7 @@ void BootInstaller::update()
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_WAIT_TO_BEGIN:
-        if (func_102D00(g_resource_queue) != 0)
+        if (func_00102D00(g_resource_queue) != 0)
         {
             queue_fade();
             step++;
@@ -662,7 +664,7 @@ void BootInstaller::update()
         icon_header = (u8*)memalign(0x40, 0x200);
         progress_bar = new (0) BootProgressBar;
         progress_bar_reset(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
-        tip_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
+        tip_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
         tip_text->set_color(0x34130F);
         lib_container_attach_widget(container, tip_text);
         show_tip_image(0);
@@ -673,13 +675,13 @@ void BootInstaller::update()
         if (resource->widescreen)
         {
             progress_bar->model->set_translation(-366.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
+            progress_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
         else
         {
             progress_bar->model->set_translation(-280.0f, 180.0f, 0.0f);
-            progress_text = new (0) BootTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
+            progress_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
             progress_text->set_color(0x34130F);
         }
 
@@ -691,7 +693,7 @@ void BootInstaller::update()
             sizes[i] = header->decoded_size;
             system_file_buffers[i] = (u8*)memalign(0x200, header->decoded_size + 0x200);
             memset_guess(system_file_buffers[i], 0, header->decoded_size + 0x200);
-            func_1025A0(g_resident_resource_decoder, (u8*)header, system_file_buffers[i], 0);
+            resident_decode_resource_block(g_resident_resource_decoder, header, system_file_buffers[i], 0);
             header = (ResidentResourceHeader*)((u8*)header + header->next_offset);
         }
 
@@ -704,7 +706,7 @@ void BootInstaller::update()
             sizes[i] = header->decoded_size;
             navigator_file_buffers[i] = (u8*)memalign(0x200, header->decoded_size + 0x200);
             memset_guess(navigator_file_buffers[i], 0, header->decoded_size + 0x200);
-            func_1025A0(g_resident_resource_decoder, (u8*)header, navigator_file_buffers[i], 0);
+            resident_decode_resource_block(g_resident_resource_decoder, header, navigator_file_buffers[i], 0);
             header = (ResidentResourceHeader*)((u8*)header + header->next_offset);
         }
 
@@ -794,9 +796,10 @@ void BootInstaller::update()
                 x = menu_cursor_x(selection);
                 cursor = new (0) BootSelectionCursor;
                 func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-                func_465B20(D_001B657C, cursor);
+                lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                         reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
                 tip_text->visible = 0;
-                tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
+                tip_image->model->draw_flags |= LIB_DRAW_HIDDEN;
                 step = BOOT_INSTALL_HANDLE_CHOICE;
                 yes_step = BOOT_INSTALL_ABORT_COPY;
                 no_step = BOOT_INSTALL_RESUME_COPY;
@@ -831,7 +834,7 @@ void BootInstaller::update()
     case BOOT_INSTALL_SHOW_COMPLETE:
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALL_COMPLETE, 0);
         tip_text->visible = 0;
-        tip_image->model->draw_flags |= BOOT_DRAW_HIDDEN;
+        tip_image->model->draw_flags |= LIB_DRAW_HIDDEN;
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_SHOW_ERROR:
@@ -927,13 +930,13 @@ void BootInstaller::update()
             tip_image = 0;
         }
 
-        static_cast<BootUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
+        static_cast<LibUpdateList*>(D_001B6614)->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
     case BOOT_INSTALL_RESUME_COPY:
         tip_text->visible = 1;
-        tip_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
+        tip_image->model->draw_flags &= ~LIB_DRAW_HIDDEN;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
         g_resource_archive->copy_paused = 0;
         step = BOOT_INSTALL_COPY_PROGRESS;
@@ -999,7 +1002,7 @@ void BootInstaller::update()
             x = menu_cursor_x(selection);
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-            func_465B20(D_001B657C, cursor);
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
         else
         {
@@ -1045,8 +1048,13 @@ void BootInstaller::update()
     update_choice_images();
 }
 
+/** @brief Destroy the transform receiver. */
+LibCallbackTransform::~LibCallbackTransform()
+{
+}
+
 /** @brief Destroy the list receiver. */
-BootListReceiver::~BootListReceiver()
+LibListReceiver::~LibListReceiver()
 {
 }
 
@@ -1191,7 +1199,7 @@ BootInstaller::BootInstaller()
  * @brief Default DMA notification hook; does nothing.
  * @param value Notification value.
  */
-void BootDmaCallbacks::on_packet_notify(u32 value)
+void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
@@ -1199,7 +1207,7 @@ void BootDmaCallbacks::on_packet_notify(u32 value)
  * @brief Default preparation hook; does nothing.
  * @param value Notification word or packet address.
  */
-void BootDmaCallbacks::on_packet_complete(u32 value)
+void LibDmaCallbacks::on_packet_complete(u32 value)
 {
 }
 
@@ -1207,7 +1215,7 @@ void BootDmaCallbacks::on_packet_complete(u32 value)
  * @brief Copy the position.
  * @param value Source vector.
  */
-void BootPositionTransform::copy_translation(const BootVector4* value)
+void LibPositionTransform::copy_translation(const LibVector4* value)
 {
     copy_vector(&translation, value);
 }
@@ -1216,7 +1224,7 @@ void BootPositionTransform::copy_translation(const BootVector4* value)
  * @brief Copy the position.
  * @param value Source vector.
  */
-void BootPositionTransform::set_translation_vector(const BootVector4* value)
+void LibPositionTransform::set_translation_vector(const LibVector4* value)
 {
     copy_vector(&translation, value);
 }
@@ -1227,7 +1235,7 @@ void BootPositionTransform::set_translation_vector(const BootVector4* value)
  * @param y Second component.
  * @param z Third component.
  */
-void BootPositionTransform::set_translation(float x, float y, float z)
+void LibPositionTransform::set_translation(float x, float y, float z)
 {
     translation.x = x;
     translation.y = y;
@@ -1239,13 +1247,13 @@ void BootPositionTransform::set_translation(float x, float y, float z)
  * @brief Report the list kind used when registration requests the default.
  * @return Three in the base implementation.
  */
-s32 BootListObject::get_default_list_kind()
+s32 LibListObject::get_default_list_kind()
 {
     return 3;
 }
 
 /** @brief Advance this registered object's state; the base implementation does nothing. */
-void BootListObject::update()
+void LibListObject::update()
 {
 }
 
@@ -1253,7 +1261,7 @@ void BootListObject::update()
  * @brief Copy the position and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::copy_translation(const BootVector4* value)
+void LibOrientedTransform::copy_translation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&translation, value);
@@ -1263,7 +1271,7 @@ void BootTransform::copy_translation(const BootVector4* value)
  * @brief Copy the position and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::set_translation_vector(const BootVector4* value)
+void LibOrientedTransform::set_translation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&translation, value);
@@ -1276,7 +1284,7 @@ void BootTransform::set_translation_vector(const BootVector4* value)
  * @param z Third component.
  * @param w Fourth component.
  */
-void BootTransform::set_orientation_components(float x, float y, float z, float w)
+void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
     orientation.x = x;
@@ -1289,7 +1297,7 @@ void BootTransform::set_orientation_components(float x, float y, float z, float 
  * @brief Copy the rotation vector and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::copy_orientation(const BootVector4* value)
+void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
@@ -1299,7 +1307,7 @@ void BootTransform::copy_orientation(const BootVector4* value)
  * @brief Copy the rotation vector and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::set_orientation(const BootVector4* value)
+void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
@@ -1309,7 +1317,7 @@ void BootTransform::set_orientation(const BootVector4* value)
  * @brief Convert a rotation into the rotation vector and mark the transform dirty.
  * @param value Source rotation.
  */
-void BootTransform::convert_rotation(const BootVector4* value)
+void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
     func_4CE4C0(&orientation, &value->x);
@@ -1319,7 +1327,7 @@ void BootTransform::convert_rotation(const BootVector4* value)
  * @brief Convert a rotation into the rotation vector and mark the transform dirty.
  * @param value Source rotation.
  */
-void BootTransform::set_rotation_vector(const BootVector4* value)
+void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     func_4CE4C0(&orientation, &value->x);
@@ -1331,10 +1339,10 @@ void BootTransform::set_rotation_vector(const BootVector4* value)
  * @param y Second component.
  * @param z Third component.
  */
-void BootTransform::set_rotation(float x, float y, float z)
+void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
-    BootVector4 value;
+    LibVector4 value;
     value.x = x;
     value.y = y;
     value.z = z;
@@ -1346,7 +1354,7 @@ void BootTransform::set_rotation(float x, float y, float z)
  * @brief Copy the scale vector and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::copy_scale(const BootVector4* value)
+void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
@@ -1356,20 +1364,20 @@ void BootTransform::copy_scale(const BootVector4* value)
  * @brief Copy the scale vector and mark the transform dirty.
  * @param value Source vector.
  */
-void BootTransform::set_scale_vector(const BootVector4* value)
+void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
 }
 
 /** @brief Draw in the main list (bucket zero). */
-void BootTransformOwner::set_default_draw_bucket()
+void LibTransformOwner::set_default_draw_bucket()
 {
     draw_bucket = 0;
 }
 
 /** @brief Virtual slot 4; the owner's implementation does nothing. */
-void BootTransformOwner::render()
+void LibTransformOwner::render()
 {
 }
 
@@ -1378,7 +1386,7 @@ void BootTransformOwner::render()
  * @param output Receives the centre in local space.
  * @return Nonzero when a centre was written; zero here, so the test is skipped.
  */
-s32 BootTransformOwner::get_box_cull_center(void* output)
+s32 LibTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
@@ -1389,16 +1397,21 @@ s32 BootTransformOwner::get_box_cull_center(void* output)
  * @param mode Two from Lib's caller; unused here.
  * @return Whether the value is negative.
  */
-bool BootTransformOwner::set_fade_alpha(float value, float mode)
+s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
-    return value < 0.0f;
+    s32 result = 1;
+    if (!(value < 0.0f))
+    {
+        result = 0;
+    }
+    return result;
 }
 
 /**
  * @brief Return the bounding sphere Lib culls against (centre in xyz, radius in w); this owner has Lib's shared default.
  * @return Bounding sphere.
  */
-const BootVector4* BootTransformOwner::get_bounding_sphere()
+const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
     return &D_50CD30;
 }
@@ -1408,7 +1421,7 @@ const BootVector4* BootTransformOwner::get_bounding_sphere()
  * @param matrix Matrix supplied by the caller.
  * @param context Opaque caller context.
  */
-void BootTransformOwner::build_packet(const void* matrix, void* context)
+void LibTransformOwner::build_packet(const void* matrix, void* context)
 {
 }
 
@@ -1416,13 +1429,13 @@ void BootTransformOwner::build_packet(const void* matrix, void* context)
  * @brief Make a copy of this object that stays linked to it; this owner can't be copied.
  * @return The copy, or null.
  */
-BootTransformOwner* BootTransformOwner::clone()
+LibTransformOwner* LibTransformOwner::clone()
 {
     return 0;
 }
 
 /** @brief Unlink a copy from its original and queue it for release; this owner never has copies, so it does nothing. */
-void BootTransformOwner::release_clone()
+void LibTransformOwner::release_clone()
 {
 }
 

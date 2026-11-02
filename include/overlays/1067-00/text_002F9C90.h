@@ -68,8 +68,8 @@ public:
     u8 unk7c[4];
     LibVector4 unk80;
     LibVector4 unk90;
-    LibClass171EA0* display;
-    LibClass171EA0* previous_display;
+    LibListObject* display;
+    LibListObject* previous_display;
     u8 unka8[8];
     LibTransform member;
     u8 unk2c0[0x10];
@@ -281,7 +281,7 @@ void func_002FED50(void* object);
 #include "overlays/lib/text_004CD3A0.h"
 
 /** Camera transform with queued DMA and field context callbacks. */
-class FieldClass15BBB0 : public LibClass178A90, public DmaSubmission, public FieldClass1DD400
+class FieldClass15BBB0 : public LibTransformOwner, public DmaSubmission, public FieldClass1DD400
 {
 public:
     FieldClass15BBB0();

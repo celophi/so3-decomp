@@ -218,7 +218,7 @@ extern "C"
 
     extern ResidentHeap* D_001B6698;
 
-    extern LibClass171EA0* D_001B6640;
+    extern LibListObject* D_001B6640;
 
     extern FieldDisplayState6624* D_001B6624;
 
@@ -460,9 +460,9 @@ void FieldClass157AF0::emit_secondary_entries(const LibVector4* position, LibVec
             vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
             float scale = secondary_emission_scale;
-            transformed_first.components[0] *= scale;
-            transformed_first.components[1] *= scale;
-            transformed_first.components[2] *= scale;
+            transformed_first.x *= scale;
+            transformed_first.y *= scale;
+            transformed_first.z *= scale;
         }
         else
         {
@@ -494,7 +494,7 @@ void FieldClass157AF0::emit_secondary_entries(const LibVector4* position, LibVec
         vu0_reset_emission_state();
         vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = unk3C;
+        first_offset->w = unk3C;
     }
 }
 
@@ -602,9 +602,9 @@ void FieldClass157E30::emit_secondary_entries(const LibVector4* position, LibVec
             vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
             float scale = secondary_emission_scale;
-            transformed_first.components[0] *= scale;
-            transformed_first.components[1] *= scale;
-            transformed_first.components[2] *= scale;
+            transformed_first.x *= scale;
+            transformed_first.y *= scale;
+            transformed_first.z *= scale;
         }
         else
         {
@@ -636,7 +636,7 @@ void FieldClass157E30::emit_secondary_entries(const LibVector4* position, LibVec
         vu0_reset_emission_state();
         vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = unk3C;
+        first_offset->w = unk3C;
     }
 }
 
@@ -744,9 +744,9 @@ void FieldClass158170::emit_secondary_entries(const LibVector4* position, LibVec
             vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
             float scale = secondary_emission_scale;
-            transformed_first.components[0] *= scale;
-            transformed_first.components[1] *= scale;
-            transformed_first.components[2] *= scale;
+            transformed_first.x *= scale;
+            transformed_first.y *= scale;
+            transformed_first.z *= scale;
         }
         else
         {
@@ -778,7 +778,7 @@ void FieldClass158170::emit_secondary_entries(const LibVector4* position, LibVec
         vu0_reset_emission_state();
         vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = unk3C;
+        first_offset->w = unk3C;
     }
 }
 
@@ -888,7 +888,7 @@ static inline void field_release_slot_object(T*& object)
     if (object != 0)
     {
         lib_object_detach_owner(object);
-        object->func_003EF740();
+        object->destroy();
         object = 0;
     }
 }
@@ -942,8 +942,8 @@ void field_register_object_slots(FieldObjectSlotOwner* owner)
     {
         if (owner->objects[i] != 0)
         {
-            LibClass178DD0& list = lib_object_list_00507c40;
-            list.append_node(owner->objects[i], LibClass178DD0::DEFAULT_NODE_KIND);
+            LibUpdateList& list = lib_object_list_00507c40;
+            list.append_node(owner->objects[i], LibUpdateList::DEFAULT_NODE_KIND);
         }
     }
 }
@@ -972,7 +972,7 @@ void field_detach_object_slots(FieldObjectSlotOwner* owner)
  * @param owner Slot owner.
  * @param object Object to mark.
  */
-void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibClass171EA0* object)
+void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibListObject* object)
 {
     for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
@@ -992,15 +992,15 @@ void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibClass171E
  * @param object Object to store and register.
  * @return True if a vacant slot was found; false when all slots are occupied.
  */
-bool field_add_object_slot(FieldObjectSlotOwner* owner, LibClass171EA0* object)
+bool field_add_object_slot(FieldObjectSlotOwner* owner, LibListObject* object)
 {
     for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
         if (owner->objects[i] == 0)
         {
             owner->objects[i] = object;
-            LibClass178DD0& list = lib_object_list_00507c40;
-            list.append_node(object, LibClass178DD0::DEFAULT_NODE_KIND);
+            LibUpdateList& list = lib_object_list_00507c40;
+            list.append_node(object, LibUpdateList::DEFAULT_NODE_KIND);
             owner->pending_removal[i] = 0;
             return true;
         }
@@ -1122,7 +1122,7 @@ void FieldTimedQuadController::func_00272130()
     LibTransform* target = attached_object;
     if (target != 0)
     {
-        target->unk6a |= 1;
+        target->draw_flags |= 1;
     }
 }
 
@@ -1132,7 +1132,7 @@ void FieldTimedQuadController::func_002721A0()
     LibTransform* target = attached_object;
     if (target != 0)
     {
-        target->unk6a &= 0xFFFE;
+        target->draw_flags &= 0xFFFE;
     }
 }
 
@@ -1823,7 +1823,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
 
     if (D_001B6640 != 0)
     {
-        D_001B6640->func_003EF740();
+        D_001B6640->destroy();
         D_001B6640 = 0;
     }
 
@@ -2046,7 +2046,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
 
     D_001B6614->append_node(context->unk58, -1);
     context->unk48 = ::new (0) FieldClass1534B0;
-    static_cast<LibClass178DD0*>(D_001B661C)->append_node(context->unk48, -1);
+    static_cast<LibUpdateList*>(D_001B661C)->append_node(context->unk48, -1);
     context->unk40 = ::new (0) FieldClass153590;
     D_001B6614->append_node(context->unk40, -1);
     context->unk20 = ::new (0) FieldClass156B50;
@@ -2125,7 +2125,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     {
         context->unk18 = new FieldClass152350;
         static_cast<FieldClass152350*>(context->unk18)->unk74 = 0;
-        static_cast<LibClass178DD0*>(static_cast<FieldClass14FE30*>(context->unk04))->append_node(context->unk18, -1);
+        static_cast<LibUpdateList*>(static_cast<FieldClass14FE30*>(context->unk04))->append_node(context->unk18, -1);
     }
     else
     {
@@ -2155,7 +2155,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
             strcpy_guess(camera->name, g_field_default_camera_name);
             camera->unk9fd_0 = 1;
             camera->unk9ca = 0;
-            static_cast<LibClass178DD0*>(D_001B661C)->append_node(camera, -1);
+            static_cast<LibUpdateList*>(D_001B661C)->append_node(camera, -1);
             break;
         }
         case 1:
@@ -2256,7 +2256,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
 
             if (added != 0)
             {
-                static_cast<LibClass178DD0&>(*static_cast<FieldResourceLoaderList*>(context->unk30)).append_node(loader, -1);
+                static_cast<LibUpdateList&>(*static_cast<FieldResourceLoaderList*>(context->unk30)).append_node(loader, -1);
                 return;
             }
 

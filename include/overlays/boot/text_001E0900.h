@@ -63,7 +63,7 @@ struct BootCardSlotState
 };
 
 /** Partial 0x58-byte Lib memory card object that runs the two transfer modes; boot calls the Lib constructor. */
-class BootModeOwner0910 : public BootListObject
+class BootModeOwner0910 : public LibListObject
 {
     public:
         /** @brief Initialize the memory card object. */
@@ -158,7 +158,7 @@ enum BootTrophyProbeEvent
  * file through a Lib memory card object and reports each slot's free-space state for the startup checks. Mode 0
  * and mode 1 select the two card slots.
  */
-class BootBattleTrophyCard : public BootListObject
+class BootBattleTrophyCard : public LibListObject
 {
     public:
         /** @brief Clear the transfer state, both modes, and the filename. */
@@ -372,7 +372,7 @@ enum BootStartupUnitStep
  * Screens shown before the opening movie, with vtable D_170ED0 in main data: the memory card space warning,
  * the progressive display offer and the PlayStation BB Unit status. Every step checks the main executable.
  */
-class BootStartupChecks : public BootListObject
+class BootStartupChecks : public LibListObject
 {
     public:
         /** @brief Start on the memory card check. */
@@ -402,8 +402,8 @@ class BootStartupChecks : public BootListObject
         /** Slot 2 state the warning was chosen for. */
         s32 shown_slot2;
 
-        BootContainer* container;
-        BootTextWidget* text;
+        LibContainer* container;
+        LibTextWidget* text;
 };
 
 /**
@@ -435,66 +435,10 @@ class BootFlatFloor : public BootFloorQuery
         }
 };
 
-extern "C" void lib_animation_release_channels(class BootAnimation* animation);
-
-/** Partial 0x70-byte Lib animation with vtable D_178220 in main data; boot calls the Lib constructor. */
-class BootAnimation : public BootListObject
-{
-    public:
-        /** @brief Construct an empty animation. */
-        BootAnimation();
-
-        /**
-         * @brief Release the current channels and resource, then play from borrowed data.
-         * @param data Animation data the caller keeps.
-         */
-        void set_resource(void* data)
-        {
-            if (entries)
-            {
-                lib_animation_release_channels(this);
-                delete[] entries;
-            }
-
-            targets_bound = 0;
-
-            if (!resource_is_borrowed)
-            {
-                operator delete(resource_data);
-            }
-
-            resource_is_borrowed = 1;
-            resource_data = data;
-        }
-
-        u8 unk14[0x1C];
-        void* resource_data;
-        u8 unk34[0xC];
-        u8* entries;
-        u8 unk44[0x24];
-        u8 resource_is_borrowed;
-        u8 unk69;
-
-        /** Cleared to restart the animation from its first frame. */
-        u8 unk6A;
-
-        u8 unk6B[3];
-        u8 targets_bound;
-        u8 unk6F;
-};
-
-/** Partial 0xD0-byte Lib animation target with vtable D_178370 in main data; boot calls the Lib constructor. */
-class BootAnimationTarget : public BootListObject
-{
-    public:
-        /** @brief Construct an empty target. */
-        BootAnimationTarget();
-
-        u8 unk14[0xBC];
-};
+extern "C" void lib_animation_release_channels(class LibAnimation* animation);
 
 /** Partial 0xB0-byte Lib scene with vtable D_175320 in main data; boot calls the Lib constructor. */
-class BootScene : public BootListObject
+class BootScene : public LibListObject
 {
     public:
         /** @brief Construct an empty scene. */
@@ -536,7 +480,7 @@ enum BootSettingsStage
  * sound output, event skip, voice playback, vibration, difficulty), with a speaker setup scene behind the sound
  * page, then the game starts. Cancelling on the first page goes back to the title.
  */
-class BootNewGameSettings : public BootListObject
+class BootNewGameSettings : public LibListObject
 {
     public:
         /** @brief Start loading the page images and the speaker setup scenes, and clear the owned objects. */
@@ -669,23 +613,23 @@ class BootNewGameSettings : public BootListObject
         BootClass170F30* girl_models[10];
 
         /** Walk animations, one per walk_state. */
-        BootAnimation* girl_animations[6];
+        LibAnimation* girl_animations[6];
 
-        BootAnimationTarget* animation_targets[6];
+        LibAnimationTarget* animation_targets[6];
 
         /** Installed in g_floor_query while the screen runs, so Lib sees a floor at height zero. */
         BootFlatFloor flat_floor;
 
-        BootContainer* container;
+        LibContainer* container;
 
         /** Description of the selected option. */
-        BootTextWidget* description_text;
+        LibTextWidget* description_text;
 
         BootSelectionCursor* cursor;
 };
 
 /** Boot's pad and memory card monitor, with vtable D_171030 in main data; samples both every frame. */
-class BootInput : public BootListObject
+class BootInput : public LibListObject
 {
     public:
         /** @brief Clear the card states and start querying the cards. */
@@ -810,7 +754,7 @@ enum BootMovieConstants
 };
 
 /** Partial 0x15E7C0-byte Lib movie player with vtable D_172500 in main data; boot calls the Lib constructor. */
-class BootMoviePlayer : public BootListObject
+class BootMoviePlayer : public LibListObject
 {
     public:
         /**
@@ -853,7 +797,7 @@ enum BootCaptionPhase
 };
 
 /** The opening movie with its timed captions, with vtable D_171050 in main data; Start skips it. */
-class BootOpeningMovie : public BootListObject
+class BootOpeningMovie : public LibListObject
 {
     public:
         /** @brief Create the movie player in its own heap, set up for 4:3 or widescreen. */
@@ -881,8 +825,8 @@ class BootOpeningMovie : public BootListObject
         BootResident113E40* movie_heap;
         BootMoviePlayer* player;
         BootImage* caption_image;
-        BootContainer* container;
-        BootTextWidget* caption_text;
+        LibContainer* container;
+        LibTextWidget* caption_text;
 };
 
 /** Blocks decoded from the boot program's common UI resource. */
@@ -895,7 +839,7 @@ enum BootCommonUiBlock
 };
 
 /** Partial 0x20-byte boot object with vtable D_171090 in main data. */
-class BootResourceLoader : public BootListObject
+class BootResourceLoader : public LibListObject
 {
     public:
         /**
@@ -4039,7 +3983,7 @@ s32 func_432720(BootModeOwner0910* owner, void* queue);
 void func_432660(BootModeOwner0910* owner, s32 mode, u32 enabled, u32 flags);
 s32 func_432310(BootModeOwner0910* owner, u32 mode, BootCardFileRequest* request);
 s32 func_432270(BootModeOwner0910* owner, s32 mode, s32* result);
-extern BootUpdateList* D_001B6614;
+extern LibUpdateList* D_001B6614;
 /** Product code at the start of every save name: "BASLUS-20488". */
 extern const char g_card_product_code[];
 /** Save name suffix of the battle trophy file: "BTLCOL". */

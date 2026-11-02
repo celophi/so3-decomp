@@ -114,7 +114,7 @@ public:
     u8 unk0f;
 
     /** List subobject that registered this node, or null after detachment. */
-    LibClass178DD0* owner;
+    LibUpdateList* owner;
 };
 
 /**
@@ -143,7 +143,7 @@ public:
  * that list through their owner field. Updates snapshot its nodes by list
  * kind, allow entry zero to load and request cancellation from later entries.
  */
-class FieldResourceLoaderList : public FieldListObject, public LibClass178DD0
+class FieldResourceLoaderList : public FieldListObject, public LibUpdateList
 {
 public:
     /** @brief Initialize the inherited field node and object list. */
@@ -172,9 +172,9 @@ public:
     /** @brief Prepend a node using its default list kind. @param node Node to register. */
     void insert(void* node)
     {
-        LibClass178DD0& list = *this;
+        LibUpdateList& list = *this;
         void* self = &list;
-        list.insert_node_after(self, node, LibClass178DD0::DEFAULT_NODE_KIND);
+        list.insert_node_after(self, node, LibUpdateList::DEFAULT_NODE_KIND);
     }
 };
 
@@ -187,7 +187,7 @@ public:
 };
 
 /** Partial class with bases at offsets 0x78 and 0x90 and a Lib member at 0xA0, with vtable D_14FE30 in main data. */
-class FieldClass14FE30 : public LibClass178DD0, public FieldListObject, public FieldClass14FE84
+class FieldClass14FE30 : public LibUpdateList, public FieldListObject, public FieldClass14FE84
 {
 public:
     static void* operator new(u32 size);
@@ -501,7 +501,7 @@ public:
 extern "C" bool func_001DDD30(FieldListOwner94* list, FieldClass151510** target);
 
 /** Resident Lib list that many Field objects insert themselves into. */
-extern "C" LibClass178DD0* D_001B6614;
+extern "C" LibUpdateList* D_001B6614;
 #endif
 
 #ifdef __cplusplus
@@ -549,7 +549,7 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed);
 #ifdef __cplusplus
 
 /** Registered field object list. */
-class FieldClass150E10 : public FieldListObject, public LibClass178DD0
+class FieldClass150E10 : public FieldListObject, public LibUpdateList
 {
 public:
     /** @brief Initialize the inherited field node and object list. */

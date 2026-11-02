@@ -11,7 +11,7 @@
 
 typedef struct ItemCreationCategoryRecord ItemCreationCategoryRecord;
 struct ItemCreationAllocationRecord;
-struct LibObject178660;
+struct LibContainer;
 struct FieldObject23BE00;
 
 typedef struct WorkshopExpansionWindow WorkshopExpansionWindow;
@@ -71,18 +71,18 @@ public:
     struct ItemCreationOptionResourceDisplay* unk150[6];
     struct LibObject172440* unk168[8];
     struct ItemCreationClass172870* unk188;
-    struct LibClass178630* unk18c;
+    struct LibPanel* unk18c;
     /** Item-preview switch control label. */
-    LibObject178750* preview_switch_label;
+    LibTextWidget* preview_switch_label;
     /** Item-list action controls label. */
-    LibObject178750* action_controls_label;
-    LibObject178750* unk198;
+    LibTextWidget* action_controls_label;
+    LibTextWidget* unk198;
     u8 unk19c[4];
-    LibObject178750* unk1a0;
-    LibObject178750* unk1a4;
+    LibTextWidget* unk1a0;
+    LibTextWidget* unk1a4;
     struct LibObject172410* unk1a8;
     /** Auxiliary container for item-detail widgets. */
-    LibObject178660* detail_container;
+    LibContainer* detail_container;
     /** Item-preview mode used by the list callbacks. */
     u8 preview_mode;
     u8 unk1b1[3];
@@ -144,14 +144,14 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
-    LibObject178750* yes_label;
-    LibObject178750* no_label;
+    LibTextWidget* yes_label;
+    LibTextWidget* no_label;
     FieldClass153130* choice_selector;
     FieldClass153170* selection_marker;
     bool line_development_requests[3];
 };
 
-struct LibObject175140;
+struct LibStringLabel;
 struct ItemCreationOptionResourceDisplay;
 
 /** @brief Inventor information window showing eight creation-skill talents. */
@@ -192,11 +192,11 @@ public:
     /** Selected inventor portrait display. */
     ItemCreationOptionResourceDisplay* portrait_display;
     /** Inventor name display backed by selection text. */
-    LibObject175140* name_text_display;
+    LibStringLabel* name_text_display;
     /** Inventor name display backed by message keys. */
-    LibObject178750* name_message_display;
+    LibTextWidget* name_message_display;
     /** Creation-skill label widgets. */
-    LibObject178750* skill_labels[9];
+    LibTextWidget* skill_labels[9];
     /** Numeric creation-skill talent displays. */
     LibObject174F20* talent_displays[9];
     /** Cached state used by the information toggle callbacks. */
@@ -207,9 +207,9 @@ public:
     u16 skill_mask;
 };
 
-struct LibClass178600;
-struct LibClass178630;
-struct LibObject178750;
+struct LibWidget;
+struct LibPanel;
+struct LibTextWidget;
 struct LibObject174F20;
 struct ItemCreationOptionResourceDisplay;
 
@@ -254,15 +254,15 @@ public:
      * @param unused Unused caller state word.
      */
     void func_003598E0(u16 mode, u32 unused);
-    LibClass178630* panel;
-    LibObject178750* primary_action_label;
-    LibObject178750* primary_control_label;
-    LibObject178750* unkb4;
-    LibObject178750* unkb8;
-    LibObject178750* unkbc;
-    LibObject178750* unkc0;
-    LibObject178750* unkc4;
-    LibObject178750* unkc8;
+    LibPanel* panel;
+    LibTextWidget* primary_action_label;
+    LibTextWidget* primary_control_label;
+    LibTextWidget* unkb4;
+    LibTextWidget* unkb8;
+    LibTextWidget* unkbc;
+    LibTextWidget* unkc0;
+    LibTextWidget* unkc4;
+    LibTextWidget* unkc8;
     ItemCreationOptionResourceDisplay* unkcc;
     LibObject174F20* unkd0;
     ItemCreationOptionResourceDisplay* unkd4;
@@ -291,8 +291,8 @@ public:
     virtual void func_slot60(s32 text_key);
     /** @brief Create the message window widgets. @param associated Full resource source word. @return One on success, or zero for missing widgets. */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* heading_text;
-    LibObject178750* message_text;
+    LibTextWidget* heading_text;
+    LibTextWidget* message_text;
     s32 message_scroll_span;
     u32 unkb4;
     s16 message_hold_count;
@@ -383,9 +383,9 @@ public:
     virtual void set_scroll_position(float start);
     /** @brief Rebuild the related category list. @param reset Whether to reset the selection. @param mode Category mode. */
     virtual void func_slot11c(u16 reset, u8 mode);
-    LibObject178750* unk138[12];
+    LibTextWidget* unk138[12];
     LibObject174F20* unk168[12];
-    LibClass178630* unk198;
+    LibPanel* unk198;
     ItemCreationClass1746A0* unk19c;
     ItemCreationSelectedDisplayState* unk1a0;
     u32 unk1a4;
@@ -427,18 +427,18 @@ public:
     u16 unkb4;
     u8 unkb6[2];
     u32 unkb8;
-    LibClass178630* unkbc;
-    LibClass178630* unkc0;
-    LibClass178630* unkc4;
-    LibObject178750* unkc8[6];
+    LibPanel* unkbc;
+    LibPanel* unkc0;
+    LibPanel* unkc4;
+    LibTextWidget* unkc8[6];
     ItemCreationOptionResourceDisplay* unke0[6];
-    LibObject178750* unkf8;
+    LibTextWidget* unkf8;
     float unkfc[4];
     s16 unk10c;
     u8 unk10e[2];
-    LibObject178750* unk110[3];
+    LibTextWidget* unk110[3];
     LibObject172410* unk11c[3];
-    LibObject178750* unk128[6];
+    LibTextWidget* unk128[6];
     LibObject174F20* unk140[3];
     u8 unk14c;
     u8 unk14d[3];
@@ -470,8 +470,8 @@ public:
     AssignedInventorGrid* unka8;
     u8 unkac;
     u8 unkad[0x3];
-    LibClass178630* unkb0;
-    LibObject178750* unkb4[2];
+    LibPanel* unkb0;
+    LibTextWidget* unkb4[2];
     float unkbc;
     float unkc0[3];
     FieldClass153130* unkcc;
@@ -510,8 +510,8 @@ public:
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
     AssignedInventorGrid* unkac;
-    LibClass178630* panel;
-    LibObject178750* skill_labels[8];
+    LibPanel* panel;
+    LibTextWidget* skill_labels[8];
     FieldClass153130* skill_selector;
     FieldClass153170* skill_marker;
     u8 unkdc;
@@ -602,13 +602,13 @@ public:
     FieldClass15B200* unk160[12];
     u8 unk190;
     u8 unk191[3];
-    LibObject178750* unk194[3];
-    LibObject178750* unk1a0[3];
+    LibTextWidget* unk194[3];
+    LibTextWidget* unk1a0[3];
     LibObject174F20* unk1ac[3];
-    LibObject178750* unk1b8[3];
-    LibObject178750* unk1c4[3];
-    LibObject178750* unk1d0[3];
-    LibObject178750* unk1dc[3];
+    LibTextWidget* unk1b8[3];
+    LibTextWidget* unk1c4[3];
+    LibTextWidget* unk1d0[3];
+    LibTextWidget* unk1dc[3];
     CreationSkillWindow* unk1e8;
     InventionPolicyWindow* unk1ec;
     u8 unk1f0;
@@ -659,13 +659,13 @@ public:
     FieldObject23CEA0* unkdc;
     FieldObject23BE00* unke0;
     LibObject174F20* unke4;
-    LibObject178750* unke8[9];
+    LibTextWidget* unke8[9];
     u8 unk10c;
     u8 unk10d;
     u8 unk10e[2];
     /** Cost of adding a development line, indexed by the current line count. */
     u32 additional_line_costs[3];
-    LibObject178750* unk11c;
+    LibTextWidget* unk11c;
     LibObject174F20* unk120;
 };
 
@@ -692,9 +692,9 @@ public:
     u8 unk124;
     u8 unk125;
     u8 unk126[2];
-    LibObject178750* unk128[3];
-    LibObject178750* unk134[3];
-    LibObject178750* unk140[3];
+    LibTextWidget* unk128[3];
+    LibTextWidget* unk134[3];
+    LibTextWidget* unk140[3];
 };
 
 /** @brief Fourteen-inventor selection grid for available team members. */

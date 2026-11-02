@@ -6,10 +6,10 @@
 #ifdef __cplusplus
 
 /**
- * @brief Set the draw flags (BOOT_DRAW_*).
+ * @brief Set the draw flags (LIB_DRAW_*).
  * @param value New flags.
  */
-inline void BootTransformOwner::set_draw_flags(u16 value)
+inline void LibTransformOwner::set_draw_flags(u16 value)
 {
     draw_flags = value;
 }
@@ -18,7 +18,7 @@ inline void BootTransformOwner::set_draw_flags(u16 value)
  * @brief Set the object's type ID.
  * @param value Type ID.
  */
-inline void BootTransformOwner::set_type_id(u16 value)
+inline void LibTransformOwner::set_type_id(u16 value)
 {
     type_id = value;
 }
@@ -32,13 +32,10 @@ inline BootWordQuad::BootWordQuad()
     unk00 = 0;
 }
 
-/** @brief Install the interface's vtable. */
-inline BootDmaCallbacks::BootDmaCallbacks()
-{
-}
+#include "overlays/lib/dma_callbacks_inlines.h"
 
 /** @brief Initialize the owner's state bytes and tracking words. */
-inline BootTransformOwner::BootTransformOwner()
+inline LibTransformOwner::LibTransformOwner()
 {
     draw_bucket = 0;
     matrix_ready = 0;
@@ -46,7 +43,7 @@ inline BootTransformOwner::BootTransformOwner()
     unk66 = 0;
     unk68 = 0;
     unk69 = 0;
-    draw_flags = BOOT_DRAW_FLAG_0010;
+    draw_flags = LIB_DRAW_FLAG_0010;
     type_id = 1;
     unk80 = 0;
     unk88 = 0;

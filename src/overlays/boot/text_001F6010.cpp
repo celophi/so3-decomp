@@ -28,7 +28,7 @@ u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 un
 
 extern void func_4D00B0(void* object);
 void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
-extern void* D_001B6630;
+extern LibDisplayManager* D_001B6630;
 void func_4333A0(BootImageStrip* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
 
 extern const char g_new_game_node_name[];
@@ -45,7 +45,6 @@ void func_4791F0(BootScene* scene, u8* data);
 void func_40B3A0(u8* data);
 void func_473AA0(BootScene* scene);
 
-void func_11F510(void* owner, void* object);
 }
 
 /** Title screen stages, including the hand-off for each menu choice. */
@@ -152,7 +151,7 @@ void BootTitleMenu::animate_items(u8 snap)
 
         if (item == selected)
         {
-            BootVector4 value;
+            LibVector4 value;
             copy_vector(&value, &node->scale);
 
             if (value.x < 1.08f && !snap)
@@ -212,7 +211,7 @@ void BootTitleMenu::animate_items(u8 snap)
         }
         else
         {
-            BootVector4 value;
+            LibVector4 value;
             copy_vector(&value, &node->scale);
 
             if (value.x > 1.05f)
@@ -328,7 +327,7 @@ void BootTitleMenu::update_item_availability()
         return;
     }
 
-    BootVector4 color;
+    LibVector4 color;
     copy_vector(&color, &collection_node->base_color_factor);
 
     if (first == BOOT_TROPHY_FILE_PRESENT || second == BOOT_TROPHY_FILE_PRESENT)
@@ -381,7 +380,7 @@ void BootTitleMenu::update()
     {
     case BOOT_TITLE_LOAD_SCENE:
     {
-        if (func_102D00(g_resource_queue) == 0)
+        if (func_00102D00(g_resource_queue) == 0)
         {
             break;
         }
@@ -401,7 +400,7 @@ void BootTitleMenu::update()
         delete[] game_data;
         game_data = 0;
         camera = lib_find_camera_entry(scene, g_title_camera_node_name);
-        D_001B6628->current_display = camera;
+        D_001B6628->current_display = static_cast<LibListObject*>(camera);
 
         if (initial_item != BOOT_TITLE_ITEM_AUTO)
         {
@@ -423,7 +422,7 @@ void BootTitleMenu::update()
         get_cursor_position(&x, &y);
         cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, x, y, 0.0f);
-        func_465B20(D_001B657C, cursor);
+        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         step++;
         break;
     }
@@ -516,7 +515,7 @@ void BootTitleMenu::update()
                 resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
             }
         }
-        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && func_115270(g_resource_archive, 1) == 1)
+        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && func_00115270(g_resource_archive, 1) == 1)
         {
             queue_fade();
             resident_sound_stop_music(g_sound, 0x1E, -1);
@@ -804,7 +803,7 @@ void progress_bar_reset(BootProgressBar* bar, s32 width, s32 height, u32 color, 
     progress_bar_draw(bar, 0, 1);
     func_4D6430(bar->model, bar->draw_buffer);
     bar->model->unk80 = D_001B6630;
-    bar->model->draw_flags |= BOOT_DRAW_FLAG_0400;
+    bar->model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(bar->model, -1);
 }
 
@@ -860,7 +859,7 @@ void BootScreenFade::on_packet_complete(u32 value)
 void BootScreenFade::render()
 {
     dma_pending = 1;
-    func_11F510(packet, static_cast<BootDmaCallbacks*>(this));
+    func_0011F510(packet, static_cast<LibDmaCallbacks*>(this));
 }
 
 /**
@@ -1000,7 +999,7 @@ BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
 
     set_type_id(0x4000);
     unk65 = 1;
-    set_draw_flags(BOOT_DRAW_FLAG_0400);
+    set_draw_flags(LIB_DRAW_FLAG_0400);
     packet = new (0) BootPacketBuffer(0x400);
     alpha = 1.0f;
     fade_speed = 1.0f;
@@ -1118,7 +1117,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     func_455BD0(image->draw_buffer, image->unk2c, 500.0f, 0);
     func_4D6430(image->model, image->draw_buffer);
     image->model->unk80 = D_001B6630;
-    image->model->draw_flags |= BOOT_DRAW_FLAG_0400;
+    image->model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(image->model, -1);
 }
 
@@ -1172,7 +1171,7 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
     func_455BD0(draw_buffer, unk2c, 500.0f, 0);
     func_4D6430(model, draw_buffer);
     model->unk80 = D_001B6630;
-    model->draw_flags |= BOOT_DRAW_FLAG_0400;
+    model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(model, -1);
 }
 
@@ -1315,7 +1314,7 @@ void BootGameLauncher::update()
 
             movie_heap = new (0) BootResident113E40;
             movie_heap->unk2C = 0x40;
-            func_113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
+            func_00113930(reinterpret_cast<ResidentHeap*>(movie_heap), BOOT_MOVIE_HEAP_SIZE);
             void* heap = resident_exchange_allocation_heap(movie_heap);
             player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
             resident_exchange_allocation_heap(heap);
@@ -1363,7 +1362,7 @@ void BootGameLauncher::update()
         step++;
         break;
     case BOOT_LAUNCH_HAND_OFF:
-        if (func_102D00(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
+        if (func_00102D00(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
         {
             lib_object_detach_owner(this);
             destroy();

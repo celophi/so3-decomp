@@ -40,7 +40,7 @@ static inline FieldVec4B lib_lod_add_position_offset(const FieldVec4B& value, co
  */
 static inline void lib_lod_set_position(LibLodController* object, const FieldVec4B& position)
 {
-    object->func_003EF770(reinterpret_cast<const LibVector4*>(&position));
+    object->copy_translation(reinterpret_cast<const LibVector4*>(&position));
 }
 
 typedef struct FourQuadwordCopyTargetOwnertext_0049B820
@@ -438,7 +438,7 @@ void LibLodController::copy_state(const LibLodController* source)
         objects[index] = source->objects[index];
     }
     position_offset = source->position_offset;
-    LibTransform::copy_transform_state(source);
+    LibTransform::copy_offset_transform_state(source);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8B10);
@@ -463,14 +463,14 @@ void lib_append_entry_handle(LibEntryHandleCollection* collection, void* object)
 void LibLodController::apply_position_offset(const FieldVec4A& offset)
 {
     position_offset = offset;
-    lib_lod_set_position(this, lib_lod_add_position_offset(*reinterpret_cast<const FieldVec4B*>(&unk20), offset));
+    lib_lod_set_position(this, lib_lod_add_position_offset(*reinterpret_cast<const FieldVec4B*>(&translation), offset));
     position_offset_applied = 1;
 }
 
 /** @brief Initialize the controller's offset flag, object count, and selected level. */
 LibLodController::LibLodController()
 {
-    unk6c = 6;
+    type_id = 6;
     position_offset_applied = 0;
     object_count = 0;
     active_level = -1;

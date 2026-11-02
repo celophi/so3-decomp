@@ -282,29 +282,29 @@ void FieldClass150280::func_001E7590()
     {
         unk2c = unk14->unk64 - 1.0f;
         func_004B4550(unk14, unk2c, 0);
-        LibClass178370* state = unk18;
+        LibAnimationTarget* state = unk18;
         state->unkc0 = 0;
         state->unkc1 = 0;
         state->unkc2 = 0;
-        state->unk60.packed = 0;
-        state->unk60.components[3] = 1.0f;
-        state->unk70.packed = 0;
-        state->unk70.components[3] = 1.0f;
-        state->unk80.packed = 0;
-        state->unk80.components[3] = 1.0f;
+        clear_vector(&state->unk60);
+        state->unk60.w = 1.0f;
+        clear_vector(&state->unk70);
+        state->unk70.w = 1.0f;
+        clear_vector(&state->unk80);
+        state->unk80.w = 1.0f;
         LibVector4 origin;
-        origin.components[0] = 0.0f;
-        origin.components[1] = 0.0f;
-        origin.components[2] = 0.0f;
-        origin.components[3] = 1.0f;
-        unk18->unk90.packed = origin.packed;
+        origin.x = 0.0f;
+        origin.y = 0.0f;
+        origin.z = 0.0f;
+        origin.w = 1.0f;
+        copy_vector(&unk18->unk90, &origin);
         LibVector4 zero;
-        zero.components[0] = 0.0f;
-        zero.components[1] = 0.0f;
-        zero.components[2] = 0.0f;
-        zero.components[3] = 0.0f;
-        unk18->unka0.packed = zero.packed;
-        unk18->unkb0.packed = origin.packed;
+        zero.x = 0.0f;
+        zero.y = 0.0f;
+        zero.z = 0.0f;
+        zero.w = 0.0f;
+        copy_vector(&unk18->unka0, &zero);
+        copy_vector(&unk18->unkb0, &origin);
     }
     else
     {
@@ -347,21 +347,21 @@ void FieldClass150280::func_001E76B0(float start, float end)
     }
     unk14->unk6a = 0;
     LibVector4 initial;
-    initial.components[0] = 0.0f;
-    initial.components[1] = 0.0f;
-    initial.components[2] = 0.0f;
-    initial.components[3] = 0.0f;
-    unk18->func_003EF780(&initial);
-    LibClass178370* state = unk18;
+    initial.x = 0.0f;
+    initial.y = 0.0f;
+    initial.z = 0.0f;
+    initial.w = 0.0f;
+    unk18->set_translation_vector(&initial);
+    LibAnimationTarget* state = unk18;
     state->unkc0 = 0;
     state->unkc1 = 0;
     state->unkc2 = 0;
-    state->unk60.packed = 0;
-    state->unk60.components[3] = 1.0f;
-    state->unk70.packed = 0;
-    state->unk70.components[3] = 1.0f;
-    state->unk80.packed = 0;
-    state->unk80.components[3] = 1.0f;
+    clear_vector(&state->unk60);
+    state->unk60.w = 1.0f;
+    clear_vector(&state->unk70);
+    state->unk70.w = 1.0f;
+    clear_vector(&state->unk80);
+    state->unk80.w = 1.0f;
     lib_animation_bind_state(unk14, unk18, D_31A7D8);
     func_004B3DE0(unk14, unk18);
     unk2c = start;
@@ -419,12 +419,12 @@ FieldClass150280::~FieldClass150280()
         unk66_3 = 0;
         if (unk14)
         {
-            unk14->func_003EF740();
+            unk14->destroy();
             unk14 = 0;
         }
         if (unk18)
         {
-            unk18->func_003EF740();
+            unk18->destroy();
             unk18 = 0;
         }
     }
@@ -489,12 +489,12 @@ s32 FieldClass1502E0::func_001E82B0(s32 key)
         return 0;
     }
     FieldClass150EB0* owner = unk78;
-    item->unk14 = new(0) LibClass178220;
-    item->unk18 = new(0) LibClass178370;
+    item->unk14 = new(0) LibAnimation;
+    item->unk18 = new(0) LibAnimationTarget;
     item->unk66_1 = 1;
     item->unk54 = key;
     item->unk1c = owner;
-    LibClass178220* anim = item->unk14;
+    LibAnimation* anim = item->unk14;
     if (anim->entries)
     {
         lib_animation_release_channels(anim);
@@ -611,7 +611,7 @@ FieldClass150320::~FieldClass150320()
  * @param owner Owner argument; unused.
  * @param duration Duration argument; unused.
  */
-FieldClass150320::FieldClass150320(LibClass178220* animation, void* owner, float duration)
+FieldClass150320::FieldClass150320(LibAnimation* animation, void* owner, float duration)
 {
     unk00 = animation;
     unk04 = 0;
@@ -1256,7 +1256,7 @@ void FieldClass1504F0::func_001DD7B0()
         resident_enqueue_object(g_resident_release_queues, this);
         if (unk18)
         {
-            static_cast<LibClass174610&>(*unk18).func_003EF740();
+            static_cast<LibCallbackTransform&>(*unk18).destroy();
             unk18 = 0;
         }
         unk4d_1 = 1;
@@ -1330,13 +1330,13 @@ void FieldClass1504F0::func_001ED160()
             unk34[index]->unk3d = 0;
         }
     }
-    LibClass178600* first_panel = unk24[0];
+    LibWidget* first_panel = unk24[0];
     first_panel->unk18.unk00 = 0.0f;
-    first_panel->unk3c = 1;
+    first_panel->needs_redraw = 1;
     unk24[0]->unk3d = 1;
     if (!unk2c[0])
     {
-        unk2c[0] = new(0) LibObject178750;
+        unk2c[0] = new(0) LibTextWidget;
     }
     if (!unk34[0])
     {
@@ -1353,9 +1353,9 @@ void FieldClass1504F0::func_001ED160()
             {
                 if (lib_text_init_resource_rectangle(unk2c[0], unk3c, 0x20, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
                 {
-                    LibClass174EF0* widget = unk2c[0];
-                    widget->unk80 = 0.8f;
-                    widget->unk3c = 1;
+                    LibDrawWidget* widget = unk2c[0];
+                    widget->draw_scale = 0.8f;
+                    widget->needs_redraw = 1;
                     unk2c[0]->unk3d = 1;
                 }
                 lib_container_attach_widget(unk18, unk2c[0]);
@@ -1363,9 +1363,9 @@ void FieldClass1504F0::func_001ED160()
             if (unk34[0])
             {
                 lib_numeric_widget_init_rectangle(unk34[0], resource->inventory_count, 0, 0, 92.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
-                LibClass174EF0* widget = unk34[0];
-                widget->unk9c = 0;
-                widget->unk3c = 1;
+                LibDrawWidget* widget = unk34[0];
+                widget->horizontal_align = 0;
+                widget->needs_redraw = 1;
                 unk34[0]->unk3d = 1;
                 lib_container_attach_widget(unk18, unk34[0]);
             }
@@ -1378,22 +1378,22 @@ void FieldClass1504F0::func_001ED160()
         ItemCreationCategoryRecord* second_resource = &((ResidentObject1B64F8*)D_001B64F8)->item_types[498];
         if (func_00217600(state, 0x80F))
         {
-            LibClass178600* second_panel = unk24[1];
+            LibWidget* second_panel = unk24[1];
             second_panel->unk18.unk00 = offset;
-            second_panel->unk3c = 1;
+            second_panel->needs_redraw = 1;
             unk24[1]->unk3d = 1;
             LibUiRect16* position = &unk24[1]->unk18;
             if (!unk2c[1])
             {
-                unk2c[1] = new(0) LibObject178750;
+                unk2c[1] = new(0) LibTextWidget;
             }
             if (unk2c[1])
             {
                 if (lib_text_init_resource_rectangle(unk2c[1], unk3c, 0x21, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
                 {
-                    LibClass174EF0* widget = unk2c[1];
-                    widget->unk80 = 0.9f;
-                    widget->unk3c = 1;
+                    LibDrawWidget* widget = unk2c[1];
+                    widget->draw_scale = 0.9f;
+                    widget->needs_redraw = 1;
                     unk2c[1]->unk3d = 1;
                 }
                 lib_container_attach_widget(unk18, unk2c[1]);
@@ -1405,9 +1405,9 @@ void FieldClass1504F0::func_001ED160()
             if (unk34[1])
             {
                 lib_numeric_widget_init_rectangle(unk34[1], second_resource->inventory_count, 0, 0, 80.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
-                LibClass174EF0* widget = unk34[1];
-                widget->unk9c = 0;
-                widget->unk3c = 1;
+                LibDrawWidget* widget = unk34[1];
+                widget->horizontal_align = 0;
+                widget->needs_redraw = 1;
                 unk34[1]->unk3d = 1;
                 lib_container_attach_widget(unk18, unk34[1]);
             }
@@ -1419,17 +1419,17 @@ void FieldClass1504F0::func_001ED160()
     }
     else
     {
-        LibClass178600* special_panel = unk24[0];
+        LibWidget* special_panel = unk24[0];
         special_panel->unk18.unk08 = 264.0f;
-        special_panel->unk3c = 1;
+        special_panel->needs_redraw = 1;
         LibUiRect16* position = &unk24[0]->unk18;
         if (unk2c[0])
         {
             if (lib_text_init_resource_rectangle(unk2c[0], unk3c, 0x22, 0, 16.0f + position->unk00, 8.0f + position->unk04, 352.0f, 48.0f))
             {
-                LibClass174EF0* widget = unk2c[0];
-                widget->unk80 = 0.8f;
-                widget->unk3c = 1;
+                LibDrawWidget* widget = unk2c[0];
+                widget->draw_scale = 0.8f;
+                widget->needs_redraw = 1;
                 unk2c[0]->unk3d = 1;
             }
             lib_container_attach_widget(unk18, unk2c[0]);
@@ -1437,9 +1437,9 @@ void FieldClass1504F0::func_001ED160()
         if (unk34[0])
         {
             lib_numeric_widget_init_rectangle(unk34[0], section->unk1b0, 0, 0, 208.0f + position->unk00, 8.0f + position->unk04, 0.0f, 0.0f);
-            LibClass174EF0* widget = unk34[0];
-            widget->unk9c = 0;
-            widget->unk3c = 1;
+            LibDrawWidget* widget = unk34[0];
+            widget->horizontal_align = 0;
+            widget->needs_redraw = 1;
             unk34[0]->unk3d = 1;
             lib_container_attach_widget(unk18, unk34[0]);
         }

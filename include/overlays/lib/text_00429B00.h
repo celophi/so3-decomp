@@ -4,9 +4,9 @@
 #include "types.h"
 
 #ifdef __cplusplus
-class LibClass178A90;
+class LibTransformOwner;
 #else
-typedef struct LibClass178A90 LibClass178A90;
+typedef struct LibTransformOwner LibTransformOwner;
 #endif
 
 typedef struct {
@@ -325,7 +325,7 @@ void* func_0042AA60(void* object, void* value);
 /** Return the second pointer argument unchanged. */
 void* func_0042AA70(void* object, void* value);
 /** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
-void func_0042AA00(LibClass178A90* object);
+void func_0042AA00(LibTransformOwner* object);
 
 /** Set the high packed mode at its target field and record whether either mode equals four. */
 void func_0042A340(void* object, u8 mode);

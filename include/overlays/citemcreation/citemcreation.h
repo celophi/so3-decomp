@@ -58,10 +58,10 @@ typedef struct ItemCreationClass186770
     struct InadequateLineDialog* unk118;
     struct FieldClass15B200* unk11c[3];
     struct FieldClass15B200* unk128[3];
-    struct LibObject178750* unk134[3];
-    struct LibObject178750* unk140[3];
-    struct LibObject178750* unk14c[3];
-    struct LibObject178750* unk158[3];
+    struct LibTextWidget* unk134[3];
+    struct LibTextWidget* unk140[3];
+    struct LibTextWidget* unk14c[3];
+    struct LibTextWidget* unk158[3];
     struct LibObject174F20* unk164[3];
     u8 unk170[4];
     struct ItemCreationOptionResourceDisplay* unk174[12];
@@ -239,14 +239,14 @@ public:
     /** @brief Create the workshop selector, facility labels and assignment controls. @param associated Full resource source word. @return Creation status. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelection* workshop_selection;
-    LibObject178750* workshop_name;
-    LibObject178750* facility_labels[9];
+    LibTextWidget* workshop_name;
+    LibTextWidget* facility_labels[9];
     class ItemCreationClass174C40* register_button;
     class ItemCreationClass174C40* back_button;
     class ItemCreationClass174C40* view_button;
-    LibObject178750* register_label;
-    LibObject178750* back_label;
-    LibObject178750* view_label;
+    LibTextWidget* register_label;
+    LibTextWidget* back_label;
+    LibTextWidget* view_label;
     class WorkshopFullDialog* workshop_full_dialog;
 };
 
@@ -285,19 +285,19 @@ public:
     LibClass175030* unk16c;
     u8 current_workshop_id;
     u8 unk171[3];
-    LibObject178750* current_workshop_name;
+    LibTextWidget* current_workshop_name;
     u8 source_workshop_id;
     u8 source_inventor_id;
     u8 unk17a[2];
-    LibObject178750* source_workshop_name;
-    LibObject178750* source_facility_labels[9];
-    LibClass174EF0* source_inventor_widgets[3];
+    LibTextWidget* source_workshop_name;
+    LibTextWidget* source_facility_labels[9];
+    LibDrawWidget* source_inventor_widgets[3];
     u8 destination_workshop_id;
     u8 destination_inventor_id;
     u8 unk1b2[2];
-    LibObject178750* destination_workshop_name;
-    LibObject178750* destination_facility_labels[9];
-    LibClass174EF0* destination_inventor_widgets[3];
+    LibTextWidget* destination_workshop_name;
+    LibTextWidget* destination_facility_labels[9];
+    LibDrawWidget* destination_inventor_widgets[3];
 };
 
 /** @brief Warning dialog shown when a workshop has no room for another inventor. */
@@ -340,11 +340,11 @@ public:
     virtual void func_slot74();
     FieldObject23CEA0* unka8;
     ItemCreationOptionResourceDisplay* unkac;
-    LibObject178750* unkb0;
-    LibObject178750* unkb4;
-    LibObject178750* unkb8;
-    LibObject178750* unkbc;
-    LibObject178750* unkc0;
+    LibTextWidget* unkb0;
+    LibTextWidget* unkb4;
+    LibTextWidget* unkb8;
+    LibTextWidget* unkbc;
+    LibTextWidget* unkc0;
     u8 unkc4;
     u8 unkc5;
     u8 unkc6[2];
@@ -364,11 +364,11 @@ public:
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
     u32 unkac;
-    LibObject178750* unkb0;
-    LibObject178750* unkb4;
+    LibTextWidget* unkb0;
+    LibTextWidget* unkb4;
     u8 unkb8;
     u8 unkb9[3];
-    LibObject178750* unkbc;
+    LibTextWidget* unkbc;
     LibObject174F20* unkc0;
 };
 
@@ -432,8 +432,8 @@ public:
     /** @brief Create the inventor title, skill labels and numeric talent displays. @param associated Full resource source word. @return Always one. */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* selection_state;
-    LibObject178750* inventor_name;
-    LibObject178750* skill_labels[9];
+    LibTextWidget* inventor_name;
+    LibTextWidget* skill_labels[9];
     LibObject174F20* skill_values[9];
     u8 selected_inventor_id;
     u8 unkf9[3];
@@ -462,7 +462,7 @@ public:
     ItemCreationSelectedDisplayState* selection_state;
     u8 line_index;
     u8 unkad[3];
-    LibObject178750* line_label;
+    LibTextWidget* line_label;
 };
 
 /** @brief Warning dialog for insufficient Fol to begin development. */
@@ -561,22 +561,22 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
     ItemCreationSelectedDisplayState* unka8;
-    LibObject178750* unkac;
+    LibTextWidget* unkac;
     LibObject172410* unkb0;
     LibObject174F20* unkb4;
     ItemCreationClass172870* unkb8;
-    LibObject178750* unkbc;
-    LibObject178750* unkc0;
+    LibTextWidget* unkbc;
+    LibTextWidget* unkc0;
     LibObject172440* unkc4[8];
-    LibObject178750* unke4;
-    LibObject178660* unke8;
+    LibTextWidget* unke4;
+    LibContainer* unke8;
     u8 unkec;
     u8 unked;
     u16 unkee;
     u16 unkf0;
     u8 unkf2[2];
     u32 unkf4;
-    LibClass178630* unkf8;
+    LibPanel* unkf8;
 };
 
 /** @brief Failure dialog for a line that created no items. */
@@ -614,7 +614,7 @@ public:
      * @return Setup status.
      */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* line_label;
+    LibTextWidget* line_label;
 };
 
 /** @brief Success dialog for an invented item. */
@@ -648,7 +648,7 @@ public:
      * @return Setup status.
      */
     virtual s32 func_slotf4(u32 associated);
-    LibObject178750* line_label;
+    LibTextWidget* line_label;
 };
 
 /** @brief Framed background panel for the development controls. */
@@ -754,7 +754,7 @@ public:
     ItemCreationSelectedDisplayState* selection_state;
     FieldClass153130* choice_selector;
     FieldClass153170* selection_marker;
-    LibObject178750* line_label;
+    LibTextWidget* line_label;
 };
 
 class LibClass1721F0;
@@ -793,14 +793,14 @@ public:
     virtual void func_slot10(LibClass1721F0* source, s32 index);
     /** @brief Update the row position. @param source Row owner. @param x Horizontal setting. @param y Vertical setting. */
     virtual void func_slot14(LibClass1721F0* source, float x, float y);
-    LibObject178750 inventor_name;
-    LibObject178750 contract_status_label;
-    LibObject178750 skill_label;
-    LibObject178750 work_status_label;
+    LibTextWidget inventor_name;
+    LibTextWidget contract_status_label;
+    LibTextWidget skill_label;
+    LibTextWidget work_status_label;
 };
 
 /** @brief Panel widget used by the item-creation windows. */
-class ItemCreationClass184F30 : public LibClass178630
+class ItemCreationClass184F30 : public LibPanel
 {
 public:
     /** @brief Initialize the widget and select kind 2. */
@@ -840,7 +840,7 @@ public:
 };
 
 /** @brief Display container for item-creation child widgets. */
-class ItemCreationClass184F60 : public LibObject178660, public ItemCreationClass1723F0
+class ItemCreationClass184F60 : public LibContainer, public ItemCreationClass1723F0
 {
 public:
     /** @brief Initialize the container and its widget aggregate. */
@@ -1023,7 +1023,7 @@ u32 func_0034FF60(ItemCreationSelectedDisplayState* object);
  * @param object Object containing the field.
  * @param value Value to store.
  */
-void func_003527C0(struct LibClass174610* object, u16 value);
+void func_003527C0(struct LibCallbackTransform* object, u16 value);
 
 /**
  * @brief Clear the flag byte in 24 nested objects.

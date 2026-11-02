@@ -89,7 +89,7 @@ struct FieldContext26FF70;
 struct FieldClass151620;
 struct FieldListObject;
 struct FieldClass151570;
-struct LibClass178DD0;
+struct LibUpdateList;
 struct FieldShapeOwner18;
 #ifdef __cplusplus
 extern "C" {
@@ -103,9 +103,9 @@ void func_0020DDD0(struct FieldClass151640* object, struct FieldContext26FF70* c
 /** @brief Refresh the named transforms of the attached shape entries. @param object Shape data and list owner. */
 void func_0020DE80(struct FieldClass151640* object);
 /** @brief Move source nodes into the inherited shape list. @param object Destination shape list owner. @param source Source list. */
-void func_0020DEF0(struct FieldClass151640* object, struct LibClass178DD0* source);
+void func_0020DEF0(struct FieldClass151640* object, struct LibUpdateList* source);
 /** @brief Move the inherited shape nodes into a destination list. @param object Source shape list owner. @param destination Destination list. */
-void func_0020DF80(struct FieldClass151640* object, struct LibClass178DD0* destination);
+void func_0020DF80(struct FieldClass151640* object, struct LibUpdateList* destination);
 /** @brief Detach and delete an optional shape node. @param object Shape list owner. @param node Node to remove, or null. */
 void func_0020E090(struct FieldClass151640* object, struct FieldListObject* node);
 /** @brief Append the shape entry and bind an optional animation attachment. @param object Shape list owner. @param entry Entry to append. @return Created attachment, or null. */

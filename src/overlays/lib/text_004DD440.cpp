@@ -211,7 +211,7 @@ const void* func_004E0FB0(void)
     return D_50CD80;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E0FC0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __ct__20LibOrientedTransformFv);
 
 extern "C" void func_004E1020(void* object)
 {
@@ -253,14 +253,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1450);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1460);
 
 /** @brief Clear the manager camera reference, then detach and queue the transform. */
-void LibClass179080::func_003EF740()
+void LibClass179080::destroy()
 {
-    LibClass178F30* manager = static_cast<LibClass178F30*>(owner);
+    LibDisplayManager* manager = static_cast<LibDisplayManager*>(owner);
     if (manager != 0 && manager->current_display == this)
     {
         manager->current_display = 0;
     }
-    LibClass178A90::func_003EF740();
+    LibTransformOwner::destroy();
 }
 
 /** @brief Initialize viewport bounds and default projection settings. @param context Resident viewport context. */
@@ -349,7 +349,7 @@ void LibClass179080::update()
     unk63 = 0;
     LibTransform::update();
     transform_dirty = 1;
-    if (static_cast<LibClass178F30*>(owner)->current_display == this)
+    if (static_cast<LibDisplayManager*>(owner)->current_display == this)
     {
         func_004E24D0();
     }
@@ -425,7 +425,7 @@ void LibClass179080::copy_camera(const LibClass179080* source)
 {
     copy_view_and_fog(source);
     look_at_target = source->look_at_target;
-    LibTransform::copy_transform_state(source);
+    LibTransform::copy_offset_transform_state(source);
 }
 
 /** @brief Copy the camera's view and fog settings. @param source Camera to copy. */

@@ -162,7 +162,7 @@ class ItemCoordinateList
 };
 
 /** Item menu State: owns the windows, the party selection, and what the player picked. */
-class ItemController : public LibClass171FF0, public FieldClass153E30
+class ItemController : public LibDmaCallbacks, public FieldClass153E30
 {
     public:
         /** @brief Initialize the controller's bases and clear its window and selection state. */
@@ -287,8 +287,8 @@ class ItemDropConfirmWindow : public FieldClass15AE70
         /** Two-column Yes/No grid; its unk114 is the selected column. */
         FieldObject23CEA0* grid;
 
-        LibObject178750* yes_text;
-        LibObject178750* no_text;
+        LibTextWidget* yes_text;
+        LibTextWidget* no_text;
 };
 
 /** Gauge origin, zeroed on construction. */
@@ -355,7 +355,7 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
         virtual ~ItemHpMpGauge();
 
         /** @brief Submit the drawing packet for DMA notification. */
-        virtual void func_003EEBE0();
+        virtual void render();
 
         /** @brief Leave the default update state unchanged. */
         virtual void update();
@@ -364,10 +364,10 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
         virtual s32 get_default_list_kind();
 
         /** @brief Detach and queue the gauge for release. */
-        virtual void func_003EF740();
+        virtual void destroy();
 
         /** @brief Restore the saved transform state. */
-        virtual void func_003F4420();
+        virtual void set_default_draw_bucket();
 
         /**
          * @brief Update gauge visibility and rebuild changed packets.
@@ -378,7 +378,7 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
         virtual void func_0044B100(u32 first, u32 second, u32 third);
 
         /** @brief Complete DMA notification processing. @param value Unused notification value. */
-        virtual void func_003F4410(u32 value);
+        virtual void on_packet_complete(u32 value);
 
         /**
          * @brief Initialize the gauge transform.
@@ -415,7 +415,7 @@ class ItemCoordinateSelector : public LibClass175030
         virtual void update();
 
         /** @brief Leave the default notification hook unchanged. */
-        virtual void func_003EEBE0();
+        virtual void render();
 
         ItemCoordinateList positions;
 
@@ -499,7 +499,7 @@ class ItemTypeListWindow : public FieldClass15AD40
         virtual void rebuild_list(s32 reset, s32 category);
 
         /** ":" after each item name. */
-        LibObject178750* separators[14];
+        LibTextWidget* separators[14];
 
         LibObject174F20* counts[14];
         ItemController* controller;
@@ -598,7 +598,7 @@ class ItemControlHelpWindow : public FieldClass15AE70
         virtual s32 func_slotf4(u32 associated);
 
         /** Sort, Back and Select. */
-        LibObject178750* prompts[3];
+        LibTextWidget* prompts[3];
 
         float width;
         float height;
@@ -646,7 +646,7 @@ class ItemHelpWindow : public FieldClass15AE70
          */
         virtual s32 func_slotf4(u32 associated);
 
-        LibObject178750* text_display;
+        LibTextWidget* text_display;
 
         /** Help line width plus a six-pixel gap. */
         s32 scroll_extent;
@@ -770,7 +770,7 @@ class ItemEquipWindow : public FieldClass15AE70
         ItemCreationOptionResourceDisplay* portraits[8];
 
         /** "Up!", "Down!", "Same!" or "..." for ATK, DEF and INT. */
-        LibObject178750* stat_results[8][3];
+        LibTextWidget* stat_results[8][3];
 };
 
 /** Party panels for using the selected item, with HP, MP, status and gauges. */
@@ -835,7 +835,7 @@ class ItemUseWindow : public FieldClass15AE70
         LibObject174F20* mp_values[8];
         LibObject174F20* max_hp_values[8];
         LibObject174F20* max_mp_values[8];
-        LibObject175140* names[8];
+        LibStringLabel* names[8];
         ItemCreationOptionResourceDisplay* portraits[8];
 
         /** Three status icons, then the incapacitated portrait. */
@@ -941,24 +941,24 @@ class ItemInstanceListWindow : public FieldClass15AD40
         /** Line under the rows; it moves up while the details are shown. */
         ItemCreationClass172870* divider;
 
-        LibClass178630* panel;
+        LibPanel* panel;
 
         /** "Drop / Details" prompt. */
-        LibObject178750* details_prompt;
+        LibTextWidget* details_prompt;
 
         /** "Back / Use"; with the details shown, "Switch / Back", or "Back" for a valuable. */
-        LibObject178750* action_prompt;
+        LibTextWidget* action_prompt;
 
         /** Icon showing how many factors each visible item has. */
         ItemCreationOptionResourceDisplay* factor_marks[6];
 
-        LibObject178660* detail_container;
-        LibObject178750* category_label;
+        LibContainer* detail_container;
+        LibTextWidget* category_label;
         u8 unk1a0[4];
-        LibObject178750* description;
+        LibTextWidget* description;
 
         /** "Factor". */
-        LibObject178750* factor_heading;
+        LibTextWidget* factor_heading;
 
         /** Name of the selected item type, drawn large. */
         LibObject172410* selected_item;

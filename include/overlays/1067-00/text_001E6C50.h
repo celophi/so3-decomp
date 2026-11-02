@@ -283,7 +283,7 @@ struct FieldChannelPool
 class FieldClass150320
 {
 public:
-    LibClass178220* unk00;
+    LibAnimation* unk00;
     FieldSavedChannelEntry* unk04;
     s32 unk08;
 
@@ -293,7 +293,7 @@ public:
      * @param owner Owner argument; unused.
      * @param duration Duration argument; unused.
      */
-    FieldClass150320(LibClass178220* animation, void* owner, float duration);
+    FieldClass150320(LibAnimation* animation, void* owner, float duration);
 
     /** @brief Release the entries, then destroy the object. */
     virtual ~FieldClass150320();
@@ -344,11 +344,11 @@ public:
      */
     FieldVec4A func_001E78B0(void* arg, bool flag8, bool flag9, float step);
 
-    LibClass178220* unk14;
-    LibClass178370* unk18;
+    LibAnimation* unk14;
+    LibAnimationTarget* unk18;
     FieldClass150EB0* unk1c;
-    LibClass171EF0* unk20;
-    LibClass178A90* unk24;
+    LibOrientedTransform* unk20;
+    LibTransformOwner* unk24;
     LibClass173180* unk28;
     float unk2c;
     float unk30;
@@ -483,7 +483,7 @@ struct FieldShapeRecord20
 struct FieldShapeOwner18
 {
     FieldShapeOwner18* unk00;
-    LibClass178A90* unk04;
+    LibTransformOwner* unk04;
     u8 unk08[2];
     u8 unk0a;
     u8 unk0b;
@@ -584,7 +584,7 @@ public:
     u32 unk14;
     FieldShapeOwner18* unk18;
     FieldShapeRecord20* unk1c;
-    LibClass178A90* unk20;
+    LibTransformOwner* unk20;
     FieldVec4B* unk24;
     FieldVec4B* unk28;
     FieldIndexPair* unk2c;
@@ -671,11 +671,11 @@ public:
     virtual void func_001DD7B0();
 
     FieldObject24B6B0* unk14;
-    LibObject178660* unk18;
-    LibClass178630* unk1c;
-    LibObject178750* unk20;
-    LibClass178630* unk24[2];
-    LibObject178750* unk2c[2];
+    LibContainer* unk18;
+    LibPanel* unk1c;
+    LibTextWidget* unk20;
+    LibPanel* unk24[2];
+    LibTextWidget* unk2c[2];
     LibObject174F20* unk34[2];
     s32 unk3c;
     FieldListObject* unk40;
@@ -962,7 +962,7 @@ public:
     void append_shape(FieldShapeOwner18* owner, FieldShapeRecord20* record)
     {
         FieldClass150330* shape = new(0) FieldClass150330;
-        unk38.append_node(shape, LibClass178DD0::DEFAULT_NODE_KIND);
+        unk38.append_node(shape, LibUpdateList::DEFAULT_NODE_KIND);
         shape->unk34 = &unk34->unk08[owner->unk0c].unk04;
         shape->func_001EA2E0(owner, record, 0x8040FF40, unkc4_5);
     }
@@ -986,7 +986,7 @@ public:
     u8 unk14[0x1C];
     FieldShapeOwner18* unk30;
     FieldShapeData10* unk34;
-    LibClass178DD0 unk38;
+    LibUpdateList unk38;
     FieldVec4A unkb0;
     s32 unkc0;
     u8 unkc4_0 : 1;

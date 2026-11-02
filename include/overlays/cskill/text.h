@@ -48,12 +48,12 @@ typedef struct FieldClass15AE70 FieldClass15AE70;
 typedef struct SkillCharacterStats SkillCharacterStats;
 #ifdef __cplusplus
 class FieldClass153E30;
-class LibClass171EF0;
-class LibObject178660;
+class LibOrientedTransform;
+class LibContainer;
 #else
 typedef struct FieldClass153E30 FieldClass153E30;
-typedef struct LibClass171EF0 LibClass171EF0;
-typedef struct LibObject178660 LibObject178660;
+typedef struct LibOrientedTransform LibOrientedTransform;
+typedef struct LibContainer LibContainer;
 #endif
 typedef struct SkillTacticalPromptWindow SkillTacticalPromptWindow;
 typedef struct SkillCostWindow SkillCostWindow;
@@ -125,7 +125,7 @@ struct SkillPairList184258
 };
 
 /** Menu controller with DMA notification and Field callback interfaces. */
-struct SkillController : public LibClass171FF0, public FieldClass153E30
+struct SkillController : public LibDmaCallbacks, public FieldClass153E30
 {
     /** @brief Initialize the controller and clear its window links. */
     SkillController();
