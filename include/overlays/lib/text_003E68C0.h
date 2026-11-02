@@ -25,9 +25,9 @@ public:
 };
 
 class LibClass178A90;
-class LibClass171EC0;
-class LibClass171EF0;
-union LibVector4;
+class LibPositionTransform;
+class LibOrientedTransform;
+struct LibVector4;
 
 /** @brief Store state value 8 in the transform's byte at offset 0x60. @param object Transform owner. */
 extern "C" void func_003F4500(LibClass178A90* object);
@@ -69,29 +69,48 @@ extern "C" void* func_003F4570(void);
 /** @brief Clear the receiver's first two words and return the receiver. @param object Receiver. @return The receiver. */
 extern "C" void* func_003F42A0(void* object);
 
-/** Four-float Lib vector with a packed representation for full-width transfers. */
-union LibVector4
+/** Four aligned floating-point vector components. */
+struct LibVector4
 {
-    unsigned __int128 packed;
-    float components[4];
+    float x;
+    float y;
+    float z;
+    float w;
 } __attribute__((aligned(16)));
 
-/** @brief Copy a vector into the position transform. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EF770(LibClass171EC0* object, const LibVector4* value);
-/** @brief Copy a vector into the position transform. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EF780(LibClass171EC0* object, const LibVector4* value);
+/**
+ * @brief Copy a vector as one 128-bit value.
+ *
+ * Plain assignment copies four words; the game uses this for most copies.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(LibVector4* destination, const LibVector4* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
+/**
+ * @brief Zero all four components with one 128-bit store.
+ * @param vector Vector to clear.
+ */
+static inline void clear_vector(LibVector4* vector)
+{
+    *(unsigned __int128*)vector = 0;
+}
+
 /** @brief Copy the position vector and mark the transform dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EEE70(LibClass171EF0* object, const LibVector4* value);
+extern "C" void func_003EEE70(LibOrientedTransform* object, const LibVector4* value);
 /** @brief Copy the position vector and mark the transform dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EEE90(LibClass171EF0* object, const LibVector4* value);
+extern "C" void func_003EEE90(LibOrientedTransform* object, const LibVector4* value);
 /** @brief Set the position xyz components, set w to one, and mark the transform dirty. @param object Transform to update. @param x First component. @param y Second component. @param z Third component. */
-extern "C" void func_003EEEB0(LibClass171EF0* object, float x, float y, float z);
+extern "C" void func_003EEEB0(LibOrientedTransform* object, float x, float y, float z);
 /** @brief Copy the primary transform vector and mark it dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EEF30(LibClass171EF0* object, const LibVector4* value);
+extern "C" void convert_rotation(LibOrientedTransform* object, const LibVector4* value);
 /** @brief Copy the primary transform vector and mark it dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EEF60(LibClass171EF0* object, const LibVector4* value);
+extern "C" void set_rotation_vector(LibOrientedTransform* object, const LibVector4* value);
 /** @brief Set the primary transform vector's xyz components, set w to one, and mark it dirty. @param object Transform to update. @param x First component. @param y Second component. @param z Third component. */
-extern "C" void func_003EEF90(LibClass171EF0* object, float x, float y, float z);
+extern "C" void set_rotation(LibOrientedTransform* object, float x, float y, float z);
 
 /** Partially known 8-byte buffer entry; the signed value is at offset 6. */
 struct LibClass3F5B80Entry
@@ -164,46 +183,43 @@ public:
 };
 
 /** Virtual intrusive-link root. */
-class LibClass171E80
+class LibLink
 {
 public:
     /** @brief Destroy the intrusive-link root. */
-    virtual ~LibClass171E80()
+    virtual ~LibLink()
     {
     }
 };
 /** Intrusive list sentinel initialized by the resident list constructor. */
-class LibClass171E90 : public LibClass171E80
+class LibListSentinel : public LibLink
 {
 public:
     /** @brief Clear the intrusive links before a sentinel owner installs itself. */
-    LibClass171E90() : previous(0), next(0)
+    LibListSentinel() : previous(0), next(0)
     {
     }
     /** @brief Destroy the list sentinel and its virtual root. */
-    virtual ~LibClass171E90()
+    virtual ~LibListSentinel()
     {
     }
-    LibClass171E90* previous;
-    LibClass171E90* next;
+    LibListSentinel* previous;
+    LibListSentinel* next;
 };
 class LibClass178DD0;
 /** @brief Detach an object from its owner. @param object Intrusive receiver. */
 extern "C" void lib_object_detach_owner(void* object);
 
-/**
- * Partial 0x14-byte intrusive object with its vtable pointer at offset 0.
- * Vtable D_171EA0 is stored in main data. Slot 4 remains unknown.
- */
-class LibClass171EA0 : public LibClass171E90
+/** 0x14-byte object kept in an owner's intrusive list, with vtable D_171EA0 in main data. */
+class LibListObject : public LibListSentinel
 {
 public:
     /** @brief Clear the object flags and its owner after initializing the links. */
-    LibClass171EA0() : is_listed(0), unk0f(0), owner(0)
+    LibListObject() : is_listed(0), object_kind(0), owner(0)
     {
     }
     /** @brief Detach from the owner, then destroy the intrusive links. */
-    virtual ~LibClass171EA0()
+    virtual ~LibListObject()
     {
         lib_object_detach_owner(this);
     }
@@ -212,124 +228,155 @@ public:
     virtual s32 get_default_list_kind();
 
     /** @brief Delete the object through its virtual destructor; null is ignored. */
-    virtual void func_003EF740();
+    virtual void destroy();
 
     /** @brief Advance this registered object's state; the owning list's update pass calls it. */
     virtual void update();
 
-    /** @brief Virtual slot 4. */
-    virtual void func_003EEBE0();
+    /** @brief Virtual slot 4; the base implementation does nothing. */
+    virtual void render();
     s16 list_kind;
     u8 is_listed;
-    u8 unk0f;
+
+    /** Type tag; zero by default, two for transform owners. */
+    u8 object_kind;
+
     LibClass178DD0* owner;
 };
 
-/** Position transform, with root vtable D_171EC0. */
-class LibClass171EC0 : public LibClass171EA0
+/** Position transform, with vtable D_171EC0 in main data. */
+class LibPositionTransform : public LibListObject
 {
 public:
     /** @brief Destroy the transform. */
-    virtual ~LibClass171EC0();
+    virtual ~LibPositionTransform()
+    {
+    }
+
     /**
-     * @brief Update transform components.
-     * @param x Scalar component.
-     * @param y Scalar component.
-     * @param z Scalar component.
+     * @brief Set the position and a w component of one.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
      */
-    virtual void func_003EF790(float x, float y, float z);
+    virtual void set_translation(float x, float y, float z);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Copy the position.
+     * @param value Source vector.
      */
-    virtual void func_003EF780(const LibVector4* value);
+    virtual void set_translation_vector(const LibVector4* value);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Copy the position.
+     * @param value Source vector.
      */
-    virtual void func_003EF770(const LibVector4* value);
-    u8 unk14[0x0C];
-    LibVector4 unk20;
+    virtual void copy_translation(const LibVector4* value);
+
+    u8 unk14[0xC];
+    LibVector4 translation;
 };
-/** Position, quaternion and scale transform, with root vtable D_171EF0. */
-class LibClass171EF0 : public LibClass171EC0
+/** Position, rotation and scale transform, with vtable D_171EF0 in main data. */
+class LibOrientedTransform : public LibPositionTransform
 {
 public:
+    /** @brief Initialize the transform. */
+    LibOrientedTransform();
+
     /** @brief Destroy the transform. */
-    virtual ~LibClass171EF0();
+    virtual ~LibOrientedTransform()
+    {
+    }
+
     /**
-     * @brief Update transform components.
-     * @param x Scalar component.
-     * @param y Scalar component.
-     * @param z Scalar component.
+     * @brief Set the position and a w component of one, and mark the transform dirty.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
      */
-    virtual void func_003EF790(float x, float y, float z);
+    virtual void set_translation(float x, float y, float z);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Copy the position and mark the transform dirty.
+     * @param value Source vector.
      */
-    virtual void func_003EF780(const LibVector4* value);
+    virtual void set_translation_vector(const LibVector4* value);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Copy the position and mark the transform dirty.
+     * @param value Source vector.
      */
-    virtual void func_003EF770(const LibVector4* value);
+    virtual void copy_translation(const LibVector4* value);
+
     /**
-     * @brief Update transform components.
-     * @param x Scalar component.
-     * @param y Scalar component.
-     * @param z Scalar component.
+     * @brief Convert three rotation components into the rotation vector and mark the transform dirty.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
      */
-    virtual void func_003EEF90(float x, float y, float z);
+    virtual void set_rotation(float x, float y, float z);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Convert a rotation into the rotation vector and mark the transform dirty.
+     * @param value Source rotation.
      */
-    virtual void func_003EEF60(const LibVector4* value);
+    virtual void set_rotation_vector(const LibVector4* value);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Convert a rotation into the rotation vector and mark the transform dirty.
+     * @param value Source rotation.
      */
-    virtual void func_003EEF30(const LibVector4* value);
+    virtual void convert_rotation(const LibVector4* value);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Copy the rotation vector and mark the transform dirty.
+     * @param value Source vector.
      */
-    virtual void func_003EEF10(const LibVector4* value);
+    virtual void set_orientation(const LibVector4* value);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Copy the rotation vector and mark the transform dirty.
+     * @param value Source vector.
      */
-    virtual void func_003EEEF0(const LibVector4* value);
+    virtual void copy_orientation(const LibVector4* value);
+
     /**
-     * @brief Update transform components.
-     * @param x Scalar component.
-     * @param y Scalar component.
-     * @param z Scalar component.
-     * @param w Scalar component.
+     * @brief Set all four rotation components and mark the transform dirty.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     * @param w Fourth component.
      */
-    virtual void func_003EEED0(float x, float y, float z, float w);
+    virtual void set_orientation_components(float x, float y, float z, float w);
+
     /**
-     * @brief Update transform components.
-     * @param x Scalar component.
-     * @param y Scalar component.
-     * @param z Scalar component.
+     * @brief Set the scale's xyz components and mark the transform dirty.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
      */
-    virtual void func_003EF010(float x, float y, float z);
+    virtual void set_scale(float x, float y, float z);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Copy the scale vector and mark the transform dirty.
+     * @param value Source vector.
      */
-    virtual void func_003EEFF0(const LibVector4* value);
+    virtual void set_scale_vector(const LibVector4* value);
+
     /**
-     * @brief Update transform components.
-     * @param value Vector components.
+     * @brief Copy the scale vector and mark the transform dirty.
+     * @param value Source vector.
      */
-    virtual void func_003EEFD0(const LibVector4* value);
-    LibVector4 unk30;
-    LibVector4 unk40;
+    virtual void copy_scale(const LibVector4* value);
+
+    /** Rotation as a quaternion; Euler angles are converted on the way in. */
+    LibVector4 orientation;
+
+    LibVector4 scale;
+
     /** Nonzero when the transformation matrices need rebuilding. */
     u8 transform_dirty;
+
     u8 unk51;
 };
 #endif

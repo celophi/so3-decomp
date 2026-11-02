@@ -148,17 +148,17 @@ extern "C"
 class LibClass178F30;
 
 /** Partial 0x90-byte transform owner with vtable D_178A90 in main data. */
-class LibClass178A90 : public LibClass171EF0
+class LibClass178A90 : public LibOrientedTransform
 {
 public:
     /** @brief Destroy the transform owner. */
     virtual ~LibClass178A90();
 
     /** @brief Detach and queue the transform owner, then clear its tracking mask. */
-    virtual void func_003EF740();
+    virtual void destroy();
 
     /** @brief Run the default transform update hook. */
-    virtual void func_003EEBE0();
+    virtual void render();
 
     /**
      * @brief Set the translation coordinates and mark the transform dirty.
@@ -166,19 +166,19 @@ public:
      * @param y Vertical translation.
      * @param z Third translation component.
      */
-    virtual void func_003EF790(float x, float y, float z);
+    virtual void set_translation(float x, float y, float z);
 
     /**
      * @brief Copy the translation vector and mark the transform dirty.
      * @param value Translation vector to copy.
      */
-    virtual void func_003EF780(const LibVector4* value);
+    virtual void set_translation_vector(const LibVector4* value);
 
     /**
      * @brief Copy the translation vector and mark the transform dirty.
      * @param value Translation vector to copy.
      */
-    virtual void func_003EF770(const LibVector4* value);
+    virtual void copy_translation(const LibVector4* value);
 
     /** @brief Clear the byte at offset 0x60. */
     virtual void func_003F4420();
@@ -336,14 +336,14 @@ extern "C" s32 lib_list_release_node_buffer(LibClass178DD0* owner);
  * @param node Node supplying the old kind.
  * @param new_kind Kind whose count is incremented.
  */
-extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibClass171EA0* node, s32 new_kind);
+extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibListObject* node, s32 new_kind);
 
 /**
  * @brief Update the owner's kind counts, then store the node's list kind.
  * @param node Node whose list kind is changed.
  * @param kind Kind passed to the owner; its low halfword is stored in the node.
  */
-extern "C" void lib_object_set_list_kind(LibClass171EA0* node, s32 kind);
+extern "C" void lib_object_set_list_kind(LibListObject* node, s32 kind);
 
 /**
  * @brief Collect the list chain's nodes into an array grouped by list kind.
@@ -360,7 +360,7 @@ extern "C" void lib_list_collect_nodes_by_kind(LibClass178DD0* list, void** item
 extern "C" void lib_list_add_chain_kind_offsets(LibClass178DD0* list, u32* offsets);
 
 /** 0x98-byte display manager with a list interface and secondary intrusive receiver. */
-class LibClass178F30 : public LibClass178DD0, public LibClass171EA0
+class LibClass178F30 : public LibClass178DD0, public LibListObject
 {
 public:
     /** @brief Initialize the manager interfaces and current display. */
@@ -372,7 +372,7 @@ public:
     /** @brief Update the manager's intrusive receiver. */
     virtual void update();
     u8 unk8c[4];
-    LibClass171EA0* current_display;
+    LibListObject* current_display;
     u8 unk94;
     u8 unk95;
     u8 unk96[2];
@@ -792,7 +792,7 @@ void func_004DBEE0(struct FieldPacketQueue* queue, s32 flag);
 #ifdef __cplusplus
 
 /** Temporary object-node buffer. */
-class LibClass178B10 : public LibClass171EA0
+class LibClass178B10 : public LibListObject
 {
 public:
     LibClass178B10(s32 count);

@@ -45,7 +45,7 @@ struct BootTrophyRecord
  * Battle Trophies viewer, with vtable D_171CD0 in main data. It loads the trophy data from a memory card slot and
  * lists the 300 battle trophies.
  */
-class BootBattleTrophyViewer : public BootListObject
+class BootBattleTrophyViewer : public LibListObject
 {
     public:
         /** @brief Start loading resource 0x2B, clear the owned objects and build the three palettes. */

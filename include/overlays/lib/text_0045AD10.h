@@ -253,7 +253,7 @@ struct LibObject172440 : public LibClass174EF0
 
 #ifdef __cplusplus
 /** Partial native runtime interface with resident vtable at 0x174F50. */
-class LibClass174F50 : public LibClass171EA0
+class LibClass174F50 : public LibListObject
 {
 public:
     /** @brief Release the runtime's retained objects and storage. */

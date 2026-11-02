@@ -1926,7 +1926,7 @@ LibClass178A70::~LibClass178A70()
 
 void ShopItemDetailWindow::func_slot0c()
 {
-    detail_container->func_003EF740();
+    detail_container->destroy();
     FieldClass15AE70::func_slot0c();
 }
 

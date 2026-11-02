@@ -392,32 +392,32 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CECD0);
 extern "C" void lib_direction_angles_xy(LibVector4* value, const LibVector4* target, float y_angle)
 {
     FieldVec4A delta;
-    delta.x = target->components[0] - value->components[0];
-    delta.y = target->components[1] - value->components[1];
-    delta.z = target->components[2] - value->components[2];
+    delta.x = target->x - value->x;
+    delta.y = target->y - value->y;
+    delta.z = target->z - value->z;
     float x_squared = delta.x * delta.x;
     float y_squared = delta.y * delta.y;
     if (x_squared == 0.0f && y_squared == 0.0f)
     {
         if (delta.z < 0.0f)
         {
-            value->components[0] = HALF_PI;
+            value->x = HALF_PI;
         }
         else
         {
-            value->components[0] = -HALF_PI;
+            value->x = -HALF_PI;
         }
-        value->components[2] = 0.0f;
+        value->z = 0.0f;
     }
     else
     {
         float horizontal_squared = x_squared + y_squared;
         float horizontal_distance = __sqrt(horizontal_squared, horizontal_squared);
-        value->components[0] = func_00142148(-delta.z, horizontal_distance);
-        value->components[2] = func_00142148(delta.x, delta.y);
+        value->x = func_00142148(-delta.z, horizontal_distance);
+        value->z = func_00142148(delta.x, delta.y);
     }
-    value->components[1] = y_angle;
-    value->components[3] = 1.0f;
+    value->y = y_angle;
+    value->w = 1.0f;
 }
 
 /**
@@ -428,9 +428,9 @@ extern "C" void lib_direction_angles_xy(LibVector4* value, const LibVector4* tar
  */
 extern "C" void lib_direction_angles_xz(LibVector4* value, const LibVector4* target, float z_angle)
 {
-    float dx = target->components[0] - value->components[0];
-    float dy = target->components[1] - value->components[1];
-    float dz = target->components[2] - value->components[2];
+    float dx = target->x - value->x;
+    float dy = target->y - value->y;
+    float dz = target->z - value->z;
     FieldVec4A delta(dx, dy, dz, 0.0f);
     float x_squared = delta.x * delta.x;
     float z_squared = delta.z * delta.z;
@@ -438,23 +438,23 @@ extern "C" void lib_direction_angles_xz(LibVector4* value, const LibVector4* tar
     {
         if (delta.y < 0.0f)
         {
-            value->components[0] = HALF_PI;
+            value->x = HALF_PI;
         }
         else
         {
-            value->components[0] = -HALF_PI;
+            value->x = -HALF_PI;
         }
-        value->components[1] = 0.0f;
+        value->y = 0.0f;
     }
     else
     {
         float horizontal_squared = x_squared + z_squared;
         float horizontal_distance = __sqrt(horizontal_squared, horizontal_squared);
-        value->components[0] = func_00142148(-delta.y, horizontal_distance);
-        value->components[1] = func_00142148(delta.x, delta.z);
+        value->x = func_00142148(-delta.y, horizontal_distance);
+        value->y = func_00142148(delta.x, delta.z);
     }
-    value->components[2] = z_angle;
-    value->components[3] = 1.0f;
+    value->z = z_angle;
+    value->w = 1.0f;
 }
 
 /** @brief Invert an orthonormal rotation and its row-vector translation. @param input Source matrix. @param output Destination matrix, distinct from input. */
@@ -800,14 +800,14 @@ extern "C" void func_004CFF80(LibMatrix44Value* matrix)
 /** @brief Copy the source transform through its virtual setters, then copy its manager and flags. @param source Transform source. */
 void LibClass178A90::func_004CFFA0(const LibClass178A90* source)
 {
-    func_003EF780(&source->unk20);
-    func_003EEF10(&source->unk30);
-    func_003EEFF0(&source->unk40);
+    set_translation_vector(&source->translation);
+    set_orientation(&source->orientation);
+    set_scale_vector(&source->scale);
     unk80 = source->unk80;
     unk6a = source->unk6a;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_003EF740__14LibClass178A90Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", destroy__14LibClass178A90Fv);
 
 /** @brief Mark the base transform's matrix state ready. */
 void LibClass178A90::update_transform_matrix()
@@ -947,14 +947,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D56B0);
 extern "C" void func_004D5740(LibClass178A90* object)
 {
     object->owner = 0;
-    object->LibClass178A90::func_003EF740();
+    object->LibClass178A90::destroy();
 }
 
 /** @brief Clear the intrusive owner and invoke the base removal hook. @param object Transform owner to detach. */
 extern "C" void func_004D5760(LibClass178A90* object)
 {
     object->owner = 0;
-    object->LibClass178A90::func_003EF740();
+    object->LibClass178A90::destroy();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5780);
@@ -996,7 +996,7 @@ void* LibResourceBuffer::find_child_data(s32 index)
         return 0;
     }
 
-    for (LibClass171E90* node = children->next; ; node = node->next)
+    for (LibListSentinel* node = children->next; ; node = node->next)
     {
         if (children == node)
         {
@@ -1094,7 +1094,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6510);
  */
 extern "C" void lib_object_detach_owner(void* object)
 {
-    LibClass171EA0* node = static_cast<LibClass171EA0*>(object);
+    LibListObject* node = static_cast<LibListObject*>(object);
     if (node->owner)
     {
         node->owner->remove_node(object);
@@ -1107,7 +1107,7 @@ extern "C" void lib_object_detach_owner(void* object)
  * @param node Node whose list kind is changed.
  * @param kind Kind passed to the owner; its low halfword is stored in the node.
  */
-extern "C" void lib_object_set_list_kind(LibClass171EA0* node, s32 kind)
+extern "C" void lib_object_set_list_kind(LibListObject* node, s32 kind)
 {
     if (node->owner)
     {
@@ -1174,7 +1174,7 @@ extern "C" void lib_list_collect_nodes_by_kind(LibClass178DD0* list, void** item
     {
         lib_list_add_chain_kind_offsets(list->next_list, offsets);
     }
-    LibClass171E90* link = &list->sentinel;
+    LibListSentinel* link = &list->sentinel;
     for (;;)
     {
         link = link->next;
@@ -1182,7 +1182,7 @@ extern "C" void lib_list_collect_nodes_by_kind(LibClass178DD0* list, void** item
         {
             break;
         }
-        LibClass171EA0* node = reinterpret_cast<LibClass171EA0*>(link);
+        LibListObject* node = reinterpret_cast<LibListObject*>(link);
         items[offsets[node->list_kind]++] = node;
     }
     if (list->next_list)
@@ -1238,7 +1238,7 @@ extern "C" inline void lib_list_add_chain_kind_offsets(LibClass178DD0* list, u32
  */
 void LibClass178DD0::remove_node(void* object)
 {
-    LibClass171EA0* node = static_cast<LibClass171EA0*>(object);
+    LibListObject* node = static_cast<LibListObject*>(object);
     --node_counts_by_kind[node->list_kind];
     node->is_listed = 0;
     node->owner = 0;
@@ -1277,7 +1277,7 @@ void LibClass178DD0::remove_node(void* object)
  * @param node Node supplying the old kind.
  * @param new_kind Kind whose count is incremented.
  */
-extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibClass171EA0* node, s32 new_kind)
+extern "C" void lib_list_change_node_kind_counts(LibClass178DD0* owner, const LibListObject* node, s32 new_kind)
 {
     --owner->node_counts_by_kind[node->list_kind];
     ++owner->node_counts_by_kind[new_kind];
@@ -1828,21 +1828,21 @@ void LibTransform::update()
             }
             LibVector4 angles;
             const float* camera_angles = camera->rotation_angles;
-            func_004CDA40(&angles, &unk30);
+            func_004CDA40(&angles, &orientation);
             if (unk6a & 0x80)
             {
-                angles.components[0] = -camera_angles[0];
+                angles.x = -camera_angles[0];
             }
             if (unk6a & 0x100)
             {
-                angles.components[1] = camera_angles[1];
+                angles.y = camera_angles[1];
             }
             if (unk6a & 0x200)
             {
-                angles.components[2] = -camera_angles[2];
+                angles.z = -camera_angles[2];
             }
-            angles.components[1] += 3.1415927f;
-            func_003EEF60(&angles);
+            angles.y += 3.1415927f;
+            set_rotation_vector(&angles);
             matrix_ready = 0;
         }
     }
@@ -1878,7 +1878,7 @@ void LibTransform::copy_transform_state(const LibTransform* source)
 /** @brief Copy a complete local vector. @param output Destination vector. @param input Source vector. */
 extern "C" void func_004DA040(LibVector4* output, const LibVector4* input)
 {
-    output->packed = input->packed;
+    copy_vector(output, input);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA050);

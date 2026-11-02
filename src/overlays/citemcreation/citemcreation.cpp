@@ -3332,7 +3332,7 @@ void InventorStatusWindow::func_slot5c()
             }
             else
             {
-                child->func_003EF740();
+                child->destroy();
                 status_list = 0;
                 func_slot20(0);
                 ItemCreationClass186770* window = static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14)->development_lines_window;
@@ -4528,7 +4528,7 @@ s32 ItemDetailsWindow::func_slotf4(u32 associated)
 /** @brief Release the container and base window contents. */
 void ItemDetailsWindow::func_slot0c()
 {
-    unke8->func_003EF740();
+    unke8->destroy();
     FieldClass15AE70::func_slot0c();
 }
 
@@ -7477,7 +7477,7 @@ void FieldClass15AD40::func_slot110(u8 value)
 /** @brief Release the detail container and its base window contents. */
 void InventoryItemInstanceList::func_slot0c()
 {
-    detail_container->func_003EF740();
+    detail_container->destroy();
     FieldClass15AE70::func_slot0c();
 }
 
@@ -7947,7 +7947,7 @@ extern "C" void func_0035D0C0(InventoryItemTypeList* object, s32 mode)
     if (mode != 0)
     {
         LibClass174610& transform = static_cast<LibClass174610&>(*object->FieldClass15AE70::unk10);
-        func_44B190(&transform, transform.unk20.components[0], 186.0f);
+        func_44B190(&transform, transform.translation.x, 186.0f);
         set_height(object->unk198, 280.0f);
         set_height(object->unk19c, 248.0f);
         set_height(object->FieldStateCE420::unk00, 260.0f);
@@ -7956,7 +7956,7 @@ extern "C" void func_0035D0C0(InventoryItemTypeList* object, s32 mode)
     else
     {
         LibClass174610& transform = static_cast<LibClass174610&>(*object->FieldClass15AE70::unk10);
-        func_44B190(&transform, transform.unk20.components[0], 128.0f);
+        func_44B190(&transform, transform.translation.x, 128.0f);
         set_height(object->unk198, 336.0f);
         set_height(object->unk19c, 310.0f);
         set_height(object->FieldStateCE420::unk00, 300.0f);
@@ -8169,7 +8169,7 @@ extern "C" void func_0035D7C0(PlanItemGroupWindow* object, u8 mode)
         }
         set_y(object->unkc0, 116.0f);
         set_size(object->unkc0, 200.0f, 190.0f);
-        object->unkac->func_003EF740();
+        object->unkac->destroy();
         object->unkac = new (0) FieldClass153130;
         SelectorColumns columns = SELECTOR_SINGLE_COLUMN;
         object->unkac->func_0023B530(columns, 1, 1, 0, 1, object->unkfc[3], 146.0f, 0.0f, object->unkfc[2]);
@@ -8211,7 +8211,7 @@ extern "C" void func_0035D7C0(PlanItemGroupWindow* object, u8 mode)
     {
         object->unkb4 = 6;
         object->unk14c = 1;
-        object->unkac->func_003EF740();
+        object->unkac->destroy();
         object->unkac = new (0) FieldClass153130;
         SelectorColumns columns = SELECTOR_SINGLE_COLUMN;
         object->unkac->func_0023B530(columns, (u8)object->unkb4, 1, 0, 1, object->unkfc[3], 144.0f, 0.0f, object->unkfc[2]);
@@ -8254,7 +8254,7 @@ extern "C" void func_0035D7C0(PlanItemGroupWindow* object, u8 mode)
             set_y(object->unkc8[index], (float)(72 + index * 27));
             set_y(object->unke0[index], (float)(72 + index * 27));
         }
-        object->unkac->func_003EF740();
+        object->unkac->destroy();
         object->unkac = new (0) FieldClass153130;
         SelectorColumns columns = SELECTOR_SINGLE_COLUMN;
         object->unkac->func_0023B530(columns, (u8)object->unkb4, 1, 0, 1, object->unkfc[3], 12.0f + object->unkfc[1], 0.0f, object->unkfc[2]);
@@ -14709,7 +14709,7 @@ struct ItemCreationRuntimeSection1
 struct ItemCreationRuntime643CGeometry
 {
     u8 unk00[0x1C];
-    LibClass171EC0* unk1c;
+    LibPositionTransform* unk1c;
 };
 extern "C"
 {
@@ -14752,10 +14752,10 @@ static inline u32 target_kind(const FieldStateTargets* target)
  */
 static inline void initialize_vector(LibVector4* vector, float x, float y, float z, float w)
 {
-    vector->components[0] = x;
-    vector->components[1] = y;
-    vector->components[2] = z;
-    vector->components[3] = w;
+    vector->x = x;
+    vector->y = y;
+    vector->z = z;
+    vector->w = w;
 }
 
 /** @brief Set the status window's five geometry floats. @param window Status window. @param a Angle. @param b Distance. @param c Pitch. @param d Height. @param e Offset. */
@@ -14796,7 +14796,7 @@ void ItemCreationSelectedDisplayState::update()
         resource_window = new(0) FieldClass15BB90;
         LibVector4 vector;
         initialize_vector(&vector, 400.0f, -400.0f, 500.0f, 1.0f);
-        reinterpret_cast<ItemCreationRuntime643CGeometry*>(D_001B643C)->unk1c->func_003EF780(&vector);
+        reinterpret_cast<ItemCreationRuntime643CGeometry*>(D_001B643C)->unk1c->set_translation_vector(&vector);
         resource_window->unk5b = 1;
         field_replace_model_camera(resource_window, reinterpret_cast<ItemCreationRuntime643CGeometry*>(D_001B643C)->unk1c);
         field_attach_model_display(resource_window);
@@ -15543,37 +15543,37 @@ ItemCreationSelectedDisplayState::ItemCreationSelectedDisplayState()
     }
 }
 
-s32 LibClass171EA0::get_default_list_kind()
+s32 LibListObject::get_default_list_kind()
 {
     return 3;
 }
 
-void LibClass171EA0::update()
+void LibListObject::update()
 {
 }
 
-void LibClass171EA0::func_003EEBE0()
+void LibListObject::render()
 {
-}
-
-/**
- * @brief Update the transform components and mark the transform dirty.
- * @param value Source vector.
- */
-void LibClass171EF0::func_003EF770(const LibVector4* value)
-{
-    transform_dirty = 1;
-    unk20.packed = value->packed;
 }
 
 /**
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EF780(const LibVector4* value)
+void LibOrientedTransform::copy_translation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
+}
+
+/**
+ * @brief Update the transform components and mark the transform dirty.
+ * @param value Source vector.
+ */
+void LibOrientedTransform::set_translation_vector(const LibVector4* value)
+{
+    transform_dirty = 1;
+    copy_vector(&translation, value);
 }
 
 /**
@@ -15582,13 +15582,13 @@ void LibClass171EF0::func_003EF780(const LibVector4* value)
  * @param y Component value.
  * @param z Component value.
  */
-void LibClass171EF0::func_003EF790(float x, float y, float z)
+void LibOrientedTransform::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk20.components[0] = x;
-    unk20.components[1] = y;
-    unk20.components[2] = z;
-    unk20.components[3] = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /**
@@ -15598,53 +15598,53 @@ void LibClass171EF0::func_003EF790(float x, float y, float z)
  * @param z Component value.
  * @param w Component value.
  */
-void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
+void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
-    unk30.components[0] = x;
-    unk30.components[1] = y;
-    unk30.components[2] = z;
-    unk30.components[3] = w;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
 /**
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EEEF0(const LibVector4* value)
+void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /**
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EEF10(const LibVector4* value)
+void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /**
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EEF30(const LibVector4* value)
+void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(unk30.components, value->components);
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
 /**
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EEF60(const LibVector4* value)
+void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(unk30.components, value->components);
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
 /**
@@ -15653,7 +15653,7 @@ void LibClass171EF0::func_003EEF60(const LibVector4* value)
  * @param y Component value.
  * @param z Component value.
  */
-void LibClass171EF0::func_003EEF90(float x, float y, float z)
+void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     float value[4];
     transform_dirty = 1;
@@ -15661,27 +15661,27 @@ void LibClass171EF0::func_003EEF90(float x, float y, float z)
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_004CE4C0(unk30.components, value);
+    func_004CE4C0(&orientation.x, value);
 }
 
 /**
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EEFD0(const LibVector4* value)
+void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /**
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EEFF0(const LibVector4* value)
+void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /**
@@ -15690,12 +15690,12 @@ void LibClass171EF0::func_003EEFF0(const LibVector4* value)
  * @param y Component value.
  * @param z Component value.
  */
-void LibClass171EF0::func_003EF010(float x, float y, float z)
+void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk40.components[0] = x;
-    unk40.components[1] = y;
-    unk40.components[2] = z;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
 }
 
 /** @brief Return the default output status. @param output Unused output object. @return Zero. */

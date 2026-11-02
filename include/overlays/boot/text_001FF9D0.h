@@ -281,7 +281,7 @@ enum BootMusicPlayMode
  * Music player with vtable D_171D80 in main data, opened from the Battle Trophies screen. It can stop after one track,
  * continue through its 87 tracks in order or shuffle them, and shows five frequency bands per channel on needle meters.
  */
-class BootMusicPlayer : public BootListObject
+class BootMusicPlayer : public LibListObject
 {
     public:
         /** @brief Start loading resource 0x2C, create the meters and build the analysis window. */
@@ -363,7 +363,7 @@ class BootMusicPlayer : public BootListObject
         float window[BOOT_MUSIC_FFT_SIZE];
 
         BootContainer* container;
-        BootListObject* unk4050f4;
+        LibListObject* unk4050f4;
         BootSelectionCursor* cursor;
 
         /** Track number. */

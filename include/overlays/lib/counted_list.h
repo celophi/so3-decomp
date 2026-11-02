@@ -8,7 +8,7 @@
 class LibClass178A70
 {
 public:
-    LibClass171E90 sentinel;
+    LibListSentinel sentinel;
     u32 node_count;
     /** @brief Initialize the list receiver. */
     LibClass178A70();

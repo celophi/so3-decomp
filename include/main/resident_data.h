@@ -144,7 +144,7 @@ typedef struct ResidentContext
     void* unk3c;
     void* unk40;
     ResidentContextObject52* unk44;
-    struct LibClass171EA0* unk48;
+    struct LibListObject* unk48;
     struct FieldClass154CC0* unk4c;
 
     /** Node that rebuilds drawing commands while display blending is active. */

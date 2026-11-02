@@ -69,12 +69,12 @@ void LibClass174610::set_codes_and_z(s32 code, u32 first, float z, u32 second, u
         third = 255 - (code - 13);
     }
     unka9 = third;
-    float x = unk20.components[0];
-    float y = unk20.components[1];
-    unk20.components[0] = x;
-    unk20.components[1] = y;
-    unk20.components[2] = z;
-    unk20.components[3] = 1.0f;
+    float x = translation.x;
+    float y = translation.y;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
     unkae = 1;
 }
 
@@ -98,7 +98,7 @@ extern "C" void func_0044B1C0(LibClass174610* object)
         {
             func_00465A90(object->unk94, object);
         }
-        object->LibClass178A90::func_003EF740();
+        object->LibClass178A90::destroy();
         object->unkaf = 1;
     }
 }
@@ -267,7 +267,7 @@ extern "C" const void* func_0044D080(void)
 extern "C" void func_0044D090(LibClass178A90* object)
 {
     object->owner = 0;
-    object->LibClass178A90::func_003EF740();
+    object->LibClass178A90::destroy();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0B0);

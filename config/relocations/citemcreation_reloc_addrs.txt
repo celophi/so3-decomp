@@ -71,10 +71,10 @@ rom:0x9F70 reloc:MIPS_HI16 symbol:__vt__18InventorStatusList addend:0xB4
 rom:0x9F74 reloc:MIPS_LO16 symbol:__vt__18InventorStatusList addend:0xB4
 rom:0xA544 reloc:MIPS_HI16 symbol:__vt__14LibClass178A70
 rom:0xA548 reloc:MIPS_LO16 symbol:__vt__14LibClass178A70
-rom:0xA554 reloc:MIPS_HI16 symbol:__vt__14LibClass171E90
-rom:0xA558 reloc:MIPS_LO16 symbol:__vt__14LibClass171E90
-rom:0xA564 reloc:MIPS_HI16 symbol:__vt__14LibClass171E80
-rom:0xA568 reloc:MIPS_LO16 symbol:__vt__14LibClass171E80
+rom:0xA554 reloc:MIPS_HI16 symbol:__vt__15LibListSentinel
+rom:0xA558 reloc:MIPS_LO16 symbol:__vt__15LibListSentinel
+rom:0xA564 reloc:MIPS_HI16 symbol:__vt__7LibLink
+rom:0xA568 reloc:MIPS_LO16 symbol:__vt__7LibLink
 
 rom:0x25E04 reloc:MIPS_HI16 symbol:__vt__32ItemCreationSelectedDisplayState
 rom:0x25E0C reloc:MIPS_LO16 symbol:__vt__32ItemCreationSelectedDisplayState

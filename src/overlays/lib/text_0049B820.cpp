@@ -40,7 +40,7 @@ static inline FieldVec4B lib_lod_add_position_offset(const FieldVec4B& value, co
  */
 static inline void lib_lod_set_position(LibLodController* object, const FieldVec4B& position)
 {
-    object->func_003EF770(reinterpret_cast<const LibVector4*>(&position));
+    object->copy_translation(reinterpret_cast<const LibVector4*>(&position));
 }
 
 typedef struct FourQuadwordCopyTargetOwnertext_0049B820
@@ -463,7 +463,7 @@ void lib_append_entry_handle(LibEntryHandleCollection* collection, void* object)
 void LibLodController::apply_position_offset(const FieldVec4A& offset)
 {
     position_offset = offset;
-    lib_lod_set_position(this, lib_lod_add_position_offset(*reinterpret_cast<const FieldVec4B*>(&unk20), offset));
+    lib_lod_set_position(this, lib_lod_add_position_offset(*reinterpret_cast<const FieldVec4B*>(&translation), offset));
     position_offset_applied = 1;
 }
 

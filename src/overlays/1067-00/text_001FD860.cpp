@@ -283,7 +283,7 @@ extern "C" void func_001FEDF0(FieldOwner1FEDF0* owner)
 {
     if (owner->unk5c8 != 0)
     {
-        owner->unk5c8->func_003EF740();
+        owner->unk5c8->destroy();
         owner->unk5c8 = 0;
     }
 }

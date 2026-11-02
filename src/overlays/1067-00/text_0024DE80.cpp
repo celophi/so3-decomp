@@ -95,7 +95,7 @@ extern "C" void func_0024E7C0(FieldOwner24E860* owner)
     owner->unk134 = 0;
     if (owner->unk12c != 0)
     {
-        owner->unk12c->func_003EF740();
+        owner->unk12c->destroy();
         owner->unk12c = 0;
     }
     if (owner->unk120c >= 0)

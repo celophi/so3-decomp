@@ -355,7 +355,7 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
         virtual ~ItemHpMpGauge();
 
         /** @brief Submit the drawing packet for DMA notification. */
-        virtual void func_003EEBE0();
+        virtual void render();
 
         /** @brief Leave the default update state unchanged. */
         virtual void update();
@@ -364,7 +364,7 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
         virtual s32 get_default_list_kind();
 
         /** @brief Detach and queue the gauge for release. */
-        virtual void func_003EF740();
+        virtual void destroy();
 
         /** @brief Restore the saved transform state. */
         virtual void func_003F4420();
@@ -415,7 +415,7 @@ class ItemCoordinateSelector : public LibClass175030
         virtual void update();
 
         /** @brief Leave the default notification hook unchanged. */
-        virtual void func_003EEBE0();
+        virtual void render();
 
         ItemCoordinateList positions;
 

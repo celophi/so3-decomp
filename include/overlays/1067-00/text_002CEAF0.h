@@ -97,7 +97,7 @@ s32 field_launch_menu(FieldMenuManager* manager, u8 menu);
 
 class FieldClass1504F0;
 class FieldClass1538D0;
-class LibClass171EA0;
+class LibListObject;
 class LibDrawBuffer;
 class LibObject178660;
 struct FieldVec4A;
@@ -195,7 +195,7 @@ class FieldClass15B0E0 : public FieldListObject, public FieldClass1DD400
         s32 unk38;
         u32 unk3c;
         LibDrawBuffer* unk40;
-        LibClass171EA0* unk44;
+        LibListObject* unk44;
         FieldClass1504F0* unk48;
         LibObject178660* unk4c;
         u32 unk50;

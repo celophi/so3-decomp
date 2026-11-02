@@ -327,7 +327,7 @@ public:
     /**
      * @brief Default transform hook that performs no work.
      */
-    virtual void func_003EEBE0();
+    virtual void render();
 
     /**
      * @brief Store the translation coordinates and mark the transform dirty.
@@ -335,19 +335,19 @@ public:
      * @param y Vertical translation.
      * @param z Third translation component.
      */
-    virtual void func_003EF790(float x, float y, float z);
+    virtual void set_translation(float x, float y, float z);
 
     /**
      * @brief Copy the translation vector and mark the transform dirty.
      * @param value Translation vector to copy.
      */
-    virtual void func_003EF780(const LibVector4* value);
+    virtual void set_translation_vector(const LibVector4* value);
 
     /**
      * @brief Copy the translation vector and mark the transform dirty.
      * @param value Translation vector to copy.
      */
-    virtual void func_003EF770(const LibVector4* value);
+    virtual void copy_translation(const LibVector4* value);
 
     /**
      * @brief Build the rotation quaternion from three angles and mark the transform dirty.
@@ -355,31 +355,31 @@ public:
      * @param y Second rotation angle.
      * @param z Third rotation angle.
      */
-    virtual void func_003EEF90(float x, float y, float z);
+    virtual void set_rotation(float x, float y, float z);
 
     /**
      * @brief Build the rotation quaternion from an angle vector and mark the transform dirty.
      * @param value Rotation angles to convert.
      */
-    virtual void func_003EEF60(const LibVector4* value);
+    virtual void set_rotation_vector(const LibVector4* value);
 
     /**
      * @brief Build the rotation quaternion from an angle vector and mark the transform dirty.
      * @param value Rotation angles to convert.
      */
-    virtual void func_003EEF30(const LibVector4* value);
+    virtual void convert_rotation(const LibVector4* value);
 
     /**
      * @brief Copy the rotation quaternion and mark the transform dirty.
      * @param value Quaternion to copy.
      */
-    virtual void func_003EEF10(const LibVector4* value);
+    virtual void set_orientation(const LibVector4* value);
 
     /**
      * @brief Copy the rotation quaternion and mark the transform dirty.
      * @param value Quaternion to copy.
      */
-    virtual void func_003EEEF0(const LibVector4* value);
+    virtual void copy_orientation(const LibVector4* value);
 
     /**
      * @brief Store the quaternion components and mark the transform dirty.
@@ -388,7 +388,7 @@ public:
      * @param z Third quaternion component.
      * @param w Scalar quaternion component.
      */
-    virtual void func_003EEED0(float x, float y, float z, float w);
+    virtual void set_orientation_components(float x, float y, float z, float w);
 
     /**
      * @brief Store the scale components and mark the transform dirty.
@@ -396,19 +396,19 @@ public:
      * @param y Vertical scale factor.
      * @param z Third scale factor.
      */
-    virtual void func_003EF010(float x, float y, float z);
+    virtual void set_scale(float x, float y, float z);
 
     /**
      * @brief Copy the scale vector and mark the transform dirty.
      * @param value Scale vector to copy.
      */
-    virtual void func_003EEFF0(const LibVector4* value);
+    virtual void set_scale_vector(const LibVector4* value);
 
     /**
      * @brief Copy the scale vector and mark the transform dirty.
      * @param value Scale vector to copy.
      */
-    virtual void func_003EEFD0(const LibVector4* value);
+    virtual void copy_scale(const LibVector4* value);
 
     /**
      * @brief Clear the inherited state byte.

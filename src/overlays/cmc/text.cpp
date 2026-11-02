@@ -1514,20 +1514,20 @@ void func_00359020(Overlay0072Object00359000* object, const unsigned __int128* v
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EEF30(const LibVector4* value)
+void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(unk30.components, value->components);
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
 /**
  * @brief Update the transform components and mark the transform dirty.
  * @param value Source vector.
  */
-void LibClass171EF0::func_003EEF60(const LibVector4* value)
+void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(unk30.components, value->components);
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
 /**
@@ -1536,7 +1536,7 @@ void LibClass171EF0::func_003EEF60(const LibVector4* value)
  * @param y Component value.
  * @param z Component value.
  */
-void LibClass171EF0::func_003EEF90(float x, float y, float z)
+void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     float value[4];
     transform_dirty = 1;
@@ -1544,7 +1544,7 @@ void LibClass171EF0::func_003EEF90(float x, float y, float z)
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_004CE4C0(unk30.components, value);
+    func_004CE4C0(&orientation.x, value);
 }
 
 void func_003590E0(Overlay0072Object003590E0* object, const unsigned __int128* value)

@@ -1182,10 +1182,10 @@ void ItemHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
 s32 ItemHpMpGauge::initialize(s32 code, s32 first, void* source, float x, float y, float z)
 {
     unk6c = 0x6006;
-    LibClass171EC0::unk20.components[0] = 0.0f;
-    LibClass171EC0::unk20.components[1] = 0.0f;
-    LibClass171EC0::unk20.components[2] = 0.0f;
-    LibClass171EC0::unk20.components[3] = 1.0f;
+    LibPositionTransform::translation.x = 0.0f;
+    LibPositionTransform::translation.y = 0.0f;
+    LibPositionTransform::translation.z = 0.0f;
+    LibPositionTransform::translation.w = 1.0f;
     set_codes_and_z(code, first, z, reinterpret_cast<u32>(source), 0);
     unkb4 = 0;
     unkb8 = 0;
@@ -1199,7 +1199,7 @@ void ItemHpMpGauge::func_003F4410(u32 value)
 }
 
 /** @brief Submit the drawing packet for DMA notification. */
-void ItemHpMpGauge::func_003EEBE0()
+void ItemHpMpGauge::render()
 {
     dma_pending = 1;
 
@@ -2480,14 +2480,14 @@ void ItemUseWindow::func_slot0c()
 {
     for (ItemListNode* node = this->gauges.head->next; node != 0; node = node->next)
     {
-        static_cast<LibClass171EA0*>(node->value)->func_003EF740();
+        static_cast<LibListObject*>(node->value)->destroy();
     }
 
     FieldClass15AE70::func_slot0c();
 }
 
 /** @brief Detach and queue the gauge for release. */
-void ItemHpMpGauge::func_003EF740()
+void ItemHpMpGauge::destroy()
 {
     queued_for_release = 1;
     func_0044B210(this);
@@ -3351,7 +3351,7 @@ ItemInstanceListWindow::~ItemInstanceListWindow()
 /** @brief Release the detail container and the window's widgets. */
 void ItemInstanceListWindow::func_slot0c()
 {
-    detail_container->func_003EF740();
+    detail_container->destroy();
     FieldClass15AE70::func_slot0c();
 }
 
@@ -4531,105 +4531,105 @@ void ItemCoordinateSelector::update()
 }
 
 /** @brief Leave the default notification hook unchanged. */
-void ItemCoordinateSelector::func_003EEBE0()
+void ItemCoordinateSelector::render()
 {
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
-void LibClass178A90::func_003EF770(const LibVector4* value)
+void LibClass178A90::copy_translation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
-void LibClass178A90::func_003EF780(const LibVector4* value)
+void LibClass178A90::set_translation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
 /** @brief Set the translation coordinates and mark the transform dirty. @param x Horizontal translation. @param y Vertical translation. @param z Third translation component. */
-void LibClass178A90::func_003EF790(float x, float y, float z)
+void LibClass178A90::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk20.components[0] = x;
-    unk20.components[1] = y;
-    unk20.components[2] = z;
-    unk20.components[3] = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /** @brief Set all quaternion components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
-void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
+void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
-    unk30.components[0] = x;
-    unk30.components[1] = y;
-    unk30.components[2] = z;
-    unk30.components[3] = w;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
-void LibClass171EF0::func_003EEEF0(const LibVector4* value)
+void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
-void LibClass171EF0::func_003EEF10(const LibVector4* value)
+void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
-void LibClass171EF0::func_003EEF30(const LibVector4* value)
+void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(unk30.components, value->components);
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
-void LibClass171EF0::func_003EEF60(const LibVector4* value)
+void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(unk30.components, value->components);
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
 /** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
-void LibClass171EF0::func_003EEF90(float x, float y, float z)
+void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
     LibVector4 value;
-    value.components[0] = x;
-    value.components[1] = y;
-    value.components[2] = z;
-    value.components[3] = 1.0f;
-    func_004CE4C0(unk30.components, value.components);
+    value.x = x;
+    value.y = y;
+    value.z = z;
+    value.w = 1.0f;
+    func_004CE4C0(&orientation.x, &value.x);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
-void LibClass171EF0::func_003EEFD0(const LibVector4* value)
+void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
-void LibClass171EF0::func_003EEFF0(const LibVector4* value)
+void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Set the scale coordinates and mark the transform dirty. @param x First scale component. @param y Second scale component. @param z Third scale component. */
-void LibClass171EF0::func_003EF010(float x, float y, float z)
+void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk40.components[0] = x;
-    unk40.components[1] = y;
-    unk40.components[2] = z;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
 }
 
 /** @brief Return the default output status. @param output Unused output object. @return Zero. */

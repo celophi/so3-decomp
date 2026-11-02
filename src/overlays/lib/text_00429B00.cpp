@@ -224,7 +224,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A920);
 void func_0042AA00(LibClass178A90* object)
 {
     object->owner = 0;
-    object->LibClass178A90::func_003EF740();
+    object->LibClass178A90::destroy();
 }
 
 s32 func_0042AA20(void* object)

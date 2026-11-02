@@ -2647,7 +2647,7 @@ void EquipController::func_slot5c()
 
     if (container != 0)
     {
-        static_cast<LibClass174610&>(*container).func_003EF740();
+        static_cast<LibClass174610&>(*container).destroy();
     }
 
     if (resource_slot != 0)

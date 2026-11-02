@@ -254,7 +254,7 @@ public:
     /** @brief Copy the stored transform state byte into the active state. */
     virtual void func_003F4420();
     /** @brief Queue the transform receiver for release. */
-    virtual void func_003EF740();
+    virtual void destroy();
     /**
      * @brief Dispatch the transform state flags.
      * @param matrix Unused matrix argument.
@@ -346,7 +346,7 @@ public:
      */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
     /** @brief Prepare the container storage. */
-    virtual void func_003EEBE0();
+    virtual void render();
     /** @brief Prepare the container transform. @param value Notification value. */
     virtual void func_003F4410(u32 value);
     /**
@@ -389,7 +389,7 @@ struct LibObject178750 : public LibClass174EF0
      * @return Configuration status.
      */
     s32 init_resource_rectangle(float x, float y, float width, float height, s32 slot, u32 key, u8 flag);
-    LibClass171EA0* unkfc;
+    LibListObject* unkfc;
     u8 unk100[0x14];
 };
 
@@ -620,7 +620,7 @@ struct LibAnimationEntry14
  * It holds a data block at offset 0x30 (owned unless the byte at 0x68 is set)
  * and an array at offset 0x40.
  */
-class LibClass178220 : public LibClass171EA0
+class LibClass178220 : public LibListObject
 {
 public:
     /** @brief Construct an empty object. */
@@ -648,7 +648,7 @@ public:
 };
 
 /** Partial 0xD0-byte Lib object, with vtable D_178370 in main data. */
-class LibClass178370 : public LibClass171EF0
+class LibClass178370 : public LibOrientedTransform
 {
 public:
     /** @brief Construct an empty object. */
@@ -660,13 +660,13 @@ public:
      * @param y Second component.
      * @param z Third component.
      */
-    virtual void func_003EF790(float x, float y, float z);
+    virtual void set_translation(float x, float y, float z);
 
     /**
      * @brief Store a vector and update the vector state delta.
      * @param value New vector.
      */
-    virtual void func_003EF780(const LibVector4* value);
+    virtual void set_translation_vector(const LibVector4* value);
 
     LibVector4 unk60;
     LibVector4 unk70;

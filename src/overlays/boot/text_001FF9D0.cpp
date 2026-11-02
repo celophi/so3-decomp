@@ -12,10 +12,6 @@ extern "C" {
 float sqrtf(float value);
 float lib_cosine(float angle);
 float lib_sine(float angle);
-void func_109F40(void* handle, void* left, void* right, s32 size);
-s32 func_109F20(void* handle, s32 channel, s32 count, float* destination);
-s32 func_109FB0(void* handle);
-s32 func_109FD0(void* handle);
 void lib_container_attach_widget(BootContainer* container, BootDrawWidget* child);
 void lib_text_set_resource(BootTextWidget* text, s32 slot, u32 key, u8 flag);
 
@@ -420,7 +416,7 @@ void BootMusicPlayer::update_row_colors()
 
             if (selection == i)
             {
-                BootVector4 scale;
+                LibVector4 scale;
                 copy_vector(&scale, &model->base_color_factor);
 
                 if (brightening == 0)
@@ -461,7 +457,7 @@ void BootMusicPlayer::update_row_colors()
             }
             else
             {
-                BootVector4 scale;
+                LibVector4 scale;
                 scale.x = 1.0f;
                 scale.y = 1.0f;
                 scale.z = 1.0f;
@@ -709,19 +705,22 @@ void BootMusicPlayer::update()
     switch (step)
     {
     case BOOT_MUSIC_WAIT_FOR_RESOURCES:
-        if (func_102D00(g_resource_queue) != 0)
+        if (func_00102D00(g_resource_queue) != 0)
         {
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             step++;
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
-            func_465B20(D_001B657C, container);
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                     reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
         }
 
         break;
     case BOOT_MUSIC_DECODE_IMAGES:
-        image_buffers[images_loaded] = func_102920(g_resident_resource_decoder, resource_data, images_loaded, 1);
-        func_1025A0(g_resident_resource_decoder, resource_data, (void*)BOOT_ALIGN_RESOURCE(image_buffers[images_loaded]), images_loaded);
+        image_buffers[images_loaded] =
+            resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(resource_data), images_loaded, 1);
+        resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(resource_data),
+                                       (void*)BOOT_ALIGN_RESOURCE(image_buffers[images_loaded]), images_loaded);
 
         if (++images_loaded >= 2)
         {
@@ -741,7 +740,7 @@ void BootMusicPlayer::update()
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, 54.0f, y, 0.0f);
         }
-        func_465B20(D_001B657C, cursor);
+        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
         D_001B661C->append_node(meters[0], -1);
         D_001B661C->append_node(meters[1], -1);
         D_001B661C->append_node(meters[2], -1);
@@ -851,7 +850,7 @@ void BootMusicPlayer::update()
             case BOOT_MUSIC_ROW_TRACK:
             case BOOT_MUSIC_ROW_PLAY:
                 playing = 1;
-                func_109F40(g_sound->stream->thread, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
+                func_00109F40(g_sound->stream->thread, (u32)stream_buffers[0], (u32)stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
 
                 if (play_mode == BOOT_MUSIC_PLAY_SHUFFLED)
                 {
@@ -888,7 +887,7 @@ void BootMusicPlayer::update()
             return;
         }
 
-        if (play_mode > BOOT_MUSIC_PLAY_SINGLE && resident_sound_is_music_playing(g_sound, -1) != 0 && func_109FB0(g_sound->stream->thread) > 0 && playing)
+        if (play_mode > BOOT_MUSIC_PLAY_SINGLE && resident_sound_is_music_playing(g_sound, -1) != 0 && func_00109FB0(g_sound->stream->thread) > 0 && playing)
         {
             resident_sound_stop_music(g_sound, 0x1E0, -1);
             next_track_delay = 8.0f;
@@ -913,7 +912,7 @@ void BootMusicPlayer::update()
                 {
                     samples_analysed = 0.0f;
                     samples_played = (float)BOOT_MUSIC_NEXT_TRACK_LEAD_SAMPLES;
-                    func_109F40(g_sound->stream->thread, stream_buffers[0], stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
+                    func_00109F40(g_sound->stream->thread, (u32)stream_buffers[0], (u32)stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
                     playing = 1;
 
                     switch (play_mode)
@@ -959,9 +958,9 @@ void BootMusicPlayer::update()
             if (samples_analysed < samples_played - (float)BOOT_MUSIC_FFT_SIZE)
             {
                 samples_analysed += (float)BOOT_MUSIC_FFT_SIZE;
-                func_109F20(g_sound->stream->thread, 0, BOOT_MUSIC_FFT_SIZE, spectra[0].real);
+                func_00109F20(g_sound->stream->thread, 0, BOOT_MUSIC_FFT_SIZE, spectra[0].real);
 
-                if ((u8)func_109F20(g_sound->stream->thread, 1, BOOT_MUSIC_FFT_SIZE, spectra[1].real))
+                if ((u8)func_00109F20(g_sound->stream->thread, 1, BOOT_MUSIC_FFT_SIZE, spectra[1].real))
                 {
                     for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
                     {
@@ -969,7 +968,7 @@ void BootMusicPlayer::update()
                         spectra[1].imag[i] = 0.0f;
                     }
 
-                    if (func_109FD0(g_sound->stream->thread) != 0)
+                    if (func_00109FD0(g_sound->stream->thread) != 0)
                     {
                         for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
                         {
@@ -1328,7 +1327,7 @@ BootMusicPlayer::~BootMusicPlayer()
     }
 
     delete fft;
-    func_109F40(g_sound->stream->thread, 0, 0, 0);
+    func_00109F40(g_sound->stream->thread, 0, 0, 0);
     resident_sound_set_volume_scale(g_sound, 0x7FFF);
 }
 

@@ -167,7 +167,7 @@ typedef struct LibPanelAssociationState
 extern "C" void func_004BD360(void* object, const unsigned __int128* value)
 {
     LibVectorField10View* state = (LibVectorField10View*)object;
-    state->value10.packed = *value;
+    copy_vector(&state->value10, (const LibVector4*)value);
 }
 
 const void* func_004BD370(const void* object)
@@ -246,7 +246,7 @@ const void* func_004BD4B0(const void* object)
 extern "C" void* func_004BD4C0(void* object, const unsigned __int128* value)
 {
     LibVector4* vector = (LibVector4*)object;
-    vector->packed = *value;
+    copy_vector(vector, (const LibVector4*)value);
     return object;
 }
 
@@ -854,7 +854,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4620);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4780);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_003EF740__14LibClass178600Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", destroy__14LibClass178600Fv);
 
 /** @brief Unlink the widget from its container before detaching its owner. */
 LibClass178600::~LibClass178600()
@@ -908,7 +908,7 @@ public:
     /** @brief Release the association and destroy the transform. */
     virtual ~FieldClass15BA90();
     /** @brief Set the transform translation. @param x Horizontal component. @param y Vertical component. @param z Third component. */
-    virtual void func_003EF790(float x, float y, float z);
+    virtual void set_translation(float x, float y, float z);
     void* unk94;
     u8 unk98[4];
     LibClass178630* panel;
@@ -924,7 +924,7 @@ extern "C" s32 lib_panel_init_transform(LibClass178630* object, float z)
         return 0;
     if (func_002F99F0((FieldClass15BA90*)object->unk60, object) == 0)
         return 0;
-    ((FieldClass15BA90*)object->unk60)->func_003EF790(0.0f, 0.0f, z);
+    ((FieldClass15BA90*)object->unk60)->set_translation(0.0f, 0.0f, z);
     if (object->unk8c != 0)
     {
         ((FieldClass15BA90*)object->unk60)->pending = 1;
@@ -1080,10 +1080,10 @@ extern "C" s32 lib_container_init(LibObject178660* object, s32 code, float x, fl
     {
         return 0;
     }
-    object->LibClass174610::unk20.components[0] = x;
-    object->LibClass174610::unk20.components[1] = y;
-    object->LibClass174610::unk20.components[2] = 0.0f;
-    object->LibClass174610::unk20.components[3] = 1.0f;
+    object->LibClass174610::translation.x = x;
+    object->LibClass174610::translation.y = y;
+    object->LibClass174610::translation.z = 0.0f;
+    object->LibClass174610::translation.w = 1.0f;
     object->set_codes_and_z(code, first, z, second, 0);
     object->unkE0 = 128.0f;
     return 1;
@@ -1284,7 +1284,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9010);
 extern "C" void func_004C94D0(void* object, const unsigned __int128* value)
 {
     LibVectorField850View* state = (LibVectorField850View*)object;
-    state->value850.packed = *value;
+    copy_vector(&state->value850, (const LibVector4*)value);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C94E0);
@@ -1340,7 +1340,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9F00);
  */
 void LibClass178A70::unlink(void* node)
 {
-    LibClass171E90* removed = static_cast<LibClass171E90*>(node);
+    LibListSentinel* removed = static_cast<LibListSentinel*>(node);
     if (removed == &sentinel)
     {
         return;
@@ -1349,8 +1349,8 @@ void LibClass178A70::unlink(void* node)
     {
         return;
     }
-    LibClass171E90* previous = removed->previous;
-    LibClass171E90* next = removed->next;
+    LibListSentinel* previous = removed->previous;
+    LibListSentinel* next = removed->next;
     if (previous)
     {
         previous->next = next;
@@ -1374,9 +1374,9 @@ void LibClass178A70::unlink(void* node)
  */
 void LibClass178A70::insert_after(void* position, void* node)
 {
-    LibClass171E90* after = static_cast<LibClass171E90*>(position);
-    LibClass171E90* inserted = static_cast<LibClass171E90*>(node);
-    LibClass171E90* next = after->next;
+    LibListSentinel* after = static_cast<LibListSentinel*>(position);
+    LibListSentinel* inserted = static_cast<LibListSentinel*>(node);
+    LibListSentinel* next = after->next;
     inserted->previous = after;
     inserted->next = next;
     after->next = inserted;
@@ -1393,8 +1393,8 @@ void LibClass178A70::insert_after(void* position, void* node)
  */
 void LibClass178A70::prepend(void* node)
 {
-    LibClass171E90* inserted = static_cast<LibClass171E90*>(node);
-    LibClass171E90* first = sentinel.next;
+    LibListSentinel* inserted = static_cast<LibListSentinel*>(node);
+    LibListSentinel* first = sentinel.next;
     inserted->previous = &sentinel;
     inserted->next = first;
     sentinel.next = inserted;
@@ -1408,8 +1408,8 @@ void LibClass178A70::prepend(void* node)
  */
 void LibClass178A70::append(void* node)
 {
-    LibClass171E90* inserted = static_cast<LibClass171E90*>(node);
-    LibClass171E90* last = sentinel.previous;
+    LibListSentinel* inserted = static_cast<LibListSentinel*>(node);
+    LibListSentinel* last = sentinel.previous;
     inserted->previous = last;
     inserted->next = &sentinel;
     sentinel.previous = inserted;
@@ -1640,7 +1640,7 @@ extern "C" float lib_dot_point_offset(const LibVector4* point, const LibVector4*
 {
     LibVector4 result;
     vu0_dot_offset_xyz(&result, point, direction, origin);
-    return result.components[0];
+    return result.x;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC7A0);
@@ -1732,12 +1732,12 @@ extern "C" void lib_quaternion_inverse_z_direction(const FieldVec4B* quaternion,
 extern "C" void lib_quaternion_from_direction_xz(float* output, const LibVector4* target, float z_angle)
 {
     LibVector4 angles;
-    angles.components[0] = 0.0f;
-    angles.components[1] = 0.0f;
-    angles.components[2] = 0.0f;
-    angles.components[3] = 1.0f;
+    angles.x = 0.0f;
+    angles.y = 0.0f;
+    angles.z = 0.0f;
+    angles.w = 1.0f;
     lib_direction_angles_xz(&angles, target, z_angle);
-    func_004CE4C0(output, angles.components);
+    func_004CE4C0(output, &angles.x);
 }
 
 /**

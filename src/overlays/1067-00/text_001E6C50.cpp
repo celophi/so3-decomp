@@ -286,25 +286,25 @@ void FieldClass150280::func_001E7590()
         state->unkc0 = 0;
         state->unkc1 = 0;
         state->unkc2 = 0;
-        state->unk60.packed = 0;
-        state->unk60.components[3] = 1.0f;
-        state->unk70.packed = 0;
-        state->unk70.components[3] = 1.0f;
-        state->unk80.packed = 0;
-        state->unk80.components[3] = 1.0f;
+        clear_vector(&state->unk60);
+        state->unk60.w = 1.0f;
+        clear_vector(&state->unk70);
+        state->unk70.w = 1.0f;
+        clear_vector(&state->unk80);
+        state->unk80.w = 1.0f;
         LibVector4 origin;
-        origin.components[0] = 0.0f;
-        origin.components[1] = 0.0f;
-        origin.components[2] = 0.0f;
-        origin.components[3] = 1.0f;
-        unk18->unk90.packed = origin.packed;
+        origin.x = 0.0f;
+        origin.y = 0.0f;
+        origin.z = 0.0f;
+        origin.w = 1.0f;
+        copy_vector(&unk18->unk90, &origin);
         LibVector4 zero;
-        zero.components[0] = 0.0f;
-        zero.components[1] = 0.0f;
-        zero.components[2] = 0.0f;
-        zero.components[3] = 0.0f;
-        unk18->unka0.packed = zero.packed;
-        unk18->unkb0.packed = origin.packed;
+        zero.x = 0.0f;
+        zero.y = 0.0f;
+        zero.z = 0.0f;
+        zero.w = 0.0f;
+        copy_vector(&unk18->unka0, &zero);
+        copy_vector(&unk18->unkb0, &origin);
     }
     else
     {
@@ -347,21 +347,21 @@ void FieldClass150280::func_001E76B0(float start, float end)
     }
     unk14->unk6a = 0;
     LibVector4 initial;
-    initial.components[0] = 0.0f;
-    initial.components[1] = 0.0f;
-    initial.components[2] = 0.0f;
-    initial.components[3] = 0.0f;
-    unk18->func_003EF780(&initial);
+    initial.x = 0.0f;
+    initial.y = 0.0f;
+    initial.z = 0.0f;
+    initial.w = 0.0f;
+    unk18->set_translation_vector(&initial);
     LibClass178370* state = unk18;
     state->unkc0 = 0;
     state->unkc1 = 0;
     state->unkc2 = 0;
-    state->unk60.packed = 0;
-    state->unk60.components[3] = 1.0f;
-    state->unk70.packed = 0;
-    state->unk70.components[3] = 1.0f;
-    state->unk80.packed = 0;
-    state->unk80.components[3] = 1.0f;
+    clear_vector(&state->unk60);
+    state->unk60.w = 1.0f;
+    clear_vector(&state->unk70);
+    state->unk70.w = 1.0f;
+    clear_vector(&state->unk80);
+    state->unk80.w = 1.0f;
     lib_animation_bind_state(unk14, unk18, D_31A7D8);
     func_004B3DE0(unk14, unk18);
     unk2c = start;
@@ -419,12 +419,12 @@ FieldClass150280::~FieldClass150280()
         unk66_3 = 0;
         if (unk14)
         {
-            unk14->func_003EF740();
+            unk14->destroy();
             unk14 = 0;
         }
         if (unk18)
         {
-            unk18->func_003EF740();
+            unk18->destroy();
             unk18 = 0;
         }
     }
@@ -1256,7 +1256,7 @@ void FieldClass1504F0::func_001DD7B0()
         resident_enqueue_object(g_resident_release_queues, this);
         if (unk18)
         {
-            static_cast<LibClass174610&>(*unk18).func_003EF740();
+            static_cast<LibClass174610&>(*unk18).destroy();
             unk18 = 0;
         }
         unk4d_1 = 1;

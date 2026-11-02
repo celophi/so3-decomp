@@ -48,11 +48,11 @@ typedef struct FieldClass15AE70 FieldClass15AE70;
 typedef struct SkillCharacterStats SkillCharacterStats;
 #ifdef __cplusplus
 class FieldClass153E30;
-class LibClass171EF0;
+class LibOrientedTransform;
 class LibObject178660;
 #else
 typedef struct FieldClass153E30 FieldClass153E30;
-typedef struct LibClass171EF0 LibClass171EF0;
+typedef struct LibOrientedTransform LibOrientedTransform;
 typedef struct LibObject178660 LibObject178660;
 #endif
 typedef struct SkillTacticalPromptWindow SkillTacticalPromptWindow;

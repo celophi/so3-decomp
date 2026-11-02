@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-union LibVector4;
+struct LibVector4;
 struct BattlePointFlagFields20;
 struct BattlePointFlagSlot20;
 struct BattlePointFlagFields30;

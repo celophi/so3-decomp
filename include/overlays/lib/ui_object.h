@@ -14,14 +14,14 @@ typedef struct LibClass178600 LibClass178600;
 #ifdef __cplusplus
 struct LibObject178660;
 /** Partial 0x40-byte widget base, with MAIN vtable D_178600. */
-struct LibClass178600 : public LibClass171EA0
+struct LibClass178600 : public LibListObject
 {
     /** @brief Initialize the widget rectangle and state bytes. */
     LibClass178600();
     /** @brief Destroy the widget. */
     virtual ~LibClass178600();
     /** @brief Delete the widget through its virtual destructor. */
-    virtual void func_003EF740();
+    virtual void destroy();
     /** @brief Virtual widget slot at 0x1C; its base implementation does no work. */
     virtual void func_00413D20();
     /** @brief Draw the widget; the base implementation does no work. */

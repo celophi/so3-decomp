@@ -26,18 +26,18 @@ struct LibWordPairView
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEB50);
 
 /** @brief Report the list kind used when registration requests the default. @return Three. */
-s32 LibClass171EA0::get_default_list_kind()
+s32 LibListObject::get_default_list_kind()
 {
     return 3;
 }
 
 /** @brief Default update handler that performs no work. */
-void LibClass171EA0::update()
+void LibListObject::update()
 {
 }
 
 /** @brief Leave the base intrusive object unchanged. */
-void LibClass171EA0::func_003EEBE0()
+void LibListObject::render()
 {
 }
 
@@ -93,98 +93,98 @@ void LibClass178A90::func_003EEE60()
 {
 }
 
-extern "C" void func_003EEE70(LibClass171EF0* object, const LibVector4* value)
+extern "C" void func_003EEE70(LibOrientedTransform* object, const LibVector4* value)
 {
     object->transform_dirty = 1;
-    object->unk20.packed = value->packed;
+    copy_vector(&object->translation, value);
 }
 
-extern "C" void func_003EEE90(LibClass171EF0* object, const LibVector4* value)
+extern "C" void func_003EEE90(LibOrientedTransform* object, const LibVector4* value)
 {
     object->transform_dirty = 1;
-    object->unk20.packed = value->packed;
+    copy_vector(&object->translation, value);
 }
 
-extern "C" void func_003EEEB0(LibClass171EF0* object, float x, float y, float z)
+extern "C" void func_003EEEB0(LibOrientedTransform* object, float x, float y, float z)
 {
     object->transform_dirty = 1;
-    object->unk20.components[0] = x;
-    object->unk20.components[1] = y;
-    object->unk20.components[2] = z;
-    object->unk20.components[3] = 1.0f;
+    object->translation.x = x;
+    object->translation.y = y;
+    object->translation.z = z;
+    object->translation.w = 1.0f;
 }
 
 /** @brief Set all four components of the primary transform vector and mark it dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
-void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
+void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
-    unk30.components[0] = x;
-    unk30.components[1] = y;
-    unk30.components[2] = z;
-    unk30.components[3] = w;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
 /** @brief Copy the primary transform vector and mark it dirty. @param value Source vector. */
-void LibClass171EF0::func_003EEEF0(const LibVector4* value)
+void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Copy the primary transform vector and mark it dirty. @param value Source vector. */
-void LibClass171EF0::func_003EEF10(const LibVector4* value)
+void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Copy the primary transform vector and mark it dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EEF30(LibClass171EF0* object, const LibVector4* value)
+extern "C" void convert_rotation(LibOrientedTransform* object, const LibVector4* value)
 {
     object->transform_dirty = 1;
-    func_004CE4C0(object->unk30.components, value->components);
+    func_004CE4C0(&object->orientation.x, &value->x);
 }
 
 /** @brief Copy the primary transform vector and mark it dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EEF60(LibClass171EF0* object, const LibVector4* value)
+extern "C" void set_rotation_vector(LibOrientedTransform* object, const LibVector4* value)
 {
     object->transform_dirty = 1;
-    func_004CE4C0(object->unk30.components, value->components);
+    func_004CE4C0(&object->orientation.x, &value->x);
 }
 
 /** @brief Set the primary transform vector's xyz components, set w to one, and mark it dirty. @param object Transform to update. @param x First component. @param y Second component. @param z Third component. */
-extern "C" void func_003EEF90(LibClass171EF0* object, float x, float y, float z)
+extern "C" void set_rotation(LibOrientedTransform* object, float x, float y, float z)
 {
     object->transform_dirty = 1;
     LibVector4 value;
-    value.components[0] = x;
-    value.components[1] = y;
-    value.components[2] = z;
-    value.components[3] = 1.0f;
-    func_004CE4C0(object->unk30.components, value.components);
+    value.x = x;
+    value.y = y;
+    value.z = z;
+    value.w = 1.0f;
+    func_004CE4C0(&object->orientation.x, &value.x);
 }
 
 /** @brief Copy the secondary transform vector and mark it dirty. @param value Source vector. */
-void LibClass171EF0::func_003EEFD0(const LibVector4* value)
+void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Copy the secondary transform vector and mark it dirty. @param value Source vector. */
-void LibClass171EF0::func_003EEFF0(const LibVector4* value)
+void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Set the secondary transform vector's xyz components and mark it dirty. @param x First component. @param y Second component. @param z Third component. */
-void LibClass171EF0::func_003EF010(float x, float y, float z)
+void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk40.components[0] = x;
-    unk40.components[1] = y;
-    unk40.components[2] = z;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
 }
 
 void func_003EF030(u8* object)
@@ -223,30 +223,28 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF390);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF490);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF570);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF740__14LibClass171EA0Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", destroy__13LibListObjectFv);
 
 /** @brief Store the position components and set the homogeneous component to one. */
-void LibClass171EC0::func_003EF790(float x, float y, float z)
+void LibPositionTransform::set_translation(float x, float y, float z)
 {
-    unk20.components[0] = x;
-    unk20.components[1] = y;
-    unk20.components[2] = z;
-    unk20.components[3] = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
-extern "C" void func_003EF770(LibClass171EC0* object, const LibVector4* value)
+/** @brief Copy the position. */
+void LibPositionTransform::copy_translation(const LibVector4* value)
 {
-    object->unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
-extern "C" void func_003EF780(LibClass171EC0* object, const LibVector4* value)
+/** @brief Copy the position. */
+void LibPositionTransform::set_translation_vector(const LibVector4* value)
 {
-    object->unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF7B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF840);
 
@@ -404,7 +402,7 @@ void LibClass178A90::func_003F4420()
 }
 
 /** @brief Leave the default transform update hook unchanged. */
-void LibClass178A90::func_003EEBE0()
+void LibClass178A90::render()
 {
 }
 

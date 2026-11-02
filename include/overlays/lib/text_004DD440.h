@@ -74,7 +74,7 @@ public:
     /** @brief Release camera resources and its transform base. */
     virtual ~LibClass179080();
     /** @brief Clear the manager camera reference, then detach and queue the transform. */
-    virtual void func_003EF740();
+    virtual void destroy();
     /** @brief Initialize viewport bounds and default projection settings. @param context Resident viewport context. */
     void initialize_projection(const LibCameraContext* context);
     /** @brief Build the local perspective volume for visibility tests. @param volume Destination volume. */
@@ -417,7 +417,7 @@ public:
 
     virtual void update();
 
-    virtual void func_003EEBE0();
+    virtual void render();
 
     virtual const LibVector4* func_003EFAA0();
 

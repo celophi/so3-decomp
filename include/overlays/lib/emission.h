@@ -4,7 +4,7 @@
 #include "overlays/lib/text_004CD3A0.h"
 
 /** Secondary polymorphic base of the Lib grid emitter. */
-class LibClass173A28 : public LibClass171E80
+class LibClass173A28 : public LibLink
 {
 public:
     /** @brief Destroy the secondary base. */
@@ -25,7 +25,7 @@ public:
     virtual s32 get_default_list_kind();
 
     /** @brief Detach and queue the emitter. */
-    virtual void func_003EF740();
+    virtual void destroy();
 
     /** @brief Update the emitter and its attached grid. */
     virtual void update();

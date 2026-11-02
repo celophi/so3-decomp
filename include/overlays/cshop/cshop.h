@@ -391,9 +391,9 @@ struct ShopSellConfirmWindow : public FieldClass15AE70
 typedef LibMovementState ShopClass187B90;
 
 /** Shop copy of the shared intrusive-link root. */
-typedef LibClass171E80 ShopClass187B68;
+typedef LibLink ShopClass187B68;
 /** Shop copy of the shared intrusive-list sentinel. */
-typedef LibClass171E90 ShopClass187B78;
+typedef LibListSentinel ShopClass187B78;
 
 /** Shop resources, windows, selected items and transaction state. */
 struct ShopState : FieldClass153E30

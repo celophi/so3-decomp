@@ -347,7 +347,7 @@ public:
     LibClass178220* unk14;
     LibClass178370* unk18;
     FieldClass150EB0* unk1c;
-    LibClass171EF0* unk20;
+    LibOrientedTransform* unk20;
     LibClass178A90* unk24;
     LibClass173180* unk28;
     float unk2c;

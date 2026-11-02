@@ -126,7 +126,7 @@ public:
     u8 unk14[4];
 
     /** Owned objects; null marks a vacant slot. */
-    LibClass171EA0* objects[SLOT_COUNT];
+    LibListObject* objects[SLOT_COUNT];
 
     /** Nonzero entries request release of their occupied slots on update. */
     u8 pending_removal[SLOT_COUNT];
@@ -1831,9 +1831,9 @@ public:
     /** @brief Report the transform kind. @return Fourteen. */
     virtual s32 get_default_list_kind();
     /** @brief Queue the receiver for release. */
-    virtual void func_003EF740();
+    virtual void destroy();
     /** @brief Leave the default update state unchanged. */
-    virtual void func_003EEBE0();
+    virtual void render();
     /** @brief Run the default transform update hook. @param first First state value. @param second Second state value. @param third Third state value. */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
     /** @brief Run the default DMA completion hook. @param value Notification value. */
@@ -1996,7 +1996,7 @@ void field_detach_object_slots(FieldObjectSlotOwner* owner);
  * @param owner Slot owner.
  * @param object Object to mark.
  */
-void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibClass171EA0* object);
+void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibListObject* object);
 
 /**
  * @brief Store and register an object in the first vacant slot.
@@ -2006,7 +2006,7 @@ void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibClass171E
  * @param object Object to store and register.
  * @return True if a vacant slot was found; false when all slots are occupied.
  */
-bool field_add_object_slot(FieldObjectSlotOwner* owner, LibClass171EA0* object);
+bool field_add_object_slot(FieldObjectSlotOwner* owner, LibListObject* object);
 #endif
 
 #ifdef __cplusplus

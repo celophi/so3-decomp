@@ -683,7 +683,7 @@ struct SkillCoordinateSelector : public LibClass175030
     /** @brief Leave the default update hook unchanged. */
     virtual void update();
     /** @brief Leave the default notification hook unchanged. */
-    virtual void func_003EEBE0();
+    virtual void render();
     SkillPairList184258 nodes;
     s32 selected;
 };
@@ -837,13 +837,13 @@ struct SkillHpMpGauge : public FieldClass1599E0, public SkillHpMpGaugeDrawer
     /** @brief Release the drawing and transform bases. */
     virtual ~SkillHpMpGauge();
     /** @brief Submit the drawing packet for DMA notification. */
-    virtual void func_003EEBE0();
+    virtual void render();
     /** @brief Leave the default update state unchanged. */
     virtual void update();
     /** @brief Report the transform kind. @return Fourteen. */
     virtual s32 get_default_list_kind();
     /** @brief Detach and queue the gauge for release. */
-    virtual void func_003EF740();
+    virtual void destroy();
     /** @brief Restore the saved transform state. */
     virtual void func_003F4420();
     /** @brief Update gauge visibility and rebuild changed packets. @param first Update enabled. @param second Mark the packet changed. @param third Allow drawing. */
@@ -1040,7 +1040,7 @@ public:
     /** @brief Leave the default update hook unchanged. */
     virtual void update();
     /** @brief Leave the default notification hook unchanged. */
-    virtual void func_003EEBE0();
+    virtual void render();
     /** @brief Update the widget drawing state. */
     virtual void func_00413D20();
     /** @brief Draw the widget. */
@@ -3176,8 +3176,8 @@ s32 skill_initialize_damage_conversion_grid(SkillTacticalDetailWindow* record)
     {
         return 0;
     }
-    x = record->unk10->unk20.components[0] + record->conversion_x;
-    y = record->unk10->unk20.components[1] + record->conversion_y;
+    x = record->unk10->translation.x + record->conversion_x;
+    y = record->unk10->translation.y + record->conversion_y;
     record->conversion_cursor = new (0) FieldObject23BE00;
     record->conversion_cursor->func_0023BB20(record->conversion_x, record->conversion_y, 96.0f, 1.0f, record->conversion_grid, 0x808080);
     lib_container_attach_widget(record->unk10, record->conversion_cursor);
@@ -3205,8 +3205,8 @@ s32 skill_initialize_aura_grid(SkillTacticalDetailWindow* record)
     {
         return 0;
     }
-    x = record->unk10->unk20.components[0] + record->aura_x;
-    y = record->unk10->unk20.components[1] + record->aura_y;
+    x = record->unk10->translation.x + record->aura_x;
+    y = record->unk10->translation.y + record->aura_y;
     record->aura_cursor = new (0) FieldObject23BE00;
     record->aura_cursor->func_0023BB20(record->aura_x, record->aura_y, 48.0f, 1.0f, record->aura_grid, 0x808080);
     lib_container_attach_widget(record->unk10, record->aura_cursor);
@@ -4193,8 +4193,8 @@ s32 skill_initialize_selection_grid(SkillModeSelection* record, s16 row_count)
     {
         return 0;
     }
-    x = record->unk10->unk20.components[0] + record->list_x;
-    y = 16.0f + record->unk10->unk20.components[1];
+    x = record->unk10->translation.x + record->list_x;
+    y = 16.0f + record->unk10->translation.y;
     func_0023CE80((FieldObject23CE80*)record->selection, 1, row_count);
     func_0023CE60((FieldObject23CE80*)record->selection, 0.0f, record->row_spacing);
     record->selection->unkF2 = 0;
@@ -5427,7 +5427,7 @@ s32 SkillTacticalWindow::func_slotf4(u32 associated)
     cursor->func_0023BB20(row_x, row_y, 144.0f, 1.0f, selection, 0x288080);
     lib_container_attach_widget(unk10, cursor);
     func_0035C440(reinterpret_cast<SkillList*>(&unk8c), cursor);
-    const float* position = unk10->unk20.components;
+    const float* position = &unk10->translation.x;
     float grid_x = 24.0f + position[0];
     float grid_y = position[1] + row_y;
     selection->func_0023CE80(1, 5);
@@ -6107,7 +6107,7 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
     lib_queue_display_object(D_001B657C, static_cast<LibClass174610*>(this->attachment));
     SkillController* controller = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     controller->status_attachment = this->attachment;
-    const float* position = this->unk10->unk20.components;
+    const float* position = &this->unk10->translation.x;
     this->selection->func_0023CE80(1, 6);
     this->selection->func_0023CE60(0.0f, this->row_spacing);
     this->selection->unkF2 = 0;
@@ -6627,7 +6627,7 @@ s32 SkillStatusSkillWindow::func_slotf4(u32 associated)
     func_0023BB20(this->cursor, reinterpret_cast<FieldObject23CEB0*>(this->selection), 0x288080, 32.0f, this->first_row_y, 144.0f, 1.0f);
     lib_container_attach_widget(this->unk10, this->cursor);
     func_0035C440(reinterpret_cast<SkillList*>(&this->unk8c), this->cursor);
-    const float* position = this->unk10->unk20.components;
+    const float* position = &this->unk10->translation.x;
     this->selection->func_0023CE80(1, 4);
     this->selection->func_0023CE60(0.0f, this->row_spacing);
     this->selection->unkF2 = 0;
@@ -7645,7 +7645,7 @@ void SkillController::func_slot5c()
     SkillStatusAttachment* attachment = this->status_attachment;
     if (attachment != 0)
     {
-        attachment->func_003EF740();
+        attachment->destroy();
     }
     s32 resource = this->resource_slot;
     if (resource != 0)
@@ -7881,105 +7881,105 @@ void SkillCoordinateSelector::update()
 {
 }
 
-void SkillCoordinateSelector::func_003EEBE0()
+void SkillCoordinateSelector::render()
 {
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
-void LibClass178A90::func_003EF770(const LibVector4* value)
+void LibClass178A90::copy_translation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
 /** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
-void LibClass178A90::func_003EF780(const LibVector4* value)
+void LibClass178A90::set_translation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk20.packed = value->packed;
+    copy_vector(&translation, value);
 }
 
 /** @brief Set the translation coordinates and mark the transform dirty. @param x Horizontal translation. @param y Vertical translation. @param z Third translation component. */
-void LibClass178A90::func_003EF790(float x, float y, float z)
+void LibClass178A90::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk20.components[0] = x;
-    unk20.components[1] = y;
-    unk20.components[2] = z;
-    unk20.components[3] = 1.0f;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /** @brief Set all quaternion components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
-void LibClass171EF0::func_003EEED0(float x, float y, float z, float w)
+void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
-    unk30.components[0] = x;
-    unk30.components[1] = y;
-    unk30.components[2] = z;
-    unk30.components[3] = w;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
-void LibClass171EF0::func_003EEEF0(const LibVector4* value)
+void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
-void LibClass171EF0::func_003EEF10(const LibVector4* value)
+void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk30.packed = value->packed;
+    copy_vector(&orientation, value);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
-void LibClass171EF0::func_003EEF30(const LibVector4* value)
+void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&unk30, value);
+    func_4CE4C0(&orientation, value);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
-void LibClass171EF0::func_003EEF60(const LibVector4* value)
+void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&unk30, value);
+    func_4CE4C0(&orientation, value);
 }
 
 /** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
-void LibClass171EF0::func_003EEF90(float x, float y, float z)
+void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
     LibVector4 value;
-    value.components[0] = x;
-    value.components[1] = y;
-    value.components[2] = z;
-    value.components[3] = 1.0f;
-    func_4CE4C0(&unk30, &value);
+    value.x = x;
+    value.y = y;
+    value.z = z;
+    value.w = 1.0f;
+    func_4CE4C0(&orientation, &value);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
-void LibClass171EF0::func_003EEFD0(const LibVector4* value)
+void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
-void LibClass171EF0::func_003EEFF0(const LibVector4* value)
+void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    unk40.packed = value->packed;
+    copy_vector(&scale, value);
 }
 
 /** @brief Set the scale coordinates and mark the transform dirty. @param x First scale component. @param y Second scale component. @param z Third scale component. */
-void LibClass171EF0::func_003EF010(float x, float y, float z)
+void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
-    unk40.components[0] = x;
-    unk40.components[1] = y;
-    unk40.components[2] = z;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
 }
 
 /** @brief Return the default output status. @param output Unused output object. @return Zero. */
@@ -8545,10 +8545,10 @@ void SkillHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
 s32 SkillHpMpGauge::initialize(s32 code, s32 first, void* source, float x, float y, float z)
 {
     unk6c = 0x6006;
-    LibClass171EC0::unk20.components[0] = 0.0f;
-    LibClass171EC0::unk20.components[1] = 0.0f;
-    LibClass171EC0::unk20.components[2] = 0.0f;
-    LibClass171EC0::unk20.components[3] = 1.0f;
+    LibPositionTransform::translation.x = 0.0f;
+    LibPositionTransform::translation.y = 0.0f;
+    LibPositionTransform::translation.z = 0.0f;
+    LibPositionTransform::translation.w = 1.0f;
     func_44B110(this, code, first, source, z, 0);
     unkb4 = 0;
     unkb8 = 0;
@@ -8560,7 +8560,7 @@ void SkillHpMpGauge::func_003F4410(u32 value)
     func_4D00B0(this);
 }
 
-void SkillHpMpGauge::func_003EEBE0()
+void SkillHpMpGauge::render()
 {
     dma_pending = 1;
     if (unk08 != 0)
@@ -9112,14 +9112,14 @@ void SkillOptionsWindow::func_slot0c()
     SkillListNode* node = this->nested.head->next;
     while (node != 0)
     {
-        LibClass171EA0* display = (LibClass171EA0*)node->value;
-        display->func_003EF740();
+        LibListObject* display = (LibListObject*)node->value;
+        display->destroy();
         node = node->next;
     }
     this->FieldClass15AE70::func_slot0c();
 }
 
-void SkillHpMpGauge::func_003EF740()
+void SkillHpMpGauge::destroy()
 {
     queued_for_release = 1;
     func_44B210(this);

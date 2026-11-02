@@ -76,7 +76,7 @@ public:
 
 #ifdef __cplusplus
 /**
- * Scoped lock that disables interrupts while it lives; vtable D_0014FA60. Its constructor reads the COP0 Status
+ * Scoped lock that disables interrupts while it lives; vtable at 0x14FA60. Its constructor reads the COP0 Status
  * register, so it is only built from the queue's hand-written code.
  */
 class ResidentInterruptLock
@@ -617,9 +617,9 @@ s32 func_00109F20(struct ResidentStreamThread* thread, s32 ring, s32 count, floa
 /**
  * @brief Read the stream thread's signed byte at offset 0xBC.
  * @param thread Stream thread.
- * @return The byte.
+ * @return The signed byte, promoted to a word.
  */
-s8 func_00109FD0(const struct ResidentStreamThread* thread);
+s32 func_00109FD0(const struct ResidentStreamThread* thread);
 
 /**
  * @brief Set the receiver flag when the input value is positive.

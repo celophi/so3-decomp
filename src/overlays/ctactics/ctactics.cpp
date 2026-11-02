@@ -82,7 +82,7 @@ public:
     virtual void update();
 
     /** @brief Leave the default notification hook unchanged. */
-    virtual void func_003EEBE0();
+    virtual void render();
 
     TacticsCoordinatePositionList nodes;
     s32 selected;
@@ -3614,7 +3614,7 @@ s32 TacticsCoordinateSelector::get_default_list_kind()
 }
 
 /** @brief Leave the default notification hook unchanged. */
-void TacticsCoordinateSelector::func_003EEBE0()
+void TacticsCoordinateSelector::render()
 {
 }
 

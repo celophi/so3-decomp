@@ -1870,10 +1870,10 @@ s32 battle_has_quaternion_key(const BattleQuaternionTrackFields* object, float k
 /** @brief Clear all four vector components. @param vector Vector to clear. */
 void battle_clear_vector4(LibVector4* vector)
 {
-    vector->components[0] = 0.0f;
-    vector->components[1] = 0.0f;
-    vector->components[2] = 0.0f;
-    vector->components[3] = 0.0f;
+    vector->x = 0.0f;
+    vector->y = 0.0f;
+    vector->z = 0.0f;
+    vector->w = 0.0f;
 }
 
 /** @brief Return the difference between the last and first packed quaternion key values. */

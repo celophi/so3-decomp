@@ -6,10 +6,13 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_00101550.h"
 #include "main/resident_0011EE70.h"
+#include "main/resident_00121860.h"
 #include "sdk/main/libc_0013C6D0.h"
 #include "sdk/main/libc_0013CA60.h"
 #include "vu0.h"
 #include "ee.h"
+#include "overlays/lib/text_0045AD10.h"
+#include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/vector_inlines.h"
 
 #define TIMER0_COUNT (*(volatile u32*)0x10000000)
@@ -18,8 +21,6 @@
 
 extern "C" {
 extern BootFloorQuery* g_floor_query;
-// TODO: Lib's lib_load_resource_slot, which takes FieldRuntime; boot still has its own mirror of it.
-s32 func_4656B0(BootRuntime1B657C* runtime, void* data);
 extern void* D_001B663C;
 extern void* D_001B65E0;
 extern struct BootRenderState* D_001B6618;
@@ -34,7 +35,6 @@ void func_4DCFA0(BootDimensionsACD0* display);
 void func_4DCC10(void* object, void* value);
 void func_4D78F0(void* object);
 void func_42D940(void);
-void func_4DCEA0(BootDimensionsACD0* display, s32 first, s32 second);
 void resident_system_set_progressive(ResidentSystem* system, u8 progressive);
 extern BootDimensionsACD0* D_001B6650;
 extern BootDimensionsACD0* D_001B6520;
@@ -48,34 +48,28 @@ extern BootTrackPool<BootPooledFloatQuaternionTrack>* g_float_quaternion_track_p
 extern BootTrackPool<BootPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
 extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
 void func_4C5B60(s32 first, s32 second);
-void lib_container_attach_widget(BootContainer* container, BootListObject* child);
+void lib_container_attach_widget(BootContainer* container, LibListObject* child);
 void resident_system_create_status(ResidentSystem* system);
-ResidentResourceQueue* func_101250(void* root);
 void func_45A5D0(void);
 void func_45A770(void);
 void func_433680(void);
 void func_4E33B0(void);
 void func_4D8970(void);
-void func_121890(BootDimensionsACD0* display);
 void func_4E3830(BootDimensionsACD0* display, u32 first, s32 second, s32 third, s32 fourth, s32 fifth, s32 sixth);
 void func_4D8A80(struct BootScreenRect* rect, u32 color);
 void func_4DD830(BootDimensionsACD0* display, s32 frame, void* queue);
 extern void* D_001B65DC;
-void func_4D8AC0(void);
-void func_4D76C0(void* object, u16 x, u16 y);
-void func_4D4BE0(void* object);
-u32 func_4DCFF0(BootDimensionsACD0* display, s32 frame);
 extern const struct BootLabelOffsets D_205170;
 const struct BootTextExtent* lib_text_measure_bounds(BootTextWidget* text);
 extern const struct BootCaption g_opening_captions[];
-void lib_compute_sine_cosine_pair_degree9(BootVector4* output, float angle);
-void func_4CBD20(BootMatrix* output, const BootVector4* position, const FieldVec4B* target, float roll);
-void func_4CBAC0(BootVector4* output, const BootMatrix* matrix);
-void func_4CD810(FieldVec4B* output, const BootVector4* axis_angle);
-BootTransformOwner* func_473530(BootListObject* models, const char* name);
-void* func_473390(BootListObject* models, const char* name);
+void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
+void func_4CBD20(BootMatrix* output, const LibVector4* position, const FieldVec4B* target, float roll);
+void func_4CBAC0(LibVector4* output, const BootMatrix* matrix);
+void func_4CD810(FieldVec4B* output, const LibVector4* axis_angle);
+BootTransformOwner* func_473530(LibListObject* models, const char* name);
+void* func_473390(LibListObject* models, const char* name);
 s32 func_4B4550(BootAnimation* animation, float frame, s32 mode);
-void func_4DA2F0(void* object, const BootVector4* offset, s32 first, s32 second, s32 third, float value);
+void func_4DA2F0(void* object, const LibVector4* offset, s32 first, s32 second, s32 third, float value);
 extern const char g_root_node_name[];
 extern const char g_look_node_name[];
 extern const char g_right_speaker_name[];
@@ -91,13 +85,12 @@ extern const char g_empty_name[];
 extern const char g_bone_root_name[];
 extern const char g_camera_node_name[];
 extern const char g_face_model_name[];
-void func_10DAA0(ResidentSound* sound, s32 mode);
 s32 resident_sound_stop(ResidentSound* sound, s32 handle, s32 flag);
 s32 resident_sound_is_active(ResidentSound* sound, s32 handle);
 u32 resident_sound_get_voice_level(ResidentSound* sound, s32 handle, float time);
 void lib_text_set_resource(BootTextWidget* text, s32 source, s32 key, u8 flag);
-BootClass170F30* func_472EB0(BootListObject* models, BootClass170F30* model);
-void func_4BF100(BootAnimation* animation, BootListObject* models, void* optional);
+BootClass170F30* func_472EB0(LibListObject* models, BootClass170F30* model);
+void func_4BF100(BootAnimation* animation, LibListObject* models, void* optional);
 void lib_animation_bind_state(BootAnimation* animation, BootAnimationTarget* target, const char* name);
 void func_4B3DE0(BootAnimation* animation, BootAnimationTarget* target);
 void func_4C96E0(struct BootMorphTarget* target, float weight);
@@ -1589,7 +1582,8 @@ void BootStartupChecks::update()
         case BOOT_STARTUP_CARD_SHOW_WARNING:
             check_main_code();
             container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
-            func_465B20(D_001B657C, container);
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                     reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
             text = new (0) BootTextWidget(g_boot_program.get_messages(), message, 0, 32.0f, 128.0f, 576.0f, 320.0f);
             lib_container_attach_widget(container, text);
             step = BOOT_STARTUP_CARD_WAIT_FOR_INPUT;
@@ -1648,7 +1642,8 @@ void BootStartupChecks::update()
                 {
                     step++;
                     container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
-                    func_465B20(D_001B657C, container);
+                    lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                             reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
                 }
                 else if (++frames >= 30 && BOOT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
                 {
@@ -1819,13 +1814,15 @@ void BootStartupChecks::update()
                     {
                         step++;
                         container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
-                        func_465B20(D_001B657C, container);
+                        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                                 reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
                     }
                     else if (g_boot_program.unit_data_deleted != 0)
                     {
                         step = BOOT_STARTUP_UNIT_LOAD_DELETED_WARNING;
                         container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
-                        func_465B20(D_001B657C, container);
+                        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                                 reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
                     }
                     else
                     {
@@ -1922,7 +1919,7 @@ s32 BootNewGameSettings::get_default_list_kind()
  * @param scale Per-component factors; w is unused.
  * @return The scaled vector.
  */
-static inline FieldVec4B scale_components(const FieldVec4A& vector, const BootVector4& scale)
+static inline FieldVec4B scale_components(const FieldVec4A& vector, const LibVector4& scale)
 {
     FieldVec4B result = vector;
     result.x *= scale.x;
@@ -1960,14 +1957,14 @@ static inline float abs_float(float value)
 /** @brief Move the girl to her angle around the listener with her lean, then step her walk animations. */
 void BootNewGameSettings::place_girl()
 {
-    BootVector4 position;
-    BootVector4 angles;
+    LibVector4 position;
+    LibVector4 angles;
     BootMatrix matrix;
     FieldVec4B target;
     FieldVec4B rotation;
     FieldVec4B roll;
-    BootVector4 axis;
-    BootVector4 offset;
+    LibVector4 axis;
+    LibVector4 offset;
     float angle = girl_angle;
     lib_compute_sine_cosine_pair_degree9(&angles, angle);
     position.x = 300.0f * angles.z;
@@ -1976,7 +1973,7 @@ void BootNewGameSettings::place_girl()
     position.w = 1.0f;
     target = scale_components(FieldVec4A(-1.0f, -1.0f, -1.0f, -1.0f), position);
     func_4CBD20(&matrix, &position, &target, 0.0f);
-    func_4CBAC0((BootVector4*)&rotation, &matrix);
+    func_4CBAC0((LibVector4*)&rotation, &matrix);
     axis.x = 0.0f;
     axis.y = 1.0f;
     axis.z = 0.0f;
@@ -2010,7 +2007,7 @@ void BootNewGameSettings::place_girl()
 
     BootTransformOwner* root = func_473530(girl_scene, g_root_node_name);
     root->set_translation_vector(&position);
-    root->set_orientation((BootVector4*)&rotation);
+    root->set_orientation((LibVector4*)&rotation);
 
     bool again = true;
 
@@ -2178,8 +2175,8 @@ void BootNewGameSettings::place_girl()
 void BootNewGameSettings::get_speaker_cursor_position(s32 speaker, float* x, float* y)
 {
     BootClass170F30* speakers[4];
-    BootVector4 position;
-    BootVector4 screen;
+    LibVector4 position;
+    LibVector4 screen;
     speakers[0] = lib_find_renderable_entry(room_scene, g_right_speaker_name);
     speakers[1] = lib_find_renderable_entry(room_scene, g_left_speaker_name);
     speakers[2] = lib_find_renderable_entry(room_scene, g_rear_left_speaker_name);
@@ -2208,7 +2205,7 @@ void BootNewGameSettings::get_speaker_cursor_position(s32 speaker, float* x, flo
  */
 static inline void set_speaker_color(BootClass170F30* const& model, float shade)
 {
-    BootVector4 color;
+    LibVector4 color;
     color.x = shade;
     color.y = shade;
     color.z = shade;
@@ -2230,11 +2227,11 @@ void BootNewGameSettings::place_speakers()
 
     for (s32 i = 0; i < 5; i++)
     {
-        BootVector4 position;
-        BootVector4 angles;
+        LibVector4 position;
+        LibVector4 angles;
         BootMatrix matrix;
         FieldVec4B target;
-        BootVector4 rotation;
+        LibVector4 rotation;
         lib_compute_sine_cosine_pair_degree9(&angles, i < 4 ? g_sound->speaker_angles[i] : 1.5707964f);
         position.x = 250.0f * angles.z;
         position.z = 250.0f * angles.w;
@@ -2253,7 +2250,7 @@ void BootNewGameSettings::place_speakers()
         {
             if (i == selected_speaker)
             {
-                BootVector4 scale;
+                LibVector4 scale;
                 copy_vector(&scale, &speakers[i]->base_color_factor);
 
                 if (adjusting_speaker == 1)
@@ -2602,7 +2599,7 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
  */
 static inline void set_model_color(BootModel* model, float red, float green, float blue, float alpha)
 {
-    BootVector4 color;
+    LibVector4 color;
     color.x = red;
     color.y = green;
     color.z = blue;
@@ -2736,7 +2733,7 @@ void BootNewGameSettings::update_option_rows()
             {
                 if (images[16 + i] != 0 && images[16 + i]->model != 0)
                 {
-                    BootVector4 position;
+                    LibVector4 position;
                     copy_vector(&position, &images[16 + i]->model->translation);
                     position.x = 8.0f + 1.3333334f * row_x;
                     images[16 + i]->model->set_translation_vector(&position);
@@ -2749,7 +2746,7 @@ void BootNewGameSettings::update_option_rows()
             {
                 if (images[16 + i] != 0 && images[16 + i]->model != 0)
                 {
-                    BootVector4 position;
+                    LibVector4 position;
                     copy_vector(&position, &images[16 + i]->model->translation);
                     position.x = row_x;
                     images[16 + i]->model->set_translation_vector(&position);
@@ -2796,7 +2793,7 @@ void BootNewGameSettings::update_option_rows()
 
             if (selection == i)
             {
-                BootVector4 scale;
+                LibVector4 scale;
                 copy_vector(&scale, &model->base_color_factor);
 
                 if (highlight_phase == 0)
@@ -2967,7 +2964,7 @@ void BootNewGameSettings::update_page_images()
         {
             if (images[3 + i] != 0)
             {
-                BootVector4 color;
+                LibVector4 color;
                 color.x = 1.0f;
                 color.y = 1.0f;
                 color.z = 1.0f;
@@ -2998,7 +2995,7 @@ void BootNewGameSettings::update_page_images()
         {
             if (images[3 + i] != 0)
             {
-                BootVector4 color;
+                LibVector4 color;
                 color.x = 0.5f;
                 color.y = 0.5f;
                 color.z = 0.5f;
@@ -3029,7 +3026,7 @@ void BootNewGameSettings::update_page_images()
 }
 
 /** Partial Lib morph target, one of a face model's children; object_kind is two for a morph target. */
-struct BootMorphTarget : public BootListObject
+struct BootMorphTarget : public LibListObject
 {
     u8 unk14[0x1C];
 
@@ -3075,7 +3072,7 @@ static inline void place_cursor(BootSelectionCursor* cursor, float x, float y)
  * @param node Current node.
  * @return Whether node is the sentinel.
  */
-static inline bool at_end(const BootListSentinel* list, const BootListSentinel* node)
+static inline bool at_end(const LibListSentinel* list, const LibListSentinel* node)
 {
     if (list == node)
     {
@@ -3107,7 +3104,7 @@ void BootNewGameSettings::update()
     switch (stage)
     {
     case BOOT_SETTINGS_STAGE_LOAD:
-        if (func_102D00(g_resource_queue) != 0)
+        if (func_00102D00(g_resource_queue) != 0)
         {
             resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
             resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, model_data,
@@ -3118,7 +3115,8 @@ void BootNewGameSettings::update()
             stage++;
             highlight_phase = 0;
             container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
-            func_465B20(D_001B657C, container);
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                     reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
             description_text = new (0) BootTextWidget(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
             description_text->set_color(0x34130F);
             lib_container_attach_widget(container, description_text);
@@ -3129,14 +3127,16 @@ void BootNewGameSettings::update()
             get_cursor_position(&x, &y);
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0xF42400, x, y, 0.0f);
-            func_465B20(D_001B657C, cursor);
-            func_10DAA0(g_sound, 2);
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
+            func_0010DAA0(g_sound, 2);
         }
 
         break;
     case BOOT_SETTINGS_STAGE_LOAD_IMAGES:
-        image_blocks[loaded_image_blocks] = func_102920(g_resident_resource_decoder, image_data, loaded_image_blocks, 1);
-        func_1025A0(g_resident_resource_decoder, image_data, (void*)BOOT_ALIGN_RESOURCE(image_blocks[loaded_image_blocks]), loaded_image_blocks);
+        image_blocks[loaded_image_blocks] =
+            resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(image_data), loaded_image_blocks, 1);
+        resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(image_data),
+                                       (void*)BOOT_ALIGN_RESOURCE(image_blocks[loaded_image_blocks]), loaded_image_blocks);
 
         if (++loaded_image_blocks >= 5)
         {
@@ -3562,8 +3562,8 @@ void BootNewGameSettings::update()
         if (voice_line != 0)
         {
             BootClass170F30* face = lib_find_renderable_entry(girl_scene, g_face_model_name);
-            BootListSentinel* end = &face->children;
-            BootListSentinel* node = end->next;
+            LibListSentinel* end = &face->children;
+            LibListSentinel* node = end->next;
 
             if (resident_sound_is_active(g_sound, voice_line) != 0)
             {
@@ -3638,8 +3638,8 @@ void BootNewGameSettings::update()
         if (blink_frame != 0)
         {
             BootClass170F30* face = lib_find_renderable_entry(girl_scene, g_face_model_name);
-            BootListSentinel* end = &face->children;
-            BootListSentinel* node = end->next;
+            LibListSentinel* end = &face->children;
+            LibListSentinel* node = end->next;
             blink_frame++;
 
             for (; !at_end(end, node); node = node->next)
@@ -3786,8 +3786,10 @@ void BootNewGameSettings::update()
 
     if (stage > BOOT_SETTINGS_STAGE_LOAD && resident_find_resource_request(g_resource_queue, 0x29, 0, 0, -1, 0) == 0 && loaded_model_blocks < 8)
     {
-        model_blocks[loaded_model_blocks] = func_102920(g_resident_resource_decoder, model_data, loaded_model_blocks, 1);
-        func_1025A0(g_resident_resource_decoder, model_data, (void*)BOOT_ALIGN_RESOURCE(model_blocks[loaded_model_blocks]), loaded_model_blocks);
+        model_blocks[loaded_model_blocks] =
+            resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(model_data), loaded_model_blocks, 1);
+        resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(model_data),
+                                       (void*)BOOT_ALIGN_RESOURCE(model_blocks[loaded_model_blocks]), loaded_model_blocks);
         loaded_model_blocks++;
         FlushCache(0);
     }
@@ -3955,9 +3957,9 @@ BootNewGameSettings::BootNewGameSettings()
 void BootClass170F30::build_packet(const void* matrix, void* context)
 {
     BootMatrix negated;
-    BootVector4* vector1 = &negated.vectors[1];
-    BootVector4* vector2 = &negated.vectors[2];
-    BootVector4* vector3 = &negated.vectors[3];
+    LibVector4* vector1 = &negated.vectors[1];
+    LibVector4* vector2 = &negated.vectors[2];
+    LibVector4* vector3 = &negated.vectors[3];
     copy_vector(&negated.vectors[0], &unk90.vectors[0]);
     copy_vector(vector1, &unk90.vectors[1]);
     copy_vector(vector2, &unk90.vectors[2]);
@@ -4092,7 +4094,7 @@ void BootOpeningMovie::update()
     switch (step)
     {
     case BOOT_MOVIE_PREPARE:
-        if ((input->held & BOOT_BUTTON_START) || func_115270(g_resource_archive, 1) != 1)
+        if ((input->held & BOOT_BUTTON_START) || func_00115270(g_resource_archive, 1) != 1)
         {
             step = BOOT_MOVIE_STOP;
             break;
@@ -4104,7 +4106,7 @@ void BootOpeningMovie::update()
         }
 
         container = new (0) BootContainer(9, 0.0f, 0.0f, 0.0f);
-        func_465B20(D_001B657C, container);
+        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
         func_419A70(player, 12, 1);
         caption = 0;
         caption_phase = BOOT_CAPTION_HIDDEN;
@@ -4279,7 +4281,7 @@ void BootOpeningMovie::update()
             {
                 float alpha = ((float)BOOT_CAPTION_FADE_FRAMES - (float)fade) / (float)BOOT_CAPTION_FADE_FRAMES;
                 caption_image->model->draw_flags &= ~BOOT_DRAW_HIDDEN;
-                BootVector4 color;
+                LibVector4 color;
                 color.x = 1.0f;
                 color.y = 1.0f;
                 color.z = 1.0f;
@@ -4291,7 +4293,7 @@ void BootOpeningMovie::update()
             }
             case BOOT_CAPTION_SHOWN:
             {
-                BootVector4 color;
+                LibVector4 color;
                 color.x = 1.0f;
                 color.y = 1.0f;
                 color.z = 1.0f;
@@ -4303,7 +4305,7 @@ void BootOpeningMovie::update()
             }
             case BOOT_CAPTION_FADE_OUT:
             {
-                BootVector4 color;
+                LibVector4 color;
                 color.x = 1.0f;
                 color.y = 1.0f;
                 color.z = 1.0f;
@@ -4409,7 +4411,7 @@ BootOpeningMovie::BootOpeningMovie()
     step = BOOT_MOVIE_PREPARE;
     movie_heap = new (0) BootResident113E40;
     movie_heap->unk2C = 0x40;
-    func_113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
+    func_00113930(reinterpret_cast<ResidentHeap*>(movie_heap), BOOT_MOVIE_HEAP_SIZE);
     heap = resident_exchange_allocation_heap(movie_heap);
     player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
     resident_exchange_allocation_heap(heap);
@@ -4444,7 +4446,8 @@ void BootUnitErrorPopup::update()
         if (container == 0 && BOOT_ALIGN_RESOURCE(program->message_block) != 0)
         {
             container = new (0) BootContainer(8, 0.0f, 0.0f, 0.0f);
-            func_465B20(D_001B657C, container);
+            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                                     reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(container)));
             panel = new (0) BootPanel(0, 64.0f, 160.0f, 520.0f, 160.0f, 88.0f);
             lib_container_attach_widget(container, panel);
             text = new (0) BootTextWidget(program->messages, BOOT_MSG_UNIT_FIX, 0, 80.0f, 176.0f, 576.0f, 320.0f);
@@ -4619,7 +4622,7 @@ void BootResourceLoader::update()
     u8* buffer;
     u8* aligned;
 
-    if (func_102D00(g_resource_queue) != 0)
+    if (func_00102D00(g_resource_queue) != 0)
     {
         if (block >= BOOT_COMMON_UI_BLOCK_COUNT)
         {
@@ -4629,19 +4632,19 @@ void BootResourceLoader::update()
             return;
         }
 
-        buffer = func_102920(g_resident_resource_decoder, data, block, 1);
+        buffer = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(data), block, 1);
         aligned = (u8*)BOOT_ALIGN_RESOURCE(buffer);
-        func_1025A0(g_resident_resource_decoder, data, aligned, block);
+        resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(data), aligned, block);
 
         switch (block)
         {
         case BOOT_COMMON_UI_MESSAGES:
             program->message_block = buffer;
-            program->messages = func_4656B0(D_001B657C, aligned);
+            program->messages = lib_load_resource_slot(reinterpret_cast<FieldRuntime*>(D_001B657C), aligned);
             break;
         case BOOT_COMMON_UI_CAPTIONS:
             program->caption_block = buffer;
-            program->captions = func_4656B0(D_001B657C, aligned);
+            program->captions = lib_load_resource_slot(reinterpret_cast<FieldRuntime*>(D_001B657C), aligned);
             break;
         case BOOT_COMMON_UI_IMAGES:
             program->image_block = buffer;
@@ -4726,7 +4729,7 @@ void BootProgram::run()
 
     image = (BootProgramImage*)memalign(0x40, size);
     // Leaving the u32 conversion implicit moves the clamp's copy of size; the explicit cast keeps it.
-    resident_queue_resource_request(func_101250(resident_get_system()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image,
+    resident_queue_resource_request(func_00101250(resident_get_system()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image,
                                     BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, (u32)size, 0, BOOT_RESOURCE_READ);
     delete[] buffer;
 
@@ -4750,7 +4753,7 @@ void BootProgram::run()
 
     func_4D8970();
     rebuild_display(0);
-    func_121890(display);
+    func_00121890(display);
     func_4E3830(display, 0xA0013BA, 0x20000, 0x20, 0x200, 0, 0);
     rect.x = 0;
     rect.y = 0;
@@ -4760,7 +4763,7 @@ void BootProgram::run()
     D_001B6618->clear_color = 0xFFFFFF;
     resident_input_attach_display(g_input_system, display, 1);
 
-    while (!func_102D00(g_resource_queue))
+    while (!func_00102D00(g_resource_queue))
     {
     }
 

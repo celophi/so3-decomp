@@ -558,16 +558,16 @@ void FieldClass15AE70::func_slot0c()
     void* first = 0;
     while (func_002CF190(&unk74, &first))
     {
-        ((LibClass171EA0*)first)->func_003EF740();
+        ((LibListObject*)first)->destroy();
     }
     void* second = 0;
     while (func_002CEFA0(&unk80, &second))
     {
-        ((LibClass171EA0*)second)->func_003EF740();
+        ((LibListObject*)second)->destroy();
     }
     if (unk10)
     {
-        static_cast<LibClass174610&>(*unk10).func_003EF740();
+        static_cast<LibClass174610&>(*unk10).destroy();
     }
     resident_enqueue_object(g_resident_release_queues, this);
 }

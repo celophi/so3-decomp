@@ -218,7 +218,7 @@ extern "C"
 
     extern ResidentHeap* D_001B6698;
 
-    extern LibClass171EA0* D_001B6640;
+    extern LibListObject* D_001B6640;
 
     extern FieldDisplayState6624* D_001B6624;
 
@@ -460,9 +460,9 @@ void FieldClass157AF0::emit_secondary_entries(const LibVector4* position, LibVec
             vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
             float scale = secondary_emission_scale;
-            transformed_first.components[0] *= scale;
-            transformed_first.components[1] *= scale;
-            transformed_first.components[2] *= scale;
+            transformed_first.x *= scale;
+            transformed_first.y *= scale;
+            transformed_first.z *= scale;
         }
         else
         {
@@ -494,7 +494,7 @@ void FieldClass157AF0::emit_secondary_entries(const LibVector4* position, LibVec
         vu0_reset_emission_state();
         vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = unk3C;
+        first_offset->w = unk3C;
     }
 }
 
@@ -602,9 +602,9 @@ void FieldClass157E30::emit_secondary_entries(const LibVector4* position, LibVec
             vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
             float scale = secondary_emission_scale;
-            transformed_first.components[0] *= scale;
-            transformed_first.components[1] *= scale;
-            transformed_first.components[2] *= scale;
+            transformed_first.x *= scale;
+            transformed_first.y *= scale;
+            transformed_first.z *= scale;
         }
         else
         {
@@ -636,7 +636,7 @@ void FieldClass157E30::emit_secondary_entries(const LibVector4* position, LibVec
         vu0_reset_emission_state();
         vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = unk3C;
+        first_offset->w = unk3C;
     }
 }
 
@@ -744,9 +744,9 @@ void FieldClass158170::emit_secondary_entries(const LibVector4* position, LibVec
             vu0_transform_emission_direction(transform_rows, first_offset, &transformed_first);
             first_offset_arg = &transformed_first;
             float scale = secondary_emission_scale;
-            transformed_first.components[0] *= scale;
-            transformed_first.components[1] *= scale;
-            transformed_first.components[2] *= scale;
+            transformed_first.x *= scale;
+            transformed_first.y *= scale;
+            transformed_first.z *= scale;
         }
         else
         {
@@ -778,7 +778,7 @@ void FieldClass158170::emit_secondary_entries(const LibVector4* position, LibVec
         vu0_reset_emission_state();
         vu0_set_emission_delta(g_frame_seconds);
         vu0_restore_emission_state(saved_state);
-        first_offset->components[3] = unk3C;
+        first_offset->w = unk3C;
     }
 }
 
@@ -888,7 +888,7 @@ static inline void field_release_slot_object(T*& object)
     if (object != 0)
     {
         lib_object_detach_owner(object);
-        object->func_003EF740();
+        object->destroy();
         object = 0;
     }
 }
@@ -972,7 +972,7 @@ void field_detach_object_slots(FieldObjectSlotOwner* owner)
  * @param owner Slot owner.
  * @param object Object to mark.
  */
-void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibClass171EA0* object)
+void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibListObject* object)
 {
     for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
@@ -992,7 +992,7 @@ void field_request_object_slot_removal(FieldObjectSlotOwner* owner, LibClass171E
  * @param object Object to store and register.
  * @return True if a vacant slot was found; false when all slots are occupied.
  */
-bool field_add_object_slot(FieldObjectSlotOwner* owner, LibClass171EA0* object)
+bool field_add_object_slot(FieldObjectSlotOwner* owner, LibListObject* object)
 {
     for (s32 i = 0; i < FieldObjectSlotOwner::SLOT_COUNT; i++)
     {
@@ -1823,7 +1823,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
 
     if (D_001B6640 != 0)
     {
-        D_001B6640->func_003EF740();
+        D_001B6640->destroy();
         D_001B6640 = 0;
     }
 

@@ -45,7 +45,6 @@ void func_4791F0(BootScene* scene, u8* data);
 void func_40B3A0(u8* data);
 void func_473AA0(BootScene* scene);
 
-void func_11F510(void* owner, void* object);
 }
 
 /** Title screen stages, including the hand-off for each menu choice. */
@@ -152,7 +151,7 @@ void BootTitleMenu::animate_items(u8 snap)
 
         if (item == selected)
         {
-            BootVector4 value;
+            LibVector4 value;
             copy_vector(&value, &node->scale);
 
             if (value.x < 1.08f && !snap)
@@ -212,7 +211,7 @@ void BootTitleMenu::animate_items(u8 snap)
         }
         else
         {
-            BootVector4 value;
+            LibVector4 value;
             copy_vector(&value, &node->scale);
 
             if (value.x > 1.05f)
@@ -328,7 +327,7 @@ void BootTitleMenu::update_item_availability()
         return;
     }
 
-    BootVector4 color;
+    LibVector4 color;
     copy_vector(&color, &collection_node->base_color_factor);
 
     if (first == BOOT_TROPHY_FILE_PRESENT || second == BOOT_TROPHY_FILE_PRESENT)
@@ -381,7 +380,7 @@ void BootTitleMenu::update()
     {
     case BOOT_TITLE_LOAD_SCENE:
     {
-        if (func_102D00(g_resource_queue) == 0)
+        if (func_00102D00(g_resource_queue) == 0)
         {
             break;
         }
@@ -423,7 +422,7 @@ void BootTitleMenu::update()
         get_cursor_position(&x, &y);
         cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, x, y, 0.0f);
-        func_465B20(D_001B657C, cursor);
+        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibClass178A90*>(static_cast<BootTransformOwner*>(cursor)));
         step++;
         break;
     }
@@ -516,7 +515,7 @@ void BootTitleMenu::update()
                 resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
             }
         }
-        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && func_115270(g_resource_archive, 1) == 1)
+        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && func_00115270(g_resource_archive, 1) == 1)
         {
             queue_fade();
             resident_sound_stop_music(g_sound, 0x1E, -1);
@@ -860,7 +859,7 @@ void BootScreenFade::on_packet_complete(u32 value)
 void BootScreenFade::render()
 {
     dma_pending = 1;
-    func_11F510(packet, static_cast<BootDmaCallbacks*>(this));
+    func_0011F510(packet, static_cast<BootDmaCallbacks*>(this));
 }
 
 /**
@@ -1315,7 +1314,7 @@ void BootGameLauncher::update()
 
             movie_heap = new (0) BootResident113E40;
             movie_heap->unk2C = 0x40;
-            func_113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
+            func_00113930(reinterpret_cast<ResidentHeap*>(movie_heap), BOOT_MOVIE_HEAP_SIZE);
             void* heap = resident_exchange_allocation_heap(movie_heap);
             player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
             resident_exchange_allocation_heap(heap);
@@ -1363,7 +1362,7 @@ void BootGameLauncher::update()
         step++;
         break;
     case BOOT_LAUNCH_HAND_OFF:
-        if (func_102D00(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
+        if (func_00102D00(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
         {
             lib_object_detach_owner(this);
             destroy();

@@ -3056,7 +3056,7 @@ LibClass178A70::~LibClass178A70()
 
 void StatusCharacterWindow::func_slot0c()
 {
-    container->func_003EF740();
+    container->destroy();
     FieldClass15AE70::func_slot0c();
 }
 
