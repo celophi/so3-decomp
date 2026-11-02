@@ -241,6 +241,9 @@ set_translation_vector__20LibPositionTransformFPC10LibVector4 = 0x003EF780; // t
 set_translation__20LibPositionTransformFfff = 0x003EF790; // type:func size:0x18
 __dt__20LibPositionTransformFv = 0x003EF7B0; // type:func size:0x90
 __dt__20LibOrientedTransformFv = 0x003EF570; // type:func size:0xA0
+copy_translation__20LibOrientedTransformFPC10LibVector4 = 0x003EEE70; // type:func size:0x14
+set_translation_vector__20LibOrientedTransformFPC10LibVector4 = 0x003EEE90; // type:func size:0x14
+set_translation__20LibOrientedTransformFfff = 0x003EEEB0; // type:func size:0x20
 __ct__20LibOrientedTransformFv = 0x004E0FC0; // type:func
 
 lib_container_init = 0x004C6510; // type:func size:0xC8

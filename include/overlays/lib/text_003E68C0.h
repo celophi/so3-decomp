@@ -99,18 +99,6 @@ static inline void clear_vector(LibVector4* vector)
     *(unsigned __int128*)vector = 0;
 }
 
-/** @brief Copy the position vector and mark the transform dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EEE70(LibOrientedTransform* object, const LibVector4* value);
-/** @brief Copy the position vector and mark the transform dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void func_003EEE90(LibOrientedTransform* object, const LibVector4* value);
-/** @brief Set the position xyz components, set w to one, and mark the transform dirty. @param object Transform to update. @param x First component. @param y Second component. @param z Third component. */
-extern "C" void func_003EEEB0(LibOrientedTransform* object, float x, float y, float z);
-/** @brief Copy the primary transform vector and mark it dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void convert_rotation(LibOrientedTransform* object, const LibVector4* value);
-/** @brief Copy the primary transform vector and mark it dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void set_rotation_vector(LibOrientedTransform* object, const LibVector4* value);
-/** @brief Set the primary transform vector's xyz components, set w to one, and mark it dirty. @param object Transform to update. @param x First component. @param y Second component. @param z Third component. */
-extern "C" void set_rotation(LibOrientedTransform* object, float x, float y, float z);
 
 /** Partially known 8-byte buffer entry; the signed value is at offset 6. */
 struct LibClass3F5B80Entry

@@ -957,6 +957,8 @@ func_003EEE30__14LibClass178A90Fff = 0x0036E740; // type:func allow_duplicated:T
 func_003EEE50__14LibClass178A90Fv = 0x0036E770; // type:func allow_duplicated:True
 func_003EEE60__14LibClass178A90Fv = 0x0036E780; // type:func allow_duplicated:True
 
+__vt__20LibOrientedTransform = 0x00171EF0; // size:0x4C absolute:True
+__dt__20LibOrientedTransformFv = 0x003EF570; // type:func absolute:True allow_duplicated:True
 copy_translation__20LibOrientedTransformFPC10LibVector4 = 0x0036E570; // type:func allow_duplicated:True
 set_translation_vector__20LibOrientedTransformFPC10LibVector4 = 0x0036E590; // type:func allow_duplicated:True
 set_translation__20LibOrientedTransformFfff = 0x0036E5B0; // type:func allow_duplicated:True

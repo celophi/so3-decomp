@@ -93,25 +93,28 @@ void LibClass178A90::func_003EEE60()
 {
 }
 
-extern "C" void func_003EEE70(LibOrientedTransform* object, const LibVector4* value)
+/** @brief Copy the position and mark the transform dirty. */
+void LibOrientedTransform::copy_translation(const LibVector4* value)
 {
-    object->transform_dirty = 1;
-    copy_vector(&object->translation, value);
+    transform_dirty = 1;
+    copy_vector(&translation, value);
 }
 
-extern "C" void func_003EEE90(LibOrientedTransform* object, const LibVector4* value)
+/** @brief Copy the position and mark the transform dirty. */
+void LibOrientedTransform::set_translation_vector(const LibVector4* value)
 {
-    object->transform_dirty = 1;
-    copy_vector(&object->translation, value);
+    transform_dirty = 1;
+    copy_vector(&translation, value);
 }
 
-extern "C" void func_003EEEB0(LibOrientedTransform* object, float x, float y, float z)
+/** @brief Set the position and a w component of one, and mark the transform dirty. */
+void LibOrientedTransform::set_translation(float x, float y, float z)
 {
-    object->transform_dirty = 1;
-    object->translation.x = x;
-    object->translation.y = y;
-    object->translation.z = z;
-    object->translation.w = 1.0f;
+    transform_dirty = 1;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
 }
 
 /** @brief Set all four components of the primary transform vector and mark it dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
@@ -138,30 +141,30 @@ void LibOrientedTransform::set_orientation(const LibVector4* value)
     copy_vector(&orientation, value);
 }
 
-/** @brief Copy the primary transform vector and mark it dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void convert_rotation(LibOrientedTransform* object, const LibVector4* value)
+/** @brief Convert a rotation into the rotation vector and mark the transform dirty. */
+void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
-    object->transform_dirty = 1;
-    func_004CE4C0(&object->orientation.x, &value->x);
+    transform_dirty = 1;
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
-/** @brief Copy the primary transform vector and mark it dirty. @param object Transform to update. @param value Source vector. */
-extern "C" void set_rotation_vector(LibOrientedTransform* object, const LibVector4* value)
+/** @brief Convert a rotation into the rotation vector and mark the transform dirty. */
+void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
-    object->transform_dirty = 1;
-    func_004CE4C0(&object->orientation.x, &value->x);
+    transform_dirty = 1;
+    func_004CE4C0(&orientation.x, &value->x);
 }
 
-/** @brief Set the primary transform vector's xyz components, set w to one, and mark it dirty. @param object Transform to update. @param x First component. @param y Second component. @param z Third component. */
-extern "C" void set_rotation(LibOrientedTransform* object, float x, float y, float z)
+/** @brief Convert three rotation components into the rotation vector and mark the transform dirty. */
+void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
-    object->transform_dirty = 1;
+    transform_dirty = 1;
     LibVector4 value;
     value.x = x;
     value.y = y;
     value.z = z;
     value.w = 1.0f;
-    func_004CE4C0(&object->orientation.x, &value.x);
+    func_004CE4C0(&orientation.x, &value.x);
 }
 
 /** @brief Copy the secondary transform vector and mark it dirty. @param value Source vector. */
