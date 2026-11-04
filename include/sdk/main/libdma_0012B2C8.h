@@ -40,6 +40,14 @@ DmaChannel* sceDmaGetChan(u32 channel);
 /** @brief Start a source-chain DMA transfer. @param channel Channel register block. @param chain Source-chain head. */
 void sceDmaSend(DmaChannel* channel, void* chain);
 
+/**
+ * @brief Start a normal-mode DMA transfer.
+ * @param channel Channel register block.
+ * @param address Data to send.
+ * @param count Quadwords to send.
+ */
+void sceDmaSendN(DmaChannel* channel, void* address, s32 count);
+
 /** @brief Reset the DMA controller. @param mode 1 to reset it. @return Zero on success. */
 s32 sceDmaReset(s32 mode);
 

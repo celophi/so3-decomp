@@ -546,12 +546,50 @@ struct ResidentSound
 
 typedef struct ResidentSound ResidentSound;
 
-/** Partial resident DMA queue exposing the asynchronously cleared busy flag. */
-typedef struct ResidentDmaQueue
+#ifdef __cplusplus
+class DmaSubmission;
+
+/**
+ * Ring of DMA submissions waiting for one DMA channel, with the DMAC interrupt handler that starts the next one;
+ * vtable D_0014FB48.
+ */
+class ResidentDmaQueue
 {
-    u8 unk00[0x1011];
-    volatile u8 busy;
-} ResidentDmaQueue;
+    public:
+        /** Submissions waiting for the channel. */
+        DmaSubmission* entries[0x400];
+
+        u8 unk1000[4];
+
+        /** Next free entry. */
+        s32 write_index;
+
+        /** Next entry to start. */
+        s32 read_index;
+
+        /** DMAC handler ID from AddDmacHandler. */
+        s32 handler_id;
+
+        /** DMA channel number. */
+        u8 channel;
+
+        /** Set while a transfer is running; the DMAC handler clears it. */
+        volatile u8 busy;
+
+        u8 unk1012;
+
+        /**
+         * @brief Register the queue as its channel's and install the channel's DMAC handler.
+         * @param channel DMA channel number.
+         */
+        ResidentDmaQueue(s32 channel);
+
+        /** @brief Disable the channel and remove its DMAC handler. */
+        virtual ~ResidentDmaQueue();
+};
+#else
+typedef struct ResidentDmaQueue ResidentDmaQueue;
+#endif
 
 /** Tag of an allocated heap block. */
 #define RESIDENT_HEAP_BLOCK_TAG 0x4D655279
@@ -1715,12 +1753,14 @@ s32 resident_sound_play(ResidentSound* sound, s32 number, s32 selector, s32 valu
  */
 s32 resident_sound_is_music_playing(ResidentSound* sound, s32 key);
 
+#ifdef __cplusplus
 /**
  * @brief Report whether a hard disk unit error is pending.
  * @param archive Resource archive.
- * @return One when an error is pending, otherwise zero.
+ * @return Whether an error is pending.
  */
-s32 resident_archive_has_unit_error(const ResidentArchive* archive);
+bool resident_archive_has_unit_error(const ResidentArchive* archive);
+#endif
 
 /**
  * @brief Clear the pending hard disk unit error.
@@ -1871,8 +1911,11 @@ u32 func_0011DF70(const struct ResidentInputSystem* input);
 void func_0011DF80(struct ResidentInputSystem* input);
 
 
-/** Store the byte constant at receiver offset 0x1012. */
-void func_001140F0(void* object);
+/**
+ * @brief Set the queue's unk1012 flag.
+ * @param queue DMA queue.
+ */
+void func_001140F0(ResidentDmaQueue* queue);
 
 void func_0010EE50(void* object);
 
@@ -1887,12 +1930,12 @@ void func_00113180(void* object);
 void func_00113EA0(void* object);
 
 /**
- * @brief Return the state byte or wait for it to clear when requested.
- * @param object State receiver whose byte is at offset 0x1011.
- * @param wait Nonzero returns the current byte; zero waits until it is clear.
- * @return Current state byte when waiting is disabled, otherwise zero.
+ * @brief Report whether the queue's transfer is running, or wait until it finishes.
+ * @param queue DMA queue.
+ * @param poll Nonzero returns the busy flag straight away; zero waits until the transfer finishes.
+ * @return The busy flag when polling, otherwise zero.
  */
-u32 func_00113EB0(void* object, s32 wait);
+u32 func_00113EB0(ResidentDmaQueue* queue, s32 poll);
 void func_00114450(void* object);
 
 /** Return whether waking the resident thread succeeds. */

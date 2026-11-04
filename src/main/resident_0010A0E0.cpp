@@ -63,6 +63,24 @@ struct ThreadParam
 /** GS CSR; bit 13 is the field being displayed. */
 #define GS_CSR (*(volatile u64*)0x12001000)
 
+/** DMA channel 9, scratchpad RAM writes. */
+#define DMA_CHANNEL_TO_SPR 9
+
+/** Low byte of the DMAC control register D_CTRL. */
+typedef struct DmaControlLow
+{
+    u8 dma_enable : 1;
+
+    /** Release the bus between transfers (cycle stealing). */
+    u8 release : 1;
+
+    u8 memory_fifo_drain : 2;
+    u8 stall_source : 2;
+    u8 stall_drain : 2;
+} DmaControlLow;
+
+#define D_CTRL_BITS (*(volatile DmaControlLow*)0x1000E000)
+
 /** Position of the table of contents, in 2048-byte blocks. */
 #define RESIDENT_ARCHIVE_TOC_POSITION 0x400
 
@@ -127,6 +145,17 @@ s32 AddIntcHandler(s32 cause, s32 (*handler)(s32 cause), s32 next);
 s32 RemoveIntcHandler(s32 cause, s32 handler_id);
 s32 EnableIntc(s32 cause);
 s32 DisableIntc(s32 cause);
+s32 AddDmacHandler(s32 channel, s32 (*handler)(s32 channel), s32 next);
+s32 RemoveDmacHandler(s32 channel, s32 handler_id);
+s32 EnableDmac(s32 channel);
+s32 DisableDmac(s32 channel);
+s32 func_00113EF0(s32 channel);
+
+/** Each DMA channel's queue, by channel number. */
+extern ResidentDmaQueue* D_001CF9C0[];
+
+void func_00115310(void* worker, u8* header, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
+                   s32 third_size, u8* fourth, s32 fourth_size);
 s32 DIntr(void);
 s32 EIntr(void);
 s32 sceDbcInit(void);
@@ -174,11 +203,6 @@ typedef struct ResidentSpeakerAngles
     float angles[4];
 } ResidentSpeakerAngles;
 extern const ResidentSpeakerAngles D_00144260;
-typedef struct ConstantByteSetterOwnerresident_0010A0E0
-{
-    u8 unk00[0x1012];
-    u8 unk1012;
-} ConstantByteSetterOwnerresident_0010A0E0;
 
 
 
@@ -2679,21 +2703,23 @@ void func_00113EA0(void* object)
 {
 }
 
-typedef struct ResidentPolledFlag13EB0
+/**
+ * @brief Report whether the queue's transfer is running, or wait until it finishes.
+ * @param queue DMA queue.
+ * @param poll Nonzero returns the busy flag straight away; zero waits until the transfer finishes.
+ * @return The busy flag when polling, otherwise zero.
+ */
+u32 func_00113EB0(ResidentDmaQueue* queue, s32 poll)
 {
-    u8 pad00[0x1011];
-    volatile u8 flag;
-} ResidentPolledFlag13EB0;
+    if (poll != 0)
+    {
+        return queue->busy;
+    }
 
-/** Return the state byte or wait for it to clear when requested. */
-u32 func_00113EB0(void* object, s32 wait)
-{
-    ResidentPolledFlag13EB0* state = (ResidentPolledFlag13EB0*)object;
-    if (wait != 0) {
-        return state->flag;
+    while (queue->busy != 0)
+    {
     }
-    while (state->flag != 0) {
-    }
+
     return 0;
 }
 
@@ -2701,18 +2727,44 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00113EF0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00113FD0);
 
-/** Store 0x1 at receiver offset 0x1012. */
-void func_001140F0(void* object)
+/**
+ * @brief Set the queue's unk1012 flag.
+ * @param queue DMA queue.
+ */
+void func_001140F0(ResidentDmaQueue* queue)
 {
-    ConstantByteSetterOwnerresident_0010A0E0* receiver = (ConstantByteSetterOwnerresident_0010A0E0*)object;
-    receiver->unk1012 = 0x1;
+    queue->unk1012 = 1;
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114100);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001142C0);
+/** @brief Disable the channel and remove its DMAC handler. */
+ResidentDmaQueue::~ResidentDmaQueue()
+{
+    DisableDmac(channel);
+    RemoveDmacHandler(channel, handler_id);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114330);
+/**
+ * @brief Register the queue as its channel's and install the channel's DMAC handler.
+ * @param channel DMA channel number.
+ */
+ResidentDmaQueue::ResidentDmaQueue(s32 channel)
+{
+    D_001CF9C0[channel] = this;
+    this->channel = channel;
+    handler_id = AddDmacHandler(channel, func_00113EF0, 0);
+    EnableDmac(this->channel);
+    busy = 0;
+    unk1012 = 0;
+    write_index = 0;
+    read_index = 0;
+
+    if (channel == DMA_CHANNEL_TO_SPR)
+    {
+        D_CTRL_BITS.release = 1;
+    }
+}
 
 s32 func_001143E0(double left, double right)
 {
@@ -2967,7 +3019,24 @@ void resident_archive_set_navigator_files(ResidentArchive* archive, u8* first, s
     archive->navigator_file_sizes[2] = third_size;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_set_system_files);
+/**
+ * @brief Hand the system files and their icon header to the hard disk worker.
+ * @param archive Resource archive.
+ * @param header Icon header.
+ * @param first First file.
+ * @param first_size Size of first.
+ * @param second Second file.
+ * @param second_size Size of second.
+ * @param third Third file.
+ * @param third_size Size of third.
+ * @param fourth Fourth file.
+ * @param fourth_size Size of fourth.
+ */
+void resident_archive_set_system_files(ResidentArchive* archive, u8* header, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
+                                       s32 third_size, u8* fourth, s32 fourth_size)
+{
+    func_00115310(archive->unkEC, header, first, first_size, second, second_size, third, third_size, fourth, fourth_size);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115310);
 
@@ -2981,7 +3050,30 @@ void resident_archive_clear_unit_error(ResidentArchive* archive)
     archive->unk6c = 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_has_unit_error);
+// TODO: These two only match with the logical rebuild off; with it on, MWCC turns the || into sltu compares the
+// target doesn't have. It changes nothing else in the file, so the whole file may have been built that way.
+#pragma push
+#pragma opt_rebuildlogicals off
+
+/**
+ * @brief Report whether a hard disk unit error is pending.
+ * @param archive Resource archive.
+ * @return Whether an error is pending.
+ */
+static inline bool archive_unit_error_pending(const ResidentArchive* archive)
+{
+    return archive->unk140 || archive->unk6c;
+}
+
+/**
+ * @brief Report whether a hard disk unit error is pending.
+ * @param archive Resource archive.
+ * @return Whether an error is pending.
+ */
+bool resident_archive_has_unit_error(const ResidentArchive* archive)
+{
+    return archive_unit_error_pending(archive);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_query_unit);
 
@@ -3015,7 +3107,22 @@ s32 resident_archive_get_copy_remaining(const ResidentArchive* archive)
     return archive->copy_remaining;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_is_unit_ready);
+/**
+ * @brief Report whether the unit is ready, with no error pending.
+ * @param archive Resource archive.
+ * @return Nonzero when the unit is ready.
+ */
+s32 resident_archive_is_unit_ready(const ResidentArchive* archive)
+{
+    if (archive_unit_error_pending(archive))
+    {
+        return 0;
+    }
+
+    return archive->unit_ready;
+}
+
+#pragma pop
 
 /**
  * @brief Set the buffer the install copies through.

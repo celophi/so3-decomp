@@ -838,7 +838,7 @@ void BootInstaller::update()
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_SHOW_ERROR:
-        if (resident_archive_has_unit_error(g_resource_archive) != 0)
+        if (resident_archive_has_unit_error(g_resource_archive))
         {
             if (tip_text != 0)
             {

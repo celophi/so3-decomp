@@ -267,6 +267,19 @@ void func_0011F0B0(ResidentPacket* packet, u64 data);
 void func_0011F510(ResidentPacket* packet, void* completion);
 
 /**
+ * @brief End the packet's pending data with a GIF end tag and send it straight to the GS on DMA channel 2.
+ * @param packet Packet buffer to send.
+ */
+void func_0011F580(ResidentPacket* packet);
+
+/**
+ * @brief Write a GIF end tag and a VIF FLUSH + MSKPATH3 (unmask) pair after the pending data, without advancing the cursor.
+ * @param packet Packet to terminate.
+ * @return Quadwords from the pending data's start through the end, or zero when nothing is pending.
+ */
+u32 func_0011F640(ResidentPacket* packet);
+
+/**
  * @brief Write a GIF end tag after the pending data without advancing the cursor.
  * @param packet Packet to terminate.
  * @return Quadwords from the pending data's start through the end tag, or zero when nothing is pending.
@@ -1105,6 +1118,12 @@ extern "C"
      */
     ResidentClass14FD30* func_00120A70(ResidentClass14FCB0* list, u32 mask, const ResidentVector4* point,
                                        ResidentClass14FD30* start);
+
+    /**
+     * @brief Rebuild the hit box's matrices from its transform: the transpose, then the inverse from it.
+     * @param object Object whose hit box is updated.
+     */
+    void func_00120F20(ResidentClass14FD30* object);
 
     /**
      * @brief Turn the image animation on or off, rebuilding the image channel while the object is registered.

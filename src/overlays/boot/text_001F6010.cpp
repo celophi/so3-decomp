@@ -1307,7 +1307,7 @@ void BootGameLauncher::update()
     case BOOT_LAUNCH_WAIT_TO_PLAY_MOVIE:
         if (++timer > BOOT_LAUNCH_MOVIE_START_DELAY_FRAMES)
         {
-            if (resident_archive_has_unit_error(g_resource_archive) == 0 && resident_archive_is_unit_ready(g_resource_archive) != 0 && resident_archive_is_busy(g_resource_archive) != 0)
+            if (!resident_archive_has_unit_error(g_resource_archive) && resident_archive_is_unit_ready(g_resource_archive) != 0 && resident_archive_is_busy(g_resource_archive) != 0)
             {
                 break;
             }

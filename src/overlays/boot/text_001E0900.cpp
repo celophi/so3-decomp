@@ -1274,7 +1274,7 @@ void BootStartupChecks::update()
     u8 finished;
     u8 again;
 
-    if (resident_archive_has_unit_error(g_resource_archive) != 0)
+    if (resident_archive_has_unit_error(g_resource_archive))
     {
         return;
     }
@@ -4428,7 +4428,7 @@ void BootUnitErrorPopup::update()
         return;
     }
 
-    if (resident_archive_has_unit_error(g_resource_archive) != 0)
+    if (resident_archive_has_unit_error(g_resource_archive))
     {
         if (container == 0 && BOOT_ALIGN_RESOURCE(program->message_block) != 0)
         {
