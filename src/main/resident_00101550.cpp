@@ -32,7 +32,8 @@ s32 DIntr(void);
 s32 EIntr(void);
 s32 SleepThread(void);
 void func_0010B510(ResidentStreamThread* thread, s32 command);
-void func_00114E00(ResidentThread* thread);
+bool func_00114E00(ResidentThread* thread);
+u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 arg3, s32 arg4, s32 arg5);
 s32 func_4DC4F0(void* queue, u32 operation, u32 flags, void* packet, u32 value, void* completion);
 s32 func_00108000(ResidentSoundStream* stream, s32* status, u32 arg2, u32 arg3, u32 address, u32 arg5, u32 arg6,
                   u32 arg7, u32 arg8, u32 arg9, u32 arg10);
@@ -325,13 +326,33 @@ extern "C" void func_00102AE0(ResidentResourceQueue* queue)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102B30);
-
-ResidentInterruptLock::~ResidentInterruptLock()
+/**
+ * @brief Relink the first queued request of kind 4 at the head of the request list.
+ * @param queue Resource queue.
+ * @return True when such a request was found.
+ */
+extern "C" bool func_00102B30(ResidentResourceQueue* queue)
 {
-    if (disabled)
+    ResidentInterruptLock lock;
+    s32 index = queue->requests[0].next;
+
+    for (;;)
     {
-        EIntr();
+        if (index == 0)
+        {
+            return false;
+        }
+
+        if (queue->requests[index].request_kind == 4)
+        {
+            queue->requests[queue->requests[0].next].previous = index;
+            queue->requests[index].next = queue->requests[queue->requests[0].next].next;
+            queue->requests[0].next = index;
+            queue->requests[index].previous = 0;
+            return true;
+        }
+
+        index = queue->requests[index].next;
     }
 }
 
@@ -385,7 +406,26 @@ extern "C" void func_00103510(ResidentResourceQueue* queue)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00103580);
+/**
+ * @brief Process the queue under its semaphore until nothing more can start.
+ * @param queue Resource queue.
+ */
+extern "C" void func_00103580(ResidentResourceQueue* queue)
+{
+    (void)queue->semaphore.wait();
+
+    if (queue->unk30)
+    {
+        queue->archive->unk70++;
+    }
+
+    do
+    {
+        func_00102D50(queue);
+    } while (func_001031C0(queue));
+
+    (void)queue->semaphore.signal();
+}
 
 /**
  * @brief Process completed work, then find the first queued request matching the filters.
@@ -625,11 +665,51 @@ extern "C" s32 func_00105770(ResidentDecodeObject* decoder, ResidentDecodeStream
     return 1;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001058C0);
+/**
+ * @brief Read four values from the sound stream's IOP side.
+ * @param stream Sound stream.
+ * @param x Receives the first value.
+ * @param y Receives the second value.
+ * @param z Receives the third value.
+ * @param w Receives the fourth value.
+ */
+extern "C" void func_001058C0(ResidentSoundStream* stream, u32* x, u32* y, u32* z, u32* w)
+{
+    u32 reply[16];
+    u32 handle;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00105A20);
+    {
+        ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+        handle = func_0010C200(&D_001CC590, 0xE, reply, 0, 0, 0);
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00105AE0);
+    while (func_0010C0E0(&D_001CC590, handle))
+    {
+    }
+
+    if (reply[0])
+    {
+        *x = reply[1];
+        *y = reply[2];
+        *z = reply[3];
+        *w = reply[4];
+    }
+}
+
+/**
+ * @brief Send sound stream command 0x1C to the IOP.
+ * @param stream Sound stream; unused.
+ * @param reply Receives the reply, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle.
+ */
+extern "C" u32 func_00105AE0(ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+
+    return func_0010C200(&D_001CC590, 0x1C, reply, arg2, arg3, 0);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00105BF0);
 
@@ -1060,16 +1140,29 @@ extern "C" s32 func_001071A0(ResidentSoundStream* stream, s32 no_wait)
  * @brief Report whether an IOP request of the stream is still running.
  * @param stream Sound stream; unused.
  * @param request Request ID.
- * @return Nonzero while the request runs.
+ * @return True while the request runs.
  */
-extern "C" s32 func_00107230(ResidentSoundStream* stream, s32 request)
+extern "C" bool func_00107230(ResidentSoundStream* stream, s32 request)
 {
     return func_0010C0E0(&D_001CC590, request);
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107250);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107420);
+/**
+ * @brief Send sound stream command 0x18 to the IOP.
+ * @param stream Sound stream; unused.
+ * @param reply Receives the reply, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle.
+ */
+extern "C" u32 func_00107420(ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+
+    return func_0010C200(&D_001CC590, 0x18, reply, arg2, arg3, 0);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107530);
 
@@ -1182,7 +1275,16 @@ extern "C" void func_00109C80(ResidentStreamDma* dma, u32 channel)
     func_4DC4F0(D_001B65DC, 5, 0, dma, 0, 0);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109CB0);
+/**
+ * @brief Set the stream thread's unk110 to two while holding its semaphore.
+ * @param thread Stream thread.
+ */
+extern "C" void func_00109CB0(ResidentStreamThread* thread)
+{
+    (void)thread->semaphore.wait();
+    thread->stream->thread->unk110 = 2;
+    (void)thread->semaphore.signal();
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109D50);
 

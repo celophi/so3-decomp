@@ -19,6 +19,20 @@ void FlushCache(s32 mode);
 void InitTLB(void);
 
 /**
+ * @brief Wait on a semaphore.
+ * @param sema_id Semaphore ID.
+ * @return The semaphore ID, or a negative value on failure.
+ */
+s32 WaitSema(s32 sema_id);
+
+/**
+ * @brief Signal a semaphore.
+ * @param sema_id Semaphore ID.
+ * @return The semaphore ID, or a negative value on failure.
+ */
+s32 SignalSema(s32 sema_id);
+
+/**
  * @brief Signal a semaphore from interrupt context.
  * @param sema_id Semaphore ID to signal.
  * @return Result from the syscall.
@@ -119,6 +133,13 @@ void TerminateLibrary(void);
 s32 GetThreadId(void);
 
 s32 WakeupThread(s32 thread_id);
+
+/**
+ * @brief Wake a sleeping thread from interrupt context.
+ * @param thread_id Thread ID.
+ * @return The thread ID, or a negative value on failure.
+ */
+s32 iWakeupThread(s32 thread_id);
 
 /** Header that starts every SIF command packet. */
 typedef struct SifCommandHeader

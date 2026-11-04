@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "sdk/main/libkernl_00121940.h"
+#include "ee.h"
 
 #ifndef __cplusplus
 /* C units see the resident C++ classes as opaque types. */
@@ -87,12 +88,95 @@ public:
     /** Kernel semaphore ID, or a negative value when none was created. */
     s32 id;
 
+    /**
+     * @brief Wait on the semaphore.
+     * @return True on success.
+     */
+    bool wait()
+    {
+        if (WaitSema(id) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @brief Signal the semaphore from interrupt context.
+     * @return True on success.
+     */
+    bool isignal()
+    {
+        if (iSignalSema(id) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @brief Signal the semaphore, with the interrupt-context call when interrupts are disabled.
+     * @return True on success.
+     */
+    bool signal()
+    {
+        if (ee_get_status() & EE_STATUS_EIE)
+        {
+            if (SignalSema(id) < 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        if (iSignalSema(id) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     /** @brief Delete the kernel semaphore, if one was created. */
     virtual ~ResidentSemaphore()
     {
         if (id >= 0)
         {
             DeleteSema(id);
+        }
+    }
+};
+
+/** Holds a semaphore for as long as it lives; vtable D_0014FAA8. */
+class ResidentSemaphoreLock
+{
+public:
+    /** Semaphore held. */
+    ResidentSemaphore* semaphore;
+
+    /** Nonzero while the lock holds the semaphore. */
+    u8 held;
+
+    /**
+     * @brief Wait on a semaphore and hold it.
+     * @param semaphore Semaphore to hold.
+     */
+    ResidentSemaphoreLock(ResidentSemaphore* semaphore)
+    {
+        this->semaphore = semaphore;
+        held = 1;
+        (void)semaphore->wait();
+    }
+
+    /** @brief Signal the semaphore if the lock holds it. */
+    virtual ~ResidentSemaphoreLock()
+    {
+        if (held)
+        {
+            (void)semaphore->signal();
         }
     }
 };

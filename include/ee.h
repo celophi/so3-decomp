@@ -87,6 +87,35 @@ static inline void ee_sync(void)
 }
 
 /**
+ * @brief Finish an interrupt handler (sync, then ei).
+ *
+ * Every interrupt and SIF command handler in the game ends with this pair
+ * before it returns, as a workaround for an EE kernel bug.
+ * @see ps2sdk has the same pair as ExitHandler
+ *      (https://github.com/ps2dev/ps2sdk, ee/kernel/include/kernel.h).
+ */
+static inline void ee_exit_handler(void)
+{
+    asm __volatile__("sync\nei");
+}
+
+/** COP0 Status bit set while interrupts are enabled (EIE). */
+#define EE_STATUS_EIE 0x10000
+
+/**
+ * @brief Read the COP0 Status register (one mfc0).
+ * @return The Status register.
+ * @see ps2sdk reads it the same way with get_mips_cop_reg(0, COP0_REG_Status)
+ *      (https://github.com/ps2dev/ps2sdk, common/include/mipscopaccess.h).
+ */
+static inline u32 ee_get_status(void)
+{
+    u32 status;
+    asm __volatile__("mfc0 %0, $12" : "=r"(status));
+    return status;
+}
+
+/**
  * @brief Transpose a 16-byte-aligned 4x4 matrix of words with the EE's 128-bit MMI instructions.
  *
  * The registers are fixed ($t0-$t7) because every copy in the game uses the

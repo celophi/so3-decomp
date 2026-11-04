@@ -2,6 +2,7 @@
 #define SO3_MAIN_RESIDENT_00101550_H
 
 #include "types.h"
+#include "ee.h"
 #include "main/resident_001001E0.h"
 
 #ifdef __cplusplus
@@ -75,18 +76,36 @@ public:
 #endif
 
 #ifdef __cplusplus
-/**
- * Scoped lock that disables interrupts while it lives; vtable at 0x14FA60. Its constructor reads the COP0 Status
- * register, so it is only built from the queue's hand-written code.
- */
+extern "C" s32 DIntr(void);
+extern "C" s32 EIntr(void);
+
+/** Scoped lock that disables interrupts while it lives, if they were enabled; vtable at 0x14FA60. */
 class ResidentInterruptLock
 {
 public:
     /** Nonzero when the lock disabled interrupts and must enable them again. */
     u8 disabled;
 
+    /** @brief Disable interrupts if they're enabled. */
+    ResidentInterruptLock()
+    {
+        disabled = 0;
+
+        if (ee_get_status() & EE_STATUS_EIE)
+        {
+            DIntr();
+            disabled = 1;
+        }
+    }
+
     /** @brief Enable interrupts again if the lock disabled them. */
-    virtual ~ResidentInterruptLock();
+    virtual ~ResidentInterruptLock()
+    {
+        if (disabled)
+        {
+            EIntr();
+        }
+    }
 };
 #endif
 
@@ -771,13 +790,35 @@ s32 func_00107020(struct ResidentSoundStream* stream);
  */
 void func_001070B0(struct ResidentSoundStream* stream, s32 command);
 
+#ifdef __cplusplus
 /**
  * @brief Report whether an IOP request of the stream is still running.
  * @param stream Sound stream; unused.
  * @param request Request ID.
- * @return Nonzero while the request runs.
+ * @return True while the request runs.
  */
-s32 func_00107230(struct ResidentSoundStream* stream, s32 request);
+bool func_00107230(struct ResidentSoundStream* stream, s32 request);
+#endif
+
+/**
+ * @brief Send sound stream command 0x1C to the IOP.
+ * @param stream Sound stream; unused.
+ * @param reply Receives the reply, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle.
+ */
+u32 func_00105AE0(struct ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3);
+
+/**
+ * @brief Send sound stream command 0x18 to the IOP.
+ * @param stream Sound stream; unused.
+ * @param reply Receives the reply, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle.
+ */
+u32 func_00107420(struct ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3);
 
 /**
  * @brief Start the VIF1 DMA chain for the transfer's current phase.
@@ -824,14 +865,14 @@ s32 func_00109FB0(struct ResidentStreamThread* thread);
 s32 func_0010A000(struct ResidentStreamThread* thread, s32 which);
 
 /**
- * @brief Read four values from the sound stream.
+ * @brief Read four values from the sound stream's IOP side.
  * @param stream Sound stream.
  * @param x Receives the first value.
  * @param y Receives the second value.
  * @param z Receives the third value.
  * @param w Receives the fourth value.
  */
-void func_001058C0(struct ResidentSoundStream* stream, float* x, float* y, float* z, float* w);
+void func_001058C0(struct ResidentSoundStream* stream, u32* x, u32* y, u32* z, u32* w);
 
 /**
  * @brief Construct the resource queue.

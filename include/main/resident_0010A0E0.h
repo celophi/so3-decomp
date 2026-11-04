@@ -68,7 +68,10 @@ typedef struct ResidentClock
     u8 second;
     u8 minute;
     u8 hour;
-    u8 unk04[4];
+    u8 pad;
+    u8 day;
+    u8 month;
+    u8 year;
 } ResidentClock;
 
 /** Tag at the head of the resource table once it is decrypted. */
@@ -80,11 +83,54 @@ typedef struct ResidentClock
  */
 typedef struct ResidentArchive
 {
-    u8 unk00[0x6C];
+    u8 unk00[0x18];
+
+    /** Held while the clock is read or changed. */
+#ifdef __cplusplus
+    ResidentSemaphore semaphore;
+#else
+    u8 semaphore[8];
+#endif
+
+    u8 unk20[0x18];
+
+    /** Signalled when a disc command finishes or times out. */
+#ifdef __cplusplus
+    ResidentSemaphore timeout_semaphore;
+#else
+    u8 timeout_semaphore[8];
+#endif
+
+    u8 unk40[0x1C];
+    u8 unk5c;
+    u8 unk5d;
+    u8 unk5e;
+    u8 unk5f[9];
+    u8 unk68;
+    u8 unk69[2];
+    u8 unk6b;
     u8 unk6c;
-    u8 unk6d[0x5C];
+
+    /** Set when the timeout alarm ran out. */
+    u8 timed_out;
+
+    u8 unk6e[2];
+    s32 unk70;
+
+    /** Alarm ticks counted since the timeout alarm started. */
+    s32 timeout_ticks;
+
+    /** Running timeout alarm, or -1. */
+    s32 timeout_alarm;
+
+    u8 unk7c[0x44];
+    s32 unkc0;
+    u8 unkc4[5];
     u8 unkc9;
-    u8 unkca[0xE];
+    u8 unkca[6];
+
+    /** Clock the disc drive last reported. */
+    ResidentClock clock;
 
     /** Thread the disc power-off callback is given. */
     u8 unkD8[0x14];
@@ -559,13 +605,17 @@ class ResidentDmaQueue
         /** Submissions waiting for the channel. */
         DmaSubmission* entries[0x400];
 
-        u8 unk1000[4];
+        /** Submission whose transfer is running, or null. */
+        DmaSubmission* current;
+
+        // TODO: The indices are volatile because the DMAC handler changes them from interrupt context; the target
+        // reloads them after every store, and nothing else I tried does that.
 
         /** Next free entry. */
-        s32 write_index;
+        volatile s32 write_index;
 
         /** Next entry to start. */
-        s32 read_index;
+        volatile s32 read_index;
 
         /** DMAC handler ID from AddDmacHandler. */
         s32 handler_id;
@@ -583,6 +633,13 @@ class ResidentDmaQueue
          * @param channel DMA channel number.
          */
         ResidentDmaQueue(s32 channel);
+
+        /**
+         * @brief Queue a submission, and start it straight away if the channel is idle.
+         * @param submission Transfer to queue.
+         * @return False when the queue is full.
+         */
+        bool push(DmaSubmission* submission);
 
         /** @brief Disable the channel and remove its DMAC handler. */
         virtual ~ResidentDmaQueue();
@@ -989,7 +1046,32 @@ public:
     SifCommandHandlerEntry handlers[5];
     u8 unk31C[0x10];
     ResidentSemaphore unk32C;
-    ResidentSemaphore unk334;
+
+    /** Held while a request is being queued for the IOP. */
+    ResidentSemaphore request_semaphore;
+
+    /**
+     * @brief Get the semaphore held while a request is queued.
+     * @return The request semaphore.
+     */
+    ResidentSemaphore* get_request_semaphore()
+    {
+        return &request_semaphore;
+    }
+
+    /**
+     * @brief Get the 64-byte argument block of the next request.
+     * @return The block, or null when every reply slot is taken.
+     */
+    u32* get_request_arguments()
+    {
+        if (reply_index == unk1C)
+        {
+            return 0;
+        }
+
+        return (u32*)(buffer + unk1C * 64);
+    }
 
     /** Next packet for sends from interrupt context. */
     s32 interrupt_packet_index;
@@ -1257,6 +1339,9 @@ void func_0010ECF0(ResidentSound* sound);
 
 /**
  * @brief Queue a DMA submission and start processing if the channel is idle.
+ *
+ * This is ResidentDmaQueue::push as the overlays declare it: they treat the result as an int, while the method
+ * returns bool.
  * @param queue Resident queue for the DMA channel.
  * @param submission Transfer callbacks to enqueue.
  * @return 1 on success, 0 when the queue is full.
@@ -1365,13 +1450,15 @@ s32 func_0010BDA0(ResidentSif* sif, s32 command, void* source, void* destination
  */
 void func_0010BE80(ResidentSif* sif, s32 command, void* source, void* destination, s32 size);
 
+#ifdef __cplusplus
 /**
  * @brief Check whether a request sent over the SIF link is still waiting for its reply.
  * @param sif SIF link.
  * @param handle Request handle.
- * @return Nonzero while the request is outstanding.
+ * @return True while the request is outstanding.
  */
-s32 func_0010C0E0(ResidentSif* sif, u32 handle);
+bool func_0010C0E0(ResidentSif* sif, u32 handle);
+#endif
 
 /**
  * @brief Send a SIF command, queueing it if earlier commands are waiting or the IOP has no room.
@@ -1970,7 +2057,7 @@ void func_00110C60(ResidentSound* sound);
 s32 func_001106B0(ResidentSound* request, s32 value);
 
 /** Synchronize the GS path while holding the receiver's semaphore. */
-s32 func_0011DE00(void* object, s32 first, s32 second);
+s32 func_0011DE00(void* object, s32 first, u16 second);
 
 #ifdef __cplusplus
 }
@@ -1979,7 +2066,12 @@ s32 func_0011DE00(void* object, s32 first, s32 second);
 #ifdef __cplusplus
 extern "C"
 {
-    void func_00114650(void* object, s32 value);
+    /**
+     * @brief Start a thread, or stop it (exiting when it is the calling thread).
+     * @param object Thread.
+     * @param run Nonzero to start it; stored in the sound system's unk351.
+     */
+    void func_00114650(void* object, u8 run);
 
     /**
      * @brief Give a heap memory of its own.

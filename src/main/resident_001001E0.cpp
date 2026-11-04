@@ -43,6 +43,7 @@ union ResidentVector
 {
     unsigned __int128 qword;
     float f[4];
+    u32 words[4];
 };
 
 /** End of the program image, where the C library heap starts. */
@@ -322,7 +323,7 @@ int main(int argc, char** argv)
     D_STAT = D_STAT_CHANNEL_0;
 
     v = &vector;
-    func_001058C0(func_00101270(&g_system)->stream, &v->f[0], &v->f[1], &v->f[2], &v->f[3]);
+    func_001058C0(func_00101270(&g_system)->stream, &v->words[0], &v->words[1], &v->words[2], &v->words[3]);
     vu0_run_microprogram_vf1_vf3(&vector);
     D_001CC530.qword = vector.qword;
 
