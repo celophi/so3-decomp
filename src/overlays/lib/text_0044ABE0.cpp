@@ -528,7 +528,23 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454E90);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455040);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004550F0);
+extern "C" void func_00455AD0(LibDrawBuffer* buffer);
+
+/**
+ * @brief Start a primitive of some vertices, flushing the buffer first when they wouldn't fit in 40.
+ * @param buffer Draw buffer.
+ * @param count Vertices in the primitive.
+ */
+void lib_draw_buffer_begin_primitive(LibDrawBuffer* buffer, s32 count)
+{
+    if (buffer->vertex_count + count >= 40)
+    {
+        func_00455AD0(buffer);
+    }
+
+    *buffer->primitive_sizes++ = count;
+    buffer->primitive_count++;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455150);
 

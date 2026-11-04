@@ -134,7 +134,13 @@ extern "C"
     /** @brief Extract rotation components from a quaternion. @param angles Destination rotation vector. @param quaternion Source quaternion. */
     void func_004CDA40(LibVector4* angles, const LibVector4* quaternion);
     /** @brief Normalize a quaternion in place. @param quaternion Quaternion to normalize. */
-    void func_004CD8A0(FieldVec4B* quaternion);
+    void lib_normalize_quaternion(FieldVec4B* quaternion);
+    /**
+     * @brief Build the unit quaternion for a rotation about an axis.
+     * @param output Receives the quaternion.
+     * @param axis_angle Axis in x, y and z, angle in radians in w.
+     */
+    void lib_quaternion_from_axis_angle(FieldVec4B* output, const LibVector4* axis_angle);
     /** @brief Convert a quaternion to a matrix. @param quaternion Rotation to convert. @return Rotation matrix. */
     LibMatrix44Value func_004CE930(const FieldVec4B& quaternion);
     /**

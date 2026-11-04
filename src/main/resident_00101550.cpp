@@ -361,7 +361,7 @@ extern "C" bool func_00102B30(ResidentResourceQueue* queue)
  * @param queue Resident resource queue.
  * @return Nonzero when the queue is empty.
  */
-extern "C" s32 func_00102D00(ResidentResourceQueue* queue)
+extern "C" s32 resident_poll_resource_queue(ResidentResourceQueue* queue)
 {
     do
     {
@@ -1296,7 +1296,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109D50)
  * @param output Receives the samples.
  * @return One when the samples were taken, or zero when the ring doesn't hold that many yet.
  */
-extern "C" s32 func_00109F20(ResidentStreamThread* thread, s32 ring, s32 count, float* output)
+extern "C" s32 resident_stream_read_samples(ResidentStreamThread* thread, s32 ring, s32 count, float* output)
 {
     return func_00109510(thread->dma, ring, count, output);
 }
@@ -1308,7 +1308,7 @@ extern "C" s32 func_00109F20(ResidentStreamThread* thread, s32 ring, s32 count, 
  * @param second_ring Start of the second ring.
  * @param ring_size Size of each ring in bytes.
  */
-extern "C" void func_00109F40(ResidentStreamThread* thread, u32 first_ring, u32 second_ring, u32 ring_size)
+extern "C" void resident_stream_set_sample_rings(ResidentStreamThread* thread, u32 first_ring, u32 second_ring, u32 ring_size)
 {
     ResidentStreamDma* dma = thread->dma;
 

@@ -862,7 +862,7 @@ FieldClass150590::FieldClass150590(void* owner, FieldVec4A position, FieldVec4A 
     unk90.unk0c = flags;
     float cosine = lib_cosine(0.5f * unk48);
     FieldVec4B quaternion(0.0f, -lib_sine(0.5f * unk48), 0.0f, cosine);
-    func_004CD8A0(&quaternion);
+    lib_normalize_quaternion(&quaternion);
     unk50 = func_004CE930(quaternion);
 }
 
@@ -935,7 +935,7 @@ FieldClass150570::FieldClass150570(void* owner, FieldVec4A position, FieldVec4A 
     unk48 = dimensions.w;
     float cosine = lib_cosine(0.5f * unk48);
     FieldVec4B quaternion(0.0f, -lib_sine(0.5f * unk48), 0.0f, cosine);
-    func_004CD8A0(&quaternion);
+    lib_normalize_quaternion(&quaternion);
     unk50 = func_004CE930(quaternion);
 }
 

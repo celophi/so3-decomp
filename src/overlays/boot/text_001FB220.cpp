@@ -18,7 +18,6 @@ extern const char g_trophy_texture_name[];
 
 extern const char g_no_trophy_number[];
 extern const char g_trophy_number_format[];
-void func_4CD810(FieldVec4B* output, const LibVector4* axis_angle);
 void func_4CD630(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t);
 s32 func_457220(BootTrophyRecord* record);
 
@@ -272,12 +271,12 @@ void BootBattleTrophyViewer::update_grid()
         front_axis.y = 1.0f;
         front_axis.z = 0.0f;
         front_axis.w = 0.0f;
-        func_4CD810(&front, &front_axis);
+        lib_quaternion_from_axis_angle(&front, &front_axis);
         back_axis.x = 0.0f;
         back_axis.y = 1.0f;
         back_axis.z = 0.0f;
         back_axis.w = 3.1415927f;
-        func_4CD810(&back, &back_axis);
+        lib_quaternion_from_axis_angle(&back, &back_axis);
 
         for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
         {
@@ -610,7 +609,7 @@ static inline float grid_cursor_x(BootBattleTrophyViewer* viewer)
  */
 static inline void move_grid_cursor(BootBattleTrophyViewer* viewer)
 {
-    viewer->cursor->func_00466E40(grid_cursor_x(viewer), viewer->cursor_row * 100 + 170, 0.05f);
+    viewer->cursor->set_move_target(grid_cursor_x(viewer), viewer->cursor_row * 100 + 170, 0.05f);
     resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
 }
 
@@ -629,7 +628,7 @@ void BootBattleTrophyViewer::update()
     switch (step)
     {
     case BOOT_TROPHY_WAIT_FOR_RESOURCES:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
@@ -727,7 +726,7 @@ void BootBattleTrophyViewer::update()
                 y = 156.0f;
             }
 
-            cursor->func_00466E40(170.0f, y, 0.05f);
+            cursor->set_move_target(170.0f, y, 0.05f);
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
 

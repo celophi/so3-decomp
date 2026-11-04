@@ -39,7 +39,6 @@ extern const char g_title_camera_node_name[];
 void func_455DF0(LibDrawBuffer* buffer, s32 first, s32 second);
 void func_455040(LibDrawBuffer* buffer, const BootTextureResource* resource);
 void func_455150(LibDrawBuffer* buffer, BootDrawSettings* settings);
-void func_4550F0(LibDrawBuffer* buffer, s32 count);
 void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
 void func_4791F0(BootScene* scene, u8* data);
 void func_40B3A0(u8* data);
@@ -380,7 +379,7 @@ void BootTitleMenu::update()
     {
     case BOOT_TITLE_LOAD_SCENE:
     {
-        if (func_00102D00(g_resource_queue) == 0)
+        if (resident_poll_resource_queue(g_resource_queue) == 0)
         {
             break;
         }
@@ -452,7 +451,7 @@ void BootTitleMenu::update()
             float x;
             float y;
             get_cursor_position(&x, &y);
-            cursor->func_00466E40(x, y, 0.05f);
+            cursor->set_move_target(x, y, 0.05f);
             pulse_up = 0;
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
@@ -469,7 +468,7 @@ void BootTitleMenu::update()
             float x;
             float y;
             get_cursor_position(&x, &y);
-            cursor->func_00466E40(x, y, 0.05f);
+            cursor->set_move_target(x, y, 0.05f);
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
 
@@ -515,7 +514,7 @@ void BootTitleMenu::update()
                 resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
             }
         }
-        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && func_00115270(g_resource_archive, 1) == 1)
+        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && resident_archive_has_resource(g_resource_archive, 1) == 1)
         {
             queue_fade();
             resident_sound_stop_music(g_sound, 0x1E, -1);
@@ -715,32 +714,32 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
     s32 height = bar->height;
     u32 color = bar->color;
     s32 depth = bar->mode;
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(-2.0f, -1.0f, (float)depth, 1.0f), normal, 0, 0x80301004);
     add_vertex(bar->draw_buffer, FieldVec4A(2.0f + width, -1.0f, (float)depth, 1.0f), normal, 0, 0x80301004);
     add_vertex(bar->draw_buffer, FieldVec4A(-2.0f, 1.0f + height, (float)depth, 1.0f), normal, 0, 0x80301004);
     add_vertex(bar->draw_buffer, FieldVec4A(2.0f + width, 1.0f + height, (float)depth, 1.0f), normal, 0, 0x80301004);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(0.0f, 1.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A((float)width, 1.0f, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(0.0f, height - 1.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A((float)width, height - 1.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(0.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A((float)width, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(-1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(-1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(width - 1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(width - 1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(3.0f, 3.0f, (float)depth, 1.0f), normal, 0, color);
     float right = 3.0f + ((width - 6.0f) * fill) / (float)BOOT_PROGRESS_BAR_SCALE;
     add_vertex(bar->draw_buffer, FieldVec4A(right, 3.0f, (float)depth, 1.0f), normal, 0, color);
@@ -859,7 +858,7 @@ void BootScreenFade::on_packet_complete(u32 value)
 void BootScreenFade::render()
 {
     dma_pending = 1;
-    func_0011F510(packet, static_cast<LibDmaCallbacks*>(this));
+    resident_packet_queue_pending(packet, static_cast<LibDmaCallbacks*>(this));
 }
 
 /**
@@ -1049,7 +1048,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     settings.unk05 = 1;
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
     func_455150(image->draw_buffer, &settings);
-    func_4550F0(image->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(image->draw_buffer, 4);
 
     if (image->centered)
     {
@@ -1084,7 +1083,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
         settings.unk05 = 0;
         settings.texture_index = 1;
         func_455150(image->draw_buffer, &settings);
-        func_4550F0(image->draw_buffer, 4);
+        lib_draw_buffer_begin_primitive(image->draw_buffer, 4);
 
         if (image->centered)
         {
@@ -1141,7 +1140,7 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
     settings.prim = 0x5C;
     settings.unk05 = 1;
     func_455150(draw_buffer, &settings);
-    func_4550F0(draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(draw_buffer, 4);
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
 
     if (centered)
@@ -1314,7 +1313,7 @@ void BootGameLauncher::update()
 
             movie_heap = new (0) ResidentHeap;
             movie_heap->alignment = 0x40;
-            func_00113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
+            resident_heap_create_memory(movie_heap, BOOT_MOVIE_HEAP_SIZE);
             void* heap = resident_exchange_allocation_heap(movie_heap);
             player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
             resident_exchange_allocation_heap(heap);
@@ -1362,7 +1361,7 @@ void BootGameLauncher::update()
         step++;
         break;
     case BOOT_LAUNCH_HAND_OFF:
-        if (func_00102D00(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
+        if (resident_poll_resource_queue(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
         {
             lib_object_detach_owner(this);
             destroy();

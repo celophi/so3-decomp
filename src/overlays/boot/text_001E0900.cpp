@@ -67,7 +67,6 @@ extern const struct BootCaption g_opening_captions[];
 void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
 void func_4CBD20(BootMatrix* output, const LibVector4* position, const FieldVec4B* target, float roll);
 void func_4CBAC0(LibVector4* output, const BootMatrix* matrix);
-void func_4CD810(FieldVec4B* output, const LibVector4* axis_angle);
 LibTransformOwner* func_473530(LibListObject* models, const char* name);
 void* func_473390(LibListObject* models, const char* name);
 s32 func_4B4550(LibAnimation* animation, float frame, s32 mode);
@@ -1970,7 +1969,7 @@ void BootNewGameSettings::place_girl()
     axis.y = 1.0f;
     axis.z = 0.0f;
     axis.w = girl_lean;
-    func_4CD810(&roll, &axis);
+    lib_quaternion_from_axis_angle(&roll, &axis);
     rotation = multiply_rotations(roll, rotation);
 
     if (turn_speed == 0.0f)
@@ -3094,7 +3093,7 @@ void BootNewGameSettings::update()
     switch (stage)
     {
     case BOOT_SETTINGS_STAGE_LOAD:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
             resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, model_data,
@@ -3144,7 +3143,7 @@ void BootNewGameSettings::update()
             float x;
             float y;
             get_cursor_position(&x, &y);
-            cursor->func_00466E40(x, y, 0.05f);
+            cursor->set_move_target(x, y, 0.05f);
             highlight_phase = 0;
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
             show_value_message();
@@ -3159,7 +3158,7 @@ void BootNewGameSettings::update()
             float x;
             float y;
             get_cursor_position(&x, &y);
-            cursor->func_00466E40(x, y, 0.05f);
+            cursor->set_move_target(x, y, 0.05f);
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
             show_value_message();
         }
@@ -3379,7 +3378,7 @@ void BootNewGameSettings::update()
                     float x;
                     float y;
                     get_speaker_cursor_position(selected_speaker, &x, &y);
-                    cursor->func_00466E40(x, y, 0.05f);
+                    cursor->set_move_target(x, y, 0.05f);
                     highlight_phase = 0;
                     resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
                 }
@@ -3431,7 +3430,7 @@ void BootNewGameSettings::update()
                     float x;
                     float y;
                     get_speaker_cursor_position(selected_speaker, &x, &y);
-                    cursor->func_00466E40(x, y, 0.05f);
+                    cursor->set_move_target(x, y, 0.05f);
                     resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
                 }
             }
@@ -4084,7 +4083,7 @@ void BootOpeningMovie::update()
     switch (step)
     {
     case BOOT_MOVIE_PREPARE:
-        if ((input->held & BOOT_BUTTON_START) || func_00115270(g_resource_archive, 1) != 1)
+        if ((input->held & BOOT_BUTTON_START) || resident_archive_has_resource(g_resource_archive, 1) != 1)
         {
             step = BOOT_MOVIE_STOP;
             break;
@@ -4401,7 +4400,7 @@ BootOpeningMovie::BootOpeningMovie()
     step = BOOT_MOVIE_PREPARE;
     movie_heap = new (0) ResidentHeap;
     movie_heap->alignment = 0x40;
-    func_00113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
+    resident_heap_create_memory(movie_heap, BOOT_MOVIE_HEAP_SIZE);
     heap = resident_exchange_allocation_heap(movie_heap);
     player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
     resident_exchange_allocation_heap(heap);
@@ -4612,7 +4611,7 @@ void BootResourceLoader::update()
     u8* buffer;
     u8* aligned;
 
-    if (func_00102D00(g_resource_queue) != 0)
+    if (resident_poll_resource_queue(g_resource_queue) != 0)
     {
         if (block >= BOOT_COMMON_UI_BLOCK_COUNT)
         {
@@ -4719,7 +4718,7 @@ void BootProgram::run()
 
     image = (BootProgramImage*)memalign(0x40, size);
     // Leaving the u32 conversion implicit moves the clamp's copy of size; the explicit cast keeps it.
-    resident_queue_resource_request(func_00101250(resident_get_system()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image,
+    resident_queue_resource_request(resident_system_get_resource_queue(resident_get_system()), BOOT_PROGRAM_MAIN_CODE_RESOURCE, image,
                                     BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, (u32)size, 0, BOOT_RESOURCE_READ);
     delete[] buffer;
 
@@ -4753,7 +4752,7 @@ void BootProgram::run()
     D_001B6618->clear_color = 0xFFFFFF;
     resident_input_attach_display(g_input_system, display, 1);
 
-    while (!func_00102D00(g_resource_queue))
+    while (!resident_poll_resource_queue(g_resource_queue))
     {
     }
 

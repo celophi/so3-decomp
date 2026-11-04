@@ -1849,12 +1849,12 @@ void func_0034AEC0(ConfigOptions* object, u16 direction, s32 amount)
                 {
                     changed = object->unkb0 = true;
                     object->unk29c = -object->unk2a0;
-                    object->scroll->func_00466E40(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
+                    object->scroll->set_move_target(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
                 }
             }
             else
             {
-                object->scroll->func_00466E40(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
+                object->scroll->set_move_target(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
             }
         }
         else if (object->selected == 7)
@@ -1864,12 +1864,12 @@ void func_0034AEC0(ConfigOptions* object, u16 direction, s32 amount)
                 object->unkb0 = false;
                 changed = true;
                 object->unk29c = object->unk2a0;
-                object->scroll->func_00466E40(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
+                object->scroll->set_move_target(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
             }
         }
         else
         {
-            object->scroll->func_00466E40(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
+            object->scroll->set_move_target(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
         }
 
         if (changed && object->unk288 == 0)

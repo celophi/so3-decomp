@@ -299,7 +299,7 @@ int main(int argc, char** argv)
     do
     {
         resident_next_random_word();
-        func_00101250(&g_system)->func_00104770();
+        resident_system_get_resource_queue(&g_system)->func_00104770();
         func_0011DF10(func_001012D0(&g_system), 0);
         sound = func_00101270(&g_system);
         func_0010F250(sound, 0);

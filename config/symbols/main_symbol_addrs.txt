@@ -1,7 +1,7 @@
 // Entry point and the five byte-verified probe functions.
 // Function names are placeholders; original symbols have not been recovered.
 _start = 0x00100008; // type:func
-func_00101250 = 0x00101250; // type:func size:0x10
+resident_system_get_resource_queue = 0x00101250; // type:func size:0x10
 func_00101510 = 0x00101510; // type:func size:0x40
 func_0010A080 = 0x0010A080; // type:func size:0x28
 func_0010A0B0 = 0x0010A0B0; // type:func size:0x30
@@ -831,3 +831,11 @@ copy_offset_transform_state__23ResidentClass14FD30BaseFPC23ResidentClass14FD30Ba
 // ResidentPacketBuffer, main's GS packet buffer class.
 __vt__20ResidentPacketBuffer = 0x0014FDF0; // size:0xC
 __dt__20ResidentPacketBufferFv = 0x001218A0; // type:func size:0x70
+
+// Resident functions the overlays call.
+resident_poll_resource_queue = 0x00102D00; // type:func size:0x4C
+resident_stream_read_samples = 0x00109F20; // type:func size:0x1C
+resident_stream_set_sample_rings = 0x00109F40; // type:func size:0x68
+resident_heap_create_memory = 0x00113930; // type:func size:0xD4
+resident_archive_has_resource = 0x00115270; // type:func size:0x48
+resident_packet_queue_pending = 0x0011F510; // type:func size:0x64

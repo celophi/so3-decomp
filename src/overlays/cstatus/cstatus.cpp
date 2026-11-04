@@ -2011,7 +2011,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
     grid_marker = new (0) LibClass175030;
     lib_moving_widget_init_position(grid_marker, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, grid_marker);
-    grid_marker->func_00466E40(command_x - 6.0f, 214.0f, 0.1f);
+    grid_marker->set_move_target(command_x - 6.0f, 214.0f, 0.1f);
     status_select_alphanumeric_grid(this, grid_mode);
     lib_text_set_resource(surname_caption, func_slot54(), selection->slots[selection->current] + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0);
     const s8* saved = reinterpret_cast<const s8*>(static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name);

@@ -123,7 +123,12 @@ public:
 
     u32* command_buffers[2];
     u32* command_begin;
-    u8 unk2c[0x18];
+    u8 unk2c[0x10];
+
+    /** Next byte of the per-primitive vertex counts. */
+    u8* primitive_sizes;
+
+    u8 unk40[4];
 
     /** Next free slot of the vertex position stream. */
     FieldVec4A* positions;
@@ -167,6 +172,18 @@ public:
     u8 unkcf;
 };
 
+#endif
+
+#ifdef __cplusplus
+extern "C"
+{
+    /**
+     * @brief Start a primitive of some vertices, flushing the buffer first when they wouldn't fit in 40.
+     * @param buffer Draw buffer.
+     * @param count Vertices in the primitive.
+     */
+    void lib_draw_buffer_begin_primitive(LibDrawBuffer* buffer, s32 count);
+}
 #endif
 
 #endif

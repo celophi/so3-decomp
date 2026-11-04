@@ -1830,7 +1830,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     {
         func_0011DF80(g_input_system);
         context->unk6c = ::new (0) ResidentHeap;
-        func_00113930(static_cast<ResidentHeap*>(context->unk6c), 0x40C00);
+        resident_heap_create_memory(static_cast<ResidentHeap*>(context->unk6c), 0x40C00);
         void* previous_heap = resident_exchange_allocation_heap(context->unk6c);
         LibBufferOwner* buffers = ::new (0) LibBufferOwner;
         func_0040AFA0();
@@ -1874,7 +1874,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     previous_heap = resident_exchange_allocation_heap(context->unk6c);
     context->unk70 = ::new (0) ResidentHeap;
     resident_exchange_allocation_heap(previous_heap);
-    func_00113930(static_cast<ResidentHeap*>(context->unk70), 0x600000);
+    resident_heap_create_memory(static_cast<ResidentHeap*>(context->unk70), 0x600000);
     resident_exchange_allocation_heap(context->unk70);
     s32 unused_space = D_3E6880 - D_36FA80;
 

@@ -2079,7 +2079,7 @@ extern "C"
      * @param size Usable size in bytes.
      * @return Nonzero on success, zero when the memory can't be allocated.
      */
-    u32 func_00113930(ResidentHeap* heap, u32 size);
+    u32 resident_heap_create_memory(ResidentHeap* heap, u32 size);
 
     /**
      * @brief Give a heap a memory range to allocate from.
@@ -2348,7 +2348,7 @@ extern "C"
      * @param index Resource index, counted from the sixth entry.
      * @return One when the resource has a size, zero when it is empty, or two when the table isn't decrypted.
      */
-    s32 func_00115270(const ResidentArchive* archive, s32 index);
+    s32 resident_archive_has_resource(const ResidentArchive* archive, s32 index);
 }
 #endif
 

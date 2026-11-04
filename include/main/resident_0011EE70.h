@@ -264,7 +264,7 @@ void func_0011F0B0(ResidentPacket* packet, u64 data);
  * @param packet Packet whose data is queued.
  * @param completion Object notified when the transfer finishes, or null.
  */
-void func_0011F510(ResidentPacket* packet, void* completion);
+void resident_packet_queue_pending(ResidentPacket* packet, void* completion);
 
 /**
  * @brief End the packet's pending data with a GIF end tag and send it straight to the GS on DMA channel 2.

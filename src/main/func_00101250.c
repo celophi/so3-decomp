@@ -6,7 +6,7 @@
  * @param object Resident system.
  * @return Resource queue at offset 0x15A24.
  */
-ResidentResourceQueue* func_00101250(void* object)
+ResidentResourceQueue* resident_system_get_resource_queue(void* object)
 {
     return (ResidentResourceQueue*)((char*)object + 0x15A24);
 }

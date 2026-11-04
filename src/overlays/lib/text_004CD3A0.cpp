@@ -8,6 +8,7 @@
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/matrix_vu0.h"
+#include "vu0.h"
 #include "overlays/lib/quaternion_vu0.h"
 #include "ee.h"
 #include "main/resident_001001E0.h"
@@ -277,9 +278,37 @@ extern "C" void func_004CD630(FieldVec4B* output, const FieldVec4B* first, const
     vu0_quaternion_norm_finish(output);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD810);
+/**
+ * @brief Build the unit quaternion for a rotation about an axis.
+ * @param output Receives the quaternion.
+ * @param axis_angle Axis in x, y and z, angle in radians in w.
+ */
+void lib_quaternion_from_axis_angle(FieldVec4B* output, const LibVector4* axis_angle)
+{
+    LibVector4 pair;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD8A0);
+    lib_compute_sine_cosine_pair(&pair, 0.5f * axis_angle->w);
+    float sine = pair.w;
+
+    output->w = pair.z;
+    output->x = axis_angle->x * sine;
+    output->y = axis_angle->y * sine;
+    output->z = axis_angle->z * sine;
+    vu0_start_microprogram_670_vf5(output);
+    vu0_wait_microprogram();
+    vu0_read_vf6(output);
+}
+
+/**
+ * @brief Normalize a quaternion in place.
+ * @param quaternion Quaternion to normalize.
+ */
+void lib_normalize_quaternion(FieldVec4B* quaternion)
+{
+    vu0_start_microprogram_670_vf5(quaternion);
+    vu0_wait_microprogram();
+    vu0_read_vf6(quaternion);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD8C0);
 

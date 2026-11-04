@@ -166,7 +166,7 @@ public:
      * @param y Target vertical coordinate.
      * @param duration Duration in seconds, converted to sixty frames per second.
      */
-    void func_00466E40(float x, float y, float duration);
+    void set_move_target(float x, float y, float duration);
 
 };
 

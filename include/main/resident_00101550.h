@@ -381,7 +381,7 @@ void func_00102AE0(ResidentResourceQueue* queue);
  * @param queue Resident resource queue.
  * @return Nonzero when the queue is empty.
  */
-s32 func_00102D00(ResidentResourceQueue* queue);
+s32 resident_poll_resource_queue(ResidentResourceQueue* queue);
 
 /** @brief Lower the priority of every queued request that is still positive. @param queue Resident resource queue. */
 void func_00103510(ResidentResourceQueue* queue);
@@ -631,7 +631,7 @@ void func_00107250(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 a
  * @param output Receives the samples.
  * @return One when the samples were taken, or zero when the ring doesn't hold that many yet.
  */
-s32 func_00109F20(struct ResidentStreamThread* thread, s32 ring, s32 count, float* output);
+s32 resident_stream_read_samples(struct ResidentStreamThread* thread, s32 ring, s32 count, float* output);
 
 /**
  * @brief Read the stream thread's signed byte at offset 0xBC.
@@ -847,7 +847,7 @@ void func_00109D50(struct ResidentStreamThread* thread);
  * @param second_ring Start of the second ring.
  * @param ring_size Size of each ring in bytes.
  */
-void func_00109F40(struct ResidentStreamThread* thread, u32 first_ring, u32 second_ring, u32 ring_size);
+void resident_stream_set_sample_rings(struct ResidentStreamThread* thread, u32 first_ring, u32 second_ring, u32 ring_size);
 
 /**
  * @brief Read the stream thread's word at offset 0xC0 while its first state is one.

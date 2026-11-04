@@ -782,3 +782,6 @@ resident_packet_reserve = 0x0011F860; // type:func absolute:True
 resident_packet_allocate = 0x0011F8A0; // type:func absolute:True
 g_resource_queue = 0x001B65E8; // absolute:True
 g_system = 0x001B6880; // absolute:True
+lib_draw_buffer_begin_primitive = 0x004550F0; // type:func size:0x60
+lib_quaternion_from_axis_angle = 0x004CD810; // type:func size:0x88
+lib_normalize_quaternion = 0x004CD8A0; // type:func size:0x18

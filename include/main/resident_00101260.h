@@ -77,7 +77,7 @@ struct ResidentInputSystem* func_001012D0(struct ResidentSystem* system);
  * @param object Resident system.
  * @return Resource queue at offset 0x15A24.
  */
-ResidentResourceQueue* func_00101250(void* object);
+ResidentResourceQueue* resident_system_get_resource_queue(void* object);
 
 /**
  * @brief Get the resident system's overlay decoder.

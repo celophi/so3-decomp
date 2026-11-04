@@ -418,7 +418,7 @@ void resident_packet_add_line(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s3
  * @param packet Packet whose data is queued.
  * @param completion Object notified when the transfer finishes, or null.
  */
-void func_0011F510(ResidentPacket* packet, void* completion)
+void resident_packet_queue_pending(ResidentPacket* packet, void* completion)
 {
     if (resident_packet_space(packet, 0) != packet->unk0c)
     {
@@ -613,7 +613,7 @@ void func_0011F940(ResidentClass14FC90* set)
 {
     if (set->loading == 0)
     {
-        resident_cancel_resource_requests(func_00101250(resident_get_system()), 0, 0, 6, 0xFFFFFFFF, 0);
+        resident_cancel_resource_requests(resident_system_get_resource_queue(resident_get_system()), 0, 0, 6, 0xFFFFFFFF, 0);
         set->variants[0] = -1;
         set->variants[1] = -1;
         set->variants[2] = -1;
@@ -734,7 +734,7 @@ void ResidentClass14FC90::func_00104770()
         return;
     }
 
-    queue = func_00101250(resident_get_system());
+    queue = resident_system_get_resource_queue(resident_get_system());
     sound = func_00101270(resident_get_system());
 
     if (upload_lists == 0)

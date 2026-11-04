@@ -2345,7 +2345,7 @@ void func_00112D80(ResidentSound* sound)
 {
     sound->stream = func_00101280(resident_get_system());
     sound->archive = resident_get_archive(resident_get_system());
-    sound->resource_queue = func_00101250(resident_get_system());
+    sound->resource_queue = resident_system_get_resource_queue(resident_get_system());
     s32 request = func_00109000(sound->stream, 0, 0, 0, 0x18000, 0x3000, 0x1000, 3, 1);
 
     while (func_0010C0E0(&D_001CC590, request))
@@ -2657,7 +2657,7 @@ u32 func_001138B0(ResidentHeap* heap, void* address, u32 size)
  * @param size Usable size in bytes.
  * @return Nonzero on success, zero when the memory can't be allocated.
  */
-u32 func_00113930(ResidentHeap* heap, u32 size)
+u32 resident_heap_create_memory(ResidentHeap* heap, u32 size)
 {
     heap->free_anchor = &heap->head;
     heap->memory = malloc_guess(size + heap->alignment + 0x20);
@@ -2803,7 +2803,7 @@ u32 func_00113C40(ResidentHeap* heap, u32 size)
         return 0;
     }
 
-    if (!func_00113930(child, size))
+    if (!resident_heap_create_memory(child, size))
     {
         delete child;
         return 0;
@@ -3352,7 +3352,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001151B0)
  * @param index Resource index, counted from the sixth entry.
  * @return One when the resource has a size, zero when it is empty, or two when the table isn't decrypted.
  */
-s32 func_00115270(const ResidentArchive* archive, s32 index)
+s32 resident_archive_has_resource(const ResidentArchive* archive, s32 index)
 {
     if (archive->table_tag != RESIDENT_ARCHIVE_TABLE_TAG)
     {
@@ -4246,7 +4246,7 @@ void resident_input_handle_vblank(ResidentInputSystem* input)
         }
     }
 
-    func_00103510(func_00101250(resident_get_system()));
+    func_00103510(resident_system_get_resource_queue(resident_get_system()));
     input->vblank_wait_count++;
     input->vblank_count++;
     func_00114DD0(&input->poll_thread);

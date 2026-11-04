@@ -1461,7 +1461,7 @@ void WorkshopSelectionWindow::func_slotf8(u16 direction)
         {
             position = selection->workshop_map_positions[index - 1].unk00;
         }
-        this->workshop_selection_display->func_00466E40(position[0], position[1], 0.05f);
+        this->workshop_selection_display->set_move_target(position[0], position[1], 0.05f);
         field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
     }
     selected = this->workshop_selection->selected_workshop_id;
@@ -2602,7 +2602,7 @@ void InventorTransferWindow::func_slotf8(u16 direction)
         selection = &unkdc;
         index = func_003696B0(selection, direction);
         position = workshop_map_position(selection, index);
-        workshop_selection_display->func_00466E40(position[0], position[1], 0.05f);
+        workshop_selection_display->set_move_target(position[0], position[1], 0.05f);
         field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
     }
     selected = workshop_selection->selected_workshop_id;
@@ -2793,7 +2793,7 @@ void ItemCreationClass185A60::func_slotf8(u16 direction)
         selection = &unkdc;
         index = func_003696B0(selection, direction);
         position = workshop_map_position(selection, index);
-        workshop_selection_display->func_00466E40(position[0], position[1], 0.05f);
+        workshop_selection_display->set_move_target(position[0], position[1], 0.05f);
         field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->unk10), 0);
     }
 }

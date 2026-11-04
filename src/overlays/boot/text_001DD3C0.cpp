@@ -375,7 +375,7 @@ void BootInstaller::update()
     switch (step)
     {
     case BOOT_INSTALL_WAIT_FOR_RESOURCES:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             resident_queue_resource_request(g_resource_queue, BOOT_RES_SOUND, sound_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
@@ -443,7 +443,7 @@ void BootInstaller::update()
             selection = (selection + 1) & 1;
             choice_growing = 0;
             x = menu_cursor_x(selection);
-            cursor->func_00466E40(x, 256.0f, 0.05f);
+            cursor->set_move_target(x, 256.0f, 0.05f);
             choice_growing = 0;
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
@@ -544,7 +544,7 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_WAIT_FOR_UNIT_RESOURCES:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             step++;
         }
@@ -606,7 +606,7 @@ void BootInstaller::update()
         {
             selection = 1;
             x = menu_cursor_x(selection);
-            cursor->func_00466E40(x, 256.0f, 0.05f);
+            cursor->set_move_target(x, 256.0f, 0.05f);
             choice_growing = 0;
         }
 
@@ -650,7 +650,7 @@ void BootInstaller::update()
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_WAIT_TO_BEGIN:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             queue_fade();
             step++;

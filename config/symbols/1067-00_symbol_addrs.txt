@@ -608,7 +608,8 @@ __vt__16FieldClass150590 = 0x00150590;
 func_00142148 = 0x00142148; // type:func
 __ct__16FieldClass150590FPv10FieldVec4A10FieldVec4A10FieldVec4AUiUiUiUc = 0x001EE420; // type:func
 
-func_004CD8A0 = 0x004CD8A0; // type:func
+func_004CD8A0 = 0x004CD8A0; // type:func absolute:True allow_duplicated:True
+lib_normalize_quaternion = 0x004CD8A0; // type:func absolute:True allow_duplicated:True
 func_004CE930 = 0x004CE930; // type:func
 __dt__16FieldClass150510Fv = 0x001EF010; // type:func
 __dt__16FieldClass150590Fv = 0x001F0230; // type:func
@@ -2359,6 +2360,7 @@ __dl__16FieldClass159010FPv = 0x004DB570; // type:func absolute:True allow_dupli
 func_00114650 = 0x00114650; // type:func absolute:True allow_duplicated:True
 func_0011DF80 = 0x0011DF80; // type:func absolute:True allow_duplicated:True
 func_00113930 = 0x00113930; // type:func absolute:True allow_duplicated:True
+resident_heap_create_memory = 0x00113930; // type:func absolute:True allow_duplicated:True
 func_0040AFA0 = 0x0040AFA0; // type:func absolute:True allow_duplicated:True
 func_001014B0 = 0x001014B0; // type:func absolute:True allow_duplicated:True
 func_004076D0 = 0x004076D0; // type:func absolute:True allow_duplicated:True

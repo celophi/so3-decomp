@@ -703,7 +703,7 @@ void BootMusicPlayer::update()
     switch (step)
     {
     case BOOT_MUSIC_WAIT_FOR_RESOURCES:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
             step++;
@@ -785,7 +785,7 @@ void BootMusicPlayer::update()
         if (input->repeated == BOOT_BUTTON_DOWN && cursor->unk35)
         {
             selection = (selection + 1) % BOOT_MUSIC_ROW_COUNT;
-            cursor->func_00466E40(54.0f, row_y(selection), 0.05f);
+            cursor->set_move_target(54.0f, row_y(selection), 0.05f);
             brightening = 0;
         }
 
@@ -793,7 +793,7 @@ void BootMusicPlayer::update()
         {
             selection = (selection + BOOT_MUSIC_ROW_COUNT - 1) % BOOT_MUSIC_ROW_COUNT;
             brightening = 0;
-            cursor->func_00466E40(54.0f, row_y(selection), 0.05f);
+            cursor->set_move_target(54.0f, row_y(selection), 0.05f);
         }
 
         if (input->repeated == BOOT_BUTTON_LEFT && cursor->unk35)
@@ -848,7 +848,7 @@ void BootMusicPlayer::update()
             case BOOT_MUSIC_ROW_TRACK:
             case BOOT_MUSIC_ROW_PLAY:
                 playing = 1;
-                func_00109F40(g_sound->stream->thread, (u32)stream_buffers[0], (u32)stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
+                resident_stream_set_sample_rings(g_sound->stream->thread, (u32)stream_buffers[0], (u32)stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
 
                 if (play_mode == BOOT_MUSIC_PLAY_SHUFFLED)
                 {
@@ -910,7 +910,7 @@ void BootMusicPlayer::update()
                 {
                     samples_analysed = 0.0f;
                     samples_played = (float)BOOT_MUSIC_NEXT_TRACK_LEAD_SAMPLES;
-                    func_00109F40(g_sound->stream->thread, (u32)stream_buffers[0], (u32)stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
+                    resident_stream_set_sample_rings(g_sound->stream->thread, (u32)stream_buffers[0], (u32)stream_buffers[1], BOOT_MUSIC_STREAM_BUFFER_SIZE);
                     playing = 1;
 
                     switch (play_mode)
@@ -956,9 +956,9 @@ void BootMusicPlayer::update()
             if (samples_analysed < samples_played - (float)BOOT_MUSIC_FFT_SIZE)
             {
                 samples_analysed += (float)BOOT_MUSIC_FFT_SIZE;
-                func_00109F20(g_sound->stream->thread, 0, BOOT_MUSIC_FFT_SIZE, spectra[0].real);
+                resident_stream_read_samples(g_sound->stream->thread, 0, BOOT_MUSIC_FFT_SIZE, spectra[0].real);
 
-                if ((u8)func_00109F20(g_sound->stream->thread, 1, BOOT_MUSIC_FFT_SIZE, spectra[1].real))
+                if ((u8)resident_stream_read_samples(g_sound->stream->thread, 1, BOOT_MUSIC_FFT_SIZE, spectra[1].real))
                 {
                     for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
                     {
@@ -1325,7 +1325,7 @@ BootMusicPlayer::~BootMusicPlayer()
     }
 
     delete fft;
-    func_00109F40(g_sound->stream->thread, 0, 0, 0);
+    resident_stream_set_sample_rings(g_sound->stream->thread, 0, 0, 0);
     resident_sound_set_volume_scale(g_sound, 0x7FFF);
 }
 

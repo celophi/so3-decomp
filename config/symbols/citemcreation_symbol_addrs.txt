@@ -877,6 +877,7 @@ func_0036E7D0 = 0x0036E7D0; // type:func absolute:True allow_duplicated:True
 
 func_00466E40 = 0x00466E40; // type:func absolute:True allow_duplicated:True
 func_00466E40__23ItemCreationClass185050Ffff = 0x00466E40; // type:func absolute:True allow_duplicated:True
+set_move_target__23ItemCreationClass185050Ffff = 0x00466E40; // type:func absolute:True allow_duplicated:True
 
 func_slot6c__20StartInventingDialogFv = 0x00358240; // type:func allow_duplicated:True
 func_slot68__20StartInventingDialogFv = 0x00358340; // type:func allow_duplicated:True
