@@ -301,12 +301,67 @@ struct LibObject172440 : public LibDrawWidget
 #endif
 
 #ifdef __cplusplus
-/** Partial native runtime interface with resident vtable at 0x174F50. */
-class LibClass174F50 : public LibListObject
+/**
+ * The display runtime reached through D_001B657C: sixteen resource slots, the display list and the numbers that
+ * formatted messages print. Resident vtable at 0x174F50.
+ */
+class FieldRuntime : public LibListObject
 {
 public:
+    /**
+     * @brief Initialize the runtime for a screen size.
+     * @param width Screen width.
+     * @param height Screen height.
+     * @param first First mode.
+     * @param second Second mode.
+     * @param scale Scale factor.
+     */
+    FieldRuntime(float width, float height, s32 first, s32 second, float scale);
+
     /** @brief Release the runtime's retained objects and storage. */
-    virtual ~LibClass174F50();
+    virtual ~FieldRuntime();
+
+    /** Sixteen 0x50-byte resource slots. */
+    u8 resource_slots[0x500];
+
+    /** Resource slot and first message key of the two text banks a menu loads. */
+    struct TextBank
+    {
+        s32 resource_slot;
+        u32 base_key;
+    } text_banks[2];
+
+    u8 unk524[0x10];
+
+    /** Screen scale and offset applied to menu coordinates. */
+    float screen_scale_x;
+    float screen_scale_y;
+    float screen_offset_x;
+    float screen_offset_y;
+
+    u8 unk544[0x18];
+
+    /** First and last object queued for display, and how many there are. */
+    void* display_first;
+    void* display_last;
+    s32 display_count;
+
+    /** Integer arguments substituted into the next formatted message. */
+    s32 message_arguments[10];
+
+    u8 unk590[0x58];
+    struct FieldCharacterNames* character_names;
+    float rate;
+
+    /** Two six-byte controller records. */
+    struct Input
+    {
+        u16 unk00;
+        u16 unk02;
+        u16 unk04;
+    } inputs[2];
+
+    u8 unk5fc[8];
 };
 #endif
 

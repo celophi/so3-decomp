@@ -11,6 +11,7 @@
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_004DD440.h"
 
 /** Marker byte of an encoded BootSealedRecord. */
 #define BOOT_RECORD_SEALED 0x69
@@ -230,68 +231,16 @@ typedef struct BootSystemSettings
     BootTrophyFlags trophy_flags;
 } BootSystemSettings;
 
-/** Partial resident display runtime reached through D_001B657C, with the Lib vtable D_174F50. */
-class BootRuntime1B657C
-{
-    public:
-        /**
-         * @brief Initialize the runtime for a screen size; boot calls the Lib constructor.
-         * @param width Screen width.
-         * @param height Screen height.
-         * @param first First mode.
-         * @param second Second mode.
-         * @param scale Scale factor.
-         */
-        BootRuntime1B657C(float width, float height, s32 first, s32 second, float scale);
 
-        /** @brief Destroy the runtime. */
-        virtual ~BootRuntime1B657C();
 
-        u8 unk04[0x564];
-
-        /** Number the next formatted message prints. */
-        u32 message_value;
-
-        /** Further numbers for messages that print more than one. */
-        s32 message_values[9];
-
-        u8 unk590[0x74];
-};
-
-/** @brief Partial display area whose signed dimensions drive the projection. */
-struct BootDisplayArea
-{
-    u8 unk00[0xC];
-    s16 width;
-    s16 height;
-};
-
-/** Partial 0x3F10-byte Lib display with vtable D_178FB0 in main data; its data comes before the vptr. */
-class BootDimensionsACD0
-{
-    public:
-        /** @brief Construct the display. */
-        BootDimensionsACD0();
-
-        u8 unk00[0x160];
-        u16 unk160;
-        u8 unk162[0x3AFE];
-        BootDisplayArea display_area;
-        u8 unk3C70[8];
-        void* unk3C78;
-        u8 unk3C7C[0x290];
-
-        /** @brief Destroy the display. */
-        virtual ~BootDimensionsACD0();
-};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern class BootProjectionACD0* D_001B6654;
+extern class LibClass179080* D_001B6654;
 
-extern BootRuntime1B657C* D_001B657C;
+extern FieldRuntime* D_001B657C;
 extern ResidentArchive* g_resource_archive;
 extern ResidentResourceQueue* g_resource_queue;
 extern ResidentReleaseQueues* g_resident_release_queues;
@@ -401,38 +350,6 @@ extern "C" s32 lib_list_indicator_init(class BootListIndicator* object, float x,
 extern "C" void func_4E32F0(BootClass179150* object);
 extern "C" void func_4D5C90(void* object);
 
-/** Partial 0x880-byte Lib projection object; boot calls the Lib constructor. */
-class BootProjectionACD0 : public LibListObject
-{
-    public:
-        /**
-         * @brief Initialize the projection; boot calls the Lib constructor.
-         * @param display Display the projection draws to.
-         */
-        BootProjectionACD0(BootDimensionsACD0* display);
-
-        /**
-         * @brief Set up the projection for a display; boot uses the Lib implementation.
-         * @param display Display the projection draws to.
-         */
-        void initialize_projection(const BootDimensionsACD0* display);
-
-        /**
-         * @brief Set the position.
-         * @param x First component.
-         * @param y Second component.
-         * @param z Third component.
-         */
-        virtual void set_translation(float x, float y, float z);
-
-        u8 unk14[0x23C];
-        float unk250;
-        u8 unk254[8];
-        float unk25C;
-        u8 unk260[0x18];
-        float unk278;
-        u8 unk27C[0x604];
-};
 
 extern "C" LibDisplayManager* D_001B6628;
 
@@ -488,7 +405,7 @@ class BootClipRegion : public LibTransformOwner, public LibDmaCallbacks
         /** @brief Destroy the object. */
         virtual ~BootClipRegion();
 
-        BootDimensionsACD0* display;
+        LibCameraContext* display;
         void* unk98;
         u8 unk9c[8];
         s32 left;
@@ -580,7 +497,7 @@ class BootScreenFade : public LibTransformOwner, public LibDmaCallbacks
          * @brief Copy the display into ten strips and show them, fully opaque.
          * @param display Display to copy.
          */
-        BootScreenFade(BootDimensionsACD0* display);
+        BootScreenFade(LibCameraContext* display);
 
         /** @brief Destroy the strips, the copy buffer and the packet. */
         virtual ~BootScreenFade();
@@ -610,7 +527,7 @@ class BootScreenFade : public LibTransformOwner, public LibDmaCallbacks
 
         BootImageStrip* images[10];
         u8* buffer;
-        BootDimensionsACD0* display;
+        LibCameraContext* display;
         BootPacketBuffer* packet;
         u8 armed;
         u8 unkc9[3];
@@ -706,7 +623,6 @@ class BootTitleMenu : public LibListObject
         float idle_time;
 };
 
-class BootResident113E40;
 class BootMoviePlayer;
 
 /**
@@ -731,7 +647,7 @@ class BootGameLauncher : public LibListObject
         u8* buffer;
         s32 step;
         s32 timer;
-        BootResident113E40* movie_heap;
+        ResidentHeap* movie_heap;
         BootMoviePlayer* player;
 };
 

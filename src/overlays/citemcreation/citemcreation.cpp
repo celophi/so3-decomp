@@ -1,3 +1,4 @@
+#include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/grid_marker.h"
 #include "overlays/1067-00/text_marker.h"
@@ -4438,16 +4439,6 @@ u8 ItemDetailsWindow::func_slotb0()
 }
 
 /** @brief Attach a widget to its container. @param object Container. @param child Widget to attach. */
-/** Partial Field runtime reached through D_001B657C. */
-struct FieldRuntime
-{
-    u8 unk00[0x514];
-    u32 unk514;
-    u32 unk518;
-    u32 unk51c;
-    u32 unk520;
-};
-
 /**
  * @brief Create the window's panels, text and value displays and register its runtime callback.
  * @param associated Full resource source word.
@@ -4507,8 +4498,8 @@ s32 ItemDetailsWindow::func_slotf4(u32 associated)
     set_text_spacing(unkc0, -1.0f);
     lib_container_attach_widget(unk10, unkc0);
     FieldRuntime* runtime = D_001B657C;
-    runtime->unk51c = associated;
-    runtime->unk520 = 0x11171;
+    runtime->text_banks[1].resource_slot = associated;
+    runtime->text_banks[1].base_key = 0x11171;
     for (s32 index = 0; index < 8; index++)
     {
         lib_detail_code_init_rectangle(unkc4[index], 0, 1, 0, 26.0f, 178.0f + 24.0f * index, 0.0f, 0.0f);
@@ -15319,8 +15310,8 @@ s32 ItemCreationSelectedDisplayState::on_resource_loaded(void* buffer)
     unk34 = lib_load_resource_slot(D_001B657C, buffer_header(buffer));
     func_100C80(previous_heap);
     FieldRuntime* runtime = D_001B657C;
-    runtime->unk514 = unk34;
-    runtime->unk518 = 0xC351;
+    runtime->text_banks[0].resource_slot = unk34;
+    runtime->text_banks[0].base_key = 0xC351;
     return init_windows();
 }
 

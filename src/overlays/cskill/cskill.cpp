@@ -546,20 +546,6 @@ struct SkillRuntime
     FieldBufferSlots* resources;
 };
 
-/** Partial Field runtime reached through D_001B657C. */
-struct FieldRuntime
-{
-    u8 unk00[0x534];
-    /** Screen scale and offset applied to menu coordinates. */
-    float screen_scale_x;
-    float screen_scale_y;
-    float screen_offset_x;
-    float screen_offset_y;
-    u8 unk544[0x24];
-    /** Integer arguments substituted into the next message. */
-    s32 message_arguments[1];
-};
-
 /** Linked node containing a pair of float values. */
 typedef struct SkillPairListNode
 {
@@ -9034,10 +9020,10 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             gauge->character_id = slot;
             gauge->characters = D_001B643C->characters;
             LibCameraContext* context = D_001B6650;
-            gauge->FieldClass159A70::unk1c = 0x800 - context->viewport_width / 2;
-            gauge->FieldClass159A70::unk20 = 0x800 - context->viewport_height / 2;
-            gauge->FieldClass159A70::unk24 = 0x800 + context->viewport_width / 2;
-            gauge->FieldClass159A70::unk28 = 0x800 + context->viewport_height / 2;
+            gauge->FieldClass159A70::unk1c = 0x800 - context->display_area.width / 2;
+            gauge->FieldClass159A70::unk20 = 0x800 - context->display_area.height / 2;
+            gauge->FieldClass159A70::unk24 = 0x800 + context->display_area.width / 2;
+            gauge->FieldClass159A70::unk28 = 0x800 + context->display_area.height / 2;
             gauge->initialize(1, 0, 0, 0.0f, 0.0f, 0.0f);
             if (row < 3)
             {

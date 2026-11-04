@@ -1,3 +1,4 @@
+#include "overlays/lib/text_0045AD10.h"
 #include "include_asm.h"
 #include "overlays/1067-00/field_class_154D40.h"
 #include "overlays/1067-00/field_class_154EF0.h"
@@ -260,12 +261,6 @@ struct FieldSelector
     void* unk30;
     u8 unk34;
 };
-struct FieldRuntime
-{
-    u8 pad00[0x5EC];
-    float rate;
-};
-
 struct FieldProgressState
 {
     u8 pad00[0xCE];

@@ -256,14 +256,6 @@ struct FieldTrackPool
     bool external;
 };
 
-/** Partial field runtime exposing the increment used by its updates. */
-struct FieldRuntime
-{
-    u8 unk00[0x5E8];
-    FieldCharacterNames* character_names;
-    float rate;
-};
-
 /** Prefix of either embedded motion state retained by the context owner. */
 struct FieldContextMotion
 {
@@ -1661,7 +1653,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         D_001B6548 = 0;
         D_001B6628->unk90 = 0;
         field_detach_release_context_object(context->unk40);
-        delete reinterpret_cast<LibClass174F50*>(D_001B657C);
+        delete D_001B657C;
         D_001B657C = 0;
         func_002B4620(D_001B6664);
         func_002B4C50(D_001B6668);
@@ -1817,7 +1809,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     D_001B663C = 0;
     delete D_001B6618;
     D_001B6618 = 0;
-    delete reinterpret_cast<LibClass174F50*>(D_001B657C);
+    delete D_001B657C;
     D_001B657C = 0;
     lib_object_detach_owner(D_001B6640);
 

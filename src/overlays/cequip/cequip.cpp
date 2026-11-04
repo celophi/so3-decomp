@@ -1,3 +1,4 @@
+#include "overlays/lib/text_0045AD10.h"
 #include "overlays/cequip/cequip.h"
 #include "main/resident_data.h"
 #include "main/resident_0010A0E0.h"
@@ -44,16 +45,6 @@ struct EquipAlignedResource
 {
     u8 unk00[0x40];
     s32 unk40;
-};
-
-/** Partial Field runtime reached through D_001B657C. */
-struct FieldRuntime
-{
-    u8 unk00[0x514];
-    s32 unk514;
-    u32 unk518;
-    s32 unk51c;
-    u32 unk520;
 };
 
 /** Partial callback directory containing the active menu State. */
@@ -2685,8 +2676,8 @@ static inline void attach_comparison(EquipSlotWindow* object, EquipParameterWind
 s32 EquipController::init_windows()
 {
     FieldRuntime* runtime = D_001B657C;
-    runtime->unk51c = resource_slot;
-    runtime->unk520 = 0x11171;
+    runtime->text_banks[1].resource_slot = resource_slot;
+    runtime->text_banks[1].base_key = 0x11171;
     tooltip = new (0) EquipFactorTooltip;
 
     if (tooltip != 0)
@@ -2764,8 +2755,8 @@ s32 EquipController::on_resource_loaded(void* buffer)
     resource_slot = lib_load_resource_slot(D_001B657C, aligned);
     resident_exchange_allocation_heap(saved_heap);
     FieldRuntime* runtime = D_001B657C;
-    runtime->unk514 = resource_slot;
-    runtime->unk518 = 0xC351;
+    runtime->text_banks[0].resource_slot = resource_slot;
+    runtime->text_banks[0].base_key = 0xC351;
     return init_windows();
 }
 

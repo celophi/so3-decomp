@@ -585,7 +585,7 @@ static inline u32 pack_color(u8 red, u8 green, u8 blue)
  */
 static inline float viewport_aspect()
 {
-    return (4.0f / 3.0f) * ((15.0f / 14.0f) * D_001B6650->viewport_height) / D_001B6650->viewport_width;
+    return (4.0f / 3.0f) * ((15.0f / 14.0f) * D_001B6650->display_area.height) / D_001B6650->display_area.width;
 }
 
 /**

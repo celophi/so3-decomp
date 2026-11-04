@@ -390,7 +390,7 @@ void BootInstaller::update()
             screen_images_loaded = 0;
             step++;
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+            lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             message_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
             message_text->set_color(0x34130F);
@@ -398,7 +398,7 @@ void BootInstaller::update()
             x = menu_cursor_x(selection);
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+            lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
 
         break;
@@ -645,7 +645,7 @@ void BootInstaller::update()
         break;
     }
     case BOOT_INSTALL_SHOW_NO_SPACE:
-        D_001B657C->message_value = resident_archive_get_install_size(g_resource_archive) >> 11;
+        D_001B657C->message_arguments[0] = resident_archive_get_install_size(g_resource_archive) >> 11;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_NOT_ENOUGH_SPACE, 0);
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
@@ -670,7 +670,7 @@ void BootInstaller::update()
         show_tip_image(0);
         tip_index = 1;
         next_tip_percent = BOOT_INSTALL_SECOND_TIP_PERCENT;
-        D_001B657C->message_value = 0;
+        D_001B657C->message_arguments[0] = 0;
 
         if (resource->widescreen)
         {
@@ -773,7 +773,7 @@ void BootInstaller::update()
         {
             remaining = resident_archive_get_copy_remaining(g_resource_archive);
             percent = 99 - remaining * 99 / install_total;
-            D_001B657C->message_value = percent;
+            D_001B657C->message_arguments[0] = percent;
             lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
 
             if (percent >= next_tip_percent && tip_index < BOOT_INSTALL_TIP_COUNT)
@@ -796,7 +796,7 @@ void BootInstaller::update()
                 x = menu_cursor_x(selection);
                 cursor = new (0) BootSelectionCursor;
                 func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-                lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                lib_queue_display_object(D_001B657C,
                                          reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
                 tip_text->visible = 0;
                 tip_image->model->draw_flags |= LIB_DRAW_HIDDEN;
@@ -808,7 +808,7 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_FINISH_COPY:
-        D_001B657C->message_value = 100;
+        D_001B657C->message_arguments[0] = 100;
         lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
         progress_bar_draw(progress_bar, 100, 100);
         resident_archive_set_copy_buffer(g_resource_archive, 0);
@@ -1002,7 +1002,7 @@ void BootInstaller::update()
             x = menu_cursor_x(selection);
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+            lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
         else
         {

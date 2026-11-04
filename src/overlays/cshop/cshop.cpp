@@ -146,16 +146,6 @@ extern "C" const ShopPanelColors D_00351FA0;
 extern "C" const ShopPanelColors D_00351FB0;
 extern "C" const ShopPanelColors D_00351FC0;
 
-/** Partial resource runtime containing the selected slot and display code. */
-struct FieldRuntime
-{
-    u8 unk00[0x514];
-    s32 item_name_resource_slot;
-    u32 item_name_base_key;
-    s32 factor_resource_slot;
-    u32 factor_base_key;
-};
-
 struct ShopRuntimeFlags
 {
     u8 unk00[0x81];
@@ -1298,8 +1288,8 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     separator->needs_redraw = 1;
     lib_container_attach_widget(FieldClass15AE70::unk10, factor_separator);
     FieldRuntime* runtime = D_001B657C;
-    runtime->factor_resource_slot = static_cast<s32>(associated);
-    runtime->factor_base_key = SHOP_MSG_FACTORS + 1;
+    runtime->text_banks[1].resource_slot = static_cast<s32>(associated);
+    runtime->text_banks[1].base_key = SHOP_MSG_FACTORS + 1;
 
     for (s32 factor_index = 0; factor_index < 8; factor_index++)
     {
@@ -1862,8 +1852,8 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     factor_heading_widget->needs_redraw = 1;
     lib_container_attach_widget(unk10, factor_heading);
     FieldRuntime* runtime = D_001B657C;
-    runtime->factor_resource_slot = static_cast<s32>(associated);
-    runtime->factor_base_key = SHOP_MSG_FACTORS + 1;
+    runtime->text_banks[1].resource_slot = static_cast<s32>(associated);
+    runtime->text_banks[1].base_key = SHOP_MSG_FACTORS + 1;
 
     for (s32 i = 0; i < 8; i++)
     {
@@ -3698,8 +3688,8 @@ s32 ShopState::on_resource_loaded(void* buffer)
     resource_slot = lib_load_resource_slot(D_001B657C, resource);
     resident_exchange_allocation_heap(previous_heap);
     FieldRuntime* runtime = D_001B657C;
-    runtime->item_name_resource_slot = resource_slot;
-    runtime->item_name_base_key = SHOP_MSG_ITEM_NAMES + 1;
+    runtime->text_banks[0].resource_slot = resource_slot;
+    runtime->text_banks[0].base_key = SHOP_MSG_ITEM_NAMES + 1;
     return init_windows();
 }
 

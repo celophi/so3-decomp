@@ -136,23 +136,6 @@ struct ItemAlignedResource
     s32 byte_count;
 };
 
-/** Partial resource runtime containing the item-name and detail-code resource groups. */
-struct FieldRuntime
-{
-    u8 unk00[0x514];
-    s32 item_name_resource_slot;
-    u32 item_name_base_key;
-    s32 detail_resource_slot;
-    u32 detail_base_key;
-    u8 unk524[0x10];
-
-    /** Screen scale and offset applied to menu coordinates. */
-    float screen_scale_x;
-    float screen_scale_y;
-    float screen_offset_x;
-    float screen_offset_y;
-};
-
 /** Packed allocation view with the four-bit equipped owner spanning bytes C and D. */
 struct ItemAllocationOwnerView
 {
@@ -2401,10 +2384,10 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             gauge->character_id = slot;
             gauge->characters = D_001B643C->characters;
             LibCameraContext* context = D_001B6650;
-            gauge->FieldClass159A70::unk1c = 0x800 - context->viewport_width / 2;
-            gauge->FieldClass159A70::unk20 = 0x800 - context->viewport_height / 2;
-            gauge->FieldClass159A70::unk24 = 0x800 + context->viewport_width / 2;
-            gauge->FieldClass159A70::unk28 = 0x800 + context->viewport_height / 2;
+            gauge->FieldClass159A70::unk1c = 0x800 - context->display_area.width / 2;
+            gauge->FieldClass159A70::unk20 = 0x800 - context->display_area.height / 2;
+            gauge->FieldClass159A70::unk24 = 0x800 + context->display_area.width / 2;
+            gauge->FieldClass159A70::unk28 = 0x800 + context->display_area.height / 2;
             gauge->initialize(1, 0, 0, 0.0f, 0.0f, 0.0f);
 
             if (row < 3)
@@ -2980,8 +2963,8 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
     marker->needs_redraw = 1;
     lib_container_attach_widget(FieldClass15AE70::unk10, divider);
     FieldRuntime* runtime = D_001B657C;
-    runtime->detail_resource_slot = associated;
-    runtime->detail_base_key = ITEM_MSG_FIRST_FACTOR_NAME;
+    runtime->text_banks[1].resource_slot = associated;
+    runtime->text_banks[1].base_key = ITEM_MSG_FIRST_FACTOR_NAME;
     s32 index;
 
     for (index = 0; index < 8; index++)
@@ -4428,8 +4411,8 @@ s32 ItemController::on_resource_loaded(void* buffer)
     resource_slot = lib_load_resource_slot(D_001B657C, resource);
     resident_exchange_allocation_heap(previous_heap);
     FieldRuntime* runtime = D_001B657C;
-    runtime->item_name_resource_slot = resource_slot;
-    runtime->item_name_base_key = ITEM_MSG_ITEM_NAME_BASE + 1;
+    runtime->text_banks[0].resource_slot = resource_slot;
+    runtime->text_banks[0].base_key = ITEM_MSG_ITEM_NAME_BASE + 1;
     return init_windows();
 }
 

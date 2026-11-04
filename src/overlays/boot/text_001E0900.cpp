@@ -1,3 +1,8 @@
+// TODO: The second half of this file only matches with constant pull-out off. Turning it off for the whole file
+// changes nothing in the first half, and the other boot files don't match with it, so I think this file was built
+// with it off.
+#pragma opt_pulloutconstants off
+
 #include "include_asm.h"
 #include "overlays/boot/text_001E0900.h"
 #include "overlays/boot/init.h"
@@ -25,19 +30,19 @@ extern void* D_001B663C;
 extern void* D_001B65E0;
 extern struct BootRenderState* D_001B6618;
 extern BootResidentDisplay* D_001B6658;
-void func_4E09B0(BootDimensionsACD0* display, s32 mode);
-void func_4E0BC0(BootDimensionsACD0* display, s32 index, float first, float second, s32 mask);
-void func_4DD440(BootDimensionsACD0* display, s32 index, s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g, s32 width, s32 height);
-void func_4DF890(BootDimensionsACD0* display, s32 index, s32 width, s32 height, s32 depth, s32 mode);
-void func_4E03C0(BootDimensionsACD0* display, s32 index, s32 width, s32 height);
-void func_4DE250(BootDimensionsACD0* display, s32 index, s32 x, s32 y, s32 width, s32 height);
-void func_4DCFA0(BootDimensionsACD0* display);
+void func_4E09B0(LibCameraContext* display, s32 mode);
+void func_4E0BC0(LibCameraContext* display, s32 index, float first, float second, s32 mask);
+void func_4DD440(LibCameraContext* display, s32 index, s32 a, s32 b, s32 c, s32 d, s32 e, s32 f, s32 g, s32 width, s32 height);
+void func_4DF890(LibCameraContext* display, s32 index, s32 width, s32 height, s32 depth, s32 mode);
+void func_4E03C0(LibCameraContext* display, s32 index, s32 width, s32 height);
+void func_4DE250(LibCameraContext* display, s32 index, s32 x, s32 y, s32 width, s32 height);
+void func_4DCFA0(LibCameraContext* display);
 void func_4DCC10(void* object, void* value);
 void func_4D78F0(void* object);
 void func_42D940(void);
 void resident_system_set_progressive(ResidentSystem* system, u8 progressive);
-extern BootDimensionsACD0* D_001B6650;
-extern BootDimensionsACD0* D_001B6520;
+extern LibCameraContext* D_001B6650;
+extern LibCameraContext* D_001B6520;
 extern u8 D_001B6420;
 extern BootTrackPool<BootPooledFloatTrack>* g_float_track_pool;
 extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
@@ -54,7 +59,7 @@ void func_45A770(void);
 void func_433680(void);
 void func_4E33B0(void);
 void func_4D8970(void);
-void func_4E3830(BootDimensionsACD0* display, u32 first, s32 second, s32 third, s32 fourth, s32 fifth, s32 sixth);
+void func_4E3830(LibCameraContext* display, u32 first, s32 second, s32 third, s32 fourth, s32 fifth, s32 sixth);
 void func_4D8A80(struct BootScreenRect* rect, u32 color);
 extern struct FieldPacketQueue* D_001B65DC;
 extern const struct BootLabelOffsets D_205170;
@@ -74,7 +79,7 @@ extern const char g_left_speaker_name[];
 extern const char g_rear_left_speaker_name[];
 extern const char g_rear_right_speaker_name[];
 extern const char g_center_speaker_name[];
-void func_4DAFE0(LibDisplayManager* manager, BootDimensionsACD0* display, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask);
+void func_4DAFE0(LibDisplayManager* manager, LibCameraContext* display, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask);
 extern u8 g_settings_option_counts[5];
 extern u8 g_difficulty_option_count;
 extern const s16 g_voice_lines[];
@@ -1292,7 +1297,7 @@ void BootStartupChecks::update()
             if (BOOT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
             {
                 check_main_code();
-                D_001B657C->message_value = 175;
+                D_001B657C->message_arguments[0] = 175;
 
                 // Statuses 16-17 need no warning; these pairs can split the save and trophy files between cards.
                 if ((u32)(slot1 - 16) <= 1 ||
@@ -1569,7 +1574,7 @@ void BootStartupChecks::update()
         case BOOT_STARTUP_CARD_SHOW_WARNING:
             check_main_code();
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+            lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             text = new (0) LibTextWidget(g_boot_program.get_messages(), message, 0, 32.0f, 128.0f, 576.0f, 320.0f);
             lib_container_attach_widget(container, text);
@@ -1629,7 +1634,7 @@ void BootStartupChecks::update()
                 {
                     step++;
                     container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-                    lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                    lib_queue_display_object(D_001B657C,
                                              reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
                 }
                 else if (++frames >= 30 && BOOT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
@@ -1801,14 +1806,14 @@ void BootStartupChecks::update()
                     {
                         step++;
                         container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-                        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                        lib_queue_display_object(D_001B657C,
                                                  reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
                     }
                     else if (g_boot_program.unit_data_deleted != 0)
                     {
                         step = BOOT_STARTUP_UNIT_LOAD_DELETED_WARNING;
                         container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-                        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                        lib_queue_display_object(D_001B657C,
                                                  reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
                     }
                     else
@@ -2352,7 +2357,7 @@ void BootNewGameSettings::apply_option_value()
         case 0:
             settings->widescreen = 0;
             D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width;
-            D_001B6654->unk25C = 1.5707964f;
+            D_001B6654->horizontal_fov = 1.5707964f;
             g_boot_program.update_projection_aspect();
             break;
         case 1:
@@ -2360,7 +2365,7 @@ void BootNewGameSettings::apply_option_value()
             D_001B6654->unk278 =
                 (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width)) /
                 1.3333334f;
-            D_001B6654->unk25C = 1.8325958f;
+            D_001B6654->horizontal_fov = 1.8325958f;
             g_boot_program.update_projection_aspect();
             break;
         }
@@ -2827,8 +2832,6 @@ void BootNewGameSettings::update_option_rows()
     }
 }
 
-// TODO: Only matches with this off to the end of the file; find the real cause.
-#pragma opt_pulloutconstants off
 
 /** @brief Create the page's images once their textures are loaded, then place and highlight them. */
 void BootNewGameSettings::update_page_images()
@@ -3102,7 +3105,7 @@ void BootNewGameSettings::update()
             stage++;
             highlight_phase = 0;
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+            lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             description_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
             description_text->set_color(0x34130F);
@@ -3114,7 +3117,7 @@ void BootNewGameSettings::update()
             get_cursor_position(&x, &y);
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0xF42400, x, y, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+            lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
             func_0010DAA0(g_sound, 2);
         }
 
@@ -4093,7 +4096,7 @@ void BootOpeningMovie::update()
         }
 
         container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
+        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         func_419A70(player, 12, 1);
         caption = 0;
         caption_phase = BOOT_CAPTION_HIDDEN;
@@ -4396,9 +4399,9 @@ BootOpeningMovie::BootOpeningMovie()
     void* heap;
     BootSystemSettings* resource;
     step = BOOT_MOVIE_PREPARE;
-    movie_heap = new (0) BootResident113E40;
-    movie_heap->unk2C = 0x40;
-    func_00113930(reinterpret_cast<ResidentHeap*>(movie_heap), BOOT_MOVIE_HEAP_SIZE);
+    movie_heap = new (0) ResidentHeap;
+    movie_heap->alignment = 0x40;
+    func_00113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
     heap = resident_exchange_allocation_heap(movie_heap);
     player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
     resident_exchange_allocation_heap(heap);
@@ -4412,7 +4415,7 @@ BootOpeningMovie::BootOpeningMovie()
         D_001B6654->unk278 =
             (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width)) /
             1.3333334f;
-        D_001B6654->unk25C = 1.8325958f;
+        D_001B6654->horizontal_fov = 1.8325958f;
     }
 
     container = 0;
@@ -4433,7 +4436,7 @@ void BootUnitErrorPopup::update()
         if (container == 0 && BOOT_ALIGN_RESOURCE(program->message_block) != 0)
         {
             container = new (0) LibContainer(8, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+            lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             panel = new (0) LibPanel(0, 64.0f, 160.0f, 520.0f, 160.0f, 88.0f);
             lib_container_attach_widget(container, panel);
@@ -4498,9 +4501,9 @@ void BootUnitErrorPopup::destroy()
  */
 void BootProgram::rebuild_display(u8 full)
 {
-    BootDisplayArea* area;
+    LibDisplayArea* area;
     delete display;
-    display = new (0) BootDimensionsACD0;
+    display = new (0) LibCameraContext;
     func_4E09B0(display, 2);
     func_4E0BC0(display, 1, 1.0f, 2.0f, -1);
     func_4DD440(display, 0, 1, 0, 0, 1, 0, 0, 1, 640, 224);
@@ -4541,7 +4544,7 @@ void BootProgram::select_projection()
 inline void BootProgram::update_projection_aspect()
 {
     BootSystemSettings* resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
-    BootDimensionsACD0* dimensions;
+    LibCameraContext* dimensions;
 
     if (resource->widescreen != 0)
     {
@@ -4550,7 +4553,7 @@ inline void BootProgram::update_projection_aspect()
         projection->unk250 = 0.75f;
         dimensions = g_boot_program.display;
         D_001B6654->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
-        D_001B6654->unk25C = 1.8325958f;
+        D_001B6654->horizontal_fov = 1.8325958f;
     }
     else
     {
@@ -4559,7 +4562,7 @@ inline void BootProgram::update_projection_aspect()
         projection->unk250 = 1.0f;
         dimensions = g_boot_program.display;
         D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
-        D_001B6654->unk25C = 1.5707964f;
+        D_001B6654->horizontal_fov = 1.5707964f;
     }
 }
 
@@ -4569,7 +4572,7 @@ inline void BootProgram::update_projection_aspect()
  */
 void BootProgram::set_progressive(u8 progressive)
 {
-    BootDimensionsACD0* rebuilt;
+    LibCameraContext* rebuilt;
     BootDisplayLinks661C* links;
 
     if (progressive)
@@ -4627,11 +4630,11 @@ void BootResourceLoader::update()
         {
         case BOOT_COMMON_UI_MESSAGES:
             program->message_block = buffer;
-            program->messages = lib_load_resource_slot(reinterpret_cast<FieldRuntime*>(D_001B657C), aligned);
+            program->messages = lib_load_resource_slot(D_001B657C, aligned);
             break;
         case BOOT_COMMON_UI_CAPTIONS:
             program->caption_block = buffer;
-            program->captions = lib_load_resource_slot(reinterpret_cast<FieldRuntime*>(D_001B657C), aligned);
+            program->captions = lib_load_resource_slot(D_001B657C, aligned);
             break;
         case BOOT_COMMON_UI_IMAGES:
             program->image_block = buffer;
@@ -4654,7 +4657,7 @@ void BootProgram::create_pools_and_projection()
     float_quaternion_track_pool_allocate(g_float_quaternion_track_pool, 2000);
     quaternion_curve_track_pool_allocate(g_quaternion_curve_track_pool, 1000);
     quaternion_track_pool_allocate(g_quaternion_track_pool, 1000);
-    projection = new (0) BootProjectionACD0(display);
+    projection = new (0) LibClass179080(display);
     projection->initialize_projection(display);
     projection->set_translation(0.0f, 0.0f, -500.0f);
     D_001B6628->append_node(projection, -1);
@@ -4764,7 +4767,7 @@ void BootProgram::run()
         settings->widescreen = saved_widescreen != 0;
     }
 
-    D_001B657C = new (0) BootRuntime1B657C(640.0f, 480.0f, 0, 0, 1.8f);
+    D_001B657C = new (0) FieldRuntime(640.0f, 480.0f, 0, 0, 1.8f);
     trophy_card = new (0) BootBattleTrophyCard;
     D_001B6614->append_node(trophy_card, -1);
     trophy_card->initialize();

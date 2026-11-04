@@ -688,21 +688,6 @@ class BootInput : public LibListObject
         s32 slot2_ready;
 };
 
-/** Partial 0x58-byte resident object whose vtable pointer follows its data; boot calls the resident constructor. */
-class BootResident113E40
-{
-    public:
-        /** @brief Initialize the object. */
-        BootResident113E40();
-
-        u8 unk00[0x2C];
-        s32 unk2C;
-        u8 unk30[0x24];
-
-        /** @brief Destroy the object. */
-        virtual ~BootResident113E40();
-};
-
 /** Partial movie decoder state reached through the player. */
 struct BootMovieState15E700
 {
@@ -822,7 +807,7 @@ class BootOpeningMovie : public LibListObject
         u8 caption_image_loaded;
 
         u8 unk21[3];
-        BootResident113E40* movie_heap;
+        ResidentHeap* movie_heap;
         BootMoviePlayer* player;
         BootImage* caption_image;
         LibContainer* container;
@@ -966,8 +951,8 @@ class BootProgram : public BootResidentProgram
             return input;
         }
 
-        BootDimensionsACD0* display;
-        BootProjectionACD0* projection;
+        LibCameraContext* display;
+        LibClass179080* projection;
         BootInput* input;
 
         /** Resource 0x26's first block, holding the message bank. */
@@ -1013,7 +998,7 @@ class BootProgram : public BootResidentProgram
 struct BootResidentDisplay
 {
     u8 unk00[4];
-    BootDimensionsACD0* display;
+    LibCameraContext* display;
 };
 
 /** 0x2910-byte Lib heap that may sit at the start of scratchpad memory. */

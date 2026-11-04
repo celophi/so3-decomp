@@ -57,12 +57,31 @@ public:
     /** Rotation about the viewing direction, passed to the sine/cosine helper. */
     float roll_angle;
 };
-/** Partial resident context supplying signed viewport dimensions. */
-struct LibCameraContext
+/** Size of the area a display draws to. */
+struct LibDisplayArea
 {
-    u8 unk00[0x3C6C];
-    s16 viewport_width;
-    s16 viewport_height;
+    u8 unk00[0xC];
+    s16 width;
+    s16 height;
+};
+
+/** Partial 0x3F10-byte Lib display, with vtable D_178FB0 in main data; its data comes before the vptr. */
+class LibCameraContext
+{
+public:
+    /** @brief Initialize the display. */
+    LibCameraContext();
+
+    u8 unk00[0x160];
+    u16 unk160;
+    u8 unk162[0x3AFE];
+    LibDisplayArea display_area;
+    u8 unk3C70[8];
+    void* unk3C78;
+    u8 unk3C7C[0x290];
+
+    /** @brief Destroy the display. */
+    virtual ~LibCameraContext();
 };
 
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */

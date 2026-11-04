@@ -709,7 +709,7 @@ void BootMusicPlayer::update()
             step++;
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+            lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         }
 
@@ -738,7 +738,7 @@ void BootMusicPlayer::update()
             cursor = new (0) BootSelectionCursor;
             func_467570(cursor, 1, 0, 0, 54.0f, y, 0.0f);
         }
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         D_001B661C->append_node(meters[0], -1);
         D_001B661C->append_node(meters[1], -1);
         D_001B661C->append_node(meters[2], -1);

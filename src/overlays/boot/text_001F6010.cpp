@@ -422,7 +422,7 @@ void BootTitleMenu::update()
         get_cursor_position(&x, &y);
         cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, x, y, 0.0f);
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         step++;
         break;
     }
@@ -978,7 +978,7 @@ BootPacketBuffer::~BootPacketBuffer()
  * @brief Copy the display into ten strips and show them, fully opaque.
  * @param display Display to copy.
  */
-BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
+BootScreenFade::BootScreenFade(LibCameraContext* display)
 {
     s32 width;
     s32 height;
@@ -1312,9 +1312,9 @@ void BootGameLauncher::update()
                 break;
             }
 
-            movie_heap = new (0) BootResident113E40;
-            movie_heap->unk2C = 0x40;
-            func_00113930(reinterpret_cast<ResidentHeap*>(movie_heap), BOOT_MOVIE_HEAP_SIZE);
+            movie_heap = new (0) ResidentHeap;
+            movie_heap->alignment = 0x40;
+            func_00113930(movie_heap, BOOT_MOVIE_HEAP_SIZE);
             void* heap = resident_exchange_allocation_heap(movie_heap);
             player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
             resident_exchange_allocation_heap(heap);

@@ -641,7 +641,7 @@ void BootBattleTrophyViewer::update()
 
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+            lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         }
 
@@ -693,7 +693,7 @@ void BootBattleTrophyViewer::update()
         slot = 0;
         cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, 170.0f, 156.0f, 0.0f);
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_WAIT_FOR_EXIT:
         if (input->pressed & settings->confirm_buttons)
@@ -996,12 +996,12 @@ void BootBattleTrophyViewer::update()
             }
         }
 
-        D_001B657C->message_values[0] = earned_count;
-        D_001B657C->message_values[1] = BOOT_TROPHY_COUNT;
-        D_001B657C->message_values[2] = earned_count * 100 / BOOT_TROPHY_COUNT;
+        D_001B657C->message_arguments[1] = earned_count;
+        D_001B657C->message_arguments[2] = BOOT_TROPHY_COUNT;
+        D_001B657C->message_arguments[3] = earned_count * 100 / BOOT_TROPHY_COUNT;
         cursor = new (0) BootSelectionCursor;
         func_467570(cursor, 1, 0, 0, grid_cursor_x(this), cursor_row * 100 + 170, 0.0f);
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_BROWSE:
     {
@@ -1084,12 +1084,12 @@ void BootBattleTrophyViewer::update()
                 {
                     lib_text_set_resource(name_text, g_boot_program.get_messages(), index + 200, 0);
                     BootTrophyTime* time = &records[index].time;
-                    D_001B657C->message_values[3] = from_bcd(time->year);
-                    D_001B657C->message_values[4] = from_bcd(time->month);
-                    D_001B657C->message_values[5] = from_bcd(time->day);
-                    D_001B657C->message_values[6] = from_bcd(time->hour);
-                    D_001B657C->message_values[7] = from_bcd(time->minute);
-                    D_001B657C->message_values[8] = from_bcd(time->second);
+                    D_001B657C->message_arguments[4] = from_bcd(time->year);
+                    D_001B657C->message_arguments[5] = from_bcd(time->month);
+                    D_001B657C->message_arguments[6] = from_bcd(time->day);
+                    D_001B657C->message_arguments[7] = from_bcd(time->hour);
+                    D_001B657C->message_arguments[8] = from_bcd(time->minute);
+                    D_001B657C->message_arguments[9] = from_bcd(time->second);
 
                     if (time->year >= 0x10)
                     {

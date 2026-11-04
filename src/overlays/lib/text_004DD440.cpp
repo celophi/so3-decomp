@@ -267,8 +267,8 @@ void LibClass179080::destroy()
 void LibClass179080::initialize_projection(const LibCameraContext* context)
 {
     horizontal_fov = 0.7853982f;
-    s32 half_height = context->viewport_height / 2;
-    s32 half_width = context->viewport_width / 2;
+    s32 half_height = context->display_area.height / 2;
+    s32 half_width = context->display_area.width / 2;
     screen_min.x = 2048 - half_width;
     screen_min.y = 2048 - half_height;
     screen_min.z = 100.0f;
@@ -282,7 +282,7 @@ void LibClass179080::initialize_projection(const LibCameraContext* context)
     unk3d2 = 1;
     unk280 = 2048.0f;
     unk284 = 2048.0f;
-    unk278 = (1.3333334f * (1.0714285f * context->viewport_height)) / context->viewport_width;
+    unk278 = (1.3333334f * (1.0714285f * context->display_area.height)) / context->display_area.width;
     unk250 = 1.0f;
     unk270 = 1.0f;
 }
