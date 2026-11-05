@@ -15,6 +15,7 @@
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/text_004DD440.h"
+#include "overlays/lib/model.h"
 
 /** Marker byte of an encoded BootSealedRecord. */
 #define BOOT_RECORD_SEALED 0x69
@@ -40,12 +41,6 @@ enum BootScreenResourceId
     BOOT_RES_TROPHY_VIEWER = 0x2B,
     BOOT_RES_MUSIC_PLAYER = 0x2C
 };
-
-/** @brief Matrix storage containing four aligned four-component vectors. */
-typedef struct BootMatrix
-{
-    LibVector4 vectors[4];
-} BootMatrix;
 
 /**
  * @brief 0xB4-byte saved record that is kept XOR-encoded, with a checksum over the encoded bytes.
@@ -221,11 +216,6 @@ extern ResidentReleaseQueues* g_resident_release_queues;
 extern ResidentSound* g_sound;
 u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
 
-/**
- * @brief Recompute the checksum of a flag block from its key.
- * @param bits Flag block.
- */
-void func_457520(LibTrophyFlags* bits);
 
 #ifdef __cplusplus
 }
@@ -312,7 +302,6 @@ extern "C" s32 lib_container_init(LibContainer* container, s32 code, float x, fl
  * @return One on success, or zero if its storage could not be initialized.
  */
 extern "C" s32 lib_list_indicator_init(class BootListIndicator* object, float x, float y, float height, float extent, float position);
-extern "C" void func_4D5C90(void* object);
 
 
 extern "C" LibDisplayManager* D_001B6628;
@@ -550,7 +539,6 @@ class BootGameLauncher : public LibListObject
         LibMoviePlayer* player;
 };
 
-class BootModel;
 
 /** Partial 0x2C-byte progress bar with vtable D_171BD0 in main data; driven with a done/total pair. */
 class BootProgressBar : public LibListObject
@@ -566,403 +554,15 @@ class BootProgressBar : public LibListObject
         virtual void destroy();
 
         class LibDrawBuffer* draw_buffer;
-        BootModel* model;
+        LibModel* model;
         s32 width;
         s32 height;
         u32 color;
         s32 mode;
 };
 
-/** Boot's view of the Lib model base that adds a matrix and three vectors, with the Lib vtable D_172080. */
-class BootModelBase : public LibTransformOwner
-{
-    public:
-        /** @brief Destroy the model base; boot uses the Lib implementation. */
-        virtual ~BootModelBase();
-
-        /** @brief Rebuild the transformation matrix; boot uses the Lib implementation. */
-        virtual void update_transform_matrix();
-
-        /**
-         * @brief Read the transformation matrix.
-         * @return The matrix.
-         */
-        virtual const LibMatrix44Value* get_transform_matrix()
-        {
-            return reinterpret_cast<const LibMatrix44Value*>(&unk90);
-        }
-
-        /**
-         * @brief Read the offset transform's translation.
-         * @return Translation.
-         */
-        virtual const LibVector4* get_offset_translation() const
-        {
-            return &offset_translation;
-        }
-
-        /**
-         * @brief Read the offset transform's rotation.
-         * @return Rotation quaternion.
-         */
-        virtual const LibVector4* get_offset_rotation() const
-        {
-            return &offset_rotation;
-        }
-
-        /**
-         * @brief Read the offset transform's scale.
-         * @return Scale.
-         */
-        virtual const LibVector4* get_offset_scale() const
-        {
-            return &offset_scale;
-        }
-
-        /**
-         * @brief Copy another model's transform state (slot 0x68) and its offset vectors; Lib implements this as
-         * LibTransform::copy_transform_state.
-         * @param source Model to copy.
-         */
-        virtual void copy_offset_transform_state(const BootModelBase* source);
-
-        BootMatrix unk90;
-        BootMatrix unkD0;
-        u8 unk110[0xC0];
-        LibVector4 offset_translation;
-
-        /** Quaternion used to build the offset transform. */
-        LibVector4 offset_rotation;
-
-        LibVector4 offset_scale;
-        u8 unk200[8];
-        s32 unk208;
-        u8 unk20C[4];
-
-        /** Lib's blend transforms draw in bucket 2 when this is nonzero, else in the main list. */
-        u8 blend_mode;
-};
-
-/** Boot's view of the Lib model with color factors, with the Lib vtable D_174310. */
-class BootColorModel : public BootModelBase
-{
-    public:
-        /** @brief Destroy the model; boot uses the Lib implementation. */
-        virtual ~BootColorModel();
-
-        /** @brief Detach and queue the model; boot uses the Lib implementation. */
-        virtual void destroy();
-
-        /**
-         * @brief Store the blend mode and flag the color state for an update.
-         * @param value Blend mode; boot uses 2 while a model is highlighted or fading, 0 otherwise.
-         */
-        virtual void set_blend_mode(u8 value)
-        {
-            blend_mode = value;
-            unk59d_3 = 1;
-        }
-
-        /**
-         * @brief Copy another model's blend mode and its Lib transform state.
-         * @param source Model to copy.
-         */
-        virtual void copy_blend_state(const BootColorModel* source)
-        {
-            set_blend_mode(source->blend_mode);
-            BootModelBase::copy_offset_transform_state(source);
-        }
-
-        /** @brief Store the component product of the two input vectors. */
-        virtual void update_combined_color_factor();
-
-        /**
-         * @brief Store the color modulation, then recompute the combined color factor.
-         * @param key Caller's key; unused here.
-         * @param modulation Color modulation to store.
-         */
-        virtual void set_color_modulation(s32 key, const LibVector4* modulation)
-        {
-            copy_vector(&color_modulation, modulation);
-            update_combined_color_factor();
-        }
-
-        /**
-         * @brief Read the color modulation.
-         * @return Vector at offset 0x570.
-         */
-        virtual const LibVector4* get_color_modulation() const
-        {
-            return &color_modulation;
-        }
-
-        /** @brief Virtual slot 0x98; boot uses the Lib implementation. */
-        virtual void func_slot98();
-
-        /** @brief Virtual slot 0x9C; boot uses the Lib implementation. */
-        virtual void func_448180();
-
-        u8 unk220[0x340];
-        LibVector4 base_color_factor;
-        LibVector4 color_modulation;
-        LibVector4 combined_color_factor;
-        u8 unk590[0xD];
-        u8 unk59d_0_2 : 3;
-        u8 unk59d_3 : 1;
-        u8 unk59d_4_7 : 4;
-        u8 unk59e[2];
-        u8 unk5a0;
-        u8 unk5a1[3];
-
-        /** Child objects, such as the face's morph targets. */
-        LibListSentinel children;
-
-        u8 unk5b0[0x84];
-        void* unk634;
-        u8 unk638[8];
-};
-
-/** Boot's view of the Lib model base that adds five more slots; no vtable of its own appears in main data. */
-class BootModelPrimaryBase : public BootColorModel
-{
-    public:
-        /** @brief Destroy the model; boot uses the Lib implementation. */
-        virtual ~BootModelPrimaryBase();
-
-        /** @brief Virtual slot 0xA0; boot uses the Lib implementation. */
-        virtual void func_4A3F50();
-
-        /** @brief Virtual slot 0xA4; boot uses the Lib implementation. */
-        virtual void func_4A3EC0();
-
-        /** @brief Virtual slot 0xA8; boot uses the Lib implementation. */
-        virtual void func_4A3E50();
-
-        /**
-         * @brief Test whether the model's draw packet has been built.
-         * @return Nonzero when it has.
-         */
-        virtual s32 has_packet();
-
-        /**
-         * @brief Return the list of the model's render channels.
-         * @return List sentinel.
-         */
-        virtual LibListSentinel* get_render_channels();
-};
-
-/** Boot's view of the Lib model's second base at offset 0x640. */
-class BootModelSecondaryBase
-{
-    public:
-        /** @brief First secondary slot. */
-        virtual void func_4A4510();
-
-        /** @brief Second secondary slot. */
-        virtual void func_4A4550();
-};
-
-/** Boot's view of the Lib model with vtable D_177820; boot calls its Lib constructor and destructor. */
-class BootModel : public BootModelPrimaryBase, public BootModelSecondaryBase
-{
-    public:
-        /** @brief Construct an empty model; boot uses the Lib implementation. */
-        BootModel();
-
-        /** @brief Destroy the model; boot uses the Lib implementation. */
-        virtual ~BootModel();
-
-        /** @brief Detach the attached object when the gate is set, then destroy the model through its base. */
-        virtual void destroy()
-        {
-            if (unk5a0 != 0 && unk634 != 0)
-            {
-                func_4D5C90(unk634);
-            }
-
-            BootColorModel::destroy();
-        }
-
-        /** @brief Advance the model; boot uses the Lib implementation. */
-        virtual void update();
-
-        /** @brief Virtual slot 4; boot uses the Lib implementation. */
-        virtual void render();
-
-        /** @brief Boot uses the Lib implementation. */
-        virtual void set_default_draw_bucket();
-
-        /**
-         * @brief Give the centre for Lib's oriented-box visibility test, from the mesh, when the model is unscaled; Lib implements this.
-         * @param output Receives the centre in local space.
-         * @return Nonzero when a centre was written.
-         */
-        virtual s32 get_box_cull_center(void* output);
-
-        /**
-         * @brief Fade the model near the camera; Lib implements this. Below one it blends with the value as alpha, otherwise opaque.
-         * @param value Distance in front of the camera over the fade range, clamped to one.
-         * @param mode Two from Lib's caller.
-         * @return Whether the value is negative.
-         */
-        virtual s32 set_fade_alpha(float value, float mode);
-
-        /**
-         * @brief Return the bounding sphere from the mesh, with the radius scaled by the model; Lib implements this.
-         * @return Bounding sphere (centre in xyz, radius in w).
-         */
-        virtual const LibVector4* get_bounding_sphere();
-
-        /**
-         * @brief Apply a matrix; boot uses the Lib implementation.
-         * @param matrix Matrix supplied by the caller.
-         * @param context Opaque caller context.
-         */
-        virtual void build_packet(const void* matrix, void* context);
-
-        /**
-         * @brief Make a copy of the model built from this one and linked to it; Lib implements this.
-         * @return The copy, or null when it couldn't be built.
-         */
-        virtual LibTransformOwner* clone();
-
-        /** @brief Unlink this copy from its original's copies and queue it for release; Lib implements this. */
-        virtual void release_clone();
-
-        /** @brief Virtual slot 0x98; boot uses the Lib implementation. */
-        virtual void func_slot98();
-
-        /**
-         * @brief Test whether the model's draw packet has been built.
-         * @return Nonzero when it has.
-         */
-        virtual s32 has_packet()
-        {
-            return packet != 0;
-        }
-
-        /**
-         * @brief Return the list of the model's render channels.
-         * @return List sentinel.
-         */
-        virtual LibListSentinel* get_render_channels()
-        {
-            return &render_channels;
-        }
-
-        /**
-         * @brief Size of the extra packet block Lib chains in before the model's draw packet; this model has none.
-         * @return Size in quadwords.
-         */
-        virtual s32 get_before_packet_size()
-        {
-            return 0;
-        }
-
-        /**
-         * @brief Size of the extra packet block Lib chains in after the model's draw packet; this model has none.
-         * @return Size in quadwords.
-         */
-        virtual s32 get_after_packet_size()
-        {
-            return 0;
-        }
-
-        /**
-         * @brief Fill the block before the draw packet; Lib passes the block's address and the packet being built.
-         * @param block Block address (uncached).
-         * @return End of what was written; the block itself here, as nothing is.
-         */
-        virtual s32 build_before_packet(s32 block)
-        {
-            return block;
-        }
-
-        /**
-         * @brief Fill the block after the draw packet; Lib passes the block's address and the packet being built.
-         * @param block Block address (uncached).
-         * @return End of what was written; the block itself here, as nothing is.
-         */
-        virtual s32 build_after_packet(s32 block)
-        {
-            return block;
-        }
-
-        /**
-         * @brief Put one of the model's textures in VRAM when the model supplies its own textures; this model doesn't.
-         * @return VRAM address, or zero to skip the texture.
-         */
-        virtual s32 place_texture()
-        {
-            return 0;
-        }
-
-        /**
-         * @brief Swap a texture record while drawing when the model supplies its own textures; this model doesn't.
-         * @return Replacement record, or zero to keep the original.
-         */
-        virtual s32 replace_texture()
-        {
-            return 0;
-        }
-
-        /** @brief First secondary slot; boot uses the Lib implementation. */
-        virtual void func_4A4510();
-
-        /** @brief Second secondary slot; boot uses the Lib implementation. */
-        virtual void func_4A4550();
-
-        /**
-         * @brief Return which of the model's packet sets is in use.
-         * @return Packet set index.
-         */
-        virtual u8 get_packet_set()
-        {
-            return packet_set;
-        }
-
-        /**
-         * @brief Build this model from a model in a loaded scene; boot uses the Lib implementation.
-         * @param links Display list the model draws through.
-         * @param source Scene model to copy.
-         */
-        virtual void func_4A37C0(LibUpdateList* links, BootClass170F30* source);
-
-        /** @brief Boot uses the Lib implementation. */
-        virtual void func_4A7E80();
-
-        /** @brief Boot uses the Lib implementation. */
-        virtual void func_4A4ED0();
-
-        /**
-         * @brief Extra quadwords to reserve in the model's draw packet; this model needs none.
-         * @return Quadword count.
-         */
-        virtual s32 get_extra_packet_size()
-        {
-            return 0;
-        }
-
-        u8 unk644[0xC0];
-
-        /** The model's draw packet, built by Lib (0x4A7E80) and called from the DMA chain at offset 0x650. */
-        u32 packet;
-
-        u8 unk708[0x8C];
-
-        /** Which packet set Lib builds and draws (indexes the chains at 0x6A0 and the packets at 0x708); set through slot 0xA4. */
-        u8 packet_set;
-
-        u8 unk795[7];
-
-        /** The model's render channels; Lib updates each and searches them by kind. */
-        LibListSentinel render_channels;
-
-        u8 unk7a8[0x78];
-};
-
 /** Partial model object with vtable D_170F30 in main data. */
-class BootClass170F30 : public BootModel
+class BootClass170F30 : public LibModel
 {
     public:
         /** @brief Destroy the model object. */
@@ -1008,7 +608,7 @@ class BootImage : public LibListObject
         void set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s32 depth);
 
         class LibDrawBuffer* draw_buffer;
-        BootModel* model;
+        LibModel* model;
 
         /** Texture width in texels. */
         s32 texture_width;

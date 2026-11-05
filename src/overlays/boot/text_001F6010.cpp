@@ -5,13 +5,12 @@
 #include "overlays/boot/text_001FF9D0.h"
 #include "overlays/boot/resident.h"
 #include "overlays/lib/render_buffer.h"
+#include "overlays/lib/text_004095C0.h"
 
 extern "C" {
 
-extern void func_4D00B0(void* object);
 // Boot calls lib_draw_buffer_end through its own prototype, with a u8 mode.
 void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
-void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
 extern LibDisplayManager* D_001B6630;
 
 extern const char g_new_game_node_name[];
@@ -20,7 +19,6 @@ extern const char g_battle_collection_node_name[];
 extern const char g_install_node_name[];
 extern const char g_title_camera_node_name[];
 void lib_scene_load_data(BootScene* scene, ResidentResourceHeader* source);
-void func_40B3A0(u8* data);
 void lib_scene_release_entries(BootScene* scene);
 
 }
@@ -252,8 +250,8 @@ void BootTitleMenu::get_cursor_position(float* x, float* y)
         node->update_transform_matrix();
     }
 
-    float screen_x = node->unkD0.vectors[0].w;
-    float screen_y = node->unkD0.vectors[1].w;
+    float screen_x = node->base_transform.m[0][3];
+    float screen_y = node->base_transform.m[1][3];
 
     if (settings->widescreen)
     {
@@ -374,7 +372,7 @@ void BootTitleMenu::update()
         func_474010(scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
         delete[] scene_data;
         scene_data = 0;
-        func_40B3A0(game_data);
+        lib_reset_game_state(game_data);
         delete[] game_data;
         game_data = 0;
         camera = lib_find_camera_entry(scene, g_title_camera_node_name);
@@ -772,14 +770,14 @@ void progress_bar_reset(BootProgressBar* bar, s32 width, s32 height, u32 color, 
     }
 
     bar->draw_buffer = new (0) LibDrawBuffer;
-    bar->model = new (0) BootModel;
+    bar->model = new (0) LibModel;
     bar->draw_buffer->allocate_storage(2, 0x600, 1, 8);
     bar->width = width;
     bar->height = height;
     bar->color = color;
     bar->mode = mode;
     progress_bar_draw(bar, 0, 1);
-    func_4D6430(bar->model, bar->draw_buffer);
+    bar->model->attach_draw_buffer(bar->draw_buffer);
     bar->model->unk80 = D_001B6630;
     bar->model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(bar->model, -1);
@@ -824,13 +822,13 @@ void BootScreenFade::update()
 }
 
 /**
- * @brief Mark the fade inactive and run the Lib release helper.
+ * @brief Mark the fade inactive and finish its packet.
  * @param value Unused.
  */
 void BootScreenFade::on_packet_complete(u32 value)
 {
     dma_pending = 0;
-    func_4D00B0(this);
+    lib_finish_packet(this);
 }
 
 /** @brief Mark the fade active and submit its packet. */
@@ -1092,7 +1090,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     }
 
     func_455BD0(image->draw_buffer, image->unk2c, 500.0f, 0);
-    func_4D6430(image->model, image->draw_buffer);
+    image->model->attach_draw_buffer(image->draw_buffer);
     image->model->unk80 = D_001B6630;
     image->model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(image->model, -1);
@@ -1146,7 +1144,7 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
     }
 
     func_455BD0(draw_buffer, unk2c, 500.0f, 0);
-    func_4D6430(model, draw_buffer);
+    model->attach_draw_buffer(draw_buffer);
     model->unk80 = D_001B6630;
     model->draw_flags |= LIB_DRAW_FLAG_0400;
     D_001B661C->append_node(model, -1);
@@ -1170,7 +1168,7 @@ void BootImage::set_texture(const LibImageResource* texture, const LibImageResou
     }
 
     draw_buffer = new (0) LibDrawBuffer;
-    model = new (0) BootModel;
+    model = new (0) LibModel;
     draw_buffer->allocate_storage(1, 0x600, 2, 8);
     lib_draw_buffer_add_texture(draw_buffer, texture);
 
@@ -1266,7 +1264,7 @@ void BootGameLauncher::update()
             }
 
             bits->trophy_key = resident_next_random_word();
-            func_457520(bits);
+            lib_trophy_flags_update_checksum(bits);
         }
 
         if ((u8)settings->continue_selected == 0 && settings->sound_output == BOOT_SOUND_DOLBY_PRO_LOGIC_II)

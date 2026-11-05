@@ -9,7 +9,6 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
 
-extern "C" void func_004D00B0(void* object);
 extern "C" void func_00461830(void* embedded, void* adjusted);
 
 enum
@@ -847,7 +846,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673C0);
  */
 void LibSelectionCursor::on_packet_complete(u32 value)
 {
-    func_004D00B0(this);
+    lib_finish_packet(this);
 }
 
 struct N54Owner64_0045AD10 { u8 pad00[0x64]; u8 active; };
@@ -904,7 +903,31 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004679B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004679D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467AD0);
+/**
+ * @brief Configure the drawing rectangle and string.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Drawing width.
+ * @param height Drawing height.
+ * @param value String to draw.
+ * @param flag Drawing flag.
+ * @return One on success, or zero when the drawing storage couldn't be set up.
+ */
+s32 LibStringLabel::init_text_rectangle(float x, float y, float width, float height, const char* value, u8 flag)
+{
+    unkf8 = flag;
+    func_00464870(this, x, y, width, height);
+    resource_slot = D_001B657C->resource_slots;
+
+    if (!func_00464900(this, 32, 0, 0, 0))
+    {
+        return 0;
+    }
+
+    text = value;
+    unk39 = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467B50);
 
@@ -956,10 +979,10 @@ void func_0046A3B0(void* receiver)
     *(volatile u32*)0x10009000 = 0x105;
 }
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0046A3F0(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** Queue the DMA submission embedded at offset 0x5a0 when present. */

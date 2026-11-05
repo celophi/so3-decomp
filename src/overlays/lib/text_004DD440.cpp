@@ -10,7 +10,6 @@
 #include "ee.h"
 #include "main/resident_data.h"
 
-extern "C" void func_004D00B0(void* object);
 /** Track pool built by func_004E4590 and its siblings; its data comes before the vptr. */
 class LibTrackPool
 {
@@ -151,6 +150,18 @@ static inline float lib_vector_length(const FieldVec4B& vector)
     FieldVec4A result;
     vu0_length_xyz(&result, &vector);
     return result.x;
+}
+
+/**
+ * @brief Subtract the first three components of one vector from another.
+ * @param left Vector to subtract from.
+ * @param right Vector to subtract.
+ * @return The difference, with left's w.
+ */
+static inline FieldVec4B lib_vector_difference(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4B value(left);
+    return value.subtract(right);
 }
 
 typedef struct FourWordClearOwnertext_004DD440 { u32 words[4]; } FourWordClearOwnertext_004DD440;
@@ -841,7 +852,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __ct__20LibOrie
 extern "C" void func_004E1020(void* object)
 {
     ((ByteClear64Ownertext_004DD440*)object)->unk64 = 0;
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 struct N50Owner114_004DD440
@@ -982,7 +993,7 @@ void LibClass179080::update()
     transform_dirty = 1;
     if (static_cast<LibDisplayManager*>(owner)->current_display == this)
     {
-        func_004E24D0();
+        update_projection();
     }
     if (look_at_target != 0 && unk3d3 != 0)
     {
@@ -1078,8 +1089,8 @@ void LibClass179080::copy_view_and_fog(const LibClass179080* source)
     unk3d3 = source->unk3d3;
     unk244 = source->unk244;
     unk24c = source->unk24c;
-    unk3d0 = source->unk3d0;
-    unk3d4 = source->unk3d4;
+    mode = source->mode;
+    anchor = source->anchor;
     unk260 = source->unk260;
     unk264 = source->unk264;
     unk268 = source->unk268;
@@ -1121,7 +1132,69 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2120);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E22B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E24D0__14LibClass179080Fv);
+/** Field of view the camera uses while it faces the current camera (90 degrees). */
+#define LIB_FACE_CAMERA_FOV 1.5707964f
+
+/** @brief Rebuild the view and projection matrices and upload the projection to VU0. */
+void LibClass179080::update_projection()
+{
+    switch (mode)
+    {
+    case LIB_CAMERA_MODE_FACE_CURRENT_CAMERA:
+        horizontal_fov = LIB_FACE_CAMERA_FOV;
+        set_translation_vector(&anchor->translation);
+        LibClass179080* camera = static_cast<LibClass179080*>(D_001B6628->current_display);
+
+        if (camera == 0)
+        {
+            return;
+        }
+
+        if (!camera->matrix_ready)
+        {
+            camera->update_projection();
+        }
+
+        update_transform_matrix();
+        LibMatrix44Value look;
+        FieldVec4B target;
+        FieldVec4B position;
+        FieldVec4B rotation;
+        lib_get_transform_translation(position, *this);
+        lib_get_transform_translation(target, *camera);
+        target = lib_vector_difference(target, position);
+        lib_matrix_look_at(&look, &position, &target, 0.0f);
+        lib_matrix_to_quaternion(&rotation, &look);
+        set_orientation(reinterpret_cast<const LibVector4*>(&rotation));
+        break;
+    }
+
+    update_transform_matrix();
+    view_matrix = func_004CF0B0(*get_transform_matrix());
+    float half_width = (unk254 * unk250) * (screen_max.x - screen_min.x) / 2.0f;
+    projection_distance = half_width / func_00141EC0(horizontal_fov / 2.0f);
+
+    if (unk3d2)
+    {
+        screen_min.z = projection_distance / 16.0f;
+    }
+
+    func_004CFD80(&projection_matrix, projection_distance, unk278, unk280 - unk3e0, unk284 - unk3e4, unk3c8, unk3cc, screen_min.z,
+                  screen_max.z);
+    vu0_start_microprogram_1f0_vf5_vf8(&projection_matrix);
+    FieldVec4A centre(0.0f, 0.0f, projection_distance * unk270, 1.0f);
+    vu0_start_microprogram_vf5(&centre);
+    FieldVec4A low(screen_min.x, screen_min.y, screen_min.z, 1.0f);
+    FieldVec4A high(screen_max.x, screen_max.y, screen_max.z, 1.0f);
+    func_004CF930(&unk340, &low, &high, projection_distance, unk278);
+    vu0_wait_microprogram();
+    vu0_read_vf6(&centre);
+    centre_depth = centre.z;
+    LibMatrix44Value clip;
+    func_004CFA30(&clip, &low, &high, projection_distance, unk278, unk280 - unk3e0, unk284 - unk3e4, unk3c8, unk3cc);
+    unk380 = func_004CECD0(clip);
+    func_004E1670(this);
+}
 
 /**
  * @brief Calculate the scaled screen-plane distance from the horizontal field of view.
@@ -1170,7 +1243,7 @@ s32 LibColorFade::get_default_list_kind()
  */
 void LibColorFade::on_packet_complete(u32 value)
 {
-    func_004D00B0(this);
+    lib_finish_packet(this);
 }
 
 /** @brief Mark the fade pending and submit its packet. */
@@ -1345,7 +1418,7 @@ extern "C" void lib_shutdown(void)
     D_001B6658 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E3830);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_initialize);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4450);
 

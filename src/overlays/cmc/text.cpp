@@ -285,7 +285,7 @@ struct Overlay0072List
 };
 
 extern "C" {
-extern u8 D_50CD30[];
+extern u8 g_default_bounding_sphere[];
 extern void func_4C4960(void* object);
 /** Native table anchors used by the retained constructor entry points. */
 extern u8 __vt__23ItemCreationClass172870[];
@@ -1517,7 +1517,7 @@ void func_00359020(Overlay0072Object00359000* object, const unsigned __int128* v
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /**
@@ -1527,7 +1527,7 @@ void LibOrientedTransform::convert_rotation(const LibVector4* value)
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /**
@@ -1544,7 +1544,7 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_004CE4C0(&orientation.x, value);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), value);
 }
 
 void func_003590E0(Overlay0072Object003590E0* object, const unsigned __int128* value)
@@ -1584,7 +1584,7 @@ s32 func_00359150(float value)
 
 u8* func_00359170(void* object)
 {
-    return D_50CD30;
+    return g_default_bounding_sphere;
 }
 
 s32 func_00359180(void* object)

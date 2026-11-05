@@ -1138,9 +1138,9 @@ void func_00358FE0(Overlay0072Object00358FE0* object, float x, float y, float z,
 void func_00353710(Overlay0072Object00353710* object, float x, float y, float z);
 
 /**
- * @brief Return the address of D_50CD30.
+ * @brief Return the address of g_default_bounding_sphere.
  * @param object Receiver or first argument; unused.
- * @return Address of D_50CD30.
+ * @return Address of g_default_bounding_sphere.
  */
 u8* func_00359170(void* object);
 

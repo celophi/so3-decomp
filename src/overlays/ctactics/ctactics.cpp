@@ -1069,9 +1069,9 @@ s32 TacticsLeaderWindow::func_slotf4(u32 associated)
         {
             LibStringLabel* name = new (0) LibStringLabel;
             float y = 48.0f + 28.0f * candidate_count;
-            name->func_00467AD0(24.0f, y, 0.0f, 0.0f,
-                reinterpret_cast<const char*>(&static_cast<TacticsCharacterEquipment*>(
-                    record_selection->unk04)[static_cast<s16>(index)]) + 0x20, 0);
+            name->init_text_rectangle(
+                24.0f, y, 0.0f, 0.0f,
+                reinterpret_cast<const char*>(&static_cast<TacticsCharacterEquipment*>(record_selection->unk04)[static_cast<s16>(index)]) + 0x20, 0);
             lib_container_attach_widget(unk10, name);
             append_icon_widget_node(&unk44, name);
             candidate_indices_by_slot[index] = icon_index;
@@ -1499,8 +1499,8 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     selected_heading->set_tint(0x288080);
     lib_container_attach_widget(unk10, selected_heading);
     label = new (0) LibStringLabel;
-    label->func_00467AD0(434.0f, heading_y, 0.0f, 0.0f,
-        static_cast<TacticsCharacterEquipment*>(record_selection->unk04)[static_cast<s16>(resource_index)].character_name, 0);
+    label->init_text_rectangle(434.0f, heading_y, 0.0f, 0.0f,
+                               static_cast<TacticsCharacterEquipment*>(record_selection->unk04)[static_cast<s16>(resource_index)].character_name, 0);
     lib_container_attach_widget(unk10, label);
     ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
     void* allocation = field_get_aligned_allocation(D_001B643C->resources, 0);
@@ -2230,7 +2230,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
             empty_marker->set_scale(0.8f, 0.8f);
         }
 
-        character_name_label->func_00467AD0(label_x, label_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
+        character_name_label->init_text_rectangle(label_x, label_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
         character_name_label->set_scale(0.8f, 0.8f);
         set_widget_rectangle(empty_marker, column_x, empty_y, width, 24.0f);
         empty_marker->set_horizontal_align(1);
@@ -3140,14 +3140,14 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
         if (index < 3)
         {
             row_y = height * index;
-            label->func_00467AD0(108.0f, 24.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
+            label->init_text_rectangle(108.0f, 24.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
             set_widget_rectangle(empty, 0.0f, (height / 2.0f + row_y) - 19.2f, width, 24.0f);
             column_x = 0.0f;
         }
         else
         {
             row_y = height * (index - 3);
-            label->func_00467AD0(412.0f, 14.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
+            label->init_text_rectangle(412.0f, 14.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
             set_widget_rectangle(empty, 304.0f, 8.0f + ((height / 2.0f + row_y) - 19.2f * 0.8f), 304.0f, 24.0f);
             column_x = 304.0f;
             empty->set_scale(0.8f, 0.8f);

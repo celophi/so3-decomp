@@ -5,8 +5,8 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
 
-extern "C" LibVector4 D_0050CD30;
-extern "C" void func_004D00B0(LibTransformOwner* object);
+/** Bounding sphere objects without bounds report: centred on the origin, radius 1000000. */
+extern "C" LibVector4 g_default_bounding_sphere;
 
 struct LibStateByteB4View
 {
@@ -144,14 +144,14 @@ void LibOrientedTransform::set_orientation(const LibVector4* value)
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /** @brief Convert a rotation into the rotation vector and mark the transform dirty. */
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /** @brief Convert three rotation components into the rotation vector and mark the transform dirty. */
@@ -163,7 +163,7 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     value.y = y;
     value.z = z;
     value.w = 1.0f;
-    func_004CE4C0(&orientation.x, &value.x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value.x);
 }
 
 /** @brief Copy the secondary transform vector and mark it dirty. @param value Source vector. */
@@ -198,10 +198,10 @@ void func_003EF030(u8* object)
     *(volatile u32*)0x10009000 = 0x101;
 }
 
-/** @brief Forward the transform receiver to its state-update handler. @param object Transform owner. */
+/** @brief Finish the transform receiver's packet. @param object Transform owner. */
 extern "C" void func_003EF070(LibTransformOwner* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(object);
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -282,10 +282,13 @@ void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
-/** @brief Return the shared fallback transform vector. @return Address of D_0050CD30. */
+/**
+ * @brief Return the default bounding sphere, which encloses everything.
+ * @return Sphere centre in xyz, radius in w.
+ */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
-    return &D_0050CD30;
+    return &g_default_bounding_sphere;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EFAB0);
@@ -325,10 +328,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1330);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2510);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_003F2550(LibTransformOwner* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(object);
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */

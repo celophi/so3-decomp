@@ -6635,7 +6635,7 @@ s32 InventorInformationWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, portrait_display);
     portrait_display->unk3d = 0;
     name_text_display = new (0) LibStringLabel;
-    name_text_display->func_00467AD0(96.0f, 42.0f, 0.0f, 0.0f, D_0036F738, 1);
+    name_text_display->init_text_rectangle(96.0f, 42.0f, 0.0f, 0.0f, D_0036F738, 1);
     lib_container_attach_widget(unk10, name_text_display);
     name_text_display->unk3d = 0;
     name_message_display = new (0) LibTextWidget;
@@ -12391,7 +12391,7 @@ enum
 
 extern "C"
 {
-    extern LibVector4 D_50CD30[];
+    extern LibVector4 g_default_bounding_sphere[];
 }
 
 /**
@@ -15625,7 +15625,7 @@ void LibOrientedTransform::set_orientation(const LibVector4* value)
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /**
@@ -15635,7 +15635,7 @@ void LibOrientedTransform::convert_rotation(const LibVector4* value)
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /**
@@ -15652,7 +15652,7 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_004CE4C0(&orientation.x, value);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), value);
 }
 
 /**
@@ -15709,7 +15709,7 @@ s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 /** @brief Return the default transform vector. @return Resident vector pointer. */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
-    return D_50CD30;
+    return g_default_bounding_sphere;
 }
 
 /** @brief Return the default transform receiver. @return Null. */

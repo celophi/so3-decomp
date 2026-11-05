@@ -792,9 +792,16 @@ public:
     LibVector4 unk60;
     LibVector4 unk70;
     LibVector4 unk80;
-    LibVector4 unk90;
-    LibVector4 unka0;
-    LibVector4 unkb0;
+
+    /** Translation read from the target's translation channels by lib_animation_read_channel_pose. */
+    LibVector4 channel_translation;
+
+    /** Rotation quaternion read from the target's rotation channels. */
+    LibVector4 channel_rotation;
+
+    /** Scale read from the target's scale channels. */
+    LibVector4 channel_scale;
+
     u8 unkc0;
     u8 unkc1;
     u8 unkc2;
@@ -812,7 +819,16 @@ extern "C" {
  * @param output Destination quaternion.
  * @param input Source matrix.
  */
-void func_004CBAC0(FieldVec4B* output, const LibMatrix44Value* input);
+void lib_matrix_to_quaternion(FieldVec4B* output, const LibMatrix44Value* input);
+
+/**
+ * @brief Build a matrix at a position that looks along a direction.
+ * @param output Destination matrix.
+ * @param position Eye position.
+ * @param direction Direction to face.
+ * @param roll Roll angle in radians.
+ */
+void lib_matrix_look_at(LibMatrix44Value* output, const FieldVec4B* position, const FieldVec4B* direction, float roll);
 
 /**
  * @brief Evaluate the native three-angle trigonometric approximation and retain its result in VU0 vf13.
@@ -869,15 +885,65 @@ void func_004CCCF0(const LibMatrix44Value* source, FieldVec4B* output);
  */
 float func_004CCD90(float value);
 
+/** Entry kinds of a target's pose channels; the axis kinds keep one component per channel. */
+enum
+{
+    LIB_ANIMATION_KIND_TRANSLATION = 0,
+    LIB_ANIMATION_KIND_ROTATION = 1,
+    LIB_ANIMATION_KIND_SCALE = 2,
+    LIB_ANIMATION_KIND_TRANSLATION_AXIS = 3,
+    LIB_ANIMATION_KIND_ROTATION_AXIS = 4,
+    LIB_ANIMATION_KIND_SCALE_AXIS = 5
+};
+
+enum
+{
+    LIB_ANIMATION_AXIS_COUNT = 3,
+
+    /** Low nibble of an entry's flags: the axis of a per-axis channel, zero for a whole vector. */
+    LIB_ANIMATION_ENTRY_AXIS_MASK = 0xF
+};
+
 /**
- * @brief Find an animation channel by bound target and kind.
+ * @brief Find the channel bound to a target with the requested kind and axis, and cache its entry.
  * @param object Animation object.
  * @param target Bound target to match.
  * @param kind Entry kind.
- * @param flags Low flag bits to match.
+ * @param axis Axis to match against the entry flags' low nibble.
  * @return Matching channel, or null.
  */
-LibClass173180* func_004BDAA0(LibAnimation* object, const void* target, u8 kind, u8 flags);
+static inline LibClass173180* lib_animation_find_channel_inline(LibAnimation* object, const void* target, u8 kind, u8 axis)
+{
+    if (!object->entries)
+    {
+        return 0;
+    }
+
+    s32 count = object->entry_count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (object->entries[i].channel && object->entries[i].target == target && kind == object->entries[i].kind &&
+            axis == (object->entries[i].flags & LIB_ANIMATION_ENTRY_AXIS_MASK))
+        {
+            object->cached_entry = &object->entries[i];
+            return object->cached_entry->channel;
+        }
+    }
+
+    object->cached_entry = 0;
+    return 0;
+}
+
+/**
+ * @brief Find the channel bound to a target with the requested kind and axis, and cache its entry.
+ * @param object Animation object.
+ * @param target Bound target to match.
+ * @param kind Entry kind.
+ * @param axis Axis to match against the entry flags' low nibble.
+ * @return Matching channel, or null.
+ */
+LibClass173180* lib_animation_find_channel(LibAnimation* object, const void* target, u8 kind, u8 axis);
 
 /**
  * @brief Prepare a transition between animation objects.
@@ -890,13 +956,13 @@ LibClass173180* func_004BDAA0(LibAnimation* object, const void* target, u8 kind,
 float func_004BDE00(LibAnimation* object, void* target, LibAnimation* previous, float duration);
 
 /**
- * @brief Bind the animation object to a target.
+ * @brief Make the animation's channels from its resource and bind each record to the scene entry it names.
  * @param object Animation object.
- * @param target Target object.
- * @param optional Optional object passed to the binder.
- * @return Binding status.
+ * @param scene Scene whose entries the records name.
+ * @param slots Optional slot source for entries without a scene target.
+ * @return One when bound, or zero when the animation has no resource.
  */
-s32 func_004BF100(LibAnimation* object, void* target, void* optional);
+s32 lib_animation_bind_channels(LibAnimation* object, void* scene, void* slots);
 
 /**
  * @brief Bind populated animation entries whose state names match over up to sixteen characters.
@@ -1156,6 +1222,13 @@ s32 func_004C3F60(void* object, float key);
 /** Set the active byte and notify the embedded receiver. */
 void func_004C61F0(N54Owner84_004BD360* object);
 
+/**
+ * @brief Load the shared font, upload its textures and store it in the resident entry table.
+ * @param chunks Loaded chunk list, or null to read archive resources 8 and 9.
+ * @param source Loaded texture block; read from the archive when chunks is null.
+ * @return One when the font is loaded, or zero when an allocation or decode fails.
+ */
+s32 lib_load_shared_font(struct LibFontChunk* chunks, struct ResidentResourceHeader* source);
 
 }
 #endif

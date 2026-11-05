@@ -2400,7 +2400,7 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
     append_panel_widget_node(&unk14, panel);
     name_text = new (0) LibStringLabel;
     const char* text = selected_equipment(selection)->character_name;
-    name_text->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
+    name_text->init_text_rectangle(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
     lib_container_attach_widget(unk10, name_text);
     append_icon_widget_node(&unk44, name_text);
     name_text->set_scale(0.8f, 0.8f);

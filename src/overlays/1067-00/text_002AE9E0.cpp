@@ -45,8 +45,8 @@
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/1067-00/text_00291B80.h"
 #include "overlays/1067-00/text_002D3BD0.h"
+#include "ee.h"
 
-#define TIMER0_COUNT (*(volatile u32*)0x10000000)
 #define TIMER0_MODE (*(volatile u32*)0x10000010)
 
 /** Display interfaces retained by the field display/list manager. */

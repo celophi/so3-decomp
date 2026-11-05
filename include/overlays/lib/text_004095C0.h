@@ -167,7 +167,17 @@ void func_0040FB00(void* object, u8 value);
 void func_0040B650(void* object, u32 value);
 
 /** Store the low halfword at receiver offset 0x2. */
-void func_0040B6C0(void* object, u32 value);
+void func_0040B6C0(void* object, u16 value);
+
+/** Clear an allocation record and give it a random checksum shift. */
+void func_0040B6D0(void* record);
+
+/**
+ * @brief Decode the item catalog and reset the resident game state for a new game.
+ * @param data Game data resource, or null to load it from the archive here.
+ * @return One on success, or zero when the catalog can't be loaded or decoded.
+ */
+s32 lib_reset_game_state(u8* data);
 
 /** Return the fixed integer value 4. */
 s32 func_0040E3A0(void* object);

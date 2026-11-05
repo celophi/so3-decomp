@@ -116,6 +116,12 @@ void lib_allocate_system_data(void);
  */
 void lib_trophy_flags_checksum(LibTrophyFlags* flags, const u32* seed, u32* checksum);
 
+/**
+ * @brief Pick a new random checksum seed for the trophy flags and recompute their checksum.
+ * @param flags Trophy flags.
+ */
+void lib_trophy_flags_update_checksum(LibTrophyFlags* flags);
+
 #ifdef __cplusplus
 /**
  * @brief Decode a trophy record in place, then check it against the checksum in its first word.

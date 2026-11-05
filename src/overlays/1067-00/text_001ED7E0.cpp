@@ -32,7 +32,7 @@
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
 extern "C" u32 D_001B65B4;
-extern "C" u8 D_50CD30[];
+extern "C" u8 g_default_bounding_sphere[];
 extern "C" LibDisplayManager* D_001B6628;
 extern "C" u8 D_001B6510;
 
@@ -633,13 +633,13 @@ void func_001EDEC0(FieldVectorState50* state, const FieldQword* input)
 void func_001EDEE0(FieldVectorState50* state, const float* input)
 {
     state->transform_dirty = 1;
-    func_004CE4C0(state->unk30.floats, input);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(state->unk30.floats), input);
 }
 
 void func_001EDF10(FieldVectorState50* state, const float* input)
 {
     state->transform_dirty = 1;
-    func_004CE4C0(state->unk30.floats, input);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(state->unk30.floats), input);
 }
 
 void func_001EDF40(FieldVectorState50* state, float x, float y, float z)
@@ -650,7 +650,7 @@ void func_001EDF40(FieldVectorState50* state, float x, float y, float z)
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_004CE4C0(state->unk30.floats, value);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(state->unk30.floats), value);
 }
 
 void func_001EDF80(FieldVectorState50* state, const FieldQword* input)
@@ -693,7 +693,7 @@ bool func_001EE180(void* object, float value)
 
 void* func_001EE1A0()
 {
-    return D_50CD30;
+    return g_default_bounding_sphere;
 }
 
 void func_001EE1B0(void* object)

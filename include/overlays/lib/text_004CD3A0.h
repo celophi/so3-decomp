@@ -85,6 +85,13 @@ extern "C"
     void func_004CF1C0(const LibMatrix44Value* input, LibMatrix44Value* output);
     /** @brief Multiply a matrix by a column vector. @param matrix Source matrix. @param value Source vector. @return Transformed vector. */
     FieldVec4A func_004CF6C0(const LibMatrix44Value& matrix, const FieldVec4A& value);
+    /**
+     * @brief Combine two matrices with the VU0 microprogram at 0x250.
+     * @param left First matrix (vf1-vf4).
+     * @param right Second matrix (vf5-vf8).
+     * @return Combined matrix.
+     */
+    LibMatrix44Value func_004CF7C0(const LibMatrix44Value& left, const LibMatrix44Value& right);
     /** @brief Multiply a row vector by a matrix. @param value Source vector. @param matrix Source matrix. @return Transformed vector. */
     FieldVec4A func_004CF830(const FieldVec4A& value, const LibMatrix44Value& matrix);
     /**
@@ -149,6 +156,43 @@ extern "C"
      * @return Row-vector rotation matrix with the squared norm in its homogeneous diagonal.
      */
     LibMatrix44Value func_004CE980(const FieldVec4B& quaternion);
+    /**
+     * @brief Build a rotation quaternion from three angles.
+     * @param output Destination quaternion.
+     * @param angles Angles in radians in x, y and z.
+     */
+    void func_004CE040(LibVector4* output, const LibVector4* angles);
+    /** @brief Transpose a matrix. @param input Source matrix. @return Transposed matrix. */
+    LibMatrix44Value func_004CECD0(const LibMatrix44Value& input);
+    /**
+     * @brief Invert a rigid transform.
+     * @param input Source transform, or null for the identity.
+     * @param output Destination matrix.
+     */
+    void func_004CEFD0(const LibMatrix44Value* input, LibMatrix44Value* output);
+    /**
+     * @brief Build a matrix from a camera's screen bounds.
+     * @param output Destination matrix.
+     * @param min Screen minimum corner.
+     * @param max Screen maximum corner.
+     * @param distance Projection distance.
+     * @param aspect Aspect factor.
+     */
+    void func_004CF930(LibMatrix44Value* output, const FieldVec4A* min, const FieldVec4A* max, float distance, float aspect);
+    /**
+     * @brief Build a clip matrix from a camera's screen bounds and depth range.
+     * @param output Destination matrix.
+     * @param min Screen minimum corner.
+     * @param max Screen maximum corner.
+     * @param distance Projection distance.
+     * @param aspect Aspect factor.
+     * @param x_offset Horizontal projection offset.
+     * @param y_offset Vertical projection offset.
+     * @param first_depth First depth-range coefficient.
+     * @param second_depth Second depth-range coefficient.
+     */
+    void func_004CFA30(LibMatrix44Value* output, const FieldVec4A* min, const FieldVec4A* max, float distance, float aspect,
+                       float x_offset, float y_offset, float first_depth, float second_depth);
 }
 
 class LibDisplayManager;
@@ -641,13 +685,30 @@ public:
 
     void* lists[2];
     u32 unk40a0;
-    u32 unk40a4;
-    u32 unk40a8;
-    u8 unk40ac[4];
+
+    /** EE timer 0 ticks the last finished packet took. */
+    s32 packet_ticks;
+
+    /** Object whose main-list packet is in flight. */
+    LibTransformOwner* main_packet;
+
+    /** Object whose bucket-list packet is in flight. */
+    LibTransformOwner* bucket_packet;
+
     u32 unk40b0;
     u8 unk40b4[0xC];
-    u32 unk40c0;
-    u8 unk40c4[6];
+
+    /** EE timer 0 count when the in-flight packet started. */
+    s32 packet_start_time;
+
+    u8 unk40c4[4];
+
+    /** Nonzero while the main-list packet is in flight. */
+    u8 main_packet_busy;
+
+    /** Nonzero while the bucket-list packet is in flight. */
+    u8 bucket_packet_busy;
+
     u8 unk40ca;
     u8 unk40cb;
     u8 unk40cc[5];
@@ -813,6 +874,24 @@ extern "C" void lib_rebuild_offset_transform(LibTransform* object);
 
 /** @brief Mark each transform in the parent chain dirty. @param object First transform, or null. */
 extern "C" void lib_invalidate_transform_chain(LibTransform* object);
+
+/**
+ * @brief Turn the joints above a transform so that it reaches toward a target (cyclic coordinate descent).
+ * @param end Transform at the end of the chain.
+ * @param target Target point, in the same space as the base transforms.
+ * @param links Most parent joints to turn per iteration.
+ * @param iterations Most passes over the chain.
+ * @param include_root Nonzero to also turn the chain's root.
+ * @param weight Fraction of each joint's full correction to apply.
+ */
+extern "C" void lib_solve_ik_chain(LibTransform* end, const LibVector4* target, s32 links, s32 iterations, s32 include_root,
+                                   float weight);
+
+/**
+ * @brief Finish an object's packet once its DMA completes.
+ * @param object Object whose packet completed.
+ */
+extern "C" void lib_finish_packet(LibTransformOwner* object);
 #endif
 
 #ifdef __cplusplus
@@ -850,7 +929,7 @@ void func_004CD3A0(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B
  * @param second Second aligned quaternion.
  * @param fraction Interpolation fraction.
  */
-void func_004CD630(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction);
+void lib_quaternion_slerp(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction);
 
 /**
  * @brief Add all four components to a quaternion and return its updated value.
@@ -890,14 +969,16 @@ void lib_direction_angles_xy(LibVector4* value, const LibVector4* target, float 
  * @param z_angle Angle to store in the z component.
  */
 void lib_direction_angles_xz(LibVector4* value, const LibVector4* target, float z_angle);
-#endif
 
 /**
- * @brief Transform a four-float input into an output vector.
- * @param output Destination vector.
- * @param input Source vector.
+ * @brief Build the unit quaternion for three rotation angles.
+ *
+ * The x and y angles turn about the negative axes and z about the positive axis.
+ * @param output Receives the quaternion.
+ * @param angles Angles in radians about x, y and z.
  */
-void func_004CE4C0(float* output, const float* input);
+void lib_quaternion_from_euler(FieldVec4B* output, const float* angles);
+#endif
 
 /**
  * @brief Pass a batch of table entry handles to the manager.
@@ -974,6 +1055,17 @@ u64 func_004DC800(LibVramAllocator* vram, s16 slot, s16 entry, s32 mode);
  * @return Negative on failure.
  */
 s32 func_004D8D20(u8* image, s32 slot);
+
+/** 16x16 CT32 image (256 colors) in Lib data. */
+extern const u32 D_4EC600[];
+
+/**
+ * @brief Allocate VRAM for a 16x16 CT32 image and queue its upload.
+ * @param image Image to upload.
+ * @param count Passed to the VRAM allocator.
+ * @return VRAM slot, or -1.
+ */
+s16 func_004D8C20(const void* image, s32 count);
 
 /** The game's VRAM allocator. */
 extern LibVramAllocator* D_001B65E0;
@@ -1117,6 +1209,13 @@ extern LibPacketQueue* D_001B65DC;
 
 /** Wait for or finish the packet queue according to the flag. */
 void func_004DBEE0(LibPacketQueue* queue, s32 flag);
+
+/**
+ * @brief Let queued packets start, or hold them back.
+ * @param queue Packet queue.
+ * @param enable Nonzero lets packets start.
+ */
+void func_004DC420(LibPacketQueue* queue, s32 enable);
 
 /**
  * @brief Test whether the packet queue is full.

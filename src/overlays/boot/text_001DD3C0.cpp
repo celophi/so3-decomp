@@ -9,8 +9,7 @@
 #include "vu0.h"
 
 extern "C" {
-extern LibVector4 D_50CD30;
-void func_4CE4C0(void* destination, const float* source);
+extern LibVector4 g_default_bounding_sphere;
 }
 
 /** Stages of the installer screen's resource loading, unit checks, copy, and exit paths. */
@@ -208,7 +207,7 @@ void BootInstaller::update_choice_images()
     {
         if (images[4 + i] != 0 && images[4 + i]->model != 0)
         {
-            BootModel* model = images[4 + i]->model;
+            LibModel* model = images[4 + i]->model;
 
             if (selection == i)
             {
@@ -266,7 +265,7 @@ void BootInstaller::update_choice_images()
 }
 
 /** @brief Store the component product of the two input vectors. */
-void BootColorModel::update_combined_color_factor()
+void LibColorModel::update_combined_color_factor()
 {
     vu0_multiply_xyzw(&combined_color_factor, &base_color_factor, &color_modulation);
 }
@@ -1320,7 +1319,7 @@ void LibOrientedTransform::set_orientation(const LibVector4* value)
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&orientation, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /**
@@ -1330,7 +1329,7 @@ void LibOrientedTransform::convert_rotation(const LibVector4* value)
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&orientation, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /**
@@ -1347,7 +1346,7 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     value.y = y;
     value.z = z;
     value.w = 1.0f;
-    func_4CE4C0(&orientation, &value.x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value.x);
 }
 
 /**
@@ -1413,7 +1412,7 @@ s32 LibTransformOwner::set_fade_alpha(float value, float mode)
  */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
-    return &D_50CD30;
+    return &g_default_bounding_sphere;
 }
 
 /**

@@ -1,8 +1,8 @@
 // Resident object registration helper.
 func_00101560 = 0x00101560; // type:func
 
-// Lib vector transform helper.
-func_004CE4C0 = 0x004CE4C0; // type:func
+// Lib Euler-angle quaternion builder.
+lib_quaternion_from_euler = 0x004CE4C0; // type:func absolute:True
 
 // Lib owner detach helper.
 lib_object_detach_owner = 0x004D65C0; // type:func absolute:True
@@ -525,8 +525,8 @@ func_004B4550 = 0x004B4550; // type:func
 func_001E7590__16FieldClass150280Fv = 0x001E7590; // type:func
 func_001E7660__16FieldClass150280Fv = 0x001E7660; // type:func
 func_001E76B0__16FieldClass150280Fff = 0x001E76B0; // type:func
-func_004BF100 = 0x004BF100; // type:func
-func_004B3DE0 = 0x004B3DE0; // type:func
+lib_animation_bind_channels = 0x004BF100; // type:func
+lib_animation_read_channel_pose = 0x004B3DE0; // type:func
 func_004B43C0 = 0x004B43C0; // type:func
 func_004B46E0 = 0x004B46E0; // type:func
 func_004C2CD0 = 0x004C2CD0; // type:func
@@ -543,7 +543,7 @@ func_001EAE60__16FieldClass1504C0FP17FieldShapeOwner18P18FieldShapeRecord20 = 0x
 func_001EAF60__16FieldClass1504C0FP17FieldShapeOwner18P16FieldShapeData10 = 0x001EAF60; // type:func
 func_001E84E0__16FieldClass1502E0Fv = 0x001E84E0; // type:func
 func_00473390 = 0x00473390; // type:func
-func_004BDAA0 = 0x004BDAA0; // type:func
+lib_animation_find_channel = 0x004BDAA0; // type:func
 func_004BDE00 = 0x004BDE00; // type:func
 func_001EB070__16FieldClass1504C0FP17FieldShapeOwner18P16FieldShapeData10 = 0x001EB070; // type:func
 func_001EB2F0__16FieldClass1504C0FP17FieldShapeOwner18P16FieldShapeData10 = 0x001EB2F0; // type:func
@@ -2057,7 +2057,7 @@ update__14LibClass178EA0Fv = 0x004D9D60; // type:func absolute:True allow_duplic
 func_004D0090__16FieldClass175290Fv = 0x0046B8B0; // type:func absolute:True allow_duplicated:True
 func_004D0090__14LibClass179080Fv = 0x004E1BF0; // type:func absolute:True allow_duplicated:True
 update__14LibClass179080Fv = 0x004E1C30; // type:func absolute:True allow_duplicated:True
-func_004E24D0__14LibClass179080Fv = 0x004E24D0; // type:func absolute:True allow_duplicated:True
+update_projection__14LibClass179080Fv = 0x004E24D0; // type:func absolute:True allow_duplicated:True
 
 func_004D00A0__16FieldClass150990Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
 func_004D00A0__16FieldClass155840Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
@@ -3134,3 +3134,4 @@ flip__16LibCameraContextFiP14LibPacketQueue = 0x004DD830; // type:func absolute:
 lib_begin_frame_packet = 0x004D8AC0; // type:func absolute:True
 lib_find_next_renderable_entry = 0x00472EB0; // type:func absolute:True
 lib_animation_apply_frame = 0x004B4550; // type:func absolute:True
+g_default_bounding_sphere = 0x0050CD30; // absolute:True

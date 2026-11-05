@@ -145,7 +145,7 @@ s32 func_004A4570(void* object);
  */
 void lib_queue_object_release(void* object);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_004A4550(void* object);
 
 #ifdef __cplusplus

@@ -14,6 +14,7 @@
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/mslgcc_00142A40.h"
 #include "vu0.h"
+#include "ee.h"
 
 /** Object that reports running out of memory in place of the default message; null by default. */
 class ResidentMemoryHook
@@ -52,13 +53,11 @@ extern "C" u8 _end[];
 /** Size of the main thread's stack; the linker passes it as an address. */
 extern "C" u8 _stack_size[];
 
-#define TIMER0_COUNT (*(volatile u32*)0x10000000)
 #define TIMER0_MODE (*(volatile u32*)0x10000010)
 #define D0_CHCR (*(volatile u32*)0x10008000)
 #define D0_QWC (*(volatile u32*)0x10008020)
 #define D0_TADR (*(volatile u32*)0x10008030)
 #define D_CTRL (*(volatile u32*)0x1000E000)
-#define D_STAT (*(volatile u32*)0x1000E010)
 
 #define TIMER_MODE_CLOCK_HBLANK 0x3
 #define TIMER_MODE_COUNT_ENABLE 0x80
@@ -313,14 +312,14 @@ int main(int argc, char** argv)
     D_CTRL = D_CTRL_RELEASE_CYCLE_256 | D_CTRL_RELEASE_ENABLE | D_CTRL_DMA_ENABLE;
     D0_QWC = 0;
     D0_TADR = (u32)D_00143B80;
-    D_STAT = D_STAT_CHANNEL_0;
+    *D_STAT = D_STAT_CHANNEL_0;
     D0_CHCR = D_CHCR_START | D_CHCR_TRANSFER_TAG | D_CHCR_CHAIN_MODE | D_CHCR_FROM_MEMORY;
 
-    while (!(D_STAT & D_STAT_CHANNEL_0))
+    while (!(*D_STAT & D_STAT_CHANNEL_0))
     {
     }
 
-    D_STAT = D_STAT_CHANNEL_0;
+    *D_STAT = D_STAT_CHANNEL_0;
 
     v = &vector;
     func_001058C0(func_00101270(&g_system)->stream, &v->words[0], &v->words[1], &v->words[2], &v->words[3]);

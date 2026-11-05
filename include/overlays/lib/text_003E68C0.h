@@ -42,7 +42,7 @@ extern "C" s32 func_003EF900(void* object);
 extern "C" s32 func_003F4370(void* object);
 /** @brief Store state value 9 in the transform's byte at offset 0x60. @param object Transform owner. */
 extern "C" void func_003EF910(LibTransformOwner* object);
-/** @brief Forward the transform receiver to its state-update handler. @param object Transform owner. */
+/** @brief Finish the transform receiver's packet. @param object Transform owner. */
 extern "C" void func_003EF070(LibTransformOwner* object);
 
 /** @brief Store a word at receiver offset 0x14. @param object Receiver. @param value Word value. */
@@ -94,6 +94,22 @@ static inline void copy_vector(LibVector4* destination, const LibVector4* source
 static inline void clear_vector(LibVector4* vector)
 {
     *(unsigned __int128*)vector = 0;
+}
+
+/**
+ * @brief Set all four components of a vector.
+ * @param vector Vector to set.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
+static inline void set_vector(LibVector4* vector, float x, float y, float z, float w)
+{
+    vector->x = x;
+    vector->y = y;
+    vector->z = z;
+    vector->w = w;
 }
 
 
@@ -386,7 +402,7 @@ public:
 #endif
 
 #ifdef __cplusplus
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 extern "C" void func_003F2550(LibTransformOwner* object);
 #endif
 

@@ -297,14 +297,14 @@ void FieldClass150280::func_001E7590()
         origin.y = 0.0f;
         origin.z = 0.0f;
         origin.w = 1.0f;
-        copy_vector(&unk18->unk90, &origin);
+        copy_vector(&unk18->channel_translation, &origin);
         LibVector4 zero;
         zero.x = 0.0f;
         zero.y = 0.0f;
         zero.z = 0.0f;
         zero.w = 0.0f;
-        copy_vector(&unk18->unka0, &zero);
-        copy_vector(&unk18->unkb0, &origin);
+        copy_vector(&unk18->channel_rotation, &zero);
+        copy_vector(&unk18->channel_scale, &origin);
     }
     else
     {
@@ -337,7 +337,7 @@ void FieldClass150280::func_001E76B0(float start, float end)
     if (!unk66_3)
     {
         void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk70);
-        if (!func_004BF100(unk14, unk1c->unk7c, 0))
+        if (!lib_animation_bind_channels(unk14, unk1c->unk7c, 0))
         {
             resident_exchange_allocation_heap(heap);
             return;
@@ -363,7 +363,7 @@ void FieldClass150280::func_001E76B0(float start, float end)
     clear_vector(&state->unk80);
     state->unk80.w = 1.0f;
     lib_animation_bind_state(unk14, unk18, D_31A7D8);
-    func_004B3DE0(unk14, unk18);
+    lib_animation_read_channel_pose(unk14, unk18);
     unk2c = start;
     unk50 = 0;
     unk58 = 2;

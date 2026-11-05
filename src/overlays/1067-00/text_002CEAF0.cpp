@@ -1640,7 +1640,7 @@ void FieldClass15B090::update()
     angles.z = 0.0f;
     angles.w = 1.0f;
     lib_direction_angles_xz(&angles, &direction, 0.0f);
-    func_004CE4C0(&rotation.x, &angles.x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&rotation), &angles.x);
     func_004CD3A0(reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&rotation), 1.0f);
     unk20.y += unka8 * g_frame_ticks;
     unka8 += 0.5f * g_frame_ticks;

@@ -468,7 +468,7 @@ struct ItemMenuRef
 extern ResidentObject1B64F8* D_001B64F8;
 extern ItemMenuRef* D_001B643C;
 extern u16 g_item_valuable_models[];
-extern LibVector4 D_50CD30;
+extern LibVector4 g_default_bounding_sphere;
 extern u64 D_004ED330[];
 extern LibWidgetColors4C5590 g_item_drop_title_colors;
 extern const char g_item_empty_name[];
@@ -1727,8 +1727,8 @@ s32 ItemEquipWindow::func_slotf4(u32 associated)
             if (row < 3)
             {
                 LibStringLabel* name = new (0) LibStringLabel;
-                name->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
-                    static_cast<ItemCharacterEquipment*>(this->party->unk04)[index].character_name, 0);
+                name->init_text_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
+                                          static_cast<ItemCharacterEquipment*>(this->party->unk04)[index].character_name, 0);
                 lib_container_attach_widget(this->unk10, name);
                 name->set_scale(0.8f, 0.8f);
             }
@@ -2194,7 +2194,8 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             if (row < 3)
             {
                 this->names[row] = new (0) LibStringLabel;
-                this->names[row]->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
+                this->names[row]->init_text_rectangle(
+                    16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
                     slot > 0 ? static_cast<ItemCharacterEquipment*>(this->party->unk04)[index].character_name : g_item_empty_name, 0);
                 lib_container_attach_widget(this->unk10, this->names[row]);
                 this->names[row]->set_scale(0.8f, 0.8f);
@@ -4571,14 +4572,14 @@ void LibOrientedTransform::set_orientation(const LibVector4* value)
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
@@ -4590,7 +4591,7 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     value.y = y;
     value.z = z;
     value.w = 1.0f;
-    func_004CE4C0(&orientation.x, &value.x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value.x);
 }
 
 /** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
@@ -4638,7 +4639,7 @@ s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 /** @brief Return the default transform vector. @return Resident vector pointer. */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
-    return &D_50CD30;
+    return &g_default_bounding_sphere;
 }
 
 /** @brief Return the default transform receiver. @return Null. */

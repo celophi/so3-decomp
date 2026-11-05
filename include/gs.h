@@ -31,6 +31,7 @@ enum
     GS_PSMCT24 = 0x01,
     GS_PSMCT16 = 0x02,
     GS_PSMCT16S = 0x0A,
+    GS_PSMT4HH = 0x2C,
     GS_PSMZ24 = 0x31,
     GS_PSMZ16 = 0x32,
     GS_PSMZ16S = 0x3A
@@ -94,6 +95,14 @@ typedef struct GsRegisterValue
     u64 data;
     u64 address;
 } GsRegisterValue;
+
+/** BITBLTBUF destination buffer width (DBW), in 64-pixel units. */
+#define GS_BITBLTBUF_DBW_SHIFT 48
+#define GS_BITBLTBUF_DBW_MASK 0x3F
+
+/** TRXREG transfer width (RRW) and height (RRH). */
+#define GS_TRXREG_RRH_SHIFT 32
+#define GS_TRXREG_SIZE_MASK 0xFFF
 
 /** GIF tag PRE bit: the tag's PRIM field is written to the PRIM register. */
 #define GIF_TAG_PRE ((u64)1 << 46)

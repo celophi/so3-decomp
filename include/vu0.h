@@ -155,6 +155,29 @@ static inline void vu0_start_microprogram_670_vf5(const void* vector)
 }
 
 /**
+ * @brief Load a matrix into vf5-vf8 and start the microprogram at 0x1F0.
+ *
+ * Lib loads the camera's view-projection matrix this way before it uses
+ * microprogram 0 for screen positions, so I think 0x1F0 keeps the matrix for
+ * program 0. Every site has the same two nops.
+ * @param matrix 16-byte aligned matrix.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see func_004D3780, func_004D4010, func_004DB190, func_0044A5F0, func_004D5870, func_004E1670 and
+ *      LibClass179080::update_projection in Lib, func_0020E9B0, resolve_field_object_display_position and
+ *      func_0028BD20 in 1067-00, and func_00230A20 and func_00288830 in 1070-00.
+ */
+static inline void vu0_start_microprogram_1f0_vf5_vf8(const void* matrix)
+{
+    asm __volatile__("lqc2 $vf5, 0x0(%0)\n"
+                     "lqc2 $vf6, 0x10(%0)\n"
+                     "lqc2 $vf7, 0x20(%0)\n"
+                     "lqc2 $vf8, 0x30(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0x1F0" : : "r"(matrix) : "memory");
+}
+
+/**
  * @brief Run microprogram 0 on a vector in place, from vf1 to vf3.
  *
  * Main calls this once, right after loading boot's microcode, so it's a

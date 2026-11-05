@@ -1072,7 +1072,132 @@ s32 func_004B3D70(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3D80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3DE0);
+/**
+ * @brief Read a target's translation, rotation and scale from its animation channels.
+ *
+ * A whole-vector channel wins; otherwise up to three per-axis channels fill the components in order, and
+ * per-axis rotation angles are converted to a quaternion.
+ * @param object Animation object.
+ * @param target Bound target to update.
+ */
+extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimationTarget* target)
+{
+    LibClass173180* channel = lib_animation_find_channel_inline(object, target, LIB_ANIMATION_KIND_TRANSLATION, 0);
+
+    if (channel)
+    {
+        LibVector4 value;
+        channel->func_004C4500(&value);
+        copy_vector(&target->channel_translation, &value);
+    }
+    else
+    {
+        LibVector4 value;
+        value.x = 0.0f;
+        value.y = 0.0f;
+        value.z = 0.0f;
+        value.w = 0.0f;
+        u8 found = 0;
+
+        for (s32 i = 0; i < LIB_ANIMATION_AXIS_COUNT; i++)
+        {
+            channel = lib_animation_find_channel_inline(object, target, LIB_ANIMATION_KIND_TRANSLATION_AXIS, i);
+
+            if (!channel)
+            {
+                break;
+            }
+
+            float component;
+            channel->func_004C4500(&component);
+            (&value.x)[i] = component;
+            found = 1;
+        }
+
+        if (found)
+        {
+            copy_vector(&target->channel_translation, &value);
+        }
+    }
+
+    channel = lib_animation_find_channel_inline(object, target, LIB_ANIMATION_KIND_ROTATION, 0);
+
+    if (channel)
+    {
+        LibVector4 value;
+        channel->func_004C4500(&value);
+        copy_vector(&target->channel_rotation, &value);
+    }
+    else
+    {
+        LibVector4 angles;
+        angles.x = 0.0f;
+        angles.y = 0.0f;
+        angles.z = 0.0f;
+        angles.w = 0.0f;
+        u8 found = 0;
+
+        for (s32 i = 0; i < LIB_ANIMATION_AXIS_COUNT; i++)
+        {
+            channel = lib_animation_find_channel_inline(object, target, LIB_ANIMATION_KIND_ROTATION_AXIS, i);
+
+            if (!channel)
+            {
+                break;
+            }
+
+            float angle;
+            channel->func_004C4500(&angle);
+            (&angles.x)[i] = angle;
+            found = 1;
+        }
+
+        if (found)
+        {
+            LibVector4 rotation;
+            func_004CE040(&rotation, &angles);
+            copy_vector(&target->channel_rotation, &rotation);
+        }
+    }
+
+    channel = lib_animation_find_channel_inline(object, target, LIB_ANIMATION_KIND_SCALE, 0);
+
+    if (channel)
+    {
+        LibVector4 value;
+        channel->func_004C4500(&value);
+        copy_vector(&target->channel_scale, &value);
+    }
+    else
+    {
+        LibVector4 value;
+        value.x = 0.0f;
+        value.y = 0.0f;
+        value.z = 0.0f;
+        value.w = 0.0f;
+        u8 found = 0;
+
+        for (s32 i = 0; i < LIB_ANIMATION_AXIS_COUNT; i++)
+        {
+            channel = lib_animation_find_channel_inline(object, target, LIB_ANIMATION_KIND_SCALE_AXIS, i);
+
+            if (!channel)
+            {
+                break;
+            }
+
+            float component;
+            channel->func_004C4500(&component);
+            (&value.x)[i] = component;
+            found = 1;
+        }
+
+        if (found)
+        {
+            copy_vector(&target->channel_scale, &value);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B43C0);
 

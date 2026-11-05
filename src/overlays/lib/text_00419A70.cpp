@@ -6,7 +6,6 @@
 #include "main/resident_data.h"
 #include "main/resident_00101550.h"
 
-extern "C" void func_004D00B0(void* object);
 
 typedef struct WordSetterOwnertext_00419A70
 {
@@ -247,10 +246,10 @@ extern "C" void func_0041ADC0(LibTransformOwner* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041ADE0);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0041AE30(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -272,10 +271,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D0A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D1C0);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0041D210(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -304,10 +303,10 @@ void func_0041E880(u8* object)
     *(volatile u32*)0x10009000 = 0x101;
 }
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0041E8C0(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -413,10 +412,10 @@ extern "C" void func_0041F290(LibTransformOwner* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F2B0);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0041F300(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -522,10 +521,10 @@ void func_00423930(u8* object)
     *(volatile u32*)0x10009000 = 0x101;
 }
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_00423970(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** Queue the DMA submission embedded at offset 0x210 when present. */

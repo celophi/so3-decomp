@@ -626,6 +626,9 @@ public:
  */
 extern "C" void lib_begin_frame_packet(void);
 
+/** Camera mode that sits at the anchor transform and faces the current camera. */
+#define LIB_CAMERA_MODE_FACE_CURRENT_CAMERA 1
+
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */
 class LibClass179080 : public LibLookAtTransform, public DmaSubmission
 {
@@ -646,8 +649,8 @@ public:
     virtual void update_transform_matrix();
     /** @brief Update camera state and its attached-transform distance. */
     virtual void update();
-    /** @brief Update the active camera projection state. */
-    void func_004E24D0();
+    /** @brief Rebuild the view and projection matrices and upload the projection to VU0. */
+    void update_projection();
     /** @brief Submit the camera's DMA chain. @param channel DMA channel number. */
     virtual void submit_dma(u32 channel);
     /** @brief Complete the camera transfer. @param channel DMA channel number. */
@@ -727,15 +730,38 @@ public:
     u8 unk288[8];
     FieldVec4B screen_min;
     FieldVec4B screen_max;
-    u8 unk2b0[0x118];
-    u32 unk3c8;
-    u32 unk3cc;
-    u8 unk3d0;
+    u8 unk2b0[0x10];
+
+    /** Inverse of the camera transform. */
+    LibMatrix44Value view_matrix;
+
+    /** Perspective projection built from the camera's projection settings. */
+    LibMatrix44Value projection_matrix;
+
+    LibMatrix44Value unk340;
+    LibMatrix44Value unk380;
+    u8 unk3c0[4];
+
+    /** Depth microprogram 0 gives a point on the view axis at the projection distance. */
+    float centre_depth;
+
+    s32 unk3c8;
+    s32 unk3cc;
+
+    /** LIB_CAMERA_MODE_* value. */
+    u8 mode;
+
     u8 unk3d1;
     u8 unk3d2;
     u8 unk3d3;
-    u32 unk3d4;
-    u8 unk3d8[0x18];
+
+    /** Transform the camera sits at in LIB_CAMERA_MODE_FACE_CURRENT_CAMERA. */
+    LibTransform* anchor;
+
+    u8 unk3d8[8];
+    float unk3e0;
+    float unk3e4;
+    u8 unk3e8[8];
     FieldVec4A clip_points[10];
     FieldVec4A clip_normals[10];
     u32 fog_color;
@@ -753,6 +779,18 @@ public:
     float rotation_angles[3];
     u8 unk56c[0x314];
 };
+
+/**
+ * @brief Hand the camera's view-projection matrix to the VU0 microprogram at 0x1F0.
+ * @param camera Camera whose matrices are used.
+ */
+extern "C" void lib_load_camera_screen_matrix(const LibClass179080* camera);
+
+/**
+ * @brief Load the camera's transform into VU0 (microprogram 0x1F0) and build its screen clip data.
+ * @param camera Camera to upload.
+ */
+extern "C" void func_004E1670(LibClass179080* camera);
 #endif
 
 #ifdef __cplusplus
@@ -933,6 +971,19 @@ void* func_004E4AD0(void* object);
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * @brief Create Lib's global objects, link them into the update lists and set up the scene camera.
+ * @param display Display Lib draws to.
+ * @param depth_far Integer depth at the scene camera's far plane.
+ * @param texture_cache_size Texture cache size in bytes.
+ * @param texture_cache_blocks Texture cache block count.
+ * @param node_count Node pointers the temporary node buffer holds.
+ * @param first First extra renderer argument; with second, both nonzero turn the extra renderer state on.
+ * @param second Second extra renderer argument.
+ */
+void lib_initialize(LibCameraContext* display, s32 depth_far, s32 texture_cache_size, s32 texture_cache_blocks, s32 node_count,
+                    s32 first, s32 second);
 
 /** @brief Destroy Lib's global objects, free their storage and clear the pointers. */
 void lib_shutdown(void);

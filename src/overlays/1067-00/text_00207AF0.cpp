@@ -1116,9 +1116,9 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibAnimatio
             do
             {
                 found = true;
-                if (func_004BDAA0(manager, transform, 0, 0) ||
-                    func_004BDAA0(manager, transform, 1, 0) ||
-                    func_004BDAA0(manager, transform, 2, 0))
+                if (lib_animation_find_channel(manager, transform, 0, 0) ||
+                    lib_animation_find_channel(manager, transform, 1, 0) ||
+                    lib_animation_find_channel(manager, transform, 2, 0))
                 {
                     break;
                 }

@@ -65,6 +65,9 @@ void lib_scene_use_data(BootScene* scene, u8* data);
 void func_474010(BootScene* scene, LibCameraContext* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
                  BootDisplayLinks661C* links, s32 flag);
 BootClass170F30* lib_find_renderable_entry(LibListObject* models, const char* name);
+BootClass170F30* lib_find_next_renderable_entry(LibListObject* models, BootClass170F30* model);
+void* lib_find_named_entry(LibListObject* models, const char* name);
+LibTransformOwner* lib_find_transform_entry(LibListObject* models, const char* name);
 void* lib_find_camera_entry(LibListObject* models, const char* name);
 }
 

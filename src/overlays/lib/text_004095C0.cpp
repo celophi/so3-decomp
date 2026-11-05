@@ -2,7 +2,26 @@
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "main/resident_data.h"
+#include "main/resident_00101260.h"
+#include "main/resident_00101550.h"
+#include "main/resident_0010A0E0.h"
 #include "overlays/lib/item_allocation.h"
+#include "sdk/main/libc_guess_00137290.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libkernl_00121940.h"
+
+/** Archive key of the game data resource, which holds the item catalog. */
+#define LIB_GAME_DATA_RESOURCE 10
+
+/** Item allocation records in the game state. */
+#define LIB_ALLOCATION_COUNT 3000
+
+/** Twelve-byte and 0x34-byte records in the game state. */
+#define LIB_GAME_STATE_RECORD0C_COUNT 38
+#define LIB_GAME_STATE_RECORD34_COUNT 12
+
+/** Twelve-byte records from this one-based ID on get no starting word; this one gets byte 8 set to 3. */
+#define LIB_GAME_STATE_RECORD0C_FIXED_ID 29
 
 typedef struct HalfwordSetterOwnertext_004095C0
 {
@@ -87,13 +106,58 @@ typedef struct LibInventoryAllocationLinks
     s16 next;
 } LibInventoryAllocationLinks;
 
-/** Resident allocation records, intrusive links and twelve-byte category entries. */
-typedef struct LibInventoryAllocationLists
+/** Twelve-byte game state record; only its setters are known. */
+typedef struct LibGameStateRecord0C
 {
-    LibAllocationEquipmentView allocations[3000];
-    LibInventoryAllocationLinks links[3000];
-    ItemCreationCategoryRecord item_types[750];
-} LibInventoryAllocationLists;
+    u8 unk00[0xC];
+} LibGameStateRecord0C;
+
+/** 0x34-byte game state record; only its setters are known. */
+typedef struct LibGameStateRecord34
+{
+    u8 unk00[0x34];
+} LibGameStateRecord34;
+
+/** Starting halfword and byte of one LibGameStateRecord34. */
+typedef struct LibGameStateInitial34
+{
+    u16 unk00;
+    u8 unk02;
+    u8 unk03;
+} LibGameStateInitial34;
+
+/** Resident game state at D_001B64F8: allocation records, their category links and entries, and later records. */
+typedef struct LibGameState
+{
+    LibAllocationEquipmentView allocations[LIB_ALLOCATION_COUNT];
+    LibInventoryAllocationLinks links[LIB_ALLOCATION_COUNT];
+    ItemCreationCategoryRecord item_types[ITEM_TYPE_COUNT];
+    LibGameStateRecord0C unk10d88[LIB_GAME_STATE_RECORD0C_COUNT];
+    LibGameStateRecord34 unk10f50[LIB_GAME_STATE_RECORD34_COUNT];
+    u8 unk111c0[0x4E0];
+    u32 unk116a0;
+    u32 unk116a4;
+    u8 unk116a8[4];
+    u32 unk116ac;
+    u8 unk116b0[0x70];
+    u16 unk11720;
+    u8 unk11722[0xA2];
+} LibGameState;
+
+/** Starting word of each LibGameStateRecord0C below LIB_GAME_STATE_RECORD0C_FIXED_ID; all zero in the shipped data. */
+extern "C" const u16 D_505630[];
+
+/** Starting values of the LibGameStateRecord34 entries. */
+extern "C" const LibGameStateInitial34 D_505670[];
+
+/**
+ * @brief Return the resident game state.
+ * @return Game state at D_001B64F8.
+ */
+static inline LibGameState* lib_game_state()
+{
+    return reinterpret_cast<LibGameState*>(D_001B64F8);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004095C0);
 
@@ -131,7 +195,104 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B330);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B360);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B3A0);
+/**
+ * @brief Decode the item catalog and reset the resident game state for a new game.
+ * @param data Game data resource, or null to load it from the archive here.
+ * @return One on success, or zero when the catalog can't be loaded or decoded.
+ */
+s32 lib_reset_game_state(u8* data)
+{
+    u8* buffer = 0;
+
+    if (data == 0)
+    {
+        ResidentArchive* archive = resident_get_archive(resident_get_system());
+        buffer = static_cast<u8*>(memalign(RESIDENT_RESOURCE_ALIGNMENT, resident_get_resource_size(archive, LIB_GAME_DATA_RESOURCE)));
+
+        if (buffer == 0)
+        {
+            return 0;
+        }
+
+        FlushCache(0);
+
+        if (!func_0011CA60(archive, buffer, LIB_GAME_DATA_RESOURCE, 0))
+        {
+            return 0;
+        }
+
+        data = buffer;
+    }
+
+    if (!resident_decode_resource_block(func_001012B0(resident_get_system()), reinterpret_cast<ResidentResourceHeader*>(data), D_001B64F0, 0))
+    {
+        return 0;
+    }
+
+    if (buffer != 0)
+    {
+        free_guess(buffer);
+        FlushCache(0);
+    }
+
+    LibGameState* state = lib_game_state();
+    memset_guess(state, 0, sizeof(LibGameState));
+    LibAllocationEquipmentView* allocation = state->allocations;
+
+    for (s32 i = 0; i < LIB_ALLOCATION_COUNT; i++)
+    {
+        func_0040B6D0(allocation);
+        allocation++;
+    }
+
+    ItemCreationCategoryRecord* item_type = state->item_types;
+
+    for (s32 i = 0; i < ITEM_TYPE_COUNT; i++)
+    {
+        func_0040B6C0(item_type, i);
+        item_type++;
+    }
+
+    const u16* value = D_505630;
+    LibGameStateRecord0C* record = state->unk10d88;
+
+    for (s32 i = 0; i < LIB_GAME_STATE_RECORD0C_COUNT; i++)
+    {
+        func_0040B6B0(record, i + 1);
+
+        if (!func_0040B6A0(record))
+        {
+            func_0040B690(record, *value);
+            func_0040B680(record, 1);
+        }
+        else if (i + 1 == LIB_GAME_STATE_RECORD0C_FIXED_ID)
+        {
+            func_0040B670(record, 3);
+        }
+
+        value++;
+        record++;
+    }
+
+    const LibGameStateInitial34* initial = D_505670;
+    LibGameStateRecord34* entry = state->unk10f50;
+
+    for (s32 i = 0; i < LIB_GAME_STATE_RECORD34_COUNT; i++)
+    {
+        func_0040B660(entry, i + 1);
+        func_0040B650(entry, initial->unk00);
+        func_0040B640(entry, initial->unk02);
+        initial++;
+        entry++;
+    }
+
+    state->unk116a0 = 18000;
+    state->unk116a4 = 36000;
+    state->unk116ac = 108000;
+    state->unk11720 = 18000;
+    FlushCache(0);
+    return 1;
+}
 
 /** Store the byte at receiver offset 0x33. */
 void func_0040B640(void* object, u8 value)
@@ -190,7 +351,7 @@ void func_0040B6B0(void* object, u8 value)
 }
 
 /** Store the low halfword at receiver offset 0x2. */
-void func_0040B6C0(void* object, u32 value)
+void func_0040B6C0(void* object, u16 value)
 {
     HalfwordSetterOwnertext_004095C0* receiver = static_cast<HalfwordSetterOwnertext_004095C0*>(object);
     receiver->unk02 = value;
@@ -233,7 +394,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040CC70);
  */
 s32 lib_collect_unequipped_allocations(const void* state, ItemCreationAllocationRecord** records, u16 category)
 {
-    const LibInventoryAllocationLists* inventory = (const LibInventoryAllocationLists*)state;
+    const LibGameState* inventory = (const LibGameState*)state;
     bool valid = false;
     s32 category_index = category;
     if (category > 0 && category < 751)

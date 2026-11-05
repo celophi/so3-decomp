@@ -10,7 +10,6 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
 
-extern "C" void func_004D00B0(void* object);
 #include "sdk/main/libmc_0012BB10.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "main/resident_00101260.h"
@@ -425,7 +424,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042D760);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042D830);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042D940);
+/** @brief Upload the palette image at D_4EC600. */
+void lib_upload_default_palette(void)
+{
+    func_004D8C20(D_4EC600, 30);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042D970);
 
@@ -775,7 +778,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004329C0);
 void LibImageCapture::on_store_complete()
 {
     stored[storing] = 1;
-    func_004D00B0(this);
+    lib_finish_packet(this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432A80);

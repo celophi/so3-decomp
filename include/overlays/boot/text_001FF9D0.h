@@ -9,12 +9,6 @@ extern "C" {
 #endif
 
 /**
- * @brief Run the Lib hook at 0x4D00B0 on an object.
- * @param object Object to pass.
- */
-void func_4D00B0(void* object);
-
-/**
  * @brief Allocate a packet's storage.
  * @param packet Packet to set up.
  * @param size Storage size in bytes.
@@ -29,19 +23,6 @@ void resident_packet_allocate(ResidentPacket* packet, s32 size);
 #include "overlays/boot/text_001E0900.h"
 
 class LibStringLabel;
-
-/**
- * @brief Set a string label's rectangle and string.
- * @param object Label to set up.
- * @param text String to draw.
- * @param flag Drawing flag.
- * @param x Origin x.
- * @param y Origin y.
- * @param width Rectangle width.
- * @param height Rectangle height.
- * @return Lib status.
- */
-extern "C" s32 func_467AD0(LibStringLabel* object, const char* text, u8 flag, float x, float y, float width, float height);
 
 /** GS packet buffer with vtable D_171BF0 in main data; its data comes before the vptr. */
 class BootPacketBuffer : public ResidentPacket

@@ -211,7 +211,6 @@ void func_0044C060(void* object)
 
 extern "C" u8 D_00508240[];
 extern "C" void func_004D92C0(void* object, s32 value);
-extern "C" void func_004D00B0(void* object);
 
 /** @brief Return the address of D_00508240. @return The data symbol's address. */
 const void* func_0044C070(void)
@@ -230,7 +229,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C0A0);
 /** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
 void func_0044C0F0(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** @brief Queue the receiver's DMA callback interface. */
@@ -299,7 +298,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D100);
 /** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
 extern "C" void func_0044D150(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D170);
@@ -1240,7 +1239,7 @@ u16 lib_compute_checksum(u16 seed, const void* data, s32 size)
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457520);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_trophy_flags_update_checksum);
 
 // TODO: Like the checksum above, this only matches at optimization level 0.
 #pragma push

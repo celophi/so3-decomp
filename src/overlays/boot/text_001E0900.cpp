@@ -22,7 +22,6 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004AB8B0.h"
 
-#define TIMER0_COUNT (*(volatile u32*)0x10000000)
 /** Timebase used to convert frame ticks to seconds. */
 #define BOOT_FRAME_TICKS_PER_SECOND 60.0f
 
@@ -39,7 +38,6 @@ extern "C" {
 extern BootFloorQuery* g_floor_query;
 extern LibScreenText* D_001B6618;
 extern BootResidentDisplay* D_001B6658;
-void func_42D940(void);
 void resident_system_set_progressive(ResidentSystem* system, u8 progressive);
 extern LibCameraContext* D_001B6520;
 extern u8 D_001B6420;
@@ -51,18 +49,11 @@ extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
 extern BootTrackPool<BootPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
 extern BootTrackPool<BootPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
 extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
-void func_4C5B60(s32 first, s32 second);
 void resident_system_create_status(ResidentSystem* system);
-void func_4E3830(LibCameraContext* display, u32 first, s32 second, s32 third, s32 fourth, s32 fifth, s32 sixth);
 extern struct LibPacketQueue* D_001B65DC;
-extern const struct BootLabelOffsets D_205170;
+extern const struct BootLabelOffsets g_settings_label_offsets;
 extern const struct BootCaption g_opening_captions[];
 void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
-void func_4CBD20(BootMatrix* output, const LibVector4* position, const FieldVec4B* target, float roll);
-void func_4CBAC0(LibVector4* output, const BootMatrix* matrix);
-LibTransformOwner* func_473530(LibListObject* models, const char* name);
-void* func_473390(LibListObject* models, const char* name);
-void func_4DA2F0(void* object, const LibVector4* offset, s32 first, s32 second, s32 third, float value);
 extern const char g_root_node_name[];
 extern const char g_look_node_name[];
 extern const char g_right_speaker_name[];
@@ -80,12 +71,7 @@ extern const char g_face_model_name[];
 s32 resident_sound_stop(ResidentSound* sound, s32 handle, s32 flag);
 s32 resident_sound_is_active(ResidentSound* sound, s32 handle);
 u32 resident_sound_get_voice_level(ResidentSound* sound, s32 handle, float time);
-BootClass170F30* func_472EB0(LibListObject* models, BootClass170F30* model);
-void func_4BF100(LibAnimation* animation, LibListObject* models, void* optional);
 void lib_animation_bind_state(LibAnimation* animation, LibAnimationTarget* target, const char* name);
-void func_4B3DE0(LibAnimation* animation, LibAnimationTarget* target);
-void func_4E24D0(void* display);
-void func_4D5870(void* display);
 }
 
 /** One timed caption of the opening movie; the list ends with a frame of -1. */
@@ -1931,7 +1917,7 @@ void BootNewGameSettings::place_girl()
 {
     LibVector4 position;
     LibVector4 angles;
-    BootMatrix matrix;
+    LibMatrix44Value matrix;
     FieldVec4B target;
     FieldVec4B rotation;
     FieldVec4B roll;
@@ -1944,8 +1930,8 @@ void BootNewGameSettings::place_girl()
     position.y = 0.0f;
     position.w = 1.0f;
     target = scale_components(FieldVec4A(-1.0f, -1.0f, -1.0f, -1.0f), position);
-    func_4CBD20(&matrix, &position, &target, 0.0f);
-    func_4CBAC0((LibVector4*)&rotation, &matrix);
+    lib_matrix_look_at(&matrix, reinterpret_cast<const FieldVec4B*>(&position), &target, 0.0f);
+    lib_matrix_to_quaternion(&rotation, &matrix);
     axis.x = 0.0f;
     axis.y = 1.0f;
     axis.z = 0.0f;
@@ -1977,7 +1963,7 @@ void BootNewGameSettings::place_girl()
         girl_lean = ee_max(-1.5707964f, girl_lean);
     }
 
-    LibTransformOwner* root = func_473530(girl_scene, g_root_node_name);
+    LibTransformOwner* root = lib_find_transform_entry(girl_scene, g_root_node_name);
     root->set_translation_vector(&position);
     root->set_orientation((LibVector4*)&rotation);
 
@@ -2126,7 +2112,7 @@ void BootNewGameSettings::place_girl()
     }
     }
 
-    void* look = func_473390(girl_scene, g_look_node_name);
+    LibTransform* look = static_cast<LibTransform*>(lib_find_named_entry(girl_scene, g_look_node_name));
 
     if (look != 0)
     {
@@ -2134,7 +2120,7 @@ void BootNewGameSettings::place_girl()
         offset.y = -160.0f;
         offset.z = 0.0f;
         offset.w = 1.0f;
-        func_4DA2F0(look, &offset, 1, 4, 0, 0.5f);
+        lib_solve_ik_chain(look, &offset, 1, 4, 0, 0.5f);
     }
 }
 
@@ -2155,13 +2141,13 @@ void BootNewGameSettings::get_speaker_cursor_position(s32 speaker, float* x, flo
     speakers[3] = lib_find_renderable_entry(room_scene, g_rear_right_speaker_name);
     speakers[speaker]->update_transform_matrix();
     BootClass170F30* model = speakers[speaker];
-    position.x = model->unk90.vectors[0].w;
-    position.y = model->unk90.vectors[1].w;
-    position.z = model->unk90.vectors[2].w;
+    position.x = model->transform.m[0][3];
+    position.y = model->transform.m[1][3];
+    position.z = model->transform.m[2][3];
     position.w = 1.0f;
     LibDisplayManager* manager = D_001B6628;
-    func_4E24D0(manager->current_display);
-    func_4D5870(D_001B6628->current_display);
+    static_cast<LibClass179080*>(manager->current_display)->update_projection();
+    lib_load_camera_screen_matrix(static_cast<LibClass179080*>(D_001B6628->current_display));
     vu0_wait_microprogram();
     vu0_start_microprogram_vf5(&position);
     vu0_wait_microprogram();
@@ -2201,7 +2187,7 @@ void BootNewGameSettings::place_speakers()
     {
         LibVector4 position;
         LibVector4 angles;
-        BootMatrix matrix;
+        LibMatrix44Value matrix;
         FieldVec4B target;
         LibVector4 rotation;
         lib_compute_sine_cosine_pair_degree9(&angles, i < 4 ? g_sound->speaker_angles[i] : 1.5707964f);
@@ -2211,8 +2197,8 @@ void BootNewGameSettings::place_speakers()
         position.w = 1.0f;
         speakers[i]->set_translation_vector(&position);
         target = scale_components(FieldVec4A(-1.0f, -1.0f, -1.0f, -1.0f), position);
-        func_4CBD20(&matrix, &position, &target, 0.0f);
-        func_4CBAC0(&rotation, &matrix);
+        lib_matrix_look_at(&matrix, reinterpret_cast<const FieldVec4B*>(&position), &target, 0.0f);
+        lib_matrix_to_quaternion(reinterpret_cast<FieldVec4B*>(&rotation), &matrix);
         speakers[i]->set_orientation(&rotation);
     }
 
@@ -2569,7 +2555,7 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
  * @param blue Blue factor.
  * @param alpha Alpha factor.
  */
-static inline void set_model_color(BootModel* model, float red, float green, float blue, float alpha)
+static inline void set_model_color(LibModel* model, float red, float green, float blue, float alpha)
 {
     LibVector4 color;
     color.x = red;
@@ -2727,7 +2713,7 @@ void BootNewGameSettings::update_option_rows()
         }
 
         s32 i;
-        BootModel* model;
+        LibModel* model;
         // Form the settings block pointer before the loop to preserve its access pattern.
         u8* extra = &settings->unk1A0;
 
@@ -2926,7 +2912,7 @@ void BootNewGameSettings::update_page_images()
         }
     }
 
-    offsets = D_205170;
+    offsets = g_settings_label_offsets;
 
     for (s32 i = 0; i < 6; i++)
     {
@@ -2939,7 +2925,7 @@ void BootNewGameSettings::update_page_images()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = 1.0f;
-                BootModel* model = images[3 + i]->model;
+                LibModel* model = images[3 + i]->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
             }
@@ -2970,7 +2956,7 @@ void BootNewGameSettings::update_page_images()
                 color.y = 0.5f;
                 color.z = 0.5f;
                 color.w = 1.0f;
-                BootModel* model = images[3 + i]->model;
+                LibModel* model = images[3 + i]->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
             }
@@ -3288,13 +3274,13 @@ void BootNewGameSettings::update()
             func_474010(girl_scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
             s32 count = 0;
 
-            for (BootClass170F30* model = lib_find_renderable_entry(girl_scene, g_empty_name); model != 0; model = func_472EB0(girl_scene, model))
+            for (BootClass170F30* model = lib_find_renderable_entry(girl_scene, g_empty_name); model != 0; model = lib_find_next_renderable_entry(girl_scene, model))
             {
                 if (model->type_id == 0x100)
                 {
                     girl_models[count] = new (0) BootClass170F30;
-                    girl_models[count]->func_4A37C0(D_001B661C, model);
-                    girl_models[count++]->unk208 = model->unk208;
+                    girl_models[count]->build_from(D_001B661C, model);
+                    girl_models[count++]->parent_transform = model->parent_transform;
                 }
             }
 
@@ -3302,10 +3288,10 @@ void BootNewGameSettings::update()
             {
                 girl_animations[i] = new (0) LibAnimation;
                 girl_animations[i]->set_resource((void*)RESIDENT_ALIGN_RESOURCE(model_blocks[2 + i]));
-                func_4BF100(girl_animations[i], girl_scene, 0);
+                lib_animation_bind_channels(girl_animations[i], girl_scene, 0);
                 animation_targets[i] = new (0) LibAnimationTarget;
                 lib_animation_bind_state(girl_animations[i], animation_targets[i], g_bone_root_name);
-                func_4B3DE0(girl_animations[i], animation_targets[i]);
+                lib_animation_read_channel_pose(girl_animations[i], animation_targets[i]);
             }
 
             D_001B661C->prepend_node(new (0) LibColorFade, -1);
@@ -3317,7 +3303,7 @@ void BootNewGameSettings::update()
             girl_lean = 0.0f;
             blink_frame = 0;
             adjusting_speaker = 0;
-            resident_sound_set_listener(g_sound, func_473530(room_scene, g_root_node_name), 0.0f, 500.0f);
+            resident_sound_set_listener(g_sound, lib_find_transform_entry(room_scene, g_root_node_name), 0.0f, 500.0f);
             description_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_SPEAKER_SETUP, 1, 32.0f, 352.0f, 576.0f, 112.0f);
             description_text->set_color(0x34130F);
             lib_container_attach_widget(container, description_text);
@@ -3464,7 +3450,7 @@ void BootNewGameSettings::update()
             }
 
             voice_line = resident_sound_play_voice(g_sound, g_voice_lines[line],
-                                                   (ResidentSoundEmitter*)func_473530(girl_scene, g_root_node_name), 0, 0x7F, 0);
+                                                   (ResidentSoundEmitter*)lib_find_transform_entry(girl_scene, g_root_node_name), 0, 0x7F, 0);
         }
 
         if (button_pressed(input, settings->confirm_buttons))
@@ -3524,7 +3510,7 @@ void BootNewGameSettings::update()
         if (voice_line != 0)
         {
             BootClass170F30* face = lib_find_renderable_entry(girl_scene, g_face_model_name);
-            LibListSentinel* end = &face->children;
+            LibListSentinel* end = &face->children.sentinel;
             LibListSentinel* node = end->next;
 
             if (resident_sound_is_active(g_sound, voice_line) != 0)
@@ -3600,7 +3586,7 @@ void BootNewGameSettings::update()
         if (blink_frame != 0)
         {
             BootClass170F30* face = lib_find_renderable_entry(girl_scene, g_face_model_name);
-            LibListSentinel* end = &face->children;
+            LibListSentinel* end = &face->children.sentinel;
             LibListSentinel* node = end->next;
             blink_frame++;
 
@@ -3918,29 +3904,76 @@ BootNewGameSettings::BootNewGameSettings()
  */
 void BootClass170F30::build_packet(const void* matrix, void* context)
 {
-    BootMatrix negated;
-    LibVector4* vector1 = &negated.vectors[1];
-    LibVector4* vector2 = &negated.vectors[2];
-    LibVector4* vector3 = &negated.vectors[3];
-    copy_vector(&negated.vectors[0], &unk90.vectors[0]);
-    copy_vector(vector1, &unk90.vectors[1]);
-    copy_vector(vector2, &unk90.vectors[2]);
-    copy_vector(vector3, &unk90.vectors[3]);
+    LibVector4 negated[4];
+    LibVector4* rows = reinterpret_cast<LibVector4*>(transform.m);
+    LibVector4* vector1 = &negated[1];
+    LibVector4* vector2 = &negated[2];
+    LibVector4* vector3 = &negated[3];
+    copy_vector(&negated[0], &rows[0]);
+    copy_vector(vector1, &rows[1]);
+    copy_vector(vector2, &rows[2]);
+    copy_vector(vector3, &rows[3]);
     vector1->x *= -1.0f;
     vector1->y *= -1.0f;
     vector1->z *= -1.0f;
     vector1->w *= -1.0f;
-    copy_vector(&unk90.vectors[0], &negated.vectors[0]);
-    copy_vector(&unk90.vectors[1], vector1);
-    copy_vector(&unk90.vectors[2], vector2);
-    copy_vector(&unk90.vectors[3], vector3);
+    copy_vector(&rows[0], &negated[0]);
+    copy_vector(&rows[1], vector1);
+    copy_vector(&rows[2], vector2);
+    copy_vector(&rows[3], vector3);
     transform_dirty = 1;
-    BootModel::build_packet(matrix, context);
+    LibModel::build_packet(matrix, context);
 }
 
 /** @brief Destroy the model object. */
 BootClass170F30::~BootClass170F30()
 {
+}
+
+/**
+ * @brief Apply the source blend mode and copy its inherited transform state.
+ * @param source Blend transform to copy.
+ */
+void LibBlendTransform::copy_blend_state(const LibBlendTransform* source)
+{
+    set_blend_mode(source->blend_mode);
+    LibTransform::copy_offset_transform_state(source);
+}
+
+/**
+ * @brief Read the cached combined transformation matrix.
+ * @return Pointer to the stored matrix; this call does not update it.
+ */
+const LibMatrix44Value* LibTransform::get_transform_matrix()
+{
+    return &transform;
+}
+
+/**
+ * @brief Read the additional local translation.
+ * @return Stored translation vector; only xyz is used to build the offset matrix.
+ */
+const LibVector4* LibTransform::get_offset_translation() const
+{
+    return &offset_translation;
+}
+
+/**
+ * @brief Read the additional local rotation.
+ * @return Stored quaternion in x, y, z, w order.
+ */
+const LibVector4* LibTransform::get_offset_rotation() const
+{
+    return &offset_rotation;
+}
+
+/**
+ * @brief Read the additional local scale.
+ * @return Stored scale vector; only xyz is used to build the offset matrix.
+ */
+const LibVector4* LibTransform::get_offset_scale() const
+{
+    return &offset_scale;
 }
 
 /**
@@ -4248,7 +4281,7 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = alpha;
-                BootModel* model = caption_image->model;
+                LibModel* model = caption_image->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
                 break;
@@ -4260,7 +4293,7 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = 1.0f;
-                BootModel* model = caption_image->model;
+                LibModel* model = caption_image->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
                 break;
@@ -4272,7 +4305,7 @@ void BootOpeningMovie::update()
                 color.y = 1.0f;
                 color.z = 1.0f;
                 color.w = ((float)BOOT_CAPTION_FADE_FRAMES - (float)fade) / (float)BOOT_CAPTION_FADE_FRAMES;
-                BootModel* model = caption_image->model;
+                LibModel* model = caption_image->model;
                 copy_vector(&model->base_color_factor, &color);
                 model->update_combined_color_factor();
                 break;
@@ -4498,7 +4531,7 @@ void BootProgram::rebuild_display(u8 full)
         lib_vram_reset(D_001B65E0, display->vram_free_page);
         D_001B663C = new (0) LibTextureCache(0x20000, 0x20);
         D_001B6618->load_font();
-        func_42D940();
+        lib_upload_default_palette();
         resident_input_attach_display(g_input_system, display, 1);
         D_001B6658->display = display;
     }
@@ -4620,7 +4653,7 @@ void BootResourceLoader::update()
 /** @brief Fill the track pools, then create and register the projection. */
 void BootProgram::create_pools_and_projection()
 {
-    func_4C5B60(0, 0);
+    lib_load_shared_font(0, 0);
     float_track_pool_allocate(g_float_track_pool, 500);
     vector_track_pool_allocate(g_vector_track_pool, 500);
     track_1718C0_pool_allocate(D_001B666C, 500);
@@ -4716,7 +4749,7 @@ void BootProgram::run()
     lib_clear_vram();
     rebuild_display(0);
     func_00121890(display);
-    func_4E3830(display, 0xA0013BA, 0x20000, 0x20, 0x200, 0, 0);
+    lib_initialize(display, 0xA0013BA, 0x20000, 0x20, 0x200, 0, 0);
     rect.x = 0;
     rect.y = 0;
     rect.width = BOOT_SCREEN_WIDTH;

@@ -1,4 +1,5 @@
 #include "ee.h"
+#include "gs.h"
 #include "include_asm.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector.h"
@@ -7,13 +8,18 @@
 #include "overlays/lib/trig_vu0.h"
 #include "overlays/lib/vector_vu0.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_00429B00.h"
 #include "main/resident_data.h"
 #include "main/resident_001001E0.h"
+#include "main/resident_00101260.h"
 #include "main/resident_00101550.h"
+#include "sdk/main/libgraph_0012EAC8.h"
+#include "sdk/main/libc_guess_00137290.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libkernl_00121940.h"
 
 extern "C" u8 D_00174C90[];
 extern "C" void func_004A8F10(void* object);
-extern "C" void func_004D00B0(void* object);
 extern "C" void func_004C2BB0(void* object);
 extern "C" void func_004C2C40(void* object);
 extern "C" void func_00461830(void* embedded, void* adjusted);
@@ -319,7 +325,18 @@ extern "C" LibClass173180* lib_animation_channel_at(LibAnimation* object, s32 in
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDAA0);
+/**
+ * @brief Find the channel bound to a target with the requested kind and axis, and cache its entry.
+ * @param object Animation object.
+ * @param target Bound target to match.
+ * @param kind Entry kind.
+ * @param axis Axis to match against the entry flags' low nibble.
+ * @return Matching channel, or null.
+ */
+extern "C" LibClass173180* lib_animation_find_channel(LibAnimation* object, const void* target, u8 kind, u8 axis)
+{
+    return lib_animation_find_channel_inline(object, target, kind, axis);
+}
 
 /**
  * @brief Bind populated animation entries whose state names match over up to sixteen characters.
@@ -431,7 +448,7 @@ extern "C" void lib_animation_release_channels(LibAnimation* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDE00);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BF100);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_animation_bind_channels);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BFDB0);
 
@@ -1025,7 +1042,303 @@ extern "C" s32 lib_panel_init_rectangle(LibPanel* object, s32 mode, float x, flo
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C5B60);
+/** Archive resources holding the shared font's chunk list and its texture block. */
+enum
+{
+    LIB_SHARED_FONT_CHUNKS_KEY = 8,
+    LIB_SHARED_FONT_TEXTURES_KEY = 9
+};
+
+#define LIB_SHARED_FONT_REQUEST_TAG 0x80000000
+#define LIB_SHARED_FONT_REQUEST_PRIORITY 0x34BC0
+#define LIB_SHARED_FONT_REQUEST_READ 1
+#define LIB_SHARED_FONT_ALIGNMENT 0x80
+
+/** Tag of the chunk that ends a shared font chunk list. */
+#define LIB_FONT_CHUNK_END 'END'
+
+/** VRAM block addresses of the font palettes and of the glyph pages. */
+enum
+{
+    LIB_SHARED_FONT_PALETTE_BLOCK = 0x3FF4,
+    LIB_SHARED_FONT_IMAGE_BLOCK = 0x800,
+    LIB_FONT_CHUNK0_PALETTE_BLOCK = 0x3FFC,
+    LIB_FONT_CHUNK0_IMAGE_BLOCK = 0,
+    LIB_FONT_CHUNK1_PALETTE_BLOCK = 0x3FF8,
+    LIB_FONT_CHUNK1_IMAGE_BLOCK = 0x400
+};
+
+/** Packet operation that uploads a LibImageUpload. */
+#define LIB_PACKET_LOAD_IMAGE 1
+
+/**
+ * @brief Upload a font resource's glyph pages to VRAM.
+ * @param source Decoded font resource.
+ * @param start First VRAM page.
+ * @param count Number of glyph pages to upload.
+ * @return First byte after the uploaded pages.
+ */
+extern "C" u8* func_00451C00(void* source, s32 start, s32 count);
+
+/** Stored image transfer packet: tags and transfer registers, with the pixels after them. */
+struct LibImagePacket
+{
+    u8 unk00[0x10];
+    GsGifTag tag;
+    GsRegisterValue bitbltbuf;
+    GsRegisterValue trxpos;
+    GsRegisterValue trxreg;
+    GsRegisterValue trxdir;
+    GsGifTag image_tag;
+    u8 unk70[0x10];
+    u8 pixels[1];
+};
+
+/** Glyph page image of a font texture block. */
+struct LibFontImage
+{
+    s16 width;
+    s16 height;
+    u8 unk04[4];
+
+    /** Offset of its LibImagePacket from the texture header. */
+    s32 packet_offset;
+};
+
+/** Header of a decoded font texture block, 0x10 bytes into the block. */
+struct LibFontTextureHeader
+{
+    u8 unk00[0xC];
+
+    /** Offset of the glyph page's LibFontImage from this header. */
+    s32 image_offset;
+
+    u8 unk10[4];
+
+    /** Offset of the palette's LibImagePacket from this header. */
+    s32 palette_offset;
+
+    s16 palette_format;
+};
+
+/** Decoded glyph table chunk. */
+struct LibFontGlyphHeader
+{
+    u8 unk00[0x1C];
+
+    /** Bytes of the table copied into the shared font. */
+    u32 table_size;
+
+    s32 glyph_count;
+};
+
+/** One entry of the shared font's chunk list, followed by its compressed resource. */
+struct LibFontChunk
+{
+    u32 tag;
+    u8 unk04[8];
+
+    /** Offset of the next chunk from this one, or zero for none. */
+    s32 next_offset;
+
+    ResidentResourceHeader resource;
+};
+
+/** Image transfer packet and the pixels it sends. */
+struct LibImageUpload
+{
+    GsLoadImage packet;
+    const void* pixels;
+};
+
+/** The shared font stored in the resident entry table. */
+struct LibSharedFont
+{
+    void* glyphs;
+    void* metrics;
+    u8 unk08[0x78];
+    u8 glyph_data[0x200];
+    u8 metric_data[0x2A00];
+};
+
+/**
+ * @brief Upload a font texture block's palette and glyph page to VRAM and wait for the packets.
+ * @param block Decoded texture block.
+ * @param palette_block VRAM block address for the palette, or zero to skip it.
+ * @param image_block VRAM block address for the glyph page.
+ */
+static inline void upload_font_texture(void* block, u16 palette_block, u16 image_block)
+{
+    LibFontTextureHeader* header = (LibFontTextureHeader*)((u8*)block + 0x10);
+
+    if (palette_block)
+    {
+        LibImagePacket* palette = (LibImagePacket*)((u8*)header + header->palette_offset);
+        LibImageUpload upload;
+        sceGsSetDefLoadImage(&upload.packet, palette_block,
+                             (palette->bitbltbuf.data >> GS_BITBLTBUF_DBW_SHIFT) & GS_BITBLTBUF_DBW_MASK,
+                             header->palette_format, 0, 0, palette->trxreg.data & GS_TRXREG_SIZE_MASK,
+                             (palette->trxreg.data >> GS_TRXREG_RRH_SHIFT) & GS_TRXREG_SIZE_MASK);
+        upload.pixels = palette->pixels;
+        FlushCache(0);
+        func_004DC4F0(D_001B65DC, LIB_PACKET_LOAD_IMAGE, 0, &upload, 0, 0);
+    }
+
+    LibFontImage* image = (LibFontImage*)((u8*)header + header->image_offset);
+    LibImagePacket* packet = (LibImagePacket*)((u8*)header + image->packet_offset);
+    LibImageUpload upload;
+    sceGsSetDefLoadImage(&upload.packet, image_block,
+                         (packet->bitbltbuf.data >> GS_BITBLTBUF_DBW_SHIFT) & GS_BITBLTBUF_DBW_MASK, GS_PSMT4HH,
+                         0, 0, image->width, image->height);
+    upload.pixels = packet->pixels;
+    FlushCache(0);
+    func_004DC4F0(D_001B65DC, LIB_PACKET_LOAD_IMAGE, 0, &upload, 0, 0);
+    func_004DBEE0(D_001B65DC, 0);
+}
+
+/**
+ * @brief Load the shared font, upload its textures and store it in the resident entry table.
+ * @param data_chunks Loaded chunk list, or null to read archive resources 8 and 9.
+ * @param source Loaded texture block; read from the archive when data_chunks is null.
+ * @return One when the font is loaded, or zero when an allocation or decode fails.
+ */
+extern "C" s32 lib_load_shared_font(LibFontChunk* data_chunks, ResidentResourceHeader* source)
+{
+    LibSharedFont* font = (LibSharedFont*)memalign(LIB_SHARED_FONT_ALIGNMENT, sizeof(LibSharedFont));
+
+    if (!font)
+    {
+        return 0;
+    }
+
+    func_001014B0(resident_get_entry_table(resident_get_system()), font, LIB_ENTRY_SHARED_FONT);
+    u8* archive_data = 0;
+    LibFontChunk* chunks;
+
+    if (!data_chunks)
+    {
+        ResidentArchive* archive = resident_get_archive(resident_get_system());
+        u32 chunk_size = resident_get_resource_size(archive, LIB_SHARED_FONT_CHUNKS_KEY);
+        archive_data = (u8*)memalign(LIB_SHARED_FONT_ALIGNMENT,
+                                     chunk_size + resident_get_resource_size(archive, LIB_SHARED_FONT_TEXTURES_KEY));
+
+        if (!archive_data)
+        {
+            return 0;
+        }
+
+        FlushCache(0);
+        chunks = (LibFontChunk*)archive_data;
+        source = (ResidentResourceHeader*)(archive_data + chunk_size);
+        resident_queue_resource_request(g_resource_queue, LIB_SHARED_FONT_CHUNKS_KEY, chunks, LIB_SHARED_FONT_REQUEST_TAG,
+                                        LIB_SHARED_FONT_REQUEST_PRIORITY, 0, 0, 0, LIB_SHARED_FONT_REQUEST_READ);
+        resident_queue_resource_request(g_resource_queue, LIB_SHARED_FONT_TEXTURES_KEY, source, LIB_SHARED_FONT_REQUEST_TAG,
+                                        LIB_SHARED_FONT_REQUEST_PRIORITY, 0, 0, 0, LIB_SHARED_FONT_REQUEST_READ);
+
+        while (resident_find_resource_request(g_resource_queue, LIB_SHARED_FONT_CHUNKS_KEY, (u32)chunks, LIB_SHARED_FONT_REQUEST_TAG,
+                                              0xFFFFFFFF, 0))
+        {
+        }
+
+        while (resident_find_resource_request(g_resource_queue, LIB_SHARED_FONT_TEXTURES_KEY, (u32)source,
+                                              LIB_SHARED_FONT_REQUEST_TAG, 0xFFFFFFFF, 0))
+        {
+        }
+    }
+    else
+    {
+        chunks = data_chunks;
+    }
+
+    ResidentDecodeObject* decoder = func_001012B0(resident_get_system());
+    void* block = memalign(LIB_SHARED_FONT_ALIGNMENT, source->decoded_size);
+
+    if (!block)
+    {
+        return 0;
+    }
+
+    FlushCache(0);
+
+    if (!resident_decode_resource_block(decoder, source, block, 0))
+    {
+        return 0;
+    }
+
+    upload_font_texture(block, LIB_SHARED_FONT_PALETTE_BLOCK, LIB_SHARED_FONT_IMAGE_BLOCK);
+    free_guess(block);
+    FlushCache(0);
+
+    for (s32 index = 0;; index++)
+    {
+        source = &chunks->resource;
+        void* chunk_block = memalign(LIB_SHARED_FONT_ALIGNMENT, source->decoded_size);
+
+        if (!chunk_block)
+        {
+            return 0;
+        }
+
+        FlushCache(0);
+
+        if (!resident_decode_resource_block(decoder, source, chunk_block, 0))
+        {
+            return 0;
+        }
+
+        u8* data;
+
+        switch (index)
+        {
+        case 0:
+        case 1:
+            u16 palette_block;
+            u16 image_block;
+
+            if (index == 0)
+            {
+                image_block = LIB_FONT_CHUNK0_IMAGE_BLOCK;
+                palette_block = LIB_FONT_CHUNK0_PALETTE_BLOCK;
+            }
+            else
+            {
+                image_block = LIB_FONT_CHUNK1_IMAGE_BLOCK;
+                palette_block = LIB_FONT_CHUNK1_PALETTE_BLOCK;
+            }
+
+            upload_font_texture(chunk_block, palette_block, image_block);
+            break;
+        case 2:
+            func_00451C00(chunk_block, 0, ((LibFontGlyphHeader*)chunk_block)->glyph_count);
+            data = font->glyph_data;
+            memcpy_guess(data, chunk_block, ((LibFontGlyphHeader*)chunk_block)->table_size);
+            font->glyphs = data;
+            break;
+        case 3:
+            data = font->metric_data;
+            memcpy_guess(data, chunk_block, source->decoded_size);
+            font->metrics = data;
+            break;
+        }
+
+        free_guess(chunk_block);
+        FlushCache(0);
+        chunks = chunks->next_offset == 0 ? 0 : (LibFontChunk*)((u8*)chunks + chunks->next_offset);
+
+        if (chunks->tag == LIB_FONT_CHUNK_END)
+        {
+            break;
+        }
+    }
+
+    if (archive_data)
+    {
+        free_guess(archive_data);
+        FlushCache(0);
+    }
+
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6120);
 
@@ -1045,7 +1358,7 @@ extern "C" void lib_container_attach_widget(LibContainer* object, LibWidget* chi
 
 extern "C" void func_004C61D0(void* object)
 {
-    func_004D00B0((u8*)object + 0x20);
+    lib_finish_packet(reinterpret_cast<LibTransformOwner*>((u8*)object + 0x20));
 }
 
 struct N54Owner84_004BD360 { u8 pad00[0x84]; u8 active; };
@@ -1500,9 +1813,9 @@ void LibProjectionVolume::update_coefficients()
     unk58 = (-2.0f * near_half_height) * far_distance;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CBAC0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_matrix_to_quaternion);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CBD20);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_matrix_look_at);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC070);
 
@@ -1806,7 +2119,7 @@ extern "C" void lib_quaternion_from_direction_xz(float* output, const LibVector4
     angles.z = 0.0f;
     angles.w = 1.0f;
     lib_direction_angles_xz(&angles, target, z_angle);
-    func_004CE4C0(output, &angles.x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(output), &angles.x);
 }
 
 /**
@@ -1850,7 +2163,7 @@ extern "C" void func_004CCCF0(const LibMatrix44Value* source, FieldVec4B* output
     row1.z = source->m[1][1];
     row2.z = source->m[2][1];
     converted.m[3][3] = 1.0f;
-    func_004CBAC0(output, &converted);
+    lib_matrix_to_quaternion(output, &converted);
 }
 
 /**

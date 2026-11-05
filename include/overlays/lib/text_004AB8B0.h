@@ -119,11 +119,14 @@ s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode);
 s32 func_004B4840(LibAnimation* object, LibAnimationEntry14* entry, float frame, s32 mode, s32 status);
 
 /**
- * @brief Evaluate the animation into its vector state.
+ * @brief Read a target's translation, rotation and scale from its animation channels.
+ *
+ * A whole-vector channel wins; otherwise up to three per-axis channels fill the components in order, and
+ * per-axis rotation angles are converted to a quaternion.
  * @param object Animation object.
- * @param target Vector state.
+ * @param target Bound target to update.
  */
-void func_004B3DE0(LibAnimation* object, LibAnimationTarget* target);
+void lib_animation_read_channel_pose(LibAnimation* object, LibAnimationTarget* target);
 
 /**
  * @brief Process the animation at a requested frame.

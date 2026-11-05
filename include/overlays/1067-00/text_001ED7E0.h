@@ -723,7 +723,7 @@ s32 func_001EE170(void* object);
 bool func_001EE180(void* object, float value);
 
 /**
- * @brief Return the address of D_50CD30.
+ * @brief Return the address of g_default_bounding_sphere.
  * @return Address of the data.
  */
 void* func_001EE1A0();

@@ -1136,7 +1136,7 @@ extern "C" void func_002CE530(FieldClass15AE70* object, u32 flag, u32 lists);
 
 extern "C" u64 D_4ED330[];
 
-extern "C" LibVector4 D_50CD30;
+extern "C" LibVector4 g_default_bounding_sphere;
 
 extern "C" const char D_364EF8[];
 
@@ -6846,7 +6846,8 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 408.0f, 104.0f, 88.0f);
     func_0035CBB0(reinterpret_cast<SkillList*>(&this->unk14), panel);
     lib_container_attach_widget(this->unk10, panel);
-    this->character_name->func_00467AD0(152.0f, 18.0f, 0.0f, 0.0f, static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current].character_name, 0);
+    this->character_name->init_text_rectangle(152.0f, 18.0f, 0.0f, 0.0f,
+                                              static_cast<SkillCharacterEquipment*>(this->selection->unk04)[this->selection->current].character_name, 0);
     func_0035C5F0(reinterpret_cast<SkillList*>(&this->unk44), this->character_name);
     lib_container_attach_widget(this->unk10, this->character_name);
     this->sp_label->init_resource_rectangle(236.0f, 72.0f, 0.0f, 0.0f, associated, 0x178B, 1);
@@ -7989,7 +7990,7 @@ s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 /** @brief Return the default transform vector. @return Resident vector pointer. */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
-    return &D_50CD30;
+    return &g_default_bounding_sphere;
 }
 
 /** @brief Return the default transform receiver. @return Null. */
@@ -8850,8 +8851,9 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             if (row < 3)
             {
                 this->labels[row] = new (0) LibStringLabel;
-                this->labels[row]->func_00467AD0(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
-                    slot > 0 ? static_cast<SkillCharacterEquipment*>(this->records->unk04)[index].character_name : D_364EF8, 0);
+                this->labels[row]->init_text_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f,
+                                                       slot > 0 ? static_cast<SkillCharacterEquipment*>(this->records->unk04)[index].character_name : D_364EF8,
+                                                       0);
                 lib_container_attach_widget(this->unk10, this->labels[row]);
                 this->labels[row]->set_scale(0.8f, 0.8f);
                 if (reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5)
@@ -9934,8 +9936,8 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     func_0035CBB0(reinterpret_cast<SkillList*>(&unk14), panel);
 
     character_name = new (0) LibStringLabel;
-    character_name->func_00467AD0(36.0f, 20.0f, 0.0f, 0.0f,
-        static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current].character_name, 0);
+    character_name->init_text_rectangle(36.0f, 20.0f, 0.0f, 0.0f, static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current].character_name,
+                                        0);
     character_name->set_scale(0.9f, 0.9f);
     lib_container_attach_widget(unk10, character_name);
 

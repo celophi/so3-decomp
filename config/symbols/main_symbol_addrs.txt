@@ -846,3 +846,7 @@ resident_stream_set_sample_rings = 0x00109F40; // type:func size:0x68
 resident_heap_create_memory = 0x00113930; // type:func size:0xD4
 resident_archive_has_resource = 0x00115270; // type:func size:0x48
 resident_packet_queue_pending = 0x0011F510; // type:func size:0x64
+g_default_bounding_sphere = 0x0050CD30; // absolute:True
+lib_matrix_look_at = 0x004CBD20; // type:func absolute:True
+lib_matrix_to_quaternion = 0x004CBAC0; // type:func absolute:True
+lib_quaternion_from_euler = 0x004CE4C0; // type:func absolute:True

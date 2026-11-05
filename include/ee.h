@@ -32,6 +32,9 @@
 /** D_STAT: channel 8 has finished. */
 #define D_STAT_CIS8 0x100
 
+/** EE timer 0 counter. */
+#define TIMER0_COUNT (*(volatile u32*)0x10000000)
+
 /** VIF codes: STCYCL, and UNPACK with its formats and flags. */
 #define VIF_STCYCL(cl, wl) (0x01000000 | ((wl) << 8) | (cl))
 #define VIF_UNPACK(format, num, address) (((num) << 16) | ((format) << 24) | (address))

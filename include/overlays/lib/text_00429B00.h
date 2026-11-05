@@ -344,6 +344,9 @@ extern "C" {
 /** @brief Free the shared font (archive resources 8 and 9) and remove it from the entry table. */
 void lib_release_shared_font(void);
 
+/** @brief Upload the palette image at D_4EC600. */
+void lib_upload_default_palette(void);
+
 #ifdef __cplusplus
 }
 #endif

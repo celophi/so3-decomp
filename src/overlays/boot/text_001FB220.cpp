@@ -18,7 +18,6 @@ extern const char g_trophy_texture_name[];
 
 extern const char g_no_trophy_number[];
 extern const char g_trophy_number_format[];
-void func_4CD630(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t);
 
 /** Key each trophy record must carry, stored XOR-encoded. */
 extern const u32 g_trophy_keys[];
@@ -279,7 +278,7 @@ void BootBattleTrophyViewer::update_grid()
 
         for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
         {
-            BootModel* model;
+            LibModel* model;
 
             if (trophy_images[i] != 0 && (model = trophy_images[i]->model) != 0)
             {
@@ -287,7 +286,7 @@ void BootBattleTrophyViewer::update_grid()
                 {
                     if (model != 0)
                     {
-                        func_4CD630(&rotation, &front, &back, flip_progress[i]);
+                        lib_quaternion_slerp(&rotation, &front, &back, flip_progress[i]);
                         model->set_orientation((const LibVector4*)&rotation);
                     }
 
@@ -312,7 +311,7 @@ void BootBattleTrophyViewer::update_grid()
 
         if (image != 0)
         {
-            BootModel* model = image->model;
+            LibModel* model = image->model;
             copy_vector(&value, &model->translation);
             value.x = -236.0f + (i & (BOOT_TROPHY_GRID_COLUMNS - 1)) * 68;
             value.y = scrolled(-94.0f + i / BOOT_TROPHY_GRID_COLUMNS * 100, scroll);
@@ -402,7 +401,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
             {
                 set_resource_bit(bits, i, 0);
                 record->key = 0;
-                func_457520(bits);
+                lib_trophy_flags_update_checksum(bits);
                 return 0;
             }
         }
@@ -486,7 +485,7 @@ static inline void set_bar_color(BootProgressBar* const& bar, float red, float g
     color.y = green;
     color.z = blue;
     color.w = alpha;
-    BootModel* model = bar->model;
+    LibModel* model = bar->model;
     copy_vector(&model->base_color_factor, &color);
     model->update_combined_color_factor();
 }

@@ -12,6 +12,8 @@
 #include "overlays/lib/matrix_vu0.h"
 #include "vu0.h"
 #include "overlays/lib/quaternion_vu0.h"
+#include "overlays/lib/direction_vu0.h"
+#include "overlays/lib/quaternion_inlines.h"
 #include "ee.h"
 #include "clamp.h"
 #include "main/resident_data.h"
@@ -142,7 +144,6 @@ struct LibRenderDataRecord
 };
 
 extern "C" void func_004D6C20(LibUpdateList* list, void** items, u32* offsets);
-extern "C" void func_004D00B0(LibTransformOwner* object);
 extern "C" LibRenderDataRecord* func_00448910(u32 first_key, u32 second_key);
 
 struct LibFieldPointer634
@@ -249,7 +250,7 @@ extern "C" FieldVec4B func_004CD570(const FieldVec4B& quaternion)
     row1.z = source_row1.y;
     row2.z = source_row2.y;
     converted.m[3][3] = 1.0f;
-    func_004CBAC0(&result, &converted);
+    lib_matrix_to_quaternion(&result, &converted);
     return result;
 }
 
@@ -260,7 +261,7 @@ extern "C" FieldVec4B func_004CD570(const FieldVec4B& quaternion)
  * @param second Second aligned quaternion.
  * @param fraction Interpolation fraction.
  */
-extern "C" void func_004CD630(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction)
+extern "C" void lib_quaternion_slerp(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction)
 {
     float dot = ((first->x * second->x + first->y * second->y) + first->z * second->z) + first->w * second->w;
     bool negative;
@@ -312,18 +313,7 @@ extern "C" void func_004CD630(FieldVec4B* output, const FieldVec4B* first, const
  */
 void lib_quaternion_from_axis_angle(FieldVec4B* output, const LibVector4* axis_angle)
 {
-    LibVector4 pair;
-
-    lib_compute_sine_cosine_pair(&pair, 0.5f * axis_angle->w);
-    float sine = pair.w;
-
-    output->w = pair.z;
-    output->x = axis_angle->x * sine;
-    output->y = axis_angle->y * sine;
-    output->z = axis_angle->z * sine;
-    vu0_start_microprogram_670_vf5(output);
-    vu0_wait_microprogram();
-    vu0_read_vf6(output);
+    quaternion_from_axis_angle(output, axis_angle);
 }
 
 /**
@@ -332,9 +322,7 @@ void lib_quaternion_from_axis_angle(FieldVec4B* output, const LibVector4* axis_a
  */
 void lib_normalize_quaternion(FieldVec4B* quaternion)
 {
-    vu0_start_microprogram_670_vf5(quaternion);
-    vu0_wait_microprogram();
-    vu0_read_vf6(quaternion);
+    normalize_quaternion(quaternion);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD8C0);
@@ -345,7 +333,34 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CDBC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CE040);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CE4C0);
+/**
+ * @brief Build the unit quaternion for three rotation angles.
+ *
+ * The x and y angles turn about the negative axes and z about the positive axis. The result is the product
+ * z * (x * y) of the three rotations, normalized.
+ * @param output Receives the quaternion.
+ * @param angles Angles in radians about x, y and z.
+ */
+void lib_quaternion_from_euler(FieldVec4B* output, const float* angles)
+{
+    LibVector4 x_axis;
+    LibVector4 y_axis;
+    LibVector4 z_axis;
+    FieldVec4B x_rotation;
+    FieldVec4B y_rotation;
+    FieldVec4B z_rotation;
+    FieldVec4B rotation;
+
+    set_vector(&x_axis, -1.0f, 0.0f, 0.0f, angles[0]);
+    set_vector(&y_axis, 0.0f, -1.0f, 0.0f, angles[1]);
+    set_vector(&z_axis, 0.0f, 0.0f, 1.0f, angles[2]);
+    quaternion_from_axis_angle(&x_rotation, &x_axis);
+    quaternion_from_axis_angle(&y_rotation, &y_axis);
+    quaternion_from_axis_angle(&z_rotation, &z_axis);
+    rotation = multiply_rotations(x_rotation, y_rotation);
+    *output = multiply_rotations(z_rotation, rotation);
+    normalize_quaternion(output);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CE930);
 
@@ -880,7 +895,46 @@ const LibMatrix44Value* LibTransformOwner::get_transform_matrix()
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D00B0);
+/**
+ * @brief Finish an object's packet once its DMA completes.
+ *
+ * If the object's packet is the one the renderer has in flight, clear that slot's busy flag and record how many timer
+ * ticks it took. A main-list packet lets the packet queue start again; a bucket-list packet flags the display.
+ * @param object Object whose packet completed.
+ */
+extern "C" void lib_finish_packet(LibTransformOwner* object)
+{
+    object->dma_pending = 0;
+    object->unk62 = 1;
+
+    if (object->unk65 == 0)
+    {
+        LibRenderer* renderer = static_cast<LibRenderer*>(D_001B661C);
+
+        if (renderer->main_packet == object)
+        {
+            renderer->main_packet_busy = 0;
+            renderer->packet_ticks = TIMER0_COUNT - renderer->packet_start_time;
+            func_004DC420(D_001B65DC, 1);
+            renderer->main_packet = 0;
+        }
+    }
+    else
+    {
+        LibRenderer* renderer = static_cast<LibRenderer*>(D_001B661C);
+
+        if (renderer->bucket_packet == object)
+        {
+            renderer->bucket_packet_busy = 0;
+            renderer->packet_ticks = TIMER0_COUNT - renderer->packet_start_time;
+
+            if (renderer->display != 0)
+            {
+                renderer->display->unk3E6A = 1;
+            }
+        }
+    }
+}
 
 extern "C" s32 func_004D0160(void* object)
 {
@@ -900,12 +954,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D03D0);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0460);
 
 /**
- * @brief Forward the transform receiver to its state-update handler.
+ * @brief Finish the transform receiver's packet.
  * @param object Transform owner.
  */
 extern "C" void func_004D04A0(LibTransformOwner* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(object);
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -926,12 +980,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0640);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D06E0);
 
 /**
- * @brief Forward the transform receiver to its state-update handler.
+ * @brief Finish the transform receiver's packet.
  * @param object Transform owner.
  */
 extern "C" void func_004D0720(LibTransformOwner* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(object);
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -1001,12 +1055,12 @@ void LibRenderer::begin_frame()
     unk40cb = 0;
     unk40a0 = 0;
     unk408c = 0;
-    unk40a4 = 0;
+    packet_ticks = 0;
     cursor = buffers[buffer_index];
     current_list = lists[buffer_index];
     buffer_index ^= 1;
-    unk40a8 = 0;
-    unk40c0 = 0;
+    main_packet = 0;
+    packet_start_time = 0;
 
     if (current_list != 0 && manager->current_display != 0)
     {
@@ -1066,7 +1120,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5850);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5860);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5870);
+/**
+ * @brief Hand the camera's view-projection matrix to the VU0 microprogram at 0x1F0.
+ * @param camera Camera whose matrices are used.
+ */
+extern "C" void lib_load_camera_screen_matrix(const LibClass179080* camera)
+{
+    LibMatrix44Value matrix = func_004CF7C0(camera->projection_matrix, camera->view_matrix);
+    vu0_start_microprogram_1f0_vf5_vf8(&matrix);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__14LibClass172000Fv);
 
@@ -1124,11 +1186,21 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5BB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5C10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5C90);
-
 extern "C" void func_004486A0(LibResourceBuffer* resource);
 extern "C" void func_004D0260(void* owner, LibResourceBuffer* resource);
 extern "C" void* D_001B6640;
+
+/** @brief Unregister the resource from the resource manager if it is registered. */
+void LibResourceBuffer::unregister()
+{
+    if (registered)
+    {
+        registered = 0;
+        func_004486A0(this);
+        func_004D0260(D_001B6640, this);
+    }
+}
+
 /** @brief Unregister the resource and release owned data. */
 LibResourceBuffer::~LibResourceBuffer()
 {
@@ -1137,6 +1209,7 @@ LibResourceBuffer::~LibResourceBuffer()
         func_004486A0(this);
         func_004D0260(D_001B6640, this);
     }
+
     if (!external_data)
     {
         ::operator delete(data);
@@ -2214,7 +2287,130 @@ extern "C" void lib_invalidate_transform_chain(LibTransform* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA2F0);
+/** Joints are left alone once the end and the target directions are this close. */
+#define LIB_IK_ALIGNED_COSINE 0.99999988f
+
+/** Iterations stop once the end moves less than this along every axis. */
+#define LIB_IK_SETTLED_DISTANCE 1.0f
+
+/**
+ * @brief Read the parent's combined matrix, updating the parent first if needed.
+ * @param object Transform whose parent is read.
+ * @return Parent's base transform, or null without a parent.
+ */
+static inline const LibMatrix44Value* lib_get_parent_matrix(LibTransform* object)
+{
+    if (object->parent_transform == 0)
+    {
+        return 0;
+    }
+
+    if (!object->parent_transform->matrix_ready)
+    {
+        object->parent_transform->update_transform_matrix();
+
+        if (object->parent_transform->unk51)
+        {
+            object->transform_dirty = 1;
+        }
+    }
+
+    return &object->parent_transform->base_transform;
+}
+
+/**
+ * @brief Turn the joints above a transform so that it reaches toward a target (cyclic coordinate descent).
+ * @param end Transform at the end of the chain.
+ * @param target Target point, in the same space as the base transforms.
+ * @param links Most parent joints to turn per iteration.
+ * @param iterations Most passes over the chain.
+ * @param include_root Nonzero to also turn the chain's root.
+ * @param weight Fraction of each joint's full correction to apply.
+ */
+extern "C" void lib_solve_ik_chain(LibTransform* end, const LibVector4* target, s32 links, s32 iterations, s32 include_root, float weight)
+{
+    LibVector4 position;
+    LibVector4 start;
+    LibVector4 current;
+    LibMatrix44Value inverse;
+    LibVector4 dot;
+    LibVector4 axis;
+    FieldVec4B rotation;
+
+    if (!end->matrix_ready)
+    {
+        end->update_transform_matrix();
+    }
+
+    for (s32 iteration = 0; iteration < iterations; iteration++)
+    {
+        start.x = end->transform.m[0][3];
+        start.y = end->transform.m[1][3];
+        start.z = end->transform.m[2][3];
+        start.w = 1.0f;
+
+        LibTransform* joint = end;
+
+        for (s32 link = 0; link < links; link++)
+        {
+            LibTransform* child = joint;
+            joint = joint->parent_transform;
+
+            if (joint == 0)
+            {
+                break;
+            }
+
+            if (!include_root && joint->parent_transform == 0)
+            {
+                break;
+            }
+
+            func_004CEFD0(lib_get_parent_matrix(child), &inverse);
+            position.x = end->base_transform.m[0][3];
+            position.y = end->base_transform.m[1][3];
+            position.z = end->base_transform.m[2][3];
+            position.w = 1.0f;
+            ee_transpose_matrix(&inverse, &inverse);
+            vu0_direction_pair_begin(&inverse, &position, target);
+
+            // TODO: I'm guessing the threshold was a local here; it's the only shape that loads it between the two VU0 blocks.
+            float limit = LIB_IK_ALIGNED_COSINE;
+
+            vu0_direction_pair_dot_cross();
+            vu0_direction_pair_store_dot(&dot);
+
+            if (dot.x < limit)
+            {
+                vu0_store_unit_cross(&axis);
+                axis.w = weight * func_004CD010(dot.x);
+                lib_quaternion_from_axis_angle(&rotation, &axis);
+                vu0_quaternion_multiply_assign(&rotation, reinterpret_cast<const FieldVec4B*>(&joint->orientation));
+                joint->copy_orientation(reinterpret_cast<const LibVector4*>(&rotation));
+
+                LibTransform* dirty = end;
+
+                for (s32 i = 0; i <= link; i++)
+                {
+                    dirty->matrix_ready = 0;
+                    dirty = dirty->parent_transform;
+                }
+
+                end->update_transform_matrix();
+            }
+        }
+
+        current.x = end->base_transform.m[0][3];
+        current.y = end->base_transform.m[1][3];
+        current.z = end->base_transform.m[2][3];
+        current.w = 1.0f;
+
+        if (fabsf(current.x - start.x) < LIB_IK_SETTLED_DISTANCE && fabsf(current.y - start.y) < LIB_IK_SETTLED_DISTANCE && fabsf(current.z - start.z) < LIB_IK_SETTLED_DISTANCE)
+        {
+            break;
+        }
+    }
+}
 
 /** @brief Extract the transform's translation column. @param object Transform owner. @return Translation coordinates with homogeneous component one. */
 extern "C" FieldVec4B func_004DA6F0(const LibTransform* object)

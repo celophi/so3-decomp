@@ -160,13 +160,19 @@ static inline void vu0_quaternion_norm_finish(FieldVec4B* output)
  * @brief Replace the first quaternion with its Hamilton product with the second.
  * @param first Aligned left-hand quaternion and destination.
  * @param second Aligned right-hand quaternion; may alias first.
+ * @see lib_quaternion_multiply_assign and lib_solve_ik_chain; func_00426650 and func_00426C20 in Lib
+ *      run the same sequence.
  */
 static inline void vu0_quaternion_multiply_assign(FieldVec4B* first, const FieldVec4B* second)
 {
     asm __volatile__(
-        "lqc2       $vf1, 0x0(%0)\n"
-        "lqc2       $vf2, 0x0(%1)\n"
+        "lqc2       $vf1, 0x0(%1)\n"
+        "lqc2       $vf2, 0x0(%0)\n"
         "vmaxw.xyzw $vf5, $vf0, $vf0w\n"
+        :
+        : "r"(second), "r"(first)
+        : "memory");
+    asm __volatile__(
         "vopmula.xyz $ACC, $vf1, $vf2\n"
         "vopmsub.xyz $vf3, $vf2, $vf1\n"
         "vmul.xyzw  $vf4, $vf1, $vf2\n"
@@ -178,7 +184,7 @@ static inline void vu0_quaternion_multiply_assign(FieldVec4B* first, const Field
         "vmsubx.w   $vf1, $vf5, $vf4x\n"
         "sqc2       $vf1, 0x0(%0)\n"
         :
-        : "r"(first), "r"(second)
+        : "r"(first)
         : "memory");
 }
 

@@ -50,13 +50,13 @@ void BootNeedleMeter::set_default_draw_bucket()
 }
 
 /**
- * @brief Clear dma_pending and run the Lib hook.
+ * @brief Clear dma_pending and finish the packet.
  * @param value Notification value; unused.
  */
 void BootNeedleMeter::on_packet_complete(u32 value)
 {
     dma_pending = 0;
-    func_4D00B0(this);
+    lib_finish_packet(this);
 }
 
 /** @brief Mark the meter active and submit its packet. */
@@ -408,7 +408,7 @@ void BootMusicPlayer::update_row_colors()
     {
         if (images[4 + i] != 0 && images[4 + i]->model != 0)
         {
-            BootModel* model = images[4 + i]->model;
+            LibModel* model = images[4 + i]->model;
 
             if (selection == i)
             {

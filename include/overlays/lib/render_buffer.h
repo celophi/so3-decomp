@@ -57,6 +57,9 @@ public:
     /** @brief Unregister the resource and release owned data. */
     virtual ~LibResourceBuffer();
 
+    /** @brief Unregister the resource from the resource manager if it is registered. */
+    void unregister();
+
     /**
      * @brief Read the data referenced by the resource payload header.
      * @return Data pointer, or null when storage or the stored data offset is zero.

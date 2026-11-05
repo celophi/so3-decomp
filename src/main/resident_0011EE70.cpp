@@ -39,7 +39,7 @@
 #define SOUND_BANK_SECTOR_SHIFT 11
 
 extern "C" {
-extern const ResidentVector4 D_50CD30;
+extern const ResidentVector4 g_default_bounding_sphere;
 extern u8 D_0014FC78[];
 extern const ResidentSoundBankVariants* D_001B6424;
 extern ResidentDisplayContext* D_001B6650;
@@ -48,20 +48,20 @@ extern ResidentObjectList* D_001B6614;
 extern u8 D_001B65D0;
 extern struct LibPacketQueue* D_001B65DC;
 
-void func_4CE4C0(ResidentVector4* orientation, const ResidentVector4* rotation);
+void lib_quaternion_from_euler(ResidentVector4* orientation, const ResidentVector4* rotation);
 void func_4486A0(void* object);
 void func_4D0260(void* list, void* object);
 void func_4D02E0(void* list, void* object);
 s32 func_4DC4F0(struct LibPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
 bool func_4D7D40(ResidentImageSequenceChannel* channel, ResidentRenderDataRecord* record, bool use_inline);
-void func_4CBD20(ResidentMatrix* output, const ResidentVector4* position, const ResidentVector4* direction, float roll);
+void lib_matrix_look_at(ResidentMatrix* output, const ResidentVector4* position, const ResidentVector4* direction, float roll);
 void func_4CFB20(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
                  float y_offset);
 void func_4CFC50(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
                  float y_offset);
 void func_4D9E70(ResidentClass14FD30Base* object);
 void func_4CCCF0(const ResidentMatrix* source, ResidentVector4* output);
-void func_4CBAC0(ResidentVector4* output, const ResidentMatrix* input);
+void lib_matrix_to_quaternion(ResidentVector4* output, const ResidentMatrix* input);
 float func_4E28D0(ResidentClass14FD30Base* camera);
 }
 
@@ -1493,7 +1493,7 @@ void ResidentClass14FCB0::func_00104770()
             position.y = source->transform.rows[1].w;
             position.z = source->transform.rows[2].w;
             position.w = 1.0f;
-            func_4CBAC0(&orientation, &source->transform);
+            lib_matrix_to_quaternion(&orientation, &source->transform);
             node->set_translation_vector(&position);
             node->set_orientation(&orientation);
 
@@ -1625,7 +1625,7 @@ void func_001210B0(ResidentClass14FD30* object, const ResidentVector4* target)
         position.z = object->transform.rows[2].w;
         position.w = 1.0f;
         subtract_xyz(&direction, target, &position);
-        func_4CBD20(&matrix, &position, &direction, 0.0f);
+        lib_matrix_look_at(&matrix, &position, &direction, 0.0f);
         matrix.rows[0].w = position.x;
         matrix.rows[1].w = position.y;
         matrix.rows[2].w = position.z;
@@ -1791,7 +1791,7 @@ bool ResidentClass14FD30::set_fade_alpha(float value, float mode)
  */
 const ResidentVector4* ResidentClass14FD30::get_bounding_sphere()
 {
-    return &D_50CD30;
+    return &g_default_bounding_sphere;
 }
 
 /**
@@ -1875,7 +1875,7 @@ void ResidentClass14FD30::copy_orientation(const ResidentVector4* value)
 void ResidentClass14FD30::convert_rotation(const ResidentVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&orientation, value);
+    lib_quaternion_from_euler(&orientation, value);
 }
 
 /**
@@ -1885,7 +1885,7 @@ void ResidentClass14FD30::convert_rotation(const ResidentVector4* value)
 void ResidentClass14FD30::set_rotation_vector(const ResidentVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&orientation, value);
+    lib_quaternion_from_euler(&orientation, value);
 }
 
 /**
@@ -1903,7 +1903,7 @@ void ResidentClass14FD30::set_rotation(float x, float y, float z)
     rotation.y = y;
     rotation.z = z;
     rotation.w = 1.0f;
-    func_4CE4C0(&orientation, &rotation);
+    lib_quaternion_from_euler(&orientation, &rotation);
 }
 
 /**

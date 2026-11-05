@@ -1993,7 +1993,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
 
     name_text = new (0) LibStringLabel;
     const char* name = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name;
-    name_text->func_00467AD0(name_x, name_y, 0.0f, 0.0f, name, 0);
+    name_text->init_text_rectangle(name_x, name_y, 0.0f, 0.0f, name, 0);
     lib_container_attach_widget(unk10, name_text);
     status_append_name_widget(reinterpret_cast<StatusWidgetList*>(&unk44), name_text);
     status_set_spacing(name_text, 8.0f);
@@ -2646,7 +2646,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     character_name_widget = new (0) LibStringLabel;
     surname_caption = new (0) LibTextWidget;
     name_divider = new (0) ItemCreationClass172870;
-    character_name_widget->func_00467AD0(name_x, name_y, 0.0f, 0.0f, status_equipment(selection)->character_name, 0);
+    character_name_widget->init_text_rectangle(name_x, name_y, 0.0f, 0.0f, status_equipment(selection)->character_name, 0);
     lib_container_attach_widget(unk10, character_name_widget);
     status_append_name_widget(reinterpret_cast<StatusWidgetList*>(&unk44), character_name_widget);
     LibTextExtent* bounds = func_00467950(character_name_widget);

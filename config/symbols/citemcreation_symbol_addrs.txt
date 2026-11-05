@@ -32,8 +32,8 @@ func_23B3B0 = 0x0023B3B0; // type:func allow_duplicated:True
 resident_get_system = 0x0010D8E0; // type:func absolute:True
 func_101290 = 0x00101290; // type:func absolute:True
 func_101440 = 0x00101440; // type:func absolute:True
-func_004CE4C0 = 0x004CE4C0; // type:func absolute:True
-D_50CD30 = 0x0050CD30; // absolute:True
+lib_quaternion_from_euler = 0x004CE4C0; // type:func absolute:True
+g_default_bounding_sphere = 0x0050CD30; // absolute:True
 func_0040D890 = 0x0040D890; // type:func absolute:True
 func_0040CF90 = 0x0040CF90; // type:func absolute:True
 memset_guess = 0x0013A678; // type:func absolute:True
@@ -463,7 +463,7 @@ func_0036BF30__32ItemCreationSelectedDisplayStateFib = 0x0036BF30; // type:func 
 
 __vt__14LibStringLabel = 0x00175140; // absolute:True
 __dt__14LibStringLabelFv = 0x004678F0; // type:func absolute:True
-func_00467AD0__14LibStringLabelFffffPCcUc = 0x00467AD0; // type:func absolute:True allow_duplicated:True
+init_text_rectangle__14LibStringLabelFffffPCcUc = 0x00467AD0; // type:func absolute:True allow_duplicated:True
 func_467AD0 = 0x00467AD0; // type:func absolute:True allow_duplicated:True
 
 func_00359240 = 0x00359240; // type:func allow_duplicated:True

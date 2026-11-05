@@ -5,7 +5,6 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
 
-extern "C" void func_004D00B0(void* object);
 extern "C" ResidentReleaseQueues* g_resident_release_queues;
 
 /** Partial word-array owner with its native virtual pointer after the data fields. */
@@ -292,10 +291,10 @@ void func_004A4510(void* receiver)
     *(volatile u32*)0x10009000 = 0x105;
 }
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_004A4550(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** Queue the DMA submission embedded at offset 0x640 when present. */

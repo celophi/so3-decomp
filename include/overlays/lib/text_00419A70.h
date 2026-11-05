@@ -272,19 +272,19 @@ void func_004295B0(void* object, u32 value);
 void func_004296B0(void* unused, void* output);
 
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0041AE30(void* object);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0041D210(void* object);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0041E8C0(void* object);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0041F300(void* object);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_00423970(void* object);
 
 /** Build and return a pointer to the four-word stack value. */

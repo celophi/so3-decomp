@@ -52,7 +52,11 @@ struct LibDrawWidget : public LibWidget
     virtual ~LibDrawWidget();
     /** Backing drawing-storage allocation. */
     void* allocation;
-    u8 unk44[0x2C];
+    u8 unk44[0x28];
+
+    /** Runtime resource slot the widget draws from. */
+    u8* resource_slot;
+
     void* unk70;
     u8 unk74[4];
     u32 unk78;
@@ -223,7 +227,7 @@ struct LibStringLabel : public LibDrawWidget
     LibStringLabel(const char* value, u8 flag, float x, float y, float width, float height)
     {
         unk38 = 14;
-        func_00467AD0(x, y, width, height, value, flag);
+        init_text_rectangle(x, y, width, height, value, flag);
     }
 
     /**
@@ -247,9 +251,9 @@ struct LibStringLabel : public LibDrawWidget
      * @param height Drawing height.
      * @param value String to draw.
      * @param flag Drawing flag.
-     * @return Configuration status.
+     * @return One on success, or zero when the drawing storage couldn't be set up.
      */
-    s32 func_00467AD0(float x, float y, float width, float height, const char* value, u8 flag);
+    s32 init_text_rectangle(float x, float y, float width, float height, const char* value, u8 flag);
     /** String the label draws. */
     const char* text;
 };
@@ -639,7 +643,7 @@ void func_004619E0(void* object);
 void func_004662A0(void* object);
 
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0046A3F0(void* object);
 
 /** Set the active byte and notify the embedded receiver. */

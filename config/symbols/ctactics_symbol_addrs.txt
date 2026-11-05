@@ -255,7 +255,7 @@ __ct__17TacticsControllerFv = 0x00350F00; // type:func
 
 
 __vt__14LibStringLabel = 0x00175140; // size:0x24 absolute:True allow_duplicated:True
-func_00467AD0__14LibStringLabelFffffPCcUc = 0x00467AD0; // type:func absolute:True allow_duplicated:True
+init_text_rectangle__14LibStringLabelFffffPCcUc = 0x00467AD0; // type:func absolute:True allow_duplicated:True
 func_00467AD0 = 0x00467AD0; // type:func absolute:True allow_duplicated:True
 
 resident_exchange_allocation_heap = 0x00100C80; // type:func absolute:True
