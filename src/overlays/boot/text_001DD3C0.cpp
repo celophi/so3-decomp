@@ -426,8 +426,8 @@ void BootInstaller::update()
         {
             LibSelectionCursor* arrow = cursor;
             ItemCreationClass185050& motion = *arrow;
-            motion.unk10 = x;
-            motion.unk14 = 256.0f;
+            motion.position.x = x;
+            motion.position.y = 256.0f;
             motion.unk35 = 1;
             arrow->unkae = 1;
         }

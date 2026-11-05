@@ -1438,7 +1438,7 @@ u8 func_003499F0(ConfigCornerWindow* object)
     D_001B643C->unk10->unk14->add_child(color);
     D_001B643C->unk10->unk14->func_00263C70(color);
     FieldObject23CEA0* grid = static_cast<FieldObject23CEA0*>(func_00352690(reinterpret_cast<ConfigListOwner*>(&object->unk74), 0)->value);
-    grid->FieldClass151C50::unk30 = 64.0f;
+    grid->ItemCreationClass185050::alpha = 64.0f;
     grid->unkae = 1;
     return 1;
 }
@@ -3114,7 +3114,7 @@ void ConfigOptions::func_slota8()
 void ConfigOptions::func_slot64()
 {
     LibClass175030* widget = scroll;
-    widget->unk30 = 128.0f;
+    widget->alpha = 128.0f;
     widget->needs_redraw = 1;
     s32 key = func_00350270(this, selected);
     if (key != unkb8)
@@ -3187,7 +3187,7 @@ u8 ConfigOptions::func_slotb0()
     if (opened == true)
     {
         LibClass175030* indicator = scroll;
-        indicator->ItemCreationClass185050::unk30 = 64.0f;
+        indicator->ItemCreationClass185050::alpha = 64.0f;
         indicator->needs_redraw = 1;
         return 1;
     }

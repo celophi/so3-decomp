@@ -974,13 +974,13 @@ void ShopSaleItemWindow::func_slot10c(u32 value, u32 selected)
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
+            selection_cursor->LibMovementState::alpha = SHOP_CURSOR_FOCUSED_OPACITY;
             selection_cursor->needs_redraw = 1;
         }
         else
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
+            selection_cursor->LibMovementState::alpha = SHOP_CURSOR_UNFOCUSED_OPACITY;
             selection_cursor->needs_redraw = 1;
         }
     }
@@ -1061,13 +1061,13 @@ void ShopSaleItemWindow::func_slot5c()
     if (D_001B643C->callbacks->shop->func_00261150() == this)
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
+        selection_cursor->LibMovementState::alpha = SHOP_CURSOR_FOCUSED_OPACITY;
         selection_cursor->needs_redraw = 1;
     }
     else
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
+        selection_cursor->LibMovementState::alpha = SHOP_CURSOR_UNFOCUSED_OPACITY;
         selection_cursor->needs_redraw = 1;
         return;
     }
@@ -1367,13 +1367,13 @@ void ShopSellListWindow::func_slot10c(u32 value, u32 selected)
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
+            selection_cursor->LibMovementState::alpha = SHOP_CURSOR_FOCUSED_OPACITY;
             selection_cursor->needs_redraw = 1;
         }
         else
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
+            selection_cursor->LibMovementState::alpha = SHOP_CURSOR_UNFOCUSED_OPACITY;
             selection_cursor->needs_redraw = 1;
         }
     }
@@ -1446,13 +1446,13 @@ void ShopSellListWindow::func_slot5c()
     if (D_001B643C->callbacks->shop->func_00261150() == this)
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
+        selection_cursor->LibMovementState::alpha = SHOP_CURSOR_FOCUSED_OPACITY;
         selection_cursor->needs_redraw = 1;
     }
     else
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
+        selection_cursor->LibMovementState::alpha = SHOP_CURSOR_UNFOCUSED_OPACITY;
         selection_cursor->needs_redraw = 1;
         return;
     }
@@ -1979,13 +1979,13 @@ void ShopBuyListWindow::func_slot10c(u32 value, u32 selected)
         if (selected != 0)
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
+            selection_cursor->LibMovementState::alpha = SHOP_CURSOR_FOCUSED_OPACITY;
             selection_cursor->needs_redraw = 1;
         }
         else
         {
             LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
+            selection_cursor->LibMovementState::alpha = SHOP_CURSOR_UNFOCUSED_OPACITY;
             selection_cursor->needs_redraw = 1;
         }
     }
@@ -2114,13 +2114,13 @@ void ShopBuyListWindow::func_slot5c()
     if (D_001B643C->callbacks->shop->func_00261150() == this)
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_FOCUSED_OPACITY;
+        selection_cursor->LibMovementState::alpha = SHOP_CURSOR_FOCUSED_OPACITY;
         selection_cursor->needs_redraw = 1;
     }
     else
     {
         LibClass175030* selection_cursor = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selection_cursor->LibMovementState::unk30 = SHOP_CURSOR_UNFOCUSED_OPACITY;
+        selection_cursor->LibMovementState::alpha = SHOP_CURSOR_UNFOCUSED_OPACITY;
         selection_cursor->needs_redraw = 1;
         return;
     }
@@ -2536,7 +2536,7 @@ s32 shop_select_action(void* receiver)
  */
 static inline void set_shop_choice_opacity(FieldObject23CEA0* choice, float opacity)
 {
-    choice->FieldClass151C50::unk30 = opacity;
+    choice->ItemCreationClass185050::alpha = opacity;
     choice->unkae = 1;
 }
 /**

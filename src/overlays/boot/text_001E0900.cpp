@@ -3040,8 +3040,8 @@ static inline s32 button_pressed(BootInput* input, u16 mask)
 static inline void place_cursor(LibSelectionCursor* cursor, float x, float y)
 {
     ItemCreationClass185050& motion = *cursor;
-    motion.unk10 = x;
-    motion.unk14 = y;
+    motion.position.x = x;
+    motion.position.y = y;
     motion.unk35 = 1;
     cursor->unkae = 1;
 }

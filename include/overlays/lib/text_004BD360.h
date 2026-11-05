@@ -334,6 +334,12 @@ public:
     virtual ~LibSelectionCursor();
 
     /**
+     * @brief Finish the cursor's drawing packet.
+     * @param value Notification word.
+     */
+    virtual void on_packet_complete(u32 value);
+
+    /**
      * @brief Reset the translation, set the drawing codes and depth, and place the cursor.
      * @param code Drawing code.
      * @param first First drawing value.

@@ -1543,7 +1543,7 @@ void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
             x = 48.0f + (155.0f + 34.0f * column);
         }
 
-        func_00466E40(&movement, x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
+        movement.set_move_target(x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
         object->selected_grid_cell = value;
         field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->callbacks), 0);
     }

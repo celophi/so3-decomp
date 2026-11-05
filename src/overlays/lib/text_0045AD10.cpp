@@ -765,13 +765,45 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466AD0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E40);
+/**
+ * @brief Set the movement target and reset its completion flags.
+ * @param x Target horizontal coordinate.
+ * @param y Target vertical coordinate.
+ * @param duration Duration in seconds, converted to sixty frames per second.
+ */
+void ItemCreationClass185050::set_move_target(float x, float y, float duration)
+{
+    target.x = x;
+    target.y = y;
+    move_frames = 60.0f * duration;
+    unk34 = 0;
+    unk35 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E70);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004670B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467250);
+/**
+ * @brief Allocate the drawing storage and show the state at a position at full alpha.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @return One on success, or zero when the storage couldn't be allocated.
+ */
+s32 ItemCreationClass185050::init_position(float x, float y)
+{
+    if (!lib_allocate_drawing_storage(&unk00, 0x12))
+    {
+        return 0;
+    }
+
+    position.x = x;
+    position.y = y;
+    alpha = 128.0f;
+    unk34 = 0;
+    unk35 = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004672C0);
 
@@ -784,9 +816,8 @@ typedef struct LibFieldWidgetState
     u8 pad38;
     u8 unk39;
     u8 pad3a[6];
-    u8 storage[0x3C];
+    LibMovementState movement;
 } LibFieldWidgetState;
-extern "C" s32 func_00467250(void* object, float x, float y);
 /**
  * @brief Initialize the moving widget storage and position, then set its drawing flags.
  * @param object Moving widget.
@@ -797,7 +828,7 @@ extern "C" s32 func_00467250(void* object, float x, float y);
 extern "C" s32 lib_moving_widget_init_position(LibClass175030* object, float x, float y)
 {
     LibFieldWidgetState* state = (LibFieldWidgetState*)object;
-    if (!func_00467250(state->storage, x, y))
+    if (!state->movement.init_position(x, y))
     {
         return 0;
     }
@@ -810,10 +841,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673C0);
 
-/** Forward the receiver to func_004D00B0. */
-void func_00467480(void* object)
+/**
+ * @brief Finish the cursor's drawing packet.
+ * @param value Notification word.
+ */
+void LibSelectionCursor::on_packet_complete(u32 value)
 {
-    func_004D00B0(object);
+    func_004D00B0(this);
 }
 
 struct N54Owner64_0045AD10 { u8 pad00[0x64]; u8 active; };
@@ -847,7 +881,7 @@ void LibSelectionCursor::init(s32 code, u32 first, u32 second, float x, float y,
     translation.z = 0.0f;
     translation.w = 1.0f;
     set_codes_and_z(code, first, z, second, 0);
-    func_00467250(&static_cast<ItemCreationClass185050&>(*this), x, y);
+    init_position(x, y);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004675E0);

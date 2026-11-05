@@ -789,13 +789,13 @@ void EquipItemInstanceListWindow::func_slot10c(u32 rows, u32 cursor)
         if (cursor != 0)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::unk30 = 128.0f;
+            nested->ItemCreationClass185050::alpha = 128.0f;
             nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::unk30 = 64.0f;
+            nested->ItemCreationClass185050::alpha = 64.0f;
             nested->needs_redraw = 1;
         }
     }
@@ -883,13 +883,13 @@ void EquipItemInstanceListWindow::func_slot5c()
         if (D_001B643C->callbacks->state->func_00261150() == this)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::unk30 = 128.0f;
+            nested->ItemCreationClass185050::alpha = 128.0f;
             nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::unk30 = 64.0f;
+            nested->ItemCreationClass185050::alpha = 64.0f;
             nested->needs_redraw = 1;
         }
 
@@ -1233,13 +1233,13 @@ void EquipItemListWindow::func_slot10c(u32 unused, u32 cursor)
         if (cursor != 0)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::unk30 = 128.0f;
+            nested->ItemCreationClass185050::alpha = 128.0f;
             nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::unk30 = 64.0f;
+            nested->ItemCreationClass185050::alpha = 64.0f;
             nested->needs_redraw = 1;
         }
     }
@@ -1867,7 +1867,7 @@ u8 EquipSlotWindow::func_slotb0()
     current_controller()->func_00263C70(item_list);
     active_slot = category;
     FieldClass153130* selector = equipment_slot_selector;
-    selector->ItemCreationClass185050::unk30 = 64.0f;
+    selector->ItemCreationClass185050::alpha = 64.0f;
     selector->LibWidget::needs_redraw = 1;
     func_slot20(0);
     lib_factor_tooltip_hide(controller->tooltip);
@@ -1922,7 +1922,7 @@ void EquipSlotWindow::func_slot64()
 
     equip_refresh_record_display(associated);
     FieldClass153130* selector = equipment_slot_selector;
-    selector->ItemCreationClass185050::unk30 = 128.0f;
+    selector->ItemCreationClass185050::alpha = 128.0f;
     selector->LibWidget::needs_redraw = 1;
 }
 

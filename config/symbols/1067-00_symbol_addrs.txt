@@ -1989,10 +1989,10 @@ __ct__17FieldObject23CEA0Fv = 0x0023D170; // type:func size:0xC0
 func_0023D170 = 0x0023D170; // type:func absolute:True allow_duplicated:True
 __dt__17FieldObject23CEA0Fv = 0x0023D0C0; // type:func absolute:True allow_duplicated:True
 __vt__17FieldObject23CEA0 = 0x00153290; // size:0xA0 absolute:True allow_duplicated:True
-__vt__16FieldClass175070 = 0x00175070; // size:0x9C absolute:True allow_duplicated:True
-__vt__16FieldClass151C50 = 0x00151C50; // size:0x10 absolute:True allow_duplicated:True
-on_packet_complete__16FieldClass175070FUi = 0x00467480; // type:func absolute:True allow_duplicated:True
-__dt__16FieldClass175070Fv = 0x0023BCC0; // type:func absolute:True allow_duplicated:True
+__vt__18LibSelectionCursor = 0x00175070; // size:0x9C absolute:True allow_duplicated:True
+__vt__23ItemCreationClass185050 = 0x00151C50; // size:0x10 absolute:True allow_duplicated:True
+on_packet_complete__18LibSelectionCursorFUi = 0x00467480; // type:func absolute:True allow_duplicated:True
+__dt__18LibSelectionCursorFv = 0x0023BCC0; // type:func absolute:True allow_duplicated:True
 
 resident_sound_play = 0x00112400; // type:func absolute:True allow_duplicated:True
 

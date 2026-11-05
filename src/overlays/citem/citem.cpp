@@ -796,7 +796,7 @@ static inline void set_selector_brightness(FieldClass153130* selector, float bri
 {
     if (selector != 0)
     {
-        selector->ItemCreationClass185050::unk30 = brightness;
+        selector->ItemCreationClass185050::alpha = brightness;
         selector->needs_redraw = 1;
     }
 }
@@ -2573,13 +2573,13 @@ void ItemInstanceListWindow::func_slot5c()
     if (D_001B643C->callbacks->state->func_00261150() == this)
     {
         ItemCreationClass175030* display = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-        display->unk30 = 128.0f;
+        display->alpha = 128.0f;
         display->needs_redraw = 1;
     }
     else
     {
         ItemCreationClass175030* display = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-        display->unk30 = 64.0f;
+        display->alpha = 64.0f;
         display->needs_redraw = 1;
     }
 
@@ -3415,13 +3415,13 @@ void ItemInstanceListWindow::func_slot10c(u32 value, u32 alternate)
         if (alternate != 0)
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::unk30 = 128.0f;
+            control->ItemCreationClass185050::alpha = 128.0f;
             control->needs_redraw = 1;
         }
         else
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::unk30 = 64.0f;
+            control->ItemCreationClass185050::alpha = 64.0f;
             control->needs_redraw = 1;
         }
     }
@@ -3626,7 +3626,7 @@ u8 ItemTypeListWindow::func_slotb0()
     if (FieldClass15AE60::unk04 != 0)
     {
         LibClass175030* selector = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selector->ItemCreationClass185050::unk30 = 64.0f;
+        selector->ItemCreationClass185050::alpha = 64.0f;
         selector->needs_redraw = 1;
     }
 
@@ -3897,13 +3897,13 @@ void ItemTypeListWindow::func_slot10c(u32 unused, u32 cursor)
         if (cursor != 0)
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::unk30 = 128.0f;
+            control->ItemCreationClass185050::alpha = 128.0f;
             control->needs_redraw = 1;
         }
         else
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::unk30 = 64.0f;
+            control->ItemCreationClass185050::alpha = 64.0f;
             control->needs_redraw = 1;
         }
     }

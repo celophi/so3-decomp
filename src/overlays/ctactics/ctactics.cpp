@@ -827,7 +827,7 @@ u8 TacticsExitConfirmWindow::func_slotb4()
 {
     FieldClass15AE70::func_slot18(0, 0x7F);
     LibClass175030* movement = static_cast<TacticsAssociatedMovementRef*>(func_slot44())->movement;
-    movement->unk30 = 128.0f;
+    movement->alpha = 128.0f;
     movement->needs_redraw = 1;
     FieldClass153E30* state = D_001B643C->callbacks->state;
     state->func_00263C70(func_slot44());
@@ -1156,7 +1156,7 @@ u8 TacticsFormationWindow::func_slotb8()
 
     if (parent_grid != 0)
     {
-        parent_grid->FieldClass151C50::unk30 = 64.0f;
+        parent_grid->ItemCreationClass185050::alpha = 64.0f;
         parent_grid->unkae = 1;
     }
 
@@ -1290,7 +1290,7 @@ void TacticsFormationWindow::func_slot64()
 
     if (parent_grid != 0)
     {
-        parent_grid->FieldClass151C50::unk30 = 128.0f;
+        parent_grid->ItemCreationClass185050::alpha = 128.0f;
         parent_grid->unkae = 1;
     }
 
@@ -1749,13 +1749,13 @@ u8 TacticsReplaceWindow::func_slotb4()
     if (use_second == 1)
     {
         LibClass175030* second_target = second_selector;
-        second_target->unk10 = -128.0f;
-        second_target->unk14 = -128.0f;
+        second_target->position.x = -128.0f;
+        second_target->position.y = -128.0f;
         second_target->unk35 = 1;
         second_target->needs_redraw = 1;
         second_selector->visible = 0;
         LibClass175030* first_target = first_selector;
-        first_target->unk30 = 128.0f;
+        first_target->alpha = 128.0f;
         first_target->needs_redraw = 1;
         use_second = 0;
         source_record_index = -1;
@@ -1788,7 +1788,7 @@ u8 TacticsReplaceWindow::func_slotb4()
         child->func_slotf4(func_slot54(), 175.0f, 160.0f, 5, TACTICS_MSG_CONFIRM_EXIT_REPLACE);
         child->func_slot40(this);
         LibClass175030* first_target = first_selector;
-        first_target->unk30 = 64.0f;
+        first_target->alpha = 64.0f;
         first_target->needs_redraw = 1;
         D_001B643C->callbacks->state->add_child(child);
         D_001B643C->callbacks->state->func_00263C70(child);
@@ -1944,13 +1944,13 @@ u8 TacticsReplaceWindow::func_slotb0()
         }
 
         LibClass175030* second_target = second_selector;
-        second_target->unk10 = -128.0f;
-        second_target->unk14 = -128.0f;
+        second_target->position.x = -128.0f;
+        second_target->position.y = -128.0f;
         second_target->unk35 = 1;
         second_target->needs_redraw = 1;
         second_selector->visible = 0;
         LibClass175030* first_target = first_selector;
-        first_target->unk30 = 128.0f;
+        first_target->alpha = 128.0f;
         first_target->needs_redraw = 1;
         use_second = 0;
         source_record_index = -1;
@@ -1960,16 +1960,16 @@ u8 TacticsReplaceWindow::func_slotb0()
     {
         LibClass175030* second_target = second_selector;
         LibClass175030* first_target = first_selector;
-        const float& x = first_target->unk10;
-        float y = first_target->unk14;
-        second_target->unk10 = x;
-        second_target->unk14 = y;
+        const float& x = first_target->position.x;
+        float y = first_target->position.y;
+        second_target->position.x = x;
+        second_target->position.y = y;
         second_target->unk35 = 1;
         second_target->needs_redraw = 1;
         s32 index = (s32)(24.0f + x);
         s32 direct = 1;
 
-        if (!first_target->unk14)
+        if (!first_target->position.y)
         {
             direct = 0;
         }
@@ -1979,7 +1979,7 @@ u8 TacticsReplaceWindow::func_slotb0()
         source_record_index = first_selector->selected;
         func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(second_selector), source_record_index, 1);
         first_target = first_selector;
-        first_target->unk30 = 64.0f;
+        first_target->alpha = 64.0f;
         first_target->needs_redraw = 1;
         use_second = 1;
     }
@@ -2816,7 +2816,7 @@ void TacticsChangeWindow::func_slot64()
     else
     {
         target = selection;
-        target->unk30 = 128.0f;
+        target->alpha = 128.0f;
         target->needs_redraw = 1;
     }
 }
@@ -2985,7 +2985,7 @@ u8 TacticsChangeWindow::func_slotb0()
         else
         {
             LibClass175030* target = selection;
-            target->unk30 = 64.0f;
+            target->alpha = 64.0f;
             target->needs_redraw = 1;
         }
 

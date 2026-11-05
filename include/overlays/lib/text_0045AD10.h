@@ -127,20 +127,29 @@ struct LibDrawWidget : public LibWidget
         needs_redraw = 1;
     }
 };
+/** Two-dimensional screen position. */
+struct LibPoint2
+{
+    float x;
+    float y;
+};
+
 /** 0x3C-byte storage receiver, with its dispatch pointer after the stored state. */
 class ItemCreationClass185050
 {
 public:
     LibStorageBlock0C unk00;
     u8 unk0c[4];
-    float unk10;
-    float unk14;
+    LibPoint2 position;
     float unk18;
     float unk1c;
-    float unk20;
-    float unk24;
-    u8 unk28[8];
-    float unk30;
+    LibPoint2 target;
+
+    /** Frames the move to the target takes. */
+    float move_frames;
+
+    u8 unk2c[4];
+    float alpha;
     u8 unk34;
     u8 unk35;
     u8 unk36[2];
@@ -148,12 +157,12 @@ public:
     /** @brief Initialize the storage and clear its three scalar pairs. */
     ItemCreationClass185050()
     {
-        unk14 = 0.0f;
-        unk10 = 0.0f;
+        position.y = 0.0f;
+        position.x = 0.0f;
         unk1c = 0.0f;
         unk18 = 0.0f;
-        unk24 = 0.0f;
-        unk20 = 0.0f;
+        target.y = 0.0f;
+        target.x = 0.0f;
     }
     /** @brief Release the owned storage. */
     virtual ~ItemCreationClass185050()
@@ -161,13 +170,19 @@ public:
     }
     virtual void func_slot0c();
     /**
+     * @brief Allocate the drawing storage and show the state at a position at full alpha.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @return One on success, or zero when the storage couldn't be allocated.
+     */
+    s32 init_position(float x, float y);
+    /**
      * @brief Set the movement target and reset its completion flags.
      * @param x Target horizontal coordinate.
      * @param y Target vertical coordinate.
      * @param duration Duration in seconds, converted to sixty frames per second.
      */
     void set_move_target(float x, float y, float duration);
-
 };
 
 /** Partial kind-9 widget with a storage base at offset 0x40. */
@@ -456,15 +471,6 @@ void lib_multiline_text_init_rectangle(LibObject174D90* object, float x, float y
 s32 lib_multiline_text_init_resource_rectangle(LibObject174D90* object, float x, float y, float width, float height, s32 slot, s32 key, u32 mode, u32 flag);
 
 /**
- * @brief Set the widget movement target and reset its completion flags.
- * @param object Widget movement storage.
- * @param x Target horizontal coordinate.
- * @param y Target vertical coordinate.
- * @param duration Duration in seconds, converted to sixty frames per second.
- */
-void func_00466E40(void* object, float x, float y, float duration);
-
-/**
  * @brief Initialize the moving widget's storage and position.
  * @param object Moving widget with its storage base at offset 0x40.
  * @param x Horizontal position.
@@ -632,9 +638,6 @@ void func_004619D0(void* object);
 void func_004619E0(void* object);
 void func_004662A0(void* object);
 
-
-/** Forward the receiver to func_004D00B0. */
-void func_00467480(void* object);
 
 /** Forward the receiver to func_004D00B0. */
 void func_0046A3F0(void* object);

@@ -305,7 +305,7 @@ extern "C" u8 func_0023CB50(FieldObject23CEA0* object, s16 direction);
 
 s16 FieldObject23CEA0::process_direction(s16 direction)
 {
-    if (FieldClass151C50::unk35 == 0)
+    if (ItemCreationClass185050::unk35 == 0)
     {
         return 1;
     }
@@ -430,21 +430,6 @@ void func_0023D020(FieldObject23D020* object, float first_float, float second_fl
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D0C0);
-
-inline FieldClass151C50::FieldClass151C50()
-{
-    unk10.y = 0;
-    unk10.x = 0;
-    unk1c = 0;
-    unk18 = 0;
-    unk24 = 0;
-    unk20 = 0;
-}
-
-inline FieldClass175070::FieldClass175070()
-{
-    type_id = 0x6FF0;
-}
 
 FieldObject23CEA0::FieldObject23CEA0()
 {
