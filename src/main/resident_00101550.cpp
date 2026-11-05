@@ -35,8 +35,6 @@ void func_0010B510(ResidentStreamThread* thread, s32 command);
 bool func_00114E00(ResidentThread* thread);
 u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 arg3, s32 arg4, s32 arg5);
 s32 func_4DC4F0(void* queue, u32 operation, u32 flags, void* packet, u32 value, void* completion);
-s32 func_00108000(ResidentSoundStream* stream, s32* status, u32 arg2, u32 arg3, u32 address, u32 arg5, u32 arg6,
-                  u32 arg7, u32 arg8, u32 arg9, u32 arg10);
 }
 
 /** Vtable of the running program. */
@@ -879,8 +877,9 @@ extern "C" u8* func_00106640(ResidentSoundStream* stream, u32 arg1, u32 arg2)
 {
     ResidentBankRequest* request = stream->bank_read;
 
-    stream->bank_request = func_00108000(stream, stream->bank_status, arg1, arg2, stream->bank_address, request->unk10,
-                                         request->unk14, 0, request->unk18, request->unk1C, request->unk20);
+    stream->bank_request = func_00108000(stream, (s32)stream->bank_status, (void (*)(void*, ResidentRequestSlot*))arg1,
+                                         (ResidentRequestSlot*)arg2, stream->bank_address, request->unk10, request->unk14, 0,
+                                         request->unk18, request->unk1C, request->unk20);
     request->waiting = 0;
     stream->bank_state++;
     return (u8*)stream->slots[stream->bank_slot] + sizeof(SoundChunk);
@@ -1147,7 +1146,28 @@ extern "C" bool func_00107230(ResidentSoundStream* stream, s32 request)
     return func_0010C0E0(&D_001CC590, request);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107250);
+/**
+ * @brief Send sound stream command 0x17 to the IOP with one value.
+ * @param stream Sound stream; unused.
+ * @param arg1 Reply buffer address, or zero.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @param value Value sent in the argument block.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00107250(ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, s32 value)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    arguments[0] = value;
+    return func_0010C200(&D_001CC590, 0x17, (void*)arg1, arg2, arg3, 0);
+}
 
 /**
  * @brief Send sound stream command 0x18 to the IOP.
@@ -1164,11 +1184,81 @@ extern "C" u32 func_00107420(ResidentSoundStream* stream, void* reply, s32 arg2,
     return func_0010C200(&D_001CC590, 0x18, reply, arg2, arg3, 0);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107530);
+/**
+ * @brief Send sound stream command 0x15 to the IOP with 4 values in the argument block.
+ * @param stream Sound stream; unused.
+ * @param arg1 Reply buffer address, or zero.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @param handle First value.
+ * @param command Second value.
+ * @param first Third value.
+ * @param second Fourth value.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00107530(ResidentSoundStream* stream, u32 arg1, u32 arg2, u32 arg3, u32 handle, s32 command, s32 first, s32 second)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107730);
+    if (!arguments)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107940);
+    arguments[0] = handle;
+    arguments[1] = command;
+    arguments[2] = first;
+    arguments[3] = second;
+    return func_0010C200(&D_001CC590, 0x15, (void*)arg1, arg2, arg3, 0);
+}
+
+/**
+ * @brief Send sound stream command 0x14 with a count and that many words.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00107730(ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, const u32* values, s32 count)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    *arguments++ = count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        *arguments++ = *values++;
+    }
+
+    return func_0010C200(&D_001CC590, 0x14, (void*)arg1, arg2, arg3, 0);
+}
+
+/**
+ * @brief Send sound stream command 0x13 to the IOP with 1 value in the argument block.
+ * @param stream Sound stream; unused.
+ * @param arg1 Reply buffer address, or zero.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @param mode Value sent.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" s32 func_00107940(ResidentSoundStream* stream, u32 arg1, u32 arg2, u32 arg3, u32 mode)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    arguments[0] = mode;
+    return func_0010C200(&D_001CC590, 0x13, (void*)arg1, arg2, arg3, 0);
+}
 
 /**
  * @brief Query the stream: modes one and two read the stream thread's states, other modes go to func_00107940.
@@ -1189,7 +1279,33 @@ extern "C" s32 func_00107B10(ResidentSoundStream* stream, u32 arg1, u32 arg2, u3
     return func_00107940(stream, arg1, arg2, arg3, mode);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107B60);
+/**
+ * @brief Send sound stream command 0x12 (stop); handles 1 and 2 are first checked against the stream thread.
+ * @return Nonzero when the stop was sent.
+ */
+extern "C" s32 func_00107B60(ResidentSoundStream* stream, u32 arg1, void (*callback)(void*), void* argument, u32 handle, s32 mode, u32 arg6)
+{
+    if (handle == 1 || handle == 2)
+    {
+        if (!func_0010A000(stream->thread, handle))
+        {
+            return 0;
+        }
+    }
+
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    arguments[0] = handle;
+    arguments[1] = mode;
+    arguments[2] = arg6;
+    return func_0010C200(&D_001CC590, 0x12, (void*)arg1, (s32)callback, (s32)argument, 0);
+}
 
 /**
  * @brief Set the stream thread's second state to one when the value is positive.
@@ -1212,25 +1328,287 @@ extern "C" s32 func_00107DB0(ResidentSoundStream* stream, const s32* value)
     return func_0010A0B0(stream->thread, value);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00107DD0);
+/**
+ * @brief Send sound stream command 0x10 with a flag in the seventh word.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" s32 func_00107DD0(void* object, s32 arg1, void* callback, void* argument, s32 arg4, s32 command, s32 arg6, s32 arg7, u32 arg8, s32 arg9, u8 arg10)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108000);
+    if (!arguments)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108220);
+    arguments[0] = arg4;
+    arguments[1] = command;
+    arguments[2] = arg6;
+    arguments[3] = arg7;
+    arguments[4] = arg8;
+    arguments[5] = arg9;
+    arguments[6] = arg10 ? 1 : 0;
+    arguments[7] = 0;
+    return func_0010C200(&D_001CC590, 0x10, (void*)arg1, (s32)callback, (s32)argument, 0);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108430);
+/**
+ * @brief Send sound stream command 0x10 for a request slot.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" s32 func_00108000(void* context, s32 first, void (*callback)(void*, ResidentRequestSlot*), ResidentRequestSlot* slot, s32 selected, s32 value, s32 arg3, s32 zero, u32 packed, u32 placement, u32 room)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108640);
+    if (!arguments)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108800);
+    arguments[0] = selected;
+    arguments[1] = value;
+    arguments[2] = arg3;
+    arguments[3] = zero;
+    arguments[4] = packed;
+    arguments[5] = placement;
+    arguments[6] = 0;
+    arguments[7] = room;
+    return func_0010C200(&D_001CC590, 0x10, (void*)first, (s32)callback, (s32)slot, 0);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108A00);
+/**
+ * @brief Send sound stream command 0x10 for a request slot, with one packed word.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" s32 func_00108220(void* context, s32 first, void (*callback)(void*, ResidentRequestSlot*), ResidentRequestSlot* slot, s32 selected, s32 value, s32 arg3, s32 zero, s32 packed)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108C40);
+    if (!arguments)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00108E10);
+    arguments[0] = selected;
+    arguments[1] = value;
+    arguments[2] = arg3;
+    arguments[3] = zero;
+    arguments[4] = packed;
+    arguments[5] = 0;
+    arguments[6] = 0;
+    arguments[7] = 0;
+    return func_0010C200(&D_001CC590, 0x10, (void*)first, (s32)callback, (s32)slot, 0);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109000);
+/**
+ * @brief Send sound stream command 0x10 with the fifth word set to 0x7F400000.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" s32 func_00108430(void* object, s32 arg1, void* callback, void* argument, s32 arg4, s32 command, s32 arg6, s32 arg7)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    arguments[0] = arg4;
+    arguments[1] = command;
+    arguments[2] = arg6;
+    arguments[3] = arg7;
+    arguments[4] = 0x7F400000;
+    arguments[5] = 0;
+    arguments[6] = 0;
+    arguments[7] = 0;
+    return func_0010C200(&D_001CC590, 0x10, (void*)arg1, (s32)callback, (s32)argument, 0);
+}
+
+/**
+ * @brief Send sound stream command 0xC with an empty argument block.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00108640(void* object, s32 arg1, s32 arg2, s32 arg3)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    return func_0010C200(&D_001CC590, 0xC, (void*)arg1, arg2, arg3, 0);
+}
+
+/**
+ * @brief Send sound stream command 0xB to the IOP with 4 values in the argument block.
+ * @param stream Sound stream; unused.
+ * @param arg1 Reply buffer address, or zero.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @param value0 First value.
+ * @param value1 Second value.
+ * @param value2 Third value.
+ * @param value3 Fourth value.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00108800(ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, s32 value0, s32 value1, s32 value2, s32 value3)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    arguments[0] = value0;
+    arguments[1] = value1;
+    arguments[2] = value2;
+    arguments[3] = value3;
+    return func_0010C200(&D_001CC590, 0xB, (void*)arg1, arg2, arg3, 0);
+}
+
+/**
+ * @brief Send sound stream command 0x7 with four values, allocating a slot buffer first when a size is given.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00108A00(ResidentSoundStream* stream, u32* reply, s32 arg2, s32 arg3, s32 index, u32 arg5, u32 arg6, u32 arg7,
+                  u32 arg8, u32 arg9)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    arguments[0] = arg5;
+    arguments[1] = arg6;
+    arguments[2] = arg7;
+    arguments[3] = arg8;
+
+    if (arg9)
+    {
+        stream->slots[index] = new (0) u8[arg9];
+
+        if (stream->slots[index])
+        {
+            *(u32*)stream->slots[index] = 0;
+        }
+    }
+
+    return func_0010C200(&D_001CC590, 0x7, reply, arg2, arg3, 0);
+}
+
+/**
+ * @brief Send sound stream command 0x6 to the IOP with 1 value in the argument block.
+ * @param object Sound stream; unused.
+ * @param arg1 Reply buffer address, or zero.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @param arg4 Value sent.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00108C40(void* object, u32 arg1, u32 arg2, u32 arg3, u32 arg4)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    arguments[0] = arg4;
+    return func_0010C200(&D_001CC590, 0x6, (void*)arg1, arg2, arg3, 0);
+}
+
+/**
+ * @brief Stream setup step run after func_00109000: send command 0x2 with the SIF buffers and keep the reply as
+ * the sequence address.
+ * @param stream Sound stream.
+ */
+extern "C" void func_00108E10(ResidentSoundStream* stream)
+{
+    u32 reply[16];
+    u32 handle;
+
+    {
+        ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+        u32* arguments = D_001CC590.get_request_arguments();
+
+        if (!arguments)
+        {
+            return;
+        }
+
+        arguments[0] = (u32)D_001CC590.unk2AC;
+        arguments[1] = (u32)D_001CC590.unk2B0;
+        handle = func_0010C200(&D_001CC590, 0x2, reply, 0, 0, 0);
+    }
+
+    while (func_0010C0E0(&D_001CC590, handle))
+    {
+    }
+
+    stream->sequence_address = reply[0];
+}
+
+/**
+ * @brief Start the sound stream: take the SIF commands, send command 0x1, set up the four channels, then start the
+ * stream thread.
+ * @return Zero.
+ */
+extern "C" s32 func_00109000(ResidentSoundStream* stream, u32 arg1, u32 arg2, u32 arg3, u32 arg4, u32 arg5, u32 arg6, s32 arg7, s32 arg8)
+{
+    u32 handle;
+
+    {
+        ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+        u32* arguments = D_001CC590.get_request_arguments();
+
+        if (!arguments)
+        {
+            return 0;
+        }
+
+        g_sif_command_receiver = stream;
+        arguments[0] = arg4;
+        arguments[1] = arg5;
+        arguments[2] = arg6;
+        arguments[3] = arg7;
+        arguments[4] = arg8;
+        arguments[5] = 0;
+        handle = func_0010C200(&D_001CC590, 0x1, (void*)arg1, arg2, arg3, 0);
+    }
+
+    while (func_0010C0E0(&D_001CC590, handle))
+    {
+    }
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        u32 reply[16];
+        handle = func_00108A00(stream, reply, 0, 0, i + 0x1C, 0, 0x100, 0x100, 0x10000, 0x400);
+
+        while (func_0010C0E0(&D_001CC590, handle))
+        {
+        }
+
+        stream->channels[i].address = reply[0];
+        stream->channels[i].slot = i + 0x1C;
+    }
+
+    stream->thread->start();
+    return 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", __dt__19ResidentSoundStreamFv);
 

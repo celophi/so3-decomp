@@ -110,7 +110,8 @@ static inline void ee_exit_handler(void)
  */
 static inline u32 ee_get_status(void)
 {
-    u32 status;
+    // The game clears it before the read; one request wrapper keeps that dead move.
+    u32 status = 0;
     asm __volatile__("mfc0 %0, $12" : "=r"(status));
     return status;
 }

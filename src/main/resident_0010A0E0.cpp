@@ -199,12 +199,7 @@ void func_0010BC50(void* packet, void* data);
 void func_0010BC90(void* packet, void* data);
 void func_0010BCD0(void* packet, void* data);
 void func_0010C6D0(s32 alarm_id, u16 time, void* common);
-s32 func_00108430(void* object, s32 arg1, void* callback, void* argument, s32 arg4, s32 command, s32 arg6, s32 arg7);
-s32 func_00107DD0(void* object, s32 arg1, void* callback, void* argument, s32 arg4, s32 command, s32 arg6, s32 arg7,
-                  u32 arg8, s32 arg9, s32 arg10);
 void func_0010A7A0(ResidentStreamThread* stream);
-u32 func_00108A00(ResidentSoundStream* stream, u32* reply, s32 arg2, s32 arg3, s32 index, u32 arg5, u32 arg6, u32 arg7,
-                  u32 arg8, u32 arg9);
 void func_0010AA30(ResidentStreamThread* stream);
 void func_0010B600(ResidentStreamThread* stream, s32 value);
 typedef struct ResidentSpeakerAngles
@@ -428,7 +423,7 @@ s32 func_0010A400(ResidentStreamThread* stream, s32 arg1, void* callback, void* 
  * @return The request result, or zero while a request is already running.
  */
 s32 func_0010A450(ResidentStreamThread* stream, s32 arg1, void* callback, void* argument, s32 value, s32 arg6,
-                  s32 arg10)
+                  u8 arg10)
 {
     if (stream->first_state != 0)
     {
@@ -1698,12 +1693,6 @@ s32 func_0010EFD0(ResidentSound* sound)
 }
 
 extern void func_0010EE60(void* response, ResidentRequestSlot* slot);
-extern s32 func_00108000(void* context, s32 first, void (*callback)(void*, ResidentRequestSlot*),
-                         ResidentRequestSlot* slot, s32 selected, s32 value, s32 arg3, s32 zero, u32 packed,
-                         u32 placement, u32 room);
-extern s32 func_00108220(void* context, s32 first,
-    void (*callback)(void*, ResidentRequestSlot*), ResidentRequestSlot* slot,
-    s32 selected, s32 value, s32 arg3, s32 zero, s32 packed);
 
 /**
  * @brief Find a free sound slot, starting at the cursor and advancing it past every slot looked at.
@@ -3659,7 +3648,57 @@ s32 func_0011C7C0(const void* object)
     return (values[0x33] & 1) != 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C7D0);
+/**
+ * @brief Read the archive's unk5E flag under its semaphore.
+ * @param archive Resource archive.
+ * @return The flag.
+ */
+static inline u8 archive_read_unk5e(ResidentArchive* archive)
+{
+    (void)archive->semaphore.wait();
+    u8 value = archive->unk5e;
+    (void)archive->semaphore.signal();
+    return value;
+}
+
+/**
+ * @brief Report whether the archive's unk5E flag is clear.
+ * @param archive Resource archive.
+ * @return True when it is clear.
+ */
+static inline bool archive_unk5e_clear(ResidentArchive* archive)
+{
+    return !archive_read_unk5e(archive);
+}
+
+/**
+ * @brief Get unk70 when unk12186 is set, or a read is in progress with unk5E clear; otherwise zero.
+ * @param archive Resource archive.
+ * @return unk70, or zero.
+ */
+extern "C" s32 func_0011C7D0(ResidentArchive* archive)
+{
+    u8 ready = archive->unk12186;
+
+    if (!ready)
+    {
+        u8 reading = archive->read_busy;
+
+        if (reading)
+        {
+            reading = archive_unk5e_clear(archive);
+        }
+
+        ready = reading;
+    }
+
+    if (ready)
+    {
+        return archive->unk70;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Get the size of a resource, in whole 2048-byte blocks.

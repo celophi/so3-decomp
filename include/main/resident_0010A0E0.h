@@ -1024,10 +1024,13 @@ public:
 
     s32 unk14;
 
-    /** Reply slot the last reply went to. */
-    s32 reply_index;
+    // TODO: The two ring indices are volatile because the reply interrupt moves them; the request wrappers
+    // reread unk1C after comparing it, and nothing else I tried does that.
 
-    s32 unk1C;
+    /** Reply slot the last reply went to. */
+    volatile s32 reply_index;
+
+    volatile s32 unk1C;
     ResidentSifReply replies[32];
 
     /** The allocation rounded up to 64 bytes. */
@@ -1070,7 +1073,9 @@ public:
             return 0;
         }
 
-        return (u32*)(buffer + unk1C * 64);
+        u8* base = buffer;
+
+        return (u32*)(base + unk1C * 64);
     }
 
     /** Next packet for sends from interrupt context. */
@@ -2417,7 +2422,7 @@ s32 func_0010A400(ResidentStreamThread* stream, s32 arg1, void* callback, void* 
  * @return The request result, or zero while a request is already running.
  */
 s32 func_0010A450(ResidentStreamThread* stream, s32 arg1, void* callback, void* argument, s32 value, s32 arg6,
-                  s32 arg10);
+                  u8 arg10);
 
 /**
  * @brief Append bytes to the ring, first moving unread data back to the start of the ring when the end is too close.
