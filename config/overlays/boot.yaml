@@ -55,10 +55,12 @@ segments:
     subsegments:
       # Linker padding: .text starts on a 128-byte boundary after the 64-byte MWo3 header.
       - [0x40, pad, text_align]
-      - [0x80, cpp, text_001DD3C0]
+      - [0x80, cpp, installer]
       - [0x3580, cpp, text_001E0900]
+      - [0xC230, cpp, text_001E95B0]
       - [0x11900, cpp, text_001EEC80]
       - [0x18C90, cpp, text_001F6010]
+      - [0x1D520, cpp, text_001FA8A0]
       - [0x1DEA0, cpp, text_001FB220]
       - [0x22650, cpp, text_001FF9D0]
       # Linker padding: the data section starts on a 128-byte boundary.
@@ -66,7 +68,7 @@ segments:
       - [0x27D80, databin, data]
       - start: 0x28580
         type: .rodata
-        name: text_001DD3C0
+        name: installer
         linker_section: .rodata.00205900
         rodata_anchors:
           - {function: update__13BootInstallerFv, offset: 0x0, size: 0x80}
@@ -130,7 +132,13 @@ segments:
         linker_section: .rodata.00205BD0
         rodata_anchors:
           - {function: update__13BootTitleMenuFv, offset: 0x0, size: 0x20}
-          - {function: update__16BootGameLauncherFv, offset: 0x20, size: 0x1C}
+        linker_section_order: .rodata
+      - start: 0x28870
+        type: .rodata
+        name: text_001FA8A0
+        linker_section: .rodata.00205BF0
+        rodata_anchors:
+          - {function: update__16BootGameLauncherFv, offset: 0x0, size: 0x1C}
         linker_section_order: .rodata
       - [0x2888C, pad, rodata_pad_00205C0C]
       - [0x28890, rodatabin, data_00205C10]

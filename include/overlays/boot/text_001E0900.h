@@ -793,6 +793,9 @@ class BootProgram : public BootResidentProgram
         /** @brief Set the projections' aspect and field of view for the 4:3 or widescreen setting. */
         void update_projection_aspect();
 
+        /** @brief Body of update_projection_aspect, which the program's own functions inline. */
+        inline void apply_projection_aspect();
+
         /**
          * @brief Replace the display and, on a full rebuild, the scratch heap.
          * @param full Nonzero to also recreate the scratch heap and rebind the display.

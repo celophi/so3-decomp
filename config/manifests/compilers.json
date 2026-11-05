@@ -55,7 +55,7 @@
       "flags": ["-O4,p"]
     },
     {
-      "source": "src/overlays/boot/text_001DD3C0.cpp",
+      "source": "src/overlays/boot/installer.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
@@ -75,11 +75,19 @@
       "flags": ["-O4,p"]
     },
     {
+      "source": "src/overlays/boot/text_001E95B0.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
       "source": "src/overlays/boot/text_001EEC80.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
       "source": "src/overlays/boot/text_001F6010.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/boot/text_001FA8A0.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
