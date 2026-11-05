@@ -93,7 +93,6 @@ BootClass170F30* func_472EB0(LibListObject* models, BootClass170F30* model);
 void func_4BF100(LibAnimation* animation, LibListObject* models, void* optional);
 void lib_animation_bind_state(LibAnimation* animation, LibAnimationTarget* target, const char* name);
 void func_4B3DE0(LibAnimation* animation, LibAnimationTarget* target);
-void func_4C96E0(struct BootMorphTarget* target, float weight);
 void func_4E24D0(void* display);
 void func_4D5870(void* display);
 }
@@ -230,7 +229,7 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* trophy_card)
  */
 static inline u8 settings_difficulty(BootSystemSettings* settings)
 {
-    if (settings->checksum != func_457470(settings->key, &settings->unk26, (u8*)&settings->checksum - &settings->unk26))
+    if (settings->checksum != lib_compute_checksum(settings->key, &settings->unk26, (u8*)&settings->checksum - &settings->unk26))
     {
         return BOOT_DIFFICULTY_EARTH;
     }
@@ -247,11 +246,11 @@ static inline void settings_set_difficulty(BootSystemSettings* settings, u8 valu
 {
     s32 length = (u8*)&settings->checksum - &settings->unk26;
 
-    if (settings->checksum == func_457470(settings->key, &settings->unk26, length))
+    if (settings->checksum == lib_compute_checksum(settings->key, &settings->unk26, length))
     {
         settings->difficulty = value;
         settings->key = resident_next_random_word();
-        settings->checksum = func_457470(settings->key, &settings->unk26, length);
+        settings->checksum = lib_compute_checksum(settings->key, &settings->unk26, length);
     }
 }
 
@@ -264,7 +263,7 @@ static inline void settings_set_difficulty(BootSystemSettings* settings, u8 valu
  */
 static inline u8 settings_extra_byte(BootSystemSettings* settings, u8* data, u8* value)
 {
-    if (settings->extra_checksum != func_457470(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
+    if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
         return 0;
     }
@@ -281,7 +280,7 @@ static inline u8 settings_universe_unlocked(BootSystemSettings* settings)
 {
     u8* data = &settings->unk1A0;
 
-    if (settings->extra_checksum != func_457470(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
+    if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
         return 0;
     }
@@ -298,7 +297,7 @@ static inline u8 settings_fourth_dimension_unlocked(BootSystemSettings* settings
 {
     u8* data = &settings->unk1A0;
 
-    if (settings->extra_checksum != func_457470(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
+    if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
         return 0;
     }
@@ -3014,14 +3013,6 @@ void BootNewGameSettings::update_page_images()
     }
 }
 
-/** Partial Lib morph target, one of a face model's children; object_kind is two for a morph target. */
-struct BootMorphTarget : public LibListObject
-{
-    u8 unk14[0x1C];
-
-    /** Shape the target draws, such as a mouth shape or zero for closed eyes. */
-    s32* shape;
-};
 
 /** @brief Show the message that describes the selected option. */
 inline void BootNewGameSettings::show_value_message()
@@ -3046,7 +3037,7 @@ static inline s32 button_pressed(BootInput* input, u16 mask)
  * @param x Horizontal position.
  * @param y Vertical position.
  */
-static inline void place_cursor(BootSelectionCursor* cursor, float x, float y)
+static inline void place_cursor(LibSelectionCursor* cursor, float x, float y)
 {
     ItemCreationClass185050& motion = *cursor;
     motion.unk10 = x;
@@ -3114,8 +3105,8 @@ void BootNewGameSettings::update()
             float x;
             float y;
             get_cursor_position(&x, &y);
-            cursor = new (0) BootSelectionCursor;
-            func_467570(cursor, 1, 0, 0xF42400, x, y, 0.0f);
+            cursor = new (0) LibSelectionCursor;
+            cursor->init(1, 0, 0xF42400, x, y, 0.0f);
             lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
             func_0010DAA0(g_sound, 2);
         }
@@ -3588,17 +3579,17 @@ void BootNewGameSettings::update()
 
                 for (; !at_end(end, node); node = node->next)
                 {
-                    BootMorphTarget* target = (BootMorphTarget*)node;
+                    LibMorphTarget* target = (LibMorphTarget*)node;
 
                     if (target->object_kind == 2)
                     {
-                        if (shape == *target->shape)
+                        if (shape == target->shape->id)
                         {
-                            func_4C96E0(target, 100.0f);
+                            lib_morph_target_set_weight(target, 100.0f);
                         }
                         else
                         {
-                            func_4C96E0(target, 0.0f);
+                            lib_morph_target_set_weight(target, 0.0f);
                         }
                     }
                 }
@@ -3609,11 +3600,11 @@ void BootNewGameSettings::update()
 
                 for (; !at_end(end, node); node = node->next)
                 {
-                    BootMorphTarget* target = (BootMorphTarget*)node;
+                    LibMorphTarget* target = (LibMorphTarget*)node;
 
                     if (target->object_kind == 2)
                     {
-                        func_4C96E0(target, 0.0f);
+                        lib_morph_target_set_weight(target, 0.0f);
                     }
                 }
             }
@@ -3633,17 +3624,17 @@ void BootNewGameSettings::update()
 
             for (; !at_end(end, node); node = node->next)
             {
-                BootMorphTarget* target = (BootMorphTarget*)node;
+                LibMorphTarget* target = (LibMorphTarget*)node;
 
-                if (target->object_kind == 2 && *target->shape == 0)
+                if (target->object_kind == 2 && target->shape->id == 0)
                 {
                     if (blink_frame < 5)
                     {
-                        func_4C96E0(target, 100.0f);
+                        lib_morph_target_set_weight(target, 100.0f);
                     }
                     else
                     {
-                        func_4C96E0(target, 0.0f);
+                        lib_morph_target_set_weight(target, 0.0f);
                         blink_frame = 0;
                     }
 

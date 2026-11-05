@@ -831,7 +831,24 @@ void func_004674A0(N54Owner64_0045AD10* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004674E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467570);
+/**
+ * @brief Reset the translation, set the drawing codes and depth, and place the cursor.
+ * @param code Drawing code.
+ * @param first First drawing value.
+ * @param second Second drawing value.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Depth.
+ */
+void LibSelectionCursor::init(s32 code, u32 first, u32 second, float x, float y, float z)
+{
+    translation.x = 0.0f;
+    translation.y = 0.0f;
+    translation.z = 0.0f;
+    translation.w = 1.0f;
+    set_codes_and_z(code, first, z, second, 0);
+    func_00467250(&static_cast<ItemCreationClass185050&>(*this), x, y);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004675E0);
 

@@ -543,3 +543,4 @@ field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_dupl
 lib_allocation_initialize = 0x0040D2E0; // type:func absolute:True allow_duplicated:True
 lib_character_recalculate_stats = 0x003F9890; // type:func absolute:True allow_duplicated:True
 g_sound = 0x001B65F8; // absolute:True
+lib_compute_checksum = 0x00457470; // type:func absolute:True allow_duplicated:True

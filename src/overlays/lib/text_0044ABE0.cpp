@@ -696,7 +696,34 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457220);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457360);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457470);
+// TODO: This only matches at optimization level 0, and with an unused local cleared at the start; I don't know
+// what the local was for.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Compute the checksum the game stores with its saved records.
+ * @param seed Starting value, usually the record's key.
+ * @param data Bytes to check.
+ * @param size Number of bytes.
+ * @return Checksum.
+ */
+u16 lib_compute_checksum(u16 seed, const void* data, s32 size)
+{
+    u32 checksum = seed;
+    u32 total = 0;
+    const u8* bytes = (const u8*)data;
+
+    for (s32 i = 0; i < size; i++)
+    {
+        u8 value = *bytes++;
+        checksum = (value << 8) + (checksum * 0x19660D + 0x3C6EF35F);
+    }
+
+    return checksum;
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457520);
 

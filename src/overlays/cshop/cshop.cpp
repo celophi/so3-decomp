@@ -2406,7 +2406,7 @@ void shop_update_fol(ShopValueDisplay* object)
     u16 checksum = saved_record->checksum;
     const u8* end = (const u8*)&saved_record->checksum;
 
-    if (checksum != func_00457470(saved_record->checksum_seed, (u8*)saved_record + 0x26, end - ((const u8*)saved_record + 0x26)))
+    if (checksum != lib_compute_checksum(saved_record->checksum_seed, (u8*)saved_record + 0x26, end - ((const u8*)saved_record + 0x26)))
     {
         current_fol = 0;
     }

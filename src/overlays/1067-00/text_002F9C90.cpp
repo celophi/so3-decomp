@@ -52,7 +52,7 @@ struct TransactionDynamicInventory
 
 // Resident library ABI spellings used by the Field overlay.
 extern "C" ResidentObject1B64F8* D_001B64F8;
-extern "C" u16 func_457470(u16 seed, const void* data, s32 size);
+extern "C" u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
 extern "C" u32 func_414130(ItemCreationCategoryRecord* item);
 extern "C" u32 func_40D760(ItemCreationAllocationRecord* allocation);
 
@@ -227,7 +227,7 @@ s32 shop_increase_quantity(ShopTransaction* transaction, u32 code)
     u16 checksum = record->checksum;
     const u8* end = reinterpret_cast<const u8*>(&record->checksum);
     u32 fol;
-    if (checksum != func_457470(record->checksum_seed, reinterpret_cast<u8*>(record) + 0x26, end - (reinterpret_cast<const u8*>(record) + 0x26)))
+    if (checksum != lib_compute_checksum(record->checksum_seed, reinterpret_cast<u8*>(record) + 0x26, end - (reinterpret_cast<const u8*>(record) + 0x26)))
     {
         fol = 0;
     }

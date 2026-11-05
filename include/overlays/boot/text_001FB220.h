@@ -157,7 +157,7 @@ class BootBattleTrophyViewer : public LibListObject
         /** Prompt and status message. */
         LibTextWidget* message_text;
 
-        BootSelectionCursor* cursor;
+        LibSelectionCursor* cursor;
 
         /** Slot 1 choice. */
         LibTextWidget* slot1_text;

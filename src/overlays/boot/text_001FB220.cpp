@@ -570,11 +570,11 @@ static inline void settings_set_extra_byte(BootSystemSettings* settings, u8* fie
     u8* data = &settings->unk1A0;
     length = (u8*)&settings->extra_checksum - data;
 
-    if (settings->extra_checksum == func_457470(settings->extra_key, data, length))
+    if (settings->extra_checksum == lib_compute_checksum(settings->extra_key, data, length))
     {
         *field = value;
         settings->extra_key = resident_next_random_word();
-        settings->extra_checksum = func_457470(settings->extra_key, data, length);
+        settings->extra_checksum = lib_compute_checksum(settings->extra_key, data, length);
     }
 }
 
@@ -690,8 +690,8 @@ void BootBattleTrophyViewer::update()
         slot2_text->set_color(0x34130F);
         step = BOOT_TROPHY_CHOOSE_SLOT;
         slot = 0;
-        cursor = new (0) BootSelectionCursor;
-        func_467570(cursor, 1, 0, 0, 170.0f, 156.0f, 0.0f);
+        cursor = new (0) LibSelectionCursor;
+        cursor->init(1, 0, 0, 170.0f, 156.0f, 0.0f);
         lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_WAIT_FOR_EXIT:
@@ -998,8 +998,8 @@ void BootBattleTrophyViewer::update()
         D_001B657C->message_arguments[1] = earned_count;
         D_001B657C->message_arguments[2] = BOOT_TROPHY_COUNT;
         D_001B657C->message_arguments[3] = earned_count * 100 / BOOT_TROPHY_COUNT;
-        cursor = new (0) BootSelectionCursor;
-        func_467570(cursor, 1, 0, 0, grid_cursor_x(this), cursor_row * 100 + 170, 0.0f);
+        cursor = new (0) LibSelectionCursor;
+        cursor->init(1, 0, 0, grid_cursor_x(this), cursor_row * 100 + 170, 0.0f);
         lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_BROWSE:

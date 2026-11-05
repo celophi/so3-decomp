@@ -6219,7 +6219,7 @@ static inline u32 checked_fol(ResidentCheckedRecord* record)
     const u8* end = (const u8*)&record->checksum;
     u16 checksum = record->checksum;
     u32 value;
-    if (checksum != func_00457470(record->checksum_seed, ((u8*)record + 0x26),
+    if (checksum != lib_compute_checksum(record->checksum_seed, ((u8*)record + 0x26),
         end - ((const u8*)record + 0x26)))
     {
         value = 0;
@@ -11596,7 +11596,7 @@ u8 WorkshopExpansionWindow::func_slotb0()
         ResidentCheckedRecord* record = D_001B643C->unk00;
         s32 checksum = record->checksum;
         const u8* end = (const u8*)&record->checksum;
-        if (checksum != (u16)func_00457470(record->checksum_seed, (u8*)record + 0x26, end - ((const u8*)record + 0x26)))
+        if (checksum != (u16)lib_compute_checksum(record->checksum_seed, (u8*)record + 0x26, end - ((const u8*)record + 0x26)))
         {
             value = 0;
         }
@@ -11618,7 +11618,7 @@ u8 WorkshopExpansionWindow::func_slotb0()
             ResidentCheckedRecord* stored = D_001B643C->unk00;
             const u8* stored_end = (const u8*)&stored->checksum;
             s32 stored_checksum = stored->checksum;
-            if (stored_checksum == (u16)func_00457470(stored->checksum_seed, (u8*)stored + 0x26, stored_end - ((const u8*)stored + 0x26)))
+            if (stored_checksum == (u16)lib_compute_checksum(stored->checksum_seed, (u8*)stored + 0x26, stored_end - ((const u8*)stored + 0x26)))
             {
                 value += 40597;
                 value = clamp(value, 40597, 100040596);
@@ -11626,7 +11626,7 @@ u8 WorkshopExpansionWindow::func_slotb0()
                 stored->encoded_fol = value ^ 0x7CE3C7F7;
                 stored->checksum_seed = resident_next_random_word();
                 stored_end = (const u8*)&stored->checksum;
-                stored->checksum = func_00457470(stored->checksum_seed, stored->unk26, stored_end - stored->unk26);
+                stored->checksum = lib_compute_checksum(stored->checksum_seed, stored->unk26, stored_end - stored->unk26);
             }
             if (this->unk10c != index)
             {

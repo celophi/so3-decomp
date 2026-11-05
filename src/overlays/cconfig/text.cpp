@@ -422,7 +422,7 @@ extern "C" void func_2642D0(void* object);
 static inline u8 config_extra(ConfigSettings* settings)
 {
     u8* data = &settings->extra;
-    if (settings->extra_checksum != func_00457470(settings->extra_key, data,
+    if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data,
         reinterpret_cast<u8*>(&settings->extra_checksum) - data))
     {
         return 0;
@@ -436,7 +436,7 @@ static inline u8 config_extra(ConfigSettings* settings)
  */
 static inline u8 config_mode(ConfigSettings* settings)
 {
-    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
+    if (settings->checksum != lib_compute_checksum(settings->key, &settings->unk26,
         reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
     {
         return 0;
@@ -450,7 +450,7 @@ static inline u8 config_mode(ConfigSettings* settings)
  */
 static inline u8 config_enabled(ConfigSettings* settings)
 {
-    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
+    if (settings->checksum != lib_compute_checksum(settings->key, &settings->unk26,
         reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
     {
         return 0;
@@ -477,11 +477,11 @@ static inline u8 config_flag(ConfigSettings* settings)
 static inline void config_set_mode(ConfigSettings* settings, u8 mode)
 {
     s32 length = reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26;
-    if (settings->checksum == func_00457470(settings->key, &settings->unk26, length))
+    if (settings->checksum == lib_compute_checksum(settings->key, &settings->unk26, length))
     {
         settings->mode = mode;
         settings->key = resident_next_random_word();
-        settings->checksum = func_00457470(settings->key, &settings->unk26, length);
+        settings->checksum = lib_compute_checksum(settings->key, &settings->unk26, length);
     }
 }
 

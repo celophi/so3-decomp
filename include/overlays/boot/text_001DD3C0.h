@@ -245,7 +245,7 @@ extern ResidentArchive* g_resource_archive;
 extern ResidentResourceQueue* g_resource_queue;
 extern ResidentReleaseQueues* g_resident_release_queues;
 extern ResidentSound* g_sound;
-u16 func_457470(u16 seed, const void* data, s32 size);
+u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
 
 /**
  * @brief Compute the checksum of a flag block from a seed.
@@ -415,19 +415,6 @@ class BootClipRegion : public LibTransformOwner, public LibDmaCallbacks
         u8 unkb4[0xC];
 };
 
-/** Partial 0xF0-byte selection cursor with the Lib vtable D_175070. */
-class BootSelectionCursor : public LibCallbackTransform, public ItemCreationClass185050
-{
-    public:
-        /** @brief Initialize the cursor transform. */
-        BootSelectionCursor()
-        {
-            type_id = 0x6FF0;
-        }
-
-        /** @brief Destroy the cursor. */
-        virtual ~BootSelectionCursor();
-};
 
 /** Boot's view of the 0x58-byte Lib list indicator with vtable D_1725D0, a bar showing how far a list is scrolled. */
 class BootListIndicator : public LibWidget
@@ -590,7 +577,7 @@ class BootTitleMenu : public LibListObject
         void* camera;
 
         /** Arrow beside the selected item. */
-        class BootSelectionCursor* cursor;
+        class LibSelectionCursor* cursor;
 
         u8* scene_data;
 
@@ -1369,7 +1356,7 @@ class BootInstaller : public LibListObject
         LibTextWidget* message_text;
         LibTextWidget* progress_text;
         LibTextWidget* tip_text;
-        BootSelectionCursor* cursor;
+        LibSelectionCursor* cursor;
 };
 
 /** Partial loaded program image; the offset locates the copy of the main executable's code. */

@@ -74,7 +74,7 @@ void func_004587C0(void* settings);
  * @param size Signed byte count.
  * @return Low sixteen bits of the resulting checksum.
  */
-u16 func_00457470(u16 seed, const void* data, s32 size);
+u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
 
 /**
  * @brief Select the indexed resource and initialize its drawing position.

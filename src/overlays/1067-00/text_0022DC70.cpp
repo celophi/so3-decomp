@@ -75,7 +75,6 @@ struct FieldObject232640
 
 extern u8 D_3013A0[];
 extern u8 D_3014A0[];
-extern "C" void func_4C96E0(void* object, float value);
 
 
 typedef struct FieldObject22E3A0
@@ -678,7 +677,7 @@ void func_002336B0(FieldObject232640* object, s32 state)
         {
             if (attachment->current != 0)
             {
-                func_4C96E0(attachment->current, 0.0f);
+                lib_morph_target_set_weight((LibMorphTarget*)attachment->current, 0.0f);
             }
             if (attachment->target != 0)
             {

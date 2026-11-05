@@ -785,3 +785,6 @@ g_system = 0x001B6880; // absolute:True
 lib_draw_buffer_begin_primitive = 0x004550F0; // type:func size:0x60
 lib_quaternion_from_axis_angle = 0x004CD810; // type:func size:0x88
 lib_normalize_quaternion = 0x004CD8A0; // type:func size:0x18
+init__18LibSelectionCursorFiUiUifff = 0x00467570; // type:func size:0x68
+lib_compute_checksum = 0x00457470; // type:func size:0xAC
+lib_morph_target_set_weight = 0x004C96E0; // type:func size:0xB8

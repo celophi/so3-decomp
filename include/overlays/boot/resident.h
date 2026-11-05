@@ -63,7 +63,6 @@ extern float g_frame_seconds;
 void FlushCache(s32 value);
 void func_419A70(BootMoviePlayer* player, s32 first, s32 second);
 void func_41A210(BootMoviePlayer* player);
-void func_467570(BootSelectionCursor* object, s32 first, s32 second, s32 third, float x, float y, float z);
 void func_479190(BootScene* scene, void* data);
 void func_474010(BootScene* scene, LibCameraContext* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
                  BootDisplayLinks661C* links, s32 flag);

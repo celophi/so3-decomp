@@ -3125,3 +3125,5 @@ resident_sound_play_music = 0x00112990; // type:func absolute:True
 resident_random_below = 0x0010CAA0; // type:func absolute:True
 resident_random_range = 0x0010CC40; // type:func absolute:True
 resident_packet_allocate = 0x0011F8A0; // type:func absolute:True
+lib_compute_checksum = 0x00457470; // type:func absolute:True allow_duplicated:True
+lib_morph_target_set_weight = 0x004C96E0; // type:func absolute:True allow_duplicated:True

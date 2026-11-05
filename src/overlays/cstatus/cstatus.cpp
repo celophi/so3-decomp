@@ -2469,7 +2469,7 @@ u8 StatusCharacterWindow::func_slotb8()
         const u8* end = reinterpret_cast<const u8*>(&section->checksum);
         u8 maximum;
 
-        if (checksum != func_00457470(section->seed, begin, end - begin))
+        if (checksum != lib_compute_checksum(section->seed, begin, end - begin))
         {
             maximum = 0;
         }
@@ -2701,7 +2701,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     u8* variant_end = reinterpret_cast<u8*>(&variants->checksum);
     u8 variant;
 
-    if (variants->checksum != func_00457470(variants->seed, variant_begin, variant_end - variant_begin))
+    if (variants->checksum != lib_compute_checksum(variants->seed, variant_begin, variant_end - variant_begin))
     {
         variant = 0;
     }

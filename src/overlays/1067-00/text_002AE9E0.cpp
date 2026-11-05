@@ -2273,7 +2273,7 @@ extern "C" void field_set_checked_fol(ResidentCheckedRecord* record, s32 fol)
     const u8* end = reinterpret_cast<const u8*>(&record->checksum);
     const u8* data = record->unk26;
 
-    if (checksum == func_00457470(record->checksum_seed, data, end - data))
+    if (checksum == lib_compute_checksum(record->checksum_seed, data, end - data))
     {
         fol += 40597;
         fol = clamp(fol, 40597, 100040596);
@@ -2282,7 +2282,7 @@ extern "C" void field_set_checked_fol(ResidentCheckedRecord* record, s32 fol)
         record->checksum_seed = resident_next_random_word();
         end = reinterpret_cast<const u8*>(&record->checksum);
         data = record->unk26;
-        record->checksum = func_00457470(record->checksum_seed, data, end - data);
+        record->checksum = lib_compute_checksum(record->checksum_seed, data, end - data);
     }
 }
 

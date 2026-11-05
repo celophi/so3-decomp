@@ -396,8 +396,8 @@ void BootInstaller::update()
             message_text->set_color(0x34130F);
             lib_container_attach_widget(container, message_text);
             x = menu_cursor_x(selection);
-            cursor = new (0) BootSelectionCursor;
-            func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
+            cursor = new (0) LibSelectionCursor;
+            cursor->init(1, 0, 0, x, 256.0f, 0.0f);
             lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
 
@@ -424,7 +424,7 @@ void BootInstaller::update()
         x = menu_cursor_x(selection);
 
         {
-            BootSelectionCursor* arrow = cursor;
+            LibSelectionCursor* arrow = cursor;
             ItemCreationClass185050& motion = *arrow;
             motion.unk10 = x;
             motion.unk14 = 256.0f;
@@ -794,8 +794,8 @@ void BootInstaller::update()
                 g_resource_archive->copy_paused = 1;
                 selection = 1;
                 x = menu_cursor_x(selection);
-                cursor = new (0) BootSelectionCursor;
-                func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
+                cursor = new (0) LibSelectionCursor;
+                cursor->init(1, 0, 0, x, 256.0f, 0.0f);
                 lib_queue_display_object(D_001B657C,
                                          reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
                 tip_text->visible = 0;
@@ -1000,8 +1000,8 @@ void BootInstaller::update()
             step = BOOT_INSTALL_SHOW_INITIAL_PROMPT;
             selection = 0;
             x = menu_cursor_x(selection);
-            cursor = new (0) BootSelectionCursor;
-            func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
+            cursor = new (0) LibSelectionCursor;
+            cursor->init(1, 0, 0, x, 256.0f, 0.0f);
             lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
         else

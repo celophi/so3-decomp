@@ -665,3 +665,4 @@ lib_character_recalculate_stats = 0x003F9890; // type:func absolute:True allow_d
 memcpy_guess = 0x0013A4C0; // type:func absolute:True
 memset_guess = 0x0013A678; // type:func absolute:True
 strcpy_guess = 0x0013C948; // type:func absolute:True
+lib_compute_checksum = 0x00457470; // type:func absolute:True allow_duplicated:True

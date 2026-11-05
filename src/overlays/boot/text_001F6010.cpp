@@ -419,8 +419,8 @@ void BootTitleMenu::update()
         float x;
         float y;
         get_cursor_position(&x, &y);
-        cursor = new (0) BootSelectionCursor;
-        func_467570(cursor, 1, 0, 0, x, y, 0.0f);
+        cursor = new (0) LibSelectionCursor;
+        cursor->init(1, 0, 0, x, y, 0.0f);
         lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         step++;
         break;
@@ -1415,7 +1415,7 @@ void seal_record(BootSealedRecord* record)
         }
 
         record->key = resident_next_random_word();
-        record->checksum = func_457470(record->key * BOOT_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
+        record->checksum = lib_compute_checksum(record->key * BOOT_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
     }
     else if (record->sealed != BOOT_RECORD_SEALED)
     {

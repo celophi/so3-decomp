@@ -735,8 +735,8 @@ void BootMusicPlayer::update()
 
         {
             float y = row_y(selection);
-            cursor = new (0) BootSelectionCursor;
-            func_467570(cursor, 1, 0, 0, 54.0f, y, 0.0f);
+            cursor = new (0) LibSelectionCursor;
+            cursor->init(1, 0, 0, 54.0f, y, 0.0f);
         }
         lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         D_001B661C->append_node(meters[0], -1);

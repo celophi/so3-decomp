@@ -625,7 +625,7 @@ class BootNewGameSettings : public LibListObject
         /** Description of the selected option. */
         LibTextWidget* description_text;
 
-        BootSelectionCursor* cursor;
+        LibSelectionCursor* cursor;
 };
 
 /** Boot's pad and memory card monitor, with vtable D_171030 in main data; samples both every frame. */
