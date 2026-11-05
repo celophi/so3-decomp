@@ -57,9 +57,9 @@ segments:
       - [0x40, pad, text_align]
       - [0x80, cpp, installer]
       - [0x3580, cpp, text_001E0900]
-      - [0xC230, cpp, text_001E95B0]
-      - [0x11900, cpp, text_001EEC80]
-      - [0x18C90, cpp, text_001F6010]
+      - [0xC230, cpp, program]
+      - [0xEC90, cpp, tracks]
+      - [0x18C90, cpp, title_menu]
       - [0x1D520, cpp, text_001FA8A0]
       - [0x1DEA0, cpp, text_001FB220]
       - [0x22650, cpp, text_001FF9D0]
@@ -128,7 +128,7 @@ segments:
       - [0x28800, rodatabin, data_00205B80]
       - start: 0x28850
         type: .rodata
-        name: text_001F6010
+        name: title_menu
         linker_section: .rodata.00205BD0
         rodata_anchors:
           - {function: update__13BootTitleMenuFv, offset: 0x0, size: 0x20}

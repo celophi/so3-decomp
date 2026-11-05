@@ -1127,6 +1127,11 @@ void BootBattleTrophyCard::destroy()
     resident_enqueue_object(g_resident_release_queues, this);
 }
 
+/** @brief Destroy the object. */
+BootBattleTrophyCard::~BootBattleTrophyCard()
+{
+}
+
 /** @brief Clear the transfer state, both modes, and the filename. */
 BootBattleTrophyCard::BootBattleTrophyCard()
 {

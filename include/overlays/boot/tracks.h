@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_BOOT_TEXT_001EEC80_H
-#define SO3_OVERLAYS_BOOT_TEXT_001EEC80_H
+#ifndef SO3_OVERLAYS_BOOT_TRACKS_H
+#define SO3_OVERLAYS_BOOT_TRACKS_H
 
 #include "types.h"
 #include "overlays/boot/text_001DD3C0.h"

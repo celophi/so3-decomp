@@ -75,15 +75,15 @@
       "flags": ["-O4,p"]
     },
     {
-      "source": "src/overlays/boot/text_001E95B0.cpp",
+      "source": "src/overlays/boot/program.cpp",
       "flags": ["-O4,p"]
     },
     {
-      "source": "src/overlays/boot/text_001EEC80.cpp",
+      "source": "src/overlays/boot/tracks.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
-      "source": "src/overlays/boot/text_001F6010.cpp",
+      "source": "src/overlays/boot/title_menu.cpp",
       "flags": ["-inline", "level=7"]
     },
     {

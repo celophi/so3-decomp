@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_BOOT_TEXT_001F6010_H
-#define SO3_OVERLAYS_BOOT_TEXT_001F6010_H
+#ifndef SO3_OVERLAYS_BOOT_TITLE_MENU_H
+#define SO3_OVERLAYS_BOOT_TITLE_MENU_H
 
 #include "types.h"
 #include "overlays/boot/text_001DD3C0.h"

@@ -107,9 +107,7 @@ class BootBattleTrophyCard : public LibListObject
         BootBattleTrophyCard();
 
         /** @brief Destroy the object. */
-        virtual ~BootBattleTrophyCard()
-        {
-        }
+        virtual ~BootBattleTrophyCard();
 
         /**
          * @brief Report the list kind used when registration requests the default.
@@ -578,9 +576,7 @@ class BootInput : public LibListObject
         BootInput();
 
         /** @brief Destroy the object. */
-        virtual ~BootInput()
-        {
-        }
+        virtual ~BootInput();
 
         /** @brief Sample the first pad, then keep the latest nonzero state of each memory card slot. */
         virtual void update();

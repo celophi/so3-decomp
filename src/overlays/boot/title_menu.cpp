@@ -1,5 +1,5 @@
 #include "include_asm.h"
-#include "overlays/boot/text_001F6010.h"
+#include "overlays/boot/title_menu.h"
 #include "overlays/boot/installer.h"
 #include "overlays/boot/text_001E0900.h"
 #include "overlays/boot/text_001FB220.h"
