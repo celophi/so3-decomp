@@ -637,7 +637,7 @@ void BootBattleTrophyViewer::update()
                 step++;
             }
 
-            D_001B661C->prepend_node(new (0) BootClass179150, -1);
+            D_001B661C->prepend_node(new (0) LibColorFade, -1);
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
             lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));

@@ -15,6 +15,7 @@ extern "C" void field_record_selection_advance(FieldRecordSelection* selection, 
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 #include "overlays/1067-00/text_002D5260.h"
@@ -554,7 +555,10 @@ struct StatusRuntimeResource
 struct StatusTransitionEffect
 {
     u8 unk00[0xC0];
-    s32 value;
+
+    /** Depth the transition draws at. */
+    s32 depth;
+
     u8 unkc4[0x2C];
     u8 mode;
 };
@@ -566,9 +570,6 @@ struct StatusTransitionOwner
 };
 extern "C" void* func_0020F230(ResidentContextObject38* state, u32 index, u32 first, u32 second, s32 mode, u32 third, u32 flags, float duration, float x, float y);
 extern "C" s32 func_0022A160(void* object);
-extern "C" void func_004DCEA0(void* object, s32 enabled, s32 other);
-extern "C" void* D_001B6650;
-extern "C" s32 D_001B6694;
 
 struct StatusRuntimeCallbacks;
 
@@ -3327,7 +3328,7 @@ void StatusResourceState::update()
     {
         func_0020F230(D_001B6430->context->unk38, 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
         StatusTransitionEffect* effect;
-        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->value = D_001B6694;
+        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->depth = D_001B6694;
         effect->mode = 10;
         object->transition_phase = STATUS_TRANSITION_SWITCH_WINDOW;
         break;
@@ -3339,7 +3340,7 @@ void StatusResourceState::update()
             return;
         }
 
-        func_004DCEA0(D_001B6650, 0, 0);
+        D_001B6650->set_output(false, false);
 
         switch (object->requested_window)
         {
@@ -3364,10 +3365,10 @@ void StatusResourceState::update()
 
         func_0020F230(D_001B6430->context->unk38, 0, 0x80000000, 0, 0, 0, 0, 10.0f, 0.0f, 0.0f);
         StatusTransitionEffect* effect;
-        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->value = D_001B6694;
+        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->depth = D_001B6694;
         effect->mode = 10;
         object->transition_phase = STATUS_TRANSITION_FINISH;
-        func_004DCEA0(D_001B6650, 1, 0);
+        D_001B6650->set_output(true, false);
         break;
     }
     case STATUS_TRANSITION_FINISH:

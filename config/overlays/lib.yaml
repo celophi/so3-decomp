@@ -31,7 +31,7 @@ options:
   disasm_unknown: true
   gp_value: 0x1bdff0
   global_vram_start: 0x00100000
-  global_vram_end: 0x001DD380
+  global_vram_end: 0x0050CE00
   # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching
   # macro adds to every assembly function, so this module redefines it as empty.
   # The nonmatching lines stay in the .s files for the tools that read them.

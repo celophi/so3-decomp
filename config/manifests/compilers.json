@@ -63,6 +63,14 @@
       "flags": ["-inline", "level=7"]
     },
     {
+      "source": "src/overlays/lib/text_00429B00.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/lib/text_004DD440.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
       "source": "src/overlays/boot/text_001E0900.cpp",
       "flags": ["-O4,p"]
     },

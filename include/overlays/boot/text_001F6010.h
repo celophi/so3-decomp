@@ -4,32 +4,6 @@
 #include "types.h"
 #include "overlays/boot/text_001DD3C0.h"
 
-/** Settings record initialized before calls to the resident rendering interface. */
-typedef struct BootDrawSettings
-{
-    /** GS PRIM bits: 0xC is a Gouraud-shaded triangle strip; 0x5C adds texture mapping and alpha blending. */
-    u16 prim;
-
-    u8 unk02;
-
-    /** Which of the draw buffer's textures to draw with; the palette quad uses 1. */
-    u8 texture_index;
-
-    u8 unk04;
-    u8 unk05;
-    u8 unk06;
-    u8 unk07;
-    float unk08;
-    float unk0C;
-    float unk10;
-    float unk14;
-    u8 unk18;
-    u8 unk19;
-    u8 unk1A;
-    u8 unk1B;
-    u8 unk1C;
-} BootDrawSettings;
-
 #ifdef __cplusplus
 /** One fade strip's packet: upload the strip's image to VRAM, then draw it as a textured sprite. */
 struct BootFadeStripPacket
@@ -73,24 +47,6 @@ struct BootFadeStripPacket
     u64 xyz1;
 };
 
-/** VRAM area request passed to func_4D93A0. */
-struct BootVramRequest
-{
-    s16 width;
-    s16 height;
-    s32 size;
-    u8 unk08[4];
-
-    /** GS pixel storage mode (1 is PSMCT24). */
-    s16 psm;
-
-    /** Texture width as a power of two (TEX0's TW). */
-    u8 width_log2;
-
-    /** Texture height as a power of two (TEX0's TH). */
-    u8 height_log2;
-};
-
 extern "C" {
 #endif
 
@@ -98,7 +54,7 @@ extern "C" {
  * @brief Initialize the settings record to its default values.
  * @param settings Settings record to initialize.
  */
-void init_draw_settings(BootDrawSettings* settings);
+void init_draw_settings(LibDrawSettings* settings);
 
 /**
  * @brief Build an image's quad from a rectangle of its texture and a rectangle of its palette, and queue the

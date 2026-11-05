@@ -1,6 +1,15 @@
 #include "include_asm.h"
 #include "overlays/lib/text_004AB8B0.h"
 
+/** Animation entry flags and the kinds an entry without a target may have. */
+enum
+{
+    LIB_ANIMATION_ENTRY_SKIP = 0x10,
+    LIB_ANIMATION_ENTRY_RESTART_ONLY = 0x20,
+    LIB_ANIMATION_KIND_UNBOUND_FIRST = 0xE0,
+    LIB_ANIMATION_KIND_UNBOUND_END = 0xF0
+};
+
 extern "C" {
 
 extern void func_004B0B20(void* object);
@@ -256,6 +265,7 @@ s32 func_004AC940(void* object, float key)
     FloatKeyScanOwner_text_004AB8B0_20* receiver = static_cast<FloatKeyScanOwner_text_004AB8B0_20*>(object);
     s16 count = receiver->count38;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -263,6 +273,7 @@ s32 func_004AC940(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -280,10 +291,12 @@ float func_004AC9B0(void* object)
 {
     const FloatKeyScanOwner_text_004AB8B0_20* receiver = static_cast<const FloatKeyScanOwner_text_004AB8B0_20*>(object);
     s32 count = receiver->count38;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_004AB8B0_20* entries = receiver->entries;
     const FloatKeyScanEntry_text_004AB8B0_20* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -462,6 +475,7 @@ void func_004AFF70(const void* object, float* output)
 {
     const FloatKeyScanOwner_text_004AB8B0_10* receiver = (const FloatKeyScanOwner_text_004AB8B0_10*)object;
     FloatDiffEntry_text_004AB8B0_10* entries = (FloatDiffEntry_text_004AB8B0_10*)receiver->entries;
+
     if (entries != 0)
     {
         *output = entries[receiver->count20 - 1].value - entries[0].value;
@@ -537,6 +551,7 @@ s32 func_004B0670(void* object, float key)
     FloatKeyScanOwner_text_004AB8B0_20* receiver = static_cast<FloatKeyScanOwner_text_004AB8B0_20*>(object);
     s16 count = receiver->count38;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -544,6 +559,7 @@ s32 func_004B0670(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -561,10 +577,12 @@ float func_004B06E0(void* object)
 {
     const FloatKeyScanOwner_text_004AB8B0_20* receiver = static_cast<const FloatKeyScanOwner_text_004AB8B0_20*>(object);
     s32 count = receiver->count38;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_004AB8B0_20* entries = receiver->entries;
     const FloatKeyScanEntry_text_004AB8B0_20* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -660,6 +678,7 @@ s32 func_004B0DD0(void* object, float key)
     FloatKeyScanOwner_text_004AB8B0_10* receiver = static_cast<FloatKeyScanOwner_text_004AB8B0_10*>(object);
     s16 count = receiver->count20;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -667,6 +686,7 @@ s32 func_004B0DD0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -685,10 +705,12 @@ float func_004B0E30(void* object)
 {
     const FloatKeyScanOwner_text_004AB8B0_10* receiver = static_cast<const FloatKeyScanOwner_text_004AB8B0_10*>(object);
     s32 count = receiver->count20;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_004AB8B0_10* entries = receiver->entries;
     const FloatKeyScanEntry_text_004AB8B0_10* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -828,6 +850,7 @@ void func_004B2720(const void* object, float* output)
 {
     const FloatKeyScanOwner_text_004AB8B0_10* receiver = (const FloatKeyScanOwner_text_004AB8B0_10*)object;
     FloatDiffEntry_text_004AB8B0_08* entries = (FloatDiffEntry_text_004AB8B0_08*)receiver->entries;
+
     if (entries != 0)
     {
         *output = entries[receiver->count18 - 1].value - entries[0].value;
@@ -927,10 +950,12 @@ float func_004B2CC0(void* object)
 {
     const FloatKeyScanOwner_text_004AB8B0_08* receiver = static_cast<const FloatKeyScanOwner_text_004AB8B0_08*>(object);
     s32 count = receiver->count18;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_004AB8B0_08* entries = receiver->entries;
     const FloatKeyScanEntry_text_004AB8B0_08* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -945,6 +970,7 @@ s32 func_004B2D10(void* object, float key)
     FloatKeyScanOwner_text_004AB8B0_08* receiver = static_cast<FloatKeyScanOwner_text_004AB8B0_08*>(object);
     s16 count = receiver->count18;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -952,6 +978,7 @@ s32 func_004B2D10(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1049,7 +1076,72 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3DE0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B43C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B4550);
+/**
+ * @brief Apply every eligible animation entry at a frame.
+ * @param object Animation object.
+ * @param frame Requested frame; a negative frame leaves the animation marked as restarting.
+ * @param mode Nonzero to stop at the first entry that returns a nonzero status.
+ * @return Status of the last applied entry, or 0 when the animation has no entries.
+ */
+s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode)
+{
+    s32 status;
+    s32 count;
+    u8 restarting;
+    s32 index;
+
+    if (object->entries == 0)
+    {
+        return 0;
+    }
+
+    object->unk60 = 0;
+    object->unk48 = 0;
+    status = 0;
+    restarting = !object->unk6a;
+    count = object->entry_count;
+
+    for (index = 0; index < count; index++)
+    {
+        LibAnimationEntry14* entry = &object->entries[index];
+
+        if (entry->channel != 0)
+        {
+            if (entry->target != 0 || (entry->kind >= LIB_ANIMATION_KIND_UNBOUND_FIRST && entry->kind < LIB_ANIMATION_KIND_UNBOUND_END))
+            {
+                if (entry->flags & LIB_ANIMATION_ENTRY_SKIP)
+                {
+                    continue;
+                }
+
+                if (!(entry->flags & LIB_ANIMATION_ENTRY_RESTART_ONLY) || restarting)
+                {
+                    if (object->unk60 == entry->target)
+                    {
+                        status = func_004B4840(object, entry, (float)(s32)frame, mode, status);
+                    }
+                    else
+                    {
+                        object->unk60 = 0;
+                        status = func_004B4840(object, entry, frame, mode, status);
+                    }
+                }
+            }
+        }
+
+        if (mode != 0 && status != 0)
+        {
+            break;
+        }
+    }
+
+    if (!(frame < 0.0f))
+    {
+        object->unk6a = 1;
+    }
+
+    return status;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B46E0);
 

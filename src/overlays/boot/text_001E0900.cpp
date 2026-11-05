@@ -20,6 +20,7 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/vector_inlines.h"
+#include "overlays/lib/text_004AB8B0.h"
 
 #define TIMER0_COUNT (*(volatile u32*)0x10000000)
 /** Timebase used to convert frame ticks to seconds. */
@@ -31,15 +32,13 @@
 /** Height of one interlaced field, half the 448-line frame. */
 #define BOOT_FIELD_HEIGHT 224
 
+/** Reverb the settings screen plays under (studio A). */
+#define BOOT_SETTINGS_REVERB_PRESET 2
+
 extern "C" {
 extern BootFloorQuery* g_floor_query;
-extern void* D_001B663C;
-extern struct BootRenderState* D_001B6618;
+extern LibScreenText* D_001B6618;
 extern BootResidentDisplay* D_001B6658;
-void func_4DF890(LibCameraContext* display, s32 index, s32 width, s32 height, s32 depth, s32 mode);
-void func_4E03C0(LibCameraContext* display, s32 index, s32 width, s32 height);
-void func_4DCFA0(LibCameraContext* display);
-void func_4D78F0(void* object);
 void func_42D940(void);
 void resident_system_set_progressive(ResidentSystem* system, u8 progressive);
 extern LibCameraContext* D_001B6520;
@@ -54,12 +53,8 @@ extern BootTrackPool<BootPooledQuaternionCurveTrack>* g_quaternion_curve_track_p
 extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
 void func_4C5B60(s32 first, s32 second);
 void resident_system_create_status(ResidentSystem* system);
-void func_45A5D0(void);
-void func_45A770(void);
-void func_4E33B0(void);
 void func_4E3830(LibCameraContext* display, u32 first, s32 second, s32 third, s32 fourth, s32 fifth, s32 sixth);
-void func_4D8A80(struct BootScreenRect* rect, u32 color);
-extern struct FieldPacketQueue* D_001B65DC;
+extern struct LibPacketQueue* D_001B65DC;
 extern const struct BootLabelOffsets D_205170;
 extern const struct BootCaption g_opening_captions[];
 void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
@@ -67,7 +62,6 @@ void func_4CBD20(BootMatrix* output, const LibVector4* position, const FieldVec4
 void func_4CBAC0(LibVector4* output, const BootMatrix* matrix);
 LibTransformOwner* func_473530(LibListObject* models, const char* name);
 void* func_473390(LibListObject* models, const char* name);
-s32 func_4B4550(LibAnimation* animation, float frame, s32 mode);
 void func_4DA2F0(void* object, const LibVector4* offset, s32 first, s32 second, s32 third, float value);
 extern const char g_root_node_name[];
 extern const char g_look_node_name[];
@@ -76,7 +70,6 @@ extern const char g_left_speaker_name[];
 extern const char g_rear_left_speaker_name[];
 extern const char g_rear_right_speaker_name[];
 extern const char g_center_speaker_name[];
-void func_4DAFE0(LibDisplayManager* manager, LibCameraContext* display, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask);
 extern u8 g_settings_option_counts[5];
 extern u8 g_difficulty_option_count;
 extern const s16 g_voice_lines[];
@@ -137,22 +130,13 @@ struct BootLabelOffsets
     s32 values[6];
 };
 
-/** Screen rectangle passed to the clear-colour setup. */
+/** Screen rectangle for the colour fade area; unlike LibScreenRect it has no constructor. */
 struct BootScreenRect
 {
     s32 x;
     s32 y;
     s32 width;
     s32 height;
-};
-
-/** Partial resident render state D_001B6618. */
-struct BootRenderState
-{
-    u8 unk00[0xC];
-    u32 clear_color;
-    u8 unk10[0x10];
-    ResidentPacket* packet;
 };
 
 static inline void copy_transfer_name(BootBattleTrophyCard* trophy_card, const char* base, const char* suffix);
@@ -2010,7 +1994,7 @@ void BootNewGameSettings::place_girl()
                 girl_animations[1]->unk6a = 0;
                 walk_state = 1;
             }
-            else if (func_4B4550(girl_animations[0], animation_frame, 2) > 0)
+            else if (lib_animation_apply_frame(girl_animations[0], animation_frame, 2) > 0)
             {
                 animation_frame = 0.0f;
             }
@@ -2021,7 +2005,7 @@ void BootNewGameSettings::place_girl()
 
             break;
         case 1:
-            if (func_4B4550(girl_animations[1], animation_frame, 2) > 0)
+            if (lib_animation_apply_frame(girl_animations[1], animation_frame, 2) > 0)
             {
                 if (turn_speed == 0.0f)
                 {
@@ -2043,7 +2027,7 @@ void BootNewGameSettings::place_girl()
 
             break;
         case 2:
-            if (func_4B4550(girl_animations[2], animation_frame, 2) > 0)
+            if (lib_animation_apply_frame(girl_animations[2], animation_frame, 2) > 0)
             {
                 if (turn_speed == 0.0f)
                 {
@@ -2065,7 +2049,7 @@ void BootNewGameSettings::place_girl()
 
             break;
         case 3:
-            if (func_4B4550(girl_animations[3], animation_frame, 2) > 0)
+            if (lib_animation_apply_frame(girl_animations[3], animation_frame, 2) > 0)
             {
                 if (turn_speed == 0.0f)
                 {
@@ -2087,7 +2071,7 @@ void BootNewGameSettings::place_girl()
 
             break;
         case 4:
-            if (func_4B4550(girl_animations[4], animation_frame, 2) > 0)
+            if (lib_animation_apply_frame(girl_animations[4], animation_frame, 2) > 0)
             {
                 girl_animations[0]->unk6a = 0;
                 animation_frame = 0.0f;
@@ -2100,7 +2084,7 @@ void BootNewGameSettings::place_girl()
 
             break;
         case 5:
-            if (func_4B4550(girl_animations[5], animation_frame, 2) > 0)
+            if (lib_animation_apply_frame(girl_animations[5], animation_frame, 2) > 0)
             {
                 girl_animations[0]->unk6a = 0;
                 animation_frame = 0.0f;
@@ -3088,7 +3072,7 @@ void BootNewGameSettings::update()
             resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, model_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             clear_to_menu_background();
-            D_001B661C->prepend_node(new (0) BootClass179150, -1);
+            D_001B661C->prepend_node(new (0) LibColorFade, -1);
             loaded_image_blocks = 0;
             stage++;
             highlight_phase = 0;
@@ -3106,7 +3090,7 @@ void BootNewGameSettings::update()
             cursor = new (0) LibSelectionCursor;
             cursor->init(1, 0, 0xF42400, x, y, 0.0f);
             lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
-            func_0010DAA0(g_sound, 2);
+            resident_sound_set_reverb(g_sound, BOOT_SETTINGS_REVERB_PRESET);
         }
 
         break;
@@ -3324,7 +3308,7 @@ void BootNewGameSettings::update()
                 func_4B3DE0(girl_animations[i], animation_targets[i]);
             }
 
-            D_001B661C->prepend_node(new (0) BootClass179150, -1);
+            D_001B661C->prepend_node(new (0) LibColorFade, -1);
             D_001B6628->current_display = static_cast<LibListObject*>(lib_find_camera_entry(room_scene, g_camera_node_name));
             girl_angle = 1.5707964f;
             animation_frame = 0.0f;
@@ -4496,24 +4480,24 @@ void BootProgram::rebuild_display(u8 full)
     display->set_scale(1, 1.0f, 2.0f, -1);
     display->configure_screen(0, 1, 0, 0, 1, 0, 0, 1, BOOT_SCREEN_WIDTH, BOOT_FIELD_HEIGHT);
     display->configure_screen(1, 1, 0, 0, 1, 1, 1, 1, BOOT_SCREEN_WIDTH, BOOT_FIELD_HEIGHT);
-    func_4DF890(display, 0, BOOT_SCREEN_WIDTH, BOOT_FIELD_HEIGHT, 2, 0x31);
-    func_4E03C0(display, 1, BOOT_SCREEN_WIDTH, BOOT_FIELD_HEIGHT);
+    display->configure_buffers(GS_PSMCT32, BOOT_SCREEN_WIDTH, BOOT_FIELD_HEIGHT, GS_DEPTH_TEST_GEQUAL, GS_PSMZ24);
+    display->configure_display(GS_PSMCT24, BOOT_SCREEN_WIDTH, BOOT_FIELD_HEIGHT);
     display->set_clear_color(0, 0, 0, 0x81);
     area = &display->display_area;
     display->set_screen_view(0, 0, 0, area->width, area->height);
     display->set_screen_view(1, 0, 0, area->width, area->height);
-    func_4DCFA0(display);
+    display->refresh_scaled_packets();
 
     if (full)
     {
-        if (D_001B663C != (void*)0x70000000)
+        if (D_001B663C != reinterpret_cast<LibTextureCache*>(EE_SCRATCHPAD))
         {
             ::operator delete(D_001B663C);
         }
 
         lib_vram_reset(D_001B65E0, display->vram_free_page);
-        D_001B663C = new (0) BootScratchHeap(0x20000, 0x20);
-        func_4D78F0(D_001B6618);
+        D_001B663C = new (0) LibTextureCache(0x20000, 0x20);
+        D_001B6618->load_font();
         func_42D940();
         resident_input_attach_display(g_input_system, display, 1);
         D_001B6658->display = display;
@@ -4565,12 +4549,12 @@ void BootProgram::set_progressive(u8 progressive)
 
     if (progressive)
     {
-        func_4DCEA0(display, 0, 0);
+        display->set_output(false, false);
         resident_system_set_progressive(resident_get_system(), 1);
     }
     else
     {
-        func_4DCEA0(display, 0, 0);
+        display->set_output(false, false);
         resident_system_set_progressive(resident_get_system(), 0);
     }
 
@@ -4650,7 +4634,7 @@ void BootProgram::create_pools_and_projection()
     projection->set_translation(0.0f, 0.0f, -500.0f);
     D_001B6628->append_node(projection, -1);
     D_001B6628->current_display = projection;
-    func_4DAFE0(D_001B6628, display, false, true, false, 2, 0xFFFFFF);
+    D_001B6628->set_display_effect(display, false, true, false, 2, 0xFFFFFF);
     D_001B661C->unk4084 = D_001B6624;
     D_001B6624->manager = D_001B6628;
 }
@@ -4717,14 +4701,14 @@ void BootProgram::run()
     if (resident_find_entry(resident_get_entry_table(resident_get_system()), 1) != 0)
     {
         saved_widescreen = ((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen;
-        func_45A5D0();
+        lib_free_system_data();
         fresh = false;
     }
 
     if (D_001B6614 != 0)
     {
         lib_release_shared_font();
-        func_4E33B0();
+        lib_shutdown();
         resident_drain_release_queues(g_resident_release_queues);
         resident_drain_release_queues(g_resident_release_queues);
     }
@@ -4737,8 +4721,8 @@ void BootProgram::run()
     rect.y = 0;
     rect.width = BOOT_SCREEN_WIDTH;
     rect.height = BOOT_FIELD_HEIGHT;
-    func_4D8A80(&rect, 0xFFFFFF);
-    D_001B6618->clear_color = 0xFFFFFF;
+    lib_set_color_fade_area(reinterpret_cast<const LibScreenRect*>(&rect), GS_DEPTH_NEAREST);
+    D_001B6618->depth = GS_DEPTH_NEAREST;
     resident_input_attach_display(g_input_system, display, 1);
 
     while (!resident_poll_resource_queue(g_resource_queue))
@@ -4746,7 +4730,7 @@ void BootProgram::run()
     }
 
     check_main_code();
-    func_45A770();
+    lib_allocate_system_data();
     create_pools_and_projection();
     settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
@@ -4783,18 +4767,18 @@ void BootProgram::run()
 
     while (next_program == 0)
     {
-        func_4DD830(display, frame++, D_001B65DC);
-        func_4D8AC0();
-        func_4D76C0(D_001B6618, 16, 16);
+        display->flip(frame++, D_001B65DC);
+        lib_begin_frame_packet();
+        D_001B6618->begin(16, 16);
         func_4D4BE0(D_001B661C);
         D_001B6614->update_nodes();
         resident_packet_submit(D_001B6618->packet, 0);
         resident_drain_release_queues(g_resident_release_queues);
-        func_4DCFF0(display, frame);
+        display->wait_for_field(frame);
 
         if (frame > 1)
         {
-            func_4DCEA0(display, 1, 0);
+            display->set_output(true, false);
         }
 
         g_frame_ticks = (float)resident_input_take_vblank_count(g_input_system);

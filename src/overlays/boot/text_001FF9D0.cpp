@@ -73,9 +73,7 @@ void BootNeedleMeter::render()
  */
 void BootNeedleMeter::build_packet(const void* matrix, void* context)
 {
-    ResidentPacket* buffer = packet;
-    buffer->unk08 = buffer->unk00 + 0x40;
-    buffer->unk0c = buffer->unk08;
+    resident_packet_rewind(packet);
     log10f_guess(1073741824.0f);
 
     if (levels[0] > needles[0])
@@ -707,7 +705,7 @@ void BootMusicPlayer::update()
         {
             clear_to_menu_background();
             step++;
-            D_001B661C->prepend_node(new (0) BootClass179150, -1);
+            D_001B661C->prepend_node(new (0) LibColorFade, -1);
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
             lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
@@ -885,7 +883,8 @@ void BootMusicPlayer::update()
             return;
         }
 
-        if (play_mode > BOOT_MUSIC_PLAY_SINGLE && resident_sound_is_music_playing(g_sound, -1) != 0 && func_00109FB0(g_sound->stream->thread) > 0 && playing)
+        if (play_mode > BOOT_MUSIC_PLAY_SINGLE && resident_sound_is_music_playing(g_sound, -1) != 0 &&
+            resident_stream_get_loop_count(g_sound->stream->thread) > 0 && playing)
         {
             resident_sound_stop_music(g_sound, 0x1E0, -1);
             next_track_delay = 8.0f;

@@ -182,6 +182,39 @@ typedef struct FourQuadwordCopySourceOwnertext_0046AE20
     unsigned __int128 values150[4];
 } FourQuadwordCopySourceOwnertext_0046AE20;
 
+/**
+ * @brief Find the index of the entry that owns a handle.
+ * @param manager Runtime entry table and source resource header.
+ * @param handle Entry handle to look for.
+ * @return Index of the first entry with metadata whose handle matches, or -1.
+ */
+static inline s32 lib_find_entry_index_inline(const LibEntryManager* manager, void* handle)
+{
+    s32 found = -1;
+    s32 index;
+
+    for (index = 0; index < manager->header->count; index++)
+    {
+        if (manager->entries[index].metadata != 0 && manager->entries[index].handle == handle)
+        {
+            found = index;
+            break;
+        }
+    }
+
+    return found;
+}
+
+/**
+ * @brief Test whether an entry has no source metadata.
+ * @param entry Entry to test.
+ * @return Nonzero when the entry has no metadata.
+ */
+static inline s32 lib_entry_is_empty(const LibManagedEntry* entry)
+{
+    return !entry->metadata;
+}
+
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046AE20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B0D0);
@@ -225,6 +258,7 @@ void lib_animation_register_binding(LibAnimationBindingOwner* owner, void* anima
     if (mode)
     {
         s32 index;
+
         for (index = 1; index < LIB_ANIMATION_BINDING_CAPACITY; index++)
         {
             if (owner->animation_slots[index] == animation)
@@ -232,6 +266,7 @@ void lib_animation_register_binding(LibAnimationBindingOwner* owner, void* anima
                 return;
             }
         }
+
         for (index = 1; index < LIB_ANIMATION_BINDING_CAPACITY; index++)
         {
             if (!owner->animation_slots[index])
@@ -365,10 +400,12 @@ void lib_object_add_flags(void* object, u16 flags)
 void* lib_get_entry_data(LibEntryManager* manager, LibEntryMetadata* metadata)
 {
     u8* data = (u8*)metadata + metadata->data_offset;
+
     if (manager->header->flags & LIB_ENTRY_HAS_NAMES)
     {
         data += 0x10;
     }
+
     return data;
 }
 
@@ -379,13 +416,16 @@ void* lib_get_entry_data(LibEntryManager* manager, LibEntryMetadata* metadata)
 void lib_update_renderable_entries(LibEntryManager* manager)
 {
     s32 index;
+
     for (index = 0; index < manager->header->count; index++)
     {
         LibManagedEntry* entry = &manager->entries[index];
         void* handle = entry->handle;
+
         if (handle != 0 && entry->unk00 == 0)
         {
             LibEntryMetadata* metadata = entry->metadata;
+
             if ((metadata->state == 2 || metadata->state == 0) &&
                 (metadata->kind == 1 || metadata->kind == 8) &&
                 (metadata->flags & 0x4080) == 0)
@@ -403,13 +443,16 @@ void lib_update_renderable_entries(LibEntryManager* manager)
 void func_004724A0(LibEntryManager* manager)
 {
     s32 index;
+
     for (index = 0; index < manager->header->count; index++)
     {
         LibManagedEntry* entry = &manager->entries[index];
         void* handle = entry->handle;
+
         if (handle != 0 && entry->unk00 == 0)
         {
             LibEntryMetadata* metadata = entry->metadata;
+
             if ((metadata->state == 2 || metadata->state == 0) &&
                 (metadata->kind == 1 || metadata->kind == 8) &&
                 (metadata->flags & 0x4080) == 0)
@@ -436,9 +479,58 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472C90);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472DA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472EB0);
+/**
+ * @brief Find the next renderable entry after the entry that owns a handle.
+ * @param manager Runtime entry table and source resource header.
+ * @param handle Handle of the current entry, as returned by lib_find_renderable_entry.
+ * @return The next entry of kind 1 or 8 that passes the state filter, or null.
+ */
+void* lib_find_next_renderable_entry(const LibEntryManager* manager, void* handle)
+{
+    s32 found;
+    s32 index;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472FD0);
+    if (manager->entries == 0)
+    {
+        return 0;
+    }
+
+    found = lib_find_entry_index_inline(manager, handle);
+
+    if (found >= 0)
+    {
+        index = found;
+
+        for (;;)
+        {
+            index++;
+
+            if (index >= manager->header->count || index == found)
+            {
+                break;
+            }
+
+            if (manager->entries[index].metadata != 0 && (manager->entries[index].metadata->state == 2 || manager->entries[index].metadata->state == 0) &&
+                (manager->entries[index].metadata->kind == 1 || manager->entries[index].metadata->kind == 8))
+            {
+                return manager->entries[index].handle;
+            }
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Find the index of the entry that owns a handle.
+ * @param manager Runtime entry table and source resource header.
+ * @param handle Entry handle to look for.
+ * @return Index of the first entry with metadata whose handle matches, or -1.
+ */
+s32 lib_find_entry_index(const LibEntryManager* manager, void* handle)
+{
+    return lib_find_entry_index_inline(manager, handle);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473040);
 
@@ -455,45 +547,158 @@ void* lib_find_named_entry_cached(LibEntryManager* manager, const char* name, s3
 {
     s32 index;
     s32 scanned;
+
     if (!name)
     {
         return 0;
     }
+
     if (!checksum)
     {
         s32 name_index;
+
         for (name_index = 0; name_index < LIB_ENTRY_NAME_COMPARE_LENGTH; name_index++)
         {
             s32 byte = (s8)name[name_index];
+
             if (!byte)
             {
                 break;
             }
+
             checksum += byte;
         }
     }
+
     index = manager->cached_entry_index;
+
     for (scanned = 0; scanned < manager->header->count; scanned++)
     {
         LibEntryMetadata* metadata = manager->entries[index].metadata;
+
         if (metadata && checksum == metadata->name_checksum &&
             lib_compare_bounded_strings(name, (const char*)metadata + metadata->data_offset, LIB_ENTRY_NAME_COMPARE_LENGTH) == 0)
         {
             manager->cached_entry_index = index;
             return manager->entries[index].handle;
         }
+
         index++;
+
         if (index >= manager->header->count)
         {
             index = 0;
         }
     }
+
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473390);
+/**
+ * @brief Find an entry by name.
+ * @param manager Runtime entry table and source resource header.
+ * @param name Name to compare, or null to take the first entry with metadata.
+ * @return Handle of the first entry whose name checksum and name match, or null.
+ */
+void* lib_find_named_entry(const LibEntryManager* manager, const char* name)
+{
+    s32 checksum;
+    s32 name_index;
+    s32 index;
+    s32 first;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473530);
+    if (name == 0)
+    {
+        for (first = 0; first < manager->header->count; first++)
+        {
+            if (!lib_entry_is_empty(&manager->entries[first]))
+            {
+                return manager->entries[first].handle;
+            }
+        }
+
+        return 0;
+    }
+
+    if (!(manager->header->flags & LIB_ENTRY_HAS_NAMES))
+    {
+        return 0;
+    }
+
+    if (manager->entries == 0)
+    {
+        return 0;
+    }
+
+    checksum = 0;
+
+    for (name_index = 0; name_index < LIB_ENTRY_NAME_COMPARE_LENGTH; name_index++)
+    {
+        s32 byte = (s8)name[name_index];
+
+        if (!byte)
+        {
+            break;
+        }
+
+        checksum += byte;
+    }
+
+    for (index = 0; index < manager->header->count; index++)
+    {
+        const LibEntryMetadata* metadata = manager->entries[index].metadata;
+
+        if (metadata != 0 && checksum == metadata->name_checksum &&
+            lib_compare_bounded_strings(name, (const char*)metadata + metadata->data_offset, LIB_ENTRY_NAME_COMPARE_LENGTH) == 0)
+        {
+            return manager->entries[index].handle;
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Find a transform entry (metadata state 1 or 3) by name.
+ * @param manager Runtime entry table and source resource header.
+ * @param name Name to compare, or null or empty to accept any name.
+ * @return The first matching transform handle, or null.
+ */
+void* lib_find_transform_entry(LibEntryManager* manager, const char* name)
+{
+    u8 any_name = 0;
+    s32 index;
+
+    if (name == 0 || name[0] == 0)
+    {
+        any_name = 1;
+    }
+
+    if (!(manager->header->flags & LIB_ENTRY_HAS_NAMES) && !any_name)
+    {
+        return 0;
+    }
+
+    if (manager->entries == 0)
+    {
+        return 0;
+    }
+
+    for (index = 0; index < manager->header->count; index++)
+    {
+        LibEntryMetadata* metadata = manager->entries[index].metadata;
+
+        if (metadata != 0 && (metadata->state == 1 || metadata->state == 3))
+        {
+            if (any_name || lib_compare_bounded_strings(name, (const char*)metadata + metadata->data_offset, LIB_ENTRY_NAME_COMPARE_LENGTH) == 0)
+            {
+                return manager->entries[index].handle;
+            }
+        }
+    }
+
+    return 0;
+}
 
 /**
  * @brief Find a camera entry whose metadata passes the state and name filters.
@@ -505,21 +710,26 @@ void* lib_find_camera_entry(LibEntryManager* manager, const char* name)
 {
     u8 any_name = 0;
     s32 index;
+
     if (name == 0 || name[0] == 0)
     {
         any_name = 1;
     }
+
     if (!(manager->header->flags & LIB_ENTRY_HAS_NAMES) && !any_name)
     {
         return 0;
     }
+
     if (manager->entries == 0)
     {
         return 0;
     }
+
     for (index = 0; index < manager->header->count; index++)
     {
         LibEntryMetadata* metadata = manager->entries[index].metadata;
+
         if (metadata != 0 && (metadata->state == 2 || metadata->state == 0) &&
             metadata->kind == LIB_ENTRY_KIND_CAMERA)
         {
@@ -530,6 +740,7 @@ void* lib_find_camera_entry(LibEntryManager* manager, const char* name)
             }
         }
     }
+
     return 0;
 }
 
@@ -543,21 +754,26 @@ void* lib_find_light_entry(LibEntryManager* manager, const char* name)
 {
     u8 any_name = 0;
     s32 index;
+
     if (name == 0 || name[0] == 0)
     {
         any_name = 1;
     }
+
     if (!(manager->header->flags & LIB_ENTRY_HAS_NAMES) && !any_name)
     {
         return 0;
     }
+
     if (manager->entries == 0)
     {
         return 0;
     }
+
     for (index = 0; index < manager->header->count; index++)
     {
         LibEntryMetadata* metadata = manager->entries[index].metadata;
+
         if (metadata != 0 && (metadata->state == 2 || metadata->state == 0) &&
             metadata->kind == LIB_ENTRY_KIND_LIGHT)
         {
@@ -568,6 +784,7 @@ void* lib_find_light_entry(LibEntryManager* manager, const char* name)
             }
         }
     }
+
     return 0;
 }
 
@@ -581,21 +798,26 @@ void* lib_find_renderable_entry(LibEntryManager* manager, const char* name)
 {
     u8 any_name = 0;
     s32 index;
+
     if (name == 0 || name[0] == 0)
     {
         any_name = 1;
     }
+
     if (!(manager->header->flags & LIB_ENTRY_HAS_NAMES) && !any_name)
     {
         return 0;
     }
+
     if (manager->entries == 0)
     {
         return 0;
     }
+
     for (index = 0; index < manager->header->count; index++)
     {
         LibEntryMetadata* metadata = manager->entries[index].metadata;
+
         if (metadata != 0 && (metadata->state == 2 || metadata->state == 0) &&
             (metadata->kind == 1 || metadata->kind == 8))
         {
@@ -606,6 +828,7 @@ void* lib_find_renderable_entry(LibEntryManager* manager, const char* name)
             }
         }
     }
+
     return 0;
 }
 

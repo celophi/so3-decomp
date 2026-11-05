@@ -362,9 +362,9 @@ void func_0040FB00(void* object, u8 value)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040FB10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00410FE0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __dt__14LibTrophyFlagsFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411050);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __dt__11LibBitArrayFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004110C0);
 

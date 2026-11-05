@@ -262,7 +262,7 @@ enum BootResourceRequest
  */
 static inline s32 resource_bit(LibTrophyFlags* bits, u32 index)
 {
-    return (bits->flag_bytes[index / 8] >> (index % 8)) & 1;
+    return (bits->flags.bytes[index / 8] >> (index % 8)) & 1;
 }
 
 /**
@@ -280,12 +280,12 @@ static inline void set_resource_bit(LibTrophyFlags* bits, u32 index, s32 enabled
     if (enabled)
     {
         mask = 1ULL << bit_index;
-        bits->flag_bytes[byte_index] |= mask;
+        bits->flags.bytes[byte_index] |= mask;
     }
     else
     {
         mask = ~(1ULL << bit_index);
-        bits->flag_bytes[byte_index] &= mask;
+        bits->flags.bytes[byte_index] &= mask;
     }
 }
 
@@ -298,7 +298,6 @@ static inline void set_resource_bit(LibTrophyFlags* bits, u32 index, s32 enabled
 extern "C" void lib_object_detach_owner(void* object);
 
 class LibContainer;
-class BootClass179150;
 class BootClass170F30;
 extern "C" s32 lib_container_init(LibContainer* container, s32 code, float x, float y, s32 first, float z, s32 second);
 
@@ -313,53 +312,10 @@ extern "C" s32 lib_container_init(LibContainer* container, s32 code, float x, fl
  * @return One on success, or zero if its storage could not be initialized.
  */
 extern "C" s32 lib_list_indicator_init(class BootListIndicator* object, float x, float y, float height, float extent, float position);
-extern "C" void func_4E32F0(BootClass179150* object);
 extern "C" void func_4D5C90(void* object);
 
 
 extern "C" LibDisplayManager* D_001B6628;
-
-/** Four words cleared by an out-of-line constructor. */
-class BootWordQuad
-{
-    public:
-        /** @brief Clear all four words. */
-        inline BootWordQuad();
-
-        u32 unk00;
-        u32 unk04;
-        u32 unk08;
-        u32 unk0c;
-};
-
-/** Partial 0xC0-byte transform with the Lib vtable D_179150. */
-class BootClass179150 : public LibTransformOwner, public LibDmaCallbacks
-{
-    public:
-        /** @brief Initialize the transform's modes and timing. */
-        BootClass179150()
-        {
-            func_4E32F0(this);
-            unk94 = 0x80000000;
-            unk9c = 0x80000000;
-            unk98 = 0;
-            unka4 = 30.0f;
-            set_type_id(0x300);
-            unk65 = 1;
-            set_draw_flags(LIB_DRAW_FLAG_0400);
-        }
-
-        /** @brief Destroy the transform. */
-        virtual ~BootClass179150();
-
-        u32 unk94;
-        u32 unk98;
-        u32 unk9c;
-        u8 unka0[4];
-        float unka4;
-        BootWordQuad unka8;
-        u8 unkb8[8];
-};
 
 /** Partial 0xC0-byte Lib transform with vtable D_171DD0 in main data; boot calls its Lib constructor. */
 class BootClipRegion : public LibTransformOwner, public LibDmaCallbacks

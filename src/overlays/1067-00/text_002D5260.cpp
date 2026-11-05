@@ -920,8 +920,8 @@ public:
     u8 unk14ac[4];
 };
 
-struct FieldPacketQueue;
-extern "C" FieldPacketQueue* D_001B65DC;
+struct LibPacketQueue;
+extern "C" LibPacketQueue* D_001B65DC;
 
 /**
  * @brief Append a packet address and optional completion context to the queue.
@@ -933,8 +933,7 @@ extern "C" FieldPacketQueue* D_001B65DC;
  * @param completion Optional completion context.
  * @return One when queued, or zero when the queue is full.
  */
-extern "C" s32 func_4DC4F0(FieldPacketQueue* queue, u32 operation, u32 flags,
-                          u32 address, u32 value, void* completion);
+extern "C" s32 func_4DC4F0(LibPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
 
 /**
  * @brief Submit prepared packet addresses with the callback attached to the final entry.

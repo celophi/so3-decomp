@@ -7,10 +7,10 @@
 #include "overlays/lib/render_buffer.h"
 
 extern "C" {
-extern void* D_001B663C;
-u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 unk4, s32 unk5, s32 unk6, s32 unk7);
 
 extern void func_4D00B0(void* object);
+// Boot calls lib_draw_buffer_end through its own prototype, with a u8 mode.
+void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
 void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
 extern LibDisplayManager* D_001B6630;
 
@@ -19,8 +19,6 @@ extern const char g_continue_node_name[];
 extern const char g_battle_collection_node_name[];
 extern const char g_install_node_name[];
 extern const char g_title_camera_node_name[];
-void func_455150(LibDrawBuffer* buffer, BootDrawSettings* settings);
-void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
 void lib_scene_load_data(BootScene* scene, ResidentResourceHeader* source);
 void func_40B3A0(u8* data);
 void lib_scene_release_entries(BootScene* scene);
@@ -396,7 +394,7 @@ void BootTitleMenu::update()
         }
 
         animate_items(1);
-        D_001B661C->prepend_node(new (0) BootClass179150, -1);
+        D_001B661C->prepend_node(new (0) LibColorFade, -1);
         float x;
         float y;
         get_cursor_position(&x, &y);
@@ -665,13 +663,13 @@ static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position,
  */
 void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
 {
-    BootDrawSettings settings;
+    LibDrawSettings settings;
     s32 fill;
 
     lib_draw_buffer_begin(bar->draw_buffer, 0, 1);
     init_draw_settings(&settings);
     settings.prim = 0xC;
-    settings.unk02 = 0;
+    settings.blend_mode = 0;
     settings.unk05 = 1;
     settings.unk06 = 0;
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
@@ -690,7 +688,7 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
         fill = done * BOOT_PROGRESS_BAR_SCALE / total;
     }
 
-    func_455150(bar->draw_buffer, &settings);
+    lib_draw_buffer_apply_settings(bar->draw_buffer, &settings);
     s32 width = bar->width;
     s32 height = bar->height;
     u32 color = bar->color;
@@ -733,11 +731,11 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
  * @brief Initialize the settings record to its default values.
  * @param settings Settings record to initialize.
  */
-void init_draw_settings(BootDrawSettings* settings)
+void init_draw_settings(LibDrawSettings* settings)
 {
     settings->prim = 0xC;
     settings->texture_index = 0;
-    settings->unk02 = 0;
+    settings->blend_mode = 0;
     settings->unk04 = 0;
     settings->unk05 = 0;
     settings->unk06 = 1;
@@ -856,18 +854,16 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
         return;
     }
 
-    BootPacketBuffer* buffer_packet = packet;
-    buffer_packet->unk08 = buffer_packet->unk00 + 0x40;
-    buffer_packet->unk0c = buffer_packet->unk08;
+    resident_packet_rewind(packet);
     BootFadeStripPacket* strip = reinterpret_cast<BootFadeStripPacket*>(resident_packet_reserve(packet, 0));
-    BootVramRequest request;
+    LibTextureRequest request;
     request.width = BOOT_FADE_STRIP_WIDTH;
     request.height = BOOT_FADE_STRIP_HEIGHT;
     request.size = BOOT_FADE_STRIP_VRAM_SIZE;
     request.psm = 1;
     request.width_log2 = 6;
     request.height_log2 = 10;
-    u32 address = func_4D93A0(D_001B663C, &request, 0x54744664, 1, 0, 0, 1, 0);
+    u32 address = D_001B663C->find_texture(&request, 0x54744664, 1, 0, 0, 1, 0);
 
     if (address != 0)
     {
@@ -973,8 +969,8 @@ BootScreenFade::BootScreenFade(LibCameraContext* display)
         images[i] = new (0) LibImageCapture;
         images[i]->unk65 = 1;
         lib_image_capture_store(images[i], buffer + height * (i * BOOT_FADE_STRIP_WIDTH) * 3 / 16 * 16,
-                                display->buffers[0].environment.frame.base_pointer << 5, width / BOOT_FADE_STRIP_WIDTH,
-                                GS_PSMCT24, i * BOOT_FADE_STRIP_WIDTH, 0, BOOT_FADE_STRIP_WIDTH, height);
+                                display->buffers[0].environment.context1.frame.base_pointer << 5, width / BOOT_FADE_STRIP_WIDTH, GS_PSMCT24,
+                                i * BOOT_FADE_STRIP_WIDTH, 0, BOOT_FADE_STRIP_WIDTH, height);
         D_001B661C->append_node(images[i], -1);
     }
 
@@ -1020,16 +1016,16 @@ void BootImage::destroy()
 void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width,
                                       s32 palette_height, u32 color, s32 depth)
 {
-    BootDrawSettings settings;
+    LibDrawSettings settings;
 
     lib_draw_buffer_begin(image->draw_buffer, 1, 1);
     init_draw_settings(&settings);
     settings.unk06 = 0;
-    settings.unk02 = 2;
+    settings.blend_mode = 2;
     settings.prim = 0x5C;
     settings.unk05 = 1;
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
-    func_455150(image->draw_buffer, &settings);
+    lib_draw_buffer_apply_settings(image->draw_buffer, &settings);
     lib_draw_buffer_begin_primitive(image->draw_buffer, 4);
 
     if (image->centered)
@@ -1064,7 +1060,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     {
         settings.unk05 = 0;
         settings.texture_index = 1;
-        func_455150(image->draw_buffer, &settings);
+        lib_draw_buffer_apply_settings(image->draw_buffer, &settings);
         lib_draw_buffer_begin_primitive(image->draw_buffer, 4);
 
         if (image->centered)
@@ -1113,15 +1109,15 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
  */
 void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s32 depth)
 {
-    BootDrawSettings settings;
+    LibDrawSettings settings;
 
     lib_draw_buffer_begin(draw_buffer, 0, 1);
     init_draw_settings(&settings);
     settings.unk06 = 0;
-    settings.unk02 = 2;
+    settings.blend_mode = 2;
     settings.prim = 0x5C;
     settings.unk05 = 1;
-    func_455150(draw_buffer, &settings);
+    lib_draw_buffer_apply_settings(draw_buffer, &settings);
     lib_draw_buffer_begin_primitive(draw_buffer, 4);
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
 
@@ -1262,11 +1258,11 @@ void BootGameLauncher::update()
             memset_guess(record, 0, sizeof(BootSealedRecord));
             seal_record(record);
             LibTrophyFlags* bits = &settings->trophy_flags;
-            s32 size = bits->size;
+            s32 size = bits->flags.size;
 
             for (s32 i = 0; i < size; i++)
             {
-                bits->flag_bytes[i] = 0;
+                bits->flags.bytes[i] = 0;
             }
 
             bits->trophy_key = resident_next_random_word();

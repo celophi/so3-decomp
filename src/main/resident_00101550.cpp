@@ -1702,15 +1702,15 @@ extern "C" void resident_stream_set_sample_rings(ResidentStreamThread* thread, u
 }
 
 /**
- * @brief Read the stream thread's word at offset 0xC0 while its first state is one.
+ * @brief Get how many times the playing stream has looped.
  * @param thread Stream thread.
- * @return The word, or zero in any other state.
+ * @return Loop count, or zero when nothing is playing.
  */
-extern "C" s32 func_00109FB0(ResidentStreamThread* thread)
+extern "C" s32 resident_stream_get_loop_count(ResidentStreamThread* thread)
 {
     if (thread->first_state == 1)
     {
-        return thread->unkC0;
+        return thread->loop_count;
     }
 
     return 0;

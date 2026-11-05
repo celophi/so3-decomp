@@ -33,7 +33,7 @@
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
 extern "C" u32 D_001B65B4;
 extern "C" u8 D_50CD30[];
-extern "C" void* D_001B6628;
+extern "C" LibDisplayManager* D_001B6628;
 extern "C" u8 D_001B6510;
 
 
@@ -1918,7 +1918,7 @@ FieldClass150630::~FieldClass150630()
 /** @brief Apply the packed callback fields, then unlink and release this object. */
 void FieldClass150630::update()
 {
-    func_004DAFE0(D_001B6628, D_001B6650, unk18 != 0, unk19 != 0, unk1a != 0, unk1c, 0xFFFFFF);
+    D_001B6628->set_display_effect(D_001B6650, unk18 != 0, unk19 != 0, unk1a != 0, unk1c, 0xFFFFFF);
     lib_object_detach_owner(this);
     func_001DD7B0();
 }

@@ -1,0 +1,3 @@
+@144@on_packet_complete__12LibColorFadeFUi = 0x004E33A0;
+@144@complete_dma__15LibImageCaptureFUi = 0x00433660;
+@144@submit_dma__15LibImageCaptureFUi = 0x00433670;

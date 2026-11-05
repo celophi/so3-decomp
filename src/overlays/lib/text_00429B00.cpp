@@ -4,6 +4,13 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/memory_card.h"
 #include "overlays/lib/image_capture.h"
+#include "overlays/lib/transform_owner_inlines.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "ee.h"
+#include "overlays/lib/text_004DD440.h"
+#include "main/resident_0010A0E0.h"
+
+extern "C" void func_004D00B0(void* object);
 #include "sdk/main/libmc_0012BB10.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "main/resident_00101260.h"
@@ -764,15 +771,58 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432900);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004329C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432A50);
+/** @brief Mark the packet being stored as done and finish the capture. */
+void LibImageCapture::on_store_complete()
+{
+    stored[storing] = 1;
+    func_004D00B0(this);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432A80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433270);
+/**
+ * @brief Let the store thread know the store packet's transfer is over.
+ * @param channel DMA channel number.
+ */
+void LibImageCapture::complete_dma(u32 channel)
+{
+    func_001140F0(g_vif1_dma_queue);
+    iSignalSema(D_005081D0.semaphore);
+}
+
+/**
+ * @brief Hand the packet being stored to the store thread and wake it.
+ * @param channel DMA channel number.
+ */
+void LibImageCapture::submit_dma(u32 channel)
+{
+    dma_pending = 1;
+    u8 index = storing;
+    void* destination = destinations[index];
+    D_005081D0.packet = reinterpret_cast<GsStoreImage*>(reinterpret_cast<u32>(&packets[index]) | UNCACHED_SEGMENT);
+    D_005081D0.destination = destination;
+    D_005081D0.capture = this;
+
+    if (!func_00114DD0(&D_005081D0))
+    {
+        D_005081D0.wake_failed = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004332F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433340);
+/** @brief Queue the capture's DMA, or hand it to the packet queue when unk65 is set. */
+void LibImageCapture::render()
+{
+    if (!unk65)
+    {
+        func_00114100(g_vif1_dma_queue, this);
+    }
+    else
+    {
+        func_004DC4F0(D_001B65DC, 6, 0, this, 0, 0);
+    }
+}
 
 /**
  * @brief Queue a copy of a VRAM rectangle into memory, in the next of the capture's two store packets.
@@ -797,21 +847,46 @@ void lib_image_capture_store(LibImageCapture* capture, void* destination, s16 ba
     capture->pending = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433440);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433480);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433580);
-
-void func_00433650(void* object)
+/**
+ * @brief Pick the waiting packet to store, if there is one.
+ * @param matrix Matrix supplied by the caller; unused.
+ * @param context Opaque caller context; unused.
+ */
+void LibImageCapture::build_packet(const void* matrix, void* context)
 {
-    u8* bytes = (u8*)object;
-    bytes[0x60] = bytes[0x94];
+    if (!pending)
+    {
+        unk63 = 0;
+        return;
+    }
+
+    storing = current;
+    unk63 = 1;
+    pending = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433660);
+/** @brief Destroy the capture. */
+LibImageCapture::~LibImageCapture()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433670);
+/** @brief Construct the capture. */
+LibImageCapture::LibImageCapture()
+{
+    set_type_id(0x1200);
+    default_draw_bucket = 9;
+    current = 0;
+    pending = 0;
+    unk65 = 0;
+    set_draw_flags(draw_flags | LIB_DRAW_FLAG_0400);
+    FlushCache(0);
+}
+
+/** @brief Use the capture's own draw bucket. */
+void LibImageCapture::set_default_draw_bucket()
+{
+    draw_bucket = default_draw_bucket;
+}
 
 /** @brief Free the shared font (archive resources 8 and 9) and remove it from the entry table. */
 void lib_release_shared_font(void)

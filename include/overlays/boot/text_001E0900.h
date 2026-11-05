@@ -879,44 +879,6 @@ struct BootResidentDisplay
     LibCameraContext* display;
 };
 
-/** 0x2910-byte Lib heap that may sit at the start of scratchpad memory. */
-class BootScratchHeap
-{
-    public:
-        /**
-         * @brief Create the heap.
-         * @param size Heap size in bytes.
-         * @param count Block count.
-         */
-        BootScratchHeap(s32 size, s32 count);
-
-        /**
-         * @brief Allocate the heap object through the resident allocator.
-         * @param size Object size in bytes.
-         * @param heap Heap selector.
-         * @return The allocated storage.
-         */
-        static void* operator new(u32 size, s32 heap)
-        {
-            return ::operator new(size, heap);
-        }
-
-        /**
-         * @brief Release the storage when construction fails, unless it is the scratchpad.
-         * @param object Storage to release.
-         * @param heap Heap selector passed to operator new.
-         */
-        static void operator delete(void* object, s32 heap)
-        {
-            if (object != (void*)0x70000000)
-            {
-                ::operator delete(object);
-            }
-        }
-
-        u8 unk00[0x2910];
-};
-
 /** How a track evaluates keys outside its first and last keyframes. */
 enum BootTrackEndMode
 {

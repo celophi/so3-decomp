@@ -5,8 +5,7 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
 
-extern "C" LibVector4 D_50CD30;
-extern "C" void resident_packet_submit(void* owner, void* object);
+extern "C" LibVector4 D_0050CD30;
 extern "C" void func_004D00B0(LibTransformOwner* object);
 
 struct LibStateByteB4View
@@ -220,7 +219,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF0C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF200);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF320);
+/** @brief Free the packet storage unless it is borrowed. */
+LibPacketBuffer::~LibPacketBuffer()
+{
+    if (!unk14)
+    {
+        delete unk04;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF390);
 
@@ -276,15 +282,21 @@ void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
-/** @brief Return the shared fallback transform vector. @return Address of D_50CD30. */
+/** @brief Return the shared fallback transform vector. @return Address of D_0050CD30. */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
-    return &D_50CD30;
+    return &D_0050CD30;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EFAB0);
 
-struct N50Owner94_003E68C0 { u8 pad00[0x64]; u8 active; u8 pad65[0x2F]; void* owner; };
+struct N50Owner94_003E68C0
+{
+        u8 pad00[0x64];
+        u8 active;
+        u8 pad65[0x2F];
+        ResidentPacket* owner;
+};
 
 void func_003EFAF0(N50Owner94_003E68C0* object)
 {

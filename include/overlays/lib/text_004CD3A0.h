@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "gs.h"
+#include "ee.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/render_channel.h"
@@ -27,8 +28,6 @@ typedef struct LibListNode
 } LibListNode;
 
 #ifdef __cplusplus
-/** @brief Configure the attached callback and its flags. @param object Receiver. @param attached Attached object. @param enabled Whether the callback is enabled. @param first_flag First callback flag. @param second_flag Second callback flag. @param level Signed callback level. @param mask Callback mask. */
-extern "C" void func_004DAFE0(void* object, void* attached, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask);
 
 /** Aligned four-row matrix whose assignment returns a copy of the matrix. */
 class LibMatrix44Value
@@ -153,6 +152,151 @@ extern "C"
 }
 
 class LibDisplayManager;
+class LibCameraContext;
+
+/** Entries a texture cache tracks; entry 0 is the head of the most-recently-used list. */
+#define LIB_TEXTURE_CACHE_ENTRY_COUNT 256
+
+/** Partial object that owns a cached texture. */
+struct LibTextureUser
+{
+    u8 unk00[0x2C];
+    s32 priority;
+};
+
+/** Partial key half of a cache entry. */
+struct LibTextureKey
+{
+    u32 id;
+    u8 unk04[0xB];
+
+    /** Cache stamp of the last lookup that found the entry. */
+    u8 stamp;
+};
+
+/** Partial value half of a cache entry. */
+struct LibTextureEntry
+{
+    u32 tag;
+    LibTextureUser* user;
+
+    /** TEX0 value for the texture; TBP0 gives its VRAM address. */
+    u64 tex0;
+};
+
+/** VRAM area a texture cache miss asks for. */
+struct LibTextureRequest
+{
+    s16 width;
+    s16 height;
+    s32 size;
+    u8 unk08[4];
+
+    /** GS pixel storage mode (1 is PSMCT24). */
+    s16 psm;
+
+    /** Texture width as a power of two (TEX0's TW). */
+    u8 width_log2;
+
+    /** Texture height as a power of two (TEX0's TH). */
+    u8 height_log2;
+};
+
+/** Partial 0x2910-byte VRAM texture cache (D_001B663C). It may sit at the start of scratchpad memory. */
+class LibTextureCache
+{
+public:
+    /**
+     * @brief Create the cache.
+     * @param size Size in bytes.
+     * @param count Block count.
+     */
+    LibTextureCache(s32 size, s32 count);
+
+    /**
+     * @brief Allocate the cache through the resident allocator.
+     * @param size Object size in bytes.
+     * @param heap Heap selector.
+     * @return The allocated storage.
+     */
+    static void* operator new(u32 size, s32 heap)
+    {
+        return ::operator new(size, heap);
+    }
+
+    /**
+     * @brief Release the storage when construction fails, unless it is the scratchpad.
+     * @param object Storage to release.
+     * @param heap Heap selector passed to operator new.
+     */
+    static void operator delete(void* object, s32 heap)
+    {
+        if (object != (void*)EE_SCRATCHPAD)
+        {
+            ::operator delete(object);
+        }
+    }
+
+    /**
+     * @brief Look up a cached texture, loading it on a miss.
+     * @param request Texture to load on a miss, or null to only look.
+     * @param tag Request tag.
+     * @param id Texture ID.
+     * @param slot Slot whose last hit is recorded.
+     * @param unk5 Passed to the loader on a miss.
+     * @param want_address Nonzero to return the texture's VRAM address.
+     * @param user Object whose priority a hit on a user-owned texture lowers.
+     * @return VRAM word address of the texture, or 0.
+     */
+    u32 find_texture(LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5, s32 want_address,
+                     LibTextureUser* user);
+
+    /**
+     * @brief Move an entry to the front of the most-recently-used list.
+     * @param index Entry to move; it must not already be at the front.
+     */
+    void move_to_front(u32 index)
+    {
+        next[previous[index]] = next[index];
+        previous[next[index]] = previous[index];
+        next[index] = next[0];
+        previous[index] = 0;
+        previous[next[0]] = index;
+        next[0] = index;
+    }
+
+    u8 unk00[8];
+    LibTextureKey keys[LIB_TEXTURE_CACHE_ENTRY_COUNT];
+    LibTextureEntry entries[LIB_TEXTURE_CACHE_ENTRY_COUNT];
+    u8 next[LIB_TEXTURE_CACHE_ENTRY_COUNT];
+    u8 previous[LIB_TEXTURE_CACHE_ENTRY_COUNT];
+    u8 unk2208[0x468];
+
+    /** Entry each slot last found. */
+    u16 slot_entries[LIB_TEXTURE_CACHE_ENTRY_COUNT];
+
+    u8 unk2870[0x80];
+    u8 stamp;
+    u8 unk28f1[0x1F];
+};
+
+/** The game's texture cache. */
+extern "C" LibTextureCache* D_001B663C;
+
+/**
+ * @brief Load a texture the cache missed.
+ * @param cache Cache to add the texture to.
+ * @param request Texture to load.
+ * @param tag Request tag.
+ * @param id Texture ID.
+ * @param slot Slot whose last hit is recorded.
+ * @param unk5 Unknown.
+ * @param user Object that owns the texture, or null.
+ * @return VRAM word address of the texture, or 0.
+ */
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5,
+                             LibTextureUser* user);
+
 
 extern "C" u32 D_001B65BC;
 extern "C" u8 D_001B65C0;
@@ -436,12 +580,99 @@ public:
     virtual s32 get_default_list_kind();
     /** @brief Update the manager's intrusive receiver. */
     virtual void update();
-    u8 unk8c[4];
+
+    /**
+     * @brief Turn the display's effect on or off and pick its level.
+     * @param display Display the effect applies to.
+     * @param enabled Nonzero to turn the effect on.
+     * @param first_flag Passed to the display unchanged.
+     * @param second_flag Passed to the display and kept here.
+     * @param level Effect level; it picks the two scales passed to the display.
+     * @param mask Passed to the display unchanged.
+     */
+    void set_display_effect(LibCameraContext* display, bool enabled, bool first_flag, bool second_flag, s32 level,
+                            u32 mask);
+
+    /** Display the effect is set on, or null while it's off. */
+    LibCameraContext* effect_display;
+
     LibListObject* current_display;
     u8 unk94;
-    u8 unk95;
-    u8 unk96[2];
+
+    /** Nonzero while the display effect is on. */
+    u8 effect_enabled;
+
+    u8 unk96;
+    u8 effect_level;
 };
+
+/** Bytes in each of the renderer's two packet buffers. */
+#define LIB_RENDERER_BUFFER_SIZE 0x2000
+
+/** Partial Lib renderer (D_001B661C); it alternates between two packet buffers each frame. */
+class LibRenderer : public LibUpdateList
+{
+public:
+    /** @brief Destroy the renderer. */
+    virtual ~LibRenderer();
+
+    /** @brief Start a frame: swap packet buffers and, with a list and a camera, build the frame's packets. */
+    void begin_frame();
+
+    void func_004D4700();
+    void func_004D4560();
+
+    /** Write position in the current packet buffer. */
+    u8* cursor;
+
+    u8 unk7c[4];
+    u8 buffers[2][LIB_RENDERER_BUFFER_SIZE];
+
+    /** Scene manager whose current camera the frame is drawn with. */
+    LibDisplayManager* manager;
+
+    void* unk4084;
+    LibCameraContext* display;
+    u32 unk408c;
+    u8 unk4090[4];
+
+    /** Entry of lists picked for this frame. */
+    void* current_list;
+
+    void* lists[2];
+    u32 unk40a0;
+    u32 unk40a4;
+    u32 unk40a8;
+    u8 unk40ac[4];
+    u32 unk40b0;
+    u8 unk40b4[0xC];
+    u32 unk40c0;
+    u8 unk40c4[6];
+    u8 unk40ca;
+    u8 unk40cb;
+    u8 unk40cc[5];
+
+    /** Packet buffer the next frame writes to. */
+    u8 buffer_index;
+};
+
+/** Reciprocal of g_frame_ticks, refreshed each frame. */
+extern float D_001B668C;
+
+extern "C" LibBusyObject* D_001B65FC;
+extern "C" u64 D_001B65C8;
+
+/**
+ * @brief Queue the busy object on a channel.
+ * @param object Busy object.
+ * @param channel Channel number.
+ * @return Queue status.
+ */
+extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel);
+
+extern "C" void func_004DB150(LibDisplayManager* manager);
+extern "C" void func_004C8390(LibDisplayManager* manager);
+extern "C" u64 func_004DBCA0(LibCameraContext* display, s32 index);
 
 /** Transform with local vectors, a cached matrix, and a parent link. */
 class LibTransform : public LibTransformOwner
@@ -588,40 +819,19 @@ extern "C" void lib_invalidate_transform_chain(LibTransform* object);
 extern "C" {
 #endif
 
-/** @brief Start the Lib frame packet. */
-void func_4D8AC0(void);
-
 /**
- * @brief Prepare the Lib rendering state for an update.
- * @param object Lib rendering state.
+ * @brief LibRenderer::begin_frame, for modules that only have an untyped view of the renderer.
+ * @param object Renderer.
  */
 void func_4D4BE0(void* object);
 
 /**
- * @brief Append packet drawer data at the supplied coordinates.
- * @param object Packet drawer.
- * @param x First coordinate.
- * @param y Second coordinate.
+ * @brief LibScreenText::begin, for modules that only have their own view of the printer.
+ * @param object Screen text printer.
+ * @param x Left margin in screen pixels.
+ * @param y Top line in screen pixels.
  */
 void func_4D76C0(void* object, u16 x, u16 y);
-
-/**
- * @brief Select the display buffer and wait for its field.
- * @param object Display state.
- * @param frame Render iteration.
- * @return Selected display field.
- */
-u32 func_4DCFF0(void* object, s32 frame);
-
-#ifdef __cplusplus
-/**
- * @brief Configure display-buffer flags.
- * @param object Display state.
- * @param enabled Enable the buffer flag.
- * @param other Select the additional flag.
- */
-void func_4DCEA0(void* object, bool enabled, bool other);
-#endif
 
 #ifdef __cplusplus
 /**
@@ -739,7 +949,31 @@ typedef struct LibVramAllocator
     s16 allocation_count;
     s16 unk04_capacity;
     s16 allocation_capacity;
+    u32 unk14;
+
+#ifdef __cplusplus
+    /** @brief Free the allocation tables. */
+    virtual ~LibVramAllocator();
+#endif
 } LibVramAllocator;
+
+/**
+ * @brief Build the CLUT half of a TEX0 value for a VRAM slot.
+ * @param vram Allocator holding the slot's CLUT address.
+ * @param slot VRAM slot.
+ * @param entry CLUT entry offset (CSA).
+ * @param mode CLUT load mode.
+ * @return CBP, CSA and CLD bits of TEX0.
+ */
+u64 func_004DC800(LibVramAllocator* vram, s16 slot, s16 entry, s32 mode);
+
+/**
+ * @brief Upload an image to a VRAM slot.
+ * @param image Decoded image.
+ * @param slot VRAM slot.
+ * @return Negative on failure.
+ */
+s32 func_004D8D20(u8* image, s32 slot);
 
 /** The game's VRAM allocator. */
 extern LibVramAllocator* D_001B65E0;
@@ -875,13 +1109,59 @@ extern "C" s32 func_004D0740(void* object);
 extern "C" {
 #endif
 
-struct FieldPacketQueue;
+/** Lib's queue of GS packet operations. */
+typedef struct LibPacketQueue LibPacketQueue;
+
+/** The game's packet queue. */
+extern LibPacketQueue* D_001B65DC;
 
 /** Wait for or finish the packet queue according to the flag. */
-void func_004DBEE0(struct FieldPacketQueue* queue, s32 flag);
+void func_004DBEE0(LibPacketQueue* queue, s32 flag);
+
+/**
+ * @brief Test whether the packet queue is full.
+ * @param queue Packet queue.
+ * @return Nonzero when no more operations fit.
+ */
+s32 func_004DBD80(LibPacketQueue* queue);
+
+/**
+ * @brief Queue a packet operation.
+ * @param queue Packet queue.
+ * @param operation Operation number.
+ * @param flags Operation flags.
+ * @param packet Packet to send, or the object the operation is for.
+ * @param value Operation value, such as a quadword count.
+ * @param completion Called when the operation is done, or null.
+ * @return Queue status.
+ */
+s32 func_004DC4F0(LibPacketQueue* queue, u32 operation, u32 flags, const void* packet, u32 value, void* completion);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+
+/** Partial Lib packet queue; its vtable D_00178F90 comes after its data. */
+struct LibPacketQueue
+{
+    s32 unk00;
+    void* entries;
+    s16 capacity;
+    s16 unk0A;
+    s16 unk0C;
+    u8 unk0E;
+    u8 unk0F;
+
+    /** Queued packets may start; func_004DC420 sets it. */
+    u8 enabled;
+
+    u8 unk11;
+
+    /** @brief Destroy the queue. */
+    virtual ~LibPacketQueue();
+};
 #endif
 
 #ifdef __cplusplus

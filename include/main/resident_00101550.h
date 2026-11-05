@@ -944,11 +944,11 @@ void func_00109D50(struct ResidentStreamThread* thread);
 void resident_stream_set_sample_rings(struct ResidentStreamThread* thread, u32 first_ring, u32 second_ring, u32 ring_size);
 
 /**
- * @brief Read the stream thread's word at offset 0xC0 while its first state is one.
+ * @brief Get how many times the playing stream has looped.
  * @param thread Stream thread.
- * @return The word, or zero in any other state.
+ * @return Loop count, or zero when nothing is playing.
  */
-s32 func_00109FB0(struct ResidentStreamThread* thread);
+s32 resident_stream_get_loop_count(struct ResidentStreamThread* thread);
 
 /**
  * @brief Move one of the stream thread's two states to two when it is one or two.

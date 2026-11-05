@@ -10,6 +10,39 @@
 /** Address bit that maps EE main memory uncached. */
 #define UNCACHED_SEGMENT 0x20000000
 
+/** Start of the EE's 16 KB scratchpad RAM. */
+#define EE_SCRATCHPAD 0x70000000
+
+/** DMA tag IDs and a tag word: quadword count, ID and address. */
+#define DMA_TAG_ID_CNT 0x10000000
+#define DMA_TAG_ID_END 0x70000000
+#define DMA_TAG(qwc, id, address) ((u64)(qwc) | (id) | ((u64)(u32)(address) << 32))
+
+/** Dn_CHCR bits. */
+#define DMA_CHCR_DIR_FROM_MEMORY 0x1
+#define DMA_CHCR_MODE_CHAIN 0x4
+#define DMA_CHCR_START 0x100
+
+/** DMA channel 8 (scratchpad to memory) registers, and the DMA status register. */
+#define D8_CHCR ((volatile u32*)0x1000D000)
+#define D8_QWC ((volatile u32*)0x1000D020)
+#define D8_SADR ((volatile u32*)0x1000D080)
+#define D_STAT ((volatile u32*)0x1000E010)
+
+/** D_STAT: channel 8 has finished. */
+#define D_STAT_CIS8 0x100
+
+/** VIF codes: STCYCL, and UNPACK with its formats and flags. */
+#define VIF_STCYCL(cl, wl) (0x01000000 | ((wl) << 8) | (cl))
+#define VIF_UNPACK(format, num, address) (((num) << 16) | ((format) << 24) | (address))
+#define VIF_UNPACK_S_8 0x62
+#define VIF_UNPACK_V4_32 0x6C
+#define VIF_UNPACK_V4_16 0x6D
+#define VIF_UNPACK_V4_8 0x6E
+#define VIF_UNPACK_V2_16_MASKED 0x75
+#define VIF_UNPACK_UNSIGNED 0x4000
+#define VIF_UNPACK_ADD_TOPS 0x8000
+
 /**
  * @brief Return the EE scalar maximum of two floating-point operands.
  * @param left First operand.

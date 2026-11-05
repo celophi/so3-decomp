@@ -5,7 +5,6 @@
 #include "gs.h"
 
 typedef struct N50Owner114_004DD440 N50Owner114_004DD440;
-typedef struct N50OwnerBC_004DD440 N50OwnerBC_004DD440;
 #include "main/resident_0010A0E0.h"
 #include "sdk/main/libdma_0012B2C8.h"
 
@@ -49,25 +48,12 @@ struct LibDisplayArea
     s16 height;
 };
 
-/**
- * GS drawing environment for one draw buffer: a GIF tag and the context-1
- * registers in A+D form, in the order libgraph's sceGsDrawEnv1 uses.
- */
+/** GS drawing environment for one draw buffer: a GIF tag and both contexts' registers in A+D form. */
 struct LibDrawEnvironment
 {
     GsGifTag gif_tag;
-    GsFrame frame;
-    u64 frame_address;
-    u64 depth_buffer;
-    u64 depth_buffer_address;
-    u64 offset;
-    u64 offset_address;
-    GsScissor scissor;
-    u64 scissor_address;
-    u64 unk40[6];
-    GsTest test;
-    u64 test_address;
-    u8 unk80[0x80];
+    GsDrawContext context1;
+    GsDrawContext context2;
 };
 
 /** GS packet that clears a draw buffer in 32-pixel-wide strips. */
@@ -83,8 +69,24 @@ struct LibDisplayBuffer
     LibScreenClear clear;
 };
 
+/** DISPFB and DISPLAY values for one read circuit. */
+struct LibDisplayRegisters
+{
+    u64 framebuffer;
+    u64 display;
+};
+
 /** Number of draw buffers a display keeps (two alternate; the third is drawn separately). */
 #define LIB_DISPLAY_BUFFER_COUNT 3
+
+/** Number of packets in each of a display's two packet sets. */
+#define LIB_DISPLAY_PACKET_COUNT 18
+
+/** Number of packet sets a display alternates between. */
+#define LIB_DISPLAY_PACKET_SET_COUNT 2
+
+/** Number of packet lists a display keeps: one per field in each set. */
+#define LIB_DISPLAY_PACKET_LIST_COUNT (LIB_DISPLAY_PACKET_SET_COUNT * 2)
 
 /** Number of screens a display can show (one per interlaced field per read circuit). */
 #define LIB_DISPLAY_SCREEN_COUNT 4
@@ -92,15 +94,10 @@ struct LibDisplayBuffer
 /** One screen the display can show: its output registers, draw buffers and settings. */
 struct LibDisplayScreen
 {
-    u8 unk00[0x10];
+    /** Display setup for the read circuit this screen is shown on. */
+    GsDisplayEnvironment display_environment;
 
-    /** DISPFB value for the read circuit this screen is shown on. */
-    u64 framebuffer_register;
-
-    /** DISPLAY value for the read circuit this screen is shown on. */
-    u64 display_register;
-
-    u8 unk20[0x10];
+    u8 unk28[8];
     LibDisplayBuffer buffers[2];
     u8 enabled;
     u8 unkA51;
@@ -118,7 +115,10 @@ struct LibDisplayScreen
 
     u8 unkA56;
     u8 unkA57;
-    s16 unkA58;
+
+    /** Pixel format of the screen's frame and draw buffers. */
+    s16 pixel_format;
+
     s16 width;
     s16 height;
     s16 view_x;
@@ -187,7 +187,67 @@ private:
      */
     void apply_scale(u8 unk3C77, float scale_x, float scale_y, s16 unk3C70);
 
+    /** @brief Size the draw area from its base size and scale, rounded up to 64 by 32 pixels. */
+    void resize_display_area()
+    {
+        s32 fields;
+
+        fields = 1;
+        if (resident_get_system()->progressive)
+        {
+            fields = 2;
+        }
+
+        display_area.width = ((s32)(display_area.base_width * display_area.scale_x) + 63) & ~63;
+        display_area.height = ((s32)(display_area.base_height * display_area.scale_y / fields) + 31) & ~31;
+    }
+
 public:
+    /**
+     * @brief Set up the display environments for a frame size. The three frame buffers follow the depth buffer;
+     *        each gets circuit-1 registers and a copy that blends both circuits.
+     * @param pixel_format Frame buffer pixel format.
+     * @param width Frame width in pixels.
+     * @param height Frame height in pixels.
+     */
+    void configure_display(s16 pixel_format, s16 width, s16 height);
+
+    /**
+     * @brief Set up the draw buffers for a frame size and lay out VRAM: the depth buffer at vram_base_page, then
+     *        the frame buffers. A scaled display also places the draw area and each enabled screen's buffers after
+     *        them.
+     * @param pixel_format Frame buffer pixel format.
+     * @param width Frame width in pixels.
+     * @param height Frame height in pixels (one field when interlaced).
+     * @param depth_test Depth test method; 0 for no depth buffer.
+     * @param depth_format Depth buffer pixel format.
+     */
+    void configure_buffers(s16 pixel_format, s16 width, s16 height, s16 depth_test, s16 depth_format);
+
+    /**
+     * @brief Show the field that's starting: point the read circuits at the screens drawn for it and, when the
+     *        display is scaled and no screen is on circuit 2, send the packets that draw the scaled area.
+     * @param field Interlaced field (0 or 1) from GS CSR.
+     */
+    void vblank(s32 field);
+
+    /**
+     * @brief Finish a render iteration: send its draw packets to the queue and pick the buffers to show.
+     * @param frame Render iteration.
+     * @param queue Packet queue the frame's packets go to.
+     */
+    void flip(s32 frame, LibPacketQueue* queue);
+
+    /**
+     * @brief Send one field's packet list from send_list_set. Entries flagged in unk3E08 are drawn with
+     *        environments[0]; the draw environment is put back when the flagged run ends.
+     * @param field Interlaced field whose list is sent.
+     * @param per_screen Put back the environments of the field's circuit-2 screens instead of buffers[1]'s.
+     */
+    void send_packet_list(s32 field, bool per_screen);
+
+    /** @brief Send the ready packet, once, if there is one and a packet queue to send it to. */
+    void send_ready_packet();
 
     /**
      * @brief Configure one of the display's screens. Progressive output has no second read circuit, so a
@@ -199,12 +259,12 @@ public:
      * @param circuit2 Show the screen on read circuit 2.
      * @param unk6 Stored at 0xA56.
      * @param field Interlaced field the screen is shown in.
-     * @param unk8 Stored at 0xA58.
+     * @param pixel_format Pixel format of the screen's buffers.
      * @param width Screen width in pixels.
      * @param height Screen height in pixels.
      */
-    void configure_screen(s32 index, u8 enabled, u8 unk3, u8 circuit1, u8 circuit2, u8 unk6, u8 field, s16 unk8,
-                          s16 width, s16 height);
+    void configure_screen(s32 index, u8 enabled, u8 unk3, u8 circuit1, u8 circuit2, u8 unk6, u8 field,
+                          s16 pixel_format, s16 width, s16 height);
 
     /**
      * @brief Set the rectangle of a screen that is drawn to.
@@ -216,47 +276,153 @@ public:
      */
     void set_screen_view(s32 index, s32 x, s32 y, s32 width, s32 height);
 
-    u8 unk00[0x10];
+    /**
+     * @brief Turn the display output on or off. Circuit 1 only comes on when the display allows it (0x3E64).
+     * @param enabled Show read circuit 2.
+     * @param circuit1 Also show read circuit 1.
+     */
+    void set_output(bool enabled, bool circuit1);
 
-    /** DISPFB value used when a screen doesn't supply its own. */
-    u64 framebuffer_register;
+    /** @brief Rebuild the scaled display's packets, if it's scaled and has a draw area. */
+    void refresh_scaled_packets();
 
-    /** DISPLAY value used when a screen doesn't supply its own. */
-    u64 display_register;
+    /** @brief Build the packets that draw the scaled draw area onto each screen. */
+    void build_scaled_packets();
 
-    u8 unk20[0x130];
+    /**
+     * @brief Get the scale from screen pixels to the draw area. Interlaced output draws one field, so it counts y
+     *        in field lines.
+     * @param x Receives the horizontal scale.
+     * @param y Receives the vertical scale.
+     */
+    void get_area_scale(float* x, float* y);
+
+    /**
+     * @brief Wait for the next field and set the draw buffers' half-pixel offsets for it.
+     * @param frame Render iteration, which picks the draw buffer.
+     * @return Field the frame is drawn for (always 0 for progressive output).
+     */
+    u32 wait_for_field(s32 frame);
+
+    GsDisplayEnvironment display_environments[LIB_DISPLAY_BUFFER_COUNT];
+
+    /** Each display environment's DISPFB and DISPLAY values, for showing that buffer on read circuit 1. */
+    LibDisplayRegisters circuit1_registers[LIB_DISPLAY_BUFFER_COUNT];
+
+    /** The display environments with both circuits blended at a fixed alpha that alternates each field. */
+    GsDisplayEnvironment blend_environments[LIB_DISPLAY_BUFFER_COUNT];
+
+    /** Circuit-1 registers for the blended environments, with the picture moved to line 49. */
+    LibDisplayRegisters blend_registers[LIB_DISPLAY_BUFFER_COUNT];
+
     LibDisplayBuffer buffers[LIB_DISPLAY_BUFFER_COUNT];
     LibDrawEnvironment environments[2];
     LibDisplayScreen screens[LIB_DISPLAY_SCREEN_COUNT];
     LibDisplayArea display_area;
     s16 unk3C70;
-    u8 unk3C72[4];
+
+    /** Depth test method the draw environments are set up with (sceGsSetDefDrawEnv's ztest). */
+    s16 depth_test;
+
+    /** Depth buffer pixel format. */
+    s16 depth_format;
 
     /** The draw area isn't drawn at 1:1. */
     u8 scaled;
 
     u8 unk3C77;
+
     /** First VRAM page (8 KB) after the display's buffers; textures go from here. */
     u32 vram_free_page;
-    u32 unk3C7C;
-    u8 unk3C80[0x34];
-    u8* unk3CB4[18];
-    u8* unk3CFC[18];
-    u8 unk3D44[0x108];
+
+    /** First VRAM page of the display's buffers: the depth buffer, then the frame buffers. */
+    u32 vram_base_page;
+
+    /** VRAM pages the depth buffer takes. */
+    u32 depth_buffer_pages;
+
+    /** Queue the display's packets go to, set each frame. */
+    LibPacketQueue* packet_queue;
+
+    u8* unk3C88[2];
+    u32 unk3C90[2];
+
+    /** Built packets waiting to be sent once, or null. */
+    u8* ready_packets[2];
+
+    /** Quadword counts of ready_packets. */
+    u32 ready_sizes[2];
+
+    u8* unk3CA8[2];
+    u8 unk3CB0;
+
+    /** Which of ready_packets to send. */
+    u8 ready_index;
+
+    u8 unk3CB2[2];
+
+    /** Two sets of the display's packets, 0x530 bytes each: one per field, one per screen, then the rest. */
+    u8* packets[LIB_DISPLAY_PACKET_SET_COUNT][LIB_DISPLAY_PACKET_COUNT];
+
+    /** Quadword counts of packets. */
+    u32 packet_sizes[LIB_DISPLAY_PACKET_SET_COUNT][LIB_DISPLAY_PACKET_COUNT];
+
+    /** Which set of packets is sent. */
+    s32 packet_set;
+
+    /** Packet lists, two sets of one per field (index set * 2 + field): the buffer, null when there are none. */
+    u8* list_buffers[LIB_DISPLAY_PACKET_LIST_COUNT];
+
+    /** Each list's packet addresses. */
+    u8** list_packets[LIB_DISPLAY_PACKET_LIST_COUNT];
+
+    /** Each list's packet quadword counts. */
+    u32* list_sizes[LIB_DISPLAY_PACKET_LIST_COUNT];
+
+    /** Per set, one flag per list entry: draw it with environments[0] instead of the screen's own. */
+    u8* unk3E08[LIB_DISPLAY_PACKET_SET_COUNT];
+
+    s32 unk3E10;
+    s32 unk3E14;
+    s32 unk3E18;
+    u8 unk3E1C[4];
+    u8* unk3E20;
+    u8* unk3E24;
+
+    /** Set of packet lists the next send uses. */
+    s32 send_list_set;
+
+    /** Entries in each list of send_list_set. */
+    s32 send_list_count;
+
+    u8 unk3E30;
+    u8 unk3E31[3];
+    u8* unk3E34;
+    u8 unk3E38[4];
+    u32 unk3E3C;
+    u8 unk3E40[8];
+    u8 unk3E48;
+    u8 unk3E49[3];
     u32 unk3E4C;
     u32 unk3E50;
-    u32 unk3E54;
-    u32 unk3E58;
+
+    /** Display environment shown in each field. */
+    u32 shown_buffers[2];
+
     /** Frame buffers the display cycles through. */
     s32 frame_buffer_count;
-    u8 unk3E60[4];
+
+    /** Blend alpha for blend_environments in the even field; the odd field adds 0x80. */
+    u32 blend_field_alpha;
+
     u8 unk3E64;
     u8 unk3E65;
     u8 unk3E66;
     u8 unk3E67;
     u8 unk3E68;
     u8 unk3E69;
-    u8 unk3E6A[2];
+    u8 unk3E6A;
+    u8 unk3E6B;
 
     /** Enable alpha blending in the display drawing commands. */
     u8 blend_enabled;
@@ -274,7 +440,8 @@ public:
 
     s16 unk3E78;
     s16 unk3E7A;
-    u8 unk3E7C[0x90];
+    u8 unk3E7C;
+    u8 unk3E7D[0x8F];
 
     /** @brief Destroy the display. */
     virtual ~LibCameraContext();
@@ -282,6 +449,182 @@ public:
 
 /** The game's display. */
 extern LibCameraContext* D_001B6650;
+
+/** Rectangle in screen pixels. Lib's colour fades cover it. */
+struct LibScreenRect
+{
+    /** @brief Clear the rectangle. */
+    inline LibScreenRect();
+
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
+};
+
+/** Area new colour fades cover. */
+extern LibScreenRect D_0050CD40;
+
+/** Depth new colour fades draw at. */
+extern "C" s32 D_001B6694;
+
+/**
+ * @brief Set the area and depth that new colour fades use.
+ * @param rect Area in screen pixels.
+ * @param depth Depth the fades draw at.
+ */
+extern "C" void lib_set_color_fade_area(const LibScreenRect* rect, s32 depth);
+
+/**
+ * @brief Set up the display's effect with the scales its level picked.
+ * @param display Display.
+ * @param enabled Turn the effect on.
+ * @param first_flag Effect flag.
+ * @param second_flag Effect flag.
+ * @param level Effect level.
+ * @param mask Effect mask.
+ * @param first_scale First scale.
+ * @param second_scale Second scale.
+ */
+extern "C" void func_004DCDE0(LibCameraContext* display, bool enabled, bool first_flag, bool second_flag, s32 level,
+                              u32 mask, float first_scale, float second_scale);
+
+/**
+ * @brief Apply the display's effect once it's been set up.
+ * @param display Display.
+ */
+extern "C" void func_004DE500(LibCameraContext* display);
+
+/** GS ALPHA register values; the first is the usual (Cs - Cd) * As + Cd blend. */
+extern "C" u64 D_4ED330[];
+
+/** Rectangle of one colour that blends from a start colour to an end colour, then destroys itself (vtable D_179150). */
+class LibColorFade : public LibTransformOwner, public LibDmaCallbacks
+{
+public:
+    /** @brief Fade from black (alpha 128) to transparent over 30 frames. */
+    LibColorFade()
+    {
+        reset();
+        start_color = 0x80000000;
+        color = 0x80000000;
+        end_color = 0;
+        duration = 30.0f;
+        set_type_id(0x300);
+        unk65 = 1;
+        set_draw_flags(LIB_DRAW_FLAG_0400);
+    }
+
+    /** @brief Release the packet. */
+    virtual ~LibColorFade();
+
+    /**
+     * @brief Return the list a colour fade goes in.
+     * @return List kind 3.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Blend the colour for the time so far; once the fade is over, destroy it. */
+    virtual void update();
+
+    /** @brief Mark the fade pending and submit its packet. */
+    virtual void render();
+
+    /** @brief Draw in bucket 10. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Build the packet: one sprite over the rectangle, scaled to the display.
+     * @param matrix Matrix supplied by the caller; unused.
+     * @param context Opaque caller context; unused.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Finish the fade's drawing packet.
+     * @param value Notification word.
+     */
+    virtual void on_packet_complete(u32 value);
+
+    /** @brief Clear the colour and time, take the default area and depth, and allocate the packet. */
+    void reset();
+
+    u32 start_color;
+    u32 end_color;
+    u32 color;
+
+    /** Frames so far. */
+    float elapsed;
+
+    /** Frames the fade lasts. */
+    float duration;
+
+    LibScreenRect rect;
+    s32 depth;
+    LibPacketBuffer* packet;
+};
+
+/** Partial 0x28-byte screen text printer D_001B6618 (vtable D_178E90); its data comes before the vptr. */
+class LibScreenText
+{
+public:
+    /**
+     * @brief Set the default colours and cell size for the display's scale, put the cursor at a screen position
+     *        and start the text packet with the font's drawing state.
+     * @param x Left margin in screen pixels.
+     * @param y Top line in screen pixels.
+     */
+    void begin(u16 x, u16 y);
+
+    /**
+     * @brief Load and decode the font unless one is attached, upload it to its VRAM slot and restart the text at
+     *        the top-left corner.
+     */
+    void load_font();
+
+    /** Left margin, in GS primitive coordinates (pixels times 16). */
+    s16 left;
+
+    /** Cursor position, in GS primitive coordinates. */
+    s16 cursor_y;
+
+    s16 cursor_x;
+
+    /** Character cell size in pixels for the display's scale; the height counts field lines. */
+    s16 cell_width;
+
+    s16 cell_height;
+    u8 unk0a[2];
+
+    /** Depth the text draws at. */
+    u32 depth;
+
+    /** Text colour (RGBA). */
+    u32 color;
+
+    /** Shadow colour (RGBA). */
+    u32 shadow_color;
+
+    u8 unk18;
+
+    /** Nonzero when the font image belongs to someone else. */
+    u8 shared_font;
+    u8 unk1a[2];
+
+    /** Decoded font image; resource 11 unless another one was attached. */
+    u8* font_image;
+
+    /** Packet the text is drawn with, 0x2000 quadwords. */
+    LibPacketBuffer* packet;
+
+    /** @brief Destroy the printer. */
+    virtual ~LibScreenText();
+};
+
+/**
+ * @brief Rebuild Lib's frame packet, which resets the context-2 drawing state, and send it.
+ */
+extern "C" void lib_begin_frame_packet(void);
 
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */
 class LibClass179080 : public LibLookAtTransform, public DmaSubmission
@@ -419,16 +762,6 @@ extern "C" {
 /** Resident VIF1 DMA queue initialized by the Lib runtime. */
 extern ResidentDmaQueue* g_vif1_dma_queue;
 
-struct FieldPacketQueue;
-
-/**
- * @brief Process the render iteration and submit its queued packets.
- * @param object Display state.
- * @param frame Render iteration.
- * @param queue Packet queue to process.
- */
-void func_4DD830(void* object, s32 frame, struct FieldPacketQueue* queue);
-
 
 void func_004E59A0(void* object);
 void func_004E5B00(void* object);
@@ -438,13 +771,6 @@ void func_004E5B00(void* object);
  * @param object Receiver or first argument; unused.
  */
 void func_004E2E30(void* object);
-
-/**
- * @brief Return the fixed value 3.
- * @param object Receiver or first argument; unused.
- * @return Always 3.
- */
-s32 func_004E2EF0(void* object);
 
 /**
  * @brief Return the fixed value 16.
@@ -538,9 +864,6 @@ s16 func_004E6860(const void* object);
 s16 func_004E6870(const void* object);
 
 
-/** Store the byte constant at receiver offset 0x60. */
-void func_004E2EE0(void* object);
-
 /** Hide the equipment menu's factor tooltip by clearing its visible byte at 0xCB. */
 void lib_factor_tooltip_hide(void* object);
 
@@ -552,8 +875,6 @@ const void* func_004E0FB0(void);
 
 /** Set the active flag and forward the optional child pointer. */
 void func_004E1040(N50Owner114_004DD440* object);
-/** Set the active flag and forward the optional child pointer. */
-void func_004E2F20(N50OwnerBC_004DD440* object);
 
 #ifdef __cplusplus
 /** Return the first pointer argument unchanged. */
@@ -566,9 +887,6 @@ void func_004E64B0(void* object);
 
 /** Clear four consecutive words at the start of the receiver. */
 void func_004E68D0(void* object);
-
-/** Forward the receiver to func_004D00B0. */
-void func_004E2F00(void* object);
 
 /** Set the low packed mode at its target field and record whether either mode equals four. */
 void func_004E6340(void* object, u8 mode);
@@ -616,8 +934,8 @@ void* func_004E4AD0(void* object);
 extern "C" {
 #endif
 
-/** Release the retained display objects and storage. */
-void func_004E33B0(void);
+/** @brief Destroy Lib's global objects, free their storage and clear the pointers. */
+void lib_shutdown(void);
 
 #ifdef __cplusplus
 }

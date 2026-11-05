@@ -29,6 +29,9 @@
 #include "overlays/cshop/cshop.h"
 #include "overlays/citemcreation/text_003684D0.h"
 
+// This overlay only has an untyped view of the Lib entry tables these take.
+extern "C" void* func_472EB0(void* table, void* entry);
+
 extern "C" void func_002CEDA0(FieldCountedList* list);
 extern "C" void func_002CEF20(FieldCountedList* list);
 
@@ -53,7 +56,6 @@ extern "C" void func_00264460(FieldCountedList* list, void* value);
 
 extern "C" u8 func_0022A160(FieldScreenTransition* transition);
 
-extern "C" void* D_001B6694;
 
 /** Menu manager with vtable D_15B020 in main data; it loads the requested menu and runs its controller. */
 class FieldMenuManager : public FieldListObject
@@ -1120,7 +1122,7 @@ extern "C" u8 field_advance_menu_load(FieldMenuManager* manager)
             {
                 func_0020F230(field_display(), 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
                 FieldScreenTransition* transition;
-                (transition = field_display()->effects.transition)->unkc0 = D_001B6694;
+                (transition = field_display()->effects.transition)->depth = D_001B6694;
                 transition->unkf0 = 10;
                 manager->load_state = 2;
                 manager->transition_time = 4.0f;
@@ -1201,7 +1203,7 @@ extern "C" u8 field_advance_menu_load(FieldMenuManager* manager)
         {
             func_0020F230(field_display(), 0, 0x80000000, 0, 0, 0, 0, manager->transition_time, 0.0f, 0.0f);
             FieldScreenTransition* transition = field_display()->effects.transition;
-            void* value = D_001B6694;
+            s32 depth = D_001B6694;
             FieldTransitionRect rect;
             rect.bounds[0] = 0;
             rect.bounds[1] = 0;
@@ -1214,7 +1216,7 @@ extern "C" u8 field_advance_menu_load(FieldMenuManager* manager)
                 transition->rect.bounds[i] = source[i];
             }
 
-            transition->unkc0 = value;
+            transition->depth = depth;
             transition->unkf0 = 10;
             manager->load_state = 7;
             manager->timer = 0.0f;
@@ -1347,7 +1349,7 @@ void FieldMenuManager::update()
         {
             func_0020F230(field_display(), 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
             FieldScreenTransition* transition;
-            (transition = field_display()->effects.transition)->unkc0 = D_001B6694;
+            (transition = field_display()->effects.transition)->depth = D_001B6694;
             transition->unkf0 = 10;
             phase = 8;
             break;
@@ -1674,7 +1676,7 @@ FieldClass15B090::FieldClass15B090()
     func_00204A10(0xF900);
 
     for (FieldRenderableEntry* entry = static_cast<FieldRenderableEntry*>(lib_find_renderable_entry(static_cast<LibEntryManager*>(unk7c), 0)); entry != 0;
-         entry = static_cast<FieldRenderableEntry*>(func_00472EB0(unk7c, entry)))
+         entry = static_cast<FieldRenderableEntry*>(func_472EB0(unk7c, entry)))
     {
         if (entry->kind == 0x100)
         {

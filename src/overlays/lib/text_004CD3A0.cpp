@@ -13,6 +13,8 @@
 #include "vu0.h"
 #include "overlays/lib/quaternion_vu0.h"
 #include "ee.h"
+#include "clamp.h"
+#include "main/resident_data.h"
 #include "main/resident_001001E0.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0046AE20.h"
@@ -24,6 +26,63 @@
 #include "main/resident_0010A0E0.h"
 
 #define TEXTURE_TRANSFER_GIF_TAG 0x1000000000008004ULL
+
+/** Request tag ('MlPs') whose misses are only loaded when an address is wanted. */
+#define LIB_TEXTURE_TAG_MLPS 0x4D6C5073
+
+/** Highest and lowest priority a cached texture's user can reach. */
+#define LIB_TEXTURE_PRIORITY_MAX 10
+#define LIB_TEXTURE_PRIORITY_MIN -10
+
+/** Lowest priority at which a hit still moves a user's texture to the front. */
+#define LIB_TEXTURE_PRIORITY_KEEP -5
+
+/** VRAM slot the screen text font is uploaded to. */
+#define LIB_SCREEN_TEXT_FONT_SLOT 31
+
+/** Archive key of the screen text font image. */
+#define LIB_SCREEN_TEXT_FONT_KEY 11
+
+/** Resource queue tag and priority the font is read with. */
+#define LIB_SCREEN_TEXT_FONT_TAG 2
+#define LIB_SCREEN_TEXT_FONT_PRIORITY 0x34BC0
+
+/** Character cell size in screen pixels, before the display's area scale. */
+#define LIB_SCREEN_TEXT_CELL_SIZE 16.01f
+
+/** TEX0 size and colour bits of the font: 256x256 (TW = TH = 8) with alpha (TCC). */
+#define LIB_SCREEN_TEXT_FONT_TEX0 0x620000000ULL
+
+/** PRIM for the text: textured, alpha-blended sprites with UV coordinates, in context 2. */
+#define LIB_SCREEN_TEXT_PRIM 0x356
+
+/** Packet that sets up the GS for drawing screen text: TEX0_2, ALPHA_2, PRIM and RGBAQ in A+D form. */
+struct LibScreenTextPacket
+{
+    GsGifTag tag;
+    u64 tex0;
+    u64 tex0_address;
+    u64 alpha;
+    u64 alpha_address;
+    u64 prim;
+    u64 prim_address;
+    u32 rgba;
+    float q;
+    u64 rgbaq_address;
+};
+
+/** Registers Lib's frame packet resets at the start of each frame. */
+#define LIB_FRAME_PACKET_REGISTER_COUNT 11
+
+/** Packet that resets the context-2 drawing state Lib relies on. */
+struct LibFramePacket
+{
+    GsGifTag tag;
+    GsRegisterValue registers[LIB_FRAME_PACKET_REGISTER_COUNT];
+};
+
+/** Lib's frame packet, 64 quadwords. TODO: init builds a LibPacketBuffer here, but I can only match this as a plain packet. */
+extern "C" ResidentPacket D_0050CD60;
 
 enum
 {
@@ -920,11 +979,45 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4010);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D44D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4560);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4560__11LibRendererFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4700);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4700__11LibRendererFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4BE0);
+/** @brief Start a frame: swap packet buffers and, with a list and a camera, build the frame's packets. */
+void LibRenderer::begin_frame()
+{
+    func_004D9A80(D_001B65FC, 0);
+    D_001B668C = 1.0f / g_frame_ticks;
+
+    if (manager == 0)
+    {
+        func_004D99B0(D_001B65FC);
+        return;
+    }
+
+    func_004D99B0(D_001B65FC);
+    func_004DB150(manager);
+    func_004C8390(manager);
+    unk40cb = 0;
+    unk40a0 = 0;
+    unk408c = 0;
+    unk40a4 = 0;
+    cursor = buffers[buffer_index];
+    current_list = lists[buffer_index];
+    buffer_index ^= 1;
+    unk40a8 = 0;
+    unk40c0 = 0;
+
+    if (current_list != 0 && manager->current_display != 0)
+    {
+        D_001B65C8 = func_004DBCA0(display, 0);
+        unk40b0 = 0;
+        func_004D4700();
+        func_004D4560();
+    }
+
+    unk40ca = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4D00);
 
@@ -1305,9 +1398,90 @@ LibUpdateList::LibUpdateList()
     active_buffer_owner = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D76C0);
+/**
+ * @brief Set the default colours and cell size for the display's scale, put the cursor at a screen position and
+ *        start the text packet with the font's drawing state.
+ * @param x Left margin in screen pixels.
+ * @param y Top line in screen pixels.
+ */
+void LibScreenText::begin(u16 x, u16 y)
+{
+    float scale_x;
+    float scale_y;
+    LibCameraContext* display;
+    s32 top;
+    s32 margin;
+    LibScreenTextPacket* setup;
+    u32 rgba;
+    u64 tex0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D78F0);
+    if (packet == 0)
+    {
+        return;
+    }
+
+    color = 0x80FFFFFF;
+    shadow_color = 0x80101010;
+    D_001B6650->get_area_scale(&scale_x, &scale_y);
+    cell_width = (u8)(s32)(LIB_SCREEN_TEXT_CELL_SIZE * scale_x);
+    cell_height = (u8)(s32)(0.5f * (LIB_SCREEN_TEXT_CELL_SIZE * scale_y));
+    display = D_001B6650;
+    top = GS_COORDINATE_CENTRE - display->display_area.height / 2;
+    margin = GS_COORDINATE_CENTRE - display->display_area.width / 2;
+    left = cursor_x = (x + margin) << 4;
+    cursor_y = (y + top) << 4;
+    resident_packet_rewind(packet);
+    setup = (LibScreenTextPacket*)resident_packet_reserve(packet, 0);
+
+    if (setup == 0)
+    {
+        return;
+    }
+
+    setup->tag.tag = GIF_TAG_NREG(1) | 4;
+    setup->tag.registers = 0;
+    setup->tag.fields.register0 = GIF_REGISTER_AD;
+    tex0 = (u64)D_001B65E0->unk04[LIB_SCREEN_TEXT_FONT_SLOT] | LIB_SCREEN_TEXT_FONT_TEX0;
+    setup->tex0 = tex0 | func_004DC800(D_001B65E0, LIB_SCREEN_TEXT_FONT_SLOT, 0, 1);
+    setup->tex0_address = GS_REGISTER_TEX0_2;
+    setup->alpha = GS_ALPHA_NORMAL;
+    setup->alpha_address = GS_REGISTER_ALPHA_2;
+    setup->prim = LIB_SCREEN_TEXT_PRIM;
+    setup->prim_address = GS_REGISTER_PRIM;
+    rgba = color;
+    setup->rgba = (rgba & 0xFF) | ((rgba >> 8) & 0xFF) << 8 | ((rgba >> 16) & 0xFF) << 16 | (rgba & 0xFF000000);
+    setup->q = 1.0f;
+    setup->rgbaq_address = GS_REGISTER_RGBAQ;
+    resident_packet_align_cursor(packet, (u8*)(setup + 1));
+}
+
+/**
+ * @brief Load and decode the font unless one is attached, upload it to its VRAM slot and restart the text at the
+ *        top-left corner.
+ */
+void LibScreenText::load_font()
+{
+    u8* data;
+
+    if (font_image == 0)
+    {
+        data = new (0) u8[resident_get_resource_size(g_resource_archive, LIB_SCREEN_TEXT_FONT_KEY)];
+        resident_queue_resource_request(g_resource_queue, LIB_SCREEN_TEXT_FONT_KEY, data, LIB_SCREEN_TEXT_FONT_TAG, LIB_SCREEN_TEXT_FONT_PRIORITY, 0, 0, 0, 1);
+
+        while (resident_find_resource_request(g_resource_queue, LIB_SCREEN_TEXT_FONT_KEY, (u32)data, LIB_SCREEN_TEXT_FONT_TAG, 0xFFFFFFFF, 0))
+        {
+        }
+
+        font_image = resident_allocate_decode_buffer(g_resident_resource_decoder, (ResidentResourceHeader*)data, 0, 0);
+        resident_decode_resource_block(g_resident_resource_decoder, (ResidentResourceHeader*)data, font_image, 0);
+        operator delete(data);
+        FlushCache(0);
+        shared_font = 0;
+    }
+
+    func_004D8D20(font_image, LIB_SCREEN_TEXT_FONT_SLOT);
+    begin(0, 0);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update__22LibPaletteBlendChannelFv);
 
@@ -1742,9 +1916,53 @@ void lib_clear_vram(void)
     operator delete(zeros);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8A80);
+/**
+ * @brief Set the area and depth that new colour fades use.
+ * @param rect Area in screen pixels.
+ * @param depth Depth the fades draw at.
+ */
+extern "C" void lib_set_color_fade_area(const LibScreenRect* rect, s32 depth)
+{
+    D_0050CD40 = *rect;
+    D_001B6694 = depth;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8AC0);
+/** @brief Rebuild Lib's frame packet, which resets the context-2 drawing state, and send it. */
+void lib_begin_frame_packet(void)
+{
+    LibFramePacket* packet;
+
+    resident_packet_rewind(&D_0050CD60);
+    packet = (LibFramePacket*)resident_packet_reserve(&D_0050CD60, 0);
+    packet->tag.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | LIB_FRAME_PACKET_REGISTER_COUNT;
+    packet->tag.registers = 0;
+    packet->tag.fields.register0 = GIF_REGISTER_AD;
+    packet->registers[0].data = 1;
+    packet->registers[0].address = GS_REGISTER_TEXFLUSH;
+    packet->registers[1].data = 4;
+    packet->registers[1].address = GS_REGISTER_TEXCLUT;
+    packet->registers[2].data = 0x61;
+    packet->registers[2].address = GS_REGISTER_TEX1_2;
+    packet->registers[3].data = GS_ALPHA_NORMAL;
+    packet->registers[3].address = GS_REGISTER_ALPHA_2;
+    packet->registers[4].data = 0x5000D;
+    packet->registers[4].address = GS_REGISTER_TEST_2;
+    packet->registers[5].data = 0;
+    packet->registers[5].address = GS_REGISTER_FBA_2;
+    packet->registers[6].data = 0;
+    packet->registers[6].address = GS_REGISTER_PABE;
+    packet->registers[7].data = 1;
+    packet->registers[7].address = GS_REGISTER_PRMODECONT;
+    packet->registers[8].data = 0x8000008080ULL;
+    packet->registers[8].address = GS_REGISTER_TEXA;
+    packet->registers[9].data = 0xFFFFFFF0ULL;
+    packet->registers[9].address = GS_REGISTER_CLAMP_1;
+    packet->registers[10].data = 0xFFFFFFF0ULL;
+    packet->registers[10].address = GS_REGISTER_CLAMP_2;
+    packet++;
+    resident_packet_align_cursor(&D_0050CD60, (u8*)packet);
+    resident_packet_submit(&D_0050CD60, 0);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8C20);
 
@@ -1764,13 +1982,84 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D92C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9300);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D93A0);
+/**
+ * @brief Look up a cached texture, loading it on a miss.
+ * @param request Texture to load on a miss, or null to only look.
+ * @param tag Request tag.
+ * @param id Texture ID.
+ * @param slot Slot whose last hit is recorded.
+ * @param unk5 Passed to the loader on a miss.
+ * @param want_address Nonzero to return the texture's VRAM address.
+ * @param user Object whose priority a hit on a user-owned texture lowers.
+ * @return VRAM word address of the texture, or 0.
+ */
+u32 LibTextureCache::find_texture(LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5, s32 want_address, LibTextureUser* user)
+{
+    u32 index;
+
+    for (index = next[0]; index != 0; index = next[index])
+    {
+        if (keys[index].id == id && entries[index].tag == tag)
+        {
+            keys[index].stamp = stamp;
+
+            if (entries[index].user == 0)
+            {
+                if (next[0] != index)
+                {
+                    move_to_front(index);
+                }
+
+                slot_entries[slot] = index;
+
+                // TODO: hits only test the flag's low byte and the miss path tests all of it; I'm not sure why yet.
+                if (!(u8)want_address)
+                {
+                    return 0;
+                }
+
+                return (entries[index].tex0 & 0x3FFF) * GS_VRAM_BLOCK_WORDS;
+            }
+            else
+            {
+                s32 priority = entries[index].user->priority;
+
+                if (next[0] != index && priority >= LIB_TEXTURE_PRIORITY_KEEP)
+                {
+                    move_to_front(index);
+                }
+
+                slot_entries[slot] = index;
+
+                if (!(u8)want_address)
+                {
+                    priority++;
+                    priority = clamp_high(priority, LIB_TEXTURE_PRIORITY_MAX);
+                    entries[index].user->priority = priority;
+                    return 0;
+                }
+
+                priority -= 2;
+                priority = clamp_low(priority, LIB_TEXTURE_PRIORITY_MIN);
+                user->priority = priority;
+                return (entries[index].tex0 & 0x3FFF) * GS_VRAM_BLOCK_WORDS;
+            }
+        }
+    }
+
+    if ((tag == LIB_TEXTURE_TAG_MLPS && !want_address) || request == 0)
+    {
+        return 0;
+    }
+
+    return func_004A7100(this, request, tag, id, slot, unk5, user);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9590);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9670);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9810);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__15LibTextureCacheFii);
 
 extern "C" void* func_004D99A0(void* object)
 {
@@ -1953,7 +2242,61 @@ extern "C" s32 func_004DAFD0(void* object)
     return 8;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DAFE0);
+/**
+ * @brief Turn the display's effect on or off and pick its level.
+ * @param display Display the effect applies to.
+ * @param enabled Nonzero to turn the effect on.
+ * @param first_flag Passed to the display unchanged.
+ * @param second_flag Passed to the display and kept here.
+ * @param level Effect level; it picks the two scales passed to the display.
+ * @param mask Passed to the display unchanged.
+ */
+void LibDisplayManager::set_display_effect(LibCameraContext* display, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask)
+{
+    float first_scale;
+    float second_scale;
+
+    effect_enabled = enabled;
+
+    if (effect_enabled)
+    {
+        if (level == 1)
+        {
+            first_scale = 1.0f;
+            second_scale = 1.0f;
+        }
+        else if (level == 2)
+        {
+            first_scale = 0.5f;
+            second_scale = 2.0f;
+        }
+        else if (level == 3)
+        {
+            first_scale = 0.2f;
+            second_scale = 4.0f;
+        }
+        else if (level < 9)
+        {
+            first_scale = 0.15f;
+            second_scale = 6.0f;
+        }
+        else
+        {
+            first_scale = 0.1f;
+            second_scale = 12.0f;
+        }
+
+        effect_display = display;
+        unk96 = second_flag;
+        effect_level = level;
+        func_004DCDE0(display, true, first_flag, second_flag, level, mask, first_scale, second_scale);
+        func_004DE500(display);
+    }
+    else
+    {
+        effect_display = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB0F0);
 
@@ -1989,7 +2332,19 @@ void func_004DBB70(LibCameraContext* display)
     display->unk3E7A ^= 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBB90);
+/**
+ * @brief Get the scale from screen pixels to the draw area. Interlaced output draws one field, so it counts y in
+ *        field lines.
+ * @param x Receives the horizontal scale.
+ * @param y Receives the vertical scale.
+ */
+void LibCameraContext::get_area_scale(float* x, float* y)
+{
+    *x = (float)display_area.width / display_area.base_width;
+    ResidentSystem* system = resident_get_system();
+    float ratio = (float)display_area.height / display_area.base_height;
+    *y = ratio * (1.0f + system->progressive);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBC70);
 
@@ -2058,10 +2413,149 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCDA0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCDE0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCEA0);
+/**
+ * @brief Turn the display output on or off. Circuit 1 only comes on when the display allows it (0x3E64).
+ * @param enabled Show read circuit 2.
+ * @param circuit1 Also show read circuit 1.
+ */
+void LibCameraContext::set_output(bool enabled, bool circuit1)
+{
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCFA0);
+    if (enabled)
+    {
+        for (i = 0; i < LIB_DISPLAY_BUFFER_COUNT; i++)
+        {
+            display_environments[i].pmode.circuit2 = 1;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCFF0);
+            if (circuit1)
+            {
+                if (unk3E64)
+                {
+                    display_environments[i].pmode.circuit1 = 1;
+                }
+            }
+            else
+            {
+                display_environments[i].pmode.circuit1 = 0;
+            }
+        }
+    }
+    else
+    {
+        for (i = 0; i < LIB_DISPLAY_BUFFER_COUNT; i++)
+        {
+            display_environments[i].pmode.circuit1 = 0;
+            display_environments[i].pmode.circuit2 = 0;
+        }
+    }
+}
+
+/** @brief Rebuild the scaled display's packets, if it's scaled and has a draw area. */
+void LibCameraContext::refresh_scaled_packets()
+{
+    if (scaled && display_area.width > 0 && display_area.height > 0)
+    {
+        build_scaled_packets();
+    }
+}
+
+/**
+ * @brief Offset a draw environment's contexts by half a pixel on odd fields.
+ * @param environment Environment whose context-1 and context-2 offsets are set.
+ * @param field Field being drawn.
+ */
+static inline void set_half_offset(LibDrawEnvironment* environment, u32 field)
+{
+    sceGsSetHalfOffset(&environment->context1, GS_COORDINATE_CENTRE, GS_COORDINATE_CENTRE, field);
+    sceGsSetHalfOffset2(&environment->context2, GS_COORDINATE_CENTRE, GS_COORDINATE_CENTRE, field);
+}
+
+/**
+ * @brief Wait for the next field and set the draw buffers' half-pixel offsets for it.
+ * @param frame Render iteration, which picks the draw buffer.
+ * @return Field the frame is drawn for (always 0 for progressive output).
+ */
+u32 LibCameraContext::wait_for_field(s32 frame)
+{
+    ResidentInputSystem* input = resident_system_get_input(&g_system);
+    u32 field;
+
+    if (unk3E68 != 0)
+    {
+        unk3E68--;
+    }
+
+    if (unk3E65 != 0 && frame >= 0)
+    {
+        shown_buffers[unk3E69 ^ 1] = (frame - 1) % LIB_DISPLAY_BUFFER_COUNT;
+    }
+
+    if (unk3E66 != 0)
+    {
+        shown_buffers[0] = (frame - 1) % LIB_DISPLAY_BUFFER_COUNT;
+    }
+
+    unk3E6B = 1;
+    field = func_0011DF10(input, 0) ^ 1;
+
+    if (resident_get_system()->progressive)
+    {
+        field = 0;
+    }
+
+    if (scaled)
+    {
+        return field;
+    }
+
+    unk3E50 = field ^ 1;
+
+    if (unk3E65 != 0)
+    {
+        field = unk3E69;
+        unk3E69 = field ^ 1;
+    }
+
+    if (unk3E66 != 0)
+    {
+        unk3E69 = 0;
+        field = 0;
+    }
+
+    // TODO: scaled was already handled above; this second test is the only shape I found that matches.
+    if (!scaled)
+    {
+        unk3E4C = field;
+
+        if (frame_buffer_count == LIB_DISPLAY_BUFFER_COUNT)
+        {
+            switch (frame % LIB_DISPLAY_BUFFER_COUNT)
+            {
+            case 0:
+                set_half_offset(&buffers[0].environment, field);
+                break;
+            case 1:
+                set_half_offset(&buffers[1].environment, field);
+                break;
+            case 2:
+                set_half_offset(&buffers[2].environment, field);
+                break;
+            }
+        }
+        else if (frame & 1)
+        {
+            set_half_offset(&buffers[1].environment, field);
+            set_half_offset(&environments[1], field);
+        }
+        else
+        {
+            set_half_offset(&buffers[0].environment, field);
+            set_half_offset(&environments[0], field);
+        }
+    }
+
+    return field;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DD310);

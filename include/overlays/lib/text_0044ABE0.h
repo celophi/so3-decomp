@@ -24,18 +24,43 @@ typedef struct LibObjectByte60
 #define LIB_CHECKSUM_MULTIPLIER 0x19660D
 #define LIB_CHECKSUM_INCREMENT 0x3C6EF35F
 
-/** @brief The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
-typedef struct LibTrophyFlags
+#ifdef __cplusplus
+/** Bit array whose bytes come before the vptr (vtable D_1721D0 in main data). */
+class LibBitArray
 {
+public:
     u8 unk00[4];
 
-    /** Size of the flag array in bytes. */
+    /** Size of the array in bytes. */
     s32 size;
 
-    /** Flag array: bit i of the array is set once trophy i is earned. */
-    u8* flag_bytes;
+    u8* bytes;
 
-    u8 unk0C[8];
+    /** Nonzero when bytes is borrowed and must not be freed. */
+    u8 borrowed;
+
+    /** @brief Start with no bytes. */
+    LibBitArray()
+    {
+        bytes = 0;
+        borrowed = 0;
+    }
+
+    /** @brief Free the bytes unless they're borrowed. */
+    virtual ~LibBitArray()
+    {
+        if (!borrowed)
+        {
+            delete[] bytes;
+        }
+    }
+};
+
+/** The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
+struct LibTrophyFlags
+{
+    /** Bit i is set once trophy i is earned. */
+    LibBitArray flags;
 
     /** Random word mixed into each trophy record's key; replaced when the flags are reset. */
     s32 trophy_key;
@@ -44,11 +69,43 @@ typedef struct LibTrophyFlags
     u32 checksum_seed;
 
     u32 checksum;
-} LibTrophyFlags;
+};
+
+/** Lib's view of the 0x1C8-byte system settings (resident entry 1). */
+struct LibSystemSettings
+{
+    /** @brief Leave the settings uninitialized; the allocator clears them. */
+    LibSystemSettings()
+    {
+    }
+
+    u8 unk00[0x1A8];
+    LibTrophyFlags trophy_flags;
+};
+
+/** Resident entry table keys of the saved system data. */
+enum
+{
+    LIB_ENTRY_SYSTEM_SETTINGS = 1,
+    LIB_ENTRY_RECORD_OUTPUTS = 2,
+    LIB_ENTRY_RECORD_INPUTS = 3,
+    LIB_ENTRY_08 = 8,
+    LIB_ENTRY_PADDING = 9
+};
+#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/** @brief Free the system settings, the two record arrays and the padding block, and remove their entries. */
+void lib_free_system_data(void);
+
+/**
+ * @brief Allocate the system settings, the two record arrays and func_0040B760's data in a random order, after a
+ *        random-sized padding block, register them in the resident entry table and initialize them.
+ */
+void lib_allocate_system_data(void);
 
 /**
  * @brief Compute the trophy flags' checksum from a seed: each flag, flipped by the seed's low bit, weighted by the
@@ -73,7 +130,7 @@ void* func_004568A0(void* receiver);
 void func_0044C050(LibObjectByte60* object);
 /** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */
 void func_0044D070(LibObjectByte60* object);
-/** @brief Return the address of D_508230. @return The data symbol's address. */
+/** @brief Return the address of D_00508230. @return The data symbol's address. */
 const void* func_0044D080(void);
 /** @brief Update the transform and mark the current display ready. @param object Transform receiver. */
 void func_0044D0D0(void* object);
@@ -95,7 +152,7 @@ s32 func_004569C0(void);
 s32 func_0045ABA0(void);
 /** @brief Perform no work. @param object Unused receiver. */
 void func_0044C060(void* object);
-/** @brief Return the address of D_508240. @return The data symbol's address. */
+/** @brief Return the address of D_00508240. @return The data symbol's address. */
 const void* func_0044C070(void);
 /** @brief Clear the selected state in the shared lib object. */
 void func_0044C080(void);

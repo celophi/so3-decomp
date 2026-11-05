@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_LIB_TEXT_003E68C0_H
 
 #include "types.h"
+#include "main/resident_0011EE70.h"
 
 #ifdef __cplusplus
 extern "C" void func_003EF030(u8* object);
@@ -164,6 +165,25 @@ public:
 
     u8 unk00[0x790];
     LibClass3F5B80Buffer* buffer;
+};
+
+/** Lib's copy of the GS packet buffer, with vtable D_171E70 in main data; its data comes before the vptr. */
+class LibPacketBuffer : public ResidentPacket
+{
+public:
+    /**
+     * @brief Allocate the packet's storage.
+     * @param quadwords Storage size in quadwords.
+     */
+    LibPacketBuffer(s32 quadwords)
+    {
+        unk04 = 0;
+        unk15 = 0;
+        resident_packet_allocate(this, quadwords);
+    }
+
+    /** @brief Free the packet storage unless it is borrowed. */
+    virtual ~LibPacketBuffer();
 };
 
 /** Virtual intrusive-link root. */

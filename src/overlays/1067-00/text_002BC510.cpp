@@ -28,7 +28,6 @@ extern "C" FieldGlobal643C* D_001B643C;
 
 extern "C" void func_4D00B0(void* object);
 extern "C" void func_44B210(void* object);
-extern "C" void func_4DCEA0(void* state, bool enabled, bool other);
 
 
 FieldClass159A80::~FieldClass159A80()
@@ -66,7 +65,8 @@ bool func_002BC610(void* object, bool enabled)
     {
         return false;
     }
-    func_4DCEA0(D_001B6650, enabled, false);
+
+    D_001B6650->set_output(enabled, false);
     return true;
 }
 

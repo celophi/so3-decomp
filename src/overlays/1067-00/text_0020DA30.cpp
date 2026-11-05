@@ -6,6 +6,9 @@
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_0046AE20.h"
 
+// This overlay only has an untyped view of the Lib entry tables these take.
+extern "C" void* func_473390(void* table, const char* name);
+
 /** @brief Test the descriptor terminal flag. @param shape Descriptor to test. @return Whether the array ends here. */
 static inline bool field_owner_is_last(const FieldShapeOwner18* shape)
 {
@@ -108,7 +111,7 @@ extern "C" void func_0020DE80(FieldClass151640* object)
             break;
         }
         memcpy_guess(node->unk84, node->unk84, 0x11);
-        node->shape.unk04 = (LibTransformOwner*)func_00473390(D_001B6430->context->unk08->current_object->unk7c, node->unk84);
+        node->shape.unk04 = (LibTransformOwner*)func_473390(D_001B6430->context->unk08->current_object->unk7c, node->unk84);
     }
 }
 

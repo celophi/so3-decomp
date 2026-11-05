@@ -13,6 +13,9 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
+// This overlay only has an untyped view of the Lib entry tables these take.
+extern "C" void* func_473390(void* table, const char* name);
+
 struct FieldMotionVector81
 {
     u8 unk00[0x10];
@@ -743,8 +746,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020DB
 extern "C" LibTransformOwner* func_0020CA10(FieldClass151620* entry, const char* name)
 {
     memcpy_guess(entry->unk84, name, sizeof(entry->unk84));
-    LibTransformOwner* transform = (LibTransformOwner*)func_00473390(
-        D_001B6430->context->unk08->current_object->unk7c, entry->unk84);
+    LibTransformOwner* transform = (LibTransformOwner*)func_473390(D_001B6430->context->unk08->current_object->unk7c, entry->unk84);
     entry->shape.unk04 = transform;
     return transform;
 }

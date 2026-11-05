@@ -745,12 +745,17 @@ public:
     s32 entry_count;
     u8 unk3c[4];
     LibAnimationEntry14* entries;
-    u8 unk44[0xC];
+    u8 unk44[4];
+    u32 unk48;
+    u8 unk4c[4];
     LibAnimationEntry14* cached_entry;
     u8 unk54[4];
     LibAnimationBindingOwner* primary_binding_owner;
     LibAnimationBindingOwner* secondary_binding_owner;
-    u8 unk60[4];
+
+    /** Compared with each entry's target; the frame is truncated to a whole number when they match. */
+    void* unk60;
+
     float unk64;
     u8 resource_is_borrowed;
     u8 unk69;

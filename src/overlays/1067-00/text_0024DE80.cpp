@@ -20,7 +20,6 @@ struct FieldObject11CValues
     FieldValues24* values;
 };
 
-extern void* D_001B663C;
 extern "C" void func_4D9250(void* target, u32 first, u32 second);
 extern "C" void func_4D00B0(void* object);
 extern "C" void func_44B240(void* object, const void* matrix, void* context);

@@ -21,6 +21,13 @@ void FlushCache(s32 mode);
 s32 DisableDmac(s32 channel);
 
 /**
+ * @brief Let the DMAC raise interrupts for one channel.
+ * @param channel DMA channel.
+ * @return The channel's previous enable state.
+ */
+s32 EnableDmac(s32 channel);
+
+/**
  * @brief Initialize the TLB.
  */
 void InitTLB(void);

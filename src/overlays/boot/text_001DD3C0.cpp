@@ -386,7 +386,7 @@ void BootInstaller::update()
             resident_queue_resource_request(g_resource_queue, BOOT_RES_TIP_IMAGES, tip_image_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             clear_to_menu_background();
-            D_001B661C->prepend_node(new (0) BootClass179150, -1);
+            D_001B661C->prepend_node(new (0) LibColorFade, -1);
             screen_images_loaded = 0;
             step++;
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);

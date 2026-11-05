@@ -79,11 +79,29 @@ s32 func_00404CA0(void* object, s32 value);
 struct LibResourceRecordC4
 {
     u8 data[0xC4];
+
+#ifdef __cplusplus
+    /**
+     * @brief Copy a record.
+     * @param other Record to copy.
+     * @return This record.
+     */
+    LibResourceRecordC4& operator=(const LibResourceRecordC4& other);
+#endif
 };
 
 struct LibResourceRecord114
 {
     u8 data[0x114];
+
+#ifdef __cplusplus
+    /**
+     * @brief Copy a record.
+     * @param other Record to copy.
+     * @return This record.
+     */
+    LibResourceRecord114& operator=(const LibResourceRecord114& other);
+#endif
 };
 
 

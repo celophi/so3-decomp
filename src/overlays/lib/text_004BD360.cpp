@@ -116,9 +116,9 @@ struct LibWidgetContainerLink
     LibContainer* container;
 };
 
-extern "C" LibTrigTable D_50CC80;
-extern "C" LibTrigQuotients D_50CD10;
-extern "C" LibTrigQuotients D_50CD00;
+extern "C" LibTrigTable D_0050CC80;
+extern "C" LibTrigQuotients D_0050CD10;
+extern "C" LibTrigQuotients D_0050CD00;
 
 /** Packed scalar quotient lane written by VU0 range reduction. */
 struct LibScalarTrigQuotient
@@ -126,11 +126,10 @@ struct LibScalarTrigQuotient
     u32 unk00[3];
     s32 half_turns;
 } __attribute__((aligned(16)));
-extern "C" LibScalarTrigQuotient D_50CCF0;
-extern "C" LibScalarTrigQuotient D_50CCD0;
-extern "C" LibScalarTrigQuotient D_50CCE0;
-extern "C" LibScalarTrigQuotient D_50CCC0;
-
+extern "C" LibScalarTrigQuotient D_0050CCF0;
+extern "C" LibScalarTrigQuotient D_0050CCD0;
+extern "C" LibScalarTrigQuotient D_0050CCE0;
+extern "C" LibScalarTrigQuotient D_0050CCC0;
 
 /** @brief View an aligned matrix row as a vector. @param matrix Destination matrix. @param row Row index. @return Writable row vector. */
 static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 row)
@@ -1514,11 +1513,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC070);
  */
 extern "C" void lib_compute_sine_cosine_pair(LibVector4* output, float angle)
 {
-    D_50CC80.phase.angle = angle;
-    vu0_sincos_load(&D_50CC80);
-    vu0_sincos_reduce(&D_50CD10);
-    bool cosine_negative = bool(D_50CD10.cosine_half_turns & 1);
-    bool sine_negative = bool(D_50CD10.sine_half_turns & 1);
+    D_0050CC80.phase.angle = angle;
+    vu0_sincos_load(&D_0050CC80);
+    vu0_sincos_reduce(&D_0050CD10);
+    bool cosine_negative = bool(D_0050CD10.cosine_half_turns & 1);
+    bool sine_negative = bool(D_0050CD10.sine_half_turns & 1);
     vu0_sincos_square();
     float cosine_sign;
     if (cosine_negative)
@@ -1529,8 +1528,10 @@ extern "C" void lib_compute_sine_cosine_pair(LibVector4* output, float angle)
     {
         cosine_sign = 1.0f;
     }
-    D_50CC80.sign = cosine_sign;
+
+    D_0050CC80.sign = cosine_sign;
     float sine_sign;
+
     if (sine_negative)
     {
         sine_sign = -1.0f;
@@ -1539,8 +1540,9 @@ extern "C" void lib_compute_sine_cosine_pair(LibVector4* output, float angle)
     {
         sine_sign = 1.0f;
     }
-    D_50CC80.phase.sine_sign = sine_sign;
-    vu0_sincos_evaluate(&D_50CC80);
+
+    D_0050CC80.phase.sine_sign = sine_sign;
+    vu0_sincos_evaluate(&D_0050CC80);
     vu0_sincos_store(output);
 }
 
@@ -1551,11 +1553,11 @@ extern "C" void lib_compute_sine_cosine_pair(LibVector4* output, float angle)
  */
 extern "C" void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle)
 {
-    D_50CC80.phase.angle = angle;
-    vu0_sincos_load_degree9(&D_50CC80);
-    vu0_sincos_reduce(&D_50CD00);
-    bool cosine_negative = bool(D_50CD00.cosine_half_turns & 1);
-    bool sine_negative = bool(D_50CD00.sine_half_turns & 1);
+    D_0050CC80.phase.angle = angle;
+    vu0_sincos_load_degree9(&D_0050CC80);
+    vu0_sincos_reduce(&D_0050CD00);
+    bool cosine_negative = bool(D_0050CD00.cosine_half_turns & 1);
+    bool sine_negative = bool(D_0050CD00.sine_half_turns & 1);
     vu0_sincos_square();
     float cosine_sign;
     if (cosine_negative)
@@ -1566,8 +1568,10 @@ extern "C" void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float a
     {
         cosine_sign = 1.0f;
     }
-    D_50CC80.sign = cosine_sign;
+
+    D_0050CC80.sign = cosine_sign;
     float sine_sign;
+
     if (sine_negative)
     {
         sine_sign = -1.0f;
@@ -1576,8 +1580,9 @@ extern "C" void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float a
     {
         sine_sign = 1.0f;
     }
-    D_50CC80.phase.sine_sign = sine_sign;
-    vu0_sincos_evaluate_degree9(&D_50CC80);
+
+    D_0050CC80.phase.sine_sign = sine_sign;
+    vu0_sincos_evaluate_degree9(&D_0050CC80);
     vu0_sincos_store(output);
 }
 
@@ -1588,10 +1593,10 @@ extern "C" void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float a
  */
 extern "C" float lib_cosine(float angle)
 {
-    D_50CC80.phase.angle = angle;
-    vu0_cosine_load(&D_50CC80);
-    vu0_cosine_reduce(&D_50CCF0);
-    bool negative = bool(D_50CCF0.half_turns & 1);
+    D_0050CC80.phase.angle = angle;
+    vu0_cosine_load(&D_0050CC80);
+    vu0_cosine_reduce(&D_0050CCF0);
+    bool negative = bool(D_0050CCF0.half_turns & 1);
     vu0_trig_square_scalar();
     float sign;
     if (negative)
@@ -1602,10 +1607,11 @@ extern "C" float lib_cosine(float angle)
     {
         sign = 1.0f;
     }
-    D_50CC80.sign = sign;
-    vu0_cosine_begin_evaluate(&D_50CC80);
-    vu0_trig_finish_evaluate(&D_50CC80);
-    return D_50CC80.phase.result;
+
+    D_0050CC80.sign = sign;
+    vu0_cosine_begin_evaluate(&D_0050CC80);
+    vu0_trig_finish_evaluate(&D_0050CC80);
+    return D_0050CC80.phase.result;
 }
 
 /**
@@ -1615,10 +1621,10 @@ extern "C" float lib_cosine(float angle)
  */
 extern "C" float lib_cosine_degree9(float angle)
 {
-    D_50CC80.phase.angle = angle;
-    vu0_sincos_load_degree9(&D_50CC80);
-    vu0_cosine_reduce(&D_50CCE0);
-    bool negative = bool(D_50CCE0.half_turns & 1);
+    D_0050CC80.phase.angle = angle;
+    vu0_sincos_load_degree9(&D_0050CC80);
+    vu0_cosine_reduce(&D_0050CCE0);
+    bool negative = bool(D_0050CCE0.half_turns & 1);
     vu0_trig_square_scalar();
     float sign;
     if (negative)
@@ -1629,10 +1635,11 @@ extern "C" float lib_cosine_degree9(float angle)
     {
         sign = 1.0f;
     }
-    D_50CC80.sign = sign;
-    vu0_trig_begin_evaluate_degree9(&D_50CC80);
-    vu0_trig_finish_evaluate_degree9(&D_50CC80);
-    return D_50CC80.phase.result;
+
+    D_0050CC80.sign = sign;
+    vu0_trig_begin_evaluate_degree9(&D_0050CC80);
+    vu0_trig_finish_evaluate_degree9(&D_0050CC80);
+    return D_0050CC80.phase.result;
 }
 
 /**
@@ -1642,10 +1649,10 @@ extern "C" float lib_cosine_degree9(float angle)
  */
 extern "C" float lib_sine(float angle)
 {
-    D_50CC80.phase.angle = angle;
-    vu0_sine_load(&D_50CC80);
-    vu0_sine_reduce(&D_50CCD0);
-    bool negative = bool(D_50CCD0.half_turns & 1);
+    D_0050CC80.phase.angle = angle;
+    vu0_sine_load(&D_0050CC80);
+    vu0_sine_reduce(&D_0050CCD0);
+    bool negative = bool(D_0050CCD0.half_turns & 1);
     vu0_trig_square_scalar();
     float sign;
     if (negative)
@@ -1656,10 +1663,11 @@ extern "C" float lib_sine(float angle)
     {
         sign = 1.0f;
     }
-    D_50CC80.sign = sign;
-    vu0_sine_begin_evaluate(&D_50CC80);
-    vu0_trig_finish_evaluate(&D_50CC80);
-    return D_50CC80.phase.result;
+
+    D_0050CC80.sign = sign;
+    vu0_sine_begin_evaluate(&D_0050CC80);
+    vu0_trig_finish_evaluate(&D_0050CC80);
+    return D_0050CC80.phase.result;
 }
 
 /**
@@ -1669,10 +1677,10 @@ extern "C" float lib_sine(float angle)
  */
 extern "C" float lib_sine_degree9(float angle)
 {
-    D_50CC80.phase.angle = angle;
-    vu0_sine_load_degree9(&D_50CC80);
-    vu0_sine_reduce(&D_50CCC0);
-    bool negative = bool(D_50CCC0.half_turns & 1);
+    D_0050CC80.phase.angle = angle;
+    vu0_sine_load_degree9(&D_0050CC80);
+    vu0_sine_reduce(&D_0050CCC0);
+    bool negative = bool(D_0050CCC0.half_turns & 1);
     vu0_trig_square_scalar();
     float sign;
     if (negative)
@@ -1683,10 +1691,11 @@ extern "C" float lib_sine_degree9(float angle)
     {
         sign = 1.0f;
     }
-    D_50CC80.sign = sign;
-    vu0_trig_begin_evaluate_degree9(&D_50CC80);
-    vu0_trig_finish_evaluate_degree9(&D_50CC80);
-    return D_50CC80.phase.result;
+
+    D_0050CC80.sign = sign;
+    vu0_trig_begin_evaluate_degree9(&D_0050CC80);
+    vu0_trig_finish_evaluate_degree9(&D_0050CC80);
+    return D_0050CC80.phase.result;
 }
 
 /**

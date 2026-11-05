@@ -291,7 +291,6 @@ struct FieldState6628
     u32 unk90;
 };
 
-extern "C" void func_4DCFA0(void* state);
 extern "C" FieldTrackPool<FieldClass159130>* D_001B6674;
 extern "C" FieldTrackPool<FieldClass159390>* D_001B6668;
 extern "C" void func_002B9090(FieldClass1595D0* track);
@@ -321,7 +320,6 @@ extern "C" ResidentDmaQueue* D_001B6610;
 
 extern "C" FieldState6628* D_001B6628;
 
-extern "C" void* D_001B663C;
 
 extern "C" FieldTrackPool<FieldClass177F70>* D_001B6664;
 
@@ -1388,14 +1386,14 @@ void field_run_update_loop(ResidentContext* context)
     {
     }
 
-    func_4DCEA0(D_001B6650, true, false);
+    D_001B6650->set_output(true, false);
     D_001B6420 = 1;
 
     for (; !context->exit_requested;)
     {
         if (!context->skip_render)
         {
-            func_4DD830(D_001B6650, context->render_count, D_001B65DC);
+            D_001B6650->flip(context->render_count, D_001B65DC);
         }
         else
         {
@@ -1410,7 +1408,7 @@ void field_run_update_loop(ResidentContext* context)
             func_4D76C0(D_001B6618, 16, 16);
         }
 
-        func_4D8AC0();
+        lib_begin_frame_packet();
         func_4D4BE0(D_001B661C);
         D_001B6614->update_nodes();
         context->update_count++;
@@ -1448,13 +1446,14 @@ void field_run_update_loop(ResidentContext* context)
                 overrun = 0;
             }
 
-            context->display_field = func_4DCFF0(D_001B6650, context->render_count);
+            context->display_field = D_001B6650->wait_for_field(context->render_count);
             resident_input_take_vblank_count(g_input_system);
         }
         else
         {
             s32 remaining = context->time_step_level;
-            context->display_field = func_4DCFF0(D_001B6650, context->render_count);
+            context->display_field = D_001B6650->wait_for_field(context->render_count);
+
             for (s32 retries = 5; retries >= 0; retries--)
             {
                 remaining -= resident_input_take_vblank_count(g_input_system);
@@ -1677,7 +1676,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
         if (full_release)
         {
-            if (D_001B663C != reinterpret_cast<void*>(0x70000000))
+            if (D_001B663C != reinterpret_cast<LibTextureCache*>(EE_SCRATCHPAD))
             {
                 ::operator delete(D_001B663C);
             }
@@ -1696,7 +1695,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
         if (full_release)
         {
-            func_004E33B0();
+            lib_shutdown();
         }
 
         resident_drain_release_queues(g_resident_release_queues);
@@ -1800,7 +1799,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     delete static_cast<ResidentHeap*>(D_001B6684);
     D_001B6684 = 0;
 
-    if (D_001B663C != reinterpret_cast<void*>(0x70000000))
+    if (D_001B663C != reinterpret_cast<LibTextureCache*>(EE_SCRATCHPAD))
     {
         ::operator delete(D_001B663C);
     }
@@ -2314,7 +2313,7 @@ s32 FieldDisplayBlendNode::get_default_list_kind()
 /** @brief Rebuild the display drawing commands. */
 void FieldDisplayBlendNode::update()
 {
-    func_4DCFA0(D_001B6650);
+    D_001B6650->refresh_scaled_packets();
 }
 
 /**

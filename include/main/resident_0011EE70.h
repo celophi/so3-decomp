@@ -20,6 +20,19 @@ typedef struct ResidentPacket
     u8 unk15;
 } ResidentPacket;
 
+/** Bytes at the start of a packet's storage that its write cursor starts after. */
+#define RESIDENT_PACKET_HEADER_SIZE 0x40
+
+/**
+ * @brief Empty a packet: move its write cursor and start back to just after the header.
+ * @param packet Packet to empty.
+ */
+static inline void resident_packet_rewind(ResidentPacket* packet)
+{
+    packet->unk08 = packet->unk00 + RESIDENT_PACKET_HEADER_SIZE;
+    packet->unk0c = packet->unk08;
+}
+
 #ifdef __cplusplus
 /** Main's GS packet buffer class (vtable D_0014FDF0); its data comes before the vptr. Boot and Field have their own. */
 class ResidentPacketBuffer : public ResidentPacket

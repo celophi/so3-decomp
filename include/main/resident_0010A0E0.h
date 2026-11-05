@@ -459,6 +459,15 @@ typedef struct ResidentMusicEntry
     u16 resource;
 } ResidentMusicEntry;
 
+/** What the sound system is busy with. Only the states I've identified are listed. */
+enum ResidentSoundState
+{
+    RESIDENT_SOUND_IDLE = 0,
+    RESIDENT_SOUND_UPLOADING = 4,
+    RESIDENT_SOUND_LOADING = 5,
+    RESIDENT_SOUND_CHANGING_REVERB = 9
+};
+
 /**
  * The sound system: sound effects and voices in sixty slots, streamed music, and the surround output with its
  * listener and speaker placement.
@@ -497,6 +506,8 @@ struct ResidentSound
     s32 unk3c;
     s32 unk40;
     u8 unk44[0xCC];
+
+    /** What the sound system is busy with (ResidentSoundState). */
     u8 state;
     u8 unk111;
     u8 unk112[2];
@@ -520,8 +531,11 @@ struct ResidentSound
     u8 unk351;
     u8 unk352;
     u8 unk353;
-    u8 unk354;
-    u8 unk355;
+    /** Reverb preset, an index into the SPU2 effect settings table at D_001441A0. */
+    u8 reverb_preset;
+
+    /** Progress through applying the reverb preset. */
+    u8 reverb_step;
     u8 unk356;
     u8 unk357[9];
     const void* unk360;
@@ -945,7 +959,9 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         s8 unkBC;
         u8 unkBD;
         u8 unkBE;
-        s32 unkC0;
+        /** Times the stream has looped; the IOP fills this in, and a new stream starts it at zero. */
+        s32 loop_count;
+
         u8 unkC4[4];
 
         /** Next free byte of the debug byte log. */
@@ -2500,12 +2516,12 @@ void func_0010B510(ResidentStreamThread* stream, s32 event);
 char* func_0010D710(char* buffer, s32 value, s32 width, char pad);
 
 /**
- * @brief Ask the sound system to switch unk354 to a new value.
+ * @brief Switch to another reverb preset. The sound update applies it once every voice is idle.
  * @param sound Sound system.
- * @param value New value.
+ * @param preset Reverb preset.
  * @return Zero while the sound system is busy, otherwise one.
  */
-s32 func_0010DAA0(ResidentSound* sound, s32 value);
+s32 resident_sound_set_reverb(ResidentSound* sound, s32 preset);
 
 /**
  * @brief Scale the sound volume and send it to the stream.

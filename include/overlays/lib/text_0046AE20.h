@@ -116,12 +116,20 @@ void lib_update_renderable_entries(LibEntryManager* manager);
 void func_004728A0(void* object, s32 enable, s32 option);
 
 /**
- * @brief Return the handle of the next table entry after entry that passes the entry state filter.
- * @param object Object whose entry table is searched.
- * @param entry Handle of the current entry.
- * @return The next entry's handle, or null if there is none.
+ * @brief Find the next renderable entry after the entry that owns a handle.
+ * @param manager Runtime entry table and source resource header.
+ * @param handle Handle of the current entry, as returned by lib_find_renderable_entry.
+ * @return The next entry of kind 1 or 8 that passes the state filter, or null.
  */
-void* func_00472EB0(void* object, void* entry);
+void* lib_find_next_renderable_entry(const LibEntryManager* manager, void* handle);
+
+/**
+ * @brief Find the index of the entry that owns a handle.
+ * @param manager Runtime entry table and source resource header.
+ * @param handle Entry handle to look for.
+ * @return Index of the first entry with metadata whose handle matches, or -1.
+ */
+s32 lib_find_entry_index(const LibEntryManager* manager, void* handle);
 
 /**
  * @brief Find a renderable entry of kind 1 or 8 whose metadata passes the state and name filters.
@@ -132,12 +140,20 @@ void* func_00472EB0(void* object, void* entry);
 void* lib_find_renderable_entry(LibEntryManager* manager, const char* name);
 
 /**
- * @brief Find a named table entry.
- * @param object Object whose table is searched.
- * @param name Name to search; null selects the first entry with metadata.
- * @return Matching entry handle, or null.
+ * @brief Find an entry by name.
+ * @param manager Runtime entry table and source resource header.
+ * @param name Name to compare, or null to take the first entry with metadata.
+ * @return Handle of the first entry whose name checksum and name match, or null.
  */
-void* func_00473390(void* object, const char* name);
+void* lib_find_named_entry(const LibEntryManager* manager, const char* name);
+
+/**
+ * @brief Find a transform entry (metadata state 1 or 3) by name.
+ * @param manager Runtime entry table and source resource header.
+ * @param name Name to compare, or null or empty to accept any name.
+ * @return The first matching transform handle, or null.
+ */
+void* lib_find_transform_entry(LibEntryManager* manager, const char* name);
 
 /** @brief Copy one aligned 16-byte value. @param output Destination value. @param input Source value. */
 void func_00479090(void* output, const void* input);

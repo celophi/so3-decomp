@@ -2,14 +2,57 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/camera_vu0.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
 #include "vu0.h"
+#include "ee.h"
+#include "main/resident_data.h"
 
 extern "C" void func_004D00B0(void* object);
-extern "C" void* D_001B6674;
-extern "C" void resident_packet_submit(void* owner, void* object);
-extern "C" void* D_001B6668;
+/** Track pool built by func_004E4590 and its siblings; its data comes before the vptr. */
+class LibTrackPool
+{
+    public:
+        u8 unk00[0x20];
+
+        /** @brief Free the pool. */
+        virtual ~LibTrackPool();
+};
+
+extern "C" {
+extern LibDisplayManager* D_001B6660;
+extern LibListObject* D_001B665C;
+extern LibListObject* D_001B6640;
+extern LibScreenText* D_001B6618;
+extern void* D_001B6644;
+extern void* D_001B6638;
+extern ResidentDmaQueue* D_001B660C;
+extern ResidentDmaQueue* D_001B6608;
+extern ResidentDmaQueue* D_001B6604;
+extern void* D_001B6600;
+extern LibListObject* D_001B6654;
+extern LibListObject* D_001B664C;
+extern LibListObject* D_001B6620;
+extern LibListObject* D_001B6648;
+extern LibUpdateList* D_001B6614;
+extern LibDisplayManager* D_001B6628;
+extern LibDisplayManager* D_001B6630;
+extern LibDisplayManager* D_001B6624;
+extern LibDisplayManager* D_001B662C;
+extern LibListObject* D_001B6634;
+extern LibListObject D_00507CB8;
+extern LibTrackPool* D_001B6664;
+extern LibTrackPool* D_001B6668;
+extern LibTrackPool* D_001B666C;
+extern LibTrackPool* D_001B6670;
+extern LibTrackPool* D_001B6674;
+extern LibTrackPool* D_001B6678;
+extern LibTrackPool* D_001B667C;
+extern LibTrackPool* D_001B6680;
+extern void* D_001B6658;
+}
 extern "C" void func_004E6690(void* object);
 extern "C" void func_004E6B30(void* owner, void* object);
 extern "C" void func_004E6A90(void* object);
@@ -51,12 +94,6 @@ typedef struct FieldArgumentInitializerState
         return object; \
     }
 
-typedef struct ConstantByteSetterOwnertext_004DD440
-{
-    u8 unk00[0x60];
-    u8 unk60;
-} ConstantByteSetterOwnertext_004DD440;
-
 typedef struct ByteClearOwnertext_004DD440
 {
     u8 unk00[0xCB];
@@ -75,9 +112,7 @@ typedef struct WordClearOwnertext_004DD440
     u32 unk114;
 } WordClearOwnertext_004DD440;
 
-extern "C" u8 D_50CD80[];
-
-
+extern "C" u8 D_0050CD80[];
 
 typedef struct HalfwordGetterOwnertext_004DD440
 {
@@ -187,6 +222,30 @@ static inline void lib_start_register_list(GsGifTag* tag, u32 count)
 }
 
 /**
+ * @brief Count the VRAM pages a buffer takes.
+ * @param bytes Bytes per pixel.
+ * @param width Width in pixels.
+ * @param height Height in pixels.
+ * @return Pages, rounded down.
+ */
+static inline s32 lib_vram_pages(s32 bytes, s16 width, s16 height)
+{
+    return height * (bytes * width) / GS_VRAM_PAGE_BYTES;
+}
+
+/**
+ * @brief Count the VRAM pages a frame buffer takes. 16-bit formats take two bytes a pixel, the rest four.
+ * @param pixel_format GS pixel format.
+ * @param width Width in pixels.
+ * @param height Height in pixels.
+ * @return Pages, rounded down.
+ */
+static inline s32 lib_buffer_pages(s16 pixel_format, s16 width, s16 height)
+{
+    return lib_vram_pages(pixel_format == GS_PSMCT16 || pixel_format == GS_PSMCT16S ? 2 : 4, width, height);
+}
+
+/**
  * @brief Configure one of the display's screens. Progressive output has no second read circuit, so a circuit-2
  *        screen is left alone there.
  * @param index Screen index.
@@ -196,12 +255,11 @@ static inline void lib_start_register_list(GsGifTag* tag, u32 count)
  * @param circuit2 Show the screen on read circuit 2.
  * @param unk6 Stored at 0xA56.
  * @param field Interlaced field the screen is shown in.
- * @param unk8 Stored at 0xA58.
+ * @param pixel_format Pixel format of the screen's buffers.
  * @param width Screen width in pixels.
  * @param height Screen height in pixels.
  */
-void LibCameraContext::configure_screen(s32 index, u8 enabled, u8 unk3, u8 circuit1, u8 circuit2, u8 unk6, u8 field,
-                                        s16 unk8, s16 width, s16 height)
+void LibCameraContext::configure_screen(s32 index, u8 enabled, u8 unk3, u8 circuit1, u8 circuit2, u8 unk6, u8 field, s16 pixel_format, s16 width, s16 height)
 {
     if (resident_get_system()->progressive && circuit2)
     {
@@ -215,19 +273,168 @@ void LibCameraContext::configure_screen(s32 index, u8 enabled, u8 unk3, u8 circu
     screens[index].circuit1 = circuit1;
     screens[index].circuit2 = circuit2;
     screens[index].unkA56 = unk6;
-    screens[index].unkA58 = unk8;
+    screens[index].pixel_format = pixel_format;
     screens[index].width = width;
     screens[index].height = height;
     screens[index].field = field;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DD520);
+/**
+ * @brief Show the field that's starting: point the read circuits at the screens drawn for it and, when the display
+ *        is scaled and no screen is on circuit 2, send the packets that draw the scaled area.
+ * @param field Interlaced field (0 or 1) from GS CSR.
+ */
+void LibCameraContext::vblank(s32 field)
+{
+    bool circuit2_screen;
+    s32 i;
+    LibDisplayRegisters* registers;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DD830);
+    if (resident_get_system()->progressive)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE010);
+    if (scaled)
+    {
+        circuit2_screen = false;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE1E0);
+        for (i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+        {
+            if (screens[i].enabled && screens[i].circuit2)
+            {
+                circuit2_screen = true;
+
+                if (screens[i].field == field)
+                {
+                    if (screens[i].unkA57)
+                    {
+                        GS_DISPFB2 = *(u64*)&screens[i].display_environment.framebuffer;
+                        GS_DISPLAY2 = *(u64*)&screens[i].display_environment.display;
+                    }
+                    else
+                    {
+                        GS_DISPFB2 = *(u64*)&display_environments[0].framebuffer;
+                        GS_DISPLAY2 = *(u64*)&display_environments[0].display;
+                    }
+                }
+            }
+
+            if (screens[i].enabled && screens[i].field == field && screens[i].unkA51 && screens[i].circuit1)
+            {
+                GS_DISPFB1 = *(u64*)&screens[i].display_environment.framebuffer;
+                GS_DISPLAY1 = *(u64*)&screens[i].display_environment.display;
+            }
+        }
+
+        if (!unk3E6B && unk3E6A && packet_queue != 0 && !circuit2_screen && !func_004DBD80(packet_queue) && packet_queue->enabled)
+        {
+            func_004DC4F0(packet_queue, 4, 0, &buffers[1], 0, 0);
+            func_004DC4F0(packet_queue, 2, 0, packets[packet_set][field] + 0x40, packet_sizes[packet_set][field], 0);
+
+            if (unk3E48)
+            {
+                func_004DC4F0(packet_queue, 2, 0, unk3E34, unk3E3C, 0);
+            }
+
+            if (unk3E30 == 2)
+            {
+                send_packet_list(field, false);
+            }
+        }
+    }
+    else if (unk3E66 && !unk3E68)
+    {
+        blend_environments[shown_buffers[0]].pmode.alpha = field ? (u8)(blend_field_alpha + 0x80) : blend_field_alpha;
+        sceGsPutDispEnv(&blend_environments[shown_buffers[0]]);
+
+        if (unk3E64)
+        {
+            registers = &blend_registers[shown_buffers[0]];
+            GS_DISPFB1 = registers->framebuffer;
+            GS_DISPLAY1 = registers->display;
+        }
+    }
+    else
+    {
+        sceGsPutDispEnv(&display_environments[shown_buffers[field]]);
+
+        if (unk3E64)
+        {
+            registers = &circuit1_registers[shown_buffers[field ^ 1]];
+            GS_DISPFB1 = registers->framebuffer;
+            GS_DISPLAY1 = registers->display;
+        }
+    }
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", flip__16LibCameraContextFiP14LibPacketQueue);
+
+/**
+ * @brief Send one field's packet list from send_list_set. Entries flagged in unk3E08 are drawn with
+ *        environments[0]; the draw environment is put back when the flagged run ends.
+ * @param field Interlaced field whose list is sent.
+ * @param per_screen Put back the environments of the field's circuit-2 screens instead of buffers[1]'s.
+ */
+void LibCameraContext::send_packet_list(s32 field, bool per_screen)
+{
+    s32 list = send_list_set * 2 + field;
+    s32 count;
+    s32 i;
+    s32 j;
+    bool alternate;
+
+    if (list_buffers[list] == 0)
+    {
+        return;
+    }
+
+    count = send_list_count;
+    alternate = false;
+
+    for (i = 0; i < count; i++)
+    {
+        if (unk3E08[send_list_set][i] != 0)
+        {
+            if (!alternate)
+            {
+                func_004DC4F0(packet_queue, 2, 0, environments, sizeof(LibDrawEnvironment) / sizeof(unsigned __int128), 0);
+                alternate = true;
+            }
+        }
+        else if (alternate)
+        {
+            if (per_screen)
+            {
+                for (j = 0; j < LIB_DISPLAY_SCREEN_COUNT; j++)
+                {
+                    if (screens[j].enabled && screens[j].circuit2 && screens[j].field == field)
+                    {
+                        func_004DC4F0(packet_queue, 4, 0, &screens[j].buffers[0], 0, 0);
+                    }
+                }
+            }
+            else
+            {
+                func_004DC4F0(packet_queue, 4, 0, &buffers[1], 0, 0);
+            }
+
+            alternate = false;
+        }
+
+        func_004DC4F0(packet_queue, 2, 0, list_packets[list][i], list_sizes[list][i], 0);
+    }
+}
+
+/** @brief Send the ready packet, once, if there is one and a packet queue to send it to. */
+void LibCameraContext::send_ready_packet()
+{
+    if (packet_queue != 0 && ready_sizes[ready_index] != 0 && ready_packets[ready_index] != 0)
+    {
+        func_004DC4F0(packet_queue, 2, 0, ready_packets[ready_index], ready_sizes[ready_index], 0);
+        ready_packets[ready_index] = 0;
+    }
+}
 
 /**
  * @brief Set the rectangle of a screen that is drawn to.
@@ -245,7 +452,7 @@ void LibCameraContext::set_screen_view(s32 index, s32 x, s32 y, s32 width, s32 h
     screens[index].view_height = height;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE270);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", build_scaled_packets__16LibCameraContextFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE500);
 
@@ -262,9 +469,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DF270);
  */
 void LibCameraContext::set_clear_color(u8 red, u8 green, u8 blue, u8 alpha)
 {
-    s32 width = buffers[0].environment.scissor.x1 + 1;
-    s32 height = buffers[0].environment.scissor.y1 + 1;
-    s32 depth_method = buffers[1].environment.test.depth_method;
+    s32 width = buffers[0].environment.context1.scissor.x1 + 1;
+    s32 height = buffers[0].environment.context1.scissor.y1 + 1;
+    s32 depth_method = buffers[1].environment.context1.test.depth_method;
     s32 y = GS_COORDINATE_CENTRE - (height >> 1);
     s32 x = GS_COORDINATE_CENTRE - (width >> 1);
 
@@ -274,11 +481,231 @@ void LibCameraContext::set_clear_color(u8 red, u8 green, u8 blue, u8 alpha)
     clear_color = red | (green << 8) | (blue << 16) | (alpha << 24);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DF890);
+/**
+ * @brief Set up the draw buffers for a frame size and lay out VRAM: the depth buffer at vram_base_page, then the
+ *        frame buffers. A scaled display also places the draw area and each enabled screen's buffers after them.
+ * @param pixel_format Frame buffer pixel format.
+ * @param width Frame width in pixels.
+ * @param height Frame height in pixels (one field when interlaced).
+ * @param depth_test Depth test method; 0 for no depth buffer.
+ * @param depth_format Depth buffer pixel format.
+ */
+void LibCameraContext::configure_buffers(s16 pixel_format, s16 width, s16 height, s16 depth_test, s16 depth_format)
+{
+    s16 y;
+    s32 fields;
+    s32 field_height;
+    s32 depth_bytes;
+    s32 pages;
+    s32 i;
+
+    if (height > 256)
+    {
+        y = (448 - height) / 2;
+    }
+    else
+    {
+        y = 224 - height;
+    }
+
+    fields = 1;
+
+    if (resident_get_system()->progressive)
+    {
+        fields = 2;
+    }
+
+    display_area.base_width = width;
+    field_height = height * fields;
+    display_area.base_height = field_height;
+    this->depth_test = depth_test;
+    this->depth_format = depth_format;
+
+    if (unk3C70 == -1)
+    {
+        unk3C70 = pixel_format;
+    }
+
+    resize_display_area();
+
+    if (scaled)
+    {
+        sceGsSetDefDrawEnv(&buffers[0].environment.context1, unk3C70, display_area.width, display_area.height, depth_test, depth_format);
+        sceGsSetDefDrawEnv2(&buffers[0].environment.context2, unk3C70, display_area.width, display_area.height, depth_test, depth_format);
+    }
+    else
+    {
+        sceGsSetDefDrawEnv(&buffers[0].environment.context1, pixel_format, width, height, depth_test, depth_format);
+        sceGsSetDefDrawEnv2(&buffers[0].environment.context2, pixel_format, width, height, depth_test, depth_format);
+    }
+
+    sceGsSetDefDrawEnv(&buffers[1].environment.context1, pixel_format, width, height, depth_test, depth_format);
+    sceGsSetDefDrawEnv2(&buffers[1].environment.context2, pixel_format, width, height, depth_test, depth_format);
+    sceGsSetDefDrawEnv(&buffers[2].environment.context1, pixel_format, width, height, depth_test, depth_format);
+    sceGsSetDefDrawEnv2(&buffers[2].environment.context2, pixel_format, width, height, depth_test, depth_format);
+
+    if (scaled)
+    {
+        buffers[1].environment.context1.depth_buffer.base_pointer = buffers[1].environment.context2.depth_buffer.base_pointer =
+            buffers[0].environment.context1.depth_buffer.base_pointer = buffers[0].environment.context2.depth_buffer.base_pointer = vram_base_page;
+        // TODO: This is overwritten before anything reads it, but the target still tests the area's format here.
+        depth_bytes = unk3C70 == GS_PSMCT16 || unk3C70 == GS_PSMCT16S ? 2 : 4;
+    }
+    else
+    {
+        buffers[2].environment.context1.depth_buffer.base_pointer = buffers[2].environment.context2.depth_buffer.base_pointer =
+            buffers[1].environment.context1.depth_buffer.base_pointer = buffers[1].environment.context2.depth_buffer.base_pointer =
+                buffers[0].environment.context1.depth_buffer.base_pointer = buffers[0].environment.context2.depth_buffer.base_pointer = vram_base_page;
+    }
+
+    depth_bytes = depth_format == GS_PSMZ16 || depth_format == GS_PSMZ16S ? 2 : 4;
+
+    if (scaled)
+    {
+        if (depth_test == 0)
+        {
+            pages = 0;
+        }
+        else
+        {
+            pages = display_area.height * (depth_bytes * display_area.width) / GS_VRAM_PAGE_BYTES;
+        }
+
+        depth_buffer_pages = pages;
+
+        vram_free_page = vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, field_height) +
+                         lib_buffer_pages(unk3C70, display_area.width, display_area.height);
+
+        for (i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+        {
+            if (screens[i].enabled)
+            {
+                sceGsSetDefDispEnv(&screens[i].display_environment, screens[i].pixel_format, screens[i].width, screens[i].height, 0, y);
+                screens[i].display_environment.framebuffer.base_pointer = vram_free_page;
+                lib_start_register_list(&screens[i].buffers[0].environment.gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
+                lib_start_register_list(&screens[i].buffers[1].environment.gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
+                sceGsSetDefDrawEnv(&screens[i].buffers[0].environment.context1, screens[i].pixel_format, screens[i].width, screens[i].height, depth_test,
+                                   depth_format);
+                sceGsSetDefDrawEnv2(&screens[i].buffers[0].environment.context2, screens[i].pixel_format, screens[i].width, screens[i].height, depth_test,
+                                    depth_format);
+                sceGsSetDefDrawEnv(&screens[i].buffers[1].environment.context1, screens[i].pixel_format, screens[i].view_width, screens[i].view_height,
+                                   depth_test, depth_format);
+                sceGsSetDefDrawEnv2(&screens[i].buffers[1].environment.context2, screens[i].pixel_format, screens[i].view_width, screens[i].view_height,
+                                    depth_test, depth_format);
+                screens[i].buffers[0].environment.context1.depth_buffer.base_pointer = screens[i].buffers[0].environment.context2.depth_buffer.base_pointer =
+                    buffers[0].environment.context1.depth_buffer.base_pointer;
+                screens[i].buffers[0].environment.context1.frame.base_pointer = screens[i].buffers[0].environment.context2.frame.base_pointer = vram_free_page;
+                screens[i].buffers[1].environment.context1.depth_buffer.base_pointer = screens[i].buffers[1].environment.context2.depth_buffer.base_pointer =
+                    buffers[0].environment.context1.depth_buffer.base_pointer;
+                screens[i].buffers[1].environment.context1.frame.base_pointer = screens[i].buffers[1].environment.context2.frame.base_pointer =
+                    vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, height);
+                if (screens[i].unkA56)
+                {
+                    vram_free_page += lib_buffer_pages(screens[i].pixel_format, screens[i].width, screens[i].height);
+                }
+            }
+        }
+    }
+    else
+    {
+        if (depth_test == 0)
+        {
+            pages = 0;
+        }
+        else
+        {
+            pages = height * (depth_bytes * width) / GS_VRAM_PAGE_BYTES;
+        }
+
+        depth_buffer_pages = pages;
+
+        vram_free_page = vram_base_page + depth_buffer_pages + frame_buffer_count * lib_buffer_pages(pixel_format, width, field_height);
+    }
+
+    if (frame_buffer_count == 2)
+    {
+        buffers[0].environment.context2.frame.base_pointer = buffers[0].environment.context1.frame.base_pointer =
+            vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, field_height);
+        buffers[1].environment.context2.frame.base_pointer = buffers[1].environment.context1.frame.base_pointer = vram_base_page + depth_buffer_pages;
+    }
+    else
+    {
+        buffers[0].environment.context2.frame.base_pointer = buffers[0].environment.context1.frame.base_pointer = vram_base_page + depth_buffer_pages;
+        buffers[1].environment.context2.frame.base_pointer = buffers[1].environment.context1.frame.base_pointer =
+            vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, field_height);
+        buffers[2].environment.context2.frame.base_pointer = buffers[2].environment.context1.frame.base_pointer =
+            vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, field_height) * 2;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E02C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E03C0);
+/**
+ * @brief Set up the display environments for a frame size. The three frame buffers follow the depth buffer; each
+ *        gets circuit-1 registers and a copy that blends both circuits.
+ * @param pixel_format Frame buffer pixel format.
+ * @param width Frame width in pixels.
+ * @param height Frame height in pixels.
+ */
+void LibCameraContext::configure_display(s16 pixel_format, s16 width, s16 height)
+{
+    s16 y;
+    s32 i;
+
+    if (height > 256)
+    {
+        y = (448 - height) / 2;
+    }
+    else
+    {
+        y = 224 - height;
+    }
+
+    if (resident_get_system()->progressive)
+    {
+        height *= 2;
+        y += 16;
+    }
+
+    sceGsSetDefDispEnv(&display_environments[0], pixel_format, width, height, 0, y);
+    sceGsSetDefDispEnv(&display_environments[1], pixel_format, width, height, 0, y);
+    sceGsSetDefDispEnv(&display_environments[2], pixel_format, width, height, 0, y);
+    display_environments[2].framebuffer.base_pointer = vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, height) * 2;
+    display_environments[1].framebuffer.base_pointer = vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, height);
+    display_environments[0].framebuffer.base_pointer = vram_base_page + depth_buffer_pages;
+
+    for (i = 0; i < LIB_DISPLAY_BUFFER_COUNT; i++)
+    {
+        circuit1_registers[i].framebuffer = *(u64*)&display_environments[i].framebuffer;
+        circuit1_registers[i].display = *(u64*)&display_environments[i].display;
+    }
+
+    for (i = 0; i < LIB_DISPLAY_BUFFER_COUNT; i++)
+    {
+        blend_environments[i] = display_environments[i];
+        blend_registers[i] = circuit1_registers[i];
+        blend_registers[i].display = (blend_registers[i].display & ~GS_DISPLAY_Y_MASK) | (49 << GS_DISPLAY_Y_SHIFT);
+        blend_environments[i].pmode.circuit1 = 1;
+        blend_environments[i].pmode.fixed_alpha = 1;
+        blend_environments[i].pmode.blend_background = 0;
+    }
+
+    blend_field_alpha = 0;
+
+    if (scaled)
+    {
+        sceGsSetDefDrawEnv(&buffers[1].environment.context1, pixel_format, display_area.base_width, display_area.base_height, depth_test, depth_format);
+        sceGsSetDefDrawEnv2(&buffers[1].environment.context2, pixel_format, display_area.base_width, display_area.base_height, depth_test, depth_format);
+        buffers[1].environment.context1.depth_buffer.base_pointer = buffers[1].environment.context2.depth_buffer.base_pointer =
+            buffers[0].environment.context1.depth_buffer.base_pointer;
+        buffers[1].environment.context2.frame.base_pointer = buffers[1].environment.context1.frame.base_pointer = vram_base_page + depth_buffer_pages;
+    }
+
+    environments[0].context1 = buffers[0].environment.context1;
+    environments[0].context2 = buffers[0].environment.context2;
+    environments[1].context1 = buffers[1].environment.context1;
+    environments[1].context2 = buffers[1].environment.context2;
+}
 
 /**
  * @brief Body of set_scale, which initialize also inlines.
@@ -289,8 +716,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E03C0);
  */
 inline void LibCameraContext::apply_scale(u8 unk3C77, float scale_x, float scale_y, s16 unk3C70)
 {
-    s32 fields;
-
     display_area.scale_x = scale_x;
     display_area.scale_y = scale_y;
     scaled = !(scale_x == 1.0f && scale_y == 1.0f);
@@ -305,14 +730,7 @@ inline void LibCameraContext::apply_scale(u8 unk3C77, float scale_x, float scale
         lib_start_register_list(&buffers[1].environment.gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
     }
 
-    fields = 1;
-    if (resident_get_system()->progressive)
-    {
-        fields = 2;
-    }
-
-    display_area.width = ((s32)(display_area.base_width * display_area.scale_x) + 63) & ~63;
-    display_area.height = ((s32)(display_area.base_height * display_area.scale_y / fields) + 31) & ~31;
+    resize_display_area();
 }
 
 /**
@@ -329,10 +747,10 @@ void LibCameraContext::initialize(s32 frame_buffer_count)
     lib_start_register_list(&environments[0].gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
     lib_start_register_list(&environments[1].gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
     this->frame_buffer_count = frame_buffer_count;
-    unk3C7C = 0;
+    vram_base_page = 0;
     unk3E64 = 0;
-    unk3E54 = 0;
-    unk3E58 = 0;
+    shown_buffers[0] = 0;
+    shown_buffers[1] = 0;
     unk3E4C = 0;
     unk3E69 = 0;
     unk3E50 = 0;
@@ -340,10 +758,10 @@ void LibCameraContext::initialize(s32 frame_buffer_count)
     unk3E7A = 0;
     apply_scale(0, 1.0f, 1.0f, -1);
 
-    for (i = 0; i < 18; i++)
+    for (i = 0; i < LIB_DISPLAY_PACKET_COUNT; i++)
     {
-        unk3CB4[i] = new (0) u8[0x530];
-        unk3CFC[i] = new (0) u8[0x530];
+        packets[0][i] = new (0) u8[0x530];
+        packets[1][i] = new (0) u8[0x530];
     }
 
     FlushCache(0);
@@ -363,11 +781,59 @@ void LibCameraContext::set_scale(u8 unk3C77, float scale_x, float scale_y, s16 u
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E0D20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E0E60);
+/** @brief Initialize the display. */
+LibCameraContext::LibCameraContext()
+{
+    unk3C70 = -1;
+    unk3E6A = 0;
+    unk3E6B = 0;
+    packet_queue = 0;
+
+    for (s32 i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+    {
+        memset_guess(&screens[i], 0, sizeof(LibDisplayScreen));
+    }
+
+    current_buffer = 0;
+
+    for (s32 i = 0; i < LIB_DISPLAY_PACKET_COUNT; i++)
+    {
+        packets[0][i] = 0;
+        packets[1][i] = 0;
+    }
+
+    for (s32 i = 0; i < LIB_DISPLAY_PACKET_LIST_COUNT; i++)
+    {
+        list_buffers[i] = 0;
+        list_packets[i] = 0;
+        list_sizes[i] = 0;
+    }
+
+    for (s32 i = 0; i < LIB_DISPLAY_PACKET_SET_COUNT; i++)
+    {
+        unk3E08[i] = 0;
+    }
+
+    unk3E34 = 0;
+    unk3E48 = 0;
+    unk3E10 = 0;
+    blend_enabled = 0;
+    packet_set = 0;
+    unk3CB0 = 0;
+    ready_index = 0;
+    unk3E7C = 0;
+    unk3C88[0] = 0;
+    unk3C88[1] = 0;
+    ready_packets[0] = 0;
+    ready_packets[1] = 0;
+    unk3CA8[0] = 0;
+    unk3CA8[1] = 0;
+    unk3E67 = 1;
+}
 
 const void* func_004E0FB0(void)
 {
-    return D_50CD80;
+    return D_0050CD80;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __ct__20LibOrientedTransformFv);
@@ -378,7 +844,13 @@ extern "C" void func_004E1020(void* object)
     func_004D00B0(object);
 }
 
-struct N50Owner114_004DD440 { u8 pad00[0x64]; u8 active; u8 pad65[0xAF]; void* owner; };
+struct N50Owner114_004DD440
+{
+        u8 pad00[0x64];
+        u8 active;
+        u8 pad65[0xAF];
+        ResidentPacket* owner;
+};
 
 void func_004E1040(N50Owner114_004DD440* object)
 {
@@ -677,48 +1149,201 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2EC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2ED0);
 
-/** Store 0xA at receiver offset 0x60. */
-void func_004E2EE0(void* object)
+/** @brief Draw in bucket 10. */
+void LibColorFade::set_default_draw_bucket()
 {
-    ConstantByteSetterOwnertext_004DD440* receiver = static_cast<ConstantByteSetterOwnertext_004DD440*>(object);
-    receiver->unk60 = 0xA;
+    draw_bucket = 10;
 }
 
-s32 func_004E2EF0(void* object)
+/**
+ * @brief Return the list a colour fade goes in.
+ * @return List kind 3.
+ */
+s32 LibColorFade::get_default_list_kind()
 {
     return 3;
 }
 
-/** Forward the receiver to func_004D00B0. */
-void func_004E2F00(void* object)
+/**
+ * @brief Finish the fade's drawing packet.
+ * @param value Notification word.
+ */
+void LibColorFade::on_packet_complete(u32 value)
 {
-    func_004D00B0(object);
+    func_004D00B0(this);
 }
 
-struct N50OwnerBC_004DD440 { u8 pad00[0x64]; u8 active; u8 pad65[0x57]; void* owner; };
-
-void func_004E2F20(N50OwnerBC_004DD440* object)
+/** @brief Mark the fade pending and submit its packet. */
+void LibColorFade::render()
 {
-    object->active = 1;
-    void* adjusted = object;
-    if (object != 0)
+    dma_pending = 1;
+    resident_packet_submit(packet, static_cast<LibDmaCallbacks*>(this));
+}
+
+/**
+ * @brief Build the packet: one sprite over the rectangle, scaled to the display.
+ * @param matrix Matrix supplied by the caller; unused.
+ * @param context Opaque caller context; unused.
+ */
+void LibColorFade::build_packet(const void* matrix, void* context)
+{
+    float scale_x;
+    float scale_y;
+
+    resident_packet_rewind(packet);
+    packet->unk15 = 1;
+    func_0011F140(packet, D_4ED330[0]);
+    D_001B6650->get_area_scale(&scale_x, &scale_y);
+    func_0011F1D0(packet, rect.x, rect.y, (s32)(rect.width * scale_x) + 1, (s32)(rect.height * scale_y) + 1, depth, color);
+    unk63 = 1;
+}
+
+/** @brief Blend the colour for the time so far; once the fade is over, destroy it. */
+void LibColorFade::update()
+{
+    s32 shift;
+
+    color = 0;
+
+    for (shift = 0; shift < 32; shift += 8)
     {
-        adjusted = (u8*)adjusted + 0x90;
+        s32 from = (start_color >> shift) & 0xFF;
+        s32 to = (end_color >> shift) & 0xFF;
+        color |= (s32)(from + elapsed * (to - from) / duration) << shift;
     }
-    resident_packet_submit(object->owner, adjusted);
+
+    elapsed += g_frame_ticks;
+
+    if (elapsed >= duration)
+    {
+        destroy();
+        return;
+    }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2F60);
+/** @brief Release the packet. */
+LibColorFade::~LibColorFade()
+{
+    delete packet;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E3020);
+/** @brief Clear the colour and time, take the default area and depth, and allocate the packet. */
+void LibColorFade::reset()
+{
+    color = 0;
+    elapsed = 0.0f;
+    rect = D_0050CD40;
+    depth = D_001B6694;
+    packet = new (0) LibPacketBuffer(16);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E31D0);
+/**
+ * @brief Detach a list object from its owner.
+ * @param object Object to detach.
+ */
+static inline void lib_detach(LibListObject& object)
+{
+    lib_object_detach_owner(&object);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E32F0);
+/** @brief Destroy Lib's global objects, free their storage and clear the pointers. */
+extern "C" void lib_shutdown(void)
+{
+    lib_detach(*D_001B6660);
+    D_001B6660->destroy();
+    D_001B6660 = 0;
+    lib_detach(*D_001B665C);
+    D_001B665C->destroy();
+    D_001B665C = 0;
+    lib_detach(*D_001B6640);
+    delete D_001B6618;
+    ::operator delete(D_001B6644);
+    D_001B6640->destroy();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E33A0);
+    if (D_001B6638 != (void*)EE_SCRATCHPAD)
+    {
+        ::operator delete(D_001B6638);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E33B0);
+    if (D_001B663C != (void*)EE_SCRATCHPAD)
+    {
+        ::operator delete(D_001B663C);
+    }
+
+    delete g_vif1_dma_queue;
+    delete D_001B660C;
+    delete D_001B6608;
+    delete D_001B6604;
+    ::operator delete(D_001B6600);
+    delete D_001B65FC;
+    D_001B6618 = 0;
+    D_001B6644 = 0;
+    D_001B6640 = 0;
+    D_001B6638 = 0;
+    D_001B663C = 0;
+    g_vif1_dma_queue = 0;
+    D_001B660C = 0;
+    D_001B6608 = 0;
+    D_001B6604 = 0;
+    D_001B6600 = 0;
+    D_001B65FC = 0;
+
+    lib_detach(*D_001B6654);
+    lib_detach(*D_001B664C);
+    lib_detach(*D_001B6620);
+    lib_detach(*D_001B6648);
+    D_001B6614->func_004295B0(0);
+    lib_detach(*D_001B6628);
+    lib_detach(*D_001B6630);
+    lib_detach(*D_001B6624);
+    D_001B6654->destroy();
+    D_001B6634->destroy();
+    lib_object_detach_owner(g_resource_queue);
+    lib_detach(D_00507CB8);
+    D_001B6654 = 0;
+    D_001B6634 = 0;
+
+    delete D_001B6680;
+    delete D_001B667C;
+    delete D_001B6664;
+    delete D_001B6668;
+    delete D_001B666C;
+    delete D_001B6670;
+    delete D_001B6674;
+    delete D_001B6678;
+    D_001B6680 = 0;
+    D_001B667C = 0;
+    D_001B6664 = 0;
+    D_001B6668 = 0;
+    D_001B666C = 0;
+    D_001B6670 = 0;
+    D_001B6674 = 0;
+    D_001B6678 = 0;
+
+    D_001B664C->destroy();
+    D_001B6648->destroy();
+    D_001B662C->destroy();
+    D_001B6630->destroy();
+    D_001B6624->destroy();
+    D_001B6620->destroy();
+    delete static_cast<LibRenderer*>(D_001B661C);
+    delete D_001B65E0;
+    delete D_001B65DC;
+    delete D_001B6614;
+    ::operator delete(D_001B6658);
+    resident_get_system()->unk15C80 = 0;
+    D_001B664C = 0;
+    D_001B6648 = 0;
+    D_001B662C = 0;
+    D_001B6630 = 0;
+    D_001B6624 = 0;
+    D_001B6620 = 0;
+    D_001B661C = 0;
+    D_001B65E0 = 0;
+    D_001B65DC = 0;
+    D_001B6614 = 0;
+    D_001B6658 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E3830);
 

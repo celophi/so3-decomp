@@ -46,13 +46,13 @@ extern ResidentDisplayContext* D_001B6650;
 extern void* D_001B6640;
 extern ResidentObjectList* D_001B6614;
 extern u8 D_001B65D0;
-extern struct FieldPacketQueue* D_001B65DC;
+extern struct LibPacketQueue* D_001B65DC;
 
 void func_4CE4C0(ResidentVector4* orientation, const ResidentVector4* rotation);
 void func_4486A0(void* object);
 void func_4D0260(void* list, void* object);
 void func_4D02E0(void* list, void* object);
-s32 func_4DC4F0(struct FieldPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
+s32 func_4DC4F0(struct LibPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
 bool func_4D7D40(ResidentImageSequenceChannel* channel, ResidentRenderDataRecord* record, bool use_inline);
 void func_4CBD20(ResidentMatrix* output, const ResidentVector4* position, const ResidentVector4* direction, float roll);
 void func_4CFB20(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
@@ -583,8 +583,7 @@ void resident_packet_allocate(ResidentPacket* packet, s32 quadwords)
     FlushCache(0);
     packet->unk10 = words;
     packet->unk00 = (u8*)((u32)packet->unk04 | 0x30000000);
-    packet->unk08 = packet->unk00 + 0x40;
-    packet->unk0c = packet->unk08;
+    resident_packet_rewind(packet);
 }
 
 /**

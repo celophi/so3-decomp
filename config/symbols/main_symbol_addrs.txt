@@ -478,7 +478,9 @@ sceGsSetDefLoadImage = 0x0012F868; // type:func size:0x1E8
 sceGsSetDefStoreImage = 0x0012FA50; // type:func size:0x140
 sceGsExecLoadImage = 0x0012FB90; // type:func size:0x180
 // libgraph.a: graph022.o
+sceGsSetHalfOffset = 0x0012FD10; // type:func size:0x88
 sceGsSetDefDrawEnv2 = 0x0012FD98; // type:func size:0x1E0
+sceGsSetHalfOffset2 = 0x0012FF78; // type:func size:0x88
 // libcdvd.a: cdvd000.o, cdvd003.o, cdvd005.o, cdvd014.o, cdvd015.o, cdvd017.o, cdvd018.o, cdvd035.o, cdvd036.o, cdvd039.o
 CB_DelayTh = 0x00130000; // type:func size:0x28
 sceCdDelayThread = 0x00130028; // type:func size:0x68
@@ -723,6 +725,8 @@ resident_get_archive = 0x001012C0; // type:func
 resident_archive_get_clock = 0x0011D9A0; // type:func
 resident_sound_reset_speaker_angles = 0x0010DA30; // type:func
 resident_sound_set_output_mode = 0x0010DA70; // type:func
+resident_sound_set_reverb = 0x0010DAA0; // type:func
+resident_stream_get_loop_count = 0x00109FB0; // type:func
 resident_sound_set_volume_scale = 0x0010DB10; // type:func
 resident_sound_get_voice_level = 0x0010E310; // type:func
 resident_sound_set_listener = 0x0010EA70; // type:func

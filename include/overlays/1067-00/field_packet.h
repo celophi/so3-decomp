@@ -26,7 +26,7 @@ typedef struct FieldPacketDrawer
 #endif
 } FieldPacketDrawer;
 
-typedef struct FieldPacketQueue FieldPacketQueue;
+typedef struct LibPacketQueue LibPacketQueue;
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +34,7 @@ extern "C" {
 
 extern FieldPacketDrawer* D_001B6618;
 
-extern FieldPacketQueue* D_001B65DC;
+extern LibPacketQueue* D_001B65DC;
 
 #ifdef __cplusplus
 }

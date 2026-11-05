@@ -34,4 +34,17 @@ static inline s32 clamp_low(s32 value, s32 low)
     return ee_movn(value, low, value < low);
 }
 
+/**
+ * @brief Lower value to high without branching.
+ *
+ * The upper half of clamp on its own.
+ * @param value Value to clamp.
+ * @param high Highest allowed value.
+ * @return value, or high when value is above it.
+ */
+static inline s32 clamp_high(s32 value, s32 high)
+{
+    return ee_movz(value, high, value <= high);
+}
+
 #endif

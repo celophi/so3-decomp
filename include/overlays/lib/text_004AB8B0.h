@@ -99,13 +99,24 @@ void func_004B2720(const void* object, float* output);
 float func_4B16C0(FieldFloatSpan1C* span, float key);
 
 /**
- * @brief Update the animation state for a requested frame.
+ * @brief Apply every eligible animation entry at a frame.
  * @param object Animation object.
- * @param frame Requested frame.
- * @param flag Update flag.
- * @return Processing result.
+ * @param frame Requested frame; a negative frame leaves the animation marked as restarting.
+ * @param mode Nonzero to stop at the first entry that returns a nonzero status.
+ * @return Status of the last applied entry, or 0 when the animation has no entries.
  */
-s32 func_004B4550(LibAnimation* object, float frame, s32 flag);
+s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode);
+
+/**
+ * @brief Apply one animation entry.
+ * @param object Animation object.
+ * @param entry Entry to apply.
+ * @param frame Frame to apply it at.
+ * @param mode Mode passed to lib_animation_apply_frame.
+ * @param status Status so far.
+ * @return The new status.
+ */
+s32 func_004B4840(LibAnimation* object, LibAnimationEntry14* entry, float frame, s32 mode, s32 status);
 
 /**
  * @brief Evaluate the animation into its vector state.

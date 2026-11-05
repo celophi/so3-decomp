@@ -281,7 +281,7 @@ void FieldClass150280::func_001E7590()
     if (unk14)
     {
         unk2c = unk14->unk64 - 1.0f;
-        func_004B4550(unk14, unk2c, 0);
+        lib_animation_apply_frame(unk14, unk2c, 0);
         LibAnimationTarget* state = unk18;
         state->unkc0 = 0;
         state->unkc1 = 0;

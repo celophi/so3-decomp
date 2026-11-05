@@ -318,7 +318,7 @@ s32 func_0010A0E0(ResidentStreamThread* stream, s32 arg1, void* callback, void* 
     stream->unkA0 = 0;
     stream->unkA4 = entry[4];
     stream->unkA8 = entry[5];
-    stream->unkC0 = 0;
+    stream->loop_count = 0;
     return func_00108430(stream->stream, arg1, callback, argument, 0, -5, arg6, 0);
 }
 
@@ -351,7 +351,7 @@ s32 func_0010A200(ResidentStreamThread* stream, s32 arg1, void* callback, void* 
     stream->unkA0 = 0;
     stream->unkA4 = entry[4];
     stream->unkA8 = entry[5];
-    stream->unkC0 = 0;
+    stream->loop_count = 0;
     return func_00108430(stream->stream, arg1, callback, argument, 0, -4, arg6, 0);
 }
 
@@ -383,7 +383,7 @@ s32 func_0010A310(ResidentStreamThread* stream, s32 arg1, void* callback, void* 
     stream->unkA0 = 0;
     stream->unkA4 = entry[4];
     stream->unkA8 = entry[5];
-    stream->unkC0 = 0;
+    stream->loop_count = 0;
     return func_00108430(stream->stream, arg1, callback, argument, 0, -3, arg6, 0);
 }
 
@@ -432,7 +432,7 @@ s32 func_0010A450(ResidentStreamThread* stream, s32 arg1, void* callback, void* 
     stream->unk90 = value;
     stream->unk94 = 0;
     stream->unkBD = 0;
-    stream->unkC0 = 0;
+    stream->loop_count = 0;
     return func_00107DD0(stream->stream, arg1, callback, argument, 0, -1, arg6, 0, (0x7F << 24) | (0x40 << 16), 0,
                          arg10);
 }
@@ -1247,19 +1247,19 @@ void resident_sound_set_output_mode(ResidentSound* sound, s32 mode)
 }
 
 /**
- * @brief Ask the sound system to switch unk354 to a new value.
+ * @brief Switch to another reverb preset. The sound update applies it once every voice is idle.
  * @param sound Sound system.
- * @param value New value.
+ * @param preset Reverb preset.
  * @return Zero while the sound system is busy, otherwise one.
  */
-s32 func_0010DAA0(ResidentSound* sound, s32 value)
+s32 resident_sound_set_reverb(ResidentSound* sound, s32 preset)
 {
-    if (sound->state != 0)
+    if (sound->state != RESIDENT_SOUND_IDLE)
     {
         return 0;
     }
 
-    if (sound->unk354 == value)
+    if (sound->reverb_preset == preset)
     {
         return 1;
     }
@@ -1269,9 +1269,9 @@ s32 func_0010DAA0(ResidentSound* sound, s32 value)
         return 1;
     }
 
-    sound->state = 9;
-    sound->unk354 = value;
-    sound->unk355 = 0;
+    sound->state = RESIDENT_SOUND_CHANGING_REVERB;
+    sound->reverb_preset = preset;
+    sound->reverb_step = 0;
     return 1;
 }
 
@@ -1536,7 +1536,7 @@ void resident_sound_set_speaker_angles(ResidentSound* sound, const float* angles
  */
 s32 func_0010EAD0(ResidentSound* sound, s32 key)
 {
-    if (sound->state != 0)
+    if (sound->state != RESIDENT_SOUND_IDLE)
     {
         return 0;
     }
@@ -1551,7 +1551,7 @@ s32 func_0010EAD0(ResidentSound* sound, s32 key)
     }
 
     resident_queue_resource_request(sound->resource_queue, key, sound->unk400, 5, 0x34BC0, 0, 0, 0, 1);
-    sound->state = 5;
+    sound->state = RESIDENT_SOUND_LOADING;
     return 1;
 }
 
@@ -1565,14 +1565,14 @@ s32 func_0010EAD0(ResidentSound* sound, s32 key)
  */
 s32 func_0010EB90(ResidentSound* sound, const void* file, s32 index, bool append)
 {
-    if (sound->state != 0)
+    if (sound->state != RESIDENT_SOUND_IDLE)
     {
         return 0;
     }
 
     sound->unk360 = file;
     func_00106160(sound->stream, file, sound->unk454[index], index, 0, append, 0);
-    sound->state = 4;
+    sound->state = RESIDENT_SOUND_UPLOADING;
     return 1;
 }
 
@@ -2061,7 +2061,7 @@ s32 func_00111A90(ResidentSound* sound, u8* buffer, s32 value, s32 volume, s32 p
         return 1;
     }
 
-    if (sound->state == 9)
+    if (sound->state == RESIDENT_SOUND_CHANGING_REVERB)
     {
         return -1;
     }
@@ -2131,7 +2131,7 @@ s32 func_00112160(ResidentSound* sound, s32 number, ResidentSoundEmitter* emitte
         return 1;
     }
 
-    if (sound->state == 9)
+    if (sound->state == RESIDENT_SOUND_CHANGING_REVERB)
     {
         return -1;
     }
@@ -2217,7 +2217,7 @@ s32 resident_sound_play(ResidentSound* sound, s32 number, s32 selector, s32 valu
         return 1;
     }
 
-    if (sound->state == 9)
+    if (sound->state == RESIDENT_SOUND_CHANGING_REVERB)
     {
         return -1;
     }
