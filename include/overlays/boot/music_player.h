@@ -4,20 +4,6 @@
 #include "types.h"
 #include "main/resident_0011EE70.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- * @brief Allocate a packet's storage.
- * @param packet Packet to set up.
- * @param size Storage size in bytes.
- */
-void resident_packet_allocate(ResidentPacket* packet, s32 size);
-
-#ifdef __cplusplus
-}
-#endif
 
 #ifdef __cplusplus
 #include "overlays/boot/text_001E0900.h"

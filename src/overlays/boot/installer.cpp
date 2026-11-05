@@ -9,9 +9,7 @@
 #include "main/resident_00101550.h"
 #include "vu0.h"
 
-extern "C" {
 extern LibVector4 g_default_bounding_sphere;
-}
 
 /** Stages of the installer screen's resource loading, unit checks, copy, and exit paths. */
 enum BootInstallerStep

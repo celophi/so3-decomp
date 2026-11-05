@@ -6,12 +6,9 @@
 #include "overlays/boot/tracks.h"
 #include "overlays/boot/resident.h"
 
-extern "C" {
-
 extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
 extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
 extern float g_inverse_frame_ticks;
-}
 
 /**
  * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.

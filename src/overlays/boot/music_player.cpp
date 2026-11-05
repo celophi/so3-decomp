@@ -5,23 +5,15 @@
 #include "main/resident_001001E0.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
 
-/** Frame rate used to advance the music visualizer's sample position. */
-#define BOOT_MUSIC_FRAME_RATE 59.94f
-
-extern "C" {
-float sqrtf(float value);
-float lib_cosine(float angle);
-float lib_sine(float angle);
-
 /** Sound played for each track. */
 extern const s32 g_music_track_sounds[];
-
 /** Text of the track number label before the first update. */
 extern const char g_first_track_number[];
-
 /** Format of the track number label. */
 extern const char g_track_number_format[];
-}
+
+/** Frame rate used to advance the music visualizer's sample position. */
+#define BOOT_MUSIC_FRAME_RATE 59.94f
 
 /** Stages of the music player's loading, playback screen, and exit. */
 enum BootMusicPlayerStep

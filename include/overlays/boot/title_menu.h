@@ -4,7 +4,6 @@
 #include "types.h"
 #include "overlays/boot/text_001DD3C0.h"
 
-#ifdef __cplusplus
 /** One fade strip's packet: upload the strip's image to VRAM, then draw it as a textured sprite. */
 struct BootFadeStripPacket
 {
@@ -46,9 +45,6 @@ struct BootFadeStripPacket
     u64 uv1;
     u64 xyz1;
 };
-
-extern "C" {
-#endif
 
 /**
  * @brief Initialize the settings record to its default values.
@@ -97,9 +93,5 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total);
  * @param mode Draw mode.
  */
 void progress_bar_reset(BootProgressBar* bar, s32 width, s32 height, u32 color, s32 mode);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

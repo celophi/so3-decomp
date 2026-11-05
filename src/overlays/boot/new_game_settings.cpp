@@ -21,6 +21,23 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004AB8B0.h"
 
+extern BootFloorQuery* g_floor_query;
+extern const struct BootLabelOffsets g_settings_label_offsets;
+extern const char g_root_node_name[];
+extern const char g_look_node_name[];
+extern const char g_right_speaker_name[];
+extern const char g_left_speaker_name[];
+extern const char g_rear_left_speaker_name[];
+extern const char g_rear_right_speaker_name[];
+extern const char g_center_speaker_name[];
+extern u8 g_settings_option_counts[5];
+extern u8 g_difficulty_option_count;
+extern const s16 g_voice_lines[];
+extern const char g_empty_name[];
+extern const char g_bone_root_name[];
+extern const char g_camera_node_name[];
+extern const char g_face_model_name[];
+
 /** Reverb the settings screen plays under (studio A). */
 #define BOOT_SETTINGS_REVERB_PRESET 2
 
@@ -111,30 +128,6 @@ static inline u8 settings_fourth_dimension_unlocked(LibSystemSettings* settings)
     }
 
     return settings->fourth_dimension_unlocked;
-}
-
-extern "C" {
-extern BootFloorQuery* g_floor_query;
-extern const struct BootLabelOffsets g_settings_label_offsets;
-void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
-extern const char g_root_node_name[];
-extern const char g_look_node_name[];
-extern const char g_right_speaker_name[];
-extern const char g_left_speaker_name[];
-extern const char g_rear_left_speaker_name[];
-extern const char g_rear_right_speaker_name[];
-extern const char g_center_speaker_name[];
-extern u8 g_settings_option_counts[5];
-extern u8 g_difficulty_option_count;
-extern const s16 g_voice_lines[];
-extern const char g_empty_name[];
-extern const char g_bone_root_name[];
-extern const char g_camera_node_name[];
-extern const char g_face_model_name[];
-s32 resident_sound_stop(ResidentSound* sound, s32 handle, s32 flag);
-s32 resident_sound_is_active(ResidentSound* sound, s32 handle);
-u32 resident_sound_get_voice_level(ResidentSound* sound, s32 handle, float time);
-void lib_animation_bind_state(LibAnimation* animation, LibAnimationTarget* target, const char* name);
 }
 
 /**
@@ -1073,7 +1066,6 @@ void BootNewGameSettings::update_option_rows()
     }
 }
 
-
 /** @brief Create the page's images once their textures are loaded, then place and highlight them. */
 void BootNewGameSettings::update_page_images()
 {
@@ -1255,7 +1247,6 @@ void BootNewGameSettings::update_page_images()
         }
     }
 }
-
 
 /** @brief Show the message that describes the selected option. */
 inline void BootNewGameSettings::show_value_message()

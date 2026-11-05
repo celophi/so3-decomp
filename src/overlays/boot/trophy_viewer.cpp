@@ -11,21 +11,14 @@
 #include "main/resident_001001E0.h"
 #include "sdk/main/libc_guess_0013CD50.h"
 
-extern "C" {
-
 /** Name given to every trophy texture. */
 extern const char g_trophy_texture_name[];
-
 extern const char g_no_trophy_number[];
 extern const char g_trophy_number_format[];
-
 /** Key each trophy record must carry, stored XOR-encoded. */
 extern const u32 g_trophy_keys[];
-
 /** Text of the number label before the grid first updates it. */
 extern const char g_first_trophy_number[];
-
-}
 
 /** Stages of the Battle Trophies screen's card selection, transfer, and viewer flow. */
 enum BootTrophyViewerStep

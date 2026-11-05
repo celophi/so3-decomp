@@ -4,14 +4,11 @@
 #include "types.h"
 #include "overlays/boot/text_001DD3C0.h"
 
-#ifdef __cplusplus
 class FieldVec4A;
 template <class T> struct BootTrackPool;
 class BootPooledVectorTrack;
 class BootPooledVectorCurveTrack;
 class BootQuaternionTrackBase;
-extern "C" {
-#endif
 
 /**
  * @brief BootTrack's slot 0x24, between append_key and replace_key; every family inherits it and none overrides it, so
@@ -81,9 +78,5 @@ void vector_track_pool_free(BootTrackPool<BootPooledVectorTrack>* pool, BootPool
  * @param key Key to find.
  */
 void quaternion_track_find_key_value(FieldVec4A* out, BootQuaternionTrackBase* track, float key);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif

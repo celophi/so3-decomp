@@ -2211,6 +2211,24 @@ extern "C"
     s32 resident_sound_is_active(ResidentSound* sound, s32 identifier);
 
     /**
+     * @brief Stop a sound.
+     * @param sound Sound system.
+     * @param identifier Identifier resident_sound_play returned.
+     * @param flag Stop mode.
+     * @return Status.
+     */
+    s32 resident_sound_stop(ResidentSound* sound, s32 identifier, s32 flag);
+
+    /**
+     * @brief Read a playing voice's level at a time.
+     * @param sound Sound system.
+     * @param identifier Identifier resident_sound_play returned.
+     * @param time Time to sample.
+     * @return Voice level.
+     */
+    u32 resident_sound_get_voice_level(ResidentSound* sound, s32 identifier, float time);
+
+    /**
      * @brief Free one voice read ahead of time, cancelling its read if it is still in progress.
      * @param sound Sound system.
      * @param voice Index of the voice in the voice table.

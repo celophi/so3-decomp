@@ -4,6 +4,7 @@
 #include "overlays/boot/text_001E0900.h"
 #include "overlays/boot/init.h"
 #include "overlays/lib/text_0045AD10.h"
+#include "sdk/main/libkernl_00121940.h"
 
 /** Partial resident display state D_001B6624 that points back at the display manager. */
 struct BootDisplay6624
@@ -12,7 +13,6 @@ struct BootDisplay6624
     LibDisplayManager* manager;
 };
 
-extern "C" {
 extern LibRenderer* g_renderer;
 extern BootDisplay6624* D_001B6624;
 
@@ -21,8 +21,12 @@ extern float g_frame_ticks;
 
 extern float g_frame_seconds;
 
-void FlushCache(s32 value);
+// Lib functions boot calls with its own scene and model types, or (lib_draw_buffer_end) with a u8 mode.
+extern "C" {
+void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
 void lib_scene_use_data(BootScene* scene, u8* data);
+void lib_scene_load_data(BootScene* scene, ResidentResourceHeader* source);
+void lib_scene_release_entries(BootScene* scene);
 void func_474010(BootScene* scene, LibCameraContext* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
                  LibRenderer* renderer, s32 flag);
 BootClass170F30* lib_find_renderable_entry(LibListObject* models, const char* name);

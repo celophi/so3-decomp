@@ -375,7 +375,6 @@ class BootFlatFloor : public BootFloorQuery
         }
 };
 
-extern "C" void lib_animation_release_channels(class LibAnimation* animation);
 
 /** Partial 0xB0-byte Lib scene with vtable D_175320 in main data; boot calls the Lib constructor. */
 class BootScene : public LibListObject
@@ -3782,7 +3781,6 @@ class BootPooledQuaternionTrack : public BootQuaternionTrackBase
         u8 unk24[8];
 };
 
-extern "C" {
 s32 float_track_pool_allocate(BootTrackPool<BootPooledFloatTrack>* pool, s32 count);
 void float_track_pool_release(BootTrackPool<BootPooledFloatTrack>* pool);
 s32 vector_track_pool_allocate(BootTrackPool<BootPooledVectorTrack>* pool, s32 count);
@@ -3799,9 +3797,7 @@ s32 quaternion_curve_track_pool_allocate(BootTrackPool<BootPooledQuaternionCurve
 void quaternion_curve_track_pool_release(BootTrackPool<BootPooledQuaternionCurveTrack>* pool);
 s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count);
 void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool);
-}
 
-extern "C" {
 extern ResidentInputSystem* g_input_system;
 extern LibUpdateList* g_update_list;
 /** Product code at the start of every save name: "BASLUS-20488". */
@@ -3810,6 +3806,5 @@ extern const char g_card_product_code[];
 extern const char g_trophy_file_suffix[];
 /** Suffix that matches any of the game's saves: "-*". */
 extern const char g_any_file_suffix[];
-}
 
 #endif

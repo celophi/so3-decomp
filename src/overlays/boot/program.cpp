@@ -17,6 +17,21 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004AB8B0.h"
 
+extern LibScreenText* g_screen_text;
+extern BootResidentDisplay* g_display_callbacks;
+extern LibCameraContext* D_001B6520;
+extern u8 D_001B6420;
+extern BootTrackPool<BootPooledFloatTrack>* g_float_track_pool;
+extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
+extern BootTrackPool<BootClass177EE0>* D_001B666C;
+extern BootTrackPool<BootPooledFloatCurveTrack>* g_float_curve_track_pool;
+extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
+extern BootTrackPool<BootPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
+extern BootTrackPool<BootPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
+extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
+extern struct LibPacketQueue* g_packet_queue;
+extern const struct BootCaption g_opening_captions[];
+
 /** Timebase used to convert frame ticks to seconds. */
 #define BOOT_FRAME_TICKS_PER_SECOND 60.0f
 
@@ -28,46 +43,6 @@
 
 /** Reverb the settings screen plays under (studio A). */
 #define BOOT_SETTINGS_REVERB_PRESET 2
-
-extern "C" {
-extern BootFloorQuery* g_floor_query;
-extern LibScreenText* g_screen_text;
-extern BootResidentDisplay* g_display_callbacks;
-void resident_system_set_progressive(ResidentSystem* system, u8 progressive);
-extern LibCameraContext* D_001B6520;
-extern u8 D_001B6420;
-extern BootTrackPool<BootPooledFloatTrack>* g_float_track_pool;
-extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
-extern BootTrackPool<BootClass177EE0>* D_001B666C;
-extern BootTrackPool<BootPooledFloatCurveTrack>* g_float_curve_track_pool;
-extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
-extern BootTrackPool<BootPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
-extern BootTrackPool<BootPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
-extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
-void resident_system_create_status(ResidentSystem* system);
-extern struct LibPacketQueue* g_packet_queue;
-extern const struct BootLabelOffsets g_settings_label_offsets;
-extern const struct BootCaption g_opening_captions[];
-void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
-extern const char g_root_node_name[];
-extern const char g_look_node_name[];
-extern const char g_right_speaker_name[];
-extern const char g_left_speaker_name[];
-extern const char g_rear_left_speaker_name[];
-extern const char g_rear_right_speaker_name[];
-extern const char g_center_speaker_name[];
-extern u8 g_settings_option_counts[5];
-extern u8 g_difficulty_option_count;
-extern const s16 g_voice_lines[];
-extern const char g_empty_name[];
-extern const char g_bone_root_name[];
-extern const char g_camera_node_name[];
-extern const char g_face_model_name[];
-s32 resident_sound_stop(ResidentSound* sound, s32 handle, s32 flag);
-s32 resident_sound_is_active(ResidentSound* sound, s32 handle);
-u32 resident_sound_get_voice_level(ResidentSound* sound, s32 handle, float time);
-void lib_animation_bind_state(LibAnimation* animation, LibAnimationTarget* target, const char* name);
-}
 
 /** One timed caption of the opening movie; the list ends with a frame of -1. */
 struct BootCaption

@@ -29,10 +29,6 @@ enum BootScreenResourceId
     BOOT_RES_MUSIC_PLAYER = 0x2C
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 extern class LibClass179080* g_scene_camera;
 
 extern FieldRuntime* g_field_runtime;
@@ -40,12 +36,6 @@ extern ResidentArchive* g_resource_archive;
 extern ResidentResourceQueue* g_resource_queue;
 extern ResidentReleaseQueues* g_resident_release_queues;
 extern ResidentSound* g_sound;
-u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
-
-
-#ifdef __cplusplus
-}
-#endif
 
 #ifdef __cplusplus
 /**
@@ -107,15 +97,8 @@ static inline void set_resource_bit(LibTrophyFlags* bits, u32 index, s32 enabled
 
 #include "overlays/lib/text_0045AD10.h"
 
-/**
- * @brief Detach an object from its owner.
- * @param object Intrusive receiver.
- */
-extern "C" void lib_object_detach_owner(void* object);
-
 class LibContainer;
 class BootClass170F30;
-extern "C" s32 lib_container_init(LibContainer* container, s32 code, float x, float y, s32 first, float z, s32 second);
 
 /**
  * @brief Place a list indicator and set its scroll extent and position.
@@ -127,10 +110,11 @@ extern "C" s32 lib_container_init(LibContainer* container, s32 code, float x, fl
  * @param position Scroll position.
  * @return One on success, or zero if its storage could not be initialized.
  */
+// Lib's list indicator init, declared with boot's view of the indicator.
 extern "C" s32 lib_list_indicator_init(class BootListIndicator* object, float x, float y, float height, float extent, float position);
 
 
-extern "C" LibDisplayManager* g_display_manager;
+extern LibDisplayManager* g_display_manager;
 
 /** Partial 0xC0-byte Lib transform with vtable D_171DD0 in main data; boot calls its Lib constructor. */
 class BootClipRegion : public LibTransformOwner, public LibDmaCallbacks

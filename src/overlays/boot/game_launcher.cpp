@@ -7,21 +7,6 @@
 #include "overlays/lib/render_buffer.h"
 #include "overlays/lib/text_004095C0.h"
 
-extern "C" {
-
-// Boot calls lib_draw_buffer_end through its own prototype, with a u8 mode.
-void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
-extern LibDisplayManager* g_scene_display_manager;
-
-extern const char g_new_game_node_name[];
-extern const char g_continue_node_name[];
-extern const char g_battle_collection_node_name[];
-extern const char g_install_node_name[];
-extern const char g_title_camera_node_name[];
-void lib_scene_load_data(BootScene* scene, ResidentResourceHeader* source);
-void lib_scene_release_entries(BootScene* scene);
-
-}
 
 #include "overlays/boot/transform_inlines.h"
 
