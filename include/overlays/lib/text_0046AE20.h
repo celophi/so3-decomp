@@ -22,6 +22,26 @@ void* func_0047A860(const void* object, s32 index);
 void func_0047A040(void* object, u8* state, void* row);
 
 /**
+ * @brief Release the scene's entries (detach and free what they created).
+ * @param scene Scene.
+ */
+void lib_scene_release_entries(LibEntryManager* scene);
+
+/**
+ * @brief Replace the scene's data with already decoded data it doesn't own.
+ * @param scene Scene.
+ * @param data Decoded scene resource.
+ */
+void lib_scene_use_data(LibEntryManager* scene, u8* data);
+
+/**
+ * @brief Replace the scene's data by decoding a scene resource into a buffer the scene owns.
+ * @param scene Scene.
+ * @param source Compressed scene resource.
+ */
+void lib_scene_load_data(LibEntryManager* scene, struct ResidentResourceHeader* source);
+
+/**
  * @brief Release the grid reference held by the linked Lib object.
  * @param object Linked object holding the grid.
  */

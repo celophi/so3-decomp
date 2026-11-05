@@ -7,6 +7,12 @@
 extern "C" {
 #endif
 
+/**
+ * @brief Start the memory card library.
+ * @return Zero on success.
+ */
+s32 sceMcInit(void);
+
 s32 mcHearAlarm(s32 callback_arg0, s32 callback_arg1, s32 sema_id);
 
 #ifdef __cplusplus

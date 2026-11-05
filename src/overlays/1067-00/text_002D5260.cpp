@@ -148,21 +148,6 @@ class FieldClass15B670 : public LibContainer, public FieldScalarTransition2D6AF0
 {
 };
 
-/** Six-byte controller record in the resident runtime. */
-struct FieldControllerInput6
-{
-    u16 unk00;
-    u16 unk02;
-    u16 unk04;
-};
-
-/** Partial runtime prefix containing its two controller records. */
-struct FieldRuntime
-{
-    u8 unk00[0x5F0];
-    FieldControllerInput6 unk5f0[2];
-};
-
 /** @brief Refresh the aggregate's scalar display. @param object Widget aggregate. */
 extern "C" void func_413BB0(LibClass1723F0* object);
 /** @brief Dispatch a resident request. @param receiver Request receiver. @param arg1 Request kind. @param arg2 Request argument. @param arg3 Request argument. @param arg4 Request argument. @param arg5 Request argument. @param arg6 Request argument. @return Request result. */
@@ -624,7 +609,7 @@ bool func_002D6CB0(FieldClass15B300* object)
     bool changed = false;
     s32 selection = object->unk312;
     s32 row_step = 0;
-    u16 buttons = D_001B657C->unk5f0[object->unk315].unk04;
+    u16 buttons = D_001B657C->inputs[object->unk315].unk04;
     s32 page_step = 0;
     if (buttons & 0x10)
     {

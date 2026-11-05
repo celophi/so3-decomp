@@ -78,7 +78,7 @@ ResidentArchive* resident_get_archive(ResidentSystem* system)
  * @param system Resident system.
  * @return Input system at offset 0x1480.
  */
-ResidentInputSystem* func_001012D0(ResidentSystem* system)
+ResidentInputSystem* resident_system_get_input(ResidentSystem* system)
 {
     return &system->input;
 }
@@ -155,7 +155,7 @@ u32 resident_find_entry(void* object, s32 key)
  * @param object Entry table.
  * @param key Key to remove.
  */
-void func_00101480(void* object, s32 key)
+void resident_remove_entry(void* object, s32 key)
 {
     ResidentEntryTable* table = (ResidentEntryTable*)object;
     s32 index;

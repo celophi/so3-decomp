@@ -159,51 +159,8 @@ public:
     u16 unk94;
 };
 
-/** Two-dimensional position of a Field selection display. */
-struct FieldGridPosition
-{
-    float x;
-    float y;
-};
-
-/** Field storage and bounds interface with its virtual pointer at 0x38. */
-class FieldClass151C50
-{
-public:
-    /** @brief Clear the owned storage and initial coordinate values. */
-    FieldClass151C50();
-    LibStorageBlock0C unk00;
-    u8 unk0c[4];
-    FieldGridPosition unk10;
-    float unk18;
-    float unk1c;
-    float unk20;
-    float unk24;
-    u8 unk28[8];
-    float unk30;
-    u8 unk34;
-    u8 unk35;
-    u8 unk36[2];
-    /** @brief Destroy the owned field storage. */
-    virtual ~FieldClass151C50();
-    /** @brief Run the default field bounds hook. */
-    virtual void func_00212450();
-};
-
-/** Field-context transform with secondary field storage, using table 0x175070. */
-class FieldClass175070 : public LibCallbackTransform, public FieldClass151C50
-{
-public:
-    /** @brief Initialize the Field transform and its drawing code. */
-    FieldClass175070();
-    /** @brief Destroy the field storage and transform bases. */
-    virtual ~FieldClass175070();
-    /** @brief Prepare the field transform after notification. @param value Notification word. */
-    virtual void on_packet_complete(u32 value);
-};
-
 /** Partial field grid interface using MAIN table 0x153290. */
-struct FieldObject23CEA0 : public FieldClass175070
+struct FieldObject23CEA0 : public LibSelectionCursor
 {
     /** @brief Initialize the grid and its field transform bases. */
     FieldObject23CEA0();

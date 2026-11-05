@@ -47,6 +47,26 @@ typedef struct GsLoadImage
 void sceGsSetDefLoadImage(GsLoadImage* image, s16 buffer_pointer, s16 buffer_width, s16 pixel_format, s16 x, s16 y,
                           s16 width, s16 height);
 
+/** GS image read-back packet: VIF codes, GIF tag and transfer registers, 16-byte aligned. */
+typedef struct GsStoreImage
+{
+    u8 data[0x70];
+} __attribute__((aligned(16))) GsStoreImage;
+
+/**
+ * @brief Build a packet that copies a VRAM rectangle back to main memory.
+ * @param image Packet to fill.
+ * @param buffer_pointer Source VRAM address in 64-word units.
+ * @param buffer_width Source width in 64-pixel units.
+ * @param pixel_format Source pixel format.
+ * @param x Source x.
+ * @param y Source y.
+ * @param width Width in pixels.
+ * @param height Height in pixels.
+ */
+void sceGsSetDefStoreImage(GsStoreImage* image, s16 buffer_pointer, s16 buffer_width, s16 pixel_format, s16 x, s16 y,
+                           s16 width, s16 height);
+
 /** @brief Send an image to VRAM. @param image Transfer packet. @param source 16-byte aligned pixels. @return Zero. */
 s32 sceGsExecLoadImage(GsLoadImage* image, void* source);
 

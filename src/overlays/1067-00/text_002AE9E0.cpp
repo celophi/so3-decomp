@@ -256,14 +256,6 @@ struct FieldTrackPool
     bool external;
 };
 
-/** Partial field runtime exposing the increment used by its updates. */
-struct FieldRuntime
-{
-    u8 unk00[0x5E8];
-    FieldCharacterNames* character_names;
-    float rate;
-};
-
 /** Prefix of either embedded motion state retained by the context owner. */
 struct FieldContextMotion
 {
@@ -299,7 +291,6 @@ struct FieldState6628
     u32 unk90;
 };
 
-extern "C" void* D_001B6650;
 extern "C" void func_4DCFA0(void* state);
 extern "C" FieldTrackPool<FieldClass159130>* D_001B6674;
 extern "C" FieldTrackPool<FieldClass159390>* D_001B6668;
@@ -1272,7 +1263,7 @@ extern "C" void field_set_display_blend(ResidentContext* context, float alpha)
         }
 
         context->display_blend_node->alpha = alpha;
-        LibDisplayState* state = static_cast<LibDisplayState*>(D_001B6650);
+        LibCameraContext* state = D_001B6650;
         state->blend_enabled = 1;
         state->blend_alpha = alpha;
     }
@@ -1563,16 +1554,16 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
             void* directory = resident_get_entry_table(resident_get_system());
             void* storage = reinterpret_cast<void*>(resident_find_entry(directory, 6));
-            func_00101480(directory, 6);
+            resident_remove_entry(directory, 6);
             FieldClass152F00::operator delete(storage);
             storage = reinterpret_cast<void*>(resident_find_entry(directory, 4));
-            func_00101480(directory, 4);
+            resident_remove_entry(directory, 4);
             FieldClass152F00::operator delete(storage);
             FieldClass150DB0* resource = reinterpret_cast<FieldClass150DB0*>(resident_find_entry(directory, 5));
 
             if (resource != 0)
             {
-                func_00101480(directory, 5);
+                resident_remove_entry(directory, 5);
                 delete resource;
             }
 
@@ -1580,12 +1571,12 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
             if (buffers != 0)
             {
-                func_00101480(directory, 7);
+                resident_remove_entry(directory, 7);
                 delete buffers;
             }
 
             func_0040AF80();
-            func_00433680();
+            lib_release_shared_font();
             func_003EF8A0();
             func_001DEF70(reinterpret_cast<FieldClass150060*>(context->unk04), 0);
 
@@ -1645,7 +1636,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
     case 4:
         field_detach_release_context_object(context->input);
         field_detach_release_context_object(context->unk20);
-        func_0011DE00(func_001012D0(resident_get_system()), 0, 0);
+        resident_sync_gs_path(resident_system_get_input(resident_get_system()), 0, 0);
         func_004DBEE0(D_001B65DC, 0);
 
         ResidentDmaQueue* dma_queue = D_001B6610;
@@ -1661,7 +1652,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         D_001B6548 = 0;
         D_001B6628->unk90 = 0;
         field_detach_release_context_object(context->unk40);
-        delete reinterpret_cast<LibClass174F50*>(D_001B657C);
+        delete D_001B657C;
         D_001B657C = 0;
         func_002B4620(D_001B6664);
         func_002B4C50(D_001B6668);
@@ -1817,7 +1808,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     D_001B663C = 0;
     delete D_001B6618;
     D_001B6618 = 0;
-    delete reinterpret_cast<LibClass174F50*>(D_001B657C);
+    delete D_001B657C;
     D_001B657C = 0;
     lib_object_detach_owner(D_001B6640);
 
@@ -1838,7 +1829,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     {
         func_0011DF80(g_input_system);
         context->unk6c = ::new (0) ResidentHeap;
-        func_00113930(static_cast<ResidentHeap*>(context->unk6c), 0x40C00);
+        resident_heap_create_memory(static_cast<ResidentHeap*>(context->unk6c), 0x40C00);
         void* previous_heap = resident_exchange_allocation_heap(context->unk6c);
         LibBufferOwner* buffers = ::new (0) LibBufferOwner;
         func_0040AFA0();
@@ -1882,7 +1873,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     previous_heap = resident_exchange_allocation_heap(context->unk6c);
     context->unk70 = ::new (0) ResidentHeap;
     resident_exchange_allocation_heap(previous_heap);
-    func_00113930(static_cast<ResidentHeap*>(context->unk70), 0x600000);
+    resident_heap_create_memory(static_cast<ResidentHeap*>(context->unk70), 0x600000);
     resident_exchange_allocation_heap(context->unk70);
     s32 unused_space = D_3E6880 - D_36FA80;
 
@@ -2281,7 +2272,7 @@ extern "C" void field_set_checked_fol(ResidentCheckedRecord* record, s32 fol)
     const u8* end = reinterpret_cast<const u8*>(&record->checksum);
     const u8* data = record->unk26;
 
-    if (checksum == func_00457470(record->checksum_seed, data, end - data))
+    if (checksum == lib_compute_checksum(record->checksum_seed, data, end - data))
     {
         fol += 40597;
         fol = clamp(fol, 40597, 100040596);
@@ -2290,7 +2281,7 @@ extern "C" void field_set_checked_fol(ResidentCheckedRecord* record, s32 fol)
         record->checksum_seed = resident_next_random_word();
         end = reinterpret_cast<const u8*>(&record->checksum);
         data = record->unk26;
-        record->checksum = func_00457470(record->checksum_seed, data, end - data);
+        record->checksum = lib_compute_checksum(record->checksum_seed, data, end - data);
     }
 }
 
@@ -2306,7 +2297,7 @@ extern "C" void field_clear_flags_5000(FieldRuntimeValues* values)
 /** @brief Disable display blending and restore the default alpha. */
 FieldDisplayBlendNode::~FieldDisplayBlendNode()
 {
-    LibDisplayState* state = static_cast<LibDisplayState*>(D_001B6650);
+    LibCameraContext* state = D_001B6650;
     state->blend_enabled = 0;
     state->blend_alpha = 0.5f;
 }

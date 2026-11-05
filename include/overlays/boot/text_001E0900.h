@@ -4,16 +4,17 @@
 #include "overlays/boot/text_001DD3C0.h"
 #include "main/resident_001001E0.h"
 #include "overlays/lib/vector.h"
+#include "overlays/lib/memory_card.h"
+#include "overlays/lib/movie_player.h"
 #include "sdk/main/libc_guess_0013C948.h"
 
 #define BOOT_TRANSFER_NAME_CAPACITY 64
 /** Mask used to align memory card query buffers to 64 bytes. */
 #define BOOT_CARD_QUERY_ALIGNMENT_MASK 0x3F
 #define BOOT_ALIGN_CARD_QUERY(value) (((u32)(value) + BOOT_CARD_QUERY_ALIGNMENT_MASK) & ~BOOT_CARD_QUERY_ALIGNMENT_MASK)
-#define BOOT_TRANSFER_FLAG_COUNT BOOT_TROPHY_COUNT
+#define BOOT_TRANSFER_FLAG_COUNT LIB_TROPHY_COUNT
 #define BOOT_TRANSFER_FLAG_BYTES ((BOOT_TRANSFER_FLAG_COUNT + 7) / 8)
-#define BOOT_TROPHY_RECORD_SIZE 0xF10
-#define BOOT_TROPHY_RECORD_BYTES (BOOT_TRANSFER_FLAG_COUNT * BOOT_TROPHY_RECORD_SIZE)
+#define BOOT_TROPHY_RECORD_BYTES (BOOT_TRANSFER_FLAG_COUNT * LIB_TROPHY_RECORD_SIZE)
 #define BOOT_TROPHY_FILE_FLAGS_OFFSET 0x4B4
 #define BOOT_TROPHY_FILE_RECORDS_OFFSET (BOOT_TROPHY_FILE_FLAGS_OFFSET + BOOT_TRANSFER_FLAG_BYTES + 8)
 #define BOOT_TRANSFER_BUFFER_SIZE (BOOT_TROPHY_FILE_RECORDS_OFFSET + BOOT_TROPHY_RECORD_BYTES)
@@ -44,65 +45,6 @@ struct BootTrophyCardFile
 };
 
 typedef char BootTrophyCardFileSizeCheck[sizeof(BootTrophyCardFile) == BOOT_TRANSFER_BUFFER_SIZE ? 1 : -1];
-
-/** @brief Partial 0x100-byte record the memory card object keeps per slot. */
-struct BootCardSlotState
-{
-    u8 unk00[0x48];
-
-    /** Card state; two once the card is ready. */
-    s32 card_state;
-
-    /** Free space. */
-    s32 free_space;
-
-    /** Nonzero when the card is formatted. */
-    s32 formatted;
-
-    u8 unk54[0xAC];
-};
-
-/** Partial 0x58-byte Lib memory card object that runs the two transfer modes; boot calls the Lib constructor. */
-class BootModeOwner0910 : public LibListObject
-{
-    public:
-        /** @brief Initialize the memory card object. */
-        BootModeOwner0910();
-
-        /** The two card slots. */
-        BootCardSlotState* slots;
-
-        u8 unk18[8];
-
-        /** Zero while the card object is busy. */
-        u8 ready;
-
-        u8 unk21[0x37];
-};
-
-enum BootCardSlotMask
-{
-    BOOT_CARD_SLOT_1 = 0x1,
-    BOOT_CARD_SLOT_2 = 0x2
-};
-
-/** One file of a memory card request: Lib opens `<directory>/<name>` and transfers size bytes at data. */
-struct BootCardFileBuffer
-{
-    char* name;
-    void* data;
-    u32 size;
-    u32 unk0C;
-};
-
-/** Memory card request for files in one directory; Lib keeps a pointer to it in the slot until it finishes. */
-struct BootCardFileRequest
-{
-    char* directory;
-    s32 file_count;
-    u32 unk08;
-    BootCardFileBuffer* files;
-};
 
 /** Card checks and file probes performed before a Battle Trophy transfer. */
 enum BootTrophyCardStep
@@ -257,7 +199,7 @@ class BootBattleTrophyCard : public LibListObject
          */
         s32 initialize();
 
-        BootModeOwner0910* card;
+        LibMemoryCard* card;
 
         /** Selected slot, or -1. */
         s16 slot;
@@ -312,8 +254,8 @@ class BootBattleTrophyCard : public LibListObject
         s16 transfer_state;
 
         s32 transfer_result;
-        BootCardFileBuffer file_buffer;
-        BootCardFileRequest file_request;
+        LibCardFileBuffer file_buffer;
+        LibCardFileRequest file_request;
         BootSystemSettings* settings;
 
         /** Set by start_transfer until the transfer finishes or fails. */
@@ -625,7 +567,7 @@ class BootNewGameSettings : public LibListObject
         /** Description of the selected option. */
         LibTextWidget* description_text;
 
-        BootSelectionCursor* cursor;
+        LibSelectionCursor* cursor;
 };
 
 /** Boot's pad and memory card monitor, with vtable D_171030 in main data; samples both every frame. */
@@ -688,62 +630,6 @@ class BootInput : public LibListObject
         s32 slot2_ready;
 };
 
-/** Partial 0x58-byte resident object whose vtable pointer follows its data; boot calls the resident constructor. */
-class BootResident113E40
-{
-    public:
-        /** @brief Initialize the object. */
-        BootResident113E40();
-
-        u8 unk00[0x2C];
-        s32 unk2C;
-        u8 unk30[0x24];
-
-        /** @brief Destroy the object. */
-        virtual ~BootResident113E40();
-};
-
-/** Partial movie decoder state reached through the player. */
-struct BootMovieState15E700
-{
-    /**
-     * @brief Store the two scale words at offset 0x80C4.
-     * @param first First scale.
-     * @param second Second scale.
-     */
-    void set_scale(float first, float second)
-    {
-        unk80C4 = first;
-        unk80C8 = second;
-    }
-
-    /**
-     * @brief Store the three words at offset 0x80AC.
-     * @param first First word.
-     * @param second Second word.
-     * @param third Third word.
-     */
-    void set_words(s32 first, s32 second, s32 third)
-    {
-        unk80AC = first;
-        unk80B0 = second;
-        unk80B4 = third;
-    }
-
-    u8 unk00[0x80AC];
-    s32 unk80AC;
-    s32 unk80B0;
-    s32 unk80B4;
-    u8 unk80B8[8];
-
-    /** Frame being shown. */
-    s32 current_frame;
-
-    float unk80C4;
-    float unk80C8;
-    u8 unk80CC[0xC];
-    u8 unk80D8;
-};
 
 /** Heap capacity and frame dimensions shared by the opening and launch movies. */
 enum BootMovieConstants
@@ -753,29 +639,6 @@ enum BootMovieConstants
     BOOT_MOVIE_FRAME_HEIGHT = 448
 };
 
-/** Partial 0x15E7C0-byte Lib movie player with vtable D_172500 in main data; boot calls the Lib constructor. */
-class BootMoviePlayer : public LibListObject
-{
-    public:
-        /**
-         * @brief Initialize the player and its decoder for a frame size.
-         * @param width Frame width.
-         * @param height Frame height.
-         */
-        BootMoviePlayer(s32 width, s32 height);
-
-        /** @brief Destroy the player. */
-        virtual ~BootMoviePlayer();
-
-        u8 unk14[0x15E6EC];
-        BootMovieState15E700* state;
-        u8 unk15E704[0x90];
-
-        /** Nonzero while the movie plays. */
-        u8 is_playing;
-
-        u8 unk15E795[0x2B];
-};
 
 /** Steps of the opening movie, from loading its images through opening the title menu. */
 enum BootOpeningMovieStep
@@ -822,8 +685,8 @@ class BootOpeningMovie : public LibListObject
         u8 caption_image_loaded;
 
         u8 unk21[3];
-        BootResident113E40* movie_heap;
-        BootMoviePlayer* player;
+        ResidentHeap* movie_heap;
+        LibMoviePlayer* player;
         BootImage* caption_image;
         LibContainer* container;
         LibTextWidget* caption_text;
@@ -966,8 +829,8 @@ class BootProgram : public BootResidentProgram
             return input;
         }
 
-        BootDimensionsACD0* display;
-        BootProjectionACD0* projection;
+        LibCameraContext* display;
+        LibClass179080* projection;
         BootInput* input;
 
         /** Resource 0x26's first block, holding the message bank. */
@@ -1013,7 +876,7 @@ class BootProgram : public BootResidentProgram
 struct BootResidentDisplay
 {
     u8 unk00[4];
-    BootDimensionsACD0* display;
+    LibCameraContext* display;
 };
 
 /** 0x2910-byte Lib heap that may sit at the start of scratchpad memory. */
@@ -3979,10 +3842,6 @@ void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* poo
 
 extern "C" {
 extern ResidentInputSystem* g_input_system;
-s32 func_432720(BootModeOwner0910* owner, void* queue);
-void func_432660(BootModeOwner0910* owner, s32 mode, u32 enabled, u32 flags);
-s32 func_432310(BootModeOwner0910* owner, u32 mode, BootCardFileRequest* request);
-s32 func_432270(BootModeOwner0910* owner, s32 mode, s32* result);
 extern LibUpdateList* D_001B6614;
 /** Product code at the start of every save name: "BASLUS-20488". */
 extern const char g_card_product_code[];
@@ -3990,7 +3849,6 @@ extern const char g_card_product_code[];
 extern const char g_trophy_file_suffix[];
 /** Suffix that matches any of the game's saves: "-*". */
 extern const char g_any_file_suffix[];
-s32 func_431F90(BootModeOwner0910* owner, s32 slot, char* name, s32 first, s32 second, u8* buffer);
 }
 
 #endif

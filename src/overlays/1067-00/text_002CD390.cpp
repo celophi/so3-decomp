@@ -421,8 +421,8 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE0
  */
 static inline void set_selector_position(ItemCreationClass175030* selector, float x, float y)
 {
-    selector->ItemCreationClass185050::unk10 = x;
-    selector->ItemCreationClass185050::unk14 = y;
+    selector->ItemCreationClass185050::position.x = x;
+    selector->ItemCreationClass185050::position.y = y;
     selector->unk35 = 1;
     selector->needs_redraw = 1;
 }

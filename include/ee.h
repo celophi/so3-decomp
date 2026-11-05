@@ -4,8 +4,11 @@
 #include "types.h"
 
 /*
- * EE single-instruction helpers the game wrote inline.
+ * EE instruction helpers the game wrote inline.
  */
+
+/** Address bit that maps EE main memory uncached. */
+#define UNCACHED_SEGMENT 0x20000000
 
 /**
  * @brief Return the EE scalar maximum of two floating-point operands.
@@ -71,6 +74,82 @@ static inline float ee_max_in_place(float left, const float& right)
 static inline void ee_prefetch(const void* address)
 {
     asm __volatile__("pref 0, 0(%0)" : : "r"(address));
+}
+
+/**
+ * @brief Wait for every earlier load and store to finish (one sync).
+ *
+ * The game issues this between writing a packet's end tag and handing the
+ * packet to DMA, so the tag is in memory before the transfer reads it.
+ * @see ps2sdk has the same one-instruction EE_SYNC
+ *      (https://github.com/ps2dev/ps2sdk, ee/kernel/include/kernel.h).
+ */
+static inline void ee_sync(void)
+{
+    asm __volatile__("sync");
+}
+
+/**
+ * @brief Finish an interrupt handler (sync, then ei).
+ *
+ * Every interrupt and SIF command handler in the game ends with this pair
+ * before it returns, as a workaround for an EE kernel bug.
+ * @see ps2sdk has the same pair as ExitHandler
+ *      (https://github.com/ps2dev/ps2sdk, ee/kernel/include/kernel.h).
+ */
+static inline void ee_exit_handler(void)
+{
+    asm __volatile__("sync\nei");
+}
+
+/** COP0 Status bit set while interrupts are enabled (EIE). */
+#define EE_STATUS_EIE 0x10000
+
+/**
+ * @brief Read the COP0 Status register (one mfc0).
+ * @return The Status register.
+ * @see ps2sdk reads it the same way with get_mips_cop_reg(0, COP0_REG_Status)
+ *      (https://github.com/ps2dev/ps2sdk, common/include/mipscopaccess.h).
+ */
+static inline u32 ee_get_status(void)
+{
+    // The game clears it before the read; one request wrapper keeps that dead move.
+    u32 status = 0;
+    asm __volatile__("mfc0 %0, $12" : "=r"(status));
+    return status;
+}
+
+/**
+ * @brief Transpose a 16-byte-aligned 4x4 matrix of words with the EE's 128-bit MMI instructions.
+ *
+ * The registers are fixed ($t0-$t7) because every copy in the game uses the
+ * same ones: about 115 functions across main, lib, 1067-00, 1070-00, 3253-00
+ * and 3454-00 have this exact sequence.
+ * @param out Aligned destination matrix.
+ * @param in Aligned source matrix.
+ * @see EE Core Instruction Set Manual (PEXTLW, PEXTUW, PCPYLD, PCPYUD, LQ, SQ).
+ */
+static inline void ee_transpose_matrix(void* out, const void* in)
+{
+    asm __volatile__("lq       $8, 0x0(%1)\n"
+                     "lq       $9, 0x10(%1)\n"
+                     "lq       $10, 0x20(%1)\n"
+                     "lq       $11, 0x30(%1)\n"
+                     "pextlw   $12, $9, $8\n"
+                     "pextuw   $13, $9, $8\n"
+                     "pextlw   $14, $11, $10\n"
+                     "pextuw   $15, $11, $10\n"
+                     "pcpyld   $8, $14, $12\n"
+                     "pcpyud   $9, $12, $14\n"
+                     "pcpyld   $10, $15, $13\n"
+                     "pcpyud   $11, $13, $15\n"
+                     "sq       $8, 0x0(%0)\n"
+                     "sq       $9, 0x10(%0)\n"
+                     "sq       $10, 0x20(%0)\n"
+                     "sq       $11, 0x30(%0)\n"
+                     :
+                     : "r"(out), "r"(in)
+                     : "$8", "$9", "$10", "$11", "$12", "$13", "$14", "$15", "memory");
 }
 
 /*

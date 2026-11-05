@@ -422,7 +422,7 @@ extern "C" void func_2642D0(void* object);
 static inline u8 config_extra(ConfigSettings* settings)
 {
     u8* data = &settings->extra;
-    if (settings->extra_checksum != func_00457470(settings->extra_key, data,
+    if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data,
         reinterpret_cast<u8*>(&settings->extra_checksum) - data))
     {
         return 0;
@@ -436,7 +436,7 @@ static inline u8 config_extra(ConfigSettings* settings)
  */
 static inline u8 config_mode(ConfigSettings* settings)
 {
-    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
+    if (settings->checksum != lib_compute_checksum(settings->key, &settings->unk26,
         reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
     {
         return 0;
@@ -450,7 +450,7 @@ static inline u8 config_mode(ConfigSettings* settings)
  */
 static inline u8 config_enabled(ConfigSettings* settings)
 {
-    if (settings->checksum != func_00457470(settings->key, &settings->unk26,
+    if (settings->checksum != lib_compute_checksum(settings->key, &settings->unk26,
         reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26))
     {
         return 0;
@@ -477,11 +477,11 @@ static inline u8 config_flag(ConfigSettings* settings)
 static inline void config_set_mode(ConfigSettings* settings, u8 mode)
 {
     s32 length = reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26;
-    if (settings->checksum == func_00457470(settings->key, &settings->unk26, length))
+    if (settings->checksum == lib_compute_checksum(settings->key, &settings->unk26, length))
     {
         settings->mode = mode;
         settings->key = resident_next_random_word();
-        settings->checksum = func_00457470(settings->key, &settings->unk26, length);
+        settings->checksum = lib_compute_checksum(settings->key, &settings->unk26, length);
     }
 }
 
@@ -585,7 +585,7 @@ static inline u32 pack_color(u8 red, u8 green, u8 blue)
  */
 static inline float viewport_aspect()
 {
-    return (4.0f / 3.0f) * ((15.0f / 14.0f) * D_001B6650->viewport_height) / D_001B6650->viewport_width;
+    return (4.0f / 3.0f) * ((15.0f / 14.0f) * D_001B6650->display_area.height) / D_001B6650->display_area.width;
 }
 
 /**
@@ -1438,7 +1438,7 @@ u8 func_003499F0(ConfigCornerWindow* object)
     D_001B643C->unk10->unk14->add_child(color);
     D_001B643C->unk10->unk14->func_00263C70(color);
     FieldObject23CEA0* grid = static_cast<FieldObject23CEA0*>(func_00352690(reinterpret_cast<ConfigListOwner*>(&object->unk74), 0)->value);
-    grid->FieldClass151C50::unk30 = 64.0f;
+    grid->ItemCreationClass185050::alpha = 64.0f;
     grid->unkae = 1;
     return 1;
 }
@@ -1849,12 +1849,12 @@ void func_0034AEC0(ConfigOptions* object, u16 direction, s32 amount)
                 {
                     changed = object->unkb0 = true;
                     object->unk29c = -object->unk2a0;
-                    object->scroll->func_00466E40(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
+                    object->scroll->set_move_target(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
                 }
             }
             else
             {
-                object->scroll->func_00466E40(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
+                object->scroll->set_move_target(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
             }
         }
         else if (object->selected == 7)
@@ -1864,12 +1864,12 @@ void func_0034AEC0(ConfigOptions* object, u16 direction, s32 amount)
                 object->unkb0 = false;
                 changed = true;
                 object->unk29c = object->unk2a0;
-                object->scroll->func_00466E40(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
+                object->scroll->set_move_target(object->unk110, 12.0f + object->positions[object->selected], 0.05f);
             }
         }
         else
         {
-            object->scroll->func_00466E40(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
+            object->scroll->set_move_target(object->unk110, 12.0f + (object->positions[object->selected] - 400.0f), 0.05f);
         }
 
         if (changed && object->unk288 == 0)
@@ -3114,7 +3114,7 @@ void ConfigOptions::func_slota8()
 void ConfigOptions::func_slot64()
 {
     LibClass175030* widget = scroll;
-    widget->unk30 = 128.0f;
+    widget->alpha = 128.0f;
     widget->needs_redraw = 1;
     s32 key = func_00350270(this, selected);
     if (key != unkb8)
@@ -3187,7 +3187,7 @@ u8 ConfigOptions::func_slotb0()
     if (opened == true)
     {
         LibClass175030* indicator = scroll;
-        indicator->ItemCreationClass185050::unk30 = 64.0f;
+        indicator->ItemCreationClass185050::alpha = 64.0f;
         indicator->needs_redraw = 1;
         return 1;
     }

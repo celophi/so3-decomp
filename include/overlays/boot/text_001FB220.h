@@ -72,7 +72,7 @@ class BootBattleTrophyViewer : public LibListObject
          * @param texture Texture resource to fill.
          * @param index Trophy index.
          */
-        void build_trophy_texture(const BootTrophyRecord* record, BootTextureResource* texture, s32 index);
+        void build_trophy_texture(const BootTrophyRecord* record, LibImageResource* texture, s32 index);
 
         /**
          * @brief Reset the display order to trophy number order, then optionally sort it newest first.
@@ -157,7 +157,7 @@ class BootBattleTrophyViewer : public LibListObject
         /** Prompt and status message. */
         LibTextWidget* message_text;
 
-        BootSelectionCursor* cursor;
+        LibSelectionCursor* cursor;
 
         /** Slot 1 choice. */
         LibTextWidget* slot1_text;
@@ -208,21 +208,21 @@ class BootBattleTrophyViewer : public LibListObject
         char number_text[9];
 
         /** Trophy number shown at each list position. */
-        s16 order[BOOT_TROPHY_COUNT];
+        s16 order[LIB_TROPHY_COUNT];
 
         u8 unk32E[2];
 
         /** Picture of each trophy. */
-        BootImage* trophy_images[BOOT_TROPHY_COUNT];
+        BootImage* trophy_images[LIB_TROPHY_COUNT];
 
         /** Record of each trophy, as read from the memory card. */
         BootTrophyRecord* records;
 
         /** Texture built for each earned trophy. */
-        BootTextureResource* textures[BOOT_TROPHY_COUNT];
+        LibImageResource* textures[LIB_TROPHY_COUNT];
 
         /** How far each trophy picture has turned from its back to its front, zero when unrevealed. */
-        float flip_progress[BOOT_TROPHY_COUNT];
+        float flip_progress[LIB_TROPHY_COUNT];
 
         /** Next trophy to start turning over as the screen opens. */
         s32 reveal_index;

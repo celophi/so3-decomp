@@ -6,22 +6,6 @@
 #include "overlays/boot/resident.h"
 #include "overlays/lib/render_buffer.h"
 
-/** GIF register descriptors and GS register addresses the fade packet uses. */
-enum
-{
-    GIF_REGISTER_AD = 0xE,
-    GIF_REGISTER_UV = 0x3,
-    GIF_REGISTER_XYZ2 = 0x5,
-    GS_REGISTER_PRIM = 0x00,
-    GS_REGISTER_RGBAQ = 0x01,
-    GS_REGISTER_TEX0_2 = 0x07,
-    GS_REGISTER_TEXFLUSH = 0x3F,
-    GS_REGISTER_BITBLTBUF = 0x50,
-    GS_REGISTER_TRXPOS = 0x51,
-    GS_REGISTER_TRXREG = 0x52,
-    GS_REGISTER_TRXDIR = 0x53
-};
-
 extern "C" {
 extern void* D_001B663C;
 u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 unk4, s32 unk5, s32 unk6, s32 unk7);
@@ -29,21 +13,17 @@ u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 un
 extern void func_4D00B0(void* object);
 void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
 extern LibDisplayManager* D_001B6630;
-void func_4333A0(BootImageStrip* image, u8* data, s16 address, s16 width, s32 first, s16 x, s32 second, s32 strip_width, s16 height);
 
 extern const char g_new_game_node_name[];
 extern const char g_continue_node_name[];
 extern const char g_battle_collection_node_name[];
 extern const char g_install_node_name[];
 extern const char g_title_camera_node_name[];
-void func_455DF0(LibDrawBuffer* buffer, s32 first, s32 second);
-void func_455040(LibDrawBuffer* buffer, const BootTextureResource* resource);
 void func_455150(LibDrawBuffer* buffer, BootDrawSettings* settings);
-void func_4550F0(LibDrawBuffer* buffer, s32 count);
 void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
-void func_4791F0(BootScene* scene, u8* data);
+void lib_scene_load_data(BootScene* scene, ResidentResourceHeader* source);
 void func_40B3A0(u8* data);
-void func_473AA0(BootScene* scene);
+void lib_scene_release_entries(BootScene* scene);
 
 }
 
@@ -380,19 +360,19 @@ void BootTitleMenu::update()
     {
     case BOOT_TITLE_LOAD_SCENE:
     {
-        if (func_00102D00(g_resource_queue) == 0)
+        if (resident_poll_resource_queue(g_resource_queue) == 0)
         {
             break;
         }
 
-        if (BOOT_ALIGN_RESOURCE(g_boot_program.message_block) == 0)
+        if (RESIDENT_ALIGN_RESOURCE(g_boot_program.message_block) == 0)
         {
             break;
         }
 
         check_main_code();
         scene = new (0) BootScene;
-        func_4791F0(scene, scene_data);
+        lib_scene_load_data(scene, (ResidentResourceHeader*)scene_data);
         func_474010(scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
         delete[] scene_data;
         scene_data = 0;
@@ -420,9 +400,9 @@ void BootTitleMenu::update()
         float x;
         float y;
         get_cursor_position(&x, &y);
-        cursor = new (0) BootSelectionCursor;
-        func_467570(cursor, 1, 0, 0, x, y, 0.0f);
-        lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        cursor = new (0) LibSelectionCursor;
+        cursor->init(1, 0, 0, x, y, 0.0f);
+        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         step++;
         break;
     }
@@ -452,7 +432,7 @@ void BootTitleMenu::update()
             float x;
             float y;
             get_cursor_position(&x, &y);
-            cursor->func_00466E40(x, y, 0.05f);
+            cursor->set_move_target(x, y, 0.05f);
             pulse_up = 0;
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
@@ -469,7 +449,7 @@ void BootTitleMenu::update()
             float x;
             float y;
             get_cursor_position(&x, &y);
-            cursor->func_00466E40(x, y, 0.05f);
+            cursor->set_move_target(x, y, 0.05f);
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
 
@@ -515,7 +495,7 @@ void BootTitleMenu::update()
                 resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
             }
         }
-        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && func_00115270(g_resource_archive, 1) == 1)
+        else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && resident_archive_has_resource(g_resource_archive, 1) == 1)
         {
             queue_fade();
             resident_sound_stop_music(g_sound, 0x1E, -1);
@@ -528,7 +508,7 @@ void BootTitleMenu::update()
         check_main_code();
         g_boot_program.select_projection();
         step++;
-        func_473AA0(scene);
+        lib_scene_release_entries(scene);
         scene->destroy();
         scene = 0;
         cursor->destroy();
@@ -541,7 +521,7 @@ void BootTitleMenu::update()
         check_main_code();
         g_boot_program.select_projection();
         step++;
-        func_473AA0(scene);
+        lib_scene_release_entries(scene);
         scene->destroy();
         scene = 0;
         cursor->destroy();
@@ -555,7 +535,7 @@ void BootTitleMenu::update()
         check_main_code();
         g_boot_program.select_projection();
         step++;
-        func_473AA0(scene);
+        lib_scene_release_entries(scene);
         scene->destroy();
         scene = 0;
         cursor->destroy();
@@ -568,7 +548,7 @@ void BootTitleMenu::update()
         check_main_code();
         g_boot_program.select_projection();
         step++;
-        func_473AA0(scene);
+        lib_scene_release_entries(scene);
         scene->destroy();
         scene = 0;
         cursor->destroy();
@@ -582,7 +562,7 @@ void BootTitleMenu::update()
         check_main_code();
         g_boot_program.select_projection();
         step++;
-        func_473AA0(scene);
+        lib_scene_release_entries(scene);
         scene->destroy();
         scene = 0;
         cursor->destroy();
@@ -688,7 +668,7 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
     BootDrawSettings settings;
     s32 fill;
 
-    func_455DF0(bar->draw_buffer, 0, 1);
+    lib_draw_buffer_begin(bar->draw_buffer, 0, 1);
     init_draw_settings(&settings);
     settings.prim = 0xC;
     settings.unk02 = 0;
@@ -715,32 +695,32 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
     s32 height = bar->height;
     u32 color = bar->color;
     s32 depth = bar->mode;
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(-2.0f, -1.0f, (float)depth, 1.0f), normal, 0, 0x80301004);
     add_vertex(bar->draw_buffer, FieldVec4A(2.0f + width, -1.0f, (float)depth, 1.0f), normal, 0, 0x80301004);
     add_vertex(bar->draw_buffer, FieldVec4A(-2.0f, 1.0f + height, (float)depth, 1.0f), normal, 0, 0x80301004);
     add_vertex(bar->draw_buffer, FieldVec4A(2.0f + width, 1.0f + height, (float)depth, 1.0f), normal, 0, 0x80301004);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(0.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A((float)width, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(0.0f, 1.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A((float)width, 1.0f, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(0.0f, height - 1.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A((float)width, height - 1.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(0.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A((float)width, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(-1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(-1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(width - 1.0f, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, 0.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(width - 1.0f, (float)height, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(1.0f + width, (float)height, (float)depth, 1.0f), normal, 0, color);
-    func_4550F0(bar->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(bar->draw_buffer, 4);
     add_vertex(bar->draw_buffer, FieldVec4A(3.0f, 3.0f, (float)depth, 1.0f), normal, 0, color);
     float right = 3.0f + ((width - 6.0f) * fill) / (float)BOOT_PROGRESS_BAR_SCALE;
     add_vertex(bar->draw_buffer, FieldVec4A(right, 3.0f, (float)depth, 1.0f), normal, 0, color);
@@ -859,7 +839,7 @@ void BootScreenFade::on_packet_complete(u32 value)
 void BootScreenFade::render()
 {
     dma_pending = 1;
-    func_0011F510(packet, static_cast<LibDmaCallbacks*>(this));
+    resident_packet_queue_pending(packet, static_cast<LibDmaCallbacks*>(this));
 }
 
 /**
@@ -978,7 +958,7 @@ BootPacketBuffer::~BootPacketBuffer()
  * @brief Copy the display into ten strips and show them, fully opaque.
  * @param display Display to copy.
  */
-BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
+BootScreenFade::BootScreenFade(LibCameraContext* display)
 {
     s32 width;
     s32 height;
@@ -990,10 +970,11 @@ BootScreenFade::BootScreenFade(BootDimensionsACD0* display)
 
     for (i = 0; i < BOOT_FADE_STRIP_COUNT; i++)
     {
-        images[i] = new (0) BootImageStrip;
+        images[i] = new (0) LibImageCapture;
         images[i]->unk65 = 1;
-        func_4333A0(images[i], buffer + height * (i * BOOT_FADE_STRIP_WIDTH) * 3 / 16 * 16, (display->unk160 & 0x1FF) << 5,
-                      width / BOOT_FADE_STRIP_WIDTH, 1, i * BOOT_FADE_STRIP_WIDTH, 0, BOOT_FADE_STRIP_WIDTH, height);
+        lib_image_capture_store(images[i], buffer + height * (i * BOOT_FADE_STRIP_WIDTH) * 3 / 16 * 16,
+                                display->buffers[0].environment.frame.base_pointer << 5, width / BOOT_FADE_STRIP_WIDTH,
+                                GS_PSMCT24, i * BOOT_FADE_STRIP_WIDTH, 0, BOOT_FADE_STRIP_WIDTH, height);
         D_001B661C->append_node(images[i], -1);
     }
 
@@ -1041,7 +1022,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
 {
     BootDrawSettings settings;
 
-    func_455DF0(image->draw_buffer, 1, 1);
+    lib_draw_buffer_begin(image->draw_buffer, 1, 1);
     init_draw_settings(&settings);
     settings.unk06 = 0;
     settings.unk02 = 2;
@@ -1049,7 +1030,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     settings.unk05 = 1;
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
     func_455150(image->draw_buffer, &settings);
-    func_4550F0(image->draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(image->draw_buffer, 4);
 
     if (image->centered)
     {
@@ -1084,7 +1065,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
         settings.unk05 = 0;
         settings.texture_index = 1;
         func_455150(image->draw_buffer, &settings);
-        func_4550F0(image->draw_buffer, 4);
+        lib_draw_buffer_begin_primitive(image->draw_buffer, 4);
 
         if (image->centered)
         {
@@ -1134,14 +1115,14 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
 {
     BootDrawSettings settings;
 
-    func_455DF0(draw_buffer, 0, 1);
+    lib_draw_buffer_begin(draw_buffer, 0, 1);
     init_draw_settings(&settings);
     settings.unk06 = 0;
     settings.unk02 = 2;
     settings.prim = 0x5C;
     settings.unk05 = 1;
     func_455150(draw_buffer, &settings);
-    func_4550F0(draw_buffer, 4);
+    lib_draw_buffer_begin_primitive(draw_buffer, 4);
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
 
     if (centered)
@@ -1180,7 +1161,7 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
  * @param texture Texture resource.
  * @param palette Palette resource, or null.
  */
-void BootImage::set_texture(const BootTextureResource* texture, const BootTextureResource* palette)
+void BootImage::set_texture(const LibImageResource* texture, const LibImageResource* palette)
 {
     if (draw_buffer != 0)
     {
@@ -1195,20 +1176,20 @@ void BootImage::set_texture(const BootTextureResource* texture, const BootTextur
     draw_buffer = new (0) LibDrawBuffer;
     model = new (0) BootModel;
     draw_buffer->allocate_storage(1, 0x600, 2, 8);
-    func_455040(draw_buffer, texture);
+    lib_draw_buffer_add_texture(draw_buffer, texture);
 
     if (palette != 0)
     {
-        func_455040(draw_buffer, palette);
+        lib_draw_buffer_add_texture(draw_buffer, palette);
     }
 
-    const BootTextureImage* info = texture_image(texture);
+    const LibImageInfo* info = lib_image_info(texture);
     texture_width = 1 << info->width_log2;
     texture_height = 1 << info->height_log2;
 
     if (palette != 0)
     {
-        info = texture_image(palette);
+        info = lib_image_info(palette);
         palette_width = 1 << info->width_log2;
         palette_height = 1 << info->height_log2;
         has_palette = 1;
@@ -1280,7 +1261,7 @@ void BootGameLauncher::update()
             BootSealedRecord* record = &settings->sealed_record;
             memset_guess(record, 0, sizeof(BootSealedRecord));
             seal_record(record);
-            BootTrophyFlags* bits = &settings->trophy_flags;
+            LibTrophyFlags* bits = &settings->trophy_flags;
             s32 size = bits->size;
 
             for (s32 i = 0; i < size; i++)
@@ -1307,16 +1288,16 @@ void BootGameLauncher::update()
     case BOOT_LAUNCH_WAIT_TO_PLAY_MOVIE:
         if (++timer > BOOT_LAUNCH_MOVIE_START_DELAY_FRAMES)
         {
-            if (resident_archive_has_unit_error(g_resource_archive) == 0 && resident_archive_is_unit_ready(g_resource_archive) != 0 && resident_archive_is_busy(g_resource_archive) != 0)
+            if (!resident_archive_has_unit_error(g_resource_archive) && resident_archive_is_unit_ready(g_resource_archive) != 0 && resident_archive_is_busy(g_resource_archive) != 0)
             {
                 break;
             }
 
-            movie_heap = new (0) BootResident113E40;
-            movie_heap->unk2C = 0x40;
-            func_00113930(reinterpret_cast<ResidentHeap*>(movie_heap), BOOT_MOVIE_HEAP_SIZE);
+            movie_heap = new (0) ResidentHeap;
+            movie_heap->alignment = 0x40;
+            resident_heap_create_memory(movie_heap, BOOT_MOVIE_HEAP_SIZE);
             void* heap = resident_exchange_allocation_heap(movie_heap);
-            player = new (0) BootMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
+            player = new (0) LibMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
             resident_exchange_allocation_heap(heap);
             player->state->set_scale(1.0f, 1.0f);
             player->state->set_words(0x800, 0x800, 1);
@@ -1326,7 +1307,7 @@ void BootGameLauncher::update()
                 player->state->unk80D8 = 1;
             }
 
-            func_419A70(player, BOOT_LAUNCH_MOVIE_ID, 1);
+            lib_movie_play(player, BOOT_LAUNCH_MOVIE_ID, 1);
             step++;
         }
         else if (input->held & BOOT_BUTTON_START)
@@ -1345,7 +1326,7 @@ void BootGameLauncher::update()
 
         break;
     case BOOT_LAUNCH_STOP_MOVIE:
-        func_41A210(player);
+        lib_movie_stop(player);
         player->destroy();
         player = 0;
         step++;
@@ -1362,7 +1343,7 @@ void BootGameLauncher::update()
         step++;
         break;
     case BOOT_LAUNCH_HAND_OFF:
-        if (func_00102D00(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
+        if (resident_poll_resource_queue(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
         {
             lib_object_detach_owner(this);
             destroy();
@@ -1416,7 +1397,7 @@ void seal_record(BootSealedRecord* record)
         }
 
         record->key = resident_next_random_word();
-        record->checksum = func_457470(record->key * BOOT_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
+        record->checksum = lib_compute_checksum(record->key * BOOT_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
     }
     else if (record->sealed != BOOT_RECORD_SEALED)
     {

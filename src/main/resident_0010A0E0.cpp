@@ -1,3 +1,8 @@
+// TODO: The archive checks only match with the logical rebuild off; with it on, MWCC turns their || chains into
+// sltu compares the game doesn't have. Turning it off changes nothing else in this file, so I think the whole file
+// was built that way.
+#pragma opt_rebuildlogicals off
+
 #include "include_asm.h"
 #include "main/resident_0010A0E0.h"
 #include "main/resident_00101550.h"
@@ -6,9 +11,7 @@
 #include "main/func_0011EE00.h"
 #include "main/resident_data.h"
 #include "main/resident_00101260.h"
-
-/** Address bit that maps EE main memory uncached. */
-#define UNCACHED_SEGMENT 0x20000000
+#include "ee.h"
 
 /** EE interrupt controller cause for the end of vertical blank. */
 #define INTC_VBLANK_END 3
@@ -62,6 +65,24 @@ struct ThreadParam
 
 /** GS CSR; bit 13 is the field being displayed. */
 #define GS_CSR (*(volatile u64*)0x12001000)
+
+/** DMA channel 9, scratchpad RAM writes. */
+#define DMA_CHANNEL_TO_SPR 9
+
+/** Low byte of the DMAC control register D_CTRL. */
+typedef struct DmaControlLow
+{
+    u8 dma_enable : 1;
+
+    /** Release the bus between transfers (cycle stealing). */
+    u8 release : 1;
+
+    u8 memory_fifo_drain : 2;
+    u8 stall_source : 2;
+    u8 stall_drain : 2;
+} DmaControlLow;
+
+#define D_CTRL_BITS (*(volatile DmaControlLow*)0x1000E000)
 
 /** Position of the table of contents, in 2048-byte blocks. */
 #define RESIDENT_ARCHIVE_TOC_POSITION 0x400
@@ -119,6 +140,10 @@ extern u8 _gp;
 
 s32 CreateThread(ThreadParam* param);
 s32 TerminateThread(s32 thread_id);
+s32 iTerminateThread(s32 thread_id);
+s32 sceGsSyncPath(s32 mode, u16 timeout);
+s32 func_00114BD0(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread);
+void ExitThread(void);
 s32 DeleteThread(s32 thread_id);
 void ExitDeleteThread(void);
 void func_4DA730(struct ResidentSoundEmitter* emitter, float* position);
@@ -127,6 +152,17 @@ s32 AddIntcHandler(s32 cause, s32 (*handler)(s32 cause), s32 next);
 s32 RemoveIntcHandler(s32 cause, s32 handler_id);
 s32 EnableIntc(s32 cause);
 s32 DisableIntc(s32 cause);
+s32 AddDmacHandler(s32 channel, s32 (*handler)(s32 channel), s32 next);
+s32 RemoveDmacHandler(s32 channel, s32 handler_id);
+s32 EnableDmac(s32 channel);
+s32 DisableDmac(s32 channel);
+s32 func_00113EF0(s32 channel);
+
+/** Each DMA channel's queue, by channel number. */
+extern ResidentDmaQueue* D_001CF9C0[];
+
+void func_00115310(void* worker, u8* header, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
+                   s32 third_size, u8* fourth, s32 fourth_size);
 s32 DIntr(void);
 s32 EIntr(void);
 s32 sceDbcInit(void);
@@ -142,7 +178,7 @@ s32 sceVibGetProfile(s32 socket, u8* profile);
 s32 sceVibSetActParam(s32 socket, s32 profile_size, u8* profile, s32 data_size, u8* data);
 s32 AddIntcHandler(s32 cause, s32 (*handler)(s32), s32 next);
 s32 EnableIntc(s32 cause);
-s32 D_0011E9A0(s32 cause);
+s32 resident_input_vblank_handler(s32 cause);
 void func_4DD520(ResidentDisplay* display, s32 field);
 void func_4DCDA0(ResidentDisplay* display, s32 value);
 void func_00103510(ResidentResourceQueue* queue);
@@ -150,7 +186,7 @@ void resident_pad_update_vibration(ResidentInputSystem* input, s32 slot);
 void func_0011E9E0(ResidentInputSystem* input, s32 slot, s32 full);
 extern u32 D_001B641C;
 void func_00118880(void* worker, s32 command, s32 argument);
-void func_00114E00(void* value);
+bool func_00114E00(ResidentThread* thread);
 s32 iWakeupThread(s32 thread_id);
 s32 StartThread(s32 thread_id, void* argument);
 s32 SleepThread(void);
@@ -160,13 +196,7 @@ void func_0010BC50(void* packet, void* data);
 void func_0010BC90(void* packet, void* data);
 void func_0010BCD0(void* packet, void* data);
 void func_0010C6D0(s32 alarm_id, u16 time, void* common);
-s32 func_00108430(void* object, s32 arg1, void* callback, void* argument, s32 arg4, s32 command, s32 arg6, s32 arg7);
-s32 func_00107DD0(void* object, s32 arg1, void* callback, void* argument, s32 arg4, s32 command, s32 arg6, s32 arg7,
-                  u32 arg8, s32 arg9, s32 arg10);
 void func_0010A7A0(ResidentStreamThread* stream);
-void func_00107420(ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3);
-u32 func_00108A00(ResidentSoundStream* stream, u32* reply, s32 arg2, s32 arg3, s32 index, u32 arg5, u32 arg6, u32 arg7,
-                  u32 arg8, u32 arg9);
 void func_0010AA30(ResidentStreamThread* stream);
 void func_0010B600(ResidentStreamThread* stream, s32 value);
 typedef struct ResidentSpeakerAngles
@@ -174,11 +204,6 @@ typedef struct ResidentSpeakerAngles
     float angles[4];
 } ResidentSpeakerAngles;
 extern const ResidentSpeakerAngles D_00144260;
-typedef struct ConstantByteSetterOwnerresident_0010A0E0
-{
-    u8 unk00[0x1012];
-    u8 unk1012;
-} ConstantByteSetterOwnerresident_0010A0E0;
 
 
 
@@ -395,7 +420,7 @@ s32 func_0010A400(ResidentStreamThread* stream, s32 arg1, void* callback, void* 
  * @return The request result, or zero while a request is already running.
  */
 s32 func_0010A450(ResidentStreamThread* stream, s32 arg1, void* callback, void* argument, s32 value, s32 arg6,
-                  s32 arg10)
+                  u8 arg10)
 {
     if (stream->first_state != 0)
     {
@@ -610,13 +635,73 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010BBF0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010BC00);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010BC10);
+/**
+ * @brief SIF command 4 handler: pass 4 to the SIF command receiver.
+ * @param packet Command packet.
+ * @param data Handler data.
+ */
+void func_0010BC10(void* packet, void* data)
+{
+    ResidentListener* receiver = static_cast<ResidentListener*>(g_sif_command_receiver);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010BC50);
+    if (receiver)
+    {
+        receiver->notify((void*)4);
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010BC90);
+    ee_exit_handler();
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010BCD0);
+/**
+ * @brief SIF command 2 handler: pass 2 to the SIF command receiver.
+ * @param packet Command packet.
+ * @param data Handler data.
+ */
+void func_0010BC50(void* packet, void* data)
+{
+    ResidentListener* receiver = static_cast<ResidentListener*>(g_sif_command_receiver);
+
+    if (receiver)
+    {
+        receiver->notify((void*)2);
+    }
+
+    ee_exit_handler();
+}
+
+/**
+ * @brief SIF command 1 handler: pass 1 to the SIF command receiver.
+ * @param packet Command packet.
+ * @param data Handler data.
+ */
+void func_0010BC90(void* packet, void* data)
+{
+    ResidentListener* receiver = static_cast<ResidentListener*>(g_sif_command_receiver);
+
+    if (receiver)
+    {
+        receiver->notify((void*)1);
+    }
+
+    ee_exit_handler();
+}
+
+/**
+ * @brief SIF command 0 handler: pass 0 to the SIF command receiver.
+ * @param packet Command packet.
+ * @param data Handler data.
+ */
+void func_0010BCD0(void* packet, void* data)
+{
+    ResidentListener* receiver = static_cast<ResidentListener*>(g_sif_command_receiver);
+
+    if (receiver)
+    {
+        receiver->notify((void*)0);
+    }
+
+    ee_exit_handler();
+}
 
 /**
  * @brief Send queued SIF commands until the queue is empty or the IOP has no room.
@@ -809,7 +894,48 @@ void func_0010BFA0(ResidentSif* sif, s32 command, void* source, void* destinatio
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C0E0);
+/**
+ * @brief Check whether a request sent over the SIF link is still waiting for its reply.
+ * @param sif SIF link.
+ * @param handle Request handle.
+ * @return True while the request is outstanding.
+ */
+bool func_0010C0E0(ResidentSif* sif, u32 handle)
+{
+    if (!handle)
+    {
+        return false;
+    }
+
+    ResidentInterruptLock lock;
+    s32 index = sif->reply_index + 1;
+    s32 end = sif->unk1C;
+
+    if (index == 32)
+    {
+        index = 0;
+    }
+
+    for (;;)
+    {
+        if (index == end)
+        {
+            break;
+        }
+
+        if (sif->replies[index].unk10 == handle)
+        {
+            return true;
+        }
+
+        if (++index == 32)
+        {
+            index = 0;
+        }
+    }
+
+    return false;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C200);
 
@@ -838,7 +964,17 @@ s32 func_0010C640(ResidentSif* sif)
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C6D0);
+/**
+ * @brief Alarm handler that wakes the thread waiting on it.
+ * @param alarm_id Alarm.
+ * @param time Time the alarm fired.
+ * @param common ID of the thread to wake.
+ */
+void func_0010C6D0(s32 alarm_id, u16 time, void* common)
+{
+    iWakeupThread((s32)common);
+    ee_exit_handler();
+}
 
 /**
  * @brief Set up the SIF link: carve its buffers, register its SIF command handlers and start its thread.
@@ -1554,12 +1690,6 @@ s32 func_0010EFD0(ResidentSound* sound)
 }
 
 extern void func_0010EE60(void* response, ResidentRequestSlot* slot);
-extern s32 func_00108000(void* context, s32 first, void (*callback)(void*, ResidentRequestSlot*),
-                         ResidentRequestSlot* slot, s32 selected, s32 value, s32 arg3, s32 zero, u32 packed,
-                         u32 placement, u32 room);
-extern s32 func_00108220(void* context, s32 first,
-    void (*callback)(void*, ResidentRequestSlot*), ResidentRequestSlot* slot,
-    s32 selected, s32 value, s32 arg3, s32 zero, s32 packed);
 
 /**
  * @brief Find a free sound slot, starting at the cursor and advancing it past every slot looked at.
@@ -1753,7 +1883,23 @@ void func_00110520(ResidentSound* sound, s32 identifier, s32 volume, s32 second,
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001105E0);
+/**
+ * @brief Clear the target of every active request slot aimed at an object, with interrupts disabled.
+ * @param sound Sound system.
+ * @param target Object to forget.
+ */
+extern "C" void func_001105E0(ResidentSound* sound, ResidentSoundEmitter* target)
+{
+    ResidentInterruptLock lock;
+
+    for (s32 i = 0; i < 60; i++)
+    {
+        if (sound->slots[i].active && sound->slots[i].target == target)
+        {
+            sound->slots[i].target = 0;
+        }
+    }
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001106B0);
 
@@ -2185,7 +2331,7 @@ void func_00112D80(ResidentSound* sound)
 {
     sound->stream = func_00101280(resident_get_system());
     sound->archive = resident_get_archive(resident_get_system());
-    sound->resource_queue = func_00101250(resident_get_system());
+    sound->resource_queue = resident_system_get_resource_queue(resident_get_system());
     s32 request = func_00109000(sound->stream, 0, 0, 0, 0x18000, 0x3000, 0x1000, 3, 1);
 
     while (func_0010C0E0(&D_001CC590, request))
@@ -2497,7 +2643,7 @@ u32 func_001138B0(ResidentHeap* heap, void* address, u32 size)
  * @param size Usable size in bytes.
  * @return Nonzero on success, zero when the memory can't be allocated.
  */
-u32 func_00113930(ResidentHeap* heap, u32 size)
+u32 resident_heap_create_memory(ResidentHeap* heap, u32 size)
 {
     heap->free_anchor = &heap->head;
     heap->memory = malloc_guess(size + heap->alignment + 0x20);
@@ -2643,7 +2789,7 @@ u32 func_00113C40(ResidentHeap* heap, u32 size)
         return 0;
     }
 
-    if (!func_00113930(child, size))
+    if (!resident_heap_create_memory(child, size))
     {
         delete child;
         return 0;
@@ -2679,40 +2825,158 @@ void func_00113EA0(void* object)
 {
 }
 
-typedef struct ResidentPolledFlag13EB0
+/**
+ * @brief Report whether the queue's transfer is running, or wait until it finishes.
+ * @param queue DMA queue.
+ * @param poll Nonzero returns the busy flag straight away; zero waits until the transfer finishes.
+ * @return The busy flag when polling, otherwise zero.
+ */
+u32 func_00113EB0(ResidentDmaQueue* queue, s32 poll)
 {
-    u8 pad00[0x1011];
-    volatile u8 flag;
-} ResidentPolledFlag13EB0;
+    if (poll != 0)
+    {
+        return queue->busy;
+    }
 
-/** Return the state byte or wait for it to clear when requested. */
-u32 func_00113EB0(void* object, s32 wait)
-{
-    ResidentPolledFlag13EB0* state = (ResidentPolledFlag13EB0*)object;
-    if (wait != 0) {
-        return state->flag;
+    while (queue->busy != 0)
+    {
     }
-    while (state->flag != 0) {
-    }
+
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00113EF0);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00113FD0);
-
-/** Store 0x1 at receiver offset 0x1012. */
-void func_001140F0(void* object)
+/**
+ * @brief Finish the queue's current submission, then start the next one unless the queue is empty or paused.
+ * @param queue DMA queue.
+ */
+static inline void dma_queue_advance(ResidentDmaQueue* queue)
 {
-    ConstantByteSetterOwnerresident_0010A0E0* receiver = (ConstantByteSetterOwnerresident_0010A0E0*)object;
-    receiver->unk1012 = 0x1;
+    if (queue->current)
+    {
+        queue->current->complete_dma(queue->channel);
+        queue->current = 0;
+    }
+
+    if (queue->write_index == queue->read_index)
+    {
+        queue->busy = 0;
+    }
+    else if (!queue->unk1012)
+    {
+        queue->current = queue->entries[queue->read_index];
+        s32 index = queue->read_index;
+
+        if (++queue->read_index >= 0x400)
+        {
+            queue->read_index = 0;
+        }
+
+        queue->entries[index]->submit_dma(queue->channel);
+    }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114100);
+/**
+ * @brief DMAC interrupt handler: finish the channel's current submission and start the next one.
+ * @param channel DMA channel.
+ * @return One.
+ */
+s32 func_00113EF0(s32 channel)
+{
+    dma_queue_advance(D_001CF9C0[channel]);
+    ee_exit_handler();
+    return 1;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001142C0);
+/**
+ * @brief Clear the queue's unk1012 pause flag and restart it, if it was paused.
+ * @param queue DMA queue.
+ */
+extern "C" void func_00113FD0(ResidentDmaQueue* queue)
+{
+    if (!queue->unk1012)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114330);
+    ResidentInterruptLock lock;
+    queue->unk1012 = 0;
+    queue->current = 0;
+    dma_queue_advance(queue);
+}
+
+/**
+ * @brief Set the queue's unk1012 flag.
+ * @param queue DMA queue.
+ */
+void func_001140F0(ResidentDmaQueue* queue)
+{
+    queue->unk1012 = 1;
+}
+
+/**
+ * @brief Queue a submission, and start it straight away if the channel is idle.
+ * @param submission Transfer to queue.
+ * @return False when the queue is full.
+ */
+bool ResidentDmaQueue::push(DmaSubmission* submission)
+{
+    ResidentInterruptLock lock;
+    s32 next = write_index + 1;
+
+    if (next >= 0x400)
+    {
+        next = 0;
+    }
+
+    if (next == read_index)
+    {
+        return false;
+    }
+
+    entries[write_index] = submission;
+
+    if (++write_index >= 0x400)
+    {
+        write_index = 0;
+    }
+
+    if (!busy)
+    {
+        busy = 1;
+        current = 0;
+        dma_queue_advance(this);
+    }
+
+    return true;
+}
+
+/** @brief Disable the channel and remove its DMAC handler. */
+ResidentDmaQueue::~ResidentDmaQueue()
+{
+    DisableDmac(channel);
+    RemoveDmacHandler(channel, handler_id);
+}
+
+/**
+ * @brief Register the queue as its channel's and install the channel's DMAC handler.
+ * @param channel DMA channel number.
+ */
+ResidentDmaQueue::ResidentDmaQueue(s32 channel)
+{
+    D_001CF9C0[channel] = this;
+    this->channel = channel;
+    handler_id = AddDmacHandler(channel, func_00113EF0, 0);
+    EnableDmac(this->channel);
+    busy = 0;
+    unk1012 = 0;
+    write_index = 0;
+    read_index = 0;
+
+    if (channel == DMA_CHANNEL_TO_SPR)
+    {
+        D_CTRL_BITS.release = 1;
+    }
+}
 
 s32 func_001143E0(double left, double right)
 {
@@ -2733,7 +2997,73 @@ void func_00114450(void* object)
 {
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114460);
+/**
+ * @brief Start a thread's kernel thread, passing the thread as its argument.
+ * @param thread Thread to start.
+ * @return True on success.
+ */
+static inline bool thread_start(ResidentThread* thread)
+{
+    if (StartThread(thread->thread_id, thread) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Stop a thread: exit when it is the calling thread, otherwise terminate it, from interrupt context when
+ * interrupts are disabled.
+ * @param thread Thread to stop.
+ * @return True on success.
+ */
+static inline bool thread_stop(ResidentThread* thread)
+{
+    if (ee_get_status() & EE_STATUS_EIE)
+    {
+        if (thread->thread_id == GetThreadId())
+        {
+            ExitThread();
+            return true;
+        }
+
+        if (TerminateThread(thread->thread_id) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    if (iTerminateThread(thread->thread_id) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Start a time-sliced thread and add it to the scheduler, stopping it again when the scheduler is full.
+ * @param thread Thread to start.
+ * @return One on success, otherwise zero.
+ */
+extern "C" s32 func_00114460(ResidentTimeSlicedThread* thread)
+{
+    if (thread_start(thread))
+    {
+        if (func_00114BD0(&D_001CFA00, thread))
+        {
+            return 1;
+        }
+
+        (void)thread_stop(thread);
+        return 0;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Set a time-sliced thread's slice and create it at the normal resident priority.
@@ -2751,7 +3081,25 @@ s32 func_00114560(ResidentTimeSlicedThread* thread, s16 time_slice, s32 stack_si
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114580);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114650);
+/**
+ * @brief Start a thread, or stop it (exiting when it is the calling thread).
+ * @param object Thread.
+ * @param run Nonzero to start it; stored in the sound system's unk351.
+ */
+void func_00114650(void* object, u8 run)
+{
+    ResidentThread* thread = (ResidentThread*)object;
+
+    func_00101270(&g_system)->unk351 = run;
+
+    if (run)
+    {
+        thread->start();
+        return;
+    }
+
+    (void)thread_stop(thread);
+}
 
 /**
  * @brief Stop handing out time slices, returning the running thread to the normal priority.
@@ -2819,7 +3167,23 @@ void func_00114790(ResidentThreadScheduler* scheduler)
     scheduler->active = 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114870);
+/**
+ * @brief Alarm handler that ends the running time slice while the scheduler is active.
+ * @param alarm_id Alarm.
+ * @param time Time the alarm fired.
+ * @param common Scheduler.
+ */
+void func_00114870(s32 alarm_id, u16 time, void* common)
+{
+    ResidentThreadScheduler* scheduler = (ResidentThreadScheduler*)common;
+
+    if (scheduler->active)
+    {
+        func_00114790(scheduler);
+    }
+
+    ee_exit_handler();
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001148B0);
 
@@ -2834,7 +3198,50 @@ s32 func_00114DD0(const void* object)
     return iWakeupThread(receiver->unk08) >= 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114E00);
+/**
+ * @brief Wake a sleeping thread.
+ * @param thread_id Thread ID.
+ * @return True on success.
+ */
+static inline bool thread_wakeup(s32 thread_id)
+{
+    if (WakeupThread(thread_id) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Wake a sleeping thread from interrupt context.
+ * @param thread_id Thread ID.
+ * @return True on success.
+ */
+static inline bool thread_iwakeup(s32 thread_id)
+{
+    if (iWakeupThread(thread_id) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Wake a thread, with the interrupt-context call when interrupts are disabled.
+ * @param thread Thread to wake.
+ * @return True on success.
+ */
+bool func_00114E00(ResidentThread* thread)
+{
+    if (ee_get_status() & EE_STATUS_EIE)
+    {
+        return thread_wakeup(thread->thread_id);
+    }
+
+    return thread_iwakeup(thread->thread_id);
+}
 
 /** Return whether the resident thread sleep request succeeds. */
 s32 func_00114E80(void)
@@ -2931,7 +3338,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001151B0)
  * @param index Resource index, counted from the sixth entry.
  * @return One when the resource has a size, zero when it is empty, or two when the table isn't decrypted.
  */
-s32 func_00115270(const ResidentArchive* archive, s32 index)
+s32 resident_archive_has_resource(const ResidentArchive* archive, s32 index)
 {
     if (archive->table_tag != RESIDENT_ARCHIVE_TABLE_TAG)
     {
@@ -2967,7 +3374,24 @@ void resident_archive_set_navigator_files(ResidentArchive* archive, u8* first, s
     archive->navigator_file_sizes[2] = third_size;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_set_system_files);
+/**
+ * @brief Hand the system files and their icon header to the hard disk worker.
+ * @param archive Resource archive.
+ * @param header Icon header.
+ * @param first First file.
+ * @param first_size Size of first.
+ * @param second Second file.
+ * @param second_size Size of second.
+ * @param third Third file.
+ * @param third_size Size of third.
+ * @param fourth Fourth file.
+ * @param fourth_size Size of fourth.
+ */
+void resident_archive_set_system_files(ResidentArchive* archive, u8* header, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
+                                       s32 third_size, u8* fourth, s32 fourth_size)
+{
+    func_00115310(archive->unkEC, header, first, first_size, second, second_size, third, third_size, fourth, fourth_size);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115310);
 
@@ -2981,7 +3405,25 @@ void resident_archive_clear_unit_error(ResidentArchive* archive)
     archive->unk6c = 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_has_unit_error);
+/**
+ * @brief Report whether a hard disk unit error is pending.
+ * @param archive Resource archive.
+ * @return Whether an error is pending.
+ */
+static inline bool archive_unit_error_pending(const ResidentArchive* archive)
+{
+    return archive->unk140 || archive->unk6c;
+}
+
+/**
+ * @brief Report whether a hard disk unit error is pending.
+ * @param archive Resource archive.
+ * @return Whether an error is pending.
+ */
+bool resident_archive_has_unit_error(const ResidentArchive* archive)
+{
+    return archive_unit_error_pending(archive);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_query_unit);
 
@@ -3015,7 +3457,20 @@ s32 resident_archive_get_copy_remaining(const ResidentArchive* archive)
     return archive->copy_remaining;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_is_unit_ready);
+/**
+ * @brief Report whether the unit is ready, with no error pending.
+ * @param archive Resource archive.
+ * @return Nonzero when the unit is ready.
+ */
+s32 resident_archive_is_unit_ready(const ResidentArchive* archive)
+{
+    if (archive_unit_error_pending(archive))
+    {
+        return 0;
+    }
+
+    return archive->unit_ready;
+}
 
 /**
  * @brief Set the buffer the install copies through.
@@ -3100,7 +3555,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118A70)
 
 void func_00118B80(void* object, void* value)
 {
-    func_00114E00(value);
+    func_00114E00((ResidentThread*)value);
 }
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118BA0);
@@ -3109,7 +3564,37 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118C70)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00119650);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011B5C0);
+/**
+ * @brief Disc command timeout alarm: count a tick, and signal the timeout semaphore once the count runs out or the
+ * command finished; otherwise set the alarm again.
+ * @param alarm_id Alarm.
+ * @param time Time the alarm fired.
+ * @param common Resource archive.
+ */
+extern "C" void func_0011B5C0(s32 alarm_id, u16 time, void* common)
+{
+    ResidentArchive* archive = (ResidentArchive*)common;
+
+    archive->timeout_ticks++;
+    archive->unk70++;
+    archive->timeout_alarm = -1;
+
+    if (archive->timeout_ticks >= 0x708)
+    {
+        archive->timed_out = 1;
+        (void)archive->timeout_semaphore.isignal();
+    }
+    else if (archive->unk68)
+    {
+        (void)archive->timeout_semaphore.isignal();
+    }
+    else
+    {
+        archive->timeout_alarm = resident_system_iset_alarm(resident_get_system(), 0x106, func_0011B5C0, archive);
+    }
+
+    ee_exit_handler();
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011B6A0);
 
@@ -3140,7 +3625,18 @@ u32 func_0011C6C0(const ResidentArchive* archive, s32 key)
     return archive->resource_positions[key] & 0x00FFFFFF;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C6E0);
+/**
+ * @brief Report whether the archive is idle: unk5C, unk5D and unk6B all clear, read under its semaphore.
+ * @param archive Resource archive.
+ * @return True when all three are clear.
+ */
+extern "C" bool func_0011C6E0(ResidentArchive* archive)
+{
+    (void)archive->semaphore.wait();
+    bool active = archive->unk5c || archive->unk5d || archive->unk6b;
+    (void)archive->semaphore.signal();
+    return !active;
+}
 
 /** Return bit 0 of the word at receiver offset 0xCC. */
 s32 func_0011C7C0(const void* object)
@@ -3149,7 +3645,57 @@ s32 func_0011C7C0(const void* object)
     return (values[0x33] & 1) != 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C7D0);
+/**
+ * @brief Read the archive's unk5E flag under its semaphore.
+ * @param archive Resource archive.
+ * @return The flag.
+ */
+static inline u8 archive_read_unk5e(ResidentArchive* archive)
+{
+    (void)archive->semaphore.wait();
+    u8 value = archive->unk5e;
+    (void)archive->semaphore.signal();
+    return value;
+}
+
+/**
+ * @brief Report whether the archive's unk5E flag is clear.
+ * @param archive Resource archive.
+ * @return True when it is clear.
+ */
+static inline bool archive_unk5e_clear(ResidentArchive* archive)
+{
+    return !archive_read_unk5e(archive);
+}
+
+/**
+ * @brief Get unk70 when unk12186 is set, or a read is in progress with unk5E clear; otherwise zero.
+ * @param archive Resource archive.
+ * @return unk70, or zero.
+ */
+extern "C" s32 func_0011C7D0(ResidentArchive* archive)
+{
+    u8 ready = archive->unk12186;
+
+    if (!ready)
+    {
+        u8 reading = archive->read_busy;
+
+        if (reading)
+        {
+            reading = archive_unk5e_clear(archive);
+        }
+
+        ready = reading;
+    }
+
+    if (ready)
+    {
+        return archive->unk70;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Get the size of a resource, in whole 2048-byte blocks.
@@ -3272,7 +3818,29 @@ void func_0011D950(ResidentArchive* archive)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_get_clock);
+/**
+ * @brief Read the clock.
+ * @param archive Resource archive.
+ * @param clock Receives the clock bytes.
+ * @return Nonzero on success.
+ */
+s32 resident_archive_get_clock(ResidentArchive* archive, ResidentClock* clock)
+{
+    s32 result;
+
+    (void)archive->semaphore.wait();
+    clock->status = archive->clock.status;
+    clock->second = archive->clock.second;
+    clock->minute = archive->clock.minute;
+    clock->hour = archive->clock.hour;
+    clock->pad = archive->clock.pad;
+    clock->day = archive->clock.day;
+    clock->month = archive->clock.month;
+    clock->year = archive->clock.year;
+    result = archive->unkc0;
+    (void)archive->semaphore.signal();
+    return result;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DA80);
 
@@ -3284,7 +3852,20 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DD40)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__19ResidentClass14FC60Fv);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DE00);
+/**
+ * @brief Wait for a GS path to finish, holding the input system's semaphore.
+ * @param object Input system.
+ * @param first sceGsSyncPath mode.
+ * @param second sceGsSyncPath timeout.
+ * @return sceGsSyncPath's result.
+ */
+s32 resident_sync_gs_path(void* object, s32 first, u16 second)
+{
+    ResidentInputSystem* input = (ResidentInputSystem*)object;
+    ResidentSemaphoreLock lock(&input->semaphore);
+
+    return sceGsSyncPath(first, second);
+}
 
 /**
  * @brief Attach the display whose field the vblank handler updates.
@@ -3701,7 +4282,7 @@ void resident_input_handle_vblank(ResidentInputSystem* input)
         }
     }
 
-    func_00103510(func_00101250(resident_get_system()));
+    func_00103510(resident_system_get_resource_queue(resident_get_system()));
     input->vblank_wait_count++;
     input->vblank_count++;
     func_00114DD0(&input->poll_thread);
@@ -3841,7 +4422,33 @@ void resident_pad_update(ResidentInputSystem* input)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011E970);
+/**
+ * @brief Body of the pad polling thread: on every wakeup, read the pads.
+ * @param thread Pad polling thread.
+ */
+extern "C" void func_0011E970(ResidentClass14FC60* thread)
+{
+    for (;;)
+    {
+        func_00114E80();
+        thread->polling = 1;
+        resident_pad_update(thread->input);
+        thread->polling = 0;
+    }
+}
+
+/**
+ * @brief Vblank interrupt handler: let the scheduler run, then update the input system.
+ * @param cause Interrupt cause.
+ * @return Zero.
+ */
+s32 resident_input_vblank_handler(s32 cause)
+{
+    func_00114720(&D_001CFA00);
+    resident_input_handle_vblank(resident_system_get_input(&g_system));
+    ee_exit_handler();
+    return 0;
+}
 
 /**
  * @brief Clear a pad's buttons, sticks and pressures, and wait a couple of polls before reading it again.
@@ -3929,7 +4536,7 @@ void func_0011EA80(ResidentInputSystem* input)
         input->large_motor[slot] = 0;
     }
 
-    input->vblank_handler = AddIntcHandler(INTC_VBLANK_S, D_0011E9A0, 0);
+    input->vblank_handler = AddIntcHandler(INTC_VBLANK_S, resident_input_vblank_handler, 0);
     EnableIntc(INTC_VBLANK_S);
     input->hook = 0;
     input->display = 0;

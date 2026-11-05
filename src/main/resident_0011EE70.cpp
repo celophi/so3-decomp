@@ -1,25 +1,11 @@
-#include "include_asm.h"
 #include "main/resident_0011EE70.h"
 #include "main/resident_00101260.h"
 #include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
+#include "ee.h"
+#include "gs.h"
+#include "sdk/main/libdma_0012B2C8.h"
 #include "vu0.h"
-
-enum
-{
-    GIF_REGISTER_PRIM = 0x0,
-    GIF_REGISTER_RGBAQ = 0x1,
-    GIF_REGISTER_XYZ2 = 0x5,
-    GIF_REGISTER_AD = 0xE
-};
-
-enum
-{
-    GS_REGISTER_PRIM = 0x00,
-    GS_REGISTER_TEX0_2 = 0x07,
-    GS_REGISTER_ALPHA_1 = 0x42,
-    GS_REGISTER_ALPHA_2 = 0x43
-};
 
 /** GIF tag for one A+D register write: NLOOP 1, EOP clear, NREG 1. */
 #define GIF_TAG_AD_WRITE 0x1000000000000001ULL
@@ -33,6 +19,10 @@ enum
 /** GIF tag for one packed rectangle: NLOOP 1, register list mode, NREG 6. */
 #define GIF_TAG_RECTANGLE 0x6400000000000001ULL
 
+#define VIF_CODE_FLUSH 0x11000000
+
+#define VIF_CODE_MSKPATH3 0x06000000
+
 /** GS PRIM: antialiased line drawn with the second drawing context. */
 #define GS_PRIM_LINE 0x281
 
@@ -41,9 +31,6 @@ enum
 
 /** GS PRIM alpha blending enable bit. */
 #define GS_PRIM_ALPHA_BLEND 0x40
-
-/** Centre of the GS primitive coordinate space, in whole pixels. */
-#define GS_COORDINATE_CENTRE 0x800
 
 /** Budget one slot's random bank pick costs. */
 #define SOUND_BANK_PICK_COST 300
@@ -72,6 +59,10 @@ void func_4CFB20(ResidentMatrix* output, const ResidentMatrix* input, float scal
                  float y_offset);
 void func_4CFC50(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
                  float y_offset);
+void func_4D9E70(ResidentClass14FD30Base* object);
+void func_4CCCF0(const ResidentMatrix* source, ResidentVector4* output);
+void func_4CBAC0(ResidentVector4* output, const ResidentMatrix* input);
+float func_4E28D0(ResidentClass14FD30Base* camera);
 }
 
 /**
@@ -409,7 +400,7 @@ void resident_packet_add_line(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s3
  * @param packet Packet whose data is queued.
  * @param completion Object notified when the transfer finishes, or null.
  */
-void func_0011F510(ResidentPacket* packet, void* completion)
+void resident_packet_queue_pending(ResidentPacket* packet, void* completion)
 {
     if (resident_packet_space(packet, 0) != packet->unk0c)
     {
@@ -417,9 +408,64 @@ void func_0011F510(ResidentPacket* packet, void* completion)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F580);
+/**
+ * @brief End the packet's pending data with a GIF end tag and send it straight to the GS on DMA channel 2.
+ * @param packet Packet buffer to send.
+ */
+void func_0011F580(ResidentPacket* packet)
+{
+    u64* cursor = (u64*)resident_packet_space(packet, 1);
+    u32 count;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_0011F640);
+    if (cursor == 0)
+    {
+        return;
+    }
+
+    if ((u8*)cursor == packet->unk0c)
+    {
+        return;
+    }
+
+    *cursor++ = GIF_TAG_END;
+    *cursor++ = 0;
+    ee_sync();
+    count = (u32)((u8*)cursor - packet->unk0c) >> 4;
+    sceDmaSendN(sceDmaGetChan(2), (void*)((u32)packet->unk0c & 0x0FFFFFFF), count);
+    packet->unk08 = (u8*)cursor;
+    packet->unk0c = (u8*)cursor;
+}
+
+/**
+ * @brief Write a GIF end tag and a VIF FLUSH + MSKPATH3 (unmask) pair after the pending data, without advancing the cursor.
+ * @param packet Packet to terminate.
+ * @return Quadwords from the pending data's start through the end, or zero when nothing is pending.
+ */
+u32 func_0011F640(ResidentPacket* packet)
+{
+    u64* cursor = (u64*)resident_packet_space(packet, 2);
+    u32 count;
+
+    if (cursor == 0)
+    {
+        return 0;
+    }
+
+    if ((u8*)cursor == packet->unk0c)
+    {
+        return 0;
+    }
+
+    *cursor++ = GIF_TAG_END;
+    *cursor++ = 0;
+    *cursor++ = 0;
+    ((u32*)cursor)[0] = VIF_CODE_FLUSH;
+    ((u32*)cursor)[1] = VIF_CODE_MSKPATH3;
+    cursor++;
+    count = (u32)((u8*)cursor - packet->unk0c) >> 4;
+    ee_sync();
+    return count;
+}
 
 /**
  * @brief Write a GIF end tag after the pending data without advancing the cursor.
@@ -456,7 +502,34 @@ u32 func_0011F760(const void* object)
     return words[3] & 0x0FFFFFFF;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", resident_packet_submit);
+/**
+ * @brief End the packet's pending data with a GIF end tag and send it on DMA channel 2.
+ * @param packet Packet buffer to submit.
+ * @param notification Object notified when the transfer finishes, or null.
+ */
+void resident_packet_submit(ResidentPacket* packet, void* notification)
+{
+    u64* cursor = (u64*)resident_packet_space(packet, 1);
+    u32 count;
+
+    if (cursor == 0)
+    {
+        return;
+    }
+
+    if ((u8*)cursor == packet->unk0c)
+    {
+        return;
+    }
+
+    *cursor++ = GIF_TAG_END;
+    *cursor++ = 0;
+    count = (u32)((u8*)cursor - packet->unk0c) >> 4;
+    ee_sync();
+    func_4DC4F0(D_001B65DC, 2, 0, (u32)packet->unk0c & 0x0FFFFFFF, count, notification);
+    packet->unk08 = (u8*)cursor;
+    packet->unk0c = (u8*)cursor;
+}
 
 /**
  * @brief Advance the packet cursor to the next 16-byte boundary.
@@ -522,7 +595,7 @@ void func_0011F940(ResidentClass14FC90* set)
 {
     if (set->loading == 0)
     {
-        resident_cancel_resource_requests(func_00101250(resident_get_system()), 0, 0, 6, 0xFFFFFFFF, 0);
+        resident_cancel_resource_requests(resident_system_get_resource_queue(resident_get_system()), 0, 0, 6, 0xFFFFFFFF, 0);
         set->variants[0] = -1;
         set->variants[1] = -1;
         set->variants[2] = -1;
@@ -643,7 +716,7 @@ void ResidentClass14FC90::func_00104770()
         return;
     }
 
-    queue = func_00101250(resident_get_system());
+    queue = resident_system_get_resource_queue(resident_get_system());
     sound = func_00101270(resident_get_system());
 
     if (upload_lists == 0)
@@ -1346,7 +1419,125 @@ ResidentClass14FD30* func_00120A70(ResidentClass14FCB0* list, u32 mask, const Re
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00104770__19ResidentClass14FCB0Fv);
+/**
+ * @brief Advance an object's image time.
+ * @param object Object to advance.
+ * @param ticks Frame ticks to add.
+ */
+static inline void advance_elapsed(ResidentClass14FD30* object, float ticks)
+{
+    object->elapsed += ticks;
+}
+
+/**
+ * @brief Update every node: follow targets, advance the images and rebuild hit boxes.
+ */
+void ResidentClass14FCB0::func_00104770()
+{
+    ResidentClass14FA30* link;
+
+    if (unk8c)
+    {
+        unk8c--;
+    }
+
+    link = &sentinel;
+
+    for (;;)
+    {
+        ResidentClass14FD30* node;
+        ResidentHitBox* box;
+
+        link = link->next;
+
+        if (at_list_end(&sentinel, link))
+        {
+            break;
+        }
+
+        node = static_cast<ResidentClass14FD30*>(link);
+
+        if (node->follow_position)
+        {
+            ResidentVector4 position;
+            ResidentVector4 orientation;
+            ResidentClass14FD30Base* source;
+
+            if (!node->position_source->matrix_ready)
+            {
+                node->position_source->update_transform_matrix();
+            }
+
+            source = node->position_source;
+            position.x = source->transform.rows[0].w;
+            position.y = source->transform.rows[1].w;
+            position.z = source->transform.rows[2].w;
+            position.w = 1.0f;
+            func_4CCCF0(&source->transform, &orientation);
+            node->set_translation_vector(&position);
+            node->set_orientation(&orientation);
+        }
+
+        if (node->follow_camera)
+        {
+            ResidentVector4 position;
+            ResidentVector4 orientation;
+            ResidentClass14FD30Base* source;
+
+            if (!node->camera->matrix_ready)
+            {
+                node->camera->update_transform_matrix();
+            }
+
+            source = node->camera;
+            position.x = source->transform.rows[0].w;
+            position.y = source->transform.rows[1].w;
+            position.z = source->transform.rows[2].w;
+            position.w = 1.0f;
+            func_4CBAC0(&orientation, &source->transform);
+            node->set_translation_vector(&position);
+            node->set_orientation(&orientation);
+
+            if (!node->unk2c5)
+            {
+                node->unk218 = func_4E28D0(node->camera) * 2.0f;
+            }
+        }
+
+        advance_elapsed(node, g_frame_ticks);
+
+        if (node->channel)
+        {
+            s32 frame = node->elapsed;
+
+            node->channel->unk48 = frame;
+        }
+
+        if (!node->faces_target)
+        {
+            if (node->transform_dirty)
+            {
+                func_001210B0(node, 0);
+            }
+        }
+        else
+        {
+            node->matrix_ready = 0;
+            node->unk51 = 0;
+        }
+
+        box = node->hit_volume;
+
+        if (box && box->transform_dirty)
+        {
+            box->update_transform_matrix();
+            box->unk20e_0 = 1;
+            box->unk20e_1 = 0;
+            ee_transpose_matrix(&box->transposed_transform, &box->transform);
+            func_4D9E70(box);
+        }
+    }
+}
 
 /**
  * @brief Copy the orientation quaternion.
@@ -1379,7 +1570,23 @@ void ResidentClass14FCB0::remove_node(void* object)
     ResidentObjectList::remove_node(object);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0011EE70", func_00120F20);
+/**
+ * @brief Rebuild the hit box's matrices from its transform: the transpose, then the inverse from it.
+ * @param object Object whose hit box is updated.
+ */
+void func_00120F20(ResidentClass14FD30* object)
+{
+    ResidentHitBox* box = object->hit_volume;
+
+    if (box)
+    {
+        box->update_transform_matrix();
+        box->unk20e_0 = 1;
+        box->unk20e_1 = 0;
+        ee_transpose_matrix(&box->transposed_transform, &box->transform);
+        func_4D9E70(box);
+    }
+}
 
 /**
  * @brief Turn the image animation on or off, rebuilding the image channel while the object is registered.

@@ -1543,7 +1543,7 @@ void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
             x = 48.0f + (155.0f + 34.0f * column);
         }
 
-        func_00466E40(&movement, x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
+        movement.set_move_target(x, 16.0f + (110.0f + 28.0f * row), 1.0f / 15.0f);
         object->selected_grid_cell = value;
         field_play_menu_sound(reinterpret_cast<FieldMenuManager*>(D_001B643C->callbacks), 0);
     }
@@ -2011,7 +2011,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
     grid_marker = new (0) LibClass175030;
     lib_moving_widget_init_position(grid_marker, 0.0f, 0.0f);
     lib_container_attach_widget(unk10, grid_marker);
-    grid_marker->func_00466E40(command_x - 6.0f, 214.0f, 0.1f);
+    grid_marker->set_move_target(command_x - 6.0f, 214.0f, 0.1f);
     status_select_alphanumeric_grid(this, grid_mode);
     lib_text_set_resource(surname_caption, func_slot54(), selection->slots[selection->current] + STATUS_TEXT_CHARACTER_SURNAME_BASE, 0);
     const s8* saved = reinterpret_cast<const s8*>(static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name);
@@ -2469,7 +2469,7 @@ u8 StatusCharacterWindow::func_slotb8()
         const u8* end = reinterpret_cast<const u8*>(&section->checksum);
         u8 maximum;
 
-        if (checksum != func_00457470(section->seed, begin, end - begin))
+        if (checksum != lib_compute_checksum(section->seed, begin, end - begin))
         {
             maximum = 0;
         }
@@ -2701,7 +2701,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     u8* variant_end = reinterpret_cast<u8*>(&variants->checksum);
     u8 variant;
 
-    if (variants->checksum != func_00457470(variants->seed, variant_begin, variant_end - variant_begin))
+    if (variants->checksum != lib_compute_checksum(variants->seed, variant_begin, variant_end - variant_begin))
     {
         variant = 0;
     }

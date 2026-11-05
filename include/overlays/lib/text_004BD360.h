@@ -275,6 +275,82 @@ public:
     u8 unkaf;
 };
 
+/** Shape a morph target blends toward, with the weight range it may use. */
+struct LibMorphShape
+{
+    /** Shape number, such as a mouth shape or zero for closed eyes. */
+    s32 id;
+
+    u8 unk04[0x14];
+    float min_weight;
+    float max_weight;
+};
+
+/** Morph target, one of a face model's children; object_kind is two for a morph target. */
+struct LibMorphTarget : public LibListObject
+{
+    u8 unk14[4];
+
+    /** Set while the target has a nonzero weight. */
+    u8 active;
+
+    u8 unk19[0x17];
+    LibMorphShape* shape;
+    u8 unk34[0xC];
+
+    /** Weight clamped to the shape's range. */
+    float clamped_weight;
+
+    u8 unk44[0xC];
+
+    /** Weight last asked for. */
+    float weight;
+
+    /** Frames left before an idle target is dropped. */
+    s32 idle_frames;
+};
+
+extern "C"
+{
+    /**
+     * @brief Set a morph target's weight, clamped to its shape's range, and mark its owner when it becomes active.
+     * @param target Morph target.
+     * @param weight New weight.
+     */
+    void lib_morph_target_set_weight(LibMorphTarget* target, float weight);
+}
+
+/** Selection cursor: a callback transform with a movement state that slides it between positions; vtable D_175070. */
+class LibSelectionCursor : public LibCallbackTransform, public ItemCreationClass185050
+{
+public:
+    /** @brief Initialize the cursor transform. */
+    LibSelectionCursor()
+    {
+        type_id = 0x6FF0;
+    }
+
+    /** @brief Destroy the cursor. */
+    virtual ~LibSelectionCursor();
+
+    /**
+     * @brief Finish the cursor's drawing packet.
+     * @param value Notification word.
+     */
+    virtual void on_packet_complete(u32 value);
+
+    /**
+     * @brief Reset the translation, set the drawing codes and depth, and place the cursor.
+     * @param code Drawing code.
+     * @param first First drawing value.
+     * @param second Second drawing value.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param z Depth.
+     */
+    void init(s32 code, u32 first, u32 second, float x, float y, float z);
+};
+
 class LibContainer;
 /**
  * @brief Configure the container transform and modes.

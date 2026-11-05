@@ -328,7 +328,7 @@ class BootMusicPlayer : public LibListObject
 
         LibContainer* container;
         LibListObject* unk4050f4;
-        BootSelectionCursor* cursor;
+        LibSelectionCursor* cursor;
 
         /** Track number. */
         LibStringLabel* number_text;

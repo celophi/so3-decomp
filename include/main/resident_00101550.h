@@ -2,7 +2,14 @@
 #define SO3_MAIN_RESIDENT_00101550_H
 
 #include "types.h"
+#include "ee.h"
 #include "main/resident_001001E0.h"
+
+/** Decoded resources start on a 128-byte boundary; their buffers leave room to round up. */
+#define RESIDENT_RESOURCE_ALIGNMENT 128
+
+/** Round a resource buffer address up to RESIDENT_RESOURCE_ALIGNMENT. */
+#define RESIDENT_ALIGN_RESOURCE(value) (((u32)(value) + RESIDENT_RESOURCE_ALIGNMENT - 1) & ~(RESIDENT_RESOURCE_ALIGNMENT - 1))
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,18 +82,36 @@ public:
 #endif
 
 #ifdef __cplusplus
-/**
- * Scoped lock that disables interrupts while it lives; vtable at 0x14FA60. Its constructor reads the COP0 Status
- * register, so it is only built from the queue's hand-written code.
- */
+extern "C" s32 DIntr(void);
+extern "C" s32 EIntr(void);
+
+/** Scoped lock that disables interrupts while it lives, if they were enabled; vtable at 0x14FA60. */
 class ResidentInterruptLock
 {
 public:
     /** Nonzero when the lock disabled interrupts and must enable them again. */
     u8 disabled;
 
+    /** @brief Disable interrupts if they're enabled. */
+    ResidentInterruptLock()
+    {
+        disabled = 0;
+
+        if (ee_get_status() & EE_STATUS_EIE)
+        {
+            DIntr();
+            disabled = 1;
+        }
+    }
+
     /** @brief Enable interrupts again if the lock disabled them. */
-    virtual ~ResidentInterruptLock();
+    virtual ~ResidentInterruptLock()
+    {
+        if (disabled)
+        {
+            EIntr();
+        }
+    }
 };
 #endif
 
@@ -362,7 +387,7 @@ void func_00102AE0(ResidentResourceQueue* queue);
  * @param queue Resident resource queue.
  * @return Nonzero when the queue is empty.
  */
-s32 func_00102D00(ResidentResourceQueue* queue);
+s32 resident_poll_resource_queue(ResidentResourceQueue* queue);
 
 /** @brief Lower the priority of every queued request that is still positive. @param queue Resident resource queue. */
 void func_00103510(ResidentResourceQueue* queue);
@@ -525,7 +550,7 @@ s32 func_00107DB0(struct ResidentSoundStream* stream, const s32* value);
  * @param arg3 Third input word.
  * @param arg4 Fourth input word.
  */
-void func_00108C40(void* object, u32 arg1, u32 arg2, u32 arg3, u32 arg4);
+u32 func_00108C40(void* object, u32 arg1, u32 arg2, u32 arg3, u32 arg4);
 
 /**
  * @brief Query the stream: modes one and two read the stream thread's states, other modes go to func_00107940.
@@ -559,7 +584,7 @@ s32 func_00109FE0(struct ResidentStreamThread* thread, s32 which);
  * @param first First command argument.
  * @param second Second command argument.
  */
-void func_00107530(struct ResidentSoundStream* stream, u32 arg1, u32 arg2, u32 arg3, u32 handle, s32 command, s32 first, s32 second);
+u32 func_00107530(struct ResidentSoundStream* stream, u32 arg1, u32 arg2, u32 arg3, u32 handle, s32 command, s32 first, s32 second);
 
 /**
  * @brief Stop one of the stream's voices or music tracks.
@@ -586,7 +611,7 @@ s32 func_00107B60(struct ResidentSoundStream* stream, u32 arg1, void (*callback)
  * @param arg6 Third setup size.
  * @param arg7 Setup value.
  * @param arg8 Setup value.
- * @return Request identifier to wait for.
+ * @return Zero.
  */
 s32 func_00109000(struct ResidentSoundStream* stream, u32 arg1, u32 arg2, u32 arg3, u32 arg4, u32 arg5, u32 arg6, s32 arg7, s32 arg8);
 
@@ -601,7 +626,95 @@ void func_00108E10(struct ResidentSoundStream* stream);
  * @param arg3 Unused by the sound callers, which pass zero.
  * @param value Value sent.
  */
-void func_00107250(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, s32 value);
+u32 func_00107250(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, s32 value);
+
+/*
+ * Sound stream requests to the IOP. Each one takes the SIF request semaphore, fills the next 64-byte argument block
+ * and sends the command; it returns the request handle, or zero when no reply slot is free. arg1 is the reply
+ * buffer, then the callback and its argument (or two plain arguments).
+ */
+
+/**
+ * @brief Send sound stream command 0x14 with a count and that many words.
+ * @param stream Sound stream; unused.
+ * @param arg1 Reply buffer address, or zero.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @param values Words to send.
+ * @param count Number of words.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+u32 func_00107730(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, const u32* values, s32 count);
+
+/**
+ * @brief Send sound stream command 0x10 with a flag in the seventh word.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+s32 func_00107DD0(void* object, s32 arg1, void* callback, void* argument, s32 arg4, s32 command, s32 arg6, s32 arg7,
+                  u32 arg8, s32 arg9, u8 arg10);
+
+/**
+ * @brief Send sound stream command 0x10 for a request slot.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+s32 func_00108000(void* context, s32 first, void (*callback)(void*, struct ResidentRequestSlot*),
+                  struct ResidentRequestSlot* slot, s32 selected, s32 value, s32 arg3, s32 zero, u32 packed,
+                  u32 placement, u32 room);
+
+/**
+ * @brief Send sound stream command 0x10 for a request slot, with one packed word.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+s32 func_00108220(void* context, s32 first, void (*callback)(void*, struct ResidentRequestSlot*),
+                  struct ResidentRequestSlot* slot, s32 selected, s32 value, s32 arg3, s32 zero, s32 packed);
+
+/**
+ * @brief Send sound stream command 0x10 with the fifth word set to 0x7F400000.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+s32 func_00108430(void* object, s32 arg1, void* callback, void* argument, s32 arg4, s32 command, s32 arg6, s32 arg7);
+
+/**
+ * @brief Send sound stream command 0xC with an empty argument block.
+ * @param object Sound stream; unused.
+ * @param arg1 Reply buffer address, or zero.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+u32 func_00108640(void* object, s32 arg1, s32 arg2, s32 arg3);
+
+/**
+ * @brief Send sound stream command 0x7 with four values, allocating a slot buffer first when a size is given.
+ * @param stream Sound stream.
+ * @param reply Reply buffer, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @param index Slot the buffer is for.
+ * @param arg5 First value.
+ * @param arg6 Second value.
+ * @param arg7 Third value.
+ * @param arg8 Fourth value.
+ * @param arg9 Size of the slot buffer to allocate, or zero for none.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+u32 func_00108A00(struct ResidentSoundStream* stream, u32* reply, s32 arg2, s32 arg3, s32 index, u32 arg5, u32 arg6,
+                  u32 arg7, u32 arg8, u32 arg9);
+
+/**
+ * @brief Send sound stream command 0xB to the IOP with four values in the argument block.
+ * @param stream Sound stream; unused.
+ * @param arg1 Reply buffer address, or zero.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @param value0 First value.
+ * @param value1 Second value.
+ * @param value2 Third value.
+ * @param value3 Fourth value.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+u32 func_00108800(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, s32 value0, s32 value1, s32 value2,
+                  s32 value3);
 
 
 /**
@@ -612,7 +725,7 @@ void func_00107250(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 a
  * @param output Receives the samples.
  * @return One when the samples were taken, or zero when the ring doesn't hold that many yet.
  */
-s32 func_00109F20(struct ResidentStreamThread* thread, s32 ring, s32 count, float* output);
+s32 resident_stream_read_samples(struct ResidentStreamThread* thread, s32 ring, s32 count, float* output);
 
 /**
  * @brief Read the stream thread's signed byte at offset 0xBC.
@@ -771,13 +884,35 @@ s32 func_00107020(struct ResidentSoundStream* stream);
  */
 void func_001070B0(struct ResidentSoundStream* stream, s32 command);
 
+#ifdef __cplusplus
 /**
  * @brief Report whether an IOP request of the stream is still running.
  * @param stream Sound stream; unused.
  * @param request Request ID.
- * @return Nonzero while the request runs.
+ * @return True while the request runs.
  */
-s32 func_00107230(struct ResidentSoundStream* stream, s32 request);
+bool func_00107230(struct ResidentSoundStream* stream, s32 request);
+#endif
+
+/**
+ * @brief Send sound stream command 0x1C to the IOP.
+ * @param stream Sound stream; unused.
+ * @param reply Receives the reply, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle.
+ */
+u32 func_00105AE0(struct ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3);
+
+/**
+ * @brief Send sound stream command 0x18 to the IOP.
+ * @param stream Sound stream; unused.
+ * @param reply Receives the reply, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle.
+ */
+u32 func_00107420(struct ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3);
 
 /**
  * @brief Start the VIF1 DMA chain for the transfer's current phase.
@@ -806,7 +941,7 @@ void func_00109D50(struct ResidentStreamThread* thread);
  * @param second_ring Start of the second ring.
  * @param ring_size Size of each ring in bytes.
  */
-void func_00109F40(struct ResidentStreamThread* thread, u32 first_ring, u32 second_ring, u32 ring_size);
+void resident_stream_set_sample_rings(struct ResidentStreamThread* thread, u32 first_ring, u32 second_ring, u32 ring_size);
 
 /**
  * @brief Read the stream thread's word at offset 0xC0 while its first state is one.
@@ -824,14 +959,14 @@ s32 func_00109FB0(struct ResidentStreamThread* thread);
 s32 func_0010A000(struct ResidentStreamThread* thread, s32 which);
 
 /**
- * @brief Read four values from the sound stream.
+ * @brief Read four values from the sound stream's IOP side.
  * @param stream Sound stream.
  * @param x Receives the first value.
  * @param y Receives the second value.
  * @param z Receives the third value.
  * @param w Receives the fourth value.
  */
-void func_001058C0(struct ResidentSoundStream* stream, float* x, float* y, float* z, float* w);
+void func_001058C0(struct ResidentSoundStream* stream, u32* x, u32* y, u32* z, u32* w);
 
 /**
  * @brief Construct the resource queue.

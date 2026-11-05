@@ -120,9 +120,9 @@ void BootInstaller::show_tip_image(s32 index)
 
     tip_image_buffer = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(tip_image_data), index, 1);
     resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(tip_image_data),
-                                   (void*)BOOT_ALIGN_RESOURCE(tip_image_buffer), index);
+                                   (void*)RESIDENT_ALIGN_RESOURCE(tip_image_buffer), index);
     tip_image = new (0) BootImage;
-    tip_image->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(tip_image_buffer), 0);
+    tip_image->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(tip_image_buffer), 0);
     resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     tip_image->set_rectangle(0, 1, 0x120, 0xC9, 0x80808080, 0);
     tip_image->model->set_translation(-296.0f, -64.0f, 0.0f);
@@ -172,10 +172,10 @@ void BootInstaller::update_choice_images()
     if (images[4] == 0)
     {
         images[4] = new (0) BootImage;
-        images[4]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[4]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[4]->set_rectangle(0x1E, 0x131, 0x4C, 0x26, 0x80808080, 0);
         images[5] = new (0) BootImage;
-        images[5]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[5]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[5]->set_rectangle(0x1E, 0x167, 0x4C, 0x26, 0x80808080, 0);
     }
 
@@ -282,7 +282,7 @@ void BootInstaller::place_screen_images()
     if (images[0] == 0)
     {
         images[0] = new (0) BootImage;
-        images[0]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[0]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
@@ -290,7 +290,7 @@ void BootInstaller::place_screen_images()
     if (images[1] == 0)
     {
         images[1] = new (0) BootImage;
-        images[1]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[1]), 0);
+        images[1]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[1]), 0);
         images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
         images[1]->model->set_translation(-312.0f, -216.0f, 0.0f);
     }
@@ -298,14 +298,14 @@ void BootInstaller::place_screen_images()
     if (images[2] == 0)
     {
         images[2] = new (0) BootImage;
-        images[2]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[2]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[2]->set_rectangle(0, 0xEA, 0xC8, 0x1D, 0x80808080, 0);
     }
 
     if (images[3] == 0)
     {
         images[3] = new (0) BootImage;
-        images[3]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[3]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[3]->set_rectangle(0x1B, 0x190, 0x1B6, 0x31, 0x80808080, 0);
     }
 
@@ -375,7 +375,7 @@ void BootInstaller::update()
     switch (step)
     {
     case BOOT_INSTALL_WAIT_FOR_RESOURCES:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             resident_queue_resource_request(g_resource_queue, BOOT_RES_SOUND, sound_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
@@ -385,20 +385,20 @@ void BootInstaller::update()
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             resident_queue_resource_request(g_resource_queue, BOOT_RES_TIP_IMAGES, tip_image_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
-            func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
+            clear_to_menu_background();
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
             step++;
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+            lib_queue_display_object(D_001B657C,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             message_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
             message_text->set_color(0x34130F);
             lib_container_attach_widget(container, message_text);
             x = menu_cursor_x(selection);
-            cursor = new (0) BootSelectionCursor;
-            func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+            cursor = new (0) LibSelectionCursor;
+            cursor->init(1, 0, 0, x, 256.0f, 0.0f);
+            lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
 
         break;
@@ -406,7 +406,7 @@ void BootInstaller::update()
         screen_image_buffers[screen_images_loaded] =
             resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(screen_image_data), screen_images_loaded, 1);
         resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(screen_image_data),
-                                       (void*)BOOT_ALIGN_RESOURCE(screen_image_buffers[screen_images_loaded]), screen_images_loaded);
+                                       (void*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[screen_images_loaded]), screen_images_loaded);
 
         if (++screen_images_loaded >= 2)
         {
@@ -424,10 +424,10 @@ void BootInstaller::update()
         x = menu_cursor_x(selection);
 
         {
-            BootSelectionCursor* arrow = cursor;
+            LibSelectionCursor* arrow = cursor;
             ItemCreationClass185050& motion = *arrow;
-            motion.unk10 = x;
-            motion.unk14 = 256.0f;
+            motion.position.x = x;
+            motion.position.y = 256.0f;
             motion.unk35 = 1;
             arrow->unkae = 1;
         }
@@ -443,7 +443,7 @@ void BootInstaller::update()
             selection = (selection + 1) & 1;
             choice_growing = 0;
             x = menu_cursor_x(selection);
-            cursor->func_00466E40(x, 256.0f, 0.05f);
+            cursor->set_move_target(x, 256.0f, 0.05f);
             choice_growing = 0;
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
@@ -481,7 +481,7 @@ void BootInstaller::update()
         }
         else if (resident_update_resource_queue(g_resource_queue) == 0 && g_resource_archive->read_busy == 0)
         {
-            func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+            clear_to_black();
 
             for (s32 i = 0; i < 20; i++)
             {
@@ -544,7 +544,7 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_WAIT_FOR_UNIT_RESOURCES:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             step++;
         }
@@ -606,7 +606,7 @@ void BootInstaller::update()
         {
             selection = 1;
             x = menu_cursor_x(selection);
-            cursor->func_00466E40(x, 256.0f, 0.05f);
+            cursor->set_move_target(x, 256.0f, 0.05f);
             choice_growing = 0;
         }
 
@@ -645,12 +645,12 @@ void BootInstaller::update()
         break;
     }
     case BOOT_INSTALL_SHOW_NO_SPACE:
-        D_001B657C->message_value = resident_archive_get_install_size(g_resource_archive) >> 11;
+        D_001B657C->message_arguments[0] = resident_archive_get_install_size(g_resource_archive) >> 11;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_NOT_ENOUGH_SPACE, 0);
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_WAIT_TO_BEGIN:
-        if (func_00102D00(g_resource_queue) != 0)
+        if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             queue_fade();
             step++;
@@ -670,7 +670,7 @@ void BootInstaller::update()
         show_tip_image(0);
         tip_index = 1;
         next_tip_percent = BOOT_INSTALL_SECOND_TIP_PERCENT;
-        D_001B657C->message_value = 0;
+        D_001B657C->message_arguments[0] = 0;
 
         if (resource->widescreen)
         {
@@ -773,7 +773,7 @@ void BootInstaller::update()
         {
             remaining = resident_archive_get_copy_remaining(g_resource_archive);
             percent = 99 - remaining * 99 / install_total;
-            D_001B657C->message_value = percent;
+            D_001B657C->message_arguments[0] = percent;
             lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
 
             if (percent >= next_tip_percent && tip_index < BOOT_INSTALL_TIP_COUNT)
@@ -794,9 +794,9 @@ void BootInstaller::update()
                 g_resource_archive->copy_paused = 1;
                 selection = 1;
                 x = menu_cursor_x(selection);
-                cursor = new (0) BootSelectionCursor;
-                func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-                lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C),
+                cursor = new (0) LibSelectionCursor;
+                cursor->init(1, 0, 0, x, 256.0f, 0.0f);
+                lib_queue_display_object(D_001B657C,
                                          reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
                 tip_text->visible = 0;
                 tip_image->model->draw_flags |= LIB_DRAW_HIDDEN;
@@ -808,7 +808,7 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_FINISH_COPY:
-        D_001B657C->message_value = 100;
+        D_001B657C->message_arguments[0] = 100;
         lib_text_set_resource(progress_text, g_boot_program.messages, BOOT_MSG_PERCENT, 0);
         progress_bar_draw(progress_bar, 100, 100);
         resident_archive_set_copy_buffer(g_resource_archive, 0);
@@ -838,7 +838,7 @@ void BootInstaller::update()
         step = BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT;
         break;
     case BOOT_INSTALL_SHOW_ERROR:
-        if (resident_archive_has_unit_error(g_resource_archive) != 0)
+        if (resident_archive_has_unit_error(g_resource_archive))
         {
             if (tip_text != 0)
             {
@@ -874,7 +874,7 @@ void BootInstaller::update()
         break;
     case BOOT_INSTALL_RETURN_TO_TITLE:
         resident_sound_stop_music(g_sound, 0, -1);
-        func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+        clear_to_black();
 
         for (s32 i = 0; i < 20; i++)
         {
@@ -1000,9 +1000,9 @@ void BootInstaller::update()
             step = BOOT_INSTALL_SHOW_INITIAL_PROMPT;
             selection = 0;
             x = menu_cursor_x(selection);
-            cursor = new (0) BootSelectionCursor;
-            func_467570(cursor, 1, 0, 0, x, 256.0f, 0.0f);
-            lib_queue_display_object(reinterpret_cast<FieldRuntime*>(D_001B657C), reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+            cursor = new (0) LibSelectionCursor;
+            cursor->init(1, 0, 0, x, 256.0f, 0.0f);
+            lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         }
         else
         {

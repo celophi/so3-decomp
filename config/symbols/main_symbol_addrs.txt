@@ -1,7 +1,7 @@
 // Entry point and the five byte-verified probe functions.
 // Function names are placeholders; original symbols have not been recovered.
 _start = 0x00100008; // type:func
-func_00101250 = 0x00101250; // type:func size:0x10
+resident_system_get_resource_queue = 0x00101250; // type:func size:0x10
 func_00101510 = 0x00101510; // type:func size:0x40
 func_0010A080 = 0x0010A080; // type:func size:0x28
 func_0010A0B0 = 0x0010A0B0; // type:func size:0x30
@@ -573,6 +573,8 @@ _end = 0x0050CE00; // absolute:True
 g_allocation_heap = 0x001B6400; // type:u32 size:0x4 absolute:True
 g_current_program = 0x001B6404; // type:u32 size:0x4 absolute:True
 g_sif_command_receiver = 0x001B6408; // type:u32 size:0x4 absolute:True
+// ResidentSif, so splat writes references to its members as offsets from it.
+D_001CC590 = 0x001CC590; // size:0x3350
 D_001B640C = 0x001B640C; // type:s32 size:0x4 absolute:True
 D_001CF8E0 = 0x001CF8E0; // type:u32 size:0xE0 absolute:True
 g_system = 0x001B6880; // absolute:True
@@ -583,6 +585,9 @@ resident_exchange_allocation_heap = 0x00100C80; // type:func size:0xC
 resident_get_allocation_heap = 0x00100C90; // type:func size:0x8
 resident_get_entry_table = 0x00101290; // type:func size:0x10
 resident_find_entry = 0x00101440; // type:func size:0x40
+resident_remove_entry = 0x00101480; // type:func size:0x30
+resident_system_get_input = 0x001012D0; // type:func size:0x8
+resident_sync_gs_path = 0x0011DE00; // type:func size:0xE0
 resident_get_system = 0x0010D8E0; // type:func size:0xC
 main = 0x001001E0; // type:func size:0x854
 resident_handle_out_of_memory = 0x00100A50; // type:func size:0x5C
@@ -617,10 +622,16 @@ __dt__17ResidentSemaphoreFv = 0x00100E70; // type:func size:0xF0
 __vt__17ResidentSemaphore = 0x0014F9E0; // type:u32 size:0xC
 __dt__21ResidentInterruptLockFv = 0x00102C90; // type:func size:0x70
 __vt__21ResidentInterruptLock = 0x0014FA60; // type:u32 size:0xC
+__dt__21ResidentSemaphoreLockFv = 0x00105A20; // type:func size:0xB8
+__vt__21ResidentSemaphoreLock = 0x0014FAA8; // type:u32 size:0xC
 __vt__14ResidentThread = 0x0014FBA0; // type:u32 size:0x14
 __vt__13ResidentSound = 0x0014FB28; // type:u32 size:0xC
 __vt__12ResidentHeap = 0x0014FB38; // type:u32 size:0xC
 __dt__12ResidentHeapFv = 0x00113D60; // type:func
+__vt__16ResidentDmaQueue = 0x0014FB48; // type:u32 size:0xC
+__dt__16ResidentDmaQueueFv = 0x001142C0; // type:func size:0x70
+__ct__16ResidentDmaQueueFi = 0x00114330; // type:func size:0xB0
+push__16ResidentDmaQueueFP13DmaSubmission = 0x00114100; // type:func size:0x1B4
 _gp = 0x001BDFF0;
 __dt__14ResidentSystemFv = 0x00100D00; // type:func size:0x170
 __dt__21ResidentResourceQueueFv = 0x00104420; // type:func size:0xD0
@@ -629,6 +640,8 @@ __dt__13ResidentSoundFv = 0x00112F60; // type:func size:0x80
 __dt__14ResidentThreadFv = 0x00114F50; // type:func size:0xAC
 __dt__15ResidentArchiveFv = 0x0011D840; // type:func size:0x108
 __dt__19ResidentClass14FC60Fv = 0x0011DDA0; // type:func size:0x60
+func_0011E970 = 0x0011E970; // type:func size:0x30
+resident_input_vblank_handler = 0x0011E9A0; // type:func size:0x40
 __dt__21ResidentReleaseQueuesFv = 0x0011EE70; // type:func size:0x60
 __vt__19ResidentClass14FC60 = 0x0014FC60; // type:u32 size:0x14
 
@@ -821,3 +834,11 @@ copy_offset_transform_state__23ResidentClass14FD30BaseFPC23ResidentClass14FD30Ba
 // ResidentPacketBuffer, main's GS packet buffer class.
 __vt__20ResidentPacketBuffer = 0x0014FDF0; // size:0xC
 __dt__20ResidentPacketBufferFv = 0x001218A0; // type:func size:0x70
+
+// Resident functions the overlays call.
+resident_poll_resource_queue = 0x00102D00; // type:func size:0x4C
+resident_stream_read_samples = 0x00109F20; // type:func size:0x1C
+resident_stream_set_sample_rings = 0x00109F40; // type:func size:0x68
+resident_heap_create_memory = 0x00113930; // type:func size:0xD4
+resident_archive_has_resource = 0x00115270; // type:func size:0x48
+resident_packet_queue_pending = 0x0011F510; // type:func size:0x64

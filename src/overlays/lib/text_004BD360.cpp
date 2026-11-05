@@ -1,3 +1,4 @@
+#include "ee.h"
 #include "include_asm.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector.h"
@@ -1300,7 +1301,66 @@ s32 func_004C96D0(void* object)
     return 67;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C96E0);
+/** Model that owns morph targets; only the flag a morph target sets is known. */
+struct LibMorphOwner
+{
+    u8 unk00[0x8D];
+    u8 unk8d_0 : 1;
+
+    /** Set when a morph target of the model becomes active. */
+    u8 morph_dirty : 1;
+
+    u8 unk8d_2 : 6;
+};
+
+/**
+ * @brief Return the absolute value of a float (one abs.s).
+ * @param value Value to convert.
+ * @return Absolute value.
+ */
+static inline float morph_abs(float value)
+{
+    return __s_abs(value);
+}
+
+/**
+ * @brief Set a morph target's weight, clamped to its shape's range, and mark its owner when it becomes active.
+ * @param target Morph target.
+ * @param weight New weight.
+ */
+void lib_morph_target_set_weight(LibMorphTarget* target, float weight)
+{
+    float previous = target->weight;
+    target->weight = weight;
+    float clamped = ee_min(weight, target->shape->max_weight);
+    clamped = ee_max(clamped, target->shape->min_weight);
+    target->clamped_weight = clamped;
+
+    float previous_size = morph_abs(previous);
+
+    if (morph_abs(clamped) < 1e-5f)
+    {
+        if (target->idle_frames == 0 && !(previous_size < 1e-5f))
+        {
+            target->idle_frames = 3;
+        }
+    }
+    else
+    {
+        if (target->active != 1)
+        {
+            LibMorphOwner* owner = (LibMorphOwner*)target->owner;
+
+            if (owner)
+            {
+                owner->morph_dirty = 1;
+            }
+        }
+
+        target->active = 1;
+        target->idle_frames = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C97A0);
 

@@ -68,7 +68,10 @@ typedef struct ResidentClock
     u8 second;
     u8 minute;
     u8 hour;
-    u8 unk04[4];
+    u8 pad;
+    u8 day;
+    u8 month;
+    u8 year;
 } ResidentClock;
 
 /** Tag at the head of the resource table once it is decrypted. */
@@ -80,11 +83,55 @@ typedef struct ResidentClock
  */
 typedef struct ResidentArchive
 {
-    u8 unk00[0x6C];
+    u8 unk00[0x18];
+
+    /** Held while the clock is read or changed. */
+#ifdef __cplusplus
+    ResidentSemaphore semaphore;
+#else
+    u8 semaphore[8];
+#endif
+
+    u8 unk20[0x18];
+
+    /** Signalled when a disc command finishes or times out. */
+#ifdef __cplusplus
+    ResidentSemaphore timeout_semaphore;
+#else
+    u8 timeout_semaphore[8];
+#endif
+
+    u8 unk40[0x1C];
+    u8 unk5c;
+    u8 unk5d;
+    u8 unk5e;
+    u8 unk5f[5];
+    void* unk64;
+    u8 unk68;
+    u8 unk69[2];
+    u8 unk6b;
     u8 unk6c;
-    u8 unk6d[0x5C];
+
+    /** Set when the timeout alarm ran out. */
+    u8 timed_out;
+
+    u8 unk6e[2];
+    s32 unk70;
+
+    /** Alarm ticks counted since the timeout alarm started. */
+    s32 timeout_ticks;
+
+    /** Running timeout alarm, or -1. */
+    s32 timeout_alarm;
+
+    u8 unk7c[0x44];
+    s32 unkc0;
+    u8 unkc4[5];
     u8 unkc9;
-    u8 unkca[0xE];
+    u8 unkca[6];
+
+    /** Clock the disc drive last reported. */
+    ResidentClock clock;
 
     /** Thread the disc power-off callback is given. */
     u8 unkD8[0x14];
@@ -546,12 +593,76 @@ struct ResidentSound
 
 typedef struct ResidentSound ResidentSound;
 
-/** Partial resident DMA queue exposing the asynchronously cleared busy flag. */
-typedef struct ResidentDmaQueue
+#ifdef __cplusplus
+class DmaSubmission;
+
+/**
+ * Ring of DMA submissions waiting for one DMA channel, with the DMAC interrupt handler that starts the next one;
+ * vtable D_0014FB48.
+ */
+class ResidentDmaQueue
 {
-    u8 unk00[0x1011];
-    volatile u8 busy;
-} ResidentDmaQueue;
+    public:
+        /** Submissions waiting for the channel. */
+        DmaSubmission* entries[0x400];
+
+        /** Submission whose transfer is running, or null. */
+        DmaSubmission* current;
+
+        // TODO: The indices are volatile because the DMAC handler changes them from interrupt context; the target
+        // reloads them after every store, and nothing else I tried does that.
+
+        /** Next free entry. */
+        volatile s32 write_index;
+
+        /** Next entry to start. */
+        volatile s32 read_index;
+
+        /** DMAC handler ID from AddDmacHandler. */
+        s32 handler_id;
+
+        /** DMA channel number. */
+        u8 channel;
+
+        /** Set while a transfer is running; the DMAC handler clears it. */
+        volatile u8 busy;
+
+        u8 unk1012;
+
+        /**
+         * @brief Register the queue as its channel's and install the channel's DMAC handler.
+         * @param channel DMA channel number.
+         */
+        ResidentDmaQueue(s32 channel);
+
+        /**
+         * @brief Queue a submission, and start it straight away if the channel is idle.
+         * @param submission Transfer to queue.
+         * @return False when the queue is full.
+         */
+        bool push(DmaSubmission* submission);
+
+        /** @brief Wait until the running transfer finishes. */
+        void wait_idle()
+        {
+            while (busy)
+            {
+            }
+        }
+
+        /** @brief Forget the current submission and stop the channel's DMAC interrupts. */
+        void stop()
+        {
+            current = 0;
+            DisableDmac(channel);
+        }
+
+        /** @brief Disable the channel and remove its DMAC handler. */
+        virtual ~ResidentDmaQueue();
+};
+#else
+typedef struct ResidentDmaQueue ResidentDmaQueue;
+#endif
 
 /** Tag of an allocated heap block. */
 #define RESIDENT_HEAP_BLOCK_TAG 0x4D655279
@@ -929,10 +1040,13 @@ public:
 
     s32 unk14;
 
-    /** Reply slot the last reply went to. */
-    s32 reply_index;
+    // TODO: The two ring indices are volatile because the reply interrupt moves them; the request wrappers
+    // reread unk1C after comparing it, and nothing else I tried does that.
 
-    s32 unk1C;
+    /** Reply slot the last reply went to. */
+    volatile s32 reply_index;
+
+    volatile s32 unk1C;
     ResidentSifReply replies[32];
 
     /** The allocation rounded up to 64 bytes. */
@@ -951,7 +1065,34 @@ public:
     SifCommandHandlerEntry handlers[5];
     u8 unk31C[0x10];
     ResidentSemaphore unk32C;
-    ResidentSemaphore unk334;
+
+    /** Held while a request is being queued for the IOP. */
+    ResidentSemaphore request_semaphore;
+
+    /**
+     * @brief Get the semaphore held while a request is queued.
+     * @return The request semaphore.
+     */
+    ResidentSemaphore* get_request_semaphore()
+    {
+        return &request_semaphore;
+    }
+
+    /**
+     * @brief Get the 64-byte argument block of the next request.
+     * @return The block, or null when every reply slot is taken.
+     */
+    u32* get_request_arguments()
+    {
+        if (reply_index == unk1C)
+        {
+            return 0;
+        }
+
+        u8* base = buffer;
+
+        return (u32*)(base + unk1C * 64);
+    }
 
     /** Next packet for sends from interrupt context. */
     s32 interrupt_packet_index;
@@ -1219,6 +1360,9 @@ void func_0010ECF0(ResidentSound* sound);
 
 /**
  * @brief Queue a DMA submission and start processing if the channel is idle.
+ *
+ * This is ResidentDmaQueue::push as the overlays declare it: they treat the result as an int, while the method
+ * returns bool.
  * @param queue Resident queue for the DMA channel.
  * @param submission Transfer callbacks to enqueue.
  * @return 1 on success, 0 when the queue is full.
@@ -1262,6 +1406,21 @@ s32 func_0011D470(ResidentArchive* archive);
  * @return Nonzero when the resource was selected.
  */
 s32 func_0011D080(ResidentArchive* archive, s32 key);
+
+/**
+ * @brief Start streaming the selected resource into a buffer.
+ * @param archive Resource archive.
+ * @param buffer Destination.
+ * @param size Buffer size in bytes.
+ * @param flag Passed through.
+ */
+void func_0011C120(ResidentArchive* archive, void* buffer, u32 size, s32 flag);
+
+/**
+ * @brief Stop the archive's streaming read.
+ * @param archive Resource archive.
+ */
+void func_0011C8E0(ResidentArchive* archive);
 
 /**
  * @brief Set the listener the archive notifies when a read finishes.
@@ -1327,13 +1486,15 @@ s32 func_0010BDA0(ResidentSif* sif, s32 command, void* source, void* destination
  */
 void func_0010BE80(ResidentSif* sif, s32 command, void* source, void* destination, s32 size);
 
+#ifdef __cplusplus
 /**
  * @brief Check whether a request sent over the SIF link is still waiting for its reply.
  * @param sif SIF link.
  * @param handle Request handle.
- * @return Nonzero while the request is outstanding.
+ * @return True while the request is outstanding.
  */
-s32 func_0010C0E0(ResidentSif* sif, u32 handle);
+bool func_0010C0E0(ResidentSif* sif, u32 handle);
+#endif
 
 /**
  * @brief Send a SIF command, queueing it if earlier commands are waiting or the IOP has no room.
@@ -1715,12 +1876,14 @@ s32 resident_sound_play(ResidentSound* sound, s32 number, s32 selector, s32 valu
  */
 s32 resident_sound_is_music_playing(ResidentSound* sound, s32 key);
 
+#ifdef __cplusplus
 /**
  * @brief Report whether a hard disk unit error is pending.
  * @param archive Resource archive.
- * @return One when an error is pending, otherwise zero.
+ * @return Whether an error is pending.
  */
-s32 resident_archive_has_unit_error(const ResidentArchive* archive);
+bool resident_archive_has_unit_error(const ResidentArchive* archive);
+#endif
 
 /**
  * @brief Clear the pending hard disk unit error.
@@ -1871,8 +2034,11 @@ u32 func_0011DF70(const struct ResidentInputSystem* input);
 void func_0011DF80(struct ResidentInputSystem* input);
 
 
-/** Store the byte constant at receiver offset 0x1012. */
-void func_001140F0(void* object);
+/**
+ * @brief Set the queue's unk1012 flag.
+ * @param queue DMA queue.
+ */
+void func_001140F0(ResidentDmaQueue* queue);
 
 void func_0010EE50(void* object);
 
@@ -1887,12 +2053,12 @@ void func_00113180(void* object);
 void func_00113EA0(void* object);
 
 /**
- * @brief Return the state byte or wait for it to clear when requested.
- * @param object State receiver whose byte is at offset 0x1011.
- * @param wait Nonzero returns the current byte; zero waits until it is clear.
- * @return Current state byte when waiting is disabled, otherwise zero.
+ * @brief Report whether the queue's transfer is running, or wait until it finishes.
+ * @param queue DMA queue.
+ * @param poll Nonzero returns the busy flag straight away; zero waits until the transfer finishes.
+ * @return The busy flag when polling, otherwise zero.
  */
-u32 func_00113EB0(void* object, s32 wait);
+u32 func_00113EB0(ResidentDmaQueue* queue, s32 poll);
 void func_00114450(void* object);
 
 /** Return whether waking the resident thread succeeds. */
@@ -1905,6 +2071,7 @@ s32 func_00114EB0(void* object);
 /** Call func_00114E00 with the second argument. */
 void func_00118B80(void* object, void* value);
 
+/** @brief Do nothing. @param object Unused. */
 void func_0011C6B0(void* object);
 /** Return bit 0 of the word at receiver offset 0xCC. */
 s32 func_0011C7C0(const void* object);
@@ -1927,7 +2094,7 @@ void func_00110C60(ResidentSound* sound);
 s32 func_001106B0(ResidentSound* request, s32 value);
 
 /** Synchronize the GS path while holding the receiver's semaphore. */
-s32 func_0011DE00(void* object, s32 first, s32 second);
+s32 resident_sync_gs_path(void* object, s32 first, u16 second);
 
 #ifdef __cplusplus
 }
@@ -1936,7 +2103,12 @@ s32 func_0011DE00(void* object, s32 first, s32 second);
 #ifdef __cplusplus
 extern "C"
 {
-    void func_00114650(void* object, s32 value);
+    /**
+     * @brief Start a thread, or stop it (exiting when it is the calling thread).
+     * @param object Thread.
+     * @param run Nonzero to start it; stored in the sound system's unk351.
+     */
+    void func_00114650(void* object, u8 run);
 
     /**
      * @brief Give a heap memory of its own.
@@ -1944,7 +2116,7 @@ extern "C"
      * @param size Usable size in bytes.
      * @return Nonzero on success, zero when the memory can't be allocated.
      */
-    u32 func_00113930(ResidentHeap* heap, u32 size);
+    u32 resident_heap_create_memory(ResidentHeap* heap, u32 size);
 
     /**
      * @brief Give a heap a memory range to allocate from.
@@ -2213,7 +2385,7 @@ extern "C"
      * @param index Resource index, counted from the sixth entry.
      * @return One when the resource has a size, zero when it is empty, or two when the table isn't decrypted.
      */
-    s32 func_00115270(const ResidentArchive* archive, s32 index);
+    s32 resident_archive_has_resource(const ResidentArchive* archive, s32 index);
 }
 #endif
 
@@ -2282,7 +2454,7 @@ s32 func_0010A400(ResidentStreamThread* stream, s32 arg1, void* callback, void* 
  * @return The request result, or zero while a request is already running.
  */
 s32 func_0010A450(ResidentStreamThread* stream, s32 arg1, void* callback, void* argument, s32 value, s32 arg6,
-                  s32 arg10);
+                  u8 arg10);
 
 /**
  * @brief Append bytes to the ring, first moving unread data back to the start of the ring when the end is too close.

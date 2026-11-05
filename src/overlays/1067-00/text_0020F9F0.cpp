@@ -2,6 +2,7 @@
 #include "overlays/1067-00/text_0020F9F0.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/text_004DD440.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020F9F0);
@@ -127,7 +128,6 @@ FieldClass151C00::~FieldClass151C00()
 {
 }
 
-extern "C" void* D_001B6650;
 extern "C" void func_4DB9E0(void* manager, u32 first, u32 second, u32 third, u32 fourth);
 
 /** @brief Pass the four words to the Lib manager, then detach and delete this object. */

@@ -136,23 +136,6 @@ struct ItemAlignedResource
     s32 byte_count;
 };
 
-/** Partial resource runtime containing the item-name and detail-code resource groups. */
-struct FieldRuntime
-{
-    u8 unk00[0x514];
-    s32 item_name_resource_slot;
-    u32 item_name_base_key;
-    s32 detail_resource_slot;
-    u32 detail_base_key;
-    u8 unk524[0x10];
-
-    /** Screen scale and offset applied to menu coordinates. */
-    float screen_scale_x;
-    float screen_scale_y;
-    float screen_offset_x;
-    float screen_offset_y;
-};
-
 /** Packed allocation view with the four-bit equipped owner spanning bytes C and D. */
 struct ItemAllocationOwnerView
 {
@@ -813,7 +796,7 @@ static inline void set_selector_brightness(FieldClass153130* selector, float bri
 {
     if (selector != 0)
     {
-        selector->ItemCreationClass185050::unk30 = brightness;
+        selector->ItemCreationClass185050::alpha = brightness;
         selector->needs_redraw = 1;
     }
 }
@@ -2401,10 +2384,10 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             gauge->character_id = slot;
             gauge->characters = D_001B643C->characters;
             LibCameraContext* context = D_001B6650;
-            gauge->FieldClass159A70::unk1c = 0x800 - context->viewport_width / 2;
-            gauge->FieldClass159A70::unk20 = 0x800 - context->viewport_height / 2;
-            gauge->FieldClass159A70::unk24 = 0x800 + context->viewport_width / 2;
-            gauge->FieldClass159A70::unk28 = 0x800 + context->viewport_height / 2;
+            gauge->FieldClass159A70::unk1c = 0x800 - context->display_area.width / 2;
+            gauge->FieldClass159A70::unk20 = 0x800 - context->display_area.height / 2;
+            gauge->FieldClass159A70::unk24 = 0x800 + context->display_area.width / 2;
+            gauge->FieldClass159A70::unk28 = 0x800 + context->display_area.height / 2;
             gauge->initialize(1, 0, 0, 0.0f, 0.0f, 0.0f);
 
             if (row < 3)
@@ -2590,13 +2573,13 @@ void ItemInstanceListWindow::func_slot5c()
     if (D_001B643C->callbacks->state->func_00261150() == this)
     {
         ItemCreationClass175030* display = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-        display->unk30 = 128.0f;
+        display->alpha = 128.0f;
         display->needs_redraw = 1;
     }
     else
     {
         ItemCreationClass175030* display = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-        display->unk30 = 64.0f;
+        display->alpha = 64.0f;
         display->needs_redraw = 1;
     }
 
@@ -2980,8 +2963,8 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
     marker->needs_redraw = 1;
     lib_container_attach_widget(FieldClass15AE70::unk10, divider);
     FieldRuntime* runtime = D_001B657C;
-    runtime->detail_resource_slot = associated;
-    runtime->detail_base_key = ITEM_MSG_FIRST_FACTOR_NAME;
+    runtime->text_banks[1].resource_slot = associated;
+    runtime->text_banks[1].base_key = ITEM_MSG_FIRST_FACTOR_NAME;
     s32 index;
 
     for (index = 0; index < 8; index++)
@@ -3432,13 +3415,13 @@ void ItemInstanceListWindow::func_slot10c(u32 value, u32 alternate)
         if (alternate != 0)
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::unk30 = 128.0f;
+            control->ItemCreationClass185050::alpha = 128.0f;
             control->needs_redraw = 1;
         }
         else
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::unk30 = 64.0f;
+            control->ItemCreationClass185050::alpha = 64.0f;
             control->needs_redraw = 1;
         }
     }
@@ -3643,7 +3626,7 @@ u8 ItemTypeListWindow::func_slotb0()
     if (FieldClass15AE60::unk04 != 0)
     {
         LibClass175030* selector = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selector->ItemCreationClass185050::unk30 = 64.0f;
+        selector->ItemCreationClass185050::alpha = 64.0f;
         selector->needs_redraw = 1;
     }
 
@@ -3914,13 +3897,13 @@ void ItemTypeListWindow::func_slot10c(u32 unused, u32 cursor)
         if (cursor != 0)
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::unk30 = 128.0f;
+            control->ItemCreationClass185050::alpha = 128.0f;
             control->needs_redraw = 1;
         }
         else
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::unk30 = 64.0f;
+            control->ItemCreationClass185050::alpha = 64.0f;
             control->needs_redraw = 1;
         }
     }
@@ -4428,8 +4411,8 @@ s32 ItemController::on_resource_loaded(void* buffer)
     resource_slot = lib_load_resource_slot(D_001B657C, resource);
     resident_exchange_allocation_heap(previous_heap);
     FieldRuntime* runtime = D_001B657C;
-    runtime->item_name_resource_slot = resource_slot;
-    runtime->item_name_base_key = ITEM_MSG_ITEM_NAME_BASE + 1;
+    runtime->text_banks[0].resource_slot = resource_slot;
+    runtime->text_banks[0].base_key = ITEM_MSG_ITEM_NAME_BASE + 1;
     return init_windows();
 }
 

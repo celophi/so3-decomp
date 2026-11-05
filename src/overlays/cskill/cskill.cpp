@@ -546,20 +546,6 @@ struct SkillRuntime
     FieldBufferSlots* resources;
 };
 
-/** Partial Field runtime reached through D_001B657C. */
-struct FieldRuntime
-{
-    u8 unk00[0x534];
-    /** Screen scale and offset applied to menu coordinates. */
-    float screen_scale_x;
-    float screen_scale_y;
-    float screen_offset_x;
-    float screen_offset_y;
-    u8 unk544[0x24];
-    /** Integer arguments substituted into the next message. */
-    s32 message_arguments[1];
-};
-
 /** Linked node containing a pair of float values. */
 typedef struct SkillPairListNode
 {
@@ -4002,7 +3988,7 @@ u8 SkillModeSelection::func_slotb0()
 s32 SkillModeSelection::func_slotd4()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->FieldClass151C50::unk35;
+    u8 inactive = !selection->ItemCreationClass185050::unk35;
     if (inactive == 1)
     {
         return 0;
@@ -4064,7 +4050,7 @@ s32 SkillModeSelection::func_slotd4()
 
 s32 SkillModeSelection::func_slotd0()
 {
-    u8 inactive = !this->selection->FieldClass151C50::unk35;
+    u8 inactive = !this->selection->ItemCreationClass185050::unk35;
     if (inactive == 1)
     {
         return 0;
@@ -4110,7 +4096,7 @@ s32 SkillModeSelection::func_slotd0()
 void SkillModeSelection::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->FieldClass151C50::unk35;
+    u8 inactive = !selection->ItemCreationClass185050::unk35;
     if (inactive == 1)
     {
         return;
@@ -4144,7 +4130,7 @@ void SkillModeSelection::func_slot6c()
 void SkillModeSelection::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->FieldClass151C50::unk35;
+    u8 inactive = !selection->ItemCreationClass185050::unk35;
     if (inactive == 1)
     {
         return;
@@ -4901,7 +4887,7 @@ void SkillTacticalWindow::func_slot5c()
 void SkillTacticalWindow::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
-    selection->FieldClass151C50::unk30 = 128.0f;
+    selection->ItemCreationClass185050::alpha = 128.0f;
     selection->unkae = 1;
     LibContainer* display = this->attachment->unk10;
     if (display != 0)
@@ -5104,7 +5090,7 @@ void skill_open_tactical_details(SkillTacticalWindow* object)
     SkillTacticalDetailWindow* window = static_cast<SkillTacticalDetailWindow*>(object->func_slot4c());
     skill_select_tactical_detail_mode(window, mode);
     FieldObject23CEA0* selection = object->selection;
-    selection->FieldClass151C50::unk30 = 64.0f;
+    selection->ItemCreationClass185050::alpha = 64.0f;
     selection->unkae = 1;
     LibContainer* display = object->attachment->unk10;
     if (display != 0)
@@ -5543,7 +5529,7 @@ void skill_set_battle_setup_visibility(SkillBattleSetupWindow* object, u32 flag,
 void SkillBattleSetupWindow::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
-    selection->FieldClass151C50::unk30 = 128.0f;
+    selection->ItemCreationClass185050::alpha = 128.0f;
     selection->unkae = 1;
     skill_refresh_battle_selection(this);
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
@@ -6385,7 +6371,7 @@ u8 SkillStatusSkillWindow::func_slotb4()
 
 u8 SkillStatusSkillWindow::func_slotb0()
 {
-    bool inactive = this->selection->FieldClass151C50::unk35 ? false : true;
+    bool inactive = this->selection->ItemCreationClass185050::unk35 ? false : true;
     if (inactive == 1)
     {
         return 0;
@@ -7040,7 +7026,7 @@ SkillCharacterWindow::SkillCharacterWindow(SkillController* controller)
 void SkillSecondarySelection::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
-    selection->FieldClass151C50::unk30 = 128.0f;
+    selection->ItemCreationClass185050::alpha = 128.0f;
     selection->unkae = 1;
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     func_0035AF00(owner, this->code, 1);
@@ -9034,10 +9020,10 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             gauge->character_id = slot;
             gauge->characters = D_001B643C->characters;
             LibCameraContext* context = D_001B6650;
-            gauge->FieldClass159A70::unk1c = 0x800 - context->viewport_width / 2;
-            gauge->FieldClass159A70::unk20 = 0x800 - context->viewport_height / 2;
-            gauge->FieldClass159A70::unk24 = 0x800 + context->viewport_width / 2;
-            gauge->FieldClass159A70::unk28 = 0x800 + context->viewport_height / 2;
+            gauge->FieldClass159A70::unk1c = 0x800 - context->display_area.width / 2;
+            gauge->FieldClass159A70::unk20 = 0x800 - context->display_area.height / 2;
+            gauge->FieldClass159A70::unk24 = 0x800 + context->display_area.width / 2;
+            gauge->FieldClass159A70::unk28 = 0x800 + context->display_area.height / 2;
             gauge->initialize(1, 0, 0, 0.0f, 0.0f, 0.0f);
             if (row < 3)
             {
@@ -9620,7 +9606,7 @@ u8 SkillSymbologyWindow::func_slotb4()
  */
 u8 SkillSymbologyWindow::func_slotb0()
 {
-    u8 inactive = !this->selection->FieldClass151C50::unk35;
+    u8 inactive = !this->selection->ItemCreationClass185050::unk35;
     if (inactive == 1)
     {
         return 0;

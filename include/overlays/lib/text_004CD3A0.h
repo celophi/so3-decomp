@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_LIB_TEXT_004CD3A0_H
 
 #include "types.h"
+#include "gs.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/render_channel.h"
@@ -134,7 +135,13 @@ extern "C"
     /** @brief Extract rotation components from a quaternion. @param angles Destination rotation vector. @param quaternion Source quaternion. */
     void func_004CDA40(LibVector4* angles, const LibVector4* quaternion);
     /** @brief Normalize a quaternion in place. @param quaternion Quaternion to normalize. */
-    void func_004CD8A0(FieldVec4B* quaternion);
+    void lib_normalize_quaternion(FieldVec4B* quaternion);
+    /**
+     * @brief Build the unit quaternion for a rotation about an axis.
+     * @param output Receives the quaternion.
+     * @param axis_angle Axis in x, y and z, angle in radians in w.
+     */
+    void lib_quaternion_from_axis_angle(FieldVec4B* output, const LibVector4* axis_angle);
     /** @brief Convert a quaternion to a matrix. @param quaternion Rotation to convert. @return Rotation matrix. */
     LibMatrix44Value func_004CE930(const FieldVec4B& quaternion);
     /**
@@ -717,11 +724,41 @@ void func_004D6700(void* list, void* item);
  */
 void func_004DB570(void* object);
 
+/** VRAM allocator: hands out texture space after the display's buffers. */
+typedef struct LibVramAllocator
+{
+    /** Word address allocations start from. */
+    u32 base_address;
+
+    u32* unk04;
+
+    /** Word address of each allocation. */
+    u32* allocations;
+
+    s16 unk04_count;
+    s16 allocation_count;
+    s16 unk04_capacity;
+    s16 allocation_capacity;
+} LibVramAllocator;
+
+/** The game's VRAM allocator. */
+extern LibVramAllocator* D_001B65E0;
+
+/** @brief Fill all of VRAM with zeros, one 256x256 32-bit upload at a time. */
+void lib_clear_vram(void);
+
 /**
- * @brief Clear the halfword at offset 0x3E78 and toggle bit zero at offset 0x3E7A.
- * @param object Receiver to update.
+ * @brief Empty the allocator and make it start allocating at a VRAM page.
+ * @param vram Allocator.
+ * @param page First VRAM page to hand out.
  */
-void func_004DBB70(void* object);
+void lib_vram_reset(LibVramAllocator* vram, u32 page);
+
+/**
+ * @brief Clear the display's halfword at 0x3E78 and toggle the one at 0x3E7A.
+ * @param display Display to update.
+ */
+void func_004DBB70(struct LibCameraContext* display);
 
 /**
  * @brief Detach the object from the owner stored at offset 0x10, then clear that pointer.

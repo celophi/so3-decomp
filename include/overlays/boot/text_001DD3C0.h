@@ -11,6 +11,10 @@
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/render_buffer.h"
+#include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/image_capture.h"
+#include "overlays/lib/text_004DD440.h"
 
 /** Marker byte of an encoded BootSealedRecord. */
 #define BOOT_RECORD_SEALED 0x69
@@ -24,13 +28,6 @@ enum BootSealedRecordConstants
     BOOT_RECORD_ENCODED_TAIL_SIZE = 76,
     BOOT_RECORD_CHECKSUM_KEY_FACTOR = 37
 };
-
-/** Number of Battle Trophies and of flags in the saved collection. */
-#define BOOT_TROPHY_COUNT 300
-
-/** Mask used to round decoded resource pointers up to a 128-byte boundary. */
-#define BOOT_RESOURCE_ALIGNMENT_MASK 0x7F
-#define BOOT_ALIGN_RESOURCE(value) (((u32)(value) + BOOT_RESOURCE_ALIGNMENT_MASK) & ~BOOT_RESOURCE_ALIGNMENT_MASK)
 
 /** Resource IDs used by the boot program and its menus. */
 enum BootScreenResourceId
@@ -49,28 +46,6 @@ typedef struct BootMatrix
 {
     LibVector4 vectors[4];
 } BootMatrix;
-
-/** @brief The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
-typedef struct BootTrophyFlags
-{
-    u8 unk00[4];
-
-    /** Size of the flag array in bytes. */
-    s32 size;
-
-    /** Flag array: bit i of the array is set once trophy i is earned. */
-    u8* flag_bytes;
-
-    u8 unk0C[8];
-
-    /** Random word mixed into each trophy record's key; replaced when the flags are reset. */
-    s32 trophy_key;
-
-    /** Seed for checksum. */
-    u32 checksum_seed;
-
-    u32 checksum;
-} BootTrophyFlags;
 
 /**
  * @brief 0xB4-byte saved record that is kept XOR-encoded, with a checksum over the encoded bytes.
@@ -227,90 +202,30 @@ typedef struct BootSystemSettings
     /** Seed for extra_checksum. */
     u16 extra_key;
 
-    BootTrophyFlags trophy_flags;
+    LibTrophyFlags trophy_flags;
 } BootSystemSettings;
 
-/** Partial resident display runtime reached through D_001B657C, with the Lib vtable D_174F50. */
-class BootRuntime1B657C
-{
-    public:
-        /**
-         * @brief Initialize the runtime for a screen size; boot calls the Lib constructor.
-         * @param width Screen width.
-         * @param height Screen height.
-         * @param first First mode.
-         * @param second Second mode.
-         * @param scale Scale factor.
-         */
-        BootRuntime1B657C(float width, float height, s32 first, s32 second, float scale);
 
-        /** @brief Destroy the runtime. */
-        virtual ~BootRuntime1B657C();
 
-        u8 unk04[0x564];
-
-        /** Number the next formatted message prints. */
-        u32 message_value;
-
-        /** Further numbers for messages that print more than one. */
-        s32 message_values[9];
-
-        u8 unk590[0x74];
-};
-
-/** @brief Partial display area whose signed dimensions drive the projection. */
-struct BootDisplayArea
-{
-    u8 unk00[0xC];
-    s16 width;
-    s16 height;
-};
-
-/** Partial 0x3F10-byte Lib display with vtable D_178FB0 in main data; its data comes before the vptr. */
-class BootDimensionsACD0
-{
-    public:
-        /** @brief Construct the display. */
-        BootDimensionsACD0();
-
-        u8 unk00[0x160];
-        u16 unk160;
-        u8 unk162[0x3AFE];
-        BootDisplayArea display_area;
-        u8 unk3C70[8];
-        void* unk3C78;
-        u8 unk3C7C[0x290];
-
-        /** @brief Destroy the display. */
-        virtual ~BootDimensionsACD0();
-};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern class BootProjectionACD0* D_001B6654;
+extern class LibClass179080* D_001B6654;
 
-extern BootRuntime1B657C* D_001B657C;
+extern FieldRuntime* D_001B657C;
 extern ResidentArchive* g_resource_archive;
 extern ResidentResourceQueue* g_resource_queue;
 extern ResidentReleaseQueues* g_resident_release_queues;
 extern ResidentSound* g_sound;
-u16 func_457470(u16 seed, const void* data, s32 size);
-
-/**
- * @brief Compute the checksum of a flag block from a seed.
- * @param bits Flag block.
- * @param seed Seed, passed by address.
- * @param checksum Receives the checksum.
- */
-void func_457670(BootTrophyFlags* bits, u32* seed, u32* checksum);
+u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
 
 /**
  * @brief Recompute the checksum of a flag block from its key.
  * @param bits Flag block.
  */
-void func_457520(BootTrophyFlags* bits);
+void func_457520(LibTrophyFlags* bits);
 
 #ifdef __cplusplus
 }
@@ -345,7 +260,7 @@ enum BootResourceRequest
  * @param index Unsigned flag index.
  * @return One if the bit is set, otherwise zero.
  */
-static inline s32 resource_bit(BootTrophyFlags* bits, u32 index)
+static inline s32 resource_bit(LibTrophyFlags* bits, u32 index)
 {
     return (bits->flag_bytes[index / 8] >> (index % 8)) & 1;
 }
@@ -356,7 +271,7 @@ static inline s32 resource_bit(BootTrophyFlags* bits, u32 index)
  * @param index Unsigned flag index.
  * @param enabled Nonzero to set the bit, or zero to clear it.
  */
-static inline void set_resource_bit(BootTrophyFlags* bits, u32 index, s32 enabled)
+static inline void set_resource_bit(LibTrophyFlags* bits, u32 index, s32 enabled)
 {
     u32 byte_index = index / 8;
     u32 bit_index = index % 8;
@@ -401,38 +316,6 @@ extern "C" s32 lib_list_indicator_init(class BootListIndicator* object, float x,
 extern "C" void func_4E32F0(BootClass179150* object);
 extern "C" void func_4D5C90(void* object);
 
-/** Partial 0x880-byte Lib projection object; boot calls the Lib constructor. */
-class BootProjectionACD0 : public LibListObject
-{
-    public:
-        /**
-         * @brief Initialize the projection; boot calls the Lib constructor.
-         * @param display Display the projection draws to.
-         */
-        BootProjectionACD0(BootDimensionsACD0* display);
-
-        /**
-         * @brief Set up the projection for a display; boot uses the Lib implementation.
-         * @param display Display the projection draws to.
-         */
-        void initialize_projection(const BootDimensionsACD0* display);
-
-        /**
-         * @brief Set the position.
-         * @param x First component.
-         * @param y Second component.
-         * @param z Third component.
-         */
-        virtual void set_translation(float x, float y, float z);
-
-        u8 unk14[0x23C];
-        float unk250;
-        u8 unk254[8];
-        float unk25C;
-        u8 unk260[0x18];
-        float unk278;
-        u8 unk27C[0x604];
-};
 
 extern "C" LibDisplayManager* D_001B6628;
 
@@ -488,7 +371,7 @@ class BootClipRegion : public LibTransformOwner, public LibDmaCallbacks
         /** @brief Destroy the object. */
         virtual ~BootClipRegion();
 
-        BootDimensionsACD0* display;
+        LibCameraContext* display;
         void* unk98;
         u8 unk9c[8];
         s32 left;
@@ -498,19 +381,6 @@ class BootClipRegion : public LibTransformOwner, public LibDmaCallbacks
         u8 unkb4[0xC];
 };
 
-/** Partial 0xF0-byte selection cursor with the Lib vtable D_175070. */
-class BootSelectionCursor : public LibCallbackTransform, public ItemCreationClass185050
-{
-    public:
-        /** @brief Initialize the cursor transform. */
-        BootSelectionCursor()
-        {
-            type_id = 0x6FF0;
-        }
-
-        /** @brief Destroy the cursor. */
-        virtual ~BootSelectionCursor();
-};
 
 /** Boot's view of the 0x58-byte Lib list indicator with vtable D_1725D0, a bar showing how far a list is scrolled. */
 class BootListIndicator : public LibWidget
@@ -562,16 +432,6 @@ struct BootPanelRect50
 
 class BootPacketBuffer;
 
-/** Partial 0x210-byte Lib image strip with vtable D_1735A0 in main data; boot calls the Lib constructor. */
-class BootImageStrip : public LibTransformOwner, public LibDmaCallbacks
-{
-    public:
-        /** @brief Construct the strip. */
-        BootImageStrip();
-
-        u8 unk94[0x17C];
-};
-
 /** 0xE0-byte screen fade with vtable D_171C00 in main data: ten strips copied from the display, faded out. */
 class BootScreenFade : public LibTransformOwner, public LibDmaCallbacks
 {
@@ -580,7 +440,7 @@ class BootScreenFade : public LibTransformOwner, public LibDmaCallbacks
          * @brief Copy the display into ten strips and show them, fully opaque.
          * @param display Display to copy.
          */
-        BootScreenFade(BootDimensionsACD0* display);
+        BootScreenFade(LibCameraContext* display);
 
         /** @brief Destroy the strips, the copy buffer and the packet. */
         virtual ~BootScreenFade();
@@ -608,9 +468,9 @@ class BootScreenFade : public LibTransformOwner, public LibDmaCallbacks
          */
         virtual void on_packet_complete(u32 value);
 
-        BootImageStrip* images[10];
+        LibImageCapture* images[10];
         u8* buffer;
-        BootDimensionsACD0* display;
+        LibCameraContext* display;
         BootPacketBuffer* packet;
         u8 armed;
         u8 unkc9[3];
@@ -673,7 +533,7 @@ class BootTitleMenu : public LibListObject
         void* camera;
 
         /** Arrow beside the selected item. */
-        class BootSelectionCursor* cursor;
+        class LibSelectionCursor* cursor;
 
         u8* scene_data;
 
@@ -706,8 +566,7 @@ class BootTitleMenu : public LibListObject
         float idle_time;
 };
 
-class BootResident113E40;
-class BootMoviePlayer;
+class LibMoviePlayer;
 
 /**
  * Starts the game, with vtable D_171CB0 in main data. On a new game with Dolby Pro Logic II output it first plays
@@ -731,8 +590,8 @@ class BootGameLauncher : public LibListObject
         u8* buffer;
         s32 step;
         s32 timer;
-        BootResident113E40* movie_heap;
-        BootMoviePlayer* player;
+        ResidentHeap* movie_heap;
+        LibMoviePlayer* player;
 };
 
 class BootModel;
@@ -1161,50 +1020,6 @@ class BootClass170F30 : public BootModel
         virtual void build_packet(const void* matrix, void* context);
 };
 
-/** Block of a texture resource that holds its size; the width and height are powers of two. */
-struct BootTextureImage
-{
-    u8 unk00[8];
-
-    /** Offset of the pixel block from the texture header. */
-    u32 pixel_offset;
-
-    u8 unk0C[2];
-    u8 width_log2;
-    u8 height_log2;
-};
-
-/** Header of a texture resource; the image block sits image_offset bytes after it. */
-struct BootTextureHeader
-{
-    u8 unk00[4];
-    char name[4];
-    s32 id;
-    u32 image_offset;
-    u8 unk10[4];
-
-    /** Offset of the palette block from the texture header. */
-    u32 palette_offset;
-};
-
-/** Partial texture resource with its header after a 0x10-byte prefix. */
-struct BootTextureResource
-{
-    u8 unk00[0x10];
-    BootTextureHeader header;
-};
-
-/**
- * @brief Return the size block of a texture resource.
- * @param resource Texture resource.
- * @return Its size block.
- */
-static inline const BootTextureImage* texture_image(const BootTextureResource* resource)
-{
-    const BootTextureHeader* header = &resource->header;
-    return (const BootTextureImage*)((const u8*)header + header->image_offset);
-}
-
 /** Partial 0x30-byte image object with vtable D_171C90 in main data, drawn from a decoded FIS image. */
 class BootImage : public LibListObject
 {
@@ -1223,7 +1038,7 @@ class BootImage : public LibListObject
          * @param texture Texture resource.
          * @param palette Palette resource, or null.
          */
-        void set_texture(const BootTextureResource* texture, const BootTextureResource* palette);
+        void set_texture(const LibImageResource* texture, const LibImageResource* palette);
 
         /**
          * @brief Build the image's quad from a rectangle of its texture and queue the model for drawing.
@@ -1453,7 +1268,7 @@ class BootInstaller : public LibListObject
         LibTextWidget* message_text;
         LibTextWidget* progress_text;
         LibTextWidget* tip_text;
-        BootSelectionCursor* cursor;
+        LibSelectionCursor* cursor;
 };
 
 /** Partial loaded program image; the offset locates the copy of the main executable's code. */

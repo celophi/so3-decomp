@@ -2,6 +2,7 @@
 #define SO3_MAIN_RESIDENT_0011EE70_H
 
 #include "types.h"
+#include "gs.h"
 #include "main/resident_0010A0E0.h"
 
 /**
@@ -60,32 +61,10 @@ typedef struct ResidentSoundBankVariants
     const s32* file_keys;
 } ResidentSoundBankVariants;
 
-/** GIF tag: the tag word and the register list, four bits per register. */
-typedef struct ResidentGifTag
-{
-    u64 tag;
-
-    union
-    {
-        u64 registers;
-
-        struct
-        {
-            u64 register0 : 4;
-            u64 register1 : 4;
-            u64 register2 : 4;
-            u64 register3 : 4;
-            u64 register4 : 4;
-            u64 register5 : 4;
-            u64 unused : 40;
-        } fields;
-    };
-} ResidentGifTag;
-
 /** One GS register write in A+D (address plus data) form. */
 typedef struct ResidentGsRegisterWrite
 {
-    ResidentGifTag tag;
+    GsGifTag tag;
     u64 data;
     u64 address;
 } ResidentGsRegisterWrite;
@@ -93,7 +72,7 @@ typedef struct ResidentGsRegisterWrite
 /** Packed GIF tag, PRIM, colour and two XYZ2 vertices drawing one line. */
 typedef struct ResidentLinePacket
 {
-    ResidentGifTag tag;
+    GsGifTag tag;
     u64 prim;
     u32 rgba;
     u32 q;
@@ -103,7 +82,7 @@ typedef struct ResidentLinePacket
 /** Packed GIF tag, PRIM, colour and four XYZ2 vertices drawing one filled rectangle as a triangle strip. */
 typedef struct ResidentRectanglePacket
 {
-    ResidentGifTag tag;
+    GsGifTag tag;
     u64 prim;
     u32 rgba;
     u32 q;
@@ -264,7 +243,20 @@ void func_0011F0B0(ResidentPacket* packet, u64 data);
  * @param packet Packet whose data is queued.
  * @param completion Object notified when the transfer finishes, or null.
  */
-void func_0011F510(ResidentPacket* packet, void* completion);
+void resident_packet_queue_pending(ResidentPacket* packet, void* completion);
+
+/**
+ * @brief End the packet's pending data with a GIF end tag and send it straight to the GS on DMA channel 2.
+ * @param packet Packet buffer to send.
+ */
+void func_0011F580(ResidentPacket* packet);
+
+/**
+ * @brief Write a GIF end tag and a VIF FLUSH + MSKPATH3 (unmask) pair after the pending data, without advancing the cursor.
+ * @param packet Packet to terminate.
+ * @return Quadwords from the pending data's start through the end, or zero when nothing is pending.
+ */
+u32 func_0011F640(ResidentPacket* packet);
 
 /**
  * @brief Write a GIF end tag after the pending data without advancing the cursor.
@@ -1105,6 +1097,12 @@ extern "C"
      */
     ResidentClass14FD30* func_00120A70(ResidentClass14FCB0* list, u32 mask, const ResidentVector4* point,
                                        ResidentClass14FD30* start);
+
+    /**
+     * @brief Rebuild the hit box's matrices from its transform: the transpose, then the inverse from it.
+     * @param object Object whose hit box is updated.
+     */
+    void func_00120F20(ResidentClass14FD30* object);
 
     /**
      * @brief Turn the image animation on or off, rebuilding the image channel while the object is registered.

@@ -129,7 +129,7 @@ typedef struct ResidentContext
     u8 unk00[4];
     void* unk04;
     ResidentContext08* unk08;
-    struct LibDisplayState* unk0c;
+    struct LibCameraContext* unk0c;
     ResidentContextInput10* input;
     void* unk14;
     void* unk18;

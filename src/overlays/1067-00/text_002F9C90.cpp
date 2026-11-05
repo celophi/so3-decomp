@@ -10,6 +10,8 @@
 #include "overlays/lib/item_allocation.h"
 #include "overlays/1067-00/text_002607B0.h"
 #include "main/resident_001001E0.h"
+#include "overlays/lib/text_004DD440.h"
+#include "main/resident_00101260.h"
 
 extern "C" void func_114100(void* queue, void* submission);
 extern "C" void* D_001B6610;
@@ -52,13 +54,12 @@ struct TransactionDynamicInventory
 
 // Resident library ABI spellings used by the Field overlay.
 extern "C" ResidentObject1B64F8* D_001B64F8;
-extern "C" u16 func_457470(u16 seed, const void* data, s32 size);
+extern "C" u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
 extern "C" u32 func_414130(ItemCreationCategoryRecord* item);
 extern "C" u32 func_40D760(ItemCreationAllocationRecord* allocation);
 
 extern "C" void* memset_guess(void* destination, s32 value, u32 size);
 extern "C" u8 func_40B360(u32 shop_id);
-extern "C" void* func_1012D0(ResidentSystem* system);
 extern "C" u32 func_11DF70(void* clock);
 extern "C" const u16* D_31A500[42];
 
@@ -227,7 +228,7 @@ s32 shop_increase_quantity(ShopTransaction* transaction, u32 code)
     u16 checksum = record->checksum;
     const u8* end = reinterpret_cast<const u8*>(&record->checksum);
     u32 fol;
-    if (checksum != func_457470(record->checksum_seed, reinterpret_cast<u8*>(record) + 0x26, end - (reinterpret_cast<const u8*>(record) + 0x26)))
+    if (checksum != lib_compute_checksum(record->checksum_seed, reinterpret_cast<u8*>(record) + 0x26, end - (reinterpret_cast<const u8*>(record) + 0x26)))
     {
         fol = 0;
     }
@@ -408,7 +409,7 @@ s32 shop_init_transaction(ShopTransaction* transaction, u8 shop_id, u8 discount_
     transaction->shop_index = shop_id - 1;
     transaction->dynamic_inventory_slot = func_40B360(shop_id);
     transaction->discount_percent = discount_percent < 100 ? discount_percent : 99;
-    transaction->play_time_seconds = func_11DF70(func_1012D0(resident_get_system()));
+    transaction->play_time_seconds = func_11DF70(resident_system_get_input(resident_get_system()));
     ShopItemList* all_items = &transaction->category_items[7];
     u16* output = all_items->item_codes;
     s32 count = 0;
@@ -563,7 +564,6 @@ extern "C" void field_attach_model_display(FieldStatus14* object)
     object->display_attached = 1;
 }
 
-extern "C" void* D_001B6650;
 extern "C" void field_replace_model_camera(FieldStatus14* object, void* attached)
 {
     if (object->display != 0)

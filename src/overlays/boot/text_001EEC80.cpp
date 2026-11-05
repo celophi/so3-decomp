@@ -4659,7 +4659,8 @@ float BootQuaternionTrackBase::get_key_span() const
  */
 static inline void reread_result(FieldVec4A*& out)
 {
-    // Preserve the read of the result pointer after the copy.
+    // TODO: The game reads the result pointer back through its address after the copy and never uses it. Every
+    // non-volatile form I tried gets optimised away, so I'm not sure yet what the original wrote here.
     FieldVec4A* volatile* slot = &out;
     (void)*slot;
 }

@@ -14,9 +14,30 @@ extern "C" {
 void FlushCache(s32 mode);
 
 /**
+ * @brief Stop the DMAC raising interrupts for one channel.
+ * @param channel DMA channel.
+ * @return The channel's previous enable state.
+ */
+s32 DisableDmac(s32 channel);
+
+/**
  * @brief Initialize the TLB.
  */
 void InitTLB(void);
+
+/**
+ * @brief Wait on a semaphore.
+ * @param sema_id Semaphore ID.
+ * @return The semaphore ID, or a negative value on failure.
+ */
+s32 WaitSema(s32 sema_id);
+
+/**
+ * @brief Signal a semaphore.
+ * @param sema_id Semaphore ID.
+ * @return The semaphore ID, or a negative value on failure.
+ */
+s32 SignalSema(s32 sema_id);
 
 /**
  * @brief Signal a semaphore from interrupt context.
@@ -119,6 +140,13 @@ void TerminateLibrary(void);
 s32 GetThreadId(void);
 
 s32 WakeupThread(s32 thread_id);
+
+/**
+ * @brief Wake a sleeping thread from interrupt context.
+ * @param thread_id Thread ID.
+ * @return The thread ID, or a negative value on failure.
+ */
+s32 iWakeupThread(s32 thread_id);
 
 /** Header that starts every SIF command packet. */
 typedef struct SifCommandHeader

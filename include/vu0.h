@@ -140,6 +140,21 @@ static inline void vu0_start_microprogram_vf5(const void* vector)
 }
 
 /**
+ * @brief Load a vector into vf5 and start the microprogram at 0x670.
+ *
+ * The program normalizes the quaternion and leaves it in vf6. Lib starts it
+ * from 16 places, all with this one nop.
+ * @param vector 16-byte aligned vector.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ */
+static inline void vu0_start_microprogram_670_vf5(const void* vector)
+{
+    asm __volatile__("lqc2 $vf5, 0(%0)\n"
+                     "nop\n"
+                     "vcallms 0x670" : : "r"(vector) : "memory");
+}
+
+/**
  * @brief Run microprogram 0 on a vector in place, from vf1 to vf3.
  *
  * Main calls this once, right after loading boot's microcode, so it's a
