@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_BOOT_TEXT_001FF9D0_H
-#define SO3_OVERLAYS_BOOT_TEXT_001FF9D0_H
+#ifndef SO3_OVERLAYS_BOOT_MUSIC_PLAYER_H
+#define SO3_OVERLAYS_BOOT_MUSIC_PLAYER_H
 
 #include "types.h"
 #include "main/resident_0011EE70.h"

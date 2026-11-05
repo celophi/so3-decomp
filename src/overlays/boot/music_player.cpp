@@ -1,5 +1,5 @@
 #include "include_asm.h"
-#include "overlays/boot/text_001FF9D0.h"
+#include "overlays/boot/music_player.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
