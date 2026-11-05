@@ -1223,7 +1223,7 @@ s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode)
     object->unk60 = 0;
     object->unk48 = 0;
     status = 0;
-    restarting = !object->unk6a;
+    restarting = !object->started;
     count = object->entry_count;
 
     for (index = 0; index < count; index++)
@@ -1262,7 +1262,7 @@ s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode)
 
     if (!(frame < 0.0f))
     {
-        object->unk6a = 1;
+        object->started = 1;
     }
 
     return status;

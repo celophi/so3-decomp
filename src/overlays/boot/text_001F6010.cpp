@@ -11,7 +11,7 @@ extern "C" {
 
 // Boot calls lib_draw_buffer_end through its own prototype, with a u8 mode.
 void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
-extern LibDisplayManager* D_001B6630;
+extern LibDisplayManager* g_scene_display_manager;
 
 extern const char g_new_game_node_name[];
 extern const char g_continue_node_name[];
@@ -235,7 +235,7 @@ void BootTitleMenu::animate_items(u8 snap)
  */
 void BootTitleMenu::get_cursor_position(float* x, float* y)
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     BootClass170F30* node = find_menu_item(this, selected);
 
     if (node == 0)
@@ -348,9 +348,9 @@ void BootTitleMenu::update_item_availability()
 /** @brief Run the menu state machine. */
 void BootTitleMenu::update()
 {
-    BootSystemSettings* settings;
+    LibSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (step)
     {
@@ -369,14 +369,14 @@ void BootTitleMenu::update()
         check_main_code();
         scene = new (0) BootScene;
         lib_scene_load_data(scene, (ResidentResourceHeader*)scene_data);
-        func_474010(scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
+        func_474010(scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
         delete[] scene_data;
         scene_data = 0;
         lib_reset_game_state(game_data);
         delete[] game_data;
         game_data = 0;
         camera = lib_find_camera_entry(scene, g_title_camera_node_name);
-        D_001B6628->current_display = static_cast<LibListObject*>(camera);
+        g_display_manager->current_display = static_cast<LibListObject*>(camera);
 
         if (initial_item != BOOT_TITLE_ITEM_AUTO)
         {
@@ -392,13 +392,13 @@ void BootTitleMenu::update()
         }
 
         animate_items(1);
-        D_001B661C->prepend_node(new (0) LibColorFade, -1);
+        g_renderer->prepend_node(new (0) LibColorFade, -1);
         float x;
         float y;
         get_cursor_position(&x, &y);
         cursor = new (0) LibSelectionCursor;
         cursor->init(1, 0, 0, x, y, 0.0f);
-        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         step++;
         break;
     }
@@ -416,7 +416,7 @@ void BootTitleMenu::update()
     {
         check_main_code();
 
-        if (input->repeated == BOOT_BUTTON_LEFT && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_LEFT && cursor->arrived)
         {
             selected--;
 
@@ -433,7 +433,7 @@ void BootTitleMenu::update()
             resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
         }
 
-        if (input->repeated == BOOT_BUTTON_RIGHT && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_RIGHT && cursor->arrived)
         {
             selected++;
 
@@ -509,7 +509,7 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        D_001B6614->append_node(new (0) BootNewGameSettings, -1);
+        g_update_list->append_node(new (0) BootNewGameSettings, -1);
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -523,7 +523,7 @@ void BootTitleMenu::update()
         cursor->destroy();
         cursor = 0;
         resident_sound_stop_music(g_sound, 0, -1);
-        D_001B6614->append_node(new (0) BootOpeningMovie, -1);
+        g_update_list->append_node(new (0) BootOpeningMovie, -1);
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -536,7 +536,7 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        D_001B6614->append_node(new (0) BootGameLauncher, -1);
+        g_update_list->append_node(new (0) BootGameLauncher, -1);
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -549,7 +549,7 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        D_001B6614->append_node(new (0) BootInstaller, -1);
+        g_update_list->append_node(new (0) BootInstaller, -1);
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -564,7 +564,7 @@ void BootTitleMenu::update()
         cursor->destroy();
         cursor = 0;
         u8* block = new (0) u8[resident_rand()];
-        D_001B6614->append_node(new (0) BootBattleTrophyViewer, -1);
+        g_update_list->append_node(new (0) BootBattleTrophyViewer, -1);
         delete block;
         lib_object_detach_owner(this);
         destroy();
@@ -778,9 +778,9 @@ void progress_bar_reset(BootProgressBar* bar, s32 width, s32 height, u32 color, 
     bar->mode = mode;
     progress_bar_draw(bar, 0, 1);
     bar->model->attach_draw_buffer(bar->draw_buffer);
-    bar->model->unk80 = D_001B6630;
+    bar->model->display_manager = g_scene_display_manager;
     bar->model->draw_flags |= LIB_DRAW_FLAG_0400;
-    D_001B661C->append_node(bar->model, -1);
+    g_renderer->append_node(bar->model, -1);
 }
 
 /** @brief Destroy the bar's model, then the bar. */
@@ -861,7 +861,7 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
     request.psm = 1;
     request.width_log2 = 6;
     request.height_log2 = 10;
-    u32 address = D_001B663C->find_texture(&request, 0x54744664, 1, 0, 0, 1, 0);
+    u32 address = g_texture_cache->find_texture(&request, 0x54744664, 1, 0, 0, 1, 0);
 
     if (address != 0)
     {
@@ -969,7 +969,7 @@ BootScreenFade::BootScreenFade(LibCameraContext* display)
         lib_image_capture_store(images[i], buffer + height * (i * BOOT_FADE_STRIP_WIDTH) * 3 / 16 * 16,
                                 display->buffers[0].environment.context1.frame.base_pointer << 5, width / BOOT_FADE_STRIP_WIDTH, GS_PSMCT24,
                                 i * BOOT_FADE_STRIP_WIDTH, 0, BOOT_FADE_STRIP_WIDTH, height);
-        D_001B661C->append_node(images[i], -1);
+        g_renderer->append_node(images[i], -1);
     }
 
     set_type_id(0x4000);
@@ -1091,9 +1091,9 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
 
     func_455BD0(image->draw_buffer, image->unk2c, 500.0f, 0);
     image->model->attach_draw_buffer(image->draw_buffer);
-    image->model->unk80 = D_001B6630;
+    image->model->display_manager = g_scene_display_manager;
     image->model->draw_flags |= LIB_DRAW_FLAG_0400;
-    D_001B661C->append_node(image->model, -1);
+    g_renderer->append_node(image->model, -1);
 }
 
 /**
@@ -1145,9 +1145,9 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
 
     func_455BD0(draw_buffer, unk2c, 500.0f, 0);
     model->attach_draw_buffer(draw_buffer);
-    model->unk80 = D_001B6630;
+    model->display_manager = g_scene_display_manager;
     model->draw_flags |= LIB_DRAW_FLAG_0400;
-    D_001B661C->append_node(model, -1);
+    g_renderer->append_node(model, -1);
 }
 
 /**
@@ -1218,9 +1218,9 @@ void BootScreenFade::set_default_draw_bucket()
 /** @brief Run the launch steps: seed, movie, load, hand over. */
 void BootGameLauncher::update()
 {
-    BootSystemSettings* settings;
+    LibSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     u32 previous;
 
     switch (step)
@@ -1252,8 +1252,8 @@ void BootGameLauncher::update()
 
         if ((u8)settings->continue_selected == 0)
         {
-            BootSealedRecord* record = &settings->sealed_record;
-            memset_guess(record, 0, sizeof(BootSealedRecord));
+            LibSealedRecord* record = &settings->sealed_record;
+            memset_guess(record, 0, sizeof(LibSealedRecord));
             seal_record(record);
             LibTrophyFlags* bits = &settings->trophy_flags;
             s32 size = bits->flags.size;
@@ -1267,7 +1267,7 @@ void BootGameLauncher::update()
             lib_trophy_flags_update_checksum(bits);
         }
 
-        if ((u8)settings->continue_selected == 0 && settings->sound_output == BOOT_SOUND_DOLBY_PRO_LOGIC_II)
+        if ((u8)settings->continue_selected == 0 && settings->sound_output == LIB_SOUND_DOLBY_PRO_LOGIC_II)
         {
             step++;
             timer = 0;
@@ -1296,7 +1296,7 @@ void BootGameLauncher::update()
             player->state->set_scale(1.0f, 1.0f);
             player->state->set_words(0x800, 0x800, 1);
 
-            if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
+            if (((LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
             {
                 player->state->unk80D8 = 1;
             }
@@ -1353,49 +1353,49 @@ void BootGameLauncher::update()
  * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.
  * @param record Record to seal; an already sealed record is left alone.
  */
-void seal_record(BootSealedRecord* record)
+void seal_record(LibSealedRecord* record)
 {
     s32 i;
 
     if (record->sealed == 0)
     {
-        record->sealed = BOOT_RECORD_SEALED;
-        record->unk00 ^= BOOT_RECORD_XOR_BYTE;
-        record->unk02 ^= BOOT_RECORD_XOR_HALFWORD;
-        record->unk04 ^= BOOT_RECORD_XOR_WORD;
-        record->unk08 ^= BOOT_RECORD_XOR_WORD;
-        record->unk0C ^= BOOT_RECORD_XOR_WORD;
-        record->unk10 ^= BOOT_RECORD_XOR_WORD;
-        record->unk14 ^= BOOT_RECORD_XOR_WORD;
-        record->unk18 ^= BOOT_RECORD_XOR_WORD;
-        record->unk1C ^= BOOT_RECORD_XOR_WORD;
-        record->unk20 ^= BOOT_RECORD_XOR_WORD;
-        record->unk24 ^= BOOT_RECORD_XOR_WORD;
-        record->unk28 ^= BOOT_RECORD_XOR_WORD;
-        record->unk2C ^= BOOT_RECORD_XOR_WORD;
-        record->unk30 ^= BOOT_RECORD_XOR_WORD;
-        record->unk34 ^= BOOT_RECORD_XOR_WORD;
-        record->unk38 ^= BOOT_RECORD_XOR_WORD;
-        record->unk3C ^= BOOT_RECORD_XOR_WORD;
-        record->unk40 ^= BOOT_RECORD_XOR_WORD;
-        record->unk44 ^= BOOT_RECORD_XOR_WORD;
-        record->unk48 ^= BOOT_RECORD_XOR_WORD;
-        record->unk4C ^= BOOT_RECORD_XOR_WORD;
-        record->unk50 ^= BOOT_RECORD_XOR_WORD;
-        record->unk54 ^= BOOT_RECORD_XOR_WORD;
-        record->unk58 ^= BOOT_RECORD_XOR_WORD;
+        record->sealed = LIB_RECORD_SEALED;
+        record->unk00 ^= LIB_RECORD_XOR_BYTE;
+        record->unk02 ^= LIB_RECORD_XOR_HALFWORD;
+        record->unk04 ^= LIB_RECORD_XOR_WORD;
+        record->unk08 ^= LIB_RECORD_XOR_WORD;
+        record->unk0C ^= LIB_RECORD_XOR_WORD;
+        record->unk10 ^= LIB_RECORD_XOR_WORD;
+        record->unk14 ^= LIB_RECORD_XOR_WORD;
+        record->unk18 ^= LIB_RECORD_XOR_WORD;
+        record->unk1C ^= LIB_RECORD_XOR_WORD;
+        record->unk20 ^= LIB_RECORD_XOR_WORD;
+        record->unk24 ^= LIB_RECORD_XOR_WORD;
+        record->unk28 ^= LIB_RECORD_XOR_WORD;
+        record->unk2C ^= LIB_RECORD_XOR_WORD;
+        record->unk30 ^= LIB_RECORD_XOR_WORD;
+        record->unk34 ^= LIB_RECORD_XOR_WORD;
+        record->unk38 ^= LIB_RECORD_XOR_WORD;
+        record->unk3C ^= LIB_RECORD_XOR_WORD;
+        record->unk40 ^= LIB_RECORD_XOR_WORD;
+        record->unk44 ^= LIB_RECORD_XOR_WORD;
+        record->unk48 ^= LIB_RECORD_XOR_WORD;
+        record->unk4C ^= LIB_RECORD_XOR_WORD;
+        record->unk50 ^= LIB_RECORD_XOR_WORD;
+        record->unk54 ^= LIB_RECORD_XOR_WORD;
+        record->unk58 ^= LIB_RECORD_XOR_WORD;
 
-        for (i = 0; i < BOOT_RECORD_ENCODED_TAIL_SIZE; i++)
+        for (i = 0; i < LIB_RECORD_ENCODED_TAIL_SIZE; i++)
         {
-            record->encoded_tail[i] ^= BOOT_RECORD_XOR_BYTE;
+            record->encoded_tail[i] ^= LIB_RECORD_XOR_BYTE;
         }
 
         record->key = resident_next_random_word();
-        record->checksum = lib_compute_checksum(record->key * BOOT_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
+        record->checksum = lib_compute_checksum(record->key * LIB_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
     }
-    else if (record->sealed != BOOT_RECORD_SEALED)
+    else if (record->sealed != LIB_RECORD_SEALED)
     {
-        memset_guess(record, 0, sizeof(BootSealedRecord));
+        memset_guess(record, 0, sizeof(LibSealedRecord));
     }
 }
 

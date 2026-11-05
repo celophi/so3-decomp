@@ -823,7 +823,7 @@ void LibImageCapture::render()
     }
     else
     {
-        func_004DC4F0(D_001B65DC, 6, 0, this, 0, 0);
+        func_004DC4F0(g_packet_queue, 6, 0, this, 0, 0);
     }
 }
 

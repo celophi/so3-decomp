@@ -12,47 +12,8 @@ struct BootDisplay6624
     LibDisplayManager* manager;
 };
 
-/** Partial resident object whose display pointer is at offset 0x8C. */
-struct BootDisplayUser8C
-{
-    u8 unk00[0x8C];
-    LibCameraContext* display;
-};
-
-/** Partial resident object whose display pointer is at offset 0x94. */
-struct BootDisplayUser94
-{
-    u8 unk00[0x94];
-    LibCameraContext* display;
-};
-
-/** Partial resident object whose display pointer is at offset 0x128. */
-struct BootDisplayUser128
-{
-    u8 unk00[0x128];
-    LibCameraContext* display;
-};
-
-/** Partial resident manager D_001B661C and the objects that draw through the display. */
-struct BootDisplayLinks661C : public LibUpdateList
-{
-    u8 unk78[0x4008];
-    BootDisplayUser8C* unk4080;
-    void* unk4084;
-    LibCameraContext* unk4088;
-    u8 unk408C[0x42];
-    u8 unk40CE;
-    u8 unk40CF[0x389];
-    BootDisplayUser94* unk4458;
-    u8 unk445C[4];
-    BootDisplayUser94* unk4460;
-    BootDisplayUser94* unk4464;
-    BootDisplayUser94* unk4468;
-    BootDisplayUser128* unk446C;
-};
-
 extern "C" {
-extern BootDisplayLinks661C* D_001B661C;
+extern LibRenderer* g_renderer;
 extern BootDisplay6624* D_001B6624;
 
 /** Seconds since the last frame. */
@@ -63,7 +24,7 @@ extern float g_frame_seconds;
 void FlushCache(s32 value);
 void lib_scene_use_data(BootScene* scene, u8* data);
 void func_474010(BootScene* scene, LibCameraContext* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
-                 BootDisplayLinks661C* links, s32 flag);
+                 LibRenderer* renderer, s32 flag);
 BootClass170F30* lib_find_renderable_entry(LibListObject* models, const char* name);
 BootClass170F30* lib_find_next_renderable_entry(LibListObject* models, BootClass170F30* model);
 void* lib_find_named_entry(LibListObject* models, const char* name);
@@ -112,7 +73,7 @@ static inline void queue_fade()
 {
     BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
     fade->fade_speed = 2.0f;
-    D_001B661C->append_node(fade, -1);
+    g_renderer->append_node(fade, -1);
 }
 
 #endif

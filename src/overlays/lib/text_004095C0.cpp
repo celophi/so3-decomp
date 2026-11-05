@@ -695,7 +695,7 @@ s32 lib_item_code_init_rectangle(LibObject172410* object, float x, float y, floa
     LibRuntimeCodeResources* resources;
     state->flag = flag;
     func_00464870(object, x, y, width, height);
-    resources = (LibRuntimeCodeResources*)D_001B657C;
+    resources = (LibRuntimeCodeResources*)g_field_runtime;
     state->source = &resources->slots[resources->item_slot];
     if (!func_00464900(object, 0, 64, 0, 0))
     {
@@ -733,7 +733,7 @@ s32 lib_detail_code_init_rectangle(LibObject172440* object, u16 code, u8 variati
     LibRuntimeCodeResources* resources;
     state->flag = flag;
     func_00464870(object, x, y, width, height);
-    resources = (LibRuntimeCodeResources*)D_001B657C;
+    resources = (LibRuntimeCodeResources*)g_field_runtime;
     state->source = &resources->slots[resources->factor_slot];
     if (!func_00464900(object, 0, 128, 0, 0))
     {

@@ -32,9 +32,9 @@ typedef struct LibPacketQueue LibPacketQueue;
 extern "C" {
 #endif
 
-extern FieldPacketDrawer* D_001B6618;
+extern FieldPacketDrawer* g_screen_text;
 
-extern LibPacketQueue* D_001B65DC;
+extern LibPacketQueue* g_packet_queue;
 
 #ifdef __cplusplus
 }

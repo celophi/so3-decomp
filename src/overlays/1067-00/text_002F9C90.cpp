@@ -551,7 +551,7 @@ extern "C" void func_002FD1B0(FieldFloatState5C* object, float first, float seco
     object->values[4] = fifth;
 }
 
-extern "C" LibDisplayManager* D_001B6628;
+extern "C" LibDisplayManager* g_display_manager;
 
 /**
  * @brief Attach the window's auxiliary display to the resident display manager.
@@ -559,8 +559,8 @@ extern "C" LibDisplayManager* D_001B6628;
  */
 extern "C" void field_attach_model_display(FieldStatus14* object)
 {
-    D_001B6628->append_node(object->display, -1);
-    D_001B6628->current_display = object->display;
+    g_display_manager->append_node(object->display, -1);
+    g_display_manager->current_display = object->display;
     object->display_attached = 1;
 }
 
@@ -568,12 +568,12 @@ extern "C" void field_replace_model_camera(FieldStatus14* object, void* attached
 {
     if (object->display != 0)
     {
-        D_001B6628->current_display = object->previous_display;
+        g_display_manager->current_display = object->previous_display;
         object->display->destroy();
         object->display = 0;
     }
-    object->previous_display = D_001B6628->current_display;
-    object->display = new (0) LibClass179080(D_001B6650);
+    object->previous_display = g_display_manager->current_display;
+    object->display = new (0) LibClass179080(g_display);
     ((LibClass179080*)object->display)->copy_camera((const LibClass179080*)attached);
     ((LibClass179080*)object->display)->look_at_target = &object->member;
     object->rotation = 1.57f;
@@ -629,7 +629,7 @@ void field_cancel_model_request(FieldStatus14* object)
             if (object->display && object->display_attached && object->previous_display)
             {
                 object->display_attached = 0;
-                D_001B6628->current_display = object->previous_display;
+                g_display_manager->current_display = object->previous_display;
                 lib_object_detach_owner(object->display);
                 object->display->destroy();
                 object->display = 0;
@@ -692,7 +692,7 @@ void FieldClass15BB90::func_001DD7B0()
     if (display && display_attached && previous_display)
     {
         display_attached = 0;
-        D_001B6628->current_display = previous_display;
+        g_display_manager->current_display = previous_display;
         lib_object_detach_owner(display);
         display->destroy();
         display = 0;

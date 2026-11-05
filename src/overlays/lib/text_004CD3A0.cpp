@@ -154,7 +154,7 @@ struct LibFieldPointer634
 
 #define HALF_PI 1.57079637050628662109375f
 
-extern "C" LibDisplayManager* D_001B6628;
+extern "C" LibDisplayManager* g_display_manager;
 extern "C" ResidentDmaQueue* D_001B660C;
 
 /** @brief View an aligned matrix row as a vector. @param matrix Source matrix. @param index Row index. @return Read-only row vector. */
@@ -874,7 +874,7 @@ void LibTransformOwner::copy_transform_state(const LibTransformOwner* source)
     set_translation_vector(&source->translation);
     set_orientation(&source->orientation);
     set_scale_vector(&source->scale);
-    unk80 = source->unk80;
+    display_manager = source->display_manager;
     draw_flags = source->draw_flags;
 }
 
@@ -909,19 +909,19 @@ extern "C" void lib_finish_packet(LibTransformOwner* object)
 
     if (object->unk65 == 0)
     {
-        LibRenderer* renderer = static_cast<LibRenderer*>(D_001B661C);
+        LibRenderer* renderer = static_cast<LibRenderer*>(g_renderer);
 
         if (renderer->main_packet == object)
         {
             renderer->main_packet_busy = 0;
             renderer->packet_ticks = TIMER0_COUNT - renderer->packet_start_time;
-            func_004DC420(D_001B65DC, 1);
+            func_004DC420(g_packet_queue, 1);
             renderer->main_packet = 0;
         }
     }
     else
     {
-        LibRenderer* renderer = static_cast<LibRenderer*>(D_001B661C);
+        LibRenderer* renderer = static_cast<LibRenderer*>(g_renderer);
 
         if (renderer->bucket_packet == object)
         {
@@ -1041,7 +1041,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4700__
 void LibRenderer::begin_frame()
 {
     func_004D9A80(D_001B65FC, 0);
-    D_001B668C = 1.0f / g_frame_ticks;
+    g_inverse_frame_ticks = 1.0f / g_frame_ticks;
 
     if (manager == 0)
     {
@@ -1495,10 +1495,10 @@ void LibScreenText::begin(u16 x, u16 y)
 
     color = 0x80FFFFFF;
     shadow_color = 0x80101010;
-    D_001B6650->get_area_scale(&scale_x, &scale_y);
+    g_display->get_area_scale(&scale_x, &scale_y);
     cell_width = (u8)(s32)(LIB_SCREEN_TEXT_CELL_SIZE * scale_x);
     cell_height = (u8)(s32)(0.5f * (LIB_SCREEN_TEXT_CELL_SIZE * scale_y));
-    display = D_001B6650;
+    display = g_display;
     top = GS_COORDINATE_CENTRE - display->display_area.height / 2;
     margin = GS_COORDINATE_CENTRE - display->display_area.width / 2;
     left = cursor_x = (x + margin) << 4;
@@ -1514,8 +1514,8 @@ void LibScreenText::begin(u16 x, u16 y)
     setup->tag.tag = GIF_TAG_NREG(1) | 4;
     setup->tag.registers = 0;
     setup->tag.fields.register0 = GIF_REGISTER_AD;
-    tex0 = (u64)D_001B65E0->unk04[LIB_SCREEN_TEXT_FONT_SLOT] | LIB_SCREEN_TEXT_FONT_TEX0;
-    setup->tex0 = tex0 | func_004DC800(D_001B65E0, LIB_SCREEN_TEXT_FONT_SLOT, 0, 1);
+    tex0 = (u64)g_vram_allocator->unk04[LIB_SCREEN_TEXT_FONT_SLOT] | LIB_SCREEN_TEXT_FONT_TEX0;
+    setup->tex0 = tex0 | func_004DC800(g_vram_allocator, LIB_SCREEN_TEXT_FONT_SLOT, 0, 1);
     setup->tex0_address = GS_REGISTER_TEX0_2;
     setup->alpha = GS_ALPHA_NORMAL;
     setup->alpha_address = GS_REGISTER_ALPHA_2;
@@ -2200,13 +2200,13 @@ void LibTransform::update()
     if (draw_flags & 0x380)
     {
         LibClass179080* camera;
-        if (unk80 != 0)
+        if (display_manager != 0)
         {
-            camera = static_cast<LibClass179080*>(unk80->current_display);
+            camera = static_cast<LibClass179080*>(display_manager->current_display);
         }
         else
         {
-            camera = static_cast<LibClass179080*>(D_001B6628->current_display);
+            camera = static_cast<LibClass179080*>(g_display_manager->current_display);
         }
         if (camera != 0)
         {

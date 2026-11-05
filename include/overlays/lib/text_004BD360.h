@@ -760,8 +760,8 @@ public:
     u8 resource_is_borrowed;
     u8 unk69;
 
-    /** Cleared to restart the animation from its first frame. */
-    u8 unk6a;
+    /** Set once a frame has been applied; cleared to restart, which applies the restart-only entries again. */
+    u8 started;
 
     u8 unk6b[3];
     u8 targets_bound;

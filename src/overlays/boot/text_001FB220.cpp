@@ -88,7 +88,7 @@ s32 BootBattleTrophyViewer::get_default_list_kind()
  */
 static inline u64 trophy_time(BootBattleTrophyViewer* viewer, s32 position)
 {
-    BootSystemSettings* settings = boot_settings();
+    LibSystemSettings* settings = boot_settings();
     s32 index = viewer->order[position];
 
     if (resource_bit(&settings->trophy_flags, index))
@@ -381,7 +381,7 @@ static inline void set_clip(BootClipRegion* clip, s32 left, s32 top, s32 right, 
  */
 s32 BootBattleTrophyViewer::create_trophy_images()
 {
-    BootSystemSettings* settings = boot_settings();
+    LibSystemSettings* settings = boot_settings();
     LibTrophyFlags* bits = &settings->trophy_flags;
 
     if (!flags_intact(bits))
@@ -414,7 +414,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
     }
 
     grid_clip = new (0) BootClipRegion;
-    D_001B661C->append_node(grid_clip, -1);
+    g_renderer->append_node(grid_clip, -1);
 
     if (settings->widescreen)
     {
@@ -465,7 +465,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
 
     FlushCache(0);
     screen_clip = new (0) BootClipRegion;
-    D_001B661C->append_node(screen_clip, -1);
+    g_renderer->append_node(screen_clip, -1);
     screen_clip->display = g_boot_program.display;
     return 1;
 }
@@ -562,7 +562,7 @@ static inline bool trophy_genuine(const BootTrophyRecord* record, s32 index)
  * @param field Byte to save.
  * @param value Value to save.
  */
-static inline void settings_set_extra_byte(BootSystemSettings* settings, u8* field, u8 value)
+static inline void settings_set_extra_byte(LibSystemSettings* settings, u8* field, u8 value)
 {
     s32 length;
     u8* data = &settings->unk1A0;
@@ -615,7 +615,7 @@ static inline void move_grid_cursor(BootBattleTrophyViewer* viewer)
 void BootBattleTrophyViewer::update()
 {
     BootInput* input = g_boot_program.get_input();
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     s32 card_states[2];
     card_states[0] = input->slot1_raw_state;
     card_states[1] = input->slot2_raw_state;
@@ -636,9 +636,9 @@ void BootBattleTrophyViewer::update()
                 step++;
             }
 
-            D_001B661C->prepend_node(new (0) LibColorFade, -1);
+            g_renderer->prepend_node(new (0) LibColorFade, -1);
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(D_001B657C,
+            lib_queue_display_object(g_field_runtime,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         }
 
@@ -690,7 +690,7 @@ void BootBattleTrophyViewer::update()
         slot = 0;
         cursor = new (0) LibSelectionCursor;
         cursor->init(1, 0, 0, 170.0f, 156.0f, 0.0f);
-        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_WAIT_FOR_EXIT:
         if (input->pressed & settings->confirm_buttons)
@@ -705,12 +705,12 @@ void BootBattleTrophyViewer::update()
         clear_to_black();
         resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
-        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_BATTLE_TROPHIES), -1);
+        g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_BATTLE_TROPHIES), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
     case BOOT_TROPHY_CHOOSE_SLOT:
-        if ((input->repeated & (BOOT_BUTTON_UP | BOOT_BUTTON_DOWN)) && cursor->unk35)
+        if ((input->repeated & (BOOT_BUTTON_UP | BOOT_BUTTON_DOWN)) && cursor->arrived)
         {
             float y;
             slot = (slot + 1) & 1;
@@ -993,12 +993,12 @@ void BootBattleTrophyViewer::update()
             }
         }
 
-        D_001B657C->message_arguments[1] = earned_count;
-        D_001B657C->message_arguments[2] = LIB_TROPHY_COUNT;
-        D_001B657C->message_arguments[3] = earned_count * 100 / LIB_TROPHY_COUNT;
+        g_field_runtime->message_arguments[1] = earned_count;
+        g_field_runtime->message_arguments[2] = LIB_TROPHY_COUNT;
+        g_field_runtime->message_arguments[3] = earned_count * 100 / LIB_TROPHY_COUNT;
         cursor = new (0) LibSelectionCursor;
         cursor->init(1, 0, 0, grid_cursor_x(this), cursor_row * 100 + 170, 0.0f);
-        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_BROWSE:
     {
@@ -1081,12 +1081,12 @@ void BootBattleTrophyViewer::update()
                 {
                     lib_text_set_resource(name_text, g_boot_program.get_messages(), index + 200, 0);
                     BootTrophyTime* time = &records[index].time;
-                    D_001B657C->message_arguments[4] = from_bcd(time->year);
-                    D_001B657C->message_arguments[5] = from_bcd(time->month);
-                    D_001B657C->message_arguments[6] = from_bcd(time->day);
-                    D_001B657C->message_arguments[7] = from_bcd(time->hour);
-                    D_001B657C->message_arguments[8] = from_bcd(time->minute);
-                    D_001B657C->message_arguments[9] = from_bcd(time->second);
+                    g_field_runtime->message_arguments[4] = from_bcd(time->year);
+                    g_field_runtime->message_arguments[5] = from_bcd(time->month);
+                    g_field_runtime->message_arguments[6] = from_bcd(time->day);
+                    g_field_runtime->message_arguments[7] = from_bcd(time->hour);
+                    g_field_runtime->message_arguments[8] = from_bcd(time->minute);
+                    g_field_runtime->message_arguments[9] = from_bcd(time->second);
 
                     if (time->year >= 0x10)
                     {
@@ -1145,7 +1145,7 @@ void BootBattleTrophyViewer::update()
             reveal_index++;
         }
 
-        if (cursor->unk35 && scroll_step == 0 && input_delay == 0)
+        if (cursor->arrived && scroll_step == 0 && input_delay == 0)
         {
             if (input->repeated & BOOT_BUTTON_RIGHT)
             {
@@ -1319,7 +1319,7 @@ void BootBattleTrophyViewer::update()
         clear_to_black();
         resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
-        D_001B6614->append_node(new (0) BootMusicPlayer, -1);
+        g_update_list->append_node(new (0) BootMusicPlayer, -1);
         lib_object_detach_owner(this);
         destroy();
         return;

@@ -472,7 +472,7 @@ extern LibVector4 g_default_bounding_sphere;
 extern u64 D_004ED330[];
 extern LibWidgetColors4C5590 g_item_drop_title_colors;
 extern const char g_item_empty_name[];
-extern LibCameraContext* D_001B6650;
+extern LibCameraContext* g_display;
 
 // Lib defines these under C names without a shared declaration, and the record functions take this overlay's own types.
 extern "C"
@@ -808,7 +808,7 @@ static inline void set_selector_brightness(FieldClass153130* selector, float bri
  */
 static inline s32 selector_is_idle(ItemCoordinateSelector* selector)
 {
-    return ((u32)selector->ItemCreationClass185050::unk35 > 0) ^ 1;
+    return ((u32)selector->ItemCreationClass185050::arrived > 0) ^ 1;
 }
 
 /** @brief Read the catalog entry's unsellable flag. @param definition Catalog entry. @return Flag as a byte. */
@@ -2384,7 +2384,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
             ItemHpMpGauge* gauge = new (0) ItemHpMpGauge;
             gauge->character_id = slot;
             gauge->characters = D_001B643C->characters;
-            LibCameraContext* context = D_001B6650;
+            LibCameraContext* context = g_display;
             gauge->FieldClass159A70::unk1c = 0x800 - context->display_area.width / 2;
             gauge->FieldClass159A70::unk20 = 0x800 - context->display_area.height / 2;
             gauge->FieldClass159A70::unk24 = 0x800 + context->display_area.width / 2;
@@ -2408,7 +2408,7 @@ s32 ItemUseWindow::func_slotf4(u32 associated)
 
             gauge->func_002BC370(0x80);
             gauge->FieldClass159A70::unk04 = this->unk10;
-            lib_queue_display_object(D_001B657C, gauge);
+            lib_queue_display_object(g_field_runtime, gauge);
             this->gauges.append(gauge);
             gauge->LibCallbackTransform::unkab = 0;
         }
@@ -2917,7 +2917,7 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
     FieldClass15AE60::unk3c = 1;
     detail_container = new (0) LibContainer;
     lib_container_init(detail_container, 14, 20.0f, 83.0f, 0, 0.0f, 0);
-    lib_queue_display_object(D_001B657C, detail_container);
+    lib_queue_display_object(g_field_runtime, detail_container);
     LibClass1746A0* clip = new (0) LibClass1746A0;
     LibClass1746A0* reset = new (0) LibClass1746A0;
     panel = new (0) LibPanel;
@@ -2963,7 +2963,7 @@ s32 ItemInstanceListWindow::func_slot104(u32 associated)
     marker->unk50 = 0xDC6464;
     marker->needs_redraw = 1;
     lib_container_attach_widget(FieldClass15AE70::unk10, divider);
-    FieldRuntime* runtime = D_001B657C;
+    FieldRuntime* runtime = g_field_runtime;
     runtime->text_banks[1].resource_slot = associated;
     runtime->text_banks[1].base_key = ITEM_MSG_FIRST_FACTOR_NAME;
     s32 index;
@@ -3090,7 +3090,7 @@ void ItemInstanceListWindow::refresh_instances(s32 reset)
                 func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(model), 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
             }
 
-            D_001B6614->append_node(model, -1);
+            g_update_list->append_node(model, -1);
         }
 
         details_shown = 1;
@@ -3558,7 +3558,7 @@ u8 ItemInstanceListWindow::func_slotb8()
                     func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(model), 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
                 }
 
-                D_001B6614->append_node(model, -1);
+                g_update_list->append_node(model, -1);
             }
 
             details_shown = 1;
@@ -3978,7 +3978,7 @@ u8 ItemCategoryWindow::func_slotb0()
         return 0;
     }
 
-    bool idle = !selector->ItemCreationClass185050::unk35;
+    bool idle = !selector->ItemCreationClass185050::arrived;
 
     if (idle)
     {
@@ -4325,7 +4325,7 @@ void ItemController::func_slot5c()
 {
     if (resource_slot != 0)
     {
-        lib_release_resource_slot(D_001B657C, resource_slot);
+        lib_release_resource_slot(g_field_runtime, resource_slot);
     }
 
     lib_object_detach_owner(&static_cast<FieldClass153E30&>(*this));
@@ -4409,9 +4409,9 @@ s32 ItemController::on_resource_loaded(void* buffer)
         resident_exchange_allocation_heap(resource_heap);
     }
 
-    resource_slot = lib_load_resource_slot(D_001B657C, resource);
+    resource_slot = lib_load_resource_slot(g_field_runtime, resource);
     resident_exchange_allocation_heap(previous_heap);
-    FieldRuntime* runtime = D_001B657C;
+    FieldRuntime* runtime = g_field_runtime;
     runtime->text_banks[0].resource_slot = resource_slot;
     runtime->text_banks[0].base_key = ITEM_MSG_ITEM_NAME_BASE + 1;
     return init_windows();

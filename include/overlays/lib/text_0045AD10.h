@@ -152,10 +152,17 @@ public:
     /** Frames the move to the target takes. */
     float move_frames;
 
-    u8 unk2c[4];
+    /** Distance moved per frame, worked out on the first step of a move. */
+    float speed;
+
     float alpha;
-    u8 unk34;
-    u8 unk35;
+
+    /** Set once the move's speed has been worked out. */
+    u8 speed_ready;
+
+    /** Set once the position has reached the target. */
+    u8 arrived;
+
     u8 unk36[2];
 
     /** @brief Initialize the storage and clear its three scalar pairs. */
@@ -321,7 +328,7 @@ struct LibObject172440 : public LibDrawWidget
 
 #ifdef __cplusplus
 /**
- * The display runtime reached through D_001B657C: sixteen resource slots, the display list and the numbers that
+ * The display runtime reached through g_field_runtime: sixteen resource slots, the display list and the numbers that
  * formatted messages print. Resident vtable at 0x174F50.
  */
 class FieldRuntime : public LibListObject

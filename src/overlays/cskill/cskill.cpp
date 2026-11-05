@@ -1129,7 +1129,7 @@ struct SkillTacticalPromptWindow : FieldClass15AE70
 };
 
 extern "C" SkillRuntime* D_001B643C;
-extern "C" LibCameraContext* D_001B6650;
+extern "C" LibCameraContext* g_display;
 
 /** @brief Set display flags for the selected window lists. @param object Window base. @param flag Flag value. @param lists List-selection bit mask. */
 extern "C" void func_002CE530(FieldClass15AE70* object, u32 flag, u32 lists);
@@ -1287,7 +1287,7 @@ static inline void show_grid_message(FieldClass153E30* controller, FieldObject23
  */
 static inline void move_active_grid(FieldObject23CEA0* selection, s16 direction)
 {
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive != 1)
     {
         selection->process_direction(direction);
@@ -3005,7 +3005,7 @@ u8 SkillTacticalDetailWindow::func_slotb0()
     if (this->mode == SKILL_TACTICAL_DETAILS_AURA)
     {
         FieldObject23CEA0* grid = this->aura_grid;
-        u8 inactive = !grid->unk35;
+        u8 inactive = !grid->arrived;
         if (inactive == 1)
         {
             return 0;
@@ -3020,7 +3020,7 @@ u8 SkillTacticalDetailWindow::func_slotb0()
     else if (this->mode == SKILL_TACTICAL_DETAILS_CONVERSION)
     {
         FieldObject23CEA0* grid = this->conversion_grid;
-        u8 inactive = !grid->unk35;
+        u8 inactive = !grid->arrived;
         if (inactive == 1)
         {
             return 0;
@@ -3061,7 +3061,7 @@ void SkillTacticalDetailWindow::func_slot70()
 {
     if (this->mode == SKILL_TACTICAL_DETAILS_AURA)
     {
-        u8 inactive = !this->aura_grid->unk35;
+        u8 inactive = !this->aura_grid->arrived;
         if (inactive == 1)
         {
             return;
@@ -3069,7 +3069,7 @@ void SkillTacticalDetailWindow::func_slot70()
     }
     else if (this->mode == SKILL_TACTICAL_DETAILS_CONVERSION)
     {
-        u8 inactive = !this->conversion_grid->unk35;
+        u8 inactive = !this->conversion_grid->arrived;
         if (inactive == 1)
         {
             return;
@@ -3087,7 +3087,7 @@ void SkillTacticalDetailWindow::func_slot6c()
             return;
         }
         FieldObject23CEA0* selection = this->aura_grid;
-        u8 inactive = !selection->unk35;
+        u8 inactive = !selection->arrived;
         if (inactive == 1)
         {
             return;
@@ -3101,7 +3101,7 @@ void SkillTacticalDetailWindow::func_slot6c()
     else if (this->mode == SKILL_TACTICAL_DETAILS_CONVERSION)
     {
         FieldObject23CEA0* selection = this->conversion_grid;
-        u8 inactive = !selection->unk35;
+        u8 inactive = !selection->arrived;
         if (inactive == 1)
         {
             return;
@@ -3123,7 +3123,7 @@ void SkillTacticalDetailWindow::func_slot68()
             return;
         }
         FieldObject23CEA0* selection = this->aura_grid;
-        u8 inactive = !selection->unk35;
+        u8 inactive = !selection->arrived;
         if (inactive == 1)
         {
             return;
@@ -3137,7 +3137,7 @@ void SkillTacticalDetailWindow::func_slot68()
     else if (this->mode == SKILL_TACTICAL_DETAILS_CONVERSION)
     {
         FieldObject23CEA0* selection = this->conversion_grid;
-        u8 inactive = !selection->unk35;
+        u8 inactive = !selection->arrived;
         if (inactive == 1)
         {
             return;
@@ -3711,7 +3711,7 @@ static inline void clear_selection_rows(SkillModeSelection* window)
 /** @brief Cancel skill selection and restore the battle setup window. @return Zero when inactive, otherwise event two. */
 u8 SkillModeSelection::func_slotb4()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -3797,7 +3797,7 @@ static inline void set_battle_skill_index(SkillCharacterEquipment* record, s32 s
 u8 SkillModeSelection::func_slotb0()
 {
     FieldObject23CEA0* grid = this->selection;
-    u8 inactive = !grid->unk35;
+    u8 inactive = !grid->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -3988,7 +3988,7 @@ u8 SkillModeSelection::func_slotb0()
 s32 SkillModeSelection::func_slotd4()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->ItemCreationClass185050::unk35;
+    u8 inactive = !selection->ItemCreationClass185050::arrived;
     if (inactive == 1)
     {
         return 0;
@@ -4050,7 +4050,7 @@ s32 SkillModeSelection::func_slotd4()
 
 s32 SkillModeSelection::func_slotd0()
 {
-    u8 inactive = !this->selection->ItemCreationClass185050::unk35;
+    u8 inactive = !this->selection->ItemCreationClass185050::arrived;
     if (inactive == 1)
     {
         return 0;
@@ -4096,7 +4096,7 @@ s32 SkillModeSelection::func_slotd0()
 void SkillModeSelection::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->ItemCreationClass185050::unk35;
+    u8 inactive = !selection->ItemCreationClass185050::arrived;
     if (inactive == 1)
     {
         return;
@@ -4130,7 +4130,7 @@ void SkillModeSelection::func_slot6c()
 void SkillModeSelection::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->ItemCreationClass185050::unk35;
+    u8 inactive = !selection->ItemCreationClass185050::arrived;
     if (inactive == 1)
     {
         return;
@@ -5040,7 +5040,7 @@ void func_00351BE0(SkillTacticalWindow* object)
 void SkillTacticalWindow::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -5058,7 +5058,7 @@ void SkillTacticalWindow::func_slot6c()
 void SkillTacticalWindow::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -5169,7 +5169,7 @@ u8 func_003523A0(SkillTacticalWindow* object)
 s32 SkillTacticalWindow::func_slotdc()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -5187,7 +5187,7 @@ s32 SkillTacticalWindow::func_slotdc()
 s32 SkillTacticalWindow::func_slotd8()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -5204,7 +5204,7 @@ s32 SkillTacticalWindow::func_slotd8()
 
 u8 SkillTacticalWindow::func_slotb4()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -5241,7 +5241,7 @@ u8 SkillTacticalWindow::func_slotb4()
 u8 SkillTacticalWindow::func_slotbc()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -5261,7 +5261,7 @@ u8 SkillTacticalWindow::func_slotbc()
 u8 SkillTacticalWindow::func_slotb0()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     s16 index;
     s16 mode;
     LibWidget* display;
@@ -5620,7 +5620,7 @@ void skill_refresh_battle_selection(SkillBattleSetupWindow* record)
 
 s32 SkillBattleSetupWindow::func_slotdc()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -5636,7 +5636,7 @@ s32 SkillBattleSetupWindow::func_slotdc()
 
 s32 SkillBattleSetupWindow::func_slotd8()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -5653,7 +5653,7 @@ s32 SkillBattleSetupWindow::func_slotd8()
 void SkillBattleSetupWindow::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -5693,7 +5693,7 @@ void SkillBattleSetupWindow::func_slot6c()
 void SkillBattleSetupWindow::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -5732,7 +5732,7 @@ void SkillBattleSetupWindow::func_slot68()
 
 u8 SkillBattleSetupWindow::func_slotb4()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -6091,7 +6091,7 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
     }
     this->attachment->set_codes_and_z(0, 9, 0.0f, this->unk10->unka4 + 0x20, 0);
     this->attachment->resource_source = associated;
-    lib_queue_display_object(D_001B657C, static_cast<LibCallbackTransform*>(this->attachment));
+    lib_queue_display_object(g_field_runtime, static_cast<LibCallbackTransform*>(this->attachment));
     SkillController* controller = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     controller->status_attachment = this->attachment;
     const float* position = &this->unk10->translation.x;
@@ -6165,7 +6165,7 @@ void SkillStatusSkillWindow::func_slot5c()
     s32 level = status_skill_level(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], row);
     if (level == 10)
     {
-        D_001B657C->message_arguments[0] = 0;
+        g_field_runtime->message_arguments[0] = 0;
         this->message->func_slot60(row ? 0x1ABD : 0x1ABC);
     }
     else
@@ -6181,7 +6181,7 @@ void SkillStatusSkillWindow::func_slot5c()
             increase = func_4086D0(record, level + 1, 2);
             break;
         }
-        D_001B657C->message_arguments[0] = increase;
+        g_field_runtime->message_arguments[0] = increase;
         this->message->func_slot60(this->selection->unk114 + SKILL_MSG_STATUS_HELP_BASE);
     }
 }
@@ -6260,7 +6260,7 @@ void func_003559F0(SkillStatusSkillWindow* object)
 void SkillStatusSkillWindow::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -6290,7 +6290,7 @@ void SkillStatusSkillWindow::func_slot6c()
 void SkillStatusSkillWindow::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -6319,7 +6319,7 @@ void SkillStatusSkillWindow::func_slot68()
 
 s32 SkillStatusSkillWindow::func_slotdc()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -6335,7 +6335,7 @@ s32 SkillStatusSkillWindow::func_slotdc()
 
 s32 SkillStatusSkillWindow::func_slotd8()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -6351,7 +6351,7 @@ s32 SkillStatusSkillWindow::func_slotd8()
 
 u8 SkillStatusSkillWindow::func_slotb4()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -6371,7 +6371,7 @@ u8 SkillStatusSkillWindow::func_slotb4()
 
 u8 SkillStatusSkillWindow::func_slotb0()
 {
-    bool inactive = this->selection->ItemCreationClass185050::unk35 ? false : true;
+    bool inactive = this->selection->ItemCreationClass185050::arrived ? false : true;
     if (inactive == 1)
     {
         return 0;
@@ -7040,7 +7040,7 @@ void SkillSecondarySelection::func_slot5c()
     {
         return;
     }
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -7088,7 +7088,7 @@ s32 SkillSecondarySelection::func_slotdc()
     {
         return 0;
     }
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -7102,7 +7102,7 @@ s32 SkillSecondarySelection::func_slotd8()
     {
         return 0;
     }
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -7139,7 +7139,7 @@ u8 SkillSecondarySelection::func_slotb4()
 
 u8 SkillSecondarySelection::func_slotb0()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -7638,7 +7638,7 @@ void SkillController::func_slot5c()
     s32 resource = this->resource_slot;
     if (resource != 0)
     {
-        lib_release_resource_slot(D_001B657C, resource);
+        lib_release_resource_slot(g_field_runtime, resource);
     }
     lib_object_detach_owner(&static_cast<FieldClass153E30&>(*this));
     this->func_001DD7B0();
@@ -7795,7 +7795,7 @@ s32 SkillController::on_resource_loaded(void* buffer)
         resident_heap_release(memory);
         resident_exchange_allocation_heap(heap);
     }
-    resource_slot = lib_load_resource_slot(D_001B657C, aligned);
+    resource_slot = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
     return init_windows();
 }
@@ -8639,7 +8639,7 @@ void SkillOptionsWindow::func_slot5c()
 void SkillOptionsWindow::func_slot70()
 {
     SkillCoordinateSelector* child = this->child;
-    bool inactive = !child->LibMovementState::unk35;
+    bool inactive = !child->LibMovementState::arrived;
     if (!inactive)
     {
         s32 index = child->selected - 1;
@@ -8654,7 +8654,7 @@ void SkillOptionsWindow::func_slot70()
 void SkillOptionsWindow::func_slot74()
 {
     SkillCoordinateSelector* child = this->child;
-    bool inactive = !child->LibMovementState::unk35;
+    bool inactive = !child->LibMovementState::arrived;
     if (!inactive)
     {
         s32 index = child->selected + 1;
@@ -8669,7 +8669,7 @@ void SkillOptionsWindow::func_slot74()
 void SkillOptionsWindow::func_slot6c()
 {
     SkillCoordinateSelector* child = this->child;
-    bool inactive = !child->LibMovementState::unk35;
+    bool inactive = !child->LibMovementState::arrived;
     if (!inactive)
     {
         s32 index = child->selected;
@@ -8694,7 +8694,7 @@ void SkillOptionsWindow::func_slot6c()
 void SkillOptionsWindow::func_slot68()
 {
     SkillCoordinateSelector* child = this->child;
-    bool inactive = !child->LibMovementState::unk35;
+    bool inactive = !child->LibMovementState::arrived;
     if (!inactive)
     {
         s32 index = child->selected;
@@ -9021,7 +9021,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             SkillHpMpGauge* gauge = new (0) SkillHpMpGauge;
             gauge->character_id = slot;
             gauge->characters = D_001B643C->characters;
-            LibCameraContext* context = D_001B6650;
+            LibCameraContext* context = g_display;
             gauge->FieldClass159A70::unk1c = 0x800 - context->display_area.width / 2;
             gauge->FieldClass159A70::unk20 = 0x800 - context->display_area.height / 2;
             gauge->FieldClass159A70::unk24 = 0x800 + context->display_area.width / 2;
@@ -9043,7 +9043,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             }
             gauge->func_002BC370(0x80);
             gauge->FieldClass159A70::unk04 = this->unk10;
-            lib_queue_display_object(D_001B657C, gauge);
+            lib_queue_display_object(g_field_runtime, gauge);
             func_003649E0(reinterpret_cast<SkillList*>(&this->nested), gauge);
             gauge->LibCallbackTransform::unkab = 0;
         }
@@ -9272,7 +9272,7 @@ void SkillSymbologyWindow::func_slot5c()
  */
 s32 SkillSymbologyWindow::func_slotc4()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -9312,7 +9312,7 @@ s32 SkillSymbologyWindow::func_slotc4()
  */
 s32 SkillSymbologyWindow::func_slotc0()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return 0;
@@ -9348,7 +9348,7 @@ s32 SkillSymbologyWindow::func_slotc0()
 
 void SkillSymbologyWindow::func_slot74()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -9377,7 +9377,7 @@ void SkillSymbologyWindow::func_slot74()
 
 void SkillSymbologyWindow::func_slot70()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -9407,7 +9407,7 @@ void SkillSymbologyWindow::func_slot70()
 void SkillSymbologyWindow::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -9436,7 +9436,7 @@ void SkillSymbologyWindow::func_slot6c()
 void SkillSymbologyWindow::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->unk35;
+    u8 inactive = !selection->arrived;
     if (inactive == 1)
     {
         return;
@@ -9464,7 +9464,7 @@ void SkillSymbologyWindow::func_slot68()
 
 s32 SkillSymbologyWindow::func_slotdc()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     SkillSymbologyCharacterWindow* character_window;
     if (inactive == 1)
     {
@@ -9484,7 +9484,7 @@ s32 SkillSymbologyWindow::func_slotdc()
 
 s32 SkillSymbologyWindow::func_slotd8()
 {
-    u8 inactive = !this->selection->unk35;
+    u8 inactive = !this->selection->arrived;
     SkillSymbologyCharacterWindow* character_window;
     if (inactive == 1)
     {
@@ -9608,7 +9608,7 @@ u8 SkillSymbologyWindow::func_slotb4()
  */
 u8 SkillSymbologyWindow::func_slotb0()
 {
-    u8 inactive = !this->selection->ItemCreationClass185050::unk35;
+    u8 inactive = !this->selection->ItemCreationClass185050::arrived;
     if (inactive == 1)
     {
         return 0;

@@ -1118,7 +1118,7 @@ s32 func_001ECF10(const FieldGatedObject448* object);
 void func_001E94F0(LibClass177B50* object);
 
 /**
- * @brief Create the FieldClass1504F0 instance and insert it into D_001B6614.
+ * @brief Create the FieldClass1504F0 instance and insert it into g_update_list.
  *
  * When flag is set and bit 3 of the field context byte at offset 0xDE is clear,
  * the bit is written clear and nothing is created. Nothing is created while an

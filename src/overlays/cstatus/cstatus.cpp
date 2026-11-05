@@ -1515,7 +1515,7 @@ void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
     LibClass175030* marker = object->grid_marker;
     LibMovementState& movement = *marker;
 
-    if (movement.unk35 != 0)
+    if (movement.arrived != 0)
     {
         if (value < 0)
         {
@@ -2446,7 +2446,7 @@ void status_create_character_model(StatusCharacterWindow* object)
             func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->character_model), 0.5235988f, 480.0f, 0.0f, 90.0f, 110.0f);
         }
 
-        D_001B6614->append_node(object->character_model, -1);
+        g_update_list->append_node(object->character_model, -1);
     }
 }
 
@@ -2637,7 +2637,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 14);
     container = new (0) LibContainer;
     lib_container_init(container, 0, 16.0f, 72.0f, 9, 0.0f, 0x898);
-    lib_queue_display_object(D_001B657C, container);
+    lib_queue_display_object(g_field_runtime, container);
     LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 392.0f, 88.0f);
     lib_container_attach_widget(container, panel);
@@ -3293,7 +3293,7 @@ void StatusResourceState::func_slot5c()
 
     if (object->resource != 0)
     {
-        lib_release_resource_slot(D_001B657C, object->resource);
+        lib_release_resource_slot(g_field_runtime, object->resource);
     }
 
     lib_object_detach_owner(object);
@@ -3340,7 +3340,7 @@ void StatusResourceState::update()
             return;
         }
 
-        D_001B6650->set_output(false, false);
+        g_display->set_output(false, false);
 
         switch (object->requested_window)
         {
@@ -3368,7 +3368,7 @@ void StatusResourceState::update()
         (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->depth = D_001B6694;
         effect->mode = 10;
         object->transition_phase = STATUS_TRANSITION_FINISH;
-        D_001B6650->set_output(true, false);
+        g_display->set_output(true, false);
         break;
     }
     case STATUS_TRANSITION_FINISH:
@@ -3445,9 +3445,9 @@ s32 StatusResourceState::on_resource_loaded(void* buffer)
         resident_exchange_allocation_heap(heap);
     }
 
-    object->resource = lib_load_resource_slot(D_001B657C, aligned);
+    object->resource = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
-    StatusRuntimeResource* runtime = reinterpret_cast<StatusRuntimeResource*>(D_001B657C);
+    StatusRuntimeResource* runtime = reinterpret_cast<StatusRuntimeResource*>(g_field_runtime);
     runtime->resource = object->resource;
     runtime->code = 0xC351;
     return object->init_windows();

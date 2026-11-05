@@ -345,7 +345,7 @@ void FieldClass150280::func_001E76B0(float start, float end)
         resident_exchange_allocation_heap(heap);
         unk66_3 = 1;
     }
-    unk14->unk6a = 0;
+    unk14->started = 0;
     LibVector4 initial;
     initial.x = 0.0f;
     initial.y = 0.0f;
@@ -712,7 +712,7 @@ s32 func_001E95B0(s32 flag)
             if (object)
             {
                 object->unk4d_2 = flag;
-                D_001B6614->append_node(object, -1);
+                g_update_list->append_node(object, -1);
                 return 1;
             }
         }
@@ -1268,7 +1268,7 @@ FieldClass1504F0::~FieldClass1504F0()
 {
     if (unk3c != -1)
     {
-        lib_release_resource_slot(D_001B657C, unk3c);
+        lib_release_resource_slot(g_field_runtime, unk3c);
     }
     if (unk40)
     {

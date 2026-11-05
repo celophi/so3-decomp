@@ -1398,7 +1398,7 @@ void CmcClass18AF20::func_slot5c()
 {
     if (resource_slot)
     {
-        lib_release_resource_slot(D_001B657C, resource_slot);
+        lib_release_resource_slot(g_field_runtime, resource_slot);
     }
     lib_object_detach_owner(this);
     func_001DD7B0();
@@ -1434,7 +1434,7 @@ s32 CmcClass18AF20::on_resource_loaded(void* buffer)
         resident_heap_release(allocation);
         resident_exchange_allocation_heap(resource_heap);
     }
-    resource_slot = lib_load_resource_slot(D_001B657C, resource);
+    resource_slot = lib_load_resource_slot(g_field_runtime, resource);
     resident_exchange_allocation_heap(previous_heap);
     return init_windows();
 }

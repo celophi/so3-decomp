@@ -34,7 +34,7 @@ inline LibTransformOwner::LibTransformOwner()
     unk69 = 0;
     draw_flags = LIB_DRAW_FLAG_0010;
     type_id = 1;
-    unk80 = 0;
+    display_manager = 0;
     unk88 = 0;
     unk8c = 0;
     object_kind = 2;

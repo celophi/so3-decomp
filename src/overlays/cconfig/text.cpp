@@ -409,7 +409,7 @@ extern ConfigRuntime* D_001B643C;
 /** Four-corner gradient for the corner selector's background panel. */
 extern "C" LibWidgetColors4C5590 g_config_corner_panel_colors;
 
-extern "C" LibCameraContext* D_001B6650;
+extern "C" LibCameraContext* g_display;
 
 extern "C" void func_2642D0(void* object);
 
@@ -563,7 +563,7 @@ static inline void set_preview_scale(ItemCreationOptionResourceDisplay* display,
  */
 static inline u8 config_selection_inactive(const FieldObject23CEA0* selection)
 {
-    return !selection->unk35;
+    return !selection->arrived;
 }
 
 
@@ -585,7 +585,7 @@ static inline u32 pack_color(u8 red, u8 green, u8 blue)
  */
 static inline float viewport_aspect()
 {
-    return (4.0f / 3.0f) * ((15.0f / 14.0f) * D_001B6650->display_area.height) / D_001B6650->display_area.width;
+    return (4.0f / 3.0f) * ((15.0f / 14.0f) * g_display->display_area.height) / g_display->display_area.width;
 }
 
 /**
@@ -1808,7 +1808,7 @@ void func_0034AD30(ConfigOptions* object)
 
 void func_0034AEC0(ConfigOptions* object, u16 direction, s32 amount)
 {
-    if (object->scroll != 0 && object->scroll->unk35 != 0 && object->unk288 == 0)
+    if (object->scroll != 0 && object->scroll->arrived != 0 && object->unk288 == 0)
     {
         if (direction == 0 && object->selected == 0)
         {
@@ -2465,11 +2465,11 @@ void func_0034BF40(ConfigOptions* object, u16 input)
     {
         if (active_settings->widescreen != 0)
         {
-            camera->unk278 = (16.0f / 9.0f) * viewport_aspect() / (4.0f / 3.0f);
+            camera->pixel_aspect = (16.0f / 9.0f) * viewport_aspect() / (4.0f / 3.0f);
         }
         else
         {
-            camera->unk278 = viewport_aspect();
+            camera->pixel_aspect = viewport_aspect();
         }
     }
 }
@@ -4644,7 +4644,7 @@ void func_003520C0(ConfigControlReceiver* object)
 {
     if (object->resource)
     {
-        lib_release_resource_slot(D_001B657C, object->resource);
+        lib_release_resource_slot(g_field_runtime, object->resource);
     }
     lib_object_detach_owner(object);
     object->func_001DD7B0();
@@ -4696,7 +4696,7 @@ s32 func_00352330(ConfigControlReceiver* object, void* buffer)
         resident_heap_release(memory);
         resident_exchange_allocation_heap(heap);
     }
-    object->resource = lib_load_resource_slot(D_001B657C, aligned);
+    object->resource = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
     return object->init_windows();
 }

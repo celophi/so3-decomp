@@ -25,7 +25,7 @@
 #define STREAM_BLOCK_SIZE 0x1000
 
 extern "C" {
-extern void* D_001B65DC;
+extern void* g_packet_queue;
 extern u8 D_00148400[];
 extern u8 D_0014A9E0[];
 s32 DIntr(void);
@@ -1650,7 +1650,7 @@ extern "C" void func_00109BE0(ResidentStreamDma* dma, u32 channel)
  */
 extern "C" void func_00109C80(ResidentStreamDma* dma, u32 channel)
 {
-    func_4DC4F0(D_001B65DC, 5, 0, dma, 0, 0);
+    func_4DC4F0(g_packet_queue, 5, 0, dma, 0, 0);
 }
 
 /**

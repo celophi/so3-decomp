@@ -45,7 +45,7 @@ extern "C" void* func_4997C0(void* object, FieldParticleDesc296870* desc);
 
 extern "C" void* func_100CA0(void* heap);
 extern "C" void func_452C90(void* object, s32 count, FieldScaleEntry296670* entries);
-extern "C" RequestQueue* D_001B6614;
+extern "C" RequestQueue* g_update_list;
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" const char D_335660[];
 extern "C" const char D_335680[];
@@ -92,9 +92,9 @@ void func_00294DA0(FieldRequestState294DA0* object)
     FieldEntry1C* entry = &object->unk1c[object->unk32];
     if (entry->rounded_unk04())
     {
-        func_104320(D_001B6614, entry->unk0c, entry->rounded_unk04(), 0x80000000,
+        func_104320(g_update_list, entry->unk0c, entry->rounded_unk04(), 0x80000000,
                     object->unk28, static_cast<FieldRequestObserver294DA0*>(object), entry->byte_count(), 0, 1);
-        entry->unk10 = func_103AF0(D_001B6614, entry->unk0c, entry->rounded_unk04(), 0x80000000, entry->byte_count(), 0);
+        entry->unk10 = func_103AF0(g_update_list, entry->unk0c, entry->rounded_unk04(), 0x80000000, entry->byte_count(), 0);
         func_139128(D_335660, entry->unk0c, entry->rounded_unk04(), entry->rounded_unk04() + entry->byte_count(), entry->byte_count());
         if (object->unk2c != -1)
         {
@@ -180,7 +180,7 @@ void FieldClass16C970::func_slot1c(s32 flag)
                 FieldEntry1C* record = &unk1c[i];
                 u32 word = record->unk00;
                 u32 size = record->rounded_unk04();
-                func_103FD0(D_001B6614, record->unk0c, size, 0x80000000, word, 0);
+                func_103FD0(g_update_list, record->unk0c, size, 0x80000000, word, 0);
             }
             unk15 = 9;
         }
@@ -189,7 +189,7 @@ void FieldClass16C970::func_slot1c(s32 flag)
             FieldEntry1C* record = &unk1c[unk32];
             u32 word = record->unk00;
             u32 size = record->rounded_unk04();
-            if (!func_103AF0(D_001B6614, record->unk0c, size, 0x80000000, word, 0))
+            if (!func_103AF0(g_update_list, record->unk0c, size, 0x80000000, word, 0))
             {
                 func_slot0c(0);
             }
@@ -210,13 +210,13 @@ void FieldClass16C970::func_slot1c(s32 flag)
             FieldEntry1C* record = &records[i];
             u32 word = record->unk00;
             u32 size = record->rounded_unk04();
-            record->unk10 = func_103AF0(D_001B6614, record->unk0c, size, 0x80000000, word, 0);
+            record->unk10 = func_103AF0(g_update_list, record->unk0c, size, 0x80000000, word, 0);
             if (record->unk10)
             {
                 done = false;
             }
         }
-        if (D_001B6610->unkf17b || func_102D90(D_001B6614))
+        if (D_001B6610->unkf17b || func_102D90(g_update_list))
         {
             done = false;
         }
@@ -240,13 +240,13 @@ void FieldClass16C970::func_slot1c(s32 flag)
         {
             u32 word = record->unk00;
             u32 size = record->rounded_unk04();
-            record->unk10 = func_103AF0(D_001B6614, record->unk0c, size, 0x80000000, word, 0);
+            record->unk10 = func_103AF0(g_update_list, record->unk0c, size, 0x80000000, word, 0);
             if (record->unk10)
             {
                 done = false;
             }
         }
-        if (D_001B6610->unkf17b || func_102D90(D_001B6614))
+        if (D_001B6610->unkf17b || func_102D90(g_update_list))
         {
             done = false;
         }
@@ -278,7 +278,7 @@ s32 FieldClass16C970::func_slot20()
             FieldEntry1C* entry = &entries[i];
             if (!entry->unk08_0)
             {
-                func_103FD0(D_001B6614, entry->unk0c, entry->rounded_unk04(),
+                func_103FD0(g_update_list, entry->unk0c, entry->rounded_unk04(),
                     0x80000000, entry->byte_count(), 0);
             }
         }
@@ -288,7 +288,7 @@ s32 FieldClass16C970::func_slot20()
     case 10:
         break;
     case 9:
-        if (D_001B6610->unkf17b || func_102D90(D_001B6614))
+        if (D_001B6610->unkf17b || func_102D90(g_update_list))
         {
             break;
         }
@@ -346,7 +346,7 @@ s32 FieldClass16C970::func_slot24()
     {
         if (!entry->unk08_0)
         {
-            func_103FD0(D_001B6614, entry->unk0c, entry->rounded_unk04(),
+            func_103FD0(g_update_list, entry->unk0c, entry->rounded_unk04(),
                 0x80000000, entry->byte_count(), 0);
         }
     }

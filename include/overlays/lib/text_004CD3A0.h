@@ -246,7 +246,7 @@ struct LibTextureRequest
     u8 height_log2;
 };
 
-/** Partial 0x2910-byte VRAM texture cache (D_001B663C). It may sit at the start of scratchpad memory. */
+/** Partial 0x2910-byte VRAM texture cache (g_texture_cache). It may sit at the start of scratchpad memory. */
 class LibTextureCache
 {
 public:
@@ -325,7 +325,7 @@ public:
 };
 
 /** The game's texture cache. */
-extern "C" LibTextureCache* D_001B663C;
+extern "C" LibTextureCache* g_texture_cache;
 
 /**
  * @brief Load a texture the cache missed.
@@ -471,7 +471,9 @@ public:
     u16 type_id;
 
     u8 unk6e[0x12];
-    LibDisplayManager* unk80;
+
+    /** Display manager whose current camera the object faces; null for g_display_manager's. */
+    LibDisplayManager* display_manager;
     u8 unk84[4];
     u32 unk88;
     u32 unk8c;
@@ -653,7 +655,26 @@ public:
 /** Bytes in each of the renderer's two packet buffers. */
 #define LIB_RENDERER_BUFFER_SIZE 0x2000
 
-/** Partial Lib renderer (D_001B661C); it alternates between two packet buffers each frame. */
+/** Partial renderer pass that draws to the display at 0x94. */
+struct LibRendererPass
+{
+    u8 unk00[0x94];
+    LibCameraContext* display;
+};
+
+/** Partial renderer pass that lib_initialize can switch on, drawing to the display at 0x128. */
+struct LibRendererExtra
+{
+    u8 unk00[0x96];
+
+    /** Set when Lib starts with both extra renderer arguments nonzero. */
+    u8 enabled;
+
+    u8 unk97[0x91];
+    LibCameraContext* display;
+};
+
+/** Partial Lib renderer (g_renderer); it alternates between two packet buffers each frame. */
 class LibRenderer : public LibUpdateList
 {
 public:
@@ -711,14 +732,24 @@ public:
 
     u8 unk40ca;
     u8 unk40cb;
-    u8 unk40cc[5];
+    u8 unk40cc[2];
+    u8 unk40ce;
+    u8 unk40cf[2];
 
     /** Packet buffer the next frame writes to. */
     u8 buffer_index;
+
+    u8 unk40d2[0x386];
+    LibRendererPass* unk4458;
+    u8 unk445c[4];
+    LibRendererPass* unk4460;
+    LibRendererPass* unk4464;
+    LibRendererPass* unk4468;
+    LibRendererExtra* extra;
 };
 
 /** Reciprocal of g_frame_ticks, refreshed each frame. */
-extern float D_001B668C;
+extern float g_inverse_frame_ticks;
 
 extern "C" LibBusyObject* D_001B65FC;
 extern "C" u64 D_001B65C8;
@@ -1068,7 +1099,7 @@ extern const u32 D_4EC600[];
 s16 func_004D8C20(const void* image, s32 count);
 
 /** The game's VRAM allocator. */
-extern LibVramAllocator* D_001B65E0;
+extern LibVramAllocator* g_vram_allocator;
 
 /** @brief Fill all of VRAM with zeros, one 256x256 32-bit upload at a time. */
 void lib_clear_vram(void);
@@ -1205,7 +1236,7 @@ extern "C" {
 typedef struct LibPacketQueue LibPacketQueue;
 
 /** The game's packet queue. */
-extern LibPacketQueue* D_001B65DC;
+extern LibPacketQueue* g_packet_queue;
 
 /** Wait for or finish the packet queue according to the flag. */
 void func_004DBEE0(LibPacketQueue* queue, s32 flag);

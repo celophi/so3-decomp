@@ -10,7 +10,7 @@ extern "C" {
 
 extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
 extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
-extern float D_001B668C;
+extern float g_inverse_frame_ticks;
 }
 
 /**
@@ -347,7 +347,7 @@ FieldVec4A BootVectorCurveTrack::sample(float key)
         }
     }
 
-    value_rate = scaled(D_001B668C, difference(result, last_value));
+    value_rate = scaled(g_inverse_frame_ticks, difference(result, last_value));
     last_value = result;
     return *reinterpret_cast<FieldVec4A*>(&result);
 }
@@ -3741,7 +3741,7 @@ float BootFloatCurveTrack::sample(float key)
         result = entries[0].value + (entries[0].out_tangent / (entries[1].key - first_key)) * (key - first_key);
     }
 
-    value_rate = D_001B668C * (result - last_value);
+    value_rate = g_inverse_frame_ticks * (result - last_value);
     last_value = result;
     return result;
 }

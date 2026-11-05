@@ -10,7 +10,7 @@ extern "C" u64 D_4FC540[];
 extern "C" float D_001B66B4;
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" void func_4EA1E0(void);
-extern "C" void* D_001B661C;
+extern "C" void* g_renderer;
 extern "C" u32 func_120ED0(void* object);
 extern "C" void func_441010(void* object);
 extern "C" void func_441070(void* object);
@@ -798,7 +798,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_0028E7
 s32 func_0028E900(void* object)
 {
     FieldWordSource540* state = (FieldWordSource540*)object;
-    state->unk424 = func_120ED0(D_001B661C);
+    state->unk424 = func_120ED0(g_renderer);
     return 1;
 }
 

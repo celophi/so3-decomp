@@ -529,7 +529,7 @@ static inline u8 character_record_empty(const TacticsCharacterRecord* record);
  */
 static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
 {
-    return !grid->unk35;
+    return !grid->arrived;
 }
 
 /**
@@ -539,7 +539,7 @@ static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
  */
 static inline bool tactics_selection_inactive(TacticsCoordinateSelector* selection)
 {
-    return !selection->unk35;
+    return !selection->arrived;
 }
 
 /**
@@ -1751,7 +1751,7 @@ u8 TacticsReplaceWindow::func_slotb4()
         LibClass175030* second_target = second_selector;
         second_target->position.x = -128.0f;
         second_target->position.y = -128.0f;
-        second_target->unk35 = 1;
+        second_target->arrived = 1;
         second_target->needs_redraw = 1;
         second_selector->visible = 0;
         LibClass175030* first_target = first_selector;
@@ -1946,7 +1946,7 @@ u8 TacticsReplaceWindow::func_slotb0()
         LibClass175030* second_target = second_selector;
         second_target->position.x = -128.0f;
         second_target->position.y = -128.0f;
-        second_target->unk35 = 1;
+        second_target->arrived = 1;
         second_target->needs_redraw = 1;
         second_selector->visible = 0;
         LibClass175030* first_target = first_selector;
@@ -1964,7 +1964,7 @@ u8 TacticsReplaceWindow::func_slotb0()
         float y = first_target->position.y;
         second_target->position.x = x;
         second_target->position.y = y;
-        second_target->unk35 = 1;
+        second_target->arrived = 1;
         second_target->needs_redraw = 1;
         s32 index = (s32)(24.0f + x);
         s32 direct = 1;
@@ -3410,7 +3410,7 @@ void TacticsController::func_slot5c()
 {
     if (resource_slot != 0)
     {
-        lib_release_resource_slot(D_001B657C, resource_slot);
+        lib_release_resource_slot(g_field_runtime, resource_slot);
     }
 
     lib_object_detach_owner(this);
@@ -3558,7 +3558,7 @@ s32 TacticsController::on_resource_loaded(void* buffer)
         resident_exchange_allocation_heap(heap);
     }
 
-    resource_slot = lib_load_resource_slot(D_001B657C, aligned);
+    resource_slot = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
     return init_windows();
 }

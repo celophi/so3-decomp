@@ -24,22 +24,22 @@ extern "C" {
 extern LibDisplayManager* D_001B6660;
 extern LibListObject* D_001B665C;
 extern LibListObject* D_001B6640;
-extern LibScreenText* D_001B6618;
+extern LibScreenText* g_screen_text;
 extern void* D_001B6644;
 extern void* D_001B6638;
 extern ResidentDmaQueue* D_001B660C;
 extern ResidentDmaQueue* D_001B6608;
 extern ResidentDmaQueue* D_001B6604;
 extern void* D_001B6600;
-extern LibListObject* D_001B6654;
+extern LibListObject* g_scene_camera;
 extern LibListObject* D_001B664C;
 extern LibListObject* D_001B6620;
 extern LibListObject* D_001B6648;
-extern LibUpdateList* D_001B6614;
-extern LibDisplayManager* D_001B6628;
-extern LibDisplayManager* D_001B6630;
+extern LibUpdateList* g_update_list;
+extern LibDisplayManager* g_display_manager;
+extern LibDisplayManager* g_scene_display_manager;
 extern LibDisplayManager* D_001B6624;
-extern LibDisplayManager* D_001B662C;
+extern LibDisplayManager* g_default_display_manager;
 extern LibListObject* D_001B6634;
 extern LibListObject D_00507CB8;
 extern LibTrackPool* D_001B6664;
@@ -50,7 +50,7 @@ extern LibTrackPool* D_001B6674;
 extern LibTrackPool* D_001B6678;
 extern LibTrackPool* D_001B667C;
 extern LibTrackPool* D_001B6680;
-extern void* D_001B6658;
+extern void* g_display_callbacks;
 }
 extern "C" void func_004E6690(void* object);
 extern "C" void func_004E6B30(void* owner, void* object);
@@ -924,7 +924,7 @@ void LibClass179080::initialize_projection(const LibCameraContext* context)
     unk3d2 = 1;
     unk280 = 2048.0f;
     unk284 = 2048.0f;
-    unk278 = (1.3333334f * (1.0714285f * context->display_area.height)) / context->display_area.width;
+    pixel_aspect = (1.3333334f * (1.0714285f * context->display_area.height)) / context->display_area.width;
     unk250 = 1.0f;
     unk270 = 1.0f;
 }
@@ -949,7 +949,7 @@ void LibClass179080::build_projection_volume(LibProjectionVolume* volume) const
     transverse_axis.w = 1.0f;
     volume->near_half_width = (screen_min.z * (0.5f * (screen_max.x - screen_min.x))) / projection_distance;
     volume->x_axis = transverse_axis;
-    float inverse_aspect = 1.0f / unk278;
+    float inverse_aspect = 1.0f / pixel_aspect;
     transverse_axis.x = 0.0f;
     transverse_axis.y = -1.0f;
     transverse_axis.z = 0.0f;
@@ -1075,7 +1075,7 @@ void LibClass179080::copy_view_and_fog(const LibClass179080* source)
 {
     unk3c8 = source->unk3c8;
     unk3cc = source->unk3cc;
-    unk278 = source->unk278;
+    pixel_aspect = source->pixel_aspect;
     screen_min = source->screen_min;
     screen_max = source->screen_max;
     unk280 = source->unk280;
@@ -1143,7 +1143,7 @@ void LibClass179080::update_projection()
     case LIB_CAMERA_MODE_FACE_CURRENT_CAMERA:
         horizontal_fov = LIB_FACE_CAMERA_FOV;
         set_translation_vector(&anchor->translation);
-        LibClass179080* camera = static_cast<LibClass179080*>(D_001B6628->current_display);
+        LibClass179080* camera = static_cast<LibClass179080*>(g_display_manager->current_display);
 
         if (camera == 0)
         {
@@ -1179,19 +1179,19 @@ void LibClass179080::update_projection()
         screen_min.z = projection_distance / 16.0f;
     }
 
-    func_004CFD80(&projection_matrix, projection_distance, unk278, unk280 - unk3e0, unk284 - unk3e4, unk3c8, unk3cc, screen_min.z,
+    func_004CFD80(&projection_matrix, projection_distance, pixel_aspect, unk280 - unk3e0, unk284 - unk3e4, unk3c8, unk3cc, screen_min.z,
                   screen_max.z);
     vu0_start_microprogram_1f0_vf5_vf8(&projection_matrix);
     FieldVec4A centre(0.0f, 0.0f, projection_distance * unk270, 1.0f);
     vu0_start_microprogram_vf5(&centre);
     FieldVec4A low(screen_min.x, screen_min.y, screen_min.z, 1.0f);
     FieldVec4A high(screen_max.x, screen_max.y, screen_max.z, 1.0f);
-    func_004CF930(&unk340, &low, &high, projection_distance, unk278);
+    func_004CF930(&unk340, &low, &high, projection_distance, pixel_aspect);
     vu0_wait_microprogram();
     vu0_read_vf6(&centre);
     centre_depth = centre.z;
     LibMatrix44Value clip;
-    func_004CFA30(&clip, &low, &high, projection_distance, unk278, unk280 - unk3e0, unk284 - unk3e4, unk3c8, unk3cc);
+    func_004CFA30(&clip, &low, &high, projection_distance, pixel_aspect, unk280 - unk3e0, unk284 - unk3e4, unk3c8, unk3cc);
     unk380 = func_004CECD0(clip);
     func_004E1670(this);
 }
@@ -1266,7 +1266,7 @@ void LibColorFade::build_packet(const void* matrix, void* context)
     resident_packet_rewind(packet);
     packet->unk15 = 1;
     func_0011F140(packet, D_4ED330[0]);
-    D_001B6650->get_area_scale(&scale_x, &scale_y);
+    g_display->get_area_scale(&scale_x, &scale_y);
     func_0011F1D0(packet, rect.x, rect.y, (s32)(rect.width * scale_x) + 1, (s32)(rect.height * scale_y) + 1, depth, color);
     unk63 = 1;
 }
@@ -1329,7 +1329,7 @@ extern "C" void lib_shutdown(void)
     D_001B665C->destroy();
     D_001B665C = 0;
     lib_detach(*D_001B6640);
-    delete D_001B6618;
+    delete g_screen_text;
     ::operator delete(D_001B6644);
     D_001B6640->destroy();
 
@@ -1338,9 +1338,9 @@ extern "C" void lib_shutdown(void)
         ::operator delete(D_001B6638);
     }
 
-    if (D_001B663C != (void*)EE_SCRATCHPAD)
+    if (g_texture_cache != (void*)EE_SCRATCHPAD)
     {
-        ::operator delete(D_001B663C);
+        ::operator delete(g_texture_cache);
     }
 
     delete g_vif1_dma_queue;
@@ -1349,11 +1349,11 @@ extern "C" void lib_shutdown(void)
     delete D_001B6604;
     ::operator delete(D_001B6600);
     delete D_001B65FC;
-    D_001B6618 = 0;
+    g_screen_text = 0;
     D_001B6644 = 0;
     D_001B6640 = 0;
     D_001B6638 = 0;
-    D_001B663C = 0;
+    g_texture_cache = 0;
     g_vif1_dma_queue = 0;
     D_001B660C = 0;
     D_001B6608 = 0;
@@ -1361,19 +1361,19 @@ extern "C" void lib_shutdown(void)
     D_001B6600 = 0;
     D_001B65FC = 0;
 
-    lib_detach(*D_001B6654);
+    lib_detach(*g_scene_camera);
     lib_detach(*D_001B664C);
     lib_detach(*D_001B6620);
     lib_detach(*D_001B6648);
-    D_001B6614->func_004295B0(0);
-    lib_detach(*D_001B6628);
-    lib_detach(*D_001B6630);
+    g_update_list->func_004295B0(0);
+    lib_detach(*g_display_manager);
+    lib_detach(*g_scene_display_manager);
     lib_detach(*D_001B6624);
-    D_001B6654->destroy();
+    g_scene_camera->destroy();
     D_001B6634->destroy();
     lib_object_detach_owner(g_resource_queue);
     lib_detach(D_00507CB8);
-    D_001B6654 = 0;
+    g_scene_camera = 0;
     D_001B6634 = 0;
 
     delete D_001B6680;
@@ -1395,27 +1395,27 @@ extern "C" void lib_shutdown(void)
 
     D_001B664C->destroy();
     D_001B6648->destroy();
-    D_001B662C->destroy();
-    D_001B6630->destroy();
+    g_default_display_manager->destroy();
+    g_scene_display_manager->destroy();
     D_001B6624->destroy();
     D_001B6620->destroy();
-    delete static_cast<LibRenderer*>(D_001B661C);
-    delete D_001B65E0;
-    delete D_001B65DC;
-    delete D_001B6614;
-    ::operator delete(D_001B6658);
+    delete static_cast<LibRenderer*>(g_renderer);
+    delete g_vram_allocator;
+    delete g_packet_queue;
+    delete g_update_list;
+    ::operator delete(g_display_callbacks);
     resident_get_system()->unk15C80 = 0;
     D_001B664C = 0;
     D_001B6648 = 0;
-    D_001B662C = 0;
-    D_001B6630 = 0;
+    g_default_display_manager = 0;
+    g_scene_display_manager = 0;
     D_001B6624 = 0;
     D_001B6620 = 0;
-    D_001B661C = 0;
-    D_001B65E0 = 0;
-    D_001B65DC = 0;
-    D_001B6614 = 0;
-    D_001B6658 = 0;
+    g_renderer = 0;
+    g_vram_allocator = 0;
+    g_packet_queue = 0;
+    g_update_list = 0;
+    g_display_callbacks = 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_initialize);

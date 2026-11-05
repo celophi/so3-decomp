@@ -78,7 +78,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
  * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.
  * @param record Record to seal; an already sealed record is left alone.
  */
-void seal_record(BootSealedRecord* record);
+void seal_record(LibSealedRecord* record);
 
 /**
  * @brief Draw a progress bar: a dark border, the bar outline and a fill proportional to done / total.

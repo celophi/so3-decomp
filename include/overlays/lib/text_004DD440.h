@@ -448,7 +448,7 @@ public:
 };
 
 /** The game's display. */
-extern LibCameraContext* D_001B6650;
+extern LibCameraContext* g_display;
 
 /** Rectangle in screen pixels. Lib's colour fades cover it. */
 struct LibScreenRect
@@ -564,7 +564,7 @@ public:
     LibPacketBuffer* packet;
 };
 
-/** Partial 0x28-byte screen text printer D_001B6618 (vtable D_178E90); its data comes before the vptr. */
+/** Partial 0x28-byte screen text printer g_screen_text (vtable D_178E90); its data comes before the vptr. */
 class LibScreenText
 {
 public:
@@ -723,7 +723,10 @@ public:
     float unk26c;
     float unk270;
     float projection_distance;
-    float unk278;
+
+    /** Height of a screen pixel over its width: the display's aspect ratio scaled to its pixel size. */
+    float pixel_aspect;
+
     u32 unk27c;
     float unk280;
     float unk284;

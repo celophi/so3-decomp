@@ -42,11 +42,11 @@ extern "C" {
 extern const ResidentVector4 g_default_bounding_sphere;
 extern u8 D_0014FC78[];
 extern const ResidentSoundBankVariants* D_001B6424;
-extern ResidentDisplayContext* D_001B6650;
+extern ResidentDisplayContext* g_display;
 extern void* D_001B6640;
-extern ResidentObjectList* D_001B6614;
+extern ResidentObjectList* g_update_list;
 extern u8 D_001B65D0;
-extern struct LibPacketQueue* D_001B65DC;
+extern struct LibPacketQueue* g_packet_queue;
 
 void lib_quaternion_from_euler(ResidentVector4* orientation, const ResidentVector4* rotation);
 void func_4486A0(void* object);
@@ -350,8 +350,8 @@ void func_0011F1D0(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, s32 z
         rectangle->tag.fields.register5 = GIF_REGISTER_XYZ2;
         rectangle->prim = (packet->unk15 ? GS_PRIM_ALPHA_BLEND : 0) | GS_PRIM_TRIANGLE_STRIP;
         rectangle->rgba = color;
-        offset_x = GS_COORDINATE_CENTRE - D_001B6650->viewport_width / 2;
-        offset_y = GS_COORDINATE_CENTRE - D_001B6650->viewport_height / 2;
+        offset_x = GS_COORDINATE_CENTRE - g_display->viewport_width / 2;
+        offset_y = GS_COORDINATE_CENTRE - g_display->viewport_height / 2;
         rectangle->vertices[0] = resident_gs_xyz(x0 + offset_x, y0 + offset_y, z);
         rectangle->vertices[1] = resident_gs_xyz(x1 + offset_x, y0 + offset_y, z);
         rectangle->vertices[2] = resident_gs_xyz(x0 + offset_x, y1 + offset_y, z);
@@ -387,8 +387,8 @@ void resident_packet_add_line(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s3
         line->tag.fields.register3 = GIF_REGISTER_XYZ2;
         line->prim = (packet->unk15 ? GS_PRIM_ALPHA_BLEND : 0) | GS_PRIM_LINE;
         line->rgba = color;
-        offset_x = GS_COORDINATE_CENTRE - D_001B6650->viewport_width / 2;
-        offset_y = GS_COORDINATE_CENTRE - D_001B6650->viewport_height / 2;
+        offset_x = GS_COORDINATE_CENTRE - g_display->viewport_width / 2;
+        offset_y = GS_COORDINATE_CENTRE - g_display->viewport_height / 2;
         line->vertices[0] = resident_gs_xyz(x0 + offset_x, y0 + offset_y, z);
         line->vertices[1] = resident_gs_xyz(x1 + offset_x, y1 + offset_y, z);
         resident_packet_set_cursor(packet, (u8*)(line + 1));
@@ -404,7 +404,7 @@ void resident_packet_queue_pending(ResidentPacket* packet, void* completion)
 {
     if (resident_packet_space(packet, 0) != packet->unk0c)
     {
-        func_4DC4F0(D_001B65DC, 3, 0, (u32)packet->unk0c & 0x0FFFFFFF, 0, completion);
+        func_4DC4F0(g_packet_queue, 3, 0, (u32)packet->unk0c & 0x0FFFFFFF, 0, completion);
     }
 }
 
@@ -526,7 +526,7 @@ void resident_packet_submit(ResidentPacket* packet, void* notification)
     *cursor++ = 0;
     count = (u32)((u8*)cursor - packet->unk0c) >> 4;
     ee_sync();
-    func_4DC4F0(D_001B65DC, 2, 0, (u32)packet->unk0c & 0x0FFFFFFF, count, notification);
+    func_4DC4F0(g_packet_queue, 2, 0, (u32)packet->unk0c & 0x0FFFFFFF, count, notification);
     packet->unk08 = (u8*)cursor;
     packet->unk0c = (u8*)cursor;
 }
@@ -1110,7 +1110,7 @@ ResidentClass14FC90::ResidentClass14FC90() : buffer(0)
 
     loading = 0;
     unk24 = 0;
-    D_001B6614->append_node(this, -1);
+    g_update_list->append_node(this, -1);
 }
 
 /**
@@ -1638,7 +1638,7 @@ void func_001210B0(ResidentClass14FD30* object, const ResidentVector4* target)
 
     if (object->shared_image)
     {
-        image = &static_cast<ResidentDisplayManager*>(D_001B661C)->images[object->shared_image - 1];
+        image = &static_cast<ResidentDisplayManager*>(g_renderer)->images[object->shared_image - 1];
     }
     else
     {

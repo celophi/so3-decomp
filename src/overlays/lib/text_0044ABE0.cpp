@@ -221,7 +221,7 @@ const void* func_0044C070(void)
 /** @brief Clear the selected state in the shared lib object. */
 void func_0044C080(void)
 {
-    func_004D92C0(D_001B663C, 1);
+    func_004D92C0(g_texture_cache, 1);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C0A0);
@@ -288,7 +288,7 @@ typedef struct LibDisplayReadyView
 extern "C" void func_0044D0D0(void* object)
 {
     static_cast<LibTransform*>(object)->LibTransform::update();
-    LibDisplayManagerView* manager = static_cast<LibDisplayManagerView*>(D_001B661C);
+    LibDisplayManagerView* manager = static_cast<LibDisplayManagerView*>(g_renderer);
     LibDisplayReadyView* display = static_cast<LibDisplayReadyView*>(manager->current_display);
     display->ready = 1;
 }
@@ -402,7 +402,7 @@ extern "C" s32 lib_indexed_resource_init(ItemCreationClass174C40* object, float 
     LibIndexedResourceState* state = (LibIndexedResourceState*)object;
     state->selected = index;
     state->current = index;
-    return func_00467800(object, func_00464EF0(D_001B657C, state->current) + 0x22, 0, 0, 0, 0, x, y);
+    return func_00467800(object, func_00464EF0(g_field_runtime, state->current) + 0x22, 0, 0, 0, 0, x, y);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453150);

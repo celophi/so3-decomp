@@ -518,7 +518,7 @@ extern "C" s32 lib_numeric_widget_init_rectangle(LibObject174F20* object, u32 va
     LibNumericResourceState* state = (LibNumericResourceState*)object;
     state->flag = flag;
     func_00464870(object, x, y, width, height);
-    state->source = &((LibNumericResourceOwner*)D_001B657C)->slots[slot];
+    state->source = &((LibNumericResourceOwner*)g_field_runtime)->slots[slot];
     if (!func_00464900(object, 0, 16, 0, 0))
     {
         return 0;
@@ -775,8 +775,8 @@ void ItemCreationClass185050::set_move_target(float x, float y, float duration)
     target.x = x;
     target.y = y;
     move_frames = 60.0f * duration;
-    unk34 = 0;
-    unk35 = 0;
+    speed_ready = 0;
+    arrived = 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E70);
@@ -799,8 +799,8 @@ s32 ItemCreationClass185050::init_position(float x, float y)
     position.x = x;
     position.y = y;
     alpha = 128.0f;
-    unk34 = 0;
-    unk35 = 1;
+    speed_ready = 0;
+    arrived = 1;
     return 1;
 }
 
@@ -917,7 +917,7 @@ s32 LibStringLabel::init_text_rectangle(float x, float y, float width, float hei
 {
     unkf8 = flag;
     func_00464870(this, x, y, width, height);
-    resource_slot = D_001B657C->resource_slots;
+    resource_slot = g_field_runtime->resource_slots;
 
     if (!func_00464900(this, 32, 0, 0, 0))
     {

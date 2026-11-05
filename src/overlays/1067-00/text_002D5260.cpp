@@ -609,7 +609,7 @@ bool func_002D6CB0(FieldClass15B300* object)
     bool changed = false;
     s32 selection = object->unk312;
     s32 row_step = 0;
-    u16 buttons = D_001B657C->inputs[object->unk315].unk04;
+    u16 buttons = g_field_runtime->inputs[object->unk315].unk04;
     s32 page_step = 0;
     if (buttons & 0x10)
     {
@@ -921,7 +921,7 @@ public:
 };
 
 struct LibPacketQueue;
-extern "C" LibPacketQueue* D_001B65DC;
+extern "C" LibPacketQueue* g_packet_queue;
 
 /**
  * @brief Append a packet address and optional completion context to the queue.
@@ -946,7 +946,7 @@ void func_002D7AD0(FieldClass15B770* object)
     {
         FieldClass1DD400* completion = index == object->packet_count - 1 ?
             static_cast<FieldClass1DD400*>(object) : 0;
-        func_4DC4F0(D_001B65DC, 3, 0, object->packet_addresses[index], 0, completion);
+        func_4DC4F0(g_packet_queue, 3, 0, object->packet_addresses[index], 0, completion);
     }
 }
 

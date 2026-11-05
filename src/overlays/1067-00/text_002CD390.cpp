@@ -330,7 +330,7 @@ void FieldClass15AD40::func_slot5c()
         if (active)
         {
             this->FieldClass15AE60::unk24 = this->FieldClass15AE60::unk28 + this->FieldClass15AE60::unk22 * this->FieldClass15AE60::unk26;
-            FieldListInputRuntime* runtime = (FieldListInputRuntime*)D_001B657C;
+            FieldListInputRuntime* runtime = (FieldListInputRuntime*)g_field_runtime;
             FieldListInputFlags* flags = runtime->flags;
             u16 mask = runtime->mask;
             if (!(mask & flags->unk00) && (mask & flags->unk02))
@@ -423,7 +423,7 @@ static inline void set_selector_position(ItemCreationClass175030* selector, floa
 {
     selector->ItemCreationClass185050::position.x = x;
     selector->ItemCreationClass185050::position.y = y;
-    selector->unk35 = 1;
+    selector->arrived = 1;
     selector->needs_redraw = 1;
 }
 void FieldClass15AE60::configure_selection(s32 count, s32 start, s32 selected)
@@ -519,7 +519,7 @@ static inline u8 queue_container(LibContainer* container)
     {
         return 0;
     }
-    lib_queue_display_object(D_001B657C, container);
+    lib_queue_display_object(g_field_runtime, container);
     return 1;
 }
 

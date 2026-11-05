@@ -732,7 +732,7 @@ typedef struct ResidentImageHeader
     u8 unk10[0x58];
 } ResidentImageHeader;
 
-/** Partial display manager at D_001B661C, holding the shared image headers. */
+/** Partial display manager at g_renderer, holding the shared image headers. */
 typedef struct ResidentDisplayManager
 {
     u8 unk0000[0xB3C8];

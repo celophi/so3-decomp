@@ -1,6 +1,6 @@
 rom:0xB38A0 reloc:MIPS_GPREL16 symbol:D_001B66B4
-rom:0xB236C reloc:MIPS_GPREL16 symbol:D_001B6614
-rom:0xB23C0 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB236C reloc:MIPS_GPREL16 symbol:g_update_list
+rom:0xB23C0 reloc:MIPS_GPREL16 symbol:g_update_list
 rom:0xB247C reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x2A8E8 reloc:MIPS_GPREL16 symbol:D_001B64E4
 rom:0xB2490 reloc:MIPS_GPREL16 symbol:D_001B64B0
@@ -70,12 +70,12 @@ rom:0x1109C4 reloc:MIPS_GPREL16 symbol:D_001B6620
 rom:0x1118D4 reloc:MIPS_GPREL16 symbol:D_001B6620
 rom:0x66E88 reloc:MIPS_GPREL16 symbol:D_001B6568
 rom:0x12CB90 reloc:MIPS_GPREL16 symbol:D_001B64BC
-rom:0xB1EC reloc:MIPS_GPREL16 symbol:D_001B661C
+rom:0xB1EC reloc:MIPS_GPREL16 symbol:g_renderer
 rom:0xEF15C reloc:MIPS_GPREL16 symbol:D_001B667C
 rom:0x32B0 reloc:MIPS_GPREL16 symbol:D_001B6620
 rom:0x5643C reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x66E44 reloc:MIPS_GPREL16 symbol:D_001B6620
-rom:0x133F3C reloc:MIPS_GPREL16 symbol:D_001B663C
+rom:0x133F3C reloc:MIPS_GPREL16 symbol:g_texture_cache
 rom:0xF2394 reloc:MIPS_GPREL16 symbol:D_001B66A0
 rom:0xF2444 reloc:MIPS_GPREL16 symbol:D_001B6694
 rom:0x59AF0 reloc:MIPS_GPREL16 symbol:D_001B64B0
@@ -121,18 +121,18 @@ rom:0xB3730 reloc:MIPS_LO16 symbol:__vt__16FieldClass172110 addend:0x1C
 rom:0xB25D0 reloc:MIPS_HI16 symbol:__vt__16FieldClass16C970 addend:0x2C
 rom:0xB25D8 reloc:MIPS_LO16 symbol:__vt__16FieldClass16C970 addend:0x2C
 rom:0xB2630 reloc:MIPS_GPREL16 symbol:D_001B64B0
-rom:0xB2EB0 reloc:MIPS_GPREL16 symbol:D_001B6614
-rom:0xB2C10 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2EB0 reloc:MIPS_GPREL16 symbol:g_update_list
+rom:0xB2C10 reloc:MIPS_GPREL16 symbol:g_update_list
 rom:0xB2C50 reloc:MIPS_GPREL16 symbol:D_001B6610
-rom:0xB2C6C reloc:MIPS_GPREL16 symbol:D_001B6614
-rom:0xB2818 reloc:MIPS_GPREL16 symbol:D_001B6614
-rom:0xB28A8 reloc:MIPS_GPREL16 symbol:D_001B6614
-rom:0xB2958 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2C6C reloc:MIPS_GPREL16 symbol:g_update_list
+rom:0xB2818 reloc:MIPS_GPREL16 symbol:g_update_list
+rom:0xB28A8 reloc:MIPS_GPREL16 symbol:g_update_list
+rom:0xB2958 reloc:MIPS_GPREL16 symbol:g_update_list
 rom:0xB2998 reloc:MIPS_GPREL16 symbol:D_001B6610
-rom:0xB29B4 reloc:MIPS_GPREL16 symbol:D_001B6614
-rom:0xB2A78 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB29B4 reloc:MIPS_GPREL16 symbol:g_update_list
+rom:0xB2A78 reloc:MIPS_GPREL16 symbol:g_update_list
 rom:0xB2AB8 reloc:MIPS_GPREL16 symbol:D_001B6610
-rom:0xB2AD4 reloc:MIPS_GPREL16 symbol:D_001B6614
+rom:0xB2AD4 reloc:MIPS_GPREL16 symbol:g_update_list
 rom:0x1B994 reloc:MIPS_HI16 symbol:__vt__16FieldClass172140 addend:0x1C
 rom:0x1B9AC reloc:MIPS_LO16 symbol:__vt__16FieldClass172140 addend:0x1C
 rom:0x1BB10 reloc:MIPS_HI16 symbol:__vt__16FieldClass172140 addend:0x1C
@@ -146,7 +146,7 @@ rom:0xB41EC reloc:MIPS_GPREL16 symbol:D_001B64B8
 rom:0xB4394 reloc:MIPS_GPREL16 symbol:D_001B64B8
 rom:0xB4544 reloc:MIPS_GPREL16 symbol:D_001B64B8
 rom:0xB46A0 reloc:MIPS_GPREL16 symbol:D_001B64B8
-rom:0xABE14 reloc:MIPS_GPREL16 symbol:D_001B661C
+rom:0xABE14 reloc:MIPS_GPREL16 symbol:g_renderer
 rom:0x8AAC8 reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x8AA08 reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x8A94C reloc:MIPS_GPREL16 symbol:D_001B64B0

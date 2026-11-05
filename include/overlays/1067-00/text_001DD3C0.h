@@ -424,7 +424,7 @@ public:
 };
 
 /**
- * @brief Pass the table entries of each listed type-0x8 object to the D_001B661C manager.
+ * @brief Pass the table entries of each listed type-0x8 object to the g_renderer manager.
  *
  * Objects whose func_00204420 check fails or that have no table at offset 0x7C
  * are skipped. At most 32 entries are collected per object.
@@ -501,7 +501,7 @@ public:
 extern "C" bool func_001DDD30(FieldListOwner94* list, FieldClass151510** target);
 
 /** Resident Lib list that many Field objects insert themselves into. */
-extern "C" LibUpdateList* D_001B6614;
+extern "C" LibUpdateList* g_update_list;
 #endif
 
 #ifdef __cplusplus

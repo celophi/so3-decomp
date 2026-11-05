@@ -17,19 +17,6 @@
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/model.h"
 
-/** Marker byte of an encoded BootSealedRecord. */
-#define BOOT_RECORD_SEALED 0x69
-
-/** Masks and sizes used when sealing the saved record. */
-enum BootSealedRecordConstants
-{
-    BOOT_RECORD_XOR_BYTE = 0xD7,
-    BOOT_RECORD_XOR_HALFWORD = 0xF393,
-    BOOT_RECORD_XOR_WORD = 0x7CE3C7F7,
-    BOOT_RECORD_ENCODED_TAIL_SIZE = 76,
-    BOOT_RECORD_CHECKSUM_KEY_FACTOR = 37
-};
-
 /** Resource IDs used by the boot program and its menus. */
 enum BootScreenResourceId
 {
@@ -42,174 +29,13 @@ enum BootScreenResourceId
     BOOT_RES_MUSIC_PLAYER = 0x2C
 };
 
-/**
- * @brief 0xB4-byte saved record that is kept XOR-encoded, with a checksum over the encoded bytes.
- * @note Only the encoding is known; the fields are still unnamed.
- */
-typedef struct BootSealedRecord
-{
-    u8 unk00;
-    u16 unk02;
-    u32 unk04;
-    u32 unk08;
-    u32 unk0C;
-    u32 unk10;
-    u32 unk14;
-    u32 unk18;
-    u32 unk1C;
-    u32 unk20;
-    u32 unk24;
-    u32 unk28;
-    u32 unk2C;
-    u32 unk30;
-    u32 unk34;
-    u32 unk38;
-    u32 unk3C;
-    u32 unk40;
-    u32 unk44;
-    u32 unk48;
-    u32 unk4C;
-    u32 unk50;
-    u32 unk54;
-    u32 unk58;
-    u8 unk5C[8];
-    /** Tail encoded byte by byte with BOOT_RECORD_XOR_BYTE. */
-    u8 encoded_tail[BOOT_RECORD_ENCODED_TAIL_SIZE];
-    u16 checksum;
-
-    /** Random byte; the checksum seed is 37 times this. */
-    u8 key;
-
-    /** BOOT_RECORD_SEALED once encoded; any other nonzero value marks a damaged record. */
-    u8 sealed;
-} BootSealedRecord;
-
-/** Saved sound output choice; the audio system uses a different code for mono and stereo. */
-enum BootSoundOutput
-{
-    BOOT_SOUND_MONO,
-    BOOT_SOUND_STEREO,
-    BOOT_SOUND_DOLBY_PRO_LOGIC_II,
-    BOOT_SOUND_HEADPHONES
-};
-
-/** Saved voice and subtitle choice. */
-enum BootVoiceMode
-{
-    BOOT_VOICE_SUBTITLES_AND_SOUND,
-    BOOT_VOICE_SOUND_ONLY,
-    BOOT_VOICE_SUBTITLES_ONLY,
-    BOOT_VOICE_AUTO
-};
-
-/** Saved difficulty choice. */
-enum BootDifficulty
-{
-    BOOT_DIFFICULTY_EARTH,
-    BOOT_DIFFICULTY_GALAXY,
-    BOOT_DIFFICULTY_UNIVERSE,
-    BOOT_DIFFICULTY_FOURTH_DIMENSION
-};
-
-/** @brief Partial system settings, with option bits and two checksummed blocks. */
-typedef struct BootSystemSettings
-{
-    /** Button mask that confirms a selection. */
-    u16 confirm_buttons;
-
-    /** Button mask that cancels or skips. */
-    u16 cancel_buttons;
-
-    /** Button mask for the other choice of a two-way prompt. */
-    u16 alternate_buttons;
-
-    u16 unk06;
-    u8 unk08[0x1C];
-    u8 unk24_low : 2;
-    u8 unk24_mid : 2;
-    u8 unk24_bit4 : 1;
-
-    /** Controller vibration on. */
-    u8 vibration : 1;
-
-    u8 unk24_bit6 : 1;
-
-    /** Offer to skip events as they start. */
-    u8 event_skip : 1;
-
-    u8 unk25_low : 1;
-    u8 unk25_bit1 : 1;
-
-    /** Event dialog: subtitles and voice, voice only, subtitles only, or auto-advancing subtitles and voice. */
-    u8 voice_mode : 2;
-
-    /** Set when Continue is chosen on the title screen, cleared when a new game starts. */
-    u8 continue_selected : 2;
-
-    u8 unk25_bit6 : 1;
-    u8 unk25_bit7 : 1;
-
-    /** First byte covered by checksum. */
-    u8 unk26;
-
-    u8 unk27;
-
-    /** Difficulty: Earth, Galaxy, Universe or 4D. */
-    u8 difficulty;
-
-    u8 unk29[0x7B];
-    u16 checksum;
-
-    /** Seed for checksum, replaced on every write. */
-    u16 key;
-
-    u8 unkA8[0x2C];
-    BootSealedRecord sealed_record;
-    u8 unk188[4];
-
-    /** Nonzero for the 16:9 screen layout. */
-    u8 widescreen;
-
-    u8 unk18D;
-
-    /** BootSoundOutput saved in the settings record. */
-    u8 sound_output;
-
-    u8 unk18F;
-
-    /** Angle of each of the four surround speakers, as saved. */
-    float speaker_angles[4];
-
-    /** First byte covered by extra_checksum. */
-    u8 unk1A0;
-
-    /** Nonzero once Universe difficulty can be chosen. */
-    u8 universe_unlocked;
-
-    /** Nonzero once 4D difficulty can be chosen. */
-    u8 fourth_dimension_unlocked;
-
-    /** Extra player colors unlocked by battle trophy score: 1 for 2P, 2 for 3P, 3 for 4P. */
-    u8 color_unlock_level;
-
-    u16 extra_checksum;
-
-    /** Seed for extra_checksum. */
-    u16 extra_key;
-
-    LibTrophyFlags trophy_flags;
-} BootSystemSettings;
-
-
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern class LibClass179080* D_001B6654;
+extern class LibClass179080* g_scene_camera;
 
-extern FieldRuntime* D_001B657C;
+extern FieldRuntime* g_field_runtime;
 extern ResidentArchive* g_resource_archive;
 extern ResidentResourceQueue* g_resource_queue;
 extern ResidentReleaseQueues* g_resident_release_queues;
@@ -226,9 +52,9 @@ u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
  * @brief Return the system settings in the resident save data.
  * @return System settings.
  */
-static inline BootSystemSettings* boot_settings()
+static inline LibSystemSettings* boot_settings()
 {
-    return (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    return (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 }
 
 /** Arguments every boot resource load passes to the resident queue. */
@@ -304,7 +130,7 @@ extern "C" s32 lib_container_init(LibContainer* container, s32 code, float x, fl
 extern "C" s32 lib_list_indicator_init(class BootListIndicator* object, float x, float y, float height, float extent, float position);
 
 
-extern "C" LibDisplayManager* D_001B6628;
+extern "C" LibDisplayManager* g_display_manager;
 
 /** Partial 0xC0-byte Lib transform with vtable D_171DD0 in main data; boot calls its Lib constructor. */
 class BootClipRegion : public LibTransformOwner, public LibDmaCallbacks

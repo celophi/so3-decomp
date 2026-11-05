@@ -256,7 +256,7 @@ class BootBattleTrophyCard : public LibListObject
         s32 transfer_result;
         LibCardFileBuffer file_buffer;
         LibCardFileRequest file_request;
-        BootSystemSettings* settings;
+        LibSystemSettings* settings;
 
         /** Set by start_transfer until the transfer finishes or fails. */
         u8 transfer_pending;
@@ -872,7 +872,7 @@ class BootProgram : public BootResidentProgram
         BootProgramImage* image;
 };
 
-/** Partial resident object D_001B6658 that holds the current display. */
+/** Partial resident object g_display_callbacks that holds the current display. */
 struct BootResidentDisplay
 {
     u8 unk00[4];
@@ -3804,7 +3804,7 @@ void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* poo
 
 extern "C" {
 extern ResidentInputSystem* g_input_system;
-extern LibUpdateList* D_001B6614;
+extern LibUpdateList* g_update_list;
 /** Product code at the start of every save name: "BASLUS-20488". */
 extern const char g_card_product_code[];
 /** Save name suffix of the battle trophy file: "BTLCOL". */

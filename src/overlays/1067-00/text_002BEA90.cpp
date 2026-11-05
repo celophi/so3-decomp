@@ -271,7 +271,7 @@ struct FieldProgressState
     u16 mode;
 };
 
-extern "C" FieldRuntime* D_001B657C;
+extern "C" FieldRuntime* g_field_runtime;
 extern "C" s8 D_30EAFC[];
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002BEA90", __dt__16FieldClass159C30Fv);
@@ -642,7 +642,7 @@ extern "C" void func_002BFF40(FieldProgressState* self)
 {
     if (self->mode == 1)
     {
-        self->progress += 128.0f * D_001B657C->rate;
+        self->progress += 128.0f * g_field_runtime->rate;
         if (self->progress >= 128.0f)
         {
             self->progress = 128.0f;

@@ -534,7 +534,7 @@ void BootMusicPlayer::create_images()
         images[14]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
     }
 
-    if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
+    if (((LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
     {
         if (images[1] != 0)
         {
@@ -693,10 +693,10 @@ static inline float row_y(u32 row)
 /** @brief Run the player. */
 void BootMusicPlayer::update()
 {
-    BootSystemSettings* resource;
+    LibSystemSettings* resource;
     s32 i;
     BootInput* input = g_boot_program.input;
-    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    resource = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (step)
     {
@@ -705,9 +705,9 @@ void BootMusicPlayer::update()
         {
             clear_to_menu_background();
             step++;
-            D_001B661C->prepend_node(new (0) LibColorFade, -1);
+            g_renderer->prepend_node(new (0) LibColorFade, -1);
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(D_001B657C,
+            lib_queue_display_object(g_field_runtime,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         }
 
@@ -736,12 +736,12 @@ void BootMusicPlayer::update()
             cursor = new (0) LibSelectionCursor;
             cursor->init(1, 0, 0, 54.0f, y, 0.0f);
         }
-        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
-        D_001B661C->append_node(meters[0], -1);
-        D_001B661C->append_node(meters[1], -1);
-        D_001B661C->append_node(meters[2], -1);
-        D_001B661C->append_node(meters[3], -1);
-        D_001B661C->append_node(meters[4], -1);
+        lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        g_renderer->append_node(meters[0], -1);
+        g_renderer->append_node(meters[1], -1);
+        g_renderer->append_node(meters[2], -1);
+        g_renderer->append_node(meters[3], -1);
+        g_renderer->append_node(meters[4], -1);
         step++;
 
         if (resource->widescreen)
@@ -780,21 +780,21 @@ void BootMusicPlayer::update()
         resident_sound_set_volume_scale(g_sound, 0xFFFF);
         break;
     case BOOT_MUSIC_ACTIVE:
-        if (input->repeated == BOOT_BUTTON_DOWN && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_DOWN && cursor->arrived)
         {
             selection = (selection + 1) % BOOT_MUSIC_ROW_COUNT;
             cursor->set_move_target(54.0f, row_y(selection), 0.05f);
             brightening = 0;
         }
 
-        if (input->repeated == BOOT_BUTTON_UP && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_UP && cursor->arrived)
         {
             selection = (selection + BOOT_MUSIC_ROW_COUNT - 1) % BOOT_MUSIC_ROW_COUNT;
             brightening = 0;
             cursor->set_move_target(54.0f, row_y(selection), 0.05f);
         }
 
-        if (input->repeated == BOOT_BUTTON_LEFT && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_LEFT && cursor->arrived)
         {
             switch (selection)
             {
@@ -807,7 +807,7 @@ void BootMusicPlayer::update()
             }
         }
 
-        if (input->repeated == BOOT_BUTTON_RIGHT && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_RIGHT && cursor->arrived)
         {
             switch (selection)
             {
@@ -878,7 +878,7 @@ void BootMusicPlayer::update()
             resident_sound_stop_music(g_sound, 0x1E, -1);
             BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
             fade->fade_speed = 2.0f;
-            D_001B661C->append_node(fade, -1);
+            g_renderer->append_node(fade, -1);
             step = BOOT_MUSIC_RETURN_TO_TITLE;
             return;
         }
@@ -1122,7 +1122,7 @@ void BootMusicPlayer::update()
         clear_to_black();
         resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
-        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
+        g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
         lib_object_detach_owner(this);
         destroy();
         return;

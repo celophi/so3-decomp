@@ -947,7 +947,7 @@ extern "C" s32 lib_panel_init_transform(LibPanel* object, float z)
         ((FieldClass15BA90*)object->unk60)->pending = 1;
         object->unk8c = 0;
     }
-    ((LibUpdateList*)D_001B661C)->append_node(object->unk60, -1);
+    ((LibUpdateList*)g_renderer)->append_node(object->unk60, -1);
     return 1;
 }
 
@@ -1024,7 +1024,7 @@ extern "C" s32 lib_panel_init_rectangle(LibPanel* object, s32 mode, float x, flo
     {
         return 0;
     }
-    LibPanelDefaults* defaults = ((LibPanelContext*)D_001B657C)->defaults;
+    LibPanelDefaults* defaults = ((LibPanelContext*)g_field_runtime)->defaults;
     LibPanelInitState* state = (LibPanelInitState*)object;
     state->colors[0] = defaults->colors[0] & 0xFFFFFF;
     state->colors[1] = defaults->colors[1] & 0xFFFFFF;
@@ -1181,7 +1181,7 @@ static inline void upload_font_texture(void* block, u16 palette_block, u16 image
                              (palette->trxreg.data >> GS_TRXREG_RRH_SHIFT) & GS_TRXREG_SIZE_MASK);
         upload.pixels = palette->pixels;
         FlushCache(0);
-        func_004DC4F0(D_001B65DC, LIB_PACKET_LOAD_IMAGE, 0, &upload, 0, 0);
+        func_004DC4F0(g_packet_queue, LIB_PACKET_LOAD_IMAGE, 0, &upload, 0, 0);
     }
 
     LibFontImage* image = (LibFontImage*)((u8*)header + header->image_offset);
@@ -1192,8 +1192,8 @@ static inline void upload_font_texture(void* block, u16 palette_block, u16 image
                          0, 0, image->width, image->height);
     upload.pixels = packet->pixels;
     FlushCache(0);
-    func_004DC4F0(D_001B65DC, LIB_PACKET_LOAD_IMAGE, 0, &upload, 0, 0);
-    func_004DBEE0(D_001B65DC, 0);
+    func_004DC4F0(g_packet_queue, LIB_PACKET_LOAD_IMAGE, 0, &upload, 0, 0);
+    func_004DBEE0(g_packet_queue, 0);
 }
 
 /**

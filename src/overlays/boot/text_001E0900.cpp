@@ -36,8 +36,8 @@
 
 extern "C" {
 extern BootFloorQuery* g_floor_query;
-extern LibScreenText* D_001B6618;
-extern BootResidentDisplay* D_001B6658;
+extern LibScreenText* g_screen_text;
+extern BootResidentDisplay* g_display_callbacks;
 void resident_system_set_progressive(ResidentSystem* system, u8 progressive);
 extern LibCameraContext* D_001B6520;
 extern u8 D_001B6420;
@@ -50,7 +50,7 @@ extern BootTrackPool<BootPooledFloatQuaternionTrack>* g_float_quaternion_track_p
 extern BootTrackPool<BootPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
 extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
 void resident_system_create_status(ResidentSystem* system);
-extern struct LibPacketQueue* D_001B65DC;
+extern struct LibPacketQueue* g_packet_queue;
 extern const struct BootLabelOffsets g_settings_label_offsets;
 extern const struct BootCaption g_opening_captions[];
 void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
@@ -195,11 +195,11 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* trophy_card)
  * @param settings System settings.
  * @return Difficulty, or Earth when the checksum fails.
  */
-static inline u8 settings_difficulty(BootSystemSettings* settings)
+static inline u8 settings_difficulty(LibSystemSettings* settings)
 {
     if (settings->checksum != lib_compute_checksum(settings->key, &settings->unk26, (u8*)&settings->checksum - &settings->unk26))
     {
-        return BOOT_DIFFICULTY_EARTH;
+        return LIB_DIFFICULTY_EARTH;
     }
 
     return settings->difficulty;
@@ -210,7 +210,7 @@ static inline u8 settings_difficulty(BootSystemSettings* settings)
  * @param settings System settings.
  * @param value Difficulty to save.
  */
-static inline void settings_set_difficulty(BootSystemSettings* settings, u8 value)
+static inline void settings_set_difficulty(LibSystemSettings* settings, u8 value)
 {
     s32 length = (u8*)&settings->checksum - &settings->unk26;
 
@@ -229,7 +229,7 @@ static inline void settings_set_difficulty(BootSystemSettings* settings, u8 valu
  * @param value Byte to read.
  * @return Stored byte, or zero when the checksum fails.
  */
-static inline u8 settings_extra_byte(BootSystemSettings* settings, u8* data, u8* value)
+static inline u8 settings_extra_byte(LibSystemSettings* settings, u8* data, u8* value)
 {
     if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
@@ -244,7 +244,7 @@ static inline u8 settings_extra_byte(BootSystemSettings* settings, u8* data, u8*
  * @param settings System settings.
  * @return The unlock flag, or zero when the checksum fails.
  */
-static inline u8 settings_universe_unlocked(BootSystemSettings* settings)
+static inline u8 settings_universe_unlocked(LibSystemSettings* settings)
 {
     u8* data = &settings->unk1A0;
 
@@ -261,7 +261,7 @@ static inline u8 settings_universe_unlocked(BootSystemSettings* settings)
  * @param settings System settings.
  * @return The unlock flag, or zero when the checksum fails.
  */
-static inline u8 settings_fourth_dimension_unlocked(BootSystemSettings* settings)
+static inline u8 settings_fourth_dimension_unlocked(LibSystemSettings* settings)
 {
     u8* data = &settings->unk1A0;
 
@@ -1128,12 +1128,12 @@ s32 BootBattleTrophyCard::initialize()
         return 0;
     }
 
-    lib_memory_card_init(card, D_001B6614);
+    lib_memory_card_init(card, g_update_list);
     lib_memory_card_open_slot(card, 0, 0, 0);
     lib_memory_card_open_slot(card, 1, 1, 0);
     card_step = BOOT_TROPHY_CARD_IDLE;
     reset_slot(0);
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (settings == 0)
     {
@@ -1238,7 +1238,7 @@ static inline u8 unit_state(ResidentArchive* archive)
 /** @brief Run the memory card, progressive display and BB Unit screens in turn, then start the opening movie. */
 void BootStartupChecks::update()
 {
-    BootSystemSettings* settings;
+    LibSystemSettings* settings;
     BootInput* input;
     s32 slot1;
     s32 slot2;
@@ -1250,7 +1250,7 @@ void BootStartupChecks::update()
         return;
     }
 
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     input = g_boot_program.input;
     slot1 = input->slot1_state;
     slot2 = input->slot2_state;
@@ -1263,7 +1263,7 @@ void BootStartupChecks::update()
             if (RESIDENT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
             {
                 check_main_code();
-                D_001B657C->message_arguments[0] = 175;
+                g_field_runtime->message_arguments[0] = 175;
 
                 // Statuses 16-17 need no warning; these pairs can split the save and trophy files between cards.
                 if ((u32)(slot1 - 16) <= 1 ||
@@ -1540,7 +1540,7 @@ void BootStartupChecks::update()
         case BOOT_STARTUP_CARD_SHOW_WARNING:
             check_main_code();
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(D_001B657C,
+            lib_queue_display_object(g_field_runtime,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             text = new (0) LibTextWidget(g_boot_program.get_messages(), message, 0, 32.0f, 128.0f, 576.0f, 320.0f);
             lib_container_attach_widget(container, text);
@@ -1600,7 +1600,7 @@ void BootStartupChecks::update()
                 {
                     step++;
                     container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-                    lib_queue_display_object(D_001B657C,
+                    lib_queue_display_object(g_field_runtime,
                                              reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
                 }
                 else if (++frames >= 30 && RESIDENT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
@@ -1772,14 +1772,14 @@ void BootStartupChecks::update()
                     {
                         step++;
                         container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-                        lib_queue_display_object(D_001B657C,
+                        lib_queue_display_object(g_field_runtime,
                                                  reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
                     }
                     else if (g_boot_program.unit_data_deleted != 0)
                     {
                         step = BOOT_STARTUP_UNIT_LOAD_DELETED_WARNING;
                         container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-                        lib_queue_display_object(D_001B657C,
+                        lib_queue_display_object(g_field_runtime,
                                                  reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
                     }
                     else
@@ -1847,7 +1847,7 @@ void BootStartupChecks::update()
 
             lib_object_detach_owner(this);
             destroy();
-            D_001B6614->append_node(new (0) BootOpeningMovie, -1);
+            g_update_list->append_node(new (0) BootOpeningMovie, -1);
         }
     }
 }
@@ -1977,7 +1977,7 @@ void BootNewGameSettings::place_girl()
             if (turn_speed != 0.0f)
             {
                 animation_frame = 0.0f;
-                girl_animations[1]->unk6a = 0;
+                girl_animations[1]->started = 0;
                 walk_state = 1;
             }
             else if (lib_animation_apply_frame(girl_animations[0], animation_frame, 2) > 0)
@@ -1996,13 +1996,13 @@ void BootNewGameSettings::place_girl()
                 if (turn_speed == 0.0f)
                 {
                     animation_frame = 0.0f;
-                    girl_animations[5]->unk6a = 0;
+                    girl_animations[5]->started = 0;
                     walk_state = 5;
                 }
                 else
                 {
                     animation_frame = 0.0f;
-                    girl_animations[2]->unk6a = 0;
+                    girl_animations[2]->started = 0;
                     walk_state = 2;
                 }
             }
@@ -2018,13 +2018,13 @@ void BootNewGameSettings::place_girl()
                 if (turn_speed == 0.0f)
                 {
                     animation_frame = 0.0f;
-                    girl_animations[4]->unk6a = 0;
+                    girl_animations[4]->started = 0;
                     walk_state = 4;
                 }
                 else
                 {
                     animation_frame = 0.0f;
-                    girl_animations[3]->unk6a = 0;
+                    girl_animations[3]->started = 0;
                     walk_state = 3;
                 }
             }
@@ -2040,13 +2040,13 @@ void BootNewGameSettings::place_girl()
                 if (turn_speed == 0.0f)
                 {
                     animation_frame = 0.0f;
-                    girl_animations[5]->unk6a = 0;
+                    girl_animations[5]->started = 0;
                     walk_state = 5;
                 }
                 else
                 {
                     animation_frame = 0.0f;
-                    girl_animations[2]->unk6a = 0;
+                    girl_animations[2]->started = 0;
                     walk_state = 2;
                 }
             }
@@ -2059,7 +2059,7 @@ void BootNewGameSettings::place_girl()
         case 4:
             if (lib_animation_apply_frame(girl_animations[4], animation_frame, 2) > 0)
             {
-                girl_animations[0]->unk6a = 0;
+                girl_animations[0]->started = 0;
                 animation_frame = 0.0f;
                 walk_state = 0;
             }
@@ -2072,7 +2072,7 @@ void BootNewGameSettings::place_girl()
         case 5:
             if (lib_animation_apply_frame(girl_animations[5], animation_frame, 2) > 0)
             {
-                girl_animations[0]->unk6a = 0;
+                girl_animations[0]->started = 0;
                 animation_frame = 0.0f;
                 walk_state = 0;
             }
@@ -2145,9 +2145,9 @@ void BootNewGameSettings::get_speaker_cursor_position(s32 speaker, float* x, flo
     position.y = model->transform.m[1][3];
     position.z = model->transform.m[2][3];
     position.w = 1.0f;
-    LibDisplayManager* manager = D_001B6628;
+    LibDisplayManager* manager = g_display_manager;
     static_cast<LibClass179080*>(manager->current_display)->update_projection();
-    lib_load_camera_screen_matrix(static_cast<LibClass179080*>(D_001B6628->current_display));
+    lib_load_camera_screen_matrix(static_cast<LibClass179080*>(g_display_manager->current_display));
     vu0_wait_microprogram();
     vu0_start_microprogram_vf5(&position);
     vu0_wait_microprogram();
@@ -2262,7 +2262,7 @@ void BootNewGameSettings::place_speakers()
 /** @brief Select the option that matches the current page's saved setting. */
 void BootNewGameSettings::load_option_value()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (page)
     {
@@ -2281,16 +2281,16 @@ void BootNewGameSettings::load_option_value()
         switch (g_sound->output_mode)
         {
         case 1:
-            selection = BOOT_SOUND_MONO;
+            selection = LIB_SOUND_MONO;
             break;
         case 0:
-            selection = BOOT_SOUND_STEREO;
+            selection = LIB_SOUND_STEREO;
             break;
         case 2:
-            selection = BOOT_SOUND_DOLBY_PRO_LOGIC_II;
+            selection = LIB_SOUND_DOLBY_PRO_LOGIC_II;
             break;
         case 3:
-            selection = BOOT_SOUND_HEADPHONES;
+            selection = LIB_SOUND_HEADPHONES;
             break;
         }
 
@@ -2313,7 +2313,7 @@ void BootNewGameSettings::load_option_value()
 /** @brief Save the selected option for the current page and apply it to the display, sound or pad. */
 void BootNewGameSettings::apply_option_value()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (page)
     {
@@ -2322,16 +2322,16 @@ void BootNewGameSettings::apply_option_value()
         {
         case 0:
             settings->widescreen = 0;
-            D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width;
-            D_001B6654->horizontal_fov = 1.5707964f;
+            g_scene_camera->pixel_aspect = (1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width;
+            g_scene_camera->horizontal_fov = 1.5707964f;
             g_boot_program.update_projection_aspect();
             break;
         case 1:
             settings->widescreen = 1;
-            D_001B6654->unk278 =
+            g_scene_camera->pixel_aspect =
                 (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width)) /
                 1.3333334f;
-            D_001B6654->horizontal_fov = 1.8325958f;
+            g_scene_camera->horizontal_fov = 1.8325958f;
             g_boot_program.update_projection_aspect();
             break;
         }
@@ -2340,21 +2340,21 @@ void BootNewGameSettings::apply_option_value()
     case BOOT_SETTINGS_SOUND:
         switch (selection)
         {
-        case BOOT_SOUND_MONO:
+        case LIB_SOUND_MONO:
             resident_sound_set_output_mode(g_sound, 1);
-            settings->sound_output = BOOT_SOUND_MONO;
+            settings->sound_output = LIB_SOUND_MONO;
             break;
-        case BOOT_SOUND_STEREO:
+        case LIB_SOUND_STEREO:
             resident_sound_set_output_mode(g_sound, 0);
-            settings->sound_output = BOOT_SOUND_STEREO;
+            settings->sound_output = LIB_SOUND_STEREO;
             break;
-        case BOOT_SOUND_DOLBY_PRO_LOGIC_II:
+        case LIB_SOUND_DOLBY_PRO_LOGIC_II:
             resident_sound_set_output_mode(g_sound, 2);
-            settings->sound_output = BOOT_SOUND_DOLBY_PRO_LOGIC_II;
+            settings->sound_output = LIB_SOUND_DOLBY_PRO_LOGIC_II;
             break;
-        case BOOT_SOUND_HEADPHONES:
+        case LIB_SOUND_HEADPHONES:
             resident_sound_set_output_mode(g_sound, 3);
-            settings->sound_output = BOOT_SOUND_HEADPHONES;
+            settings->sound_output = LIB_SOUND_HEADPHONES;
             break;
         }
 
@@ -2402,14 +2402,14 @@ void BootNewGameSettings::apply_option_value()
  */
 s32 BootNewGameSettings::get_value_message()
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (page)
     {
     case BOOT_SETTINGS_TV_MODE:
         return selection + BOOT_MSG_TV_NORMAL;
     case BOOT_SETTINGS_SOUND:
-        if (selection == BOOT_SOUND_HEADPHONES)
+        if (selection == LIB_SOUND_HEADPHONES)
         {
             return BOOT_MSG_SOUND_HEADPHONES;
         }
@@ -2418,7 +2418,7 @@ s32 BootNewGameSettings::get_value_message()
     case BOOT_SETTINGS_EVENT_SKIP:
         return selection + BOOT_MSG_EVENT_SKIP_ON;
     case BOOT_SETTINGS_VOICE:
-        if (selection == BOOT_VOICE_AUTO)
+        if (selection == LIB_VOICE_AUTO)
         {
             return BOOT_MSG_VOICE_AUTO;
         }
@@ -2427,7 +2427,7 @@ s32 BootNewGameSettings::get_value_message()
     case BOOT_SETTINGS_VIBRATION:
         return selection + BOOT_MSG_VIBRATION_ON;
     case BOOT_SETTINGS_DIFFICULTY:
-        if (selection == BOOT_DIFFICULTY_FOURTH_DIMENSION)
+        if (selection == LIB_DIFFICULTY_FOURTH_DIMENSION)
         {
             if (settings_fourth_dimension_unlocked(settings))
             {
@@ -2437,7 +2437,7 @@ s32 BootNewGameSettings::get_value_message()
             return BOOT_MSG_FOURTH_DIMENSION_LOCKED;
         }
 
-        if (settings_universe_unlocked(settings) && selection == BOOT_DIFFICULTY_UNIVERSE)
+        if (settings_universe_unlocked(settings) && selection == LIB_DIFFICULTY_UNIVERSE)
         {
             return BOOT_MSG_UNIVERSE_UNLOCKED;
         }
@@ -2455,7 +2455,7 @@ s32 BootNewGameSettings::get_value_message()
  */
 void BootNewGameSettings::get_cursor_position(float* x, float* y)
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     *x = 58.0f;
     switch (page)
@@ -2463,16 +2463,16 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
     case BOOT_SETTINGS_SOUND:
         switch (selection)
         {
-        case BOOT_SOUND_MONO:
+        case LIB_SOUND_MONO:
             *y = 90.0f;
             return;
-        case BOOT_SOUND_STEREO:
+        case LIB_SOUND_STEREO:
             *y = 126.0f;
             return;
-        case BOOT_SOUND_DOLBY_PRO_LOGIC_II:
+        case LIB_SOUND_DOLBY_PRO_LOGIC_II:
             *y = 160.0f;
             return;
-        case BOOT_SOUND_HEADPHONES:
+        case LIB_SOUND_HEADPHONES:
             *y = 194.0f;
             return;
         }
@@ -2481,16 +2481,16 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
     case BOOT_SETTINGS_VOICE:
         switch (selection)
         {
-        case BOOT_VOICE_SUBTITLES_AND_SOUND:
+        case LIB_VOICE_SUBTITLES_AND_SOUND:
             *y = 108.0f;
             return;
-        case BOOT_VOICE_SOUND_ONLY:
+        case LIB_VOICE_SOUND_ONLY:
             *y = 148.0f;
             return;
-        case BOOT_VOICE_SUBTITLES_ONLY:
+        case LIB_VOICE_SUBTITLES_ONLY:
             *y = 188.0f;
             return;
-        case BOOT_VOICE_AUTO:
+        case LIB_VOICE_AUTO:
             *y = 228.0f;
             return;
         }
@@ -2501,16 +2501,16 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
         {
             switch (selection)
             {
-            case BOOT_DIFFICULTY_EARTH:
+            case LIB_DIFFICULTY_EARTH:
                 *y = 108.0f;
                 return;
-            case BOOT_DIFFICULTY_GALAXY:
+            case LIB_DIFFICULTY_GALAXY:
                 *y = 148.0f;
                 return;
-            case BOOT_DIFFICULTY_UNIVERSE:
+            case LIB_DIFFICULTY_UNIVERSE:
                 *y = 188.0f;
                 return;
-            case BOOT_DIFFICULTY_FOURTH_DIMENSION:
+            case LIB_DIFFICULTY_FOURTH_DIMENSION:
                 *y = 228.0f;
                 return;
             }
@@ -2519,13 +2519,13 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
         {
             switch (selection)
             {
-            case BOOT_DIFFICULTY_EARTH:
+            case LIB_DIFFICULTY_EARTH:
                 *y = 108.0f;
                 return;
-            case BOOT_DIFFICULTY_GALAXY:
+            case LIB_DIFFICULTY_GALAXY:
                 *y = 158.0f;
                 return;
-            case BOOT_DIFFICULTY_UNIVERSE:
+            case LIB_DIFFICULTY_UNIVERSE:
                 *y = 208.0f;
                 return;
             }
@@ -2569,11 +2569,11 @@ static inline void set_model_color(LibModel* model, float red, float green, floa
 /** @brief Rebuild the current page's option rows when the page changes, then place and highlight them. */
 void BootNewGameSettings::update_option_rows()
 {
-    BootSystemSettings* settings;
+    LibSystemSettings* settings;
 
     if (image_blocks[4] != 0 && on_speaker_setup == 0)
     {
-        settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+        settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
         if (shown_page != page)
         {
@@ -2802,7 +2802,7 @@ void BootNewGameSettings::update_option_rows()
 /** @brief Create the page's images once their textures are loaded, then place and highlight them. */
 void BootNewGameSettings::update_page_images()
 {
-    BootSystemSettings* settings;
+    LibSystemSettings* settings;
     BootLabelOffsets offsets;
 
     if (image_blocks[4] == 0)
@@ -2857,7 +2857,7 @@ void BootNewGameSettings::update_page_images()
         images[15]->set_rectangle(0, 0xC2, 0x180, 0x20, 0x80808080, 0);
     }
 
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (settings->widescreen)
     {
@@ -3010,7 +3010,7 @@ static inline void place_cursor(LibSelectionCursor* cursor, float x, float y)
     ItemCreationClass185050& motion = *cursor;
     motion.position.x = x;
     motion.position.y = y;
-    motion.unk35 = 1;
+    motion.arrived = 1;
     cursor->unkae = 1;
 }
 
@@ -3045,7 +3045,7 @@ static inline float speaker_angle(ResidentSound* sound, s32 speaker)
 void BootNewGameSettings::update()
 {
     BootInput* input = g_boot_program.input;
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     u8 extra = settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked);
     g_difficulty_option_count = extra ? 4 : 3;
 
@@ -3058,12 +3058,12 @@ void BootNewGameSettings::update()
             resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, model_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             clear_to_menu_background();
-            D_001B661C->prepend_node(new (0) LibColorFade, -1);
+            g_renderer->prepend_node(new (0) LibColorFade, -1);
             loaded_image_blocks = 0;
             stage++;
             highlight_phase = 0;
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(D_001B657C,
+            lib_queue_display_object(g_field_runtime,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             description_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
             description_text->set_color(0x34130F);
@@ -3075,7 +3075,7 @@ void BootNewGameSettings::update()
             get_cursor_position(&x, &y);
             cursor = new (0) LibSelectionCursor;
             cursor->init(1, 0, 0xF42400, x, y, 0.0f);
-            lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+            lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
             resident_sound_set_reverb(g_sound, BOOT_SETTINGS_REVERB_PRESET);
         }
 
@@ -3095,7 +3095,7 @@ void BootNewGameSettings::update()
 
         break;
     case BOOT_SETTINGS_STAGE_PAGE:
-        if (input->repeated == BOOT_BUTTON_DOWN && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_DOWN && cursor->arrived)
         {
             selection = (selection + 1) % g_settings_option_counts[page];
             apply_option_value();
@@ -3108,7 +3108,7 @@ void BootNewGameSettings::update()
             show_value_message();
         }
 
-        if (input->repeated == BOOT_BUTTON_UP && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_UP && cursor->arrived)
         {
             u8 count = g_settings_option_counts[page];
             selection = (selection + count - 1) % count;
@@ -3202,7 +3202,7 @@ void BootNewGameSettings::update()
             cursor = 0;
         }
 
-        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_NEW_GAME), -1);
+        g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_NEW_GAME), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
@@ -3268,10 +3268,10 @@ void BootNewGameSettings::update()
             resident_pad_set_stick_dpad(g_input_system, 0, 0);
             room_scene = new (0) BootScene;
             lib_scene_use_data(room_scene, (u8*)RESIDENT_ALIGN_RESOURCE(model_blocks[0]));
-            func_474010(room_scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
+            func_474010(room_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
             girl_scene = new (0) BootScene;
             lib_scene_use_data(girl_scene, (u8*)RESIDENT_ALIGN_RESOURCE(model_blocks[1]));
-            func_474010(girl_scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
+            func_474010(girl_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
             s32 count = 0;
 
             for (BootClass170F30* model = lib_find_renderable_entry(girl_scene, g_empty_name); model != 0; model = lib_find_next_renderable_entry(girl_scene, model))
@@ -3279,7 +3279,7 @@ void BootNewGameSettings::update()
                 if (model->type_id == 0x100)
                 {
                     girl_models[count] = new (0) BootClass170F30;
-                    girl_models[count]->build_from(D_001B661C, model);
+                    girl_models[count]->build_from(g_renderer, model);
                     girl_models[count++]->parent_transform = model->parent_transform;
                 }
             }
@@ -3294,8 +3294,8 @@ void BootNewGameSettings::update()
                 lib_animation_read_channel_pose(girl_animations[i], animation_targets[i]);
             }
 
-            D_001B661C->prepend_node(new (0) LibColorFade, -1);
-            D_001B6628->current_display = static_cast<LibListObject*>(lib_find_camera_entry(room_scene, g_camera_node_name));
+            g_renderer->prepend_node(new (0) LibColorFade, -1);
+            g_display_manager->current_display = static_cast<LibListObject*>(lib_find_camera_entry(room_scene, g_camera_node_name));
             girl_angle = 1.5707964f;
             animation_frame = 0.0f;
             turn_speed = 0.0f;
@@ -3331,7 +3331,7 @@ void BootNewGameSettings::update()
         {
             if (adjusting_speaker == 0)
             {
-                if (cursor->unk35)
+                if (cursor->arrived)
                 {
                     selected_speaker = (selected_speaker + 1) & 3;
                     float x;
@@ -3383,7 +3383,7 @@ void BootNewGameSettings::update()
         {
             if (adjusting_speaker == 0)
             {
-                if (cursor->unk35)
+                if (cursor->arrived)
                 {
                     selected_speaker = (selected_speaker + 3) & 3;
                     float x;
@@ -3726,7 +3726,7 @@ void BootNewGameSettings::update()
         }
 
         settings->continue_selected = 0;
-        D_001B6614->append_node(new (0) BootGameLauncher, -1);
+        g_update_list->append_node(new (0) BootGameLauncher, -1);
         lib_object_detach_owner(this);
         destroy();
         return;
@@ -3834,7 +3834,7 @@ BootNewGameSettings::~BootNewGameSettings()
 /** @brief Start loading the page images and the speaker setup scenes, and clear the owned objects. */
 BootNewGameSettings::BootNewGameSettings()
 {
-    BootSystemSettings* resource;
+    LibSystemSettings* resource;
     image_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_SETTINGS_IMAGES));
     resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_IMAGES, image_data,
                                     BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
@@ -3877,22 +3877,22 @@ BootNewGameSettings::BootNewGameSettings()
     g_floor_query = &flat_floor;
     page = 0;
     loaded_model_blocks = 0;
-    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    resource = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     // The audio system reverses the mono and stereo codes used by the saved setting.
     switch (g_sound->output_mode)
     {
     case 1:
-        resource->sound_output = BOOT_SOUND_MONO;
+        resource->sound_output = LIB_SOUND_MONO;
         break;
     case 0:
-        resource->sound_output = BOOT_SOUND_STEREO;
+        resource->sound_output = LIB_SOUND_STEREO;
         break;
     case 2:
-        resource->sound_output = BOOT_SOUND_DOLBY_PRO_LOGIC_II;
+        resource->sound_output = LIB_SOUND_DOLBY_PRO_LOGIC_II;
         break;
     case 3:
-        resource->sound_output = BOOT_SOUND_HEADPHONES;
+        resource->sound_output = LIB_SOUND_HEADPHONES;
         break;
     }
 }
@@ -4081,7 +4081,7 @@ void BootOpeningMovie::update()
     s32 x;
     s32 y;
     BootInput* input = g_boot_program.input;
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     s32 width;
     s32 height;
     s32 anchor;
@@ -4101,7 +4101,7 @@ void BootOpeningMovie::update()
         }
 
         container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
+        lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         lib_movie_play(player, 12, 1);
         caption = 0;
         caption_phase = BOOT_CAPTION_HIDDEN;
@@ -4121,7 +4121,7 @@ void BootOpeningMovie::update()
         if (input->held & BOOT_BUTTON_START)
         {
             step = BOOT_MOVIE_STOP;
-            D_001B661C->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
+            g_renderer->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
         }
 
         is_text = g_opening_captions[caption].is_text;
@@ -4330,7 +4330,7 @@ void BootOpeningMovie::update()
     case BOOT_MOVIE_WAIT_FOR_END:
         if ((input->held & BOOT_BUTTON_START) || !player->is_playing)
         {
-            D_001B661C->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
+            g_renderer->append_node(new (0) BootScreenFade(g_boot_program.display), -1);
             step = BOOT_MOVIE_STOP;
         }
 
@@ -4367,7 +4367,7 @@ void BootOpeningMovie::update()
     case BOOT_MOVIE_OPEN_TITLE:
         lib_object_detach_owner(this);
         destroy();
-        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
+        g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
         return;
     }
 }
@@ -4402,7 +4402,7 @@ BootOpeningMovie::~BootOpeningMovie()
 BootOpeningMovie::BootOpeningMovie()
 {
     void* heap;
-    BootSystemSettings* resource;
+    LibSystemSettings* resource;
     step = BOOT_MOVIE_PREPARE;
     movie_heap = new (0) ResidentHeap;
     movie_heap->alignment = 0x40;
@@ -4412,15 +4412,15 @@ BootOpeningMovie::BootOpeningMovie()
     resident_exchange_allocation_heap(heap);
     player->state->set_scale(1.0f, 1.0f);
     player->state->set_words(0x800, 0x800, 1);
-    resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    resource = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (resource->widescreen != 0)
     {
         player->state->unk80D8 = 1;
-        D_001B6654->unk278 =
+        g_scene_camera->pixel_aspect =
             (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width)) /
             1.3333334f;
-        D_001B6654->horizontal_fov = 1.8325958f;
+        g_scene_camera->horizontal_fov = 1.8325958f;
     }
 
     container = 0;
@@ -4441,7 +4441,7 @@ void BootUnitErrorPopup::update()
         if (container == 0 && RESIDENT_ALIGN_RESOURCE(program->message_block) != 0)
         {
             container = new (0) LibContainer(8, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(D_001B657C,
+            lib_queue_display_object(g_field_runtime,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             panel = new (0) LibPanel(0, 64.0f, 160.0f, 520.0f, 160.0f, 88.0f);
             lib_container_attach_widget(container, panel);
@@ -4523,17 +4523,17 @@ void BootProgram::rebuild_display(u8 full)
 
     if (full)
     {
-        if (D_001B663C != reinterpret_cast<LibTextureCache*>(EE_SCRATCHPAD))
+        if (g_texture_cache != reinterpret_cast<LibTextureCache*>(EE_SCRATCHPAD))
         {
-            ::operator delete(D_001B663C);
+            ::operator delete(g_texture_cache);
         }
 
-        lib_vram_reset(D_001B65E0, display->vram_free_page);
-        D_001B663C = new (0) LibTextureCache(0x20000, 0x20);
-        D_001B6618->load_font();
+        lib_vram_reset(g_vram_allocator, display->vram_free_page);
+        g_texture_cache = new (0) LibTextureCache(0x20000, 0x20);
+        g_screen_text->load_font();
         lib_upload_default_palette();
         resident_input_attach_display(g_input_system, display, 1);
-        D_001B6658->display = display;
+        g_display_callbacks->display = display;
     }
 
     frame = 0;
@@ -4542,32 +4542,32 @@ void BootProgram::rebuild_display(u8 full)
 /** @brief Make the boot projection the display manager's current display. */
 void BootProgram::select_projection()
 {
-    D_001B6628->current_display = projection;
+    g_display_manager->current_display = projection;
 }
 
 /** @brief Set the projections' aspect and field of view for the 4:3 or widescreen setting. */
 inline void BootProgram::update_projection_aspect()
 {
-    BootSystemSettings* resource = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* resource = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     LibCameraContext* dimensions;
 
     if (resource->widescreen != 0)
     {
         dimensions = g_boot_program.display;
-        projection->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
+        projection->pixel_aspect = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
         projection->unk250 = 0.75f;
         dimensions = g_boot_program.display;
-        D_001B6654->unk278 = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
-        D_001B6654->horizontal_fov = 1.8325958f;
+        g_scene_camera->pixel_aspect = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
+        g_scene_camera->horizontal_fov = 1.8325958f;
     }
     else
     {
         dimensions = g_boot_program.display;
-        projection->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
+        projection->pixel_aspect = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
         projection->unk250 = 1.0f;
         dimensions = g_boot_program.display;
-        D_001B6654->unk278 = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
-        D_001B6654->horizontal_fov = 1.5707964f;
+        g_scene_camera->pixel_aspect = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
+        g_scene_camera->horizontal_fov = 1.5707964f;
     }
 }
 
@@ -4578,7 +4578,7 @@ inline void BootProgram::update_projection_aspect()
 void BootProgram::set_progressive(u8 progressive)
 {
     LibCameraContext* rebuilt;
-    BootDisplayLinks661C* links;
+    LibRenderer* renderer;
 
     if (progressive)
     {
@@ -4593,20 +4593,20 @@ void BootProgram::set_progressive(u8 progressive)
 
     rebuild_display(1);
     rebuilt = display;
-    links = D_001B661C;
-    links->unk4088 = rebuilt;
-    D_001B6650 = rebuilt;
+    renderer = g_renderer;
+    renderer->display = rebuilt;
+    g_display = rebuilt;
 
-    if (links->unk4080 != 0)
+    if (renderer->manager != 0)
     {
-        links->unk4080->display = rebuilt;
+        renderer->manager->effect_display = rebuilt;
     }
 
-    links->unk4458->display = rebuilt;
-    links->unk4460->display = rebuilt;
-    links->unk4464->display = rebuilt;
-    links->unk4468->display = rebuilt;
-    links->unk446C->display = rebuilt;
+    renderer->unk4458->display = rebuilt;
+    renderer->unk4460->display = rebuilt;
+    renderer->unk4464->display = rebuilt;
+    renderer->unk4468->display = rebuilt;
+    renderer->extra->display = rebuilt;
     D_001B6520 = rebuilt;
     update_projection_aspect();
 }
@@ -4635,11 +4635,11 @@ void BootResourceLoader::update()
         {
         case BOOT_COMMON_UI_MESSAGES:
             program->message_block = buffer;
-            program->messages = lib_load_resource_slot(D_001B657C, aligned);
+            program->messages = lib_load_resource_slot(g_field_runtime, aligned);
             break;
         case BOOT_COMMON_UI_CAPTIONS:
             program->caption_block = buffer;
-            program->captions = lib_load_resource_slot(D_001B657C, aligned);
+            program->captions = lib_load_resource_slot(g_field_runtime, aligned);
             break;
         case BOOT_COMMON_UI_IMAGES:
             program->image_block = buffer;
@@ -4665,11 +4665,11 @@ void BootProgram::create_pools_and_projection()
     projection = new (0) LibClass179080(display);
     projection->initialize_projection(display);
     projection->set_translation(0.0f, 0.0f, -500.0f);
-    D_001B6628->append_node(projection, -1);
-    D_001B6628->current_display = projection;
-    D_001B6628->set_display_effect(display, false, true, false, 2, 0xFFFFFF);
-    D_001B661C->unk4084 = D_001B6624;
-    D_001B6624->manager = D_001B6628;
+    g_display_manager->append_node(projection, -1);
+    g_display_manager->current_display = projection;
+    g_display_manager->set_display_effect(display, false, true, false, 2, 0xFFFFFF);
+    g_renderer->unk4084 = D_001B6624;
+    D_001B6624->manager = g_display_manager;
 }
 
 /** @brief Run the boot program. */
@@ -4683,7 +4683,7 @@ void BootProgram::run()
     s32 index;
     bool fresh;
     s32 previous;
-    BootSystemSettings* settings;
+    LibSystemSettings* settings;
     BootResourceLoader* loader;
 
     if (resident_get_system()->status == 0)
@@ -4733,12 +4733,12 @@ void BootProgram::run()
 
     if (resident_find_entry(resident_get_entry_table(resident_get_system()), 1) != 0)
     {
-        saved_widescreen = ((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen;
+        saved_widescreen = ((LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen;
         lib_free_system_data();
         fresh = false;
     }
 
-    if (D_001B6614 != 0)
+    if (g_update_list != 0)
     {
         lib_release_shared_font();
         lib_shutdown();
@@ -4755,7 +4755,7 @@ void BootProgram::run()
     rect.width = BOOT_SCREEN_WIDTH;
     rect.height = BOOT_FIELD_HEIGHT;
     lib_set_color_fade_area(reinterpret_cast<const LibScreenRect*>(&rect), GS_DEPTH_NEAREST);
-    D_001B6618->depth = GS_DEPTH_NEAREST;
+    g_screen_text->depth = GS_DEPTH_NEAREST;
     resident_input_attach_display(g_input_system, display, 1);
 
     while (!resident_poll_resource_queue(g_resource_queue))
@@ -4765,47 +4765,47 @@ void BootProgram::run()
     check_main_code();
     lib_allocate_system_data();
     create_pools_and_projection();
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (saved_widescreen != BOOT_SAVED_WIDESCREEN_UNSET)
     {
         settings->widescreen = saved_widescreen != 0;
     }
 
-    D_001B657C = new (0) FieldRuntime(640.0f, 480.0f, 0, 0, 1.8f);
+    g_field_runtime = new (0) FieldRuntime(640.0f, 480.0f, 0, 0, 1.8f);
     trophy_card = new (0) BootBattleTrophyCard;
-    D_001B6614->append_node(trophy_card, -1);
+    g_update_list->append_node(trophy_card, -1);
     trophy_card->initialize();
     error_popup = new (0) BootUnitErrorPopup(this);
-    D_001B6614->append_node(error_popup, -1);
+    g_update_list->append_node(error_popup, -1);
     input = new (0) BootInput;
-    D_001B6614->append_node(input, -1);
+    g_update_list->append_node(input, -1);
     loader = new (0) BootResourceLoader(this);
-    D_001B6614->append_node(loader, -1);
+    g_update_list->append_node(loader, -1);
 
     if (fresh)
     {
-        D_001B6614->append_node(new (0) BootStartupChecks, -1);
+        g_update_list->append_node(new (0) BootStartupChecks, -1);
     }
     else
     {
-        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
+        g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
     }
 
     D_001B6420 = 1;
     update_projection_aspect();
     frame = 0;
-    D_001B661C->unk40CE = 0;
+    g_renderer->unk40ce = 0;
     D_001B6420 = 1;
 
     while (next_program == 0)
     {
-        display->flip(frame++, D_001B65DC);
+        display->flip(frame++, g_packet_queue);
         lib_begin_frame_packet();
-        D_001B6618->begin(16, 16);
-        func_4D4BE0(D_001B661C);
-        D_001B6614->update_nodes();
-        resident_packet_submit(D_001B6618->packet, 0);
+        g_screen_text->begin(16, 16);
+        g_renderer->begin_frame();
+        g_update_list->update_nodes();
+        resident_packet_submit(g_screen_text->packet, 0);
         resident_drain_release_queues(g_resident_release_queues);
         display->wait_for_field(frame);
 
@@ -4819,7 +4819,7 @@ void BootProgram::run()
         TIMER0_COUNT = 0;
     }
 
-    D_001B661C->unk40CE = 1;
+    g_renderer->unk40ce = 1;
     resident_drain_release_queues(g_resident_release_queues);
     g_boot_program.release_resources();
     resident_drain_release_queues(g_resident_release_queues);
@@ -4877,16 +4877,16 @@ void BootProgram::release_resources()
 
     if (messages != 0)
     {
-        lib_release_resource_slot(D_001B657C, messages);
+        lib_release_resource_slot(g_field_runtime, messages);
     }
 
     if (captions != 0)
     {
-        lib_release_resource_slot(D_001B657C, captions);
+        lib_release_resource_slot(g_field_runtime, captions);
     }
 
-    delete D_001B657C;
-    D_001B657C = 0;
+    delete g_field_runtime;
+    g_field_runtime = 0;
 
     if (input != 0)
     {

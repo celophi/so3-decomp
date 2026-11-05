@@ -147,7 +147,7 @@ void func_001DD5E0(FieldClass150060* list)
 
                 if (count > 0)
                 {
-                    func_004D4010(D_001B661C, count, entries);
+                    func_004D4010(g_renderer, count, entries);
                 }
             }
         }
