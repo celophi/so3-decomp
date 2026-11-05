@@ -2248,25 +2248,24 @@ func_101290 = 0x00101290; // type:func absolute:True allow_duplicated:True
 resident_get_entry_table = 0x00101290; // type:func absolute:True allow_duplicated:True
 func_101440 = 0x00101440; // type:func absolute:True allow_duplicated:True
 resident_find_entry = 0x00101440; // type:func absolute:True allow_duplicated:True
-func_1012D0 = 0x001012D0; // type:func absolute:True allow_duplicated:True
-func_001012D0 = 0x001012D0; // type:func absolute:True allow_duplicated:True
+resident_system_get_input = 0x001012D0; // type:func absolute:True
 __dt__14LibBufferOwnerFv = 0x003F5FA0; // type:func size:0x60 absolute:True
 
 func_00428B90 = 0x00428B90; // type:func absolute:True
 func_004288C0 = 0x004288C0; // type:func absolute:True
 func_00110C60 = 0x00110C60; // type:func absolute:True
 func_0040AF80 = 0x0040AF80; // type:func absolute:True
-func_00433680 = 0x00433680; // type:func absolute:True
+lib_release_shared_font = 0x00433680; // type:func absolute:True
 func_003EF8A0 = 0x003EF8A0; // type:func absolute:True
 func_003EF860 = 0x003EF860; // type:func absolute:True
 func_0040B1F0 = 0x0040B1F0; // type:func absolute:True
 func_004E33B0 = 0x004E33B0; // type:func absolute:True
-func_0011DE00 = 0x0011DE00; // type:func absolute:True
+resident_sync_gs_path = 0x0011DE00; // type:func absolute:True
 func_004DBEE0 = 0x004DBEE0; // type:func absolute:True
 resident_input_attach_display = 0x0011DEE0; // type:func absolute:True
 func_001106B0 = 0x001106B0; // type:func absolute:True
 
-func_00101480 = 0x00101480; // type:func absolute:True
+resident_remove_entry = 0x00101480; // type:func absolute:True
 
 func_457470 = 0x00457470; // type:func absolute:True allow_duplicated:True
 func_00457470 = 0x00457470; // type:func absolute:True allow_duplicated:True

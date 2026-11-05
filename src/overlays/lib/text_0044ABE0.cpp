@@ -18,18 +18,7 @@ extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 index);
 extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 first, s32 second, s32 third, s32 fourth, float x, float y);
 extern "C" void func_00465A90(void* owner, LibCallbackTransform* object);
 extern "C" ResidentDmaQueue* g_vif1_dma_queue;
-
-/**
- * @brief Find the resource payload after the allocation prefix.
- * @param resource Resource whose backing storage is inspected.
- * @return Payload pointer, or null when no backing storage is present.
- */
-static inline u8* lib_resource_payload(LibResourceBuffer* resource)
-{
-    return resource->data == 0 ? 0 :
-        resource->external_data ? static_cast<u8*>(resource->data) + 16 :
-        reinterpret_cast<u8*>((reinterpret_cast<u32>(resource->data) + 127) & ~0x7F) + 16;
-}
+extern "C" ResidentDmaQueue* D_001B6604;
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ABE0);
 
@@ -526,7 +515,49 @@ void* LibResourceBuffer::resolve_offset(const u32* offset)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454E90);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455040);
+/**
+ * @brief Add an image's texture to the draw buffer's next texture slot.
+ * @param buffer Draw buffer.
+ * @param resource Resource whose chunk list holds the image.
+ * @return The slot, or -1 when the resource has no image chunk or every slot is taken.
+ */
+s32 lib_draw_buffer_add_texture(LibDrawBuffer* buffer, const LibImageResource* resource)
+{
+    const LibResourceChunkHeader* chunk = &resource->chunk;
+    const LibImageResource* image;
+    const LibImageInfo* info;
+    s32 index;
+
+    for (;;)
+    {
+        if (chunk->magic == LIB_IMAGE_CHUNK_MAGIC)
+        {
+            break;
+        }
+
+        chunk = lib_next_chunk(chunk);
+
+        if (chunk == 0)
+        {
+            return -1;
+        }
+    }
+
+    index = buffer->texture_count;
+    if (index >= LIB_DRAW_BUFFER_TEXTURE_COUNT)
+    {
+        return -1;
+    }
+
+    image = reinterpret_cast<const LibImageResource*>(chunk);
+    info = lib_image_info(image);
+    buffer->textures[index] = &image->header;
+    buffer->texture_width_log2[index] = info->width_log2;
+    buffer->texture_height_log2[index] = info->height_log2;
+    buffer->texture_codes[index] = info->texture_code;
+    buffer->texture_count++;
+    return index;
+}
 
 extern "C" void func_00455AD0(LibDrawBuffer* buffer);
 
@@ -554,7 +585,32 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455AD0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455BD0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455DF0);
+/**
+ * @brief Start a new packet in the draw buffer's current command buffer, then stop the DMA queue it goes out on.
+ * @param buffer Draw buffer.
+ * @param unk3C Stored in the setup packet at 0x3C.
+ * @param unk3D Stored in the setup packet at 0x3D.
+ */
+void lib_draw_buffer_begin(LibDrawBuffer* buffer, u8 unk3C, u8 unk3D)
+{
+    buffer->command_begin = buffer->command_buffers[buffer->command_buffer_index] + LIB_DRAW_COMMAND_HEADER_WORDS;
+    buffer->command_cursor = buffer->command_begin;
+    buffer->setup_packet = reinterpret_cast<LibDrawSetupPacket*>(reinterpret_cast<u32>(buffer->command_cursor) | UNCACHED_SEGMENT);
+    buffer->command_cursor += sizeof(LibDrawSetupPacket) / sizeof(u32);
+    buffer->setup_packet->unk3C = unk3C;
+    buffer->setup_packet->unk3D = unk3D;
+    buffer->setup_packet->unk54 = 0;
+    buffer->setup_packet->unk56 = 0;
+    buffer->scratchpad_index = 0;
+    buffer->vertex_count = 0;
+    buffer->unk6c = 0;
+    buffer->block_count = 0;
+    buffer->unkcc = 0;
+    func_00455AD0(buffer);
+
+    D_001B6604->wait_idle();
+    D_001B6604->stop();
+}
 
 /**
  * @brief Allocate command buffers, block sizes and packet storage.
@@ -692,7 +748,79 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004570C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457190);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457220);
+/** Keys of the trophy record encoding. */
+enum
+{
+    LIB_TROPHY_RECORD_KEY_SEED = 0x437312F8,
+    LIB_TROPHY_RECORD_KEY_STEP = 0x12D953F6,
+    LIB_TROPHY_RECORD_CHECKSUM_SEED = 0x13129FDE,
+    LIB_TROPHY_RECORD_CHECKSUM_MASK = 0xFEFCFEFD
+};
+
+// TODO: This only matches at optimization level 0, like the other saved-data checksums here.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Decode a trophy record in place, then check it against the checksum in its first word.
+ * @param record Encoded record (LIB_TROPHY_RECORD_SIZE bytes).
+ * @return Whether the decoded record's checksum matches.
+ */
+bool lib_trophy_record_decode(void* record)
+{
+    u32* word;
+    u32 key;
+    u32 checksum;
+    s32 i;
+    s32 count;
+    s32 j;
+    bool valid;
+
+    word = (u32*)record;
+    count = LIB_TROPHY_RECORD_SIZE / sizeof(u32);
+    key = LIB_TROPHY_RECORD_KEY_SEED;
+
+    for (i = 0; i < count; i++)
+    {
+        *word ^= key;
+        word++;
+
+        if (i & 1)
+        {
+            key <<= 2;
+        }
+        else
+        {
+            key >>= 2;
+        }
+
+        key += LIB_TROPHY_RECORD_KEY_STEP;
+    }
+
+    word = (u32*)record;
+    word++;
+    count = LIB_TROPHY_RECORD_SIZE / sizeof(u32) - 1;
+    checksum = LIB_TROPHY_RECORD_CHECKSUM_SEED;
+
+    for (j = 0; j < count; j++)
+    {
+        checksum <<= 1;
+        checksum += *word++ ^ LIB_TROPHY_RECORD_CHECKSUM_MASK;
+    }
+
+    if (*(u32*)record == checksum)
+    {
+        valid = true;
+    }
+    else
+    {
+        valid = false;
+    }
+
+    return valid;
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457360);
 
@@ -717,7 +845,7 @@ u16 lib_compute_checksum(u16 seed, const void* data, s32 size)
     for (s32 i = 0; i < size; i++)
     {
         u8 value = *bytes++;
-        checksum = (value << 8) + (checksum * 0x19660D + 0x3C6EF35F);
+        checksum = (value << 8) + (checksum * LIB_CHECKSUM_MULTIPLIER + LIB_CHECKSUM_INCREMENT);
     }
 
     return checksum;
@@ -727,7 +855,55 @@ u16 lib_compute_checksum(u16 seed, const void* data, s32 size)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457520);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457670);
+// TODO: Like the checksum above, this only matches at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Read one trophy flag.
+ * @param flags Trophy flags.
+ * @param index Trophy number.
+ * @return Whether the flag is set.
+ */
+static inline bool lib_trophy_flag(LibTrophyFlags* flags, u32 index)
+{
+    u32 byte = index / 8;
+    u32 bit = index & 7;
+    return !!((flags->flag_bytes[byte] >> bit) & 1);
+}
+
+/**
+ * @brief Compute the trophy flags' checksum from a seed: each flag, flipped by the seed's low bit, weighted by the next
+ *        value of the seed sequence, plus the trophy key mixed with the final seed.
+ * @param flags Trophy flags.
+ * @param seed Seed.
+ * @param checksum Receives the checksum.
+ */
+void lib_trophy_flags_checksum(LibTrophyFlags* flags, const u32* seed, u32* checksum)
+{
+    u32 value = *seed;
+    u32 sum = 0;
+    s32 i;
+
+    for (i = 0; i < LIB_TROPHY_COUNT; i++)
+    {
+        s32 bit = lib_trophy_flag(flags, i);
+
+        if (value & 1)
+        {
+            bit ^= 1;
+        }
+
+        value = value * LIB_CHECKSUM_MULTIPLIER + LIB_CHECKSUM_INCREMENT;
+        sum += bit * value;
+        value = (u64)(value * value) + 0xD45666F2;
+    }
+
+    sum += flags->trophy_key ^ value;
+    *checksum = sum;
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004577A0);
 

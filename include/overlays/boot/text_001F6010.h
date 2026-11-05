@@ -31,26 +31,6 @@ typedef struct BootDrawSettings
 } BootDrawSettings;
 
 #ifdef __cplusplus
-/** GIF tag: the tag word and the register list, four bits per register. */
-struct BootGifTag
-{
-    u64 tag;
-
-    union
-    {
-        u64 registers;
-
-        struct
-        {
-            u64 register0 : 4;
-            u64 register1 : 4;
-            u64 register2 : 4;
-            u64 register3 : 4;
-            u64 unused : 48;
-        } fields;
-    };
-};
-
 /** One fade strip's packet: upload the strip's image to VRAM, then draw it as a textured sprite. */
 struct BootFadeStripPacket
 {
@@ -59,7 +39,7 @@ struct BootFadeStripPacket
     /** Upper half of the DMA tag; left unwritten, as the tag doesn't transfer it. */
     u64 transfer_dma_high;
 
-    BootGifTag transfer_tag;
+    GsGifTag transfer_tag;
     u64 bitbltbuf;
     u64 bitbltbuf_register;
     u64 trxpos;
@@ -77,7 +57,7 @@ struct BootFadeStripPacket
     u64 image_dma_high;
     u64 draw_dma;
     u64 draw_dma_high;
-    BootGifTag draw_tag;
+    GsGifTag draw_tag;
     u64 texflush;
     u64 texflush_register;
     u64 tex0;
@@ -86,7 +66,7 @@ struct BootFadeStripPacket
     u64 prim_register;
     u64 rgbaq;
     u64 rgbaq_register;
-    BootGifTag sprite_tag;
+    GsGifTag sprite_tag;
     u64 uv0;
     u64 xyz0;
     u64 uv1;

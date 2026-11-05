@@ -120,9 +120,9 @@ void BootInstaller::show_tip_image(s32 index)
 
     tip_image_buffer = resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(tip_image_data), index, 1);
     resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(tip_image_data),
-                                   (void*)BOOT_ALIGN_RESOURCE(tip_image_buffer), index);
+                                   (void*)RESIDENT_ALIGN_RESOURCE(tip_image_buffer), index);
     tip_image = new (0) BootImage;
-    tip_image->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(tip_image_buffer), 0);
+    tip_image->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(tip_image_buffer), 0);
     resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     tip_image->set_rectangle(0, 1, 0x120, 0xC9, 0x80808080, 0);
     tip_image->model->set_translation(-296.0f, -64.0f, 0.0f);
@@ -172,10 +172,10 @@ void BootInstaller::update_choice_images()
     if (images[4] == 0)
     {
         images[4] = new (0) BootImage;
-        images[4]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[4]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[4]->set_rectangle(0x1E, 0x131, 0x4C, 0x26, 0x80808080, 0);
         images[5] = new (0) BootImage;
-        images[5]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[5]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[5]->set_rectangle(0x1E, 0x167, 0x4C, 0x26, 0x80808080, 0);
     }
 
@@ -282,7 +282,7 @@ void BootInstaller::place_screen_images()
     if (images[0] == 0)
     {
         images[0] = new (0) BootImage;
-        images[0]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[0]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
@@ -290,7 +290,7 @@ void BootInstaller::place_screen_images()
     if (images[1] == 0)
     {
         images[1] = new (0) BootImage;
-        images[1]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[1]), 0);
+        images[1]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[1]), 0);
         images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
         images[1]->model->set_translation(-312.0f, -216.0f, 0.0f);
     }
@@ -298,14 +298,14 @@ void BootInstaller::place_screen_images()
     if (images[2] == 0)
     {
         images[2] = new (0) BootImage;
-        images[2]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[2]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[2]->set_rectangle(0, 0xEA, 0xC8, 0x1D, 0x80808080, 0);
     }
 
     if (images[3] == 0)
     {
         images[3] = new (0) BootImage;
-        images[3]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
+        images[3]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
         images[3]->set_rectangle(0x1B, 0x190, 0x1B6, 0x31, 0x80808080, 0);
     }
 
@@ -385,7 +385,7 @@ void BootInstaller::update()
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             resident_queue_resource_request(g_resource_queue, BOOT_RES_TIP_IMAGES, tip_image_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
-            func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
+            clear_to_menu_background();
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             screen_images_loaded = 0;
             step++;
@@ -406,7 +406,7 @@ void BootInstaller::update()
         screen_image_buffers[screen_images_loaded] =
             resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(screen_image_data), screen_images_loaded, 1);
         resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(screen_image_data),
-                                       (void*)BOOT_ALIGN_RESOURCE(screen_image_buffers[screen_images_loaded]), screen_images_loaded);
+                                       (void*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[screen_images_loaded]), screen_images_loaded);
 
         if (++screen_images_loaded >= 2)
         {
@@ -481,7 +481,7 @@ void BootInstaller::update()
         }
         else if (resident_update_resource_queue(g_resource_queue) == 0 && g_resource_archive->read_busy == 0)
         {
-            func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+            clear_to_black();
 
             for (s32 i = 0; i < 20; i++)
             {
@@ -874,7 +874,7 @@ void BootInstaller::update()
         break;
     case BOOT_INSTALL_RETURN_TO_TITLE:
         resident_sound_stop_music(g_sound, 0, -1);
-        func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+        clear_to_black();
 
         for (s32 i = 0; i < 20; i++)
         {

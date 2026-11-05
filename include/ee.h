@@ -7,6 +7,9 @@
  * EE instruction helpers the game wrote inline.
  */
 
+/** Address bit that maps EE main memory uncached. */
+#define UNCACHED_SEGMENT 0x20000000
+
 /**
  * @brief Return the EE scalar maximum of two floating-point operands.
  * @param left First operand.

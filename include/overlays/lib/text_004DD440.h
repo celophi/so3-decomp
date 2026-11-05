@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_LIB_TEXT_004DD440_H
 
 #include "types.h"
+#include "gs.h"
 
 typedef struct N50Owner114_004DD440 N50Owner114_004DD440;
 typedef struct N50OwnerBC_004DD440 N50OwnerBC_004DD440;
@@ -12,26 +13,6 @@ typedef struct N50OwnerBC_004DD440 N50OwnerBC_004DD440;
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector.h"
-
-/** Display state with its virtual pointer after the display data. */
-class LibDisplayState
-{
-public:
-    u8 unk00[0x3E6C];
-
-    /** Enable alpha blending in the display drawing commands. */
-    u8 blend_enabled;
-
-    u8 unk3e6d[3];
-
-    /** Alpha multiplied by 128 when building display drawing commands. */
-    float blend_alpha;
-
-    u8 unk3e74[0x98];
-
-    /** @brief Destroy the display state. */
-    virtual ~LibDisplayState();
-};
 
 /** Transform that faces an optional target with a roll about the viewing direction. */
 class LibLookAtTransform : public LibTransform
@@ -57,12 +38,94 @@ public:
     /** Rotation about the viewing direction, passed to the sine/cosine helper. */
     float roll_angle;
 };
-/** Size of the area a display draws to. */
+/** Size of the area a display draws to: a base size scaled, then rounded up to GS page-friendly sizes. */
 struct LibDisplayArea
 {
-    u8 unk00[0xC];
+    float scale_x;
+    float scale_y;
+    s16 base_width;
+    s16 base_height;
     s16 width;
     s16 height;
+};
+
+/**
+ * GS drawing environment for one draw buffer: a GIF tag and the context-1
+ * registers in A+D form, in the order libgraph's sceGsDrawEnv1 uses.
+ */
+struct LibDrawEnvironment
+{
+    GsGifTag gif_tag;
+    GsFrame frame;
+    u64 frame_address;
+    u64 depth_buffer;
+    u64 depth_buffer_address;
+    u64 offset;
+    u64 offset_address;
+    GsScissor scissor;
+    u64 scissor_address;
+    u64 unk40[6];
+    GsTest test;
+    u64 test_address;
+    u8 unk80[0x80];
+};
+
+/** GS packet that clears a draw buffer in 32-pixel-wide strips. */
+struct LibScreenClear
+{
+    u8 unk00[0x400];
+};
+
+/** One of the display's draw buffers: its environment and the packet that clears it. */
+struct LibDisplayBuffer
+{
+    LibDrawEnvironment environment;
+    LibScreenClear clear;
+};
+
+/** Number of draw buffers a display keeps (two alternate; the third is drawn separately). */
+#define LIB_DISPLAY_BUFFER_COUNT 3
+
+/** Number of screens a display can show (one per interlaced field per read circuit). */
+#define LIB_DISPLAY_SCREEN_COUNT 4
+
+/** One screen the display can show: its output registers, draw buffers and settings. */
+struct LibDisplayScreen
+{
+    u8 unk00[0x10];
+
+    /** DISPFB value for the read circuit this screen is shown on. */
+    u64 framebuffer_register;
+
+    /** DISPLAY value for the read circuit this screen is shown on. */
+    u64 display_register;
+
+    u8 unk20[0x10];
+    LibDisplayBuffer buffers[2];
+    u8 enabled;
+    u8 unkA51;
+
+    /** Interlaced field (0 or 1) the screen is shown in. */
+    u8 field;
+
+    u8 unkA53;
+
+    /** Show the screen on read circuit 1. */
+    u8 circuit1;
+
+    /** Show the screen on read circuit 2. */
+    u8 circuit2;
+
+    u8 unkA56;
+    u8 unkA57;
+    s16 unkA58;
+    s16 width;
+    s16 height;
+    s16 view_x;
+    s16 view_y;
+    s16 view_width;
+    s16 view_height;
+    u8 unkA66[0xA];
 };
 
 /** Partial 0x3F10-byte Lib display, with vtable D_178FB0 in main data; its data comes before the vptr. */
@@ -72,17 +135,153 @@ public:
     /** @brief Initialize the display. */
     LibCameraContext();
 
-    u8 unk00[0x160];
-    u16 unk160;
-    u8 unk162[0x3AFE];
+    /**
+     * @brief Build a clear packet that fills a rectangle with one colour.
+     * @param clear Packet to fill.
+     * @param depth_method Depth test method the packet restores afterwards.
+     * @param x Left edge, in primitive coordinates.
+     * @param y Top edge, in primitive coordinates.
+     * @param width Width in pixels.
+     * @param height Height in pixels.
+     * @param red Red component.
+     * @param green Green component.
+     * @param blue Blue component.
+     * @param alpha Alpha component.
+     * @param depth Depth the cleared pixels get.
+     */
+    void build_clear(LibScreenClear* clear, s16 depth_method, s16 x, s16 y, s16 width, s16 height, u8 red, u8 green,
+                     u8 blue, u8 alpha, u32 depth);
+
+    /**
+     * @brief Set the colour every draw buffer is cleared to.
+     * @param red Red component.
+     * @param green Green component.
+     * @param blue Blue component.
+     * @param alpha Alpha component.
+     */
+    void set_clear_color(u8 red, u8 green, u8 blue, u8 alpha);
+
+    /**
+     * @brief Set up the display's GIF tags and default state, size the draw area and allocate its buffers.
+     * @param frame_buffer_count Frame buffers the display cycles through.
+     */
+    void initialize(s32 frame_buffer_count);
+
+    /**
+     * @brief Set the draw area's scale and resize it. A scaled display draws its second buffer's environment on
+     *        its own.
+     * @param unk3C77 Stored at 0x3C77.
+     * @param scale_x Horizontal scale.
+     * @param scale_y Vertical scale.
+     * @param unk3C70 Stored at 0x3C70.
+     */
+    void set_scale(u8 unk3C77, float scale_x, float scale_y, s16 unk3C70);
+
+private:
+    /**
+     * @brief Body of set_scale, which initialize also inlines.
+     * @param unk3C77 Stored at 0x3C77.
+     * @param scale_x Horizontal scale.
+     * @param scale_y Vertical scale.
+     * @param unk3C70 Stored at 0x3C70.
+     */
+    void apply_scale(u8 unk3C77, float scale_x, float scale_y, s16 unk3C70);
+
+public:
+
+    /**
+     * @brief Configure one of the display's screens. Progressive output has no second read circuit, so a
+     *        circuit-2 screen is left alone there.
+     * @param index Screen index.
+     * @param enabled Nonzero to show the screen.
+     * @param unk3 Stored at 0xA53.
+     * @param circuit1 Show the screen on read circuit 1.
+     * @param circuit2 Show the screen on read circuit 2.
+     * @param unk6 Stored at 0xA56.
+     * @param field Interlaced field the screen is shown in.
+     * @param unk8 Stored at 0xA58.
+     * @param width Screen width in pixels.
+     * @param height Screen height in pixels.
+     */
+    void configure_screen(s32 index, u8 enabled, u8 unk3, u8 circuit1, u8 circuit2, u8 unk6, u8 field, s16 unk8,
+                          s16 width, s16 height);
+
+    /**
+     * @brief Set the rectangle of a screen that is drawn to.
+     * @param index Screen index.
+     * @param x Left edge.
+     * @param y Top edge.
+     * @param width Width in pixels.
+     * @param height Height in pixels.
+     */
+    void set_screen_view(s32 index, s32 x, s32 y, s32 width, s32 height);
+
+    u8 unk00[0x10];
+
+    /** DISPFB value used when a screen doesn't supply its own. */
+    u64 framebuffer_register;
+
+    /** DISPLAY value used when a screen doesn't supply its own. */
+    u64 display_register;
+
+    u8 unk20[0x130];
+    LibDisplayBuffer buffers[LIB_DISPLAY_BUFFER_COUNT];
+    LibDrawEnvironment environments[2];
+    LibDisplayScreen screens[LIB_DISPLAY_SCREEN_COUNT];
     LibDisplayArea display_area;
-    u8 unk3C70[8];
-    void* unk3C78;
-    u8 unk3C7C[0x290];
+    s16 unk3C70;
+    u8 unk3C72[4];
+
+    /** The draw area isn't drawn at 1:1. */
+    u8 scaled;
+
+    u8 unk3C77;
+    /** First VRAM page (8 KB) after the display's buffers; textures go from here. */
+    u32 vram_free_page;
+    u32 unk3C7C;
+    u8 unk3C80[0x34];
+    u8* unk3CB4[18];
+    u8* unk3CFC[18];
+    u8 unk3D44[0x108];
+    u32 unk3E4C;
+    u32 unk3E50;
+    u32 unk3E54;
+    u32 unk3E58;
+    /** Frame buffers the display cycles through. */
+    s32 frame_buffer_count;
+    u8 unk3E60[4];
+    u8 unk3E64;
+    u8 unk3E65;
+    u8 unk3E66;
+    u8 unk3E67;
+    u8 unk3E68;
+    u8 unk3E69;
+    u8 unk3E6A[2];
+
+    /** Enable alpha blending in the display drawing commands. */
+    u8 blend_enabled;
+
+    /** Which of the two alternating draw buffers is in use. */
+    u8 current_buffer;
+
+    u8 unk3E6E[2];
+
+    /** Alpha multiplied by 128 when building display drawing commands. */
+    float blend_alpha;
+
+    /** Packed RGBA the draw buffers are cleared to. */
+    u32 clear_color;
+
+    s16 unk3E78;
+    s16 unk3E7A;
+    u8 unk3E7C[0x90];
 
     /** @brief Destroy the display. */
     virtual ~LibCameraContext();
 };
+
+/** The game's display. */
+extern LibCameraContext* D_001B6650;
 
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */
 class LibClass179080 : public LibLookAtTransform, public DmaSubmission

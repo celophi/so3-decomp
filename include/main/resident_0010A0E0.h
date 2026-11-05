@@ -105,7 +105,8 @@ typedef struct ResidentArchive
     u8 unk5c;
     u8 unk5d;
     u8 unk5e;
-    u8 unk5f[9];
+    u8 unk5f[5];
+    void* unk64;
     u8 unk68;
     u8 unk69[2];
     u8 unk6b;
@@ -640,6 +641,21 @@ class ResidentDmaQueue
          * @return False when the queue is full.
          */
         bool push(DmaSubmission* submission);
+
+        /** @brief Wait until the running transfer finishes. */
+        void wait_idle()
+        {
+            while (busy)
+            {
+            }
+        }
+
+        /** @brief Forget the current submission and stop the channel's DMAC interrupts. */
+        void stop()
+        {
+            current = 0;
+            DisableDmac(channel);
+        }
 
         /** @brief Disable the channel and remove its DMAC handler. */
         virtual ~ResidentDmaQueue();
@@ -1392,6 +1408,21 @@ s32 func_0011D470(ResidentArchive* archive);
 s32 func_0011D080(ResidentArchive* archive, s32 key);
 
 /**
+ * @brief Start streaming the selected resource into a buffer.
+ * @param archive Resource archive.
+ * @param buffer Destination.
+ * @param size Buffer size in bytes.
+ * @param flag Passed through.
+ */
+void func_0011C120(ResidentArchive* archive, void* buffer, u32 size, s32 flag);
+
+/**
+ * @brief Stop the archive's streaming read.
+ * @param archive Resource archive.
+ */
+void func_0011C8E0(ResidentArchive* archive);
+
+/**
  * @brief Set the listener the archive notifies when a read finishes.
  * @param archive Resource archive.
  * @param listener Listener, or null to remove it.
@@ -2040,6 +2071,7 @@ s32 func_00114EB0(void* object);
 /** Call func_00114E00 with the second argument. */
 void func_00118B80(void* object, void* value);
 
+/** @brief Do nothing. @param object Unused. */
 void func_0011C6B0(void* object);
 /** Return bit 0 of the word at receiver offset 0xCC. */
 s32 func_0011C7C0(const void* object);
@@ -2062,7 +2094,7 @@ void func_00110C60(ResidentSound* sound);
 s32 func_001106B0(ResidentSound* request, s32 value);
 
 /** Synchronize the GS path while holding the receiver's semaphore. */
-s32 func_0011DE00(void* object, s32 first, u16 second);
+s32 resident_sync_gs_path(void* object, s32 first, u16 second);
 
 #ifdef __cplusplus
 }

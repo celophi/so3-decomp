@@ -291,7 +291,6 @@ struct FieldState6628
     u32 unk90;
 };
 
-extern "C" void* D_001B6650;
 extern "C" void func_4DCFA0(void* state);
 extern "C" FieldTrackPool<FieldClass159130>* D_001B6674;
 extern "C" FieldTrackPool<FieldClass159390>* D_001B6668;
@@ -1264,7 +1263,7 @@ extern "C" void field_set_display_blend(ResidentContext* context, float alpha)
         }
 
         context->display_blend_node->alpha = alpha;
-        LibDisplayState* state = static_cast<LibDisplayState*>(D_001B6650);
+        LibCameraContext* state = D_001B6650;
         state->blend_enabled = 1;
         state->blend_alpha = alpha;
     }
@@ -1555,16 +1554,16 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
             void* directory = resident_get_entry_table(resident_get_system());
             void* storage = reinterpret_cast<void*>(resident_find_entry(directory, 6));
-            func_00101480(directory, 6);
+            resident_remove_entry(directory, 6);
             FieldClass152F00::operator delete(storage);
             storage = reinterpret_cast<void*>(resident_find_entry(directory, 4));
-            func_00101480(directory, 4);
+            resident_remove_entry(directory, 4);
             FieldClass152F00::operator delete(storage);
             FieldClass150DB0* resource = reinterpret_cast<FieldClass150DB0*>(resident_find_entry(directory, 5));
 
             if (resource != 0)
             {
-                func_00101480(directory, 5);
+                resident_remove_entry(directory, 5);
                 delete resource;
             }
 
@@ -1572,12 +1571,12 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
             if (buffers != 0)
             {
-                func_00101480(directory, 7);
+                resident_remove_entry(directory, 7);
                 delete buffers;
             }
 
             func_0040AF80();
-            func_00433680();
+            lib_release_shared_font();
             func_003EF8A0();
             func_001DEF70(reinterpret_cast<FieldClass150060*>(context->unk04), 0);
 
@@ -1637,7 +1636,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
     case 4:
         field_detach_release_context_object(context->input);
         field_detach_release_context_object(context->unk20);
-        func_0011DE00(func_001012D0(resident_get_system()), 0, 0);
+        resident_sync_gs_path(resident_system_get_input(resident_get_system()), 0, 0);
         func_004DBEE0(D_001B65DC, 0);
 
         ResidentDmaQueue* dma_queue = D_001B6610;
@@ -2298,7 +2297,7 @@ extern "C" void field_clear_flags_5000(FieldRuntimeValues* values)
 /** @brief Disable display blending and restore the default alpha. */
 FieldDisplayBlendNode::~FieldDisplayBlendNode()
 {
-    LibDisplayState* state = static_cast<LibDisplayState*>(D_001B6650);
+    LibCameraContext* state = D_001B6650;
     state->blend_enabled = 0;
     state->blend_alpha = 0.5f;
 }

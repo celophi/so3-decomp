@@ -14,8 +14,59 @@ typedef struct LibObjectByte60
     u8 unk60;
 } LibObjectByte60;
 
+/** Number of Battle Trophies and of flags in the saved collection. */
+#define LIB_TROPHY_COUNT 300
+
+/** Size of one saved trophy record, picture included. */
+#define LIB_TROPHY_RECORD_SIZE 0xF10
+
+/** Linear congruential step the saved-data checksums use: value * multiplier + increment. */
+#define LIB_CHECKSUM_MULTIPLIER 0x19660D
+#define LIB_CHECKSUM_INCREMENT 0x3C6EF35F
+
+/** @brief The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
+typedef struct LibTrophyFlags
+{
+    u8 unk00[4];
+
+    /** Size of the flag array in bytes. */
+    s32 size;
+
+    /** Flag array: bit i of the array is set once trophy i is earned. */
+    u8* flag_bytes;
+
+    u8 unk0C[8];
+
+    /** Random word mixed into each trophy record's key; replaced when the flags are reset. */
+    s32 trophy_key;
+
+    /** Seed for checksum. */
+    u32 checksum_seed;
+
+    u32 checksum;
+} LibTrophyFlags;
+
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+/**
+ * @brief Compute the trophy flags' checksum from a seed: each flag, flipped by the seed's low bit, weighted by the
+ *        next value of the seed sequence, plus the trophy key mixed with the final seed.
+ * @param flags Trophy flags.
+ * @param seed Seed.
+ * @param checksum Receives the checksum.
+ */
+void lib_trophy_flags_checksum(LibTrophyFlags* flags, const u32* seed, u32* checksum);
+
+#ifdef __cplusplus
+/**
+ * @brief Decode a trophy record in place, then check it against the checksum in its first word.
+ * @param record Encoded record (LIB_TROPHY_RECORD_SIZE bytes).
+ * @return Whether the decoded record's checksum matches.
+ */
+bool lib_trophy_record_decode(void* record);
+
 void* func_004568A0(void* receiver);
 #endif
 /** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */

@@ -13,9 +13,6 @@
 #include "main/resident_00101260.h"
 #include "ee.h"
 
-/** Address bit that maps EE main memory uncached. */
-#define UNCACHED_SEGMENT 0x20000000
-
 /** EE interrupt controller cause for the end of vertical blank. */
 #define INTC_VBLANK_END 3
 
@@ -3862,7 +3859,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__19Reside
  * @param second sceGsSyncPath timeout.
  * @return sceGsSyncPath's result.
  */
-s32 func_0011DE00(void* object, s32 first, u16 second)
+s32 resident_sync_gs_path(void* object, s32 first, u16 second)
 {
     ResidentInputSystem* input = (ResidentInputSystem*)object;
     ResidentSemaphoreLock lock(&input->semaphore);
@@ -4448,7 +4445,7 @@ extern "C" void func_0011E970(ResidentClass14FC60* thread)
 s32 resident_input_vblank_handler(s32 cause)
 {
     func_00114720(&D_001CFA00);
-    resident_input_handle_vblank(func_001012D0(&g_system));
+    resident_input_handle_vblank(resident_system_get_input(&g_system));
     ee_exit_handler();
     return 0;
 }

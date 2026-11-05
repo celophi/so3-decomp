@@ -14,6 +14,13 @@ extern "C" {
 void FlushCache(s32 mode);
 
 /**
+ * @brief Stop the DMAC raising interrupts for one channel.
+ * @param channel DMA channel.
+ * @return The channel's previous enable state.
+ */
+s32 DisableDmac(s32 channel);
+
+/**
  * @brief Initialize the TLB.
  */
 void InitTLB(void);

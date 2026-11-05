@@ -3,18 +3,12 @@
 #include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_002BC510.h"
 #include "overlays/1067-00/text_002AE9E0.h"
+#include "overlays/lib/text_004DD440.h"
 
 struct FieldGlobal643C
 {
     u8 unk00[4];
     s32 unk04;
-};
-
-struct FieldGlobal6650
-{
-    u8 unk00[0x3C6C];
-    s16 unk3C6C;
-    s16 unk3C6E;
 };
 
 struct FieldState2BDF70
@@ -34,7 +28,6 @@ extern "C" FieldGlobal643C* D_001B643C;
 
 extern "C" void func_4D00B0(void* object);
 extern "C" void func_44B210(void* object);
-extern "C" void* D_001B6650;
 extern "C" void func_4DCEA0(void* state, bool enabled, bool other);
 
 
@@ -139,11 +132,11 @@ bool func_002BDF70(FieldState2BDF70* object, u16 value)
 
     object->unk44 = value;
     object->unk48 = D_001B643C->unk04;
-    FieldGlobal6650* state = static_cast<FieldGlobal6650*>(D_001B6650);
-    object->unk1C = 0x800 - state->unk3C6C / 2;
-    object->unk20 = 0x800 - state->unk3C6E / 2;
-    object->unk24 = 0x800 + state->unk3C6C / 2;
-    object->unk28 = 0x800 + state->unk3C6E / 2;
+    LibCameraContext* display = D_001B6650;
+    object->unk1C = GS_COORDINATE_CENTRE - display->display_area.width / 2;
+    object->unk20 = GS_COORDINATE_CENTRE - display->display_area.height / 2;
+    object->unk24 = GS_COORDINATE_CENTRE + display->display_area.width / 2;
+    object->unk28 = GS_COORDINATE_CENTRE + display->display_area.height / 2;
     return true;
 }
 

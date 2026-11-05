@@ -1,7 +1,10 @@
 #include "include_asm.h"
+#include "overlays/lib/movie_player.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
+#include "main/resident_data.h"
+#include "main/resident_00101550.h"
 
 extern "C" void func_004D00B0(void* object);
 
@@ -80,7 +83,57 @@ typedef struct PackedModesOwner
     PackedModePair at22;
 } PackedModesOwner;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419A70);
+extern "C" void func_00414490(void* object);
+extern "C" void func_00414BD0(void* object);
+extern "C" void func_004159E0(void* object);
+
+/**
+ * @brief Start playing a movie: select its resource and start streaming it, unless a movie is already playing.
+ * @param player Movie player.
+ * @param movie Resource to play.
+ * @param loop Nonzero to let the archive restart the stream.
+ * @return 1 once started, 0 while a movie plays or the resource queue is busy.
+ */
+s32 lib_movie_play(LibMoviePlayer* player, s32 movie, s32 loop)
+{
+    if (player->is_playing)
+    {
+        return 0;
+    }
+
+    if (!resident_poll_resource_queue(g_resource_queue))
+    {
+        return 0;
+    }
+
+    func_00414BD0(player->unk15E740);
+
+    if (loop)
+    {
+        if (!g_resource_archive->read_busy)
+        {
+            g_resource_archive->unk64 = player->unk15E77C;
+        }
+    }
+    else if (!g_resource_archive->read_busy)
+    {
+        g_resource_archive->unk64 = 0;
+    }
+
+    g_resource_queue->unk2c = 1;
+    func_0011D080(g_resource_archive, movie);
+    func_0011C120(g_resource_archive, reinterpret_cast<void*>((reinterpret_cast<u32>(player->stream_buffer) + 63) & ~63),
+                  LIB_MOVIE_STREAM_BUFFER_SIZE, 0);
+    player->stopped = 0;
+    func_004159E0(player->decoder);
+    player->movie = movie;
+    player->is_playing = 1;
+    player->unk15E795 = 1;
+    player->unk15E7A4 = 0;
+    player->unk15E784 = 0;
+    player->unk15E790 = 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419BE0);
 
@@ -105,7 +158,20 @@ s32 func_0041A170(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A1A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A210);
+/**
+ * @brief Stop the movie and its stream.
+ * @param player Movie player.
+ */
+void lib_movie_stop(LibMoviePlayer* player)
+{
+    player->stopped = 1;
+    player->is_playing = 0;
+    func_0011C8E0(g_resource_archive);
+    func_0011C6B0(g_resource_archive);
+    g_resource_queue->unk2c = 0;
+    func_00414490(player->unk15E740);
+    player->stopped = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A290);
 

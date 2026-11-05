@@ -2,6 +2,7 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/camera_vu0.h"
+#include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
 #include "vu0.h"
 
@@ -170,7 +171,55 @@ typedef struct FloatKeyScanOwner_text_004DD440_30
     s16 count48;
 } FloatKeyScanOwner_text_004DD440_30;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DD440);
+/** Number of A+D register writes that fill an object after its GIF tag. */
+#define LIB_AD_WRITE_COUNT(type) ((sizeof(type) - sizeof(GsGifTag)) / sizeof(unsigned __int128))
+
+/**
+ * @brief Start an A+D register list that ends the transfer.
+ * @param tag Tag to fill.
+ * @param count Number of register writes after the tag.
+ */
+static inline void lib_start_register_list(GsGifTag* tag, u32 count)
+{
+    gs_clear_gif_tag(tag);
+    tag->tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | count;
+    tag->fields.register0 = GIF_REGISTER_AD;
+}
+
+/**
+ * @brief Configure one of the display's screens. Progressive output has no second read circuit, so a circuit-2
+ *        screen is left alone there.
+ * @param index Screen index.
+ * @param enabled Nonzero to show the screen.
+ * @param unk3 Stored at 0xA53.
+ * @param circuit1 Show the screen on read circuit 1.
+ * @param circuit2 Show the screen on read circuit 2.
+ * @param unk6 Stored at 0xA56.
+ * @param field Interlaced field the screen is shown in.
+ * @param unk8 Stored at 0xA58.
+ * @param width Screen width in pixels.
+ * @param height Screen height in pixels.
+ */
+void LibCameraContext::configure_screen(s32 index, u8 enabled, u8 unk3, u8 circuit1, u8 circuit2, u8 unk6, u8 field,
+                                        s16 unk8, s16 width, s16 height)
+{
+    if (resident_get_system()->progressive && circuit2)
+    {
+        return;
+    }
+
+    screens[index].unkA51 = 0;
+    screens[index].unkA57 = 0;
+    screens[index].enabled = enabled;
+    screens[index].unkA53 = unk3;
+    screens[index].circuit1 = circuit1;
+    screens[index].circuit2 = circuit2;
+    screens[index].unkA56 = unk6;
+    screens[index].unkA58 = unk8;
+    screens[index].width = width;
+    screens[index].height = height;
+    screens[index].field = field;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DD520);
 
@@ -180,7 +229,21 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE010);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE1E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE250);
+/**
+ * @brief Set the rectangle of a screen that is drawn to.
+ * @param index Screen index.
+ * @param x Left edge.
+ * @param y Top edge.
+ * @param width Width in pixels.
+ * @param height Height in pixels.
+ */
+void LibCameraContext::set_screen_view(s32 index, s32 x, s32 y, s32 width, s32 height)
+{
+    screens[index].view_x = x;
+    screens[index].view_y = y;
+    screens[index].view_width = width;
+    screens[index].view_height = height;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE270);
 
@@ -190,7 +253,26 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DEA70);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DF270);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DF6E0);
+/**
+ * @brief Set the colour every draw buffer is cleared to.
+ * @param red Red component.
+ * @param green Green component.
+ * @param blue Blue component.
+ * @param alpha Alpha component.
+ */
+void LibCameraContext::set_clear_color(u8 red, u8 green, u8 blue, u8 alpha)
+{
+    s32 width = buffers[0].environment.scissor.x1 + 1;
+    s32 height = buffers[0].environment.scissor.y1 + 1;
+    s32 depth_method = buffers[1].environment.test.depth_method;
+    s32 y = GS_COORDINATE_CENTRE - (height >> 1);
+    s32 x = GS_COORDINATE_CENTRE - (width >> 1);
+
+    build_clear(&buffers[0].clear, depth_method, x, y, width, height, red, green, blue, alpha, 0);
+    build_clear(&buffers[1].clear, depth_method, x, y, width, height, red, green, blue, alpha, 0);
+    build_clear(&buffers[2].clear, depth_method, x, y, width, height, red, green, blue, alpha, 0);
+    clear_color = red | (green << 8) | (blue << 16) | (alpha << 24);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DF890);
 
@@ -198,9 +280,86 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E02C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E03C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E09B0);
+/**
+ * @brief Body of set_scale, which initialize also inlines.
+ * @param unk3C77 Stored at 0x3C77.
+ * @param scale_x Horizontal scale.
+ * @param scale_y Vertical scale.
+ * @param unk3C70 Stored at 0x3C70.
+ */
+inline void LibCameraContext::apply_scale(u8 unk3C77, float scale_x, float scale_y, s16 unk3C70)
+{
+    s32 fields;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E0BC0);
+    display_area.scale_x = scale_x;
+    display_area.scale_y = scale_y;
+    scaled = !(scale_x == 1.0f && scale_y == 1.0f);
+    this->unk3C77 = unk3C77;
+    unk3E65 = 0;
+    unk3E66 = 0;
+    unk3E68 = 0;
+    this->unk3C70 = unk3C70;
+
+    if (scaled)
+    {
+        lib_start_register_list(&buffers[1].environment.gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
+    }
+
+    fields = 1;
+    if (resident_get_system()->progressive)
+    {
+        fields = 2;
+    }
+
+    display_area.width = ((s32)(display_area.base_width * display_area.scale_x) + 63) & ~63;
+    display_area.height = ((s32)(display_area.base_height * display_area.scale_y / fields) + 31) & ~31;
+}
+
+/**
+ * @brief Set up the display's GIF tags and default state, size the draw area and allocate its buffers.
+ * @param frame_buffer_count Frame buffers the display cycles through.
+ */
+void LibCameraContext::initialize(s32 frame_buffer_count)
+{
+    s32 i;
+
+    lib_start_register_list(&buffers[0].environment.gif_tag, LIB_AD_WRITE_COUNT(LibDisplayBuffer));
+    lib_start_register_list(&buffers[1].environment.gif_tag, LIB_AD_WRITE_COUNT(LibDisplayBuffer));
+    lib_start_register_list(&buffers[2].environment.gif_tag, LIB_AD_WRITE_COUNT(LibDisplayBuffer));
+    lib_start_register_list(&environments[0].gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
+    lib_start_register_list(&environments[1].gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
+    this->frame_buffer_count = frame_buffer_count;
+    unk3C7C = 0;
+    unk3E64 = 0;
+    unk3E54 = 0;
+    unk3E58 = 0;
+    unk3E4C = 0;
+    unk3E69 = 0;
+    unk3E50 = 0;
+    unk3E78 = 0;
+    unk3E7A = 0;
+    apply_scale(0, 1.0f, 1.0f, -1);
+
+    for (i = 0; i < 18; i++)
+    {
+        unk3CB4[i] = new (0) u8[0x530];
+        unk3CFC[i] = new (0) u8[0x530];
+    }
+
+    FlushCache(0);
+}
+
+/**
+ * @brief Set the draw area's scale and resize it. A scaled display draws its second buffer's environment on its own.
+ * @param unk3C77 Stored at 0x3C77.
+ * @param scale_x Horizontal scale.
+ * @param scale_y Vertical scale.
+ * @param unk3C70 Stored at 0x3C70.
+ */
+void LibCameraContext::set_scale(u8 unk3C77, float scale_x, float scale_y, s16 unk3C70)
+{
+    apply_scale(unk3C77, scale_x, scale_y, unk3C70);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E0D20);
 
@@ -269,12 +428,12 @@ void LibClass179080::initialize_projection(const LibCameraContext* context)
     horizontal_fov = 0.7853982f;
     s32 half_height = context->display_area.height / 2;
     s32 half_width = context->display_area.width / 2;
-    screen_min.x = 2048 - half_width;
-    screen_min.y = 2048 - half_height;
+    screen_min.x = GS_COORDINATE_CENTRE - half_width;
+    screen_min.y = GS_COORDINATE_CENTRE - half_height;
     screen_min.z = 100.0f;
     screen_min.w = 1.0f;
-    screen_max.x = 2048 + half_width;
-    screen_max.y = 2048 + half_height;
+    screen_max.x = GS_COORDINATE_CENTRE + half_width;
+    screen_max.y = GS_COORDINATE_CENTRE + half_height;
     screen_max.z = 16770000.0f;
     screen_max.w = 1.0f;
     unk3c8 = 10;

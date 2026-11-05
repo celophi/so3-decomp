@@ -19,7 +19,6 @@ extern const char g_trophy_texture_name[];
 extern const char g_no_trophy_number[];
 extern const char g_trophy_number_format[];
 void func_4CD630(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t);
-s32 func_457220(BootTrophyRecord* record);
 
 /** Key each trophy record must carry, stored XOR-encoded. */
 extern const u32 g_trophy_keys[];
@@ -54,7 +53,7 @@ enum BootTrophyViewerStep
 enum BootTrophyGrid
 {
     BOOT_TROPHY_GRID_COLUMNS = 8,
-    BOOT_TROPHY_GRID_ROWS = (BOOT_TROPHY_COUNT + BOOT_TROPHY_GRID_COLUMNS - 1) / BOOT_TROPHY_GRID_COLUMNS
+    BOOT_TROPHY_GRID_ROWS = (LIB_TROPHY_COUNT + BOOT_TROPHY_GRID_COLUMNS - 1) / BOOT_TROPHY_GRID_COLUMNS
 };
 
 /** Earned trophy counts that advance the viewer rank and unlock settings. */
@@ -108,7 +107,7 @@ static inline u64 trophy_time(BootBattleTrophyViewer* viewer, s32 position)
  */
 void BootBattleTrophyViewer::sort_trophies(u8 newest_first)
 {
-    for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
     {
         order[i] = i;
     }
@@ -118,17 +117,17 @@ void BootBattleTrophyViewer::sort_trophies(u8 newest_first)
         return;
     }
 
-    BootTrophyFlags* bits = &boot_settings()->trophy_flags;
+    LibTrophyFlags* bits = &boot_settings()->trophy_flags;
     u32 seed = bits->checksum_seed;
     u32 checksum;
-    func_457670(bits, &seed, &checksum);
+    lib_trophy_flags_checksum(bits, &seed, &checksum);
 
     if (bits->checksum != checksum)
     {
         return;
     }
 
-    for (s32 i = 1; i < BOOT_TROPHY_COUNT; i++)
+    for (s32 i = 1; i < LIB_TROPHY_COUNT; i++)
     {
         u64 time = trophy_time(this, i);
         s16 current = order[i];
@@ -149,12 +148,12 @@ void BootBattleTrophyViewer::sort_trophies(u8 newest_first)
  * @param texture Texture resource to fill.
  * @param index Trophy index.
  */
-void BootBattleTrophyViewer::build_trophy_texture(const BootTrophyRecord* record, BootTextureResource* texture, s32 index)
+void BootBattleTrophyViewer::build_trophy_texture(const BootTrophyRecord* record, LibImageResource* texture, s32 index)
 {
-    memcpy_guess(texture, (void*)BOOT_ALIGN_RESOURCE(image_blocks[2]), 0x4600);
-    BootTextureHeader* header = &texture->header;
+    memcpy_guess(texture, (void*)RESIDENT_ALIGN_RESOURCE(image_blocks[2]), 0x4600);
+    LibImageHeader* header = &texture->header;
     u32* palette = (u32*)((u8*)header + header->palette_offset + 0x80);
-    u8* pixels = (u8*)header + ((BootTextureImage*)((u8*)header + header->image_offset))->pixel_offset + 0x80;
+    u8* pixels = (u8*)header + ((LibImageInfo*)((u8*)header + header->image_offset))->pixel_offset + 0x80;
     strncpy_guess(header->name, g_trophy_texture_name, 4);
     header->id = index + 1;
 
@@ -191,11 +190,11 @@ void BootBattleTrophyViewer::build_trophy_texture(const BootTrophyRecord* record
  * @param bits Flag block.
  * @return True when the checksum matches.
  */
-static inline bool flags_intact(BootTrophyFlags* bits)
+static inline bool flags_intact(LibTrophyFlags* bits)
 {
     u32 seed = bits->checksum_seed;
     u32 checksum;
-    func_457670(bits, &seed, &checksum);
+    lib_trophy_flags_checksum(bits, &seed, &checksum);
     return bits->checksum == checksum;
 }
 
@@ -251,7 +250,7 @@ void BootBattleTrophyViewer::update_grid()
     // Keep the forward scroll test in its helper to preserve code generation.
     s32 selected = cursor_column + (cursor_row + first_row + positive(scroll_step) - (scroll_step < 0)) * BOOT_TROPHY_GRID_COLUMNS;
 
-    if (selected >= BOOT_TROPHY_COUNT)
+    if (selected >= LIB_TROPHY_COUNT)
     {
         strcpy_guess(number_text, g_no_trophy_number);
     }
@@ -278,7 +277,7 @@ void BootBattleTrophyViewer::update_grid()
         back_axis.w = 3.1415927f;
         lib_quaternion_from_axis_angle(&back, &back_axis);
 
-        for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+        for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
         {
             BootModel* model;
 
@@ -307,7 +306,7 @@ void BootBattleTrophyViewer::update_grid()
         }
     }
 
-    for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
     {
         BootImage* image = trophy_images[order[i]];
 
@@ -384,7 +383,7 @@ static inline void set_clip(BootClipRegion* clip, s32 left, s32 top, s32 right, 
 s32 BootBattleTrophyViewer::create_trophy_images()
 {
     BootSystemSettings* settings = boot_settings();
-    BootTrophyFlags* bits = &settings->trophy_flags;
+    LibTrophyFlags* bits = &settings->trophy_flags;
 
     if (!flags_intact(bits))
     {
@@ -395,11 +394,11 @@ s32 BootBattleTrophyViewer::create_trophy_images()
 
     if (flags_intact(bits))
     {
-        for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+        for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
         {
             BootTrophyRecord* record = &records[i];
 
-            if (func_457220(record) == 0 || *resident_get_system()->status == RESIDENT_STATUS_TAMPERED)
+            if (!lib_trophy_record_decode(record) || *resident_get_system()->status == RESIDENT_STATUS_TAMPERED)
             {
                 set_resource_bit(bits, i, 0);
                 record->key = 0;
@@ -409,10 +408,10 @@ s32 BootBattleTrophyViewer::create_trophy_images()
         }
     }
 
-    for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
     {
         order[i] = i;
-        textures[i] = (BootTextureResource*)memalign(0x80, 0x4600);
+        textures[i] = (LibImageResource*)memalign(0x80, 0x4600);
     }
 
     grid_clip = new (0) BootClipRegion;
@@ -429,7 +428,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
 
     if (flags_intact(bits))
     {
-        for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+        for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
         {
             trophy_images[i] = new (0) BootImage;
             trophy_images[i]->centered = 1;
@@ -438,13 +437,13 @@ s32 BootBattleTrophyViewer::create_trophy_images()
             if (resource_bit(bits, i))
             {
                 build_trophy_texture(&records[i], textures[i], i);
-                trophy_images[i]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[0]), textures[i]);
+                trophy_images[i]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), textures[i]);
                 image_set_rectangle_with_palette(trophy_images[i], 0, 0xE2, 0x44, 0x64, 0, 0, 0x40, 0x60, 0x80808080, 0);
                 earned_count++;
             }
             else
             {
-                trophy_images[i]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[0]), 0);
+                trophy_images[i]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
                 trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
             }
 
@@ -454,11 +453,11 @@ s32 BootBattleTrophyViewer::create_trophy_images()
     }
     else
     {
-        for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+        for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
         {
             trophy_images[i] = new (0) BootImage;
             trophy_images[i]->centered = 1;
-            trophy_images[i]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[0]), 0);
+            trophy_images[i]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
             trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
             trophy_images[i]->model->set_translation(-236.0f + (i & (BOOT_TROPHY_GRID_COLUMNS - 1)) * 68,
                                                      -94.0f + i / BOOT_TROPHY_GRID_COLUMNS * 100, 0.0f);
@@ -503,7 +502,7 @@ void BootBattleTrophyViewer::update_images()
     if (images[0] == 0)
     {
         images[0] = new (0) BootImage;
-        images[0]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[0]), 0);
+        images[0]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
         images[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
@@ -511,7 +510,7 @@ void BootBattleTrophyViewer::update_images()
     if (images[1] == 0)
     {
         images[1] = new (0) BootImage;
-        images[1]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_blocks[1]), 0);
+        images[1]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[1]), 0);
         images[1]->set_rectangle(0, 0, 640, 80, 0x80808080, 0);
         images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
@@ -623,7 +622,7 @@ void BootBattleTrophyViewer::update()
     card_states[1] = input->slot2_raw_state;
     s32 slot1_ready = input->slot1_ready;
     s32 slot2_ready = input->slot2_ready;
-    BootTrophyFlags* bits = &settings->trophy_flags;
+    LibTrophyFlags* bits = &settings->trophy_flags;
 
     switch (step)
     {
@@ -631,7 +630,7 @@ void BootBattleTrophyViewer::update()
         if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
             resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
-            func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
+            clear_to_menu_background();
 
             if (*resident_get_system()->status != RESIDENT_STATUS_TAMPERED)
             {
@@ -649,7 +648,7 @@ void BootBattleTrophyViewer::update()
         image_blocks[images_loaded] =
             resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(resource_data), images_loaded, 1);
         resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(resource_data),
-                                       (void*)BOOT_ALIGN_RESOURCE(image_blocks[images_loaded]), images_loaded);
+                                       (void*)RESIDENT_ALIGN_RESOURCE(image_blocks[images_loaded]), images_loaded);
 
         if (++images_loaded >= 3)
         {
@@ -704,7 +703,7 @@ void BootBattleTrophyViewer::update()
 
         break;
     case BOOT_TROPHY_RETURN_TO_TITLE:
-        func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+        clear_to_black();
         resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
         D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_BATTLE_TROPHIES), -1);
@@ -805,7 +804,7 @@ void BootBattleTrophyViewer::update()
             delete[] records;
         }
 
-        records = new (0) BootTrophyRecord[BOOT_TROPHY_COUNT];
+        records = new (0) BootTrophyRecord[LIB_TROPHY_COUNT];
         lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? 0x82 : 0x68, 0);
 
         if (slot1_text != 0)
@@ -936,7 +935,7 @@ void BootBattleTrophyViewer::update()
         {
             s32 score = 0;
 
-            for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+            for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
             {
                 if (resource_bit(bits, i) && trophy_genuine(&records[i], i))
                 {
@@ -996,8 +995,8 @@ void BootBattleTrophyViewer::update()
         }
 
         D_001B657C->message_arguments[1] = earned_count;
-        D_001B657C->message_arguments[2] = BOOT_TROPHY_COUNT;
-        D_001B657C->message_arguments[3] = earned_count * 100 / BOOT_TROPHY_COUNT;
+        D_001B657C->message_arguments[2] = LIB_TROPHY_COUNT;
+        D_001B657C->message_arguments[3] = earned_count * 100 / LIB_TROPHY_COUNT;
         cursor = new (0) LibSelectionCursor;
         cursor->init(1, 0, 0, grid_cursor_x(this), cursor_row * 100 + 170, 0.0f);
         lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
@@ -1016,7 +1015,7 @@ void BootBattleTrophyViewer::update()
 
         if (flags_intact(bits))
         {
-            for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+            for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
             {
                 if (resource_bit(bits, i) && trophy_genuine(&records[i], i))
                 {
@@ -1070,7 +1069,7 @@ void BootBattleTrophyViewer::update()
 
             s32 selected = cursor_column + (cursor_row + first_row + positive(scroll_step) - (scroll_step < 0)) * BOOT_TROPHY_GRID_COLUMNS;
 
-            if (selected >= BOOT_TROPHY_COUNT)
+            if (selected >= LIB_TROPHY_COUNT)
             {
                 lib_text_set_resource(name_text, g_boot_program.get_messages(), 0x6C, 0);
                 lib_text_set_resource(date_text, g_boot_program.get_messages(), 0x6C, 0);
@@ -1134,7 +1133,7 @@ void BootBattleTrophyViewer::update()
             }
         }
 
-        if (reveal_index < BOOT_TROPHY_COUNT)
+        if (reveal_index < LIB_TROPHY_COUNT)
         {
             if (flags_intact(bits))
             {
@@ -1318,7 +1317,7 @@ void BootBattleTrophyViewer::update()
         break;
     }
     case BOOT_TROPHY_OPEN_MUSIC_PLAYER:
-        func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+        clear_to_black();
         resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
         D_001B6614->append_node(new (0) BootMusicPlayer, -1);
@@ -1461,7 +1460,7 @@ void BootBattleTrophyViewer::release()
         scroll_indicator = 0;
     }
 
-    for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
     {
         if (trophy_images[i] != 0)
         {
@@ -1526,7 +1525,7 @@ BootBattleTrophyViewer::~BootBattleTrophyViewer()
 
     delete resource_data;
 
-    for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
     {
         if (trophy_images[i] != 0)
         {
@@ -1640,7 +1639,7 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
         images[i] = 0;
     }
 
-    for (s32 i = 0; i < BOOT_TROPHY_COUNT; i++)
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
     {
         trophy_images[i] = 0;
         textures[i] = 0;

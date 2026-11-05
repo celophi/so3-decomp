@@ -334,12 +334,15 @@ void func_0042A340(void* object, u8 mode);
 }
 #endif
 
+/** Entry-table key the shared font (archive resources 8 and 9) is stored under. */
+#define LIB_ENTRY_SHARED_FONT 0x25466887
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/** Remove and free the keyed text resource. */
-void func_00433680(void);
+/** @brief Free the shared font (archive resources 8 and 9) and remove it from the entry table. */
+void lib_release_shared_font(void);
 
 #ifdef __cplusplus
 }

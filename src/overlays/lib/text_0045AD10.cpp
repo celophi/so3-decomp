@@ -690,7 +690,7 @@ extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
     u8* allocation = new (0) u8[prefix + remainder_size + 128];
     if (allocation == 0)
         return 0;
-    source = (LibResourceHeader*)(((u32)allocation + 127) & ~127u);
+    source = (LibResourceHeader*)RESIDENT_ALIGN_RESOURCE(allocation);
     memcpy_guess(source, data, prefix);
     if (remainder_size != 0)
         memcpy_guess((u8*)source + prefix, remainder, remainder_size);

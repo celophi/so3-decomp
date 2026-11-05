@@ -2,8 +2,14 @@
 #include "vu0.h"
 #include "overlays/lib/blend_transform.h"
 #include "overlays/lib/text_00429B00.h"
+#include "overlays/lib/memory_card.h"
+#include "overlays/lib/image_capture.h"
+#include "sdk/main/libmc_0012BB10.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "main/resident_00101260.h"
 #include "sdk/main/libc_guess_00137290.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libc_guess_0013CD50.h"
 
 extern "C" {
 
@@ -527,13 +533,150 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431AB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431E60);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431F90);
+/**
+ * @brief Find a slot that can start a file operation: the card library is set up, the slot is open, its card is
+ *        ready and its last operation finished.
+ * @param card Memory card object.
+ * @param slot Slot index.
+ * @return The slot's record, or null.
+ */
+static inline LibMemoryCardSlot* lib_memory_card_idle_slot(LibMemoryCard* card, u32 slot)
+{
+    LibMemoryCardSlot* record;
+
+    if (!card->initialized || slot >= LIB_MEMORY_CARD_SLOT_COUNT)
+    {
+        return 0;
+    }
+
+    record = &card->slots[slot];
+
+    if (record->card_state != LIB_MEMORY_CARD_STATE_READY)
+    {
+        return 0;
+    }
+
+    if ((record->status & LIB_MEMORY_CARD_STATUS_GROUP_MASK) != LIB_MEMORY_CARD_STATUS_DONE)
+    {
+        return 0;
+    }
+
+    if (!(record->state_flags & LIB_MEMORY_CARD_SLOT_OPEN))
+    {
+        return 0;
+    }
+
+    return record;
+}
+
+/**
+ * @brief Start an operation: an idle slot takes it as its status, a running one queues it in the busy byte.
+ * @param record Slot record.
+ * @param operation Operation code.
+ */
+static inline void lib_memory_card_start_operation(LibMemoryCardSlot* record, u8 operation)
+{
+    if (record->status == LIB_MEMORY_CARD_STATUS_DONE)
+    {
+        record->status = operation;
+    }
+    else
+    {
+        record->busy = operation;
+    }
+}
+
+/**
+ * @brief Start looking for a file on the card in a slot.
+ * @param card Memory card object.
+ * @param slot Slot index.
+ * @param name File to look for.
+ * @param unk7C Stored in the slot at 0x7C.
+ * @param unk78 Stored in the slot at 0x78.
+ * @param buffer Buffer the probe reads into; it is aligned to 64 bytes first.
+ * @return 0 once started, -1 when the slot can't start an operation.
+ */
+s32 lib_memory_card_probe_file(LibMemoryCard* card, u32 slot, const char* name, s32 unk7C, s32 unk78, u8* buffer)
+{
+    LibMemoryCardSlot* record = lib_memory_card_idle_slot(card, slot);
+
+    if (!record)
+    {
+        return -1;
+    }
+
+    lib_memory_card_start_operation(record, LIB_MEMORY_CARD_OP_PROBE_FILE);
+    record->result = 0;
+    record->buffer = reinterpret_cast<u8*>((reinterpret_cast<u32>(buffer) + 63) & ~63);
+    record->unk78 = unk78;
+    record->unk7C = unk7C;
+    strncpy_guess(record->name, name, sizeof(record->name));
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432090);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432270);
+/**
+ * @brief Read the result of a slot's last operation.
+ * @param card Memory card object.
+ * @param slot Slot index.
+ * @param result Receives the result when one is ready; cleared first. May be null.
+ * @return 1 with a result, 0 while the slot is busy or its status has no result, -1 when the card library isn't set
+ *         up or the slot doesn't exist.
+ */
+s32 lib_memory_card_get_result(LibMemoryCard* card, s32 slot, s32* result)
+{
+    if (result)
+    {
+        *result = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432310);
+    if (!card->initialized || slot >= LIB_MEMORY_CARD_SLOT_COUNT)
+    {
+        return -1;
+    }
+
+    if (card->slots[slot].busy)
+    {
+        return 0;
+    }
+
+    u8 status = card->slots[slot].status;
+    if (status != 0 && (status & LIB_MEMORY_CARD_STATUS_GROUP_MASK) != LIB_MEMORY_CARD_STATUS_DONE)
+    {
+        return 0;
+    }
+
+    if (result)
+    {
+        *result = card->slots[slot].result;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Start a file transfer on the card in a slot.
+ * @param card Memory card object.
+ * @param slot Slot index.
+ * @param request Files to transfer; the slot keeps the pointer until it finishes.
+ * @return 0 once started, -1 when the slot can't start an operation.
+ */
+s32 lib_memory_card_start_transfer(LibMemoryCard* card, u32 slot, LibCardFileRequest* request)
+{
+    LibMemoryCardSlot* record = lib_memory_card_idle_slot(card, slot);
+
+    if (!record)
+    {
+        return -1;
+    }
+
+    lib_memory_card_start_operation(record, LIB_MEMORY_CARD_OP_TRANSFER);
+    record->result = 0;
+    record->unk44 = 0;
+    record->request = request;
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004323E0);
 
@@ -541,7 +684,34 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004324D0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004325A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432660);
+/**
+ * @brief Open a slot that isn't running anything: clear its record and mark it open.
+ * @param card Memory card object.
+ * @param slot Slot index.
+ * @param enabled Low bit goes to bit 4 of the slot's config.
+ * @param flags Low two bits go to bits 0-1 of the slot's config.
+ */
+void lib_memory_card_open_slot(LibMemoryCard* card, s32 slot, u32 enabled, u32 flags)
+{
+    LibMemoryCardSlot* record;
+
+    if (!card->initialized || slot < 0 || slot >= LIB_MEMORY_CARD_SLOT_COUNT)
+    {
+        return;
+    }
+
+    record = &card->slots[slot];
+
+    if (record->status)
+    {
+        return;
+    }
+
+    memset_guess(record, 0, sizeof(LibMemoryCardSlot));
+    record->config = ((enabled & 1) << 4) | (flags & 3);
+    record->status = LIB_MEMORY_CARD_STATUS_DONE;
+    record->state_flags = LIB_MEMORY_CARD_SLOT_OPEN;
+}
 
 /** Store the word at receiver offset 0x24. */
 void func_00432710(void* object, u32 value)
@@ -550,7 +720,41 @@ void func_00432710(void* object, u32 value)
     receiver->unk24 = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432720);
+/** Static storage the card's slot records are carved from: both records plus room to align them. */
+extern "C" u8 lib_memory_card_slot_storage[];
+
+/**
+ * @brief Set up the card library and the slot records, then add the card to an update list.
+ * @param card Memory card object.
+ * @param list List to add the card to, or null.
+ * @return 1 once set up, 0 when it already was or the card library failed to start.
+ */
+s32 lib_memory_card_init(LibMemoryCard* card, LibUpdateList* list)
+{
+    if (card->initialized || sceMcInit() != 0)
+    {
+        return 0;
+    }
+
+    card->slot_storage = lib_memory_card_slot_storage;
+
+    if (!card->slot_storage)
+    {
+        return 0;
+    }
+
+    memset_guess(card->slot_storage, 0, LIB_MEMORY_CARD_SLOT_COUNT * sizeof(LibMemoryCardSlot) + 64);
+    card->slots = reinterpret_cast<LibMemoryCardSlot*>((reinterpret_cast<u32>(card->slot_storage) + 63) & ~63);
+    card->initialized = 1;
+    card->unk1e = 0;
+
+    if (list)
+    {
+        list->append_node(card, -1);
+    }
+
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432800);
 
@@ -570,7 +774,28 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004332F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433340);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004333A0);
+/**
+ * @brief Queue a copy of a VRAM rectangle into memory, in the next of the capture's two store packets.
+ * @param capture Capture object.
+ * @param destination Memory the pixels are copied to.
+ * @param base_pointer Source buffer address in 64-word blocks.
+ * @param buffer_width Source buffer width in 64-pixel units.
+ * @param pixel_format Source pixel format.
+ * @param x Left edge of the rectangle.
+ * @param y Top edge of the rectangle.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ */
+void lib_image_capture_store(LibImageCapture* capture, void* destination, s16 base_pointer, s16 buffer_width,
+                             s16 pixel_format, s16 x, s16 y, s16 width, s16 height)
+{
+    capture->current ^= 1;
+    sceGsSetDefStoreImage(reinterpret_cast<GsStoreImage*>(reinterpret_cast<u32>(&capture->packets[capture->current]) | UNCACHED_SEGMENT),
+                          base_pointer, buffer_width, pixel_format, x, y, width, height);
+    capture->destinations[capture->current] = destination;
+    capture->stored[capture->current] = 0;
+    capture->pending = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433440);
 
@@ -588,7 +813,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433660);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433670);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433680);
+/** @brief Free the shared font (archive resources 8 and 9) and remove it from the entry table. */
+void lib_release_shared_font(void)
+{
+    ResidentEntryTable* table = resident_get_entry_table(resident_get_system());
+    void* font = (void*)resident_find_entry(table, LIB_ENTRY_SHARED_FONT);
+    resident_remove_entry(table, LIB_ENTRY_SHARED_FONT);
+    free_guess(font);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004336E0);
 

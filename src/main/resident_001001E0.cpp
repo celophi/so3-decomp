@@ -262,9 +262,9 @@ int main(int argc, char** argv)
         sceGsResetGraph(0, SCE_GS_INTERLACE, SCE_GS_NTSC, SCE_GS_FRAME);
     }
 
-    func_0011EA80(func_001012D0(&g_system));
+    func_0011EA80(resident_system_get_input(&g_system));
     resident_system_save_stack(&g_system);
-    func_0011DE00(func_001012D0(&g_system), 0, 0);
+    resident_sync_gs_path(resident_system_get_input(&g_system), 0, 0);
 
     blank = new (0) u8[0x40000];
     memset_guess(blank, 0, 0x40000);
@@ -274,7 +274,7 @@ int main(int argc, char** argv)
         sceGsSetDefLoadImage(&image, k * 0x10000 / 64, 4, 0, 0, 0, 256, 256);
         FlushCache(0);
         sceGsExecLoadImage(&image, blank);
-        func_0011DE00(func_001012D0(&g_system), 0, 0);
+        resident_sync_gs_path(resident_system_get_input(&g_system), 0, 0);
     }
 
     delete blank;
@@ -300,14 +300,14 @@ int main(int argc, char** argv)
     {
         resident_next_random_word();
         resident_system_get_resource_queue(&g_system)->func_00104770();
-        func_0011DF10(func_001012D0(&g_system), 0);
+        func_0011DF10(resident_system_get_input(&g_system), 0);
         sound = func_00101270(&g_system);
         func_0010F250(sound, 0);
     } while (sound->state);
 
     // TODO: The original calls func_00100A40 through a register and reads the input system right before, without
     // using it; a call through a cast pointer is the only form I've found that gives the jalr.
-    func_001012D0(&g_system);
+    resident_system_get_input(&g_system);
     ((void (*)(u8))func_00100A40)(1);
 
     D_CTRL = D_CTRL_RELEASE_CYCLE_256 | D_CTRL_RELEASE_ENABLE | D_CTRL_DMA_ENABLE;

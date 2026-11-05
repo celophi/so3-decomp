@@ -1,6 +1,8 @@
 #include "overlays/lib/texture_scroll_channel.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libdma_0012B2C8.h"
+#include "sdk/main/libgraph_0012EAC8.h"
+#include "main/resident_00101260.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/palette_blend_channel.h"
 #include "overlays/lib/text_004CD3A0.h"
@@ -41,22 +43,7 @@ enum
     TEXTURE_TRANSFER_VIF_FLUSH = 0x11000000,
     TEXTURE_TRANSFER_QUADWORDS = 8,
     DMA_TAG_REFERENCE = 0x30000000,
-    GIF_REGISTER_AD = 0xE,
-    GS_REGISTER_BITBLTBUF = 0x50,
-    GS_REGISTER_TRXPOS = 0x51,
-    GS_REGISTER_TRXREG = 0x52,
-    GS_REGISTER_TRXDIR = 0x53,
-    GS_REGISTER_TEXFLUSH = 0x3F,
     GS_TRANSFER_LOCAL_TO_LOCAL = 2
-};
-
-/** Header shared by the linked image and sequence chunks. */
-struct LibResourceChunkHeader
-{
-    u32 magic;
-    u32 payload_size;
-    u32 previous_offset;
-    u32 next_offset;
 };
 
 /** Offset and duration for one image in a FISA sequence. */
@@ -109,25 +96,6 @@ struct LibFieldPointer634
 
 extern "C" LibDisplayManager* D_001B6628;
 extern "C" ResidentDmaQueue* D_001B660C;
-
-struct LibHalfwordToggleFields3E78
-{
-    u8 pad00[0x3E78];
-    s16 unk3E78;
-    s16 unk3E7A;
-};
-
-/**
- * @brief Locate the payload after the resource's chunk header.
- * @param buffer Resource whose backing storage is inspected.
- * @return Payload pointer, or null when no backing storage is present.
- */
-static inline u8* lib_resource_payload(LibResourceBuffer* buffer)
-{
-    return buffer->data == 0 ? 0 :
-        buffer->external_data ? static_cast<u8*>(buffer->data) + sizeof(LibResourceChunkHeader) :
-        reinterpret_cast<u8*>((reinterpret_cast<u32>(buffer->data) + 127) & ~0x7F) + sizeof(LibResourceChunkHeader);
-}
 
 /** @brief View an aligned matrix row as a vector. @param matrix Source matrix. @param index Row index. @return Read-only row vector. */
 static inline const FieldVec4A& matrix_row_vector(const LibMatrix44Value& matrix, s32 index)
@@ -1522,8 +1490,7 @@ bool LibImageSequenceChannel::bind_record(LibRenderDataRecord* record, bool use_
                 break;
             }
 
-            chunk = chunk->next_offset == 0 ? 0 :
-                reinterpret_cast<LibResourceChunkHeader*>(reinterpret_cast<u8*>(chunk) + chunk->next_offset);
+            chunk = lib_next_chunk(chunk);
 
             if (chunk == 0)
             {
@@ -1743,7 +1710,37 @@ extern "C" s32 lib_compare_bounded_strings(const char* first, const char* second
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8970);
+/** Side of the square 32-bit image lib_clear_vram uploads each pass. */
+#define LIB_VRAM_CLEAR_SIZE 256
+
+/** @brief Fill all of VRAM with zeros, one 256x256 32-bit upload at a time. */
+void lib_clear_vram(void)
+{
+    GsLoadImage image;
+    u8* zeros;
+    s32 pass;
+
+    resident_sync_gs_path(resident_system_get_input(resident_get_system()), 0, 0);
+    zeros = new (0) u8[LIB_VRAM_CLEAR_SIZE * LIB_VRAM_CLEAR_SIZE * sizeof(u32)];
+
+    if (zeros == 0)
+    {
+        return;
+    }
+
+    memset_guess(zeros, 0, LIB_VRAM_CLEAR_SIZE * LIB_VRAM_CLEAR_SIZE * sizeof(u32));
+
+    for (pass = 0; pass < GS_VRAM_WORDS / (LIB_VRAM_CLEAR_SIZE * LIB_VRAM_CLEAR_SIZE); pass++)
+    {
+        sceGsSetDefLoadImage(&image, pass * (LIB_VRAM_CLEAR_SIZE * LIB_VRAM_CLEAR_SIZE) / GS_VRAM_BLOCK_WORDS,
+                             LIB_VRAM_CLEAR_SIZE / GS_BUFFER_WIDTH_PIXELS, GS_PSMCT32, 0, 0, LIB_VRAM_CLEAR_SIZE, LIB_VRAM_CLEAR_SIZE);
+        FlushCache(0);
+        sceGsExecLoadImage(&image, zeros);
+        resident_sync_gs_path(resident_system_get_input(resident_get_system()), 0, 0);
+    }
+
+    operator delete(zeros);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8A80);
 
@@ -1982,15 +1979,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB5B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB600);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB7F0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", build_clear__16LibCameraContextFP14LibScreenClearsssssUcUcUcUcUi);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB9E0);
 
-void func_004DBB70(void* object)
+void func_004DBB70(LibCameraContext* display)
 {
-    LibHalfwordToggleFields3E78* state = (LibHalfwordToggleFields3E78*)object;
-    state->unk3E78 = 0;
-    state->unk3E7A ^= 1;
+    display->unk3E78 = 0;
+    display->unk3E7A ^= 1;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBB90);
@@ -2031,7 +2027,28 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCA70);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCB30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCC10);
+/**
+ * @brief Empty the allocator and make it start allocating at a VRAM page.
+ * @param vram Allocator.
+ * @param page First VRAM page to hand out.
+ */
+void lib_vram_reset(LibVramAllocator* vram, u32 page)
+{
+    vram->base_address = page * GS_VRAM_PAGE_WORDS;
+
+    for (s32 i = 0; i < vram->unk04_capacity; i++)
+    {
+        vram->unk04[i] = 0;
+    }
+
+    for (s32 i = 0; i < vram->allocation_capacity; i++)
+    {
+        vram->allocations[i] = 0;
+    }
+
+    vram->unk04_count = 0;
+    vram->allocation_count = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCCA0);
 

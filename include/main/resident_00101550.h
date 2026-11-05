@@ -5,6 +5,12 @@
 #include "ee.h"
 #include "main/resident_001001E0.h"
 
+/** Decoded resources start on a 128-byte boundary; their buffers leave room to round up. */
+#define RESIDENT_RESOURCE_ALIGNMENT 128
+
+/** Round a resource buffer address up to RESIDENT_RESOURCE_ALIGNMENT. */
+#define RESIDENT_ALIGN_RESOURCE(value) (((u32)(value) + RESIDENT_RESOURCE_ALIGNMENT - 1) & ~(RESIDENT_RESOURCE_ALIGNMENT - 1))
+
 #ifdef __cplusplus
 extern "C" {
 /**

@@ -61,14 +61,11 @@ extern float g_frame_ticks;
 extern float g_frame_seconds;
 
 void FlushCache(s32 value);
-void func_419A70(BootMoviePlayer* player, s32 first, s32 second);
-void func_41A210(BootMoviePlayer* player);
-void func_479190(BootScene* scene, void* data);
+void lib_scene_use_data(BootScene* scene, u8* data);
 void func_474010(BootScene* scene, LibCameraContext* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
                  BootDisplayLinks661C* links, s32 flag);
 BootClass170F30* lib_find_renderable_entry(LibListObject* models, const char* name);
 void* lib_find_camera_entry(LibListObject* models, const char* name);
-void func_4DF6E0(LibCameraContext* display, s32 red, s32 green, s32 blue, s32 alpha);
 }
 
 /**
@@ -77,7 +74,7 @@ void func_4DF6E0(LibCameraContext* display, s32 red, s32 green, s32 blue, s32 al
 static inline void check_main_code()
 {
     // Uncached cursor; the code it checks starts 0x400000 bytes (0x80000 words) below it.
-    u64* code = (u64*)(0x20000000 | 0x500000);
+    u64* code = (u64*)(UNCACHED_SEGMENT | 0x500000);
     u64* copy = (u64*)(g_boot_program.image->code_offset + (u32)g_boot_program.image);
     s32 index;
 
@@ -93,6 +90,18 @@ static inline void check_main_code()
             }
         }
     }
+}
+
+/** @brief Clear the screen to the blue-violet background behind the boot submenus. */
+static inline void clear_to_menu_background()
+{
+    g_boot_program.display->set_clear_color(0x49, 0x47, 0x9D, 0x7F);
+}
+
+/** @brief Clear the screen to black, as boot does whenever it leaves a submenu. */
+static inline void clear_to_black()
+{
+    g_boot_program.display->set_clear_color(0, 0, 0, 0x7F);
 }
 
 /** @brief Queue a fade-out over the current screen. */

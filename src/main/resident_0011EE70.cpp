@@ -3,24 +3,9 @@
 #include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "ee.h"
+#include "gs.h"
 #include "sdk/main/libdma_0012B2C8.h"
 #include "vu0.h"
-
-enum
-{
-    GIF_REGISTER_PRIM = 0x0,
-    GIF_REGISTER_RGBAQ = 0x1,
-    GIF_REGISTER_XYZ2 = 0x5,
-    GIF_REGISTER_AD = 0xE
-};
-
-enum
-{
-    GS_REGISTER_PRIM = 0x00,
-    GS_REGISTER_TEX0_2 = 0x07,
-    GS_REGISTER_ALPHA_1 = 0x42,
-    GS_REGISTER_ALPHA_2 = 0x43
-};
 
 /** GIF tag for one A+D register write: NLOOP 1, EOP clear, NREG 1. */
 #define GIF_TAG_AD_WRITE 0x1000000000000001ULL
@@ -46,9 +31,6 @@ enum
 
 /** GS PRIM alpha blending enable bit. */
 #define GS_PRIM_ALPHA_BLEND 0x40
-
-/** Centre of the GS primitive coordinate space, in whole pixels. */
-#define GS_COORDINATE_CENTRE 0x800
 
 /** Budget one slot's random bank pick costs. */
 #define SOUND_BANK_PICK_COST 300

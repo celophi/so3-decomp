@@ -28,12 +28,12 @@
 #include "overlays/1067-00/text_002CABC0.h"
 #include "vu0.h"
 #include "overlays/1067-00/text_002607B0.h"
+#include "overlays/lib/text_004DD440.h"
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
 extern "C" u32 D_001B65B4;
 extern "C" u8 D_50CD30[];
 extern "C" void* D_001B6628;
-extern "C" void* D_001B6650;
 extern "C" u8 D_001B6510;
 
 

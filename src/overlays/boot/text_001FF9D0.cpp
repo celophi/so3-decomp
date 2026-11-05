@@ -478,7 +478,7 @@ void BootMusicPlayer::create_images()
     if (images[0] == 0)
     {
         images[0] = new (0) BootImage;
-        images[0]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[0]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
@@ -486,7 +486,7 @@ void BootMusicPlayer::create_images()
     if (images[1] == 0)
     {
         images[1] = new (0) BootImage;
-        images[1]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[1]), 0);
+        images[1]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[1]), 0);
         images[1]->set_rectangle(0, 1, 640, 60, 0x80808080, 0);
         images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
@@ -494,45 +494,45 @@ void BootMusicPlayer::create_images()
     if (images[2] == 0)
     {
         images[2] = new (0) BootImage;
-        images[2]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[2]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[2]->set_rectangle(20, 434, 373, 41, 0x80808080, 0);
     }
 
     if (images[4] == 0)
     {
         images[4] = new (0) BootImage;
-        images[4]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[4]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[4]->set_rectangle(17, 241, 105, 32, 0x80808080, 0);
         images[5] = new (0) BootImage;
-        images[5]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[5]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[5]->set_rectangle(17, 279, 78, 35, 0x80808080, 0);
         images[6] = new (0) BootImage;
-        images[6]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[6]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[6]->set_rectangle(17, 315, 83, 36, 0x80808080, 0);
         images[7] = new (0) BootImage;
-        images[7]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[7]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[7]->set_rectangle(17, 351, 274, 34, 0x80808080, 0);
         images[9] = new (0) BootImage;
-        images[9]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[9]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[9]->set_rectangle(21, 486, 455, 18, 0x80808080, 0);
     }
 
     if (images[10] == 0)
     {
         images[10] = new (0) BootImage;
-        images[10]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[10]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[10]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
         images[11] = new (0) BootImage;
-        images[11]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[11]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[11]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
         images[12] = new (0) BootImage;
-        images[12]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[12]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[12]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
         images[13] = new (0) BootImage;
-        images[13]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[13]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[13]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
         images[14] = new (0) BootImage;
-        images[14]->set_texture((const BootTextureResource*)BOOT_ALIGN_RESOURCE(image_buffers[0]), 0);
+        images[14]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
         images[14]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
     }
 
@@ -705,7 +705,7 @@ void BootMusicPlayer::update()
     case BOOT_MUSIC_WAIT_FOR_RESOURCES:
         if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
-            func_4DF6E0(g_boot_program.display, 0x49, 0x47, 0x9D, 0x7F);
+            clear_to_menu_background();
             step++;
             D_001B661C->prepend_node(new (0) BootClass179150, -1);
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
@@ -718,7 +718,7 @@ void BootMusicPlayer::update()
         image_buffers[images_loaded] =
             resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(resource_data), images_loaded, 1);
         resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(resource_data),
-                                       (void*)BOOT_ALIGN_RESOURCE(image_buffers[images_loaded]), images_loaded);
+                                       (void*)RESIDENT_ALIGN_RESOURCE(image_buffers[images_loaded]), images_loaded);
 
         if (++images_loaded >= 2)
         {
@@ -1120,7 +1120,7 @@ void BootMusicPlayer::update()
 
         break;
     case BOOT_MUSIC_RETURN_TO_TITLE:
-        func_4DF6E0(g_boot_program.display, 0, 0, 0, 0x7F);
+        clear_to_black();
         resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
         D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);

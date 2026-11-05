@@ -49,7 +49,7 @@ u32 resident_find_entry(void* table, s32 key);
  * @param table Opaque entry table.
  * @param key Key to remove.
  */
-void func_00101480(void* table, s32 key);
+void resident_remove_entry(void* table, s32 key);
 
 /**
  * @brief Get the resident system's sound system, which starts it.
@@ -70,7 +70,7 @@ ResidentArchive* resident_get_archive(struct ResidentSystem* system);
  * @param system Resident system.
  * @return Input system at offset 0x1480.
  */
-struct ResidentInputSystem* func_001012D0(struct ResidentSystem* system);
+struct ResidentInputSystem* resident_system_get_input(struct ResidentSystem* system);
 
 /**
  * @brief Get the resident system's resource queue.

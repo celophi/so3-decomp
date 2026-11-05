@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "main/resident_00101550.h"
 #include "overlays/lib/text_0046AE20.h"
 
 extern void func_0047A130(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
@@ -125,12 +126,22 @@ typedef struct LibEntryTableHeader
 /** Partial view of the manager's runtime table and resource header. */
 struct LibEntryManager
 {
-    u8 unk00[0x18];
+    u8 unk00[0x14];
+
+    /** Decoded scene resource the entries come from. */
+    u8* data;
+
     LibManagedEntry* entries;
     u32 unk1c;
     LibEntryTableHeader* header;
     u8 unk24[0x70];
     s32 cached_entry_index;
+    u8 unk98[4];
+
+    /** The data belongs to someone else, so the scene doesn't free it. */
+    u8 data_borrowed;
+
+    u8 unk9D;
 };
 
 /** Partial inherited transform state shared by the setter's callers. */
@@ -598,7 +609,7 @@ void* lib_find_renderable_entry(LibEntryManager* manager, const char* name)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473AA0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", lib_scene_release_entries);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473D50);
 
@@ -684,9 +695,57 @@ void func_00479180(void* object)
     receiver->unk790 = (u8)(receiver->unk790 + 1);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00479190);
+/** operator delete(void*), called by its C++ name. */
+void __dl__FPv(void* memory);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004791F0);
+/**
+ * @brief Release the scene's entries unless it keeps them, then free its data unless it's borrowed.
+ * @param scene Scene.
+ */
+static inline void lib_scene_release_data(LibEntryManager* scene)
+{
+    if (!scene->unk9D)
+    {
+        lib_scene_release_entries(scene);
+    }
+
+    if (!scene->data_borrowed)
+    {
+        __dl__FPv(scene->data);
+    }
+}
+
+/**
+ * @brief Replace the scene's data with already decoded data it doesn't own.
+ * @param scene Scene.
+ * @param data Decoded scene resource.
+ */
+void lib_scene_use_data(LibEntryManager* scene, u8* data)
+{
+    lib_scene_release_data(scene);
+    scene->data_borrowed = 1;
+    scene->data = data;
+}
+
+/**
+ * @brief Replace the scene's data by decoding a scene resource into a buffer the scene owns.
+ * @param scene Scene.
+ * @param source Compressed scene resource.
+ */
+void lib_scene_load_data(LibEntryManager* scene, ResidentResourceHeader* source)
+{
+    u8* buffer;
+
+    lib_scene_release_data(scene);
+    scene->data_borrowed = 0;
+    buffer = resident_allocate_decode_buffer(g_resident_resource_decoder, source, 0, 1);
+
+    if (buffer)
+    {
+        resident_decode_resource_block(g_resident_resource_decoder, source, (void*)RESIDENT_ALIGN_RESOURCE(buffer), 0);
+        scene->data = buffer;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004792A0);
 

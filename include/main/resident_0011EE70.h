@@ -2,6 +2,7 @@
 #define SO3_MAIN_RESIDENT_0011EE70_H
 
 #include "types.h"
+#include "gs.h"
 #include "main/resident_0010A0E0.h"
 
 /**
@@ -60,32 +61,10 @@ typedef struct ResidentSoundBankVariants
     const s32* file_keys;
 } ResidentSoundBankVariants;
 
-/** GIF tag: the tag word and the register list, four bits per register. */
-typedef struct ResidentGifTag
-{
-    u64 tag;
-
-    union
-    {
-        u64 registers;
-
-        struct
-        {
-            u64 register0 : 4;
-            u64 register1 : 4;
-            u64 register2 : 4;
-            u64 register3 : 4;
-            u64 register4 : 4;
-            u64 register5 : 4;
-            u64 unused : 40;
-        } fields;
-    };
-} ResidentGifTag;
-
 /** One GS register write in A+D (address plus data) form. */
 typedef struct ResidentGsRegisterWrite
 {
-    ResidentGifTag tag;
+    GsGifTag tag;
     u64 data;
     u64 address;
 } ResidentGsRegisterWrite;
@@ -93,7 +72,7 @@ typedef struct ResidentGsRegisterWrite
 /** Packed GIF tag, PRIM, colour and two XYZ2 vertices drawing one line. */
 typedef struct ResidentLinePacket
 {
-    ResidentGifTag tag;
+    GsGifTag tag;
     u64 prim;
     u32 rgba;
     u32 q;
@@ -103,7 +82,7 @@ typedef struct ResidentLinePacket
 /** Packed GIF tag, PRIM, colour and four XYZ2 vertices drawing one filled rectangle as a triangle strip. */
 typedef struct ResidentRectanglePacket
 {
-    ResidentGifTag tag;
+    GsGifTag tag;
     u64 prim;
     u32 rgba;
     u32 q;

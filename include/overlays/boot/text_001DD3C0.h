@@ -11,6 +11,9 @@
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/render_buffer.h"
+#include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/image_capture.h"
 #include "overlays/lib/text_004DD440.h"
 
 /** Marker byte of an encoded BootSealedRecord. */
@@ -25,13 +28,6 @@ enum BootSealedRecordConstants
     BOOT_RECORD_ENCODED_TAIL_SIZE = 76,
     BOOT_RECORD_CHECKSUM_KEY_FACTOR = 37
 };
-
-/** Number of Battle Trophies and of flags in the saved collection. */
-#define BOOT_TROPHY_COUNT 300
-
-/** Mask used to round decoded resource pointers up to a 128-byte boundary. */
-#define BOOT_RESOURCE_ALIGNMENT_MASK 0x7F
-#define BOOT_ALIGN_RESOURCE(value) (((u32)(value) + BOOT_RESOURCE_ALIGNMENT_MASK) & ~BOOT_RESOURCE_ALIGNMENT_MASK)
 
 /** Resource IDs used by the boot program and its menus. */
 enum BootScreenResourceId
@@ -50,28 +46,6 @@ typedef struct BootMatrix
 {
     LibVector4 vectors[4];
 } BootMatrix;
-
-/** @brief The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
-typedef struct BootTrophyFlags
-{
-    u8 unk00[4];
-
-    /** Size of the flag array in bytes. */
-    s32 size;
-
-    /** Flag array: bit i of the array is set once trophy i is earned. */
-    u8* flag_bytes;
-
-    u8 unk0C[8];
-
-    /** Random word mixed into each trophy record's key; replaced when the flags are reset. */
-    s32 trophy_key;
-
-    /** Seed for checksum. */
-    u32 checksum_seed;
-
-    u32 checksum;
-} BootTrophyFlags;
 
 /**
  * @brief 0xB4-byte saved record that is kept XOR-encoded, with a checksum over the encoded bytes.
@@ -228,7 +202,7 @@ typedef struct BootSystemSettings
     /** Seed for extra_checksum. */
     u16 extra_key;
 
-    BootTrophyFlags trophy_flags;
+    LibTrophyFlags trophy_flags;
 } BootSystemSettings;
 
 
@@ -248,18 +222,10 @@ extern ResidentSound* g_sound;
 u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
 
 /**
- * @brief Compute the checksum of a flag block from a seed.
- * @param bits Flag block.
- * @param seed Seed, passed by address.
- * @param checksum Receives the checksum.
- */
-void func_457670(BootTrophyFlags* bits, u32* seed, u32* checksum);
-
-/**
  * @brief Recompute the checksum of a flag block from its key.
  * @param bits Flag block.
  */
-void func_457520(BootTrophyFlags* bits);
+void func_457520(LibTrophyFlags* bits);
 
 #ifdef __cplusplus
 }
@@ -294,7 +260,7 @@ enum BootResourceRequest
  * @param index Unsigned flag index.
  * @return One if the bit is set, otherwise zero.
  */
-static inline s32 resource_bit(BootTrophyFlags* bits, u32 index)
+static inline s32 resource_bit(LibTrophyFlags* bits, u32 index)
 {
     return (bits->flag_bytes[index / 8] >> (index % 8)) & 1;
 }
@@ -305,7 +271,7 @@ static inline s32 resource_bit(BootTrophyFlags* bits, u32 index)
  * @param index Unsigned flag index.
  * @param enabled Nonzero to set the bit, or zero to clear it.
  */
-static inline void set_resource_bit(BootTrophyFlags* bits, u32 index, s32 enabled)
+static inline void set_resource_bit(LibTrophyFlags* bits, u32 index, s32 enabled)
 {
     u32 byte_index = index / 8;
     u32 bit_index = index % 8;
@@ -466,16 +432,6 @@ struct BootPanelRect50
 
 class BootPacketBuffer;
 
-/** Partial 0x210-byte Lib image strip with vtable D_1735A0 in main data; boot calls the Lib constructor. */
-class BootImageStrip : public LibTransformOwner, public LibDmaCallbacks
-{
-    public:
-        /** @brief Construct the strip. */
-        BootImageStrip();
-
-        u8 unk94[0x17C];
-};
-
 /** 0xE0-byte screen fade with vtable D_171C00 in main data: ten strips copied from the display, faded out. */
 class BootScreenFade : public LibTransformOwner, public LibDmaCallbacks
 {
@@ -512,7 +468,7 @@ class BootScreenFade : public LibTransformOwner, public LibDmaCallbacks
          */
         virtual void on_packet_complete(u32 value);
 
-        BootImageStrip* images[10];
+        LibImageCapture* images[10];
         u8* buffer;
         LibCameraContext* display;
         BootPacketBuffer* packet;
@@ -610,7 +566,7 @@ class BootTitleMenu : public LibListObject
         float idle_time;
 };
 
-class BootMoviePlayer;
+class LibMoviePlayer;
 
 /**
  * Starts the game, with vtable D_171CB0 in main data. On a new game with Dolby Pro Logic II output it first plays
@@ -635,7 +591,7 @@ class BootGameLauncher : public LibListObject
         s32 step;
         s32 timer;
         ResidentHeap* movie_heap;
-        BootMoviePlayer* player;
+        LibMoviePlayer* player;
 };
 
 class BootModel;
@@ -1064,50 +1020,6 @@ class BootClass170F30 : public BootModel
         virtual void build_packet(const void* matrix, void* context);
 };
 
-/** Block of a texture resource that holds its size; the width and height are powers of two. */
-struct BootTextureImage
-{
-    u8 unk00[8];
-
-    /** Offset of the pixel block from the texture header. */
-    u32 pixel_offset;
-
-    u8 unk0C[2];
-    u8 width_log2;
-    u8 height_log2;
-};
-
-/** Header of a texture resource; the image block sits image_offset bytes after it. */
-struct BootTextureHeader
-{
-    u8 unk00[4];
-    char name[4];
-    s32 id;
-    u32 image_offset;
-    u8 unk10[4];
-
-    /** Offset of the palette block from the texture header. */
-    u32 palette_offset;
-};
-
-/** Partial texture resource with its header after a 0x10-byte prefix. */
-struct BootTextureResource
-{
-    u8 unk00[0x10];
-    BootTextureHeader header;
-};
-
-/**
- * @brief Return the size block of a texture resource.
- * @param resource Texture resource.
- * @return Its size block.
- */
-static inline const BootTextureImage* texture_image(const BootTextureResource* resource)
-{
-    const BootTextureHeader* header = &resource->header;
-    return (const BootTextureImage*)((const u8*)header + header->image_offset);
-}
-
 /** Partial 0x30-byte image object with vtable D_171C90 in main data, drawn from a decoded FIS image. */
 class BootImage : public LibListObject
 {
@@ -1126,7 +1038,7 @@ class BootImage : public LibListObject
          * @param texture Texture resource.
          * @param palette Palette resource, or null.
          */
-        void set_texture(const BootTextureResource* texture, const BootTextureResource* palette);
+        void set_texture(const LibImageResource* texture, const LibImageResource* palette);
 
         /**
          * @brief Build the image's quad from a rectangle of its texture and queue the model for drawing.
