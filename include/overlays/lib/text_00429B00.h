@@ -5,19 +5,11 @@
 
 #ifdef __cplusplus
 class LibTransformOwner;
+class LibClass173990;
 #else
 typedef struct LibTransformOwner LibTransformOwner;
+typedef struct LibClass173990 LibClass173990;
 #endif
-
-typedef struct {
-    u8 unk00[4];
-    void* unk04;
-    u8 unk08[8];
-    u32 unk10;
-    u8 unk14[4];
-    s16 unk18;
-    s16 unk1A;
-} LibTextSequenceState;
 
 typedef struct {
     u8 unk000[0x60];
@@ -98,153 +90,10 @@ void* func_00433880(u32 size, u32 alignment);
 void func_00433AA0(void);
 
 /**
- * @brief Clear four consecutive words.
- * @param words Pointer to the first word to clear.
- */
-void func_0042A460(u32* words);
-
-/**
- * @brief Read the word at offset 0x10 in a sequence state.
- * @param state Sequence state to read.
- * @return The stored word.
- */
-u32 func_0042A3A0(const LibTextSequenceState* state);
-
-/**
- * @brief Read the signed halfword at offset 0x18 in a sequence state.
- * @param state Sequence state to read.
- * @return The stored count.
- */
-s16 func_0042A3B0(const LibTextSequenceState* state);
-
-/**
- * @brief Read the signed halfword at offset 0x1A in a sequence state.
- * @param state Sequence state to read.
- * @return The stored count.
- */
-s16 func_0042A3C0(const LibTextSequenceState* state);
-
-/**
- * @brief Read the buffer pointer from a sequence state.
- * @param state Sequence state to read.
- * @return The stored buffer pointer.
- */
-void* func_0042A6C0(const LibTextSequenceState* state);
-
-/**
- * @brief Return the embedded buffer at byte offset 0x79C.
- * @param object Pointer to the containing object.
- * @return Pointer to the embedded buffer.
- */
-u8* func_0042AAB0(LibTextBufferState* object);
-
-/**
- * @brief Read the byte at offset 0x794 in a buffer state.
- * @param object Buffer state to read.
- * @return The stored byte.
- */
-u8 func_0042AAC0(const LibTextBufferState* object);
-
-/**
- * @brief Set the bytes at offsets 0x62 and 0x64 in a buffer state.
- * @param object Buffer state to update.
- */
-void func_0042ABB0(LibTextBufferState* object);
-
-/**
- * @brief Copy a 16-byte value to offset 0x820 in a buffer state.
- * @param object Buffer state to update.
- * @param value 16-byte aligned source value.
- */
-void func_0042ABE0(LibTextBufferState* object, const unsigned __int128* value);
-
-/**
- * @brief Test whether the word at offset 0x704 is nonzero.
- * @param object Buffer state to inspect.
- * @return One if the word is nonzero, otherwise zero.
- */
-u32 func_0042AAA0(const LibTextBufferState* object);
-
-/**
- * @brief Default append handler for a channel.
- * @param object Channel object receiving the request.
- * @param value Channel value.
- * @param optional1 Optional second component.
- * @param optional2 Optional third component.
- * @param key Sort value.
- * @return Status.
- */
-s32 func_0042A7C0(void* object, const void* value, const void* optional1, const void* optional2, float key);
-
-/**
- * @brief Default set handler for a channel.
- * @param object Channel object receiving the request.
- * @param index Entry index.
- * @param key Sort value.
- * @param value Channel value.
- * @return Status.
- */
-s32 func_0042A7D0(void* object, s32 index, float key, const void* value);
-
-/**
- * @brief Default insert handler for a channel.
- * @param object Channel object receiving the request.
- * @param index Entry index.
- * @param key Sort value.
- * @param value Channel value.
- * @return Status.
- */
-s32 func_0042A7E0(void* object, s32 index, float key, const void* value);
-
-/**
- * @brief Default channel entry reader.
- * @param object Channel object receiving the request.
- * @param index Entry index.
- * @param key Receives the sort value.
- * @param value Receives the channel value.
- * @return Status.
- */
-s32 func_0042A7F0(void* object, s32 index, float* key, void* value);
-
-/**
- * @brief Default channel add handler.
- * @param object Channel object receiving the request.
- * @param value Channel value.
- * @param key Sort value.
- */
-void func_0042A800(void* object, const void* value, float key);
-
-/**
- * @brief Perform no work for the default channel handler.
- * @param object Channel object receiving the request.
- */
-void func_0042A810(void* object);
-
-/**
  * @brief Recompute the RGBA factor from the stored base and modulation factors.
  * @param object Rendering state whose combined factor is updated.
  */
 void lib_update_color_factor(LibTextBufferState* object);
-
-/**
- * @brief Access the stored RGBA modulation factor.
- * @param object Rendering state containing the factor.
- * @return Pointer to the packed four-float RGBA factor.
- */
-unsigned __int128* lib_get_color_modulation(LibTextBufferState* object);
-
-/**
- * @brief Copy the byte at offset 0x83C to offset 0x60.
- * @param object Buffer state to update.
- */
-void func_0042AE70(LibTextBufferState* object);
-
-/**
- * @brief Store the low byte at 0x210 and set bit 3 at 0x59D.
- * @param object Buffer state containing the value and flag bytes.
- * @param value Value whose low byte is stored.
- */
-void func_0042AB30(LibTextBufferState* object, u32 value);
 
 /**
  * @brief Return the input pointer unchanged.
@@ -264,70 +113,97 @@ void func_0042EB30(LibTextValueState* state, u32 value);
 /** Store the word at receiver offset 0x24. */
 void func_00432710(void* object, u32 value);
 
-/** Store the word at receiver offset 0x428. */
-void func_00435190(void* object, u32 value);
+/**
+ * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @param memory Allocation, or null.
+ */
+void func_00434FD0(void* memory);
 
-/** Return the fixed integer value 128. */
-s32 func_0042AA30(void* object);
+/**
+ * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @param memory Allocation, or null.
+ */
+void func_00435020(void* memory);
 
-/** Return the fixed integer value 256. */
-s32 func_0042C5B0(void* object);
+/**
+ * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @param memory Allocation, or null.
+ */
+void func_00435070(void* memory);
 
-/** Return the fixed integer value 34. */
-s32 func_0042D9A0(void* object);
+/**
+ * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @param memory Allocation, or null.
+ */
+void func_004350C0(void* memory);
 
-/** Return the fixed integer value 3. */
-s32 func_0042EB20(void* object);
+/**
+ * @brief Allocate from the heap at D_001B6684 when one is set, otherwise through operator new.
+ * @param size Size in bytes.
+ * @param heap Heap selector passed on to operator new.
+ * @return The allocation.
+ */
+void* func_00435110(u32 size, s32 heap);
+
+/**
+ * @brief Allocate from the heap at D_001B6684 when one is set, otherwise through operator new.
+ * @param size Size in bytes.
+ * @param heap Heap selector passed on to operator new.
+ * @return The allocation.
+ */
+void* func_00435150(u32 size, s32 heap);
+
+/**
+ * @brief Store unk428.
+ * @param emitter Emitter to update.
+ * @param value Word to store.
+ */
+void func_00435190(LibClass173990* emitter, u32 value);
+
+/**
+ * @brief Store unk49c bit 2 and the bytes unk492 and unk493.
+ * @param emitter Emitter to update.
+ * @param flag Low bit goes to unk49c bit 2.
+ * @param first Stored in unk492.
+ * @param second Stored in unk493.
+ */
+void func_004351A0(LibClass173990* emitter, u32 flag, u8 first, u8 second);
+
+/**
+ * @brief Store unk49c bit 1 and two angles, and cache the squared cosines of their halves.
+ * @param emitter Emitter to update.
+ * @param flag Low bit goes to unk49c bit 1.
+ * @param first Angle stored in unk410.
+ * @param second Angle stored in unk414.
+ */
+void func_004351D0(LibClass173990* emitter, u32 flag, float first, float second);
+
+/**
+ * @brief Store unk49b bit 7, unk49c bit 0, unk491 and unk40c.
+ * @param emitter Emitter to update.
+ * @param first_flag Low bit goes to unk49b bit 7.
+ * @param second_flag Low bit goes to unk49c bit 0.
+ * @param value Stored in unk491.
+ * @param factor Stored in unk40c.
+ */
+void func_00435270(LibClass173990* emitter, u32 first_flag, u32 second_flag, u8 value, float factor);
+
+/**
+ * @brief Store unk49b bit 6 and the floats unk404 and unk408.
+ * @param emitter Emitter to update.
+ * @param flag Low bit goes to unk49b bit 6.
+ * @param first Stored in unk404.
+ * @param second Stored in unk408.
+ */
+void func_004352B0(LibClass173990* emitter, u32 flag, float first, float second);
 
 /** Return the fixed integer value 6. */
 s32 func_00434F20(void* object);
 
 /** Return the fixed value 0. */
-s32 func_0042A3D0(void* object);
-
-/** Return the fixed value 0. */
-s32 func_0042A3E0(void* object);
-
-/** Return the fixed value 0. */
-s32 func_0042A3F0(void* object);
-
-/** Return the fixed value 0. */
-s32 func_0042AA20(void* object);
-
-/** Return the fixed value 0. */
-s32 func_0042AA40(void* object);
-
-/** Return the fixed value 0. */
-s32 func_0042AA50(void* object);
-
-/** Return the fixed value 0. */
-s32 func_0042AA80(void* object);
-
-/** Return the fixed value 0. */
-s32 func_0042AA90(void* object);
-
-/** Return the fixed value 0. */
 s32 func_0042EB40(void* object);
 
-void func_0042A8E0(void* object);
-void func_00434E20(void* object);
-
-/** Return the receiver address at byte offset 0x230. */
-void* func_00434F10(void* object);
-
-
 #ifdef __cplusplus
-/** Return the second pointer argument unchanged. */
-void* func_0042AA60(void* object, void* value);
-/** Return the second pointer argument unchanged. */
-void* func_0042AA70(void* object, void* value);
-/** @brief Clear the intrusive owner and call the transform release hook. @param object Transform owner to detach. */
-void func_0042AA00(LibTransformOwner* object);
-
-/** Set the high packed mode at its target field and record whether either mode equals four. */
-void func_0042A340(void* object, u8 mode);
-
-
 }
 #endif
 

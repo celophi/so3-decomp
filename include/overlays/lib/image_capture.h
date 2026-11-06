@@ -112,6 +112,13 @@ extern "C"
      */
     void lib_image_capture_store(LibImageCapture* capture, void* destination, s16 base_pointer, s16 buffer_width,
                                  s16 pixel_format, s16 x, s16 y, s16 width, s16 height);
+
+    /**
+     * @brief Packet-queue handler for a capture that render handed over: let queued packets start, then queue the
+     *        capture's DMA.
+     * @param capture Capture object.
+     */
+    void func_004332F0(LibImageCapture* capture);
 }
 
 #endif

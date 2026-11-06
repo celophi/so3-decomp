@@ -129,6 +129,9 @@ typedef struct GsRegisterValue
 /** PRIM register FGE bit: fog the primitive. */
 #define GS_PRIM_FGE 0x20
 
+/** PRIM register ABE bit: alpha blend the primitive. */
+#define GS_PRIM_ABE 0x40
+
 /** GIF tag EOP bit: this is the transfer's last tag. */
 #define GIF_TAG_EOP 0x8000
 

@@ -206,7 +206,12 @@ struct LibSystemSettings
     /** Difficulty: Earth, Galaxy, Universe or 4D. */
     u8 difficulty;
 
-    u8 unk29[0x7B];
+    u8 unk29[0xB];
+
+    /** Fol XOR-encoded with LIB_RECORD_XOR_WORD. */
+    u32 encoded_fol;
+
+    u8 unk38[0x6C];
     u16 checksum;
 
     /** Seed for checksum, replaced on every write. */
@@ -355,6 +360,20 @@ void func_004587C0(void* settings);
  * @return Low sixteen bits of the resulting checksum.
  */
 u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
+
+/**
+ * @brief Lower a factor's count in a factor count list by one.
+ * @param list Factor count list (LibSystemSettings::unkA8).
+ * @param factor Factor ID.
+ */
+void func_00456F90(void* list, u16 factor);
+
+/**
+ * @brief Raise a factor's count in a factor count list by one.
+ * @param list Factor count list (LibSystemSettings::unkA8).
+ * @param factor Factor ID.
+ */
+void func_00456FE0(void* list, u16 factor);
 
 /**
  * @brief Select the indexed resource and initialize its drawing position.

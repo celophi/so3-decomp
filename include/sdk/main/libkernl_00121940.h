@@ -211,6 +211,9 @@ u32 isceSifSendCmd(s32 command, void* packet, s32 packet_size, void* source, voi
 
 s32 sceSifBindRpc(SifClientData* client, u32 server_id, u32 mode);
 
+s32 sceSifCallRpc(SifClientData* client, u32 rpc_number, u32 mode, void* send, s32 send_size, void* receive,
+                  s32 receive_size, void (*end_function)(void*), void* end_param);
+
 s32 DIntr(void);
 
 s32 EIntr(void);

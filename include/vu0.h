@@ -155,6 +155,25 @@ static inline void vu0_start_microprogram_670_vf5(const void* vector)
 }
 
 /**
+ * @brief Load a vector into vf5 and start the microprogram at 0x1B0.
+ *
+ * Lib's level-selection controller runs it on its position right after
+ * vu0_start_microprogram_1f0_vf5_vf8 has loaded the camera's view matrix, then
+ * reads the view-space position back from vf6. That's the only site I've
+ * found, and it has two nops like the 0x1F0 start.
+ * @param vector 16-byte aligned vector.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see LibLodController::update in Lib.
+ */
+static inline void vu0_start_microprogram_1b0_vf5(const void* vector)
+{
+    asm __volatile__("lqc2 $vf5, 0(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0x1B0" : : "r"(vector) : "memory");
+}
+
+/**
  * @brief Load a matrix into vf5-vf8 and start the microprogram at 0x1F0.
  *
  * Lib loads the camera's view-projection matrix this way before it uses

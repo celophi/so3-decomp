@@ -92,7 +92,19 @@ typedef struct ResidentArchive
     u8 semaphore[8];
 #endif
 
-    u8 unk20[0x18];
+    u8 unk20[8];
+
+#ifdef __cplusplus
+    ResidentSemaphore unk28;
+#else
+    u8 unk28[8];
+#endif
+
+#ifdef __cplusplus
+    ResidentSemaphore unk30;
+#else
+    u8 unk30[8];
+#endif
 
     /** Signalled when a disc command finishes or times out. */
 #ifdef __cplusplus
@@ -101,14 +113,18 @@ typedef struct ResidentArchive
     u8 timeout_semaphore[8];
 #endif
 
-    u8 unk40[0x1C];
+    u8 unk40[0x14];
+    s32 unk54;
+    s32 unk58;
     u8 unk5c;
     u8 unk5d;
     u8 unk5e;
-    u8 unk5f[5];
+    u8 unk5f;
+    u8 unk60[4];
     void* unk64;
     u8 unk68;
-    u8 unk69[2];
+    u8 unk69;
+    u8 unk6a;
     u8 unk6b;
     u8 unk6c;
 
@@ -124,7 +140,21 @@ typedef struct ResidentArchive
     /** Running timeout alarm, or -1. */
     s32 timeout_alarm;
 
-    u8 unk7c[0x44];
+    u8 unk7c[0xC];
+    s32 unk88;
+    u32 unk8c;
+    u8 unk90[0xC];
+
+    /** Listener notified when a read finishes, or null. */
+    struct ResidentListener* listener;
+
+    /** Object passed back to the listener. */
+    void* listener_context;
+
+    /** The archive itself; the archive constructor points it back at the archive. */
+    struct ResidentArchive* owner;
+
+    u8 unka8[0x18];
     s32 unkc0;
     u8 unkc4[5];
     u8 unkc9;
@@ -137,7 +167,9 @@ typedef struct ResidentArchive
     u8 unkD8[0x14];
 
     /** Hard disk worker thread; its fields up to navigator_file_sizes follow. */
-    u8 unkEC[0x18];
+    u8 unkEC[0x10];
+    u8 unkfc;
+    u8 unkfd[7];
 
     /** Free space the last space query found on the unit. */
     u32 free_space;
@@ -158,7 +190,16 @@ typedef struct ResidentArchive
     /** Words left to copy while installing. */
     s32 copy_remaining;
 
-    u8 unk11c[0x18];
+    u8 unk11c[4];
+
+    /** Held while a worker command is started or cancelled. */
+#ifdef __cplusplus
+    ResidentSemaphore command_semaphore;
+#else
+    u8 command_semaphore[8];
+#endif
+
+    u8 unk128[0xC];
 
     /** Buffer the install copies through. */
     u8* copy_buffer;
@@ -166,7 +207,8 @@ typedef struct ResidentArchive
     /** Set to ask the running command to stop. */
     u8 cancel_requested;
 
-    u8 unk139[2];
+    u8 unk139;
+    u8 unk13a;
 
     /** Set while the install's abort prompt is up. */
     u8 copy_paused;
@@ -199,7 +241,9 @@ typedef struct ResidentArchive
     /** Per resource: nonzero when the install copies it. */
     u32 install_flags[RESIDENT_RESOURCE_COUNT];
 
-    u8 unk1217c[7];
+    u8 unk1217c[5];
+    u8 unk12181;
+    u8 unk12182;
 
     /** Set while a resource read is in progress; the reading thread clears it. */
     volatile u8 read_busy;
@@ -207,15 +251,24 @@ typedef struct ResidentArchive
     u8 unk12184;
     u8 unk12185;
     u8 unk12186;
+    u8 unk12187;
+    u8 unk12188[0xC];
+    u32 unk12194;
+    u8 unk12198[8];
+    u32 unk121a0;
+    u8 unk121a4[8];
+
+    /** Stack of the disc callback thread. */
+    void* cd_callback_stack;
 
 #ifdef __cplusplus
     /** @brief Destroy the archive and its install worker. */
     ~ResidentArchive();
 
     /** @brief Get the hard disk worker thread. @return Worker thread at unkEC. */
-    class ResidentThread* disk_worker()
+    class ResidentArchiveWorker* disk_worker()
     {
-        return reinterpret_cast<class ResidentThread*>(unkEC);
+        return reinterpret_cast<class ResidentArchiveWorker*>(unkEC);
     }
 #endif
 } ResidentArchive;
@@ -265,8 +318,11 @@ typedef struct ResidentRequestSlot
     u8 unk1c;
     u8 unk1d[3];
 
-    /** Object a positional sound comes from, or null. */
-    struct ResidentSoundEmitter* target;
+    /**
+     * Object a positional sound comes from, or null.
+     * TODO: volatile is my guess; the reply callbacks reread it after every use, and nothing else I tried does that.
+     */
+    struct ResidentSoundEmitter* volatile target;
 
     /** Sound data the slot plays. */
     u8* buffer;
@@ -427,6 +483,9 @@ class ResidentSoundStream : public ResidentListener
 
         /** @brief Free the queues, the loaded files and the stream thread. */
         virtual ~ResidentSoundStream();
+
+        /** @brief Create the stream thread and the two request queues, with every channel and slot empty. */
+        ResidentSoundStream();
 };
 #else
 typedef struct ResidentSoundStream ResidentSoundStream;
@@ -468,6 +527,19 @@ enum ResidentSoundState
     RESIDENT_SOUND_CHANGING_REVERB = 9
 };
 
+/** Lib's renderer as the sound interrupt sees it; only the count at 0x40C4 is known. */
+typedef struct ResidentSoundRenderer
+{
+    u8 unk0000[0x40C4];
+
+    /**
+     * Counted up by the sound interrupt.
+     * TODO: volatile is my guess, since the interrupt and Lib both use it; the interrupt rereads it after the test,
+     * and nothing else I tried does that.
+     */
+    volatile s32 unk40c4;
+} ResidentSoundRenderer;
+
 /**
  * The sound system: sound effects and voices in sixty slots, streamed music, and the surround output with its
  * listener and speaker placement.
@@ -477,7 +549,9 @@ struct ResidentSound
     struct ResidentSoundStream* stream;
     ResidentArchive* archive;
     ResidentResourceQueue* resource_queue;
-    void* unk0c;
+
+    /** Lib renderer the sound interrupt counts on, or null. */
+    struct ResidentSoundRenderer* unk0c;
 
     /** Number of entries in music_entries. */
     s32 music_entry_count;
@@ -802,7 +876,8 @@ class ResidentTimeSlicedThread : public ResidentThread
 class ResidentThreadScheduler : public ResidentThread
 {
     public:
-        u8 unk10[0x20];
+        /** Threads added to the scheduler, or null; each round copies them to threads. */
+        ResidentTimeSlicedThread* registered[8];
 
         /** Threads that take turns, or null. */
         ResidentTimeSlicedThread* threads[8];
@@ -821,7 +896,10 @@ class ResidentThreadScheduler : public ResidentThread
         /** Set while slices are being handed out. */
         u8 active;
 
-        u8 unk61[7];
+        u8 unk61[3];
+
+        /** Horizontal syncs before the first slice of a round, less two. */
+        s32 unk64;
 
         /** Alarm that ends the running slice, or -1. */
         volatile s32 alarm_id;
@@ -830,16 +908,87 @@ class ResidentThreadScheduler : public ResidentThread
         virtual ~ResidentThreadScheduler();
 };
 
+/** The 0x200-byte "PS2ICON3D" header the worker writes in front of the four system files. */
+struct ResidentHddIconHeader
+{
+    char magic[0x10];
+
+    /** Where each file starts in the data, starting at 0x200 and rounded up to 0x200 bytes, and its size. */
+    struct
+    {
+        u32 offset;
+        u32 size;
+    } files[4];
+
+    u8 unk30[0x1D0];
+};
+
 /** Thread that runs the hard disk worker's commands; vtable D_0014FBC0. */
 class ResidentArchiveWorker : public ResidentThread
 {
     public:
-        u8 unk10[0x24];
-        ResidentSemaphore unk34;
+        u8 unk10[0xC];
+
+        /** Set once the unit is present and initialized. */
+        u8 unit_ready;
+
+        u8 unk1d[3];
+
+        /** Command being run, or zero while the worker is idle. */
+        s32 command;
+
+        u8 unk24[0x10];
+
+        /** Held while a command is started or cancelled. */
+        ResidentSemaphore command_semaphore;
+
         ResidentSemaphore unk3c;
+
+        /** Argument of the command. */
+        s32 argument;
+
+        u8 unk48[4];
+
+        /** Set to ask the running command to stop. */
+        u8 cancel_requested;
+
+        u8 unk4d[0xF];
+
+        /** Icon header written in front of the system files. */
+        struct ResidentHddIconHeader* icon_header;
+
+        /** The four system files the header describes. */
+        u8* system_files[4];
 
         /** @brief Destroy the worker and its semaphores. */
         virtual ~ResidentArchiveWorker();
+
+        virtual void run();
+};
+
+/** The archive's thread at archive + 0xAC, whose fields include the clock bytes; vtable D_0014FC40. */
+class ResidentClass14FC40 : public ResidentThread
+{
+    public:
+        u8 unk10[0x1C];
+
+        /** @brief Destroy the thread. */
+        virtual ~ResidentClass14FC40();
+
+        virtual void run();
+};
+
+/** The archive's thread at archive + 0xD8, which the disc power-off callback is given; vtable D_0014FBF0. */
+class ResidentClass14FBF0 : public ResidentThread
+{
+    public:
+        /** Hard disk worker. */
+        ResidentArchiveWorker* worker;
+
+        /** @brief Destroy the thread. */
+        virtual ~ResidentClass14FBF0();
+
+        virtual void run();
 };
 
 class ResidentStreamDma;
@@ -881,14 +1030,17 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         /** Per input (send) block: set once the block has data. */
         u8 input_ready[2];
 
+        // TODO: unk4A and unk4C are volatile because the send path (func_0010B600) also runs from the SIF interrupt;
+        // the target rereads both after every use, and nothing else I tried does that.
+
         /** Send block in use. */
-        u8 unk4A;
+        volatile u8 unk4A;
 
         /** Which of the two input buffers is filling. */
         u8 input_half;
 
         /** Next 0x1000-byte chunk of the send block, behind its 0x40-byte header. */
-        u8* unk4C;
+        u8* volatile unk4C;
 
         /** Next block of the input buffer. */
         u8* input_cursor;
@@ -1129,6 +1281,11 @@ public:
     ResidentSifQueuedCommand queue[256];
     u8 unk2348[8];
     SifCommandHeader queue_packets[256];
+
+    /** @brief Free the buffers and destroy the semaphores. */
+    virtual ~ResidentSif();
+
+    virtual void run();
 };
 
 /** The input system's pad polling thread, at g_system + 0x1784; vtable D_0014FC60. */
@@ -1354,6 +1511,15 @@ extern "C" {
 #endif
 
 /**
+ * @brief Select a resource for the next read, adding size to the counters at unk54 and unk58 when unk12181 is set.
+ * @param archive Resource archive.
+ * @param size Amount added to both counters.
+ * @param key Resource key.
+ * @return Nonzero when the resource was selected, or zero while a read is running.
+ */
+u8 func_0011CB00(ResidentArchive* archive, s32 size, s32 key);
+
+/**
  * @brief Start reading the resource func_0011D080 selected.
  * @param archive Resource archive.
  * @param buffer Destination.
@@ -1448,8 +1614,17 @@ void func_0011C8E0(ResidentArchive* archive);
  * @param archive Resource archive.
  * @param listener Listener, or null to remove it.
  * @param context Object passed back to the listener.
+ * @return The listener it replaces.
  */
-void func_0011D320(ResidentArchive* archive, struct ResidentListener* listener, void* context);
+struct ResidentListener* func_0011D320(ResidentArchive* archive, struct ResidentListener* listener, void* context);
+
+/**
+ * @brief Read the two positions at unk88 and unk8C under the archive's semaphore.
+ * @param archive Resource archive.
+ * @param position Receives unk8C plus one, less unk121A0 once it reaches unk12194 plus unk121A0.
+ * @return unk88.
+ */
+s32 func_0011BFD0(ResidentArchive* archive, u32* position);
 
 /** @brief Abort the archive's current read. @param archive Resource archive. */
 void func_0011BA90(ResidentArchive* archive);
@@ -2222,13 +2397,13 @@ extern "C"
     s32 resident_sound_is_active(ResidentSound* sound, s32 identifier);
 
     /**
-     * @brief Stop a sound.
+     * @brief Stop a sound, or mark it to stop once the stream has started it.
      * @param sound Sound system.
      * @param identifier Identifier resident_sound_play returned.
-     * @param flag Stop mode.
-     * @return Status.
+     * @param mode Stop mode passed to the stream.
+     * @return True when the sound was found (or effects are disabled), false when no slot holds it.
      */
-    s32 resident_sound_stop(ResidentSound* sound, s32 identifier, s32 flag);
+    bool resident_sound_stop(ResidentSound* sound, s32 identifier, s32 mode);
 
     /**
      * @brief Read a playing voice's level at a time.

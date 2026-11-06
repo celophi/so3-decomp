@@ -8,6 +8,8 @@
 #include "main/resident_00101550.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_00137290.h"
+#include "sdk/main/libc_guess_0013C948.h"
+#include "sdk/main/libcdvd_00130000.h"
 #include "main/func_0011EE00.h"
 #include "main/resident_data.h"
 #include "main/resident_00101260.h"
@@ -142,7 +144,7 @@ s32 CreateThread(ThreadParam* param);
 s32 TerminateThread(s32 thread_id);
 s32 iTerminateThread(s32 thread_id);
 s32 sceGsSyncPath(s32 mode, u16 timeout);
-s32 func_00114BD0(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread);
+bool func_00114BD0(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread);
 void ExitThread(void);
 s32 DeleteThread(s32 thread_id);
 void ExitDeleteThread(void);
@@ -161,14 +163,18 @@ s32 func_00113EF0(s32 channel);
 /** Each DMA channel's queue, by channel number. */
 extern ResidentDmaQueue* D_001CF9C0[];
 
-void func_00115310(void* worker, u8* header, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
-                   s32 third_size, u8* fourth, s32 fourth_size);
+void func_00115310(ResidentArchiveWorker* worker, ResidentHddIconHeader* header, u8* first, s32 first_size, u8* second,
+                   s32 second_size, u8* third, s32 third_size, u8* fourth, s32 fourth_size);
 s32 DIntr(void);
 s32 EIntr(void);
 s32 sceDbcInit(void);
 s32 sceCdDiskReady(s32 mode);
 void* sceCdPOffCallback(void (*callback)(void*), void* argument);
 void D_00118C50(void* argument);
+void D_0011B550(s32 reason);
+
+/** "PS2ICON3D", the magic of the hard disk icon header. */
+extern const char D_0014D8C8[];
 s32 scePad2Init(s32 mode);
 s32 scePad2CreateSocket(scePad2SocketParam* param, void* buffer);
 s32 scePad2GetState(s32 socket);
@@ -180,12 +186,13 @@ s32 AddIntcHandler(s32 cause, s32 (*handler)(s32), s32 next);
 s32 EnableIntc(s32 cause);
 s32 resident_input_vblank_handler(s32 cause);
 void func_4DD520(ResidentDisplay* display, s32 field);
+s32 func_4D44D0(ResidentSoundRenderer* renderer, s32 arg1);
 void func_4DCDA0(ResidentDisplay* display, s32 value);
 void func_00103510(ResidentResourceQueue* queue);
 void resident_pad_update_vibration(ResidentInputSystem* input, s32 slot);
 void func_0011E9E0(ResidentInputSystem* input, s32 slot, s32 full);
 extern u32 D_001B641C;
-void func_00118880(void* worker, s32 command, s32 argument);
+bool func_00118880(ResidentArchiveWorker* worker, s32 command, s32 argument);
 bool func_00114E00(ResidentThread* thread);
 s32 iWakeupThread(s32 thread_id);
 s32 StartThread(s32 thread_id, void* argument);
@@ -613,7 +620,55 @@ void func_0010B510(ResidentStreamThread* stream, s32 event)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010B600);
+/**
+ * @brief Send the next 0x1000-byte chunk of the current send block to the IOP behind a four-word header, or, once the
+ * block has no chunks left, release it and switch to the other send block. Nothing happens while it is already running.
+ * @param stream Streaming thread.
+ * @param value Unused.
+ */
+void func_0010B600(ResidentStreamThread* stream, s32 value)
+{
+    if (stream->unkBA)
+    {
+        return;
+    }
+
+    stream->unkBA = 1;
+
+    if (stream->unkB8)
+    {
+        if (stream->unk54[stream->unk4A])
+        {
+            stream->unk4C += 0x1000;
+            stream->unkBB++;
+            u32* header = (u32*)((u32)stream->unk4C | UNCACHED_SEGMENT);
+            header[0] = 1;
+            header[1] = 0;
+            header[2] = stream->unkCC[stream->unkBB];
+            header[3] = --stream->unk54[stream->unk4A];
+            func_0010BE80(&D_001CC590, 0, stream->unk4C, stream->unk5C[stream->unk4A], 0x1040);
+        }
+        else
+        {
+            stream->input_ready[stream->unk4A] = 0;
+
+            if (stream->unk4A == 0)
+            {
+                stream->unk4A = 1;
+                stream->unk4C = stream->input_buffers[1] + 0x40;
+            }
+            else
+            {
+                stream->unk4A = 0;
+                stream->unk4C = stream->input_buffers[0] + 0x40;
+            }
+
+            stream->unkB8 = 0;
+        }
+    }
+
+    stream->unkBA = 0;
+}
 
 /** Clear bytes at 0x78-0x7B and copy the word at 0x84 to offsets 0x7C and 0x80. */
 void func_0010B730(void* object)
@@ -939,7 +994,49 @@ bool func_0010C0E0(ResidentSif* sif, u32 handle)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C200);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C420);
+/**
+ * @brief Move to the next reply slot and deliver the reply in the reply buffer to it: copy it into the slot's buffer,
+ * if any, and call the slot's callback.
+ * @param sif SIF link.
+ */
+void func_0010C420(ResidentSif* sif)
+{
+    DIntr();
+    s32 index = sif->reply_index + 1;
+
+    if (index == 32)
+    {
+        index = 0;
+    }
+
+    sif->reply_index = index;
+    EIntr();
+
+    ResidentSifReply* reply = &sif->replies[index];
+
+    if (reply->buffer)
+    {
+        u32* source = sif->reply_data;
+        u32* destination = reply->buffer;
+
+        for (s32 i = 0; i < 64 / sizeof(u32); i++)
+        {
+            *destination++ = *source++;
+        }
+    }
+
+    if (reply->callback)
+    {
+        if (reply->buffer)
+        {
+            reply->callback(reply->buffer, reply->argument);
+        }
+        else
+        {
+            reply->callback(sif->reply_data, reply->argument);
+        }
+    }
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C550);
 
@@ -1013,7 +1110,11 @@ void func_0010C700(ResidentSif* sif)
     sif->start();
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C820);
+/** @brief Free the buffers and destroy the semaphores. */
+ResidentSif::~ResidentSif()
+{
+    delete allocation;
+}
 
 /** @brief Regenerate all 55 words of the resident subtractive random table. */
 static inline void refresh_random_table(void)
@@ -1220,7 +1321,33 @@ ResidentSystem* resident_get_system(void)
     return &g_system;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010D8F0);
+/**
+ * @brief Add a thread to the ones the sound interrupt wakes, unless it is already there.
+ * @param sound Sound system.
+ * @param thread Thread to wake.
+ * @return False when the list of 32 is full, otherwise true.
+ */
+bool func_0010D8F0(ResidentSound* sound, void* thread)
+{
+    ResidentInterruptLock lock;
+    s32 count = sound->unk143c;
+
+    if (count >= 32)
+    {
+        return false;
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (thread == sound->unk13bc[i])
+        {
+            return true;
+        }
+    }
+
+    sound->unk13bc[sound->unk143c++] = thread;
+    return true;
+}
 
 /**
  * @brief Put the four surround speakers back at their default angles.
@@ -1645,13 +1772,65 @@ void func_0010ED20(ResidentSound* sound, ResidentSoundEmitter* target)
     EIntr();
 }
 
+/**
+ * @brief Clear the target's has_sound flag once no other active slot plays from it.
+ * @param sound Sound system whose slots are searched.
+ * @param slot Slot that stops playing from its target.
+ */
+static inline void release_slot_target(ResidentSound* sound, ResidentRequestSlot* slot)
+{
+    s32 i;
+
+    if (slot->target == 0)
+    {
+        return;
+    }
+
+    for (i = 0; i < 60; i++)
+    {
+        if (sound->slots[i].active && slot != &sound->slots[i] && sound->slots[i].target == slot->target)
+        {
+            break;
+        }
+    }
+
+    if (i == 60)
+    {
+        slot->target->has_sound = 0;
+    }
+}
+
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010ED90);
 
 void func_0010EE50(void* object)
 {
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010EE60);
+/**
+ * @brief Play request callback: keep the voice handle, and send the stop that was waiting for it.
+ * @param reply Reply from the IOP; its first word is the voice handle.
+ * @param slot Request slot.
+ */
+void func_0010EE60(void* reply, ResidentRequestSlot* slot)
+{
+    slot->started = 1;
+    slot->handle = *(u32*)reply;
+
+    if (slot->stop_requested == 0)
+    {
+        return;
+    }
+
+    func_00107B60(D_001B6410->stream, 0, func_0010EE50, 0, slot->handle, slot->stop_mode, 0);
+
+    if (slot->unk03 == 0)
+    {
+        slot->active = 0;
+    }
+
+    slot->started = 0;
+    release_slot_target(D_001B6410, slot);
+}
 
 /**
  * @brief Request callback: push the music handle at the start of a reply onto the sound system's handles.
@@ -1688,8 +1867,6 @@ s32 func_0010EFD0(ResidentSound* sound)
 {
     return func_00107B10(sound->stream, 0, 0, 0, 1) != 0;
 }
-
-extern void func_0010EE60(void* response, ResidentRequestSlot* slot);
 
 /**
  * @brief Find a free sound slot, starting at the cursor and advancing it past every slot looked at.
@@ -1903,7 +2080,62 @@ extern "C" void func_001105E0(ResidentSound* sound, ResidentSoundEmitter* target
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001106B0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_stop);
+/**
+ * @brief Stop a sound, or mark it to stop once the stream has started it.
+ * @param sound Sound system.
+ * @param identifier Identifier resident_sound_play returned.
+ * @param mode Stop mode passed to the stream.
+ * @return True when the sound was found (or effects are disabled), false when no slot holds it.
+ */
+bool resident_sound_stop(ResidentSound* sound, s32 identifier, s32 mode)
+{
+    if (sound->effects_disabled)
+    {
+        return true;
+    }
+
+    ResidentInterruptLock lock;
+
+    for (s32 i = 0; i < 60; i++)
+    {
+        if (sound->slots[i].active && sound->slots[i].identifier == identifier)
+        {
+            if (sound->slots[i].unk03)
+            {
+                sound->slots[i].stop_requested = 1;
+                sound->slots[i].stop_mode = mode;
+                return true;
+            }
+
+            if (!sound->slots[i].started)
+            {
+                sound->slots[i].stop_requested = 1;
+                sound->slots[i].stop_mode = mode;
+                return true;
+            }
+
+            u32 handle = sound->slots[i].handle;
+            sound->slots[i].active = 0;
+            sound->slots[i].started = 0;
+
+            release_slot_target(sound, &sound->slots[i]);
+
+            if (sound->slots[i].owns_buffer)
+            {
+                delete sound->slots[i].buffer;
+                sound->slots[i].buffer = 0;
+                sound->slots[i].owns_buffer = 0;
+            }
+
+            lock.unlock();
+            func_00107B60(sound->stream, 0, func_0010EE50, 0, handle, mode, 0);
+            lock.relock();
+            return true;
+        }
+    }
+
+    return false;
+}
 
 /**
  * @brief Report whether a sound still holds its slot.
@@ -2345,7 +2577,49 @@ void func_00112D80(ResidentSound* sound)
     sound->unk452 = 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112E70);
+/**
+ * @brief Sound interrupt handler: wake the scheduler (when unk351 is set) and every thread waiting on the sound
+ * interrupt, then count the renderer's unk40C4 up to two, after which func_4D44D0 is tried and the stream told when it
+ * fails.
+ * @param cause Interrupt cause.
+ * @return Zero.
+ */
+s32 func_00112E70(s32 cause)
+{
+    if (D_001B6410->unk351)
+    {
+        func_00114DD0(&D_001CFA00);
+    }
+
+    s32 count = D_001B6410->unk143c;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        func_00114DD0(D_001B6410->unk13bc[i]);
+    }
+
+    D_001B6410->unk143c = 0;
+
+    ResidentSound* sound = D_001B6410;
+
+    if (sound && sound && sound->unk0c)
+    {
+        if (sound->unk0c->unk40c4 > 1)
+        {
+            if (!func_4D44D0(sound->unk0c, 1))
+            {
+                func_001071A0(sound->stream, 1);
+            }
+        }
+        else
+        {
+            sound->unk0c->unk40c4++;
+        }
+    }
+
+    ee_exit_handler();
+    return 0;
+}
 
 /** @brief Remove the sound interrupt handler and free the sound buffers. */
 ResidentSound::~ResidentSound()
@@ -2425,7 +2699,90 @@ s32 func_00113190(ResidentHeap* heap, s32* free_bytes, s32* used_bytes)
     return largest;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_heap_resize);
+/**
+ * @brief Resize a block, releasing and replacing it when it must grow.
+ *
+ * Shrinking frees the space the block no longer needs, joining it to a free neighbour when there is one. Growing a
+ * block does not preserve its contents.
+ *
+ * @param memory Resident heap allocation to resize.
+ * @param size Requested payload size in bytes.
+ * @return Allocation base, or null if a replacement cannot be allocated.
+ */
+void* resident_heap_resize(void* memory, s32 size)
+{
+    ResidentHeapBlock* block = (ResidentHeapBlock*)memory - 1;
+    ResidentHeapBlock* rest;
+    s32 alignment = block->owner->alignment;
+    ResidentHeapBlock* anchor = block->owner->free_anchor;
+    s32 rounded = -alignment & (size + 0x1F + alignment);
+
+    if (block->size == rounded)
+    {
+        return memory;
+    }
+
+    if (rounded < block->size)
+    {
+        if (block->physical_previous->allocated && block->size - rounded < alignment + 0x20)
+        {
+            return memory;
+        }
+
+        rest = (ResidentHeapBlock*)((u8*)block + rounded);
+
+        if (block->physical_previous->allocated)
+        {
+            rest->size = block->size - rounded;
+            rest->physical_previous = block->physical_previous;
+            rest->physical_next = block;
+            rest->allocated = 0;
+            rest->tag = 0;
+            rest->marker = 0;
+
+            ResidentHeapBlock* free;
+
+            for (free = block->physical_next; free != anchor; free = free->physical_next)
+            {
+                if (!free->allocated)
+                {
+                    break;
+                }
+            }
+
+            ResidentHeapBlock* following = free->free_next;
+            rest->free_previous = free;
+            rest->free_next = following;
+            following->free_previous = rest;
+            free->free_next = rest;
+            block->physical_previous->physical_next = rest;
+            block->physical_previous = rest;
+        }
+        else
+        {
+            ResidentHeapBlock merged = *block->physical_previous;
+            rest->free_next = merged.free_next;
+            rest->free_previous = merged.free_previous;
+            rest->free_next->free_previous = rest;
+            rest->free_previous->free_next = rest;
+            ResidentHeapBlock* above = merged.physical_previous;
+            above->physical_next = rest;
+            rest->physical_next = block;
+            rest->physical_previous = above;
+            rest->allocated = 0;
+            rest->tag = 0;
+            rest->marker = 0;
+            rest->size = merged.size + block->size - rounded;
+            block->physical_previous = rest;
+        }
+
+        block->size = rounded;
+        return memory;
+    }
+
+    resident_heap_release(memory);
+    return resident_heap_allocate(block->owner, size);
+}
 
 /**
  * @brief Return a block to its heap, merging it with free neighbours and relinking the free list.
@@ -3185,11 +3542,139 @@ void func_00114870(s32 alarm_id, u16 time, void* common)
     ee_exit_handler();
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001148B0);
+/**
+ * @brief Sleep until another thread wakes this one.
+ * @return True on success.
+ */
+static inline bool thread_sleep(void)
+{
+    if (SleepThread() < 0)
+    {
+        return false;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114A00);
+    return true;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114BD0);
+/**
+ * @brief Body of the scheduler's thread: on every wakeup while no round is running, copy the added threads into the
+ * round and, when there are any, start handing out slices.
+ * @param scheduler Scheduler.
+ */
+void func_001148B0(ResidentThreadScheduler* scheduler)
+{
+    for (;;)
+    {
+        do
+        {
+            (void)thread_sleep();
+        } while (scheduler->active);
+
+        (void)scheduler->semaphore.wait();
+        bool any = false;
+
+        for (s32 i = 0; i < 8; i++)
+        {
+            if ((scheduler->threads[i] = scheduler->registered[i]) != 0 && !any)
+            {
+                any = true;
+            }
+        }
+
+        (void)scheduler->semaphore.signal();
+
+        if (scheduler->active || !any)
+        {
+            continue;
+        }
+
+        DIntr();
+        scheduler->active = 1;
+        scheduler->next = 0;
+        scheduler->current = 0;
+        scheduler->alarm_id = resident_system_set_alarm(&g_system, scheduler->unk64 + 2, func_00114870, scheduler);
+        EIntr();
+    }
+}
+
+/**
+ * @brief Set a thread's priority, with the interrupt-context call when interrupts are disabled.
+ * @param thread Thread.
+ * @param priority New priority.
+ * @return True on success.
+ */
+static inline bool thread_change_priority(ResidentThread* thread, s32 priority)
+{
+    u32 status = ee_get_status();
+
+    thread->priority = priority;
+
+    if (status & EE_STATUS_EIE)
+    {
+        if (ChangeThreadPriority(thread->thread_id, priority) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    if (iChangeThreadPriority(thread->thread_id, priority) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Remove a time-sliced thread from the scheduler, returning it to the normal priority if its slice is running.
+ * @param scheduler Scheduler.
+ * @param thread Thread to remove.
+ */
+void func_00114A00(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread)
+{
+    ResidentSemaphoreLock lock(&scheduler->semaphore);
+    ResidentInterruptLock interrupts;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        if (scheduler->registered[i] == thread)
+        {
+            scheduler->registered[i] = 0;
+            scheduler->threads[i] = 0;
+
+            if (scheduler->current == thread)
+            {
+                (void)thread_change_priority(scheduler->current, RESIDENT_THREAD_PRIORITY);
+                scheduler->current = 0;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Add a time-sliced thread to the scheduler's first free entry.
+ * @param scheduler Scheduler.
+ * @param thread Thread to add.
+ * @return True when it was added, false when all eight entries are taken.
+ */
+bool func_00114BD0(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread)
+{
+    ResidentSemaphoreLock lock(&scheduler->semaphore);
+    ResidentInterruptLock interrupts;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        if (scheduler->registered[i] == 0)
+        {
+            scheduler->registered[i] = thread;
+            return true;
+        }
+    }
+
+    return false;
+}
 
 /** Return whether waking the resident thread succeeds. */
 s32 func_00114DD0(const void* object)
@@ -3330,7 +3815,10 @@ s32 func_00115000(ResidentThread* thread, s32 priority, s32 stack_size)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001150C0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001151B0);
+/** @brief Destroy the worker and its semaphores. */
+ResidentArchiveWorker::~ResidentArchiveWorker()
+{
+}
 
 /**
  * @brief Report whether a resource exists in the decrypted resource table.
@@ -3390,10 +3878,46 @@ void resident_archive_set_navigator_files(ResidentArchive* archive, u8* first, s
 void resident_archive_set_system_files(ResidentArchive* archive, u8* header, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
                                        s32 third_size, u8* fourth, s32 fourth_size)
 {
-    func_00115310(archive->unkEC, header, first, first_size, second, second_size, third, third_size, fourth, fourth_size);
+    func_00115310(archive->disk_worker(), (ResidentHddIconHeader*)header, first, first_size, second, second_size, third,
+                  third_size, fourth, fourth_size);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00115310);
+/**
+ * @brief Give the hard disk worker the system files and build their icon header: the magic, then each file's offset
+ * (from 0x200, each rounded up to 0x200 bytes) and size.
+ * @param worker Hard disk worker.
+ * @param header Header to fill, 0x200 bytes.
+ * @param first First file.
+ * @param first_size Size of first.
+ * @param second Second file.
+ * @param second_size Size of second.
+ * @param third Third file.
+ * @param third_size Size of third.
+ * @param fourth Fourth file.
+ * @param fourth_size Size of fourth.
+ */
+void func_00115310(ResidentArchiveWorker* worker, ResidentHddIconHeader* header, u8* first, s32 first_size, u8* second,
+                   s32 second_size, u8* third, s32 third_size, u8* fourth, s32 fourth_size)
+{
+    worker->icon_header = header;
+    worker->system_files[0] = first;
+    worker->system_files[1] = second;
+    worker->system_files[2] = third;
+    worker->system_files[3] = fourth;
+    memset_guess(worker->icon_header, 0, sizeof(ResidentHddIconHeader));
+    strcpy_guess(worker->icon_header->magic, D_0014D8C8);
+    worker->icon_header->files[0].offset = sizeof(ResidentHddIconHeader);
+    worker->icon_header->files[0].size = first_size;
+    worker->icon_header->files[1].offset =
+        worker->icon_header->files[0].offset + ((worker->icon_header->files[0].size + 0x1FF) & ~0x1FF);
+    worker->icon_header->files[1].size = second_size;
+    worker->icon_header->files[2].offset =
+        worker->icon_header->files[1].offset + ((worker->icon_header->files[1].size + 0x1FF) & ~0x1FF);
+    worker->icon_header->files[2].size = third_size;
+    worker->icon_header->files[3].offset =
+        worker->icon_header->files[2].offset + ((worker->icon_header->files[2].size + 0x1FF) & ~0x1FF);
+    worker->icon_header->files[3].size = fourth_size;
+}
 
 /**
  * @brief Clear the pending hard disk unit error.
@@ -3482,7 +4006,30 @@ void resident_archive_set_copy_buffer(ResidentArchive* archive, u8* buffer)
     archive->copy_buffer = buffer;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_cancel_command);
+/**
+ * @brief Ask the running worker command to stop; nothing happens when no command runs.
+ * @param archive Resource archive.
+ */
+static inline void archive_request_cancel(ResidentArchive* archive)
+{
+    ResidentSemaphoreLock lock(&archive->command_semaphore);
+
+    if (archive->busy == 0)
+    {
+        return;
+    }
+
+    archive->cancel_requested = 1;
+}
+
+/**
+ * @brief Ask the running worker command to stop.
+ * @param archive Resource archive.
+ */
+void resident_archive_cancel_command(ResidentArchive* archive)
+{
+    archive_request_cancel(archive);
+}
 
 /**
  * @brief Queue a command for the hard disk worker.
@@ -3492,7 +4039,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archi
  */
 void resident_archive_start_command(ResidentArchive* archive, s32 command, s32 argument)
 {
-    func_00118880(archive->unkEC, command, argument);
+    func_00118880(archive->disk_worker(), command, argument);
 }
 
 /**
@@ -3549,7 +4096,33 @@ s32 resident_archive_get_install_words(const ResidentArchive* archive)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001158E0);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118880);
+/**
+ * @brief Start a command on the hard disk worker and wake it.
+ * @param worker Hard disk worker.
+ * @param command Worker command.
+ * @param argument Command argument.
+ * @return True when the command started; false when the unit isn't ready or another command is running.
+ */
+bool func_00118880(ResidentArchiveWorker* worker, s32 command, s32 argument)
+{
+    ResidentSemaphoreLock lock(&worker->command_semaphore);
+
+    if (!worker->unit_ready)
+    {
+        return false;
+    }
+
+    if (worker->command)
+    {
+        return false;
+    }
+
+    worker->command = command;
+    worker->argument = argument;
+    worker->cancel_requested = 0;
+    func_00114E00(worker);
+    return true;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118A70);
 
@@ -3600,13 +4173,133 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011B6A0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011B870);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011BA90);
+/**
+ * @brief Read the archive's unk5E flag under its semaphore.
+ * @param archive Resource archive.
+ * @return The flag.
+ */
+static inline u8 archive_read_unk5e(ResidentArchive* archive)
+{
+    (void)archive->semaphore.wait();
+    u8 value = archive->unk5e;
+    (void)archive->semaphore.signal();
+    return value;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011BC80);
+/**
+ * @brief Report whether the archive's unk5E flag is clear.
+ * @param archive Resource archive.
+ * @return True when it is clear.
+ */
+static inline bool archive_unk5e_clear(ResidentArchive* archive)
+{
+    return !archive_read_unk5e(archive);
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011BE20);
+/**
+ * @brief Clear unk6A and signal unk28, while unk5E is set, a read is in progress and unk6A is set.
+ * @param archive Resource archive.
+ */
+void func_0011BA90(ResidentArchive* archive)
+{
+    if (!archive_read_unk5e(archive) || !archive->read_busy)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011BFD0);
+    (void)archive->semaphore.wait();
+    u8 pending = archive->unk6a;
+    (void)archive->semaphore.signal();
+
+    if (!pending)
+    {
+        return;
+    }
+
+    (void)archive->semaphore.wait();
+    archive->unk6a = 0;
+    (void)archive->semaphore.signal();
+    (void)archive->unk28.signal();
+}
+
+/**
+ * @brief Set unk6A once, while unk5E is set and a read is in progress.
+ * @param archive Resource archive.
+ */
+void func_0011BC80(ResidentArchive* archive)
+{
+    if (!archive_read_unk5e(archive) || !archive->read_busy)
+    {
+        return;
+    }
+
+    (void)archive->semaphore.wait();
+    u8 pending = archive->unk6a;
+    (void)archive->semaphore.signal();
+
+    if (pending)
+    {
+        return;
+    }
+
+    (void)archive->semaphore.wait();
+    archive->unk6a = 1;
+    (void)archive->semaphore.signal();
+}
+
+/**
+ * @brief Advance the position at unk8C by count, wrapping it like func_0011BFD0, take count off unk88 (stopping at
+ * zero), then signal unk30.
+ * @param archive Resource archive.
+ * @param count Amount to move by.
+ */
+void func_0011BE20(ResidentArchive* archive, s32 count)
+{
+    (void)archive->semaphore.wait();
+    archive->unk8c += count;
+
+    if (archive->unk8c >= archive->owner->unk12194 + archive->owner->unk121a0)
+    {
+        archive->unk8c -= archive->owner->unk121a0;
+    }
+
+    (void)archive->semaphore.signal();
+    (void)archive->semaphore.wait();
+    archive->unk88 -= count;
+
+    if (archive->unk88 < 0)
+    {
+        archive->unk88 = 0;
+    }
+
+    (void)archive->semaphore.signal();
+    (void)archive->unk30.signal();
+}
+
+/**
+ * @brief Read the two positions at unk88 and unk8C under the archive's semaphore.
+ * @param archive Resource archive.
+ * @param position Receives unk8C plus one, less unk121A0 once it reaches unk12194 plus unk121A0.
+ * @return unk88.
+ */
+s32 func_0011BFD0(ResidentArchive* archive, u32* position)
+{
+    (void)archive->semaphore.wait();
+    u32 current = archive->unk8c;
+    (void)archive->semaphore.signal();
+
+    *position = current + 1;
+
+    if (*position >= archive->unk12194 + archive->unk121a0)
+    {
+        *position -= archive->unk121a0;
+    }
+
+    (void)archive->semaphore.wait();
+    s32 result = archive->unk88;
+    (void)archive->semaphore.signal();
+    return result;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C120);
 
@@ -3643,29 +4336,6 @@ s32 func_0011C7C0(const void* object)
 {
     const u32* values = (const u32*)object;
     return (values[0x33] & 1) != 0;
-}
-
-/**
- * @brief Read the archive's unk5E flag under its semaphore.
- * @param archive Resource archive.
- * @return The flag.
- */
-static inline u8 archive_read_unk5e(ResidentArchive* archive)
-{
-    (void)archive->semaphore.wait();
-    u8 value = archive->unk5e;
-    (void)archive->semaphore.signal();
-    return value;
-}
-
-/**
- * @brief Report whether the archive's unk5E flag is clear.
- * @param archive Resource archive.
- * @return True when it is clear.
- */
-static inline bool archive_unk5e_clear(ResidentArchive* archive)
-{
-    return !archive_read_unk5e(archive);
 }
 
 /**
@@ -3708,7 +4378,29 @@ u32 resident_get_resource_size(const ResidentArchive* archive, s32 key)
     return (archive->resource_entries[key] & 0x00FFFFFF) << 11;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C8E0);
+/**
+ * @brief Stop the archive's streaming read.
+ * @param archive Resource archive.
+ */
+void func_0011C8E0(ResidentArchive* archive)
+{
+    (void)archive->semaphore.wait();
+    u8 stopping = archive->unk68;
+    (void)archive->semaphore.signal();
+
+    if (!stopping && archive->read_busy)
+    {
+        (void)archive->semaphore.wait();
+        archive->unk68 = 1;
+
+        if (archive->unk5e)
+        {
+            (void)archive->unk30.signal();
+        }
+
+        (void)archive->semaphore.signal();
+    }
+}
 
 /**
  * @brief Read a resource and wait for the read to finish, retrying until it starts.
@@ -3734,7 +4426,34 @@ s32 func_0011CA60(ResidentArchive* archive, void* buffer, s32 key, s32 size)
     return 1;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011CB00);
+/**
+ * @brief Select a resource for the next read, adding size to the counters at unk54 and unk58 when unk12181 is set.
+ * @param archive Resource archive.
+ * @param size Amount added to both counters.
+ * @param key Resource key.
+ * @return Nonzero when the resource was selected, or zero while a read is running.
+ */
+u8 func_0011CB00(ResidentArchive* archive, s32 size, s32 key)
+{
+    if (archive->read_busy)
+    {
+        return 0;
+    }
+
+    (void)archive->semaphore.wait();
+    archive->unk68 = 0;
+    (void)archive->semaphore.signal();
+
+    u8 selected = func_0011D080(archive, key);
+
+    if (archive->unk12181 && selected && size)
+    {
+        archive->unk54 += size;
+        archive->unk58 += size;
+    }
+
+    return selected;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011CC00);
 
@@ -3751,7 +4470,28 @@ void func_0011D060(ResidentArchive* archive, void* buffer, s32 size)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D080);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D320);
+/**
+ * @brief Set the listener the archive notifies when a read finishes.
+ * @param archive Resource archive.
+ * @param listener Listener, or null to remove it.
+ * @param context Object passed back to the listener.
+ * @return The listener it replaces.
+ */
+ResidentListener* func_0011D320(ResidentArchive* archive, ResidentListener* listener, void* context)
+{
+    ResidentListener* previous;
+
+    {
+        ResidentSemaphoreLock lock(&archive->semaphore);
+        previous = archive->listener;
+    }
+
+    (void)archive->semaphore.wait();
+    archive->listener = listener;
+    archive->listener_context = context;
+    (void)archive->semaphore.signal();
+    return previous;
+}
 
 /**
  * @brief Read and decrypt the archive's table of contents.
@@ -3842,13 +4582,45 @@ s32 resident_archive_get_clock(ResidentArchive* archive, ResidentClock* clock)
     return result;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DA80);
+/**
+ * @brief Start the disc library in DVD mode with the archive's disc callback, and mark the archive's unk5F.
+ * @param archive Resource archive.
+ */
+void func_0011DA80(ResidentArchive* archive)
+{
+    sceCdInit(0);
+    void* stack = malloc_guess(0x1000);
+    sceCdInitEeCB(0x24, stack, 0x1000);
+    archive->cd_callback_stack = stack;
+    sceCdMmode(2);
+    sceCdCallback(D_0011B550);
+    archive->unk5f = 1;
+    (void)archive->semaphore.wait();
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DBA0);
+    // The clock is copied out under the semaphore but never used.
+    ResidentClock clock;
+    clock.status = archive->clock.status;
+    clock.second = archive->clock.second;
+    clock.minute = archive->clock.minute;
+    clock.hour = archive->clock.hour;
+    clock.pad = archive->clock.pad;
+    clock.day = archive->clock.day;
+    clock.month = archive->clock.month;
+    clock.year = archive->clock.year;
+    (void)archive->semaphore.signal();
+}
+
+/** @brief Destroy the thread. */
+ResidentClass14FC40::~ResidentClass14FC40()
+{
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DC00);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DD40);
+/** @brief Destroy the thread. */
+ResidentClass14FBF0::~ResidentClass14FBF0()
+{
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__19ResidentClass14FC60Fv);
 

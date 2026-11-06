@@ -8,25 +8,6 @@
 #include "main/resident_0010A0E0.h"
 
 #ifdef __cplusplus
-extern "C" {
-/**
- * @brief Test whether an active resident slot holds the handle.
- * @param request Resident owner of the slots.
- * @param handle Handle to find.
- * @return One when an active slot holds the handle, otherwise zero.
- */
-s32 resident_sound_is_active(ResidentSound* request, s32 handle);
-
-/**
- * @brief Stop the resident slot that holds the handle.
- * @param request Resident owner of the slots.
- * @param handle Handle to stop.
- * @param flag Option passed to the stop.
- * @return Status of the stop.
- */
-s32 resident_sound_stop(ResidentSound* request, s32 handle, s32 flag);
-}
-
 /**
  * Partial Field object with vtable D_155780 in main data. Its destructor
  * releases the resource handle at offset 0x24. It adds the vtable slots at

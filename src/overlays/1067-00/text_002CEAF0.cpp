@@ -142,10 +142,6 @@ struct FieldMenuRuntime
 
 extern "C" FieldMenuRuntime* D_001B643C;
 
-extern "C" s32 resident_sound_is_active(ResidentSound* request, s32 handle);
-
-extern "C" s32 resident_sound_stop(ResidentSound* request, s32 handle, s32 flag);
-
 /** Partial pad state with its button masks. */
 struct FieldMenuPad
 {

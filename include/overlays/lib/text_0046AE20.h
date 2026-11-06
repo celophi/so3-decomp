@@ -5,8 +5,14 @@
 #include "overlays/lib/animation_binding.h"
 
 typedef struct LibObject1751A0 LibObject1751A0;
+#ifdef __cplusplus
+class LibScene;
+/** Scene that owns the runtime resource-entry table. */
+typedef LibScene LibEntryManager;
+#else
 /** Opaque owner of the runtime resource-entry table. */
 typedef struct LibEntryManager LibEntryManager;
+#endif
 /** Opaque metadata for one resource entry. */
 typedef struct LibEntryMetadata LibEntryMetadata;
 
@@ -86,6 +92,42 @@ void lib_object_add_flags(void* object, u16 flags);
  * @return Signed child-entry count stored in the entry's metadata.
  */
 s32 lib_get_entry_child_count(LibEntryManager* manager, s32 index);
+
+/**
+ * @brief Read one child entry index from an entry's data.
+ * @param manager Runtime entry table and source resource header.
+ * @param entry_index Index of the parent entry.
+ * @param child Position in the parent's child list.
+ * @return Entry index of the child.
+ */
+s32 lib_get_entry_child_index(LibEntryManager* manager, s32 entry_index, s32 child);
+
+/**
+ * @brief Get the handle of one child of an entry.
+ * @param manager Runtime entry table and source resource header.
+ * @param entry_index Index of the parent entry.
+ * @param child Position in the parent's child list.
+ * @return Handle of the child entry.
+ */
+void* lib_get_entry_child(LibEntryManager* manager, s32 entry_index, s32 child);
+
+/**
+ * @brief Copy an entry's name into a buffer.
+ * @param manager Runtime entry table and source resource header.
+ * @param index Entry index.
+ * @param name Buffer of at least seventeen bytes; emptied first.
+ * @return name, or null when the resource has no names.
+ */
+char* lib_copy_entry_name(LibEntryManager* manager, s32 index, char* name);
+
+/**
+ * @brief Copy the name of the entry that owns a handle into a buffer.
+ * @param manager Runtime entry table and source resource header.
+ * @param handle Entry handle to look for.
+ * @param name Buffer of at least seventeen bytes; emptied first.
+ * @return name, or null when the resource has no names or no entry owns the handle.
+ */
+char* lib_copy_handle_entry_name(const LibEntryManager* manager, void* handle, char* name);
 
 /**
  * @brief Set resource state for eligible renderable entries.
@@ -352,9 +394,6 @@ s32 func_00479FC0(void* object);
 s32 func_0047A850(void* object);
 
 /** Return the fixed value 0. */
-s32 func_00479700(void* object);
-
-/** Return the fixed value 0. */
 s32 func_00479840(void* object);
 
 /** Return the fixed value 0. */
@@ -402,21 +441,14 @@ void func_0047A7D0(void* object, s32 enabled);
 
 /** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
 void func_0047A810(void* object, const void* source);
-
-}
 #endif
-
-/** Return the receiver address at byte offset 0x830. */
-void* func_00479100(void* object);
 
 /** Store a byte at 0x59C and set bit 0 of the byte at 0x59D. */
 void func_00479160(void* object, u8 value);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 /** @brief Increment the byte at receiver offset 0x790. @param object Receiver containing the counter byte. */
 void func_00479180(void* object);
+
 #ifdef __cplusplus
 }
 #endif

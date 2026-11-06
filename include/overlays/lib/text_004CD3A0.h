@@ -355,6 +355,16 @@ struct LibTextureRequest
     u8 height_log2;
 };
 
+/** Request tag ('MlPs') whose misses are only loaded when an address is wanted. */
+#define LIB_TEXTURE_TAG_MLPS 0x4D6C5073
+
+/** Highest and lowest priority a cached texture's user can reach. */
+#define LIB_TEXTURE_PRIORITY_MAX 10
+#define LIB_TEXTURE_PRIORITY_MIN -10
+
+/** Lowest priority at which a hit still moves a user's texture to the front. */
+#define LIB_TEXTURE_PRIORITY_KEEP -5
+
 /** Partial 0x2910-byte VRAM texture cache (g_texture_cache). It may sit at the start of scratchpad memory. */
 class LibTextureCache
 {
@@ -416,6 +426,9 @@ public:
      */
     void expire_texture(u32 id);
 
+    /** @brief Clear the cache's stamp, the stamp of every block stamped 1, and the CLUT use flags. */
+    void clear_stamps();
+
     /**
      * @brief Check that both VRAM areas were allocated.
      * @return Whether the texture and CLUT slots are valid.
@@ -462,6 +475,15 @@ public:
      */
     u32 find_texture(LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5, s32 want_address,
                      LibTextureUser* user);
+
+    /**
+     * @brief Look up an image's texture and record a hit for a slot, raising a user-owned texture's priority.
+     * @param image Image header whose name and ID identify the texture.
+     * @param slot Slot whose last hit is recorded.
+     * @param user Object that would own the texture; unused.
+     * @return Zero on a hit or for an 'MlPs' image, one when the texture still has to be loaded.
+     */
+    s32 func_004A6D20(const struct LibImageHeader* image, s32 slot, LibTextureUser* user);
 
     /**
      * @brief Move an entry to the front of the most-recently-used list.
@@ -556,6 +578,9 @@ enum
 
     /** Keep the object under the camera: its x and z follow the camera's position every update. */
     LIB_DRAW_FOLLOW_CAMERA = 0x0004,
+
+    /** Set by a level-selection controller on the objects outside its active level. */
+    LIB_DRAW_FLAG_0008 = 0x0008,
 
     LIB_DRAW_FLAG_0010 = 0x0010,
 
@@ -977,6 +1002,14 @@ public:
 
     void func_004D4700();
     void func_004D4560();
+    void func_004D2C70();
+
+    /**
+     * @brief Test or wait for the renderer's packets in flight.
+     * @param poll Nonzero to only test; zero to wait until none is in flight.
+     * @return Nonzero while a packet is in flight (when polling).
+     */
+    s32 func_004D44D0(s32 poll);
 
     /** Write position in the current packet buffer. */
     u8* cursor;
@@ -1144,6 +1177,12 @@ public:
  * @return The combined factor.
  */
 extern "C" float func_004DA0F0(LibTransform* transform);
+
+/**
+ * @brief Invert the transform's transposed matrix into its inverse transform.
+ * @param transform Transform whose transposed_transform is up to date.
+ */
+extern "C" void func_004D9E70(LibTransform* transform);
 
 class LibResourceBuffer;
 struct LibRenderDataRecord;
@@ -1417,6 +1456,16 @@ s16 func_004D8C20(const void* image, s32 count);
 
 /** The game's VRAM allocator. */
 extern LibVramAllocator* g_vram_allocator;
+
+/**
+ * @brief Allocate an aligned area from the texture side of the VRAM allocator.
+ * @param vram Allocator.
+ * @param size Size in bytes.
+ * @param alignment Alignment in bytes.
+ * @param slot Slot to reuse, or -1 for a new one.
+ * @return Slot of the area, or -1 when VRAM is full.
+ */
+s16 func_004DCA70(LibVramAllocator* vram, u32 size, u32 alignment, s16 slot);
 
 /** @brief Fill all of VRAM with zeros, one 256x256 32-bit upload at a time. */
 void lib_clear_vram(void);

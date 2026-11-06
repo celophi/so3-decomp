@@ -88,6 +88,11 @@ public:
     /** Kernel semaphore ID, or a negative value when none was created. */
     s32 id;
 
+    /** @brief Start without a kernel semaphore. */
+    ResidentSemaphore() : id(-1)
+    {
+    }
+
     /**
      * @brief Wait on the semaphore.
      * @return True on success.

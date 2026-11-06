@@ -22,6 +22,17 @@ s32 sceMcInit(void);
  */
 s32 sceMcSync(s32 mode, s32* command, s32* result);
 
+/**
+ * @brief Start reading a card's type, free space and format state.
+ * @param port Card port.
+ * @param slot Card slot.
+ * @param type Receives the card type, or null.
+ * @param free Receives the free space, or null.
+ * @param format Receives whether the card is formatted, or null.
+ * @return Zero when the command started.
+ */
+s32 sceMcGetInfo(s32 port, s32 slot, s32* type, s32* free, s32* format);
+
 s32 mcHearAlarm(s32 callback_arg0, s32 callback_arg1, s32 sema_id);
 
 #ifdef __cplusplus

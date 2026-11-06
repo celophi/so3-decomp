@@ -36,6 +36,7 @@
 
 /** DMA channel 1 (VIF1) registers. */
 #define D1_CHCR ((volatile u32*)0x10009000)
+#define D1_MADR ((volatile u32*)0x10009010)
 #define D1_QWC ((volatile u32*)0x10009020)
 #define D1_TADR ((volatile u32*)0x10009030)
 

@@ -8,13 +8,14 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
 #include "main/resident_00101550.h"
+#include "overlays/lib/text_0045AD10.h"
+#include "ee.h"
+#include "overlays/lib/image_capture.h"
+#include "vu0.h"
+#include "overlays/lib/emission_vu0.h"
+#include "overlays/lib/shape_vu0.h"
 
 
-typedef struct WordSetterOwnertext_00419A70
-{
-    u8 unk00[0x70];
-    u32 unk70;
-} WordSetterOwnertext_00419A70;
 
 
 
@@ -56,13 +57,6 @@ struct LibMarkerState
     u32 dark_color;
 };
 
-/** Partial receiver view with an observed byte at offset 0x60. */
-typedef struct LibReceiverByte60
-{
-    u8 unk00[0x60];
-    u8 unk60;
-} LibReceiverByte60;
-
 /** Partial receiver with two pointer fields at offsets 0x14 and 0x18. */
 typedef struct LibReceiverPointerPair14
 {
@@ -88,6 +82,105 @@ typedef struct PackedModesOwner
 extern "C" void func_00414490(void* object);
 extern "C" void func_00414BD0(void* object);
 extern "C" void func_004159E0(void* object);
+extern "C" s32 func_00418540(LibMovieState* state);
+
+// TODO: The retained-set transforms' destructors inline these two ordinary functions, and LibMoviePlayer::destroy
+// inlines lib_movie_stop the same way, so I think the original unit was built with auto-inlining. Until the flags are
+// settled, this scoped pragma stands in for it here (they have to be defined before the destructors that use them).
+#pragma push
+#pragma auto_inline on
+
+/**
+ * @brief Take an object out of the first retained set, trimming the set when it was the last one.
+ * @param object Object to remove.
+ */
+void func_00428C80(LibListObject* object)
+{
+    s32 i;
+
+    for (i = 0; i < D_001B650C; i++)
+    {
+        if (D_00507CD0[i] == object)
+        {
+            D_00507CD0[i] = 0;
+
+            if (i == D_001B650C - 1)
+            {
+                while (D_001B650C > 0)
+                {
+                    if (D_00507CD0[D_001B650C - 1] != 0)
+                    {
+                        break;
+                    }
+
+                    D_001B650C--;
+                }
+            }
+
+            return;
+        }
+    }
+}
+
+/**
+ * @brief Take an object out of the second retained set, trimming the set when it was the last one.
+ * @param object Object to remove.
+ */
+void func_004289B0(LibListObject* object)
+{
+    s32 i;
+
+    for (i = 0; i < D_001B6514; i++)
+    {
+        if (D_00507E50[i] == object)
+        {
+            D_00507E50[i] = 0;
+
+            if (i == D_001B6514 - 1)
+            {
+                while (D_001B6514 > 0)
+                {
+                    if (D_00507E50[D_001B6514 - 1] != 0)
+                    {
+                        break;
+                    }
+
+                    D_001B6514--;
+                }
+            }
+
+            return;
+        }
+    }
+}
+
+#pragma pop
+
+/** @brief Detach and destroy the image capture, if there is one. */
+inline void LibClass1728A0::release_capture()
+{
+    if (capture)
+    {
+        lib_object_detach_owner(capture);
+        capture->destroy();
+        capture = 0;
+    }
+}
+
+/**
+ * @brief Stop the movie and its stream.
+ * @param player Movie player.
+ */
+static inline void movie_stop(LibMoviePlayer* player)
+{
+    player->stopped = 1;
+    player->is_playing = 0;
+    func_0011C8E0(g_resource_archive);
+    func_0011C6B0(g_resource_archive);
+    g_resource_queue->unk2c = 0;
+    func_00414490(&player->stream);
+    player->stopped = 1;
+}
 
 /**
  * @brief Start playing a movie: select its resource and start streaming it, unless a movie is already playing.
@@ -137,9 +230,30 @@ s32 lib_movie_play(LibMoviePlayer* player, s32 movie, s32 loop)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419BE0);
+/** @brief Stop the movie if it's playing, then detach and queue the player. */
+void LibMoviePlayer::destroy()
+{
+    if (is_playing)
+    {
+        movie_stop(this);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419C70);
+    LibTransformOwner::destroy();
+}
+
+/** @brief Delete the decoder thread, let go of the archive and destroy the player. */
+LibMoviePlayer::~LibMoviePlayer()
+{
+    lib_object_detach_owner(this);
+    delete thread;
+
+    if (!g_resource_archive->read_busy)
+    {
+        g_resource_archive->unk64 = 0;
+    }
+
+    g_movie_player = 0;
+}
 
 /**
  * @brief Clear the state's two shown-frame flags, counting down its pending frames for each one set.
@@ -246,7 +360,27 @@ void LibMoviePlayer::render()
     func_00114100(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A1A0);
+/**
+ * @brief Build the next frame's packet when the decoder has one ready.
+ * @param matrix Matrix supplied by the caller; unused.
+ * @param context Opaque caller context; unused.
+ */
+void LibMoviePlayer::build_packet(const void* matrix, void* context)
+{
+    unk63 = 0;
+    unk62 = 0;
+
+    if (unk15E795)
+    {
+        unk15E7A4 = func_00418540(state);
+        ee_sync();
+
+        if (unk15E7A4)
+        {
+            unk63 = 1;
+        }
+    }
+}
 
 /**
  * @brief Stop the movie and its stream.
@@ -254,26 +388,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A1A0);
  */
 void lib_movie_stop(LibMoviePlayer* player)
 {
-    player->stopped = 1;
-    player->is_playing = 0;
-    func_0011C8E0(g_resource_archive);
-    func_0011C6B0(g_resource_archive);
-    g_resource_queue->unk2c = 0;
-    func_00414490(&player->stream);
-    player->stopped = 1;
+    movie_stop(player);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A290);
+/** @brief Destroy the thread. */
+LibMovieThread::~LibMovieThread()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A2F0);
 
 void func_0041A530(void* object)
 {
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A540);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A550);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A560);
 
@@ -307,17 +434,51 @@ s32 lib_list_indicator_init(LibListIndicator* object, float x, float y, float he
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A9A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041ACF0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041AD10);
-
-void func_0041AD80(void* object)
+/** @brief Advance the scalar indicator by the runtime rate and mark it for redraw. */
+void ItemCreationClass172600::func_00413D20()
 {
-    ((LibReceiverByte60*)object)->unk60 = 7;
+    unk50 += g_field_runtime->rate;
+    needs_redraw = 1;
 }
 
-/** Build a four-word stack value and return its address. */
-void* func_0041AD90(void)
+/**
+ * @brief Place a scalar indicator, clear its value and allocate its drawing storage.
+ * @param object Scalar indicator widget.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return One on success, or zero when storage initialization fails.
+ */
+s32 func_0041AD10(ItemCreationClass172600* object, float x, float y, float width, float height)
+{
+    object->unk18.unk00 = x;
+    object->unk18.unk04 = y;
+    object->unk18.unk08 = width;
+    object->unk18.unk0c = height;
+
+    if (!lib_allocate_drawing_storage(&object->unk40, 22))
+    {
+        return 0;
+    }
+
+    object->unk50 = 0.0f;
+    object->unk34 = 2;
+    object->unk39 = 1;
+    return 1;
+}
+
+/** @brief Draw in bucket 7. */
+void LibClass172630::set_default_draw_bucket()
+{
+    draw_bucket = 7;
+}
+
+/**
+ * @brief Return the bounding sphere Lib culls against.
+ * @return Sphere in a local of this function: zero centre and a radius of 1e30, so the object is never culled.
+ */
+const LibVector4* LibClass172630::get_bounding_sphere()
 {
     s32 stack[4];
     stack[0] = 0;
@@ -325,105 +486,178 @@ void* func_0041AD90(void)
     stack[1] = 0;
     s32* result = stack;
     stack[2] = 0;
-    return result;
+    return reinterpret_cast<const LibVector4*>(result);
 }
 
-/** @brief Clear the intrusive owner and call the transform release hook. */
-extern "C" void func_0041ADC0(LibTransformOwner* object)
+/** @brief Clear the owner and queue the object for release. */
+void LibClass172630::destroy()
 {
-    object->owner = 0;
-    object->LibTransformOwner::destroy();
+    owner = 0;
+    LibTransformOwner::destroy();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041ADE0);
-
-/** Forward the receiver to lib_finish_packet. */
-void func_0041AE30(void* object)
+/**
+ * @brief Send the packet on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
+ */
+void LibClass172630::submit_dma(u32 channel)
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    dma_pending = 1;
+    *D1_QWC = packet_quadwords;
+    *D1_MADR = func_0011F760(packet);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
 }
 
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_0041AE50(void* object)
+/**
+ * @brief Finish the packet.
+ * @param channel DMA channel; unused.
+ */
+void LibClass172630::complete_dma(u32 channel)
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
-    }
-    return func_00114100(g_vif1_dma_queue, submission);
+    lib_finish_packet(this);
+}
+
+/** @brief Queue the object's DMA submission on VIF1. */
+void LibClass172630::render()
+{
+    func_00114100(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041AE80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041CF80);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D0A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D1C0);
-
-/** Forward the receiver to lib_finish_packet. */
-void func_0041D210(void* object)
+/** @brief Delete the packet and destroy the object. */
+LibClass172630::~LibClass172630()
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    delete packet;
 }
 
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_0041D230(void* object)
+/** @brief Set the object up and allocate its packet. */
+LibClass172630::LibClass172630()
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
-    }
-    return func_00114100(g_vif1_dma_queue, submission);
+    unka0 = 0.5f;
+    unka4 = 0;
+    color = 0xF0F0F0;
+    unkac = 3;
+    unkad = 0;
+    unkae = 0;
+    unkaf = 0;
+    unk65 = 0;
+    set_type_id(0xE02);
+    set_draw_flags(LIB_DRAW_FLAG_0400);
+    packet = new (0) LibPacketBuffer(0x1E0);
+}
+
+/**
+ * @brief Send the packet on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
+ */
+void LibClass1726C0::submit_dma(u32 channel)
+{
+    dma_pending = 1;
+    *D1_QWC = packet_quadwords;
+    *D1_MADR = func_0011F760(packet);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
+
+/**
+ * @brief Finish the packet.
+ * @param channel DMA channel; unused.
+ */
+void LibClass1726C0::complete_dma(u32 channel)
+{
+    lib_finish_packet(this);
+}
+
+/** @brief Queue the object's DMA submission on VIF1. */
+void LibClass1726C0::render()
+{
+    func_00114100(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D260);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E640);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E760);
-
-void func_0041E880(u8* object)
+/** @brief Delete the packet and destroy the object. */
+LibClass1726C0::~LibClass1726C0()
 {
-    object[0x64] = 1;
-    *(volatile u32*)0x10009020 = *(u32*)(object + 0x9C);
-    *(volatile u32*)0x10009010 = *(u32*)(object + 0xA0);
-    *(volatile u32*)0x1000E010 = 2;
-    *(volatile u32*)0x10009000 = 0x101;
+    delete packet;
 }
 
-/** Forward the receiver to lib_finish_packet. */
-void func_0041E8C0(void* object)
+/** @brief Set the object up and allocate its packet. */
+LibClass1726C0::LibClass1726C0()
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    unka0 = 0.5f;
+    unka4 = 0;
+    color = 0x80808080;
+    unkac = 3;
+    unkad = 0;
+    unkae = 0;
+    unkaf = 0;
+    unk65 = 0;
+    set_type_id(0xE01);
+    set_draw_flags(LIB_DRAW_FLAG_0400);
+    packet = new (0) LibPacketBuffer(0x1E0);
 }
 
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_0041E8E0(void* object)
+/**
+ * @brief Send the data on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
+ */
+void LibClass172750::submit_dma(u32 channel)
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
-    }
-    return func_00114100(g_vif1_dma_queue, submission);
+    dma_pending = 1;
+    *D1_QWC = packet_quadwords;
+    *D1_MADR = packet_address;
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
+
+/**
+ * @brief Finish the packet.
+ * @param channel DMA channel; unused.
+ */
+void LibClass172750::complete_dma(u32 channel)
+{
+    lib_finish_packet(this);
+}
+
+/** @brief Queue the object's DMA submission on VIF1. */
+void LibClass172750::render()
+{
+    func_00114100(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E910);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041EF10);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F030);
-
-void func_0041F130(void* object)
+/** @brief Delete the packet and destroy the object. */
+LibClass172750::~LibClass172750()
 {
-    ((LibReceiverByte60*)object)->unk60 = 7;
+    delete packet;
 }
 
-/** Build a four-word stack value and return its address. */
-void* func_0041F140(void)
+/** @brief Set the object up and allocate its packet. */
+LibClass172750::LibClass172750()
+{
+    unk65 = 0;
+    set_type_id(0xE00);
+    set_draw_flags(LIB_DRAW_FLAG_0400);
+    packet = new (0) LibPacketBuffer(0x40);
+    FlushCache(0);
+    tex0 = 0;
+}
+
+/** @brief Draw in bucket 7. */
+void LibClass1726C0::set_default_draw_bucket()
+{
+    draw_bucket = 7;
+}
+
+/**
+ * @brief Return the bounding sphere Lib culls against.
+ * @return Sphere in a local of this function: zero centre and a radius of 1e30, so the object is never culled.
+ */
+const LibVector4* LibClass1726C0::get_bounding_sphere()
 {
     s32 stack[4];
     stack[0] = 0;
@@ -431,59 +665,27 @@ void* func_0041F140(void)
     stack[1] = 0;
     s32* result = stack;
     stack[2] = 0;
-    return result;
+    return reinterpret_cast<const LibVector4*>(result);
 }
 
-/** @brief Clear the intrusive owner and call the transform release hook. */
-extern "C" void func_0041F170(LibTransformOwner* object)
+/** @brief Clear the owner and queue the object for release. */
+void LibClass1726C0::destroy()
 {
-    object->owner = 0;
-    object->LibTransformOwner::destroy();
+    owner = 0;
+    LibTransformOwner::destroy();
 }
 
-void func_0041F190(void* object)
+/** @brief Draw in bucket 7. */
+void LibClass172750::set_default_draw_bucket()
 {
-    ((LibReceiverByte60*)object)->unk60 = 7;
+    draw_bucket = 7;
 }
 
-/** Build a four-word stack value and return its address. */
-void* func_0041F1A0(void)
-{
-    s32 stack[4];
-    stack[0] = 0;
-    stack[3] = 0x7149F2CA;
-    stack[1] = 0;
-    s32* result = stack;
-    stack[2] = 0;
-    return result;
-}
-
-/** @brief Clear the intrusive owner and call the transform release hook. */
-extern "C" void func_0041F1D0(LibTransformOwner* object)
-{
-    object->owner = 0;
-    object->LibTransformOwner::destroy();
-}
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F1F0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F200);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F210);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F220);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F230);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F240);
-
-void func_0041F250(void* object)
-{
-    ((LibReceiverByte60*)object)->unk60 = 7;
-}
-
-/** Build a four-word stack value and return its address. */
-void* func_0041F260(void)
+/**
+ * @brief Return the bounding sphere Lib culls against.
+ * @return Sphere in a local of this function: zero centre and a radius of 1e30, so the object is never culled.
+ */
+const LibVector4* LibClass172750::get_bounding_sphere()
 {
     s32 stack[4];
     stack[0] = 0;
@@ -491,48 +693,161 @@ void* func_0041F260(void)
     stack[1] = 0;
     s32* result = stack;
     stack[2] = 0;
-    return result;
+    return reinterpret_cast<const LibVector4*>(result);
 }
 
-/** @brief Clear the intrusive owner and call the transform release hook. */
-extern "C" void func_0041F290(LibTransformOwner* object)
+/** @brief Clear the owner and queue the object for release. */
+void LibClass172750::destroy()
 {
-    object->owner = 0;
-    object->LibTransformOwner::destroy();
+    owner = 0;
+    LibTransformOwner::destroy();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F2B0);
-
-/** Forward the receiver to lib_finish_packet. */
-void func_0041F300(void* object)
+/** @brief Draw in bucket 7. */
+void LibClass1727E0::set_default_draw_bucket()
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    draw_bucket = 7;
 }
 
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_0041F320(void* object)
+/**
+ * @brief Return the bounding sphere Lib culls against.
+ * @return Sphere in a local of this function: zero centre and a radius of 1e30, so the object is never culled.
+ */
+const LibVector4* LibClass1727E0::get_bounding_sphere()
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
-    }
-    return func_00114100(g_vif1_dma_queue, submission);
+    s32 stack[4];
+    stack[0] = 0;
+    stack[3] = 0x7149F2CA;
+    stack[1] = 0;
+    s32* result = stack;
+    stack[2] = 0;
+    return reinterpret_cast<const LibVector4*>(result);
+}
+
+/** @brief Clear the owner and queue the object for release. */
+void LibClass1727E0::destroy()
+{
+    owner = 0;
+    LibTransformOwner::destroy();
+}
+
+/**
+ * @brief Send the packet on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
+ */
+void LibClass1727E0::submit_dma(u32 channel)
+{
+    dma_pending = 1;
+    *D1_QWC = packet_quadwords;
+    *D1_MADR = func_0011F760(packet);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
+
+/**
+ * @brief Finish the packet.
+ * @param channel DMA channel; unused.
+ */
+void LibClass1727E0::complete_dma(u32 channel)
+{
+    lib_finish_packet(this);
+}
+
+/** @brief Queue the object's DMA submission on VIF1. */
+void LibClass1727E0::render()
+{
+    func_00114100(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F350);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004209C0);
+/**
+ * @brief Allocate VRAM for a power-of-two image and record its size, slot and address.
+ * @param object Object to set up.
+ * @param width_log2 Image width, as a power of two.
+ * @param height_log2 Image height, as a power of two.
+ */
+void func_004209C0(LibClass1727E0* object, s32 width_log2, s32 height_log2)
+{
+    object->width_log2 = width_log2;
+    object->height_log2 = height_log2;
+    object->vram_slot = func_004DCA70(g_vram_allocator, (1 << width_log2) * (1 << height_log2), 0x800, -1);
+    object->vram_address = (g_vram_allocator->unk04[object->vram_slot] & 0x3FFF) << 6;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420A30);
+/** @brief Delete the packet and destroy the object. */
+LibClass1727E0::~LibClass1727E0()
+{
+    delete packet;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420B50);
+/** @brief Set the object up and allocate its packet. */
+LibClass1727E0::LibClass1727E0()
+{
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420D00);
+    unk96 = 0;
+    unk97 = 0;
+    unk99 = 1;
+    unk9a = 1;
+    unk9d = 0;
+    unk65 = 0;
+    set_type_id(0xF00);
+    set_draw_flags(LIB_DRAW_FLAG_0400);
+    packet = new (0) LibPacketBuffer(0x400);
+    unkb0 = 0x7C808080;
+    unkb4 = 0x80808080;
+    unka0[0] = 0.0f;
+    unka0[1] = 0.0f;
+    unka0[2] = 0.0f;
+    unka0[3] = 0.0f;
+    unk98 = 0;
+    unkd8 = 0.5f;
+    unk11c = 0.5f;
+    unk9e = 1;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420D10);
+    for (i = 0; i < 8; i++)
+    {
+        unkb8[i] = 0x808080;
+        unkdc[i] = 0.0f;
+        unkfc[i] = 0.0f;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420D20);
+/**
+ * @brief Set the marker color to a packed RGB color brightened by 1.8, and mark the marker for redraw.
+ * @param object Marker widget.
+ * @param color Packed RGB color; each channel is clamped to 255 after brightening.
+ */
+void func_00420D20(ItemCreationClass172870* object, u32 color)
+{
+    LibMarkerState* state = reinterpret_cast<LibMarkerState*>(object);
+    float red = (color & 0xFF) * 1.8f;
+    float green;
+    float blue;
+
+    if (red > 255.0f)
+    {
+        red = 255.0f;
+    }
+
+    green = ((color >> 8) & 0xFF) * 1.8f;
+
+    if (green > 255.0f)
+    {
+        green = 255.0f;
+    }
+
+    blue = ((color >> 16) & 0xFF) * 1.8f;
+
+    if (blue > 255.0f)
+    {
+        blue = 255.0f;
+    }
+
+    state->color = ((u32)blue << 16) | ((u32)green << 8) | (u32)red;
+    state->redraw = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420F20);
 
@@ -567,14 +882,23 @@ s32 lib_marker_init_rectangle(ItemCreationClass172870* object, float x, float y,
     return 1;
 }
 
-s32 func_00421240(void* object)
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Always 16.
+ */
+s32 LibClass1728A0::get_default_list_kind()
 {
     return 16;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421250);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421450);
+/** @brief Release the image capture, then delete the object. */
+void LibClass1728A0::destroy()
+{
+    release_capture();
+    delete this;
+}
 
 void func_004214C0(void* object, void* first, void* second)
 {
@@ -583,19 +907,35 @@ void func_004214C0(void* object, void* first, void* second)
     state->unk18 = second;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004214D0);
+/** @brief Release the image capture and destroy the object. */
+LibClass1728A0::~LibClass1728A0()
+{
+    release_capture();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421590);
+/** @brief Create the image capture and add it to the renderer. */
+LibClass1728A0::LibClass1728A0() : unk14(0), unk18(0)
+{
+    capture = new (0) LibImageCapture;
+    ((LibUpdateList*)g_renderer)->append_node(capture, -1);
+    unk1c = 1;
+    unk42c = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421D80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422050);
+/** @brief Delete the buffer and destroy the builder. */
+LibClass1728E0::~LibClass1728E0()
+{
+    delete unk44;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004220E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422130);
+/** @brief Construct the builder without a buffer. */
+LibClass1728E0::LibClass1728E0() : unk44(0)
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004221A0);
 
@@ -603,74 +943,177 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422850);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422F70);
 
-void func_00423930(u8* object)
+/**
+ * @brief Send the data on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
+ */
+void LibClass172960::submit_dma(u32 channel)
 {
-    object[0x64] = 1;
-    *(volatile u32*)0x10009020 = *(u32*)(object + 0x234);
-    *(volatile u32*)0x10009010 = *(u32*)(object + 0x238);
-    *(volatile u32*)0x1000E010 = 2;
-    *(volatile u32*)0x10009000 = 0x101;
+    dma_pending = 1;
+    *D1_QWC = packet_quadwords;
+    *D1_MADR = packet_address;
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
 }
 
-/** Forward the receiver to lib_finish_packet. */
-void func_00423970(void* object)
+/**
+ * @brief Finish the packet.
+ * @param channel DMA channel; unused.
+ */
+void LibClass172960::complete_dma(u32 channel)
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    lib_finish_packet(this);
 }
 
-/** Queue the DMA submission embedded at offset 0x210 when present. */
-s32 func_00423990(void* object)
+/** @brief Queue the object's DMA submission on VIF1. */
+void LibClass172960::render()
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x210);
-    }
-    return func_00114100(g_vif1_dma_queue, submission);
+    func_00114100(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004239C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424510);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004245B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424610);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424760);
-
 /** @brief Destroy the list receiver and its embedded sentinel. */
-LibListReceiver::~LibListReceiver()
+inline LibListReceiver::~LibListReceiver()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424860);
+/** @brief Allocate a packet big enough for every builder in the list, plus 20 quadwords. */
+void LibClass172960::allocate_packet()
+{
+    s32 size = 20;
+    LibListSentinel* node = sentinel.next;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424890);
+    for (;;)
+    {
+        if (&sentinel == node)
+        {
+            break;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424910);
+        size += static_cast<LibClass1728C0*>(node)->func_00424860();
+        node = node->next;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424940);
+    packet = new (0) LibPacketBuffer(size);
+}
 
-s32 func_004249C0(void* object)
+/** @brief Release the object at unk240 if unk23d is set, then queue the transform for release. */
+void LibClass172960::destroy()
+{
+    if (unk23d && unk240)
+    {
+        lib_object_detach_owner(unk240);
+        unk240->destroy();
+        unk240 = 0;
+    }
+
+    LibTransformOwner::destroy();
+}
+
+/** @brief Delete the packet, then release the object at unk240 and delete the builders if unk23d is set. */
+LibClass172960::~LibClass172960()
+{
+    delete packet;
+
+    if (unk23d)
+    {
+        if (unk240)
+        {
+            lib_object_detach_owner(unk240);
+            unk240->destroy();
+        }
+
+        LibListSentinel* node = sentinel.next;
+
+        for (;;)
+        {
+            if (&sentinel == node)
+            {
+                break;
+            }
+
+            LibListSentinel* next = node->next;
+            delete node;
+            node = next;
+        }
+    }
+}
+
+/** @brief Initialize the transform with an empty builder list and no packet. */
+LibClass172960::LibClass172960() : packet(0)
+{
+    unk65 = 0;
+    unk230 = 0xFFFFFF;
+    unk23c = 0;
+    unk23d = 0;
+    unk23e = 1;
+    unk240 = 0;
+    set_type_id(0x1000);
+}
+
+/**
+ * @brief Return the size of the builder's packet.
+ * @return Size, in quadwords.
+ */
+s32 LibClass1728E0::func_00424860()
+{
+    return unk20 * unk1c * 7 / 2 + 4;
+}
+
+/** @brief Destroy the builder. */
+LibClass172900::~LibClass172900()
+{
+}
+
+/**
+ * @brief Return the size of the builder's packet.
+ * @return Size, in quadwords.
+ */
+s32 LibClass172900::func_00424860()
+{
+    return unk20 / 2 + unk20 * 2 + 9;
+}
+
+/** @brief Destroy the builder. */
+LibClass172920::~LibClass172920()
+{
+}
+
+/**
+ * @brief Return the size of the builder's packet.
+ * @return Always 398 quadwords.
+ */
+s32 LibClass172920::func_00424860()
 {
     return 398;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004249D0);
+/** @brief Destroy the builder. */
+LibClass172940::~LibClass172940()
+{
+}
 
-s32 func_00424A50(void* object)
+/**
+ * @brief Return the size of the builder's packet.
+ * @return Always 230 quadwords.
+ */
+s32 LibClass172940::func_00424860()
 {
     return 230;
 }
 
-void func_00424A60(void* object)
+/** @brief Draw in bucket 9. */
+void LibClass172960::set_default_draw_bucket()
 {
-    ((LibReceiverByte60*)object)->unk60 = 9;
+    draw_bucket = 9;
 }
 
-/** Build a four-word stack value and return its address. */
-void* func_00424A70(void)
+/**
+ * @brief Return the bounding sphere Lib culls against.
+ * @return Sphere in a local of this function: zero centre and a radius of 1e30, so the object is never culled.
+ */
+const LibVector4* LibClass172960::get_bounding_sphere()
 {
     s32 stack[4];
     stack[0] = 0;
@@ -678,45 +1121,164 @@ void* func_00424A70(void)
     stack[1] = 0;
     s32* result = stack;
     stack[2] = 0;
-    return result;
+    return reinterpret_cast<const LibVector4*>(result);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424AA0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424AB0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424AC0);
-
-s32 func_00424AD0(void* object)
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Always 4.
+ */
+s32 LibClass172A20::get_default_list_kind()
 {
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424AE0);
+/**
+ * @brief Copy a matrix as four 128-bit rows.
+ * @param destination Matrix receiving the copy.
+ * @param source Matrix to copy.
+ */
+static inline void copy_matrix(LibMatrix44Value* destination, const LibMatrix44Value* source)
+{
+    ((unsigned __int128*)destination)[0] = ((const unsigned __int128*)source)[0];
+    ((unsigned __int128*)destination)[1] = ((const unsigned __int128*)source)[1];
+    ((unsigned __int128*)destination)[2] = ((const unsigned __int128*)source)[2];
+    ((unsigned __int128*)destination)[3] = ((const unsigned __int128*)source)[3];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424BE0);
+/**
+ * @brief Report whether the transform's transpose is current.
+ * @param transform Transform to check.
+ * @return Nonzero when the transpose was rebuilt since the matrix last changed.
+ */
+static inline s32 transpose_is_current(const LibTransform* transform)
+{
+    return transform->unk20e_0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424CE0);
+/**
+ * @brief Mark the transpose current and rebuild it from the transform.
+ * @param transform Transform to update.
+ */
+static inline void transpose_transform(LibTransform* transform)
+{
+    transform->unk20e_0 = 1;
+    transform->unk20e_1 = 0;
+    ee_transpose_matrix(&transform->transposed_transform, &transform->transform);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424D30);
+/** @brief Update the matrix and the world position. */
+void LibClass172B40::update()
+{
+    update_transform_matrix();
+    position.x = transform.m[0][3];
+    position.y = transform.m[1][3];
+    position.z = transform.m[2][3];
+    position.w = 1.0f;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424E50);
+/** @brief Update the matrices, the inverse copy and the world down axis. */
+void LibClass172C60::update()
+{
+    update_transform_matrix();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00424F40);
+    if (!transpose_is_current(this))
+    {
+        transpose_transform(this);
+        func_004D9E70(this);
+        vu0_transform_emission_direction(&transposed_transform, &D_00507F70, &down);
+        const LibMatrix44Value* source = &inverse_transform;
+        copy_matrix(&inverse, source);
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425070);
+/** @brief Update the matrix and the world down axis. */
+void LibClass172CF0::update()
+{
+    update_transform_matrix();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425130);
+    if (!transpose_is_current(this))
+    {
+        transpose_transform(this);
+        vu0_transform_emission_direction(&transposed_transform, &D_00507F70, &down);
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425250);
+/** @brief Update the matrices, the world position and the world down axis. */
+void LibClass172D80::update()
+{
+    update_transform_matrix();
 
-void func_00425280(void* object)
+    if (!transpose_is_current(this))
+    {
+        transpose_transform(this);
+        func_004D9E70(this);
+        vu0_apply_matrix(&transposed_transform, &D_00507F60, &position);
+        vu0_transform_emission_direction(&transposed_transform, &D_00507F70, &down);
+    }
+}
+
+/** @brief Update the matrices. */
+void LibClass172E10::update()
+{
+    update_transform_matrix();
+
+    if (!transpose_is_current(this))
+    {
+        transpose_transform(this);
+        func_004D9E70(this);
+    }
+}
+
+/** @brief Update the matrix, the world position and the world down axis. */
+void LibClass172EA0::update()
+{
+    update_transform_matrix();
+
+    if (!transpose_is_current(this))
+    {
+        transpose_transform(this);
+        vu0_apply_matrix(&transposed_transform, &D_00507F60, &position);
+        vu0_transform_emission_direction(&transposed_transform, &D_00507F70, &down);
+    }
+}
+
+/** @brief Update the world-space shape. */
+void LibClass172AB0::update()
+{
+    func_00425280();
+}
+
+/** @brief Bring the world-space shape up to date; the base shape has none. */
+void LibClass172AB0::func_00425280()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425290);
+/** @brief Update the matrix and move the local point and axis into world space. */
+void LibClass172FC0::func_00425280()
+{
+    update_transform_matrix();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004253A0);
+    if (!transpose_is_current(this))
+    {
+        transpose_transform(this);
+        copy_vector(&point, &local_point);
+        copy_vector(&axis, &local_axis);
+        vu0_transform_point_and_direction(&transposed_transform, &point, &axis);
+    }
+}
+
+/** @brief Update the matrix and the world position. */
+void LibClass172F30::func_00425280()
+{
+    update_transform_matrix();
+
+    if (!transpose_is_current(this))
+    {
+        transpose_transform(this);
+        vu0_apply_matrix(&transposed_transform, &D_00507F60, &position);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425490);
 
@@ -750,7 +1312,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00426650);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00426C20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428390);
+/** @brief Destroy the transform. */
+LibClass172FC0::~LibClass172FC0()
+{
+}
 
 struct SmallConditionalInput04
 {
@@ -770,67 +1335,223 @@ extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output
     return 0;
 }
 
-s32 func_004284E0(void* object)
+/**
+ * @brief Test against another shape; the base shape never touches anything.
+ * @param other Other shape; unused.
+ * @param direction Unused.
+ * @param first Unused.
+ * @param second Unused.
+ * @return Always 0.
+ */
+s32 LibClass172AB0::func_004284E0(LibClass172AB0* other, LibVector4* direction, float* first, float* second)
 {
     return 0;
 }
 
-s32 func_004284F0(void* object)
+/**
+ * @brief Test against another shape with a scale; the base shape never touches anything.
+ * @param other Other shape; unused.
+ * @param scale Unused.
+ * @param direction Unused.
+ * @param first Unused.
+ * @param second Unused.
+ * @return Always 0.
+ */
+s32 LibClass172AB0::func_004284F0(LibClass172AB0* other, const LibVector4* scale, LibVector4* direction, float* first,
+                                  float* second)
 {
     return 0;
 }
 
-void func_00428500(void* object)
+/**
+ * @brief Work out the effect at a position; the base adds nothing.
+ * @param position Unused.
+ * @param unk Unused.
+ * @param output Unused.
+ * @param source Unused.
+ */
+void LibClass172BD0::func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428510);
+// TODO: Like LibClass173380::update, the game enters this list loop with a jump to its test instead of a guard, which
+// I've only got with loop rotation off.
+#pragma push
+#pragma opt_rotateloops off
+
+/** @brief Update every node in the list, in order. */
+void LibClass173080::update()
+{
+    LibListSentinel* end = &sentinel;
+    LibListSentinel* node = end->next;
+
+    while (end != node)
+    {
+        static_cast<LibListObject*>(node)->update();
+        node = node->next;
+    }
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428570);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428670);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004288C0);
+/**
+ * @brief Detach and destroy every object in the second retained set that was added with a tag, then trim the set.
+ * @param tag Tag to release.
+ */
+void func_004288C0(u8 tag)
+{
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004289B0);
+    for (i = 0; i < D_001B6514; i++)
+    {
+        if (D_00507E50[i] != 0 && D_00507E10[i] == tag)
+        {
+            lib_object_detach_owner(D_00507E50[i]);
+            D_00507E50[i]->destroy();
+            D_00507E50[i] = 0;
+        }
+    }
+
+    while (D_001B6514 > 0)
+    {
+        if (D_00507E50[D_001B6514 - 1] != 0)
+        {
+            break;
+        }
+
+        D_001B6514--;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428A50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428AF0);
+/**
+ * @brief Count the objects in the second retained set.
+ * @return Number of occupied slots.
+ */
+s32 func_00428AF0(void)
+{
+    s32 count = 0;
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428B40);
+    for (i = 0; i < D_001B6514; i++)
+    {
+        if (D_00507E50[i] != 0)
+        {
+            count++;
+        }
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428B90);
+    return count;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428C80);
+/**
+ * @brief Count the objects in the first retained set.
+ * @return Number of occupied slots.
+ */
+s32 func_00428B40(void)
+{
+    s32 count = 0;
+    s32 i;
+
+    for (i = 0; i < D_001B650C; i++)
+    {
+        if (D_00507CD0[i] != 0)
+        {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+/**
+ * @brief Detach and destroy every object in the first retained set that was added with a tag, then trim the set.
+ * @param tag Tag to release.
+ */
+void func_00428B90(u8 tag)
+{
+    s32 i;
+
+    for (i = 0; i < D_001B650C; i++)
+    {
+        if (D_00507CD0[i] != 0 && D_00507DD0[i] == tag)
+        {
+            lib_object_detach_owner(D_00507CD0[i]);
+            D_00507CD0[i]->destroy();
+            D_00507CD0[i] = 0;
+        }
+    }
+
+    while (D_001B650C > 0)
+    {
+        if (D_00507CD0[D_001B650C - 1] != 0)
+        {
+            break;
+        }
+
+        D_001B650C--;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428D20);
 
-s32 func_00428DC0(void* object)
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Always 4.
+ */
+s32 LibClass172AB0::get_default_list_kind()
 {
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428DD0);
+/** @brief Destroy the transform. */
+LibClass172B40::~LibClass172B40()
+{
+}
 
-s32 func_00428E40(void* object)
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Always 4.
+ */
+s32 LibClass172B40::get_default_list_kind()
 {
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428E50);
+/** @brief Destroy the transform. */
+LibClass172C60::~LibClass172C60()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428EB0);
+/** @brief Destroy the transform. */
+LibClass172CF0::~LibClass172CF0()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428F20);
+/** @brief Destroy the transform. */
+LibClass172D80::~LibClass172D80()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428F90);
+/** @brief Destroy the transform. */
+LibClass172E10::~LibClass172E10()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004290A0);
+/** @brief Destroy the transform. */
+LibClass172EA0::~LibClass172EA0()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004291B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004292C0);
+/** @brief Destroy the transform. */
+LibClass172F30::~LibClass172F30()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004293D0);
 
@@ -841,22 +1562,10 @@ s32 func_004294F0(void* object)
     return 5;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429500);
-
-/** Store the word at receiver offset 0x70. */
-void func_004295B0(void* object, u32 value)
-{
-    WordSetterOwnertext_00419A70* receiver = static_cast<WordSetterOwnertext_00419A70*>(object);
-    receiver->unk70 = value;
-}
-
-void func_004295C0(void* object)
+/** @brief Destroy the list. */
+LibClass173080::~LibClass173080()
 {
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004295D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004295E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004295F0);
 

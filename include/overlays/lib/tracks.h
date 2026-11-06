@@ -1285,6 +1285,20 @@ public:
 struct LibQuaternionTrackKey
 {
     /**
+     * @brief Copy the values and key.
+     * @param entry Keyframe to copy.
+     * @return This keyframe.
+     */
+    LibQuaternionTrackKey& operator=(const LibQuaternionTrackKey& entry)
+    {
+        packed_rotation[0] = entry.packed_rotation[0];
+        packed_rotation[1] = entry.packed_rotation[1];
+        packed_rotation[2] = entry.packed_rotation[2];
+        key = entry.key;
+        return *this;
+    }
+
+    /**
      * @brief Return the key as a float.
      * @return Key.
      */
@@ -1299,10 +1313,98 @@ struct LibQuaternionTrackKey
     s16 key;
 };
 
-/** Partial key storage for rotation tracks with quaternions packed as three halfwords; only the search helpers are here. */
+/** Key storage for rotation tracks with quaternions packed as three halfwords, with vtable D_1731E0 in main data. */
 class LibQuaternionTrackBase : public LibClass173180
 {
 public:
+    /** @brief Release the keyframe storage. */
+    virtual ~LibQuaternionTrackBase();
+
+    virtual void allocate_keys(s32 count);
+    virtual void bind_keys(s32 count, void* keys);
+    virtual void set_before_mode(u32 mode);
+    virtual void set_after_mode(u32 mode);
+    virtual s32 get_cycle_count() const;
+    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual s32 has_key(float key) const;
+    virtual float wrap_key(float key) const;
+    virtual float get_key_span() const;
+    virtual void evaluate(float key, void* output);
+    virtual s16 get_key_count() const;
+    virtual void* get_keys();
+    virtual void reset_state();
+    virtual s16 get_key_capacity();
+
+    /**
+     * @brief Append a keyframe; the base ignores it.
+     * @param value Keyframe value.
+     * @param first First auxiliary value.
+     * @param second Second auxiliary value.
+     * @param key Sort key.
+     * @return Nonzero when the keyframe was stored.
+     */
+    virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
+    /**
+     * @brief Replace an indexed keyframe; the base ignores it.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first First auxiliary value.
+     * @param second Second auxiliary value.
+     * @return Nonzero when the keyframe was stored.
+     */
+    virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
+    /**
+     * @brief Insert a keyframe at an index; the base ignores it.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first First auxiliary value.
+     * @param second Second auxiliary value.
+     * @return Nonzero when the keyframe was stored.
+     */
+    virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
+    /**
+     * @brief Store a single keyframe; the base ignores it.
+     * @param value Keyframe value.
+     * @param first First auxiliary value.
+     * @param second Second auxiliary value.
+     * @param key Sort key.
+     */
+    virtual void on_set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
+    /**
+     * @brief Return a zero quaternion, the track's value when it has no keys.
+     * @return Zero vector.
+     */
+    virtual FieldVec4A get_zero_value() const;
+
+    /**
+     * @brief Return the decoded rotation of the keyframe at a key.
+     * @param key Key to find.
+     * @return Keyframe rotation, or zero when the key is absent.
+     */
+    virtual FieldVec4A find_key_value(float key);
+
+    /**
+     * @brief Sample the track at a key.
+     * @param key Key to sample at.
+     * @return Rotation at the key.
+     */
+    virtual FieldVec4A sample(float key) const = 0;
+
+    /** @brief Free the keys and give the track back to its pool; pooled tracks implement it. */
+    virtual void return_to_pool() = 0;
+
+    /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+    void free_keys();
+
     /**
      * @brief Wrap a key into the key span and record how many spans it was past the first key.
      * @param key Key to wrap.

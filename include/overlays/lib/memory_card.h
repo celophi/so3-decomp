@@ -17,8 +17,11 @@
 /** Operation codes written to a slot's status (or busy byte when it's already running one). */
 enum LibMemoryCardOperation
 {
+    LIB_MEMORY_CARD_OP_20 = 0x20,
     LIB_MEMORY_CARD_OP_TRANSFER = 0x30,
-    LIB_MEMORY_CARD_OP_PROBE_FILE = 0x60
+    LIB_MEMORY_CARD_OP_40 = 0x40,
+    LIB_MEMORY_CARD_OP_PROBE_FILE = 0x60,
+    LIB_MEMORY_CARD_OP_C0 = 0xC0
 };
 
 /** Bits of a slot status that give its group. */
@@ -197,6 +200,56 @@ extern "C"
      * @return 1 once set up, 0 when it already was or the card library failed to start.
      */
     s32 lib_memory_card_init(LibMemoryCard* card, LibUpdateList* list);
+
+    /**
+     * @brief Set unk54 and every unk2c entry to -1.
+     * @param card Memory card object.
+     */
+    void func_00431730(LibMemoryCard* card);
+
+    /**
+     * @brief Read an unk2c entry.
+     * @param card Memory card object.
+     * @param index Entry index; the check lets 10 through, which reads unk54.
+     * @return The entry, or -1 when the index is out of range.
+     */
+    s32 func_00431770(LibMemoryCard* card, s32 index);
+
+    /**
+     * @brief Store a value from 0 to 10 in unk54.
+     * @param card Memory card object.
+     * @param value Value to store.
+     * @return 1 once stored, 0 when the value is out of range.
+     */
+    s32 func_004317B0(LibMemoryCard* card, s32 value);
+
+    /**
+     * @brief Start operation 0xC0 on the card in a slot for a named file.
+     * @param card Memory card object.
+     * @param slot Slot index.
+     * @param name File name, copied into the slot.
+     * @param unk78 Stored in the slot at 0x78.
+     * @param buffer Stored as the slot's buffer, without aligning it.
+     * @return 0 once started, -1 when the slot can't start an operation.
+     */
+    s32 func_004323E0(LibMemoryCard* card, u32 slot, const char* name, s32 unk78, u8* buffer);
+
+    /**
+     * @brief Start operation 0x40 on the card in a slot for a file request.
+     * @param card Memory card object.
+     * @param slot Slot index.
+     * @param request Files to work on; the slot keeps the pointer until it finishes.
+     * @return 0 once started, -1 when the slot can't start an operation.
+     */
+    s32 func_004324D0(LibMemoryCard* card, u32 slot, LibCardFileRequest* request);
+
+    /**
+     * @brief Start operation 0x20 on the card in a slot.
+     * @param card Memory card object.
+     * @param slot Slot index.
+     * @return 0 once started, -1 when the slot can't start an operation.
+     */
+    s32 func_004325A0(LibMemoryCard* card, u32 slot);
 }
 
 #endif

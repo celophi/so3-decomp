@@ -8,11 +8,13 @@ extern "C" {
 #endif
 
 /**
- * @brief Return -1.
- * @param object Unused receiver.
+ * @brief Register a named value with the debug display; this build's version does nothing and returns -1.
+ * @param name Name shown for the value, such as "StorageQueue Status".
+ * @param value Value to show.
+ * @param kind Unknown; both callers pass one.
  * @return -1.
  */
-s32 func_00121860(void* object);
+s32 func_00121860(const char* name, void* value, s32 kind);
 /** @brief Do nothing. */
 void func_00121870(void);
 /**

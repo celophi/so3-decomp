@@ -3,18 +3,9 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_001001E0.h"
 #include "main/resident_00101260.h"
+#include "main/resident_00121860.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
-
-#define D1_CHCR (*(volatile u32*)0x10009000)
-#define D1_QWC (*(volatile u32*)0x10009020)
-#define D1_TADR (*(volatile u32*)0x10009030)
-#define D_STAT (*(volatile u32*)0x1000E010)
-
-#define D_STAT_CHANNEL_1 0x2
-#define D_CHCR_FROM_MEMORY 0x1
-#define D_CHCR_CHAIN_MODE 0x4
-#define D_CHCR_START 0x100
 
 /** Chunk tags of the sound files, as they read in memory. */
 #define SOUND_TAG_SEQ 0x20514553
@@ -32,6 +23,7 @@ s32 DIntr(void);
 s32 EIntr(void);
 s32 SleepThread(void);
 void func_0010B510(ResidentStreamThread* thread, s32 command);
+void* func_0010B810(void* memory, ResidentSoundStream* stream);
 bool func_00114E00(ResidentThread* thread);
 u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 arg3, s32 arg4, s32 arg5);
 s32 func_4DC4F0(void* queue, u32 operation, u32 flags, void* packet, u32 value, void* completion);
@@ -47,6 +39,9 @@ extern const char D_0014D748[];
 /** "SLZ" and "SLE" block tags, as the stream decoder compares them. */
 extern const char D_0014D830[];
 extern const char D_0014D838[];
+
+/** "StorageQueue Status", the name the resource queue registers its status under. */
+extern const char D_0014D750[];
 
 /**
  * @brief Decrypt an SLE block's payload in place and retag the block as SLZ.
@@ -371,7 +366,87 @@ extern "C" s32 resident_poll_resource_queue(ResidentResourceQueue* queue)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102D50);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001031C0);
+/**
+ * @brief Notify the active request's completion callback, if it has one.
+ * @param queue Resident resource queue.
+ */
+static inline void notify_completion(ResidentResourceQueue* queue)
+{
+    if (queue->requests[queue->active_request].completion_callback)
+    {
+        queue->requests[queue->active_request].completion_callback->notify(&queue->requests[queue->active_request]);
+    }
+}
+
+/**
+ * @brief Finish the active request once the archive is done with it.
+ *
+ * Reads (kinds one and three) wait for the archive's read to end, and kind four waits for unk30 to clear. A finished
+ * request notifies its completion callback with the request and leaves the queued list.
+ *
+ * @param queue Resident resource queue.
+ * @return True when a request finished, so another pass may start more work.
+ */
+extern "C" bool func_001031C0(ResidentResourceQueue* queue)
+{
+    u8 busy = queue->archive->read_busy;
+
+    if (queue->cancel_pending && !busy)
+    {
+        queue->cancel_pending = 0;
+    }
+
+    if (queue->status)
+    {
+        switch (queue->requests[queue->active_request].request_kind)
+        {
+        case 0:
+            queue->status = 0;
+            break;
+
+        case 2:
+            queue->status = 0;
+            notify_completion(queue);
+            break;
+
+        case 1:
+            if (!busy)
+            {
+                queue->status = 0;
+                notify_completion(queue);
+            }
+            break;
+
+        case 3:
+            if (!busy)
+            {
+                queue->status = 0;
+                notify_completion(queue);
+            }
+            break;
+
+        case 4:
+            if (!queue->unk30)
+            {
+                queue->status = 0;
+                notify_completion(queue);
+            }
+            break;
+        }
+
+        if (!queue->status)
+        {
+            ResidentInterruptLock lock;
+
+            queue->requests[queue->requests[queue->active_request].previous].next = queue->requests[queue->active_request].next;
+            queue->requests[queue->requests[queue->active_request].next].previous = queue->requests[queue->active_request].previous;
+            queue->requests[queue->active_request].in_use = 0;
+            return true;
+        }
+    }
+
+    return false;
+}
 
 /**
  * @brief Update the object the archive passes back to the listener.
@@ -404,25 +479,22 @@ extern "C" void func_00103510(ResidentResourceQueue* queue)
     }
 }
 
-/**
- * @brief Process the queue under its semaphore until nothing more can start.
- * @param queue Resource queue.
- */
-extern "C" void func_00103580(ResidentResourceQueue* queue)
+/** @brief Process the queue under its semaphore until nothing more can start. */
+void ResidentResourceQueue::func_00104770()
 {
-    (void)queue->semaphore.wait();
+    (void)semaphore.wait();
 
-    if (queue->unk30)
+    if (unk30)
     {
-        queue->archive->unk70++;
+        archive->unk70++;
     }
 
     do
     {
-        func_00102D50(queue);
-    } while (func_001031C0(queue));
+        func_00102D50(this);
+    } while (func_001031C0(this));
 
-    (void)queue->semaphore.signal();
+    (void)semaphore.signal();
 }
 
 /**
@@ -485,7 +557,79 @@ extern "C" s32 resident_find_resource_request(ResidentResourceQueue* queue, s32 
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001037E0);
+/**
+ * @brief Queue a request of kind four, which carries an object instead of a read.
+ * @param queue Resident resource queue.
+ * @param priority Lower values run first; minus one inserts at the front.
+ * @param context Object the request carries.
+ * @param tag Tag retained for later lookup and cancellation.
+ * @param completion_callback Optional callback object notified when the request finishes.
+ * @return True when queued, or false when no request slot remains.
+ */
+extern "C" bool func_001037E0(ResidentResourceQueue* queue, s32 priority, ResidentListener* context, u32 tag, void* completion_callback)
+{
+    ResidentInterruptLock lock;
+    s32 index;
+
+    for (index = 1; index < queue->request_capacity; index++)
+    {
+        if (!queue->requests[index].in_use)
+        {
+            break;
+        }
+    }
+
+    if (index == queue->request_capacity)
+    {
+        return false;
+    }
+
+    queue->requests[index].in_use = 1;
+    queue->requests[index].state = 0;
+    queue->requests[index].tag = tag;
+    queue->requests[index].file_key = 0;
+    queue->requests[index].buffer = 0;
+    queue->requests[index].priority = priority;
+    queue->requests[index].request_kind = 4;
+    queue->requests[index].completion_callback = static_cast<ResidentListener*>(completion_callback);
+    queue->requests[index].context = context;
+    queue->requests[index].byte_count = 0;
+    queue->requests[index].file_offset = 0;
+
+    if (priority == -1)
+    {
+        queue->requests[index].next = queue->requests[0].next;
+        queue->requests[index].previous = 0;
+        queue->requests[queue->requests[0].next].previous = index;
+        queue->requests[0].next = index;
+    }
+    else
+    {
+        s32 next = 0;
+
+        for (;;)
+        {
+            next = queue->requests[next].next;
+
+            if (next == 0)
+            {
+                break;
+            }
+
+            if (priority < queue->requests[next].priority)
+            {
+                break;
+            }
+        }
+
+        queue->requests[index].next = next;
+        queue->requests[index].previous = queue->requests[next].previous;
+        queue->requests[queue->requests[next].previous].next = index;
+        queue->requests[next].previous = index;
+    }
+
+    return true;
+}
 
 /**
  * @brief Queue a request of kind three, which reads from an offset into the file.
@@ -497,20 +641,214 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001037E0)
  * @param tag Tag retained for later lookup and cancellation.
  * @param priority Lower values run first; minus one inserts at the front.
  * @param completion_callback Optional callback object notified when the request finishes.
- * @return One when queued, or zero when the file key is zero or no request slot remains.
+ * @return True when queued, or false when the file key is zero or no request slot remains.
  */
-extern "C" s32 func_00103AE0(ResidentResourceQueue* queue, s32 file_key, void* buffer, s32 file_offset, u32 byte_count,
-                             u32 tag, s32 priority, void* completion_callback)
+extern "C" bool func_00103AE0(ResidentResourceQueue* queue, s32 file_key, void* buffer, s32 file_offset, u32 byte_count,
+                              u32 tag, s32 priority, void* completion_callback)
 {
     return resident_queue_resource_request(queue, file_key, buffer, tag, priority, completion_callback, byte_count,
                                            file_offset, 3);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_cancel_resource_requests);
+/**
+ * @brief Stop the read the archive is doing for the active request, then mark the queue as changed.
+ * @param queue Resident resource queue.
+ */
+static inline void cancel_active_read(ResidentResourceQueue* queue)
+{
+    if (queue->status)
+    {
+        switch (queue->requests[queue->active_request].request_kind)
+        {
+        case 0:
+        case 2:
+            queue->requests[queue->active_request].state = 0;
+            queue->status = 0;
+            break;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_queue_resource_request);
+        case 1:
+        case 3:
+            queue->requests[queue->active_request].state = 0;
+            func_0011C8E0(queue->archive);
+            queue->cancel_pending = 1;
+            queue->status = 0;
+            break;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001041C0);
+        case 4:
+            break;
+        }
+    }
+
+    queue->unk2e = 1;
+}
+
+/**
+ * @brief Remove every matching request and cancel its active read when applicable.
+ * @param queue Resident resource queue.
+ * @param file_key File key to match, or zero to accept any key.
+ * @param buffer_address Destination address to match, or zero to accept any address.
+ * @param tag Exact request tag to match, or zero to accept any tag.
+ * @param byte_count Read length to match, or 0xFFFFFFFF to accept any length.
+ * @param request_kind Request kind to match in the low byte, or zero to accept any kind.
+ */
+extern "C" void resident_cancel_resource_requests(ResidentResourceQueue* queue, s32 file_key, u32 buffer_address,
+                                                  u32 tag, u32 byte_count, s32 request_kind)
+{
+    s32 index = 0;
+    ResidentInterruptLock lock;
+
+    for (;;)
+    {
+        index = queue->requests[index].next;
+
+        if (index == 0)
+        {
+            return;
+        }
+
+        if (tag != 0 && tag != queue->requests[index].tag)
+        {
+            continue;
+        }
+
+        if (file_key != 0 && file_key != queue->requests[index].file_key)
+        {
+            continue;
+        }
+
+        if (buffer_address != 0 && queue->requests[index].buffer != (void*)buffer_address)
+        {
+            continue;
+        }
+
+        if (byte_count != 0xFFFFFFFF && byte_count != queue->requests[index].byte_count)
+        {
+            continue;
+        }
+
+        if ((u8)request_kind != 0 && (u8)request_kind != queue->requests[index].request_kind)
+        {
+            continue;
+        }
+
+        queue->requests[queue->requests[index].previous].next = queue->requests[index].next;
+        queue->requests[queue->requests[index].next].previous = queue->requests[index].previous;
+        queue->requests[index].in_use = 0;
+
+        if (queue->requests[index].state)
+        {
+            cancel_active_read(queue);
+            queue->unk2e = 0;
+        }
+    }
+}
+
+/**
+ * @brief Queue a resource request in priority order, then start the queue when called with interrupts enabled.
+ * @param queue Resident resource queue.
+ * @param file_key Nonzero file key for the request.
+ * @param buffer Destination buffer.
+ * @param tag Tag retained for later lookup and cancellation.
+ * @param priority Lower values run first; minus one inserts at the front.
+ * @param completion_callback Optional callback object notified when the request finishes.
+ * @param byte_count Read length passed to the resource backend.
+ * @param file_offset Offset applied when selecting a file for request kinds two and three.
+ * @param request_kind Request kind.
+ * @return True when queued, or false when the file key is zero or no request slot remains.
+ */
+extern "C" bool resident_queue_resource_request(ResidentResourceQueue* queue, s32 file_key, void* buffer, u32 tag, s32 priority,
+                                     void* completion_callback, u32 byte_count, s32 file_offset, u8 request_kind)
+{
+    if (file_key == 0)
+    {
+        return false;
+    }
+
+    ResidentInterruptLock lock;
+    s32 index;
+
+    for (index = 1; index < queue->request_capacity; index++)
+    {
+        if (!queue->requests[index].in_use)
+        {
+            break;
+        }
+    }
+
+    if (index == queue->request_capacity)
+    {
+        return false;
+    }
+
+    queue->requests[index].in_use = 1;
+    queue->requests[index].state = 0;
+    queue->requests[index].tag = tag;
+    queue->requests[index].file_key = file_key;
+    queue->requests[index].buffer = buffer;
+    queue->requests[index].priority = priority;
+    queue->requests[index].request_kind = request_kind;
+    queue->requests[index].completion_callback = static_cast<ResidentListener*>(completion_callback);
+    queue->requests[index].byte_count = byte_count;
+    queue->requests[index].file_offset = file_offset;
+
+    if (priority == -1)
+    {
+        queue->requests[index].next = queue->requests[0].next;
+        queue->requests[index].previous = 0;
+        queue->requests[queue->requests[0].next].previous = index;
+        queue->requests[0].next = index;
+    }
+    else
+    {
+        s32 next = 0;
+
+        for (;;)
+        {
+            next = queue->requests[next].next;
+
+            if (next == 0)
+            {
+                break;
+            }
+
+            if (priority < queue->requests[next].priority)
+            {
+                break;
+            }
+        }
+
+        queue->requests[index].next = next;
+        queue->requests[index].previous = queue->requests[next].previous;
+        queue->requests[queue->requests[next].previous].next = index;
+        queue->requests[next].previous = index;
+    }
+
+    if (lock.was_enabled())
+    {
+        lock.unlock();
+        func_00102D50(queue);
+    }
+
+    return true;
+}
+
+/** @brief Cancel the active read, then empty the request table and its queued list. @param queue Resident resource queue. */
+extern "C" void func_001041C0(ResidentResourceQueue* queue)
+{
+    cancel_active_read(queue);
+
+    ResidentInterruptLock lock;
+
+    queue->unk2e = 0;
+    queue->requests[0].next = 0;
+    queue->requests[0].previous = 0;
+    queue->requests[0].in_use = 1;
+
+    for (s32 index = 1; index < queue->request_capacity; index++)
+    {
+        queue->requests[index].in_use = 0;
+    }
+}
 
 /**
  * @brief Replace the request table with an empty one.
@@ -539,9 +877,33 @@ extern "C" void func_001043F0(ResidentResourceQueue* queue)
     func_0011D320(queue->archive, &queue->listener, queue);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", __dt__21ResidentResourceQueueFv);
+/** @brief Stop listening to the archive and free the request table. */
+ResidentResourceQueue::~ResidentResourceQueue()
+{
+    func_0011D320(archive, 0, 0);
+    delete[] requests;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001044F0);
+/** @brief Create the semaphore, register with the archive and allocate a 256-entry request table. */
+ResidentResourceQueue::ResidentResourceQueue()
+{
+    requests = 0;
+    status = 0;
+    unk2e = 0;
+    archive = resident_get_archive(resident_get_system());
+    cancel_pending = 0;
+    unk30 = 0;
+    unk2c = 0;
+
+    SemaParam param;
+    param.initCount = 1;
+    param.maxCount = 1;
+    semaphore.id = CreateSema(&param);
+
+    func_0011D320(archive, &listener, this);
+    func_00121860(D_0014D750, &status, 1);
+    func_00104370(this, 0x100);
+}
 
 /**
  * @brief Return the object's kind.
@@ -709,9 +1071,52 @@ extern "C" u32 func_00105AE0(ResidentSoundStream* stream, void* reply, s32 arg2,
     return func_0010C200(&D_001CC590, 0x1C, reply, arg2, arg3, 0);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00105BF0);
+/**
+ * @brief Send sound stream command 0x1B to the IOP with four values in the argument block.
+ * @param stream Sound stream; unused.
+ * @param value0 First value.
+ * @param value1 Second value.
+ * @param value2 Third value.
+ * @param value3 Fourth value.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00105BF0(ResidentSoundStream* stream, s32 value0, s32 value1, s32 value2, s32 value3)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00105DD0);
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    arguments[0] = value0;
+    arguments[1] = value1;
+    arguments[2] = value2;
+    arguments[3] = value3;
+    return func_0010C200(&D_001CC590, 0x1B, 0, 0, 0, 0);
+}
+
+/**
+ * @brief Send sound stream command 0x19 to the IOP with an empty argument block.
+ * @param stream Sound stream; unused.
+ * @param reply Receives the reply, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+extern "C" u32 func_00105DD0(ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3)
+{
+    ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+    u32* arguments = D_001CC590.get_request_arguments();
+
+    if (!arguments)
+    {
+        return 0;
+    }
+
+    return func_0010C200(&D_001CC590, 0x19, reply, arg2, arg3, 0);
+}
 
 /**
  * @brief Read the word at offset 0x14 of a SEQW file header.
@@ -1457,7 +1862,8 @@ extern "C" u32 func_00108640(void* object, s32 arg1, s32 arg2, s32 arg3)
  * @param value3 Fourth value.
  * @return Request handle, or zero when no reply slot is free.
  */
-extern "C" u32 func_00108800(ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, s32 value0, s32 value1, s32 value2, s32 value3)
+extern "C" u32 func_00108800(ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, u32 value0, u32 value1, u32 value2,
+                             u32 value3)
 {
     ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
     u32* arguments = D_001CC590.get_request_arguments();
@@ -1610,9 +2016,70 @@ extern "C" s32 func_00109000(ResidentSoundStream* stream, u32 arg1, u32 arg2, u3
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", __dt__19ResidentSoundStreamFv);
+/** @brief Free the queues, the loaded files and the stream thread. */
+ResidentSoundStream::~ResidentSoundStream()
+{
+    for (s32 index = 0; index < 4; index++)
+    {
+        if (channels[index].slot)
+        {
+            operator delete(slots[channels[index].slot]);
+        }
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001093E0);
+    for (s32 slot = 0; slot < 32; slot++)
+    {
+        if (slots[slot] != 0)
+        {
+            operator delete(slots[slot]);
+        }
+    }
+
+    delete sequence_queue;
+    delete bank_queue;
+    delete thread;
+}
+
+/** @brief Create the stream thread and the two request queues, with every channel and slot empty. */
+ResidentSoundStream::ResidentSoundStream()
+{
+    unk44 = 0;
+
+    // TODO: The stream thread's constructor is still assembly under a C name, so I've written its new expression out
+    // by hand.
+    void* memory = operator new(sizeof(ResidentStreamThread), 0);
+
+    if (memory != 0)
+    {
+        memory = func_0010B810(memory, this);
+    }
+
+    thread = static_cast<ResidentStreamThread*>(memory);
+    waiting = 0;
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        channels[i].size = 0;
+        channels[i].slot = 0;
+    }
+
+    bank_state = 0;
+    bank_queue = new (0) ResidentBankRequest[32];
+    bank_read = bank_queue;
+    bank_write = bank_queue;
+    bank_queue_end = bank_queue + 32;
+    sequence_state = 0;
+    sequence_address = 0;
+    sequence_queue = new (0) ResidentSequenceRequest[32];
+    sequence_read = sequence_queue;
+    sequence_write = sequence_queue;
+    sequence_queue_end = sequence_queue + 32;
+
+    for (s32 slot = 0; slot < 32; slot++)
+    {
+        slots[slot] = 0;
+    }
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109510);
 
@@ -1628,17 +2095,17 @@ extern "C" void func_00109BE0(ResidentStreamDma* dma, u32 channel)
     switch (dma->phase)
     {
         case 1:
-            D1_QWC = 0;
-            D1_TADR = (u32)D_00148400 & 0x0FFFFFFF;
-            D_STAT = D_STAT_CHANNEL_1;
-            D1_CHCR = D_CHCR_START | D_CHCR_CHAIN_MODE | D_CHCR_FROM_MEMORY;
+            *D1_QWC = 0;
+            *D1_TADR = (u32)D_00148400 & 0x0FFFFFFF;
+            *D_STAT = D_STAT_CIS1;
+            *D1_CHCR = DMA_CHCR_START | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
             break;
 
         case 2:
-            D1_QWC = 0;
-            D1_TADR = (u32)D_0014A9E0 & 0x0FFFFFFF;
-            D_STAT = D_STAT_CHANNEL_1;
-            D1_CHCR = D_CHCR_START | D_CHCR_CHAIN_MODE | D_CHCR_FROM_MEMORY;
+            *D1_QWC = 0;
+            *D1_TADR = (u32)D_0014A9E0 & 0x0FFFFFFF;
+            *D_STAT = D_STAT_CIS1;
+            *D1_CHCR = DMA_CHCR_START | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
             break;
     }
 }

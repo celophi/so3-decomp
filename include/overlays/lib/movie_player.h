@@ -71,6 +71,9 @@ public:
     /** @brief Initialize the decoder. */
     LibMovieDecoder();
 
+    /** @brief Destroy the decoder. */
+    ~LibMovieDecoder();
+
     u8 unk00[0xCE580];
 
     /** Buffer the stream state points at. */
@@ -172,8 +175,27 @@ public:
     /** @brief Destroy the player. */
     virtual ~LibMoviePlayer();
 
+    /**
+     * @brief Report the list kind used when registration requests the default.
+     * @return The player's list kind.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Advance playback. */
+    virtual void update();
+
     /** @brief Queue the player's frame packet for VIF1 DMA. */
     virtual void render();
+
+    /** @brief Stop the movie if it's playing, then detach and queue the player. */
+    virtual void destroy();
+
+    /**
+     * @brief Build the next frame's packet when the decoder has one ready.
+     * @param matrix Matrix supplied by the caller; unused.
+     * @param context Opaque caller context; unused.
+     */
+    virtual void build_packet(const void* matrix, void* context);
 
     /**
      * @brief Send the frame packet at unk15E7A4 on VIF1.

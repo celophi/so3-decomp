@@ -13,7 +13,7 @@ struct LibMeshHeader
 {
     u8 unk00[4];
     u32 unk04;
-    u8 unk08[4];
+    u32 unk08;
 
     /** Bounding sphere centre. */
     float sphere_center[3];
@@ -171,6 +171,22 @@ public:
     s32 apply_payload(class LibModel* model);
 
     /**
+     * @brief Make the model draw one packet set's payload.
+     * @param set Packet set to select; only set zero when the list has a single payload.
+     * @return The previously selected set, or -1 when the set isn't available.
+     */
+    s32 select_payload_set(u8 set);
+
+    /** @brief Once the list is empty, detach it, clear the model's payload and free the payload buffers. */
+    void release_model();
+
+    /**
+     * @brief Allocate a packet set's payload buffer for the model's payload, then build the payload in it.
+     * @param set Packet set; set one is skipped when the list has a single payload.
+     */
+    void allocate_payload(s32 set);
+
+    /**
      * @brief Test whether the list has the payloads it needs.
      * @return Whether it has.
      */
@@ -178,20 +194,118 @@ public:
     {
         if (unk8d_0)
         {
-            return unk74 != 0;
+            return payload_buffers[0] != 0;
         }
 
-        return unk74 != 0 && unk78 != 0;
+        return payload_buffers[0] != 0 && payload_buffers[1] != 0;
     }
 
-    u8 unk14[0x60];
-    u32 unk74;
-    u32 unk78;
-    void* unk7c;
-    u8 unk80[0xD];
+    u8 unk14[0x40];
+
+    /** Model the payloads are drawn by. */
+    class LibModel* model;
+
+    u8 unk58[4];
+    void* unk5c;
+    void* unk60;
+    u8 unk64[4];
+    void* unk68;
+    void* unk6c;
+    void* unk70;
+
+    /** Buffer each packet set's payload is built in. */
+    void* payload_buffers[LIB_MODEL_PACKET_SET_COUNT];
+
+    /** Payload handed to the model for each packet set. */
+    void* payloads[LIB_MODEL_PACKET_SET_COUNT];
+
+    u8 unk84[6];
+
+    /** Packet set last selected. */
+    u8 payload_set;
+
+    u8 unk8b[2];
     u8 unk8d_0 : 1;
     u8 unk8d_1_7 : 7;
     u8 unk8e[2];
+};
+
+/** Partial bit array whose words are owned or borrowed, with vtable D_177A10 in main data; its data comes before the vptr. */
+class LibResourceBitset
+{
+public:
+    u32 bit_count;
+    u32 word_count;
+    u32* words;
+
+    /** Nonzero when words is borrowed and must not be freed. */
+    u8 words_are_borrowed;
+
+    u8 unk0d[3];
+
+    /** @brief Start with no words. */
+    LibResourceBitset() : words(0), words_are_borrowed(0)
+    {
+    }
+
+    /** @brief Release the word buffer when it is owned by this object. */
+    virtual ~LibResourceBitset()
+    {
+        if (!words_are_borrowed)
+        {
+            delete[] words;
+        }
+    }
+};
+
+/** Partial entry of a LibClass177A20 list, with vtable D_1779F0 in main data. */
+class LibClass1779F0 : public LibListSentinel
+{
+public:
+    /** @brief Start unattached, with no data. */
+    LibClass1779F0();
+
+    /** @brief Leave the list, then free the data unless it's borrowed. */
+    virtual ~LibClass1779F0();
+
+    /**
+     * @brief Use data the entry doesn't own.
+     * @param value Borrowed data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    virtual void func_slot10() = 0;
+
+    /**
+     * @brief Return the entry's type code.
+     * @return Zero for the base entry.
+     */
+    virtual s32 func_slot14();
+
+    virtual s32 func_slot18();
+
+    /**
+     * @brief Add the entry to a model's child list, binding the list to the model first.
+     * @param model Model whose children list to join.
+     * @param links Display list passed on to the list's binding.
+     */
+    void attach(class LibModel* model, LibUpdateList* links);
+
+    /** Nonzero when data is borrowed and must not be freed. */
+    u8 data_is_borrowed;
+
+    u8 listed;
+    u8 unk0e;
+    u8 unk0f;
+
+    /** List the entry is in, or null. */
+    LibClass177A20* list;
+
+    void* data;
+    u8 unk18;
+    u8 unk19;
+    u8 unk1a[2];
+    LibResourceBitset bits;
 };
 
 /** Partial model base that draws a mesh resource, with vtable D_178D10 in main data. */
@@ -304,6 +418,18 @@ struct LibTextureUpload
     u32 mscal;
 
     u8 unk64[0x1C];
+};
+
+/** Values a model writes into one of its part records. */
+struct LibModelPartSetting
+{
+    u32 first_value;
+    u32 second_value;
+
+    /** Bit 0 applies first_value, bit 1 second_value. */
+    u8 flags;
+
+    u8 unk09[3];
 };
 
 /** Chain of DMA tags that calls a model's packets. */
@@ -486,6 +612,18 @@ public:
     /** @brief Allocate and fill the model's packets from its mesh. */
     virtual void build_packets();
 
+    /** @brief Update each render channel when the mesh asks for it. */
+    void update_render_channels();
+
+    /** @brief Write the pending part settings into the part records' GIF tags, then free them. */
+    void apply_part_settings();
+
+    /**
+     * @brief Test whether any part of the mesh blends with an ALPHA setting weighted by destination alpha.
+     * @return Nonzero when one does.
+     */
+    s32 func_004A2870();
+
     /** @brief Virtual slot 0xF0. */
     virtual void func_slotF0();
 
@@ -520,8 +658,12 @@ public:
     u8 unk748[0x20];
     void* unk768;
     void* unk76c;
-    void* unk770;
-    u8 unk774[8];
+
+    /** Settings apply_part_settings writes into the part records, unk774 of them; freed afterwards. */
+    LibModelPartSetting* unk770;
+
+    s32 unk774;
+    s32 unk778;
     u32 unk77c;
     u32 unk780;
     u8 unk784[4];

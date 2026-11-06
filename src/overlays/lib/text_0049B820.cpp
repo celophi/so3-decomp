@@ -6,8 +6,11 @@
 #include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
 #include "main/func_0011EE00.h"
+#include "main/resident_00101260.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/transform_owner_inlines.h"
 #include "ee.h"
+#include "clamp.h"
 #include "gs.h"
 #include "vu0.h"
 #include "sdk/main/libkernl_00121940.h"
@@ -16,13 +19,18 @@
 /** FGE as it sits in the upper word of a GIF tag's first doubleword. */
 #define GIF_TAG_HIGH_PRIM_FGE ((u32)(GIF_TAG_PRIM(GS_PRIM_FGE) >> 32))
 
+/** ABE as it sits in the upper word of a GIF tag's first doubleword. */
+#define GIF_TAG_HIGH_PRIM_ABE ((u32)(GIF_TAG_PRIM(GS_PRIM_ABE) >> 32))
+
 /** Byte size of each part record in the model's part table. */
 #define LIB_MODEL_PART_SIZE 0xF0
 
 /** Partial part record in the model's part table: the upper tag words of its GIF tags, written uncached. */
 struct LibModelPart
 {
-    u8 unk00[0x64];
+    u8 unk00[0x20];
+    u32 unk20;
+    u8 unk24[0x40];
     u32 first_tag_high;
     u8 unk68[0xC];
     u32 second_tag_high;
@@ -31,11 +39,24 @@ struct LibModelPart
     /** Nonzero when the part has the second pair of GIF tags. */
     u32 unk84;
 
-    u8 unk88[0x3C];
+    u8 unk88[8];
+    u32 unk90;
+    u8 unk94[8];
+    u32 unk9c;
+    u8 unka0[0x24];
     u32 third_tag_high;
     u8 unkc8[0xC];
     u32 fourth_tag_high;
     u8 unkd8[0x18];
+};
+
+/** Partial part record in a mesh resource; the model's copy of its part starts at 0x40. */
+struct LibMeshPartRecord
+{
+    u8 unk00[0x14];
+    u16 unk14;
+    u8 unk16[0x2A];
+    LibModelPart part;
 };
 
 /**
@@ -83,8 +104,17 @@ struct LibCullBox
 /** Header quadwords of the part table. */
 #define LIB_MODEL_TABLE_HEADER_QWORDS 8
 
+/** Bytes a payload buffer gets on top of the model's payload size. */
+#define LIB_PAYLOAD_BUFFER_EXTRA 0x80
+
 /** Heap model packets come from when set; otherwise they're malloc'd. */
 extern "C" void* D_001B659C;
+
+/** Heap payload buffers come from when set; otherwise they're malloc'd. */
+extern "C" void* D_001B65A8;
+
+/** Resident hit-test flags; bit 0 is set when a hit-test node is removed. */
+extern "C" u8 D_001B65D0;
 
 /** VU1 microprogram that uploads a model's textures. */
 extern "C" u8 D_678[];
@@ -95,18 +125,40 @@ extern "C" u8 D_678[];
  */
 extern "C" void func_004A7C20(LibModel* model);
 
-/** Partial word-array owner with its native virtual pointer after the data fields. */
-class LibResourceBitset
-{
-public:
-    u8 unk00[8];
-    u32* words;
-    u8 words_are_borrowed;
-    u8 unk0d[3];
+/**
+ * @brief Bind a child list to a model and add it to a display list.
+ * @param list List to bind.
+ * @param model Model the list's payloads are drawn by.
+ * @param links Display list the list is added to.
+ */
+extern "C" void func_004AB360(LibClass177A20* list, LibModel* model, LibUpdateList* links);
 
-    /** @brief Release an owned word buffer. */
-    virtual ~LibResourceBitset();
-};
+/**
+ * @brief Point a resource's record cursor at its first part record.
+ * @param resource Resource to rewind.
+ */
+extern "C" void func_004D5C10(LibResourceBuffer* resource);
+
+/**
+ * @brief Return the record at a resource's cursor and move the cursor to the next one.
+ * @param resource Resource to read.
+ * @return The record, or null at the end.
+ */
+extern "C" void* func_004D5AC0(LibResourceBuffer* resource);
+
+/**
+ * @brief Return the size of the payload a model draws.
+ * @param model Model to measure.
+ * @return Size in bytes.
+ */
+extern "C" u32 func_004D5F50(LibModel* model);
+
+/**
+ * @brief Build a packet set's payload in its buffer.
+ * @param list List whose payload to build.
+ * @param set Packet set.
+ */
+extern "C" void func_004AAFF0(LibClass177A20* list, s32 set);
 
 /**
  * @brief Add three components to a copied vector, preserving the fourth.
@@ -165,7 +217,46 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049E440);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049EB80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049EC70);
+/**
+ * @brief Copy another grid's size, emission settings and storage settings.
+ * @param source Grid to copy.
+ */
+void LibClass177090::copy_settings(const LibClass173A40* source)
+{
+    const LibClass177090* other = static_cast<const LibClass177090*>(source);
+
+    unk0c = other->unk0c;
+    unk10 = other->unk10;
+    resize(unk0c, unk10);
+    unk28 = other->unk28;
+    unk30 = other->unk30;
+    unk34 = other->unk34;
+    unk38 = other->unk38;
+    unk48 = other->unk48;
+    unk4c = other->unk4c;
+    unk4d = other->unk4d;
+    unk4e = other->unk4e;
+    unk4f = other->unk4f;
+    unk50 = other->unk50;
+    unk54 = other->unk54;
+    unk55 = other->unk55;
+    unk3c = other->unk3c;
+    unka0 = other->unka0;
+    unka4 = other->unka4;
+    unkb8 = other->unkb8;
+    unkbc = other->unkbc;
+    unkc0 = other->unkc0;
+    unkc4 = other->unkc4;
+    unkc8 = other->unkc8;
+    // TODO: The copy marks its own storage borrowed by storing the same pointers back. I think this was
+    // an inline setter given unkb0 and unkb4, but every helper form I tried loads them in the other order.
+    void* first = unkb0;
+    void* second = unkb4;
+    unkc9 = 1;
+    unkb0 = first;
+    unkb4 = second;
+    unkc4 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049ED80);
 
@@ -173,13 +264,57 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A02D0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A03C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0460);
+/** @brief Start with no storage. */
+LibClass177090::LibClass177090()
+{
+    unkc8 = 0;
+    unkc9 = 0;
+    unkb8 = 0;
+    unkbc = 0;
+    unkb0 = 0;
+    unkb4 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A04F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0550);
+/** @brief Start with no storage. */
+LibClass174120::LibClass174120()
+{
+    unkc8 = 0;
+    unkc9 = 0;
+    unkb8 = 0;
+    unkbc = 0;
+    unkb0 = 0;
+    unkb4 = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A05E0);
+/**
+ * @brief Copy another grid's size and emission settings.
+ * @param source Grid to copy.
+ */
+void LibClass176FC0::copy_settings(const LibClass173A40* source)
+{
+    const LibClass176FC0* other = static_cast<const LibClass176FC0*>(source);
+
+    unk0c = other->unk0c;
+    unk10 = other->unk10;
+    resize(unk0c, unk10);
+    unk28 = other->unk28;
+    unk30 = other->unk30;
+    unk34 = other->unk34;
+    unk38 = other->unk38;
+    unk48 = other->unk48;
+    unk4c = other->unk4c;
+    unk4d = other->unk4d;
+    unk4e = other->unk4e;
+    unk4f = other->unk4f;
+    unk50 = other->unk50;
+    unk54 = other->unk54;
+    unk55 = other->unk55;
+    unk3c = other->unk3c;
+    unka0 = other->unka0;
+    unka4 = other->unka4;
+}
 
 void func_004A06B0(void* object, const void* source)
 {
@@ -192,19 +327,82 @@ void func_004A06B0(void* object, const void* source)
     receiver->values60[3] = values->values150[3];
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A06E0);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass1771A0::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0720);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass177270::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0760);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass177340::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A07A0);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass177410::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A07E0);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass1774E0::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0820);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass1775B0::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0860);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass177680::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
 void func_004A08A0(void* object)
 {
@@ -284,9 +482,27 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A1D10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A1E90);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2060);
+/** @brief Start with no storage. */
+LibClass174240::LibClass174240()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A20C0);
+/** @brief Start with no storage. */
+LibClass177750::LibClass177750()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2120);
 
@@ -325,7 +541,16 @@ float func_004A2260(void* object)
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2270);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass177750::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
 float func_004A22B0(void* object)
 {
@@ -336,7 +561,47 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A22C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2370);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2870);
+/**
+ * @brief Test whether any part of the mesh blends with an ALPHA setting weighted by destination alpha.
+ *
+ * As I read them, 0x54, 0x58 and 0x52 are ALPHA register values with C = Ad: plain, additive and subtractive
+ * blending.
+ * @return Nonzero when one does.
+ */
+s32 LibModel::func_004A2870()
+{
+    if (resource == 0)
+    {
+        return 0;
+    }
+
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(resource));
+    s32 count = mesh->part_count;
+    func_004D5C10(resource);
+
+    for (s32 index = 0; index < count; index++)
+    {
+        LibMeshPartRecord* record =
+            reinterpret_cast<LibMeshPartRecord*>(reinterpret_cast<u32>(func_004D5AC0(resource)) | UNCACHED_SEGMENT);
+
+        if (record->unk14 & 1)
+        {
+            LibModelPart* part = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(&record->part) | UNCACHED_SEGMENT);
+
+            if (part->unk20 == 0x54 || part->unk20 == 0x58 || part->unk20 == 0x52)
+            {
+                return 1;
+            }
+
+            if (part->unk9c != 0 && (part->unk90 == 0x54 || part->unk90 == 0x58 || part->unk90 == 0x52))
+            {
+                return 1;
+            }
+        }
+    }
+
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A29D0);
 
@@ -671,7 +936,48 @@ s32 func_004A4570(void* object)
     return func_00114100(g_vif1_dma_queue, submission);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A45A0);
+/** @brief Write the pending part settings into the part records' GIF tags, then free them. */
+void LibModel::apply_part_settings()
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(resource));
+    s32 part_count = mesh->part_count;
+    u8** table;
+
+    if (unk768 != 0)
+    {
+        table = reinterpret_cast<u8**>(static_cast<u8*>(unk768) + part_count * 12);
+    }
+    else
+    {
+        table = reinterpret_cast<u8**>(static_cast<u8*>(unk76c) + part_count * 12);
+    }
+
+    s32 count = unk774;
+
+    for (s32 index = 0; index < count; index++)
+    {
+        LibModelPartSetting* setting = &unk770[index];
+        LibModelPart* part = reinterpret_cast<LibModelPart*>(
+            reinterpret_cast<u32>(reinterpret_cast<u8**>(table[index + unk778])[1]) | EE_UNCACHED_ACCELERATED);
+
+        if (setting->flags & 1)
+        {
+            part->unk20 = setting->first_value;
+            part->first_tag_high &= ~GIF_TAG_HIGH_PRIM_ABE;
+            part->second_tag_high &= ~GIF_TAG_HIGH_PRIM_ABE;
+        }
+
+        if (setting->flags & 2)
+        {
+            part->unk90 = setting->second_value;
+            part->third_tag_high &= ~GIF_TAG_HIGH_PRIM_ABE;
+            part->fourth_tag_high &= ~GIF_TAG_HIGH_PRIM_ABE;
+        }
+    }
+
+    delete unk770;
+    unk770 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4710);
 
@@ -707,11 +1013,86 @@ void LibRenderChannel::update()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A6D20);
+/**
+ * @brief Look up an image's texture and record a hit for a slot, raising a user-owned texture's priority.
+ * @param image Image header whose name and ID identify the texture.
+ * @param slot Slot whose last hit is recorded.
+ * @param user Object that would own the texture; unused.
+ * @return Zero on a hit or for an 'MlPs' image, one when the texture still has to be loaded.
+ */
+s32 LibTextureCache::func_004A6D20(const LibImageHeader* image, s32 slot, LibTextureUser* user)
+{
+    u32 index = next[0];
+    u32 id = image->id;
+    u32 tag = *reinterpret_cast<const u32*>(image->name);
+
+    while (index != 0)
+    {
+        if (blocks[index].id == id && entries[index].tag == tag)
+        {
+            blocks[index].stamp = stamp;
+
+            if (entries[index].user == 0)
+            {
+                if (next[0] != index)
+                {
+                    move_to_front(index);
+                }
+
+                slot_entries[slot] = index;
+                return 0;
+            }
+            else
+            {
+                s32 priority = entries[index].user->priority;
+
+                if (next[0] != index && priority >= LIB_TEXTURE_PRIORITY_KEEP)
+                {
+                    move_to_front(index);
+                }
+
+                slot_entries[slot] = index;
+                priority++;
+                priority = clamp_high(priority, LIB_TEXTURE_PRIORITY_MAX);
+                entries[index].user->priority = priority;
+                return 0;
+            }
+        }
+
+        index = next[index];
+    }
+
+    if (tag == LIB_TEXTURE_TAG_MLPS)
+    {
+        return 0;
+    }
+
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A6EA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7030);
+/** @brief Clear the cache's stamp, the stamp of every block stamped 1, and the CLUT use flags. */
+void LibTextureCache::clear_stamps()
+{
+    stamp = 0;
+
+    for (u32 index = blocks[0].next_block; index != 0; index = blocks[index].next_block)
+    {
+        if (blocks[index].stamp == 1)
+        {
+            blocks[index].stamp = 0;
+        }
+    }
+
+    unsigned __int128* flags = reinterpret_cast<unsigned __int128*>(clut_used);
+    s32 count = clut_count / 16;
+
+    for (s32 index = 0; index < count; index++)
+    {
+        *flags++ = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7100);
 
@@ -748,9 +1129,43 @@ void LibTextureCache::release_block(u32 index)
     blocks[index].state = LIB_TEXTURE_BLOCK_FREE;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A75F0);
+/** @brief Update each render channel when the mesh asks for it. */
+void LibModel::update_render_channels()
+{
+    if (payload != 0 && reinterpret_cast<LibMeshHeader*>(payload)->unk08 != 0)
+    {
+        LibListSentinel* node = &render_channels.sentinel;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7660);
+        for (;;)
+        {
+            node = node->next;
+
+            if (&render_channels.sentinel == node)
+            {
+                break;
+            }
+
+            static_cast<LibRenderChannel*>(node)->update();
+        }
+    }
+}
+
+/** @brief Advance the model; while the resource's first state bit is set, count unk793 up to four and set unk795. */
+void LibModel::update()
+{
+    if (D_001B65D0 & 1)
+    {
+        unk780 = 0;
+    }
+
+    if (resource != 0 && (resource->unk01 & 1) && unk793 < 4)
+    {
+        unk793++;
+        unk795 = 1;
+    }
+
+    LibModelBase::update();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A76D0);
 
@@ -964,9 +1379,76 @@ failed:
     after_packet = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8450);
+/** @brief Destroy the list receiver and its sentinel. */
+inline LibListReceiver::~LibListReceiver()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", __ct__8LibModelFv);
+/** @brief Release the channels and packets, then destroy the model. */
+LibModel::~LibModel()
+{
+    LibListSentinel* next = render_channels.sentinel.next;
+
+    for (;;)
+    {
+        if (&render_channels.sentinel == next)
+        {
+            break;
+        }
+
+        LibRenderChannel* channel = static_cast<LibRenderChannel*>(next);
+        next = next->next;
+        render_channels.unlink(channel);
+        delete channel;
+    }
+
+    delete packet;
+    delete override_packets[0];
+    delete override_packets[1];
+    delete base_packet;
+    delete texture_uploads;
+    delete unk768;
+    delete unk76c;
+    delete unk770;
+    delete unk720;
+    delete before_packet;
+    delete after_packet;
+}
+
+/** @brief Construct an empty model. */
+LibModel::LibModel()
+    : base_packet(0), packet(0), texture_uploads(0), unk720(0), parts(0), unk768(0), unk76c(0), unk770(0), unk77c(0),
+      unk780(0), payload(0), unk790(0), unk791(0), draw_bucket_choice(0), unk793(0), packet_set(0), unk795(0),
+      unk796(0), unk797_0(0), unk797_1(0), unk797_2(0), uses_payload_override(0), unk797_5(0), unk797_6(0),
+      unk797_7(0), unk798_0(0), unk798_2(0)
+{
+    source = 0;
+    set_type_id(0x100);
+    unk5a1 = 0;
+    packet_chains[0].tags[2][0] = DMA_TAG_ID_END;
+    packet_chains[1].tags[2][0] = DMA_TAG_ID_END;
+    override_packets[0] = 0;
+    override_packets[1] = 0;
+    unk7c0 = 1.0f;
+    unk7c4 = 1.0f;
+    unk7c8[0] = 0;
+    unk7c8[1] = 0;
+    unk7c8[2] = 0;
+    unk7c8[3] = 0;
+    unk7c8[4] = 0;
+    unk7c8[5] = 0;
+
+    for (s32 index = 0; index < 0x20; index++)
+    {
+        unk748[index] = 0;
+    }
+
+    unk7e0 = 0;
+    before_packet = 0;
+    after_packet = 0;
+    box_cull_enabled = 0;
+    FlushCache(0);
+}
 
 /**
  * @brief Report the base channel's empty entry set.
@@ -987,14 +1469,30 @@ void* LibRenderChannel::get_entry(s32 index)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8810);
+/** @brief Destroy the object. */
+LibClass177940::~LibClass177940()
+{
+}
 
-s32 func_004A88A0(void* object)
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Thirteen.
+ */
+s32 LibClass177940::get_default_list_kind()
 {
     return 13;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A88B0);
+/** @brief Draw the renderer's frame and wait for its packets, between two calls on the resident sound. */
+void LibClass177940::update()
+{
+    renderer->func_004D2C70();
+    frame_start_time = TIMER0_COUNT;
+    func_0010F250(func_00101270(resident_get_system()), 1);
+    renderer->func_004D44D0(0);
+    resident_sync_gs_path(g_input_system, 0, 0);
+    func_0010ECF0(func_00101270(resident_get_system()));
+}
 
 /** @brief Destroy the controller and its inherited transform state. */
 LibLodController::~LibLodController()
@@ -1036,7 +1534,73 @@ void LibLodController::copy_state(const LibLodController* source)
     LibTransform::copy_offset_transform_state(source);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8B10);
+/** @brief Show the objects of the level the camera distance falls in and hide the previous level's. */
+void LibLodController::update()
+{
+    LibClass179080* camera = static_cast<LibClass179080*>(static_cast<LibDisplayManager*>(display_manager)->current_display);
+
+    if (camera == 0)
+    {
+        return;
+    }
+
+    LibVector4 view;
+    vu0_start_microprogram_1f0_vf5_vf8(&camera->view_matrix);
+    vu0_start_microprogram_1b0_vf5(&translation);
+    vu0_wait_microprogram();
+    vu0_read_vf6(&view);
+    float distance;
+
+    if (view.z <= 1.0f)
+    {
+        distance = 8.0f;
+    }
+    else
+    {
+        distance = 640.0f / view.z;
+    }
+
+    s32 level = 0;
+
+    for (s32 index = 0; index < level_count; index++)
+    {
+        if (range_minimums[index] <= distance && !(range_maximums[index] <= distance))
+        {
+            level = index;
+            break;
+        }
+    }
+
+    if (active_level != level)
+    {
+        if (active_level >= 0)
+        {
+            for (s32 index = level_boundaries[active_level]; index < level_boundaries[active_level + 1]; index++)
+            {
+                if (index >= object_count)
+                {
+                    break;
+                }
+
+                LibTransformOwner* object = static_cast<LibTransformOwner*>(objects[index]);
+            object->draw_flags |= LIB_DRAW_FLAG_0008;
+            }
+        }
+
+        for (s32 index = level_boundaries[level]; index < level_boundaries[level + 1]; index++)
+        {
+            if (index >= object_count)
+            {
+                break;
+            }
+
+            LibTransformOwner* object = static_cast<LibTransformOwner*>(objects[index]);
+            object->draw_flags &= ~LIB_DRAW_FLAG_0008;
+        }
+    }
+
+    active_level = level;
+}
 
 /**
  * @brief Append a handle when the collection has fewer than sixty-four entries.
@@ -1071,24 +1635,54 @@ LibLodController::LibLodController()
     active_level = -1;
 }
 
-s32 func_004A8DD0(void* object)
+/**
+ * @brief Return the entry's type code.
+ * @return Zero for the base entry.
+ */
+s32 LibClass1779F0::func_slot14()
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8DE0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8E30);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8F10);
-
-/** @brief Release the word buffer when it is owned by this object. */
-LibResourceBitset::~LibResourceBitset()
+/**
+ * @brief Add the entry to a model's child list, binding the list to the model first.
+ * @param model Model whose children list to join.
+ * @param links Display list passed on to the list's binding.
+ */
+void LibClass1779F0::attach(LibModel* model, LibUpdateList* links)
 {
-    if (!words_are_borrowed)
+    LibClass177A20* children = &model->children;
+    list = children;
+    func_004AB360(children, model, links);
+    children->append(this);
+}
+
+/** @brief Leave the list, then free the data unless it's borrowed. */
+LibClass1779F0::~LibClass1779F0()
+{
+    if (list != 0)
     {
-        delete[] words;
+        list->unlink(this);
+        list->release_model();
+        list = 0;
     }
+
+    if (!data_is_borrowed)
+    {
+        delete data;
+    }
+}
+
+/** @brief Start unattached, with no data. */
+LibClass1779F0::LibClass1779F0()
+{
+    data_is_borrowed = 0;
+    data = 0;
+    list = 0;
+    listed = 1;
+    unk18 = 1;
+    unk19 = 0;
+    unk0f = 0;
 }
 
 s32 func_004A8FF0(void* object)
@@ -1098,11 +1692,57 @@ s32 func_004A8FF0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9000);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9070);
+/**
+ * @brief Make the model draw one packet set's payload.
+ * @param set Packet set to select; only set zero when the list has a single payload.
+ * @return The previously selected set, or -1 when the set isn't available.
+ */
+s32 LibClass177A20::select_payload_set(u8 set)
+{
+    if (set && unk8d_0)
+    {
+        return -1;
+    }
+
+    s32 previous = payload_set;
+    payload_set = set;
+    model->select_payload(payloads[payload_set], payload_set);
+    return previous;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", has_listed_entry__14LibClass177A20Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", apply_payload__14LibClass177A20FP8LibModel);
+/**
+ * @brief Hand the list's payload to a model, in one packet set or both.
+ * @param model Model to give the payload to.
+ * @return Nonzero on success.
+ */
+s32 LibClass177A20::apply_payload(LibModel* model)
+{
+    if (unk8d_0)
+    {
+        if (payload_buffers[0] == 0)
+        {
+            return 0;
+        }
+
+        model->load_payload(payloads[0], 0);
+    }
+    else
+    {
+        if (payload_buffers[0] == 0 || payload_buffers[1] == 0)
+        {
+            return 0;
+        }
+
+        for (s32 set = 0; set < LIB_MODEL_PACKET_SET_COUNT; set++)
+        {
+            model->load_payload(payloads[set], set);
+        }
+    }
+
+    return 1;
+}
 
 /**
  * @brief Queue the object's receiver for deferred destruction.
@@ -1143,9 +1783,59 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AA420);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AAFF0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AB1F0);
+/**
+ * @brief Allocate a packet set's payload buffer for the model's payload, then build the payload in it.
+ * @param set Packet set; set one is skipped when the list has a single payload.
+ */
+void LibClass177A20::allocate_payload(s32 set)
+{
+    if (unk8d_0 && set == 1)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AB2D0);
+    if (D_001B65A8 != 0)
+    {
+        if (payload_buffers[set] != 0)
+        {
+            resident_heap_release(payload_buffers[set]);
+        }
+
+        payload_buffers[set] = resident_heap_allocate(D_001B65A8, func_004D5F50(model) + LIB_PAYLOAD_BUFFER_EXTRA);
+    }
+    else
+    {
+        free_guess(payload_buffers[set]);
+        payload_buffers[set] = malloc_guess(func_004D5F50(model) + LIB_PAYLOAD_BUFFER_EXTRA);
+    }
+
+    if (payload_buffers[set] != 0)
+    {
+        FlushCache(0);
+        func_004AAFF0(this, set);
+    }
+}
+
+/** @brief Once the list is empty, detach it, clear the model's payload and free the payload buffers. */
+void LibClass177A20::release_model()
+{
+    if (model != 0 && node_count == 0)
+    {
+        lib_object_detach_owner(unk14);
+        model->clear_payload();
+        model = 0;
+        delete unk5c;
+        delete unk60;
+        delete unk68;
+        delete unk6c;
+        delete unk70;
+        unk5c = 0;
+        unk60 = 0;
+        unk68 = 0;
+        unk6c = 0;
+        unk70 = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AB360);
 
