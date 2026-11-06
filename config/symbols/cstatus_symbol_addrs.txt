@@ -676,3 +676,6 @@ g_inverse_frame_ticks = 0x001B668C; // absolute:True
 g_update_list = 0x001B6614; // absolute:True
 g_field_runtime = 0x001B657C; // absolute:True
 g_microcode_loader = 0x001B6600; // absolute:True
+resident_stream_is_mid_side = 0x00109FD0; // absolute:True
+g_program_running = 0x001B6420; // absolute:True
+resident_set_program_running = 0x00100A40; // absolute:True

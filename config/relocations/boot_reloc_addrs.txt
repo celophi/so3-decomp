@@ -88,10 +88,10 @@ rom:0x24AF8 reloc:MIPS_HI16 symbol:__vt__19BootSelectionCursor addend:0x74
 rom:0x24B00 reloc:MIPS_HI16 symbol:__vt__19BootSelectionCursor addend:0x88
 rom:0x24B10 reloc:MIPS_LO16 symbol:__vt__19BootSelectionCursor addend:0x74
 rom:0x24B18 reloc:MIPS_LO16 symbol:__vt__19BootSelectionCursor addend:0x88
-rom:0xA74C reloc:MIPS_HI16 symbol:__vt__15BootClass170F30 addend:0xB4
-rom:0xA754 reloc:MIPS_LO16 symbol:__vt__15BootClass170F30 addend:0xB4
-rom:0xC030 reloc:MIPS_HI16 symbol:__vt__15BootClass170F30 addend:0xB4
-rom:0xC038 reloc:MIPS_LO16 symbol:__vt__15BootClass170F30 addend:0xB4
+rom:0xA74C reloc:MIPS_HI16 symbol:__vt__18BootReflectedModel addend:0xB4
+rom:0xA754 reloc:MIPS_LO16 symbol:__vt__18BootReflectedModel addend:0xB4
+rom:0xC030 reloc:MIPS_HI16 symbol:__vt__18BootReflectedModel addend:0xB4
+rom:0xC038 reloc:MIPS_LO16 symbol:__vt__18BootReflectedModel addend:0xB4
 
 // Uncached main-executable cursor in the inlined code check: a stride, not an address pair.
 rom:0x4D14 reloc:MIPS_NONE symbol:0x2050

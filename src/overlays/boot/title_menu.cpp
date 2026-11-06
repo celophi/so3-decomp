@@ -56,23 +56,23 @@ enum BootFadeStripConstants
  * @param item Item number, from 0 to 3.
  * @return The item's node, or null if the scene has none.
  */
-static inline BootClass170F30* find_menu_item(BootTitleMenu* menu, s32 item)
+static inline LibModel* find_menu_item(BootTitleMenu* menu, s32 item)
 {
-    BootClass170F30* node;
+    LibModel* node;
 
     switch (item)
     {
     case BOOT_TITLE_ITEM_NEW_GAME:
-        node = lib_find_renderable_entry(menu->scene, g_new_game_node_name);
+        node = static_cast<LibModel*>(lib_find_renderable_entry(menu->scene, g_new_game_node_name));
         break;
     case BOOT_TITLE_ITEM_CONTINUE:
-        node = lib_find_renderable_entry(menu->scene, g_continue_node_name);
+        node = static_cast<LibModel*>(lib_find_renderable_entry(menu->scene, g_continue_node_name));
         break;
     case BOOT_TITLE_ITEM_BATTLE_TROPHIES:
-        node = lib_find_renderable_entry(menu->scene, g_battle_collection_node_name);
+        node = static_cast<LibModel*>(lib_find_renderable_entry(menu->scene, g_battle_collection_node_name));
         break;
     case BOOT_TITLE_ITEM_INSTALL:
-        node = lib_find_renderable_entry(menu->scene, g_install_node_name);
+        node = static_cast<LibModel*>(lib_find_renderable_entry(menu->scene, g_install_node_name));
         break;
     }
 
@@ -92,7 +92,7 @@ void BootTitleMenu::animate_items(u8 snap)
 
     for (s32 item = 0; item < 4; item++)
     {
-        BootClass170F30* node = find_menu_item(this, item);
+        LibModel* node = find_menu_item(this, item);
 
         if (node == 0)
         {
@@ -210,7 +210,7 @@ void BootTitleMenu::animate_items(u8 snap)
 void BootTitleMenu::get_cursor_position(float* x, float* y)
 {
     LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
-    BootClass170F30* node = find_menu_item(this, selected);
+    LibModel* node = find_menu_item(this, selected);
 
     if (node == 0)
     {
@@ -257,20 +257,20 @@ void BootTitleMenu::update_item_availability()
         return;
     }
 
-    BootClass170F30* continue_node;
+    LibModel* continue_node;
     BootInput* input = g_boot_program.input;
     u32 slot1 = input->slot1_state;
     u32 slot2 = input->slot2_state;
     u32 first = input->slot1_raw_state;
     u32 second = input->slot2_raw_state;
-    continue_node = lib_find_renderable_entry(scene, g_continue_node_name);
+    continue_node = static_cast<LibModel*>(lib_find_renderable_entry(scene, g_continue_node_name));
 
     if (continue_node == 0)
     {
         return;
     }
 
-    BootClass170F30* collection_node = lib_find_renderable_entry(scene, g_battle_collection_node_name);
+    LibModel* collection_node = static_cast<LibModel*>(lib_find_renderable_entry(scene, g_battle_collection_node_name));
 
     if (collection_node == 0)
     {
@@ -341,7 +341,7 @@ void BootTitleMenu::update()
         }
 
         check_main_code();
-        scene = new (0) BootScene;
+        scene = new (0) LibScene;
         lib_scene_load_data(scene, (ResidentResourceHeader*)scene_data);
         lib_scene_build_objects(scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
         delete[] scene_data;
@@ -696,7 +696,7 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
     add_vertex(bar->draw_buffer, FieldVec4A(right, 3.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(3.0f, height - 3.0f, (float)depth, 1.0f), normal, 0, color);
     add_vertex(bar->draw_buffer, FieldVec4A(right, height - 3.0f, (float)depth, 1.0f), normal, 0, color);
-    func_455BD0(bar->draw_buffer, 0, 1.0f, 0);
+    lib_draw_buffer_end(bar->draw_buffer, 0, 1.0f, 0);
 }
 
 /**
@@ -1063,7 +1063,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
         }
     }
 
-    func_455BD0(image->draw_buffer, image->end_mode, 500.0f, 0);
+    lib_draw_buffer_end(image->draw_buffer, image->end_mode, 500.0f, 0);
     image->model->attach_draw_buffer(image->draw_buffer);
     image->model->display_manager = g_scene_display_manager;
     image->model->draw_flags |= LIB_DRAW_FLAG_0400;
@@ -1117,7 +1117,7 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
                    (((x + width) << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
     }
 
-    func_455BD0(draw_buffer, end_mode, 500.0f, 0);
+    lib_draw_buffer_end(draw_buffer, end_mode, 500.0f, 0);
     model->attach_draw_buffer(draw_buffer);
     model->display_manager = g_scene_display_manager;
     model->draw_flags |= LIB_DRAW_FLAG_0400;

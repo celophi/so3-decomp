@@ -22,7 +22,11 @@ void func_00121880(void* object)
 {
 }
 
-void func_00121890(void* object)
+/**
+ * @brief Hook Lib calls after it installs a display, and boot before it restarts Lib; empty in the retail build.
+ * @param display Display being installed.
+ */
+void resident_display_set_hook(void* display)
 {
 }
 

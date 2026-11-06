@@ -870,3 +870,7 @@ g_renderer = 0x001B661C; // size:0x4
 g_packet_queue = 0x001B65DC; // size:0x4
 g_update_list = 0x001B6614; // size:0x4
 g_field_runtime = 0x001B657C; // size:0x4
+resident_stream_is_mid_side = 0x00109FD0; // type:func size:0x8
+resident_display_set_hook = 0x00121890; // type:func size:0x8
+g_program_running = 0x001B6420; // type:u8 size:0x1 absolute:True
+resident_set_program_running = 0x00100A40; // type:func size:0x8

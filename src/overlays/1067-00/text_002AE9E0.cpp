@@ -65,12 +65,6 @@ struct FieldDisplayManagerState
     FieldDisplaySlot* unk4468;
 };
 
-struct FieldDisplayState6624
-{
-    u8 unk00[0x360];
-    void* unk360;
-};
-
 extern "C"
 {
     extern char g_field_default_name_fayt[];
@@ -219,8 +213,6 @@ extern "C"
     extern ResidentHeap* D_001B6698;
 
     extern LibListObject* D_001B6640;
-
-    extern FieldDisplayState6624* D_001B6624;
 
     extern u8 D_001CFA00[];
 
@@ -1205,7 +1197,7 @@ void FieldShutdownSequence::update()
     if (stage >= 4)
     {
         D_001B6430->context->exit_requested = 1;
-        D_001B6420 = 0;
+        g_program_running = 0;
         lib_object_detach_owner(this);
         func_001DD7B0();
     }
@@ -1379,7 +1371,7 @@ void field_run_update_loop(ResidentContext* context)
     }
 
     g_display->set_output(true, false);
-    D_001B6420 = 1;
+    g_program_running = 1;
 
     for (; !context->exit_requested;)
     {
@@ -1647,7 +1639,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         g_field_runtime = 0;
         func_002B4620(g_float_track_pool);
         func_002B4C50(g_vector_track_pool);
-        func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool));
+        func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_slerp_quaternion_track_pool));
         func_002B56D0(g_float_curve_track_pool);
         func_002B5C80(g_vector_curve_track_pool);
         func_002B6180(g_float_quaternion_track_pool);
@@ -1703,7 +1695,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         ResidentCheckedRecord* resource =
             reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
         resource->unk25_4_5 = 0;
-        D_001B6420 = 1;
+        g_program_running = 1;
         D_001B6510 = 0;
         D_001B65A0 = 0;
         break;
@@ -1723,7 +1715,7 @@ FieldClass159010::~FieldClass159010()
 extern "C" void field_initialize_context(ResidentContext* context)
 {
     func_004DBEE0(g_packet_queue, 0);
-    D_001B6420 = 0;
+    g_program_running = 0;
     D_001B6434 = 0;
     context->unkdd.unk4 = 0;
     context->unkdd.unk5 = 0;
@@ -1779,7 +1771,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     g_frame_seconds = 1.0f / 60.0f;
     func_002B4620(g_float_track_pool);
     func_002B4C50(g_vector_track_pool);
-    func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool));
+    func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_slerp_quaternion_track_pool));
     func_002B56D0(g_float_curve_track_pool);
     func_002B5C80(g_vector_curve_track_pool);
     func_002B6180(g_float_quaternion_track_pool);
@@ -1878,7 +1870,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     func_002B5390(g_float_curve_track_pool, 901);
     func_002B6310(g_quaternion_curve_track_pool, 902);
     func_002B47C0(g_vector_track_pool, 2300);
-    func_002B4DF0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool), 2801);
+    func_002B4DF0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_slerp_quaternion_track_pool), 2801);
     func_002B5870(g_vector_curve_track_pool, 4702);
     func_002B5E20(g_float_quaternion_track_pool, 3703);
     func_002B6820(g_quaternion_track_pool, 2201);
@@ -1887,7 +1879,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     D_001B6518 = 0;
     FieldDisplayManagerState* display = static_cast<FieldDisplayManagerState*>(g_renderer);
     display->unk4084 = D_001B6624;
-    D_001B6624->unk360 = g_display_manager;
+    D_001B6624->manager = g_display_manager;
     static_cast<FieldDisplayManagerState*>(g_renderer)->unk4464->unkaf = 0;
     static_cast<FieldDisplayManagerState*>(g_renderer)->unk4468->unkaf = 0;
     FieldDisplaySlot* slot = static_cast<FieldDisplayManagerState*>(g_renderer)->unk4464;

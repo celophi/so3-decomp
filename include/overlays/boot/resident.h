@@ -8,45 +8,21 @@
 #include "overlays/lib/text_0045AD10.h"
 #include "sdk/main/libkernl_00121940.h"
 
-/** Partial resident display state D_001B6624 that points back at the display manager. */
-struct BootDisplay6624
-{
-    u8 unk00[0x360];
-    LibDisplayManager* manager;
-};
-
 extern LibRenderer* g_renderer;
-extern BootDisplay6624* D_001B6624;
 
 /** Seconds since the last frame. */
 extern float g_frame_ticks;
 
 extern float g_frame_seconds;
 
-// Lib functions boot calls with its own scene and model types, or (lib_draw_buffer_end) with a u8 mode.
-extern "C" {
-void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
-void lib_scene_use_data(BootScene* scene, u8* data);
-void lib_scene_load_data(BootScene* scene, ResidentResourceHeader* source);
-void lib_scene_release_entries(BootScene* scene);
 /**
- * @brief Create the runtime objects for a loaded scene's entries and hook them up to the display, lists and renderer.
- * @param scene Scene whose data is loaded.
- * @param display Display the scene draws to.
- * @param list Update list the objects join.
- * @param state Resident display state.
- * @param manager Display manager.
- * @param renderer Renderer.
- * @param flag Boot always passes one.
+ * @brief Finish a draw buffer's commands (Lib's definition takes an s32 mode; the image code's prototype has a u8).
+ * @param buffer Draw buffer.
+ * @param mode Nonzero stores the setup packet's size at its offset 0x04 too.
+ * @param distance Stored in the setup packet at 0x18.
+ * @param flag Stored in the setup packet at 0x3F.
  */
-void lib_scene_build_objects(BootScene* scene, LibCameraContext* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
-                 LibRenderer* renderer, s32 flag);
-BootClass170F30* lib_find_renderable_entry(LibListObject* models, const char* name);
-BootClass170F30* lib_find_next_renderable_entry(LibListObject* models, BootClass170F30* model);
-void* lib_find_named_entry(LibListObject* models, const char* name);
-LibTransformOwner* lib_find_transform_entry(LibListObject* models, const char* name);
-void* lib_find_camera_entry(LibListObject* models, const char* name);
-}
+extern "C" void lib_draw_buffer_end(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
 
 /**
  * @brief Hang when the main executable's code no longer matches the copy in the program image.

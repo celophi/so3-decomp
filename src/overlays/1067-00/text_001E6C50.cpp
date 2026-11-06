@@ -631,7 +631,7 @@ FieldClass150320::FieldClass150320(LibAnimation* animation, void* owner, float d
             saved->kind = entry->kind;
             saved->flags = entry->flags;
             saved->channel = original;
-            replacement = func_001E93E0(g_track_1718C0_pool);
+            replacement = func_001E93E0(g_slerp_quaternion_track_pool);
             replacement->allocate_keys(original->get_key_capacity() + 1);
             LibVector4 value;
             original->evaluate(0.0f, &value);
@@ -671,7 +671,7 @@ s16 func_001E9380(const FieldHalfword3A* object)
  */
 extern "C" void func_001E9390(LibClass173180* channel)
 {
-    LibClass177B50* vector = static_cast<LibClass177B50*>(channel);
+    LibSlerpQuaternionTrackBase* vector = static_cast<LibSlerpQuaternionTrackBase*>(channel);
     if (!vector->state.external_keys)
     {
         delete[] vector->key_array;
@@ -681,7 +681,7 @@ extern "C" void func_001E9390(LibClass173180* channel)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E93E0);
 
-void func_001E94F0(LibClass177B50* object)
+void func_001E94F0(LibSlerpQuaternionTrackBase* object)
 {
     object->key_array = 0;
     object->state.before_mode = 1;

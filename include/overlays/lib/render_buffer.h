@@ -604,18 +604,8 @@ extern "C"
      */
     void lib_draw_buffer_start_batch(LibDrawBuffer* buffer);
 
-    /**
-     * @brief Copy out any pending vertices and finish the commands, unless they've run into the space kept for the block
-     *        sizes and texture packets.
-     *
-     * Fills in the setup packet, appends the block sizes, hands the commands over, switches command buffers, waits for
-     * the draw buffer's DMA channel and turns its interrupts back on.
-     * @param buffer Draw buffer.
-     * @param mode Nonzero stores the setup packet's size at its offset 0x04 too.
-     * @param distance Stored in the setup packet at 0x18.
-     * @param flag Stored in the setup packet at 0x3F.
-     */
-    void lib_draw_buffer_end(LibDrawBuffer* buffer, s32 mode, float distance, s32 flag);
+    // lib_draw_buffer_end isn't declared here: its definition takes an s32 mode, but the image code in boot and the
+    // field calls it through a u8 prototype, so each side declares its own.
 }
 #endif
 

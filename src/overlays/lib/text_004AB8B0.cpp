@@ -5,17 +5,17 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/vector_vu0.h"
 
-extern LibTrackPool<LibClass177EE0>* g_track_1718C0_pool;
+extern LibTrackPool<LibPooledSlerpQuaternionTrack>* g_slerp_quaternion_track_pool;
 extern LibTrackPool<LibPooledFloatTrack>* g_float_track_pool;
 extern LibTrackPool<LibPooledFloatCurveTrack>* g_float_curve_track_pool;
 extern LibTrackPool<LibPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
 
 /**
- * @brief Mark a track's g_track_1718C0_pool slot as free.
+ * @brief Mark a track's g_slerp_quaternion_track_pool slot as free.
  * @param pool Pool that owns the track.
  * @param track Track to release.
  */
-void track_1718C0_pool_free(LibTrackPool<LibClass177EE0>* pool, LibClass177EE0* track);
+void slerp_quaternion_track_pool_free(LibTrackPool<LibPooledSlerpQuaternionTrack>* pool, LibPooledSlerpQuaternionTrack* track);
 
 /**
  * @brief Mark a track's g_float_track_pool slot as free.
@@ -48,127 +48,7 @@ enum
 
 extern "C" {
 
-typedef struct HalfwordGetterOwnertext_004AB8B0
-{
-    u8 unk00[0x18];
-    s16 unk18;
-    s16 unk1a;
-    u8 unk1c[0x4];
-    s16 unk20;
-    s16 unk22;
-    u8 unk24[0x14];
-    s16 unk38;
-    s16 unk3a;
-} HalfwordGetterOwnertext_004AB8B0;
-
-typedef struct WordGetterOwnertext_004AB8B0
-{
-    u8 unk00[0x4];
-    u32 unk04;
-    u8 unk08[0x8];
-    u32 unk10;
-    u8 unk14[0x4];
-    u32 unk18;
-    u8 unk1c[0x14];
-    u32 unk30;
-} WordGetterOwnertext_004AB8B0;
-
 typedef struct FourWordClearOwnertext_004AB8B0 { u32 words[4]; } FourWordClearOwnertext_004AB8B0;
-
-typedef struct ClearForwardWordOwnertext_004AB8B0
-{
-    u8 unk00[0x48];
-    u32 unk48;
-    u32 unk4c;
-} ClearForwardWordOwnertext_004AB8B0;
-
-typedef struct PackedModePair
-{
-    u8 lowMode : 4;
-    u8 highMode : 4;
-    u8 hasModeFour : 1;
-    u8 unk01_1_7 : 7;
-} PackedModePair;
-
-typedef struct PackedModesOwner
-{
-    u8 unk00[0x22];
-    PackedModePair at22;
-    u8 unk24[0x6];
-    PackedModePair at2a;
-    u8 unk2c[0x16];
-    PackedModePair at42;
-} PackedModesOwner;
-
-typedef struct FloatKeyScanEntry_text_004AB8B0_08
-{
-    float key00;
-    u8 unk04[0x4];
-} FloatKeyScanEntry_text_004AB8B0_08;
-
-typedef struct FloatKeyScanOwner_text_004AB8B0_08
-{
-    u8 unk00[0x4];
-    FloatKeyScanEntry_text_004AB8B0_08* entries;
-    u8 unk08[0x10];
-    s16 count18;
-    u8 unk1a[0x6];
-    s16 count20;
-    u8 unk22[0x16];
-    s16 count38;
-} FloatKeyScanOwner_text_004AB8B0_08;
-
-typedef struct FloatKeyScanEntry_text_004AB8B0_10
-{
-    float key00;
-    u8 unk04[0x8];
-    float key0c;
-} FloatKeyScanEntry_text_004AB8B0_10;
-
-typedef struct FloatDiffEntry_text_004AB8B0_10
-{
-    u32 unk00;
-    float value;
-    u8 unk08[8];
-} FloatDiffEntry_text_004AB8B0_10;
-
-typedef struct FloatDiffEntry_text_004AB8B0_08
-{
-    u32 unk00;
-    float value;
-} FloatDiffEntry_text_004AB8B0_08;
-
-typedef struct FloatKeyScanOwner_text_004AB8B0_10
-{
-    u8 unk00[0x4];
-    FloatKeyScanEntry_text_004AB8B0_10* entries;
-    u8 unk08[0x10];
-    s16 count18;
-    u8 unk1a[0x6];
-    s16 count20;
-    u8 unk22[0x16];
-    s16 count38;
-} FloatKeyScanOwner_text_004AB8B0_10;
-
-typedef struct FloatKeyScanEntry_text_004AB8B0_20
-{
-    float key00;
-    u8 unk04[0x8];
-    float key0c;
-    u8 unk10[0x10];
-} FloatKeyScanEntry_text_004AB8B0_20;
-
-typedef struct FloatKeyScanOwner_text_004AB8B0_20
-{
-    u8 unk00[0x4];
-    FloatKeyScanEntry_text_004AB8B0_20* entries;
-    u8 unk08[0x10];
-    s16 count18;
-    u8 unk1a[0x6];
-    s16 count20;
-    u8 unk22[0x16];
-    s16 count38;
-} FloatKeyScanOwner_text_004AB8B0_20;
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AB8B0);
 
@@ -216,7 +96,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC390);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC3A0);
 
 /** @brief Forget the stored samples. */
-void LibClass178200::reset()
+void LibLinearFloatHistory::reset()
 {
     sample_count = 0;
     next_index = 0;
@@ -225,7 +105,7 @@ void LibClass178200::reset()
 }
 
 /** @brief Do nothing; the slot's purpose is unknown. */
-void LibClass178200::func_slot08()
+void LibLinearFloatHistory::func_slot08()
 {
 }
 
@@ -238,7 +118,7 @@ void LibClass178200::func_slot08()
  * @param second Unused; this track has no auxiliary vectors.
  * @return One when the index is within the capacity, otherwise zero.
  */
-s32 LibClass177AC0::read_key(s32 index, float* key, void* value, void* first, void* second) const
+s32 LibSlerpQuaternionKeyTrack::read_key(s32 index, float* key, void* value, void* first, void* second) const
 {
     if (key_array == 0)
     {
@@ -268,7 +148,7 @@ s32 LibClass177AC0::read_key(s32 index, float* key, void* value, void* first, vo
  * @param key Key whose period count is representable as a signed 32-bit integer.
  * @return Normalized key, with odd-period reflection selected by the control fields.
  */
-float LibClass177B50::update_cycle_count(float key)
+float LibSlerpQuaternionTrackBase::update_cycle_count(float key)
 {
     float first = key_array[0].key;
     float quotient = (key - first) / state.span;
@@ -287,7 +167,7 @@ float LibClass177B50::update_cycle_count(float key)
         if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
         {
             s32 last_index = state.key_count - 1;
-            LibTrackKey177B50* last_entry = key_array + last_index;
+            LibSlerpQuaternionTrackKey* last_entry = key_array + last_index;
             float last = last_entry->key;
 
             if (state.cycle_count & 1)
@@ -309,7 +189,7 @@ float LibClass177B50::update_cycle_count(float key)
  * @param upper Receives the upper entry index.
  * @return One when the active end mode extends the first or last segment, otherwise zero.
  */
-u8 LibClass177B50::find_surrounding_keys(float key, s32* lower, s32* upper)
+u8 LibSlerpQuaternionTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
 {
     s32 index;
     s32 count;
@@ -364,10 +244,10 @@ u8 LibClass177B50::find_surrounding_keys(float key, s32* lower, s32* upper)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", __dt__14LibClass177B50Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", __dt__27LibSlerpQuaternionTrackBaseFv);
 
 /** @brief Clear the key storage, counts, modes and cached indices. */
-void LibClass177B50::reset_state()
+void LibSlerpQuaternionTrackBase::reset_state()
 {
     key_array = 0;
     state.before_mode = LIB_TRACK_END_CYCLE;
@@ -387,66 +267,78 @@ void LibClass177B50::reset_state()
  * @param count Keyframe count.
  * @param keys External keyframe storage.
  */
-void LibClass177B50::bind_keys(s32 count, void* keys)
+void LibSlerpQuaternionTrackBase::bind_keys(s32 count, void* keys)
 {
     s32 last_index = count - 1;
-    LibTrackKey177B50* last;
+    LibSlerpQuaternionTrackKey* last;
     state.external_keys = 1;
-    key_array = static_cast<LibTrackKey177B50*>(keys);
+    key_array = static_cast<LibSlerpQuaternionTrackKey*>(keys);
     state.key_capacity = count;
     state.key_count = count;
     last = key_array + last_index;
     state.span = last->key - key_array[0].key;
 }
 
-/** Set the low packed mode at 0x42 and record whether either mode equals four. */
-void func_004AC850(void* object, u8 mode)
+/**
+ * @brief Set the end mode used before the first key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibSlerpQuaternionTrackBase::set_before_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at42.lowMode = mode;
-    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+    state.before_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Set the high packed mode at 0x42 and record whether either mode equals four. */
-void func_004AC8B0(void* object, u8 mode)
+/**
+ * @brief Set the end mode used after the last key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibSlerpQuaternionTrackBase::set_after_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at42.highMode = mode;
-    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+    state.after_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Return the word at receiver offset 0x30. */
-u32 func_004AC910(const void* object)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 LibSlerpQuaternionTrackBase::get_cycle_count() const
 {
-    const WordGetterOwnertext_004AB8B0* receiver = (const WordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk30;
+    return state.cycle_count;
 }
 
-/** Return the signed halfword at receiver offset 0x38. */
-s16 func_004AC920(const void* object)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 LibSlerpQuaternionTrackBase::get_key_count() const
 {
-    const HalfwordGetterOwnertext_004AB8B0* receiver = (const HalfwordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk38;
+    return state.key_count;
 }
 
-/** Return the signed halfword at receiver offset 0x3A. */
-s16 func_004AC930(const void* object)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 LibSlerpQuaternionTrackBase::get_key_capacity()
 {
-    const HalfwordGetterOwnertext_004AB8B0* receiver = (const HalfwordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk3a;
+    return state.key_capacity;
 }
 
-/** Find a key in the receiver's fixed-size entry array. */
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004AC940(void* object, float key)
+/**
+ * @brief Test whether a key is stored exactly.
+ * @param key Key to find.
+ * @return One when a key equals it, otherwise zero.
+ */
+s32 LibSlerpQuaternionTrackBase::has_key(float key) const
 {
-    FloatKeyScanOwner_text_004AB8B0_20* receiver = static_cast<FloatKeyScanOwner_text_004AB8B0_20*>(object);
-    s16 count = receiver->count38;
+    s16 count = state.key_count;
     s32 index;
 
     for (index = 0; index < count; index++)
     {
-        if (key == receiver->entries[index].key00)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -455,31 +347,32 @@ s32 func_004AC940(void* object, float key)
     return 0;
 }
 
-void func_004AC990(void* object)
+/**
+ * @brief Return a zero vector, the track's value when it has no keys.
+ * @return Zero vector.
+ */
+FieldVec4A LibSlerpQuaternionTrackBase::get_zero_value() const
 {
-    FourWordClearOwnertext_004AB8B0* receiver = (FourWordClearOwnertext_004AB8B0*)object;
-    receiver->words[0] = 0;
-    receiver->words[1] = 0;
-    receiver->words[2] = 0;
-    receiver->words[3] = 0;
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-/** Return the key span between the first and last entries. */
-float func_004AC9B0(void* object)
+/**
+ * @brief Return the last key minus the first, or zero below two keys.
+ * @return Key span.
+ */
+float LibSlerpQuaternionTrackBase::get_key_span() const
 {
-    const FloatKeyScanOwner_text_004AB8B0_20* receiver = static_cast<const FloatKeyScanOwner_text_004AB8B0_20*>(object);
-    s32 count = receiver->count38;
+    s32 last_index;
+    LibSlerpQuaternionTrackKey* last_entry;
 
-    if (count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    const FloatKeyScanEntry_text_004AB8B0_20* entries = receiver->entries;
-    const FloatKeyScanEntry_text_004AB8B0_20* lastEntry = entries + --count;
-    float first = entries[0].key00;
-    float last = lastEntry->key00;
-    return last - first;
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
 /**
@@ -487,7 +380,7 @@ float func_004AC9B0(void* object)
  * @param key Evaluation key.
  * @param output Receives the vector.
  */
-void LibClass177B50::evaluate(float key, void* output)
+void LibSlerpQuaternionTrackBase::evaluate(float key, void* output)
 {
     *static_cast<FieldVec4B*>(output) = sample(key);
 }
@@ -497,11 +390,11 @@ void LibClass177B50::evaluate(float key, void* output)
  * @param key Key to wrap.
  * @return Key minus the whole spans it lies past the first key, or the key itself.
  */
-float LibClass177B50::wrap_key(float key) const
+float LibSlerpQuaternionTrackBase::wrap_key(float key) const
 {
     s32 last_index = state.key_count - 1;
-    LibTrackKey177B50* keys = key_array;
-    LibTrackKey177B50* last = keys + last_index;
+    LibSlerpQuaternionTrackKey* keys = key_array;
+    LibSlerpQuaternionTrackKey* last = keys + last_index;
     float first = keys[0].key;
     float span = last->key - first;
     float quotient = (key - first) / span;
@@ -522,15 +415,17 @@ float LibClass177B50::wrap_key(float key) const
     return key;
 }
 
-/** Return the word at receiver offset 0x4. */
-u32 func_004ACAE0(const void* object)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+void* LibSlerpQuaternionTrackBase::get_keys()
 {
-    const WordGetterOwnertext_004AB8B0* receiver = (const WordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk04;
+    return key_array;
 }
 
 /** @brief Delete the key storage unless it is external, and clear the key pointer. */
-void LibClass177B50::free_keys()
+void LibSlerpQuaternionTrackBase::free_keys()
 {
     if (!state.external_keys)
     {
@@ -545,7 +440,7 @@ void LibClass177B50::free_keys()
  * @param key Key to find.
  * @return Keyframe value, or a zero vector when no key matches.
  */
-FieldVec4A LibClass177B50::find_key_value(float key)
+FieldVec4A LibSlerpQuaternionTrackBase::find_key_value(float key)
 {
     s32 index;
 
@@ -553,7 +448,7 @@ FieldVec4A LibClass177B50::find_key_value(float key)
     {
         if (key == key_array[index].key)
         {
-            LibTrackKey177B50* entry = key_array + index;
+            LibSlerpQuaternionTrackKey* entry = key_array + index;
             return *reinterpret_cast<const FieldVec4A*>(&entry->value);
         }
     }
@@ -568,7 +463,7 @@ FieldVec4A LibClass177B50::find_key_value(float key)
  * @param out_tangent Unused.
  * @param key Sort key.
  */
-void LibClass177B50::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+void LibSlerpQuaternionTrackBase::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     on_set_single_key(static_cast<const FieldVec4A*>(value), key);
 }
@@ -586,7 +481,7 @@ void func_004ACBD0(void* object)
  * @param out_tangent Unused.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibClass177B50::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+s32 LibSlerpQuaternionTrackBase::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_insert_key(index, key, static_cast<const FieldVec4A*>(value));
 }
@@ -605,7 +500,7 @@ s32 func_004ACC10(void* object)
  * @param out_tangent Unused.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibClass177B50::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+s32 LibSlerpQuaternionTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const FieldVec4A*>(value));
 }
@@ -623,7 +518,7 @@ s32 func_004ACC50(void* object)
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibClass177B50::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+s32 LibSlerpQuaternionTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const FieldVec4A*>(value), key);
 }
@@ -637,11 +532,11 @@ s32 func_004ACC90(void* object)
  * @brief Allocate storage for a number of keyframes, dropping any keys the track owned.
  * @param count Keyframes to hold.
  */
-void LibClass177B50::allocate_keys(s32 count)
+void LibSlerpQuaternionTrackBase::allocate_keys(s32 count)
 {
     state.external_keys = 0;
     delete[] key_array;
-    key_array = new (0) LibTrackKey177B50[count];
+    key_array = new (0) LibSlerpQuaternionTrackKey[count];
     state.key_capacity = count;
 
     if (!key_array)
@@ -651,7 +546,7 @@ void LibClass177B50::allocate_keys(s32 count)
 }
 
 /** @brief Leave the keyframe uninitialized. */
-LibTrackKey177B50::LibTrackKey177B50()
+LibSlerpQuaternionTrackKey::LibSlerpQuaternionTrackKey()
 {
 }
 
@@ -660,7 +555,7 @@ LibTrackKey177B50::LibTrackKey177B50()
  * @param value Keyframe value.
  * @param key Sort key.
  */
-void LibClass177AC0::on_set_single_key(const FieldVec4A* value, float key)
+void LibSlerpQuaternionKeyTrack::on_set_single_key(const FieldVec4A* value, float key)
 {
     set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
     single_value = *value;
@@ -674,7 +569,7 @@ void LibClass177AC0::on_set_single_key(const FieldVec4A* value, float key)
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibClass177AC0::on_insert_key(s32 index, float key, const FieldVec4A* value)
+s32 LibSlerpQuaternionKeyTrack::on_insert_key(s32 index, float key, const FieldVec4A* value)
 {
     s32 count;
     s32 i;
@@ -722,7 +617,7 @@ s32 LibClass177AC0::on_insert_key(s32 index, float key, const FieldVec4A* value)
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibClass177AC0::on_replace_key(s32 index, float key, const FieldVec4A* value)
+s32 LibSlerpQuaternionKeyTrack::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     if (key_array == 0)
     {
@@ -753,7 +648,7 @@ s32 LibClass177AC0::on_replace_key(s32 index, float key, const FieldVec4A* value
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibClass177AC0::on_append_key(const FieldVec4A* value, float key)
+s32 LibSlerpQuaternionKeyTrack::on_append_key(const FieldVec4A* value, float key)
 {
     if (key_array == 0)
     {
@@ -774,23 +669,15 @@ s32 LibClass177AC0::on_append_key(const FieldVec4A* value, float key)
     return 1;
 }
 
-typedef struct LibResetWrapperState004ACFF0
+/** @brief Clear the cached sample state and reset the keys' bookkeeping. */
+void LibPooledFloatQuaternionTrack::reset_state()
 {
-    u8 unk00[0x50];
-    u32 unk50;
-    u8 unk54[4];
-    u32 unk58;
-} LibResetWrapperState004ACFF0;
-
-void func_004ACFF0(void* object)
-{
-    LibResetWrapperState004ACFF0* receiver = (LibResetWrapperState004ACFF0*)object;
-    receiver->unk58 = 0;
-    receiver->unk50 = 0;
-    static_cast<LibFloatQuaternionTrackBase*>(object)->LibFloatQuaternionTrackBase::reset_state();
+    unk58 = 0;
+    unk50 = 0;
+    LibFloatQuaternionTrackBase::reset_state();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD010);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", append_key__29LibPooledFloatQuaternionTrackFPCvPCvPCvf);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", replace_key__29LibPooledFloatQuaternionTrackFifPCvPCvPCv);
 
@@ -828,9 +715,13 @@ void LibPooledFloatQuaternionTrack::set_single_key(const void* value, const void
     single_key.key = key;
 }
 
-void func_004AD2B0(const void* object, float* value)
+/**
+ * @brief Report how fast the sampled value was changing.
+ * @param output Receives the rate.
+ */
+void LibPooledFloatQuaternionTrack::get_value_rate(void* output) const
 {
-    *value = *(const float*)((const u8*)object + 0x54);
+    *static_cast<float*>(output) = value_rate;
 }
 
 /** @brief Reset to a single zero keyframe at key zero, then select the cycle end mode. */
@@ -857,10 +748,11 @@ void LibPooledFloatQuaternionTrack::release()
     }
 }
 
-void func_004AD380(void* object)
+/** @brief Free the keys and give the track back to g_float_quaternion_track_pool. */
+void LibPooledFloatQuaternionTrack::return_to_pool()
 {
-    static_cast<LibFloatQuaternionTrackBase*>(object)->free_keys();
-    float_quaternion_track_pool_free(g_float_quaternion_track_pool, static_cast<LibPooledFloatQuaternionTrack*>(object));
+    LibFloatQuaternionTrackBase::free_keys();
+    float_quaternion_track_pool_free(g_float_quaternion_track_pool, this);
 }
 
 /** @brief Destroy the track. */
@@ -868,15 +760,17 @@ LibPooledFloatQuaternionTrack::~LibPooledFloatQuaternionTrack()
 {
 }
 
-/** Set the low packed mode at 0x42 and record whether either mode equals four. */
-void func_004AD410(void* object, u8 mode)
+/**
+ * @brief Set the end mode used before the first key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibFloatQuaternionTrackBase::set_before_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at42.lowMode = mode;
-    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+    state.before_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD470);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", get_end_delta__29LibPooledFloatQuaternionTrackCFPv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", insert_entry__29LibPooledFloatQuaternionTrackFifPC10FieldVec4Aff);
 
@@ -932,7 +826,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ADC60);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AE5A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AE7E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", sample__29LibPooledFloatQuaternionTrackCFf);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AEFE0);
 
@@ -940,7 +834,17 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AEFF0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF060);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF6A0);
+/**
+ * @brief Store the single keyframe and its tangents from plain floats.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ */
+void LibPooledFloatCurveTrack::set_single_float_curve_key(float key, float value, float in_tangent, float out_tangent)
+{
+    LibFloatCurveTrack::set_single_curve_key(&value, &in_tangent, &out_tangent, key);
+}
 
 /**
  * @brief Insert a keyframe and its tangents.
@@ -1002,10 +906,11 @@ LibPooledFloatCurveTrack::~LibPooledFloatCurveTrack()
 {
 }
 
-void func_004AF8A0(void* object)
+/** @brief Forget the last sampled value and reset the keys' bookkeeping. */
+void LibFloatCurveTrack::reset_state()
 {
-    ((ClearForwardWordOwnertext_004AB8B0*)object)->unk4c = 0;
-    static_cast<LibFloatCurveTrackBase*>(object)->LibFloatCurveTrackBase::reset_state();
+    last_value = 0.0f;
+    LibFloatCurveTrackBase::reset_state();
 }
 
 /**
@@ -1258,19 +1163,24 @@ void LibFloatCurveTrack::reset_keys()
     set_single_key(&zero, &zero, &zero, 0.0f);
 }
 
-void func_004AFF60(const void* object, float* value)
+/**
+ * @brief Report how fast the sampled value was changing.
+ * @param output Receives the rate.
+ */
+void LibFloatCurveTrack::get_value_rate(void* output) const
 {
-    *value = *(const float*)((const u8*)object + 0x50);
+    *static_cast<float*>(output) = value_rate;
 }
 
-void func_004AFF70(const void* object, float* output)
+/**
+ * @brief Report the last key's value minus the first's.
+ * @param output Receives the difference; left alone when there are no keys.
+ */
+void LibFloatCurveTrack::get_end_delta(void* output) const
 {
-    const FloatKeyScanOwner_text_004AB8B0_10* receiver = (const FloatKeyScanOwner_text_004AB8B0_10*)object;
-    FloatDiffEntry_text_004AB8B0_10* entries = (FloatDiffEntry_text_004AB8B0_10*)receiver->entries;
-
-    if (entries != 0)
+    if (key_array != 0)
     {
-        *output = entries[receiver->count20 - 1].value - entries[0].value;
+        *static_cast<float*>(output) = key_array[state.key_count - 1].value - key_array[0].value;
     }
 }
 
@@ -1517,65 +1427,87 @@ void LibFloatQuaternionTrackBase::bind_keys(s32 count, void* keys)
     state.span = last->key - key_array[0].key;
 }
 
-/** Set the high packed mode at 0x42 and record whether either mode equals four. */
-void func_004B05A0(void* object, u8 mode)
+/**
+ * @brief Set the end mode used after the last key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibFloatQuaternionTrackBase::set_after_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at42.highMode = mode;
-    receiver->at42.hasModeFour = receiver->at42.lowMode == 4 || receiver->at42.highMode == 4;
+    state.after_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Return the word at receiver offset 0x30. */
-u32 func_004B0600(const void* object)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 LibFloatQuaternionTrackBase::get_cycle_count() const
 {
-    const WordGetterOwnertext_004AB8B0* receiver = (const WordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk30;
+    return state.cycle_count;
 }
 
-/** Return the signed halfword at receiver offset 0x38. */
-s16 func_004B0610(const void* object)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 LibFloatQuaternionTrackBase::get_key_count() const
 {
-    const HalfwordGetterOwnertext_004AB8B0* receiver = (const HalfwordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk38;
+    return state.key_count;
 }
 
-/** Return the signed halfword at receiver offset 0x3A. */
-s16 func_004B0620(const void* object)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 LibFloatQuaternionTrackBase::get_key_capacity()
 {
-    const HalfwordGetterOwnertext_004AB8B0* receiver = (const HalfwordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk3a;
+    return state.key_capacity;
 }
 
-s32 func_004B0630(void* object)
+/**
+ * @brief Store a keyframe; the base ignores it.
+ */
+s32 LibFloatQuaternionTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return 0;
 }
 
-s32 func_004B0640(void* object)
+/**
+ * @brief Store a keyframe; the base ignores it.
+ */
+s32 LibFloatQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return 0;
 }
 
-s32 func_004B0650(void* object)
+/**
+ * @brief Store a keyframe; the base ignores it.
+ */
+s32 LibFloatQuaternionTrackBase::on_insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return 0;
 }
 
-void func_004B0660(void* object)
+/**
+ * @brief Store a keyframe; the base ignores it.
+ */
+void LibFloatQuaternionTrackBase::on_set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
 }
 
-/** Find a key in the receiver's fixed-size entry array. */
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004B0670(void* object, float key)
+/**
+ * @brief Test whether a key is stored exactly.
+ * @param key Key to find.
+ * @return One when a key equals it, otherwise zero.
+ */
+s32 LibFloatQuaternionTrackBase::has_key(float key) const
 {
-    FloatKeyScanOwner_text_004AB8B0_20* receiver = static_cast<FloatKeyScanOwner_text_004AB8B0_20*>(object);
-    s16 count = receiver->count38;
+    s16 count = state.key_count;
     s32 index;
 
     for (index = 0; index < count; index++)
     {
-        if (key == receiver->entries[index].key00)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -1584,31 +1516,32 @@ s32 func_004B0670(void* object, float key)
     return 0;
 }
 
-void func_004B06C0(void* object)
+/**
+ * @brief Return a zero vector, the track's value when it has no keys.
+ * @return Zero vector.
+ */
+FieldVec4A LibFloatQuaternionTrackBase::get_zero_value() const
 {
-    FourWordClearOwnertext_004AB8B0* receiver = (FourWordClearOwnertext_004AB8B0*)object;
-    receiver->words[0] = 0;
-    receiver->words[1] = 0;
-    receiver->words[2] = 0;
-    receiver->words[3] = 0;
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-/** Return the key span between the first and last entries. */
-float func_004B06E0(void* object)
+/**
+ * @brief Return the last key minus the first, or zero below two keys.
+ * @return Key span.
+ */
+float LibFloatQuaternionTrackBase::get_key_span() const
 {
-    const FloatKeyScanOwner_text_004AB8B0_20* receiver = static_cast<const FloatKeyScanOwner_text_004AB8B0_20*>(object);
-    s32 count = receiver->count38;
+    s32 last_index;
+    LibFloatQuaternionTrackKey* last_entry;
 
-    if (count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    const FloatKeyScanEntry_text_004AB8B0_20* entries = receiver->entries;
-    const FloatKeyScanEntry_text_004AB8B0_20* lastEntry = entries + --count;
-    float first = entries[0].key00;
-    float last = lastEntry->key00;
-    return last - first;
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
 /**
@@ -1651,11 +1584,13 @@ float LibFloatQuaternionTrackBase::wrap_key(float key) const
     return key;
 }
 
-/** Return the word at receiver offset 0x4. */
-u32 func_004B0810(const void* object)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+void* LibFloatQuaternionTrackBase::get_keys()
 {
-    const WordGetterOwnertext_004AB8B0* receiver = (const WordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk04;
+    return key_array;
 }
 
 /** @brief Delete the key storage unless it is external, and clear the key pointer. */
@@ -1824,73 +1759,97 @@ void LibFloatCurveTrackBase::bind_keys(s32 count, void* keys)
     state.span = last->key - key_array[0].key;
 }
 
-/** Set the low packed mode at 0x2A and record whether either mode equals four. */
-void func_004B0CA0(void* object, u8 mode)
+/**
+ * @brief Set the end mode used before the first key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibFloatCurveTrackBase::set_before_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at2a.lowMode = mode;
-    receiver->at2a.hasModeFour = receiver->at2a.lowMode == 4 || receiver->at2a.highMode == 4;
+    state.before_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Set the high packed mode at 0x2A and record whether either mode equals four. */
-void func_004B0D00(void* object, u8 mode)
+/**
+ * @brief Set the end mode used after the last key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibFloatCurveTrackBase::set_after_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at2a.highMode = mode;
-    receiver->at2a.hasModeFour = receiver->at2a.lowMode == 4 || receiver->at2a.highMode == 4;
+    state.after_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Return the word at receiver offset 0x18. */
-u32 func_004B0D60(const void* object)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 LibFloatCurveTrackBase::get_cycle_count() const
 {
-    const WordGetterOwnertext_004AB8B0* receiver = (const WordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk18;
+    return state.cycle_count;
 }
 
-/** Return the signed halfword at receiver offset 0x20. */
-s16 func_004B0D70(const void* object)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 LibFloatCurveTrackBase::get_key_count() const
 {
-    const HalfwordGetterOwnertext_004AB8B0* receiver = (const HalfwordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk20;
+    return state.key_count;
 }
 
-/** Return the signed halfword at receiver offset 0x22. */
-s16 func_004B0D80(const void* object)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 LibFloatCurveTrackBase::get_key_capacity()
 {
-    const HalfwordGetterOwnertext_004AB8B0* receiver = (const HalfwordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk22;
+    return state.key_capacity;
 }
 
-s32 func_004B0D90(void* object)
+/**
+ * @brief Store a keyframe; the base ignores it.
+ */
+s32 LibFloatCurveTrackBase::on_append_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
     return 0;
 }
 
-s32 func_004B0DA0(void* object)
+/**
+ * @brief Store a keyframe; the base ignores it.
+ */
+s32 LibFloatCurveTrackBase::on_replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
 {
     return 0;
 }
 
-s32 func_004B0DB0(void* object)
+/**
+ * @brief Store a keyframe; the base ignores it.
+ */
+s32 LibFloatCurveTrackBase::on_insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
 {
     return 0;
 }
 
-void func_004B0DC0(void* object)
+/**
+ * @brief Store a keyframe; the base ignores it.
+ */
+void LibFloatCurveTrackBase::on_set_single_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
 }
 
-/** Find a key in the receiver's fixed-size entry array. */
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004B0DD0(void* object, float key)
+/**
+ * @brief Test whether a key is stored exactly.
+ * @param key Key to find.
+ * @return One when a key equals it, otherwise zero.
+ */
+s32 LibFloatCurveTrackBase::has_key(float key) const
 {
-    FloatKeyScanOwner_text_004AB8B0_10* receiver = static_cast<FloatKeyScanOwner_text_004AB8B0_10*>(object);
-    s16 count = receiver->count20;
+    s16 count = state.key_count;
     s32 index;
 
     for (index = 0; index < count; index++)
     {
-        if (key == receiver->entries[index].key00)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -1904,27 +1863,32 @@ s32 func_004B0DD0(void* object, float key)
  * @param object Receiver or first argument; unused.
  * @return 0.0f.
  */
-float func_004B0E20(void* object)
+/**
+ * @brief Return zero, the track's value when it has no keys.
+ * @return Zero.
+ */
+float LibFloatCurveTrackBase::get_zero_value() const
 {
     return 0.0f;
 }
 
-/** Return the key span between the first and last entries. */
-float func_004B0E30(void* object)
+/**
+ * @brief Return the last key minus the first, or zero below two keys.
+ * @return Key span.
+ */
+float LibFloatCurveTrackBase::get_key_span() const
 {
-    const FloatKeyScanOwner_text_004AB8B0_10* receiver = static_cast<const FloatKeyScanOwner_text_004AB8B0_10*>(object);
-    s32 count = receiver->count20;
+    s32 last_index;
+    LibFloatCurveTrackKey* last_entry;
 
-    if (count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    const FloatKeyScanEntry_text_004AB8B0_10* entries = receiver->entries;
-    const FloatKeyScanEntry_text_004AB8B0_10* lastEntry = entries + --count;
-    float first = entries[0].key00;
-    float last = lastEntry->key00;
-    return last - first;
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
 /**
@@ -1967,11 +1931,13 @@ float LibFloatCurveTrackBase::wrap_key(float key) const
     return key;
 }
 
-/** Return the word at receiver offset 0x4. */
-u32 func_004B0F40(const void* object)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+void* LibFloatCurveTrackBase::get_keys()
 {
-    const WordGetterOwnertext_004AB8B0* receiver = (const WordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk04;
+    return key_array;
 }
 
 /** @brief Delete the key storage unless it is external, and clear the key pointer. */
@@ -2376,28 +2342,25 @@ void LibFloatSegment::get_weights(float key, float* weights) const
     weights[3] = after * squared;
 }
 
-typedef struct LibResetWrapperState004B1800
+/** @brief Clear the cached sample state and reset the keys' bookkeeping. */
+void LibPooledSlerpQuaternionTrack::reset_state()
 {
-    u8 unk00[0xB0];
-    u32 unkB0;
-    u32 unkB4;
-} LibResetWrapperState004B1800;
-
-void func_004B1800(void* object)
-{
-    LibResetWrapperState004B1800* receiver = (LibResetWrapperState004B1800*)object;
-    receiver->unkB0 = 0;
-    receiver->unkB4 = 0;
-    static_cast<LibClass177B50*>(object)->LibClass177B50::reset_state();
+    unkB0 = 0;
+    unkB4 = 0;
+    LibSlerpQuaternionTrackBase::reset_state();
 }
 
-void func_004B1820(const void* object, float* value)
+/**
+ * @brief Report how fast the sampled value was changing.
+ * @param output Receives the rate.
+ */
+void LibPooledSlerpQuaternionTrack::get_value_rate(void* output) const
 {
-    *value = *(const float*)((const u8*)object + 0xB8);
+    *static_cast<float*>(output) = value_rate;
 }
 
 /** @brief Give the track back to its pool when it came from one, otherwise delete it. */
-void LibClass177EE0::release()
+void LibPooledSlerpQuaternionTrack::release()
 {
     if (this != 0)
     {
@@ -2412,24 +2375,30 @@ void LibClass177EE0::release()
     }
 }
 
-void func_004B1890(void* object)
+/** @brief Free the keys and give the track back to g_slerp_quaternion_track_pool. */
+void LibPooledSlerpQuaternionTrack::return_to_pool()
 {
-    static_cast<LibClass177B50*>(object)->free_keys();
-    track_1718C0_pool_free(g_track_1718C0_pool, static_cast<LibClass177EE0*>(object));
+    LibSlerpQuaternionTrackBase::free_keys();
+    slerp_quaternion_track_pool_free(g_slerp_quaternion_track_pool, this);
 }
 
 /** @brief Destroy the track. */
-LibClass177EE0::~LibClass177EE0()
+LibPooledSlerpQuaternionTrack::~LibPooledSlerpQuaternionTrack()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1930);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", get_end_delta__29LibPooledSlerpQuaternionTrackCFPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1A50);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", sample__29LibPooledSlerpQuaternionTrackCFf);
 
-void func_004B24A0(void* object, float value1, float value2)
+/**
+ * @brief Store the single keyframe from plain floats.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ */
+void LibPooledFloatTrack::set_single_float_key(float key, float value)
 {
-    static_cast<LibFloatKeyTrack*>(object)->LibFloatKeyTrack::on_set_single_key(&value2, value1);
+    LibFloatKeyTrack::on_set_single_key(&value, key);
 }
 
 /**
@@ -2454,9 +2423,14 @@ void LibPooledFloatTrack::replace_float_key(s32 index, float key, float value)
     LibFloatKeyTrack::on_replace_key(index, key, &value);
 }
 
-void func_004B2500(void* object, float value1, float value2)
+/**
+ * @brief Append a keyframe from plain floats.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ */
+void LibPooledFloatTrack::append_float_key(float key, float value)
 {
-    static_cast<LibFloatKeyTrack*>(object)->LibFloatKeyTrack::on_append_key(&value2, value1);
+    LibFloatKeyTrack::on_append_key(&value, key);
 }
 
 /** @brief Give the track back to its pool when it came from one, otherwise delete it. */
@@ -2475,10 +2449,11 @@ void LibPooledFloatTrack::release()
     }
 }
 
-void func_004B2580(void* object)
+/** @brief Free the keys and give the track back to g_float_track_pool. */
+void LibPooledFloatTrack::return_to_pool()
 {
-    static_cast<LibFloatTrackBase*>(object)->free_keys();
-    float_track_pool_free(g_float_track_pool, static_cast<LibPooledFloatTrack*>(object));
+    LibFloatTrackBase::free_keys();
+    float_track_pool_free(g_float_track_pool, this);
 }
 
 /** @brief Destroy the track. */
@@ -2486,26 +2461,32 @@ LibPooledFloatTrack::~LibPooledFloatTrack()
 {
 }
 
-void func_004B2700(void* object)
+/** @brief Forget the last sampled value and reset the keys' bookkeeping. */
+void LibFloatTrack::reset_state()
 {
-    ((ClearForwardWordOwnertext_004AB8B0*)object)->unk48 = 0;
-    static_cast<LibFloatTrackBase*>(object)->LibFloatTrackBase::reset_state();
+    last_value = 0.0f;
+    LibFloatTrackBase::reset_state();
 }
 
-void func_004B2720(const void* object, float* output)
+/**
+ * @brief Report the last key's value minus the first's.
+ * @param output Receives the difference; left alone when there are no keys.
+ */
+void LibFloatTrack::get_end_delta(void* output) const
 {
-    const FloatKeyScanOwner_text_004AB8B0_10* receiver = (const FloatKeyScanOwner_text_004AB8B0_10*)object;
-    FloatDiffEntry_text_004AB8B0_08* entries = (FloatDiffEntry_text_004AB8B0_08*)receiver->entries;
-
-    if (entries != 0)
+    if (key_array != 0)
     {
-        *output = entries[receiver->count18 - 1].value - entries[0].value;
+        *static_cast<float*>(output) = key_array[state.key_count - 1].value - key_array[0].value;
     }
 }
 
-void func_004B2750(const void* object, float* value)
+/**
+ * @brief Report how fast the sampled value was changing.
+ * @param output Receives the rate.
+ */
+void LibFloatTrack::get_value_rate(void* output) const
 {
-    *value = *(const float*)((const u8*)object + 0x4C);
+    *static_cast<float*>(output) = value_rate;
 }
 
 /**
@@ -2575,41 +2556,51 @@ void LibFloatTrackBase::allocate_keys(s32 count)
     }
 }
 
-/** Set the low packed mode at 0x22 and record whether either mode equals four. */
-void func_004B29A0(void* object, u8 mode)
+/**
+ * @brief Set the end mode used before the first key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibFloatTrackBase::set_before_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at22.lowMode = mode;
-    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+    state.before_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Set the high packed mode at 0x22 and record whether either mode equals four. */
-void func_004B2A00(void* object, u8 mode)
+/**
+ * @brief Set the end mode used after the last key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibFloatTrackBase::set_after_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at22.highMode = mode;
-    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+    state.after_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Return the word at receiver offset 0x10. */
-u32 func_004B2A60(const void* object)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 LibFloatTrackBase::get_cycle_count() const
 {
-    const WordGetterOwnertext_004AB8B0* receiver = (const WordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk10;
+    return state.cycle_count;
 }
 
-/** Return the signed halfword at receiver offset 0x18. */
-s16 func_004B2A70(const void* object)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 LibFloatTrackBase::get_key_count() const
 {
-    const HalfwordGetterOwnertext_004AB8B0* receiver = (const HalfwordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk18;
+    return state.key_count;
 }
 
-/** Return the signed halfword at receiver offset 0x1A. */
-s16 func_004B2A80(const void* object)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 LibFloatTrackBase::get_key_capacity()
 {
-    const HalfwordGetterOwnertext_004AB8B0* receiver = (const HalfwordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk1a;
+    return state.key_capacity;
 }
 
 /**
@@ -2617,7 +2608,11 @@ s16 func_004B2A80(const void* object)
  * @param object Receiver or first argument; unused.
  * @return 0.0f.
  */
-float func_004B2A90(void* object)
+/**
+ * @brief Return zero, the track's value when it has no keys.
+ * @return Zero.
+ */
+float LibFloatTrackBase::get_zero_value() const
 {
     return 0.0f;
 }
@@ -2632,11 +2627,13 @@ void LibFloatTrackBase::evaluate(float key, void* output)
     *static_cast<float*>(output) = sample(key);
 }
 
-/** Return the word at receiver offset 0x4. */
-u32 func_004B2AD0(const void* object)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+void* LibFloatTrackBase::get_keys()
 {
-    const WordGetterOwnertext_004AB8B0* receiver = (const WordGetterOwnertext_004AB8B0*)object;
-    return receiver->unk04;
+    return key_array;
 }
 
 /** @brief Delete the key storage unless it is external, and clear the key pointer. */
@@ -2665,7 +2662,7 @@ void float_track_pool_free(LibTrackPool<LibPooledFloatTrack>* pool, LibPooledFlo
  * @param pool Pool that owns the track.
  * @param track Track to release.
  */
-void track_1718C0_pool_free(LibTrackPool<LibClass177EE0>* pool, LibClass177EE0* track)
+void slerp_quaternion_track_pool_free(LibTrackPool<LibPooledSlerpQuaternionTrack>* pool, LibPooledSlerpQuaternionTrack* track)
 {
     pool->free(track);
 }
@@ -2719,35 +2716,38 @@ float LibFloatTrackBase::find_key_value(float key)
     return 0.0f;
 }
 
-/** Return the key span between the first and last entries. */
-float func_004B2CC0(void* object)
+/**
+ * @brief Return the last key minus the first, or zero below two keys.
+ * @return Key span.
+ */
+float LibFloatTrackBase::get_key_span() const
 {
-    const FloatKeyScanOwner_text_004AB8B0_08* receiver = static_cast<const FloatKeyScanOwner_text_004AB8B0_08*>(object);
-    s32 count = receiver->count18;
+    s32 last_index;
+    LibFloatTrackKey* last_entry;
 
-    if (count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
 
-    const FloatKeyScanEntry_text_004AB8B0_08* entries = receiver->entries;
-    const FloatKeyScanEntry_text_004AB8B0_08* lastEntry = entries + --count;
-    float first = entries[0].key00;
-    float last = lastEntry->key00;
-    return last - first;
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
-/** Find a key in the receiver's fixed-size entry array. */
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004B2D10(void* object, float key)
+/**
+ * @brief Test whether a key is stored exactly.
+ * @param key Key to find.
+ * @return One when a key equals it, otherwise zero.
+ */
+s32 LibFloatTrackBase::has_key(float key) const
 {
-    FloatKeyScanOwner_text_004AB8B0_08* receiver = static_cast<FloatKeyScanOwner_text_004AB8B0_08*>(object);
-    s16 count = receiver->count18;
+    s16 count = state.key_count;
     s32 index;
 
     for (index = 0; index < count; index++)
     {
-        if (key == receiver->entries[index].key00)
+        if (key == key_array[index].key)
         {
             return 1;
         }
@@ -3260,7 +3260,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", sample__22LibLi
  * @param key Evaluation key.
  * @return Interpolated value, or zero before any sample.
  */
-float LibClass178200::sample(float key) const
+float LibLinearFloatHistory::sample(float key) const
 {
     if (!sample_count)
     {
@@ -3278,9 +3278,9 @@ float LibClass178200::sample(float key) const
  * @param key Key.
  * @param value Value at the key.
  */
-void LibClass178200::add_sample(float key, float value)
+void LibLinearFloatHistory::add_sample(float key, float value)
 {
-    LibClass178200::push_sample(&value, key);
+    LibLinearFloatHistory::push_sample(&value, key);
 }
 
 /**
@@ -3361,7 +3361,7 @@ float LibLinearVectorHistory::find_blend(float key, s32* lower, s32* upper) cons
  * @param value Value to store.
  * @param key Key to store.
  */
-void LibClass178200::push_sample(const float* value, float key)
+void LibLinearFloatHistory::push_sample(const float* value, float key)
 {
     values[next_index] = *value;
     keys[next_index] = key;
@@ -3384,7 +3384,7 @@ void LibClass178200::push_sample(const float* value, float key)
  * @param upper Receives the index of the newer sample.
  * @return Blend factor from the older sample to the newer one; zero until both samples are stored.
  */
-float LibClass178200::find_blend(float key, s32* lower, s32* upper) const
+float LibLinearFloatHistory::find_blend(float key, s32* lower, s32* upper) const
 {
     if (sample_count != 2)
     {

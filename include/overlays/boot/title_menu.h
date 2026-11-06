@@ -86,7 +86,7 @@ class BootTitleMenu : public LibListObject
         /** @brief Dim Continue and Battle Collection unless a memory card holds the data they need. */
         void update_item_availability();
 
-        BootScene* scene;
+        LibScene* scene;
         s32 step;
 
         /** The scene's camera node, made the current display. */

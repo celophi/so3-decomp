@@ -340,6 +340,7 @@ class BootProgram : public BootResidentProgram
 
         BootBattleTrophyCard* trophy_card;
         BootUnitErrorPopup* error_popup;
+        /** Cleared on construction and when run starts; nothing in boot reads it. */
         s32 unk2C;
 
         /** Program to run next, set when the boot program should end; passed on to the resident runtime. */

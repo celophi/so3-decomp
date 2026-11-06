@@ -201,8 +201,8 @@ class BootFloatHistory : public BootFloatHistoryBase
         float keys[2];
 };
 
-/** 0x24-byte BootFloatHistory with the Lib vtable D_178200. */
-class BootClass178200 : public BootFloatHistory
+/** 0x24-byte BootFloatHistory that blends its two values linearly, with the Lib vtable D_178200. */
+class BootLinearFloatHistory : public BootFloatHistory
 {
     public:
         /**
@@ -265,8 +265,8 @@ class BootVectorHistory : public BootVectorHistoryBase
         float keys[2];
 };
 
-/** 0x20-byte BootVectorHistory with the Lib vtable D_1781E0. */
-class BootClass1781E0 : public BootVectorHistory
+/** 0x20-byte BootVectorHistory that blends xyz linearly, with the Lib vtable D_1781E0. */
+class BootLinearVectorHistory : public BootVectorHistory
 {
     public:
         /**
@@ -278,14 +278,14 @@ class BootClass1781E0 : public BootVectorHistory
 };
 
 /**
- * Two-sample vector history with vtable D_171B20 in main data; its data comes before the vptr. The same layout as
- * BootVectorHistoryBase; Lib's BootClass1718C0-family sampler resets and fills one.
+ * Two-sample quaternion history with vtable D_171B20 in main data; its data comes before the vptr. The same layout as
+ * BootVectorHistoryBase; Lib's BootPooledSlerpQuaternionTrack sampler resets and fills one.
  */
-class BootClass171B20
+class BootQuaternionHistoryBase
 {
     public:
         /** @brief Reset the record. */
-        BootClass171B20();
+        BootQuaternionHistoryBase();
 
         /** @brief Forget the stored samples. */
         void reset();
@@ -300,15 +300,19 @@ class BootClass171B20
         virtual void func_slot08();
 };
 
-/** BootClass171B20 with vtable D_171B70 in main data. */
-class BootClass171B70 : public BootClass171B20
+/** BootQuaternionHistoryBase with vtable D_171B70 in main data. */
+class BootQuaternionHistory : public BootQuaternionHistoryBase
 {
     public:
         /** @brief Reset the record and clear its vector. */
-        BootClass171B70();
+        BootQuaternionHistory();
 
-        // Pure virtual slot 0xC; only its position is known.
-        virtual void func_slot0c() = 0;
+        /**
+         * @brief Interpolate the two stored quaternions at a key.
+         * @param key Evaluation key.
+         * @return Interpolated quaternion.
+         */
+        virtual FieldVec4B sample(float key) = 0;
 
         /**
          * @brief Store a value and key in the two-entry history and count it, up to two.
@@ -321,12 +325,16 @@ class BootClass171B70 : public BootClass171B20
         float keys[2];
 };
 
-/** 0x20-byte BootClass171B70 with the Lib vtable D_1781C0. */
-class BootClass1781C0 : public BootClass171B70
+/** 0x20-byte BootQuaternionHistory that slerps, with the Lib vtable D_1781C0. */
+class BootSlerpQuaternionHistory : public BootQuaternionHistory
 {
     public:
-        // Lib implementation of the pure slot; only its position is known.
-        virtual void func_slot0c();
+        /**
+         * @brief Slerp the two stored quaternions at a key; boot uses the Lib implementation.
+         * @param key Evaluation key.
+         * @return Interpolated quaternion.
+         */
+        virtual FieldVec4B sample(float key);
 };
 
 /** Scalar range with vtable D_171B88 in main data; its data comes before the vptr. */
@@ -725,7 +733,7 @@ class BootFloatTrack : public BootFloatKeyTrack
          */
         virtual float sample(float key);
 
-        BootClass178200 sample_history;
+        BootLinearFloatHistory sample_history;
         float last_value;
         float value_rate;
 };
@@ -1028,7 +1036,7 @@ class BootVectorTrack : public BootVectorKeyTrack
         virtual void reset_state();
         virtual FieldVec4A sample(float key);
 
-        BootClass1781E0 sample_history;
+        BootLinearVectorHistory sample_history;
         FieldVec4B last_value;
         FieldVec4B value_rate;
 };
@@ -1049,30 +1057,30 @@ class BootPooledVectorTrack : public BootVectorTrack
         virtual void return_to_pool();
 };
 
-/** 32-byte keyframe of BootClass1718C0: a key and a value at offset 0x10. */
-struct BootTrackKey1718C0
+/** 32-byte keyframe of BootSlerpQuaternionTrackBase: a key and a rotation quaternion at offset 0x10. */
+struct BootSlerpQuaternionTrackKey
 {
     /** @brief Leave the keyframe uninitialized. */
-    BootTrackKey1718C0();
+    BootSlerpQuaternionTrackKey();
 
     float key;
     FieldVec4B value;
 };
 
 /**
- * Keyframe track with vtable D_1718C0 in main data; its constructor and destructor are out of line. The values look
- * like rotations: Lib's sampler (0x4B1A50, through D_177EE0) handles the end modes with quaternion inverses and a VU
- * normalize, as BootFloatQuaternionTrackBase's does, but interpolates with plain float maths and a BootClass171B70
- * history instead of slerp.
+ * Key storage for rotation tracks with plain (key, quaternion) keys, with vtable D_1718C0 in main data; its
+ * constructor and destructor are out of line. Lib's sampler (0x4B1A50, through D_177EE0) pushes the keys around the
+ * sample key into a BootSlerpQuaternionHistory and slerps through it; unlike BootFloatQuaternionTrackBase, the keys
+ * carry no extra values.
  */
-class BootClass1718C0 : public BootTrack
+class BootSlerpQuaternionTrackBase : public BootTrack
 {
     public:
         /** @brief Construct the track. */
-        BootClass1718C0();
+        BootSlerpQuaternionTrackBase();
 
         /** @brief Destroy the track. */
-        virtual ~BootClass1718C0();
+        virtual ~BootSlerpQuaternionTrackBase();
 
         /**
          * @brief Allocate storage for the requested keyframe count.
@@ -1085,7 +1093,7 @@ class BootClass1718C0 : public BootTrack
          * @param count Keyframe count.
          * @param entries External keyframe storage.
          */
-        virtual void bind_keys(s32 count, BootTrackKey1718C0* entries);
+        virtual void bind_keys(s32 count, BootSlerpQuaternionTrackKey* entries);
 
         /**
          * @brief Set what the track does before its first key.
@@ -1207,7 +1215,7 @@ class BootClass1718C0 : public BootTrack
          * @brief Return the key storage.
          * @return Key array, or null.
          */
-        virtual BootTrackKey1718C0* get_keys();
+        virtual BootSlerpQuaternionTrackKey* get_keys();
 
         /** @brief Clear the key storage, counts, modes and cached indices. */
         virtual void reset_state();
@@ -1277,7 +1285,7 @@ class BootClass1718C0 : public BootTrack
         /** @brief Delete the key storage unless it is external, and clear the key pointer. */
         void free_keys();
 
-        BootTrackKey1718C0* key_array;
+        BootSlerpQuaternionTrackKey* key_array;
         u8 unk08[8];
 
         /** Key of the single cached keyframe, used before an array is allocated. */
@@ -1291,12 +1299,12 @@ class BootClass1718C0 : public BootTrack
         BootSequenceTail state;
 };
 
-/** Partial BootClass1718C0 with vtable D_171320 in main data. */
-class BootClass171320 : public BootClass1718C0
+/** BootSlerpQuaternionTrackBase that stores its keys, with vtable D_171320 in main data. */
+class BootSlerpQuaternionKeyTrack : public BootSlerpQuaternionTrackBase
 {
     public:
         /** @brief Destroy the track. */
-        virtual ~BootClass171320()
+        virtual ~BootSlerpQuaternionKeyTrack()
         {
         }
 
@@ -1309,15 +1317,15 @@ class BootClass171320 : public BootClass1718C0
         virtual void on_set_single_key(const FieldVec4A* value, float key);
 };
 
-/** 0xC0-byte pooled track with the Lib vtable D_177EE0. */
-class BootClass177EE0 : public BootClass171320
+/** 0xC0-byte pooled BootSlerpQuaternionKeyTrack with the Lib vtable D_177EE0, allocated from g_slerp_quaternion_track_pool. */
+class BootPooledSlerpQuaternionTrack : public BootSlerpQuaternionKeyTrack
 {
     public:
         /** @brief Construct the track. */
-        BootClass177EE0();
+        BootPooledSlerpQuaternionTrack();
 
         /** @brief Destroy the track. */
-        virtual ~BootClass177EE0();
+        virtual ~BootPooledSlerpQuaternionTrack();
 
         // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
@@ -1326,7 +1334,9 @@ class BootClass177EE0 : public BootClass171320
         virtual FieldVec4A sample(float key) const;
         virtual void return_to_pool();
 
-        BootClass1781C0 unk50;
+        /** Two-sample history the sampler fills and slerps through. */
+        BootSlerpQuaternionHistory sample_history;
+
         u8 unkA0[0x20];
 };
 
@@ -2916,9 +2926,9 @@ s32 vector_track_pool_allocate(BootTrackPool<BootPooledVectorTrack>* pool, s32 c
 
 void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool);
 
-s32 track_1718C0_pool_allocate(BootTrackPool<BootClass177EE0>* pool, s32 count);
+s32 slerp_quaternion_track_pool_allocate(BootTrackPool<BootPooledSlerpQuaternionTrack>* pool, s32 count);
 
-void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool);
+void slerp_quaternion_track_pool_release(BootTrackPool<BootPooledSlerpQuaternionTrack>* pool);
 
 s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* pool, s32 count);
 

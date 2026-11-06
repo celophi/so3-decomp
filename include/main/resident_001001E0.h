@@ -210,7 +210,7 @@ extern void* g_sif_command_receiver;
 extern void* D_001B5FB0[];
 
 /** Store a byte in the global at address 0x001B6420. */
-void func_00100A40(u8 value);
+void resident_set_program_running(u8 value);
 
 /** @brief The new handler main installs: report through the hook, or print a message and exit. */
 void resident_handle_out_of_memory(void);
