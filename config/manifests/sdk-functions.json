@@ -5123,7 +5123,7 @@
       "evidence": "sits between verified libgraph objects, and both pieces start with the same code; assumed library code pending a matching SDK; see docs/research.md",
       "functions": [
         {
-          "name": "func_0012FD10",
+          "name": "sceGsSetHalfOffset",
           "offset": 197520,
           "address": 1244432,
           "size": 136,
@@ -5166,7 +5166,7 @@
       "evidence": "sits between verified libgraph objects, and both pieces start with the same code; assumed library code pending a matching SDK; see docs/research.md",
       "functions": [
         {
-          "name": "func_0012FF78",
+          "name": "sceGsSetHalfOffset2",
           "offset": 198136,
           "address": 1245048,
           "size": 136,
