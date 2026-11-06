@@ -12,6 +12,7 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/render_buffer.h"
+#include "overlays/lib/scene.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/text_004DD440.h"
@@ -25,8 +26,6 @@
 
 class LibContainer;
 class LibMoviePlayer;
-class BootClass170F30;
-class BootScene;
 struct ResidentInputSystem;
 
 /** Resource IDs used by the boot program and its menus. */
@@ -115,15 +114,6 @@ static inline void set_resource_bit(LibTrophyFlags* bits, u32 index, s32 enabled
     }
 }
 
-
-/** Four floats of a panel rectangle. */
-struct BootPanelRect50
-{
-    float unk00;
-    float unk04;
-    float unk08;
-    float unk0c;
-};
 
 /** Title menu choices; auto-select picks Continue when a card holds a save. */
 enum BootTitleItem
@@ -237,16 +227,6 @@ enum BootTrophyProbeEvent
 {
     BOOT_TROPHY_FILE_PRESENT = 5,
     BOOT_TROPHY_FILE_MISSING = 6
-};
-
-/** Partial 0xB0-byte Lib scene with vtable D_175320 in main data; boot calls the Lib constructor. */
-class BootScene : public LibListObject
-{
-    public:
-        /** @brief Construct an empty scene. */
-        BootScene();
-
-        u8 unk14[0x9C];
 };
 
 /** Heap capacity and frame dimensions shared by the opening and launch movies. */

@@ -2184,13 +2184,13 @@ extern "C" s32 resident_stream_get_loop_count(ResidentStreamThread* thread)
 }
 
 /**
- * @brief Read the stream thread's signed byte at offset 0xBC.
+ * @brief Report whether the stream's two channels hold mid and side instead of left and right.
  * @param thread Stream thread.
- * @return The signed byte, promoted to a word.
+ * @return The stream header's mid/side flag.
  */
-extern "C" s32 func_00109FD0(const ResidentStreamThread* thread)
+extern "C" s32 resident_stream_is_mid_side(const ResidentStreamThread* thread)
 {
-    return thread->unkBC;
+    return thread->mid_side;
 }
 
 /**

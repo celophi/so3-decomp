@@ -269,7 +269,7 @@ struct FieldChannelPool
 {
     s32 unk00;
     s32 unk04;
-    LibClass177EE0* unk08;
+    LibPooledSlerpQuaternionTrack* unk08;
     u8 unk0c[8];
     u64* unk14;
     u8 unk18;
@@ -1012,14 +1012,14 @@ extern const s16* const D_301380[];
 extern const char D_31A7D8[];
 
 /** Shared animation channel pool. */
-extern FieldChannelPool* g_track_1718C0_pool;
+extern FieldChannelPool* g_slerp_quaternion_track_pool;
 
 /**
  * @brief Acquire and reset the next available channel in the pool.
  * @param pool Channel pool.
  * @return Acquired channel, or null when none is available.
  */
-LibClass177EE0* func_001E93E0(FieldChannelPool* pool);
+LibPooledSlerpQuaternionTrack* func_001E93E0(FieldChannelPool* pool);
 
 /**
  * @brief Release a vector channel's owned entry array and clear its array pointer.
@@ -1115,7 +1115,7 @@ s32 func_001ECF10(const FieldGatedObject448* object);
  * @brief Clear the entry array pointer, counters and flags, and set both nibbles and the three halfword indices to their initial values.
  * @param object Receiver to reset.
  */
-void func_001E94F0(LibClass177B50* object);
+void func_001E94F0(LibSlerpQuaternionTrackBase* object);
 
 /**
  * @brief Create the FieldClass1504F0 instance and insert it into g_update_list.

@@ -15,3 +15,5 @@ battle_reset_quaternion_channel = 0x00222980; // type:func
 
 battle_set_quaternion_low_mode = 0x002227F0; // type:func
 g_renderer = 0x001B661C; // absolute:True
+resident_stream_is_mid_side = 0x00109FD0; // absolute:True
+resident_set_program_running = 0x00100A40; // absolute:True

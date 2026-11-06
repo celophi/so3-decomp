@@ -4,15 +4,18 @@
 #include "overlays/boot/boot.h"
 #include "overlays/boot/title_menu.h"
 
-/** Partial model object with vtable D_170F30 in main data. */
-class BootClass170F30 : public LibModel
+/**
+ * Copy of a girl model drawn mirrored in the floor, with vtable D_170F30 in main data. It shares the original's parent
+ * transform and flips y before drawing, so it shows upside down under the BootFlatFloor at height zero.
+ */
+class BootReflectedModel : public LibModel
 {
     public:
         /** @brief Destroy the model object. */
-        virtual ~BootClass170F30();
+        virtual ~BootReflectedModel();
 
         /**
-         * @brief Negate the matrix's second vector, then apply the matrix through the Lib model.
+         * @brief Negate the transform's y row, mirroring the model across the floor, then build the packet through the Lib model.
          * @param matrix Matrix supplied by the caller.
          * @param context Opaque caller context.
          */
@@ -209,9 +212,10 @@ class BootNewGameSettings : public LibListObject
         float row_x;
 
         BootImage* images[21];
-        BootScene* room_scene;
-        BootScene* girl_scene;
-        BootClass170F30* girl_models[10];
+        LibScene* room_scene;
+        LibScene* girl_scene;
+        /** Mirrored copies of the girl's models (type 0x100) for the floor reflection. */
+        BootReflectedModel* girl_reflections[10];
 
         /** Walk animations, one per walk_state. */
         LibAnimation* girl_animations[6];

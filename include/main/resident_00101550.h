@@ -781,11 +781,11 @@ u32 func_00108800(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 ar
 s32 resident_stream_read_samples(struct ResidentStreamThread* thread, s32 ring, s32 count, float* output);
 
 /**
- * @brief Read the stream thread's signed byte at offset 0xBC.
+ * @brief Report whether the stream's two channels hold mid and side instead of left and right.
  * @param thread Stream thread.
- * @return The signed byte, promoted to a word.
+ * @return The stream header's mid/side flag.
  */
-s32 func_00109FD0(const struct ResidentStreamThread* thread);
+s32 resident_stream_is_mid_side(const struct ResidentStreamThread* thread);
 
 /**
  * @brief Set the receiver flag when the input value is positive.

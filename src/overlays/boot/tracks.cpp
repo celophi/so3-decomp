@@ -76,18 +76,18 @@ void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool)
  * @param count Number of tracks.
  * @return One on success, or zero when the tracks could not be allocated.
  */
-s32 track_1718C0_pool_allocate(BootTrackPool<BootClass177EE0>* pool, s32 count)
+s32 slerp_quaternion_track_pool_allocate(BootTrackPool<BootPooledSlerpQuaternionTrack>* pool, s32 count)
 {
     return pool->init(count);
 }
 
 /** @brief Destroy the track. */
-BootClass177EE0::~BootClass177EE0()
+BootPooledSlerpQuaternionTrack::~BootPooledSlerpQuaternionTrack()
 {
 }
 
 /** @brief Construct the track. */
-BootClass177EE0::BootClass177EE0()
+BootPooledSlerpQuaternionTrack::BootPooledSlerpQuaternionTrack()
 {
 }
 
@@ -95,7 +95,7 @@ BootClass177EE0::BootClass177EE0()
  * @brief Release every track in the pool and its storage.
  * @param pool Pool to clear.
  */
-void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool)
+void slerp_quaternion_track_pool_release(BootTrackPool<BootPooledSlerpQuaternionTrack>* pool)
 {
     pool->release();
 }
@@ -1161,7 +1161,7 @@ void BootFloatTrack::get_value_rate(float* output) const
 }
 
 /** @brief Reset the record and clear its vector. */
-BootClass171B70::BootClass171B70()
+BootQuaternionHistory::BootQuaternionHistory()
 {
     unk00 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -1200,13 +1200,13 @@ BootFloatHistory::BootFloatHistory()
 }
 
 /** @brief Reset the record. */
-BootClass171B20::BootClass171B20()
+BootQuaternionHistoryBase::BootQuaternionHistoryBase()
 {
     reset();
 }
 
 /** @brief Forget the stored samples. */
-void BootClass171B20::reset()
+void BootQuaternionHistoryBase::reset()
 {
     sample_count = 0;
     next_index = 0;
@@ -1904,7 +1904,7 @@ void BootFloatCurveTrackBase::free_keys()
 }
 
 /** @brief Release the keyframe storage. */
-BootClass1718C0::~BootClass1718C0()
+BootSlerpQuaternionTrackBase::~BootSlerpQuaternionTrackBase()
 {
     free_keys();
 }
@@ -1912,7 +1912,7 @@ BootClass1718C0::~BootClass1718C0()
 /**
  * @brief Reset array storage, counts, packed controls, and cached indices.
  */
-void BootClass1718C0::reset_state()
+void BootSlerpQuaternionTrackBase::reset_state()
 {
     key_array = 0;
     state.before_mode = BOOT_TRACK_END_CYCLE;
@@ -1931,7 +1931,7 @@ void BootClass1718C0::reset_state()
  * @brief Set the low packed value and flag whether either packed value is 4.
  * @param value Value to store, truncated to four bits.
  */
-void BootClass1718C0::set_before_mode(u32 value)
+void BootSlerpQuaternionTrackBase::set_before_mode(u32 value)
 {
     state.before_mode = value;
     state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
@@ -1941,7 +1941,7 @@ void BootClass1718C0::set_before_mode(u32 value)
  * @brief Set the high packed value and flag whether either packed value is 4.
  * @param value Value to store, truncated to four bits.
  */
-void BootClass1718C0::set_after_mode(u32 value)
+void BootSlerpQuaternionTrackBase::set_after_mode(u32 value)
 {
     state.after_mode = value;
     state.extends_segment = state.before_mode == BOOT_TRACK_END_EXTEND_SEGMENT || state.after_mode == BOOT_TRACK_END_EXTEND_SEGMENT;
@@ -1951,7 +1951,7 @@ void BootClass1718C0::set_after_mode(u32 value)
  * @brief Return how many key spans the last wrapped key was past the first key.
  * @return Signed cycle count.
  */
-s32 BootClass1718C0::get_cycle_count() const
+s32 BootSlerpQuaternionTrackBase::get_cycle_count() const
 {
     return state.cycle_count;
 }
@@ -1960,7 +1960,7 @@ s32 BootClass1718C0::get_cycle_count() const
  * @brief Return the number of stored keys.
  * @return Key count.
  */
-s16 BootClass1718C0::get_key_count() const
+s16 BootSlerpQuaternionTrackBase::get_key_count() const
 {
     return state.key_count;
 }
@@ -1969,7 +1969,7 @@ s16 BootClass1718C0::get_key_count() const
  * @brief Return the number of keys the storage can hold.
  * @return Key capacity.
  */
-s16 BootClass1718C0::get_key_capacity()
+s16 BootSlerpQuaternionTrackBase::get_key_capacity()
 {
     return state.key_capacity;
 }
@@ -1978,7 +1978,7 @@ s16 BootClass1718C0::get_key_capacity()
  * @brief Return a zero vector; the track's value when it has no keys.
  * @return Zero vector.
  */
-FieldVec4A BootClass1718C0::get_zero_value() const
+FieldVec4A BootSlerpQuaternionTrackBase::get_zero_value() const
 {
     return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
@@ -1988,7 +1988,7 @@ FieldVec4A BootClass1718C0::get_zero_value() const
  * @param key Evaluation key.
  * @param output Receives the evaluated value.
  */
-void BootClass1718C0::evaluate(float key, FieldVec4B* output) const
+void BootSlerpQuaternionTrackBase::evaluate(float key, FieldVec4B* output) const
 {
     *output = sample(key);
 }
@@ -1997,13 +1997,13 @@ void BootClass1718C0::evaluate(float key, FieldVec4B* output) const
  * @brief Return the key storage.
  * @return Key array, or null.
  */
-BootTrackKey1718C0* BootClass1718C0::get_keys()
+BootSlerpQuaternionTrackKey* BootSlerpQuaternionTrackBase::get_keys()
 {
     return key_array;
 }
 
 /** @brief Delete the key storage unless it is external, and clear the key pointer. */
-void BootClass1718C0::free_keys()
+void BootSlerpQuaternionTrackBase::free_keys()
 {
     if (!state.external_keys)
     {
@@ -2838,11 +2838,11 @@ BootVectorTrackBase::BootVectorTrackBase()
  * @param key Scalar key whose normalized span quotient must fit in a signed word.
  * @return Key minus the computed number of endpoint spans, or the key for zero spans.
  */
-float BootClass1718C0::wrap_key(float key) const
+float BootSlerpQuaternionTrackBase::wrap_key(float key) const
 {
     s32 last_index = state.key_count - 1;
-    BootTrackKey1718C0* entries = key_array;
-    BootTrackKey1718C0* last = entries + last_index;
+    BootSlerpQuaternionTrackKey* entries = key_array;
+    BootSlerpQuaternionTrackKey* last = entries + last_index;
     float first = entries[0].key;
     float span = last->key - first;
     float quotient = (key - first) / span;
@@ -2868,7 +2868,7 @@ float BootClass1718C0::wrap_key(float key) const
  * @param key Key to find.
  * @return Associated value, or a zero vector when no key matches.
  */
-FieldVec4A BootClass1718C0::find_key_value(float key)
+FieldVec4A BootSlerpQuaternionTrackBase::find_key_value(float key)
 {
     s32 index;
 
@@ -2876,7 +2876,7 @@ FieldVec4A BootClass1718C0::find_key_value(float key)
     {
         if (key == key_array[index].key)
         {
-            BootTrackKey1718C0* entry = key_array + index;
+            BootSlerpQuaternionTrackKey* entry = key_array + index;
             return *reinterpret_cast<const FieldVec4A*>(&entry->value);
         }
     }
@@ -2888,10 +2888,10 @@ FieldVec4A BootClass1718C0::find_key_value(float key)
  * @brief Return the last-to-first key difference, or zero below two records.
  * @return Difference between the last and first scalar keys, or zero.
  */
-float BootClass1718C0::get_key_span() const
+float BootSlerpQuaternionTrackBase::get_key_span() const
 {
     s32 last_index;
-    BootTrackKey1718C0* last_entry;
+    BootSlerpQuaternionTrackKey* last_entry;
 
     if (state.key_count < 2)
     {
@@ -2908,7 +2908,7 @@ float BootClass1718C0::get_key_span() const
  * @param key Scalar key to find.
  * @return One for an equal key, or zero when none is present.
  */
-s32 BootClass1718C0::has_key(float key) const
+s32 BootSlerpQuaternionTrackBase::has_key(float key) const
 {
     s16 count = state.key_count;
     s32 index;
@@ -2929,7 +2929,7 @@ s32 BootClass1718C0::has_key(float key) const
  * @param value Key value.
  * @param key Key the keyframe sits at.
  */
-void BootClass1718C0::set_single_key(const FieldVec4A* value, float key)
+void BootSlerpQuaternionTrackBase::set_single_key(const FieldVec4A* value, float key)
 {
     on_set_single_key(value, key);
 }
@@ -2939,7 +2939,7 @@ void BootClass1718C0::set_single_key(const FieldVec4A* value, float key)
  * @param value Key value.
  * @param key Key the keyframe sits at.
  */
-void BootClass1718C0::on_set_single_key(const FieldVec4A* value, float key)
+void BootSlerpQuaternionTrackBase::on_set_single_key(const FieldVec4A* value, float key)
 {
 }
 
@@ -2950,7 +2950,7 @@ void BootClass1718C0::on_set_single_key(const FieldVec4A* value, float key)
  * @param value Key value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1718C0::insert_key(s32 index, float key, const FieldVec4A* value)
+s32 BootSlerpQuaternionTrackBase::insert_key(s32 index, float key, const FieldVec4A* value)
 {
     return on_insert_key(index, key, value);
 }
@@ -2962,7 +2962,7 @@ s32 BootClass1718C0::insert_key(s32 index, float key, const FieldVec4A* value)
  * @param value Key value.
  * @return Zero.
  */
-s32 BootClass1718C0::on_insert_key(s32 index, float key, const FieldVec4A* value)
+s32 BootSlerpQuaternionTrackBase::on_insert_key(s32 index, float key, const FieldVec4A* value)
 {
     return 0;
 }
@@ -2974,7 +2974,7 @@ s32 BootClass1718C0::on_insert_key(s32 index, float key, const FieldVec4A* value
  * @param value Key value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1718C0::replace_key(s32 index, float key, const FieldVec4A* value)
+s32 BootSlerpQuaternionTrackBase::replace_key(s32 index, float key, const FieldVec4A* value)
 {
     return on_replace_key(index, key, value);
 }
@@ -2986,7 +2986,7 @@ s32 BootClass1718C0::replace_key(s32 index, float key, const FieldVec4A* value)
  * @param value Key value.
  * @return Zero.
  */
-s32 BootClass1718C0::on_replace_key(s32 index, float key, const FieldVec4A* value)
+s32 BootSlerpQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     return 0;
 }
@@ -2997,7 +2997,7 @@ s32 BootClass1718C0::on_replace_key(s32 index, float key, const FieldVec4A* valu
  * @param key Key the keyframe sits at.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass1718C0::append_key(const FieldVec4A* value, float key)
+s32 BootSlerpQuaternionTrackBase::append_key(const FieldVec4A* value, float key)
 {
     return on_append_key(value, key);
 }
@@ -3008,7 +3008,7 @@ s32 BootClass1718C0::append_key(const FieldVec4A* value, float key)
  * @param key Key the keyframe sits at.
  * @return Zero.
  */
-s32 BootClass1718C0::on_append_key(const FieldVec4A* value, float key)
+s32 BootSlerpQuaternionTrackBase::on_append_key(const FieldVec4A* value, float key)
 {
     return 0;
 }
@@ -3018,10 +3018,10 @@ s32 BootClass1718C0::on_append_key(const FieldVec4A* value, float key)
  * @param count Positive entry count representable in the receiver count fields.
  * @param entries External storage containing the specified number of entries.
  */
-void BootClass1718C0::bind_keys(s32 count, BootTrackKey1718C0* entries)
+void BootSlerpQuaternionTrackBase::bind_keys(s32 count, BootSlerpQuaternionTrackKey* entries)
 {
     s32 last_index = count - 1;
-    BootTrackKey1718C0* last;
+    BootSlerpQuaternionTrackKey* last;
     state.external_keys = 1;
     key_array = entries;
     state.key_capacity = count;
@@ -3034,11 +3034,11 @@ void BootClass1718C0::bind_keys(s32 count, BootTrackKey1718C0* entries)
  * @brief Allocate storage for the requested keyframe count.
  * @param count Requested keyframe count.
  */
-void BootClass1718C0::allocate_keys(s32 count)
+void BootSlerpQuaternionTrackBase::allocate_keys(s32 count)
 {
     state.external_keys = 0;
     delete[] key_array;
-    key_array = new (0) BootTrackKey1718C0[count];
+    key_array = new (0) BootSlerpQuaternionTrackKey[count];
     state.key_capacity = count;
 
     if (!key_array)
@@ -3048,12 +3048,12 @@ void BootClass1718C0::allocate_keys(s32 count)
 }
 
 /** @brief Leave the keyframe uninitialized. */
-BootTrackKey1718C0::BootTrackKey1718C0()
+BootSlerpQuaternionTrackKey::BootSlerpQuaternionTrackKey()
 {
 }
 
 /** @brief Clear the pooled flag and reset the sequence. */
-BootClass1718C0::BootClass1718C0()
+BootSlerpQuaternionTrackBase::BootSlerpQuaternionTrackBase()
 {
     state.pooled = false;
     reset_state();
@@ -3423,7 +3423,7 @@ s32 BootVectorKeyTrack::on_insert_key(s32 index, float key, const FieldVec4A* va
  * @param value Keyframe value.
  * @param key Sort key.
  */
-void BootClass171320::on_set_single_key(const FieldVec4A* value, float key)
+void BootSlerpQuaternionKeyTrack::on_set_single_key(const FieldVec4A* value, float key)
 {
     set_before_mode(BOOT_TRACK_END_USE_PRE_START_KEY);
     single_value = *value;
@@ -3439,7 +3439,7 @@ void BootClass171320::on_set_single_key(const FieldVec4A* value, float key)
  * @param second Unused; this track has no auxiliary vectors.
  * @return One when the index is within the capacity, otherwise zero.
  */
-s32 BootClass171320::read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const
+s32 BootSlerpQuaternionKeyTrack::read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const
 {
     if (key_array == 0)
     {
@@ -3471,7 +3471,7 @@ s32 BootClass171320::read_key(s32 index, float* key, FieldVec4B* value, FieldVec
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass171320::on_insert_key(s32 index, float key, const FieldVec4A* value)
+s32 BootSlerpQuaternionKeyTrack::on_insert_key(s32 index, float key, const FieldVec4A* value)
 {
     s32 count;
     s32 i;
@@ -3519,7 +3519,7 @@ s32 BootClass171320::on_insert_key(s32 index, float key, const FieldVec4A* value
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass171320::on_replace_key(s32 index, float key, const FieldVec4A* value)
+s32 BootSlerpQuaternionKeyTrack::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     if (key_array == 0)
     {
@@ -3550,7 +3550,7 @@ s32 BootClass171320::on_replace_key(s32 index, float key, const FieldVec4A* valu
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 BootClass171320::on_append_key(const FieldVec4A* value, float key)
+s32 BootSlerpQuaternionKeyTrack::on_append_key(const FieldVec4A* value, float key)
 {
     if (key_array == 0)
     {
@@ -4084,7 +4084,7 @@ void BootFloatQuaternionTrackBase::set_before_mode(u32 value)
  * @param value Value to store.
  * @param key Key to store.
  */
-void BootClass171B70::push_sample(const FieldVec4A* value, float key)
+void BootQuaternionHistory::push_sample(const FieldVec4A* value, float key)
 {
     values[next_index] = *value;
     keys[next_index] = key;
@@ -4122,7 +4122,7 @@ void BootFloatHistory::push_sample(const float* value, float key)
 }
 
 /** @brief Do nothing; the slot's purpose is unknown, and Lib's versions are empty too. */
-void BootClass171B20::func_slot08()
+void BootQuaternionHistoryBase::func_slot08()
 {
 }
 

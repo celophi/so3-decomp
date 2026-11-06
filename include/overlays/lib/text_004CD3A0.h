@@ -935,6 +935,27 @@ public:
     u8 effect_level;
 };
 
+/**
+ * 0x390-byte update list with vtable D_179690 in main data (constructor 0x4E95C0), made once by Lib's initialization
+ * and kept in D_001B6624. The renderer holds it at unk4084, calls into it before drawing models and at the end of the
+ * frame, and the scene builder appends objects to it and writes three floats at 0x310.
+ */
+class LibClass179690 : public LibUpdateList, public LibListObject
+{
+public:
+    /** @brief Construct the list. */
+    LibClass179690();
+
+    u8 unk8c[0x2D4];
+
+    /** Display manager; boot and the field point it at g_display_manager. */
+    LibDisplayManager* manager;
+
+    u8 unk364[0x2C];
+};
+
+extern LibClass179690* D_001B6624;
+
 /** Display manager whose current camera objects face by default. */
 extern LibDisplayManager* g_display_manager;
 
@@ -1020,7 +1041,7 @@ public:
     /** Scene manager whose current camera the frame is drawn with. */
     LibDisplayManager* manager;
 
-    void* unk4084;
+    LibClass179690* unk4084;
     LibCameraContext* display;
     u32 unk408c;
     u8 unk4090[4];

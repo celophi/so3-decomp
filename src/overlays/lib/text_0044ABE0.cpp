@@ -1379,7 +1379,7 @@ void lib_draw_buffer_start_batch(LibDrawBuffer* buffer)
  * @param distance Stored in the setup packet at 0x18.
  * @param flag Stored in the setup packet at 0x3F.
  */
-void lib_draw_buffer_end(LibDrawBuffer* buffer, s32 mode, float distance, s32 flag)
+extern "C" void lib_draw_buffer_end(LibDrawBuffer* buffer, s32 mode, float distance, s32 flag)
 {
     if (buffer->vertex_count != 0)
     {

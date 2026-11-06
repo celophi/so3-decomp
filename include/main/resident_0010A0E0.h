@@ -1113,7 +1113,12 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         /** Chunks sent from the current block. */
         u8 unkBB;
 
-        s8 unkBC;
+        /**
+         * Nonzero when the channels hold mid (sum) and side (difference) instead of left and right; copied from byte
+         * 0x28 of the stream header.
+         */
+        s8 mid_side;
+
         u8 unkBD;
         u8 unkBE;
         /** Times the stream has looped; the IOP fills this in, and a new stream starts it at zero. */

@@ -304,10 +304,10 @@ int main(int argc, char** argv)
         func_0010F250(sound, 0);
     } while (sound->state);
 
-    // TODO: The original calls func_00100A40 through a register and reads the input system right before, without
-    // using it; a call through a cast pointer is the only form I've found that gives the jalr.
+    // TODO: The original calls resident_set_program_running through a register and reads the input system right
+    // before, without using it; a call through a cast pointer is the only form I've found that gives the jalr.
     resident_system_get_input(&g_system);
-    ((void (*)(u8))func_00100A40)(1);
+    ((void (*)(u8))resident_set_program_running)(1);
 
     D_CTRL = D_CTRL_RELEASE_CYCLE_256 | D_CTRL_RELEASE_ENABLE | D_CTRL_DMA_ENABLE;
     D0_QWC = 0;
@@ -352,12 +352,12 @@ int main(int argc, char** argv)
 }
 
 /**
- * @brief Set the flag at D_001B6420; main sets it once start-up is done, and boot and field set it while they run.
+ * @brief Set g_program_running; main sets it once start-up is done, and boot and field set it while they run.
  * @param value New flag value.
  */
-void func_00100A40(u8 value)
+void resident_set_program_running(u8 value)
 {
-    D_001B6420 = value;
+    g_program_running = value;
 }
 
 /** @brief The new handler main installs: report through the hook, or print a message and exit. */

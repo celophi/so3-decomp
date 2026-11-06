@@ -29,30 +29,30 @@ template <class T> struct LibTrackPool
     bool external;
 };
 
-class LibClass177EE0;
+class LibPooledSlerpQuaternionTrack;
 class LibPooledFloatTrack;
 class LibPooledFloatCurveTrack;
 class LibPooledFloatQuaternionTrack;
 
-/** 32-byte keyframe of LibClass177B50: a key and a value at offset 0x10. */
-struct LibTrackKey177B50
+/** 32-byte keyframe of LibSlerpQuaternionTrackBase: a key and a rotation quaternion at offset 0x10. */
+struct LibSlerpQuaternionTrackKey
 {
     /** @brief Leave the keyframe uninitialized. */
-    LibTrackKey177B50();
+    LibSlerpQuaternionTrackKey();
 
     float key;
     FieldVec4B value;
 };
 
 /**
- * Vector keyframe track with vtable D_177B50 in main data; Lib's copy of Boot's BootClass1718C0. Its keys aren't
- * stored at this level.
+ * Key storage for rotation tracks with plain (key, quaternion) keys, with vtable D_177B50 in main data; Lib's copy of
+ * Boot's BootSlerpQuaternionTrackBase. Its keys aren't stored at this level.
  */
-class LibClass177B50 : public LibClass173180
+class LibSlerpQuaternionTrackBase : public LibClass173180
 {
 public:
     /** @brief Release the keyframe storage. */
-    virtual ~LibClass177B50();
+    virtual ~LibSlerpQuaternionTrackBase();
 
     virtual void allocate_keys(s32 count);
     virtual void bind_keys(s32 count, void* keys);
@@ -131,7 +131,7 @@ public:
     /** @brief Delete the key storage unless it is external, and clear the key pointer. */
     void free_keys();
 
-    LibTrackKey177B50* key_array;
+    LibSlerpQuaternionTrackKey* key_array;
     u8 unk08[8];
 
     /** Key of the single cached keyframe, used before an array is allocated. */
@@ -145,7 +145,7 @@ public:
     LibTrackState state;
 
     /** @brief Clear the pooled flag and reset the sequence. */
-    LibClass177B50();
+    LibSlerpQuaternionTrackBase();
 
     /**
      * @brief Wrap a key into the key span and record how many spans it was past the first key.
@@ -164,12 +164,12 @@ public:
     u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 };
 
-/** LibClass177B50 that stores its keys, with vtable D_177AC0 in main data; Lib's copy of Boot's BootClass171320. */
-class LibClass177AC0 : public LibClass177B50
+/** LibSlerpQuaternionTrackBase that stores its keys, with vtable D_177AC0 in main data; Lib's copy of Boot's BootSlerpQuaternionKeyTrack. */
+class LibSlerpQuaternionKeyTrack : public LibSlerpQuaternionTrackBase
 {
 public:
     /** @brief Destroy the track. */
-    virtual ~LibClass177AC0()
+    virtual ~LibSlerpQuaternionKeyTrack()
     {
     }
 
@@ -180,12 +180,12 @@ public:
     virtual void on_set_single_key(const FieldVec4A* value, float key);
 };
 
-/** 0xC0-byte pooled LibClass177AC0 with vtable D_177EE0 in main data, allocated from g_track_1718C0_pool. */
-class LibClass177EE0 : public LibClass177AC0
+/** 0xC0-byte pooled LibSlerpQuaternionKeyTrack with vtable D_177EE0 in main data, allocated from g_slerp_quaternion_track_pool. */
+class LibPooledSlerpQuaternionTrack : public LibSlerpQuaternionKeyTrack
 {
 public:
     /** @brief Destroy the track. */
-    virtual ~LibClass177EE0();
+    virtual ~LibPooledSlerpQuaternionTrack();
 
     virtual void get_end_delta(void* output) const;
     virtual void get_value_rate(void* output) const;
@@ -194,7 +194,17 @@ public:
     virtual FieldVec4A sample(float key) const;
     virtual void return_to_pool();
 
-    u8 unk50[0x70];
+    /** Two-sample LibSlerpQuaternionHistory the sampler fills and slerps through. */
+    u8 unk50[0x50];
+
+    u8 unkA0[0x10];
+    u32 unkB0;
+    u32 unkB4;
+
+    /** How fast the sampled rotation was changing. */
+    float value_rate;
+
+    u8 unkBC[4];
 };
 
 /** 8-byte keyframe of LibFloatTrackBase: a key followed by its value. */
@@ -342,10 +352,10 @@ public:
 
 /**
  * Two-sample float history a float track samples through, with vtable D_178200 in main data; its data comes before
- * the vptr. Boot splits the same layout into a base, a history and BootClass178200, but Lib has no vtables for
+ * the vptr. Boot splits the same layout into a base, a history and BootLinearFloatHistory, but Lib has no vtables for
  * the first two, so here it is one class.
  */
-class LibClass178200
+class LibLinearFloatHistory
 {
 public:
     u32 unk00;
@@ -501,7 +511,7 @@ public:
     virtual float sample(float key);
 
     /** Two-sample history the sampler fills; a Lib history object with vtable D_178200. */
-    LibClass178200 sample_history;
+    LibLinearFloatHistory sample_history;
 
     float last_value;
     float value_rate;
@@ -1277,7 +1287,13 @@ public:
      */
     s32 insert_entry(s32 index, float key, const FieldVec4A* value, float first, float second);
 
-    u8 unk50[0x30];
+    u32 unk50;
+
+    /** How fast the sampled rotation was changing. */
+    float value_rate;
+
+    u32 unk58;
+    u8 unk5c[0x24];
 };
 
 

@@ -84,6 +84,7 @@ class BootInstaller : public LibListObject
         u8 choice_growing;
 
         u8 unkb9[3];
+        /** Freed and cleared with the installer's other storage; boot never allocates it. */
         u8* unkbc;
 
         /** Install size used as the progress denominator. */

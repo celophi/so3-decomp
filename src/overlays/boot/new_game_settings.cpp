@@ -237,7 +237,7 @@ void BootNewGameSettings::place_girl()
         girl_lean = ee_max(-HALF_PI, girl_lean);
     }
 
-    LibTransformOwner* root = lib_find_transform_entry(girl_scene, g_root_node_name);
+    LibTransformOwner* root = static_cast<LibTransformOwner*>(lib_find_transform_entry(girl_scene, g_root_node_name));
     root->set_translation_vector(&position);
     root->set_orientation((LibVector4*)&rotation);
 
@@ -406,15 +406,15 @@ void BootNewGameSettings::place_girl()
  */
 void BootNewGameSettings::get_speaker_cursor_position(s32 speaker, float* x, float* y)
 {
-    BootClass170F30* speakers[4];
+    LibModel* speakers[4];
     LibVector4 position;
     LibVector4 screen;
-    speakers[0] = lib_find_renderable_entry(room_scene, g_right_speaker_name);
-    speakers[1] = lib_find_renderable_entry(room_scene, g_left_speaker_name);
-    speakers[2] = lib_find_renderable_entry(room_scene, g_rear_left_speaker_name);
-    speakers[3] = lib_find_renderable_entry(room_scene, g_rear_right_speaker_name);
+    speakers[0] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_right_speaker_name));
+    speakers[1] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_left_speaker_name));
+    speakers[2] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_rear_left_speaker_name));
+    speakers[3] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_rear_right_speaker_name));
     speakers[speaker]->update_transform_matrix();
-    BootClass170F30* model = speakers[speaker];
+    LibModel* model = speakers[speaker];
     position.x = model->transform.m[0][3];
     position.y = model->transform.m[1][3];
     position.z = model->transform.m[2][3];
@@ -435,14 +435,14 @@ void BootNewGameSettings::get_speaker_cursor_position(s32 speaker, float* x, flo
  * @param model Speaker model.
  * @param shade Red, green and blue factor; alpha is one.
  */
-static inline void set_speaker_color(BootClass170F30* const& model, float shade)
+static inline void set_speaker_color(LibModel* const& model, float shade)
 {
     LibVector4 color;
     color.x = shade;
     color.y = shade;
     color.z = shade;
     color.w = 1.0f;
-    BootClass170F30* speaker = model;
+    LibModel* speaker = model;
     copy_vector(&speaker->base_color_factor, &color);
     speaker->update_combined_color_factor();
 }
@@ -450,12 +450,12 @@ static inline void set_speaker_color(BootClass170F30* const& model, float shade)
 /** @brief Place the five speaker models around the listener and pulse the one being moved. */
 void BootNewGameSettings::place_speakers()
 {
-    BootClass170F30* speakers[5];
-    speakers[0] = lib_find_renderable_entry(room_scene, g_right_speaker_name);
-    speakers[1] = lib_find_renderable_entry(room_scene, g_left_speaker_name);
-    speakers[2] = lib_find_renderable_entry(room_scene, g_rear_left_speaker_name);
-    speakers[3] = lib_find_renderable_entry(room_scene, g_rear_right_speaker_name);
-    speakers[4] = lib_find_renderable_entry(room_scene, g_center_speaker_name);
+    LibModel* speakers[5];
+    speakers[0] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_right_speaker_name));
+    speakers[1] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_left_speaker_name));
+    speakers[2] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_rear_left_speaker_name));
+    speakers[3] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_rear_right_speaker_name));
+    speakers[4] = static_cast<LibModel*>(lib_find_renderable_entry(room_scene, g_center_speaker_name));
 
     for (s32 i = 0; i < 5; i++)
     {
@@ -514,7 +514,7 @@ void BootNewGameSettings::place_speakers()
                     }
                 }
 
-                BootClass170F30* model = speakers[i];
+                LibModel* model = speakers[i];
                 copy_vector(&model->base_color_factor, &scale);
                 model->update_combined_color_factor();
             }
@@ -1536,21 +1536,22 @@ void BootNewGameSettings::update()
         if (loaded_model_blocks == 8)
         {
             resident_pad_set_stick_dpad(g_input_system, 0, 0);
-            room_scene = new (0) BootScene;
+            room_scene = new (0) LibScene;
             lib_scene_use_data(room_scene, (u8*)RESIDENT_ALIGN_RESOURCE(model_blocks[0]));
             lib_scene_build_objects(room_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
-            girl_scene = new (0) BootScene;
+            girl_scene = new (0) LibScene;
             lib_scene_use_data(girl_scene, (u8*)RESIDENT_ALIGN_RESOURCE(model_blocks[1]));
             lib_scene_build_objects(girl_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
             s32 count = 0;
 
-            for (BootClass170F30* model = lib_find_renderable_entry(girl_scene, g_empty_name); model != 0; model = lib_find_next_renderable_entry(girl_scene, model))
+            for (LibModel* model = static_cast<LibModel*>(lib_find_renderable_entry(girl_scene, g_empty_name)); model != 0;
+                 model = static_cast<LibModel*>(lib_find_next_renderable_entry(girl_scene, model)))
             {
                 if (model->type_id == 0x100)
                 {
-                    girl_models[count] = new (0) BootClass170F30;
-                    girl_models[count]->build_from(g_renderer, model);
-                    girl_models[count++]->parent_transform = model->parent_transform;
+                    girl_reflections[count] = new (0) BootReflectedModel;
+                    girl_reflections[count]->build_from(g_renderer, model);
+                    girl_reflections[count++]->parent_transform = model->parent_transform;
                 }
             }
 
@@ -1779,7 +1780,7 @@ void BootNewGameSettings::update()
 
         if (voice_line != 0)
         {
-            BootClass170F30* face = lib_find_renderable_entry(girl_scene, g_face_model_name);
+            LibModel* face = static_cast<LibModel*>(lib_find_renderable_entry(girl_scene, g_face_model_name));
             LibListSentinel* end = &face->children.sentinel;
             LibListSentinel* node = end->next;
 
@@ -1855,7 +1856,7 @@ void BootNewGameSettings::update()
 
         if (blink_frame != 0)
         {
-            BootClass170F30* face = lib_find_renderable_entry(girl_scene, g_face_model_name);
+            LibModel* face = static_cast<LibModel*>(lib_find_renderable_entry(girl_scene, g_face_model_name));
             LibListSentinel* end = &face->children.sentinel;
             LibListSentinel* node = end->next;
             blink_frame++;
@@ -1966,11 +1967,11 @@ void BootNewGameSettings::update()
 
         for (s32 i = 0; i < 10; i++)
         {
-            if (girl_models[i] != 0)
+            if (girl_reflections[i] != 0)
             {
-                lib_object_detach_owner(girl_models[i]);
-                girl_models[i]->destroy();
-                girl_models[i] = 0;
+                lib_object_detach_owner(girl_reflections[i]);
+                girl_reflections[i]->destroy();
+                girl_reflections[i] = 0;
             }
         }
 
@@ -2048,10 +2049,10 @@ BootNewGameSettings::~BootNewGameSettings()
 
     for (s32 i = 0; i < 10; i++)
     {
-        if (girl_models[i] != 0)
+        if (girl_reflections[i] != 0)
         {
-            lib_object_detach_owner(girl_models[i]);
-            girl_models[i]->destroy();
+            lib_object_detach_owner(girl_reflections[i]);
+            girl_reflections[i]->destroy();
         }
     }
 
@@ -2134,7 +2135,7 @@ BootNewGameSettings::BootNewGameSettings()
 
     for (s32 i = 0; i < 10; i++)
     {
-        girl_models[i] = 0;
+        girl_reflections[i] = 0;
     }
 
     container = 0;
@@ -2168,11 +2169,11 @@ BootNewGameSettings::BootNewGameSettings()
 }
 
 /**
- * @brief Negate the matrix's second vector, then apply the matrix through the Lib model.
+ * @brief Negate the transform's y row, mirroring the model across the floor, then build the packet through the Lib model.
  * @param matrix Matrix supplied by the caller.
  * @param context Opaque caller context.
  */
-void BootClass170F30::build_packet(const void* matrix, void* context)
+void BootReflectedModel::build_packet(const void* matrix, void* context)
 {
     LibVector4 negated[4];
     LibVector4* rows = reinterpret_cast<LibVector4*>(transform.m);
@@ -2196,7 +2197,7 @@ void BootClass170F30::build_packet(const void* matrix, void* context)
 }
 
 /** @brief Destroy the model object. */
-BootClass170F30::~BootClass170F30()
+BootReflectedModel::~BootReflectedModel()
 {
 }
 

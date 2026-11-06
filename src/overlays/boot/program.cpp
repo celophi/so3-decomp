@@ -25,10 +25,10 @@
 
 extern LibScreenText* g_screen_text;
 extern BootResidentDisplay* g_display_callbacks;
-extern u8 D_001B6420;
+extern u8 g_program_running;
 extern BootTrackPool<BootPooledFloatTrack>* g_float_track_pool;
 extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
-extern BootTrackPool<BootClass177EE0>* g_track_1718C0_pool;
+extern BootTrackPool<BootPooledSlerpQuaternionTrack>* g_slerp_quaternion_track_pool;
 extern BootTrackPool<BootPooledFloatCurveTrack>* g_float_curve_track_pool;
 extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
 extern BootTrackPool<BootPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
@@ -770,7 +770,7 @@ void BootProgram::create_pools_and_projection()
     lib_load_shared_font(0, 0);
     float_track_pool_allocate(g_float_track_pool, 500);
     vector_track_pool_allocate(g_vector_track_pool, 500);
-    track_1718C0_pool_allocate(g_track_1718C0_pool, 500);
+    slerp_quaternion_track_pool_allocate(g_slerp_quaternion_track_pool, 500);
     float_curve_track_pool_allocate(g_float_curve_track_pool, 2000);
     vector_curve_track_pool_allocate(g_vector_curve_track_pool, 2000);
     float_quaternion_track_pool_allocate(g_float_quaternion_track_pool, 2000);
@@ -862,7 +862,7 @@ void BootProgram::run()
 
     lib_clear_vram();
     rebuild_display(0);
-    func_00121890(display);
+    resident_display_set_hook(display);
     lib_initialize(display, 0xA0013BA, 0x20000, 0x20, 0x200, 0, 0);
     rect.x = 0;
     rect.y = 0;
@@ -906,11 +906,11 @@ void BootProgram::run()
         g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
     }
 
-    D_001B6420 = 1;
+    g_program_running = 1;
     apply_projection_aspect();
     frame = 0;
     g_renderer->unk40ce = 0;
-    D_001B6420 = 1;
+    g_program_running = 1;
 
     while (next_program == 0)
     {
@@ -970,10 +970,10 @@ void BootProgram::run()
 void BootProgram::release_resources()
 {
     resident_input_attach_display(g_input_system, 0, 0);
-    D_001B6420 = 0;
+    g_program_running = 0;
     float_track_pool_release(g_float_track_pool);
     vector_track_pool_release(g_vector_track_pool);
-    track_1718C0_pool_release(g_track_1718C0_pool);
+    slerp_quaternion_track_pool_release(g_slerp_quaternion_track_pool);
     float_curve_track_pool_release(g_float_curve_track_pool);
     vector_curve_track_pool_release(g_vector_curve_track_pool);
     float_quaternion_track_pool_release(g_float_quaternion_track_pool);

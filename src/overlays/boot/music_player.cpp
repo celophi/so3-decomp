@@ -959,14 +959,14 @@ void BootMusicPlayer::update()
                         spectra[1].imag[i] = 0.0f;
                     }
 
-                    if (func_00109FD0(g_sound->stream->thread) != 0)
+                    if (resident_stream_is_mid_side(g_sound->stream->thread) != 0)
                     {
                         for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
                         {
-                            float left = spectra[0].real[i];
-                            float right = spectra[1].real[i];
-                            spectra[0].real[i] = left + right;
-                            spectra[1].real[i] = left - right;
+                            float mid = spectra[0].real[i];
+                            float side = spectra[1].real[i];
+                            spectra[0].real[i] = mid + side;
+                            spectra[1].real[i] = mid - side;
                         }
                     }
 

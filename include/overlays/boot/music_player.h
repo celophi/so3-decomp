@@ -66,6 +66,7 @@ class BootFft
         /** Size the tables were built for. */
         s32 size;
 
+        // unk04 to unk2c hold sizes and tables for transforms the music player never runs; boot only clears and frees them.
         s32 unk04;
         s32* bit_reverse;
         float* sine_table;
@@ -236,6 +237,7 @@ class BootMusicPlayer : public LibListObject
         /** BootMusicPlayMode value selected in the menu. */
         u8 play_mode;
 
+        /** Cleared when the screen is created; nothing in boot reads it. */
         u8 unk78;
 
         /** Index of the current track in the track table. */
@@ -274,6 +276,7 @@ class BootMusicPlayer : public LibListObject
         float window[BOOT_MUSIC_FFT_SIZE];
 
         LibContainer* container;
+        /** Released with the other widgets, but boot never creates it, so it stays null. */
         LibListObject* unk4050f4;
         LibSelectionCursor* cursor;
 

@@ -269,7 +269,8 @@ extern void* D_001B6684;
 extern float g_frame_ticks;
 extern float g_frame_seconds;
 
-extern u8 D_001B6420;
+/** Set while a program (main after start-up, boot, the field) runs its main loop; nothing in the game reads it. */
+extern u8 g_program_running;
 
 #ifdef __cplusplus
 }

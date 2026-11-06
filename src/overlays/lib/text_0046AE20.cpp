@@ -4,14 +4,13 @@
 #include "main/func_0011EE00.h"
 #include "sdk/main/libc_guess_0013CD50.h"
 #include "overlays/lib/text_0046AE20.h"
+#include "overlays/lib/scene.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/vector_inlines.h"
-
-#define LIB_ENTRY_MANAGER_SLOT_COUNT 16
 
 
 typedef struct HalfwordSetterOwnertext_0046AE20
@@ -99,14 +98,6 @@ typedef struct LibFloatFieldOwner0046AE20
     float unk44;
 } LibFloatFieldOwner0046AE20;
 
-enum
-{
-    LIB_ENTRY_HAS_NAMES = 1,
-    LIB_ENTRY_KIND_LIGHT = 2,
-    LIB_ENTRY_KIND_CAMERA = 3,
-    LIB_ENTRY_NAME_COMPARE_LENGTH = 16
-};
-
 /** Partial metadata used to filter and name resource entries. */
 struct LibEntryMetadata
 {
@@ -124,93 +115,6 @@ struct LibEntryMetadata
     u32 flags;
     u8 unk20[0x64];
     s32 name_checksum;
-};
-
-/** Runtime handle and source metadata for one resource entry. */
-typedef struct LibManagedEntry
-{
-    u8 unk00;
-    u8 unk01[3];
-    u32 unk04;
-    void* handle;
-    LibEntryMetadata* metadata;
-} LibManagedEntry;
-
-/** Resource flags and signed entry count used by table searches. */
-typedef struct LibEntryTableHeader
-{
-    u32 flags;
-    s32 count;
-} LibEntryTableHeader;
-
-/**
- * Scene built from a scene resource: the runtime table of its entries and the objects made for them, with vtable
- * D_175320 in main data.
- */
-class LibScene : public LibListObject
-{
-public:
-    /** @brief Start with no data, entries or slot objects. */
-    LibScene();
-
-    /** @brief Release the entries unless the scene keeps them, queue unborrowed data for release, then destroy the list object. */
-    virtual ~LibScene();
-
-    /**
-     * @brief Create an object of one kind for an entry.
-     * @param kind Object kind.
-     * @return The new object, or null.
-     */
-    virtual void* func_00471480(u8 kind);
-
-    /**
-     * @brief Create a camera.
-     * @param context Resident context the camera starts from.
-     * @return The new camera, or null when allocation fails.
-     */
-    virtual LibClass179080* func_00471440(void* context);
-
-    /** @brief Virtual slot 0x24. */
-    virtual void* func_0046DE90(void* unk1, void* unk2, void* record);
-
-    /** @brief Virtual slot 0x28. */
-    virtual void* func_0046C540(void* record);
-
-    /**
-     * @brief Create an object of kind 0x11.
-     * @return The new object, or null.
-     */
-    virtual void* func_0046BA00();
-
-    /** @brief Virtual slot 0x30. */
-    virtual void* func_0046C180(void* unk1, void* unk2, void* record);
-
-    /** Decoded scene resource the entries come from. */
-    u8* data;
-
-    LibManagedEntry* entries;
-    u32 unk1c;
-    LibEntryTableHeader* header;
-    u8 unk24[0x10];
-    void* unk34[LIB_ENTRY_MANAGER_SLOT_COUNT];
-
-    /** Names looked up in the linked manager by entries with a negative link. */
-    char (*link_names)[LIB_ENTRY_NAME_COMPARE_LENGTH];
-
-    void* unk78;
-    LibEntryManager* linked;
-    LibListReceiver unk80;
-    s32 cached_entry_index;
-    u8 unk98[4];
-
-    /** The data belongs to someone else, so the scene doesn't free it. */
-    u8 data_borrowed;
-
-    u8 unk9D;
-    u8 unk9E;
-
-    /** Nonzero skips the matching unk34 slot. */
-    u8 unk9f[LIB_ENTRY_MANAGER_SLOT_COUNT];
 };
 
 /** Partial inherited transform state shared by the setter's callers. */
