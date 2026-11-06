@@ -15,6 +15,7 @@ extern "C" void field_record_selection_advance(FieldRecordSelection* selection, 
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 #include "overlays/1067-00/text_002D5260.h"
@@ -554,7 +555,10 @@ struct StatusRuntimeResource
 struct StatusTransitionEffect
 {
     u8 unk00[0xC0];
-    s32 value;
+
+    /** Depth the transition draws at. */
+    s32 depth;
+
     u8 unkc4[0x2C];
     u8 mode;
 };
@@ -566,9 +570,6 @@ struct StatusTransitionOwner
 };
 extern "C" void* func_0020F230(ResidentContextObject38* state, u32 index, u32 first, u32 second, s32 mode, u32 third, u32 flags, float duration, float x, float y);
 extern "C" s32 func_0022A160(void* object);
-extern "C" void func_004DCEA0(void* object, s32 enabled, s32 other);
-extern "C" void* D_001B6650;
-extern "C" s32 D_001B6694;
 
 struct StatusRuntimeCallbacks;
 
@@ -1514,7 +1515,7 @@ void status_move_name_grid_cursor(StatusNameWindow* object, s32 value)
     LibClass175030* marker = object->grid_marker;
     LibMovementState& movement = *marker;
 
-    if (movement.unk35 != 0)
+    if (movement.arrived != 0)
     {
         if (value < 0)
         {
@@ -1992,7 +1993,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
 
     name_text = new (0) LibStringLabel;
     const char* name = static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current].character_name;
-    name_text->func_00467AD0(name_x, name_y, 0.0f, 0.0f, name, 0);
+    name_text->init_text_rectangle(name_x, name_y, 0.0f, 0.0f, name, 0);
     lib_container_attach_widget(unk10, name_text);
     status_append_name_widget(reinterpret_cast<StatusWidgetList*>(&unk44), name_text);
     status_set_spacing(name_text, 8.0f);
@@ -2145,7 +2146,7 @@ void status_update_scroll(StatusCharacterWindow* object)
         }
 
         LibClass1725D0* marker = object->scroll_marker;
-        marker->unk54 = object->scroll_position;
+        marker->position = object->scroll_position;
         marker->needs_redraw = 1;
     }
 }
@@ -2445,7 +2446,7 @@ void status_create_character_model(StatusCharacterWindow* object)
             func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(object->character_model), 0.5235988f, 480.0f, 0.0f, 90.0f, 110.0f);
         }
 
-        D_001B6614->append_node(object->character_model, -1);
+        g_update_list->append_node(object->character_model, -1);
     }
 }
 
@@ -2636,7 +2637,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 14);
     container = new (0) LibContainer;
     lib_container_init(container, 0, 16.0f, 72.0f, 9, 0.0f, 0x898);
-    lib_queue_display_object(D_001B657C, container);
+    lib_queue_display_object(g_field_runtime, container);
     LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 392.0f, 88.0f);
     lib_container_attach_widget(container, panel);
@@ -2645,7 +2646,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     character_name_widget = new (0) LibStringLabel;
     surname_caption = new (0) LibTextWidget;
     name_divider = new (0) ItemCreationClass172870;
-    character_name_widget->func_00467AD0(name_x, name_y, 0.0f, 0.0f, status_equipment(selection)->character_name, 0);
+    character_name_widget->init_text_rectangle(name_x, name_y, 0.0f, 0.0f, status_equipment(selection)->character_name, 0);
     lib_container_attach_widget(unk10, character_name_widget);
     status_append_name_widget(reinterpret_cast<StatusWidgetList*>(&unk44), character_name_widget);
     LibTextExtent* bounds = func_00467950(character_name_widget);
@@ -3043,7 +3044,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, support_skill_2_caption);
     lib_scissor_init_reset(reset, 1);
     lib_container_attach_widget(unk10, reset);
-    scroll_marker = new (0) ItemCreationClass1725D0;
+    scroll_marker = new (0) LibListIndicator;
     lib_list_indicator_init(scroll_marker, 588.0f, 8.0f + divider_y, (392.0f - divider_y) - 16.0f, scroll_extent, scroll_position);
     lib_container_attach_widget(unk10, scroll_marker);
     status_refresh_character_display(this);
@@ -3292,7 +3293,7 @@ void StatusResourceState::func_slot5c()
 
     if (object->resource != 0)
     {
-        lib_release_resource_slot(D_001B657C, object->resource);
+        lib_release_resource_slot(g_field_runtime, object->resource);
     }
 
     lib_object_detach_owner(object);
@@ -3327,7 +3328,7 @@ void StatusResourceState::update()
     {
         func_0020F230(D_001B6430->context->unk38, 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
         StatusTransitionEffect* effect;
-        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->value = D_001B6694;
+        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->depth = D_001B6694;
         effect->mode = 10;
         object->transition_phase = STATUS_TRANSITION_SWITCH_WINDOW;
         break;
@@ -3339,7 +3340,7 @@ void StatusResourceState::update()
             return;
         }
 
-        func_004DCEA0(D_001B6650, 0, 0);
+        g_display->set_output(false, false);
 
         switch (object->requested_window)
         {
@@ -3364,10 +3365,10 @@ void StatusResourceState::update()
 
         func_0020F230(D_001B6430->context->unk38, 0, 0x80000000, 0, 0, 0, 0, 10.0f, 0.0f, 0.0f);
         StatusTransitionEffect* effect;
-        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->value = D_001B6694;
+        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->depth = D_001B6694;
         effect->mode = 10;
         object->transition_phase = STATUS_TRANSITION_FINISH;
-        func_004DCEA0(D_001B6650, 1, 0);
+        g_display->set_output(true, false);
         break;
     }
     case STATUS_TRANSITION_FINISH:
@@ -3444,9 +3445,9 @@ s32 StatusResourceState::on_resource_loaded(void* buffer)
         resident_exchange_allocation_heap(heap);
     }
 
-    object->resource = lib_load_resource_slot(D_001B657C, aligned);
+    object->resource = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
-    StatusRuntimeResource* runtime = reinterpret_cast<StatusRuntimeResource*>(D_001B657C);
+    StatusRuntimeResource* runtime = reinterpret_cast<StatusRuntimeResource*>(g_field_runtime);
     runtime->resource = object->resource;
     runtime->code = 0xC351;
     return object->init_windows();

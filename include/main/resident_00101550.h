@@ -112,6 +112,35 @@ public:
             EIntr();
         }
     }
+
+    /**
+     * @brief Report whether interrupts were enabled when the lock was taken.
+     * @return True when the lock disabled them.
+     */
+    bool was_enabled() const
+    {
+        return disabled;
+    }
+
+    /** @brief Enable interrupts again early if the lock disabled them. */
+    void unlock()
+    {
+        if (disabled)
+        {
+            EIntr();
+            disabled = 0;
+        }
+    }
+
+    /** @brief Disable interrupts again after unlock(), if they're enabled. */
+    void relock()
+    {
+        if (ee_get_status() & EE_STATUS_EIE)
+        {
+            DIntr();
+            disabled = 1;
+        }
+    }
 };
 #endif
 
@@ -133,7 +162,7 @@ typedef struct ResidentResourceRequest
     u32 tag;
 
     void* buffer;
-    u32 byte_count;
+    s32 byte_count;
 
     /** Lower values run first; each queue pass lowers the positive ones, so waiting requests move up. */
     s32 priority;
@@ -147,8 +176,12 @@ typedef struct ResidentResourceRequest
     s32 previous;
 
     s32 file_offset;
-    void* completion_callback;
-    u8 unk24[4];
+
+    /** Notified with the request when it finishes, or null. */
+    struct ResidentListener* completion_callback;
+
+    /** Object a kind-4 request carries instead of a read; it's notified with the request when the request starts. */
+    struct ResidentListener* context;
 
     /** Nonzero while the entry holds a request. */
     u8 in_use;
@@ -193,8 +226,8 @@ public:
     /** Number of entries in the request table. */
     s32 request_capacity;
 
-    /** Request the archive is reading. */
-    ResidentResourceRequest* active_request;
+    /** Table index of the request the archive is reading. */
+    s32 active_request;
 
     struct ResidentArchive* archive;
     ResidentSemaphore semaphore;
@@ -213,8 +246,14 @@ public:
     /** Listener registered with the archive; it calls this queue's update. */
     ResidentResourceQueueListener listener;
 
-    /** @brief Destroy the queue. */
+    /** @brief Create the semaphore, register with the archive and allocate a 256-entry request table. */
+    ResidentResourceQueue();
+
+    /** @brief Stop listening to the archive and free the request table. */
     ~ResidentResourceQueue();
+
+    /** @brief Process the queue under its semaphore until nothing more can start. */
+    virtual void func_00104770();
 };
 #endif
 
@@ -331,8 +370,9 @@ s32 resident_find_resource_request(ResidentResourceQueue* queue, s32 file_key, u
 void resident_cancel_resource_requests(ResidentResourceQueue* queue, s32 file_key, u32 buffer_address, u32 tag,
                                      u32 byte_count, s32 request_kind);
 
+#ifdef __cplusplus
 /**
- * @brief Queue a resource request in priority order.
+ * @brief Queue a resource request in priority order, then start the queue when called with interrupts enabled.
  * @param queue Resident resource queue.
  * @param file_key Nonzero file key for the request.
  * @param buffer Destination buffer.
@@ -341,12 +381,11 @@ void resident_cancel_resource_requests(ResidentResourceQueue* queue, s32 file_ke
  * @param completion_callback Optional callback object notified when the request finishes.
  * @param byte_count Read length passed to the resource backend.
  * @param file_offset Offset applied when selecting a file for request kinds two and three.
- * @param request_kind Request kind stored in the low byte.
- * @return One when queued, or zero when the file key is zero or no request slot remains.
+ * @param request_kind Request kind.
+ * @return True when queued, or false when the file key is zero or no request slot remains.
  */
-s32 resident_queue_resource_request(ResidentResourceQueue* queue, s32 file_key, void* buffer, u32 tag,
-                                   s32 priority, void* completion_callback, u32 byte_count, s32 file_offset,
-                                   s32 request_kind);
+bool resident_queue_resource_request(ResidentResourceQueue* queue, s32 file_key, void* buffer, u32 tag, s32 priority,
+                                     void* completion_callback, u32 byte_count, s32 file_offset, u8 request_kind);
 
 /**
  * @brief Queue a request of kind three, which reads from an offset into the file.
@@ -358,22 +397,36 @@ s32 resident_queue_resource_request(ResidentResourceQueue* queue, s32 file_key, 
  * @param tag Tag retained for later lookup and cancellation.
  * @param priority Lower values run first; minus one inserts at the front.
  * @param completion_callback Optional callback object notified when the request finishes.
- * @return One when queued, or zero when the file key is zero or no request slot remains.
+ * @return True when queued, or false when the file key is zero or no request slot remains.
  */
-s32 func_00103AE0(ResidentResourceQueue* queue, s32 file_key, void* buffer, s32 file_offset, u32 byte_count, u32 tag,
-                  s32 priority, void* completion_callback);
+bool func_00103AE0(ResidentResourceQueue* queue, s32 file_key, void* buffer, s32 file_offset, u32 byte_count, u32 tag,
+                   s32 priority, void* completion_callback);
+
+/**
+ * @brief Queue a request of kind four, which carries an object instead of a read.
+ * @param queue Resident resource queue.
+ * @param priority Lower values run first; minus one inserts at the front.
+ * @param context Object the request carries.
+ * @param tag Tag retained for later lookup and cancellation.
+ * @param completion_callback Optional callback object notified when the request finishes.
+ * @return True when queued, or false when no request slot remains.
+ */
+bool func_001037E0(ResidentResourceQueue* queue, s32 priority, ResidentListener* context, u32 tag, void* completion_callback);
+#endif
 
 /** @brief Start the next queued read when the archive is idle. @param queue Resident resource queue. */
 void func_00102D50(ResidentResourceQueue* queue);
 
+#ifdef __cplusplus
 /**
- * @brief Finish the active read if the archive has completed it.
+ * @brief Finish the active request once the archive is done with it.
  * @param queue Resident resource queue.
- * @return Nonzero when a request completed, so another pass may start more work.
+ * @return True when a request finished, so another pass may start more work.
  */
-s32 func_001031C0(ResidentResourceQueue* queue);
+bool func_001031C0(ResidentResourceQueue* queue);
+#endif
 
-/** @brief Clear the request table and its queued list. @param queue Resident resource queue. */
+/** @brief Cancel the active read, then empty the request table and its queued list. @param queue Resident resource queue. */
 void func_001041C0(ResidentResourceQueue* queue);
 
 /**
@@ -713,8 +766,8 @@ u32 func_00108A00(struct ResidentSoundStream* stream, u32* reply, s32 arg2, s32 
  * @param value3 Fourth value.
  * @return Request handle, or zero when no reply slot is free.
  */
-u32 func_00108800(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, s32 value0, s32 value1, s32 value2,
-                  s32 value3);
+u32 func_00108800(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, u32 value0, u32 value1, u32 value2,
+                  u32 value3);
 
 
 /**
@@ -905,6 +958,27 @@ bool func_00107230(struct ResidentSoundStream* stream, s32 request);
 u32 func_00105AE0(struct ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3);
 
 /**
+ * @brief Send sound stream command 0x1B to the IOP with four values in the argument block.
+ * @param stream Sound stream; unused.
+ * @param value0 First value.
+ * @param value1 Second value.
+ * @param value2 Third value.
+ * @param value3 Fourth value.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+u32 func_00105BF0(struct ResidentSoundStream* stream, s32 value0, s32 value1, s32 value2, s32 value3);
+
+/**
+ * @brief Send sound stream command 0x19 to the IOP with an empty argument block.
+ * @param stream Sound stream; unused.
+ * @param reply Receives the reply, or null.
+ * @param arg2 Command argument.
+ * @param arg3 Command argument.
+ * @return Request handle, or zero when no reply slot is free.
+ */
+u32 func_00105DD0(struct ResidentSoundStream* stream, void* reply, s32 arg2, s32 arg3);
+
+/**
  * @brief Send sound stream command 0x18 to the IOP.
  * @param stream Sound stream; unused.
  * @param reply Receives the reply, or null.
@@ -944,11 +1018,11 @@ void func_00109D50(struct ResidentStreamThread* thread);
 void resident_stream_set_sample_rings(struct ResidentStreamThread* thread, u32 first_ring, u32 second_ring, u32 ring_size);
 
 /**
- * @brief Read the stream thread's word at offset 0xC0 while its first state is one.
+ * @brief Get how many times the playing stream has looped.
  * @param thread Stream thread.
- * @return The word, or zero in any other state.
+ * @return Loop count, or zero when nothing is playing.
  */
-s32 func_00109FB0(struct ResidentStreamThread* thread);
+s32 resident_stream_get_loop_count(struct ResidentStreamThread* thread);
 
 /**
  * @brief Move one of the stream thread's two states to two when it is one or two.
@@ -969,14 +1043,16 @@ s32 func_0010A000(struct ResidentStreamThread* thread, s32 which);
 void func_001058C0(struct ResidentSoundStream* stream, u32* x, u32* y, u32* z, u32* w);
 
 /**
- * @brief Construct the resource queue.
+ * @brief Construct the resource queue; the address of ResidentResourceQueue's constructor, under the C name the
+ * system's constructor calls it by.
  * @param queue Resource queue to construct.
  * @return The constructed queue.
  */
 ResidentResourceQueue* func_001044F0(ResidentResourceQueue* queue);
 
 /**
- * @brief Construct the sound stream.
+ * @brief Construct the sound stream; the address of ResidentSoundStream's constructor, under the C name the system's
+ * constructor calls it by.
  * @param stream Sound stream to construct.
  * @return The constructed stream.
  */

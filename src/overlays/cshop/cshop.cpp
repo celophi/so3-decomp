@@ -1287,7 +1287,7 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     separator->unk50 = 0xDC6464;
     separator->needs_redraw = 1;
     lib_container_attach_widget(FieldClass15AE70::unk10, factor_separator);
-    FieldRuntime* runtime = D_001B657C;
+    FieldRuntime* runtime = g_field_runtime;
     runtime->text_banks[1].resource_slot = static_cast<s32>(associated);
     runtime->text_banks[1].base_key = SHOP_MSG_FACTORS + 1;
 
@@ -1803,7 +1803,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     FieldClass15AE70::func_slot14(associated, 0, 9, 2200, 28.0f, 87.0f, 0.0f);
     detail_container = new (0) LibContainer;
     lib_container_init(detail_container, 5, 28.0f, 87.0f, 0, 0.0f, 0);
-    lib_queue_display_object(D_001B657C, detail_container);
+    lib_queue_display_object(g_field_runtime, detail_container);
     panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 584.0f, 369.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
@@ -1851,7 +1851,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
     factor_heading_widget->unk88 = -1.0f;
     factor_heading_widget->needs_redraw = 1;
     lib_container_attach_widget(unk10, factor_heading);
-    FieldRuntime* runtime = D_001B657C;
+    FieldRuntime* runtime = g_field_runtime;
     runtime->text_banks[1].resource_slot = static_cast<s32>(associated);
     runtime->text_banks[1].base_key = SHOP_MSG_FACTORS + 1;
 
@@ -1905,7 +1905,7 @@ s32 ShopItemDetailWindow::func_slotf4(u32 associated)
         func_002FD1B0(reinterpret_cast<FieldFloatState5C*>(item_model), 0.5235988f, 500.0f, 0.34906584f, 90.0f, 50.0f);
     }
 
-    D_001B6614->append_node(item_model, -1);
+    g_update_list->append_node(item_model, -1);
     return 1;
 }
 
@@ -2537,7 +2537,7 @@ s32 shop_select_action(void* receiver)
 static inline void set_shop_choice_opacity(FieldObject23CEA0* choice, float opacity)
 {
     choice->ItemCreationClass185050::alpha = opacity;
-    choice->unkae = 1;
+    choice->geometry_dirty = 1;
 }
 /**
  * @brief Update cursor opacity, the selected action, and category text.
@@ -3599,7 +3599,7 @@ void ShopState::func_slot5c()
 {
     if (resource_slot != 0)
     {
-        lib_release_resource_slot(D_001B657C, resource_slot);
+        lib_release_resource_slot(g_field_runtime, resource_slot);
     }
 
     lib_object_detach_owner(this);
@@ -3685,9 +3685,9 @@ s32 ShopState::on_resource_loaded(void* buffer)
         resident_exchange_allocation_heap(resource_heap);
     }
 
-    resource_slot = lib_load_resource_slot(D_001B657C, resource);
+    resource_slot = lib_load_resource_slot(g_field_runtime, resource);
     resident_exchange_allocation_heap(previous_heap);
-    FieldRuntime* runtime = D_001B657C;
+    FieldRuntime* runtime = g_field_runtime;
     runtime->text_banks[0].resource_slot = resource_slot;
     runtime->text_banks[0].base_key = SHOP_MSG_ITEM_NAMES + 1;
     return init_windows();

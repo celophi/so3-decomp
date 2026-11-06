@@ -1,9 +1,262 @@
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "include_asm.h"
 #include "overlays/lib/render_buffer.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+#include "main/resident_00101260.h"
+#include "overlays/lib/text_003F90C0.h"
+#include "overlays/lib/text_003E68C0.h"
+#include "sdk/main/libdma_0012B2C8.h"
+#include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
+#include "overlays/lib/image_capture.h"
+#include "overlays/lib/vector.h"
+#include "overlays/lib/transform_owner_inlines.h"
+
+class LibCameraContext;
+
+/** Words of each capture's pixel strip. */
+#define LIB_CLASS_1745F0_STRIP_WORDS 64
+
+/** Most captures the object keeps. */
+#define LIB_CLASS_1745F0_CAPTURE_COUNT 5
+
+/** List object that keeps up to five VRAM captures and their positions, with vtable D_1745F0 in main data. */
+class LibClass1745F0 : public LibListObject
+{
+public:
+    /**
+     * @brief Set up the capture positions and one capture.
+     * @param display Display the captures read from.
+     * @param unk78 Object whose transform the update reads.
+     */
+    LibClass1745F0(LibCameraContext* display, void* unk78);
+
+    /** @brief Destroy the captures, then the list object. */
+    virtual ~LibClass1745F0();
+
+    /** @brief Return the fixed list kind 14. @return Always 14. */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Destroy the captures, then queue the object for release. */
+    virtual void destroy();
+
+    /** @brief Queue this frame's captures. */
+    virtual void update();
+
+    /**
+     * @brief Destroy the current captures and create new ones, registering each with the renderer.
+     * @param count Captures to create.
+     */
+    void set_capture_count(s32 count);
+
+    /** @brief Detach and destroy every capture. */
+    void release_captures()
+    {
+        for (s32 i = 0; i < LIB_CLASS_1745F0_CAPTURE_COUNT; i++)
+        {
+            if (captures[i])
+            {
+                lib_object_detach_owner(captures[i]);
+                captures[i]->destroy();
+                captures[i] = 0;
+            }
+        }
+    }
+
+    u8 unk14[0xC];
+
+    /** Screen offset of each capture. */
+    FieldVec4A positions[LIB_CLASS_1745F0_CAPTURE_COUNT];
+
+    s32 capture_count;
+    LibCameraContext* display;
+    void* unk78;
+    u8 unk7c[8];
+    float unk84;
+    u8 unk88;
+
+    /** Set when the captures were just recreated; the next update skips its drawing. */
+    u8 recreated;
+
+    u8 unk8a[6];
+    u32 strips[LIB_CLASS_1745F0_CAPTURE_COUNT][LIB_CLASS_1745F0_STRIP_WORDS];
+    LibImageCapture* captures[LIB_CLASS_1745F0_CAPTURE_COUNT];
+};
+
+/** Corner of a LibClass174790 quad, relative to the widget's position. */
+struct LibQuadCorner
+{
+    float x;
+    float y;
+};
+
+/** Quad widget that grows in and then settles, with vtable D_174790 in main data. */
+class LibClass174790 : public LibWidget
+{
+public:
+    /** @brief Release the drawing storage and the widget base. */
+    virtual ~LibClass174790()
+    {
+    }
+
+    /** @brief Advance the grow-in animation and request a redraw. */
+    virtual void func_00413D20();
+
+    /** @brief Write the quad into the drawing packet. */
+    virtual void draw();
+
+    /**
+     * @brief Set the quad's position, color and shape, and allocate its drawing storage.
+     * @param color Packed vertex color.
+     * @param mirrored Nonzero to mirror the quad horizontally.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param width Extra width added to the quad.
+     * @return One on success, or zero if the storage couldn't be allocated.
+     */
+    s32 init(u32 color, u32 mirrored, float x, float y, float width);
+
+    LibStorageBlock0C storage;
+    u8 unk4c[4];
+    LibQuadCorner corners[4];
+
+    /** Packed vertex color; zero hides the quad. */
+    u32 color;
+
+    float scale_x;
+    float scale_y;
+    float speed;
+
+    /** Animation step: 0 grows in, 1 settles, 2 done. */
+    s32 state;
+};
+
+/** Container with a quad frame and a text line that fade in, wait and fade out; vtable D_1746D0 in main data. */
+class LibClass1746D0 : public LibContainer
+{
+public:
+#ifndef LIB_1746D0_DTOR_FIRST
+    /**
+     * @brief Run the show, wait and fade-out steps.
+     * @param first First update flag.
+     * @param second Second update flag.
+     * @param third Third update flag.
+     */
+    virtual void func_00412C40(u32 first, u32 second, u32 third);
+
+    /** @brief Destroy the text, the frame and the container. */
+    virtual ~LibClass1746D0();
+
+#else
+    /** @brief Destroy the text, the frame and the container. */
+    virtual ~LibClass1746D0();
+
+    /**
+     * @brief Run the show, wait and fade-out steps.
+     * @param first First update flag.
+     * @param second Second update flag.
+     * @param third Third update flag.
+     */
+    virtual void func_00412C40(u32 first, u32 second, u32 third);
+
+#endif
+    /**
+     * @brief Set up the frame and the text and attach them.
+     * @param flags Bit 0 puts the frame at the right edge, bit 1 at the bottom.
+     * @param color Index into the frame color table.
+     * @param slot Text resource slot.
+     * @param key Text resource key.
+     * @return One on success, otherwise zero.
+     */
+    s32 init(u32 flags, s32 color, s32 slot, s32 key);
+
+    LibClass174790 frame;
+    LibTextWidget text;
+    float timer;
+    s32 state;
+};
+
+/** Packed frame colors that LibClass1746D0::init picks from. */
+extern "C" u32 D_4ED130[];
+
+/** Hardware address register of DMA channel 1 (VIF1). Proposed for ee.h next to D1_QWC. */
+#define D1_MADR ((volatile u32*)0x10009010)
+
+extern "C" u64 D_001B6560;
+
+/** Transform owner that sends its own packet on VIF1, with vtable D_174840 in main data. */
+class LibClass174840 : public LibTransformOwner, public DmaSubmission
+{
+public:
+    /**
+     * @brief Build the packet for this frame.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Set up the transform and allocate the packet.
+     * @param unk94 Stored at unk94.
+     */
+    LibClass174840(void* unk94);
+
+    /** @brief Delete the packet and destroy the transform owner. */
+    virtual ~LibClass174840();
+
+    /** @brief Detach from the owner and release the transform. */
+    virtual void destroy();
+
+    /** @brief Queue the packet on VIF1. */
+    virtual void render();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return the bounding sphere D_00508230.
+     * @return Bounding sphere.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Send the packet's pending data on VIF1 in normal mode.
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Finish the packet.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    void* unk94;
+    LibPacketBuffer* packet;
+    u8 unk9c;
+    u8 unk9d;
+    u8 unk9e[2];
+
+    /** Quadwords of the packet's pending data. */
+    u32 qwc;
+
+    u8 unka4[4];
+    u32 unka8;
+    s16 unkac;
+    s16 unkae;
+    float unkb0;
+    s32 unkb4;
+    u8 unkb8[0x18];
+    void* unkd0;
+    s32 unkd4;
+    u8 unkd8[2];
+    s16 unkda;
+    float unkdc;
+    s32 unke0;
+    u32 unke4;
+};
 
 extern "C" u8 D_00174D30[];
 extern "C" void func_004A8F10(void* object);
@@ -19,16 +272,48 @@ extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 
 extern "C" void func_00465A90(void* owner, LibCallbackTransform* object);
 extern "C" ResidentDmaQueue* g_vif1_dma_queue;
 extern "C" ResidentDmaQueue* D_001B6604;
+extern "C" void func_00454E90(LibDrawBuffer* buffer);
+extern "C" void func_004D5A50(LibDrawBuffer* buffer, u32* commands);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ABE0);
+/**
+ * @brief Destroy the current captures and create new ones, registering each with the renderer.
+ * @param count Captures to create.
+ */
+void LibClass1745F0::set_capture_count(s32 count)
+{
+    capture_count = count;
+    release_captures();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ACF0);
+    for (s32 i = 0; i < count; i++)
+    {
+        captures[i] = new (0) LibImageCapture;
+
+        if (captures[i])
+        {
+            ((LibUpdateList*)g_renderer)->append_node(captures[i], -1);
+        }
+    }
+
+    recreated = 1;
+}
+
+/** @brief Destroy the captures, then queue the object for release. */
+void LibClass1745F0::destroy()
+{
+    release_captures();
+    resident_enqueue_object(g_resident_release_queues, this);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AD80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AE70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", __dt__20LibCallbackTransformFv);
+#pragma inline_depth(7)
+
+/** @brief Destroy the transform receiver. */
+LibCallbackTransform::~LibCallbackTransform()
+{
+}
 
 /** @brief Run the default transform state hook. */
 void LibCallbackTransform::func_0044B100(u32 first, u32 second, u32 third)
@@ -65,7 +350,7 @@ void LibCallbackTransform::set_codes_and_z(s32 code, u32 first, float z, u32 sec
     translation.y = y;
     translation.z = z;
     translation.w = 1.0f;
-    unkae = 1;
+    geometry_dirty = 1;
 }
 
 /** @brief Update the vector's x and y components while preserving z. */
@@ -102,7 +387,7 @@ extern "C" void func_0044B210(LibCallbackTransform* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B240);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__20LibCallbackTransformFPCvPv);
 
 /** @brief Initialize transform flags and drawing modes after the base receivers. */
 LibCallbackTransform::LibCallbackTransform()
@@ -110,14 +395,87 @@ LibCallbackTransform::LibCallbackTransform()
     draw_flags |= 0x400;
     unk94 = 0;
     unkaf = 0;
-    unkae = 1;
+    geometry_dirty = 1;
     unkad = 1;
     unkac = 1;
     unkab = 1;
     unkaa = 2;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B350);
+/* Proposed for gs.h. */
+#define GS_REGISTER_SCISSOR_2 0x41
+#define GS_SCISSOR(x0, x1, y0, y1) ((u64)(x0) | ((u64)(x1) << 16) | ((u64)(y0) << 32) | ((u64)(y1) << 48))
+#define GIF_TAG_NLOOP(count) ((u64)(count))
+
+/** @brief Write the widget clipping bounds into its drawing packet. */
+void ItemCreationClass1746A0::draw()
+{
+    if (unk3b)
+    {
+        return;
+    }
+
+    u64 scissor;
+
+    if (unk50)
+    {
+        scissor = GS_SCISSOR(0, g_field_runtime->unk52c, 0, g_field_runtime->unk530);
+    }
+    else
+    {
+        s32 x0;
+        s32 x1;
+        s32 y0;
+        s32 y1;
+        FieldRuntime* runtime = g_field_runtime;
+        const LibVector4* origin = &container->translation;
+
+        float left = origin->x + unk18.unk00;
+        float scale_x = runtime->screen_scale_x / 16.0f;
+        x0 = left * scale_x;
+
+        if (x0 < 0)
+        {
+            x0 = 0;
+        }
+
+        x1 = scale_x * (left + unk18.unk08);
+
+        if (x1 > runtime->unk52c)
+        {
+            x1 = runtime->unk52c;
+        }
+
+        float top = origin->y + unk18.unk04;
+        float scale_y = runtime->screen_scale_y / 16.0f;
+        y0 = top * scale_y;
+
+        if (y0 < 0)
+        {
+            y0 = 0;
+        }
+
+        y1 = scale_y * (top + unk18.unk0c);
+
+        if (y1 > runtime->unk530)
+        {
+            y1 = runtime->unk530;
+        }
+
+        scissor = GS_SCISSOR(x0, x1, y0, y1);
+    }
+
+    u64* cursor = reinterpret_cast<u64*>(unk40.dma_address);
+    packet_tag = cursor;
+    packet = cursor;
+    cursor[2] = GIF_TAG_NREG(1) | GIF_TAG_EOP | GIF_TAG_NLOOP(1);
+    cursor[3] = GIF_REGISTER_AD;
+    cursor[4] = scissor;
+    cursor[5] = GS_REGISTER_SCISSOR_2;
+    cursor += 6;
+    *packet_tag = DMA_TAG((reinterpret_cast<u32>(cursor) - reinterpret_cast<u32>(packet_tag) - LIB_DRAW_QWORD_SIZE) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_END, 0);
+    unk3b = 1;
+}
 
 /**
  * @brief Initialize a widget that restores the runtime clipping bounds.
@@ -178,13 +536,119 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B6A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B860);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B9E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", draw__14LibClass174790Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BCC0);
+/** @brief Advance the grow-in animation and request a redraw. */
+void LibClass174790::func_00413D20()
+{
+    switch (state)
+    {
+    case 0:
+    {
+        float alpha = draw_alpha;
+        alpha += 6.0f;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BDF0);
+        if (!(alpha < 128.0f))
+        {
+            alpha = 128.0f;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BEE0);
+        draw_alpha = alpha;
+        float scale = scale_x;
+        scale += speed;
+        scale_x = scale;
+
+        if (!(scale < 1.0f))
+        {
+            state++;
+        }
+
+        break;
+    }
+    case 1:
+    {
+        float velocity = speed;
+        velocity += -0.0075f;
+
+        if (velocity < -0.0075f)
+        {
+            velocity = -0.0075f;
+        }
+
+        speed = velocity;
+        float scale = scale_x;
+        scale += velocity;
+
+        if (scale < 1.0f)
+        {
+            scale = 1.0f;
+        }
+
+        scale_x = scale;
+        float stretch = scale_y;
+        stretch -= 0.02f;
+
+        if (stretch <= 1.0f)
+        {
+            stretch = 1.0f;
+            state++;
+        }
+
+        scale_y = stretch;
+        break;
+    }
+    }
+
+    needs_redraw = 1;
+}
+
+/**
+ * @brief Set the quad's position, color and shape, and allocate its drawing storage.
+ * @param color Packed vertex color.
+ * @param mirrored Nonzero to mirror the quad horizontally.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Extra width added to the quad.
+ * @return One on success, or zero if the storage couldn't be allocated.
+ */
+s32 LibClass174790::init(u32 color, u32 mirrored, float x, float y, float width)
+{
+    unk18.unk00 = x;
+    unk18.unk04 = y;
+    this->color = color;
+
+    if (!lib_allocate_drawing_storage(&storage, 14))
+    {
+        return 0;
+    }
+
+    float left = 0.0f;
+    float middle = 64.0f + width;
+    float right = 80.0f + width;
+
+    if (mirrored)
+    {
+        left = -left;
+        middle = -middle;
+        right = -right;
+    }
+
+    corners[0].x = left;
+    corners[1].x = middle;
+    corners[2].x = left;
+    corners[3].x = right;
+    corners[0].y = -12.0f;
+    corners[1].y = -12.0f;
+    corners[2].y = 8.0f;
+    corners[3].y = 8.0f;
+    draw_alpha = 0.0f;
+    scale_x = 0.0f;
+    scale_y = 2.24f;
+    speed = 0.07f;
+    state = 0;
+    unk39 = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF50);
 
@@ -201,29 +665,37 @@ void func_0044C060(void* object)
 {
 }
 
-extern "C" u8 D_508240[];
-extern "C" void* D_001B663C;
-extern "C" void func_004D92C0(void* object, s32 value);
-extern "C" void func_004D00B0(void* object);
+extern "C" u8 D_00508240[];
 
-/** @brief Return the address of D_508240. @return The data symbol's address. */
+/** @brief Return the address of D_00508240. @return The data symbol's address. */
 const void* func_0044C070(void)
 {
-    return D_508240;
+    return D_00508240;
 }
 
-/** @brief Clear the selected state in the shared lib object. */
+/** @brief Expire every cached copy of texture 1. */
 void func_0044C080(void)
 {
-    func_004D92C0(D_001B663C, 1);
+    g_texture_cache->expire_texture(1);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C0A0);
+/**
+ * @brief Send the packet's pending data on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
+ */
+void LibClass174840::submit_dma(u32 channel)
+{
+    dma_pending = 1;
+    *D1_QWC = qwc;
+    *D1_MADR = func_0011F760(packet);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
 
 /** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
 void func_0044C0F0(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** @brief Queue the receiver's DMA callback interface. */
@@ -245,12 +717,12 @@ extern "C" void func_0044D070(LibObjectByte60* object)
     object->unk60 = 8;
 }
 
-extern "C" u8 D_508230[];
+extern "C" u8 D_00508230[];
 
-/** @brief Return the address of D_508230. @return The data symbol's address. */
+/** @brief Return the address of D_00508230. @return The data symbol's address. */
 extern "C" const void* func_0044D080(void)
 {
-    return D_508230;
+    return D_00508230;
 }
 
 /** @brief Clear the intrusive owner and invoke the base transform release. @param object Transform owner to detach. */
@@ -282,7 +754,7 @@ typedef struct LibDisplayReadyView
 extern "C" void func_0044D0D0(void* object)
 {
     static_cast<LibTransform*>(object)->LibTransform::update();
-    LibDisplayManagerView* manager = static_cast<LibDisplayManagerView*>(D_001B661C);
+    LibDisplayManagerView* manager = static_cast<LibDisplayManagerView*>(g_renderer);
     LibDisplayReadyView* display = static_cast<LibDisplayReadyView*>(manager->current_display);
     display->ready = 1;
 }
@@ -292,7 +764,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D100);
 /** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
 extern "C" void func_0044D150(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D170);
@@ -396,7 +868,7 @@ extern "C" s32 lib_indexed_resource_init(ItemCreationClass174C40* object, float 
     LibIndexedResourceState* state = (LibIndexedResourceState*)object;
     state->selected = index;
     state->current = index;
-    return func_00467800(object, func_00464EF0(D_001B657C, state->current) + 0x22, 0, 0, 0, 0, x, y);
+    return func_00467800(object, func_00464EF0(g_field_runtime, state->current) + 0x22, 0, 0, 0, 0, x, y);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453150);
@@ -559,8 +1031,6 @@ s32 lib_draw_buffer_add_texture(LibDrawBuffer* buffer, const LibImageResource* r
     return index;
 }
 
-extern "C" void func_00455AD0(LibDrawBuffer* buffer);
-
 /**
  * @brief Start a primitive of some vertices, flushing the buffer first when they wouldn't fit in 40.
  * @param buffer Draw buffer.
@@ -570,20 +1040,400 @@ void lib_draw_buffer_begin_primitive(LibDrawBuffer* buffer, s32 count)
 {
     if (buffer->vertex_count + count >= 40)
     {
-        func_00455AD0(buffer);
+        lib_draw_buffer_start_batch(buffer);
     }
 
     *buffer->primitive_sizes++ = count;
     buffer->primitive_count++;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455150);
+/**
+ * @brief Copy out any pending vertices, then write the draw state the next primitives use.
+ *
+ * Sets the texture, blend, primitive tags and the settings' other parameters, and marks the state for the next batch.
+ * @param buffer Draw buffer.
+ * @param settings Settings to apply.
+ */
+void lib_draw_buffer_apply_settings(LibDrawBuffer* buffer, LibDrawSettings* settings)
+{
+    if (buffer->vertex_count != 0)
+    {
+        lib_draw_buffer_start_batch(buffer);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455450);
+    buffer->unkcf = 0;
+    LibDrawState* state = &buffer->state_block->state;
+    memset_guess(state, 0, sizeof(LibDrawState));
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455AD0);
+    u32 index = settings->texture_index;
+    u8 width_log2 = buffer->texture_width_log2[index];
+    u64 tex0 = GS_TEX0_PSM(buffer->texture_codes[index]) | GS_TEX0_TW(width_log2) | GS_TEX0_TH(buffer->texture_height_log2[index]) |
+               GS_TEX0_TBW((1 << width_log2) / GS_BUFFER_WIDTH_PIXELS) | GS_TEX0_TCC;
+    state->tex0 = tex0;
+    state->tex0_address = GS_REGISTER_TEX0_1;
+    state->unk40 = tex0;
+    state->unk48 = GS_REGISTER_TEX0_1;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00455BD0);
+    if (settings->unk19 != 0 && buffer->setup_packet->unk56 < 1)
+    {
+        buffer->setup_packet->unk56 = 1;
+    }
+
+    if (settings->unk1A != 0 && buffer->setup_packet->unk56 < 2)
+    {
+        buffer->setup_packet->unk56 = 2;
+    }
+
+    if (settings->unk1B != 0 && buffer->setup_packet->unk56 < 3)
+    {
+        buffer->setup_packet->unk56 = 3;
+    }
+
+    if (settings->unk1C != 0 && buffer->setup_packet->unk56 < 4)
+    {
+        buffer->setup_packet->unk56 = 4;
+    }
+
+    state->unk80 = settings->unk05;
+    state->unk24 = settings->unk06;
+
+    if (settings->unk06 >= 2)
+    {
+        state->tex0_address_words[1] = settings->unk07;
+    }
+
+    if (settings->unk06 != 0)
+    {
+        buffer->unkcc = 1;
+    }
+
+    if (settings->unk06 == 3)
+    {
+        state->unk50 = settings->unk08;
+        state->unk54 = settings->unk0C;
+        state->unk58 = settings->unk10;
+    }
+
+    state->alpha = D_4ED320[settings->blend_mode];
+    state->unk94 = settings->unk14;
+    state->alpha_address = GS_REGISTER_ALPHA_1;
+    state->blend = 0;
+
+    if (settings->blend_mode != 0)
+    {
+        state->blend = 1;
+    }
+
+    state->register_tag.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | LIB_DRAW_REGISTER_WRITES;
+    state->register_tag.registers = LIB_DRAW_AD_REGISTERS;
+    state->primitive_tag.tag = GIF_TAG_PRIM(settings->prim) | LIB_DRAW_PRIMITIVE_TAG;
+    state->primitive_tag.registers = LIB_DRAW_VERTEX_REGISTERS;
+    state->fan_tag.tag = GIF_TAG_PRIM((settings->prim & ~GS_PRIM_TYPE_MASK) | GS_PRIM_TRIANGLE_FAN) | LIB_DRAW_PRIMITIVE_TAG;
+    state->fan_tag.registers = LIB_DRAW_VERTEX_REGISTERS;
+    state->texture_index = settings->texture_index;
+    state->unk8c = settings->unk04;
+    buffer->unkce = settings->unk18 != 0;
+
+    if (settings->unk14 > 0.0f)
+    {
+        state->alpha = LIB_DRAW_ALPHA_SUBTRACT;
+        state->blend = 1;
+        state->unkac = 1;
+        buffer->unkcf = 1;
+    }
+
+    buffer->unkc7[0] = settings->unk19;
+    buffer->unkc7[1] = settings->unk1A;
+    buffer->unkc7[2] = settings->unk1B;
+    buffer->unkc7[3] = settings->unk1C;
+    buffer->state_pending = 1;
+}
+
+/**
+ * @brief Close the scratchpad batch and copy it into the command buffer.
+ *
+ * Writes each block's DMA tag and VIF codes, pads the streams to whole quadwords, then waits for the previous copy
+ * and starts this one. A batch that wouldn't fit in the command buffer is dropped and its vertices stay pending.
+ * @param buffer Draw buffer.
+ */
+void lib_draw_buffer_flush_batch(LibDrawBuffer* buffer)
+{
+    LibDrawChainBlock* chain = buffer->chain_block;
+    s32 address = 0;
+    s32 size = 0;
+
+    chain->dma_tag = DMA_TAG(sizeof(LibDrawBatchInfo) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_CNT, buffer->command_cursor);
+    chain->info.vif_code = VIF_UNPACK(VIF_UNPACK_V4_16, LIB_DRAW_INFO_VU_QWORDS, VIF_UNPACK_ADD_TOPS);
+    chain->info.unk24 = 0;
+    chain->info.unk28 = 0;
+    chain->info.unk34 = 0;
+    chain->info.unk38 = 0;
+    buffer->command_cursor += sizeof(LibDrawBatchInfo) / sizeof(u32);
+    size += sizeof(LibDrawBatchInfo);
+    LibDrawBatchInfo* info = &chain->info;
+
+    if (buffer->state_pending)
+    {
+        size += sizeof(LibDrawState);
+        buffer->state_block->state.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V4_32, LIB_DRAW_STATE_VU_QWORDS, VIF_UNPACK_ADD_TOPS | LIB_DRAW_INFO_VU_QWORDS);
+        buffer->state_block->dma_tag = DMA_TAG(sizeof(LibDrawState) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_CNT, buffer->command_cursor);
+        buffer->block_sizes[buffer->block_count++] = ((u32)buffer->command_cursor - (u32)buffer->command_begin) / LIB_DRAW_QWORD_SIZE;
+        buffer->command_cursor += sizeof(LibDrawState) / sizeof(u32);
+        info->flags = LIB_DRAW_BATCH_HAS_STATE;
+    }
+    else
+    {
+        info->flags = 0;
+        unsigned __int128* qwords = reinterpret_cast<unsigned __int128*>(buffer->state_block);
+        qwords[0] = 0;
+        qwords[1] = 0;
+        qwords[2] = 0;
+        qwords[3] = 0;
+        qwords[4] = 0;
+        qwords[5] = 0;
+        qwords[6] = 0;
+        qwords[7] = 0;
+        qwords[8] = 0;
+        qwords[9] = 0;
+        qwords[10] = 0;
+        qwords[11] = 0;
+        qwords[12] = 0;
+        qwords[13] = 0;
+        qwords[14] = 0;
+        qwords[15] = 0;
+    }
+
+    if (buffer->unkcf)
+    {
+        info->flags |= LIB_DRAW_BATCH_FLAG_08;
+    }
+
+    info->flags |= (u16)(buffer->unkce ? LIB_DRAW_BATCH_FLAG_04 : 0);
+    address += LIB_DRAW_INFO_VU_QWORDS + LIB_DRAW_STATE_VU_QWORDS;
+
+    buffer->primitive_block->header.vif_qword = 0;
+    buffer->primitive_block->header.dma_tag =
+        DMA_TAG((buffer->primitive_count + LIB_DRAW_QWORD_SIZE - 1) / LIB_DRAW_QWORD_SIZE + 1, DMA_TAG_ID_CNT, buffer->command_cursor);
+    buffer->primitive_block->header.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_S_8, buffer->primitive_count, address | VIF_UNPACK_ADD_TOPS | VIF_UNPACK_UNSIGNED);
+    info->primitive_count = buffer->primitive_count;
+    info->unk22 = buffer->primitive_count;
+    info->primitive_offset = size + LIB_DRAW_QWORD_SIZE;
+    info->primitive_address = address;
+    info->unk2c[0] = buffer->unkc7[0];
+    info->unk2c[1] = buffer->unkc7[1];
+    info->unk2c[2] = buffer->unkc7[2];
+    info->unk2c[3] = buffer->unkc7[3];
+    s32 primitive_count = buffer->primitive_count;
+    s32 block_size = ((primitive_count + LIB_DRAW_QWORD_SIZE - 1) & ~(LIB_DRAW_QWORD_SIZE - 1)) + LIB_DRAW_QWORD_SIZE;
+    buffer->command_cursor = reinterpret_cast<u32*>(reinterpret_cast<u8*>(buffer->command_cursor) + block_size);
+    size += block_size;
+
+    info->vertex_count = buffer->vertex_count;
+    LibDrawVectorBlock* normals = buffer->normal_block;
+    normals->header.dma_tag = DMA_TAG(buffer->vertex_count + 1, DMA_TAG_ID_CNT, buffer->command_cursor);
+    normals->header.vif_qword = 0;
+    address += primitive_count;
+
+    for (s32 i = buffer->vertex_count; i < LIB_DRAW_BATCH_VERTEX_COUNT; i++)
+    {
+        normals->vectors[i] = 0;
+    }
+
+    buffer->normal_block->header.vif_codes[2] = VIF_STCYCL(4, 1);
+    buffer->normal_block->header.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V4_32, buffer->vertex_count, address | VIF_UNPACK_ADD_TOPS);
+    info->unk4c_offset = size + LIB_DRAW_QWORD_SIZE;
+    info->unk4c_address = address;
+    block_size = buffer->vertex_count * LIB_DRAW_QWORD_SIZE + LIB_DRAW_QWORD_SIZE;
+    buffer->command_cursor = reinterpret_cast<u32*>(reinterpret_cast<u8*>(buffer->command_cursor) + block_size);
+    size += block_size;
+
+    {
+        s16 count;
+        s32 index;
+        s32 pad;
+        s32 qword;
+        LibDrawWordBlock* texcoords = buffer->texcoord_block;
+        texcoords->header.dma_tag = DMA_TAG((buffer->vertex_count + 3) / 4 + 1, DMA_TAG_ID_CNT, buffer->command_cursor);
+        texcoords->header.vif_qword = 0;
+        count = buffer->vertex_count;
+        qword = count / 4 + 1;
+        index = count;
+
+        for (pad = 0; index < LIB_DRAW_BATCH_VERTEX_COUNT && pad < 4; index++, pad++)
+        {
+            *buffer->texcoords++ = 0;
+        }
+
+        for (s32 i = qword; i < LIB_DRAW_BATCH_VERTEX_COUNT / 4; i++)
+        {
+            texcoords->qwords[i] = 0;
+        }
+
+        buffer->texcoord_block->header.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V2_16_MASKED, buffer->vertex_count, (address + 1) | VIF_UNPACK_ADD_TOPS);
+        info->texcoord_offset = size + LIB_DRAW_QWORD_SIZE;
+        block_size = ((buffer->vertex_count + 3) & ~3) * sizeof(u32) + LIB_DRAW_QWORD_SIZE;
+        buffer->command_cursor = reinterpret_cast<u32*>(reinterpret_cast<u8*>(buffer->command_cursor) + block_size);
+        size += block_size;
+    }
+
+    {
+        s16 count;
+        s32 index;
+        s32 pad;
+        s32 qword;
+        LibDrawWordBlock* colors = buffer->color_block;
+        colors->header.dma_tag = DMA_TAG((buffer->vertex_count + 3) / 4 + 1, DMA_TAG_ID_CNT, buffer->command_cursor);
+        colors->header.vif_qword = 0;
+        count = buffer->vertex_count;
+        qword = count / 4 + 1;
+        index = count;
+
+        for (pad = 0; index < LIB_DRAW_BATCH_VERTEX_COUNT && pad < 4; index++, pad++)
+        {
+            *buffer->colors++ = 0;
+        }
+
+        for (s32 i = qword; i < LIB_DRAW_BATCH_VERTEX_COUNT / 4; i++)
+        {
+            colors->qwords[i] = 0;
+        }
+
+        buffer->color_block->header.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V4_8, buffer->vertex_count, (address + 2) | VIF_UNPACK_ADD_TOPS | VIF_UNPACK_UNSIGNED);
+        info->color_offset = size + LIB_DRAW_QWORD_SIZE;
+        block_size = ((buffer->vertex_count + 3) & ~3) * sizeof(u32) + LIB_DRAW_QWORD_SIZE;
+        buffer->command_cursor = reinterpret_cast<u32*>(reinterpret_cast<u8*>(buffer->command_cursor) + block_size);
+        size += block_size;
+    }
+
+    LibDrawVectorBlock* positions = buffer->position_block;
+    positions->header.dma_tag = DMA_TAG(buffer->vertex_count + 2, DMA_TAG_ID_CNT, buffer->command_cursor);
+    positions->header.vif_qword = 0;
+    buffer->position_block->header.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V4_32, buffer->vertex_count, (address + 3) | VIF_UNPACK_ADD_TOPS);
+    info->position_offset = size + LIB_DRAW_QWORD_SIZE;
+    positions->vectors[buffer->vertex_count] = 0;
+    *reinterpret_cast<u32*>(reinterpret_cast<u8*>(positions) + (buffer->vertex_count + 2) * LIB_DRAW_QWORD_SIZE) = VIF_STCYCL(1, 1);
+    block_size = buffer->vertex_count * LIB_DRAW_QWORD_SIZE + 2 * LIB_DRAW_QWORD_SIZE;
+    buffer->command_cursor = reinterpret_cast<u32*>(reinterpret_cast<u8*>(buffer->command_cursor) + block_size);
+    *reinterpret_cast<u64*>(reinterpret_cast<u8*>(positions) + (buffer->vertex_count + 3) * LIB_DRAW_QWORD_SIZE) = DMA_TAG_ID_END;
+    size += block_size;
+
+    if (buffer->command_cursor <= buffer->command_begin + buffer->word_capacity)
+    {
+        info->size = size;
+
+        if (buffer->batch_count != 0)
+        {
+            while (!(*D_STAT & D_STAT_CIS8))
+            {
+            }
+        }
+
+        *D8_SADR = reinterpret_cast<u32>(buffer->chain_block);
+        *D8_QWC = 0;
+        *D_STAT = D_STAT_CIS8;
+        *D8_CHCR = DMA_CHCR_START | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
+        buffer->batch_count++;
+        buffer->vertex_count = 0;
+    }
+}
+
+/**
+ * @brief Copy out any pending vertices, then lay out the next scratchpad batch and switch to the other half.
+ * @param buffer Draw buffer.
+ */
+void lib_draw_buffer_start_batch(LibDrawBuffer* buffer)
+{
+    if (buffer->vertex_count != 0)
+    {
+        lib_draw_buffer_flush_batch(buffer);
+    }
+
+    buffer->chain_block = reinterpret_cast<LibDrawChainBlock*>(reinterpret_cast<u8*>(EE_SCRATCHPAD) + buffer->scratchpad_index * LIB_DRAW_BATCH_STRIDE);
+    buffer->state_block = reinterpret_cast<LibDrawStateBlock*>(buffer->chain_block + 1);
+    buffer->primitive_block = reinterpret_cast<LibDrawPrimitiveBlock*>(buffer->state_block + 1);
+    buffer->normal_block = reinterpret_cast<LibDrawVectorBlock*>(buffer->primitive_block + 1);
+    buffer->texcoord_block = reinterpret_cast<LibDrawWordBlock*>(buffer->normal_block + 1);
+    buffer->color_block = buffer->texcoord_block + 1;
+    buffer->position_block = reinterpret_cast<LibDrawVectorBlock*>(buffer->color_block + 1);
+    buffer->primitive_sizes = buffer->primitive_block->sizes;
+    reinterpret_cast<unsigned __int128*>(buffer->primitive_sizes)[0] = 0;
+    reinterpret_cast<unsigned __int128*>(buffer->primitive_sizes)[1] = 0;
+    buffer->positions = reinterpret_cast<FieldVec4A*>(buffer->position_block->vectors);
+    buffer->normals = reinterpret_cast<FieldVec4A*>(buffer->normal_block->vectors);
+    buffer->texcoords = buffer->texcoord_block->words;
+    buffer->colors = buffer->color_block->words;
+    buffer->vertex_count = 0;
+    buffer->primitive_count = 0;
+    buffer->scratchpad_index ^= 1;
+    buffer->state_pending = 0;
+}
+
+/**
+ * @brief Copy out any pending vertices and finish the commands, unless they've run into the space kept for the block
+ *        sizes and texture packets.
+ *
+ * Fills in the setup packet, appends the block sizes, hands the commands over, switches command buffers, waits for
+ * the draw buffer's DMA channel and turns its interrupts back on.
+ * @param buffer Draw buffer.
+ * @param mode Nonzero stores the setup packet's size at its offset 0x04 too.
+ * @param distance Stored in the setup packet at 0x18.
+ * @param flag Stored in the setup packet at 0x3F.
+ */
+void lib_draw_buffer_end(LibDrawBuffer* buffer, s32 mode, float distance, s32 flag)
+{
+    if (buffer->vertex_count != 0)
+    {
+        lib_draw_buffer_flush_batch(buffer);
+    }
+
+    if (reinterpret_cast<u8*>(buffer->command_cursor) < reinterpret_cast<u8*>(buffer->command_begin) + buffer->word_capacity -
+                                                            buffer->block_capacity * sizeof(u32) - buffer->texture_count * LIB_DRAW_TEXTURE_PACKET_SIZE)
+    {
+        buffer->setup_packet->size = sizeof(LibDrawSetupPacket);
+        buffer->setup_packet->unk04 = mode != 0 ? sizeof(LibDrawSetupPacket) : 0;
+        buffer->setup_packet->unk0c = 0;
+        buffer->setup_packet->unk10 = 0;
+        buffer->setup_packet->unk14 = 0;
+        buffer->setup_packet->unk18 = distance;
+        buffer->setup_packet->unk50 = 0;
+        buffer->setup_packet->batch_count = buffer->batch_count;
+        buffer->setup_packet->unk3e = buffer->unkcc;
+        buffer->setup_packet->unk3f = flag;
+        buffer->setup_packet->command_size = reinterpret_cast<u8*>(buffer->command_cursor) - reinterpret_cast<u8*>(buffer->command_begin);
+        buffer->setup_packet->unk44 = 0;
+        buffer->setup_packet->unk48 = 0;
+        buffer->setup_packet->unk4c = 0;
+
+        u32* words = reinterpret_cast<u32*>(reinterpret_cast<u32>(buffer->command_cursor) | UNCACHED_SEGMENT);
+
+        *words++ = buffer->block_count;
+        for (s32 i = 0; i < buffer->block_count; i++)
+        {
+            *words++ = buffer->block_sizes[i];
+        }
+
+        buffer->command_cursor += ((buffer->block_count + 1) * sizeof(u32) + 15) / 16 * (16 / sizeof(u32));
+        func_00454E90(buffer);
+
+        if (buffer->unkcd)
+        {
+            func_004D5A50(buffer, buffer->command_begin - 4);
+            buffer->unkcd = 0;
+        }
+        else
+        {
+            buffer->data = buffer->command_begin - 4;
+        }
+
+        if (buffer->command_buffer_count == 2)
+        {
+            buffer->command_buffer_index ^= 1;
+        }
+
+        sceDmaSync(sceDmaGetChan(D_001B6604->channel), 0, 0);
+        EnableDmac(D_001B6604->channel);
+    }
+}
 
 /**
  * @brief Start a new packet in the draw buffer's current command buffer, then stop the DMA queue it goes out on.
@@ -603,10 +1453,10 @@ void lib_draw_buffer_begin(LibDrawBuffer* buffer, u8 unk3C, u8 unk3D)
     buffer->setup_packet->unk56 = 0;
     buffer->scratchpad_index = 0;
     buffer->vertex_count = 0;
-    buffer->unk6c = 0;
+    buffer->batch_count = 0;
     buffer->block_count = 0;
     buffer->unkcc = 0;
-    func_00455AD0(buffer);
+    lib_draw_buffer_start_batch(buffer);
 
     D_001B6604->wait_idle();
     D_001B6604->stop();
@@ -853,7 +1703,7 @@ u16 lib_compute_checksum(u16 seed, const void* data, s32 size)
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457520);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_trophy_flags_update_checksum);
 
 // TODO: Like the checksum above, this only matches at optimization level 0.
 #pragma push
@@ -869,7 +1719,7 @@ static inline bool lib_trophy_flag(LibTrophyFlags* flags, u32 index)
 {
     u32 byte = index / 8;
     u32 bit = index & 7;
-    return !!((flags->flag_bytes[byte] >> bit) & 1);
+    return !!((flags->flags.bytes[byte] >> bit) & 1);
 }
 
 /**
@@ -929,9 +1779,128 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00459FB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045A2C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045A5D0);
+// TODO: Like the saved-data functions before it, this only matches at optimization level 0.
+#pragma push
+#pragma optimization_level 0
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045A770);
+/** @brief Free the system settings, the two record arrays and the padding block, and remove their entries. */
+void lib_free_system_data(void)
+{
+    ResidentEntryTable* table = resident_get_entry_table(resident_get_system());
+
+    LibSystemSettings* settings = reinterpret_cast<LibSystemSettings*>(resident_find_entry(table, LIB_ENTRY_SYSTEM_SETTINGS));
+    delete settings;
+    LibResourceRecordC4* outputs = reinterpret_cast<LibResourceRecordC4*>(resident_find_entry(table, LIB_ENTRY_RECORD_OUTPUTS));
+    delete[] outputs;
+    LibResourceRecord114* inputs = reinterpret_cast<LibResourceRecord114*>(resident_find_entry(table, LIB_ENTRY_RECORD_INPUTS));
+    delete[] inputs;
+    u8* padding = reinterpret_cast<u8*>(resident_find_entry(table, LIB_ENTRY_PADDING));
+    delete[] padding;
+    resident_remove_entry(table, LIB_ENTRY_SYSTEM_SETTINGS);
+    resident_remove_entry(table, LIB_ENTRY_RECORD_OUTPUTS);
+    resident_remove_entry(table, LIB_ENTRY_RECORD_INPUTS);
+    resident_remove_entry(table, LIB_ENTRY_PADDING);
+    func_003EF860();
+}
+
+#pragma pop
+
+/** Times the allocation order is shuffled. */
+#define LIB_SYSTEM_DATA_SHUFFLES 100
+
+/** Records in each of the two record arrays. */
+#define LIB_RESOURCE_RECORD_COUNT 8
+
+extern "C" void func_0040B760(void);
+extern "C" void func_00458700(LibResourceRecordC4* output, LibResourceRecord114* input, s32 mode);
+extern "C" void func_004588E0(LibSystemSettings* settings);
+
+// TODO: Like the saved-data functions before it, this only matches at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Allocate the system settings, the two record arrays and func_0040B760's data in a random order, after a
+ *        random-sized padding block, register them in the resident entry table and initialize them.
+ *
+ * Entry 8 is allocated and cleared only when it is missing.
+ */
+void lib_allocate_system_data(void)
+{
+    s32 order[4];
+    s32 i;
+    u8* entry8;
+    ResidentEntryTable* table;
+    s32 j;
+    LibSystemSettings* settings;
+    LibResourceRecordC4* outputs;
+    LibResourceRecord114* inputs;
+
+    for (i = 0; i < 4; i++)
+    {
+        order[i] = i;
+    }
+
+    for (s32 k = 0; k < LIB_SYSTEM_DATA_SHUFFLES; k++)
+    {
+        s32 first = resident_random_below(4);
+        s32 second = resident_random_below(4);
+        s32 swap = order[first];
+        order[first] = order[second];
+        order[second] = swap;
+    }
+
+    entry8 = 0;
+    table = resident_get_entry_table(resident_get_system());
+    entry8 = reinterpret_cast<u8*>(resident_find_entry(table, LIB_ENTRY_08));
+
+    if (entry8 == 0)
+    {
+        entry8 = reinterpret_cast<u8*>(new (0) u64);
+        memset_guess(entry8, 0, sizeof(u64));
+        func_001014B0(table, entry8, LIB_ENTRY_08);
+    }
+
+    u8* padding = new (0) u8[resident_random_below(16) * sizeof(u32) + 16];
+    func_001014B0(table, padding, LIB_ENTRY_PADDING);
+
+    for (j = 0; j < 4; j++)
+    {
+        switch (order[j])
+        {
+        case 0:
+            settings = new (0) LibSystemSettings;
+            memset_guess(settings, 0, sizeof(LibSystemSettings));
+            break;
+        case 1:
+            outputs = new (0) LibResourceRecordC4[LIB_RESOURCE_RECORD_COUNT];
+            memset_guess(outputs, 0, sizeof(LibResourceRecordC4));
+            break;
+        case 2:
+            inputs = new (0) LibResourceRecord114[LIB_RESOURCE_RECORD_COUNT];
+            memset_guess(inputs, 0, sizeof(LibResourceRecord114));
+            break;
+        case 3:
+            func_0040B760();
+            break;
+        }
+    }
+
+    func_001014B0(table, settings, LIB_ENTRY_SYSTEM_SETTINGS);
+    func_001014B0(table, outputs, LIB_ENTRY_RECORD_OUTPUTS);
+    func_001014B0(table, inputs, LIB_ENTRY_RECORD_INPUTS);
+    func_00458700(&outputs[0], &inputs[0], 1);
+    func_00458700(&outputs[1], &inputs[1], 0);
+    func_00458700(&outputs[2], &inputs[2], 0);
+    func_00458700(&outputs[3], &inputs[3], 0);
+    func_00458700(&outputs[4], &inputs[4], 0);
+    func_00458700(&outputs[5], &inputs[5], 0);
+    func_00458700(&outputs[6], &inputs[6], 0);
+    func_00458700(&outputs[7], &inputs[7], 0);
+    func_004588E0(settings);
+}
+
+#pragma pop
 
 extern "C" s32 func_0045ABA0(void)
 {

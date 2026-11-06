@@ -1,10 +1,32 @@
-#ifndef SO3_OVERLAYS_BOOT_TEXT_001FB220_H
-#define SO3_OVERLAYS_BOOT_TEXT_001FB220_H
+#ifndef SO3_OVERLAYS_BOOT_TROPHY_VIEWER_H
+#define SO3_OVERLAYS_BOOT_TROPHY_VIEWER_H
 
 #include "types.h"
+#include "overlays/boot/boot.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/clip_region.h"
+
+/**
+ * @brief Return the system settings in the resident save data.
+ * @return System settings.
+ */
+static inline LibSystemSettings* boot_settings()
+{
+    return (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+}
+
+/**
+ * @brief Read a selected bit in the resource's flag array.
+ * @param bits Resource storage containing the flag array.
+ * @param index Unsigned flag index.
+ * @return One if the bit is set, otherwise zero.
+ */
+static inline s32 resource_bit(LibTrophyFlags* bits, u32 index)
+{
+    return (bits->flags.bytes[index / 8] >> (index % 8)) & 1;
+}
 
 #ifdef __cplusplus
-#include "overlays/boot/text_001DD3C0.h"
 
 class LibStringLabel;
 
@@ -93,7 +115,8 @@ class BootBattleTrophyViewer : public LibListObject
         /** @brief Create the two screen images once the pictures load, place them for the screen shape and fade out the bar. */
         void update_images();
 
-        u8* unk14;
+        /** Block of random size allocated after the resource and only freed, so the heap layout varies. */
+        u8* heap_padding;
 
         /** Resource 0x2B. */
         u8* resource_data;
@@ -181,16 +204,16 @@ class BootBattleTrophyViewer : public LibListObject
         LibTextWidget* sort_text;
 
         /** Shows how far the grid is scrolled. */
-        BootListIndicator* scroll_indicator;
+        LibListIndicator* scroll_indicator;
 
         /** Rank title, shown once enough trophies are earned. */
         LibTextWidget* rank_text;
 
         /** Clips the trophy grid to the area between the header and footer. */
-        BootClipRegion* grid_clip;
+        LibClipRegion* grid_clip;
 
         /** Restores drawing to the whole display after the grid. */
-        BootClipRegion* screen_clip;
+        LibClipRegion* screen_clip;
 
         /** Loading bar, faded out once loading finishes. */
         BootProgressBar* progress_bar;

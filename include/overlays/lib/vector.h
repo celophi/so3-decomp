@@ -102,11 +102,6 @@ public:
     }
 
     /**
-     * @brief Copy all four components from a FieldVec4A.
-     * @param other Vector to copy.
-     * @return A copy of this vector.
-     */
-    /**
      * @brief Copy all four components from a FieldVec4A without returning a copy.
      * @param other Vector to copy.
      */
@@ -115,6 +110,11 @@ public:
         *(unsigned __int128*)this = *(const unsigned __int128*)&other;
     }
 
+    /**
+     * @brief Copy all four components from a FieldVec4A.
+     * @param other Vector to copy.
+     * @return A copy of this vector.
+     */
     FieldVec4B operator=(const FieldVec4A& other)
     {
         *(unsigned __int128*)this = *(const unsigned __int128*)&other;

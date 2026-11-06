@@ -13,8 +13,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # The release binaries below are built for x86_64 Linux. I also pin apt to a
 # dated Debian snapshot. The expiry check is off because the date never moves,
-# but Debian's signatures are still checked.
+# but Debian's signatures are still checked. snapshot.debian.org rate-limits
+# busy clients with 503s, so apt retries each download a few times instead of
+# failing the whole image on one package.
 RUN test "$(dpkg --print-architecture)" = amd64 \
+    && echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries \
     && rm /etc/apt/sources.list.d/debian.sources \
     && printf '%s\n' \
        'deb [check-valid-until=no signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] https://snapshot.debian.org/archive/debian/20260928T000000Z/ trixie main' \

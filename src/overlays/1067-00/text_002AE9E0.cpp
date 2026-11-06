@@ -45,8 +45,8 @@
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/1067-00/text_00291B80.h"
 #include "overlays/1067-00/text_002D3BD0.h"
+#include "ee.h"
 
-#define TIMER0_COUNT (*(volatile u32*)0x10000000)
 #define TIMER0_MODE (*(volatile u32*)0x10000010)
 
 /** Display interfaces retained by the field display/list manager. */
@@ -284,16 +284,8 @@ struct FieldContextOwner20
     u8 unk34_5_7 : 3;
 };
 
-/** Partial field state whose word at 0x90 is cleared during shutdown. */
-struct FieldState6628
-{
-    u8 unk00[0x90];
-    u32 unk90;
-};
-
-extern "C" void func_4DCFA0(void* state);
-extern "C" FieldTrackPool<FieldClass159130>* D_001B6674;
-extern "C" FieldTrackPool<FieldClass159390>* D_001B6668;
+extern "C" FieldTrackPool<FieldClass159130>* g_vector_curve_track_pool;
+extern "C" FieldTrackPool<FieldClass159390>* g_vector_track_pool;
 extern "C" void func_002B9090(FieldClass1595D0* track);
 extern "C" void func_002B87A0(FieldClass159780* track);
 extern "C" void func_002B91F0(FieldTrackPool<FieldClass159130>* pool, FieldClass159130* track);
@@ -319,19 +311,17 @@ extern "C" u8 D_001B65A0;
 
 extern "C" ResidentDmaQueue* D_001B6610;
 
-extern "C" FieldState6628* D_001B6628;
 
-extern "C" void* D_001B663C;
 
-extern "C" FieldTrackPool<FieldClass177F70>* D_001B6664;
+extern "C" FieldTrackPool<FieldClass177F70>* g_float_track_pool;
 
-extern "C" FieldTrackPool<FieldClass177C70>* D_001B6670;
+extern "C" FieldTrackPool<FieldClass177C70>* g_float_curve_track_pool;
 
-extern "C" FieldTrackPool<FieldClass177BE0>* D_001B6678;
+extern "C" FieldTrackPool<FieldClass177BE0>* g_float_quaternion_track_pool;
 
-extern "C" FieldTrackPool<FieldClass174440>* D_001B667C;
+extern "C" FieldTrackPool<FieldClass174440>* g_quaternion_curve_track_pool;
 
-extern "C" FieldTrackPool<FieldClass1730F0>* D_001B6680;
+extern "C" FieldTrackPool<FieldClass1730F0>* g_quaternion_track_pool;
 
 /** Partial receiver with a byte at offset 0x60. */
 struct FieldByte60AE9E0
@@ -1259,11 +1249,11 @@ extern "C" void field_set_display_blend(ResidentContext* context, float alpha)
         if (context->display_blend_node == 0)
         {
             context->display_blend_node = new (0) FieldDisplayBlendNode;
-            D_001B6614->append_node(context->display_blend_node, -1);
+            g_update_list->append_node(context->display_blend_node, -1);
         }
 
         context->display_blend_node->alpha = alpha;
-        LibCameraContext* state = D_001B6650;
+        LibCameraContext* state = g_display;
         state->blend_enabled = 1;
         state->blend_alpha = alpha;
     }
@@ -1308,9 +1298,9 @@ static inline void field_apply_time_step(ResidentContext* context, float step)
     g_frame_ticks = scaled_step;
     g_frame_seconds = scaled_step / 60.0f;
 
-    if (D_001B657C != 0)
+    if (g_field_runtime != 0)
     {
-        D_001B657C->rate = scaled_step;
+        g_field_runtime->rate = scaled_step;
     }
 }
 
@@ -1388,14 +1378,14 @@ void field_run_update_loop(ResidentContext* context)
     {
     }
 
-    func_4DCEA0(D_001B6650, true, false);
+    g_display->set_output(true, false);
     D_001B6420 = 1;
 
     for (; !context->exit_requested;)
     {
         if (!context->skip_render)
         {
-            func_4DD830(D_001B6650, context->render_count, D_001B65DC);
+            g_display->flip(context->render_count, g_packet_queue);
         }
         else
         {
@@ -1404,15 +1394,15 @@ void field_run_update_loop(ResidentContext* context)
 
         context->render_count++;
 
-        if (D_001B6618 != 0)
+        if (g_screen_text != 0)
         {
-            resident_packet_submit(D_001B6618->packet, 0);
-            func_4D76C0(D_001B6618, 16, 16);
+            resident_packet_submit(g_screen_text->packet, 0);
+            func_4D76C0(g_screen_text, 16, 16);
         }
 
-        func_4D8AC0();
-        func_4D4BE0(D_001B661C);
-        D_001B6614->update_nodes();
+        lib_begin_frame_packet();
+        func_4D4BE0(g_renderer);
+        g_update_list->update_nodes();
         context->update_count++;
 
         if (context->update_callback != 0)
@@ -1448,13 +1438,14 @@ void field_run_update_loop(ResidentContext* context)
                 overrun = 0;
             }
 
-            context->display_field = func_4DCFF0(D_001B6650, context->render_count);
+            context->display_field = g_display->wait_for_field(context->render_count);
             resident_input_take_vblank_count(g_input_system);
         }
         else
         {
             s32 remaining = context->time_step_level;
-            context->display_field = func_4DCFF0(D_001B6650, context->render_count);
+            context->display_field = g_display->wait_for_field(context->render_count);
+
             for (s32 retries = 5; retries >= 0; retries--)
             {
                 remaining -= resident_input_take_vblank_count(g_input_system);
@@ -1637,7 +1628,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         field_detach_release_context_object(context->input);
         field_detach_release_context_object(context->unk20);
         resident_sync_gs_path(resident_system_get_input(resident_get_system()), 0, 0);
-        func_004DBEE0(D_001B65DC, 0);
+        func_004DBEE0(g_packet_queue, 0);
 
         ResidentDmaQueue* dma_queue = D_001B6610;
 
@@ -1650,18 +1641,18 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         D_001B651C = 0;
         D_001B654C = 0;
         D_001B6548 = 0;
-        D_001B6628->unk90 = 0;
+        g_display_manager->current_display = 0;
         field_detach_release_context_object(context->unk40);
-        delete D_001B657C;
-        D_001B657C = 0;
-        func_002B4620(D_001B6664);
-        func_002B4C50(D_001B6668);
-        func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(D_001B666C));
-        func_002B56D0(D_001B6670);
-        func_002B5C80(D_001B6674);
-        func_002B6180(D_001B6678);
-        func_002B6680(D_001B667C);
-        func_002B6BA0(D_001B6680);
+        delete g_field_runtime;
+        g_field_runtime = 0;
+        func_002B4620(g_float_track_pool);
+        func_002B4C50(g_vector_track_pool);
+        func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool));
+        func_002B56D0(g_float_curve_track_pool);
+        func_002B5C80(g_vector_curve_track_pool);
+        func_002B6180(g_float_quaternion_track_pool);
+        func_002B6680(g_quaternion_curve_track_pool);
+        func_002B6BA0(g_quaternion_track_pool);
 
         if (!D_001B6430->context->unkdd.unk4)
         {
@@ -1672,17 +1663,17 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         D_001B6430 = 0;
         delete context->unk0c;
         context->unk0c = 0;
-        delete D_001B6618;
-        D_001B6618 = 0;
+        delete g_screen_text;
+        g_screen_text = 0;
 
         if (full_release)
         {
-            if (D_001B663C != reinterpret_cast<void*>(0x70000000))
+            if (g_texture_cache != reinterpret_cast<LibTextureCache*>(EE_SCRATCHPAD))
             {
-                ::operator delete(D_001B663C);
+                ::operator delete(g_texture_cache);
             }
 
-            D_001B663C = 0;
+            g_texture_cache = 0;
             func_003EF860();
             func_0040B1F0();
         }
@@ -1696,7 +1687,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
         if (full_release)
         {
-            func_004E33B0();
+            lib_shutdown();
         }
 
         resident_drain_release_queues(g_resident_release_queues);
@@ -1731,7 +1722,7 @@ FieldClass159010::~FieldClass159010()
  */
 extern "C" void field_initialize_context(ResidentContext* context)
 {
-    func_004DBEE0(D_001B65DC, 0);
+    func_004DBEE0(g_packet_queue, 0);
     D_001B6420 = 0;
     D_001B6434 = 0;
     context->unkdd.unk4 = 0;
@@ -1786,30 +1777,30 @@ extern "C" void field_initialize_context(ResidentContext* context)
     context->unkaa = 0;
     g_frame_ticks = 1.0f;
     g_frame_seconds = 1.0f / 60.0f;
-    func_002B4620(D_001B6664);
-    func_002B4C50(D_001B6668);
-    func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(D_001B666C));
-    func_002B56D0(D_001B6670);
-    func_002B5C80(D_001B6674);
-    func_002B6180(D_001B6678);
-    func_002B6680(D_001B667C);
-    func_002B6BA0(D_001B6680);
+    func_002B4620(g_float_track_pool);
+    func_002B4C50(g_vector_track_pool);
+    func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool));
+    func_002B56D0(g_float_curve_track_pool);
+    func_002B5C80(g_vector_curve_track_pool);
+    func_002B6180(g_float_quaternion_track_pool);
+    func_002B6680(g_quaternion_curve_track_pool);
+    func_002B6BA0(g_quaternion_track_pool);
     D_001B65A8 = 0;
     D_001B65A0 = 0;
     D_001B659C = 0;
     delete static_cast<ResidentHeap*>(D_001B6684);
     D_001B6684 = 0;
 
-    if (D_001B663C != reinterpret_cast<void*>(0x70000000))
+    if (g_texture_cache != reinterpret_cast<LibTextureCache*>(EE_SCRATCHPAD))
     {
-        ::operator delete(D_001B663C);
+        ::operator delete(g_texture_cache);
     }
 
-    D_001B663C = 0;
-    delete D_001B6618;
-    D_001B6618 = 0;
-    delete D_001B657C;
-    D_001B657C = 0;
+    g_texture_cache = 0;
+    delete g_screen_text;
+    g_screen_text = 0;
+    delete g_field_runtime;
+    g_field_runtime = 0;
     lib_object_detach_owner(D_001B6640);
 
     if (D_001B6640 != 0)
@@ -1859,7 +1850,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     void* previous_heap = resident_exchange_allocation_heap(context->unk6c);
     LibClass178B10* temporary = ::new (0) LibClass178B10(768);
     D_001B6640 = temporary;
-    D_001B6614->append_node(temporary, -1);
+    g_update_list->append_node(temporary, -1);
     resident_exchange_allocation_heap(previous_heap);
 
     if (saved == 0)
@@ -1883,30 +1874,30 @@ extern "C" void field_initialize_context(ResidentContext* context)
         func_001138B0(context->unk78, reinterpret_cast<void*>(reinterpret_cast<u32>(D_36FA80) + 0x200), unused_space - 0x800);
     }
 
-    func_002B41A0(D_001B6664, 900);
-    func_002B5390(D_001B6670, 901);
-    func_002B6310(D_001B667C, 902);
-    func_002B47C0(D_001B6668, 2300);
-    func_002B4DF0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(D_001B666C), 2801);
-    func_002B5870(D_001B6674, 4702);
-    func_002B5E20(D_001B6678, 3703);
-    func_002B6820(D_001B6680, 2201);
+    func_002B41A0(g_float_track_pool, 900);
+    func_002B5390(g_float_curve_track_pool, 901);
+    func_002B6310(g_quaternion_curve_track_pool, 902);
+    func_002B47C0(g_vector_track_pool, 2300);
+    func_002B4DF0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool), 2801);
+    func_002B5870(g_vector_curve_track_pool, 4702);
+    func_002B5E20(g_float_quaternion_track_pool, 3703);
+    func_002B6820(g_quaternion_track_pool, 2201);
     func_002B0D80(context, 0, 0x7F000000);
     D_001B6510 = 0;
     D_001B6518 = 0;
-    FieldDisplayManagerState* display = static_cast<FieldDisplayManagerState*>(D_001B661C);
+    FieldDisplayManagerState* display = static_cast<FieldDisplayManagerState*>(g_renderer);
     display->unk4084 = D_001B6624;
-    D_001B6624->unk360 = D_001B6628;
-    static_cast<FieldDisplayManagerState*>(D_001B661C)->unk4464->unkaf = 0;
-    static_cast<FieldDisplayManagerState*>(D_001B661C)->unk4468->unkaf = 0;
-    FieldDisplaySlot* slot = static_cast<FieldDisplayManagerState*>(D_001B661C)->unk4464;
+    D_001B6624->unk360 = g_display_manager;
+    static_cast<FieldDisplayManagerState*>(g_renderer)->unk4464->unkaf = 0;
+    static_cast<FieldDisplayManagerState*>(g_renderer)->unk4468->unkaf = 0;
+    FieldDisplaySlot* slot = static_cast<FieldDisplayManagerState*>(g_renderer)->unk4464;
 
     if (slot != 0)
     {
         slot->unkaf = 1;
     }
 
-    slot = static_cast<FieldDisplayManagerState*>(D_001B661C)->unk4468;
+    slot = static_cast<FieldDisplayManagerState*>(g_renderer)->unk4468;
 
     if (slot != 0)
     {
@@ -1924,7 +1915,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     FieldInputState* input = ::new (0) FieldInputState;
     context->input = reinterpret_cast<ResidentContextInput10*>(input);
     reinterpret_cast<FieldInputState*>(context->input)->clear(1);
-    D_001B6614->append_node(context->input, -1);
+    g_update_list->append_node(context->input, -1);
     ResidentContextRef* reference = ::new (0) ResidentContextRef;
 
     if (reference != 0)
@@ -1935,11 +1926,11 @@ extern "C" void field_initialize_context(ResidentContext* context)
 
     D_001B6430 = reference;
     context->unk2c = reinterpret_cast<FieldResourceList14*>(::new (0) FieldClass150E10);
-    D_001B6614->append_node(context->unk2c, -1);
+    g_update_list->append_node(context->unk2c, -1);
     context->unk30 = ::new (0) FieldResourceLoaderList;
-    D_001B6614->append_node(context->unk30, -1);
+    g_update_list->append_node(context->unk30, -1);
     context->unk08 = reinterpret_cast<ResidentContext08*>(::new (0) FieldClass153CD0);
-    D_001B6614->append_node(context->unk08, -1);
+    g_update_list->append_node(context->unk08, -1);
 
     if (saved == 0)
     {
@@ -1950,7 +1941,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->unk14 = saved->context14;
     }
 
-    D_001B6614->append_node(context->unk14, -1);
+    g_update_list->append_node(context->unk14, -1);
     FieldClass1516A0* script = ::new (0) FieldClass1516A0;
     context->unk38 = reinterpret_cast<ResidentContextObject38*>(script);
 
@@ -1962,8 +1953,8 @@ extern "C" void field_initialize_context(ResidentContext* context)
         reinterpret_cast<FieldClass150DC0*>(context->unk38)->owner = 0;
     }
 
-    D_001B6614->append_node(context->unk38, -1);
-    D_001B657C->character_names = static_cast<FieldCharacterNames*>(reinterpret_cast<FieldClass1516A0*>(context->unk38));
+    g_update_list->append_node(context->unk38, -1);
+    g_field_runtime->character_names = static_cast<FieldCharacterNames*>(reinterpret_cast<FieldClass1516A0*>(context->unk38));
 
     if (saved == 0)
     {
@@ -1974,7 +1965,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->unk64 = saved->context64;
     }
 
-    D_001B6614->append_node(context->unk64, -1);
+    g_update_list->append_node(context->unk64, -1);
 
     if (saved == 0)
     {
@@ -1985,7 +1976,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->unk04 = saved->context04;
     }
 
-    D_001B6614->append_node(static_cast<FieldListObject*>(static_cast<FieldClass14FE30*>(context->unk04)), -1);
+    g_update_list->append_node(static_cast<FieldListObject*>(static_cast<FieldClass14FE30*>(context->unk04)), -1);
     context->unk44 = reinterpret_cast<ResidentContextObject52*>(::new (0) FieldClass1537C0);
     FieldClass1537C0* camera_controller = reinterpret_cast<FieldClass1537C0*>(context->unk44);
     camera_controller->unk51_0 = 0;
@@ -1993,7 +1984,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     camera_controller->unk34 = 0;
     camera_controller->unk3c = 0;
     camera_controller->unk51_2 = 0;
-    D_001B6614->append_node(context->unk44, -1);
+    g_update_list->append_node(context->unk44, -1);
 
     if (saved == 0)
     {
@@ -2004,7 +1995,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->unk4c = saved->context4c;
     }
 
-    D_001B6614->append_node(context->unk4c, -1);
+    g_update_list->append_node(context->unk4c, -1);
 
     if (saved == 0)
     {
@@ -2024,7 +2015,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->unk34 = saved->context34;
     }
 
-    D_001B6614->append_node(context->unk34, -1);
+    g_update_list->append_node(context->unk34, -1);
 
     if (saved == 0)
     {
@@ -2035,13 +2026,13 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->unk58 = static_cast<ResidentContextObject58*>(saved->context58);
     }
 
-    D_001B6614->append_node(context->unk58, -1);
+    g_update_list->append_node(context->unk58, -1);
     context->unk48 = ::new (0) FieldClass1534B0;
-    static_cast<LibUpdateList*>(D_001B661C)->append_node(context->unk48, -1);
+    static_cast<LibUpdateList*>(g_renderer)->append_node(context->unk48, -1);
     context->unk40 = ::new (0) FieldClass153590;
-    D_001B6614->append_node(context->unk40, -1);
+    g_update_list->append_node(context->unk40, -1);
     context->unk20 = ::new (0) FieldClass156B50;
-    D_001B6614->append_node(context->unk20, -1);
+    g_update_list->append_node(context->unk20, -1);
 
     if (saved == 0)
     {
@@ -2052,7 +2043,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->object_slots = saved->object_slots;
     }
 
-    D_001B6614->append_node(context->object_slots, -1);
+    g_update_list->append_node(context->object_slots, -1);
 
     if (saved == 0)
     {
@@ -2082,7 +2073,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         context->unk54 = saved->context54;
     }
 
-    D_001B6614->append_node(context->unk54, -1);
+    g_update_list->append_node(context->unk54, -1);
 
     if (saved == 0)
     {
@@ -2094,7 +2085,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     }
 
     func_002D9F80(static_cast<FieldState2D9F80*>(context->unk28));
-    D_001B6614->append_node(context->unk28, -1);
+    g_update_list->append_node(context->unk28, -1);
 
     if (saved == 0)
     {
@@ -2146,7 +2137,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
             strcpy_guess(camera->name, g_field_default_camera_name);
             camera->unk9fd_0 = 1;
             camera->unk9ca = 0;
-            static_cast<LibUpdateList*>(D_001B661C)->append_node(camera, -1);
+            static_cast<LibUpdateList*>(g_renderer)->append_node(camera, -1);
             break;
         }
         case 1:
@@ -2297,7 +2288,7 @@ extern "C" void field_clear_flags_5000(FieldRuntimeValues* values)
 /** @brief Disable display blending and restore the default alpha. */
 FieldDisplayBlendNode::~FieldDisplayBlendNode()
 {
-    LibCameraContext* state = D_001B6650;
+    LibCameraContext* state = g_display;
     state->blend_enabled = 0;
     state->blend_alpha = 0.5f;
 }
@@ -2314,7 +2305,7 @@ s32 FieldDisplayBlendNode::get_default_list_kind()
 /** @brief Rebuild the display drawing commands. */
 void FieldDisplayBlendNode::update()
 {
-    func_4DCFA0(D_001B6650);
+    g_display->refresh_scaled_packets();
 }
 
 /**
@@ -3041,7 +3032,7 @@ void FieldClass159130::func_001DF230()
 void FieldClass159130::func_slot94()
 {
     func_002B9090(this);
-    func_002B91F0(D_001B6674, this);
+    func_002B91F0(g_vector_curve_track_pool, this);
 }
 
 float FieldClass1591D0::func_002B6DF0(float key)
@@ -3067,7 +3058,7 @@ void FieldClass159390::func_001DF230()
 void FieldClass159390::func_slot84()
 {
     func_002B87A0(this);
-    func_002B91A0(D_001B6668, this);
+    func_002B91A0(g_vector_track_pool, this);
 }
 
 void FieldClass159300::func_002B83C0()

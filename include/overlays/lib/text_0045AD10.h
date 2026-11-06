@@ -43,6 +43,90 @@ public:
  */
 extern "C" s32 lib_allocate_drawing_storage(LibStorageBlock0C* storage, s32 word_count);
 
+/** Resource header prefix containing section offsets, counts, and total size. */
+struct LibResourceHeader
+{
+    u8 unk00[0x10];
+    s32 offsets[4];
+    s32 unk20;
+    s32 unk24;
+    s32 unk28;
+    s32 unk2c;
+    s32 unk30;
+    s32 unk34;
+    s32 unk38;
+    s32 unk3c;
+    s32 size;
+};
+
+/** One 0x50-byte resource slot in the runtime table. */
+struct LibManagedResourceSlot
+{
+    void* allocation;
+    LibResourceHeader* data;
+
+    /** Section pointers; the third holds one width byte per glyph. */
+    u8* sections[4];
+
+    s32 unk18;
+    s32 unk1c;
+    s32 unk20;
+
+    /** Height of the slot's glyphs. */
+    s32 unk24;
+
+    s32 unk28;
+    s32 unk2c;
+    s32 unk30;
+    s32 loaded;
+    s32 unit_count;
+    s32 loaded_units;
+    s32 start;
+    s32 end;
+    s32 unk48;
+    u16 identifier;
+    u8 flag;
+    u8 active;
+};
+
+/** One 0x20-byte record a drawing widget lays out: a glyph, or the head of a run of glyphs. */
+struct LibDrawRecord
+{
+    float left;
+    float top;
+    float right;
+    float bottom;
+    void* unk10;
+
+    union
+    {
+        /** Glyph width in pixels. */
+        s32 width;
+
+        float scale;
+
+        /** Record after the last one of a run. */
+        LibDrawRecord* end;
+    } unk14;
+
+    u32 color;
+
+    /** Character code, or a record kind with bit 14 set. */
+    u16 code;
+
+    /** Glyph index within the resource slot. */
+    u16 glyph;
+};
+
+/** Text extent kept at a text widget's offset 0xE8. */
+typedef struct LibTextExtent
+{
+    float unk00;
+    float unk04;
+    float width;
+    float height;
+} LibTextExtent;
+
 /** Partial 0xFC-byte drawing widget, with vtable D_174EF0 in main data. */
 struct LibDrawWidget : public LibWidget
 {
@@ -50,29 +134,214 @@ struct LibDrawWidget : public LibWidget
     LibDrawWidget();
     /** @brief Destroy the drawing widget. */
     virtual ~LibDrawWidget();
+
+    /**
+     * @brief Set the display rectangle; a zero width or height selects 1024.
+     * @param x Left edge.
+     * @param y Top edge.
+     * @param width Width.
+     * @param height Height.
+     */
+    void set_rectangle(float x, float y, float width, float height);
+
+    /** @brief Hand the drawing storage to the resident release queue. */
+    void release_storage();
+
+    /**
+     * @brief Size and allocate the drawing storage.
+     * @param first First entry count.
+     * @param capacity Second entry count.
+     * @param second Third entry count.
+     * @param third Fourth entry count.
+     * @return One on success, or zero when nothing could be allocated.
+     */
+    s32 allocate_storage(s32 first, s32 capacity, s32 second, s32 third);
+
+    /** @brief Clear the storage and restore the default scale, colours and alignment. */
+    void reset_drawing_state();
+
+    /**
+     * @brief Start laying out records at the left edge of a line.
+     * @param records First record to fill.
+     * @param y Vertical pen position; zero also resets the measured extent.
+     */
+    void begin_layout(LibDrawRecord* records, float y);
+
+    /**
+     * @brief Lay out a number as one record.
+     * @param value Value stored in the record.
+     * @param digits Number of digits.
+     */
+    void add_number_record(void* value, s32 digits);
+
+    /**
+     * @brief Close the current run of records.
+     * @param value Value stored in the run's head record.
+     * @param count Value stored as the run's glyph index.
+     */
+    void end_run(void* value, s32 count);
+
+    /** @brief Start a run of records at the pen position. */
+    void begin_run();
+
+    /**
+     * @brief Format a number as character codes: one plus the digit for digits, 11 for anything else.
+     * @param codes Receives the codes and a terminating zero.
+     * @param value Number to format.
+     * @return Number of codes written before the terminator.
+     */
+    s32 format_number_codes(u16* codes, s32 value);
+
+    /**
+     * @brief Convert text to character codes.
+     *
+     * Digits, letters and the symbols in the symbol table map to their own codes, half-width katakana (with a following
+     * voiced or semi-voiced mark folded in) map to katakana, or to hiragana after an odd number of '~', and anything
+     * else maps to 0xF1.
+     * @param codes Receives the codes and a terminating zero.
+     * @param text Text to convert; null gives no codes.
+     * @return Number of codes written before the terminator.
+     */
+    s32 decode_text(u16* codes, const char* text);
+
+    /**
+     * @brief Lay out text glyph by glyph.
+     * @param text Text to lay out.
+     */
+    void add_text(const char* text);
+
+    /**
+     * @brief Lay out a number glyph by glyph.
+     * @param value Number to lay out.
+     */
+    void add_number(s32 value);
+
+    /**
+     * @brief Look up one of the eleven text palette colours.
+     * @param index Palette index; larger values select the last colour.
+     * @return Packed colour.
+     */
+    u32 get_palette_color(u8 index);
+
+    /**
+     * @brief Shift laid-out records to the horizontal alignment.
+     * @param records Records to shift.
+     * @param count Number of records.
+     */
+    void func_004637A0(LibDrawRecord* records, s32 count);
+
+    /**
+     * @brief Shift laid-out records to the vertical alignment and finish the extent.
+     * @param records Records to shift.
+     * @param count Number of records.
+     */
+    void align_records_vertically(LibDrawRecord* records, s32 count);
+
+    /**
+     * @brief Build the drawing packet for laid-out records.
+     * @param records Records to draw.
+     * @param count Number of records.
+     */
+    void draw_records(LibDrawRecord* records, s32 count);
+
+    /**
+     * @brief Start the drawing packet.
+     * @param records Records to draw.
+     * @param count Number of records.
+     */
+    void func_00463500(LibDrawRecord* records, s32 count);
+
+    /** @brief Close the drawing packet. */
+    void func_004623F0();
+
+    /**
+     * @brief Draw a glyph record.
+     * @param record Record to draw.
+     */
+    void func_004624E0(LibDrawRecord* record);
+
+    /**
+     * @brief Draw a number record.
+     * @param record Record to draw.
+     */
+    void func_00462C70(LibDrawRecord* record);
+
+    /**
+     * @brief Draw the head record of a run.
+     * @param record Record to draw.
+     */
+    void func_00462FC0(LibDrawRecord* record);
+
+    /**
+     * @brief Lay out one glyph and advance the pen.
+     * @param code Character code.
+     */
+    void add_glyph(s32 code);
     /** Backing drawing-storage allocation. */
     void* allocation;
-    u8 unk44[0x2C];
-    void* unk70;
-    u8 unk74[4];
+
+    /** The allocation rounded up to a 128-byte boundary past a 64-byte prefix. */
+    void* aligned;
+
+    u32 unk48;
+    u32 unk4c;
+    u32 unk50;
+
+    /** Uncached DMA address of the aligned storage. */
+    u32 dma_address;
+
+    u8 unk58[0x14];
+
+    /** Runtime resource slot the widget draws from. */
+    LibManagedResourceSlot* resource_slot;
+
+    /** Laid-out records, and the end of them. */
+    u8* unk70;
+    u8* unk74;
+
     u32 unk78;
     u32 unk7c;
     float draw_scale;
     float draw_scale_y;
     float unk88;
     float unk8c;
-    u32 unk90;
+    float unk90;
     /** Colour the widget is modulated by (0x80 per channel is full brightness). */
     u32 tint;
 
     u32 draw_color;
     s32 horizontal_align;
     s32 vertical_align;
-    u8 unka4[0x44];
-    float unke8;
-    float unkec;
-    float unkf0;
-    float unkf4;
+    s32 unka4;
+    s32 unka8;
+    s32 unkac;
+    s32 unkb0;
+    u32 unkb4;
+
+    /** Number of records laid out so far. */
+    s32 record_count;
+
+    /** Head record of the run being laid out. */
+    LibDrawRecord* run_head;
+
+    /** Next record to lay out. */
+    LibDrawRecord* next_record;
+
+    /** Layout pen position. */
+    float pen_x;
+    float pen_y;
+
+    /** Height of the last glyph laid out. */
+    float line_height;
+
+    /** Smallest and largest glyph heights laid out. */
+    float min_height;
+    float max_height;
+    u8 unkd8[0x10];
+
+    /** Extent of the last layout. */
+    LibTextExtent extent;
+
     u8 unkf8;
     u8 unkf9;
     u8 unkfa;
@@ -148,10 +417,17 @@ public:
     /** Frames the move to the target takes. */
     float move_frames;
 
-    u8 unk2c[4];
+    /** Distance moved per frame, worked out on the first step of a move. */
+    float speed;
+
     float alpha;
-    u8 unk34;
-    u8 unk35;
+
+    /** Set once the move's speed has been worked out. */
+    u8 speed_ready;
+
+    /** Set once the position has reached the target. */
+    u8 arrived;
+
     u8 unk36[2];
 
     /** @brief Initialize the storage and clear its three scalar pairs. */
@@ -183,6 +459,12 @@ public:
      * @param duration Duration in seconds, converted to sixty frames per second.
      */
     void set_move_target(float x, float y, float duration);
+
+    /**
+     * @brief Move one frame's distance towards the target, and report the arrival through slot 0x0C.
+     * @return One if the position changed since the last step, otherwise zero.
+     */
+    s32 step();
 };
 
 /** Partial kind-9 widget with a storage base at offset 0x40. */
@@ -223,7 +505,7 @@ struct LibStringLabel : public LibDrawWidget
     LibStringLabel(const char* value, u8 flag, float x, float y, float width, float height)
     {
         unk38 = 14;
-        func_00467AD0(x, y, width, height, value, flag);
+        init_text_rectangle(x, y, width, height, value, flag);
     }
 
     /**
@@ -239,6 +521,18 @@ struct LibStringLabel : public LibDrawWidget
     virtual ~LibStringLabel();
     /** @brief Draw the string-backed widget. */
     virtual void draw();
+
+    /**
+     * @brief Lay the string out off screen and measure it.
+     * @return Extent of the laid-out string.
+     */
+    LibTextExtent* measure();
+
+    /**
+     * @brief Count the character codes in the string.
+     * @return Number of codes.
+     */
+    s32 count_codes();
     /**
      * @brief Configure the drawing rectangle and string.
      * @param x Horizontal position.
@@ -247,9 +541,9 @@ struct LibStringLabel : public LibDrawWidget
      * @param height Drawing height.
      * @param value String to draw.
      * @param flag Drawing flag.
-     * @return Configuration status.
+     * @return One on success, or zero when the drawing storage couldn't be set up.
      */
-    s32 func_00467AD0(float x, float y, float width, float height, const char* value, u8 flag);
+    s32 init_text_rectangle(float x, float y, float width, float height, const char* value, u8 flag);
     /** String the label draws. */
     const char* text;
 };
@@ -278,6 +572,13 @@ struct LibObject174F20 : public LibDrawWidget
      * @return Configuration status.
      */
     s32 init_numeric_resource_rectangle(float x, float y, float width, float height, u32 value, s32 slot, u8 flag);
+
+    /**
+     * @brief Lay the number out off screen and measure it.
+     * @return Extent of the laid-out number.
+     */
+    LibTextExtent* measure();
+
     u32 numeric_value;
 };
 /** Item code widget with MAIN vtable at 0x172410. */
@@ -317,7 +618,7 @@ struct LibObject172440 : public LibDrawWidget
 
 #ifdef __cplusplus
 /**
- * The display runtime reached through D_001B657C: sixteen resource slots, the display list and the numbers that
+ * The display runtime reached through g_field_runtime: sixteen resource slots, the display list and the numbers that
  * formatted messages print. Resident vtable at 0x174F50.
  */
 class FieldRuntime : public LibListObject
@@ -336,8 +637,8 @@ public:
     /** @brief Release the runtime's retained objects and storage. */
     virtual ~FieldRuntime();
 
-    /** Sixteen 0x50-byte resource slots. */
-    u8 resource_slots[0x500];
+    /** Sixteen resource slots. */
+    LibManagedResourceSlot resource_slots[16];
 
     /** Resource slot and first message key of the two text banks a menu loads. */
     struct TextBank
@@ -346,7 +647,10 @@ public:
         u32 base_key;
     } text_banks[2];
 
-    u8 unk524[0x10];
+    float unk524;
+    float unk528;
+    s32 unk52c;
+    s32 unk530;
 
     /** Screen scale and offset applied to menu coordinates. */
     float screen_scale_x;
@@ -354,7 +658,9 @@ public:
     float screen_offset_x;
     float screen_offset_y;
 
-    u8 unk544[0x18];
+    u8 unk544[0xC];
+    s32 unk550;
+    u8 unk554[8];
 
     /** First and last object queued for display, and how many there are. */
     void* display_first;
@@ -376,7 +682,11 @@ public:
         u16 unk04;
     } inputs[2];
 
-    u8 unk5fc[8];
+    u8 unk5fc[2];
+    u8 unk5fe;
+    u8 unk5ff;
+    u8 unk600;
+    u8 unk601[3];
 };
 #endif
 
@@ -639,7 +949,7 @@ void func_004619E0(void* object);
 void func_004662A0(void* object);
 
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0046A3F0(void* object);
 
 /** Set the active byte and notify the embedded receiver. */

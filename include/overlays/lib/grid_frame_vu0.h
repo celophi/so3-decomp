@@ -1,9 +1,10 @@
-#ifndef SO3_OVERLAYS_1067_00_GRID_FRAME_VU0_H
-#define SO3_OVERLAYS_1067_00_GRID_FRAME_VU0_H
+#ifndef SO3_OVERLAYS_LIB_GRID_FRAME_VU0_H
+#define SO3_OVERLAYS_LIB_GRID_FRAME_VU0_H
 
 /**
  * @brief Load the frame time step into vf3.
  * @param value Time step in seconds.
+ * @see The emitter-grid frame-vector updates in Lib and Field (1067-00 field_update_grid_frame_vectors).
  */
 static inline void vu0_set_grid_frame_delta(float value)
 {
@@ -14,6 +15,7 @@ static inline void vu0_set_grid_frame_delta(float value)
  * @brief Load an animated vector into vf1 and its rate into vf2.
  * @param value Aligned current vector.
  * @param rate Aligned rate vector.
+ * @see The emitter-grid frame-vector updates in Lib and Field (1067-00 field_update_grid_frame_vectors).
  */
 static inline void vu0_load_grid_frame_vectors(const void* value, const void* rate)
 {
@@ -23,7 +25,10 @@ static inline void vu0_load_grid_frame_vectors(const void* value, const void* ra
         : : "r"(value), "r"(rate) : "memory");
 }
 
-/** @brief Add the rate times the time step to the first three components of vf1. */
+/**
+ * @brief Add the rate times the time step to the first three components of vf1.
+ * @see The emitter-grid frame-vector updates in Lib and Field (1067-00 field_update_grid_frame_vectors).
+ */
 static inline void vu0_advance_grid_frame_vector()
 {
     asm __volatile__(
@@ -35,6 +40,7 @@ static inline void vu0_advance_grid_frame_vector()
 /**
  * @brief Store the updated vector from vf1.
  * @param output Aligned destination.
+ * @see The emitter-grid frame-vector updates in Lib and Field (1067-00 field_update_grid_frame_vectors).
  */
 static inline void vu0_store_grid_frame_vector(void* output)
 {

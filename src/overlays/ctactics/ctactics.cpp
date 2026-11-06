@@ -529,7 +529,7 @@ static inline u8 character_record_empty(const TacticsCharacterRecord* record);
  */
 static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
 {
-    return !grid->unk35;
+    return !grid->arrived;
 }
 
 /**
@@ -539,7 +539,7 @@ static inline u8 tactics_grid_empty(FieldObject23CEA0* grid)
  */
 static inline bool tactics_selection_inactive(TacticsCoordinateSelector* selection)
 {
-    return !selection->unk35;
+    return !selection->arrived;
 }
 
 /**
@@ -1069,9 +1069,9 @@ s32 TacticsLeaderWindow::func_slotf4(u32 associated)
         {
             LibStringLabel* name = new (0) LibStringLabel;
             float y = 48.0f + 28.0f * candidate_count;
-            name->func_00467AD0(24.0f, y, 0.0f, 0.0f,
-                reinterpret_cast<const char*>(&static_cast<TacticsCharacterEquipment*>(
-                    record_selection->unk04)[static_cast<s16>(index)]) + 0x20, 0);
+            name->init_text_rectangle(
+                24.0f, y, 0.0f, 0.0f,
+                reinterpret_cast<const char*>(&static_cast<TacticsCharacterEquipment*>(record_selection->unk04)[static_cast<s16>(index)]) + 0x20, 0);
             lib_container_attach_widget(unk10, name);
             append_icon_widget_node(&unk44, name);
             candidate_indices_by_slot[index] = icon_index;
@@ -1157,7 +1157,7 @@ u8 TacticsFormationWindow::func_slotb8()
     if (parent_grid != 0)
     {
         parent_grid->ItemCreationClass185050::alpha = 64.0f;
-        parent_grid->unkae = 1;
+        parent_grid->geometry_dirty = 1;
     }
 
     TacticsLeaderWindow* child = static_cast<TacticsLeaderWindow*>(func_slot4c());
@@ -1291,7 +1291,7 @@ void TacticsFormationWindow::func_slot64()
     if (parent_grid != 0)
     {
         parent_grid->ItemCreationClass185050::alpha = 128.0f;
-        parent_grid->unkae = 1;
+        parent_grid->geometry_dirty = 1;
     }
 
     ItemCreationClass174C40* widget = resource_widget;
@@ -1499,8 +1499,8 @@ s32 TacticsFormationWindow::func_slotf4(u32 associated)
     selected_heading->set_tint(0x288080);
     lib_container_attach_widget(unk10, selected_heading);
     label = new (0) LibStringLabel;
-    label->func_00467AD0(434.0f, heading_y, 0.0f, 0.0f,
-        static_cast<TacticsCharacterEquipment*>(record_selection->unk04)[static_cast<s16>(resource_index)].character_name, 0);
+    label->init_text_rectangle(434.0f, heading_y, 0.0f, 0.0f,
+                               static_cast<TacticsCharacterEquipment*>(record_selection->unk04)[static_cast<s16>(resource_index)].character_name, 0);
     lib_container_attach_widget(unk10, label);
     ItemCreationOptionResourceDisplay* display = new (0) ItemCreationOptionResourceDisplay;
     void* allocation = field_get_aligned_allocation(D_001B643C->resources, 0);
@@ -1751,7 +1751,7 @@ u8 TacticsReplaceWindow::func_slotb4()
         LibClass175030* second_target = second_selector;
         second_target->position.x = -128.0f;
         second_target->position.y = -128.0f;
-        second_target->unk35 = 1;
+        second_target->arrived = 1;
         second_target->needs_redraw = 1;
         second_selector->visible = 0;
         LibClass175030* first_target = first_selector;
@@ -1946,7 +1946,7 @@ u8 TacticsReplaceWindow::func_slotb0()
         LibClass175030* second_target = second_selector;
         second_target->position.x = -128.0f;
         second_target->position.y = -128.0f;
-        second_target->unk35 = 1;
+        second_target->arrived = 1;
         second_target->needs_redraw = 1;
         second_selector->visible = 0;
         LibClass175030* first_target = first_selector;
@@ -1964,7 +1964,7 @@ u8 TacticsReplaceWindow::func_slotb0()
         float y = first_target->position.y;
         second_target->position.x = x;
         second_target->position.y = y;
-        second_target->unk35 = 1;
+        second_target->arrived = 1;
         second_target->needs_redraw = 1;
         s32 index = (s32)(24.0f + x);
         s32 direct = 1;
@@ -2230,7 +2230,7 @@ s32 TacticsReplaceWindow::func_slotf4(u32 associated)
             empty_marker->set_scale(0.8f, 0.8f);
         }
 
-        character_name_label->func_00467AD0(label_x, label_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
+        character_name_label->init_text_rectangle(label_x, label_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
         character_name_label->set_scale(0.8f, 0.8f);
         set_widget_rectangle(empty_marker, column_x, empty_y, width, 24.0f);
         empty_marker->set_horizontal_align(1);
@@ -3140,14 +3140,14 @@ s32 TacticsChangeWindow::func_slotf4(u32 associated)
         if (index < 3)
         {
             row_y = height * index;
-            label->func_00467AD0(108.0f, 24.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
+            label->init_text_rectangle(108.0f, 24.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
             set_widget_rectangle(empty, 0.0f, (height / 2.0f + row_y) - 19.2f, width, 24.0f);
             column_x = 0.0f;
         }
         else
         {
             row_y = height * (index - 3);
-            label->func_00467AD0(412.0f, 14.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
+            label->init_text_rectangle(412.0f, 14.0f + row_y, 0.0f, 0.0f, g_tactics_dummy_text, 0);
             set_widget_rectangle(empty, 304.0f, 8.0f + ((height / 2.0f + row_y) - 19.2f * 0.8f), 304.0f, 24.0f);
             column_x = 304.0f;
             empty->set_scale(0.8f, 0.8f);
@@ -3410,7 +3410,7 @@ void TacticsController::func_slot5c()
 {
     if (resource_slot != 0)
     {
-        lib_release_resource_slot(D_001B657C, resource_slot);
+        lib_release_resource_slot(g_field_runtime, resource_slot);
     }
 
     lib_object_detach_owner(this);
@@ -3558,7 +3558,7 @@ s32 TacticsController::on_resource_loaded(void* buffer)
         resident_exchange_allocation_heap(heap);
     }
 
-    resource_slot = lib_load_resource_slot(D_001B657C, aligned);
+    resource_slot = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
     return init_windows();
 }

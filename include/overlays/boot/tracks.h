@@ -1,985 +1,8 @@
-#ifndef SO3_OVERLAYS_BOOT_TEXT_001E0900_H
-#define SO3_OVERLAYS_BOOT_TEXT_001E0900_H
-
-#include "overlays/boot/text_001DD3C0.h"
-#include "main/resident_001001E0.h"
-#include "overlays/lib/vector.h"
-#include "overlays/lib/memory_card.h"
-#include "overlays/lib/movie_player.h"
-#include "sdk/main/libc_guess_0013C948.h"
-
-#define BOOT_TRANSFER_NAME_CAPACITY 64
-/** Mask used to align memory card query buffers to 64 bytes. */
-#define BOOT_CARD_QUERY_ALIGNMENT_MASK 0x3F
-#define BOOT_ALIGN_CARD_QUERY(value) (((u32)(value) + BOOT_CARD_QUERY_ALIGNMENT_MASK) & ~BOOT_CARD_QUERY_ALIGNMENT_MASK)
-#define BOOT_TRANSFER_FLAG_COUNT LIB_TROPHY_COUNT
-#define BOOT_TRANSFER_FLAG_BYTES ((BOOT_TRANSFER_FLAG_COUNT + 7) / 8)
-#define BOOT_TROPHY_RECORD_BYTES (BOOT_TRANSFER_FLAG_COUNT * LIB_TROPHY_RECORD_SIZE)
-#define BOOT_TROPHY_FILE_FLAGS_OFFSET 0x4B4
-#define BOOT_TROPHY_FILE_RECORDS_OFFSET (BOOT_TROPHY_FILE_FLAGS_OFFSET + BOOT_TRANSFER_FLAG_BYTES + 8)
-#define BOOT_TRANSFER_BUFFER_SIZE (BOOT_TROPHY_FILE_RECORDS_OFFSET + BOOT_TROPHY_RECORD_BYTES)
-
-/** Button bits returned by the pad sampler and stored in BootInput. */
-enum BootInputButton
-{
-    BOOT_BUTTON_START = 0x8,
-    BOOT_BUTTON_UP = 0x10,
-    BOOT_BUTTON_RIGHT = 0x20,
-    BOOT_BUTTON_DOWN = 0x40,
-    BOOT_BUTTON_LEFT = 0x80,
-    BOOT_BUTTON_L1 = 0x400,
-    BOOT_BUTTON_R1 = 0x800,
-    BOOT_BUTTON_TRIANGLE = 0x1000,
-    BOOT_BUTTON_CROSS = 0x4000
-};
-
-/** On-card trophy collection file, including the saved flags and all 300 trophy records. */
-struct BootTrophyCardFile
-{
-    u8 trophy_key[4];
-    u8 header[BOOT_TROPHY_FILE_FLAGS_OFFSET - 4];
-    u8 trophy_flags[BOOT_TRANSFER_FLAG_BYTES];
-    /** Saved checksum seed and checksum, stored without word alignment. */
-    u8 checksum_words[8];
-    u8 records[BOOT_TROPHY_RECORD_BYTES];
-};
-
-typedef char BootTrophyCardFileSizeCheck[sizeof(BootTrophyCardFile) == BOOT_TRANSFER_BUFFER_SIZE ? 1 : -1];
-
-/** Card checks and file probes performed before a Battle Trophy transfer. */
-enum BootTrophyCardStep
-{
-    BOOT_TROPHY_CARD_UNINITIALIZED = -1,
-    BOOT_TROPHY_CARD_IDLE = 0,
-    BOOT_TROPHY_CARD_INSPECT_SLOT,
-    BOOT_TROPHY_CARD_PROBE_SAVE,
-    BOOT_TROPHY_CARD_WAIT_SAVE_PROBE,
-    BOOT_TROPHY_CARD_PROBE_TROPHIES,
-    BOOT_TROPHY_CARD_WAIT_TROPHY_PROBE,
-    BOOT_TROPHY_CARD_TRANSFER = 8
-};
-
-/** Phases of a Battle Trophy memory card file request. */
-enum BootTrophyTransferPhase
-{
-    BOOT_TROPHY_TRANSFER_INACTIVE = -1,
-    BOOT_TROPHY_TRANSFER_OPEN,
-    BOOT_TROPHY_TRANSFER_POLL
-};
-
-/** Free-space limits used when classifying memory card save and trophy capacity. */
-enum BootCardFreeSpace
-{
-    BOOT_CARD_SAVE_SPACE_MINIMUM = 175,
-    BOOT_CARD_TROPHY_SPACE_MINIMUM = 1200,
-    BOOT_CARD_BOTH_SPACE_MINIMUM = BOOT_CARD_SAVE_SPACE_MINIMUM + BOOT_CARD_TROPHY_SPACE_MINIMUM,
-    BOOT_CARD_MAX_EXPECTED_SPACE = 8000
-};
-
-/** Card status values used to decide whether boot can save data or show a space warning. */
-enum BootCardCapacityStatus
-{
-    BOOT_CARD_STATUS_NO_SPACE = 10,
-    BOOT_CARD_STATUS_SAVE_SPACE_ONLY = 11,
-    BOOT_CARD_STATUS_EITHER_FILE_ONLY = 12,
-    BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE = 13,
-    BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE = 14,
-    BOOT_CARD_STATUS_UNAVAILABLE = 15,
-    BOOT_CARD_STATUS_SAVE_PRESENT = 17
-};
-
-/** Results of probing the Battle Trophies collection file on a memory card. */
-enum BootTrophyProbeEvent
-{
-    BOOT_TROPHY_FILE_PRESENT = 5,
-    BOOT_TROPHY_FILE_MISSING = 6
-};
-
-/**
- * Battle Trophies memory card file (BASLUS-20488BTLCOL), with vtable D_170EB0 in main data. It reads and writes the
- * file through a Lib memory card object and reports each slot's free-space state for the startup checks. Mode 0
- * and mode 1 select the two card slots.
- */
-class BootBattleTrophyCard : public LibListObject
-{
-    public:
-        /** @brief Clear the transfer state, both modes, and the filename. */
-        BootBattleTrophyCard();
-
-        /** @brief Destroy the object. */
-        virtual ~BootBattleTrophyCard()
-        {
-        }
-
-        /**
-         * @brief Report the list kind used when registration requests the default.
-         * @return Two.
-         */
-        virtual s32 get_default_list_kind();
-
-        /** @brief Release the transfer buffer and the memory card object, then queue this object for deletion. */
-        virtual void destroy();
-
-        /** @brief Advance the memory card state for the current mode. */
-        virtual void update();
-
-        /**
-         * @brief Report which card slots hold a ready card.
-         * @return Bit 0 for slot 1 and bit 1 for slot 2; zero while the card object is busy.
-         */
-        u16 get_ready_slots();
-
-        /** @brief Apply transferred flags and header values, copy the payload, and release its buffer. */
-        void finish_transfer();
-
-        /**
-         * @brief Return the last transfer's result.
-         * @return Result code; negative on failure.
-         */
-        s32 get_transfer_result();
-
-        /**
-         * @brief Return the transfer state.
-         * @return 1 once the transfer has finished, -1 while it runs or after a reset.
-         */
-        s16 get_transfer_state();
-
-        /**
-         * @brief Advance the stored two-phase request and update its completion state.
-         * @return Narrowed request status, or -1 when the phase is unsupported.
-         */
-        s16 advance_transfer();
-
-        /**
-         * @brief Initialize the buffer and request records for a selected transfer mode.
-         * @param mode Transfer mode 0 or 1.
-         * @param destination Nonnull destination for the transfer.
-         * @return 1 when prepared, or 0 for invalid arguments or allocation failure.
-         */
-        s32 start_transfer(u16 mode, void* destination);
-
-        /**
-         * @brief Store mode 1 or 2 and reset the state for selector 0.
-         * @param mode Mode to store; values other than 1 or 2 have no effect.
-         */
-        void set_mode(u8 mode);
-
-        /**
-         * @brief Query a slot's state byte, resetting slot 0 when its reset flag is set.
-         * @param mode Slot 0 or 1 to query; other values return zero without a reset.
-         * @param kind Select guarded values with 1, or the direct mode byte otherwise.
-         * @return The selected byte before any reset.
-         */
-        u16 get_slot_state(u16 mode, u16 kind);
-
-        /**
-         * @brief Apply an event to the selected mode and update its reset and completion flags.
-         * @param enabled Process the event when this byte equals 1.
-         * @param event Event code or direct byte status to store.
-         * @param kind Classify the event with 1, or store its byte status with 2.
-         */
-        void handle_card_event(u8 enabled, u16 event, u16 kind);
-
-        /**
-         * @brief Select an event's byte status and update the current mode's stored status.
-         * @param event Event code to classify.
-         * @param result Byte receiving the selected status, initially cleared to zero.
-         */
-        void classify_card_event(u16 event, u8* result);
-
-        /**
-         * @brief Select a slot and reset its fields along with the shared state.
-         * @param mode Slot 0 or 1 to select; other values reset only the shared state.
-         */
-        void reset_slot(s16 mode);
-
-        /**
-         * @brief Create the memory card object for both slots and prepare the transfer buffer.
-         * @return 1 when initialized, or 0 when the card object, settings or buffer is unavailable.
-         */
-        s32 initialize();
-
-        LibMemoryCard* card;
-
-        /** Selected slot, or -1. */
-        s16 slot;
-
-        /** Card status last read for the selected slot; a change restarts card_step. */
-        s16 last_card_status;
-
-        /** Step of update()'s card state machine; 0 is idle, 8 runs the transfer. */
-        s16 card_step;
-
-        /** Skip polling the selected card while a slot result awaits consumption. */
-        u8 card_poll_paused;
-        u8 unk1F;
-
-        /** Copy of the slot's formatted flag from the last check. */
-        u32 card_formatted;
-
-        s32 free_space;
-        /** Reset slot 0 after a caller reads a pending slot result. */
-        u8 pending_slot_reset;
-        u8 slot1_status_valid;
-        u8 slot2_status_valid;
-        u8 slot1_status;
-        u8 slot2_status;
-
-        /** Set when the slot had under 175 units free. */
-        u8 low_space;
-
-        char filename[BOOT_TRANSFER_NAME_CAPACITY];
-        /** Backing storage for the general save-file card query. */
-        u8 save_file_probe_storage[0xCC0];
-
-        /** 64-byte-aligned pointer into save_file_probe_storage. */
-        u8* save_file_probe_buffer;
-        u8 card_mode;
-        /** Whether each direct mode status has been set. */
-        u8 mode_status_valid[2];
-
-        /** Direct status returned by get_slot_state for each mode. */
-        u8 mode_status[2];
-        /** Backing storage for the Battle Trophies file query. */
-        u8 trophy_file_probe_storage[0x80];
-
-        /** 64-byte-aligned pointer into trophy_file_probe_storage. */
-        u8* trophy_file_probe_buffer;
-        s16 transfer_phase;
-        u8* transfer_buffer;
-        void* transfer_destination;
-        s16 transfer_slot;
-
-        /** 1 once the transfer has finished, -1 while it runs or after a reset. */
-        s16 transfer_state;
-
-        s32 transfer_result;
-        LibCardFileBuffer file_buffer;
-        LibCardFileRequest file_request;
-        BootSystemSettings* settings;
-
-        /** Set by start_transfer until the transfer finishes or fails. */
-        u8 transfer_pending;
-
-        /** Set once the card file has been opened for the transfer. */
-        u8 transfer_open;
-
-        s32 slot_free_space[2];
-        /** Save-file probe status used when classifying each slot. */
-        s32 save_probe_status[2];
-};
-
-/** Startup screens BootStartupChecks runs in turn. */
-enum BootStartupScreen
-{
-    /** Warns when neither memory card has room for a save and the Battle Trophies. */
-    BOOT_STARTUP_CARD_CHECK,
-    /** Offers progressive display when its button combination is held. */
-    BOOT_STARTUP_PROGRESSIVE,
-    /** Reports an uninitialized PlayStation BB Unit or damaged data on it. */
-    BOOT_STARTUP_UNIT_CHECK
-};
-
-/** Steps used while checking memory card space. */
-enum BootStartupCardStep
-{
-    BOOT_STARTUP_CARD_INSPECT,
-    BOOT_STARTUP_CARD_SHOW_WARNING,
-    BOOT_STARTUP_CARD_WAIT_FOR_INPUT
-};
-
-/** Steps of the optional progressive display setup. */
-enum BootStartupProgressiveStep
-{
-    BOOT_STARTUP_PROGRESSIVE_DETECT,
-    BOOT_STARTUP_PROGRESSIVE_LOAD_OFFER,
-    BOOT_STARTUP_PROGRESSIVE_OFFER,
-    BOOT_STARTUP_PROGRESSIVE_SWITCH_DELAY,
-    BOOT_STARTUP_PROGRESSIVE_SWITCH_WAIT,
-    BOOT_STARTUP_PROGRESSIVE_CONFIRM,
-    BOOT_STARTUP_PROGRESSIVE_REVERT_DELAY,
-    BOOT_STARTUP_PROGRESSIVE_REVERT_WAIT
-};
-
-/** Steps used to report PlayStation BB Unit status. */
-enum BootStartupUnitStep
-{
-    BOOT_STARTUP_UNIT_INSPECT,
-    BOOT_STARTUP_UNIT_LOAD_WARNING,
-    BOOT_STARTUP_UNIT_WAIT_FOR_INPUT,
-    BOOT_STARTUP_UNIT_LOAD_DELETED_WARNING
-};
-
-/**
- * Screens shown before the opening movie, with vtable D_170ED0 in main data: the memory card space warning,
- * the progressive display offer and the PlayStation BB Unit status. Every step checks the main executable.
- */
-class BootStartupChecks : public LibListObject
-{
-    public:
-        /** @brief Start on the memory card check. */
-        BootStartupChecks();
-
-        /** @brief Destroy the object. */
-        virtual ~BootStartupChecks();
-
-        /** @brief Run the memory card, progressive display and BB Unit screens in turn, then start the opening movie. */
-        virtual void update();
-
-        s32 step;
-
-        /** Frames spent in the current step. */
-        s32 frames;
-
-        s32 screen;
-
-        /** Memory card warning being shown. */
-        s32 message;
-
-        u8 unk24[8];
-
-        /** Slot 1 state the warning was chosen for; it closes if either slot changes. */
-        s32 shown_slot1;
-
-        /** Slot 2 state the warning was chosen for. */
-        s32 shown_slot2;
-
-        LibContainer* container;
-        LibTextWidget* text;
-};
-
-/**
- * Floor height lookup, with vtable D_170F20 in main data. Lib (0x4C8860) calls the one in g_floor_query with a
- * model's position and uses the result as the offset of a horizontal plane it keeps for the object. The field
- * installs one of its own objects; the new-game settings screen installs a BootFlatFloor.
- */
-class BootFloorQuery
-{
-    public:
-        /**
-         * @brief Return the floor height under a position; Lib passes the position and the object.
-         * @return Floor height.
-         */
-        virtual float get_floor_height() = 0;
-};
-
-/** Flat floor at height zero, with vtable D_170F10 in main data. */
-class BootFlatFloor : public BootFloorQuery
-{
-    public:
-        /**
-         * @brief Return the floor height, which is zero everywhere.
-         * @return Zero.
-         */
-        virtual float get_floor_height()
-        {
-            return 0.0f;
-        }
-};
-
-extern "C" void lib_animation_release_channels(class LibAnimation* animation);
-
-/** Partial 0xB0-byte Lib scene with vtable D_175320 in main data; boot calls the Lib constructor. */
-class BootScene : public LibListObject
-{
-    public:
-        /** @brief Construct an empty scene. */
-        BootScene();
-
-        u8 unk14[0x9C];
-};
-
-/** Pages of the new-game settings, in the order the player sees them. */
-enum BootSettingsPage
-{
-    BOOT_SETTINGS_TV_MODE,
-    BOOT_SETTINGS_SOUND,
-    BOOT_SETTINGS_EVENT_SKIP,
-    BOOT_SETTINGS_VOICE,
-    BOOT_SETTINGS_VIBRATION,
-    BOOT_SETTINGS_DIFFICULTY
-};
-
-/** Stages of BootNewGameSettings::update. */
-enum BootSettingsStage
-{
-    BOOT_SETTINGS_STAGE_LOAD,
-    BOOT_SETTINGS_STAGE_LOAD_IMAGES,
-    BOOT_SETTINGS_STAGE_PAGE,
-    BOOT_SETTINGS_STAGE_EXIT,
-    BOOT_SETTINGS_STAGE_NEXT_PAGE,
-    BOOT_SETTINGS_STAGE_PREVIOUS_PAGE,
-    BOOT_SETTINGS_STAGE_ENTER_SPEAKERS,
-    BOOT_SETTINGS_STAGE_BUILD_SPEAKERS,
-    BOOT_SETTINGS_STAGE_SHOW_SPEAKERS,
-    BOOT_SETTINGS_STAGE_SPEAKERS,
-    BOOT_SETTINGS_STAGE_LEAVE_SPEAKERS,
-    BOOT_SETTINGS_STAGE_START_GAME
-};
-
-/**
- * New-game settings screens, with vtable D_170EF0 in main data. The player steps through six pages (TV mode,
- * sound output, event skip, voice playback, vibration, difficulty), with a speaker setup scene behind the sound
- * page, then the game starts. Cancelling on the first page goes back to the title.
- */
-class BootNewGameSettings : public LibListObject
-{
-    public:
-        /** @brief Start loading the page images and the speaker setup scenes, and clear the owned objects. */
-        BootNewGameSettings();
-
-        /** @brief Release the loaded data and owned objects. */
-        virtual ~BootNewGameSettings();
-
-        /**
-         * @brief Report the list kind used when registration requests the default.
-         * @return Four.
-         */
-        virtual s32 get_default_list_kind();
-
-        /** @brief Run the current page or the speaker setup, then stream the next model block and place the rows. */
-        virtual void update();
-
-        /** @brief Select the option that matches the current page's saved setting. */
-        void load_option_value();
-
-        /** @brief Save the selected option for the current page and apply it to the display, sound or pad. */
-        void apply_option_value();
-
-        /**
-         * @brief Pick the message that describes the selected option.
-         * @return Message key, or zero for an unknown page.
-         */
-        s32 get_value_message();
-
-        /** @brief Show the message that describes the selected option. */
-        void show_value_message();
-
-        /**
-         * @brief Read the cursor position for the selected row of the current page.
-         * @param x Receives the horizontal position.
-         * @param y Receives the vertical position; unchanged for an unknown row.
-         */
-        void get_cursor_position(float* x, float* y);
-
-        /** @brief Rebuild the current page's option rows when the page changes, then place and highlight them. */
-        void update_option_rows();
-
-        /** @brief Move the girl to her angle around the listener with her lean, then step her walk animations. */
-        void place_girl();
-
-        /**
-         * @brief Read the cursor position for a speaker on the speaker setup screen.
-         * @param speaker Speaker index.
-         * @param x Receives the horizontal position.
-         * @param y Receives the vertical position.
-         */
-        void get_speaker_cursor_position(s32 speaker, float* x, float* y);
-
-        /** @brief Place the five speaker models around the listener and pulse the one being moved. */
-        void place_speakers();
-
-        /** @brief Create the page's images once their textures are loaded, then place and highlight them. */
-        void update_page_images();
-
-        /** Resource 0x28: the page images. */
-        u8* image_data;
-
-        /** Decoded blocks of image_data. */
-        u8* image_blocks[5];
-
-        /** Resource 0x29: the speaker room, the girl and her six walk animations. */
-        u8* model_data;
-
-        /** Decoded blocks of model_data. */
-        u8* model_blocks[8];
-
-        s32 stage;
-
-        /** The girl's angle around the listener in the middle. */
-        float girl_angle;
-
-        /** Turn from the analog stick, eased back to zero when released. */
-        float turn_speed;
-
-        /** Frame within the current walk animation. */
-        float animation_frame;
-
-        /** The girl's lean into the turn. */
-        float girl_lean;
-
-        /** Angle of the speaker being moved, restored on cancel. */
-        float saved_speaker_angle;
-
-        u8 page;
-
-        /** Page the option rows were last built for, or 0xFF to rebuild them. */
-        u8 shown_page;
-
-        u8 selection;
-        u8 loaded_image_blocks;
-
-        /** Highlight pulse on the selected row: zero darkening, one brightening. */
-        u8 highlight_phase;
-
-        /** Nonzero while the speaker setup scene replaces the option rows. */
-        u8 on_speaker_setup;
-
-        u8 loaded_model_blocks;
-        u8 selected_speaker;
-        u8 walk_state;
-
-        /** Voice lines played so far; after twelve the later lines are used. */
-        u8 voice_count;
-
-        /** Nonzero while the selected speaker is being moved: one while its pulse grows, two while it shrinks. */
-        u8 adjusting_speaker;
-
-        u8 unk73;
-
-        /** Voice line the girl's face lip-syncs to, or zero. */
-        s32 voice_line;
-
-        /** Blink frame counter, zero while her eyes are open. */
-        s32 blink_frame;
-
-        /** Frames left of the vibration that confirms turning it on. */
-        s32 rumble_frames;
-
-        /** Horizontal position of the current page's rows. */
-        float row_x;
-
-        BootImage* images[21];
-        BootScene* room_scene;
-        BootScene* girl_scene;
-        BootClass170F30* girl_models[10];
-
-        /** Walk animations, one per walk_state. */
-        LibAnimation* girl_animations[6];
-
-        LibAnimationTarget* animation_targets[6];
-
-        /** Installed in g_floor_query while the screen runs, so Lib sees a floor at height zero. */
-        BootFlatFloor flat_floor;
-
-        LibContainer* container;
-
-        /** Description of the selected option. */
-        LibTextWidget* description_text;
-
-        LibSelectionCursor* cursor;
-};
-
-/** Boot's pad and memory card monitor, with vtable D_171030 in main data; samples both every frame. */
-class BootInput : public LibListObject
-{
-    public:
-        /** @brief Clear the card states and start querying the cards. */
-        BootInput();
-
-        /** @brief Destroy the object. */
-        virtual ~BootInput()
-        {
-        }
-
-        /** @brief Sample the first pad, then keep the latest nonzero state of each memory card slot. */
-        virtual void update();
-
-        /**
-         * @brief Virtual slot 0x1C; nothing in boot, main or Lib calls it, so its purpose is unknown.
-         * @return Zero.
-         */
-        virtual s32 func_slot1c();
-
-        /** @brief Forget the memory card states so the next query starts fresh. */
-        void clear_card_states();
-
-        u8 card_query_enabled;
-        u8 unk15;
-
-        /** Buttons held down. */
-        u16 held;
-
-        /** Buttons pressed this frame. */
-        u16 pressed;
-
-        /** Buttons held at any point since the pad state was last cleared. */
-        u16 held_any;
-
-        /** Buttons pressed this frame or auto-repeating. */
-        u16 repeated;
-
-        u8 unk1E[2];
-
-        /** Last nonzero state of card slot 1, as BootStartupChecks compares them. */
-        u32 slot1_state;
-
-        /** Last nonzero state of card slot 2. */
-        u32 slot2_state;
-
-        /** Last nonzero raw status byte of card slot 1 (get_slot_state kind 2). */
-        u32 slot1_raw_state;
-
-        /** Last nonzero raw status byte of card slot 2. */
-        u32 slot2_raw_state;
-
-        /** Nonzero while the card in slot 1 is ready. */
-        s32 slot1_ready;
-
-        /** Nonzero while the card in slot 2 is ready. */
-        s32 slot2_ready;
-};
-
-
-/** Heap capacity and frame dimensions shared by the opening and launch movies. */
-enum BootMovieConstants
-{
-    BOOT_MOVIE_HEAP_SIZE = 0x579F2C,
-    BOOT_MOVIE_FRAME_WIDTH = 640,
-    BOOT_MOVIE_FRAME_HEIGHT = 448
-};
-
-
-/** Steps of the opening movie, from loading its images through opening the title menu. */
-enum BootOpeningMovieStep
-{
-    BOOT_MOVIE_PREPARE,
-    BOOT_MOVIE_CAPTIONS,
-    BOOT_MOVIE_WAIT_FOR_END,
-    BOOT_MOVIE_STOP,
-    BOOT_MOVIE_OPEN_TITLE
-};
-
-/** Visibility phases of an opening movie caption. */
-enum BootCaptionPhase
-{
-    BOOT_CAPTION_HIDDEN,
-    BOOT_CAPTION_FADE_IN,
-    BOOT_CAPTION_SHOWN,
-    BOOT_CAPTION_FADE_OUT
-};
-
-/** The opening movie with its timed captions, with vtable D_171050 in main data; Start skips it. */
-class BootOpeningMovie : public LibListObject
-{
-    public:
-        /** @brief Create the movie player in its own heap, set up for 4:3 or widescreen. */
-        BootOpeningMovie();
-
-        /** @brief Release the caption objects, the player and its heap. */
-        virtual ~BootOpeningMovie();
-
-        /** @brief Play the opening movie with its timed captions until it ends or the player skips it. */
-        virtual void update();
-
-        /** Step: start, captions, wait for the end, stop, hand over. */
-        s32 step;
-
-        /** Caption being shown. */
-        s32 caption;
-
-        /** Caption phase: zero none, one fading in, two shown, three fading out. */
-        s32 caption_phase;
-
-        /** Nonzero once the caption image exists. */
-        u8 caption_image_loaded;
-
-        u8 unk21[3];
-        ResidentHeap* movie_heap;
-        LibMoviePlayer* player;
-        BootImage* caption_image;
-        LibContainer* container;
-        LibTextWidget* caption_text;
-};
-
-/** Blocks decoded from the boot program's common UI resource. */
-enum BootCommonUiBlock
-{
-    BOOT_COMMON_UI_MESSAGES,
-    BOOT_COMMON_UI_CAPTIONS,
-    BOOT_COMMON_UI_IMAGES,
-    BOOT_COMMON_UI_BLOCK_COUNT
-};
-
-/** Partial 0x20-byte boot object with vtable D_171090 in main data. */
-class BootResourceLoader : public LibListObject
-{
-    public:
-        /**
-         * @brief Start loading the program's resource 0x26.
-         * @param owner Program that receives the decoded blocks.
-         */
-        BootResourceLoader(class BootProgram* owner)
-        {
-            data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_COMMON_UI));
-            resident_queue_resource_request(g_resource_queue, BOOT_RES_COMMON_UI, data, BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
-            program = owner;
-            block = BOOT_COMMON_UI_MESSAGES;
-        }
-
-        /** @brief Destroy the object. */
-        virtual ~BootResourceLoader();
-
-        /** @brief Decode the next of the program's three resource blocks, then destroy this object after the last. */
-        virtual void update();
-
-        class BootProgram* program;
-
-        /** Loaded resource whose blocks are decoded. */
-        u8* data;
-
-        /** Next block to decode. */
-        s32 block;
-};
-
-/** Resident program object base, with vtable D_14F9F0 in main data; the constructor registers the object. */
-class BootResidentProgram
-{
-    public:
-        /** @brief Register the object as the running program. */
-        BootResidentProgram();
-
-        /** @brief Run the program; the base implementation is resident. */
-        virtual void run();
-};
-
-/** Opaque resident input root queried by slot. */
-struct ResidentInputSystem;
-
-/** Resource and state limits used while boot runs and hands off to the main program. */
-enum BootProgramConstants
-{
-    BOOT_PROGRAM_MAIN_CODE_RESOURCE = 3,
-    BOOT_PROGRAM_MAIN_CODE_MAX_SIZE = 0x50000,
-    BOOT_SAVED_WIDESCREEN_UNSET = 0xFF,
-    BOOT_RANDOM_WARMUP_RANGE = 1000
-};
-
-/**
- * The boot program, g_boot_program, with vtable D_1710B0 in main data. It owns the display, the pad monitor and
- * resource 0x26 (messages, captions and images), and runs the boot screens until one asks to exit.
- */
-class BootProgram : public BootResidentProgram
-{
-    public:
-        /** @brief Register the program and start with nothing loaded or created. */
-        BootProgram()
-        {
-            projection = 0;
-            input = 0;
-            message_block = 0;
-            display = 0;
-            image_block = 0;
-            trophy_card = 0;
-            caption_block = 0;
-            unk2C = 0;
-            next_program = 0;
-            error_popup = 0;
-            image = 0;
-            messages = 0;
-            captions = 0;
-            unit_data_deleted = 0;
-        }
-
-        /** @brief Run the boot program. */
-        virtual void run();
-
-        /** @brief Release the program's objects, resources, and buffers. */
-        virtual ~BootProgram();
-
-        /** @brief Make the boot projection the display manager's current display. */
-        void select_projection();
-
-        /** @brief Set the projections' aspect and field of view for the 4:3 or widescreen setting. */
-        void update_projection_aspect();
-
-        /**
-         * @brief Replace the display and, on a full rebuild, the scratch heap.
-         * @param full Nonzero to also recreate the scratch heap and rebind the display.
-         */
-        void rebuild_display(u8 full);
-
-        /**
-         * @brief Switch progressive output on or off, then rebuild the display and rebind it everywhere.
-         * @param progressive Nonzero for progressive (525p) output.
-         */
-        void set_progressive(u8 progressive);
-
-        /** @brief Fill the track pools, then create and register the projection. */
-        void create_pools_and_projection();
-
-        /** @brief Release the track pools and every object, resource and buffer the program owns. */
-        void release_resources();
-
-        /**
-         * @brief Read the message bank handle.
-         * @return Bank handle.
-         */
-        s32 get_messages() const
-        {
-            return messages;
-        }
-
-        /**
-         * @brief Read the pad and memory card monitor.
-         * @return Monitor.
-         */
-        BootInput* get_input() const
-        {
-            return input;
-        }
-
-        LibCameraContext* display;
-        LibClass179080* projection;
-        BootInput* input;
-
-        /** Resource 0x26's first block, holding the message bank. */
-        u8* message_block;
-
-        /** Boot's message bank. */
-        s32 messages;
-
-        /** Resource 0x26's second block, holding the caption bank. */
-        u8* caption_block;
-
-        /** The opening movie's caption bank. */
-        s32 captions;
-
-        /** Resource 0x26's third block, holding the images. */
-        u8* image_block;
-
-        BootBattleTrophyCard* trophy_card;
-        BootUnitErrorPopup* error_popup;
-        s32 unk2C;
-
-        /** Program to run next, set when the boot program should end; passed on to the resident runtime. */
-        u8* next_program;
-
-        /** Widescreen setting kept across the display reset, or 0xFF when there were no saved settings. */
-        u8 saved_widescreen;
-
-        u8 unk35[3];
-
-        /** Frame counter. */
-        s32 frame;
-
-        /** Nonzero when damaged game data on the PlayStation BB Unit was deleted. */
-        u8 unit_data_deleted;
-
-        u8 unk3D[3];
-
-        /** Resource 3: the program image, holding a copy of the main executable's code. */
-        BootProgramImage* image;
-};
-
-/** Partial resident object D_001B6658 that holds the current display. */
-struct BootResidentDisplay
-{
-    u8 unk00[4];
-    LibCameraContext* display;
-};
-
-/** 0x2910-byte Lib heap that may sit at the start of scratchpad memory. */
-class BootScratchHeap
-{
-    public:
-        /**
-         * @brief Create the heap.
-         * @param size Heap size in bytes.
-         * @param count Block count.
-         */
-        BootScratchHeap(s32 size, s32 count);
-
-        /**
-         * @brief Allocate the heap object through the resident allocator.
-         * @param size Object size in bytes.
-         * @param heap Heap selector.
-         * @return The allocated storage.
-         */
-        static void* operator new(u32 size, s32 heap)
-        {
-            return ::operator new(size, heap);
-        }
-
-        /**
-         * @brief Release the storage when construction fails, unless it is the scratchpad.
-         * @param object Storage to release.
-         * @param heap Heap selector passed to operator new.
-         */
-        static void operator delete(void* object, s32 heap)
-        {
-            if (object != (void*)0x70000000)
-            {
-                ::operator delete(object);
-            }
-        }
-
-        u8 unk00[0x2910];
-};
-
-/** How a track evaluates keys outside its first and last keyframes. */
-enum BootTrackEndMode
-{
-    /** Keep the first or last value outside the key span. */
-    BOOT_TRACK_END_HOLD,
-
-    /** Wrap the key into the stored span. */
-    BOOT_TRACK_END_CYCLE,
-
-    /** Use the first value at the last segment's endpoint. */
-    BOOT_TRACK_END_CYCLE_TO_FIRST,
-
-    /** Reflect the key on odd cycles. */
-    BOOT_TRACK_END_PING_PONG,
-
-    /** Continue evaluating the first or last segment outside the span. */
-    BOOT_TRACK_END_EXTEND_SEGMENT,
-
-    /** Wrap the key and add the endpoint difference for each cycle. */
-    BOOT_TRACK_END_OFFSET_CYCLE,
-
-    /** Interpolate from the stored single key before the first array key. */
-    BOOT_TRACK_END_USE_PRE_START_KEY
-};
-
-/** Bookkeeping every track keeps after its key storage: counts, the cached lookup and how it extends past its ends. */
-struct BootSequenceTail
-{
-    /** Whole key spans the last wrapped key was past the first key; negative before it. */
-    s32 cycle_count;
-
-    /** Last key minus first key. */
-    float span;
-
-    s16 key_count;
-    s16 key_capacity;
-
-    /** Lower key index the last search found; the next search starts there. */
-    s16 search_index;
-
-    /** Lower key index the cached segment was built from; -1 after the keys change. */
-    s16 segment_lower;
-
-    /** Upper key index the cached segment was built from; -1 after the keys change. */
-    s16 segment_upper;
-
-    /** BootTrackEndMode applied before the first key. */
-    u8 before_mode : 4;
-
-    /** BootTrackEndMode applied after the last key. */
-    u8 after_mode : 4;
-
-    /** Set when either end extends its first or last keyframe segment. */
-    u8 extends_segment : 1;
-
-    /** Set when the keys are bound from outside, so the track doesn't free them. */
-    u8 external_keys : 1;
-
-    /** Set while the track belongs to a pool. */
-    u8 pooled : 1;
-
-    u8 unk13_3_7 : 5;
-};
+#ifndef SO3_OVERLAYS_BOOT_TRACKS_H
+#define SO3_OVERLAYS_BOOT_TRACKS_H
+
+#include "types.h"
+#include "overlays/boot/boot.h"
 
 /** Fixed pool of tracks with a bitmap of used slots. */
 template <class T> struct BootTrackPool
@@ -1067,6 +90,70 @@ template <class T> struct BootTrackPool
         s32 words;
         u64* used;
         bool external;
+};
+
+/** How a track evaluates keys outside its first and last keyframes. */
+enum BootTrackEndMode
+{
+    /** Keep the first or last value outside the key span. */
+    BOOT_TRACK_END_HOLD,
+
+    /** Wrap the key into the stored span. */
+    BOOT_TRACK_END_CYCLE,
+
+    /** Use the first value at the last segment's endpoint. */
+    BOOT_TRACK_END_CYCLE_TO_FIRST,
+
+    /** Reflect the key on odd cycles. */
+    BOOT_TRACK_END_PING_PONG,
+
+    /** Continue evaluating the first or last segment outside the span. */
+    BOOT_TRACK_END_EXTEND_SEGMENT,
+
+    /** Wrap the key and add the endpoint difference for each cycle. */
+    BOOT_TRACK_END_OFFSET_CYCLE,
+
+    /** Interpolate from the stored single key before the first array key. */
+    BOOT_TRACK_END_USE_PRE_START_KEY
+};
+
+/** Bookkeeping every track keeps after its key storage: counts, the cached lookup and how it extends past its ends. */
+struct BootSequenceTail
+{
+    /** Whole key spans the last wrapped key was past the first key; negative before it. */
+    s32 cycle_count;
+
+    /** Last key minus first key. */
+    float span;
+
+    s16 key_count;
+    s16 key_capacity;
+
+    /** Lower key index the last search found; the next search starts there. */
+    s16 search_index;
+
+    /** Lower key index the cached segment was built from; -1 after the keys change. */
+    s16 segment_lower;
+
+    /** Upper key index the cached segment was built from; -1 after the keys change. */
+    s16 segment_upper;
+
+    /** BootTrackEndMode applied before the first key. */
+    u8 before_mode : 4;
+
+    /** BootTrackEndMode applied after the last key. */
+    u8 after_mode : 4;
+
+    /** Set when either end extends its first or last keyframe segment. */
+    u8 extends_segment : 1;
+
+    /** Set when the keys are bound from outside, so the track doesn't free them. */
+    u8 external_keys : 1;
+
+    /** Set while the track belongs to a pool. */
+    u8 pooled : 1;
+
+    u8 unk13_3_7 : 5;
 };
 
 /** Track record with vtable D_171B00 in main data; its data comes before the vptr. */
@@ -3821,34 +2908,110 @@ class BootPooledQuaternionTrack : public BootQuaternionTrackBase
         u8 unk24[8];
 };
 
-extern "C" {
 s32 float_track_pool_allocate(BootTrackPool<BootPooledFloatTrack>* pool, s32 count);
-void float_track_pool_release(BootTrackPool<BootPooledFloatTrack>* pool);
-s32 vector_track_pool_allocate(BootTrackPool<BootPooledVectorTrack>* pool, s32 count);
-void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool);
-s32 track_1718C0_pool_allocate(BootTrackPool<BootClass177EE0>* pool, s32 count);
-void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool);
-s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* pool, s32 count);
-void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool);
-s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count);
-void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool);
-s32 float_quaternion_track_pool_allocate(BootTrackPool<BootPooledFloatQuaternionTrack>* pool, s32 count);
-void float_quaternion_track_pool_release(BootTrackPool<BootPooledFloatQuaternionTrack>* pool);
-s32 quaternion_curve_track_pool_allocate(BootTrackPool<BootPooledQuaternionCurveTrack>* pool, s32 count);
-void quaternion_curve_track_pool_release(BootTrackPool<BootPooledQuaternionCurveTrack>* pool);
-s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count);
-void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool);
-}
 
-extern "C" {
-extern ResidentInputSystem* g_input_system;
-extern LibUpdateList* D_001B6614;
-/** Product code at the start of every save name: "BASLUS-20488". */
-extern const char g_card_product_code[];
-/** Save name suffix of the battle trophy file: "BTLCOL". */
-extern const char g_trophy_file_suffix[];
-/** Suffix that matches any of the game's saves: "-*". */
-extern const char g_any_file_suffix[];
-}
+void float_track_pool_release(BootTrackPool<BootPooledFloatTrack>* pool);
+
+s32 vector_track_pool_allocate(BootTrackPool<BootPooledVectorTrack>* pool, s32 count);
+
+void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool);
+
+s32 track_1718C0_pool_allocate(BootTrackPool<BootClass177EE0>* pool, s32 count);
+
+void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool);
+
+s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* pool, s32 count);
+
+void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool);
+
+s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count);
+
+void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool);
+
+s32 float_quaternion_track_pool_allocate(BootTrackPool<BootPooledFloatQuaternionTrack>* pool, s32 count);
+
+void float_quaternion_track_pool_release(BootTrackPool<BootPooledFloatQuaternionTrack>* pool);
+
+s32 quaternion_curve_track_pool_allocate(BootTrackPool<BootPooledQuaternionCurveTrack>* pool, s32 count);
+
+void quaternion_curve_track_pool_release(BootTrackPool<BootPooledQuaternionCurveTrack>* pool);
+
+s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count);
+
+void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool);
+
+class FieldVec4A;
+class BootPooledVectorTrack;
+class BootPooledVectorCurveTrack;
+class BootQuaternionTrackBase;
+
+/**
+ * @brief BootTrack's slot 0x24, between append_key and replace_key; every family inherits it and none overrides it, so
+ * its purpose is unknown. It does nothing, as Lib's copy (0x429850) does.
+ * @param track Track; unused.
+ */
+void track_default_func_slot24(void* track);
+
+/**
+ * @brief BootTrack's append_key (slot 0x20), which the families' base classes inherit; it does nothing.
+ * @param track Track; unused.
+ * @return Zero.
+ */
+s32 track_default_append_key(void* track);
+
+/**
+ * @brief BootTrack's replace_key (slot 0x28), which the families' base classes inherit; it does nothing.
+ * @param track Track; unused.
+ * @return Zero.
+ */
+s32 track_default_replace_key(void* track);
+
+/**
+ * @brief BootTrack's insert_key (slot 0x2C), which the families' base classes inherit; it does nothing.
+ * @param track Track; unused.
+ * @return Zero.
+ */
+s32 track_default_insert_key(void* track);
+
+/**
+ * @brief BootTrack's read_key (slot 0x30), which the families' base classes inherit; it does nothing.
+ * @param track Track; unused.
+ * @return Zero.
+ */
+s32 track_default_read_key(void* track);
+
+/**
+ * @brief BootTrack's set_single_key (slot 0x34), which the families' base classes inherit; it does nothing.
+ * @param track Track; unused.
+ */
+void track_default_set_single_key(void* track);
+
+/**
+ * @brief BootTrack's reset_keys (slot 0x38), which the families' base classes inherit; it does nothing.
+ * @param track Track; unused.
+ */
+void track_default_reset_keys(void* track);
+
+/**
+ * @brief Mark a track's pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void vector_curve_track_pool_free(BootTrackPool<BootPooledVectorCurveTrack>* pool, BootPooledVectorCurveTrack* track);
+
+/**
+ * @brief Mark a track's pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void vector_track_pool_free(BootTrackPool<BootPooledVectorTrack>* pool, BootPooledVectorTrack* track);
+
+/**
+ * @brief BootQuaternionTrackBase's find_key_value (slot 0x7C): find the keyframe with a key and decode its rotation.
+ * @param out Receives the rotation, or zero when the key is absent.
+ * @param track Track to search.
+ * @param key Key to find.
+ */
+void quaternion_track_find_key_value(FieldVec4A* out, BootQuaternionTrackBase* track, float key);
 
 #endif

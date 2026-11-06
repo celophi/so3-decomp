@@ -351,7 +351,7 @@ void func_002276F0(void* unused0, void* unused1, float* output)
     vector[2] = 0.0f;
     vector[3] = 1.0f;
     func_4CEE30(vector);
-    func_004CE4C0(output, vector);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(output), vector);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00227740);

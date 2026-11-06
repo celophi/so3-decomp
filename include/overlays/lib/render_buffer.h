@@ -6,6 +6,8 @@
 #include "main/resident_00101550.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/vector.h"
+#include "gs.h"
+#include "ee.h"
 
 #ifdef __cplusplus
 class LibListSentinel;
@@ -45,7 +47,7 @@ public:
     LibResourceBuffer()
     {
         data = 0;
-        unk14 = 0;
+        payload_override = 0;
         children = 0;
         external_data = 0;
         unk1d = 0;
@@ -54,6 +56,9 @@ public:
 
     /** @brief Unregister the resource and release owned data. */
     virtual ~LibResourceBuffer();
+
+    /** @brief Unregister the resource from the resource manager if it is registered. */
+    void unregister();
 
     /**
      * @brief Read the data referenced by the resource payload header.
@@ -84,7 +89,9 @@ public:
     void* data;
 
     u8 unk0c[8];
-    u32 unk14;
+
+    /** Payload a model draws instead of the resource's own, or null. */
+    void* payload_override;
 
     /** Intrusive sentinel for the channels supplying child entries. */
     LibListSentinel* children;
@@ -190,17 +197,264 @@ static inline u8* lib_resource_payload(LibResourceBuffer* buffer)
         reinterpret_cast<u8*>(RESIDENT_ALIGN_RESOURCE(buffer->data)) + sizeof(LibResourceChunkHeader);
 }
 
+/**
+ * @brief Return the payload a model draws: the override when one is set, otherwise the resource's own.
+ * @param buffer Resource to read.
+ * @return Payload pointer, or null when there's neither.
+ */
+static inline u8* lib_resource_active_payload(LibResourceBuffer* buffer)
+{
+    if (buffer->payload_override != 0)
+    {
+        return static_cast<u8*>(buffer->payload_override);
+    }
+
+    if (buffer->data == 0)
+    {
+        return 0;
+    }
+
+    return buffer->external_data ? static_cast<u8*>(buffer->data) + sizeof(LibResourceChunkHeader) :
+                                   reinterpret_cast<u8*>(RESIDENT_ALIGN_RESOURCE(buffer->data)) + sizeof(LibResourceChunkHeader);
+}
+
 /** Primitive command buffers with block storage and eight texture slots. */
 /** Packet at the start of each draw buffer's commands, written through the uncached segment. */
 struct LibDrawSetupPacket
 {
-    u8 unk00[0x3C];
+    /** Size of this packet. */
+    u32 size;
+
+    u32 unk04;
+    u8 unk08[4];
+    u32 unk0c;
+    u32 unk10;
+    u32 unk14;
+    float unk18;
+    u8 unk1c[0x18];
+
+    /** Batches the commands hold. */
+    u32 batch_count;
+
+    /** Bytes of commands after the packet's start. */
+    u32 command_size;
+
     u8 unk3C;
     u8 unk3D;
-    u8 unk3E[0x16];
+    u8 unk3e;
+    u8 unk3f;
+    u8 unk40[4];
+    u32 unk44;
+    u32 unk48;
+    u32 unk4c;
+    u32 unk50;
     s16 unk54;
     u8 unk56;
     u8 unk57[9];
+};
+
+/** Bytes in a quadword. */
+#define LIB_DRAW_QWORD_SIZE 16
+
+/** VU memory the batch description and the draw state take, in quadwords. */
+#define LIB_DRAW_INFO_VU_QWORDS 7
+#define LIB_DRAW_STATE_VU_QWORDS 14
+
+/** LibDrawBatchInfo flags. */
+#define LIB_DRAW_BATCH_HAS_STATE 0x1
+#define LIB_DRAW_BATCH_FLAG_04 0x4
+#define LIB_DRAW_BATCH_FLAG_08 0x8
+
+/** ALPHA_1 value used instead of the blend mode's when the settings' unk14 is positive. */
+#define LIB_DRAW_ALPHA_SUBTRACT 0x42
+
+/** Registers the draw state writes in A+D form, and their GIF tag register list. */
+#define LIB_DRAW_REGISTER_WRITES 4
+#define LIB_DRAW_AD_REGISTERS 0xEEEEEEEE
+
+/** GIF register list and tag for each primitive's vertices: ST, RGBAQ and XYZF2. */
+#define LIB_DRAW_VERTEX_REGISTERS (GIF_REGISTER_ST | (GIF_REGISTER_RGBAQ << 4) | (GIF_REGISTER_XYZF2 << 8))
+#define LIB_DRAW_PRIMITIVE_TAG (GIF_TAG_NREG(3) | GIF_TAG_PRE | GIF_TAG_EOP)
+
+/** Bytes each texture adds to the end of the commands. */
+#define LIB_DRAW_TEXTURE_PACKET_SIZE 48
+
+/** ALPHA_1 value for each blend mode. */
+extern "C" const u64 D_4ED320[];
+
+/** Vertices one scratchpad batch holds. */
+#define LIB_DRAW_BATCH_VERTEX_COUNT 40
+
+/** Primitives one scratchpad batch holds. */
+#define LIB_DRAW_BATCH_PRIMITIVE_COUNT 32
+
+/** Bytes between the two scratchpad batches the draw buffer alternates between. */
+#define LIB_DRAW_BATCH_STRIDE 0xC00
+
+/** Start of each scratchpad block: the DMA tag that copies it out, then the VIF codes that unpack it. */
+struct LibDrawBlockHeader
+{
+    u64 dma_tag;
+    u64 unk08;
+
+    union
+    {
+        u32 vif_codes[4];
+        unsigned __int128 vif_qword;
+    };
+};
+
+/** Batch description the microprogram reads: where each stream starts, in VU memory and in the commands. */
+struct LibDrawBatchInfo
+{
+    u32 vif_code;
+
+    /** Bytes of the batch in the commands. */
+    s16 size;
+
+    s16 unk4c_address;
+    s16 primitive_count;
+    s16 primitive_address;
+    u8 unk0c[8];
+    u16 flags;
+    s16 vertex_count;
+    s16 position_offset;
+    s16 unk4c_offset;
+    s16 texcoord_offset;
+    s16 color_offset;
+    s16 primitive_offset;
+    s16 unk22;
+    u32 unk24;
+    u32 unk28;
+    s16 unk2c[4];
+    u32 unk34;
+    u64 unk38;
+};
+
+/** First block of a batch: its DMA tag, then the batch description. */
+struct LibDrawChainBlock
+{
+    u64 dma_tag;
+    u64 unk08;
+    LibDrawBatchInfo info;
+};
+
+/**
+ * Draw state the batch microprogram reads: GS register writes in A+D form, with its own
+ * parameters in the words the GS ignores.
+ */
+struct LibDrawState
+{
+    u32 vif_codes[4];
+
+    /** A+D tag for the four register writes that follow. */
+    GsGifTag register_tag;
+
+    /** Low word of ALPHA_1. */
+    u32 alpha;
+
+    u32 unk24;
+    u32 alpha_address;
+
+    /** Nonzero when alpha blending is on. */
+    u32 blend;
+
+    u64 tex0;
+
+    union
+    {
+        u64 tex0_address;
+        u32 tex0_address_words[2];
+    };
+
+    /** A second copy of TEX0_1 and its address. */
+    u64 unk40;
+    u64 unk48;
+
+    float unk50;
+    float unk54;
+    float unk58;
+    u8 unk5c[4];
+
+    /** Tag for the batch's primitives. */
+    GsGifTag primitive_tag;
+
+    /** Tag for the batch's primitives drawn as triangle fans. */
+    GsGifTag fan_tag;
+
+    u32 unk80;
+    u8 unk84[4];
+    u32 texture_index;
+    u32 unk8c;
+    u8 unk90[4];
+    float unk94;
+    u8 unk98[0x14];
+    u32 unkac;
+    u8 unkb0[0x40];
+};
+
+/** Draw state block: its DMA tag, then the state. */
+struct LibDrawStateBlock
+{
+    u64 dma_tag;
+    u64 unk08;
+    LibDrawState state;
+};
+
+/** Per-primitive vertex counts. */
+struct LibDrawPrimitiveBlock
+{
+    LibDrawBlockHeader header;
+    u8 sizes[LIB_DRAW_BATCH_PRIMITIVE_COUNT];
+};
+
+/** One vector per vertex. */
+struct LibDrawVectorBlock
+{
+    LibDrawBlockHeader header;
+    unsigned __int128 vectors[LIB_DRAW_BATCH_VERTEX_COUNT];
+};
+
+/** One word per vertex. */
+struct LibDrawWordBlock
+{
+    LibDrawBlockHeader header;
+
+    union
+    {
+        u32 words[LIB_DRAW_BATCH_VERTEX_COUNT];
+        unsigned __int128 qwords[LIB_DRAW_BATCH_VERTEX_COUNT / 4];
+    };
+};
+
+/** Settings applied to a draw buffer before its next primitives. */
+struct LibDrawSettings
+{
+    /** GS PRIM bits: 0xC is a Gouraud-shaded triangle strip; 0x5C adds texture mapping and alpha blending. */
+    u16 prim;
+
+    /** Blend mode: an index into the ALPHA_1 table, 0 for no blending. */
+    u8 blend_mode;
+
+    /** Which of the draw buffer's textures to draw with; the palette quad uses 1. */
+    u8 texture_index;
+
+    u8 unk04;
+    u8 unk05;
+    u8 unk06;
+    u8 unk07;
+    float unk08;
+    float unk0C;
+    float unk10;
+
+    /** Positive values replace the blend with ALPHA 0x42. */
+    float unk14;
+
+    u8 unk18;
+    u8 unk19;
+    u8 unk1A;
+    u8 unk1B;
+    u8 unk1C;
 };
 
 /** Words at the start of each command buffer before the setup packet. */
@@ -236,34 +490,44 @@ public:
     /** Next free word of the command buffer. */
     u32* command_cursor;
 
-    u8 unk30[0xC];
+    /** This batch's DMA chain head in the scratchpad. */
+    LibDrawChainBlock* chain_block;
+
+    /** Draw state the batch's microprogram reads. */
+    LibDrawStateBlock* state_block;
+
+    LibDrawPrimitiveBlock* primitive_block;
 
     /** Next byte of the per-primitive vertex counts. */
     u8* primitive_sizes;
 
-    u8 unk40[4];
+    LibDrawVectorBlock* position_block;
 
     /** Next free slot of the vertex position stream. */
     FieldVec4A* positions;
 
-    u8 unk48[4];
+    /** Block of the vertex normal stream. */
+    LibDrawVectorBlock* normal_block;
 
-    /** Next free slot of the second per-vertex vector stream. */
-    FieldVec4A* unk4c;
+    /** Next free slot of the vertex normal stream. */
+    FieldVec4A* normals;
 
-    u8 unk50[4];
+    LibDrawWordBlock* texcoord_block;
 
     /** Next free slot of the packed texture coordinate stream: u in the low half, v in the high half, 4.12 fixed point. */
     u32* texcoords;
 
-    u8 unk58[4];
+    LibDrawWordBlock* color_block;
 
     /** Next free slot of the vertex color stream. */
     u32* colors;
     u32* block_sizes;
     u8* block_packets;
     LibDrawSetupPacket* setup_packet;
-    u32 unk6c;
+
+    /** Batches copied into the command buffer since it was started. */
+    u32 batch_count;
+
     s32 word_capacity;
     s32 block_capacity;
     s32 block_count;
@@ -278,7 +542,10 @@ public:
     u8 command_buffer_count;
     u8 scratchpad_index;
     u8 unkc7[4];
-    u8 unkcb;
+
+    /** Set once settings are applied; the next batch carries the draw state. */
+    u8 state_pending;
+
     u8 unkcc;
     u8 unkcd;
     u8 unkce;
@@ -312,6 +579,43 @@ extern "C"
      * @param unk3D Stored in the setup packet at 0x3D.
      */
     void lib_draw_buffer_begin(LibDrawBuffer* buffer, u8 unk3C, u8 unk3D);
+
+    /**
+     * @brief Copy out any pending vertices, then write the draw state the next primitives use.
+     *
+     * Sets the texture, blend, primitive tags and the settings' other parameters, and marks the state for the next batch.
+     * @param buffer Draw buffer.
+     * @param settings Settings to apply.
+     */
+    void lib_draw_buffer_apply_settings(LibDrawBuffer* buffer, LibDrawSettings* settings);
+
+    /**
+     * @brief Close the scratchpad batch and copy it into the command buffer.
+     *
+     * Writes each block's DMA tag and VIF codes, pads the streams to whole quadwords, then waits for the previous copy
+     * and starts this one. A batch that wouldn't fit in the command buffer is dropped and its vertices stay pending.
+     * @param buffer Draw buffer.
+     */
+    void lib_draw_buffer_flush_batch(LibDrawBuffer* buffer);
+
+    /**
+     * @brief Copy out any pending vertices, then lay out the next scratchpad batch and switch to the other half.
+     * @param buffer Draw buffer.
+     */
+    void lib_draw_buffer_start_batch(LibDrawBuffer* buffer);
+
+    /**
+     * @brief Copy out any pending vertices and finish the commands, unless they've run into the space kept for the block
+     *        sizes and texture packets.
+     *
+     * Fills in the setup packet, appends the block sizes, hands the commands over, switches command buffers, waits for
+     * the draw buffer's DMA channel and turns its interrupts back on.
+     * @param buffer Draw buffer.
+     * @param mode Nonzero stores the setup packet's size at its offset 0x04 too.
+     * @param distance Stored in the setup packet at 0x18.
+     * @param flag Stored in the setup packet at 0x3F.
+     */
+    void lib_draw_buffer_end(LibDrawBuffer* buffer, s32 mode, float distance, s32 flag);
 }
 #endif
 

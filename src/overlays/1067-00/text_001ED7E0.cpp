@@ -32,8 +32,8 @@
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
 extern "C" u32 D_001B65B4;
-extern "C" u8 D_50CD30[];
-extern "C" void* D_001B6628;
+extern "C" u8 g_default_bounding_sphere[];
+extern "C" LibDisplayManager* g_display_manager;
 extern "C" u8 D_001B6510;
 
 
@@ -552,7 +552,7 @@ FieldClass1504F0::FieldClass1504F0()
     {
         return;
     }
-    lib_queue_display_object(D_001B657C, unk18);
+    lib_queue_display_object(g_field_runtime, unk18);
     unk1c = new(0) LibPanel;
     if (!unk1c)
     {
@@ -579,7 +579,7 @@ FieldClass1504F0::FieldClass1504F0()
     void* data = func_00201EA0(D_001B6430->context->unk2c, 0x535953, 0, 0);
     if (data)
     {
-        unk3c = lib_load_resource_slot(D_001B657C, (void*)(((u32)data + 127) & ~127));
+        unk3c = lib_load_resource_slot(g_field_runtime, (void*)(((u32)data + 127) & ~127));
         unk20 = new(0) LibTextWidget;
         if (unk20 && lib_text_init_resource_rectangle(unk20, unk3c, 1, 0, 16.0f, 56.0f, 352.0f, 48.0f))
         {
@@ -633,13 +633,13 @@ void func_001EDEC0(FieldVectorState50* state, const FieldQword* input)
 void func_001EDEE0(FieldVectorState50* state, const float* input)
 {
     state->transform_dirty = 1;
-    func_004CE4C0(state->unk30.floats, input);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(state->unk30.floats), input);
 }
 
 void func_001EDF10(FieldVectorState50* state, const float* input)
 {
     state->transform_dirty = 1;
-    func_004CE4C0(state->unk30.floats, input);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(state->unk30.floats), input);
 }
 
 void func_001EDF40(FieldVectorState50* state, float x, float y, float z)
@@ -650,7 +650,7 @@ void func_001EDF40(FieldVectorState50* state, float x, float y, float z)
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_004CE4C0(state->unk30.floats, value);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(state->unk30.floats), value);
 }
 
 void func_001EDF80(FieldVectorState50* state, const FieldQword* input)
@@ -693,7 +693,7 @@ bool func_001EE180(void* object, float value)
 
 void* func_001EE1A0()
 {
-    return D_50CD30;
+    return g_default_bounding_sphere;
 }
 
 void func_001EE1B0(void* object)
@@ -1533,7 +1533,7 @@ extern "C" s32 func_001F09C0(FieldScriptCursorU32* cursor)
     command->unk19 = 1;
     command->unk1a = mode;
     command->unk1c = value;
-    D_001B6614->append_node(command, -1);
+    g_update_list->append_node(command, -1);
     return 1;
 }
 
@@ -1918,7 +1918,7 @@ FieldClass150630::~FieldClass150630()
 /** @brief Apply the packed callback fields, then unlink and release this object. */
 void FieldClass150630::update()
 {
-    func_004DAFE0(D_001B6628, D_001B6650, unk18 != 0, unk19 != 0, unk1a != 0, unk1c, 0xFFFFFF);
+    g_display_manager->set_display_effect(g_display, unk18 != 0, unk19 != 0, unk1a != 0, unk1c, 0xFFFFFF);
     lib_object_detach_owner(this);
     func_001DD7B0();
 }
@@ -2004,7 +2004,7 @@ extern "C" s32 func_001F2140(FieldScriptCursorU32* cursor)
     object->unk14 = (cursor->unk420 >> 16) & 0xFFFF;
     object->unk18 = value;
     object->unk1c = flags;
-    D_001B6614->append_node(object, -1);
+    g_update_list->append_node(object, -1);
     return 1;
 }
 

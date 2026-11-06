@@ -13,7 +13,7 @@ typedef struct ConfigCornerWindow ConfigCornerWindow;
 typedef struct ConfigControlReceiver ConfigControlReceiver;
 typedef struct ConfigMessageWindow ConfigMessageWindow;
 typedef struct ConfigFrameWindow ConfigFrameWindow;
-typedef struct ItemCreationClass1725D0 ItemCreationClass1725D0;
+typedef struct LibListIndicator LibListIndicator;
 typedef struct ItemCreationOptionResourceDisplay ItemCreationOptionResourceDisplay;
 typedef struct ConfigPreviewWindow ConfigPreviewWindow;
 typedef struct FieldClass15AE70 FieldClass15AE70;
@@ -152,7 +152,7 @@ struct ConfigOptions : public FieldClass15AE70
     ConfigList182210 list14_second;
     u8 unk288;
     u8 unk289[3];
-    ItemCreationClass1725D0* unk28c;
+    LibListIndicator* unk28c;
     float unk290;
     float unk294;
     float unk298;

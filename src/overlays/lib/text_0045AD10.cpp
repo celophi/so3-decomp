@@ -9,7 +9,6 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
 
-extern "C" void func_004D00B0(void* object);
 extern "C" void func_00461830(void* embedded, void* adjusted);
 
 enum
@@ -178,7 +177,23 @@ void func_0045F650(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F660);
+extern "C" s32 func_00451B90(s32 code);
+
+/**
+ * @brief Run func_00451B90 on the value at offset 0x564 when the byte at 0x57A is set.
+ * @return The func_00451B90 result, or zero.
+ */
+s32 LibObject174D90::func_0045F660()
+{
+    s32 result = 0;
+
+    if (unk57a)
+    {
+        result = func_00451B90(unk564);
+    }
+
+    return result;
+}
 
 extern "C" void lib_multiline_text_set_resource(LibObject174D90* object, u32 source, s32 key, u32 mode, u32 flag)
 {
@@ -352,9 +367,57 @@ void func_004619E0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461B60);
+/** Message window states that wait to be advanced. */
+#define LIB_MESSAGE_WINDOW_STATE_WAIT 4
+#define LIB_MESSAGE_WINDOW_STATE_WAIT_END 6
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461BA0);
+/**
+ * @brief Advance from state 4 or 6 to the next state.
+ * @return One when the state advanced, otherwise zero.
+ */
+s32 LibMessageWindow::func_00461B60()
+{
+    if (state != LIB_MESSAGE_WINDOW_STATE_WAIT && state != LIB_MESSAGE_WINDOW_STATE_WAIT_END)
+    {
+        return 0;
+    }
+
+    state++;
+    return 1;
+}
+
+/** Message window states that wait to be advanced. */
+#define LIB_MESSAGE_WINDOW_STATE_WAIT 4
+#define LIB_MESSAGE_WINDOW_STATE_WAIT_END 6
+
+/** Message window state that loads the text. */
+#define LIB_MESSAGE_WINDOW_STATE_LOAD 2
+
+/** Mode bits kept when new text is loaded. */
+#define LIB_MESSAGE_WINDOW_KEPT_MODE 0x50000
+
+/**
+ * @brief In state 4 or 6, load new text into the window and go back to state 2.
+ * @param source Resource source word.
+ * @param key Text resource key.
+ * @param mode Drawing mode; its bits 16 and 18 are kept from the current mode.
+ * @param flag Resource state flag.
+ * @return One when the text was loaded, otherwise zero.
+ */
+s32 LibMessageWindow::func_00461BA0(u32 source, s32 key, u32 mode, u32 flag)
+{
+    if (state != LIB_MESSAGE_WINDOW_STATE_WAIT && state != LIB_MESSAGE_WINDOW_STATE_WAIT_END)
+    {
+        return 0;
+    }
+
+    this->source = source;
+    this->key = key;
+    this->mode = (this->mode & LIB_MESSAGE_WINDOW_KEPT_MODE) | (mode & ~LIB_MESSAGE_WINDOW_KEPT_MODE);
+    lib_multiline_text_set_resource(&text, this->source, this->key, this->mode, flag);
+    state = LIB_MESSAGE_WINDOW_STATE_LOAD;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461C30);
 
@@ -362,17 +425,59 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461E50);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461FA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004621E0);
+/** @brief Flag a control code for the window and set its flag byte at 0x1064. */
+void LibMessageWindowText::func_0045F650()
+{
+    owner->unk1063 = 1;
+    owner->unk1064 = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462200);
+/**
+ * @brief Pass a one-value control code to the window and set its flag byte at 0x1064.
+ * @param value Control value.
+ */
+void LibMessageWindowText::func_0045F640(u32 value)
+{
+    owner->unk1062 = 1;
+    owner->unk1050 = value;
+    owner->unk1064 = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462220);
+/**
+ * @brief Pass a one-value control code to the window.
+ * @param value Control value.
+ */
+void LibMessageWindowText::func_0045F630(u32 value)
+{
+    owner->unk1061 = 1;
+    owner->unk1050 = value;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462240);
+/**
+ * @brief Pass a three-value control code to the window.
+ * @param first First value.
+ * @param second Second value.
+ * @param third Third value.
+ */
+void LibMessageWindowText::func_0045F620(s16 first, s16 second, u32 third)
+{
+    owner->unk1054 = first;
+    owner->unk1056 = second;
+    owner->unk1058 = third;
+    owner->unk105e = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462270);
+/** @brief Flag the end of the text for the window. */
+void LibMessageWindowText::func_0045F610()
+{
+    owner->unk105d = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462280);
+/** @brief Flag the restart for the window. */
+void LibMessageWindowText::func_0045F600()
+{
+    owner->unk105c = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462290);
 
@@ -396,7 +501,37 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462FC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463500);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463610);
+/** LibDrawWidget::vertical_align value that centres the text. */
+#define LIB_ALIGN_CENTER 1
+
+/**
+ * @brief Shift laid-out records to the vertical alignment and finish the extent.
+ * @param records Records to shift.
+ * @param count Number of records.
+ */
+void LibDrawWidget::align_records_vertically(LibDrawRecord* records, s32 count)
+{
+    if (vertical_align != 0)
+    {
+        float offset = unk18.unk0c - (pen_y - unk8c);
+        if (vertical_align == LIB_ALIGN_CENTER)
+        {
+            offset /= 2.0f;
+        }
+
+        for (s32 i = 0; i < count; i++)
+        {
+            records->top += offset;
+            records->bottom += offset;
+            records++;
+        }
+
+        extent.unk04 = offset;
+    }
+
+    extent.height = pen_y - unk8c;
+    extent.width = extent.width - extent.unk00;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004637A0);
 
@@ -416,37 +551,346 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004642E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464340);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004643C0);
+/** Character code of anything in a formatted number that isn't a digit. */
+#define LIB_NUMBER_CODE_OTHER 11
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464460);
+/** "%d". */
+extern const char D_505CF8[];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464540);
+/**
+ * @brief Format a number as character codes: one plus the digit for digits, 11 for anything else.
+ * @param codes Receives the codes and a terminating zero.
+ * @param value Number to format.
+ * @return Number of codes written before the terminator.
+ */
+s32 LibDrawWidget::format_number_codes(u16* codes, s32 value)
+{
+    char text[32];
+    s32 count = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464590);
+    sprintf_guess(text, D_505CF8, value);
+    for (char* cursor = text;; count++)
+    {
+        u16 character = *cursor++;
+        u16 code;
+        // TODO: Comparing with 0L (long is 64 bits here) is the only way I've found to get the sign extension before
+        // this test. My guess is the original compared the character with NULL.
+        if (character == 0L)
+        {
+            *codes = 0;
+            break;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004645F0);
+        if (character >= '0' && character <= '9')
+        {
+            code = character - '0' + 1;
+        }
+        else
+        {
+            code = LIB_NUMBER_CODE_OTHER;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004647E0);
+        *codes++ = code;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464830);
+    return count;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464870);
+/** Record kind of a number laid out as one record. */
+#define LIB_DRAW_RECORD_NUMBER 0x401C
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004648C0);
+/** Width of one digit of a number record. */
+#define LIB_NUMBER_DIGIT_WIDTH 9.0f
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464900);
+/**
+ * @brief Lay out a number as one record.
+ * @param value Value stored in the record.
+ * @param digits Number of digits.
+ */
+void LibDrawWidget::add_number_record(void* value, s32 digits)
+{
+    float width = LIB_NUMBER_DIGIT_WIDTH * digits;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464A30);
+    next_record->code = LIB_DRAW_RECORD_NUMBER;
+    next_record->left = pen_x - unk88 - unk90;
+    next_record->right = next_record->left + width * draw_scale;
+    next_record->top = pen_y;
+    next_record->bottom = next_record->top + line_height;
+    next_record->unk14.scale = draw_scale_y;
+    next_record->color = tint;
+    next_record->unk10 = value;
+    next_record->glyph = digits;
+    pen_x = next_record->right + unk88 + unk90;
+    next_record++;
+    record_count++;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", __dt__13LibDrawWidgetFv);
+/**
+ * @brief Close the current run of records.
+ * @param value Value stored in the run's head record.
+ * @param count Value stored as the run's glyph index.
+ */
+void LibDrawWidget::end_run(void* value, s32 count)
+{
+    run_head->unk10 = value;
+    run_head->glyph = count;
+    run_head->right = pen_x - unk88;
+    run_head->bottom = run_head->top + line_height;
+    run_head->unk14.end = next_record;
+}
+
+/** Record kind of a run's head record. */
+#define LIB_DRAW_RECORD_RUN 0x4010
+
+/** @brief Start a run of records at the pen position. */
+void LibDrawWidget::begin_run()
+{
+    run_head = next_record;
+    run_head->code = LIB_DRAW_RECORD_RUN;
+    run_head->color = tint;
+    run_head->left = pen_x;
+    run_head->top = pen_y;
+    next_record++;
+    record_count++;
+}
+
+/** First character code past the shared font slot; higher codes index the widget's own slot. */
+#define LIB_SHARED_GLYPH_COUNT 300
+
+/**
+ * @brief Lay out one glyph and advance the pen.
+ * @param code Character code.
+ */
+void LibDrawWidget::add_glyph(s32 code)
+{
+    LibManagedResourceSlot* slot;
+    float spacing;
+    float width;
+    float height;
+
+    next_record->glyph = code - 1;
+    slot = resource_slot;
+    spacing = unk88;
+    if (slot->flag)
+    {
+        if (code <= LIB_SHARED_GLYPH_COUNT)
+        {
+            slot = g_field_runtime->resource_slots;
+            if (code == 0xE8 || code == 0xE9)
+            {
+                code = 0xFFFF;
+            }
+        }
+        else
+        {
+            next_record->glyph -= LIB_SHARED_GLYPH_COUNT;
+        }
+
+        if ((code >= 0x94 && code <= 0x9C) || (code >= 0x43 && code < 0x4D))
+        {
+            pen_x -= 1.0f;
+            spacing -= 1.5f;
+        }
+        else if (code >= 0x93 && code < 0xEA && code != 0x9D)
+        {
+            spacing -= 1.0f;
+        }
+    }
+
+    next_record->unk10 = slot;
+    next_record->code = code;
+    next_record->color = tint;
+    next_record->unk14.width = slot->sections[2][next_record->glyph];
+    width = next_record->unk14.width * draw_scale;
+    next_record->left = pen_x;
+    next_record->right = pen_x + width;
+    pen_x += unk90 + (width + spacing * draw_scale);
+    height = slot->unk24 * draw_scale_y;
+    next_record->top = pen_y;
+    next_record->bottom = pen_y + height;
+    line_height = height;
+    if (height < min_height)
+    {
+        min_height = height;
+    }
+
+    if (height > max_height)
+    {
+        max_height = height;
+    }
+
+    next_record++;
+    record_count++;
+}
+
+/** Starting smallest glyph height, above any real glyph. */
+#define LIB_LAYOUT_HEIGHT_MAX 9999.0f
+
+/**
+ * @brief Start laying out records at the left edge of a line.
+ * @param records First record to fill.
+ * @param y Vertical pen position; zero also resets the measured extent.
+ */
+void LibDrawWidget::begin_layout(LibDrawRecord* records, float y)
+{
+    min_height = LIB_LAYOUT_HEIGHT_MAX;
+    max_height = 0.0f;
+    line_height = 0.0f;
+    pen_x = 0.0f;
+    pen_y = y;
+    run_head = 0;
+    next_record = records;
+    record_count = 0;
+    if (y == 0.0f)
+    {
+        extent.unk00 = LIB_LAYOUT_HEIGHT_MAX;
+        extent.height = 0.0f;
+        extent.width = 0.0f;
+        extent.unk04 = 0.0f;
+    }
+}
+
+/** Number of colours in the text palette. */
+#define LIB_TEXT_PALETTE_SIZE 11
+
+/** Text palette colours. */
+extern u32 D_4ED200[LIB_TEXT_PALETTE_SIZE];
+
+/**
+ * @brief Look up one of the eleven text palette colours.
+ * @param index Palette index; larger values select the last colour.
+ * @return Packed colour.
+ */
+u32 LibDrawWidget::get_palette_color(u8 index)
+{
+    if (index > LIB_TEXT_PALETTE_SIZE - 1)
+    {
+        index = LIB_TEXT_PALETTE_SIZE - 1;
+    }
+
+    return D_4ED200[index];
+}
+
+/** Size used for a display rectangle dimension given as zero. */
+#define LIB_DRAW_WIDGET_DEFAULT_EXTENT 1024.0f
+
+/**
+ * @brief Set the display rectangle; a zero width or height selects 1024.
+ * @param x Left edge.
+ * @param y Top edge.
+ * @param width Width.
+ * @param height Height.
+ */
+void LibDrawWidget::set_rectangle(float x, float y, float width, float height)
+{
+    if (width == 0.0f)
+    {
+        width = LIB_DRAW_WIDGET_DEFAULT_EXTENT;
+    }
+
+    if (height == 0.0f)
+    {
+        height = LIB_DRAW_WIDGET_DEFAULT_EXTENT;
+    }
+
+    unk18.unk00 = x;
+    unk18.unk04 = y;
+    unk18.unk08 = width;
+    unk18.unk0c = height;
+}
+
+/** @brief Hand the drawing storage to the resident release queue. */
+void LibDrawWidget::release_storage()
+{
+    if (allocation != 0)
+    {
+        resident_queue_allocation_release(g_resident_release_queues, allocation);
+        allocation = 0;
+    }
+}
+
+/**
+ * @brief Size and allocate the drawing storage.
+ * @param first First entry count.
+ * @param capacity Second entry count.
+ * @param second Third entry count.
+ * @param third Fourth entry count.
+ * @return One on success, or zero when nothing could be allocated.
+ */
+s32 LibDrawWidget::allocate_storage(s32 first, s32 capacity, s32 second, s32 third)
+{
+    s32 lines;
+
+    unka4 = first;
+    unka8 = capacity;
+    unkac = second;
+    unkb0 = third;
+    if (capacity == 0)
+    {
+        lines = 0;
+    }
+    else
+    {
+        lines = (capacity - 1) / g_field_runtime->unk550 + 1;
+    }
+
+    unk48 = capacity * 128 + 160 + lines * 64;
+    unk4c = (unkf8 ? 368 : 96) * (first + capacity);
+    unk50 = second == 0 ? 0 : unkac * 16 + 48 + unkb0 * 80;
+    allocation = new (0) u8[unk48 + unk4c + unk50 + 256];
+    if (allocation == 0)
+    {
+        return 0;
+    }
+
+    u8* buffer = static_cast<u8*>(allocation) + DRAWING_STORAGE_PREFIX;
+    aligned = reinterpret_cast<void*>((reinterpret_cast<u32>(buffer) + DRAWING_STORAGE_ALIGNMENT - 1) & ~(DRAWING_STORAGE_ALIGNMENT - 1u));
+    dma_address = reinterpret_cast<u32>(aligned) | DRAWING_STORAGE_DMA_ADDRESS_TAG;
+    FlushCache(0);
+    return 1;
+}
+
+/** @brief Clear the storage and restore the default scale, colours and alignment. */
+void LibDrawWidget::reset_drawing_state()
+{
+    allocation = 0;
+    unk7c = 0;
+    unk78 = 0;
+    draw_scale_y = 1.0f;
+    draw_scale = 1.0f;
+    unk88 = 0.0f;
+    unk8c = 2.0f;
+    unk90 = 0.0f;
+    tint = 0x808080;
+    draw_color = 0x020202;
+    horizontal_align = 0;
+    vertical_align = 0;
+}
+
+/** Lowest address of drawing storage the widget owns; smaller values aren't heap allocations. */
+#define LIB_DRAW_WIDGET_HEAP_ADDRESS_MIN 0x10000
+
+/** @brief Free the drawing storage, then destroy the widget. */
+LibDrawWidget::~LibDrawWidget()
+{
+    if (allocation != 0)
+    {
+        if (reinterpret_cast<u32>(allocation) >= LIB_DRAW_WIDGET_HEAP_ADDRESS_MIN)
+        {
+            delete[] static_cast<u8*>(allocation);
+        }
+
+        allocation = 0;
+    }
+}
 
 /** @brief Initialize drawing storage, bounds, scale, colors, and display flags. */
 LibDrawWidget::LibDrawWidget()
 {
-    unkf4 = 0.0f;
-    unkf0 = 0.0f;
-    unkec = 0.0f;
-    unke8 = 0.0f;
+    extent.height = 0.0f;
+    extent.width = 0.0f;
+    extent.unk04 = 0.0f;
+    extent.unk00 = 0.0f;
     unk38 = 10;
     unkf8 = 0;
     unkf9 = 1;
@@ -499,8 +943,6 @@ typedef struct LibNumericResourceState
     u32 value;
 } LibNumericResourceState;
 
-extern "C" void func_00464870(void* object, float x, float y, float width, float height);
-extern "C" s32 func_00464900(void* object, s32 first, s32 capacity, s32 second, s32 third);
 
 /**
  * @brief Initialize the numeric widget rectangle, resource slot, and displayed value.
@@ -518,9 +960,9 @@ extern "C" s32 lib_numeric_widget_init_rectangle(LibObject174F20* object, u32 va
 {
     LibNumericResourceState* state = (LibNumericResourceState*)object;
     state->flag = flag;
-    func_00464870(object, x, y, width, height);
-    state->source = &((LibNumericResourceOwner*)D_001B657C)->slots[slot];
-    if (!func_00464900(object, 0, 16, 0, 0))
+    object->set_rectangle(x, y, width, height);
+    state->source = &((LibNumericResourceOwner*)g_field_runtime)->slots[slot];
+    if (!object->allocate_storage(0, 16, 0, 0))
     {
         return 0;
     }
@@ -544,25 +986,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004650B0);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465100);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465340);
-
-/** Resource header prefix containing section offsets, counts, and total size. */
-struct LibResourceHeader {
-    u8 unk00[0x10];
-    s32 offsets[4];
-    s32 unk20, unk24, unk28, unk2c, unk30, unk34, unk38, unk3c;
-    s32 size;
-};
-
-/** One 0x50-byte resource slot in the runtime table. */
-struct LibManagedResourceSlot {
-    void* allocation;
-    LibResourceHeader* data;
-    u8* sections[4];
-    s32 unk18, unk1c, unk20, unk24, unk28, unk2c, unk30;
-    s32 loaded, unit_count, loaded_units, start, end, unk48;
-    u16 identifier;
-    u8 flag, active;
-};
 
 typedef struct LibResourceSlotOwner
 {
@@ -776,8 +1199,8 @@ void ItemCreationClass185050::set_move_target(float x, float y, float duration)
     target.x = x;
     target.y = y;
     move_frames = 60.0f * duration;
-    unk34 = 0;
-    unk35 = 0;
+    speed_ready = 0;
+    arrived = 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E70);
@@ -800,8 +1223,8 @@ s32 ItemCreationClass185050::init_position(float x, float y)
     position.x = x;
     position.y = y;
     alpha = 128.0f;
-    unk34 = 0;
-    unk35 = 1;
+    speed_ready = 0;
+    arrived = 1;
     return 1;
 }
 
@@ -847,7 +1270,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673C0);
  */
 void LibSelectionCursor::on_packet_complete(u32 value)
 {
-    func_004D00B0(this);
+    lib_finish_packet(this);
 }
 
 struct N54Owner64_0045AD10 { u8 pad00[0x64]; u8 active; };
@@ -904,7 +1327,31 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004679B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004679D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467AD0);
+/**
+ * @brief Configure the drawing rectangle and string.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Drawing width.
+ * @param height Drawing height.
+ * @param value String to draw.
+ * @param flag Drawing flag.
+ * @return One on success, or zero when the drawing storage couldn't be set up.
+ */
+s32 LibStringLabel::init_text_rectangle(float x, float y, float width, float height, const char* value, u8 flag)
+{
+    unkf8 = flag;
+    set_rectangle(x, y, width, height);
+    resource_slot = g_field_runtime->resource_slots;
+
+    if (!allocate_storage(32, 0, 0, 0))
+    {
+        return 0;
+    }
+
+    text = value;
+    unk39 = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467B50);
 
@@ -956,10 +1403,10 @@ void func_0046A3B0(void* receiver)
     *(volatile u32*)0x10009000 = 0x105;
 }
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_0046A3F0(void* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(static_cast<LibTransformOwner*>(object));
 }
 
 /** Queue the DMA submission embedded at offset 0x5a0 when present. */

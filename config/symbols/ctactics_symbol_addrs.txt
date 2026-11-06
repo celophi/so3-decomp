@@ -255,7 +255,7 @@ __ct__17TacticsControllerFv = 0x00350F00; // type:func
 
 
 __vt__14LibStringLabel = 0x00175140; // size:0x24 absolute:True allow_duplicated:True
-func_00467AD0__14LibStringLabelFffffPCcUc = 0x00467AD0; // type:func absolute:True allow_duplicated:True
+init_text_rectangle__14LibStringLabelFffffPCcUc = 0x00467AD0; // type:func absolute:True allow_duplicated:True
 func_00467AD0 = 0x00467AD0; // type:func absolute:True allow_duplicated:True
 
 resident_exchange_allocation_heap = 0x00100C80; // type:func absolute:True
@@ -360,3 +360,13 @@ field_get_aligned_allocation = 0x002D3D80; // type:func absolute:True allow_dupl
 field_get_builtin_resource_data = 0x002D3EB0; // type:func absolute:True allow_duplicated:True
 memcpy_guess = 0x0013A4C0; // type:func absolute:True
 memset_guess = 0x0013A678; // type:func absolute:True
+g_display = 0x001B6650; // absolute:True
+g_renderer = 0x001B661C; // absolute:True
+g_screen_text = 0x001B6618; // absolute:True
+g_texture_cache = 0x001B663C; // absolute:True
+g_packet_queue = 0x001B65DC; // absolute:True
+g_vram_allocator = 0x001B65E0; // absolute:True
+g_inverse_frame_ticks = 0x001B668C; // absolute:True
+g_update_list = 0x001B6614; // absolute:True
+g_field_runtime = 0x001B657C; // absolute:True
+g_microcode_loader = 0x001B6600; // absolute:True

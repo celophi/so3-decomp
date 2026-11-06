@@ -3,54 +3,12 @@
 
 #include "types.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/tracks.h"
 
 #ifdef __cplusplus
 struct FieldFloatSpan1C;
 class LibAnimation;
 class LibAnimationTarget;
-/** 32-byte key and aligned vector entry. Its constructor leaves the fields uninitialized. */
-struct LibVectorChannelEntry20
-{
-    /** @brief Leave the entry uninitialized. */
-    LibVectorChannelEntry20();
-
-    float unk00;
-    LibVector4 unk10;
-};
-
-/** Partial vector-channel base with vtable D_177B50 and an owned or borrowed entry array. */
-class LibClass177B50 : public LibClass173180
-{
-public:
-    LibVectorChannelEntry20* unk04;
-    LibVectorChannelEntry20 unk10;
-    s32 unk30;
-    float unk34;
-    s16 unk38;
-    s16 unk3a;
-    s16 unk3c;
-    s16 unk3e;
-    s16 unk40;
-    u8 unk42_0_3 : 4;
-    u8 unk42_4_7 : 4;
-    u8 unk43_0 : 1;
-    u8 unk43_1 : 1;
-    u8 unk43_2 : 1;
-    u8 unk43_3_7 : 5;
-};
-
-/** Partial vector-channel specialization with vtable D_177AC0 and no additional storage before offset 0x50. */
-class LibClass177AC0 : public LibClass177B50
-{
-};
-
-/** Partial 192-byte vector channel with vtable D_177EE0, also used by the Field channel pool. */
-class LibClass177EE0 : public LibClass177AC0
-{
-public:
-    u8 unk50[0x70];
-};
-
 extern "C" {
 
 void func_004AD380(void* object);
@@ -61,16 +19,10 @@ void func_004B2580(void* object);
 void func_004ACFF0(void* object);
 /** Reset receiver state at 0xB0 and 0xB4, then run the shared reset helper. */
 void func_004B1800(void* object);
-void func_004B04C0(void* object);
-void func_004AC770(void* object);
 
 /** Forward two float values, passing the second through a stack address. */
 void func_004B24A0(void* object, float value1, float value2);
 void func_004B2500(void* object, float value1, float value2);
-void func_004B3A70(void* object, float value1, float value2);
-void func_004B2EB0(void* object, const float* value2, float value1);
-void func_004B3120(void* object, const float* value2, float value1);
-void func_004B3C30(void* object, const float* value2, float value1);
 
 /** Copy the float at receiver offset 0x54 to the output. */
 void func_004AD2B0(const void* object, float* value);
@@ -99,20 +51,34 @@ void func_004B2720(const void* object, float* output);
 float func_4B16C0(FieldFloatSpan1C* span, float key);
 
 /**
- * @brief Update the animation state for a requested frame.
+ * @brief Apply every eligible animation entry at a frame.
  * @param object Animation object.
- * @param frame Requested frame.
- * @param flag Update flag.
- * @return Processing result.
+ * @param frame Requested frame; a negative frame leaves the animation marked as restarting.
+ * @param mode Nonzero to stop at the first entry that returns a nonzero status.
+ * @return Status of the last applied entry, or 0 when the animation has no entries.
  */
-s32 func_004B4550(LibAnimation* object, float frame, s32 flag);
+s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode);
 
 /**
- * @brief Evaluate the animation into its vector state.
+ * @brief Apply one animation entry.
  * @param object Animation object.
- * @param target Vector state.
+ * @param entry Entry to apply.
+ * @param frame Frame to apply it at.
+ * @param mode Mode passed to lib_animation_apply_frame.
+ * @param status Status so far.
+ * @return The new status.
  */
-void func_004B3DE0(LibAnimation* object, LibAnimationTarget* target);
+s32 func_004B4840(LibAnimation* object, LibAnimationEntry14* entry, float frame, s32 mode, s32 status);
+
+/**
+ * @brief Read a target's translation, rotation and scale from its animation channels.
+ *
+ * A whole-vector channel wins; otherwise up to three per-axis channels fill the components in order, and
+ * per-axis rotation angles are converted to a quaternion.
+ * @param object Animation object.
+ * @param target Bound target to update.
+ */
+void lib_animation_read_channel_pose(LibAnimation* object, LibAnimationTarget* target);
 
 /**
  * @brief Process the animation at a requested frame.
@@ -244,18 +210,11 @@ s32 func_004B3D70(void* object);
 
 void func_004ABAB0(void* object);
 void func_004ABD30(void* object);
-void func_004AC430(void* object);
 void func_004ACBD0(void* object);
 void func_004B0660(void* object);
 void func_004B0DC0(void* object);
 void func_004B2D90(void* object);
-void func_004B3D40(void* object);
-void func_004B3D50(void* object);
 
-/** Return the first pointer argument unchanged. */
-void* func_004ACD50(void* value);
-/** Return the first pointer argument unchanged. */
-void* func_004B11B0(void* value);
 
 /** Clear four consecutive words at the start of the receiver. */
 void func_004AC990(void* object);

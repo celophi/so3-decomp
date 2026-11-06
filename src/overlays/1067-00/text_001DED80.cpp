@@ -754,7 +754,7 @@ float FieldClass14FEB0::func_001E0380(float key)
         float first_key = entries[0].unk00;
         result = entries[0].unk04 + (entries[0].unk0c / (entries[1].unk00 - first_key)) * (key - first_key);
     }
-    unk50 = D_001B668C * (result - unk4c);
+    unk50 = g_inverse_frame_ticks * (result - unk4c);
     unk4c = result;
     return result;
 }

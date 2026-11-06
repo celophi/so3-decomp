@@ -1,31 +1,22 @@
 #include "include_asm.h"
-#include "overlays/boot/text_001F6010.h"
-#include "overlays/boot/text_001E0900.h"
-#include "overlays/boot/text_001FB220.h"
-#include "overlays/boot/text_001FF9D0.h"
+#include "overlays/boot/title_menu.h"
+#include "overlays/boot/installer.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/game_launcher.h"
+#include "overlays/boot/new_game_settings.h"
+#include "overlays/boot/program.h"
+#include "overlays/boot/trophy_viewer.h"
+#include "overlays/boot/music_player.h"
 #include "overlays/boot/resident.h"
 #include "overlays/lib/render_buffer.h"
+#include "overlays/lib/text_004095C0.h"
 
-extern "C" {
-extern void* D_001B663C;
-u32 func_4D93A0(void* heap, BootVramRequest* request, u32 tag, s32 count, s32 unk4, s32 unk5, s32 unk6, s32 unk7);
-
-extern void func_4D00B0(void* object);
-void func_4D6430(BootModel* model, LibDrawBuffer* buffer);
-extern LibDisplayManager* D_001B6630;
-
+extern LibDisplayManager* g_scene_display_manager;
 extern const char g_new_game_node_name[];
 extern const char g_continue_node_name[];
 extern const char g_battle_collection_node_name[];
 extern const char g_install_node_name[];
 extern const char g_title_camera_node_name[];
-void func_455150(LibDrawBuffer* buffer, BootDrawSettings* settings);
-void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
-void lib_scene_load_data(BootScene* scene, ResidentResourceHeader* source);
-void func_40B3A0(u8* data);
-void lib_scene_release_entries(BootScene* scene);
-
-}
 
 /** Title screen stages, including the hand-off for each menu choice. */
 enum BootTitleStep
@@ -42,27 +33,6 @@ enum BootTitleStep
 
 /** Idle time before the title screen replays the opening movie. */
 #define BOOT_TITLE_IDLE_MOVIE_SECONDS 45.0f
-
-/** Steps between leaving the title and handing the next program to boot. */
-enum BootLaunchStep
-{
-    BOOT_LAUNCH_PREPARE = 0,
-    BOOT_LAUNCH_WAIT_TO_PLAY_MOVIE = 1,
-    BOOT_LAUNCH_PLAY_MOVIE = 2,
-    BOOT_LAUNCH_STOP_MOVIE = 3,
-    BOOT_LAUNCH_RELEASE_MOVIE_HEAP = 4,
-    BOOT_LAUNCH_LOAD_PROGRAM = 5,
-    BOOT_LAUNCH_HAND_OFF = 6
-};
-
-enum BootLaunchConstants
-{
-    BOOT_LAUNCH_MOVIE_ID = 13,
-    BOOT_LAUNCH_PROGRAM_RESOURCE = 0x42B,
-    BOOT_LAUNCH_WORK_BUFFER_SIZE = 0x12000,
-    BOOT_LAUNCH_MOVIE_START_DELAY_FRAMES = 60,
-    BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES = 40
-};
 
 /** Progress bar fill is computed in thousandths of its inner width. */
 enum BootProgressBarConstants
@@ -239,7 +209,7 @@ void BootTitleMenu::animate_items(u8 snap)
  */
 void BootTitleMenu::get_cursor_position(float* x, float* y)
 {
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     BootClass170F30* node = find_menu_item(this, selected);
 
     if (node == 0)
@@ -254,8 +224,8 @@ void BootTitleMenu::get_cursor_position(float* x, float* y)
         node->update_transform_matrix();
     }
 
-    float screen_x = node->unkD0.vectors[0].w;
-    float screen_y = node->unkD0.vectors[1].w;
+    float screen_x = node->base_transform.m[0][3];
+    float screen_y = node->base_transform.m[1][3];
 
     if (settings->widescreen)
     {
@@ -352,9 +322,9 @@ void BootTitleMenu::update_item_availability()
 /** @brief Run the menu state machine. */
 void BootTitleMenu::update()
 {
-    BootSystemSettings* settings;
+    LibSystemSettings* settings;
     BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     switch (step)
     {
@@ -373,14 +343,14 @@ void BootTitleMenu::update()
         check_main_code();
         scene = new (0) BootScene;
         lib_scene_load_data(scene, (ResidentResourceHeader*)scene_data);
-        func_474010(scene, g_boot_program.display, D_001B6614, D_001B6624, D_001B6628, D_001B661C, 1);
+        lib_scene_build_objects(scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
         delete[] scene_data;
         scene_data = 0;
-        func_40B3A0(game_data);
+        lib_reset_game_state(game_data);
         delete[] game_data;
         game_data = 0;
         camera = lib_find_camera_entry(scene, g_title_camera_node_name);
-        D_001B6628->current_display = static_cast<LibListObject*>(camera);
+        g_display_manager->current_display = static_cast<LibListObject*>(camera);
 
         if (initial_item != BOOT_TITLE_ITEM_AUTO)
         {
@@ -396,13 +366,13 @@ void BootTitleMenu::update()
         }
 
         animate_items(1);
-        D_001B661C->prepend_node(new (0) BootClass179150, -1);
+        g_renderer->prepend_node(new (0) LibColorFade, -1);
         float x;
         float y;
         get_cursor_position(&x, &y);
         cursor = new (0) LibSelectionCursor;
         cursor->init(1, 0, 0, x, y, 0.0f);
-        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         step++;
         break;
     }
@@ -420,7 +390,7 @@ void BootTitleMenu::update()
     {
         check_main_code();
 
-        if (input->repeated == BOOT_BUTTON_LEFT && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_LEFT && cursor->arrived)
         {
             selected--;
 
@@ -434,10 +404,10 @@ void BootTitleMenu::update()
             get_cursor_position(&x, &y);
             cursor->set_move_target(x, y, 0.05f);
             pulse_up = 0;
-            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
         }
 
-        if (input->repeated == BOOT_BUTTON_RIGHT && cursor->unk35)
+        if (input->repeated == BOOT_BUTTON_RIGHT && cursor->arrived)
         {
             selected++;
 
@@ -450,7 +420,7 @@ void BootTitleMenu::update()
             float y;
             get_cursor_position(&x, &y);
             cursor->set_move_target(x, y, 0.05f);
-            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
         }
 
         idle_time += g_frame_seconds;
@@ -488,11 +458,11 @@ void BootTitleMenu::update()
             {
                 queue_fade();
                 resident_sound_stop_music(g_sound, 0x1E, -1);
-                resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             }
             else
             {
-                resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_INVALID, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             }
         }
         else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && resident_archive_has_resource(g_resource_archive, 1) == 1)
@@ -513,7 +483,7 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        D_001B6614->append_node(new (0) BootNewGameSettings, -1);
+        g_update_list->append_node(new (0) BootNewGameSettings, -1);
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -527,7 +497,7 @@ void BootTitleMenu::update()
         cursor->destroy();
         cursor = 0;
         resident_sound_stop_music(g_sound, 0, -1);
-        D_001B6614->append_node(new (0) BootOpeningMovie, -1);
+        g_update_list->append_node(new (0) BootOpeningMovie, -1);
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -540,7 +510,7 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        D_001B6614->append_node(new (0) BootGameLauncher, -1);
+        g_update_list->append_node(new (0) BootGameLauncher, -1);
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -553,7 +523,7 @@ void BootTitleMenu::update()
         scene = 0;
         cursor->destroy();
         cursor = 0;
-        D_001B6614->append_node(new (0) BootInstaller, -1);
+        g_update_list->append_node(new (0) BootInstaller, -1);
         lib_object_detach_owner(this);
         destroy();
         break;
@@ -568,7 +538,7 @@ void BootTitleMenu::update()
         cursor->destroy();
         cursor = 0;
         u8* block = new (0) u8[resident_rand()];
-        D_001B6614->append_node(new (0) BootBattleTrophyViewer, -1);
+        g_update_list->append_node(new (0) BootBattleTrophyViewer, -1);
         delete block;
         lib_object_detach_owner(this);
         destroy();
@@ -642,16 +612,16 @@ void BootProgressBar::destroy()
  * @brief Append one vertex to a draw buffer's streams.
  * @param buffer Draw buffer.
  * @param position Vertex position.
- * @param unk Value for the second vector stream.
+ * @param normal Vertex normal.
  * @param texcoord Packed texture coordinates.
  * @param color Vertex color.
  */
-static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position, const FieldVec4A& unk, u32 texcoord, u32 color)
+static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position, const FieldVec4A& normal, u32 texcoord, u32 color)
 {
     *buffer->positions = position;
     buffer->positions++;
-    *buffer->unk4c = unk;
-    buffer->unk4c++;
+    *buffer->normals = normal;
+    buffer->normals++;
     *buffer->texcoords++ = texcoord;
     *buffer->colors++ = color;
     buffer->vertex_count++;
@@ -665,13 +635,13 @@ static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position,
  */
 void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
 {
-    BootDrawSettings settings;
+    LibDrawSettings settings;
     s32 fill;
 
     lib_draw_buffer_begin(bar->draw_buffer, 0, 1);
     init_draw_settings(&settings);
     settings.prim = 0xC;
-    settings.unk02 = 0;
+    settings.blend_mode = 0;
     settings.unk05 = 1;
     settings.unk06 = 0;
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
@@ -690,7 +660,7 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
         fill = done * BOOT_PROGRESS_BAR_SCALE / total;
     }
 
-    func_455150(bar->draw_buffer, &settings);
+    lib_draw_buffer_apply_settings(bar->draw_buffer, &settings);
     s32 width = bar->width;
     s32 height = bar->height;
     u32 color = bar->color;
@@ -733,11 +703,11 @@ void progress_bar_draw(BootProgressBar* bar, s32 done, s32 total)
  * @brief Initialize the settings record to its default values.
  * @param settings Settings record to initialize.
  */
-void init_draw_settings(BootDrawSettings* settings)
+void init_draw_settings(LibDrawSettings* settings)
 {
     settings->prim = 0xC;
     settings->texture_index = 0;
-    settings->unk02 = 0;
+    settings->blend_mode = 0;
     settings->unk04 = 0;
     settings->unk05 = 0;
     settings->unk06 = 1;
@@ -774,17 +744,17 @@ void progress_bar_reset(BootProgressBar* bar, s32 width, s32 height, u32 color, 
     }
 
     bar->draw_buffer = new (0) LibDrawBuffer;
-    bar->model = new (0) BootModel;
+    bar->model = new (0) LibModel;
     bar->draw_buffer->allocate_storage(2, 0x600, 1, 8);
     bar->width = width;
     bar->height = height;
     bar->color = color;
     bar->mode = mode;
     progress_bar_draw(bar, 0, 1);
-    func_4D6430(bar->model, bar->draw_buffer);
-    bar->model->unk80 = D_001B6630;
+    bar->model->attach_draw_buffer(bar->draw_buffer);
+    bar->model->display_manager = g_scene_display_manager;
     bar->model->draw_flags |= LIB_DRAW_FLAG_0400;
-    D_001B661C->append_node(bar->model, -1);
+    g_renderer->append_node(bar->model, -1);
 }
 
 /** @brief Destroy the bar's model, then the bar. */
@@ -826,13 +796,13 @@ void BootScreenFade::update()
 }
 
 /**
- * @brief Mark the fade inactive and run the Lib release helper.
+ * @brief Mark the fade inactive and finish its packet.
  * @param value Unused.
  */
 void BootScreenFade::on_packet_complete(u32 value)
 {
     dma_pending = 0;
-    func_4D00B0(this);
+    lib_finish_packet(this);
 }
 
 /** @brief Mark the fade active and submit its packet. */
@@ -856,18 +826,16 @@ void BootScreenFade::build_packet(const void* matrix, void* context)
         return;
     }
 
-    BootPacketBuffer* buffer_packet = packet;
-    buffer_packet->unk08 = buffer_packet->unk00 + 0x40;
-    buffer_packet->unk0c = buffer_packet->unk08;
+    resident_packet_rewind(packet);
     BootFadeStripPacket* strip = reinterpret_cast<BootFadeStripPacket*>(resident_packet_reserve(packet, 0));
-    BootVramRequest request;
+    LibTextureRequest request;
     request.width = BOOT_FADE_STRIP_WIDTH;
     request.height = BOOT_FADE_STRIP_HEIGHT;
     request.size = BOOT_FADE_STRIP_VRAM_SIZE;
     request.psm = 1;
     request.width_log2 = 6;
     request.height_log2 = 10;
-    u32 address = func_4D93A0(D_001B663C, &request, 0x54744664, 1, 0, 0, 1, 0);
+    u32 address = g_texture_cache->find_texture(&request, 0x54744664, 1, 0, 0, 1, 0);
 
     if (address != 0)
     {
@@ -944,7 +912,7 @@ BootScreenFade::~BootScreenFade()
 }
 
 /** @brief Release the packet storage unless it is external. */
-BootPacketBuffer::~BootPacketBuffer()
+LibPacketBuffer::~LibPacketBuffer()
 {
     if (!unk14)
     {
@@ -973,15 +941,15 @@ BootScreenFade::BootScreenFade(LibCameraContext* display)
         images[i] = new (0) LibImageCapture;
         images[i]->unk65 = 1;
         lib_image_capture_store(images[i], buffer + height * (i * BOOT_FADE_STRIP_WIDTH) * 3 / 16 * 16,
-                                display->buffers[0].environment.frame.base_pointer << 5, width / BOOT_FADE_STRIP_WIDTH,
-                                GS_PSMCT24, i * BOOT_FADE_STRIP_WIDTH, 0, BOOT_FADE_STRIP_WIDTH, height);
-        D_001B661C->append_node(images[i], -1);
+                                display->buffers[0].environment.context1.frame.base_pointer << 5, width / BOOT_FADE_STRIP_WIDTH, GS_PSMCT24,
+                                i * BOOT_FADE_STRIP_WIDTH, 0, BOOT_FADE_STRIP_WIDTH, height);
+        g_renderer->append_node(images[i], -1);
     }
 
     set_type_id(0x4000);
     unk65 = 1;
     set_draw_flags(LIB_DRAW_FLAG_0400);
-    packet = new (0) BootPacketBuffer(0x400);
+    packet = new (0) LibPacketBuffer(0x400);
     alpha = 1.0f;
     fade_speed = 1.0f;
     armed = 0;
@@ -1020,16 +988,16 @@ void BootImage::destroy()
 void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width, s32 height, s32 palette_x, s32 palette_y, s32 palette_width,
                                       s32 palette_height, u32 color, s32 depth)
 {
-    BootDrawSettings settings;
+    LibDrawSettings settings;
 
     lib_draw_buffer_begin(image->draw_buffer, 1, 1);
     init_draw_settings(&settings);
     settings.unk06 = 0;
-    settings.unk02 = 2;
+    settings.blend_mode = 2;
     settings.prim = 0x5C;
     settings.unk05 = 1;
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
-    func_455150(image->draw_buffer, &settings);
+    lib_draw_buffer_apply_settings(image->draw_buffer, &settings);
     lib_draw_buffer_begin_primitive(image->draw_buffer, 4);
 
     if (image->centered)
@@ -1064,7 +1032,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
     {
         settings.unk05 = 0;
         settings.texture_index = 1;
-        func_455150(image->draw_buffer, &settings);
+        lib_draw_buffer_apply_settings(image->draw_buffer, &settings);
         lib_draw_buffer_begin_primitive(image->draw_buffer, 4);
 
         if (image->centered)
@@ -1095,11 +1063,11 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
         }
     }
 
-    func_455BD0(image->draw_buffer, image->unk2c, 500.0f, 0);
-    func_4D6430(image->model, image->draw_buffer);
-    image->model->unk80 = D_001B6630;
+    func_455BD0(image->draw_buffer, image->end_mode, 500.0f, 0);
+    image->model->attach_draw_buffer(image->draw_buffer);
+    image->model->display_manager = g_scene_display_manager;
     image->model->draw_flags |= LIB_DRAW_FLAG_0400;
-    D_001B661C->append_node(image->model, -1);
+    g_renderer->append_node(image->model, -1);
 }
 
 /**
@@ -1113,15 +1081,15 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
  */
 void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s32 depth)
 {
-    BootDrawSettings settings;
+    LibDrawSettings settings;
 
     lib_draw_buffer_begin(draw_buffer, 0, 1);
     init_draw_settings(&settings);
     settings.unk06 = 0;
-    settings.unk02 = 2;
+    settings.blend_mode = 2;
     settings.prim = 0x5C;
     settings.unk05 = 1;
-    func_455150(draw_buffer, &settings);
+    lib_draw_buffer_apply_settings(draw_buffer, &settings);
     lib_draw_buffer_begin_primitive(draw_buffer, 4);
     FieldVec4A normal(0.0f, 0.0f, -1.0f, 1.0f);
 
@@ -1149,11 +1117,11 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
                    (((x + width) << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
     }
 
-    func_455BD0(draw_buffer, unk2c, 500.0f, 0);
-    func_4D6430(model, draw_buffer);
-    model->unk80 = D_001B6630;
+    func_455BD0(draw_buffer, end_mode, 500.0f, 0);
+    model->attach_draw_buffer(draw_buffer);
+    model->display_manager = g_scene_display_manager;
     model->draw_flags |= LIB_DRAW_FLAG_0400;
-    D_001B661C->append_node(model, -1);
+    g_renderer->append_node(model, -1);
 }
 
 /**
@@ -1174,7 +1142,7 @@ void BootImage::set_texture(const LibImageResource* texture, const LibImageResou
     }
 
     draw_buffer = new (0) LibDrawBuffer;
-    model = new (0) BootModel;
+    model = new (0) LibModel;
     draw_buffer->allocate_storage(1, 0x600, 2, 8);
     lib_draw_buffer_add_texture(draw_buffer, texture);
 
@@ -1212,217 +1180,11 @@ BootImage::BootImage()
     model = 0;
     centered = 0;
     has_palette = 0;
-    unk2c = 0;
+    end_mode = 0;
 }
 
 /** @brief Draw in bucket 10 instead of the main list. */
 void BootScreenFade::set_default_draw_bucket()
 {
     draw_bucket = 10;
-}
-
-/** @brief Run the launch steps: seed, movie, load, hand over. */
-void BootGameLauncher::update()
-{
-    BootSystemSettings* settings;
-    BootInput* input = g_boot_program.input;
-    settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
-    u32 previous;
-
-    switch (step)
-    {
-    case BOOT_LAUNCH_PREPARE:
-        previous = resident_next_random_word();
-
-        while (previous == resident_next_random_word())
-        {
-        }
-
-        previous = resident_rand();
-
-        while (previous == resident_rand())
-        {
-        }
-
-        previous = resident_random_below(BOOT_RANDOM_WARMUP_RANGE);
-
-        while (previous == resident_random_below(BOOT_RANDOM_WARMUP_RANGE))
-        {
-        }
-
-        previous = resident_random_range(0, BOOT_RANDOM_WARMUP_RANGE);
-
-        while (previous == resident_random_range(0, BOOT_RANDOM_WARMUP_RANGE))
-        {
-        }
-
-        if ((u8)settings->continue_selected == 0)
-        {
-            BootSealedRecord* record = &settings->sealed_record;
-            memset_guess(record, 0, sizeof(BootSealedRecord));
-            seal_record(record);
-            LibTrophyFlags* bits = &settings->trophy_flags;
-            s32 size = bits->size;
-
-            for (s32 i = 0; i < size; i++)
-            {
-                bits->flag_bytes[i] = 0;
-            }
-
-            bits->trophy_key = resident_next_random_word();
-            func_457520(bits);
-        }
-
-        if ((u8)settings->continue_selected == 0 && settings->sound_output == BOOT_SOUND_DOLBY_PRO_LOGIC_II)
-        {
-            step++;
-            timer = 0;
-        }
-        else
-        {
-            step = BOOT_LAUNCH_LOAD_PROGRAM;
-            timer = 0;
-        }
-
-        break;
-    case BOOT_LAUNCH_WAIT_TO_PLAY_MOVIE:
-        if (++timer > BOOT_LAUNCH_MOVIE_START_DELAY_FRAMES)
-        {
-            if (!resident_archive_has_unit_error(g_resource_archive) && resident_archive_is_unit_ready(g_resource_archive) != 0 && resident_archive_is_busy(g_resource_archive) != 0)
-            {
-                break;
-            }
-
-            movie_heap = new (0) ResidentHeap;
-            movie_heap->alignment = 0x40;
-            resident_heap_create_memory(movie_heap, BOOT_MOVIE_HEAP_SIZE);
-            void* heap = resident_exchange_allocation_heap(movie_heap);
-            player = new (0) LibMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
-            resident_exchange_allocation_heap(heap);
-            player->state->set_scale(1.0f, 1.0f);
-            player->state->set_words(0x800, 0x800, 1);
-
-            if (((BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
-            {
-                player->state->unk80D8 = 1;
-            }
-
-            lib_movie_play(player, BOOT_LAUNCH_MOVIE_ID, 1);
-            step++;
-        }
-        else if (input->held & BOOT_BUTTON_START)
-        {
-            step = BOOT_LAUNCH_LOAD_PROGRAM;
-        }
-
-        break;
-    case BOOT_LAUNCH_PLAY_MOVIE:
-        timer++;
-
-        if ((input->held & BOOT_BUTTON_START) || !player->is_playing)
-        {
-            step++;
-        }
-
-        break;
-    case BOOT_LAUNCH_STOP_MOVIE:
-        lib_movie_stop(player);
-        player->destroy();
-        player = 0;
-        step++;
-        break;
-    case BOOT_LAUNCH_RELEASE_MOVIE_HEAP:
-        delete movie_heap;
-        movie_heap = 0;
-        step++;
-        break;
-    case BOOT_LAUNCH_LOAD_PROGRAM:
-        program = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_LAUNCH_PROGRAM_RESOURCE));
-        resident_queue_resource_request(g_resource_queue, BOOT_LAUNCH_PROGRAM_RESOURCE, program,
-                                        BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
-        step++;
-        break;
-    case BOOT_LAUNCH_HAND_OFF:
-        if (resident_poll_resource_queue(g_resource_queue) != 0 && ++timer > BOOT_LAUNCH_HAND_OFF_DELAY_FRAMES)
-        {
-            lib_object_detach_owner(this);
-            destroy();
-            g_boot_program.next_program = program;
-            return;
-        }
-
-        break;
-    }
-}
-
-/**
- * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.
- * @param record Record to seal; an already sealed record is left alone.
- */
-void seal_record(BootSealedRecord* record)
-{
-    s32 i;
-
-    if (record->sealed == 0)
-    {
-        record->sealed = BOOT_RECORD_SEALED;
-        record->unk00 ^= BOOT_RECORD_XOR_BYTE;
-        record->unk02 ^= BOOT_RECORD_XOR_HALFWORD;
-        record->unk04 ^= BOOT_RECORD_XOR_WORD;
-        record->unk08 ^= BOOT_RECORD_XOR_WORD;
-        record->unk0C ^= BOOT_RECORD_XOR_WORD;
-        record->unk10 ^= BOOT_RECORD_XOR_WORD;
-        record->unk14 ^= BOOT_RECORD_XOR_WORD;
-        record->unk18 ^= BOOT_RECORD_XOR_WORD;
-        record->unk1C ^= BOOT_RECORD_XOR_WORD;
-        record->unk20 ^= BOOT_RECORD_XOR_WORD;
-        record->unk24 ^= BOOT_RECORD_XOR_WORD;
-        record->unk28 ^= BOOT_RECORD_XOR_WORD;
-        record->unk2C ^= BOOT_RECORD_XOR_WORD;
-        record->unk30 ^= BOOT_RECORD_XOR_WORD;
-        record->unk34 ^= BOOT_RECORD_XOR_WORD;
-        record->unk38 ^= BOOT_RECORD_XOR_WORD;
-        record->unk3C ^= BOOT_RECORD_XOR_WORD;
-        record->unk40 ^= BOOT_RECORD_XOR_WORD;
-        record->unk44 ^= BOOT_RECORD_XOR_WORD;
-        record->unk48 ^= BOOT_RECORD_XOR_WORD;
-        record->unk4C ^= BOOT_RECORD_XOR_WORD;
-        record->unk50 ^= BOOT_RECORD_XOR_WORD;
-        record->unk54 ^= BOOT_RECORD_XOR_WORD;
-        record->unk58 ^= BOOT_RECORD_XOR_WORD;
-
-        for (i = 0; i < BOOT_RECORD_ENCODED_TAIL_SIZE; i++)
-        {
-            record->encoded_tail[i] ^= BOOT_RECORD_XOR_BYTE;
-        }
-
-        record->key = resident_next_random_word();
-        record->checksum = lib_compute_checksum(record->key * BOOT_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
-    }
-    else if (record->sealed != BOOT_RECORD_SEALED)
-    {
-        memset_guess(record, 0, sizeof(BootSealedRecord));
-    }
-}
-
-/** @brief Release the player, its heap and the work buffer. */
-BootGameLauncher::~BootGameLauncher()
-{
-    if (player != 0)
-    {
-        player->destroy();
-    }
-
-    delete movie_heap;
-    delete buffer;
-}
-
-/** @brief Clear the state and allocate the 0x12000-byte work buffer. */
-BootGameLauncher::BootGameLauncher()
-{
-    program = 0;
-    step = BOOT_LAUNCH_PREPARE;
-    buffer = (u8*)memalign(0x40, BOOT_LAUNCH_WORK_BUFFER_SIZE);
-    movie_heap = 0;
-    player = 0;
 }

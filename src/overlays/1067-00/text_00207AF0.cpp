@@ -13,6 +13,8 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/1067-00/text_0022DC70.h"
 
+// This overlay only has an untyped view of the Lib entry tables these take.
+
 struct FieldMotionVector81
 {
     u8 unk00[0x10];
@@ -743,8 +745,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020DB
 extern "C" LibTransformOwner* func_0020CA10(FieldClass151620* entry, const char* name)
 {
     memcpy_guess(entry->unk84, name, sizeof(entry->unk84));
-    LibTransformOwner* transform = (LibTransformOwner*)func_00473390(
-        D_001B6430->context->unk08->current_object->unk7c, entry->unk84);
+    LibTransformOwner* transform = (LibTransformOwner*)lib_find_named_entry(static_cast<LibEntryManager*>(D_001B6430->context->unk08->current_object->unk7c), entry->unk84);
     entry->shape.unk04 = transform;
     return transform;
 }
@@ -1114,9 +1115,9 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibAnimatio
             do
             {
                 found = true;
-                if (func_004BDAA0(manager, transform, 0, 0) ||
-                    func_004BDAA0(manager, transform, 1, 0) ||
-                    func_004BDAA0(manager, transform, 2, 0))
+                if (lib_animation_find_channel(manager, transform, 0, 0) ||
+                    lib_animation_find_channel(manager, transform, 1, 0) ||
+                    lib_animation_find_channel(manager, transform, 2, 0))
                 {
                     break;
                 }

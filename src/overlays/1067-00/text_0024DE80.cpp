@@ -20,7 +20,6 @@ struct FieldObject11CValues
     FieldValues24* values;
 };
 
-extern void* D_001B663C;
 extern "C" void func_4D9250(void* target, u32 first, u32 second);
 extern "C" void func_4D00B0(void* object);
 extern "C" void func_44B240(void* object, const void* matrix, void* context);
@@ -100,7 +99,7 @@ extern "C" void func_0024E7C0(FieldOwner24E860* owner)
     }
     if (owner->unk120c >= 0)
     {
-        lib_release_resource_slot(D_001B657C, owner->unk120c);
+        lib_release_resource_slot(g_field_runtime, owner->unk120c);
     }
     owner->unk120c = -1;
     owner->unk1218 = 5;
@@ -128,7 +127,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0024DE80", func_002506
 
 void func_002507B0(FieldObject11CValues* object)
 {
-    func_4D9250(D_001B663C, object->values->first, object->values->second);
+    func_4D9250(g_texture_cache, object->values->first, object->values->second);
     func_4D00B0(object);
 }
 

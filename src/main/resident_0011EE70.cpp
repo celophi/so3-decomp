@@ -39,29 +39,29 @@
 #define SOUND_BANK_SECTOR_SHIFT 11
 
 extern "C" {
-extern const ResidentVector4 D_50CD30;
+extern const ResidentVector4 g_default_bounding_sphere;
 extern u8 D_0014FC78[];
 extern const ResidentSoundBankVariants* D_001B6424;
-extern ResidentDisplayContext* D_001B6650;
+extern ResidentDisplayContext* g_display;
 extern void* D_001B6640;
-extern ResidentObjectList* D_001B6614;
+extern ResidentObjectList* g_update_list;
 extern u8 D_001B65D0;
-extern struct FieldPacketQueue* D_001B65DC;
+extern struct LibPacketQueue* g_packet_queue;
 
-void func_4CE4C0(ResidentVector4* orientation, const ResidentVector4* rotation);
+void lib_quaternion_from_euler(ResidentVector4* orientation, const ResidentVector4* rotation);
 void func_4486A0(void* object);
 void func_4D0260(void* list, void* object);
 void func_4D02E0(void* list, void* object);
-s32 func_4DC4F0(struct FieldPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
+s32 func_4DC4F0(struct LibPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
 bool func_4D7D40(ResidentImageSequenceChannel* channel, ResidentRenderDataRecord* record, bool use_inline);
-void func_4CBD20(ResidentMatrix* output, const ResidentVector4* position, const ResidentVector4* direction, float roll);
+void lib_matrix_look_at(ResidentMatrix* output, const ResidentVector4* position, const ResidentVector4* direction, float roll);
 void func_4CFB20(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
                  float y_offset);
 void func_4CFC50(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
                  float y_offset);
 void func_4D9E70(ResidentClass14FD30Base* object);
 void func_4CCCF0(const ResidentMatrix* source, ResidentVector4* output);
-void func_4CBAC0(ResidentVector4* output, const ResidentMatrix* input);
+void lib_matrix_to_quaternion(ResidentVector4* output, const ResidentMatrix* input);
 float func_4E28D0(ResidentClass14FD30Base* camera);
 }
 
@@ -350,8 +350,8 @@ void func_0011F1D0(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, s32 z
         rectangle->tag.fields.register5 = GIF_REGISTER_XYZ2;
         rectangle->prim = (packet->unk15 ? GS_PRIM_ALPHA_BLEND : 0) | GS_PRIM_TRIANGLE_STRIP;
         rectangle->rgba = color;
-        offset_x = GS_COORDINATE_CENTRE - D_001B6650->viewport_width / 2;
-        offset_y = GS_COORDINATE_CENTRE - D_001B6650->viewport_height / 2;
+        offset_x = GS_COORDINATE_CENTRE - g_display->viewport_width / 2;
+        offset_y = GS_COORDINATE_CENTRE - g_display->viewport_height / 2;
         rectangle->vertices[0] = resident_gs_xyz(x0 + offset_x, y0 + offset_y, z);
         rectangle->vertices[1] = resident_gs_xyz(x1 + offset_x, y0 + offset_y, z);
         rectangle->vertices[2] = resident_gs_xyz(x0 + offset_x, y1 + offset_y, z);
@@ -387,8 +387,8 @@ void resident_packet_add_line(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s3
         line->tag.fields.register3 = GIF_REGISTER_XYZ2;
         line->prim = (packet->unk15 ? GS_PRIM_ALPHA_BLEND : 0) | GS_PRIM_LINE;
         line->rgba = color;
-        offset_x = GS_COORDINATE_CENTRE - D_001B6650->viewport_width / 2;
-        offset_y = GS_COORDINATE_CENTRE - D_001B6650->viewport_height / 2;
+        offset_x = GS_COORDINATE_CENTRE - g_display->viewport_width / 2;
+        offset_y = GS_COORDINATE_CENTRE - g_display->viewport_height / 2;
         line->vertices[0] = resident_gs_xyz(x0 + offset_x, y0 + offset_y, z);
         line->vertices[1] = resident_gs_xyz(x1 + offset_x, y1 + offset_y, z);
         resident_packet_set_cursor(packet, (u8*)(line + 1));
@@ -404,7 +404,7 @@ void resident_packet_queue_pending(ResidentPacket* packet, void* completion)
 {
     if (resident_packet_space(packet, 0) != packet->unk0c)
     {
-        func_4DC4F0(D_001B65DC, 3, 0, (u32)packet->unk0c & 0x0FFFFFFF, 0, completion);
+        func_4DC4F0(g_packet_queue, 3, 0, (u32)packet->unk0c & 0x0FFFFFFF, 0, completion);
     }
 }
 
@@ -526,7 +526,7 @@ void resident_packet_submit(ResidentPacket* packet, void* notification)
     *cursor++ = 0;
     count = (u32)((u8*)cursor - packet->unk0c) >> 4;
     ee_sync();
-    func_4DC4F0(D_001B65DC, 2, 0, (u32)packet->unk0c & 0x0FFFFFFF, count, notification);
+    func_4DC4F0(g_packet_queue, 2, 0, (u32)packet->unk0c & 0x0FFFFFFF, count, notification);
     packet->unk08 = (u8*)cursor;
     packet->unk0c = (u8*)cursor;
 }
@@ -583,8 +583,7 @@ void resident_packet_allocate(ResidentPacket* packet, s32 quadwords)
     FlushCache(0);
     packet->unk10 = words;
     packet->unk00 = (u8*)((u32)packet->unk04 | 0x30000000);
-    packet->unk08 = packet->unk00 + 0x40;
-    packet->unk0c = packet->unk08;
+    resident_packet_rewind(packet);
 }
 
 /**
@@ -1111,7 +1110,7 @@ ResidentClass14FC90::ResidentClass14FC90() : buffer(0)
 
     loading = 0;
     unk24 = 0;
-    D_001B6614->append_node(this, -1);
+    g_update_list->append_node(this, -1);
 }
 
 /**
@@ -1494,7 +1493,7 @@ void ResidentClass14FCB0::func_00104770()
             position.y = source->transform.rows[1].w;
             position.z = source->transform.rows[2].w;
             position.w = 1.0f;
-            func_4CBAC0(&orientation, &source->transform);
+            lib_matrix_to_quaternion(&orientation, &source->transform);
             node->set_translation_vector(&position);
             node->set_orientation(&orientation);
 
@@ -1626,7 +1625,7 @@ void func_001210B0(ResidentClass14FD30* object, const ResidentVector4* target)
         position.z = object->transform.rows[2].w;
         position.w = 1.0f;
         subtract_xyz(&direction, target, &position);
-        func_4CBD20(&matrix, &position, &direction, 0.0f);
+        lib_matrix_look_at(&matrix, &position, &direction, 0.0f);
         matrix.rows[0].w = position.x;
         matrix.rows[1].w = position.y;
         matrix.rows[2].w = position.z;
@@ -1639,7 +1638,7 @@ void func_001210B0(ResidentClass14FD30* object, const ResidentVector4* target)
 
     if (object->shared_image)
     {
-        image = &static_cast<ResidentDisplayManager*>(D_001B661C)->images[object->shared_image - 1];
+        image = &static_cast<ResidentDisplayManager*>(g_renderer)->images[object->shared_image - 1];
     }
     else
     {
@@ -1792,7 +1791,7 @@ bool ResidentClass14FD30::set_fade_alpha(float value, float mode)
  */
 const ResidentVector4* ResidentClass14FD30::get_bounding_sphere()
 {
-    return &D_50CD30;
+    return &g_default_bounding_sphere;
 }
 
 /**
@@ -1876,7 +1875,7 @@ void ResidentClass14FD30::copy_orientation(const ResidentVector4* value)
 void ResidentClass14FD30::convert_rotation(const ResidentVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&orientation, value);
+    lib_quaternion_from_euler(&orientation, value);
 }
 
 /**
@@ -1886,7 +1885,7 @@ void ResidentClass14FD30::convert_rotation(const ResidentVector4* value)
 void ResidentClass14FD30::set_rotation_vector(const ResidentVector4* value)
 {
     transform_dirty = 1;
-    func_4CE4C0(&orientation, value);
+    lib_quaternion_from_euler(&orientation, value);
 }
 
 /**
@@ -1904,7 +1903,7 @@ void ResidentClass14FD30::set_rotation(float x, float y, float z)
     rotation.y = y;
     rotation.z = z;
     rotation.w = 1.0f;
-    func_4CE4C0(&orientation, &rotation);
+    lib_quaternion_from_euler(&orientation, &rotation);
 }
 
 /**

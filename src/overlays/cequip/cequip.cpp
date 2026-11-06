@@ -905,7 +905,7 @@ void EquipItemInstanceListWindow::func_slot5c()
             const LibUiRect16* position = &item_icons[FieldStateCE420::unk28]->unk18;
             s32 x = static_cast<s32>(283.0f + position->unk00);
             s32 y = static_cast<s32>(224.0f + (30.0f + position->unk04));
-            bool active = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04)->ItemCreationClass185050::unk35 != 0 && FieldClass15AE60::pad29[1] == 0;
+            bool active = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04)->ItemCreationClass185050::arrived != 0 && FieldClass15AE60::pad29[1] == 0;
 
             if (active)
             {
@@ -1095,8 +1095,8 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
     lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 10.0f, 24.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
     FieldStateCE420::unk04->visible = 0;
-    FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
-    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 12.0f, 224.0f, 10.0f, 0);
+    FieldStateCE420::unk00 = new (0) LibListIndicator;
+    lib_list_indicator_init(static_cast<LibListIndicator*>(FieldStateCE420::unk00), 314.0f, 12.0f, 224.0f, 10.0f, 0);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 8, 312, 28);
     FieldStateCE420::unk2b = 3;
@@ -1488,8 +1488,8 @@ s32 EquipItemListWindow::func_slot104(u32 associated)
     lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 8.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
     FieldStateCE420::unk04->visible = 0;
-    FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
-    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 16.0f, 220.0f, 10.0f, 0.0f);
+    FieldStateCE420::unk00 = new (0) LibListIndicator;
+    lib_list_indicator_init(static_cast<LibListIndicator*>(FieldStateCE420::unk00), 314.0f, 16.0f, 220.0f, 10.0f, 0.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 8, 312, 28);
     FieldStateCE420::unk2b = 3;
@@ -1979,7 +1979,7 @@ u8 EquipSlotWindow::func_slotbc()
 /** @brief Test whether a selector is inactive. @param selector Selector state. @return One when its control byte is clear. */
 static inline u8 selector_inactive(FieldClass153130* selector)
 {
-    return !(selector->ItemCreationClass185050::unk35 != 0);
+    return !(selector->ItemCreationClass185050::arrived != 0);
 }
 
 void EquipSlotWindow::func_slot5c()
@@ -2400,7 +2400,7 @@ s32 EquipCharacterWindow::func_slotf4(u32 associated)
     append_panel_widget_node(&unk14, panel);
     name_text = new (0) LibStringLabel;
     const char* text = selected_equipment(selection)->character_name;
-    name_text->func_00467AD0(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
+    name_text->init_text_rectangle(40.0f, 24.0f, 0.0f, 0.0f, text, 0);
     lib_container_attach_widget(unk10, name_text);
     append_icon_widget_node(&unk44, name_text);
     name_text->set_scale(0.8f, 0.8f);
@@ -2643,7 +2643,7 @@ void EquipController::func_slot5c()
 
     if (resource_slot != 0)
     {
-        lib_release_resource_slot(D_001B657C, resource_slot);
+        lib_release_resource_slot(g_field_runtime, resource_slot);
     }
 
     lib_object_detach_owner(this);
@@ -2675,7 +2675,7 @@ static inline void attach_comparison(EquipSlotWindow* object, EquipParameterWind
 
 s32 EquipController::init_windows()
 {
-    FieldRuntime* runtime = D_001B657C;
+    FieldRuntime* runtime = g_field_runtime;
     runtime->text_banks[1].resource_slot = resource_slot;
     runtime->text_banks[1].base_key = 0x11171;
     tooltip = new (0) EquipFactorTooltip;
@@ -2683,7 +2683,7 @@ s32 EquipController::init_windows()
     if (tooltip != 0)
     {
         lib_factor_tooltip_init(tooltip);
-        lib_queue_display_object(D_001B657C, tooltip);
+        lib_queue_display_object(g_field_runtime, tooltip);
     }
 
     EquipResourceWindow* options = new (0) EquipResourceWindow;
@@ -2752,9 +2752,9 @@ s32 EquipController::on_resource_loaded(void* buffer)
         resident_exchange_allocation_heap(heap);
     }
 
-    resource_slot = lib_load_resource_slot(D_001B657C, aligned);
+    resource_slot = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
-    FieldRuntime* runtime = D_001B657C;
+    FieldRuntime* runtime = g_field_runtime;
     runtime->text_banks[0].resource_slot = resource_slot;
     runtime->text_banks[0].base_key = 0xC351;
     return init_windows();

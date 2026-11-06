@@ -4,7 +4,7 @@
 extern "C" void func_43ACC0(void* object);
 extern "C" void func_4DB530(void* context, u32 first, u32 second);
 extern "C" void func_4EABF0(void* object);
-extern "C" void* D_001B6668;
+extern "C" void* g_vector_track_pool;
 extern "C" void func_121E80(void* owner, void* object);
 extern "C" void* D_001B6620;
 
@@ -618,7 +618,7 @@ struct FieldLookupState11C
  */
 extern "C" void func_0025E9A0(FieldLookupState11C* object)
 {
-    func_4DB530(D_001B6668, object->values->first, object->values->second);
+    func_4DB530(g_vector_track_pool, object->values->first, object->values->second);
     func_4EABF0(object);
 }
 

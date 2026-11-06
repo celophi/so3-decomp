@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_LIB_TEXT_003E68C0_H
 
 #include "types.h"
+#include "main/resident_0011EE70.h"
 
 #ifdef __cplusplus
 extern "C" void func_003EF030(u8* object);
@@ -41,7 +42,7 @@ extern "C" s32 func_003EF900(void* object);
 extern "C" s32 func_003F4370(void* object);
 /** @brief Store state value 9 in the transform's byte at offset 0x60. @param object Transform owner. */
 extern "C" void func_003EF910(LibTransformOwner* object);
-/** @brief Forward the transform receiver to its state-update handler. @param object Transform owner. */
+/** @brief Finish the transform receiver's packet. @param object Transform owner. */
 extern "C" void func_003EF070(LibTransformOwner* object);
 
 /** @brief Store a word at receiver offset 0x14. @param object Receiver. @param value Word value. */
@@ -95,6 +96,22 @@ static inline void clear_vector(LibVector4* vector)
     *(unsigned __int128*)vector = 0;
 }
 
+/**
+ * @brief Set all four components of a vector.
+ * @param vector Vector to set.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
+static inline void set_vector(LibVector4* vector, float x, float y, float z, float w)
+{
+    vector->x = x;
+    vector->y = y;
+    vector->z = z;
+    vector->w = w;
+}
+
 
 /** Partially known 8-byte buffer entry; the signed value is at offset 6. */
 struct LibClass3F5B80Entry
@@ -103,6 +120,103 @@ struct LibClass3F5B80Entry
     u8 unk04;
     u8 unk05;
     s16 unk06;
+};
+
+/** XOR applied to LibProtectedValues::key to get the record's offset in the storage. */
+#define LIB_PROTECTED_OFFSET_KEY 0x4E92
+
+/** Keys of the checked word and of its check copy. */
+#define LIB_PROTECTED_WORD_KEY 0x72EF77
+#define LIB_PROTECTED_CHECK_KEY 0x6319F6
+
+/** Key and bias of the small value, and its largest value. */
+#define LIB_PROTECTED_SMALL_KEY 0x1233E3
+#define LIB_PROTECTED_SMALL_BIAS 9176
+#define LIB_PROTECTED_SMALL_MAX 999
+
+/** Base of the large value's random key, its bias and its largest value. */
+#define LIB_PROTECTED_LARGE_KEY_BASE 0x12652C
+#define LIB_PROTECTED_LARGE_BIAS 689
+#define LIB_PROTECTED_LARGE_MAX 6400
+
+/** Encoded copies of three values, at a random place in the owner's storage. */
+struct LibProtectedRecord
+{
+    /** The checked word XORed with LIB_PROTECTED_CHECK_KEY. */
+    u32 check;
+
+    /** Random key of the large value. */
+    u32 large_key;
+
+    /** Small value plus its bias, XORed with LIB_PROTECTED_SMALL_KEY. */
+    u32 small_value;
+
+    /** Large value plus its bias, XORed with large_key. */
+    u32 large_value;
+
+    u8 unk10[4];
+
+    /** The checked word XORed with LIB_PROTECTED_WORD_KEY. */
+    u32 word;
+};
+
+/** Three values kept encoded so that memory editing is caught or useless. */
+class LibProtectedValues
+{
+public:
+    /**
+     * @brief Return the encoded record.
+     * @return The record at the key's offset in the storage.
+     */
+    LibProtectedRecord* record()
+    {
+        return reinterpret_cast<LibProtectedRecord*>(storage + (key ^ LIB_PROTECTED_OFFSET_KEY));
+    }
+
+    /**
+     * @brief Read the checked word.
+     * @return The word, or zero when its two copies disagree.
+     */
+    u32 get_checked_word();
+
+    /**
+     * @brief Store the checked word and its check copy.
+     * @param value Word to store.
+     */
+    void set_checked_word(u32 value);
+
+    /**
+     * @brief Read the small value.
+     * @return The value, 0 to LIB_PROTECTED_SMALL_MAX.
+     */
+    s32 get_small_value();
+
+    /**
+     * @brief Store the small value, clamped to 0 to LIB_PROTECTED_SMALL_MAX.
+     * @param value Value to store.
+     */
+    void set_small_value(s32 value);
+
+    /**
+     * @brief Read the large value.
+     * @return The value, 0 to LIB_PROTECTED_LARGE_MAX.
+     */
+    s32 get_large_value();
+
+    /**
+     * @brief Store the large value, clamped to 0 to LIB_PROTECTED_LARGE_MAX, under a fresh random key.
+     * @param value Value to store.
+     */
+    void set_large_value(s32 value);
+
+    /** @brief Move the record to a new random place in the storage and store zero in all three values. */
+    void reset();
+
+    /** Storage the record sits in. */
+    u8* storage;
+
+    /** Record offset XORed with LIB_PROTECTED_OFFSET_KEY. */
+    u32 key;
 };
 
 /** Partially known 0x680-byte backing buffer for LibClass3F5B80. */
@@ -166,6 +280,25 @@ public:
     LibClass3F5B80Buffer* buffer;
 };
 
+/** Lib's copy of the GS packet buffer, with vtable D_171E70 in main data; its data comes before the vptr. */
+class LibPacketBuffer : public ResidentPacket
+{
+public:
+    /**
+     * @brief Allocate the packet's storage.
+     * @param quadwords Storage size in quadwords.
+     */
+    LibPacketBuffer(s32 quadwords)
+    {
+        unk04 = 0;
+        unk15 = 0;
+        resident_packet_allocate(this, quadwords);
+    }
+
+    /** @brief Free the packet storage unless it is borrowed. */
+    virtual ~LibPacketBuffer();
+};
+
 /** Virtual intrusive-link root. */
 class LibLink
 {
@@ -193,6 +326,16 @@ public:
 class LibUpdateList;
 /** @brief Detach an object from its owner. @param object Intrusive receiver. */
 extern "C" void lib_object_detach_owner(void* object);
+
+/** Values of LibListObject::object_kind. */
+enum
+{
+    /** Set by LibTransformOwner's constructor. */
+    LIB_OBJECT_KIND_TRANSFORM = 2,
+
+    /** Added by LibAnimation's constructor. */
+    LIB_OBJECT_KIND_ANIMATION = 4
+};
 
 /** 0x14-byte object kept in an owner's intrusive list, with vtable D_171EA0 in main data. */
 class LibListObject : public LibListSentinel
@@ -222,7 +365,7 @@ public:
     s16 list_kind;
     u8 is_listed;
 
-    /** Type tag; zero by default, two for transform owners. */
+    /** Type tag (LIB_OBJECT_KIND_*); zero by default. */
     u8 object_kind;
 
     LibUpdateList* owner;
@@ -232,6 +375,9 @@ public:
 class LibPositionTransform : public LibListObject
 {
 public:
+    /** @brief Start at the origin. */
+    LibPositionTransform();
+
     /** @brief Destroy the transform. */
     virtual ~LibPositionTransform()
     {
@@ -366,7 +512,7 @@ public:
 #endif
 
 #ifdef __cplusplus
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 extern "C" void func_003F2550(LibTransformOwner* object);
 #endif
 

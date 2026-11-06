@@ -3,14 +3,251 @@
 #include "vu0.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/vector_inlines.h"
-#include "overlays/boot/text_001EEC80.h"
+#include "overlays/boot/tracks.h"
 #include "overlays/boot/resident.h"
-
-extern "C" {
 
 extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
 extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
-extern float D_001B668C;
+extern float g_inverse_frame_ticks;
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 float_track_pool_allocate(BootTrackPool<BootPooledFloatTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledFloatTrack::~BootPooledFloatTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledFloatTrack::BootPooledFloatTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void float_track_pool_release(BootTrackPool<BootPooledFloatTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 vector_track_pool_allocate(BootTrackPool<BootPooledVectorTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledVectorTrack::~BootPooledVectorTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledVectorTrack::BootPooledVectorTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void vector_track_pool_release(BootTrackPool<BootPooledVectorTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 track_1718C0_pool_allocate(BootTrackPool<BootClass177EE0>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootClass177EE0::~BootClass177EE0()
+{
+}
+
+/** @brief Construct the track. */
+BootClass177EE0::BootClass177EE0()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void track_1718C0_pool_release(BootTrackPool<BootClass177EE0>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 float_curve_track_pool_allocate(BootTrackPool<BootPooledFloatCurveTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledFloatCurveTrack::~BootPooledFloatCurveTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledFloatCurveTrack::BootPooledFloatCurveTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void float_curve_track_pool_release(BootTrackPool<BootPooledFloatCurveTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 vector_curve_track_pool_allocate(BootTrackPool<BootPooledVectorCurveTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledVectorCurveTrack::~BootPooledVectorCurveTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledVectorCurveTrack::BootPooledVectorCurveTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void vector_curve_track_pool_release(BootTrackPool<BootPooledVectorCurveTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 float_quaternion_track_pool_allocate(BootTrackPool<BootPooledFloatQuaternionTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledFloatQuaternionTrack::~BootPooledFloatQuaternionTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledFloatQuaternionTrack::BootPooledFloatQuaternionTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void float_quaternion_track_pool_release(BootTrackPool<BootPooledFloatQuaternionTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 quaternion_curve_track_pool_allocate(BootTrackPool<BootPooledQuaternionCurveTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledQuaternionCurveTrack::~BootPooledQuaternionCurveTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledQuaternionCurveTrack::BootPooledQuaternionCurveTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void quaternion_curve_track_pool_release(BootTrackPool<BootPooledQuaternionCurveTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Allocate the pool's tracks, mark them pooled and clear the used bitmap.
+ * @param pool Pool to fill.
+ * @param count Number of tracks.
+ * @return One on success, or zero when the tracks could not be allocated.
+ */
+s32 quaternion_track_pool_allocate(BootTrackPool<BootPooledQuaternionTrack>* pool, s32 count)
+{
+    return pool->init(count);
+}
+
+/** @brief Destroy the track. */
+BootPooledQuaternionTrack::~BootPooledQuaternionTrack()
+{
+}
+
+/** @brief Construct the track. */
+BootPooledQuaternionTrack::BootPooledQuaternionTrack()
+{
+}
+
+/**
+ * @brief Release every track in the pool and its storage.
+ * @param pool Pool to clear.
+ */
+void quaternion_track_pool_release(BootTrackPool<BootPooledQuaternionTrack>* pool)
+{
+    pool->release();
 }
 
 /**
@@ -347,7 +584,7 @@ FieldVec4A BootVectorCurveTrack::sample(float key)
         }
     }
 
-    value_rate = scaled(D_001B668C, difference(result, last_value));
+    value_rate = scaled(g_inverse_frame_ticks, difference(result, last_value));
     last_value = result;
     return *reinterpret_cast<FieldVec4A*>(&result);
 }
@@ -3741,7 +3978,7 @@ float BootFloatCurveTrack::sample(float key)
         result = entries[0].value + (entries[0].out_tangent / (entries[1].key - first_key)) * (key - first_key);
     }
 
-    value_rate = D_001B668C * (result - last_value);
+    value_rate = g_inverse_frame_ticks * (result - last_value);
     last_value = result;
     return result;
 }

@@ -41,6 +41,15 @@ DmaChannel* sceDmaGetChan(u32 channel);
 void sceDmaSend(DmaChannel* channel, void* chain);
 
 /**
+ * @brief Wait for a channel's transfer to finish, or just check.
+ * @param channel Channel register block.
+ * @param mode Zero to wait, nonzero to only check.
+ * @param timeout Zero for no timeout.
+ * @return Zero once the channel is idle.
+ */
+s32 sceDmaSync(DmaChannel* channel, s32 mode, s32 timeout);
+
+/**
  * @brief Start a normal-mode DMA transfer.
  * @param channel Channel register block.
  * @param address Data to send.

@@ -816,7 +816,7 @@ public:
     ItemCreationClass184F30 unk00;
     ItemCreationClass1746A0 unk90;
     ItemCreationClass1746A0 unke4;
-    ItemCreationClass1725D0 unk138;
+    LibListIndicator unk138;
     ItemCreationClass175030 unk190;
     ItemCreationClass172600 unk20c;
     ItemCreationClass172870 unk260;

@@ -330,7 +330,7 @@ void FieldClass15AD40::func_slot5c()
         if (active)
         {
             this->FieldClass15AE60::unk24 = this->FieldClass15AE60::unk28 + this->FieldClass15AE60::unk22 * this->FieldClass15AE60::unk26;
-            FieldListInputRuntime* runtime = (FieldListInputRuntime*)D_001B657C;
+            FieldListInputRuntime* runtime = (FieldListInputRuntime*)g_field_runtime;
             FieldListInputFlags* flags = runtime->flags;
             u16 mask = runtime->mask;
             if (!(mask & flags->unk00) && (mask & flags->unk02))
@@ -423,7 +423,7 @@ static inline void set_selector_position(ItemCreationClass175030* selector, floa
 {
     selector->ItemCreationClass185050::position.x = x;
     selector->ItemCreationClass185050::position.y = y;
-    selector->unk35 = 1;
+    selector->arrived = 1;
     selector->needs_redraw = 1;
 }
 void FieldClass15AE60::configure_selection(s32 count, s32 start, s32 selected)
@@ -447,11 +447,11 @@ void FieldClass15AE60::configure_selection(s32 count, s32 start, s32 selected)
                           this->unk08 + (float)(this->unk1a * (this->unk28 % this->unk26)),
                           this->unk0c + (float)(this->unk1c * (this->unk28 / this->unk26)));
     this->unk04->needs_redraw = 1;
-    ItemCreationClass1725D0* indicator = (ItemCreationClass1725D0*)this->unk00;
-    indicator->unk50 = 100.0f * (u32)this->unk27 / (u32)this->unk1e;
+    LibListIndicator* indicator = (LibListIndicator*)this->unk00;
+    indicator->extent = 100.0f * (u32)this->unk27 / (u32)this->unk1e;
     indicator->needs_redraw = 1;
-    indicator = (ItemCreationClass1725D0*)this->unk00;
-    indicator->unk54 = 100.0f * (this->unk14 + (float)(this->unk22 * this->unk1c)) / (float)(this->unk1e * this->unk1c);
+    indicator = (LibListIndicator*)this->unk00;
+    indicator->position = 100.0f * (this->unk14 + (float)(this->unk22 * this->unk1c)) / (float)(this->unk1e * this->unk1c);
     indicator->needs_redraw = 1;
 }
 
@@ -519,7 +519,7 @@ static inline u8 queue_container(LibContainer* container)
     {
         return 0;
     }
-    lib_queue_display_object(D_001B657C, container);
+    lib_queue_display_object(g_field_runtime, container);
     return 1;
 }
 

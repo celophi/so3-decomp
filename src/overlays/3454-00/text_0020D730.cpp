@@ -11,7 +11,7 @@ void func_00218270(void* object);
 void func_00217280(void* object);
 void func_00217D70(void* object);
 void func_4CE4C0(float* output, const float* input);
-extern u8 D_50CD30[];
+extern u8 g_default_bounding_sphere[];
 extern u8 D_177BE0[];
 extern u8 D_174440[];
 extern u8 D_1730F0[];
@@ -402,7 +402,7 @@ s32 func_00211970(float value)
 
 const void* func_00211990(void)
 {
-    return D_50CD30;
+    return g_default_bounding_sphere;
 }
 
 void func_002119A0(void* object)

@@ -24,7 +24,7 @@ extern "C" u8 D_51E050[];
 extern "C" char D_334380[];
 extern "C" char D_16AAD0[];
 extern "C" float D_001B66B4;
-extern "C" void* D_001B661C;
+extern "C" void* g_renderer;
 extern "C" void func_120ED0(void* object);
 extern "C" void* D_001B6620;
 extern "C" void func_121E80(void* owner, void* object);
@@ -1284,7 +1284,7 @@ void func_001EDC20(FieldTimeState* object, u32 seconds)
 
 void func_001EDCE0(void)
 {
-    func_120ED0(D_001B661C);
+    func_120ED0(g_renderer);
 }
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001E2B40", func_001EDD00);

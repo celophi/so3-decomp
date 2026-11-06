@@ -5,9 +5,8 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
 
-extern "C" LibVector4 D_50CD30;
-extern "C" void resident_packet_submit(void* owner, void* object);
-extern "C" void func_004D00B0(LibTransformOwner* object);
+/** Bounding sphere objects without bounds report: centred on the origin, radius 1000000. */
+extern "C" LibVector4 g_default_bounding_sphere;
 
 struct LibStateByteB4View
 {
@@ -145,14 +144,14 @@ void LibOrientedTransform::set_orientation(const LibVector4* value)
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /** @brief Convert a rotation into the rotation vector and mark the transform dirty. */
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /** @brief Convert three rotation components into the rotation vector and mark the transform dirty. */
@@ -164,7 +163,7 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     value.y = y;
     value.z = z;
     value.w = 1.0f;
-    func_004CE4C0(&orientation.x, &value.x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value.x);
 }
 
 /** @brief Copy the secondary transform vector and mark it dirty. @param value Source vector. */
@@ -199,10 +198,10 @@ void func_003EF030(u8* object)
     *(volatile u32*)0x10009000 = 0x101;
 }
 
-/** @brief Forward the transform receiver to its state-update handler. @param object Transform owner. */
+/** @brief Finish the transform receiver's packet. @param object Transform owner. */
 extern "C" void func_003EF070(LibTransformOwner* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(object);
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -220,9 +219,16 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF0C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF200);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF320);
+/** @brief Free the packet storage unless it is borrowed. */
+LibPacketBuffer::~LibPacketBuffer()
+{
+    if (!unk14)
+    {
+        delete unk04;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF390);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __ct__13LibClipRegionFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", destroy__13LibListObjectFv);
 
@@ -276,15 +282,24 @@ void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
-/** @brief Return the shared fallback transform vector. @return Address of D_50CD30. */
+/**
+ * @brief Return the default bounding sphere, which encloses everything.
+ * @return Sphere centre in xyz, radius in w.
+ */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
-    return &D_50CD30;
+    return &g_default_bounding_sphere;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EFAB0);
 
-struct N50Owner94_003E68C0 { u8 pad00[0x64]; u8 active; u8 pad65[0x2F]; void* owner; };
+struct N50Owner94_003E68C0
+{
+        u8 pad00[0x64];
+        u8 active;
+        u8 pad65[0x2F];
+        ResidentPacket* owner;
+};
 
 void func_003EFAF0(N50Owner94_003E68C0* object)
 {
@@ -313,10 +328,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1330);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2510);
 
-/** Forward the receiver to func_004D00B0. */
+/** Forward the receiver to lib_finish_packet. */
 void func_003F2550(LibTransformOwner* object)
 {
-    func_004D00B0(object);
+    lib_finish_packet(object);
 }
 
 /** Queue the DMA submission embedded at offset 0x90 when present. */
@@ -602,19 +617,96 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5AC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5B80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5C40);
+/**
+ * @brief Read the checked word.
+ * @return The word, or zero when its two copies disagree.
+ */
+u32 LibProtectedValues::get_checked_word()
+{
+    LibProtectedRecord* values = record();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5C80);
+    if (values->word == (values->check ^ (LIB_PROTECTED_WORD_KEY ^ LIB_PROTECTED_CHECK_KEY)))
+    {
+        return values->word ^ LIB_PROTECTED_WORD_KEY;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5CC0);
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5CF0);
+/**
+ * @brief Store the checked word and its check copy.
+ * @param value Word to store.
+ */
+void LibProtectedValues::set_checked_word(u32 value)
+{
+    LibProtectedRecord* values = record();
+    values->word = value ^ LIB_PROTECTED_WORD_KEY;
+    values->check = value ^ LIB_PROTECTED_CHECK_KEY;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5D40);
+/**
+ * @brief Read the small value.
+ * @return The value, 0 to LIB_PROTECTED_SMALL_MAX.
+ */
+s32 LibProtectedValues::get_small_value()
+{
+    return (record()->small_value ^ LIB_PROTECTED_SMALL_KEY) - LIB_PROTECTED_SMALL_BIAS;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5D70);
+/**
+ * @brief Store the small value, clamped to 0 to LIB_PROTECTED_SMALL_MAX.
+ * @param value Value to store.
+ */
+void LibProtectedValues::set_small_value(s32 value)
+{
+    value += LIB_PROTECTED_SMALL_BIAS;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5E00);
+    if (value > LIB_PROTECTED_SMALL_BIAS + LIB_PROTECTED_SMALL_MAX)
+    {
+        value = LIB_PROTECTED_SMALL_BIAS + LIB_PROTECTED_SMALL_MAX;
+    }
+    else if (value < LIB_PROTECTED_SMALL_BIAS)
+    {
+        value = LIB_PROTECTED_SMALL_BIAS;
+    }
+
+    record()->small_value = value ^ LIB_PROTECTED_SMALL_KEY;
+}
+
+/**
+ * @brief Read the large value.
+ * @return The value, 0 to LIB_PROTECTED_LARGE_MAX.
+ */
+s32 LibProtectedValues::get_large_value()
+{
+    LibProtectedRecord* values = record();
+    return (values->large_value ^ values->large_key) - LIB_PROTECTED_LARGE_BIAS;
+}
+
+/**
+ * @brief Store the large value, clamped to 0 to LIB_PROTECTED_LARGE_MAX, under a fresh random key.
+ * @param value Value to store.
+ */
+void LibProtectedValues::set_large_value(s32 value)
+{
+    value += LIB_PROTECTED_LARGE_BIAS;
+
+    if (value > LIB_PROTECTED_LARGE_BIAS + LIB_PROTECTED_LARGE_MAX)
+    {
+        value = LIB_PROTECTED_LARGE_BIAS + LIB_PROTECTED_LARGE_MAX;
+    }
+    else if (value < LIB_PROTECTED_LARGE_BIAS)
+    {
+        value = LIB_PROTECTED_LARGE_BIAS;
+    }
+
+    LibProtectedRecord* values = record();
+    u32 key = (resident_next_random_word() & 0xFFFF) + LIB_PROTECTED_LARGE_KEY_BASE;
+    values->large_key = key;
+    values->large_value = value ^ key;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", reset__18LibProtectedValuesFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __dt__14LibBufferOwnerFv);
 

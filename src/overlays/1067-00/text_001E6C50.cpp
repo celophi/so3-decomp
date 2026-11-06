@@ -281,30 +281,30 @@ void FieldClass150280::func_001E7590()
     if (unk14)
     {
         unk2c = unk14->unk64 - 1.0f;
-        func_004B4550(unk14, unk2c, 0);
+        lib_animation_apply_frame(unk14, unk2c, 0);
         LibAnimationTarget* state = unk18;
-        state->unkc0 = 0;
-        state->unkc1 = 0;
-        state->unkc2 = 0;
-        clear_vector(&state->unk60);
-        state->unk60.w = 1.0f;
-        clear_vector(&state->unk70);
-        state->unk70.w = 1.0f;
-        clear_vector(&state->unk80);
-        state->unk80.w = 1.0f;
+        state->has_translation = 0;
+        state->has_orientation = 0;
+        state->has_scale = 0;
+        clear_vector(&state->translation_delta);
+        state->translation_delta.w = 1.0f;
+        clear_vector(&state->orientation_delta);
+        state->orientation_delta.w = 1.0f;
+        clear_vector(&state->scale_delta);
+        state->scale_delta.w = 1.0f;
         LibVector4 origin;
         origin.x = 0.0f;
         origin.y = 0.0f;
         origin.z = 0.0f;
         origin.w = 1.0f;
-        copy_vector(&unk18->unk90, &origin);
+        copy_vector(&unk18->channel_translation, &origin);
         LibVector4 zero;
         zero.x = 0.0f;
         zero.y = 0.0f;
         zero.z = 0.0f;
         zero.w = 0.0f;
-        copy_vector(&unk18->unka0, &zero);
-        copy_vector(&unk18->unkb0, &origin);
+        copy_vector(&unk18->channel_rotation, &zero);
+        copy_vector(&unk18->channel_scale, &origin);
     }
     else
     {
@@ -321,7 +321,7 @@ float FieldClass150280::func_001E7660()
     if (unk28)
     {
         float value;
-        unk28->func_004C16F0(unk2c, &value);
+        unk28->evaluate(unk2c, &value);
         return value;
     }
     return 0.0f;
@@ -337,7 +337,7 @@ void FieldClass150280::func_001E76B0(float start, float end)
     if (!unk66_3)
     {
         void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk70);
-        if (!func_004BF100(unk14, unk1c->unk7c, 0))
+        if (!lib_animation_bind_channels(unk14, unk1c->unk7c, 0))
         {
             resident_exchange_allocation_heap(heap);
             return;
@@ -345,7 +345,7 @@ void FieldClass150280::func_001E76B0(float start, float end)
         resident_exchange_allocation_heap(heap);
         unk66_3 = 1;
     }
-    unk14->unk6a = 0;
+    unk14->started = 0;
     LibVector4 initial;
     initial.x = 0.0f;
     initial.y = 0.0f;
@@ -353,17 +353,17 @@ void FieldClass150280::func_001E76B0(float start, float end)
     initial.w = 0.0f;
     unk18->set_translation_vector(&initial);
     LibAnimationTarget* state = unk18;
-    state->unkc0 = 0;
-    state->unkc1 = 0;
-    state->unkc2 = 0;
-    clear_vector(&state->unk60);
-    state->unk60.w = 1.0f;
-    clear_vector(&state->unk70);
-    state->unk70.w = 1.0f;
-    clear_vector(&state->unk80);
-    state->unk80.w = 1.0f;
+    state->has_translation = 0;
+    state->has_orientation = 0;
+    state->has_scale = 0;
+    clear_vector(&state->translation_delta);
+    state->translation_delta.w = 1.0f;
+    clear_vector(&state->orientation_delta);
+    state->orientation_delta.w = 1.0f;
+    clear_vector(&state->scale_delta);
+    state->scale_delta.w = 1.0f;
     lib_animation_bind_state(unk14, unk18, D_31A7D8);
-    func_004B3DE0(unk14, unk18);
+    lib_animation_read_channel_pose(unk14, unk18);
     unk2c = start;
     unk50 = 0;
     unk58 = 2;
@@ -591,7 +591,7 @@ void FieldClass150320::func_001E9050()
             if (channel)
             {
                 func_001E9390(channel);
-                channel->func_0042A820();
+                channel->release();
             }
             lib_animation_set_entry_channel(unk00, entry->index, entry->channel, entry->kind, entry->type, entry->flags);
         }
@@ -631,11 +631,11 @@ FieldClass150320::FieldClass150320(LibAnimation* animation, void* owner, float d
             saved->kind = entry->kind;
             saved->flags = entry->flags;
             saved->channel = original;
-            replacement = func_001E93E0(D_001B666C);
-            replacement->func_004C1560(original->func_004C16D0() + 1);
+            replacement = func_001E93E0(g_track_1718C0_pool);
+            replacement->allocate_keys(original->get_key_capacity() + 1);
             LibVector4 value;
-            original->func_004C16F0(0.0f, &value);
-            replacement->func_0042A7C0(&value, 0, 0, 0.0f);
+            original->evaluate(0.0f, &value);
+            replacement->append_key(&value, 0, 0, 0.0f);
             lib_animation_set_entry_channel(animation, index, replacement, 1, 4, entry->flags);
             count++;
             saved++;
@@ -672,28 +672,28 @@ s16 func_001E9380(const FieldHalfword3A* object)
 extern "C" void func_001E9390(LibClass173180* channel)
 {
     LibClass177B50* vector = static_cast<LibClass177B50*>(channel);
-    if (!vector->unk43_1)
+    if (!vector->state.external_keys)
     {
-        delete[] vector->unk04;
+        delete[] vector->key_array;
     }
-    vector->unk04 = 0;
+    vector->key_array = 0;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001E6C50", func_001E93E0);
 
 void func_001E94F0(LibClass177B50* object)
 {
-    object->unk04 = 0;
-    object->unk42_0_3 = 1;
-    object->unk42_4_7 = 1;
-    object->unk3a = 0;
-    object->unk38 = 0;
-    object->unk3c = -1;
-    object->unk30 = 0;
-    object->unk3e = -1;
-    object->unk40 = -1;
-    object->unk43_0 = 0;
-    object->unk43_1 = 0;
+    object->key_array = 0;
+    object->state.before_mode = 1;
+    object->state.after_mode = 1;
+    object->state.key_capacity = 0;
+    object->state.key_count = 0;
+    object->state.search_index = -1;
+    object->state.cycle_count = 0;
+    object->state.segment_lower = -1;
+    object->state.segment_upper = -1;
+    object->state.extends_segment = 0;
+    object->state.external_keys = 0;
 }
 
 void FieldClass150330::func_001DD7B0()
@@ -712,7 +712,7 @@ s32 func_001E95B0(s32 flag)
             if (object)
             {
                 object->unk4d_2 = flag;
-                D_001B6614->append_node(object, -1);
+                g_update_list->append_node(object, -1);
                 return 1;
             }
         }
@@ -1268,7 +1268,7 @@ FieldClass1504F0::~FieldClass1504F0()
 {
     if (unk3c != -1)
     {
-        lib_release_resource_slot(D_001B657C, unk3c);
+        lib_release_resource_slot(g_field_runtime, unk3c);
     }
     if (unk40)
     {

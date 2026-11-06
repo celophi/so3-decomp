@@ -31,7 +31,7 @@ options:
   disasm_unknown: true
   gp_value: 0x1bdff0
   global_vram_start: 0x00100000
-  global_vram_end: 0x001DD380
+  global_vram_end: 0x0050CE00
   # MWLDPS2 rejects the sized <function>.NON_MATCHING symbol splat's nonmatching
   # macro adds to every assembly function, so this module redefines it as empty.
   # The nonmatching lines stay in the .s files for the tools that read them.
@@ -59,7 +59,7 @@ segments:
       - [0x80, c, sdk/libmpeg_003E6900]
       - [0x7CA0, c, sdk/libipu_003EE520]
       - [0x82D0, cpp, text_003E68C0]
-      - [0x12840, c, text_003F90C0]
+      - [0x12840, cpp, text_003F90C0]
       - [0x22D40, cpp, text_004095C0]
       - [0x331F0, cpp, text_00419A70]
       - [0x43280, cpp, text_00429B00]
@@ -68,10 +68,11 @@ segments:
       - [0x5B3C0, cpp, text_00441C40]
       - [0x64360, cpp, text_0044ABE0]
       - [0x74490, cpp, text_0045AD10]
-      - [0x845A0, c, text_0046AE20]
+      - [0x845A0, cpp, text_0046AE20]
       - [0x937C0, cpp, text_0047A040]
       - [0x937F0, c, text_0047A070]
-      - [0x945A0, c, text_0047AE20]
+      - [0x945A0, cpp, text_0047AE20]
+      - [0xA4A78, pad, text_0047AE20_end_align]
       - [0xA4A80, c, text_0048B300]
       - [0xB4FA0, cpp, text_0049B820]
       - [0xC5030, cpp, text_004AB8B0]

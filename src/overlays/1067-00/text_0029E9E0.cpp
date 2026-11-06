@@ -4,7 +4,7 @@
 #include "main/resident_data.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/emission_vu0.h"
-#include "overlays/1067-00/grid_frame_vu0.h"
+#include "overlays/lib/grid_frame_vu0.h"
 #include "ee.h"
 
 static inline void field_clear_grid_cell_bit(FieldBitset154E80* object, u32 index);

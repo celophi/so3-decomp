@@ -28,7 +28,6 @@ extern "C" FieldGlobal643C* D_001B643C;
 
 extern "C" void func_4D00B0(void* object);
 extern "C" void func_44B210(void* object);
-extern "C" void func_4DCEA0(void* state, bool enabled, bool other);
 
 
 FieldClass159A80::~FieldClass159A80()
@@ -62,11 +61,12 @@ extern "C" void func_002BC5D0(FieldClass159A80* object)
 
 bool func_002BC610(void* object, bool enabled)
 {
-    if (D_001B6650 == 0)
+    if (g_display == 0)
     {
         return false;
     }
-    func_4DCEA0(D_001B6650, enabled, false);
+
+    g_display->set_output(enabled, false);
     return true;
 }
 
@@ -132,7 +132,7 @@ bool func_002BDF70(FieldState2BDF70* object, u16 value)
 
     object->unk44 = value;
     object->unk48 = D_001B643C->unk04;
-    LibCameraContext* display = D_001B6650;
+    LibCameraContext* display = g_display;
     object->unk1C = GS_COORDINATE_CENTRE - display->display_area.width / 2;
     object->unk20 = GS_COORDINATE_CENTRE - display->display_area.height / 2;
     object->unk24 = GS_COORDINATE_CENTRE + display->display_area.width / 2;

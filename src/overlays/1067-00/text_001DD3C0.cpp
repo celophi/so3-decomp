@@ -142,11 +142,12 @@ void func_001DD5E0(FieldClass150060* list)
                 while (entry && count < 0x20)
                 {
                     entries[count++] = entry;
-                    entry = func_00472EB0(table, entry);
+                    entry = lib_find_next_renderable_entry(table, entry);
                 }
+
                 if (count > 0)
                 {
-                    func_004D4010(D_001B661C, count, entries);
+                    func_004D4010(g_renderer, count, entries);
                 }
             }
         }

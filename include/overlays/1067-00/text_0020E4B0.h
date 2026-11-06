@@ -84,7 +84,10 @@ struct FieldScreenTransition
 {
     u8 unk00[0xB0];
     FieldTransitionRect rect;
-    void* unkc0;
+
+    /** Depth the transition draws at. */
+    s32 depth;
+
     u8 unkc4[0x2C];
     u8 unkf0;
 };

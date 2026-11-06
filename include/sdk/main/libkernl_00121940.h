@@ -21,6 +21,13 @@ void FlushCache(s32 mode);
 s32 DisableDmac(s32 channel);
 
 /**
+ * @brief Let the DMAC raise interrupts for one channel.
+ * @param channel DMA channel.
+ * @return The channel's previous enable state.
+ */
+s32 EnableDmac(s32 channel);
+
+/**
  * @brief Initialize the TLB.
  */
 void InitTLB(void);
@@ -203,6 +210,9 @@ u32 sceSifSendCmd(s32 command, void* packet, s32 packet_size, void* source, void
 u32 isceSifSendCmd(s32 command, void* packet, s32 packet_size, void* source, void* destination, s32 size);
 
 s32 sceSifBindRpc(SifClientData* client, u32 server_id, u32 mode);
+
+s32 sceSifCallRpc(SifClientData* client, u32 rpc_number, u32 mode, void* send, s32 send_size, void* receive,
+                  s32 receive_size, void (*end_function)(void*), void* end_param);
 
 s32 DIntr(void);
 

@@ -113,7 +113,7 @@ public:
 extern "C" {
 
 /** Resident scale used when caching the change in an evaluated keyframe value. */
-extern float D_001B668C;
+extern float g_inverse_frame_ticks;
 
 /**
  * @brief Find the segment containing a key, or select endpoint extrapolation.

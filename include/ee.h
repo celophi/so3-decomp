@@ -10,6 +10,60 @@
 /** Address bit that maps EE main memory uncached. */
 #define UNCACHED_SEGMENT 0x20000000
 
+/** Address bits that map EE main memory uncached and accelerated. */
+#define EE_UNCACHED_ACCELERATED 0x30000000
+
+/** Start of the EE's 16 KB scratchpad RAM. */
+#define EE_SCRATCHPAD 0x70000000
+
+/** DMA tag IDs and a tag word: quadword count, ID and address. */
+#define DMA_TAG_ID_CNT 0x10000000
+#define DMA_TAG_ID_CALL 0x50000000
+#define DMA_TAG_ID_END 0x70000000
+#define DMA_TAG(qwc, id, address) ((u64)(qwc) | (id) | ((u64)(u32)(address) << 32))
+
+/** Dn_CHCR bits. */
+#define DMA_CHCR_DIR_FROM_MEMORY 0x1
+#define DMA_CHCR_MODE_CHAIN 0x4
+#define DMA_CHCR_TAG_TRANSFER 0x40
+#define DMA_CHCR_START 0x100
+
+/** DMA channel 8 (scratchpad to memory) registers, and the DMA status register. */
+#define D8_CHCR ((volatile u32*)0x1000D000)
+#define D8_QWC ((volatile u32*)0x1000D020)
+#define D8_SADR ((volatile u32*)0x1000D080)
+#define D_STAT ((volatile u32*)0x1000E010)
+
+/** DMA channel 1 (VIF1) registers. */
+#define D1_CHCR ((volatile u32*)0x10009000)
+#define D1_MADR ((volatile u32*)0x10009010)
+#define D1_QWC ((volatile u32*)0x10009020)
+#define D1_TADR ((volatile u32*)0x10009030)
+
+/** D_STAT: channel 1 or channel 8 has finished. */
+#define D_STAT_CIS1 0x2
+#define D_STAT_CIS8 0x100
+
+/** EE timer 0 counter. */
+#define TIMER0_COUNT (*(volatile u32*)0x10000000)
+
+/** VIF codes: STCYCL, and UNPACK with its formats and flags. */
+#define VIF_STCYCL(cl, wl) (0x01000000 | ((wl) << 8) | (cl))
+
+/** VIF MSCALF: wait for the GIF and the running microprogram, then start the one at address (in doublewords). */
+#define VIF_MSCALF(address) (0x15000000 | (address))
+
+/** VIF FLUSH: wait for the microprogram and the GIF transfer to end. */
+#define VIF_FLUSH 0x11000000
+#define VIF_UNPACK(format, num, address) (((num) << 16) | ((format) << 24) | (address))
+#define VIF_UNPACK_S_8 0x62
+#define VIF_UNPACK_V4_32 0x6C
+#define VIF_UNPACK_V4_16 0x6D
+#define VIF_UNPACK_V4_8 0x6E
+#define VIF_UNPACK_V2_16_MASKED 0x75
+#define VIF_UNPACK_UNSIGNED 0x4000
+#define VIF_UNPACK_ADD_TOPS 0x8000
+
 /**
  * @brief Return the EE scalar maximum of two floating-point operands.
  * @param left First operand.

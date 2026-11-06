@@ -54,7 +54,34 @@ public:
      */
     virtual void copy_state(const LibClass173990* other);
 
-    u8 unk214[0x28C];
+    u8 unk214[0x1F0];
+    float unk404;
+    float unk408;
+    float unk40c;
+    float unk410;
+    float unk414;
+
+    /** Squared cosine of half of unk414. */
+    float unk418;
+
+    /** One over the squared cosines of half of unk410 and half of unk414 subtracted. */
+    float unk41c;
+
+    u8 unk420[8];
+    u32 unk428;
+    u8 unk42c[0x65];
+    u8 unk491;
+    u8 unk492;
+    u8 unk493;
+    u8 unk494[7];
+    u8 unk49b_0_5 : 6;
+    u8 unk49b_6 : 1;
+    u8 unk49b_7 : 1;
+    u8 unk49c_0 : 1;
+    u8 unk49c_1 : 1;
+    u8 unk49c_2 : 1;
+    u8 unk49c_3_7 : 5;
+    u8 unk49d[3];
 };
 
 #endif

@@ -305,7 +305,7 @@ extern "C" u8 func_0023CB50(FieldObject23CEA0* object, s16 direction);
 
 s16 FieldObject23CEA0::process_direction(s16 direction)
 {
-    if (ItemCreationClass185050::unk35 == 0)
+    if (ItemCreationClass185050::arrived == 0)
     {
         return 1;
     }
@@ -426,7 +426,7 @@ void func_0023D020(FieldObject23D020* object, float first_float, float second_fl
     object->unk12C = 0;
     object->unk128 = 0;
     func_467570(object, 1, 0, 0, first_float, second_float, 0.0f);
-    lib_queue_display_object(D_001B657C, (LibTransformOwner*)object);
+    lib_queue_display_object(g_field_runtime, (LibTransformOwner*)object);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023D0C0);

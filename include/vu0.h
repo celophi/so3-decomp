@@ -155,6 +155,48 @@ static inline void vu0_start_microprogram_670_vf5(const void* vector)
 }
 
 /**
+ * @brief Load a vector into vf5 and start the microprogram at 0x1B0.
+ *
+ * Lib's level-selection controller runs it on its position right after
+ * vu0_start_microprogram_1f0_vf5_vf8 has loaded the camera's view matrix, then
+ * reads the view-space position back from vf6. That's the only site I've
+ * found, and it has two nops like the 0x1F0 start.
+ * @param vector 16-byte aligned vector.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see LibLodController::update in Lib.
+ */
+static inline void vu0_start_microprogram_1b0_vf5(const void* vector)
+{
+    asm __volatile__("lqc2 $vf5, 0(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0x1B0" : : "r"(vector) : "memory");
+}
+
+/**
+ * @brief Load a matrix into vf5-vf8 and start the microprogram at 0x1F0.
+ *
+ * Lib loads the camera's view-projection matrix this way before it uses
+ * microprogram 0 for screen positions, so I think 0x1F0 keeps the matrix for
+ * program 0. Every site has the same two nops.
+ * @param matrix 16-byte aligned matrix.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see func_004D3780, func_004D4010, func_004DB190, func_0044A5F0, func_004D5870, func_004E1670 and
+ *      LibClass179080::update_projection in Lib, func_0020E9B0, resolve_field_object_display_position and
+ *      func_0028BD20 in 1067-00, and func_00230A20 and func_00288830 in 1070-00.
+ */
+static inline void vu0_start_microprogram_1f0_vf5_vf8(const void* matrix)
+{
+    asm __volatile__("lqc2 $vf5, 0x0(%0)\n"
+                     "lqc2 $vf6, 0x10(%0)\n"
+                     "lqc2 $vf7, 0x20(%0)\n"
+                     "lqc2 $vf8, 0x30(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0x1F0" : : "r"(matrix) : "memory");
+}
+
+/**
  * @brief Run microprogram 0 on a vector in place, from vf1 to vf3.
  *
  * Main calls this once, right after loading boot's microcode, so it's a
@@ -183,6 +225,24 @@ static inline void vu0_run_microprogram_vf1_vf3(void* vector)
 static inline void vu0_wait_microprogram(void)
 {
     asm __volatile__("cfc2.i $t1, $vi0" : : : "$t1", "memory");
+}
+
+/**
+ * @brief Load a matrix's first three rows into vf12-vf14 and start the microprogram at 0x7F0.
+ *
+ * The program leaves the scale of each row in vf6 (x, y and z). Lib compares it
+ * with one to tell an unscaled matrix from a scaled one.
+ * @param matrix 16-byte aligned matrix.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6). Lib starts it the same way in
+ *      func_004D9E70 and func_0045F2B0, and 1067-00 in func_00222D20.
+ */
+static inline void vu0_start_microprogram_7f0_rows(const void* matrix)
+{
+    asm __volatile__("lqc2 $vf12, 0x0(%0)\n"
+                     "lqc2 $vf13, 0x10(%0)\n"
+                     "lqc2 $vf14, 0x20(%0)\n"
+                     "nop\n"
+                     "vcallms 0x7F0" : : "r"(matrix) : "memory");
 }
 
 /**

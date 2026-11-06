@@ -285,12 +285,12 @@ struct Overlay0072List
 };
 
 extern "C" {
-extern u8 D_50CD30[];
+extern u8 g_default_bounding_sphere[];
 extern void func_4C4960(void* object);
 /** Native table anchors used by the retained constructor entry points. */
 extern u8 __vt__23ItemCreationClass172870[];
 extern u8 __vt__23ItemCreationClass172600[];
-extern u8 __vt__23ItemCreationClass1725D0[];
+extern u8 __vt__16LibListIndicator[];
 extern u8 __vt__23ItemCreationClass1746A0[];
 }
 
@@ -545,7 +545,7 @@ ItemCreationClass1746A0::~ItemCreationClass1746A0()
 }
 
 /** @brief Release the widget storage and destroy its base. */
-ItemCreationClass1725D0::~ItemCreationClass1725D0()
+LibListIndicator::~LibListIndicator()
 {
 }
 
@@ -596,7 +596,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_0034D160);
 Overlay0072CtorObject0034D0E0* func_0034D230(Overlay0072CtorObject0034D0E0* object)
 {
     func_4C4960(object);
-    object->table = __vt__23ItemCreationClass1725D0;
+    object->table = __vt__16LibListIndicator;
     object->field_40 = 0;
     object->state = 3;
     return object;
@@ -1398,7 +1398,7 @@ void CmcClass18AF20::func_slot5c()
 {
     if (resource_slot)
     {
-        lib_release_resource_slot(D_001B657C, resource_slot);
+        lib_release_resource_slot(g_field_runtime, resource_slot);
     }
     lib_object_detach_owner(this);
     func_001DD7B0();
@@ -1434,7 +1434,7 @@ s32 CmcClass18AF20::on_resource_loaded(void* buffer)
         resident_heap_release(allocation);
         resident_exchange_allocation_heap(resource_heap);
     }
-    resource_slot = lib_load_resource_slot(D_001B657C, resource);
+    resource_slot = lib_load_resource_slot(g_field_runtime, resource);
     resident_exchange_allocation_heap(previous_heap);
     return init_windows();
 }
@@ -1517,7 +1517,7 @@ void func_00359020(Overlay0072Object00359000* object, const unsigned __int128* v
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /**
@@ -1527,7 +1527,7 @@ void LibOrientedTransform::convert_rotation(const LibVector4* value)
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
-    func_004CE4C0(&orientation.x, &value->x);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
 /**
@@ -1544,7 +1544,7 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     value[1] = y;
     value[2] = z;
     value[3] = 1.0f;
-    func_004CE4C0(&orientation.x, value);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), value);
 }
 
 void func_003590E0(Overlay0072Object003590E0* object, const unsigned __int128* value)
@@ -1584,7 +1584,7 @@ s32 func_00359150(float value)
 
 u8* func_00359170(void* object)
 {
-    return D_50CD30;
+    return g_default_bounding_sphere;
 }
 
 s32 func_00359180(void* object)

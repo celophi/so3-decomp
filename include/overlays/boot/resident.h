@@ -1,9 +1,12 @@
 #ifndef SO3_OVERLAYS_BOOT_RESIDENT_H
 #define SO3_OVERLAYS_BOOT_RESIDENT_H
 
-#include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/new_game_settings.h"
+#include "overlays/boot/title_menu.h"
 #include "overlays/boot/init.h"
 #include "overlays/lib/text_0045AD10.h"
+#include "sdk/main/libkernl_00121940.h"
 
 /** Partial resident display state D_001B6624 that points back at the display manager. */
 struct BootDisplay6624
@@ -12,47 +15,7 @@ struct BootDisplay6624
     LibDisplayManager* manager;
 };
 
-/** Partial resident object whose display pointer is at offset 0x8C. */
-struct BootDisplayUser8C
-{
-    u8 unk00[0x8C];
-    LibCameraContext* display;
-};
-
-/** Partial resident object whose display pointer is at offset 0x94. */
-struct BootDisplayUser94
-{
-    u8 unk00[0x94];
-    LibCameraContext* display;
-};
-
-/** Partial resident object whose display pointer is at offset 0x128. */
-struct BootDisplayUser128
-{
-    u8 unk00[0x128];
-    LibCameraContext* display;
-};
-
-/** Partial resident manager D_001B661C and the objects that draw through the display. */
-struct BootDisplayLinks661C : public LibUpdateList
-{
-    u8 unk78[0x4008];
-    BootDisplayUser8C* unk4080;
-    void* unk4084;
-    LibCameraContext* unk4088;
-    u8 unk408C[0x42];
-    u8 unk40CE;
-    u8 unk40CF[0x389];
-    BootDisplayUser94* unk4458;
-    u8 unk445C[4];
-    BootDisplayUser94* unk4460;
-    BootDisplayUser94* unk4464;
-    BootDisplayUser94* unk4468;
-    BootDisplayUser128* unk446C;
-};
-
-extern "C" {
-extern BootDisplayLinks661C* D_001B661C;
+extern LibRenderer* g_renderer;
 extern BootDisplay6624* D_001B6624;
 
 /** Seconds since the last frame. */
@@ -60,11 +23,28 @@ extern float g_frame_ticks;
 
 extern float g_frame_seconds;
 
-void FlushCache(s32 value);
+// Lib functions boot calls with its own scene and model types, or (lib_draw_buffer_end) with a u8 mode.
+extern "C" {
+void func_455BD0(LibDrawBuffer* buffer, u8 mode, float distance, s32 flag);
 void lib_scene_use_data(BootScene* scene, u8* data);
-void func_474010(BootScene* scene, LibCameraContext* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
-                 BootDisplayLinks661C* links, s32 flag);
+void lib_scene_load_data(BootScene* scene, ResidentResourceHeader* source);
+void lib_scene_release_entries(BootScene* scene);
+/**
+ * @brief Create the runtime objects for a loaded scene's entries and hook them up to the display, lists and renderer.
+ * @param scene Scene whose data is loaded.
+ * @param display Display the scene draws to.
+ * @param list Update list the objects join.
+ * @param state Resident display state.
+ * @param manager Display manager.
+ * @param renderer Renderer.
+ * @param flag Boot always passes one.
+ */
+void lib_scene_build_objects(BootScene* scene, LibCameraContext* display, LibUpdateList* list, BootDisplay6624* state, LibDisplayManager* manager,
+                 LibRenderer* renderer, s32 flag);
 BootClass170F30* lib_find_renderable_entry(LibListObject* models, const char* name);
+BootClass170F30* lib_find_next_renderable_entry(LibListObject* models, BootClass170F30* model);
+void* lib_find_named_entry(LibListObject* models, const char* name);
+LibTransformOwner* lib_find_transform_entry(LibListObject* models, const char* name);
 void* lib_find_camera_entry(LibListObject* models, const char* name);
 }
 
@@ -109,7 +89,7 @@ static inline void queue_fade()
 {
     BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
     fade->fade_speed = 2.0f;
-    D_001B661C->append_node(fade, -1);
+    g_renderer->append_node(fade, -1);
 }
 
 #endif

@@ -57,7 +57,7 @@ public:
     u8 unk00[0x90];
     ItemCreationClass1746A0 unk90;
     ItemCreationClass1746A0 unke4;
-    ItemCreationClass1725D0 unk138;
+    LibListIndicator unk138;
     ItemCreationClass175030 unk190;
     u8 unk20c[0xAC];
     u8 unk2b8[8];
@@ -549,7 +549,7 @@ void func_002D6AD0(FieldClass15B300* object, u8 value)
 void func_002D6AE0(FieldClass15B300* object, float value)
 {
     object->unkE0 = value;
-    object->unkae = 1;
+    object->geometry_dirty = 1;
 }
 
 /**
@@ -609,7 +609,7 @@ bool func_002D6CB0(FieldClass15B300* object)
     bool changed = false;
     s32 selection = object->unk312;
     s32 row_step = 0;
-    u16 buttons = D_001B657C->inputs[object->unk315].unk04;
+    u16 buttons = g_field_runtime->inputs[object->unk315].unk04;
     s32 page_step = 0;
     if (buttons & 0x10)
     {
@@ -785,7 +785,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D71
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D72B0);
 
 /** @brief Release the widget storage and destroy its base. */
-ItemCreationClass1725D0::~ItemCreationClass1725D0()
+LibListIndicator::~LibListIndicator()
 {
 }
 
@@ -920,8 +920,8 @@ public:
     u8 unk14ac[4];
 };
 
-struct FieldPacketQueue;
-extern "C" FieldPacketQueue* D_001B65DC;
+struct LibPacketQueue;
+extern "C" LibPacketQueue* g_packet_queue;
 
 /**
  * @brief Append a packet address and optional completion context to the queue.
@@ -933,8 +933,7 @@ extern "C" FieldPacketQueue* D_001B65DC;
  * @param completion Optional completion context.
  * @return One when queued, or zero when the queue is full.
  */
-extern "C" s32 func_4DC4F0(FieldPacketQueue* queue, u32 operation, u32 flags,
-                          u32 address, u32 value, void* completion);
+extern "C" s32 func_4DC4F0(LibPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
 
 /**
  * @brief Submit prepared packet addresses with the callback attached to the final entry.
@@ -947,7 +946,7 @@ void func_002D7AD0(FieldClass15B770* object)
     {
         FieldClass1DD400* completion = index == object->packet_count - 1 ?
             static_cast<FieldClass1DD400*>(object) : 0;
-        func_4DC4F0(D_001B65DC, 3, 0, object->packet_addresses[index], 0, completion);
+        func_4DC4F0(g_packet_queue, 3, 0, object->packet_addresses[index], 0, completion);
     }
 }
 
@@ -1007,7 +1006,7 @@ void func_002D80E0(FieldClass15B670* object, u8 value)
 void func_002D80F0(FieldClass15B670* object, float value)
 {
     object->unkE0 = value;
-    object->unkae = 1;
+    object->geometry_dirty = 1;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D8100);

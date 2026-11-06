@@ -1,7 +1,13 @@
 #include "include_asm.h"
 #include "overlays/lib/blend_transform.h"
+#include "overlays/lib/model.h"
+#include "main/resident_data.h"
+#include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/vector.h"
+
+/** Blend mode a fading model draws with. */
+#define LIB_BLEND_MODE_FADE 2
 
 extern "C" void func_00449E00(void* object);
 
@@ -576,7 +582,14 @@ float func_00447DC0(void* object)
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447DD0);
+/**
+ * @brief Turn fogging on or off.
+ * @param enabled Nonzero for fog.
+ */
+void LibColorModel::set_fog_enabled(u8 enabled)
+{
+    fog_enabled = enabled;
+}
 
 /** @brief Set the inherited state byte to two when blending is enabled. */
 void LibBlendTransform::set_default_draw_bucket()
@@ -584,19 +597,207 @@ void LibBlendTransform::set_default_draw_bucket()
     draw_bucket = blend_mode ? 2 : 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447E10);
+/**
+ * @brief Fade the model near the camera. Below one it blends with the value as alpha, otherwise opaque.
+ * @param value Distance in front of the camera over the fade range, clamped to one.
+ * @param mode Two from Lib's caller; unused here.
+ * @return Whether the value is negative.
+ */
+s32 LibColorModel::set_fade_alpha(float value, float mode)
+{
+    LibVector4 modulation;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447EF0);
+    if (value < 0.0f)
+    {
+        return 1;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447F60);
+    if (value < 1.0f)
+    {
+        set_blend_mode(LIB_BLEND_MODE_FADE);
+        copy_vector(&modulation, &color_modulation);
+        modulation.w = value;
+        copy_vector(&color_modulation, &modulation);
+        update_combined_color_factor();
+    }
+    else
+    {
+        set_blend_mode(0);
+        copy_vector(&modulation, &color_modulation);
+        modulation.w = 1.0f;
+        copy_vector(&color_modulation, &modulation);
+        update_combined_color_factor();
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447FA0);
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448180);
+/** @brief Unlink this copy from its original's copies and queue it for release. */
+void LibColorModel::release_clone()
+{
+    LibColorModel* node = original;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448250);
+    if (node == 0)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004482B0);
+    LibColorModel* previous = 0;
+
+    for (;;)
+    {
+        LibColorModel* next = node->next_clone;
+
+        if (next == 0)
+        {
+            break;
+        }
+
+        if (next == this)
+        {
+            previous = node;
+            break;
+        }
+
+        node = next;
+    }
+
+    if (previous != 0)
+    {
+        previous->next_clone = next_clone;
+    }
+
+    original = 0;
+    next_clone = 0;
+    resident_enqueue_object(g_resident_release_queues, this);
+}
+
+/**
+ * @brief Link a copy to this model as the last of its clones.
+ * @param copy Copy to link.
+ */
+void LibColorModel::add_clone(LibColorModel* copy)
+{
+    copy->original = this;
+    LibColorModel* node = this;
+
+    for (;;)
+    {
+        LibColorModel* next = node->next_clone;
+
+        if (next == 0)
+        {
+            node->next_clone = copy;
+            break;
+        }
+
+        node = next;
+    }
+}
+
+/**
+ * @brief Update the transform. A clone takes its original's color state and its layer's display manager, and a
+ * model with LIB_DRAW_FOLLOW_CAMERA follows the camera across the ground.
+ */
+void LibColorModel::update()
+{
+    LibTransform::update();
+    LibColorModel* source = original;
+
+    if (source != 0)
+    {
+        unk590 = source->unk590;
+        set_fog_enabled(source->fog_enabled);
+        unk59d_1 = source->unk59d_1;
+        unk59c = source->unk59c;
+        unk59d_0 = 1;
+        copy_vector(&base_color_factor, &source->base_color_factor);
+        copy_vector(&color_modulation, &source->color_modulation);
+        copy_vector(&combined_color_factor, &source->combined_color_factor);
+        set_blend_mode(source->blend_mode);
+        LibTransform::copy_offset_transform_state(source);
+        display_manager = reinterpret_cast<LibSceneLayerTable*>(owner)->get_display_manager(layer);
+    }
+
+    if (draw_flags & LIB_DRAW_FLAG_0020)
+    {
+        if (func_004DA0F0(this) >= 0.5f)
+        {
+            draw_flags &= ~LIB_DRAW_FLAG_0040;
+        }
+        else
+        {
+            draw_flags |= LIB_DRAW_FLAG_0040;
+        }
+    }
+
+    if (draw_flags & LIB_DRAW_FOLLOW_CAMERA)
+    {
+        LibClass179080* camera;
+
+        if (display_manager != 0)
+        {
+            camera = static_cast<LibClass179080*>(display_manager->current_display);
+        }
+        else
+        {
+            camera = static_cast<LibClass179080*>(g_display_manager->current_display);
+        }
+
+        if (camera != 0)
+        {
+            if (camera->matrix_ready == 0)
+            {
+                camera->update_transform_matrix();
+            }
+
+            const LibMatrix44Value* matrix = camera->get_transform_matrix();
+            set_translation(matrix->m[0][3], translation.y, matrix->m[2][3]);
+        }
+    }
+}
+
+/**
+ * @brief Copy another model's color state, blend mode and offset transform.
+ * @param source Model to copy.
+ */
+void LibColorModel::copy_color_state(const LibColorModel* source)
+{
+    unk590 = source->unk590;
+    set_fog_enabled(source->fog_enabled);
+    unk59d_1 = source->unk59d_1;
+    unk59c = source->unk59c;
+    unk59d_0 = 1;
+    copy_vector(&base_color_factor, &source->base_color_factor);
+    copy_vector(&color_modulation, &source->color_modulation);
+    copy_vector(&combined_color_factor, &source->combined_color_factor);
+    set_blend_mode(source->blend_mode);
+    LibTransform::copy_offset_transform_state(source);
+}
+
+/** @brief Detach and destroy the model's clones, then detach and queue the model. */
+void LibColorModel::destroy()
+{
+    if (next_clone != 0)
+    {
+        lib_object_detach_owner(next_clone);
+        next_clone->destroy();
+        next_clone = 0;
+    }
+
+    LibTransformOwner::destroy();
+}
+
+/** @brief Detach and delete the model's clones. */
+LibColorModel::~LibColorModel()
+{
+    if (next_clone != 0)
+    {
+        lib_object_detach_owner(next_clone);
+        delete next_clone;
+        next_clone = 0;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448360);
 

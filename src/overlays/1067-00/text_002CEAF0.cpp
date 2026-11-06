@@ -29,6 +29,8 @@
 #include "overlays/cshop/cshop.h"
 #include "overlays/citemcreation/text_003684D0.h"
 
+// This overlay only has an untyped view of the Lib entry tables these take.
+
 extern "C" void func_002CEDA0(FieldCountedList* list);
 extern "C" void func_002CEF20(FieldCountedList* list);
 
@@ -53,7 +55,6 @@ extern "C" void func_00264460(FieldCountedList* list, void* value);
 
 extern "C" u8 func_0022A160(FieldScreenTransition* transition);
 
-extern "C" void* D_001B6694;
 
 /** Menu manager with vtable D_15B020 in main data; it loads the requested menu and runs its controller. */
 class FieldMenuManager : public FieldListObject
@@ -140,10 +141,6 @@ struct FieldMenuRuntime
 };
 
 extern "C" FieldMenuRuntime* D_001B643C;
-
-extern "C" s32 resident_sound_is_active(ResidentSound* request, s32 handle);
-
-extern "C" s32 resident_sound_stop(ResidentSound* request, s32 handle, s32 flag);
 
 /** Partial pad state with its button masks. */
 struct FieldMenuPad
@@ -1002,7 +999,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_1:
         {
             FieldClass154AD0* controller = new (0) FieldClass154AD0;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1010,7 +1007,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_ITEM:
         {
             ItemController* controller = new (0) ItemController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1018,7 +1015,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_EQUIP:
         {
             EquipController* controller = new (0) EquipController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1026,7 +1023,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_SKILL:
         {
             SkillController* controller = new (0) SkillController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1034,7 +1031,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_STATUS:
         {
             StatusResourceState* controller = new (0) StatusResourceState;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1042,7 +1039,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_CONFIG:
         {
             ConfigController* controller = new (0) ConfigController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1050,7 +1047,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_TACTICS:
         {
             TacticsController* controller = new (0) TacticsController;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1058,7 +1055,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_7:
         {
             CmcClass18AF20* controller = new (0) CmcClass18AF20;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             controller->func_00263CA0(manager->argument);
             result = controller->func_00264110();
@@ -1067,7 +1064,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_SHOP:
         {
             ShopState* controller = new (0) ShopState;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             shop_set_id(controller, manager->argument);
             manager->state = controller;
             result = controller->func_00264110();
@@ -1076,7 +1073,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         case FIELD_MENU_ITEM_CREATION:
         {
             ItemCreationSelectedDisplayState* controller = new (0) ItemCreationSelectedDisplayState;
-            D_001B6614->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
+            g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             result = controller->func_00264110();
             break;
@@ -1120,7 +1117,7 @@ extern "C" u8 field_advance_menu_load(FieldMenuManager* manager)
             {
                 func_0020F230(field_display(), 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
                 FieldScreenTransition* transition;
-                (transition = field_display()->effects.transition)->unkc0 = D_001B6694;
+                (transition = field_display()->effects.transition)->depth = D_001B6694;
                 transition->unkf0 = 10;
                 manager->load_state = 2;
                 manager->transition_time = 4.0f;
@@ -1201,7 +1198,7 @@ extern "C" u8 field_advance_menu_load(FieldMenuManager* manager)
         {
             func_0020F230(field_display(), 0, 0x80000000, 0, 0, 0, 0, manager->transition_time, 0.0f, 0.0f);
             FieldScreenTransition* transition = field_display()->effects.transition;
-            void* value = D_001B6694;
+            s32 depth = D_001B6694;
             FieldTransitionRect rect;
             rect.bounds[0] = 0;
             rect.bounds[1] = 0;
@@ -1214,7 +1211,7 @@ extern "C" u8 field_advance_menu_load(FieldMenuManager* manager)
                 transition->rect.bounds[i] = source[i];
             }
 
-            transition->unkc0 = value;
+            transition->depth = depth;
             transition->unkf0 = 10;
             manager->load_state = 7;
             manager->timer = 0.0f;
@@ -1347,7 +1344,7 @@ void FieldMenuManager::update()
         {
             func_0020F230(field_display(), 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
             FieldScreenTransition* transition;
-            (transition = field_display()->effects.transition)->unkc0 = D_001B6694;
+            (transition = field_display()->effects.transition)->depth = D_001B6694;
             transition->unkf0 = 10;
             phase = 8;
             break;
@@ -1638,8 +1635,8 @@ void FieldClass15B090::update()
     angles.z = 0.0f;
     angles.w = 1.0f;
     lib_direction_angles_xz(&angles, &direction, 0.0f);
-    func_004CE4C0(&rotation.x, &angles.x);
-    func_004CD3A0(reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&rotation), 1.0f);
+    lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&rotation), &angles.x);
+    lib_quaternion_slerp_async(reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&rotation), 1.0f);
     unk20.y += unka8 * g_frame_ticks;
     unka8 += 0.5f * g_frame_ticks;
 
@@ -1674,7 +1671,7 @@ FieldClass15B090::FieldClass15B090()
     func_00204A10(0xF900);
 
     for (FieldRenderableEntry* entry = static_cast<FieldRenderableEntry*>(lib_find_renderable_entry(static_cast<LibEntryManager*>(unk7c), 0)); entry != 0;
-         entry = static_cast<FieldRenderableEntry*>(func_00472EB0(unk7c, entry)))
+         entry = static_cast<FieldRenderableEntry*>(lib_find_next_renderable_entry(static_cast<LibEntryManager*>(unk7c), entry)))
     {
         if (entry->kind == 0x100)
         {

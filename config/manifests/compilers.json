@@ -55,7 +55,7 @@
       "flags": ["-O4,p"]
     },
     {
-      "source": "src/overlays/boot/text_001DD3C0.cpp",
+      "source": "src/overlays/boot/installer.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
@@ -63,23 +63,43 @@
       "flags": ["-inline", "level=7"]
     },
     {
-      "source": "src/overlays/boot/text_001E0900.cpp",
+      "source": "src/overlays/lib/text_00429B00.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/lib/text_00419A70.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/lib/text_004DD440.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/boot/startup_checks.cpp",
       "flags": ["-O4,p"]
     },
     {
-      "source": "src/overlays/boot/text_001EEC80.cpp",
+      "source": "src/overlays/boot/program.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/boot/tracks.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
-      "source": "src/overlays/boot/text_001F6010.cpp",
+      "source": "src/overlays/boot/title_menu.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
-      "source": "src/overlays/boot/text_001FB220.cpp",
+      "source": "src/overlays/boot/game_launcher.cpp",
       "flags": ["-inline", "level=7"]
     },
     {
-      "source": "src/overlays/boot/text_001FF9D0.cpp",
+      "source": "src/overlays/boot/trophy_viewer.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/boot/music_player.cpp",
       "flags": ["-inline", "level=7"]
     },
     {

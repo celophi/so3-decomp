@@ -133,7 +133,7 @@ extern "C" void func_4DB9E0(void* manager, u32 first, u32 second, u32 third, u32
 /** @brief Pass the four words to the Lib manager, then detach and delete this object. */
 void FieldClass151C00::update()
 {
-    func_4DB9E0(D_001B6650, unk14, unk18, unk1c, unk20);
+    func_4DB9E0(g_display, unk14, unk18, unk1c, unk20);
     lib_object_detach_owner(this);
     func_001DD7B0();
 }

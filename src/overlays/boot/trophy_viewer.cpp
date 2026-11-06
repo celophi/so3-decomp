@@ -1,32 +1,27 @@
 #include "include_asm.h"
+#include "angle.h"
+#include "gs.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/vector_inlines.h"
-#include "overlays/boot/text_001EEC80.h"
-#include "overlays/boot/text_001F6010.h"
-#include "overlays/boot/text_001DD3C0.h"
-#include "overlays/boot/text_001E0900.h"
-#include "overlays/boot/text_001FB220.h"
-#include "overlays/boot/text_001FF9D0.h"
+#include "overlays/boot/tracks.h"
+#include "overlays/boot/title_menu.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/program.h"
+#include "overlays/boot/trophy_viewer.h"
+#include "overlays/lib/list_indicator_inlines.h"
+#include "overlays/boot/music_player.h"
 #include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
 #include "sdk/main/libc_guess_0013CD50.h"
 
-extern "C" {
-
 /** Name given to every trophy texture. */
 extern const char g_trophy_texture_name[];
-
 extern const char g_no_trophy_number[];
 extern const char g_trophy_number_format[];
-void func_4CD630(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t);
-
 /** Key each trophy record must carry, stored XOR-encoded. */
 extern const u32 g_trophy_keys[];
-
 /** Text of the number label before the grid first updates it. */
 extern const char g_first_trophy_number[];
-
-}
 
 /** Stages of the Battle Trophies screen's card selection, transfer, and viewer flow. */
 enum BootTrophyViewerStep
@@ -89,7 +84,7 @@ s32 BootBattleTrophyViewer::get_default_list_kind()
  */
 static inline u64 trophy_time(BootBattleTrophyViewer* viewer, s32 position)
 {
-    BootSystemSettings* settings = boot_settings();
+    LibSystemSettings* settings = boot_settings();
     s32 index = viewer->order[position];
 
     if (resource_bit(&settings->trophy_flags, index))
@@ -274,12 +269,12 @@ void BootBattleTrophyViewer::update_grid()
         back_axis.x = 0.0f;
         back_axis.y = 1.0f;
         back_axis.z = 0.0f;
-        back_axis.w = 3.1415927f;
+        back_axis.w = PI;
         lib_quaternion_from_axis_angle(&back, &back_axis);
 
         for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
         {
-            BootModel* model;
+            LibModel* model;
 
             if (trophy_images[i] != 0 && (model = trophy_images[i]->model) != 0)
             {
@@ -287,7 +282,7 @@ void BootBattleTrophyViewer::update_grid()
                 {
                     if (model != 0)
                     {
-                        func_4CD630(&rotation, &front, &back, flip_progress[i]);
+                        lib_quaternion_slerp(&rotation, &front, &back, flip_progress[i]);
                         model->set_orientation((const LibVector4*)&rotation);
                     }
 
@@ -312,7 +307,7 @@ void BootBattleTrophyViewer::update_grid()
 
         if (image != 0)
         {
-            BootModel* model = image->model;
+            LibModel* model = image->model;
             copy_vector(&value, &model->translation);
             value.x = -236.0f + (i & (BOOT_TROPHY_GRID_COLUMNS - 1)) * 68;
             value.y = scrolled(-94.0f + i / BOOT_TROPHY_GRID_COLUMNS * 100, scroll);
@@ -366,7 +361,7 @@ void BootBattleTrophyViewer::update_grid()
  * @param right Right edge.
  * @param bottom Bottom edge.
  */
-static inline void set_clip(BootClipRegion* clip, s32 left, s32 top, s32 right, s32 bottom)
+static inline void set_clip(LibClipRegion* clip, s32 left, s32 top, s32 right, s32 bottom)
 {
     clip->left = left;
     clip->top = top;
@@ -382,7 +377,7 @@ static inline void set_clip(BootClipRegion* clip, s32 left, s32 top, s32 right, 
  */
 s32 BootBattleTrophyViewer::create_trophy_images()
 {
-    BootSystemSettings* settings = boot_settings();
+    LibSystemSettings* settings = boot_settings();
     LibTrophyFlags* bits = &settings->trophy_flags;
 
     if (!flags_intact(bits))
@@ -402,7 +397,7 @@ s32 BootBattleTrophyViewer::create_trophy_images()
             {
                 set_resource_bit(bits, i, 0);
                 record->key = 0;
-                func_457520(bits);
+                lib_trophy_flags_update_checksum(bits);
                 return 0;
             }
         }
@@ -414,8 +409,8 @@ s32 BootBattleTrophyViewer::create_trophy_images()
         textures[i] = (LibImageResource*)memalign(0x80, 0x4600);
     }
 
-    grid_clip = new (0) BootClipRegion;
-    D_001B661C->append_node(grid_clip, -1);
+    grid_clip = new (0) LibClipRegion;
+    g_renderer->append_node(grid_clip, -1);
 
     if (settings->widescreen)
     {
@@ -438,13 +433,13 @@ s32 BootBattleTrophyViewer::create_trophy_images()
             {
                 build_trophy_texture(&records[i], textures[i], i);
                 trophy_images[i]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), textures[i]);
-                image_set_rectangle_with_palette(trophy_images[i], 0, 0xE2, 0x44, 0x64, 0, 0, 0x40, 0x60, 0x80808080, 0);
+                image_set_rectangle_with_palette(trophy_images[i], 0, 226, 68, 100, 0, 0, 64, 96, GS_RGBA_NEUTRAL, 0);
                 earned_count++;
             }
             else
             {
                 trophy_images[i]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
-                trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
+                trophy_images[i]->set_rectangle(0, 226, 68, 100, GS_RGBA_NEUTRAL, 0);
             }
 
             trophy_images[i]->model->set_translation(-236.0f + (i & (BOOT_TROPHY_GRID_COLUMNS - 1)) * 68,
@@ -458,15 +453,15 @@ s32 BootBattleTrophyViewer::create_trophy_images()
             trophy_images[i] = new (0) BootImage;
             trophy_images[i]->centered = 1;
             trophy_images[i]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
-            trophy_images[i]->set_rectangle(0, 0xE2, 0x44, 0x64, 0x80808080, 0);
+            trophy_images[i]->set_rectangle(0, 226, 68, 100, GS_RGBA_NEUTRAL, 0);
             trophy_images[i]->model->set_translation(-236.0f + (i & (BOOT_TROPHY_GRID_COLUMNS - 1)) * 68,
                                                      -94.0f + i / BOOT_TROPHY_GRID_COLUMNS * 100, 0.0f);
         }
     }
 
     FlushCache(0);
-    screen_clip = new (0) BootClipRegion;
-    D_001B661C->append_node(screen_clip, -1);
+    screen_clip = new (0) LibClipRegion;
+    g_renderer->append_node(screen_clip, -1);
     screen_clip->display = g_boot_program.display;
     return 1;
 }
@@ -486,7 +481,7 @@ static inline void set_bar_color(BootProgressBar* const& bar, float red, float g
     color.y = green;
     color.z = blue;
     color.w = alpha;
-    BootModel* model = bar->model;
+    LibModel* model = bar->model;
     copy_vector(&model->base_color_factor, &color);
     model->update_combined_color_factor();
 }
@@ -503,7 +498,7 @@ void BootBattleTrophyViewer::update_images()
     {
         images[0] = new (0) BootImage;
         images[0]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
-        images[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
+        images[0]->set_rectangle(0, 1, 488, 223, GS_RGBA_NEUTRAL, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
@@ -511,7 +506,7 @@ void BootBattleTrophyViewer::update_images()
     {
         images[1] = new (0) BootImage;
         images[1]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[1]), 0);
-        images[1]->set_rectangle(0, 0, 640, 80, 0x80808080, 0);
+        images[1]->set_rectangle(0, 0, 640, 80, GS_RGBA_NEUTRAL, 0);
         images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
 
@@ -563,10 +558,10 @@ static inline bool trophy_genuine(const BootTrophyRecord* record, s32 index)
  * @param field Byte to save.
  * @param value Value to save.
  */
-static inline void settings_set_extra_byte(BootSystemSettings* settings, u8* field, u8 value)
+static inline void settings_set_extra_byte(LibSystemSettings* settings, u8* field, u8 value)
 {
     s32 length;
-    u8* data = &settings->unk1A0;
+    u8* data = &settings->extra_checksum_start;
     length = (u8*)&settings->extra_checksum - data;
 
     if (settings->extra_checksum == lib_compute_checksum(settings->extra_key, data, length))
@@ -609,14 +604,14 @@ static inline float grid_cursor_x(BootBattleTrophyViewer* viewer)
 static inline void move_grid_cursor(BootBattleTrophyViewer* viewer)
 {
     viewer->cursor->set_move_target(grid_cursor_x(viewer), viewer->cursor_row * 100 + 170, 0.05f);
-    resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+    resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
 }
 
 /** @brief Run the viewer: choose a memory card slot, load its trophy data, then browse the trophy grid. */
 void BootBattleTrophyViewer::update()
 {
     BootInput* input = g_boot_program.get_input();
-    BootSystemSettings* settings = (BootSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
+    LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
     s32 card_states[2];
     card_states[0] = input->slot1_raw_state;
     card_states[1] = input->slot2_raw_state;
@@ -637,9 +632,9 @@ void BootBattleTrophyViewer::update()
                 step++;
             }
 
-            D_001B661C->prepend_node(new (0) BootClass179150, -1);
+            g_renderer->prepend_node(new (0) LibColorFade, -1);
             container = new (0) LibContainer(9, 0.0f, 0.0f, 0.0f);
-            lib_queue_display_object(D_001B657C,
+            lib_queue_display_object(g_field_runtime,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
         }
 
@@ -684,19 +679,19 @@ void BootBattleTrophyViewer::update()
         lib_container_attach_widget(container, message_text);
         lib_container_attach_widget(container, slot1_text);
         lib_container_attach_widget(container, slot2_text);
-        message_text->set_color(0x34130F);
-        slot1_text->set_color(0x34130F);
-        slot2_text->set_color(0x34130F);
+        message_text->set_color(BOOT_TEXT_COLOR);
+        slot1_text->set_color(BOOT_TEXT_COLOR);
+        slot2_text->set_color(BOOT_TEXT_COLOR);
         step = BOOT_TROPHY_CHOOSE_SLOT;
         slot = 0;
         cursor = new (0) LibSelectionCursor;
         cursor->init(1, 0, 0, 170.0f, 156.0f, 0.0f);
-        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_WAIT_FOR_EXIT:
         if (input->pressed & settings->confirm_buttons)
         {
-            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step++;
         }
@@ -706,12 +701,12 @@ void BootBattleTrophyViewer::update()
         clear_to_black();
         resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
-        D_001B6614->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_BATTLE_TROPHIES), -1);
+        g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_BATTLE_TROPHIES), -1);
         lib_object_detach_owner(this);
         destroy();
         return;
     case BOOT_TROPHY_CHOOSE_SLOT:
-        if ((input->repeated & (BOOT_BUTTON_UP | BOOT_BUTTON_DOWN)) && cursor->unk35)
+        if ((input->repeated & (BOOT_BUTTON_UP | BOOT_BUTTON_DOWN)) && cursor->arrived)
         {
             float y;
             slot = (slot + 1) & 1;
@@ -726,7 +721,7 @@ void BootBattleTrophyViewer::update()
             }
 
             cursor->set_move_target(170.0f, y, 0.05f);
-            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
         }
 
         if (input->pressed & settings->confirm_buttons)
@@ -735,11 +730,11 @@ void BootBattleTrophyViewer::update()
             {
                 if (card_states[slot] == 5)
                 {
-                    resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 }
                 else
                 {
-                    resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_INVALID, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 }
 
                 queue_fade();
@@ -747,13 +742,13 @@ void BootBattleTrophyViewer::update()
             }
             else
             {
-                resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_INVALID, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 step = BOOT_TROPHY_SHOW_UNAVAILABLE_SLOT;
             }
         }
         else if (input->pressed & settings->cancel_buttons)
         {
-            resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step = BOOT_TROPHY_RETURN_TO_TITLE;
         }
@@ -780,7 +775,7 @@ void BootBattleTrophyViewer::update()
     case BOOT_TROPHY_WAIT_FOR_SLOT_MESSAGE:
         if (input->pressed & (settings->confirm_buttons | settings->cancel_buttons))
         {
-            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step = BOOT_TROPHY_SHOW_SLOT_CHOICES;
         }
@@ -897,12 +892,12 @@ void BootBattleTrophyViewer::update()
         input_delay = 0;
         step++;
         sort_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6F, 1, 430.0f, 55.0f, 512.0f, 224.0f);
-        sort_text->set_color(0x34130F);
+        sort_text->set_color(BOOT_TEXT_COLOR);
 
         if (settings->widescreen)
         {
             percentage_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6A, 1, 96.0f, 22.0f, 512.0f, 16.0f);
-            scroll_indicator = new (0) BootListIndicator(531.0f, 82.0f, 329.0f, 300.0f / (float)BOOT_TROPHY_GRID_ROWS, 0.0f);
+            scroll_indicator = new (0) LibListIndicator(531.0f, 82.0f, 329.0f, 300.0f / (float)BOOT_TROPHY_GRID_ROWS, 0.0f);
             number_label = new (0) LibStringLabel(g_first_trophy_number, 1, 48.0f, 414.0f, 512.0f, 224.0f);
             name_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6B, 1, 96.0f, 414.0f, 512.0f, 224.0f);
             date_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6C, 1, 96.0f, 438.0f, 512.0f, 224.0f);
@@ -910,17 +905,17 @@ void BootBattleTrophyViewer::update()
         else
         {
             percentage_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6A, 1, 96.0f, 24.0f, 512.0f, 224.0f);
-            scroll_indicator = new (0) BootListIndicator(595.0f, 84.0f, 323.0f, 300.0f / (float)BOOT_TROPHY_GRID_ROWS, 0.0f);
+            scroll_indicator = new (0) LibListIndicator(595.0f, 84.0f, 323.0f, 300.0f / (float)BOOT_TROPHY_GRID_ROWS, 0.0f);
             number_label = new (0) LibStringLabel(g_first_trophy_number, 1, 48.0f, 411.0f, 512.0f, 224.0f);
             name_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6B, 1, 96.0f, 411.0f, 512.0f, 224.0f);
             date_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6C, 1, 96.0f, 435.0f, 512.0f, 224.0f);
         }
 
-        sort_text->set_color(0x34130F);
-        percentage_text->set_color(0x34130F);
-        number_label->set_color(0x34130F);
-        name_text->set_color(0x34130F);
-        date_text->set_color(0x34130F);
+        sort_text->set_color(BOOT_TEXT_COLOR);
+        percentage_text->set_color(BOOT_TEXT_COLOR);
+        number_label->set_color(BOOT_TEXT_COLOR);
+        name_text->set_color(BOOT_TEXT_COLOR);
+        date_text->set_color(BOOT_TEXT_COLOR);
         lib_container_attach_widget(container, number_label);
         lib_container_attach_widget(container, name_text);
         lib_container_attach_widget(container, date_text);
@@ -948,7 +943,7 @@ void BootBattleTrophyViewer::update()
                 rank_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x71, 1, 32.0f, 55.0f, 512.0f, 22.0f);
                 rank_text->set_vertical_align(2);
                 lib_container_attach_widget(container, rank_text);
-                rank_text->set_color(0x34130F);
+                rank_text->set_color(BOOT_TEXT_COLOR);
                 rank = 0;
             }
 
@@ -990,22 +985,22 @@ void BootBattleTrophyViewer::update()
             if (score >= BOOT_TROPHY_FINAL_RANK_COUNT * BOOT_TROPHY_LOAD_SCORE_PER_EARNED)
             {
                 rank = 6;
-                settings_set_extra_byte(settings, &settings->unk1A0, 1);
+                settings_set_extra_byte(settings, &settings->extra_checksum_start, 1);
             }
         }
 
-        D_001B657C->message_arguments[1] = earned_count;
-        D_001B657C->message_arguments[2] = LIB_TROPHY_COUNT;
-        D_001B657C->message_arguments[3] = earned_count * 100 / LIB_TROPHY_COUNT;
+        g_field_runtime->message_arguments[1] = earned_count;
+        g_field_runtime->message_arguments[2] = LIB_TROPHY_COUNT;
+        g_field_runtime->message_arguments[3] = earned_count * 100 / LIB_TROPHY_COUNT;
         cursor = new (0) LibSelectionCursor;
         cursor->init(1, 0, 0, grid_cursor_x(this), cursor_row * 100 + 170, 0.0f);
-        lib_queue_display_object(D_001B657C, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
+        lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         break;
     case BOOT_TROPHY_BROWSE:
     {
         if (input->pressed & settings->cancel_buttons)
         {
-            resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step = BOOT_TROPHY_RETURN_TO_TITLE;
             return;
@@ -1063,7 +1058,7 @@ void BootBattleTrophyViewer::update()
                 else if (score < BOOT_TROPHY_FINAL_RANK_COUNT * BOOT_TROPHY_BROWSE_SCORE_PER_EARNED)
                 {
                     rank = 5;
-                    settings_set_extra_byte(settings, &settings->unk1A0, 0);
+                    settings_set_extra_byte(settings, &settings->extra_checksum_start, 0);
                 }
             }
 
@@ -1082,12 +1077,12 @@ void BootBattleTrophyViewer::update()
                 {
                     lib_text_set_resource(name_text, g_boot_program.get_messages(), index + 200, 0);
                     BootTrophyTime* time = &records[index].time;
-                    D_001B657C->message_arguments[4] = from_bcd(time->year);
-                    D_001B657C->message_arguments[5] = from_bcd(time->month);
-                    D_001B657C->message_arguments[6] = from_bcd(time->day);
-                    D_001B657C->message_arguments[7] = from_bcd(time->hour);
-                    D_001B657C->message_arguments[8] = from_bcd(time->minute);
-                    D_001B657C->message_arguments[9] = from_bcd(time->second);
+                    g_field_runtime->message_arguments[4] = from_bcd(time->year);
+                    g_field_runtime->message_arguments[5] = from_bcd(time->month);
+                    g_field_runtime->message_arguments[6] = from_bcd(time->day);
+                    g_field_runtime->message_arguments[7] = from_bcd(time->hour);
+                    g_field_runtime->message_arguments[8] = from_bcd(time->minute);
+                    g_field_runtime->message_arguments[9] = from_bcd(time->second);
 
                     if (time->year >= 0x10)
                     {
@@ -1106,9 +1101,9 @@ void BootBattleTrophyViewer::update()
             }
         }
 
-        if (score >= BOOT_TROPHY_RANK_THREE_COUNT * BOOT_TROPHY_BROWSE_SCORE_PER_EARNED && (input->pressed & settings->unk06))
+        if (score >= BOOT_TROPHY_RANK_THREE_COUNT * BOOT_TROPHY_BROWSE_SCORE_PER_EARNED && (input->pressed & settings->extra_buttons))
         {
-            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step = BOOT_TROPHY_OPEN_MUSIC_PLAYER;
             return;
@@ -1146,7 +1141,7 @@ void BootBattleTrophyViewer::update()
             reveal_index++;
         }
 
-        if (cursor->unk35 && scroll_step == 0 && input_delay == 0)
+        if (cursor->arrived && scroll_step == 0 && input_delay == 0)
         {
             if (input->repeated & BOOT_BUTTON_RIGHT)
             {
@@ -1205,7 +1200,7 @@ void BootBattleTrophyViewer::update()
                     if (first_row > 0)
                     {
                         scroll_step = -1;
-                        resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+                        resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     }
                 }
                 else
@@ -1230,7 +1225,7 @@ void BootBattleTrophyViewer::update()
                     if (first_row < row_count - 3)
                     {
                         scroll_step = 1;
-                        resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+                        resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     }
                 }
                 else
@@ -1258,7 +1253,7 @@ void BootBattleTrophyViewer::update()
                     }
 
                     page_delay = 4;
-                    resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 }
                 else if (cursor_row > 0)
                 {
@@ -1286,7 +1281,7 @@ void BootBattleTrophyViewer::update()
                     }
 
                     page_delay = 4;
-                    resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 }
                 else if (cursor_row < 2)
                 {
@@ -1297,7 +1292,7 @@ void BootBattleTrophyViewer::update()
 
             if (input->pressed & settings->alternate_buttons)
             {
-                resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 by_time ^= 1;
                 sort_trophies(by_time);
                 lib_text_set_resource(sort_text, g_boot_program.get_messages(), by_time + 0x6F, 0);
@@ -1320,7 +1315,7 @@ void BootBattleTrophyViewer::update()
         clear_to_black();
         resident_sound_stop_music(g_sound, 0x1E, -1);
         release();
-        D_001B6614->append_node(new (0) BootMusicPlayer, -1);
+        g_update_list->append_node(new (0) BootMusicPlayer, -1);
         lib_object_detach_owner(this);
         destroy();
         return;
@@ -1331,7 +1326,7 @@ void BootBattleTrophyViewer::update()
     case BOOT_TROPHY_WAIT_FOR_ERROR_ACKNOWLEDGEMENT:
         if (input->pressed & settings->confirm_buttons)
         {
-            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step = BOOT_TROPHY_RETURN_TO_TITLE;
         }
@@ -1506,7 +1501,7 @@ void BootBattleTrophyViewer::release()
 /** @brief Release the loaded data and every owned object. */
 BootBattleTrophyViewer::~BootBattleTrophyViewer()
 {
-    delete unk14;
+    delete heap_padding;
 
     for (s32 i = 0; i < 3; i++)
     {
@@ -1629,7 +1624,7 @@ BootBattleTrophyViewer::BootBattleTrophyViewer()
     resource_data = (u8*)memalign(0x40, resident_get_resource_size(g_resource_archive, BOOT_RES_TROPHY_VIEWER));
     resident_queue_resource_request(g_resource_queue, BOOT_RES_TROPHY_VIEWER, resource_data,
                                     BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
-    unk14 = new (0) u8[resident_random_below(0x400) * 4 + 0x400];
+    heap_padding = new (0) u8[resident_random_below(0x400) * 4 + 0x400];
     image_blocks[0] = 0;
     image_blocks[1] = 0;
     image_blocks[2] = 0;
