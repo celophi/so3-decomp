@@ -1,5 +1,11 @@
 #include "include_asm.h"
-#include "overlays/boot/text_001E0900.h"
+#include "gs.h"
+#include "overlays/boot/program.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/startup_checks.h"
+#include "overlays/boot/title_menu.h"
+#include "overlays/boot/tracks.h"
+#include "overlays/boot/trophy_card.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
@@ -19,11 +25,10 @@
 
 extern LibScreenText* g_screen_text;
 extern BootResidentDisplay* g_display_callbacks;
-extern LibCameraContext* D_001B6520;
 extern u8 D_001B6420;
 extern BootTrackPool<BootPooledFloatTrack>* g_float_track_pool;
 extern BootTrackPool<BootPooledVectorTrack>* g_vector_track_pool;
-extern BootTrackPool<BootClass177EE0>* D_001B666C;
+extern BootTrackPool<BootClass177EE0>* g_track_1718C0_pool;
 extern BootTrackPool<BootPooledFloatCurveTrack>* g_float_curve_track_pool;
 extern BootTrackPool<BootPooledVectorCurveTrack>* g_vector_curve_track_pool;
 extern BootTrackPool<BootPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
@@ -303,7 +308,7 @@ void BootOpeningMovie::update()
             {
                 caption_image = new (0) BootImage;
                 caption_image->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(g_boot_program.image_block), 0);
-                caption_image->set_rectangle(g_opening_captions[caption].x, g_opening_captions[caption].y, width, height, 0x80808080, 0);
+                caption_image->set_rectangle(g_opening_captions[caption].x, g_opening_captions[caption].y, width, height, GS_RGBA_NEUTRAL, 0);
                 caption_image_loaded = 1;
             }
         }
@@ -534,11 +539,9 @@ BootOpeningMovie::BootOpeningMovie()
 
     if (resource->widescreen != 0)
     {
-        player->state->unk80D8 = 1;
-        g_scene_camera->pixel_aspect =
-            (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width)) /
-            1.3333334f;
-        g_scene_camera->horizontal_fov = 1.8325958f;
+        player->state->widescreen = 1;
+        g_scene_camera->pixel_aspect = BOOT_PIXEL_ASPECT_WIDE(g_boot_program.display->display_area);
+        g_scene_camera->horizontal_fov = BOOT_FOV_WIDE;
     }
 
     container = 0;
@@ -672,20 +675,20 @@ inline void BootProgram::apply_projection_aspect()
     if (resource->widescreen != 0)
     {
         dimensions = g_boot_program.display;
-        projection->pixel_aspect = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
-        projection->unk250 = 0.75f;
+        projection->pixel_aspect = BOOT_PIXEL_ASPECT_WIDE(dimensions->display_area);
+        projection->width_scale = 0.75f;
         dimensions = g_boot_program.display;
-        g_scene_camera->pixel_aspect = (1.7777778f * ((1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width)) / 1.3333334f;
-        g_scene_camera->horizontal_fov = 1.8325958f;
+        g_scene_camera->pixel_aspect = BOOT_PIXEL_ASPECT_WIDE(dimensions->display_area);
+        g_scene_camera->horizontal_fov = BOOT_FOV_WIDE;
     }
     else
     {
         dimensions = g_boot_program.display;
-        projection->pixel_aspect = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
-        projection->unk250 = 1.0f;
+        projection->pixel_aspect = BOOT_PIXEL_ASPECT_STANDARD(dimensions->display_area);
+        projection->width_scale = 1.0f;
         dimensions = g_boot_program.display;
-        g_scene_camera->pixel_aspect = (1.3333334f * (1.0714285f * (float)dimensions->display_area.height)) / (float)dimensions->display_area.width;
-        g_scene_camera->horizontal_fov = 1.5707964f;
+        g_scene_camera->pixel_aspect = BOOT_PIXEL_ASPECT_STANDARD(dimensions->display_area);
+        g_scene_camera->horizontal_fov = BOOT_FOV_STANDARD;
     }
 }
 
@@ -718,20 +721,7 @@ void BootProgram::set_progressive(u8 progressive)
     rebuild_display(1);
     rebuilt = display;
     renderer = g_renderer;
-    renderer->display = rebuilt;
-    g_display = rebuilt;
-
-    if (renderer->manager != 0)
-    {
-        renderer->manager->effect_display = rebuilt;
-    }
-
-    renderer->unk4458->display = rebuilt;
-    renderer->unk4460->display = rebuilt;
-    renderer->unk4464->display = rebuilt;
-    renderer->unk4468->display = rebuilt;
-    renderer->extra->display = rebuilt;
-    D_001B6520 = rebuilt;
+    renderer->set_display(rebuilt);
     apply_projection_aspect();
 }
 
@@ -780,7 +770,7 @@ void BootProgram::create_pools_and_projection()
     lib_load_shared_font(0, 0);
     float_track_pool_allocate(g_float_track_pool, 500);
     vector_track_pool_allocate(g_vector_track_pool, 500);
-    track_1718C0_pool_allocate(D_001B666C, 500);
+    track_1718C0_pool_allocate(g_track_1718C0_pool, 500);
     float_curve_track_pool_allocate(g_float_curve_track_pool, 2000);
     vector_curve_track_pool_allocate(g_vector_curve_track_pool, 2000);
     float_quaternion_track_pool_allocate(g_float_quaternion_track_pool, 2000);
@@ -983,7 +973,7 @@ void BootProgram::release_resources()
     D_001B6420 = 0;
     float_track_pool_release(g_float_track_pool);
     vector_track_pool_release(g_vector_track_pool);
-    track_1718C0_pool_release(D_001B666C);
+    track_1718C0_pool_release(g_track_1718C0_pool);
     float_curve_track_pool_release(g_float_curve_track_pool);
     vector_curve_track_pool_release(g_vector_curve_track_pool);
     float_quaternion_track_pool_release(g_float_quaternion_track_pool);

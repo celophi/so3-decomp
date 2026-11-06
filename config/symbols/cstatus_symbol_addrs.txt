@@ -491,7 +491,7 @@ __vt__12LibContainer = 0x00178660; // type:u32 size:0xB4 absolute:True
 __vt__15LibObject174F20 = 0x00174F20; // type:u32 size:0x24 absolute:True
 __vt__15LibObject172410 = 0x00172410; // type:u32 size:0x24 absolute:True
 __vt__23ItemCreationClass172870 = 0x00172870; // type:u32 size:0x24 absolute:True
-__vt__23ItemCreationClass1725D0 = 0x001725D0; // type:u32 size:0x24 absolute:True
+__vt__16LibListIndicator = 0x001725D0; // type:u32 size:0x24 absolute:True
 
 status_initialize_name_maps = 0x00348700; // type:func
 func_00348700 = 0x00348700; // type:func absolute:True allow_duplicated:True
@@ -675,3 +675,4 @@ g_vram_allocator = 0x001B65E0; // absolute:True
 g_inverse_frame_ticks = 0x001B668C; // absolute:True
 g_update_list = 0x001B6614; // absolute:True
 g_field_runtime = 0x001B657C; // absolute:True
+g_microcode_loader = 0x001B6600; // absolute:True

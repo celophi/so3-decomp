@@ -369,3 +369,4 @@ g_vram_allocator = 0x001B65E0; // absolute:True
 g_inverse_frame_ticks = 0x001B668C; // absolute:True
 g_update_list = 0x001B6614; // absolute:True
 g_field_runtime = 0x001B657C; // absolute:True
+g_microcode_loader = 0x001B6600; // absolute:True

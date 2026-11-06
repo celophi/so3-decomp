@@ -197,7 +197,7 @@ struct LibSystemSettings
     u8 unk25_bit7 : 1;
 
     /** First byte covered by checksum. */
-    u8 unk26;
+    u8 checksum_start;
 
     u8 unk27;
 
@@ -228,7 +228,7 @@ struct LibSystemSettings
     float speaker_angles[4];
 
     /** First byte covered by extra_checksum. */
-    u8 unk1A0;
+    u8 extra_checksum_start;
 
     /** Nonzero once Universe difficulty can be chosen. */
     u8 universe_unlocked;

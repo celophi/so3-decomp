@@ -480,9 +480,26 @@ extern "C" void lib_animation_load_resource(LibAnimation* object, ResidentResour
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0370);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __dt__12LibAnimationFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __ct__12LibAnimationFv);
+/** @brief Start with no resource, entries or bindings. */
+LibAnimation::LibAnimation()
+{
+    resource_data = 0;
+    resource_is_borrowed = 0;
+    unk69 = 0;
+    entries = 0;
+    unk44 = 0;
+    unk48 = 0;
+    started = 0;
+    unk6d = 0;
+    unk6b = 0;
+    cached_entry = 0;
+    targets_bound = 0;
+    primary_binding_owner = 0;
+    secondary_binding_owner = 0;
+    object_kind |= LIB_OBJECT_KIND_ANIMATION;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0530);
 

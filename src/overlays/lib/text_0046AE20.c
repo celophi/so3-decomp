@@ -840,7 +840,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473DC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00473E20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00474010);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", lib_scene_build_objects);
 
 /** Return the word at receiver offset 0x8. */
 u32 func_00478F70(const void* object)

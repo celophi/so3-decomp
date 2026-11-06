@@ -763,6 +763,11 @@ typedef struct DmaSubmission DmaSubmission;
 class ResidentThread
 {
     public:
+        /** @brief Start without a stack or a kernel thread. */
+        ResidentThread() : stack(0), thread_id(-1)
+        {
+        }
+
         /** Priority the thread was created with. */
         s32 priority;
 
@@ -1871,14 +1876,20 @@ s32 func_0011CA60(ResidentArchive* archive, void* buffer, s32 key, s32 size);
  */
 s32 resident_enqueue_object(ResidentReleaseQueues* queue, void* object);
 
+/** Volume for a sound effect at full level. */
+#define RESIDENT_SOUND_VOLUME_FULL 127
+
+/** Pan for a sound effect centred between the speakers. */
+#define RESIDENT_SOUND_PAN_CENTRE 64
+
 /**
  * @brief Play a sound effect in a free slot.
  * @param sound Sound system.
  * @param number Sound number; its low 16 bits are stored.
  * @param selector Request selector.
  * @param value Value forwarded to request dispatch.
- * @param volume Volume, 0x7F for full; stored and packed into the upper byte.
- * @param pan Pan, 0x40 for centre; packed into the next byte.
+ * @param volume Volume, up to RESIDENT_SOUND_VOLUME_FULL; stored and packed into the upper byte.
+ * @param pan Pan, RESIDENT_SOUND_PAN_CENTRE for centre; packed into the next byte.
  * @param low Value packed into the lower 16 bits.
  * @return Slot identifier, zero on dispatch failure, one when disabled, or minus one when no slot is free.
  */

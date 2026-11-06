@@ -279,9 +279,6 @@ s32 func_0042D9A0(void* object);
 /** Return the fixed integer value 3. */
 s32 func_0042EB20(void* object);
 
-/** Return the fixed integer value 4. */
-s32 func_00431720(void* object);
-
 /** Return the fixed integer value 6. */
 s32 func_00434F20(void* object);
 

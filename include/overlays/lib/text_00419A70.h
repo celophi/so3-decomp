@@ -5,20 +5,44 @@
 #include "overlays/lib/text_004BD360.h"
 
 #ifdef __cplusplus
-/** Partial widget with resident vtable at 0x1725D0. */
-class ItemCreationClass1725D0 : public LibWidget
+/** Partial 0x58-byte list indicator with vtable D_1725D0: a bar showing how far a list is scrolled. */
+class LibListIndicator : public LibWidget
 {
 public:
     /** @brief Initialize the widget storage and select kind 3. */
-    inline ItemCreationClass1725D0();
+    inline LibListIndicator();
     /** @brief Release the widget storage and destroy its base. */
-    virtual ~ItemCreationClass1725D0();
+    virtual ~LibListIndicator();
     /** @brief Draw the list indicator. */
     virtual void draw();
+    /**
+     * @brief Select widget kind 3, then place the indicator and set its scroll extent and position.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param height Bar height.
+     * @param extent Size of one scroll step, as a share of the bar.
+     * @param position Scroll position.
+     */
+    inline LibListIndicator(float x, float y, float height, float extent, float position);
+
+    /**
+     * @brief Set the scroll position and mark the indicator for redraw.
+     * @param value Position, from 0 to 100.
+     */
+    void set_position(float value)
+    {
+        position = value;
+        needs_redraw = 1;
+    }
+
     LibStorageBlock0C unk40;
     u8 unk4c[4];
-    float unk50;
-    float unk54;
+
+    /** Size of one scroll step, as a share of the bar. */
+    float extent;
+
+    /** Scroll position, from 0 to 100. */
+    float position;
 };
 
 /** Partial widget with resident vtable at 0x172870. */
@@ -74,28 +98,28 @@ public:
 };
 
 typedef ItemCreationClass172600 LibClass172600;
-typedef ItemCreationClass1725D0 LibClass1725D0;
+typedef LibListIndicator LibClass1725D0;
 typedef ItemCreationClass172870 LibClass172870;
 extern "C" {
 void func_00423930(u8* object);
 void func_0041E880(u8* object);
 #else
 typedef struct ItemCreationClass172600 ItemCreationClass172600;
-typedef struct ItemCreationClass1725D0 ItemCreationClass1725D0;
+typedef struct LibListIndicator LibListIndicator;
 typedef struct ItemCreationClass172870 ItemCreationClass172870;
 #endif
 
 /**
- * @brief Configure the list indicator's rectangle and scalar pair.
- * @param object List indicator widget.
+ * @brief Place a list indicator and set its scroll extent and position.
+ * @param object List indicator.
  * @param x Horizontal position.
  * @param y Vertical position.
- * @param height Rectangle height.
- * @param first First scalar value.
- * @param second Second scalar value.
+ * @param height Bar height.
+ * @param extent Size of one scroll step, as a share of the bar.
+ * @param position Scroll position.
  * @return One on success, or zero if its storage could not be initialized.
  */
-s32 lib_list_indicator_init(ItemCreationClass1725D0* object, float x, float y, float height, float first, float second);
+s32 lib_list_indicator_init(LibListIndicator* object, float x, float y, float height, float extent, float position);
 
 /**
  * @brief Allocate marker drawing storage and initialize its rectangle and colors.
@@ -307,7 +331,6 @@ void func_004297F0(void* object, u8 mode);
 #endif
 
 #ifdef __cplusplus
-extern "C" s32 func_0041A170(void* object);
 extern "C" s32 func_0041AE50(void* object);
 extern "C" s32 func_0041D230(void* object);
 extern "C" s32 func_0041E8E0(void* object);

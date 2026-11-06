@@ -1012,7 +1012,7 @@ extern const s16* const D_301380[];
 extern const char D_31A7D8[];
 
 /** Shared animation channel pool. */
-extern FieldChannelPool* D_001B666C;
+extern FieldChannelPool* g_track_1718C0_pool;
 
 /**
  * @brief Acquire and reset the next available channel in the pool.

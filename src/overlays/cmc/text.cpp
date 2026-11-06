@@ -290,7 +290,7 @@ extern void func_4C4960(void* object);
 /** Native table anchors used by the retained constructor entry points. */
 extern u8 __vt__23ItemCreationClass172870[];
 extern u8 __vt__23ItemCreationClass172600[];
-extern u8 __vt__23ItemCreationClass1725D0[];
+extern u8 __vt__16LibListIndicator[];
 extern u8 __vt__23ItemCreationClass1746A0[];
 }
 
@@ -545,7 +545,7 @@ ItemCreationClass1746A0::~ItemCreationClass1746A0()
 }
 
 /** @brief Release the widget storage and destroy its base. */
-ItemCreationClass1725D0::~ItemCreationClass1725D0()
+LibListIndicator::~LibListIndicator()
 {
 }
 
@@ -596,7 +596,7 @@ INCLUDE_ASM("build/overlays/cmc/asm/nonmatchings/text", func_0034D160);
 Overlay0072CtorObject0034D0E0* func_0034D230(Overlay0072CtorObject0034D0E0* object)
 {
     func_4C4960(object);
-    object->table = __vt__23ItemCreationClass1725D0;
+    object->table = __vt__16LibListIndicator;
     object->field_40 = 0;
     object->state = 3;
     return object;

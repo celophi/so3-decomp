@@ -3,7 +3,13 @@
 #pragma opt_pulloutconstants off
 
 #include "include_asm.h"
-#include "overlays/boot/text_001E0900.h"
+#include "angle.h"
+#include "gs.h"
+#include "overlays/boot/new_game_settings.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/game_launcher.h"
+#include "overlays/boot/program.h"
+#include "overlays/boot/title_menu.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
@@ -54,7 +60,7 @@ struct BootLabelOffsets
  */
 static inline u8 settings_difficulty(LibSystemSettings* settings)
 {
-    if (settings->checksum != lib_compute_checksum(settings->key, &settings->unk26, (u8*)&settings->checksum - &settings->unk26))
+    if (settings->checksum != lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
     {
         return LIB_DIFFICULTY_EARTH;
     }
@@ -69,13 +75,13 @@ static inline u8 settings_difficulty(LibSystemSettings* settings)
  */
 static inline void settings_set_difficulty(LibSystemSettings* settings, u8 value)
 {
-    s32 length = (u8*)&settings->checksum - &settings->unk26;
+    s32 length = (u8*)&settings->checksum - &settings->checksum_start;
 
-    if (settings->checksum == lib_compute_checksum(settings->key, &settings->unk26, length))
+    if (settings->checksum == lib_compute_checksum(settings->key, &settings->checksum_start, length))
     {
         settings->difficulty = value;
         settings->key = resident_next_random_word();
-        settings->checksum = lib_compute_checksum(settings->key, &settings->unk26, length);
+        settings->checksum = lib_compute_checksum(settings->key, &settings->checksum_start, length);
     }
 }
 
@@ -103,7 +109,7 @@ static inline u8 settings_extra_byte(LibSystemSettings* settings, u8* data, u8* 
  */
 static inline u8 settings_universe_unlocked(LibSystemSettings* settings)
 {
-    u8* data = &settings->unk1A0;
+    u8* data = &settings->extra_checksum_start;
 
     if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
@@ -120,7 +126,7 @@ static inline u8 settings_universe_unlocked(LibSystemSettings* settings)
  */
 static inline u8 settings_fourth_dimension_unlocked(LibSystemSettings* settings)
 {
-    u8* data = &settings->unk1A0;
+    u8* data = &settings->extra_checksum_start;
 
     if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
     {
@@ -211,24 +217,24 @@ void BootNewGameSettings::place_girl()
     {
         if (girl_lean > 0.0f)
         {
-            girl_lean -= 3.1415927f * g_frame_seconds;
+            girl_lean -= PI * g_frame_seconds;
             girl_lean = ee_max_in_place(0.0f, girl_lean);
         }
         else
         {
-            girl_lean += 3.1415927f * g_frame_seconds;
+            girl_lean += PI * g_frame_seconds;
             girl_lean = ee_min(0.0f, girl_lean);
         }
     }
     else if (turn_speed < 0.0f)
     {
         girl_lean += 9.424778f * g_frame_seconds;
-        girl_lean = ee_min(1.5707964f, girl_lean);
+        girl_lean = ee_min(HALF_PI, girl_lean);
     }
     else
     {
         girl_lean -= 9.424778f * g_frame_seconds;
-        girl_lean = ee_max(-1.5707964f, girl_lean);
+        girl_lean = ee_max(-HALF_PI, girl_lean);
     }
 
     LibTransformOwner* root = lib_find_transform_entry(girl_scene, g_root_node_name);
@@ -458,7 +464,7 @@ void BootNewGameSettings::place_speakers()
         LibMatrix44Value matrix;
         FieldVec4B target;
         LibVector4 rotation;
-        lib_compute_sine_cosine_pair_degree9(&angles, i < 4 ? g_sound->speaker_angles[i] : 1.5707964f);
+        lib_compute_sine_cosine_pair_degree9(&angles, i < 4 ? g_sound->speaker_angles[i] : HALF_PI);
         position.x = 250.0f * angles.z;
         position.z = 250.0f * angles.w;
         position.y = 0.0f;
@@ -590,16 +596,14 @@ void BootNewGameSettings::apply_option_value()
         {
         case 0:
             settings->widescreen = 0;
-            g_scene_camera->pixel_aspect = (1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width;
-            g_scene_camera->horizontal_fov = 1.5707964f;
+            g_scene_camera->pixel_aspect = BOOT_PIXEL_ASPECT_STANDARD(g_boot_program.display->display_area);
+            g_scene_camera->horizontal_fov = BOOT_FOV_STANDARD;
             g_boot_program.update_projection_aspect();
             break;
         case 1:
             settings->widescreen = 1;
-            g_scene_camera->pixel_aspect =
-                (1.7777778f * ((1.3333334f * (1.0714285f * (float)g_boot_program.display->display_area.height)) / (float)g_boot_program.display->display_area.width)) /
-                1.3333334f;
-            g_scene_camera->horizontal_fov = 1.8325958f;
+            g_scene_camera->pixel_aspect = BOOT_PIXEL_ASPECT_WIDE(g_boot_program.display->display_area);
+            g_scene_camera->horizontal_fov = BOOT_FOV_WIDE;
             g_boot_program.update_projection_aspect();
             break;
         }
@@ -864,58 +868,58 @@ void BootNewGameSettings::update_option_rows()
             case BOOT_SETTINGS_TV_MODE:
                 row_x = -272.0f;
                 images[16]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[3]), 0);
-                images[16]->set_rectangle(0, 8, 288, 40, 0x80808080, 0);
+                images[16]->set_rectangle(0, 8, 288, 40, GS_RGBA_NEUTRAL, 0);
                 images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[3]), 0);
-                images[17]->set_rectangle(0, 68, 288, 40, 0x80808080, 0);
+                images[17]->set_rectangle(0, 68, 288, 40, GS_RGBA_NEUTRAL, 0);
                 images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_SOUND:
                 row_x = -272.0f;
                 images[16]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[3]), 0);
-                images[16]->set_rectangle(0, 106, 288, 40, 0x80808080, 0);
+                images[16]->set_rectangle(0, 106, 288, 40, GS_RGBA_NEUTRAL, 0);
                 images[16]->model->set_translation(-272.0f, -162.0f, 0.0f);
                 images[17]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[3]), 0);
-                images[17]->set_rectangle(0, 162, 200, 40, 0x80808080, 0);
+                images[17]->set_rectangle(0, 162, 200, 40, GS_RGBA_NEUTRAL, 0);
                 images[17]->model->set_translation(-272.0f, -126.0f, 0.0f);
                 images[18]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[3]), 0);
-                images[18]->set_rectangle(0, 236, 424, 40, 0x80808080, 0);
+                images[18]->set_rectangle(0, 236, 424, 40, GS_RGBA_NEUTRAL, 0);
                 images[18]->model->set_translation(-272.0f, -90.0f, 0.0f);
                 images[19]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[3]), 0);
-                images[19]->set_rectangle(224, 168, 237, 38, 0x80808080, 0);
+                images[19]->set_rectangle(224, 168, 237, 38, GS_RGBA_NEUTRAL, 0);
                 images[19]->model->set_translation(-272.0f, -55.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_EVENT_SKIP:
                 row_x = -272.0f;
                 images[16]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[3]), 0);
-                images[16]->set_rectangle(0, 312, 340, 40, 0x80808080, 0);
+                images[16]->set_rectangle(0, 312, 340, 40, GS_RGBA_NEUTRAL, 0);
                 images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[3]), 0);
-                images[17]->set_rectangle(0, 368, 340, 40, 0x80808080, 0);
+                images[17]->set_rectangle(0, 368, 340, 40, GS_RGBA_NEUTRAL, 0);
                 images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VOICE:
                 row_x = -260.0f;
                 images[16]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                images[16]->set_rectangle(0, 0, 340, 40, 0x80808080, 0);
+                images[16]->set_rectangle(0, 0, 340, 40, GS_RGBA_NEUTRAL, 0);
                 images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                images[17]->set_rectangle(0, 55, 340, 40, 0x80808080, 0);
+                images[17]->set_rectangle(0, 55, 340, 40, GS_RGBA_NEUTRAL, 0);
                 images[17]->model->set_translation(-260.0f, -102.0f, 0.0f);
                 images[18]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                images[18]->set_rectangle(0, 110, 340, 40, 0x80808080, 0);
+                images[18]->set_rectangle(0, 110, 340, 40, GS_RGBA_NEUTRAL, 0);
                 images[18]->model->set_translation(-260.0f, -62.0f, 0.0f);
                 images[19]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                images[19]->set_rectangle(0, 416, 500, 40, 0x80808080, 0);
+                images[19]->set_rectangle(0, 416, 500, 40, GS_RGBA_NEUTRAL, 0);
                 images[19]->model->set_translation(-260.0f, -22.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_VIBRATION:
                 row_x = -254.0f;
                 images[16]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                images[16]->set_rectangle(0, 160, 340, 40, 0x80808080, 0);
+                images[16]->set_rectangle(0, 160, 340, 40, GS_RGBA_NEUTRAL, 0);
                 images[16]->model->set_translation(-272.0f, -142.0f, 0.0f);
                 images[17]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                images[17]->set_rectangle(0, 215, 340, 40, 0x80808080, 0);
+                images[17]->set_rectangle(0, 215, 340, 40, GS_RGBA_NEUTRAL, 0);
                 images[17]->model->set_translation(-272.0f, -74.0f, 0.0f);
                 break;
             case BOOT_SETTINGS_DIFFICULTY:
@@ -924,28 +928,28 @@ void BootNewGameSettings::update_option_rows()
                 if (!settings_universe_unlocked(settings))
                 {
                     images[16]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                    images[16]->set_rectangle(0, 257, 340, 42, 0x80808080, 0);
+                    images[16]->set_rectangle(0, 257, 340, 42, GS_RGBA_NEUTRAL, 0);
                     images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
                     images[17]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                    images[17]->set_rectangle(0, 313, 340, 42, 0x80808080, 0);
+                    images[17]->set_rectangle(0, 313, 340, 42, GS_RGBA_NEUTRAL, 0);
                     images[17]->model->set_translation(-260.0f, -92.0f, 0.0f);
                     images[18]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                    images[18]->set_rectangle(0, 369, 340, 42, 0x80808080, 0);
+                    images[18]->set_rectangle(0, 369, 340, 42, GS_RGBA_NEUTRAL, 0);
                     images[18]->model->set_translation(-260.0f, -42.0f, 0.0f);
                 }
                 else
                 {
                     images[16]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                    images[16]->set_rectangle(3, 257, 340, 42, 0x80808080, 0);
+                    images[16]->set_rectangle(3, 257, 340, 42, GS_RGBA_NEUTRAL, 0);
                     images[16]->model->set_translation(-260.0f, -142.0f, 0.0f);
                     images[17]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                    images[17]->set_rectangle(3, 313, 340, 42, 0x80808080, 0);
+                    images[17]->set_rectangle(3, 313, 340, 42, GS_RGBA_NEUTRAL, 0);
                     images[17]->model->set_translation(-260.0f, -102.0f, 0.0f);
                     images[18]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                    images[18]->set_rectangle(3, 369, 340, 42, 0x80808080, 0);
+                    images[18]->set_rectangle(3, 369, 340, 42, GS_RGBA_NEUTRAL, 0);
                     images[18]->model->set_translation(-260.0f, -62.0f, 0.0f);
                     images[19]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[4]), 0);
-                    images[19]->set_rectangle(0, 466, 340, 42, 0x80808080, 0);
+                    images[19]->set_rectangle(0, 466, 340, 42, GS_RGBA_NEUTRAL, 0);
                     images[19]->model->set_translation(-260.0f, -24.0f, 0.0f);
                 }
 
@@ -983,7 +987,7 @@ void BootNewGameSettings::update_option_rows()
         s32 i;
         LibModel* model;
         // Form the settings block pointer before the loop to preserve its access pattern.
-        u8* extra = &settings->unk1A0;
+        u8* extra = &settings->extra_checksum_start;
 
         for (i = 0; i < 4; i++)
         {
@@ -1081,7 +1085,7 @@ void BootNewGameSettings::update_page_images()
     {
         images[0] = new (0) BootImage;
         images[0]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
-        images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
+        images[0]->set_rectangle(0, 1, 488, 223, GS_RGBA_NEUTRAL, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
@@ -1089,7 +1093,7 @@ void BootNewGameSettings::update_page_images()
     {
         images[1] = new (0) BootImage;
         images[1]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[1]), 0);
-        images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
+        images[1]->set_rectangle(0, 0, 640, 80, GS_RGBA_NEUTRAL, 0);
         images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
 
@@ -1097,13 +1101,13 @@ void BootNewGameSettings::update_page_images()
     {
         images[2] = new (0) BootImage;
         images[2]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
-        images[2]->set_rectangle(0x1A, 0xF5, 0x18, 0x16, 0x80808080, 0);
+        images[2]->set_rectangle(26, 245, 24, 22, GS_RGBA_NEUTRAL, 0);
 
         for (s32 i = 0; i < 6; i++)
         {
             images[3 + i] = new (0) BootImage;
             images[3 + i]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[0]), 0);
-            images[3 + i]->set_rectangle(0x52, 0xF3 + i * 29, 0xEE, 0x1C, 0x80808080, 0);
+            images[3 + i]->set_rectangle(82, 243 + i * 29, 238, 28, GS_RGBA_NEUTRAL, 0);
         }
     }
 
@@ -1113,7 +1117,7 @@ void BootNewGameSettings::update_page_images()
         {
             images[9 + i] = new (0) BootImage;
             images[9 + i]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[2]), 0);
-            images[9 + i]->set_rectangle(0, 2 + i * 32, 0x180, 0x20, 0x80808080, 0);
+            images[9 + i]->set_rectangle(0, 2 + i * 32, 384, 32, GS_RGBA_NEUTRAL, 0);
         }
     }
 
@@ -1121,7 +1125,7 @@ void BootNewGameSettings::update_page_images()
     {
         images[15] = new (0) BootImage;
         images[15]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_blocks[2]), 0);
-        images[15]->set_rectangle(0, 0xC2, 0x180, 0x20, 0x80808080, 0);
+        images[15]->set_rectangle(0, 194, 384, 32, GS_RGBA_NEUTRAL, 0);
     }
 
     settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
@@ -1312,7 +1316,7 @@ void BootNewGameSettings::update()
 {
     BootInput* input = g_boot_program.input;
     LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
-    u8 extra = settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked);
+    u8 extra = settings_extra_byte(settings, &settings->extra_checksum_start, &settings->universe_unlocked);
     g_difficulty_option_count = extra ? 4 : 3;
 
     switch (stage)
@@ -1332,7 +1336,7 @@ void BootNewGameSettings::update()
             lib_queue_display_object(g_field_runtime,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             description_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
-            description_text->set_color(0x34130F);
+            description_text->set_color(BOOT_TEXT_COLOR);
             lib_container_attach_widget(container, description_text);
             load_option_value();
             show_value_message();
@@ -1370,7 +1374,7 @@ void BootNewGameSettings::update()
             get_cursor_position(&x, &y);
             cursor->set_move_target(x, y, 0.05f);
             highlight_phase = 0;
-            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             show_value_message();
         }
 
@@ -1384,25 +1388,25 @@ void BootNewGameSettings::update()
             float y;
             get_cursor_position(&x, &y);
             cursor->set_move_target(x, y, 0.05f);
-            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             show_value_message();
         }
 
         if (button_pressed(input, settings->confirm_buttons))
         {
-            if (selection == 2 && page == BOOT_SETTINGS_DIFFICULTY && !settings_extra_byte(settings, &settings->unk1A0, &settings->universe_unlocked))
+            if (selection == 2 && page == BOOT_SETTINGS_DIFFICULTY && !settings_extra_byte(settings, &settings->extra_checksum_start, &settings->universe_unlocked))
             {
-                resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_INVALID, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 break;
             }
 
-            if (selection == 3 && page == BOOT_SETTINGS_DIFFICULTY && !settings_extra_byte(settings, &settings->unk1A0, &settings->fourth_dimension_unlocked))
+            if (selection == 3 && page == BOOT_SETTINGS_DIFFICULTY && !settings_extra_byte(settings, &settings->extra_checksum_start, &settings->fourth_dimension_unlocked))
             {
-                resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_INVALID, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 break;
             }
 
-            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             stage = BOOT_SETTINGS_STAGE_NEXT_PAGE;
         }
@@ -1410,7 +1414,7 @@ void BootNewGameSettings::update()
         {
             if (page == BOOT_SETTINGS_TV_MODE)
             {
-                resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 queue_fade();
                 resident_sound_stop_music(g_sound, 0x1E, -1);
                 stage = BOOT_SETTINGS_STAGE_EXIT;
@@ -1418,7 +1422,7 @@ void BootNewGameSettings::update()
             }
             else
             {
-                resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 queue_fade();
                 stage = BOOT_SETTINGS_STAGE_PREVIOUS_PAGE;
             }
@@ -1426,7 +1430,7 @@ void BootNewGameSettings::update()
 
         if (button_pressed(input, settings->alternate_buttons) && page == BOOT_SETTINGS_SOUND && selection == 2)
         {
-            resident_sound_play(g_sound, 4, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_ALTERNATE, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             stage = BOOT_SETTINGS_STAGE_ENTER_SPEAKERS;
         }
@@ -1534,10 +1538,10 @@ void BootNewGameSettings::update()
             resident_pad_set_stick_dpad(g_input_system, 0, 0);
             room_scene = new (0) BootScene;
             lib_scene_use_data(room_scene, (u8*)RESIDENT_ALIGN_RESOURCE(model_blocks[0]));
-            func_474010(room_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
+            lib_scene_build_objects(room_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
             girl_scene = new (0) BootScene;
             lib_scene_use_data(girl_scene, (u8*)RESIDENT_ALIGN_RESOURCE(model_blocks[1]));
-            func_474010(girl_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
+            lib_scene_build_objects(girl_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
             s32 count = 0;
 
             for (BootClass170F30* model = lib_find_renderable_entry(girl_scene, g_empty_name); model != 0; model = lib_find_next_renderable_entry(girl_scene, model))
@@ -1562,7 +1566,7 @@ void BootNewGameSettings::update()
 
             g_renderer->prepend_node(new (0) LibColorFade, -1);
             g_display_manager->current_display = static_cast<LibListObject*>(lib_find_camera_entry(room_scene, g_camera_node_name));
-            girl_angle = 1.5707964f;
+            girl_angle = HALF_PI;
             animation_frame = 0.0f;
             turn_speed = 0.0f;
             walk_state = 0;
@@ -1571,7 +1575,7 @@ void BootNewGameSettings::update()
             adjusting_speaker = 0;
             resident_sound_set_listener(g_sound, lib_find_transform_entry(room_scene, g_root_node_name), 0.0f, 500.0f);
             description_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_SPEAKER_SETUP, 1, 32.0f, 352.0f, 576.0f, 112.0f);
-            description_text->set_color(0x34130F);
+            description_text->set_color(BOOT_TEXT_COLOR);
             lib_container_attach_widget(container, description_text);
             place_girl();
             selected_speaker = 0;
@@ -1605,18 +1609,18 @@ void BootNewGameSettings::update()
                     get_speaker_cursor_position(selected_speaker, &x, &y);
                     cursor->set_move_target(x, y, 0.05f);
                     highlight_phase = 0;
-                    resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 }
             }
             else
             {
                 float turned = speaker_angle(g_sound, selected_speaker);
                 float angle = turned;
-                turned += 1.5707964f * g_frame_seconds;
+                turned += HALF_PI * g_frame_seconds;
 
-                if (turned >= 6.2831855f)
+                if (turned >= TWO_PI)
                 {
-                    turned -= 6.2831855f;
+                    turned -= TWO_PI;
                 }
 
                 float upper = speaker_angle(g_sound, (selected_speaker + 1) & 3) - 0.2617994f;
@@ -1656,18 +1660,18 @@ void BootNewGameSettings::update()
                     float y;
                     get_speaker_cursor_position(selected_speaker, &x, &y);
                     cursor->set_move_target(x, y, 0.05f);
-                    resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 }
             }
             else
             {
                 float turned = speaker_angle(g_sound, selected_speaker);
                 float angle = turned;
-                turned -= 1.5707964f * g_frame_seconds;
+                turned -= HALF_PI * g_frame_seconds;
 
                 if (turned < 0.0f)
                 {
-                    turned += 6.2831855f;
+                    turned += TWO_PI;
                 }
 
                 float upper = speaker_angle(g_sound, (selected_speaker + 1) & 3) - 0.2617994f;
@@ -1723,13 +1727,13 @@ void BootNewGameSettings::update()
         {
             if (adjusting_speaker == 0)
             {
-                resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 adjusting_speaker = 1;
                 saved_speaker_angle = speaker_angle(g_sound, selected_speaker);
             }
             else
             {
-                resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 adjusting_speaker = 0;
             }
         }
@@ -1738,13 +1742,13 @@ void BootNewGameSettings::update()
         {
             if (adjusting_speaker == 0)
             {
-                resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 queue_fade();
                 stage = BOOT_SETTINGS_STAGE_LEAVE_SPEAKERS;
             }
             else
             {
-                resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 resident_sound_set_speaker_angle(g_sound, selected_speaker, saved_speaker_angle);
                 settings->speaker_angles[selected_speaker] = saved_speaker_angle;
                 adjusting_speaker = 0;
@@ -1758,7 +1762,7 @@ void BootNewGameSettings::update()
 
         if ((input->pressed & 9) && adjusting_speaker == 0)
         {
-            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             resident_sound_reset_speaker_angles(g_sound);
             place_speakers();
 
@@ -1815,7 +1819,7 @@ void BootNewGameSettings::update()
                 {
                     LibMorphTarget* target = (LibMorphTarget*)node;
 
-                    if (target->object_kind == 2)
+                    if (target->object_kind == LIB_OBJECT_KIND_TRANSFORM)
                     {
                         if (shape == target->shape->id)
                         {
@@ -1836,7 +1840,7 @@ void BootNewGameSettings::update()
                 {
                     LibMorphTarget* target = (LibMorphTarget*)node;
 
-                    if (target->object_kind == 2)
+                    if (target->object_kind == LIB_OBJECT_KIND_TRANSFORM)
                     {
                         lib_morph_target_set_weight(target, 0.0f);
                     }
@@ -1860,7 +1864,7 @@ void BootNewGameSettings::update()
             {
                 LibMorphTarget* target = (LibMorphTarget*)node;
 
-                if (target->object_kind == 2 && target->shape->id == 0)
+                if (target->object_kind == LIB_OBJECT_KIND_TRANSFORM && target->shape->id == 0)
                 {
                     if (blink_frame < 5)
                     {
@@ -1910,16 +1914,16 @@ void BootNewGameSettings::update()
             }
         }
 
-        girl_angle += 0.017453292f * (0.35f * turn_speed);
+        girl_angle += DEGREES_TO_RADIANS * (0.35f * turn_speed);
 
-        if (girl_angle > 6.2831855f)
+        if (girl_angle > TWO_PI)
         {
-            girl_angle -= 6.2831855f;
+            girl_angle -= TWO_PI;
         }
 
         if (girl_angle < 0.0f)
         {
-            girl_angle += 6.2831855f;
+            girl_angle += TWO_PI;
         }
 
         place_girl();
@@ -1973,7 +1977,7 @@ void BootNewGameSettings::update()
         g_boot_program.select_projection();
         description_text->destroy();
         description_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TV_NORMAL, 1, 32.0f, 272.0f, 344.0f, 224.0f);
-        description_text->set_color(0x34130F);
+        description_text->set_color(BOOT_TEXT_COLOR);
         lib_container_attach_widget(container, description_text);
         load_option_value();
         show_value_message();

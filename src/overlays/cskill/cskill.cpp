@@ -912,7 +912,7 @@ typedef struct SkillSymbologyWindow : public FieldClass15AE70
     SkillSymbologyCharacterWindow* character_window;
     FieldRecordSelection* records;
     FieldObject23CEA0* selection;
-    ItemCreationClass1725D0* scroll_indicator;
+    LibListIndicator* scroll_indicator;
     ItemCreationOptionResourceDisplay* spell_icons[30];
     LibTextWidget* spell_labels[30];
     FieldClass153170* cursor;
@@ -3666,10 +3666,10 @@ void SkillModeSelection::func_slot5c()
     {
         this->scroll_indicator->visible = 1;
         LibClass1725D0* marker = this->scroll_indicator;
-        marker->unk50 = 100.0f * (6.0f / this->scroll_range);
+        marker->extent = 100.0f * (6.0f / this->scroll_range);
         marker->needs_redraw = 1;
         marker = this->scroll_indicator;
-        marker->unk54 = 100.0f * ((float)this->selection->row_count / this->scroll_range);
+        marker->position = 100.0f * ((float)this->selection->row_count / this->scroll_range);
         marker->needs_redraw = 1;
     }
     else
@@ -9163,11 +9163,11 @@ void SkillSymbologyWindow::func_slot5c()
             shift = 0;
         }
     }
-    ItemCreationClass1725D0* indicator = scroll_indicator;
-    indicator->unk50 = 100.0f * (14.0f / 30.0f);
+    LibListIndicator* indicator = scroll_indicator;
+    indicator->extent = 100.0f * (14.0f / 30.0f);
     indicator->needs_redraw = 1;
     indicator = scroll_indicator;
-    indicator->unk54 = 100.0f * ((float)position / 30.0f);
+    indicator->position = 100.0f * ((float)position / 30.0f);
     indicator->needs_redraw = 1;
     FieldRecordSelection* current = records;
     SkillCharacterStats* stats = &reinterpret_cast<SkillCharacterStats*>(current->records)[current->current];
@@ -9730,7 +9730,7 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
     selection->unkF2 = 2;
     selection->func_0023CF50(0, 62.0f, 238.0f);
     func_0035C4D0(reinterpret_cast<SkillList*>(&unk74), selection);
-    scroll_indicator = new (0) ItemCreationClass1725D0;
+    scroll_indicator = new (0) LibListIndicator;
     lib_list_indicator_init(scroll_indicator, 580.0f, 14.0f, 230.0f, 10.0f, 0.0f);
     lib_container_attach_widget(unk10, scroll_indicator);
     cursor = new (0) FieldClass153170;

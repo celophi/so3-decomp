@@ -130,8 +130,8 @@ draw__15LibObject174F20Fv = 0x00464C80; // type:func absolute:True
 __dt__23ItemCreationClass1746A0Fv = 0x0034CD30; // type:func allow_duplicated:True
 __vt__23ItemCreationClass1746A0 = 0x001746A0; // absolute:True
 
-__dt__23ItemCreationClass1725D0Fv = 0x0034CDA0; // type:func allow_duplicated:True
-__vt__23ItemCreationClass1725D0 = 0x001725D0; // absolute:True
+__dt__16LibListIndicatorFv = 0x0034CDA0; // type:func allow_duplicated:True
+__vt__16LibListIndicator = 0x001725D0; // absolute:True
 
 __dt__23ItemCreationClass172600Fv = 0x0034CEA0; // type:func allow_duplicated:True
 __vt__23ItemCreationClass172600 = 0x00172600; // absolute:True
@@ -149,7 +149,7 @@ func_0034CF10 = 0x0034CF10; // type:func absolute:True
 
 draw__23ItemCreationClass1746A0Fv = 0x0044B350; // type:func absolute:True
 
-draw__23ItemCreationClass1725D0Fv = 0x0041A560; // type:func absolute:True
+draw__16LibListIndicatorFv = 0x0041A560; // type:func absolute:True
 
 draw__23ItemCreationClass172870Fv = 0x00420F20; // type:func absolute:True
 
@@ -307,3 +307,4 @@ g_vram_allocator = 0x001B65E0; // absolute:True
 g_inverse_frame_ticks = 0x001B668C; // absolute:True
 g_update_list = 0x001B6614; // absolute:True
 g_field_runtime = 0x001B657C; // absolute:True
+g_microcode_loader = 0x001B6600; // absolute:True

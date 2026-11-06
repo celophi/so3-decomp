@@ -173,7 +173,7 @@ func_slot14__16FieldClass15AE70FUiiiifff = 0x002CE760; // absolute:True allow_du
 func_slot10__16FieldClass15AE70FUiffi = 0x002CE8D0; // absolute:True allow_duplicated:True type:func
 func_slot0c__16FieldClass15AE70Fv = 0x002CEA20; // absolute:True allow_duplicated:True type:func
 
-__vt__23ItemCreationClass1725D0 = 0x001725D0; // size:0x24 absolute:True allow_duplicated:True
+__vt__16LibListIndicator = 0x001725D0; // size:0x24 absolute:True allow_duplicated:True
 __vt__23ItemCreationClass1746A0 = 0x001746A0; // size:0x24 absolute:True allow_duplicated:True
 __vt__13LibTextWidget = 0x00178750; // size:0x24 absolute:True allow_duplicated:True
 __vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True allow_duplicated:True
@@ -271,3 +271,4 @@ g_vram_allocator = 0x001B65E0; // absolute:True
 g_inverse_frame_ticks = 0x001B668C; // absolute:True
 g_update_list = 0x001B6614; // absolute:True
 g_field_runtime = 0x001B657C; // absolute:True
+g_microcode_loader = 0x001B6600; // absolute:True

@@ -210,7 +210,6 @@ void func_0044C060(void* object)
 }
 
 extern "C" u8 D_00508240[];
-extern "C" void func_004D92C0(void* object, s32 value);
 
 /** @brief Return the address of D_00508240. @return The data symbol's address. */
 const void* func_0044C070(void)
@@ -218,10 +217,10 @@ const void* func_0044C070(void)
     return D_00508240;
 }
 
-/** @brief Clear the selected state in the shared lib object. */
+/** @brief Expire every cached copy of texture 1. */
 void func_0044C080(void)
 {
-    func_004D92C0(g_texture_cache, 1);
+    g_texture_cache->expire_texture(1);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C0A0);

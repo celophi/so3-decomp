@@ -1800,8 +1800,8 @@ void func_0034AD30(ConfigOptions* object)
         {
             object->unk294 += object->unk290 / 4.0f;
         }
-        ItemCreationClass1725D0* indicator = object->unk28c;
-        indicator->unk54 = object->unk294;
+        LibListIndicator* indicator = object->unk28c;
+        indicator->position = object->unk294;
         indicator->needs_redraw = 1;
     }
 }

@@ -30,26 +30,24 @@ extern void* D_001B6638;
 extern ResidentDmaQueue* D_001B660C;
 extern ResidentDmaQueue* D_001B6608;
 extern ResidentDmaQueue* D_001B6604;
-extern void* D_001B6600;
 extern LibListObject* g_scene_camera;
 extern LibListObject* D_001B664C;
 extern LibListObject* D_001B6620;
 extern LibListObject* D_001B6648;
 extern LibUpdateList* g_update_list;
-extern LibDisplayManager* g_display_manager;
 extern LibDisplayManager* g_scene_display_manager;
 extern LibDisplayManager* D_001B6624;
 extern LibDisplayManager* g_default_display_manager;
 extern LibListObject* D_001B6634;
 extern LibListObject D_00507CB8;
-extern LibTrackPool* D_001B6664;
-extern LibTrackPool* D_001B6668;
-extern LibTrackPool* D_001B666C;
-extern LibTrackPool* D_001B6670;
-extern LibTrackPool* D_001B6674;
-extern LibTrackPool* D_001B6678;
-extern LibTrackPool* D_001B667C;
-extern LibTrackPool* D_001B6680;
+extern LibTrackPool* g_float_track_pool;
+extern LibTrackPool* g_vector_track_pool;
+extern LibTrackPool* g_track_1718C0_pool;
+extern LibTrackPool* g_float_curve_track_pool;
+extern LibTrackPool* g_vector_curve_track_pool;
+extern LibTrackPool* g_float_quaternion_track_pool;
+extern LibTrackPool* g_quaternion_curve_track_pool;
+extern LibTrackPool* g_quaternion_track_pool;
 extern void* g_display_callbacks;
 }
 extern "C" void func_004E6690(void* object);
@@ -847,7 +845,18 @@ const void* func_004E0FB0(void)
     return D_0050CD80;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __ct__20LibOrientedTransformFv);
+/** @brief Initialize an identity orientation and unit scale, and mark the transform dirty. */
+LibOrientedTransform::LibOrientedTransform()
+{
+    scale.x = 1.0f;
+    scale.y = 1.0f;
+    scale.z = 1.0f;
+    scale.w = 1.0f;
+    transform_dirty = 1;
+    unk51 = 1;
+    clear_vector(&orientation);
+    orientation.w = 1.0f;
+}
 
 extern "C" void func_004E1020(void* object)
 {
@@ -925,7 +934,7 @@ void LibClass179080::initialize_projection(const LibCameraContext* context)
     unk280 = 2048.0f;
     unk284 = 2048.0f;
     pixel_aspect = (1.3333334f * (1.0714285f * context->display_area.height)) / context->display_area.width;
-    unk250 = 1.0f;
+    width_scale = 1.0f;
     unk270 = 1.0f;
 }
 
@@ -1060,7 +1069,7 @@ void LibClass179080::set_fog(u32 color, float far_factor, float near_factor, flo
     update_fog_coefficients(far_factor, near_factor);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1E70);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1E70__14LibClass179080Fv);
 
 /** @brief Copy camera settings, the attached transform and inherited transform state. @param source Camera to copy. */
 void LibClass179080::copy_camera(const LibClass179080* source)
@@ -1081,7 +1090,7 @@ void LibClass179080::copy_view_and_fog(const LibClass179080* source)
     unk280 = source->unk280;
     unk284 = source->unk284;
     unk3d2 = source->unk3d2;
-    unk250 = source->unk250;
+    width_scale = source->width_scale;
     unk254 = source->unk254;
     unk270 = source->unk270;
     unk3d1 = source->unk3d1;
@@ -1128,7 +1137,7 @@ s32 LibClass179080::enqueue_submission()
     return func_00114100(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2120);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2120__14LibClass179080Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E22B0);
 
@@ -1171,7 +1180,7 @@ void LibClass179080::update_projection()
 
     update_transform_matrix();
     view_matrix = func_004CF0B0(*get_transform_matrix());
-    float half_width = (unk254 * unk250) * (screen_max.x - screen_min.x) / 2.0f;
+    float half_width = (unk254 * width_scale) * (screen_max.x - screen_min.x) / 2.0f;
     projection_distance = half_width / func_00141EC0(horizontal_fov / 2.0f);
 
     if (unk3d2)
@@ -1202,7 +1211,7 @@ void LibClass179080::update_projection()
  */
 float LibClass179080::compute_projection_distance() const
 {
-    float half_width = (unk254 * unk250) * (screen_max.x - screen_min.x) / 2.0f;
+    float half_width = (unk254 * width_scale) * (screen_max.x - screen_min.x) / 2.0f;
     return half_width / func_00141EC0(horizontal_fov / 2.0f);
 }
 
@@ -1347,7 +1356,7 @@ extern "C" void lib_shutdown(void)
     delete D_001B660C;
     delete D_001B6608;
     delete D_001B6604;
-    ::operator delete(D_001B6600);
+    ::operator delete(g_microcode_loader);
     delete D_001B65FC;
     g_screen_text = 0;
     D_001B6644 = 0;
@@ -1358,7 +1367,7 @@ extern "C" void lib_shutdown(void)
     D_001B660C = 0;
     D_001B6608 = 0;
     D_001B6604 = 0;
-    D_001B6600 = 0;
+    g_microcode_loader = 0;
     D_001B65FC = 0;
 
     lib_detach(*g_scene_camera);
@@ -1376,22 +1385,22 @@ extern "C" void lib_shutdown(void)
     g_scene_camera = 0;
     D_001B6634 = 0;
 
-    delete D_001B6680;
-    delete D_001B667C;
-    delete D_001B6664;
-    delete D_001B6668;
-    delete D_001B666C;
-    delete D_001B6670;
-    delete D_001B6674;
-    delete D_001B6678;
-    D_001B6680 = 0;
-    D_001B667C = 0;
-    D_001B6664 = 0;
-    D_001B6668 = 0;
-    D_001B666C = 0;
-    D_001B6670 = 0;
-    D_001B6674 = 0;
-    D_001B6678 = 0;
+    delete g_quaternion_track_pool;
+    delete g_quaternion_curve_track_pool;
+    delete g_float_track_pool;
+    delete g_vector_track_pool;
+    delete g_track_1718C0_pool;
+    delete g_float_curve_track_pool;
+    delete g_vector_curve_track_pool;
+    delete g_float_quaternion_track_pool;
+    g_quaternion_track_pool = 0;
+    g_quaternion_curve_track_pool = 0;
+    g_float_track_pool = 0;
+    g_vector_track_pool = 0;
+    g_track_1718C0_pool = 0;
+    g_float_curve_track_pool = 0;
+    g_vector_curve_track_pool = 0;
+    g_float_quaternion_track_pool = 0;
 
     D_001B664C->destroy();
     D_001B6648->destroy();
@@ -1499,7 +1508,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5940);
 void func_004E59A0(void* object)
 {
     func_004E6690(object);
-    func_004E6B30(D_001B6674, object);
+    func_004E6B30(g_vector_curve_track_pool, object);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E59D0);
@@ -1511,7 +1520,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5AA0);
 void func_004E5B00(void* object)
 {
     func_004E6A90(object);
-    func_004E6AE0(D_001B6668, object);
+    func_004E6AE0(g_vector_track_pool, object);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5B30);

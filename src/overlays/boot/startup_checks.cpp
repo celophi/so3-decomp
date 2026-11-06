@@ -1,5 +1,7 @@
 #include "include_asm.h"
-#include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/startup_checks.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/program.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "main/resident_001001E0.h"
@@ -88,7 +90,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_NO_CARD;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -98,7 +100,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -108,7 +110,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -118,7 +120,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -128,7 +130,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_NO_TROPHY_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -138,7 +140,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT2_NO_SAVE_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -148,7 +150,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -158,7 +160,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -168,7 +170,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -178,7 +180,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -188,7 +190,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -198,7 +200,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -208,7 +210,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -218,7 +220,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -228,7 +230,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -238,7 +240,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -248,7 +250,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -258,7 +260,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_FULL;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -268,7 +270,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_NO_TROPHY_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -278,7 +280,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -288,7 +290,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -298,7 +300,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_TROPHY_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -308,7 +310,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_SLOT1_NO_SAVE_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -318,7 +320,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
 
@@ -328,7 +330,7 @@ void BootStartupChecks::update()
                     shown_slot2 = slot2;
                     message = BOOT_MSG_BOTH_SLOTS_NO_SAVE_SPACE;
                     step = BOOT_STARTUP_CARD_SHOW_WARNING;
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     return;
                 }
             }
@@ -356,7 +358,7 @@ void BootStartupChecks::update()
                 text = 0;
                 container->destroy();
                 container = 0;
-                resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             }
             else if (pressed & settings->cancel_buttons)
             {
@@ -364,7 +366,7 @@ void BootStartupChecks::update()
                 text = 0;
                 container->destroy();
                 container = 0;
-                resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 step = BOOT_STARTUP_CARD_INSPECT;
             }
             else if (shown_slot1 != slot1 || shown_slot2 != slot2)
@@ -428,7 +430,7 @@ void BootStartupChecks::update()
                     frames = 0;
                     text->destroy();
                     text = 0;
-                    resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     settings->widescreen = BOOT_STARTUP_PROGRESSIVE;
                 }
                 else if (input->pressed & settings->alternate_buttons)
@@ -437,12 +439,12 @@ void BootStartupChecks::update()
                     frames = 0;
                     text->destroy();
                     text = 0;
-                    resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     settings->widescreen = 0;
                 }
                 else if (input->pressed & settings->cancel_buttons)
                 {
-                    resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     finished = 1;
                 }
 
@@ -489,7 +491,7 @@ void BootStartupChecks::update()
                 if (input->pressed & settings->confirm_buttons)
                 {
                     finished = 1;
-                    resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 }
                 else if (++frames > 539 || (input->pressed & settings->cancel_buttons))
                 {
@@ -497,7 +499,7 @@ void BootStartupChecks::update()
                     text = 0;
                     step++;
                     frames = 0;
-                    resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 }
 
                 break;
@@ -592,7 +594,7 @@ void BootStartupChecks::update()
 
                 if (RESIDENT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
                 {
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_UNIT_NOT_INITIALIZED, 0, 32.0f, 96.0f, 576.0f, 320.0f);
                     lib_container_attach_widget(container, text);
                     step++;
@@ -605,7 +607,7 @@ void BootStartupChecks::update()
 
                 if (input->pressed & settings->confirm_buttons)
                 {
-                    resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     finished = 1;
                 }
 
@@ -615,7 +617,7 @@ void BootStartupChecks::update()
 
                 if (RESIDENT_ALIGN_RESOURCE(g_boot_program.message_block) != 0)
                 {
-                    resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+                    resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                     text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_UNIT_DATA_DELETED, 0, 32.0f, 128.0f, 576.0f, 320.0f);
                     lib_container_attach_widget(container, text);
                     step = BOOT_STARTUP_UNIT_WAIT_FOR_INPUT;

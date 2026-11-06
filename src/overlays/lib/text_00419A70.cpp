@@ -1,5 +1,8 @@
 #include "include_asm.h"
 #include "overlays/lib/movie_player.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "main/resident_00101260.h"
+#include "overlays/lib/transform_owner_inlines.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
@@ -30,8 +33,8 @@ struct LibListIndicatorState
     u8 unk3a[6];
     LibStorageBlock0C storage;
     u8 unk4c[4];
-    float first;
-    float second;
+    float extent;
+    float position;
 };
 
 /** Partial marker rectangle, drawing storage, flags, and packed colors. */
@@ -105,13 +108,13 @@ s32 lib_movie_play(LibMoviePlayer* player, s32 movie, s32 loop)
         return 0;
     }
 
-    func_00414BD0(player->unk15E740);
+    func_00414BD0(&player->stream);
 
     if (loop)
     {
         if (!g_resource_archive->read_busy)
         {
-            g_resource_archive->unk64 = player->unk15E77C;
+            g_resource_archive->unk64 = &player->loop_listener;
         }
     }
     else if (!g_resource_archive->read_busy)
@@ -124,7 +127,7 @@ s32 lib_movie_play(LibMoviePlayer* player, s32 movie, s32 loop)
     func_0011C120(g_resource_archive, reinterpret_cast<void*>((reinterpret_cast<u32>(player->stream_buffer) + 63) & ~63),
                   LIB_MOVIE_STREAM_BUFFER_SIZE, 0);
     player->stopped = 0;
-    func_004159E0(player->decoder);
+    func_004159E0(&player->decoder);
     player->movie = movie;
     player->is_playing = 1;
     player->unk15E795 = 1;
@@ -138,21 +141,109 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419BE0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419C70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00419DE0);
+/**
+ * @brief Clear the state's two shown-frame flags, counting down its pending frames for each one set.
+ * @param state Playback state.
+ */
+extern "C" void func_004184D0(LibMovieState* state);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A0F0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A130);
-
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_0041A170(void* object)
+/** Decoder callback types (sceMpegCbType). */
+enum
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
-    }
-    return func_00114100(g_vif1_dma_queue, submission);
+    LIB_MPEG_CALLBACK_ERROR = 0,
+    LIB_MPEG_CALLBACK_BACKGROUND = 4
+};
+
+/** Type ID of the movie player. */
+#define LIB_TYPE_ID_MOVIE_PLAYER 0xC00
+
+extern "C"
+{
+    /** @brief Initialize the MPEG library (libmpeg). */
+    void sceMpegInit(void);
+
+    /** @brief Set the decoder up for a frame size. */
+    void func_004162F0(LibMovieDecoder* decoder, s32 width, s32 height);
+
+    /** @brief Set the playback state up for a frame size. */
+    void func_00419330(LibMovieState* state, s32 width, s32 height);
+
+    /** @brief Register a decoder callback of a sceMpegCbType at an index. */
+    void func_00416200(LibMovieDecoder* decoder, s32 type, s32 index, s32 (*callback)(void*, void*, void*), void* data);
+
+    /** @brief Decoder error callback. */
+    s32 func_00414DB0(void* decoder, void* data, void* user);
+
+    /** @brief First background callback; feeds the stream. */
+    s32 func_00414AC0(void* decoder, void* data, void* user);
+
+    /** @brief Second background callback; feeds the stream. */
+    s32 func_004149B0(void* decoder, void* data, void* user);
+}
+
+/**
+ * @brief Initialize the player and its decoder for a frame size.
+ * @param width Frame width.
+ * @param height Frame height.
+ */
+LibMoviePlayer::LibMoviePlayer(s32 width, s32 height)
+{
+    sceMpegInit();
+    this->width = width;
+    this->height = height;
+    func_004162F0(&decoder, width, height);
+    func_00419330(state, width, height);
+    func_00416200(&decoder, LIB_MPEG_CALLBACK_ERROR, 0, func_00414DB0, &decoder);
+    func_00416200(&decoder, LIB_MPEG_CALLBACK_BACKGROUND, 0, func_00414AC0, &stream);
+    func_00416200(&decoder, LIB_MPEG_CALLBACK_BACKGROUND, 1, func_004149B0, &stream);
+    stream.buffer = decoder.unkCE580;
+    stream.sound = func_00101270(resident_get_system());
+    stream.player = this;
+    is_playing = 0;
+    unk15E795 = 0;
+    unk15E796 = 0;
+    LibRenderer* renderer = static_cast<LibRenderer*>(g_renderer);
+    renderer->insert_node_after(renderer->sentinel.next, this, -1);
+    set_type_id(LIB_TYPE_ID_MOVIE_PLAYER);
+    unk65 = 0;
+    set_draw_flags(LIB_DRAW_FLAG_0400);
+    unk15E7A4 = 0;
+    thread = new (0) LibMovieThread;
+    thread->set_sources(&decoder, &stream);
+    thread->player = this;
+    thread->start();
+    unk15E724 = thread;
+    FlushCache(0);
+    unk15E797 = 0;
+    g_movie_player = this;
+}
+
+/**
+ * @brief Send the frame packet at unk15E7A4 on VIF1.
+ * @param channel DMA channel; unused.
+ */
+void LibMoviePlayer::submit_dma(u32 channel)
+{
+    dma_pending = 1;
+    *D1_TADR = unk15E7A4;
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
+}
+
+/**
+ * @brief Release the shown frame and finish the packet.
+ * @param channel DMA channel; unused.
+ */
+void LibMoviePlayer::complete_dma(u32 channel)
+{
+    func_004184D0(state);
+    lib_finish_packet(this);
+}
+
+/** @brief Queue the player's frame packet for VIF1 DMA. */
+void LibMoviePlayer::render()
+{
+    func_00114100(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A1A0);
@@ -168,7 +259,7 @@ void lib_movie_stop(LibMoviePlayer* player)
     func_0011C8E0(g_resource_archive);
     func_0011C6B0(g_resource_archive);
     g_resource_queue->unk2c = 0;
-    func_00414490(player->unk15E740);
+    func_00414490(&player->stream);
     player->stopped = 1;
 }
 
@@ -187,24 +278,24 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A550);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A560);
 
 /**
- * @brief Initialize the list indicator rectangle, scalar pair, and drawing storage.
- * @param object List indicator widget.
+ * @brief Place a list indicator, set its scroll extent and position, and allocate its drawing storage.
+ * @param object List indicator.
  * @param x Horizontal position.
  * @param y Vertical position.
- * @param height Rectangle height.
- * @param first First scalar value.
- * @param second Second scalar value.
+ * @param height Bar height.
+ * @param extent Size of one scroll step, as a share of the bar.
+ * @param position Scroll position.
  * @return One on success, or zero when storage initialization fails.
  */
-s32 lib_list_indicator_init(ItemCreationClass1725D0* object, float x, float y, float height, float first, float second)
+s32 lib_list_indicator_init(LibListIndicator* object, float x, float y, float height, float extent, float position)
 {
     LibListIndicatorState* state = reinterpret_cast<LibListIndicatorState*>(object);
     state->x = x;
     state->y = y;
     state->width = 14.0f;
     state->height = height;
-    state->first = first;
-    state->second = second;
+    state->extent = extent;
+    state->position = position;
     if (!lib_allocate_drawing_storage(&state->storage, 38))
     {
         return 0;

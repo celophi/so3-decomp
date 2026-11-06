@@ -4,30 +4,10 @@
 #include "types.h"
 #include "main/resident_0011EE70.h"
 
-
 #ifdef __cplusplus
-#include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/title_menu.h"
 
 class LibStringLabel;
-
-/** GS packet buffer with vtable D_171BF0 in main data; its data comes before the vptr. */
-class BootPacketBuffer : public ResidentPacket
-{
-    public:
-        /**
-         * @brief Allocate the packet's storage.
-         * @param size Storage size in bytes.
-         */
-        BootPacketBuffer(s32 size)
-        {
-            unk04 = 0;
-            unk15 = 0;
-            resident_packet_allocate(this, size);
-        }
-
-        /** @brief Release the packet storage. */
-        virtual ~BootPacketBuffer();
-};
 
 /** Fast Fourier transform with the bit-reversal and sine tables for its current size. */
 class BootFft
@@ -143,7 +123,7 @@ class BootNeedleMeter : public LibTransformOwner, public LibDmaCallbacks
             y = pivot_y;
         }
 
-        BootPacketBuffer* packet;
+        LibPacketBuffer* packet;
         u8 unk98[0x898];
 
         /** Left and right needle positions, 0 to 96. */

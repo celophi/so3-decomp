@@ -209,6 +209,24 @@ static inline void vu0_wait_microprogram(void)
 }
 
 /**
+ * @brief Load a matrix's first three rows into vf12-vf14 and start the microprogram at 0x7F0.
+ *
+ * The program leaves the scale of each row in vf6 (x, y and z). Lib compares it
+ * with one to tell an unscaled matrix from a scaled one.
+ * @param matrix 16-byte aligned matrix.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6). Lib starts it the same way in
+ *      func_004D9E70 and func_0045F2B0, and 1067-00 in func_00222D20.
+ */
+static inline void vu0_start_microprogram_7f0_rows(const void* matrix)
+{
+    asm __volatile__("lqc2 $vf12, 0x0(%0)\n"
+                     "lqc2 $vf13, 0x10(%0)\n"
+                     "lqc2 $vf14, 0x20(%0)\n"
+                     "nop\n"
+                     "vcallms 0x7F0" : : "r"(matrix) : "memory");
+}
+
+/**
  * @brief Store vf6, where microprogram 0 leaves its result.
  * @param result 16-byte aligned destination.
  * @see vu0_start_microprogram_vf5.

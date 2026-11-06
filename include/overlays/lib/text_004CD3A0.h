@@ -29,6 +29,71 @@ typedef struct LibListNode
 
 #ifdef __cplusplus
 
+/** VU1 microprograms Lib can load. */
+#define LIB_VU1_PROGRAM_COUNT 11
+
+/** LibMicrocodeLoader::current_program before any program is loaded. */
+#define LIB_VU1_PROGRAM_NONE 0xFF
+
+/** Data of each VU1 microprogram, for LibMicrocodeLoader::select_program. */
+extern "C" const void* const lib_vu1_programs[LIB_VU1_PROGRAM_COUNT];
+
+/** DMA chain that uploads Lib's resident VU1 microcode. */
+extern "C" u8 lib_vu1_upload_chain[];
+
+/** Tracks which VU1 microprogram is loaded, with vtable D_178E80 in main data. */
+class LibMicrocodeLoader : public DmaSubmission
+{
+public:
+    /** @brief Start with no program and an empty upload packet. */
+    LibMicrocodeLoader();
+
+    /**
+     * @brief Send the resident microcode upload chain on VIF1.
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Nothing to do once the upload finishes.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    /** @brief Forget the loaded program and queue the resident microcode upload. */
+    void start_upload();
+
+    /**
+     * @brief Switch to a microprogram.
+     * @param program Program index.
+     * @return The program's data when it has to be uploaded, or null when it's already loaded.
+     */
+    const void* select_program(s32 program);
+
+    /**
+     * @brief Return the DMA tag that uploads a microprogram.
+     * @param program Program index.
+     * @return DMA REF tag.
+     */
+    u64 get_program_tag(s32 program);
+
+    u8 unk04;
+
+    /** Program now in VU1 micro memory, or LIB_VU1_PROGRAM_NONE. */
+    u8 current_program;
+
+    u8 unk06;
+    u8 unk07[0xD];
+    u32 unk14[3];
+    u32 unk20[3];
+
+    /** VIF FLUSH code that ends the packet. */
+    u32 flush;
+};
+
+/** Lib's VU1 microcode loader, made by lib_initialize. */
+extern LibMicrocodeLoader* g_microcode_loader;
+
 /** Aligned four-row matrix whose assignment returns a copy of the matrix. */
 class LibMatrix44Value
 {
@@ -201,6 +266,9 @@ class LibCameraContext;
 /** Entries a texture cache tracks; entry 0 is the head of the most-recently-used list. */
 #define LIB_TEXTURE_CACHE_ENTRY_COUNT 256
 
+/** Most CLUTs a texture cache can hold. */
+#define LIB_TEXTURE_CACHE_MAX_CLUTS 64
+
 /** Partial object that owns a cached texture. */
 struct LibTextureUser
 {
@@ -208,14 +276,55 @@ struct LibTextureUser
     s32 priority;
 };
 
-/** Partial key half of a cache entry. */
-struct LibTextureKey
+/** States of a LibTextureBlock. */
+enum LibTextureBlockState
 {
-    u32 id;
-    u8 unk04[0xB];
+    /** Free VRAM in the texture area. */
+    LIB_TEXTURE_BLOCK_FREE = 0,
 
-    /** Cache stamp of the last lookup that found the entry. */
+    /** Holds a cached texture. */
+    LIB_TEXTURE_BLOCK_USED = 1,
+
+    /** Record not in the block list. */
+    LIB_TEXTURE_BLOCK_UNUSED = 2,
+
+    /** Record 0: the head of the block list. */
+    LIB_TEXTURE_BLOCK_HEAD = 3
+};
+
+/**
+ * One piece of the texture area. The records form a list in address order through previous_block and
+ * next_block, starting and ending at record 0. A used record's index is also its texture's cache index.
+ */
+struct LibTextureBlock
+{
+    /** Texture ID the block holds. */
+    u32 id;
+
+    /** Start of the block, in the units of LibTextureCache::texture_address. */
+    u32 address;
+
+    /** Size of the block. */
+    u32 size;
+
+    u8 previous_block;
+    u8 next_block;
+
+    /** LibTextureBlockState. */
+    u8 state;
+
+    /** Cache stamp of the last lookup that found the texture. */
     u8 stamp;
+};
+
+/** One CLUT record of a texture cache. */
+struct LibTextureClut
+{
+    u32 unk00;
+    u8 unk04[4];
+
+    /** CLUT half of TEX0 (CBP and CPSM) for textures that use it. */
+    u64 tex0;
 };
 
 /** Partial value half of a cache entry. */
@@ -251,11 +360,70 @@ class LibTextureCache
 {
 public:
     /**
-     * @brief Create the cache.
-     * @param size Size in bytes.
-     * @param count Block count.
+     * @brief Allocate the texture and CLUT areas in VRAM and reset the cache.
+     * @param size Size of the texture area in bytes.
+     * @param count Number of CLUTs to hold; rounded up to a power of two, at least 8. At most 64.
      */
     LibTextureCache(s32 size, s32 count);
+
+    /** @brief Empty the cache: one free block over the whole texture area, no textures and no CLUTs. */
+    void reset();
+
+    /**
+     * @brief Release a texture's block back to the free area.
+     * @param index Cache index of the texture.
+     */
+    void release_block(u32 index);
+
+    /**
+     * @brief Release every block no lookup has stamped since the stamps were cleared; with none stamped, empty the cache.
+     */
+    void release_unstamped();
+
+    /**
+     * @brief Detach the user from every cached copy of a texture.
+     * @param tag Texture tag.
+     * @param id Texture ID.
+     */
+    void detach_user(u32 tag, u32 id);
+
+    /**
+     * @brief Release the most recently used cached copy of a texture.
+     * @param tag Texture tag.
+     * @param id Texture ID.
+     */
+    void release_texture(u32 tag, u32 id);
+
+    /**
+     * @brief Build the CLUT half of TEX0 for the CLUT a slot last found.
+     * @param slot Slot whose CLUT to use.
+     * @param entry CLUT entry offset (CSA).
+     * @param load_mode 0 to always load the CLUT, 1 to load it and keep CBP 0, 2 not to load it; anything else
+     *        loads it and keeps CBP 1.
+     * @return CBP, CPSM, CSA and CLD in TEX0's layout.
+     */
+    u64 get_clut_tex0(s16 slot, s16 entry, s32 load_mode);
+
+    /**
+     * @brief Release every used block that overlaps the last bytes of the texture area.
+     * @param size Size of the area to clear at the end.
+     */
+    void release_area_end(u32 size);
+
+    /**
+     * @brief Clear the stamp of every block holding a texture ID, and the cache's own stamp.
+     * @param id Texture ID.
+     */
+    void expire_texture(u32 id);
+
+    /**
+     * @brief Check that both VRAM areas were allocated.
+     * @return Whether the texture and CLUT slots are valid.
+     */
+    bool is_allocated() const
+    {
+        return !(texture_slot == -1 || clut_slot == -1);
+    }
 
     /**
      * @brief Allocate the cache through the resident allocator.
@@ -309,17 +477,52 @@ public:
         next[0] = index;
     }
 
-    u8 unk00[8];
-    LibTextureKey keys[LIB_TEXTURE_CACHE_ENTRY_COUNT];
+    /** VRAM slot of the texture area. */
+    s16 texture_slot;
+
+    /** VRAM slot of the CLUT area. */
+    s16 clut_slot;
+
+    u32 unk04;
+
+    /** VRAM blocks of the texture area; record 0 heads the list. */
+    LibTextureBlock blocks[LIB_TEXTURE_CACHE_ENTRY_COUNT];
+
     LibTextureEntry entries[LIB_TEXTURE_CACHE_ENTRY_COUNT];
     u8 next[LIB_TEXTURE_CACHE_ENTRY_COUNT];
     u8 previous[LIB_TEXTURE_CACHE_ENTRY_COUNT];
-    u8 unk2208[0x468];
+
+    /** Size of the texture area in bytes. */
+    s32 texture_size;
+
+    u32 unk220c;
+    u32 unk2210;
+    u8 unk2214[4];
+
+    /** CLUT records, clut_count of them. */
+    LibTextureClut cluts[LIB_TEXTURE_CACHE_MAX_CLUTS];
+
+    u8 unk2618[8];
+
+    /** Nonzero for each CLUT record in use. */
+    u8 clut_used[LIB_TEXTURE_CACHE_MAX_CLUTS];
+
+
+    /** VRAM word address of the texture area. */
+    u32 texture_address;
+
+    u32 unk2664;
+    u8 unk2668[4];
+
+    /** Number of CLUTs the CLUT area holds. */
+    s32 clut_count;
 
     /** Entry each slot last found. */
     u16 slot_entries[LIB_TEXTURE_CACHE_ENTRY_COUNT];
 
-    u8 unk2870[0x80];
+    /** CLUT record each slot last found. */
+    s16 clut_slot_entries[LIB_TEXTURE_CACHE_MAX_CLUTS];
+
     u8 stamp;
     u8 unk28f1[0x1F];
 };
@@ -350,8 +553,51 @@ enum
 {
     /** Don't draw the object. */
     LIB_DRAW_HIDDEN = 0x0001,
+
+    /** Keep the object under the camera: its x and z follow the camera's position every update. */
+    LIB_DRAW_FOLLOW_CAMERA = 0x0004,
+
     LIB_DRAW_FLAG_0010 = 0x0010,
+
+    /** Test the transform chain's combined unk200 factor every update and set LIB_DRAW_FLAG_0040 below one half. */
+    LIB_DRAW_FLAG_0020 = 0x0020,
+
+    LIB_DRAW_FLAG_0040 = 0x0040,
+
+    /** Turn the object with the camera about x, y or z. */
+    LIB_DRAW_FACE_CAMERA_X = 0x0080,
+    LIB_DRAW_FACE_CAMERA_Y = 0x0100,
+    LIB_DRAW_FACE_CAMERA_Z = 0x0200,
+
     LIB_DRAW_FLAG_0400 = 0x0400
+};
+
+class LibDisplayManager;
+
+/** One 0x68-byte layer record of a scene. */
+struct LibSceneLayer
+{
+    /** Display manager whose camera the layer's objects face. */
+    LibDisplayManager* display_manager;
+
+    u8 unk04[0x64];
+};
+
+/** Partial view of the update list that owns a scene's objects, reaching its layer records. */
+struct LibSceneLayerTable
+{
+    /**
+     * @brief Read a layer's display manager.
+     * @param layer Layer index.
+     * @return The layer's display manager.
+     */
+    LibDisplayManager* get_display_manager(s32 layer)
+    {
+        return layers[layer].display_manager;
+    }
+
+    u8 unk00[0xB30C];
+    LibSceneLayer layers[1];
 };
 
 /** Partial 0x90-byte transform owner with vtable D_178A90 in main data. */
@@ -463,7 +709,10 @@ public:
     u8 unk65;
     u8 unk66;
     u8 unk67;
-    u8 unk68;
+
+    /** Layer of the owning scene the object belongs to; picks its display manager from the scene's layer records. */
+    u8 layer;
+
     u8 unk69;
     u16 draw_flags;
 
@@ -639,6 +888,15 @@ public:
     void set_display_effect(LibCameraContext* display, bool enabled, bool first_flag, bool second_flag, s32 level,
                             u32 mask);
 
+    /** @brief Run LibClass179080::func_004E1E70 on the current camera, if there is one. */
+    void func_004DB0F0();
+
+    /** @brief Queue the current camera, if there is one, for VIF1 DMA. */
+    void submit_camera();
+
+    /** @brief Set unk94 and write the current camera's matrices, if there is one. */
+    void prepare_camera();
+
     /** Display the effect is set on, or null while it's off. */
     LibCameraContext* effect_display;
 
@@ -652,6 +910,15 @@ public:
     u8 effect_level;
 };
 
+/** Display manager whose current camera objects face by default. */
+extern LibDisplayManager* g_display_manager;
+
+/** Display Lib draws on. */
+extern LibCameraContext* g_display;
+
+/** Second copy of the draw display that LibRenderer::set_display keeps; Lib's image code reads it. */
+extern LibCameraContext* D_001B6520;
+
 /** Bytes in each of the renderer's two packet buffers. */
 #define LIB_RENDERER_BUFFER_SIZE 0x2000
 
@@ -660,6 +927,8 @@ struct LibRendererPass
 {
     u8 unk00[0x94];
     LibCameraContext* display;
+    u8 unk98[4];
+    u8 unk9c;
 };
 
 /** Partial renderer pass that lib_initialize can switch on, drawing to the display at 0x128. */
@@ -680,6 +949,28 @@ class LibRenderer : public LibUpdateList
 public:
     /** @brief Destroy the renderer. */
     virtual ~LibRenderer();
+
+    /**
+     * @brief Draw everything on a display: the renderer, its manager's effect, its passes, g_display and D_001B6520.
+     * @param target Display to draw on.
+     */
+    void set_display(LibCameraContext* target)
+    {
+        display = target;
+        g_display = target;
+
+        if (manager != 0)
+        {
+            manager->effect_display = target;
+        }
+
+        unk4458->display = target;
+        unk4460->display = target;
+        unk4464->display = target;
+        unk4468->display = target;
+        extra->display = target;
+        D_001B6520 = target;
+    }
 
     /** @brief Start a frame: swap packet buffers and, with a list and a camera, build the frame's packets. */
     void begin_frame();
@@ -733,7 +1024,13 @@ public:
     u8 unk40ca;
     u8 unk40cb;
     u8 unk40cc[2];
+
+    /**
+     * Nonzero (the default) to give bucket 0's own list the main-list objects whose unk66 byte is set; boot clears
+     * it while its own frame loop runs.
+     */
     u8 unk40ce;
+
     u8 unk40cf[2];
 
     /** Packet buffer the next frame writes to. */
@@ -762,7 +1059,6 @@ extern "C" u64 D_001B65C8;
  */
 extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel);
 
-extern "C" void func_004DB150(LibDisplayManager* manager);
 extern "C" void func_004C8390(LibDisplayManager* manager);
 extern "C" u64 func_004DBCA0(LibCameraContext* display, s32 index);
 
@@ -815,7 +1111,12 @@ public:
     /** Additional local transform composed with the base transform. */
     LibMatrix44Value offset_transform;
 
-    u8 unk150[0x80];
+    /** Transpose of transform, which func_004D9E70 inverts into inverse_transform. */
+    LibMatrix44Value transposed_transform;
+
+    /** Inverse of transform: world space to local space. */
+    LibMatrix44Value inverse_transform;
+
     LibVector4 offset_translation;
 
     /** Quaternion used to build the offset transform. */
@@ -827,8 +1128,22 @@ public:
     /** Parent used when updating the matrix and invalidating the transform chain. */
     LibTransform* parent_transform;
     u16 unk20c;
-    u8 unk20e[2];
+    u8 unk20e_0 : 1;
+    u8 unk20e_1 : 1;
+    u8 unk20e_2 : 1;
+    u8 unk20e_3 : 1;
+    u8 unk20e_4 : 1;
+    u8 unk20e_5_7 : 3;
+    u8 unk20f;
 };
+
+/**
+ * @brief Multiply the transform's unk200 factor by its parents', climbing parent_transform while bit 0x200 of unk20c
+ * is set.
+ * @param transform Transform to start from.
+ * @return The combined factor.
+ */
+extern "C" float func_004DA0F0(LibTransform* transform);
 
 class LibResourceBuffer;
 struct LibRenderDataRecord;
@@ -1186,13 +1501,6 @@ s32 func_004D5810(void* object);
 void func_004D5820(void* object);
 
 /**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_004D5D70(void* object);
-
-/**
  * @brief Pass the pointer at offset 0x634 and the remaining arguments to a helper.
  * @param receiver Object containing the pointer.
  * @param arg1 First value passed to the helper.
@@ -1205,12 +1513,6 @@ void func_004D6230(void* receiver, u32 arg1, u32 arg2);
  * @param object Receiver or first argument; unused.
  */
 void func_004D66F0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_004D9B50(void* object);
 
 /**
  * @brief Return the fixed value 8.

@@ -14,9 +14,9 @@ extern "C" {
 
 extern void func_004B0B20(void* object);
 extern void func_004B2870(void* object);
-extern void* D_001B6678;
-extern void* D_001B666C;
-extern void* D_001B6664;
+extern void* g_float_quaternion_track_pool;
+extern void* g_track_1718C0_pool;
+extern void* g_float_track_pool;
 extern void func_004B0820(void* object);
 extern void func_004B0FF0(void* owner, void* object);
 extern void func_004ACAF0(void* object);
@@ -397,7 +397,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD320);
 void func_004AD380(void* object)
 {
     func_004B0820(object);
-    func_004B0FF0(D_001B6678, object);
+    func_004B0FF0(g_float_quaternion_track_pool, object);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD3B0);
@@ -803,7 +803,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1830);
 void func_004B1890(void* object)
 {
     func_004ACAF0(object);
-    func_004B2B80(D_001B666C, object);
+    func_004B2B80(g_track_1718C0_pool, object);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B18C0);
@@ -831,7 +831,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2520);
 void func_004B2580(void* object)
 {
     func_004B2AE0(object);
-    func_004B2B30(D_001B6664, object);
+    func_004B2B30(g_float_track_pool, object);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B25B0);

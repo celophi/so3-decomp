@@ -84,6 +84,21 @@ class LibMemoryCard : public LibListObject
         /** @brief Initialize the memory card object. */
         LibMemoryCard();
 
+        /** @brief Destroy the memory card object. */
+        virtual ~LibMemoryCard();
+
+        /** @brief Wait for the card command in progress, then detach and queue the object once the library is set up. */
+        virtual void destroy();
+
+        /** @brief Run the transfer state machine. */
+        virtual void update();
+
+        /**
+         * @brief Virtual slot 0x1C, first after LibListObject's.
+         * @return Always four.
+         */
+        virtual s32 func_slot1C();
+
         /** The two card slots. */
         LibMemoryCardSlot* slots;
 
@@ -101,7 +116,12 @@ class LibMemoryCard : public LibListObject
         /** Zero while the card object is busy. */
         u8 ready;
 
-        u8 unk21[0x37];
+        u8 unk21[3];
+        u32 unk24;
+        u8 unk28;
+        u8 unk29[3];
+        s32 unk2c[10];
+        s32 unk54;
 };
 
 enum LibCardSlotMask

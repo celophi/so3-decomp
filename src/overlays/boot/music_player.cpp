@@ -1,4 +1,6 @@
 #include "include_asm.h"
+#include "angle.h"
+#include "gs.h"
 #include "overlays/boot/music_player.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
@@ -186,9 +188,9 @@ void BootNeedleMeter::build_packet(const void* matrix, void* context)
         }
     }
 
-    float left_angle = 4.5465827f - 0.017453292f * (157.0f * needles[0] / 96.0f);
-    float right_angle = 4.5465827f - 0.017453292f * (157.0f * needles[1] / 96.0f);
-    float peak_angle = 4.5465827f - 0.017453292f * (157.0f * peak / 96.0f);
+    float left_angle = 4.5465827f - DEGREES_TO_RADIANS * (157.0f * needles[0] / 96.0f);
+    float right_angle = 4.5465827f - DEGREES_TO_RADIANS * (157.0f * needles[1] / 96.0f);
+    float peak_angle = 4.5465827f - DEGREES_TO_RADIANS * (157.0f * peak / 96.0f);
     float left_x = lib_cosine(left_angle);
     float left_y = -lib_sine(left_angle);
     float right_x = lib_cosine(right_angle);
@@ -353,7 +355,7 @@ void BootFft::make_sine_table(s32 n, float* table)
     s32 n2 = n / 2;
     s32 n4 = n / 4;
     s32 n8 = n / 8;
-    float t = sinf_guess(3.1415927f / n);
+    float t = sinf_guess(PI / n);
     float dc = 2.0f * t * t;
     float ds = sqrtf(dc * (2.0f - dc));
     float c;
@@ -469,7 +471,7 @@ void BootMusicPlayer::create_images()
     {
         images[0] = new (0) BootImage;
         images[0]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[0]->set_rectangle(0, 1, 488, 223, 0x80808080, 0);
+        images[0]->set_rectangle(0, 1, 488, 223, GS_RGBA_NEUTRAL, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
@@ -477,7 +479,7 @@ void BootMusicPlayer::create_images()
     {
         images[1] = new (0) BootImage;
         images[1]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[1]), 0);
-        images[1]->set_rectangle(0, 1, 640, 60, 0x80808080, 0);
+        images[1]->set_rectangle(0, 1, 640, 60, GS_RGBA_NEUTRAL, 0);
         images[1]->model->set_translation(-320.0f, -216.0f, 0.0f);
     }
 
@@ -485,45 +487,45 @@ void BootMusicPlayer::create_images()
     {
         images[2] = new (0) BootImage;
         images[2]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[2]->set_rectangle(20, 434, 373, 41, 0x80808080, 0);
+        images[2]->set_rectangle(20, 434, 373, 41, GS_RGBA_NEUTRAL, 0);
     }
 
     if (images[4] == 0)
     {
         images[4] = new (0) BootImage;
         images[4]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[4]->set_rectangle(17, 241, 105, 32, 0x80808080, 0);
+        images[4]->set_rectangle(17, 241, 105, 32, GS_RGBA_NEUTRAL, 0);
         images[5] = new (0) BootImage;
         images[5]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[5]->set_rectangle(17, 279, 78, 35, 0x80808080, 0);
+        images[5]->set_rectangle(17, 279, 78, 35, GS_RGBA_NEUTRAL, 0);
         images[6] = new (0) BootImage;
         images[6]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[6]->set_rectangle(17, 315, 83, 36, 0x80808080, 0);
+        images[6]->set_rectangle(17, 315, 83, 36, GS_RGBA_NEUTRAL, 0);
         images[7] = new (0) BootImage;
         images[7]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[7]->set_rectangle(17, 351, 274, 34, 0x80808080, 0);
+        images[7]->set_rectangle(17, 351, 274, 34, GS_RGBA_NEUTRAL, 0);
         images[9] = new (0) BootImage;
         images[9]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[9]->set_rectangle(21, 486, 455, 18, 0x80808080, 0);
+        images[9]->set_rectangle(21, 486, 455, 18, GS_RGBA_NEUTRAL, 0);
     }
 
     if (images[10] == 0)
     {
         images[10] = new (0) BootImage;
         images[10]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[10]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
+        images[10]->set_rectangle(393, 241, 98, 180, GS_RGBA_NEUTRAL, 0);
         images[11] = new (0) BootImage;
         images[11]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[11]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
+        images[11]->set_rectangle(393, 241, 98, 180, GS_RGBA_NEUTRAL, 0);
         images[12] = new (0) BootImage;
         images[12]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[12]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
+        images[12]->set_rectangle(393, 241, 98, 180, GS_RGBA_NEUTRAL, 0);
         images[13] = new (0) BootImage;
         images[13]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[13]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
+        images[13]->set_rectangle(393, 241, 98, 180, GS_RGBA_NEUTRAL, 0);
         images[14] = new (0) BootImage;
         images[14]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(image_buffers[0]), 0);
-        images[14]->set_rectangle(393, 241, 98, 180, 0x80808080, 0);
+        images[14]->set_rectangle(393, 241, 98, 180, GS_RGBA_NEUTRAL, 0);
     }
 
     if (((LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
@@ -755,16 +757,16 @@ void BootMusicPlayer::update()
         labels[3] = new (0) LibTextWidget(g_boot_program.messages, 0x99, 1, 380.0f, 435.0f, 128.0f, 24.0f);
         labels[4] = new (0) LibTextWidget(g_boot_program.messages, 0x9A, 1, 490.0f, 435.0f, 128.0f, 24.0f);
         name_text->set_vertical_align(2);
-        number_text->set_color(0x34130F);
-        name_text->set_color(0x34130F);
-        mode_text->set_color(0x34130F);
+        number_text->set_color(BOOT_TEXT_COLOR);
+        name_text->set_color(BOOT_TEXT_COLOR);
+        mode_text->set_color(BOOT_TEXT_COLOR);
         lib_container_attach_widget(container, number_text);
         lib_container_attach_widget(container, name_text);
         lib_container_attach_widget(container, mode_text);
 
         for (s32 i = 0; i < 5; i++)
         {
-            labels[i]->set_color(0x34130F);
+            labels[i]->set_color(BOOT_TEXT_COLOR);
             lib_container_attach_widget(container, labels[i]);
         }
 
@@ -866,7 +868,7 @@ void BootMusicPlayer::update()
 
         if (input->pressed & resource->cancel_buttons)
         {
-            resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             resident_sound_stop_music(g_sound, 0x1E, -1);
             BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
             fade->fade_speed = 2.0f;
@@ -1372,7 +1374,7 @@ BootMusicPlayer::BootMusicPlayer()
 
     for (s32 i = 0; i < BOOT_MUSIC_FFT_SIZE; i++)
     {
-        window[i] = lib_sine(3.1415927f * i / (float)BOOT_MUSIC_FFT_SIZE);
+        window[i] = lib_sine(PI * i / (float)BOOT_MUSIC_FFT_SIZE);
         window[i] = window[i] * window[i];
     }
 }
@@ -1394,7 +1396,7 @@ BootNeedleMeter::BootNeedleMeter()
     set_type_id(0x4001);
     unk65 = 1;
     set_draw_flags(LIB_DRAW_FLAG_0400);
-    packet = new (0) BootPacketBuffer(0x800);
+    packet = new (0) LibPacketBuffer(0x800);
     levels[0] = 0.0f;
     levels[1] = 0.0f;
     peak = 0.0f;

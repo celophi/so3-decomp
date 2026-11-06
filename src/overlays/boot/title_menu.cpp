@@ -1,7 +1,10 @@
 #include "include_asm.h"
 #include "overlays/boot/title_menu.h"
 #include "overlays/boot/installer.h"
-#include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/game_launcher.h"
+#include "overlays/boot/new_game_settings.h"
+#include "overlays/boot/program.h"
 #include "overlays/boot/trophy_viewer.h"
 #include "overlays/boot/music_player.h"
 #include "overlays/boot/resident.h"
@@ -340,7 +343,7 @@ void BootTitleMenu::update()
         check_main_code();
         scene = new (0) BootScene;
         lib_scene_load_data(scene, (ResidentResourceHeader*)scene_data);
-        func_474010(scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
+        lib_scene_build_objects(scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
         delete[] scene_data;
         scene_data = 0;
         lib_reset_game_state(game_data);
@@ -401,7 +404,7 @@ void BootTitleMenu::update()
             get_cursor_position(&x, &y);
             cursor->set_move_target(x, y, 0.05f);
             pulse_up = 0;
-            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
         }
 
         if (input->repeated == BOOT_BUTTON_RIGHT && cursor->arrived)
@@ -417,7 +420,7 @@ void BootTitleMenu::update()
             float y;
             get_cursor_position(&x, &y);
             cursor->set_move_target(x, y, 0.05f);
-            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
         }
 
         idle_time += g_frame_seconds;
@@ -455,11 +458,11 @@ void BootTitleMenu::update()
             {
                 queue_fade();
                 resident_sound_stop_music(g_sound, 0x1E, -1);
-                resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             }
             else
             {
-                resident_sound_play(g_sound, 3, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_INVALID, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             }
         }
         else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && resident_archive_has_resource(g_resource_archive, 1) == 1)
@@ -909,7 +912,7 @@ BootScreenFade::~BootScreenFade()
 }
 
 /** @brief Release the packet storage unless it is external. */
-BootPacketBuffer::~BootPacketBuffer()
+LibPacketBuffer::~LibPacketBuffer()
 {
     if (!unk14)
     {
@@ -946,7 +949,7 @@ BootScreenFade::BootScreenFade(LibCameraContext* display)
     set_type_id(0x4000);
     unk65 = 1;
     set_draw_flags(LIB_DRAW_FLAG_0400);
-    packet = new (0) BootPacketBuffer(0x400);
+    packet = new (0) LibPacketBuffer(0x400);
     alpha = 1.0f;
     fade_speed = 1.0f;
     armed = 0;
@@ -1060,7 +1063,7 @@ void image_set_rectangle_with_palette(BootImage* image, s32 x, s32 y, s32 width,
         }
     }
 
-    func_455BD0(image->draw_buffer, image->unk2c, 500.0f, 0);
+    func_455BD0(image->draw_buffer, image->end_mode, 500.0f, 0);
     image->model->attach_draw_buffer(image->draw_buffer);
     image->model->display_manager = g_scene_display_manager;
     image->model->draw_flags |= LIB_DRAW_FLAG_0400;
@@ -1114,7 +1117,7 @@ void BootImage::set_rectangle(s32 x, s32 y, s32 width, s32 height, u32 color, s3
                    (((x + width) << 12) / texture_width) | ((((y + height) << 12) / texture_height) << 16), color);
     }
 
-    func_455BD0(draw_buffer, unk2c, 500.0f, 0);
+    func_455BD0(draw_buffer, end_mode, 500.0f, 0);
     model->attach_draw_buffer(draw_buffer);
     model->display_manager = g_scene_display_manager;
     model->draw_flags |= LIB_DRAW_FLAG_0400;
@@ -1177,7 +1180,7 @@ BootImage::BootImage()
     model = 0;
     centered = 0;
     has_palette = 0;
-    unk2c = 0;
+    end_mode = 0;
 }
 
 /** @brief Draw in bucket 10 instead of the main list. */

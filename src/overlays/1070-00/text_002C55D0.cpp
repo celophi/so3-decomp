@@ -39,7 +39,7 @@ extern "C" void func_002D7EA0(void* context, void* object);
 extern "C" void func_002D70E0(void* object);
 extern "C" void func_002D7E50(void* context, void* object);
 extern "C" void func_137F40(void* object, s32 start, s32 size);
-extern "C" void* D_001B667C;
+extern "C" void* g_quaternion_curve_track_pool;
 extern "C" void func_4F4840(void* object);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002C55D0);
@@ -327,7 +327,7 @@ s32 func_002D1C40(void* object)
 
 void func_002D1C50(void)
 {
-    func_4F4840(D_001B667C);
+    func_4F4840(g_quaternion_curve_track_pool);
 }
 
 void func_002D1C70(FieldRecordQueue* object, u32 value, u8 kind, u8 flag)

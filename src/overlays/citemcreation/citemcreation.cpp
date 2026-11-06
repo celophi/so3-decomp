@@ -47,7 +47,7 @@ public:
     u8 unk00[0x90];
     ItemCreationClass1746A0 unk90;
     ItemCreationClass1746A0 unke4;
-    ItemCreationClass1725D0 unk138;
+    LibListIndicator unk138;
     ItemCreationClass175030 unk190;
     u8 unk20c[0xEC];
     s32 unk2f8;
@@ -3767,7 +3767,7 @@ ItemCreationClass1746A0::~ItemCreationClass1746A0()
 }
 
 /** @brief Release the widget storage and destroy its base. */
-ItemCreationClass1725D0::~ItemCreationClass1725D0()
+LibListIndicator::~LibListIndicator()
 {
 }
 
@@ -7437,8 +7437,8 @@ s32 InventoryItemInstanceList::func_slot104(u32 associated)
     lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 28.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
     FieldStateCE420::unk04->visible = 0;
-    FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
-    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 558.0f, 14.0f, 140.0f, 10.0f, 0.0f);
+    FieldStateCE420::unk00 = new (0) LibListIndicator;
+    lib_list_indicator_init(static_cast<LibListIndicator*>(FieldStateCE420::unk00), 558.0f, 14.0f, 140.0f, 10.0f, 0.0f);
     FieldStateCE420::unk00->visible = 0;
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 5, 378, 28);
@@ -7994,8 +7994,8 @@ s32 InventoryItemTypeList::func_slot104(u32 associated)
     lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 20.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
     FieldStateCE420::unk04->visible = 0;
-    FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
-    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 376.0f, 16.0f, 308.0f, 10.0f, 0.0f);
+    FieldStateCE420::unk00 = new (0) LibListIndicator;
+    lib_list_indicator_init(static_cast<LibListIndicator*>(FieldStateCE420::unk00), 376.0f, 16.0f, 308.0f, 10.0f, 0.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, unk218, 378, 28);
     unk2b = 3;

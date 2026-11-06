@@ -447,11 +447,11 @@ void FieldClass15AE60::configure_selection(s32 count, s32 start, s32 selected)
                           this->unk08 + (float)(this->unk1a * (this->unk28 % this->unk26)),
                           this->unk0c + (float)(this->unk1c * (this->unk28 / this->unk26)));
     this->unk04->needs_redraw = 1;
-    ItemCreationClass1725D0* indicator = (ItemCreationClass1725D0*)this->unk00;
-    indicator->unk50 = 100.0f * (u32)this->unk27 / (u32)this->unk1e;
+    LibListIndicator* indicator = (LibListIndicator*)this->unk00;
+    indicator->extent = 100.0f * (u32)this->unk27 / (u32)this->unk1e;
     indicator->needs_redraw = 1;
-    indicator = (ItemCreationClass1725D0*)this->unk00;
-    indicator->unk54 = 100.0f * (this->unk14 + (float)(this->unk22 * this->unk1c)) / (float)(this->unk1e * this->unk1c);
+    indicator = (LibListIndicator*)this->unk00;
+    indicator->position = 100.0f * (this->unk14 + (float)(this->unk22 * this->unk1c)) / (float)(this->unk1e * this->unk1c);
     indicator->needs_redraw = 1;
 }
 

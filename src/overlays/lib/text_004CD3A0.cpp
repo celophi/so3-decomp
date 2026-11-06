@@ -26,6 +26,8 @@
 #include "overlays/lib/render_channel.h"
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
+#include "overlays/lib/model.h"
+#include "overlays/lib/transform_vu0.h"
 
 #define TEXTURE_TRANSFER_GIF_TAG 0x1000000000008004ULL
 
@@ -154,7 +156,6 @@ struct LibFieldPointer634
 
 #define HALF_PI 1.57079637050628662109375f
 
-extern "C" LibDisplayManager* g_display_manager;
 extern "C" ResidentDmaQueue* D_001B660C;
 
 /** @brief View an aligned matrix row as a vector. @param matrix Source matrix. @param index Row index. @return Read-only row vector. */
@@ -878,7 +879,24 @@ void LibTransformOwner::copy_transform_state(const LibTransformOwner* source)
     draw_flags = source->draw_flags;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", destroy__17LibTransformOwnerFv);
+/** @brief Detach and queue the owner. */
+void LibTransformOwner::destroy()
+{
+    lib_object_detach_owner(this);
+    resident_enqueue_object(g_resident_release_queues, this);
+
+    u32 mask = ~unk8c;
+    u32 previous = D_001B65BC;
+    unk8c &= mask;
+    D_001B65BC &= mask;
+
+    if (previous != D_001B65BC)
+    {
+        D_001B65C0 = 1;
+    }
+
+    unk8c = 0;
+}
 
 /** @brief Mark the base transform's matrix state ready. */
 void LibTransformOwner::update_transform_matrix()
@@ -1050,7 +1068,7 @@ void LibRenderer::begin_frame()
     }
 
     func_004D99B0(D_001B65FC);
-    func_004DB150(manager);
+    manager->prepare_camera();
     func_004C8390(manager);
     unk40cb = 0;
     unk40a0 = 0;
@@ -1132,7 +1150,12 @@ extern "C" void lib_load_camera_screen_matrix(const LibClass179080* camera)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__14LibClass172000Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5940);
+/** @brief Start at the origin. */
+LibPositionTransform::LibPositionTransform()
+{
+    clear_vector(&translation);
+    translation.w = 1.0f;
+}
 
 /**
  * @brief Find an indexed entry across the linked child channels.
@@ -1216,24 +1239,90 @@ LibResourceBuffer::~LibResourceBuffer()
     }
 }
 
-extern "C" s32 func_004D5D70(void* object)
+/**
+ * @brief Return the list of the model's render channels; the base has none.
+ * @return Null.
+ */
+LibListReceiver* LibModelBase::get_render_channels()
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5D80);
+/** @brief Flag the owning renderer's first pass for a mesh with bit 0 of unk54 set, then update the color model. */
+void LibModelBase::update()
+{
+    if (resource != 0)
+    {
+        LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(resource));
+
+        if (mesh->unk54 & 1)
+        {
+            static_cast<LibRenderer*>(owner)->unk4458->unk9c = 1;
+        }
+    }
+
+    LibColorModel::update();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5E10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5F50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5FE0);
+/**
+ * @brief Swap the object's bits in the resident flag word for a mesh's, and note when the word changed.
+ * @param object Object whose bits change.
+ * @param mesh Mesh whose resident mask the object takes.
+ */
+static inline void lib_model_take_resident_mask(LibTransformOwner* object, const LibMeshHeader* mesh)
+{
+    u32 mask = mesh->resident_mask;
+    u32 previous = D_001B65BC;
+    D_001B65BC &= ~object->unk8c;
+    object->unk8c = mask;
+    D_001B65BC |= mask;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6000);
+    if (previous != D_001B65BC)
+    {
+        D_001B65C0 = 1;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6020);
+/** @brief Go back to the resource's own payload. */
+void LibModelBase::clear_payload()
+{
+    if (resource != 0)
+    {
+        resource->payload_override = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6040);
+/**
+ * @brief Switch to a payload override.
+ * @param payload Payload to draw instead of the resource's own.
+ * @param set Packet set the payload goes in; unused here.
+ */
+void LibModelBase::select_payload(void* payload, u8 set)
+{
+    if (resource != 0)
+    {
+        resource->payload_override = payload;
+    }
+}
+
+/**
+ * @brief Draw the resource with a payload override.
+ * @param payload Payload to draw instead of the resource's own.
+ * @param set Packet set the payload goes in; unused here.
+ */
+void LibModelBase::load_payload(void* payload, u8 set)
+{
+    if (resource != 0)
+    {
+        resource->payload_override = payload;
+    }
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", set_fog_enabled__12LibModelBaseFUc);
 
 extern "C" void func_004D6230(void* receiver, u32 arg1, u32 arg2)
 {
@@ -1245,9 +1334,44 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6250);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D62A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6380);
+/**
+ * @brief Draw a mesh resource the model doesn't own, and take its resident mask.
+ * @param mesh Mesh resource.
+ * @return Always one.
+ */
+s32 LibModelBase::set_resource(LibResourceBuffer* mesh)
+{
+    owns_resource = 0;
+    resource = mesh;
+    LibMeshHeader* header = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(resource));
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6430);
+    if (header != 0)
+    {
+        lib_model_take_resident_mask(this, header);
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Own a draw buffer, give it the model's render channels and take its resident mask.
+ * @param buffer Draw buffer to attach.
+ * @return Always one.
+ */
+s32 LibModelBase::attach_draw_buffer(LibDrawBuffer* buffer)
+{
+    owns_resource = 1;
+    resource = buffer;
+    resource->children = &get_render_channels()->sentinel;
+    LibMeshHeader* header = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(resource));
+
+    if (header != 0)
+    {
+        lib_model_take_resident_mask(this, header);
+    }
+
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6510);
 
@@ -2045,15 +2169,140 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9030);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D90B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9130);
+/**
+ * @brief Check whether no lookup has stamped a block since the stamps were cleared.
+ * @param block Block to check.
+ * @return Whether the block has no stamp.
+ */
+static inline bool lib_texture_block_expired(const LibTextureBlock* block)
+{
+    if (block->stamp)
+    {
+        return false;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9200);
+    return true;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9250);
+/** @brief Release every block no lookup has stamped since the stamps were cleared; with none stamped, empty the cache. */
+void LibTextureCache::release_unstamped()
+{
+    LibTextureBlock* list = blocks;
+    bool stamped = false;
+    u32 index;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D92C0);
+    for (index = list[0].next_block; index != 0; index = list[index].next_block)
+    {
+        if (lib_texture_block_expired(&list[index]))
+        {
+            continue;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9300);
+        stamped = true;
+        break;
+    }
+
+    if (stamped)
+    {
+        for (index = list[0].next_block; index != 0;)
+        {
+            u32 next_block = list[index].next_block;
+
+            if (list[index].stamp == 0)
+            {
+                release_block(index);
+            }
+
+            index = next_block;
+        }
+    }
+    else
+    {
+        reset();
+    }
+}
+
+/**
+ * @brief Detach the user from every cached copy of a texture.
+ * @param tag Texture tag.
+ * @param id Texture ID.
+ */
+void LibTextureCache::detach_user(u32 tag, u32 id)
+{
+    for (u32 index = next[0]; index != 0; index = next[index])
+    {
+        if (blocks[index].id == id && entries[index].tag == tag)
+        {
+            entries[index].user = 0;
+        }
+    }
+}
+
+/**
+ * @brief Release the most recently used cached copy of a texture.
+ * @param tag Texture tag.
+ * @param id Texture ID.
+ */
+void LibTextureCache::release_texture(u32 tag, u32 id)
+{
+    for (u32 index = next[0]; index != 0; index = next[index])
+    {
+        if (blocks[index].id == id && entries[index].tag == tag)
+        {
+            release_block(index);
+            return;
+        }
+    }
+}
+
+/**
+ * @brief Clear the stamp of every block holding a texture ID, and the cache's own stamp.
+ * @param id Texture ID.
+ */
+void LibTextureCache::expire_texture(u32 id)
+{
+    stamp = 0;
+
+    for (u32 index = blocks[0].next_block; index != 0; index = blocks[index].next_block)
+    {
+        if (blocks[index].id == id)
+        {
+            blocks[index].stamp = 0;
+        }
+    }
+}
+
+/**
+ * @brief Build the CLUT half of TEX0 for the CLUT a slot last found.
+ * @param slot Slot whose CLUT to use.
+ * @param entry CLUT entry offset (CSA).
+ * @param load_mode 0 to always load the CLUT, 1 to load it and keep CBP 0, 2 not to load it; anything else loads it
+ *        and keeps CBP 1.
+ * @return CBP, CPSM, CSA and CLD in TEX0's layout.
+ */
+u64 LibTextureCache::get_clut_tex0(s16 slot, s16 entry, s32 load_mode)
+{
+    u64 csa = GS_TEX0_CSA((u32)(entry & 0x1F));
+    u64 cld;
+
+    switch (load_mode)
+    {
+    case 0:
+        cld = GS_TEX0_CLD(1);
+        break;
+    case 1:
+        cld = GS_TEX0_CLD(2);
+        break;
+    case 2:
+        cld = 0;
+        break;
+    default:
+        cld = GS_TEX0_CLD(4);
+        break;
+    }
+
+    return cld | (cluts[clut_slot_entries[slot]].tex0 | csa);
+}
 
 /**
  * @brief Look up a cached texture, loading it on a miss.
@@ -2072,9 +2321,9 @@ u32 LibTextureCache::find_texture(LibTextureRequest* request, u32 tag, u32 id, s
 
     for (index = next[0]; index != 0; index = next[index])
     {
-        if (keys[index].id == id && entries[index].tag == tag)
+        if (blocks[index].id == id && entries[index].tag == tag)
         {
-            keys[index].stamp = stamp;
+            blocks[index].stamp = stamp;
 
             if (entries[index].user == 0)
             {
@@ -2128,11 +2377,125 @@ u32 LibTextureCache::find_texture(LibTextureRequest* request, u32 tag, u32 id, s
     return func_004A7100(this, request, tag, id, slot, unk5, user);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9590);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", release_area_end__15LibTextureCacheFUi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9670);
+/** @brief Empty the cache: one free block over the whole texture area, no textures and no CLUTs. */
+void LibTextureCache::reset()
+{
+    for (s32 index = 0; index < LIB_TEXTURE_CACHE_ENTRY_COUNT; index++)
+    {
+        blocks[index].state = LIB_TEXTURE_BLOCK_UNUSED;
+        slot_entries[index] = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__15LibTextureCacheFii);
+    s32 count = clut_count;
+
+    for (s32 index = 0; index < count; index++)
+    {
+        clut_used[index] = 0;
+        cluts[index].unk00 = 0;
+        clut_slot_entries[index] = 0;
+    }
+
+    blocks[1].address = texture_address;
+    blocks[1].size = texture_size;
+    blocks[1].previous_block = 0;
+    blocks[1].next_block = 0;
+    blocks[1].state = LIB_TEXTURE_BLOCK_FREE;
+    blocks[0].address = 0;
+    blocks[0].size = 0;
+    blocks[0].stamp = 0;
+    blocks[0].previous_block = 1;
+    blocks[0].next_block = 1;
+    blocks[0].state = LIB_TEXTURE_BLOCK_HEAD;
+    blocks[0].id = 0;
+    unk04 = 2;
+    next[0] = 0;
+    previous[0] = 0;
+    unk2210 = 0;
+    unk220c = 0;
+    stamp = 0;
+}
+
+/** Fewest CLUTs a texture cache holds. */
+#define LIB_TEXTURE_CACHE_MIN_CLUTS 8
+
+/** Alignment of the texture area in VRAM, in bytes. */
+#define LIB_TEXTURE_CACHE_TEXTURE_ALIGNMENT 0x800
+
+/** Bytes of VRAM one CLUT takes. */
+#define LIB_TEXTURE_CACHE_CLUT_BYTES 0x100
+
+/** VRAM slot argument that asks the allocator for a new slot. */
+#define LIB_VRAM_NEW_SLOT -1
+
+/** "Too many clut size.\n" */
+extern "C" const char lib_texture_cache_clut_error[];
+
+/** "Cannot allocate vram cache.\n" */
+extern "C" const char lib_texture_cache_vram_error[];
+
+/**
+ * @brief Allocate an aligned area from the texture side of the VRAM allocator.
+ * @param vram Allocator.
+ * @param size Size in bytes.
+ * @param alignment Alignment in bytes.
+ * @param slot Slot to reuse, or LIB_VRAM_NEW_SLOT.
+ * @return Slot of the area, or -1 when VRAM is full.
+ */
+extern "C" s16 func_004DCA70(LibVramAllocator* vram, u32 size, u32 alignment, s16 slot);
+
+/**
+ * @brief Allocate an area from the CLUT side of the VRAM allocator.
+ * @param vram Allocator.
+ * @param size Size in bytes.
+ * @param slot Slot to reuse, or LIB_VRAM_NEW_SLOT.
+ * @return Slot of the area, or -1 when VRAM is full.
+ */
+extern "C" s16 func_004DC8B0(LibVramAllocator* vram, u32 size, s16 slot);
+
+/**
+ * @brief Allocate the texture and CLUT areas in VRAM and reset the cache.
+ * @param size Size of the texture area in bytes.
+ * @param count Number of CLUTs to hold; rounded up to a power of two, at least 8. At most 64.
+ */
+LibTextureCache::LibTextureCache(s32 size, s32 count)
+{
+    if (count > LIB_TEXTURE_CACHE_MAX_CLUTS)
+    {
+        printf(lib_texture_cache_clut_error);
+        throw;
+    }
+
+    s32 capacity = 1;
+
+    if (count > 1)
+    {
+        do
+        {
+            capacity <<= 1;
+        } while (capacity < count);
+    }
+
+    if (capacity < LIB_TEXTURE_CACHE_MIN_CLUTS)
+    {
+        capacity = LIB_TEXTURE_CACHE_MIN_CLUTS;
+    }
+
+    texture_slot = func_004DCA70(g_vram_allocator, size, LIB_TEXTURE_CACHE_TEXTURE_ALIGNMENT, LIB_VRAM_NEW_SLOT);
+    clut_slot = func_004DC8B0(g_vram_allocator, capacity * LIB_TEXTURE_CACHE_CLUT_BYTES, LIB_VRAM_NEW_SLOT);
+    texture_address = (g_vram_allocator->unk04[texture_slot] & 0x3FFF) << 6;
+    unk2664 = ((g_vram_allocator->allocations[texture_slot] >> 5) & 0x3FFF) << 6;
+    texture_size = size;
+    clut_count = capacity;
+    reset();
+
+    if (!is_allocated())
+    {
+        printf(lib_texture_cache_vram_error);
+        throw;
+    }
+}
 
 extern "C" void* func_004D99A0(void* object)
 {
@@ -2178,26 +2541,72 @@ extern "C" void func_004D9AB0(LibBusyObject* object, u8 channel)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9AF0);
 
-extern "C" void func_004D9B50(void* object)
+/**
+ * @brief Nothing to do once the upload finishes.
+ * @param channel DMA channel; unused.
+ */
+void LibMicrocodeLoader::complete_dma(u32 channel)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9B60);
+/**
+ * @brief Send the resident microcode upload chain on VIF1.
+ * @param channel DMA channel; unused.
+ */
+void LibMicrocodeLoader::submit_dma(u32 channel)
+{
+    *D1_QWC = 0;
+    *D1_TADR = reinterpret_cast<u32>(lib_vu1_upload_chain);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_TAG_TRANSFER | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9BA0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", get_program_tag__18LibMicrocodeLoaderFi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9BF0);
+/**
+ * @brief Switch to a microprogram.
+ * @param program Program index.
+ * @return The program's data when it has to be uploaded, or null when it's already loaded.
+ */
+const void* LibMicrocodeLoader::select_program(s32 program)
+{
+    if (current_program == program)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9C30);
+    current_program = program;
+    return lib_vu1_programs[program];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9C60);
+/** @brief Forget the loaded program and queue the resident microcode upload. */
+void LibMicrocodeLoader::start_upload()
+{
+    unk04 = 0;
+    current_program = LIB_VU1_PROGRAM_NONE;
+    func_00114100(g_vif1_dma_queue, this);
+}
+
+/** @brief Start with no program and an empty upload packet. */
+LibMicrocodeLoader::LibMicrocodeLoader()
+{
+    for (s32 i = 0; i < 3; i++)
+    {
+        unk14[i] = 0;
+        unk20[i] = 0;
+    }
+
+    flush = VIF_FLUSH;
+    unk06 = 0;
+    FlushCache(0);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9CD0);
 
 /** @brief Apply the enabled camera-facing rotation components. */
 void LibTransform::update()
 {
-    if (draw_flags & 0x380)
+    if (draw_flags & (LIB_DRAW_FACE_CAMERA_X | LIB_DRAW_FACE_CAMERA_Y | LIB_DRAW_FACE_CAMERA_Z))
     {
         LibClass179080* camera;
         if (display_manager != 0)
@@ -2217,15 +2626,15 @@ void LibTransform::update()
             LibVector4 angles;
             const float* camera_angles = camera->rotation_angles;
             func_004CDA40(&angles, &orientation);
-            if (draw_flags & 0x80)
+            if (draw_flags & LIB_DRAW_FACE_CAMERA_X)
             {
                 angles.x = -camera_angles[0];
             }
-            if (draw_flags & 0x100)
+            if (draw_flags & LIB_DRAW_FACE_CAMERA_Y)
             {
                 angles.y = camera_angles[1];
             }
-            if (draw_flags & 0x200)
+            if (draw_flags & LIB_DRAW_FACE_CAMERA_Z)
             {
                 angles.z = -camera_angles[2];
             }
@@ -2425,7 +2834,85 @@ extern "C" FieldVec4B func_004DA6F0(const LibTransform* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA730);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_transform_matrix__12LibTransformFv);
+/** LibTransform::unk20c bits that skip the microprogram at 0x830. */
+#define LIB_TRANSFORM_FLAGS_01C0 0x1C0
+
+/** @brief Update the cached transformation matrices. */
+void LibTransform::update_transform_matrix()
+{
+    LibTransform* parent = parent_transform;
+    const LibMatrix44Value* parent_matrix;
+
+    if (parent != 0)
+    {
+        if (!parent->matrix_ready)
+        {
+            parent->update_transform_matrix();
+            transform_dirty = 1;
+        }
+        else if (parent->unk51)
+        {
+            transform_dirty = 1;
+        }
+
+        parent_matrix = &parent->base_transform;
+    }
+    else
+    {
+        parent_matrix = 0;
+    }
+
+    if (!transform_dirty)
+    {
+        matrix_ready = 1;
+        return;
+    }
+
+    vu0_load_scale_vf17(&scale);
+    vu0_load_rotation_vf5(&orientation);
+    vu0_load_translation_vf16(&translation);
+    vu0_start_microprogram_728();
+    unk20e_0 = 0;
+    unk20e_1 = 0;
+    unk20e_2 = 0;
+    matrix_ready = 1;
+
+    if (parent_matrix != 0)
+    {
+        vu0_load_rows_vf1_vf3(parent_matrix);
+        ee_prefetch(&offset_transform);
+        vu0_start_microprogram_ae8();
+        unk20e_3 = 0;
+        transform_dirty = 0;
+        unk51 = 1;
+
+        if (!(unk20c & LIB_TRANSFORM_FLAGS_01C0))
+        {
+            vu0_wait_microprogram();
+            vu0_start_microprogram_830_scale_rows();
+        }
+
+        LibMatrix44Value* result = &transform;
+        const LibMatrix44Value* offset = &offset_transform;
+        LibMatrix44Value* base = &base_transform;
+        vu0_load_matrix_vf5_vf7_vf4(offset);
+        ee_prefetch(base);
+        vu0_multiply_store_vf4(base, result);
+    }
+    else
+    {
+        unk20e_3 = 0;
+        transform_dirty = 0;
+        unk51 = 1;
+        vu0_scale_rotation_rows();
+        LibMatrix44Value* result = &transform;
+        const LibMatrix44Value* offset = &offset_transform;
+        LibMatrix44Value* base = &base_transform;
+        vu0_load_matrix_vf5_vf8(offset);
+        ee_prefetch(base);
+        vu0_multiply_store_vf8(base, result);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", lib_rebuild_offset_transform);
 
@@ -2494,11 +2981,34 @@ void LibDisplayManager::set_display_effect(LibCameraContext* display, bool enabl
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB0F0);
+/** @brief Run LibClass179080::func_004E1E70 on the current camera, if there is one. */
+void LibDisplayManager::func_004DB0F0()
+{
+    if (current_display != 0)
+    {
+        static_cast<LibClass179080*>(current_display)->func_004E1E70();
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB120);
+/** @brief Queue the current camera, if there is one, for VIF1 DMA. */
+void LibDisplayManager::submit_camera()
+{
+    if (current_display != 0)
+    {
+        static_cast<LibClass179080*>(current_display)->enqueue_submission();
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB150);
+/** @brief Set unk94 and write the current camera's matrices, if there is one. */
+void LibDisplayManager::prepare_camera()
+{
+    unk94 = 1;
+
+    if (current_display != 0)
+    {
+        static_cast<LibClass179080*>(current_display)->func_004E2120();
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB190);
 

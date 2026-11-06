@@ -1,6 +1,8 @@
 #include "include_asm.h"
 #include "vu0.h"
 #include "overlays/lib/blend_transform.h"
+#include "overlays/lib/model.h"
+#include "main/resident_data.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/memory_card.h"
 #include "overlays/lib/image_capture.h"
@@ -20,7 +22,6 @@
 extern "C" {
 
 void func_004486A0(void* object);
-void func_00448250(void* object);
 
 typedef struct WordSetterOwnertext_00429B00
 {
@@ -526,7 +527,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431680);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004316C0);
 
-s32 func_00431720(void* object)
+/**
+ * @brief Virtual slot 0x1C, first after LibListObject's.
+ * @return Always four.
+ */
+s32 LibMemoryCard::func_slot1C()
 {
     return 4;
 }
@@ -541,7 +546,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004317F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431AB0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431E60);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", update__13LibMemoryCardFv);
 
 /**
  * @brief Find a slot that can start a file operation: the card library is set up, the slot is open, its card is
@@ -766,11 +771,46 @@ s32 lib_memory_card_init(LibMemoryCard* card, LibUpdateList* list)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432800);
+/** @brief Wait for the card command in progress, then detach and queue the object once the library is set up. */
+void LibMemoryCard::destroy()
+{
+    s32 command;
+    s32 result;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432870);
+    if (!sceMcSync(1, &command, &result))
+    {
+        sceMcSync(0, &command, &result);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432900);
+    if (initialized)
+    {
+        lib_object_detach_owner(this);
+        resident_enqueue_object(g_resident_release_queues, this);
+    }
+}
+
+/** @brief Destroy the memory card object. */
+LibMemoryCard::~LibMemoryCard()
+{
+}
+
+/** @brief Initialize the memory card object. */
+LibMemoryCard::LibMemoryCard()
+{
+    slots = 0;
+    slot_storage = 0;
+    initialized = 0;
+    unk1e = 0;
+    ready = 0;
+    unk24 = 0x202;
+    unk28 = 0;
+    unk54 = -1;
+
+    for (s32 i = 0; i < 10; i++)
+    {
+        unk2c[i] = -1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004329C0);
 
@@ -965,7 +1005,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00434F30);
 void func_00434FA0(void* object)
 {
     func_004486A0((u8*)object + 0x5A4);
-    func_00448250(object);
+    ((LibColorModel*)object)->LibColorModel::destroy();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00434FD0);

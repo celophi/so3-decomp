@@ -437,7 +437,22 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464900);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464A30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", __dt__13LibDrawWidgetFv);
+/** Lowest address of drawing storage the widget owns; smaller values aren't heap allocations. */
+#define LIB_DRAW_WIDGET_HEAP_ADDRESS_MIN 0x10000
+
+/** @brief Free the drawing storage, then destroy the widget. */
+LibDrawWidget::~LibDrawWidget()
+{
+    if (allocation != 0)
+    {
+        if (reinterpret_cast<u32>(allocation) >= LIB_DRAW_WIDGET_HEAP_ADDRESS_MIN)
+        {
+            delete[] static_cast<u8*>(allocation);
+        }
+
+        allocation = 0;
+    }
+}
 
 /** @brief Initialize drawing storage, bounds, scale, colors, and display flags. */
 LibDrawWidget::LibDrawWidget()

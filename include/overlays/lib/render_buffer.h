@@ -47,7 +47,7 @@ public:
     LibResourceBuffer()
     {
         data = 0;
-        unk14 = 0;
+        payload_override = 0;
         children = 0;
         external_data = 0;
         unk1d = 0;
@@ -89,7 +89,9 @@ public:
     void* data;
 
     u8 unk0c[8];
-    u32 unk14;
+
+    /** Payload a model draws instead of the resource's own, or null. */
+    void* payload_override;
 
     /** Intrusive sentinel for the channels supplying child entries. */
     LibListSentinel* children;
@@ -193,6 +195,27 @@ static inline u8* lib_resource_payload(LibResourceBuffer* buffer)
     return buffer->data == 0 ? 0 :
         buffer->external_data ? static_cast<u8*>(buffer->data) + sizeof(LibResourceChunkHeader) :
         reinterpret_cast<u8*>(RESIDENT_ALIGN_RESOURCE(buffer->data)) + sizeof(LibResourceChunkHeader);
+}
+
+/**
+ * @brief Return the payload a model draws: the override when one is set, otherwise the resource's own.
+ * @param buffer Resource to read.
+ * @return Payload pointer, or null when there's neither.
+ */
+static inline u8* lib_resource_active_payload(LibResourceBuffer* buffer)
+{
+    if (buffer->payload_override != 0)
+    {
+        return static_cast<u8*>(buffer->payload_override);
+    }
+
+    if (buffer->data == 0)
+    {
+        return 0;
+    }
+
+    return buffer->external_data ? static_cast<u8*>(buffer->data) + sizeof(LibResourceChunkHeader) :
+                                   reinterpret_cast<u8*>(RESIDENT_ALIGN_RESOURCE(buffer->data)) + sizeof(LibResourceChunkHeader);
 }
 
 /** Primitive command buffers with block storage and eight texture slots. */

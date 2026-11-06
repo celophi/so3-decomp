@@ -1,7 +1,7 @@
 #ifndef SO3_OVERLAYS_BOOT_INSTALLER_H
 #define SO3_OVERLAYS_BOOT_INSTALLER_H
 
-#include "overlays/boot/text_001DD3C0.h"
+#include "overlays/boot/title_menu.h"
 
 /** Resources the installer loads. */
 enum BootInstallResource

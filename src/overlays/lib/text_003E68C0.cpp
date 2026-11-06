@@ -228,7 +228,7 @@ LibPacketBuffer::~LibPacketBuffer()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF390);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __ct__13LibClipRegionFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", destroy__13LibListObjectFv);
 
@@ -617,19 +617,96 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5AC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5B80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5C40);
+/**
+ * @brief Read the checked word.
+ * @return The word, or zero when its two copies disagree.
+ */
+u32 LibProtectedValues::get_checked_word()
+{
+    LibProtectedRecord* values = record();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5C80);
+    if (values->word == (values->check ^ (LIB_PROTECTED_WORD_KEY ^ LIB_PROTECTED_CHECK_KEY)))
+    {
+        return values->word ^ LIB_PROTECTED_WORD_KEY;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5CC0);
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5CF0);
+/**
+ * @brief Store the checked word and its check copy.
+ * @param value Word to store.
+ */
+void LibProtectedValues::set_checked_word(u32 value)
+{
+    LibProtectedRecord* values = record();
+    values->word = value ^ LIB_PROTECTED_WORD_KEY;
+    values->check = value ^ LIB_PROTECTED_CHECK_KEY;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5D40);
+/**
+ * @brief Read the small value.
+ * @return The value, 0 to LIB_PROTECTED_SMALL_MAX.
+ */
+s32 LibProtectedValues::get_small_value()
+{
+    return (record()->small_value ^ LIB_PROTECTED_SMALL_KEY) - LIB_PROTECTED_SMALL_BIAS;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5D70);
+/**
+ * @brief Store the small value, clamped to 0 to LIB_PROTECTED_SMALL_MAX.
+ * @param value Value to store.
+ */
+void LibProtectedValues::set_small_value(s32 value)
+{
+    value += LIB_PROTECTED_SMALL_BIAS;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5E00);
+    if (value > LIB_PROTECTED_SMALL_BIAS + LIB_PROTECTED_SMALL_MAX)
+    {
+        value = LIB_PROTECTED_SMALL_BIAS + LIB_PROTECTED_SMALL_MAX;
+    }
+    else if (value < LIB_PROTECTED_SMALL_BIAS)
+    {
+        value = LIB_PROTECTED_SMALL_BIAS;
+    }
+
+    record()->small_value = value ^ LIB_PROTECTED_SMALL_KEY;
+}
+
+/**
+ * @brief Read the large value.
+ * @return The value, 0 to LIB_PROTECTED_LARGE_MAX.
+ */
+s32 LibProtectedValues::get_large_value()
+{
+    LibProtectedRecord* values = record();
+    return (values->large_value ^ values->large_key) - LIB_PROTECTED_LARGE_BIAS;
+}
+
+/**
+ * @brief Store the large value, clamped to 0 to LIB_PROTECTED_LARGE_MAX, under a fresh random key.
+ * @param value Value to store.
+ */
+void LibProtectedValues::set_large_value(s32 value)
+{
+    value += LIB_PROTECTED_LARGE_BIAS;
+
+    if (value > LIB_PROTECTED_LARGE_BIAS + LIB_PROTECTED_LARGE_MAX)
+    {
+        value = LIB_PROTECTED_LARGE_BIAS + LIB_PROTECTED_LARGE_MAX;
+    }
+    else if (value < LIB_PROTECTED_LARGE_BIAS)
+    {
+        value = LIB_PROTECTED_LARGE_BIAS;
+    }
+
+    LibProtectedRecord* values = record();
+    u32 key = (resident_next_random_word() & 0xFFFF) + LIB_PROTECTED_LARGE_KEY_BASE;
+    values->large_key = key;
+    values->large_value = value ^ key;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", reset__18LibProtectedValuesFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __dt__14LibBufferOwnerFv);
 

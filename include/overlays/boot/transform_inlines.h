@@ -1,7 +1,7 @@
 #ifndef SO3_OVERLAYS_BOOT_TRANSFORM_INLINES_H
 #define SO3_OVERLAYS_BOOT_TRANSFORM_INLINES_H
 
-#include "overlays/boot/text_001DD3C0.h"
+#include "overlays/boot/boot.h"
 
 #ifdef __cplusplus
 

@@ -17,7 +17,7 @@ extern "C" void func_121E80(void* owner, void* object);
 extern "C" void func_43AC90(void* object);
 extern "C" void func_002B5200(void* object, u16 value);
 extern "C" void func_4F4740(void* object, u32 value, u32 flags);
-extern "C" void* D_001B667C;
+extern "C" void* g_quaternion_curve_track_pool;
 extern "C" void func_139C10(void* context, const void* table, ...);
 extern "C" void func_002BB300(void* context, u32 first, u32 second, void* object);
 
@@ -126,11 +126,11 @@ extern "C" void func_002B5180(FieldCallbackInput5180* object)
  */
 extern "C" s32 func_002B51C0(void* object, u32 value)
 {
-    if (D_001B667C == 0) {
+    if (g_quaternion_curve_track_pool == 0) {
         return 0;
     }
 
-    func_4F4740(D_001B667C, value, 0);
+    func_4F4740(g_quaternion_curve_track_pool, value, 0);
     return 1;
 }
 

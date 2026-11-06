@@ -57,7 +57,7 @@ public:
     u8 unk00[0x90];
     ItemCreationClass1746A0 unk90;
     ItemCreationClass1746A0 unke4;
-    ItemCreationClass1725D0 unk138;
+    LibListIndicator unk138;
     ItemCreationClass175030 unk190;
     u8 unk20c[0xAC];
     u8 unk2b8[8];
@@ -785,7 +785,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D71
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D72B0);
 
 /** @brief Release the widget storage and destroy its base. */
-ItemCreationClass1725D0::~ItemCreationClass1725D0()
+LibListIndicator::~LibListIndicator()
 {
 }
 

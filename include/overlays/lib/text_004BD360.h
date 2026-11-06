@@ -718,6 +718,9 @@ public:
     /** @brief Construct an empty object. */
     LibAnimation();
 
+    /** @brief Detach the animation, free its resource when owned and release its channels and bindings. */
+    virtual ~LibAnimation();
+
     /**
      * @brief Release the current channels and resource, then play from borrowed data.
      * @param data Animation data the caller keeps.
@@ -745,7 +748,7 @@ public:
     s32 entry_count;
     u8 unk3c[4];
     LibAnimationEntry14* entries;
-    u8 unk44[4];
+    u32 unk44;
     u32 unk48;
     u8 unk4c[4];
     LibAnimationEntry14* cached_entry;
@@ -763,7 +766,9 @@ public:
     /** Set once a frame has been applied; cleared to restart, which applies the restart-only entries again. */
     u8 started;
 
-    u8 unk6b[3];
+    u8 unk6b;
+    u8 unk6c;
+    u8 unk6d;
     u8 targets_bound;
     u8 unk6f;
 };

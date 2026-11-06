@@ -2146,7 +2146,7 @@ void status_update_scroll(StatusCharacterWindow* object)
         }
 
         LibClass1725D0* marker = object->scroll_marker;
-        marker->unk54 = object->scroll_position;
+        marker->position = object->scroll_position;
         marker->needs_redraw = 1;
     }
 }
@@ -3044,7 +3044,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, support_skill_2_caption);
     lib_scissor_init_reset(reset, 1);
     lib_container_attach_widget(unk10, reset);
-    scroll_marker = new (0) ItemCreationClass1725D0;
+    scroll_marker = new (0) LibListIndicator;
     lib_list_indicator_init(scroll_marker, 588.0f, 8.0f + divider_y, (392.0f - divider_y) - 16.0f, scroll_extent, scroll_position);
     lib_container_attach_widget(unk10, scroll_marker);
     status_refresh_character_display(this);

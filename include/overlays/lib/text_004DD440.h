@@ -447,9 +447,6 @@ public:
     virtual ~LibCameraContext();
 };
 
-/** The game's display. */
-extern LibCameraContext* g_display;
-
 /** Rectangle in screen pixels. Lib's colour fades cover it. */
 struct LibScreenRect
 {
@@ -657,6 +654,10 @@ public:
     virtual void complete_dma(u32 channel);
     /** @brief Queue the camera for VIF1 DMA. @return 1 on success, 0 when the queue is full. */
     s32 enqueue_submission();
+    /** @brief Store unk530 in the packet at unk558 and queue the packet at unk860 for VIF1 DMA. */
+    void func_004E1E70();
+    /** @brief Write the camera's matrices into its uncached packet. */
+    void func_004E2120();
     /** @brief Copy view and projection state from another camera. @param source Camera source. */
     virtual void copy_camera(const LibClass179080* source);
     /** @brief Copy the camera's view and fog settings. @param source Camera to copy. */
@@ -713,7 +714,10 @@ public:
     float unk244;
     u32 unk248;
     float unk24c;
-    float unk250;
+
+    /** Scale on the view's width; 0.75 for widescreen. */
+    float width_scale;
+
     float unk254;
     u32 unk258;
     float horizontal_fov;

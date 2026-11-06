@@ -1,6 +1,8 @@
 #include "include_asm.h"
+#include "overlays/boot/game_launcher.h"
 #include "overlays/boot/title_menu.h"
-#include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/program.h"
 #include "overlays/boot/trophy_viewer.h"
 #include "overlays/boot/music_player.h"
 #include "overlays/boot/resident.h"
@@ -114,7 +116,7 @@ void BootGameLauncher::update()
 
             if (((LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
             {
-                player->state->unk80D8 = 1;
+                player->state->widescreen = 1;
             }
 
             lib_movie_play(player, BOOT_LAUNCH_MOVIE_ID, 1);

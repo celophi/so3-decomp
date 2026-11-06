@@ -1,5 +1,5 @@
 D_001B66B4 = 0x001B66B4; // type:f32 size:0x4 absolute:True
-D_001B6668 = 0x001B6668; // size:0x4 absolute:True
+g_vector_track_pool = 0x001B6668; // size:0x4 absolute:True
 D_001B64B0 = 0x001B64B0; // size:0x4 absolute:True
 D_001B64E4 = 0x001B64E4; // size:0x4 absolute:True
 g_update_list = 0x001B6614; // size:0x4 absolute:True
@@ -18,7 +18,7 @@ D_17C610 = 0x0017C610; // size:0x4 absolute:True
 g_texture_cache = 0x001B663C; // size:0x4 absolute:True
 D_001B66A0 = 0x001B66A0; // size:0x4 absolute:True
 D_001B6694 = 0x001B6694; // size:0x4 absolute:True
-D_001B667C = 0x001B667C; // size:0x4 absolute:True
+g_quaternion_curve_track_pool = 0x001B667C; // size:0x4 absolute:True
 D_001B65B4 = 0x001B65B4; // size:0x4 absolute:True
 
 // Primary destructor and vtable identities of the particle receiver family.

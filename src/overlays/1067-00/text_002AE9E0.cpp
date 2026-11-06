@@ -284,15 +284,8 @@ struct FieldContextOwner20
     u8 unk34_5_7 : 3;
 };
 
-/** Partial field state whose word at 0x90 is cleared during shutdown. */
-struct FieldState6628
-{
-    u8 unk00[0x90];
-    u32 unk90;
-};
-
-extern "C" FieldTrackPool<FieldClass159130>* D_001B6674;
-extern "C" FieldTrackPool<FieldClass159390>* D_001B6668;
+extern "C" FieldTrackPool<FieldClass159130>* g_vector_curve_track_pool;
+extern "C" FieldTrackPool<FieldClass159390>* g_vector_track_pool;
 extern "C" void func_002B9090(FieldClass1595D0* track);
 extern "C" void func_002B87A0(FieldClass159780* track);
 extern "C" void func_002B91F0(FieldTrackPool<FieldClass159130>* pool, FieldClass159130* track);
@@ -318,18 +311,17 @@ extern "C" u8 D_001B65A0;
 
 extern "C" ResidentDmaQueue* D_001B6610;
 
-extern "C" FieldState6628* g_display_manager;
 
 
-extern "C" FieldTrackPool<FieldClass177F70>* D_001B6664;
+extern "C" FieldTrackPool<FieldClass177F70>* g_float_track_pool;
 
-extern "C" FieldTrackPool<FieldClass177C70>* D_001B6670;
+extern "C" FieldTrackPool<FieldClass177C70>* g_float_curve_track_pool;
 
-extern "C" FieldTrackPool<FieldClass177BE0>* D_001B6678;
+extern "C" FieldTrackPool<FieldClass177BE0>* g_float_quaternion_track_pool;
 
-extern "C" FieldTrackPool<FieldClass174440>* D_001B667C;
+extern "C" FieldTrackPool<FieldClass174440>* g_quaternion_curve_track_pool;
 
-extern "C" FieldTrackPool<FieldClass1730F0>* D_001B6680;
+extern "C" FieldTrackPool<FieldClass1730F0>* g_quaternion_track_pool;
 
 /** Partial receiver with a byte at offset 0x60. */
 struct FieldByte60AE9E0
@@ -1649,18 +1641,18 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         D_001B651C = 0;
         D_001B654C = 0;
         D_001B6548 = 0;
-        g_display_manager->unk90 = 0;
+        g_display_manager->current_display = 0;
         field_detach_release_context_object(context->unk40);
         delete g_field_runtime;
         g_field_runtime = 0;
-        func_002B4620(D_001B6664);
-        func_002B4C50(D_001B6668);
-        func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(D_001B666C));
-        func_002B56D0(D_001B6670);
-        func_002B5C80(D_001B6674);
-        func_002B6180(D_001B6678);
-        func_002B6680(D_001B667C);
-        func_002B6BA0(D_001B6680);
+        func_002B4620(g_float_track_pool);
+        func_002B4C50(g_vector_track_pool);
+        func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool));
+        func_002B56D0(g_float_curve_track_pool);
+        func_002B5C80(g_vector_curve_track_pool);
+        func_002B6180(g_float_quaternion_track_pool);
+        func_002B6680(g_quaternion_curve_track_pool);
+        func_002B6BA0(g_quaternion_track_pool);
 
         if (!D_001B6430->context->unkdd.unk4)
         {
@@ -1785,14 +1777,14 @@ extern "C" void field_initialize_context(ResidentContext* context)
     context->unkaa = 0;
     g_frame_ticks = 1.0f;
     g_frame_seconds = 1.0f / 60.0f;
-    func_002B4620(D_001B6664);
-    func_002B4C50(D_001B6668);
-    func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(D_001B666C));
-    func_002B56D0(D_001B6670);
-    func_002B5C80(D_001B6674);
-    func_002B6180(D_001B6678);
-    func_002B6680(D_001B667C);
-    func_002B6BA0(D_001B6680);
+    func_002B4620(g_float_track_pool);
+    func_002B4C50(g_vector_track_pool);
+    func_002B51F0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool));
+    func_002B56D0(g_float_curve_track_pool);
+    func_002B5C80(g_vector_curve_track_pool);
+    func_002B6180(g_float_quaternion_track_pool);
+    func_002B6680(g_quaternion_curve_track_pool);
+    func_002B6BA0(g_quaternion_track_pool);
     D_001B65A8 = 0;
     D_001B65A0 = 0;
     D_001B659C = 0;
@@ -1882,14 +1874,14 @@ extern "C" void field_initialize_context(ResidentContext* context)
         func_001138B0(context->unk78, reinterpret_cast<void*>(reinterpret_cast<u32>(D_36FA80) + 0x200), unused_space - 0x800);
     }
 
-    func_002B41A0(D_001B6664, 900);
-    func_002B5390(D_001B6670, 901);
-    func_002B6310(D_001B667C, 902);
-    func_002B47C0(D_001B6668, 2300);
-    func_002B4DF0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(D_001B666C), 2801);
-    func_002B5870(D_001B6674, 4702);
-    func_002B5E20(D_001B6678, 3703);
-    func_002B6820(D_001B6680, 2201);
+    func_002B41A0(g_float_track_pool, 900);
+    func_002B5390(g_float_curve_track_pool, 901);
+    func_002B6310(g_quaternion_curve_track_pool, 902);
+    func_002B47C0(g_vector_track_pool, 2300);
+    func_002B4DF0(reinterpret_cast<FieldTrackPool<FieldClass177EE0>*>(g_track_1718C0_pool), 2801);
+    func_002B5870(g_vector_curve_track_pool, 4702);
+    func_002B5E20(g_float_quaternion_track_pool, 3703);
+    func_002B6820(g_quaternion_track_pool, 2201);
     func_002B0D80(context, 0, 0x7F000000);
     D_001B6510 = 0;
     D_001B6518 = 0;
@@ -3040,7 +3032,7 @@ void FieldClass159130::func_001DF230()
 void FieldClass159130::func_slot94()
 {
     func_002B9090(this);
-    func_002B91F0(D_001B6674, this);
+    func_002B91F0(g_vector_curve_track_pool, this);
 }
 
 float FieldClass1591D0::func_002B6DF0(float key)
@@ -3066,7 +3058,7 @@ void FieldClass159390::func_001DF230()
 void FieldClass159390::func_slot84()
 {
     func_002B87A0(this);
-    func_002B91A0(D_001B6668, this);
+    func_002B91A0(g_vector_track_pool, this);
 }
 
 void FieldClass159300::func_002B83C0()

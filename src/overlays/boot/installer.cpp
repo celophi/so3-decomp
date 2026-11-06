@@ -1,6 +1,8 @@
 #include "include_asm.h"
+#include "gs.h"
 #include "overlays/boot/installer.h"
-#include "overlays/boot/text_001E0900.h"
+#include "overlays/boot/boot.h"
+#include "overlays/boot/program.h"
 #include "overlays/boot/title_menu.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
@@ -122,7 +124,7 @@ void BootInstaller::show_tip_image(s32 index)
     tip_image = new (0) BootImage;
     tip_image->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(tip_image_buffer), 0);
     resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
-    tip_image->set_rectangle(0, 1, 0x120, 0xC9, 0x80808080, 0);
+    tip_image->set_rectangle(0, 1, 288, 201, GS_RGBA_NEUTRAL, 0);
     tip_image->model->set_translation(-296.0f, -64.0f, 0.0f);
 }
 
@@ -171,10 +173,10 @@ void BootInstaller::update_choice_images()
     {
         images[4] = new (0) BootImage;
         images[4]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
-        images[4]->set_rectangle(0x1E, 0x131, 0x4C, 0x26, 0x80808080, 0);
+        images[4]->set_rectangle(30, 305, 76, 38, GS_RGBA_NEUTRAL, 0);
         images[5] = new (0) BootImage;
         images[5]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
-        images[5]->set_rectangle(0x1E, 0x167, 0x4C, 0x26, 0x80808080, 0);
+        images[5]->set_rectangle(30, 359, 76, 38, GS_RGBA_NEUTRAL, 0);
     }
 
     if (((LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
@@ -281,7 +283,7 @@ void BootInstaller::place_screen_images()
     {
         images[0] = new (0) BootImage;
         images[0]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
-        images[0]->set_rectangle(0, 1, 0x1E8, 0xDF, 0x80808080, 0);
+        images[0]->set_rectangle(0, 1, 488, 223, GS_RGBA_NEUTRAL, 0);
         images[0]->model->set_translation(-244.0f, -112.0f, 0.0f);
     }
 
@@ -289,7 +291,7 @@ void BootInstaller::place_screen_images()
     {
         images[1] = new (0) BootImage;
         images[1]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[1]), 0);
-        images[1]->set_rectangle(0, 0, 0x280, 0x50, 0x80808080, 0);
+        images[1]->set_rectangle(0, 0, 640, 80, GS_RGBA_NEUTRAL, 0);
         images[1]->model->set_translation(-312.0f, -216.0f, 0.0f);
     }
 
@@ -297,14 +299,14 @@ void BootInstaller::place_screen_images()
     {
         images[2] = new (0) BootImage;
         images[2]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
-        images[2]->set_rectangle(0, 0xEA, 0xC8, 0x1D, 0x80808080, 0);
+        images[2]->set_rectangle(0, 234, 200, 29, GS_RGBA_NEUTRAL, 0);
     }
 
     if (images[3] == 0)
     {
         images[3] = new (0) BootImage;
         images[3]->set_texture((const LibImageResource*)RESIDENT_ALIGN_RESOURCE(screen_image_buffers[0]), 0);
-        images[3]->set_rectangle(0x1B, 0x190, 0x1B6, 0x31, 0x80808080, 0);
+        images[3]->set_rectangle(27, 400, 438, 49, GS_RGBA_NEUTRAL, 0);
     }
 
     if (((LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
@@ -391,7 +393,7 @@ void BootInstaller::update()
             lib_queue_display_object(g_field_runtime,
                                      reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(container)));
             message_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_INSTALL_CONFIRM, 1, 48.0f, 88.0f, 512.0f, 224.0f);
-            message_text->set_color(0x34130F);
+            message_text->set_color(BOOT_TEXT_COLOR);
             lib_container_attach_widget(container, message_text);
             x = menu_cursor_x(selection);
             cursor = new (0) LibSelectionCursor;
@@ -443,12 +445,12 @@ void BootInstaller::update()
             x = menu_cursor_x(selection);
             cursor->set_move_target(x, 256.0f, 0.05f);
             choice_growing = 0;
-            resident_sound_play(g_sound, 0, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CURSOR, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
         }
 
         if (input->pressed & resource->confirm_buttons)
         {
-            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
 
             if (selection == 0)
@@ -462,7 +464,7 @@ void BootInstaller::update()
         }
         else if (input->pressed & resource->cancel_buttons)
         {
-            resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step = no_step;
         }
@@ -663,7 +665,7 @@ void BootInstaller::update()
         progress_bar = new (0) BootProgressBar;
         progress_bar_reset(progress_bar, 0xF0, 0x18, 0x80FFFFFF, 0);
         tip_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_FIRST_TIP, 1, 328.0f, 180.0f, 320.0f, 224.0f);
-        tip_text->set_color(0x34130F);
+        tip_text->set_color(BOOT_TEXT_COLOR);
         lib_container_attach_widget(container, tip_text);
         show_tip_image(0);
         tip_index = 1;
@@ -674,13 +676,13 @@ void BootInstaller::update()
         {
             progress_bar->model->set_translation(-366.0f, 180.0f, 0.0f);
             progress_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 240.0f, 438.0f, 512.0f, 32.0f);
-            progress_text->set_color(0x34130F);
+            progress_text->set_color(BOOT_TEXT_COLOR);
         }
         else
         {
             progress_bar->model->set_translation(-280.0f, 180.0f, 0.0f);
             progress_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_PERCENT, 1, 290.0f, 432.0f, 512.0f, 32.0f);
-            progress_text->set_color(0x34130F);
+            progress_text->set_color(BOOT_TEXT_COLOR);
         }
 
         lib_container_attach_widget(container, progress_text);
@@ -787,7 +789,7 @@ void BootInstaller::update()
             if (input->pressed & resource->cancel_buttons)
             {
                 lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_ABORT_CONFIRM, 0);
-                resident_sound_play(g_sound, 2, 0, 0, 0x7F, 0x40, 0);
+                resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 queue_fade();
                 g_resource_archive->copy_paused = 1;
                 selection = 1;
@@ -823,7 +825,7 @@ void BootInstaller::update()
     case BOOT_INSTALL_WAIT_FOR_FINISH:
         if (resident_archive_is_busy(g_resource_archive) == 0)
         {
-            resident_sound_play(g_sound, 8, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_WARNING, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step++;
         }
@@ -864,7 +866,7 @@ void BootInstaller::update()
     case BOOT_INSTALL_WAIT_FOR_ACKNOWLEDGEMENT:
         if (input->pressed & resource->confirm_buttons)
         {
-            resident_sound_play(g_sound, 1, 0, 0, 0x7F, 0x40, 0);
+            resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();
             step = BOOT_INSTALL_RETURN_TO_TITLE;
         }

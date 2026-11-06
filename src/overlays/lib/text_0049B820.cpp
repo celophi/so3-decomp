@@ -4,8 +4,96 @@
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_0010A0E0.h"
+#include "main/resident_data.h"
+#include "main/func_0011EE00.h"
+#include "overlays/lib/model.h"
+#include "ee.h"
+#include "gs.h"
+#include "vu0.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "sdk/main/libc_guess_00137290.h"
 
-extern "C" ResidentReleaseQueues* g_resident_release_queues;
+/** FGE as it sits in the upper word of a GIF tag's first doubleword. */
+#define GIF_TAG_HIGH_PRIM_FGE ((u32)(GIF_TAG_PRIM(GS_PRIM_FGE) >> 32))
+
+/** Byte size of each part record in the model's part table. */
+#define LIB_MODEL_PART_SIZE 0xF0
+
+/** Partial part record in the model's part table: the upper tag words of its GIF tags, written uncached. */
+struct LibModelPart
+{
+    u8 unk00[0x64];
+    u32 first_tag_high;
+    u8 unk68[0xC];
+    u32 second_tag_high;
+    u8 unk78[0xC];
+
+    /** Nonzero when the part has the second pair of GIF tags. */
+    u32 unk84;
+
+    u8 unk88[0x3C];
+    u32 third_tag_high;
+    u8 unkc8[0xC];
+    u32 fourth_tag_high;
+    u8 unkd8[0x18];
+};
+
+/**
+ * @brief Return a part record through the uncached accelerated segment.
+ * @param parts Part table.
+ * @param index Part index.
+ * @return The part.
+ */
+static inline LibModelPart* lib_model_uncached_part(void* parts, s32 index)
+{
+    return reinterpret_cast<LibModelPart*>(
+        reinterpret_cast<u32>(static_cast<u8*>(parts) + index * LIB_MODEL_PART_SIZE) | EE_UNCACHED_ACCELERATED);
+}
+
+/** List kind of models that need the late update pass. */
+#define LIB_LIST_KIND_LATE_MODEL 9
+
+
+/** Scales within this of one count as unscaled. */
+#define LIB_MODEL_UNSCALED_MIN 0.999f
+#define LIB_MODEL_UNSCALED_MAX 1.001f
+
+/** Partial oriented box Lib tests against the view. */
+struct LibCullBox
+{
+    LibVector4 center;
+    u8 unk10[0x30];
+    LibVector4 half_extents;
+};
+
+/** Bytes in front of the DMA data in each of a model's packets. */
+#define LIB_MODEL_PACKET_HEADER_SIZE 0x40
+
+/** Fixed quadwords of a model packet, and the quadwords each part adds. */
+#define LIB_MODEL_PACKET_FIXED_QWORDS 19
+#define LIB_MODEL_PART_QWORDS 5
+
+/** Fixed quadwords of the base packet, and the quadwords each part-table item adds. */
+#define LIB_MODEL_BASE_FIXED_QWORDS 32
+#define LIB_MODEL_BASE_QWORDS_PER_ITEM 10
+
+/** Quadwords a before or after packet adds to its own size. */
+#define LIB_MODEL_EXTRA_BLOCK_QWORDS 9
+
+/** Header quadwords of the part table. */
+#define LIB_MODEL_TABLE_HEADER_QWORDS 8
+
+/** Heap model packets come from when set; otherwise they're malloc'd. */
+extern "C" void* D_001B659C;
+
+/** VU1 microprogram that uploads a model's textures. */
+extern "C" u8 D_678[];
+
+/**
+ * @brief Fill the model's part table from its mesh.
+ * @param model Model whose parts table to fill.
+ */
+extern "C" void func_004A7C20(LibModel* model);
 
 /** Partial word-array owner with its native virtual pointer after the data fields. */
 class LibResourceBitset
@@ -256,11 +344,152 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2EF0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3140);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3560);
+/**
+ * @brief Turn fogging on or off, in the model's part packets too.
+ * @param enabled Nonzero for fog.
+ */
+void LibModel::set_fog_enabled(u8 enabled)
+{
+    if (fog_enabled != enabled && parts != 0 && resource != 0)
+    {
+        u8* mesh = lib_resource_payload(resource);
+        s32 count = *reinterpret_cast<s32*>(mesh + reinterpret_cast<LibMeshHeader*>(mesh)->unk38);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A36F0);
+        if (enabled)
+        {
+            for (s32 index = 0; index < count; index++)
+            {
+                LibModelPart* part = lib_model_uncached_part(parts, index);
+                part->first_tag_high |= GIF_TAG_HIGH_PRIM_FGE;
+                part->second_tag_high |= GIF_TAG_HIGH_PRIM_FGE;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A37C0);
+                if (part->unk84 != 0)
+                {
+                    part->third_tag_high |= GIF_TAG_HIGH_PRIM_FGE;
+                    part->fourth_tag_high |= GIF_TAG_HIGH_PRIM_FGE;
+                }
+            }
+        }
+        else
+        {
+            for (s32 index = 0; index < count; index++)
+            {
+                LibModelPart* part = lib_model_uncached_part(parts, index);
+                part->first_tag_high &= ~GIF_TAG_HIGH_PRIM_FGE;
+                part->second_tag_high &= ~GIF_TAG_HIGH_PRIM_FGE;
+
+                if (part->unk84 != 0)
+                {
+                    part->third_tag_high &= ~GIF_TAG_HIGH_PRIM_FGE;
+                    part->fourth_tag_high &= ~GIF_TAG_HIGH_PRIM_FGE;
+                }
+            }
+        }
+    }
+
+    LibModelBase::set_fog_enabled(enabled);
+}
+
+/**
+ * @brief Make a copy of the model built from this one and linked to it.
+ * @return The copy, or null when it couldn't be built.
+ */
+LibTransformOwner* LibModel::clone()
+{
+    LibModel* copy = new (0) LibModel;
+
+    if (copy == 0)
+    {
+        return 0;
+    }
+
+    if (!copy->build_from(0, this))
+    {
+        delete copy;
+        return 0;
+    }
+
+    add_clone(copy);
+    lib_object_set_list_kind(this, LIB_LIST_KIND_LATE_MODEL);
+    return copy;
+}
+
+/**
+ * @brief Add draw flags and move the model to the late list.
+ * @param model Model to update.
+ * @param flags Flags to add.
+ */
+static inline void lib_model_add_draw_flags(LibTransformOwner* model, u16 flags)
+{
+    model->draw_flags |= flags;
+    lib_object_set_list_kind(model, LIB_LIST_KIND_LATE_MODEL);
+}
+
+/**
+ * @brief Build this model from another model.
+ * @param links Display list the model draws through, or null.
+ * @param source Model to copy.
+ * @return Nonzero on success.
+ */
+s32 LibModel::build_from(LibUpdateList* links, LibModel* source)
+{
+    u8 listed;
+    LibClass177A20* list = &source->children;
+    listed = list->has_listed_entry();
+
+    if (listed && !list->has_payload())
+    {
+        return 0;
+    }
+
+    set_resource(source->resource);
+    unk638 = source->unk638;
+
+    if (links != 0)
+    {
+        links->append_node(this, LibUpdateList::DEFAULT_NODE_KIND);
+
+        if (source->draw_flags & LIB_DRAW_FOLLOW_CAMERA)
+        {
+            lib_model_add_draw_flags(this, LIB_DRAW_FOLLOW_CAMERA);
+        }
+
+        if (source->draw_flags & LIB_DRAW_FACE_CAMERA_X)
+        {
+            lib_model_add_draw_flags(this, LIB_DRAW_FACE_CAMERA_X);
+        }
+
+        if (source->draw_flags & LIB_DRAW_FACE_CAMERA_Y)
+        {
+            lib_model_add_draw_flags(this, LIB_DRAW_FACE_CAMERA_Y);
+        }
+
+        if (source->draw_flags & LIB_DRAW_FACE_CAMERA_Z)
+        {
+            lib_model_add_draw_flags(this, LIB_DRAW_FACE_CAMERA_Z);
+        }
+    }
+
+    unk797_5 = source->unk797_5;
+    LibColorModel::copy_color_state(source);
+
+    if (static_cast<s32>(list->node_count) > 0 && listed)
+    {
+        build_packets();
+
+        if (packet != 0)
+        {
+            list->apply_payload(this);
+            this->source = source;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3A30);
 
@@ -269,17 +498,151 @@ LibPaletteBlendChannel::~LibPaletteBlendChannel()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3E50);
+/** @brief Go back to the resource's own payload and release the override packets. */
+void LibModel::clear_payload()
+{
+    LibModelBase::clear_payload();
+    uses_payload_override = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3EC0);
+    for (s32 index = 0; index < LIB_MODEL_PACKET_SET_COUNT; index++)
+    {
+        resident_queue_allocation_release(g_resident_release_queues, override_packets[index]);
+        override_packets[index] = 0;
+    }
+}
+
+/**
+ * @brief Switch to a payload override, or back to the resource's own with a set of two or more.
+ * @param payload Payload to draw instead of the resource's own.
+ * @param set Packet set to draw.
+ */
+void LibModel::select_payload(void* payload, u8 set)
+{
+    if (set > LIB_MODEL_PACKET_SET_COUNT - 1)
+    {
+        uses_payload_override = 0;
+        LibModelBase::clear_payload();
+    }
+    else
+    {
+        uses_payload_override = 1;
+        LibModelBase::select_payload(payload, set);
+        packet_set = set;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3F50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A40E0);
+/**
+ * @brief Give the centre for Lib's oriented-box visibility test, from the mesh, when the model is unscaled.
+ * @param output Receives the box's centre and half extents in local space.
+ * @return Nonzero when a centre was written.
+ */
+s32 LibModel::get_box_cull_center(void* output)
+{
+    LibVector4 extent;
+    LibVector4 scale;
+
+    if (resource == 0)
+    {
+        return 0;
+    }
+
+    if (!box_cull_enabled)
+    {
+        return 0;
+    }
+
+    vu0_start_microprogram_7f0_rows(&transform);
+    vu0_wait_microprogram();
+    vu0_read_vf6(&scale);
+
+    float x = scale.x;
+    float y = scale.y;
+    float z = scale.z;
+
+    if (!(x >= LIB_MODEL_UNSCALED_MIN && x <= LIB_MODEL_UNSCALED_MAX && y >= LIB_MODEL_UNSCALED_MIN &&
+          y <= LIB_MODEL_UNSCALED_MAX && z >= LIB_MODEL_UNSCALED_MIN && z <= LIB_MODEL_UNSCALED_MAX))
+    {
+        return 0;
+    }
+
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(resource));
+    LibCullBox* box = static_cast<LibCullBox*>(output);
+    extent.x = 0.5f * (mesh->box_max[0] - mesh->box_min[0]);
+    extent.y = 0.5f * (mesh->box_max[1] - mesh->box_min[1]);
+    extent.z = 0.5f * (mesh->box_max[2] - mesh->box_min[2]);
+    extent.w = 1.0f;
+    copy_vector(&box->half_extents, &extent);
+    extent.x += mesh->box_min[0];
+    extent.y += mesh->box_min[1];
+    extent.z += mesh->box_min[2];
+    copy_vector(&box->center, &extent);
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A42A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A43C0);
+/** @brief Pick the draw bucket from the draw flags, blend mode and mesh. */
+void LibModel::set_default_draw_bucket()
+{
+    if (draw_flags & 0x1000)
+    {
+        draw_bucket = draw_bucket_choice = 7;
+        return;
+    }
+
+    if (color_dirty)
+    {
+        draw_bucket_choice = 0;
+
+        if (blend_mode)
+        {
+            draw_bucket_choice = 2;
+        }
+
+        LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(resource));
+
+        if (mesh != 0)
+        {
+            color_dirty = 0;
+
+            if (mesh->unk54 & 1)
+            {
+                draw_bucket_choice = 8;
+            }
+            else if (mesh->unk04 != 0)
+            {
+                draw_bucket_choice = 2;
+
+                u8 kind = mesh->unk3c;
+
+                if (kind == 2)
+                {
+                    draw_bucket_choice = 1;
+                }
+                else if (kind == 4)
+                {
+                    draw_bucket_choice = 6;
+                }
+                else if (kind == 3)
+                {
+                    draw_bucket_choice = 3;
+                }
+                else if (kind == 5)
+                {
+                    draw_bucket_choice = 8;
+                }
+                else if (kind == 6)
+                {
+                    draw_bucket_choice = 9;
+                }
+            }
+        }
+    }
+
+    draw_bucket = draw_bucket_choice;
+}
 
 void func_004A4510(void* receiver)
 {
@@ -352,7 +715,38 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7030);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7100);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7520);
+/**
+ * @brief Release a texture's block back to the free area, merging it with free neighbours.
+ * @param index Cache index of the texture.
+ */
+void LibTextureCache::release_block(u32 index)
+{
+    u32 size = blocks[index].size;
+    previous[next[index]] = previous[index];
+    next[previous[index]] = next[index];
+    u32 before = blocks[index].previous_block;
+    u32 after = blocks[index].next_block;
+
+    if (blocks[before].state == LIB_TEXTURE_BLOCK_FREE)
+    {
+        blocks[index].state = LIB_TEXTURE_BLOCK_UNUSED;
+        size += blocks[before].size;
+        blocks[before].size = size;
+        blocks[after].previous_block = before;
+        blocks[before].next_block = after;
+        index = before;
+    }
+
+    if (blocks[after].state == LIB_TEXTURE_BLOCK_FREE)
+    {
+        blocks[after].state = LIB_TEXTURE_BLOCK_UNUSED;
+        blocks[index].size = size + blocks[after].size;
+        blocks[index].next_block = blocks[after].next_block;
+        blocks[blocks[after].next_block].previous_block = index;
+    }
+
+    blocks[index].state = LIB_TEXTURE_BLOCK_FREE;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A75F0);
 
@@ -366,11 +760,213 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7C20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7D50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7E80);
+/** @brief Allocate and fill the model's packets from its mesh. */
+void LibModel::build_packets()
+{
+    if (resource == 0)
+    {
+        return;
+    }
+
+    u8* data = payload = lib_resource_payload(resource);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(data);
+    s32 part_count = mesh->part_count;
+
+    if (uses_payload_override && packet != 0)
+    {
+        return;
+    }
+
+    if (unk793 < 4)
+    {
+        unk793++;
+    }
+
+    delete packet;
+    s32 size = part_count * LIB_MODEL_PART_QWORDS + LIB_MODEL_PACKET_FIXED_QWORDS + get_extra_packet_size();
+
+    if (D_001B659C != 0)
+    {
+        packet = resident_heap_allocate(D_001B659C, size * 16);
+    }
+    else
+    {
+        packet = malloc_guess(size * 16);
+    }
+
+    if (packet == 0)
+    {
+        return;
+    }
+
+    s32 item_count;
+    s32 base_size;
+
+    s32* items = reinterpret_cast<s32*>(data + mesh->unk38);
+
+    if (mesh->unk38 != 0)
+    {
+        item_count = *items;
+        base_size = item_count * LIB_MODEL_BASE_QWORDS_PER_ITEM + LIB_MODEL_BASE_FIXED_QWORDS;
+    }
+    else
+    {
+        base_size = LIB_MODEL_BASE_FIXED_QWORDS;
+    }
+
+    delete base_packet;
+
+    if (D_001B659C != 0)
+    {
+        base_packet = resident_heap_allocate(D_001B659C, base_size * 16);
+    }
+    else
+    {
+        base_packet = malloc_guess(base_size * 16);
+    }
+
+    if (base_packet != 0)
+    {
+        packet_chains[0].tags[0][0] = DMA_TAG(0, DMA_TAG_ID_CALL, static_cast<u8*>(base_packet) + LIB_MODEL_PACKET_HEADER_SIZE);
+        packet_chains[1].tags[0][0] = DMA_TAG(0, DMA_TAG_ID_CALL, static_cast<u8*>(base_packet) + LIB_MODEL_PACKET_HEADER_SIZE);
+
+        if (mesh->unk38 != 0)
+        {
+            delete unk720;
+            if (D_001B659C != 0)
+            {
+                unk720 = resident_heap_allocate(D_001B659C,
+                    (static_cast<u32>(item_count * LIB_MODEL_PART_SIZE) / 16 + LIB_MODEL_TABLE_HEADER_QWORDS) * 16);
+            }
+            else
+            {
+                unk720 = malloc_guess((static_cast<u32>(item_count * LIB_MODEL_PART_SIZE) / 16 + LIB_MODEL_TABLE_HEADER_QWORDS) * 16);
+            }
+
+            if (unk720 == 0)
+            {
+                goto failed;
+            }
+
+            parts = static_cast<u8*>(unk720) + LIB_MODEL_PACKET_HEADER_SIZE;
+            func_004A7C20(this);
+        }
+
+        delete texture_uploads;
+
+        if (D_001B659C != 0)
+        {
+            texture_uploads = static_cast<LibTextureUpload*>(
+                resident_heap_allocate(D_001B659C, (mesh->unk40 * 2 + 8) * sizeof(LibTextureUpload)));
+        }
+        else
+        {
+            texture_uploads = static_cast<LibTextureUpload*>(malloc_guess((mesh->unk40 * 2 + 8) * sizeof(LibTextureUpload)));
+        }
+
+        if (texture_uploads != 0)
+        {
+            for (s32 texture = 0; texture < mesh->unk40 + 1; texture++)
+            {
+                for (s32 slot = 1; slot <= 2; slot++)
+                {
+                    s32 index = texture * 2 + slot;
+                    *reinterpret_cast<unsigned __int128*>(&texture_uploads[index]) = 0;
+                    *reinterpret_cast<unsigned __int128*>(&texture_uploads[index].mscal) = 0;
+                    texture_uploads[index].unpack = VIF_UNPACK(VIF_UNPACK_V4_32, 5, 0x60);
+                    texture_uploads[index].mscal = VIF_MSCALF(reinterpret_cast<u32>(D_678) >> 3);
+                    texture_uploads[index].gif_tag = 4 | GIF_TAG_EOP | GIF_TAG_NREG(1);
+                    texture_uploads[index].gif_registers = GIF_REGISTER_AD;
+                    texture_uploads[index].trxpos.data = 0;
+                    texture_uploads[index].trxpos.address = GS_REGISTER_TRXPOS;
+                    texture_uploads[index].trxdir.data = 0;
+                    texture_uploads[index].trxdir.address = GS_REGISTER_TRXDIR;
+                }
+            }
+
+            for (s32 index = 0; index < 0x20; index++)
+            {
+                unk728[index] = 0;
+            }
+
+            s32 count = 0;
+            *reinterpret_cast<u64*>(&chain[count]) = DMA_TAG(0, DMA_TAG_ID_CALL, static_cast<u8*>(base_packet) + LIB_MODEL_PACKET_HEADER_SIZE);
+            count++;
+            before_packet_size = get_before_packet_size();
+
+            if (before_packet_size != 0)
+            {
+                delete before_packet;
+
+                if (D_001B659C != 0)
+                {
+                    before_packet = resident_heap_allocate(D_001B659C, (before_packet_size + LIB_MODEL_EXTRA_BLOCK_QWORDS) * 16);
+                }
+                else
+                {
+                    before_packet = malloc_guess((before_packet_size + LIB_MODEL_EXTRA_BLOCK_QWORDS) * 16);
+                }
+
+                if (before_packet == 0)
+                {
+                    goto failed;
+                }
+
+                *reinterpret_cast<u64*>(&chain[count]) = DMA_TAG(0, DMA_TAG_ID_CALL, static_cast<u8*>(before_packet) + LIB_MODEL_PACKET_HEADER_SIZE);
+                count++;
+            }
+
+            *reinterpret_cast<u64*>(&chain[count]) = DMA_TAG(0, DMA_TAG_ID_CALL, static_cast<u8*>(packet) + LIB_MODEL_PACKET_HEADER_SIZE);
+            count++;
+            after_packet_size = get_after_packet_size();
+
+            if (after_packet_size != 0)
+            {
+                delete after_packet;
+
+                if (D_001B659C != 0)
+                {
+                    after_packet = resident_heap_allocate(D_001B659C, (after_packet_size + LIB_MODEL_EXTRA_BLOCK_QWORDS) * 16);
+                }
+                else
+                {
+                    after_packet = malloc_guess((after_packet_size + LIB_MODEL_EXTRA_BLOCK_QWORDS) * 16);
+                }
+
+                if (after_packet == 0)
+                {
+                    goto failed;
+                }
+
+                *reinterpret_cast<u64*>(&chain[count]) = DMA_TAG(0, DMA_TAG_ID_CALL, static_cast<u8*>(after_packet) + LIB_MODEL_PACKET_HEADER_SIZE);
+                count++;
+            }
+
+            *reinterpret_cast<u64*>(&chain[count]) = DMA_TAG_ID_END;
+            FlushCache(0);
+            unk77c = part_count;
+            return;
+        }
+    }
+
+failed:
+    delete packet;
+    packet = 0;
+    delete base_packet;
+    base_packet = 0;
+    delete unk720;
+    unk720 = 0;
+    delete unk720;
+    unk720 = 0;
+    delete before_packet;
+    before_packet = 0;
+    delete after_packet;
+    after_packet = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A8450);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A85B0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", __ct__8LibModelFv);
 
 /**
  * @brief Report the base channel's empty entry set.
@@ -504,9 +1100,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9000);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9070);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A90E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", has_listed_entry__14LibClass177A20Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9120);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", apply_payload__14LibClass177A20FP8LibModel);
 
 /**
  * @brief Queue the object's receiver for deferred destruction.

@@ -140,7 +140,6 @@ public:
     /** Set while the model draws with fog. */
     u8 fog_enabled : 1;
 
-
     /** Set when the color state must be rebuilt. */
     u8 color_dirty : 1;
 

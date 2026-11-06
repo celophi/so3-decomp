@@ -1095,8 +1095,8 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
     lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 10.0f, 24.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
     FieldStateCE420::unk04->visible = 0;
-    FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
-    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 12.0f, 224.0f, 10.0f, 0);
+    FieldStateCE420::unk00 = new (0) LibListIndicator;
+    lib_list_indicator_init(static_cast<LibListIndicator*>(FieldStateCE420::unk00), 314.0f, 12.0f, 224.0f, 10.0f, 0);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 8, 312, 28);
     FieldStateCE420::unk2b = 3;
@@ -1488,8 +1488,8 @@ s32 EquipItemListWindow::func_slot104(u32 associated)
     lib_moving_widget_init_position(static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04), 8.0f, 28.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk04);
     FieldStateCE420::unk04->visible = 0;
-    FieldStateCE420::unk00 = new (0) ItemCreationClass1725D0;
-    lib_list_indicator_init(static_cast<ItemCreationClass1725D0*>(FieldStateCE420::unk00), 314.0f, 16.0f, 220.0f, 10.0f, 0.0f);
+    FieldStateCE420::unk00 = new (0) LibListIndicator;
+    lib_list_indicator_init(static_cast<LibListIndicator*>(FieldStateCE420::unk00), 314.0f, 16.0f, 220.0f, 10.0f, 0.0f);
     lib_container_attach_widget(FieldClass15AE70::unk10, FieldStateCE420::unk00);
     func_002CE420(&static_cast<FieldStateCE420&>(*this), 1, 8, 312, 28);
     FieldStateCE420::unk2b = 3;

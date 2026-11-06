@@ -755,9 +755,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414AC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414BD0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414C00);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __dt__14LibMovieStreamFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414C60);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __ct__14LibMovieStreamFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414CE0);
 
@@ -809,7 +809,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00416450);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004164B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00416510);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __ct__15LibMovieDecoderFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004165E0);
 

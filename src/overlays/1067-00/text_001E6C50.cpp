@@ -631,7 +631,7 @@ FieldClass150320::FieldClass150320(LibAnimation* animation, void* owner, float d
             saved->kind = entry->kind;
             saved->flags = entry->flags;
             saved->channel = original;
-            replacement = func_001E93E0(D_001B666C);
+            replacement = func_001E93E0(g_track_1718C0_pool);
             replacement->func_004C1560(original->func_004C16D0() + 1);
             LibVector4 value;
             original->func_004C16F0(0.0f, &value);

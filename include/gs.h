@@ -86,6 +86,9 @@ enum
 /** Largest 24-bit depth; with the GEQUAL depth test Lib sets, nothing draws in front of it. */
 #define GS_DEPTH_NEAREST 0xFFFFFF
 
+/** Vertex colour that leaves a modulated texture unchanged: 0x80 is 1.0 in every channel, alpha included. */
+#define GS_RGBA_NEUTRAL 0x80808080
+
 /** ALPHA value for the usual (Cs - Cd) * As + Cd blend. */
 #define GS_ALPHA_NORMAL 0x44
 
@@ -116,10 +119,15 @@ typedef struct GsRegisterValue
 #define GS_TEX0_TW(width_log2) ((u64)(width_log2) << 26)
 #define GS_TEX0_TH(height_log2) ((u64)(height_log2) << 30)
 #define GS_TEX0_TCC ((u64)1 << 34)
+#define GS_TEX0_CSA(entry) ((u64)(entry) << 56)
+#define GS_TEX0_CLD(control) ((u64)(control) << 61)
 
 /** PRIM primitive type field and the triangle fan type. */
 #define GS_PRIM_TYPE_MASK 0x7
 #define GS_PRIM_TRIANGLE_FAN 5
+
+/** PRIM register FGE bit: fog the primitive. */
+#define GS_PRIM_FGE 0x20
 
 /** GIF tag EOP bit: this is the transfer's last tag. */
 #define GIF_TAG_EOP 0x8000

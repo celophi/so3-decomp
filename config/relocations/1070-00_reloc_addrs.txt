@@ -71,7 +71,7 @@ rom:0x1118D4 reloc:MIPS_GPREL16 symbol:D_001B6620
 rom:0x66E88 reloc:MIPS_GPREL16 symbol:D_001B6568
 rom:0x12CB90 reloc:MIPS_GPREL16 symbol:D_001B64BC
 rom:0xB1EC reloc:MIPS_GPREL16 symbol:g_renderer
-rom:0xEF15C reloc:MIPS_GPREL16 symbol:D_001B667C
+rom:0xEF15C reloc:MIPS_GPREL16 symbol:g_quaternion_curve_track_pool
 rom:0x32B0 reloc:MIPS_GPREL16 symbol:D_001B6620
 rom:0x5643C reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x66E44 reloc:MIPS_GPREL16 symbol:D_001B6620
@@ -174,10 +174,10 @@ rom:0x4FA5C reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x225A4 reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x24080 reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x56D48 reloc:MIPS_GPREL16 symbol:D_001B64B0
-rom:0x7BEC0 reloc:MIPS_GPREL16 symbol:D_001B6668
+rom:0x7BEC0 reloc:MIPS_GPREL16 symbol:g_vector_track_pool
 rom:0x4FDDC reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x124CF4 reloc:MIPS_HI16 symbol:D_178930
 rom:0x124CFC reloc:MIPS_LO16 symbol:D_178930
 rom:0x8EE48 reloc:MIPS_GPREL16 symbol:D_001B64B0
 rom:0x5BD08 reloc:MIPS_GPREL16 symbol:D_001B64B0
-rom:0xD26C8 reloc:MIPS_GPREL16 symbol:D_001B667C
+rom:0xD26C8 reloc:MIPS_GPREL16 symbol:g_quaternion_curve_track_pool
