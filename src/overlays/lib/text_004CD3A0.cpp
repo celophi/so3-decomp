@@ -172,12 +172,14 @@ static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 index)
 
 /**
  * @brief Interpolate along the shorter quaternion arc and normalize the result.
+ *
+ * Same result as lib_quaternion_slerp, but the sines run on the VU0 microprogram while the CPU waits.
  * @param output Aligned destination quaternion; may alias either input.
  * @param first First aligned quaternion.
  * @param second Second aligned quaternion.
  * @param fraction Interpolation fraction.
  */
-extern "C" void func_004CD3A0(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction)
+extern "C" void lib_quaternion_slerp_async(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction)
 {
     float linear_threshold = 0.01f;
     float dot = ((first->x * second->x + first->y * second->y) + first->z * second->z) + first->w * second->w;

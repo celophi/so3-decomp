@@ -950,3 +950,4 @@ g_scene_display_manager = 0x001B6630; // absolute:True
 lib_scene_build_objects = 0x00474010; // type:func absolute:True
 g_track_1718C0_pool = 0x001B666C; // absolute:True
 g_microcode_loader = 0x001B6600; // absolute:True
+unregister__17LibResourceBufferFv = 0x004D5C90; // type:func absolute:True

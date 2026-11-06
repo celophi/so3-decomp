@@ -1101,7 +1101,7 @@ void BootBattleTrophyViewer::update()
             }
         }
 
-        if (score >= BOOT_TROPHY_RANK_THREE_COUNT * BOOT_TROPHY_BROWSE_SCORE_PER_EARNED && (input->pressed & settings->unk06))
+        if (score >= BOOT_TROPHY_RANK_THREE_COUNT * BOOT_TROPHY_BROWSE_SCORE_PER_EARNED && (input->pressed & settings->extra_buttons))
         {
             resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             queue_fade();

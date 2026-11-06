@@ -429,7 +429,7 @@ void BootInstaller::update()
             motion.position.x = x;
             motion.position.y = 256.0f;
             motion.arrived = 1;
-            arrow->unkae = 1;
+            arrow->geometry_dirty = 1;
         }
         choice_growing = 0;
         menu_frames = 0;

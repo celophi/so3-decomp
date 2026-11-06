@@ -1281,7 +1281,7 @@ static inline void place_cursor(LibSelectionCursor* cursor, float x, float y)
     motion.position.x = x;
     motion.position.y = y;
     motion.arrived = 1;
-    cursor->unkae = 1;
+    cursor->geometry_dirty = 1;
 }
 
 /**

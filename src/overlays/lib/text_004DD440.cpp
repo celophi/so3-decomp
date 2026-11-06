@@ -1429,24 +1429,49 @@ extern "C" void lib_shutdown(void)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_initialize);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4450);
+/** List object with vtable D_1791E0 in main data; its update flips a parity flag every frame. */
+class LibClass1791E0 : public LibListObject
+{
+    public:
+        /** @brief Start with the parity clear. */
+        LibClass1791E0() : parity(0)
+        {
+        }
 
-s32 func_004E44E0(void* object)
+        /** @brief Destroy the object. */
+        virtual ~LibClass1791E0();
+
+        /**
+         * @brief Return the list the object goes in.
+         * @return List kind 16.
+         */
+        virtual s32 get_default_list_kind();
+
+        /** @brief Flip the parity flag. */
+        virtual void update();
+
+        /** Flips between 0 and 1 on every update. */
+        u32 parity;
+};
+
+/** @brief Destroy the object. */
+LibClass1791E0::~LibClass1791E0()
+{
+}
+
+/**
+ * @brief Return the list the object goes in.
+ * @return List kind 16.
+ */
+s32 LibClass1791E0::get_default_list_kind()
 {
     return 16;
 }
 
-typedef struct LibToggleWord14
+/** @brief Flip the parity flag. */
+void LibClass1791E0::update()
 {
-    u8 unk00[0x14];
-    u32 unk14;
-} LibToggleWord14;
-
-/** Toggle bit zero of the word at receiver offset 0x14. */
-void func_004E44F0(void* object)
-{
-    LibToggleWord14* receiver = (LibToggleWord14*)object;
-    receiver->unk14 ^= 1;
+    parity ^= 1;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4500);

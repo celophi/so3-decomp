@@ -1157,7 +1157,7 @@ u8 TacticsFormationWindow::func_slotb8()
     if (parent_grid != 0)
     {
         parent_grid->ItemCreationClass185050::alpha = 64.0f;
-        parent_grid->unkae = 1;
+        parent_grid->geometry_dirty = 1;
     }
 
     TacticsLeaderWindow* child = static_cast<TacticsLeaderWindow*>(func_slot4c());
@@ -1291,7 +1291,7 @@ void TacticsFormationWindow::func_slot64()
     if (parent_grid != 0)
     {
         parent_grid->ItemCreationClass185050::alpha = 128.0f;
-        parent_grid->unkae = 1;
+        parent_grid->geometry_dirty = 1;
     }
 
     ItemCreationClass174C40* widget = resource_widget;

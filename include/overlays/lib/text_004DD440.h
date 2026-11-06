@@ -818,16 +818,6 @@ void func_004E5B00(void* object);
 void func_004E2E30(void* object);
 
 /**
- * @brief Return the fixed value 16.
- * @param object Receiver or first argument; unused.
- * @return Always 16.
- */
-s32 func_004E44E0(void* object);
-
-/** @brief Toggle bit zero of the word at receiver offset 0x14. @param object Receiver containing the word. */
-void func_004E44F0(void* object);
-
-/**
  * @brief Return the fixed value 0.
  * @param object Receiver or first argument; unused.
  * @return Always 0.

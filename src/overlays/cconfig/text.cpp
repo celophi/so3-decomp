@@ -1439,7 +1439,7 @@ u8 func_003499F0(ConfigCornerWindow* object)
     D_001B643C->unk10->unk14->func_00263C70(color);
     FieldObject23CEA0* grid = static_cast<FieldObject23CEA0*>(func_00352690(reinterpret_cast<ConfigListOwner*>(&object->unk74), 0)->value);
     grid->ItemCreationClass185050::alpha = 64.0f;
-    grid->unkae = 1;
+    grid->geometry_dirty = 1;
     return 1;
 }
 

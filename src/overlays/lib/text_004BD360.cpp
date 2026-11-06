@@ -17,6 +17,11 @@
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libkernl_00121940.h"
+#include "overlays/lib/text_004AB8B0.h"
+#include "main/resident_0010A0E0.h"
+#include "clamp.h"
+#include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/vector_inlines.h"
 
 extern "C" u8 D_00174C90[];
 extern "C" void func_004A8F10(void* object);
@@ -33,6 +38,8 @@ typedef struct HalfwordGetterOwnertext_004BD360
 
 
 
+
+
 typedef struct WordGetterOwnertext_004BD360
 {
     u8 unk00[0x4];
@@ -42,6 +49,7 @@ typedef struct WordGetterOwnertext_004BD360
     u8 unk14[0xC];
     u32 unk20;
 } WordGetterOwnertext_004BD360;
+
 
 
 struct LibVectorField10View
@@ -275,13 +283,59 @@ u32 func_004BD4E0(const void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD8A0);
+/** @brief Apply the frame the animation follows, once a frame has elapsed. */
+void LibAnimation::update()
+{
+    if (g_frame_seconds != 0.0f && frame)
+    {
+        unk6c = lib_animation_apply_frame(this, *frame, 0) != 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD8F0);
+/**
+ * @brief Mark or clear the skip flag of every populated entry bound to a target.
+ * @param target Bound target to match.
+ * @param skip Nonzero to skip the target's entries, zero to apply them again.
+ */
+void LibAnimation::set_target_skipped(const void* target, s32 skip)
+{
+    s32 count = entry_count;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD970);
+    for (s32 i = 0; i < count; i++)
+    {
+        if (entries[i].channel && entries[i].target == target)
+        {
+            if (skip)
+            {
+                entries[i].flags |= LIB_ANIMATION_ENTRY_SKIP;
+            }
+            else
+            {
+                entries[i].flags &= ~LIB_ANIMATION_ENTRY_SKIP;
+            }
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD990);
+/** @brief Stop following a frame and leave the update list. */
+void LibAnimation::stop()
+{
+    playing = 0;
+    frame = 0;
+    lib_object_detach_owner(this);
+}
+
+/**
+ * @brief Follow a frame and join an update list.
+ * @param list Update list to join.
+ * @param frame Frame to apply on each update.
+ */
+void LibAnimation::play(LibUpdateList* list, float* frame)
+{
+    playing = 1;
+    this->frame = frame;
+    list->append_node(this, LibUpdateList::DEFAULT_NODE_KIND);
+}
 
 /**
  * @brief Replace an animation entry's channel and descriptor when its index is below the entry count.
@@ -421,7 +475,7 @@ extern "C" void lib_animation_release_channels(LibAnimation* object)
         {
             if (object->entries[index].channel)
             {
-                object->entries[index].channel->func_0042A820();
+                object->entries[index].channel->release();
                 object->entries[index].channel = 0;
             }
         }
@@ -449,8 +503,6 @@ extern "C" void lib_animation_release_channels(LibAnimation* object)
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDE00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_animation_bind_channels);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BFDB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BFE10);
 
@@ -480,16 +532,55 @@ extern "C" void lib_animation_load_resource(LibAnimation* object, ResidentResour
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __dt__12LibAnimationFv);
+/** @brief Leave the update list, free an owned resource, and release the channels and bindings. */
+LibAnimation::~LibAnimation()
+{
+    if (playing)
+    {
+        lib_object_detach_owner(this);
+    }
+
+    if (!resource_is_borrowed)
+    {
+        operator delete(resource_data);
+    }
+
+    if (entries && !unk6d)
+    {
+        lib_animation_release_channels(this);
+    }
+
+    delete[] entries;
+    entries = 0;
+
+    if (primary_binding_owner)
+    {
+        lib_animation_register_binding(primary_binding_owner, 0, 0);
+    }
+
+    s32 slot;
+    LibAnimationBindingOwner* owner = secondary_binding_owner;
+
+    if (owner)
+    {
+        for (slot = 0; slot < LIB_ANIMATION_BINDING_CAPACITY; slot++)
+        {
+            if (owner->animation_slots[slot] == this)
+            {
+                owner->animation_slots[slot] = 0;
+            }
+        }
+    }
+}
 
 /** @brief Start with no resource, entries or bindings. */
 LibAnimation::LibAnimation()
 {
     resource_data = 0;
     resource_is_borrowed = 0;
-    unk69 = 0;
+    playing = 0;
     entries = 0;
-    unk44 = 0;
+    frame = 0;
     unk48 = 0;
     started = 0;
     unk6d = 0;
@@ -516,11 +607,40 @@ extern "C" void func_004C1440(void* object)
     state->value18 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1460);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __dt__16LibWordTrackBaseFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C14D0);
+/** @brief Reset the keys, counts, modes and cached indices. */
+void LibWordTrackBase::reset_state()
+{
+    key_array = 0;
+    state.before_mode = LIB_TRACK_END_CYCLE;
+    state.after_mode = LIB_TRACK_END_CYCLE;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.search_index = -1;
+    state.cycle_count = 0;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.extends_segment = 0;
+    state.external_keys = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1560);
+/**
+ * @brief Allocate key storage.
+ * @param count Key count.
+ */
+void LibWordTrackBase::allocate_keys(s32 count)
+{
+    state.external_keys = 0;
+    delete[] key_array;
+    key_array = new (0) LibWordTrackKey[count];
+    state.key_capacity = count;
+
+    if (!key_array)
+    {
+        state.key_capacity = 0;
+    }
+}
 
 /** Set the low packed mode at 0x22 and record whether either mode equals four. */
 void func_004C1600(void* object, u8 mode)
@@ -557,7 +677,15 @@ s32 func_004C16E0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C16F0);
+/**
+ * @brief Evaluate the track.
+ * @param key Key position.
+ * @param output Receives the word.
+ */
+void LibWordTrackBase::evaluate(float key, void* output)
+{
+    *(u32*)output = sample(key);
+}
 
 /** Return the word at receiver offset 0x4. */
 u32 func_004C1720(const void* object)
@@ -566,7 +694,16 @@ u32 func_004C1720(const void* object)
     return receiver->unk04;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1730);
+/** @brief Delete the key storage unless it is external, and clear the key pointer. */
+void LibWordTrackBase::free_keys()
+{
+    if (!state.external_keys)
+    {
+        delete[] key_array;
+    }
+
+    key_array = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1780);
 
@@ -592,9 +729,54 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C22B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C23C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C24E0);
+/**
+ * @brief Wrap a key by whole spans between the first and last keys.
+ * @param key Key position.
+ * @return Wrapped key.
+ */
+float LibWordTrackBase::wrap_key(float key) const
+{
+    s32 last_index = state.key_count - 1;
+    float first = key_array[0].key;
+    float span = key_array[last_index].key - first;
+    float position = (key - first) / span;
+    s32 cycles;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2570);
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+
+    cycles = (s32)position;
+
+    if (cycles != 0)
+    {
+        return key - cycles * span;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Return the value of the key at a position.
+ * @param key Key position.
+ * @return Key value, or zero when no key is there.
+ */
+u32 LibWordTrackBase::find_key_value(float key)
+{
+    s32 index;
+
+    for (index = 0; index < state.key_count; index++)
+    {
+        if (key == key_array[index].key)
+        {
+            LibWordTrackKey* entry = key_array + index;
+            return entry->value;
+        }
+    }
+
+    return 0;
+}
 
 /** Return the key span between the first and last entries. */
 float func_004C25D0(void* object)
@@ -629,46 +811,241 @@ s32 func_004C2620(void* object, float key)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2670);
+/**
+ * @brief Store the single key used before key storage exists.
+ * @param value Key value.
+ * @param key Key position.
+ */
+void LibWordTrackBase::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    on_set_single_key(value, key);
+}
 
 void func_004C26A0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C26B0);
+/**
+ * @brief Insert a key before an index.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Nonzero when the key was stored.
+ */
+s32 LibWordTrackBase::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_insert_key(index, key, value);
+}
 
 s32 func_004C26E0(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C26F0);
+/**
+ * @brief Replace an indexed key.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Nonzero when the key was stored.
+ */
+s32 LibWordTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_replace_key(index, key, value);
+}
 
 s32 func_004C2720(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2730);
+/**
+ * @brief Append a key.
+ * @param value Key value.
+ * @param in_tangent Optional incoming tangent.
+ * @param out_tangent Optional outgoing tangent.
+ * @param key Key position.
+ * @return Nonzero when the key was stored.
+ */
+s32 LibWordTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    return on_append_key(value, in_tangent, out_tangent, key);
+}
 
 s32 func_004C2760(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2770);
+/**
+ * @brief Use external key storage and cache its key span.
+ * @param count Key count.
+ * @param keys External keys.
+ */
+void LibWordTrackBase::bind_keys(s32 count, void* keys)
+{
+    s32 last_index = count - 1;
+    state.external_keys = 1;
+    key_array = (LibWordTrackKey*)keys;
+    state.key_capacity = count;
+    state.key_count = count;
+    state.span = key_array[last_index].key - key_array[0].key;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C27C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2830);
+/**
+ * @brief Store the single key and evaluate it before the first array key.
+ * @param value Key value.
+ * @param key Key position.
+ */
+void LibWordKeyTrack::on_set_single_key(const void* value, float key)
+{
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    single_key.value = *(const u32*)value;
+    single_key.key = key;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2890);
+/**
+ * @brief Read an indexed key.
+ * @param index Key index, checked against the capacity.
+ * @param key Optionally receives the key position.
+ * @param value Optionally receives the key value.
+ * @return One when the key is available, otherwise zero.
+ */
+s32 LibWordKeyTrack::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2910);
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2A10);
+    if (key != 0)
+    {
+        *key = key_array[index].key;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2AA0);
+    if (value != 0)
+    {
+        *(u32*)value = key_array[index].value;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Insert a key before an index and shift the following keys.
+ * @param index Key index below the key count.
+ * @param key Key position.
+ * @param value Key value.
+ * @return One when inserted, or zero when storage is absent, full, or the index is too large.
+ */
+s32 LibWordKeyTrack::on_insert_key(s32 index, float key, const void* value)
+{
+    s32 cursor;
+
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_count)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (cursor = state.key_count; cursor > index; cursor--)
+    {
+        LibWordTrackKey* destination = &key_array[cursor];
+        LibWordTrackKey* source = &key_array[cursor - 1];
+        destination->key = source->key;
+        destination->value = source->value;
+    }
+
+    key_array[index].value = *(const u32*)value;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Replace an indexed key and update the span when it is the last key.
+ * @param index Key index, checked against the capacity.
+ * @param key Key position.
+ * @param value Key value.
+ * @return One when stored, or zero when storage is absent or the index is too large.
+ */
+s32 LibWordKeyTrack::on_replace_key(s32 index, float key, const void* value)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[index].value = *(const u32*)value;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    return 1;
+}
+
+/**
+ * @brief Append a key and update the key span.
+ * @param value Key value.
+ * @param in_tangent Unused incoming tangent.
+ * @param out_tangent Unused outgoing tangent.
+ * @param key Key position.
+ * @return One when appended, or zero when storage is absent or full.
+ */
+s32 LibWordKeyTrack::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[state.key_count].value = *(const u32*)value;
+    key_array[state.key_count].key = key;
+    state.span = key - key_array[0].key;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
 
 struct ResetVectorB0_004BD360 { u8 pad[0xB0]; FieldVec4B value; };
 
@@ -690,17 +1067,111 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2BB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2C40);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2CD0);
+/**
+ * @brief Multiply two quaternions.
+ * @param first Left factor.
+ * @param second Right factor.
+ * @return first * second.
+ */
+static inline FieldVec4B quaternion_product(const FieldVec4B& first, const FieldVec4B& second)
+{
+    FieldVec4B result;
+    result.x = first.w * second.x + second.w * first.x + first.y * second.z - first.z * second.y;
+    result.y = first.w * second.y + second.w * first.y + first.z * second.x - first.x * second.z;
+    result.z = first.w * second.z + second.w * first.z + first.x * second.y - first.y * second.x;
+    result.w = first.w * second.w - first.x * second.x - first.y * second.y - first.z * second.z;
+    return result;
+}
+
+/**
+ * @brief Add the channel pose to the changes kept at the last update and renormalize the rotation change.
+ * @param object Animation target.
+ */
+void func_004C2CD0(LibAnimationTarget* object)
+{
+    object->translation_delta += object->channel_translation;
+    object->scale_delta += object->channel_scale;
+    object->orientation_delta = quaternion_product(object->channel_rotation, object->orientation_delta);
+    lib_normalize_quaternion(&object->orientation_delta);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __ct__18LibAnimationTargetFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2F50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3000);
+/**
+ * @brief Copy the position and keep its change from the previous position.
+ * @param value New position.
+ */
+void LibAnimationTarget::copy_translation(const LibVector4* value)
+{
+    LibVector4* previous = &translation;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3060);
+    if (has_translation)
+    {
+        translation_delta.x = value->x - previous->x;
+        translation_delta.y = value->y - previous->y;
+        translation_delta.z = value->z - previous->z;
+    }
+    else
+    {
+        has_translation = 1;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C30C0);
+    transform_dirty = 1;
+    copy_vector(&translation, value);
+}
+
+/**
+ * @brief Copy the position and keep its change from the previous position.
+ * @param value New position.
+ */
+void LibAnimationTarget::set_translation_vector(const LibVector4* value)
+{
+    LibVector4* previous = &translation;
+
+    if (has_translation)
+    {
+        translation_delta.x = value->x - previous->x;
+        translation_delta.y = value->y - previous->y;
+        translation_delta.z = value->z - previous->z;
+    }
+    else
+    {
+        has_translation = 1;
+    }
+
+    transform_dirty = 1;
+    copy_vector(&translation, value);
+}
+
+/**
+ * @brief Set the position, w of one, and keep its change from the previous position.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void LibAnimationTarget::set_translation(float x, float y, float z)
+{
+    LibVector4* previous = &translation;
+
+    if (has_translation)
+    {
+        translation_delta.x = x - previous->x;
+        translation_delta.y = y - previous->y;
+        translation_delta.z = z - previous->z;
+    }
+    else
+    {
+        has_translation = 1;
+    }
+
+    transform_dirty = 1;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3120);
 
@@ -708,17 +1179,82 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3240);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3360);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3470);
+/**
+ * @brief Copy the scale and keep its change from the previous scale.
+ * @param value New scale.
+ */
+void LibAnimationTarget::copy_scale(const LibVector4* value)
+{
+    LibVector4* previous = &scale;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C34D0);
+    if (has_scale)
+    {
+        scale_delta.x = value->x - previous->x;
+        scale_delta.y = value->y - previous->y;
+        scale_delta.z = value->z - previous->z;
+    }
+    else
+    {
+        has_scale = 1;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3530);
+    transform_dirty = 1;
+    copy_vector(&scale, value);
+}
+
+/**
+ * @brief Copy the scale and keep its change from the previous scale.
+ * @param value New scale.
+ */
+void LibAnimationTarget::set_scale_vector(const LibVector4* value)
+{
+    LibVector4* previous = &scale;
+
+    if (has_scale)
+    {
+        scale_delta.x = value->x - previous->x;
+        scale_delta.y = value->y - previous->y;
+        scale_delta.z = value->z - previous->z;
+    }
+    else
+    {
+        has_scale = 1;
+    }
+
+    transform_dirty = 1;
+    copy_vector(&scale, value);
+}
+
+/**
+ * @brief Set the scale's xyz and keep its change from the previous scale.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
+void LibAnimationTarget::set_scale(float x, float y, float z)
+{
+    LibVector4* previous = &scale;
+
+    if (has_scale)
+    {
+        scale_delta.x = x - previous->x;
+        scale_delta.y = y - previous->y;
+        scale_delta.z = z - previous->z;
+    }
+    else
+    {
+        has_scale = 1;
+    }
+
+    transform_dirty = 1;
+    scale.x = x;
+    scale.y = y;
+    scale.z = z;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3590);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C39A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C39F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3A50);
 
@@ -740,11 +1276,40 @@ void func_004C3AF0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3B00);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __dt__14LibClass1784E0Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3B70);
+/** @brief Reset the keys, counts, modes and cached indices. */
+void LibClass1784E0::reset_state()
+{
+    key_array = 0;
+    state.before_mode = LIB_TRACK_END_CYCLE;
+    state.after_mode = LIB_TRACK_END_CYCLE;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.search_index = -1;
+    state.cycle_count = 0;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.extends_segment = 0;
+    state.external_keys = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3C00);
+/**
+ * @brief Allocate key storage.
+ * @param count Key count.
+ */
+void LibClass1784E0::allocate_keys(s32 count)
+{
+    state.external_keys = 0;
+    delete[] key_array;
+    key_array = new (0) LibWordTrackKey[count];
+    state.key_capacity = count;
+
+    if (!key_array)
+    {
+        state.key_capacity = 0;
+    }
+}
 
 /** Set the low packed mode at 0x22 and record whether either mode equals four. */
 void func_004C3CA0(void* object, u8 mode)
@@ -781,7 +1346,15 @@ s32 func_004C3D80(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3D90);
+/**
+ * @brief Evaluate the track.
+ * @param key Key position.
+ * @param output Receives the word.
+ */
+void LibClass1784E0::evaluate(float key, void* output)
+{
+    *(u32*)output = sample(key);
+}
 
 /** Return the word at receiver offset 0x4. */
 u32 func_004C3DC0(const void* object)
@@ -790,11 +1363,65 @@ u32 func_004C3DC0(const void* object)
     return receiver->unk04;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3DD0);
+/** @brief Delete the key storage unless it is external, and clear the key pointer. */
+void LibClass1784E0::free_keys()
+{
+    if (!state.external_keys)
+    {
+        delete[] key_array;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3E20);
+    key_array = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3EB0);
+/**
+ * @brief Wrap a key by whole spans between the first and last keys.
+ * @param key Key position.
+ * @return Wrapped key.
+ */
+float LibClass1784E0::wrap_key(float key) const
+{
+    s32 last_index = state.key_count - 1;
+    float first = key_array[0].key;
+    float span = key_array[last_index].key - first;
+    float position = (key - first) / span;
+    s32 cycles;
+
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+
+    cycles = (s32)position;
+
+    if (cycles != 0)
+    {
+        return key - cycles * span;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Return the value of the key at a position.
+ * @param key Key position.
+ * @return Key value, or zero when no key is there.
+ */
+u32 LibClass1784E0::find_key_value(float key)
+{
+    s32 index;
+
+    for (index = 0; index < state.key_count; index++)
+    {
+        if (key == key_array[index].key)
+        {
+            LibWordTrackKey* entry = key_array + index;
+            return entry->value;
+        }
+    }
+
+    return 0;
+}
 
 /** Return the key span between the first and last entries. */
 float func_004C3F10(void* object)
@@ -829,50 +1456,252 @@ s32 func_004C3F60(void* object, float key)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3FB0);
+/**
+ * @brief Store the single key used before key storage exists.
+ * @param value Key value.
+ * @param key Key position.
+ */
+void LibClass1784E0::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    on_set_single_key(value, key);
+}
 
 void func_004C3FE0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3FF0);
+/**
+ * @brief Insert a key before an index.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Nonzero when the key was stored.
+ */
+s32 LibClass1784E0::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_insert_key(index, key, value);
+}
 
 s32 func_004C4020(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4030);
+/**
+ * @brief Replace an indexed key.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Nonzero when the key was stored.
+ */
+s32 LibClass1784E0::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_replace_key(index, key, value);
+}
 
 s32 func_004C4060(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4070);
+/**
+ * @brief Append a key.
+ * @param value Key value.
+ * @param in_tangent Optional incoming tangent.
+ * @param out_tangent Optional outgoing tangent.
+ * @param key Key position.
+ * @return Nonzero when the key was stored.
+ */
+s32 LibClass1784E0::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    return on_append_key(value, in_tangent, out_tangent, key);
+}
 
 s32 func_004C40A0(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C40B0);
+/**
+ * @brief Use external key storage and cache its key span.
+ * @param count Key count.
+ * @param keys External keys.
+ */
+void LibClass1784E0::bind_keys(s32 count, void* keys)
+{
+    s32 last_index = count - 1;
+    state.external_keys = 1;
+    key_array = (LibWordTrackKey*)keys;
+    state.key_capacity = count;
+    state.key_count = count;
+    state.span = key_array[last_index].key - key_array[0].key;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4100);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4170);
+/**
+ * @brief Store the single key and evaluate it before the first array key.
+ * @param value Key value.
+ * @param key Key position.
+ */
+void LibClass178450::on_set_single_key(const void* value, float key)
+{
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    single_key.value = *(const u32*)value;
+    single_key.key = key;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C41D0);
+/**
+ * @brief Read an indexed key.
+ * @param index Key index, checked against the capacity.
+ * @param key Optionally receives the key position.
+ * @param value Optionally receives the key value.
+ * @return One when the key is available, otherwise zero.
+ */
+s32 LibClass178450::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4250);
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4350);
+    if (key != 0)
+    {
+        *key = key_array[index].key;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C43E0);
+    if (value != 0)
+    {
+        *(u32*)value = key_array[index].value;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Insert a key before an index and shift the following keys.
+ * @param index Key index below the key count.
+ * @param key Key position.
+ * @param value Key value.
+ * @return One when inserted, or zero when storage is absent, full, or the index is too large.
+ */
+s32 LibClass178450::on_insert_key(s32 index, float key, const void* value)
+{
+    s32 cursor;
+
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_count)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (cursor = state.key_count; cursor > index; cursor--)
+    {
+        LibWordTrackKey* destination = &key_array[cursor];
+        LibWordTrackKey* source = &key_array[cursor - 1];
+        destination->key = source->key;
+        destination->value = source->value;
+    }
+
+    key_array[index].value = *(const u32*)value;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Replace an indexed key and update the span when it is the last key.
+ * @param index Key index, checked against the capacity.
+ * @param key Key position.
+ * @param value Key value.
+ * @return One when stored, or zero when storage is absent or the index is too large.
+ */
+s32 LibClass178450::on_replace_key(s32 index, float key, const void* value)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[index].value = *(const u32*)value;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    return 1;
+}
+
+/**
+ * @brief Append a key and update the key span.
+ * @param value Key value.
+ * @param in_tangent Unused incoming tangent.
+ * @param out_tangent Unused outgoing tangent.
+ * @param key Key position.
+ * @return One when appended, or zero when storage is absent or full.
+ */
+s32 LibClass178450::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[state.key_count].value = *(const u32*)value;
+    key_array[state.key_count].key = key;
+    state.span = key - key_array[0].key;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4470);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C44E0);
+/**
+ * @brief Return the last key's value.
+ * @return Last key value.
+ */
+u32 LibWordTrack::get_last_value()
+{
+    return key_array[state.key_count - 1].value;
+}
 
 extern "C" void func_004C4500(void* object)
 {
@@ -884,11 +1713,122 @@ extern "C" void func_004C4510(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4520);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4620);
+/**
+ * @brief Find the keys around a position, starting from the cached search index.
+ * @param key Key position.
+ * @param lower Receives the lower key index.
+ * @param upper Receives the upper key index.
+ * @return One when an end mode extends the first or last segment, otherwise zero.
+ */
+u8 LibWordTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4780);
+    if (state.extends_segment)
+    {
+        if (state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            state.search_index = 0;
+            return 1;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", destroy__9LibWidgetFv);
+        if (state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
+        {
+            *lower = state.key_count - 2;
+            *upper = state.key_count - 1;
+            state.search_index = state.key_count - 2;
+            return 1;
+        }
+    }
+
+    index = state.search_index;
+    count = state.key_count;
+
+    while (index > 0 && key < key_array[index].key)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < key_array[next].key))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    state.search_index = index;
+    return 0;
+}
+
+/**
+ * @brief Wrap a key across the span and store its signed cycle count.
+ * @param key Key position.
+ * @return Wrapped key, reflected on odd ping-pong cycles.
+ */
+float LibWordTrackBase::update_cycle_count(float key)
+{
+    float first = key_array[0].key;
+    float quotient = (key - first) / state.span;
+
+    if (key < first)
+    {
+        quotient -= 1.0f;
+    }
+
+    state.cycle_count = quotient;
+
+    if (state.cycle_count)
+    {
+        float result = key - (float)state.cycle_count * state.span;
+
+        if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) ||
+            (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
+        {
+            s32 last_index = state.key_count - 1;
+            LibWordTrackKey* last_entry = key_array + last_index;
+            float last = last_entry->key;
+
+            if (state.cycle_count & 1)
+            {
+                result = first + (last - result);
+            }
+        }
+
+        return result;
+    }
+
+    return key;
+}
+
+/** @brief Queue a widget outside any container for release, once, and stop it being active. */
+void LibWidget::destroy()
+{
+    if (!unk3a)
+    {
+        if (!container)
+        {
+            resident_enqueue_object(g_resident_release_queues, this);
+        }
+
+        unk39 = 0;
+        unk3a = 1;
+    }
+}
 
 /** @brief Unlink the widget from its container before detaching its owner. */
 LibWidget::~LibWidget()
@@ -909,8 +1849,8 @@ LibWidget::LibWidget()
     unk38 = 0;
     container = 0;
     draw_alpha = 128.0f;
-    unk2c[1] = 0;
-    unk2c[0] = 0;
+    packet_tag = 0;
+    packet = 0;
     unk34 = 0;
     unk39 = 0;
     unk3a = 0;
@@ -1357,9 +2297,29 @@ extern "C" s32 lib_load_shared_font(LibFontChunk* data_chunks, ResidentResourceH
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6120);
+/**
+ * @brief Unlink a widget from the container and clear its owner.
+ * @param object Container receiver.
+ * @param child Widget to detach.
+ */
+extern "C" void func_004C6120(LibContainer* object, LibWidget* child)
+{
+    object->LibListReceiver::unlink(child);
+    child->container = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6150);
+/**
+ * @brief Link a widget into the container after a position and record its owner.
+ * @param object Container receiver.
+ * @param position Node the widget follows.
+ * @param child Widget to insert.
+ */
+extern "C" void func_004C6150(LibContainer* object, void* position, LibWidget* child)
+{
+    object->LibListReceiver::insert_after(position, child);
+    child->container = object;
+}
+
 
 
 /**
@@ -1504,7 +2464,48 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7D00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7D40);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7F80);
+/** One glyph's drawing state in a LibClass178780 batch. */
+struct LibGlyphDraw6C : public LibDrawState64
+{
+    /** @brief Initialize the drawing state and clear both trailing words. */
+    LibGlyphDraw6C();
+
+    u32 unk64;
+    u32 unk68;
+};
+
+/** 0x30-byte batch of glyph drawing states a text widget keeps at unkfc, with vtable D_178780 in main data. */
+class LibClass178780 : public LibListObject
+{
+public:
+    /** @brief Start without storage or glyphs. */
+    LibClass178780() : glyphs(0)
+    {
+    }
+
+    /** @brief Free the glyphs and the drawing storage. */
+    virtual ~LibClass178780();
+
+    /**
+     * @brief Allocate drawing storage and glyph states for a glyph count.
+     * @param count Number of glyphs.
+     * @return One on success, or zero when an allocation fails.
+     */
+    s32 init(s32 count);
+
+    LibStorageBlock0C storage;
+    u8 unk20[4];
+    LibGlyphDraw6C* glyphs;
+    s32 glyph_capacity;
+    s32 glyph_count;
+};
+
+/** @brief Initialize the drawing state and clear both trailing words. */
+LibGlyphDraw6C::LibGlyphDraw6C()
+{
+    unk64 = 0;
+    unk68 = 0;
+}
 
 typedef struct LibTextRectangleState
 {
@@ -1515,7 +2516,6 @@ typedef struct LibTextRectangleState
     u8 pad100[0x11];
     u8 pending;
 } LibTextRectangleState;
-extern "C" void func_00464870(LibTextWidget* object, float x, float y, float width, float height);
 /**
  * @brief Initialize the text rectangle and clear its allocation and pending flag.
  * @param object Text widget.
@@ -1527,7 +2527,7 @@ extern "C" void func_00464870(LibTextWidget* object, float x, float y, float wid
 extern "C" void lib_text_init_rectangle(LibTextWidget* object, float x, float y, float width, float height)
 {
     LibTextRectangleState* state = (LibTextRectangleState*)object;
-    func_00464870(object, x, y, width, height);
+    object->set_rectangle(x, y, width, height);
     state->allocation = 0;
     state->pending = 0;
 }
@@ -1548,7 +2548,7 @@ extern "C" s32 lib_text_init_resource_rectangle(LibTextWidget* object, s32 slot,
 {
     LibTextRectangleState* state = (LibTextRectangleState*)object;
     state->flag = flag;
-    func_00464870(object, x, y, width, height);
+    object->set_rectangle(x, y, width, height);
     state->allocation = 0;
     state->pending = 0;
     return func_004C7D40(object, slot, key, 0);
@@ -2205,3 +3205,4 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCEE0);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CD010);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CD2C0);
+

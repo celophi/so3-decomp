@@ -612,16 +612,16 @@ void BootProgressBar::destroy()
  * @brief Append one vertex to a draw buffer's streams.
  * @param buffer Draw buffer.
  * @param position Vertex position.
- * @param unk Value for the second vector stream.
+ * @param normal Vertex normal.
  * @param texcoord Packed texture coordinates.
  * @param color Vertex color.
  */
-static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position, const FieldVec4A& unk, u32 texcoord, u32 color)
+static inline void add_vertex(LibDrawBuffer* buffer, const FieldVec4A& position, const FieldVec4A& normal, u32 texcoord, u32 color)
 {
     *buffer->positions = position;
     buffer->positions++;
-    *buffer->unk4c = unk;
-    buffer->unk4c++;
+    *buffer->normals = normal;
+    buffer->normals++;
     *buffer->texcoords++ = texcoord;
     *buffer->colors++ = color;
     buffer->vertex_count++;

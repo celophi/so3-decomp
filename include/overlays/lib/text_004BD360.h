@@ -185,14 +185,6 @@ s32 func_004C8360(void* object);
 }
 #endif
 
-/** Text extent kept at a text widget's offset 0xE8. */
-typedef struct LibTextExtent
-{
-    float unk00;
-    float unk04;
-    float width;
-    float height;
-} LibTextExtent;
 
 /**
  * @brief Initialize the text widget rectangle and clear its allocation and pending flag.
@@ -271,7 +263,10 @@ public:
     u8 unkab;
     u8 unkac;
     u8 unkad;
-    u8 unkae;
+
+    /** Set when the position or codes change; the packet builder rebuilds the geometry and clears it. */
+    u8 geometry_dirty;
+
     u8 unkaf;
 };
 
@@ -497,6 +492,36 @@ struct LibObject174D90 : public LibTextWidget
     virtual void func_00413D20();
     /** @brief Draw the multiline text widget. */
     virtual void draw();
+
+    /** @brief Hook run when the text restarts; the base implementation does nothing. */
+    virtual void func_0045F600();
+
+    /** @brief Hook run at the end of the text; the base implementation does nothing. */
+    virtual void func_0045F610();
+
+    /**
+     * @brief Hook for a text control code with three values; the base implementation does nothing.
+     * @param first First value.
+     * @param second Second value.
+     * @param third Third value.
+     */
+    virtual void func_0045F620(s16 first, s16 second, u32 third);
+
+    /**
+     * @brief Hook for a text control code with one value; the base implementation does nothing.
+     * @param value Control value.
+     */
+    virtual void func_0045F630(u32 value);
+
+    /**
+     * @brief Hook for a text control code with one value; the base implementation does nothing.
+     * @param value Control value.
+     */
+    virtual void func_0045F640(u32 value);
+
+    /** @brief Hook for a text control code; the base implementation does nothing. */
+    virtual void func_0045F650();
+
     /**
      * @brief Configure the multiline text resource, rectangle, and drawing mode.
      * @param x Rectangle origin x.
@@ -514,7 +539,17 @@ struct LibObject174D90 : public LibTextWidget
     float unk524;
     float unk528;
     float unk52c;
-    u8 unk530[0x4C];
+    u8 unk530[0x34];
+    s32 unk564;
+    u8 unk568[0x12];
+    u8 unk57a;
+    u8 unk57b;
+
+    /**
+     * @brief Run func_00451B90 on the object at offset 0x564 when the byte at 0x57A is set.
+     * @return The func_00451B90 result, or zero.
+     */
+    s32 func_0045F660();
 };
 
 /** 0x90-byte widget, constructed inline over LibWidget. */
@@ -566,130 +601,536 @@ struct LibPanel : public LibWidget
     u8 unk8d[3];
 };
 
-/** Partial Lib keyframe channel interface, with root vtable D_173180 and known derived table D_1782E0. */
+/** How a track evaluates keys outside its first and last keyframes. */
+enum
+{
+    /** Keep the first or last value outside the key span. */
+    LIB_TRACK_END_HOLD = 0,
+
+    /** Wrap the key into the stored span. */
+    LIB_TRACK_END_CYCLE = 1,
+
+    /** Use the first value at the last segment's endpoint. */
+    LIB_TRACK_END_CYCLE_TO_FIRST = 2,
+
+    /** Reflect the key on odd cycles. */
+    LIB_TRACK_END_PING_PONG = 3,
+
+    /** Continue evaluating the first or last segment outside the span. */
+    LIB_TRACK_END_EXTEND_SEGMENT = 4,
+
+    /** Wrap the key and add the endpoint difference for each cycle. */
+    LIB_TRACK_END_OFFSET_CYCLE = 5,
+
+    /** Interpolate from the stored single key before the first array key. */
+    LIB_TRACK_END_USE_PRE_START_KEY = 6
+};
+
+/** Bookkeeping every track keeps after its key storage: counts, the cached lookup and how it extends past its ends. */
+struct LibTrackState
+{
+    /** Whole key spans the last wrapped key was past the first key; negative before it. */
+    s32 cycle_count;
+
+    /** Last key minus first key. */
+    float span;
+
+    s16 key_count;
+    s16 key_capacity;
+
+    /** Lower key index the last search found; the next search starts there. */
+    s16 search_index;
+
+    /** Lower key index the cached segment was built from; -1 after the keys change. */
+    s16 segment_lower;
+
+    /** Upper key index the cached segment was built from; -1 after the keys change. */
+    s16 segment_upper;
+
+    /** LIB_TRACK_END_* mode applied before the first key. */
+    u8 before_mode : 4;
+
+    /** LIB_TRACK_END_* mode applied after the last key. */
+    u8 after_mode : 4;
+
+    /** Set when either end extends its first or last keyframe segment. */
+    u8 extends_segment : 1;
+
+    /** Set when the keys are bound from outside, so the track doesn't free them. */
+    u8 external_keys : 1;
+
+    /** Set while the track belongs to a pool. */
+    u8 pooled : 1;
+
+    u8 unk_3_7 : 5;
+};
+
+/**
+ * Root of Lib's keyframe tracks, with vtable D_173180 in main data. Unlike Boot's copy, the root declares the whole
+ * interface, so the float, vector and curve families share it; values travel as untyped pointers.
+ */
 class LibClass173180
 {
 public:
+    /** @brief Destroy the track. */
+    virtual ~LibClass173180()
+    {
+    }
+
     /**
-     * @brief Destroy the channel.
+     * @brief Allocate storage for the requested keyframe count.
+     * @param count Requested keyframe count.
      */
-    virtual ~LibClass173180();
+    virtual void allocate_keys(s32 count) = 0;
+
     /**
-     * @brief Allocate channel entries.
-     * @param count Entry count.
+     * @brief Bind an external keyframe array.
+     * @param count Keyframe count.
+     * @param keys External keyframe storage.
      */
-    virtual void func_004C1560(s32 count) = 0;
+    virtual void bind_keys(s32 count, void* keys) = 0;
+
     /**
-     * @brief Use external channel entries.
-     * @param count Entry count.
-     * @param entries External entries.
+     * @brief Set what the track does before its first key.
+     * @param mode LibTrackEndMode.
      */
-    virtual void func_004C2770(s32 count, void* entries) = 0;
+    virtual void set_before_mode(u32 mode) = 0;
+
     /**
-     * @brief Store the low mode nibble.
-     * @param mode Mode value.
+     * @brief Set what the track does after its last key.
+     * @param mode LibTrackEndMode.
      */
-    virtual void func_004C1600(s32 mode) = 0;
+    virtual void set_after_mode(u32 mode) = 0;
+
     /**
-     * @brief Store the high mode nibble.
-     * @param mode Mode value.
+     * @brief Return how many key spans the last wrapped key was past the first key.
+     * @return Signed cycle count.
      */
-    virtual void func_004C1660(s32 mode) = 0;
+    virtual s32 get_cycle_count() const = 0;
+
     /**
-     * @brief Read the channel word at offset 0x10.
-     * @return Stored word.
+     * @brief Append a keyframe; the root ignores it.
+     * @param value Keyframe value.
+     * @param in_tangent Incoming tangent, for curve tracks.
+     * @param out_tangent Outgoing tangent, for curve tracks.
+     * @param key Sort key.
+     * @return Nonzero when the keyframe was stored.
      */
-    virtual u32 func_004BD490() = 0;
+    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
+    /** @brief Slot 0x24; no family overrides the root's empty version, so its purpose is unknown. */
+    virtual void func_slot24();
+
     /**
-     * @brief Default append handler.
-     * @param value Channel value.
-     * @param optional1 Optional second component.
-     * @param optional2 Optional third component.
-     * @param key Sort value.
-     * @return Status.
+     * @brief Replace an indexed keyframe; the root ignores it.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param in_tangent Incoming tangent, for curve tracks.
+     * @param out_tangent Outgoing tangent, for curve tracks.
+     * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 func_0042A7C0(const void* value, const void* optional1, const void* optional2, float key);
+    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     /**
-     * @brief Slot 0x24 is an empty default handler; its argument contract remains unresolved.
+     * @brief Insert a keyframe at an index; the root ignores it.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param in_tangent Incoming tangent, for curve tracks.
+     * @param out_tangent Outgoing tangent, for curve tracks.
+     * @return Nonzero when the keyframe was stored.
      */
-    virtual void func_00429850(...);
+    virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     /**
-     * @brief Default set handler.
-     * @param index Entry index.
-     * @param key Sort value.
-     * @param value Channel value.
-     * @return Status.
+     * @brief Read an indexed keyframe; the root has none.
+     * @param index Keyframe index.
+     * @param key Receives the sort key.
+     * @param value Receives the value.
+     * @param first Receives the first auxiliary value.
+     * @param second Receives the second auxiliary value.
+     * @return Nonzero when the keyframe is available.
      */
-    virtual s32 func_0042A7D0(s32 index, float key, const void* value);
+    virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     /**
-     * @brief Default insert handler.
-     * @param index Entry index.
-     * @param key Sort value.
-     * @param value Channel value.
-     * @return Status.
+     * @brief Store a single keyframe that applies before the key array; the root ignores it.
+     * @param value Keyframe value.
+     * @param in_tangent Incoming tangent, for curve tracks.
+     * @param out_tangent Outgoing tangent, for curve tracks.
+     * @param key Sort key.
      */
-    virtual s32 func_0042A7E0(s32 index, float key, const void* value);
+    virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
+    /** @brief Forget the cached sample; the root has none. */
+    virtual void reset_keys();
+
     /**
-     * @brief Read one channel entry.
-     * @param index Entry index.
-     * @param key Receives the sort value.
-     * @param value Receives the channel value.
-     * @return Status.
+     * @brief Test whether the track has a keyframe at a key.
+     * @param key Key to find.
+     * @return Nonzero when the key exists.
      */
-    virtual s32 func_0042A7F0(s32 index, float* key, void* value);
+    virtual s32 has_key(float key) const = 0;
+
     /**
-     * @brief Default add handler.
-     * @param value Channel value.
-     * @param key Sort value.
+     * @brief Write the difference between the last and first key values.
+     * @param output Receives the difference.
      */
-    virtual void func_0042A800(const void* value, float key);
+    virtual void get_end_delta(void* output) const = 0;
+
     /**
-     * @brief Perform no work.
-     */
-    virtual void func_0042A810();
-    /**
-     * @brief Test whether an entry has the requested key.
-     * @param key Sort value.
-     * @return One when present, otherwise zero.
-     */
-    virtual s32 func_004C2620(float key) = 0;
-    /**
-     * @brief Write a channel value.
-     * @param output Receives a value whose width depends on the channel.
-     */
-    virtual void func_004C4500(void* output) = 0;
-    /**
-     * @brief Wrap a key into the channel range.
-     * @param key Sort value.
+     * @brief Wrap a key into the stored key range.
+     * @param key Key to wrap.
      * @return Wrapped key.
      */
-    virtual float func_004C24E0(float key) = 0;
+    virtual float wrap_key(float key) const = 0;
+
     /**
-     * @brief Write a channel value.
-     * @param output Receives a value whose width depends on the channel.
+     * @brief Write how fast the value changed at the last sample, per second.
+     * @param output Receives the rate.
      */
-    virtual void func_004C4510(void* output) = 0;
+    virtual void get_value_rate(void* output) const = 0;
+
     /**
-     * @brief Read the channel key span.
-     * @return Difference between last and first key.
+     * @brief Return the span between the first and last keys.
+     * @return Key span, or zero when fewer than two keys are stored.
      */
-    virtual float func_004C25D0() = 0;
+    virtual float get_key_span() const = 0;
+
     /**
-     * @brief Evaluate the channel.
-     * @param key Sort value.
-     * @param output Receives the channel value.
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @param output Receives the value.
      */
-    virtual void func_004C16F0(float key, void* output) = 0;
-    /** @brief Read the channel state. @return Stored state. */
-    virtual s16 func_004C16C0() = 0;
-    /** @brief Delete the channel through its virtual destructor. */
-    virtual void func_0042A820();
-    /** @brief Read the current channel entry. @return Entry pointer. */
-    virtual void* func_004C1720() = 0;
-    /** @brief Reset the channel state. */
-    virtual void func_004C14D0() = 0;
-    /** @brief Read the channel entry count. @return Entry count. */
-    virtual s16 func_004C16D0() = 0;
+    virtual void evaluate(float key, void* output) = 0;
+
+    /**
+     * @brief Return the stored keyframe count.
+     * @return Keyframe count.
+     */
+    virtual s16 get_key_count() const = 0;
+
+    /** @brief Delete the track through its virtual destructor; pooled tracks return to their pool instead. */
+    virtual void release();
+
+    /**
+     * @brief Return the key storage.
+     * @return Key array, or null.
+     */
+    virtual void* get_keys() = 0;
+
+    /** @brief Clear the key storage, counts, modes and cached indices. */
+    virtual void reset_state() = 0;
+
+    /**
+     * @brief Return the number of keys the storage can hold.
+     * @return Key capacity.
+     */
+    virtual s16 get_key_capacity() = 0;
+};
+
+/** 8-byte key of LibWordTrackBase: a key position followed by a word that holds until the next key. */
+struct LibWordTrackKey
+{
+    /**
+     * @brief Copy the key and value.
+     * @param other Key to copy.
+     * @return This key.
+     */
+    LibWordTrackKey& operator=(const LibWordTrackKey& other)
+    {
+        key = other.key;
+        value = other.value;
+        return *this;
+    }
+
+    float key;
+    u32 value;
+};
+
+/** Key storage and bookkeeping for tracks of 32-bit words (vtable D_1782E0 in main data); keys aren't stored at this level. */
+class LibWordTrackBase : public LibClass173180
+{
+public:
+    /** @brief Construct the track. */
+    LibWordTrackBase();
+
+    /** @brief Release the key storage. */
+    virtual ~LibWordTrackBase();
+
+    virtual void allocate_keys(s32 count);
+    virtual void bind_keys(s32 count, void* keys);
+    virtual void set_before_mode(u32 mode);
+    virtual void set_after_mode(u32 mode);
+    virtual s32 get_cycle_count() const;
+    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual s32 has_key(float key) const;
+    virtual float wrap_key(float key) const;
+    virtual float get_key_span() const;
+    virtual void evaluate(float key, void* output);
+    virtual s16 get_key_count() const;
+    virtual void* get_keys();
+    virtual void reset_state();
+    virtual s16 get_key_capacity();
+
+    /**
+     * @brief Append a key; the base ignores it.
+     * @param value Key value.
+     * @param in_tangent Unused incoming tangent.
+     * @param out_tangent Unused outgoing tangent.
+     * @param key Key position.
+     * @return Nonzero when the key was stored.
+     */
+    virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
+    /**
+     * @brief Replace an indexed key; the base ignores it.
+     * @param index Key index.
+     * @param key Key position.
+     * @param value Key value.
+     * @return Nonzero when the key was stored.
+     */
+    virtual s32 on_replace_key(s32 index, float key, const void* value);
+
+    /**
+     * @brief Insert a key before an index; the base ignores it.
+     * @param index Key index.
+     * @param key Key position.
+     * @param value Key value.
+     * @return Nonzero when the key was stored.
+     */
+    virtual s32 on_insert_key(s32 index, float key, const void* value);
+
+    /**
+     * @brief Store the single key; the base ignores it.
+     * @param value Key value.
+     * @param key Key position.
+     */
+    virtual void on_set_single_key(const void* value, float key);
+
+    /**
+     * @brief Return the value the track settles on.
+     * @return Zero in the base.
+     */
+    virtual u32 get_last_value();
+
+    /**
+     * @brief Return the value of the key at a position.
+     * @param key Key position.
+     * @return Key value, or zero when no key is there.
+     */
+    virtual u32 find_key_value(float key);
+
+    /**
+     * @brief Sample the track.
+     * @param key Key position.
+     * @return Track value.
+     */
+    virtual u32 sample(float key) = 0;
+
+    /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+    void free_keys();
+
+    /**
+     * @brief Wrap a key across the span and store its signed cycle count.
+     * @param key Key position.
+     * @return Wrapped key, reflected on odd ping-pong cycles.
+     */
+    float update_cycle_count(float key);
+
+    /**
+     * @brief Find the keys around a position, starting from the cached search index.
+     * @param key Key position.
+     * @param lower Receives the lower key index.
+     * @param upper Receives the upper key index.
+     * @return One when an end mode extends the first or last segment, otherwise zero.
+     */
+    u8 find_surrounding_keys(float key, s32* lower, s32* upper);
+
+    LibWordTrackKey* key_array;
+
+    /** Single key, used before key storage exists. */
+    LibWordTrackKey single_key;
+
+    LibTrackState state;
+};
+
+/** Word track that stores its keys in the array (vtable D_178250 in main data). */
+class LibWordKeyTrack : public LibWordTrackBase
+{
+public:
+    /** @brief Destroy the track. */
+    virtual ~LibWordKeyTrack()
+    {
+    }
+
+    virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+    virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual s32 on_replace_key(s32 index, float key, const void* value);
+    virtual s32 on_insert_key(s32 index, float key, const void* value);
+    virtual void on_set_single_key(const void* value, float key);
+};
+
+/** 0x24-byte word track that holds each key's value until the next key (vtable D_178570 in main data). */
+class LibWordTrack : public LibWordKeyTrack
+{
+public:
+    /** @brief Destroy the track. */
+    virtual ~LibWordTrack();
+
+    virtual void get_end_delta(void* output) const;
+    virtual void get_value_rate(void* output) const;
+    virtual u32 get_last_value();
+    virtual u32 sample(float key);
+};
+
+/** Second word-track base with the same layout and code as LibWordTrackBase (vtable D_1784E0 in main data). */
+class LibClass1784E0 : public LibClass173180
+{
+public:
+    /** @brief Construct the track. */
+    LibClass1784E0();
+
+    /** @brief Release the key storage. */
+    virtual ~LibClass1784E0();
+
+    virtual void allocate_keys(s32 count);
+    virtual void bind_keys(s32 count, void* keys);
+    virtual void set_before_mode(u32 mode);
+    virtual void set_after_mode(u32 mode);
+    virtual s32 get_cycle_count() const;
+    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual s32 has_key(float key) const;
+    virtual float wrap_key(float key) const;
+    virtual float get_key_span() const;
+    virtual void evaluate(float key, void* output);
+    virtual s16 get_key_count() const;
+    virtual void* get_keys();
+    virtual void reset_state();
+    virtual s16 get_key_capacity();
+
+    /**
+     * @brief Append a key; the base ignores it.
+     * @param value Key value.
+     * @param in_tangent Unused incoming tangent.
+     * @param out_tangent Unused outgoing tangent.
+     * @param key Key position.
+     * @return Nonzero when the key was stored.
+     */
+    virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
+    /**
+     * @brief Replace an indexed key; the base ignores it.
+     * @param index Key index.
+     * @param key Key position.
+     * @param value Key value.
+     * @return Nonzero when the key was stored.
+     */
+    virtual s32 on_replace_key(s32 index, float key, const void* value);
+
+    /**
+     * @brief Insert a key before an index; the base ignores it.
+     * @param index Key index.
+     * @param key Key position.
+     * @param value Key value.
+     * @return Nonzero when the key was stored.
+     */
+    virtual s32 on_insert_key(s32 index, float key, const void* value);
+
+    /**
+     * @brief Store the single key; the base ignores it.
+     * @param value Key value.
+     * @param key Key position.
+     */
+    virtual void on_set_single_key(const void* value, float key);
+
+    /**
+     * @brief Return the value the track settles on.
+     * @return Zero in the base.
+     */
+    virtual u32 get_last_value();
+
+    /**
+     * @brief Return the value of the key at a position.
+     * @param key Key position.
+     * @return Key value, or zero when no key is there.
+     */
+    virtual u32 find_key_value(float key);
+
+    /**
+     * @brief Sample the track.
+     * @param key Key position.
+     * @return Track value.
+     */
+    virtual u32 sample(float key) = 0;
+
+    /** @brief Delete the key storage unless it is external, and clear the key pointer. */
+    void free_keys();
+
+    /**
+     * @brief Wrap a key across the span and store its signed cycle count.
+     * @param key Key position.
+     * @return Wrapped key, reflected on odd ping-pong cycles.
+     */
+    float update_cycle_count(float key);
+
+    /**
+     * @brief Find the keys around a position, starting from the cached search index.
+     * @param key Key position.
+     * @param lower Receives the lower key index.
+     * @param upper Receives the upper key index.
+     * @return One when an end mode extends the first or last segment, otherwise zero.
+     */
+    u8 find_surrounding_keys(float key, s32* lower, s32* upper);
+
+    LibWordTrackKey* key_array;
+
+    /** Single key, used before key storage exists. */
+    LibWordTrackKey single_key;
+
+    LibTrackState state;
+};
+
+/** LibClass1784E0 that stores its keys in the array (vtable D_178450 in main data). */
+class LibClass178450 : public LibClass1784E0
+{
+public:
+    /** @brief Destroy the track. */
+    virtual ~LibClass178450()
+    {
+    }
+
+    virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+    virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual s32 on_replace_key(s32 index, float key, const void* value);
+    virtual s32 on_insert_key(s32 index, float key, const void* value);
+    virtual void on_set_single_key(const void* value, float key);
+};
+
+/** 0x2C-byte LibClass178450 whose sample is always zero (vtable D_1783C0 in main data). */
+class LibClass1783C0 : public LibClass178450
+{
+public:
+    /** @brief Construct the track with both trailing words cleared. */
+    LibClass1783C0();
+
+    /** @brief Destroy the track. */
+    virtual ~LibClass1783C0();
+
+    virtual void get_end_delta(void* output) const;
+    virtual void get_value_rate(void* output) const;
+    virtual u32 get_last_value();
+    virtual u32 sample(float key);
+
+    u32 unk24;
+    u32 unk28;
 };
 
 /** 20-byte animation entry with a channel, target word and state name. */
@@ -721,6 +1162,26 @@ public:
     /** @brief Detach the animation, free its resource when owned and release its channels and bindings. */
     virtual ~LibAnimation();
 
+    /** @brief Apply the frame the animation follows, once a frame has elapsed. */
+    virtual void update();
+
+    /**
+     * @brief Mark or clear the skip flag of every populated entry bound to a target.
+     * @param target Bound target to match.
+     * @param skip Nonzero to skip the target's entries, zero to apply them again.
+     */
+    void set_target_skipped(const void* target, s32 skip);
+
+    /** @brief Stop following a frame and leave the update list. */
+    void stop();
+
+    /**
+     * @brief Follow a frame and join an update list.
+     * @param list Update list to join.
+     * @param frame Frame to apply on each update.
+     */
+    void play(LibUpdateList* list, float* frame);
+
     /**
      * @brief Release the current channels and resource, then play from borrowed data.
      * @param data Animation data the caller keeps.
@@ -748,7 +1209,10 @@ public:
     s32 entry_count;
     u8 unk3c[4];
     LibAnimationEntry14* entries;
-    u32 unk44;
+
+    /** Frame applied by update(), or null when the animation isn't playing. */
+    float* frame;
+
     u32 unk48;
     u8 unk4c[4];
     LibAnimationEntry14* cached_entry;
@@ -761,27 +1225,35 @@ public:
 
     float unk64;
     u8 resource_is_borrowed;
-    u8 unk69;
+
+    /** Set while the animation is in an update list. */
+    u8 playing;
 
     /** Set once a frame has been applied; cleared to restart, which applies the restart-only entries again. */
     u8 started;
 
     u8 unk6b;
+
+    /** Whether the last update applied a nonzero status. */
     u8 unk6c;
+
     u8 unk6d;
     u8 targets_bound;
     u8 unk6f;
 };
 
-/** Partial 0xD0-byte Lib object, with vtable D_178370 in main data. */
+/** 0xD0-byte transform that animation channels drive, with vtable D_178370 in main data. It keeps how far each part moved at its last update. */
 class LibAnimationTarget : public LibOrientedTransform
 {
 public:
     /** @brief Construct an empty object. */
     LibAnimationTarget();
 
+    /** @brief Destroy the target. */
+    virtual ~LibAnimationTarget();
+
     /**
-     * @brief Store the three scalar components of the vector state.
+     * @brief Set the position, w of one, and keep its change from the previous position.
      * @param x First component.
      * @param y Second component.
      * @param z Third component.
@@ -789,29 +1261,120 @@ public:
     virtual void set_translation(float x, float y, float z);
 
     /**
-     * @brief Store a vector and update the vector state delta.
-     * @param value New vector.
+     * @brief Copy the position and keep its change from the previous position.
+     * @param value New position.
      */
     virtual void set_translation_vector(const LibVector4* value);
 
-    LibVector4 unk60;
-    LibVector4 unk70;
-    LibVector4 unk80;
+    /**
+     * @brief Copy the position and keep its change from the previous position.
+     * @param value New position.
+     */
+    virtual void copy_translation(const LibVector4* value);
+
+    /**
+     * @brief Copy the rotation and keep the rotation from the previous one.
+     * @param value New rotation quaternion.
+     */
+    virtual void set_orientation(const LibVector4* value);
+
+    /**
+     * @brief Copy the rotation and keep the rotation from the previous one.
+     * @param value New rotation quaternion.
+     */
+    virtual void copy_orientation(const LibVector4* value);
+
+    /**
+     * @brief Set the rotation and keep the rotation from the previous one.
+     * @param x First quaternion component.
+     * @param y Second quaternion component.
+     * @param z Third quaternion component.
+     * @param w Fourth quaternion component.
+     */
+    virtual void set_orientation_components(float x, float y, float z, float w);
+
+    /**
+     * @brief Set the scale's xyz and keep its change from the previous scale.
+     * @param x First component.
+     * @param y Second component.
+     * @param z Third component.
+     */
+    virtual void set_scale(float x, float y, float z);
+
+    /**
+     * @brief Copy the scale and keep its change from the previous scale.
+     * @param value New scale.
+     */
+    virtual void set_scale_vector(const LibVector4* value);
+
+    /**
+     * @brief Copy the scale and keep its change from the previous scale.
+     * @param value New scale.
+     */
+    virtual void copy_scale(const LibVector4* value);
+
+    /** Position change at the last update, once a position has been set. */
+    FieldVec4B translation_delta;
+
+    /** Rotation from the previous rotation to the current one, once a rotation has been set. */
+    FieldVec4B orientation_delta;
+
+    /** Scale change at the last update, once a scale has been set. */
+    FieldVec4B scale_delta;
 
     /** Translation read from the target's translation channels by lib_animation_read_channel_pose. */
-    LibVector4 channel_translation;
+    FieldVec4B channel_translation;
 
     /** Rotation quaternion read from the target's rotation channels. */
-    LibVector4 channel_rotation;
+    FieldVec4B channel_rotation;
 
     /** Scale read from the target's scale channels. */
-    LibVector4 channel_scale;
+    FieldVec4B channel_scale;
 
-    u8 unkc0;
-    u8 unkc1;
-    u8 unkc2;
+    /** Set once a position has been set, so later updates keep a change. */
+    u8 has_translation;
+
+    /** Set once a rotation has been set. */
+    u8 has_orientation;
+
+    /** Set once a scale has been set. */
+    u8 has_scale;
+
     u8 unkc3[0xD];
 };
+
+// Some units include this header inside an extern "C" block, where these overloads wouldn't be allowed.
+extern "C++"
+{
+/**
+ * @brief Copy a vector into a FieldVec4B as one 128-bit value, like copy_vector does for LibVector4.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(FieldVec4B* destination, const LibVector4* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
+/**
+ * @brief Copy a FieldVec4B into a vector as one 128-bit value.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(LibVector4* destination, const FieldVec4B* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
+/**
+ * @brief Zero all four components of a FieldVec4B with one 128-bit store.
+ * @param vector Vector to clear.
+ */
+static inline void clear_vector(FieldVec4B* vector)
+{
+    *(unsigned __int128*)vector = 0;
+}
+}
 #endif
 
 #ifdef __cplusplus
@@ -904,6 +1467,9 @@ enum
 enum
 {
     LIB_ANIMATION_AXIS_COUNT = 3,
+
+    /** Entry flag: lib_animation_apply_frame leaves the entry alone. */
+    LIB_ANIMATION_ENTRY_SKIP = 0x10,
 
     /** Low nibble of an entry's flags: the axis of a per-axis channel, zero for a whole vector. */
     LIB_ANIMATION_ENTRY_AXIS_MASK = 0xF
@@ -1236,6 +1802,94 @@ void func_004C61F0(N54Owner84_004BD360* object);
 s32 lib_load_shared_font(struct LibFontChunk* chunks, struct ResidentResourceHeader* source);
 
 }
+#endif
+
+#ifdef __cplusplus
+class LibMessageWindow;
+
+/** Multiline text of a message window, passing its control codes on to the window. MAIN vtable at 0x174EB0. */
+class LibMessageWindowText : public LibObject174D90
+{
+public:
+    /** @brief Destroy the text. */
+    virtual ~LibMessageWindowText();
+
+    /** @brief Flag the restart for the window. */
+    virtual void func_0045F600();
+
+    /** @brief Flag the end of the text for the window. */
+    virtual void func_0045F610();
+
+    /**
+     * @brief Pass a three-value control code to the window.
+     * @param first First value.
+     * @param second Second value.
+     * @param third Third value.
+     */
+    virtual void func_0045F620(s16 first, s16 second, u32 third);
+
+    /**
+     * @brief Pass a one-value control code to the window.
+     * @param value Control value.
+     */
+    virtual void func_0045F630(u32 value);
+
+    /**
+     * @brief Pass a one-value control code to the window and set its flag byte at 0x1064.
+     * @param value Control value.
+     */
+    virtual void func_0045F640(u32 value);
+
+    /** @brief Flag a control code for the window and set its flag byte at 0x1064. */
+    virtual void func_0045F650();
+
+    /** Window the text belongs to. */
+    LibMessageWindow* owner;
+};
+
+/** Partial message window: a container holding a panel, two clipping widgets and its multiline text. MAIN vtable at 0x174DD0. */
+class LibMessageWindow : public LibContainer
+{
+public:
+    /** @brief Destroy the window and its widgets. */
+    virtual ~LibMessageWindow();
+
+    /**
+     * @brief Advance from state 4 or 6 to the next state.
+     * @return One when the state advanced, otherwise zero.
+     */
+    s32 func_00461B60();
+
+    /**
+     * @brief In state 4 or 6, load new text into the window and go back to state 2.
+     * @param source Resource source word.
+     * @param key Text resource key.
+     * @param mode Drawing mode; its bits 16 and 18 are kept from the current mode.
+     * @param flag Resource state flag.
+     * @return One when the text was loaded, otherwise zero.
+     */
+    s32 func_00461BA0(u32 source, s32 key, u32 mode, u32 flag);
+
+    u8 unkf0[0x9D0];
+    LibMessageWindowText text;
+    u32 source;
+    s32 key;
+    u32 mode;
+    s32 state;
+    u32 unk1050;
+    s16 unk1054;
+    s16 unk1056;
+    u32 unk1058;
+    u8 unk105c;
+    u8 unk105d;
+    u8 unk105e;
+    u8 unk105f;
+    u8 unk1060;
+    u8 unk1061;
+    u8 unk1062;
+    u8 unk1063;
+    u8 unk1064;
+};
 #endif
 
 #endif

@@ -1,28 +1,52 @@
 #include "include_asm.h"
 #include "overlays/lib/text_004AB8B0.h"
+#include "main/resident_data.h"
+#include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/vector_inlines.h"
+#include "overlays/lib/vector_vu0.h"
 
-/** Animation entry flags and the kinds an entry without a target may have. */
+extern LibTrackPool<LibClass177EE0>* g_track_1718C0_pool;
+extern LibTrackPool<LibPooledFloatTrack>* g_float_track_pool;
+extern LibTrackPool<LibPooledFloatCurveTrack>* g_float_curve_track_pool;
+extern LibTrackPool<LibPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
+
+/**
+ * @brief Mark a track's g_track_1718C0_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void track_1718C0_pool_free(LibTrackPool<LibClass177EE0>* pool, LibClass177EE0* track);
+
+/**
+ * @brief Mark a track's g_float_track_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void float_track_pool_free(LibTrackPool<LibPooledFloatTrack>* pool, LibPooledFloatTrack* track);
+
+/**
+ * @brief Mark a track's g_float_curve_track_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void float_curve_track_pool_free(LibTrackPool<LibPooledFloatCurveTrack>* pool, LibPooledFloatCurveTrack* track);
+
+/**
+ * @brief Mark a track's g_float_quaternion_track_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void float_quaternion_track_pool_free(LibTrackPool<LibPooledFloatQuaternionTrack>* pool, LibPooledFloatQuaternionTrack* track);
+
+/** Another animation entry flag, and the kinds an entry without a target may have. */
 enum
 {
-    LIB_ANIMATION_ENTRY_SKIP = 0x10,
     LIB_ANIMATION_ENTRY_RESTART_ONLY = 0x20,
     LIB_ANIMATION_KIND_UNBOUND_FIRST = 0xE0,
     LIB_ANIMATION_KIND_UNBOUND_END = 0xF0
 };
 
 extern "C" {
-
-extern void func_004B0B20(void* object);
-extern void func_004B2870(void* object);
-extern void* g_float_quaternion_track_pool;
-extern void* g_track_1718C0_pool;
-extern void* g_float_track_pool;
-extern void func_004B0820(void* object);
-extern void func_004B0FF0(void* owner, void* object);
-extern void func_004ACAF0(void* object);
-extern void func_004B2B80(void* owner, void* object);
-extern void func_004B2AE0(void* object);
-extern void func_004B2B30(void* owner, void* object);
 
 typedef struct HalfwordGetterOwnertext_004AB8B0
 {
@@ -37,8 +61,6 @@ typedef struct HalfwordGetterOwnertext_004AB8B0
     s16 unk3a;
 } HalfwordGetterOwnertext_004AB8B0;
 
-
-
 typedef struct WordGetterOwnertext_004AB8B0
 {
     u8 unk00[0x4];
@@ -50,7 +72,6 @@ typedef struct WordGetterOwnertext_004AB8B0
     u8 unk1c[0x14];
     u32 unk30;
 } WordGetterOwnertext_004AB8B0;
-
 
 typedef struct FourWordClearOwnertext_004AB8B0 { u32 words[4]; } FourWordClearOwnertext_004AB8B0;
 
@@ -194,32 +215,189 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC390);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC3A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC3B0);
-
-void func_004AC410(void* object)
+/** @brief Forget the stored samples. */
+void LibClass178200::reset()
 {
-    u8* bytes = (u8*)object;
-    *(u16*)(bytes + 0x4) = 0;
-    *(u16*)(bytes + 0x6) = 0;
-    *(u32*)(bytes + 0x8) = 0;
-    *(u32*)(bytes + 0xC) = 0;
+    sample_count = 0;
+    next_index = 0;
+    unk08 = 0;
+    unk0C = 0;
 }
 
-void func_004AC430(void* object)
+/** @brief Do nothing; the slot's purpose is unknown. */
+void LibClass178200::func_slot08()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC440);
+/**
+ * @brief Read an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Receives the sort key.
+ * @param value Receives the value.
+ * @param first Unused; this track has no auxiliary vectors.
+ * @param second Unused; this track has no auxiliary vectors.
+ * @return One when the index is within the capacity, otherwise zero.
+ */
+s32 LibClass177AC0::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC4C0);
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC5A0);
+    if (key)
+    {
+        *key = key_array[index].key;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC700);
+    if (value)
+    {
+        *static_cast<FieldVec4B*>(value) = key_array[index].value;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC770);
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC800);
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float LibClass177B50::update_cycle_count(float key)
+{
+    float first = key_array[0].key;
+    float quotient = (key - first) / state.span;
+
+    if (key < first)
+    {
+        quotient -= 1.0f;
+    }
+
+    state.cycle_count = quotient;
+
+    if (state.cycle_count)
+    {
+        float result = key - (float)state.cycle_count * state.span;
+
+        if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
+        {
+            s32 last_index = state.key_count - 1;
+            LibTrackKey177B50* last_entry = key_array + last_index;
+            float last = last_entry->key;
+
+            if (state.cycle_count & 1)
+            {
+                result = first + (last - result);
+            }
+        }
+
+        return result;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
+ */
+u8 LibClass177B50::find_surrounding_keys(float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
+
+    if (state.extends_segment)
+    {
+        if (state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            state.search_index = 0;
+            return 1;
+        }
+
+        if (state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
+        {
+            *lower = state.key_count - 2;
+            *upper = state.key_count - 1;
+            state.search_index = state.key_count - 2;
+            return 1;
+        }
+    }
+
+    index = state.search_index;
+    count = state.key_count;
+
+    while (index > 0 && key < key_array[index].key)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < key_array[next].key))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    state.search_index = index;
+    return 0;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", __dt__14LibClass177B50Fv);
+
+/** @brief Clear the key storage, counts, modes and cached indices. */
+void LibClass177B50::reset_state()
+{
+    key_array = 0;
+    state.before_mode = LIB_TRACK_END_CYCLE;
+    state.after_mode = LIB_TRACK_END_CYCLE;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.search_index = -1;
+    state.cycle_count = 0;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.extends_segment = 0;
+    state.external_keys = 0;
+}
+
+/**
+ * @brief Bind an external keyframe array and cache its first-to-last key span.
+ * @param count Keyframe count.
+ * @param keys External keyframe storage.
+ */
+void LibClass177B50::bind_keys(s32 count, void* keys)
+{
+    s32 last_index = count - 1;
+    LibTrackKey177B50* last;
+    state.external_keys = 1;
+    key_array = static_cast<LibTrackKey177B50*>(keys);
+    state.key_capacity = count;
+    state.key_count = count;
+    last = key_array + last_index;
+    state.span = last->key - key_array[0].key;
+}
 
 /** Set the low packed mode at 0x42 and record whether either mode equals four. */
 void func_004AC850(void* object, u8 mode)
@@ -304,9 +482,45 @@ float func_004AC9B0(void* object)
     return last - first;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACA00);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the vector.
+ */
+void LibClass177B50::evaluate(float key, void* output)
+{
+    *static_cast<FieldVec4B*>(output) = sample(key);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACA50);
+/**
+ * @brief Move a key into the first key span by whole spans.
+ * @param key Key to wrap.
+ * @return Key minus the whole spans it lies past the first key, or the key itself.
+ */
+float LibClass177B50::wrap_key(float key) const
+{
+    s32 last_index = state.key_count - 1;
+    LibTrackKey177B50* keys = key_array;
+    LibTrackKey177B50* last = keys + last_index;
+    float first = keys[0].key;
+    float span = last->key - first;
+    float quotient = (key - first) / span;
+    s32 periods;
+
+    if (quotient < 0.0f)
+    {
+        quotient -= 1.0f;
+    }
+
+    periods = quotient;
+
+    if (periods != 0)
+    {
+        return key - (float)periods * span;
+    }
+
+    return key;
+}
 
 /** Return the word at receiver offset 0x4. */
 u32 func_004ACAE0(const void* object)
@@ -315,51 +529,250 @@ u32 func_004ACAE0(const void* object)
     return receiver->unk04;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACAF0);
+/** @brief Delete the key storage unless it is external, and clear the key pointer. */
+void LibClass177B50::free_keys()
+{
+    if (!state.external_keys)
+    {
+        delete[] key_array;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACB40);
+    key_array = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACBA0);
+/**
+ * @brief Return the value of the first keyframe at exactly a key.
+ * @param key Key to find.
+ * @return Keyframe value, or a zero vector when no key matches.
+ */
+FieldVec4A LibClass177B50::find_key_value(float key)
+{
+    s32 index;
+
+    for (index = 0; index < state.key_count; index++)
+    {
+        if (key == key_array[index].key)
+        {
+            LibTrackKey177B50* entry = key_array + index;
+            return *reinterpret_cast<const FieldVec4A*>(&entry->value);
+        }
+    }
+
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+/**
+ * @brief Store a single keyframe through on_set_single_key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @param key Sort key.
+ */
+void LibClass177B50::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    on_set_single_key(static_cast<const FieldVec4A*>(value), key);
+}
 
 void func_004ACBD0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACBE0);
+/**
+ * @brief Insert a keyframe through on_insert_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibClass177B50::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_insert_key(index, key, static_cast<const FieldVec4A*>(value));
+}
 
 s32 func_004ACC10(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACC20);
+/**
+ * @brief Replace a keyframe through on_replace_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibClass177B50::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_replace_key(index, key, static_cast<const FieldVec4A*>(value));
+}
 
 s32 func_004ACC50(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACC60);
+/**
+ * @brief Append a keyframe through on_append_key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibClass177B50::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    return on_append_key(static_cast<const FieldVec4A*>(value), key);
+}
 
 s32 func_004ACC90(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACCA0);
-
-void* func_004ACD50(void* value)
+/**
+ * @brief Allocate storage for a number of keyframes, dropping any keys the track owned.
+ * @param count Keyframes to hold.
+ */
+void LibClass177B50::allocate_keys(s32 count)
 {
-    return value;
+    state.external_keys = 0;
+    delete[] key_array;
+    key_array = new (0) LibTrackKey177B50[count];
+    state.key_capacity = count;
+
+    if (!key_array)
+    {
+        state.key_capacity = 0;
+    }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACD60);
+/** @brief Leave the keyframe uninitialized. */
+LibTrackKey177B50::LibTrackKey177B50()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACDC0);
+/**
+ * @brief Store a single keyframe in the cached key and value, and use it before the first key.
+ * @param value Keyframe value.
+ * @param key Sort key.
+ */
+void LibClass177AC0::on_set_single_key(const FieldVec4A* value, float key)
+{
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    single_value = *value;
+    single_key = key;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACEC0);
+/**
+ * @brief Insert a keyframe at an index.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibClass177AC0::on_insert_key(s32 index, float key, const FieldVec4A* value)
+{
+    s32 count;
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ACF50);
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    count = state.key_count;
+
+    if (index >= count)
+    {
+        return 0;
+    }
+
+    if (count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (i = count; i > index; i--)
+    {
+        key_array[i] = key_array[i - 1];
+    }
+
+    key_array[index].value = *value;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Replace an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibClass177AC0::on_replace_key(s32 index, float key, const FieldVec4A* value)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[index].value = *value;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    return 1;
+}
+
+/**
+ * @brief Append a keyframe.
+ * @param value Keyframe value.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibClass177AC0::on_append_key(const FieldVec4A* value, float key)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[state.key_count].value = *value;
+    key_array[state.key_count].key = key;
+    state.span = key - key_array[0].key;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
 
 typedef struct LibResetWrapperState004ACFF0
 {
@@ -374,33 +787,86 @@ void func_004ACFF0(void* object)
     LibResetWrapperState004ACFF0* receiver = (LibResetWrapperState004ACFF0*)object;
     receiver->unk58 = 0;
     receiver->unk50 = 0;
-    func_004B04C0(object);
+    static_cast<LibFloatQuaternionTrackBase*>(object)->LibFloatQuaternionTrackBase::reset_state();
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD0F0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", replace_key__29LibPooledFloatQuaternionTrackFifPCvPCvPCv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD1C0);
+/**
+ * @brief Insert a keyframe, with zero for a missing extra value.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @param first First extra value, or null for zero.
+ * @param second Second extra value, or null for zero.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibPooledFloatQuaternionTrack::insert_key(s32 index, float key, const void* value, const void* first, const void* second)
+{
+    float second_value = (second == 0) ? 0.0f : *static_cast<const float*>(second);
+    float first_value = (first == 0) ? 0.0f : *static_cast<const float*>(first);
+    return insert_entry(index, key, static_cast<const FieldVec4A*>(value), first_value, second_value);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD210);
+/**
+ * @brief Store a single keyframe, with zero for a missing extra value, and use it before the first key.
+ * @param value Keyframe rotation.
+ * @param first First extra value, or null for zero.
+ * @param second Second extra value, or null for zero.
+ * @param key Sort key.
+ */
+void LibPooledFloatQuaternionTrack::set_single_key(const void* value, const void* first, const void* second, float key)
+{
+    float second_value = (second == 0) ? 0.0f : *static_cast<const float*>(second);
+    float first_value = (first == 0) ? 0.0f : *static_cast<const float*>(first);
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    copy_vector(&single_key.value, static_cast<const LibVector4*>(value));
+    single_key.first = first_value;
+    single_key.second = second_value;
+    single_key.key = key;
+}
 
 void func_004AD2B0(const void* object, float* value)
 {
     *value = *(const float*)((const u8*)object + 0x54);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD2C0);
+/** @brief Reset to a single zero keyframe at key zero, then select the cycle end mode. */
+void LibPooledFloatQuaternionTrack::reset_keys()
+{
+    FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
+    set_single_key(&zero, &zero, &zero, 0.0f);
+    set_before_mode(LIB_TRACK_END_CYCLE);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD320);
+/** @brief Give the track back to its pool when it came from one, otherwise delete it. */
+void LibPooledFloatQuaternionTrack::release()
+{
+    if (this != 0)
+    {
+        if (state.pooled)
+        {
+            return_to_pool();
+        }
+        else
+        {
+            delete this;
+        }
+    }
+}
 
 void func_004AD380(void* object)
 {
-    func_004B0820(object);
-    func_004B0FF0(g_float_quaternion_track_pool, object);
+    static_cast<LibFloatQuaternionTrackBase*>(object)->free_keys();
+    float_quaternion_track_pool_free(g_float_quaternion_track_pool, static_cast<LibPooledFloatQuaternionTrack*>(object));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD3B0);
+/** @brief Destroy the track. */
+LibPooledFloatQuaternionTrack::~LibPooledFloatQuaternionTrack()
+{
+}
 
 /** Set the low packed mode at 0x42 and record whether either mode equals four. */
 void func_004AD410(void* object, u8 mode)
@@ -412,9 +878,51 @@ void func_004AD410(void* object, u8 mode)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD470);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD590);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", insert_entry__29LibPooledFloatQuaternionTrackFifPC10FieldVec4Aff);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD6B0);
+/**
+ * @brief Read an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Receives the sort key.
+ * @param value Receives the rotation.
+ * @param first Receives the first extra value.
+ * @param second Receives the second extra value.
+ * @return One when the index is within the capacity, otherwise zero.
+ */
+s32 LibPooledFloatQuaternionTrack::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    if (key)
+    {
+        *key = key_array[index].key;
+    }
+
+    if (value)
+    {
+        *static_cast<FieldVec4B*>(value) = key_array[index].value;
+    }
+
+    if (first)
+    {
+        *static_cast<float*>(first) = key_array[index].first;
+    }
+
+    if (second)
+    {
+        *static_cast<float*>(second) = key_array[index].second;
+    }
+
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD770);
 
@@ -434,37 +942,321 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF060);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF6A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF6D0);
+/**
+ * @brief Insert a keyframe and its tangents.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ */
+void LibPooledFloatCurveTrack::insert_float_curve_key(s32 index, float key, float value, float in_tangent, float out_tangent)
+{
+    LibFloatCurveTrack::insert_curve_key(index, key, &value, &in_tangent, &out_tangent);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF700);
+/**
+ * @brief Replace a keyframe and its tangents.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ */
+void LibPooledFloatCurveTrack::replace_float_curve_key(s32 index, float key, float value, float in_tangent, float out_tangent)
+{
+    LibFloatCurveTrack::replace_curve_key(index, key, &value, &in_tangent, &out_tangent);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF730);
+/**
+ * @brief Append a keyframe and its tangents.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ */
+void LibPooledFloatCurveTrack::append_float_curve_key(float key, float value, float in_tangent, float out_tangent)
+{
+    LibFloatCurveTrack::append_curve_key(&value, &in_tangent, &out_tangent, key);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF760);
+/** @brief Give the track and its keys back to the pool when it came from one, otherwise delete it. */
+void LibPooledFloatCurveTrack::release()
+{
+    if (this != 0)
+    {
+        if (state.pooled)
+        {
+            free_keys();
+            float_curve_track_pool_free(g_float_curve_track_pool, this);
+        }
+        else
+        {
+            delete this;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF7D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF840);
+/** @brief Destroy the track. */
+LibPooledFloatCurveTrack::~LibPooledFloatCurveTrack()
+{
+}
 
 void func_004AF8A0(void* object)
 {
     ((ClearForwardWordOwnertext_004AB8B0*)object)->unk4c = 0;
-    func_004B0B20(object);
+    static_cast<LibFloatCurveTrackBase*>(object)->LibFloatCurveTrackBase::reset_state();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF8C0);
+/**
+ * @brief Evaluate the track with cached interpolation, wrapping and endpoint extrapolation.
+ * @param key Sort value.
+ * @return Evaluated value; updates the cached value and its scaled change.
+ */
+float LibFloatCurveTrack::sample(float key)
+{
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    u8 extrapolate;
+    float result;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AFCE0);
+    if (!key_array || !state.key_count)
+    {
+        return 0.0f;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AFD40);
+    if (state.search_index >= state.key_capacity)
+    {
+        state.search_index = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AFDA0);
+    if (state.key_count == 1 && (!(key < key_array[0].key) || state.before_mode != LIB_TRACK_END_USE_PRE_START_KEY))
+    {
+        return key_array[0].value;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AFE00);
+    extrapolate = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AFE60);
+    if (key < key_array[0].key && state.before_mode == LIB_TRACK_END_USE_PRE_START_KEY)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = update_cycle_count(key);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AFF20);
+        if (state.cycle_count)
+        {
+            if (state.before_mode == LIB_TRACK_END_HOLD && state.cycle_count < 0)
+            {
+                return key_array[0].value;
+            }
+
+            if (state.after_mode == LIB_TRACK_END_HOLD && state.cycle_count > 0)
+            {
+                return key_array[state.key_count - 1].value;
+            }
+        }
+
+        extrapolate = find_surrounding_keys(wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (!extrapolate)
+    {
+        if (state.segment_lower != lower || state.segment_upper != upper)
+        {
+            state.segment_lower = lower;
+            state.segment_upper = upper;
+            LibFloatCurveTrackKey* first = lower >= 0 ? key_array + lower : &single_key;
+            s32 last = state.key_count - 1;
+
+            if (upper == last && ((!(key < key_array[0].key) && state.after_mode == LIB_TRACK_END_CYCLE_TO_FIRST) ||
+                (key < key_array[0].key && state.before_mode == LIB_TRACK_END_CYCLE_TO_FIRST)))
+            {
+                LibFloatCurveTrackKey* entries = key_array;
+                curve_segment.set_endpoints(&first->value, &first->out_tangent, &entries[0].value, &entries[0].in_tangent, first->key, entries[upper].key);
+            }
+            else if (lower < upper)
+            {
+                LibFloatCurveTrackKey* second = key_array + upper;
+                curve_segment.set_endpoints(&first->value, &first->out_tangent, &second->value, &second->in_tangent, first->key, second->key);
+            }
+            else
+            {
+                LibFloatCurveTrackKey* second = key_array + last;
+                curve_segment.set_endpoints(&first->value, &first->out_tangent, &second->value, &second->in_tangent, first->key, second->key);
+            }
+        }
+
+        result = curve_segment.interpolate(wrapped_key);
+
+        if (state.cycle_count && ((state.before_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+            (state.after_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0)))
+        {
+            float delta = key_array[state.key_count - 1].value - key_array[0].value;
+            result += delta * state.cycle_count;
+        }
+    }
+    else if (wrapped_key < key)
+    {
+        s32 count = state.key_count;
+        LibFloatCurveTrackKey* entries = key_array;
+        LibFloatCurveTrackKey* last_entry = entries + (count - 1);
+        LibFloatCurveTrackKey* previous_entry = entries + (count - 2);
+        float last_key = last_entry->key;
+        float previous_key = previous_entry->key;
+        float slope = entries[count - 1].in_tangent / (last_key - previous_key);
+        result = entries[count - 1].value + slope * (key - last_key);
+    }
+    else
+    {
+        LibFloatCurveTrackKey* entries = key_array;
+        float first_key = entries[0].key;
+        result = entries[0].value + (entries[0].out_tangent / (entries[1].key - first_key)) * (key - first_key);
+    }
+
+    value_rate = g_inverse_frame_ticks * (result - last_value);
+    last_value = result;
+    return result;
+}
+
+#define LIB_TRACKS_EMIT_DTOR_FLOAT_CURVE_TRACK
+
+/**
+ * @brief Append a keyframe, with zero for a missing tangent.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent, or null for zero.
+ * @param out_tangent Outgoing tangent, or null for zero.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatCurveTrack::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    float in_value;
+    float out_value;
+    out_value = (out_tangent == 0) ? 0.0f : *static_cast<const float*>(out_tangent);
+    out_tangent = &out_value;
+    in_value = (in_tangent == 0) ? 0.0f : *static_cast<const float*>(in_tangent);
+    in_tangent = &in_value;
+    return append_curve_key(static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent), key);
+}
+
+/**
+ * @brief Replace a keyframe, with zero for a missing tangent.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent, or null for zero.
+ * @param out_tangent Outgoing tangent, or null for zero.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatCurveTrack::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    float in_value;
+    float out_value;
+    out_value = (out_tangent == 0) ? 0.0f : *static_cast<const float*>(out_tangent);
+    out_tangent = &out_value;
+    in_value = (in_tangent == 0) ? 0.0f : *static_cast<const float*>(in_tangent);
+    in_tangent = &in_value;
+    return replace_curve_key(index, key, static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent));
+}
+
+/**
+ * @brief Insert a keyframe, with zero for a missing tangent.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent, or null for zero.
+ * @param out_tangent Outgoing tangent, or null for zero.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatCurveTrack::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    float in_value;
+    float out_value;
+    out_value = (out_tangent == 0) ? 0.0f : *static_cast<const float*>(out_tangent);
+    out_tangent = &out_value;
+    in_value = (in_tangent == 0) ? 0.0f : *static_cast<const float*>(in_tangent);
+    in_tangent = &in_value;
+    return insert_curve_key(index, key, static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent));
+}
+
+/**
+ * @brief Store the single keyframe, with zero for a missing tangent.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent, or null for zero.
+ * @param out_tangent Outgoing tangent, or null for zero.
+ * @param key Sort key.
+ */
+void LibFloatCurveTrack::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    float in_value;
+    float out_value;
+    out_value = (out_tangent == 0) ? 0.0f : *static_cast<const float*>(out_tangent);
+    out_tangent = &out_value;
+    in_value = (in_tangent == 0) ? 0.0f : *static_cast<const float*>(in_tangent);
+    in_tangent = &in_value;
+    set_single_curve_key(static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent), key);
+}
+
+/**
+ * @brief Read an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Receives the sort key.
+ * @param value Receives the value.
+ * @param first Receives the incoming tangent.
+ * @param second Receives the outgoing tangent.
+ * @return One when the index is within the capacity, otherwise zero.
+ */
+s32 LibFloatCurveTrack::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (!key_array)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    if (key)
+    {
+        *key = key_array[index].key;
+    }
+
+    if (value)
+    {
+        *static_cast<float*>(value) = key_array[index].value;
+    }
+
+    if (first)
+    {
+        *static_cast<float*>(first) = key_array[index].in_tangent;
+    }
+
+    if (second)
+    {
+        *static_cast<float*>(second) = key_array[index].out_tangent;
+    }
+
+    return 1;
+}
+
+/** @brief Reset to a single zero keyframe at key zero. */
+void LibFloatCurveTrack::reset_keys()
+{
+    float zero = 0.0f;
+    set_single_key(&zero, &zero, &zero, 0.0f);
+}
 
 void func_004AFF60(const void* object, float* value)
 {
@@ -482,19 +1274,248 @@ void func_004AFF70(const void* object, float* output)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AFFA0);
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float LibQuaternionTrackBase::update_cycle_count(float key)
+{
+    float first = key_array[0].get_key();
+    float quotient = (key - first) / state.span;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B00A0);
+    if (key < first)
+    {
+        quotient -= 1.0f;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0210);
+    state.cycle_count = quotient;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B02F0);
+    if (state.cycle_count)
+    {
+        float result = key - (float)state.cycle_count * state.span;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0450);
+        if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
+        {
+            s32 last_index = state.key_count - 1;
+            LibQuaternionTrackKey* last_entry = key_array + last_index;
+            float last = last_entry->get_key();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B04C0);
+            if (state.cycle_count & 1)
+            {
+                result = first + (last - result);
+            }
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0550);
+        return result;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
+ */
+u8 LibQuaternionTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
+
+    if (state.extends_segment)
+    {
+        if (state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            state.search_index = 0;
+            return 1;
+        }
+
+        if (state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
+        {
+            *lower = state.key_count - 2;
+            *upper = state.key_count - 1;
+            state.search_index = state.key_count - 2;
+            return 1;
+        }
+    }
+
+    index = state.search_index;
+    count = state.key_count;
+
+    while (index > 0 && key < key_array[index].get_key())
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < key_array[next].get_key()))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    state.search_index = index;
+    return 0;
+}
+
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float LibFloatQuaternionTrackBase::update_cycle_count(float key)
+{
+    float first = key_array[0].key;
+    float quotient = (key - first) / state.span;
+
+    if (key < first)
+    {
+        quotient -= 1.0f;
+    }
+
+    state.cycle_count = quotient;
+
+    if (state.cycle_count)
+    {
+        float result = key - (float)state.cycle_count * state.span;
+
+        if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
+        {
+            s32 last_index = state.key_count - 1;
+            LibFloatQuaternionTrackKey* last_entry = key_array + last_index;
+            float last = last_entry->key;
+
+            if (state.cycle_count & 1)
+            {
+                result = first + (last - result);
+            }
+        }
+
+        return result;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
+ */
+u8 LibFloatQuaternionTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
+
+    if (state.extends_segment)
+    {
+        if (state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            state.search_index = 0;
+            return 1;
+        }
+
+        if (state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
+        {
+            *lower = state.key_count - 2;
+            *upper = state.key_count - 1;
+            state.search_index = state.key_count - 2;
+            return 1;
+        }
+    }
+
+    index = state.search_index;
+    count = state.key_count;
+
+    while (index > 0 && key < key_array[index].key)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < key_array[next].key))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    state.search_index = index;
+    return 0;
+}
+
+/** @brief Free the keys, then destroy the track. */
+LibFloatQuaternionTrackBase::~LibFloatQuaternionTrackBase()
+{
+    free_keys();
+}
+
+/**
+ * @brief Reset array storage, counts, packed controls, and cached indices.
+ */
+void LibFloatQuaternionTrackBase::reset_state()
+{
+    key_array = 0;
+    state.before_mode = LIB_TRACK_END_CYCLE;
+    state.after_mode = LIB_TRACK_END_CYCLE;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.search_index = -1;
+    state.cycle_count = 0;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.extends_segment = 0;
+    state.external_keys = 0;
+}
+
+/**
+ * @brief Bind an external keyframe array and cache its first-to-last key span.
+ * @param count Keyframe count.
+ * @param keys External keyframe storage.
+ */
+void LibFloatQuaternionTrackBase::bind_keys(s32 count, void* keys)
+{
+    s32 last_index = count - 1;
+    LibFloatQuaternionTrackKey* last;
+    state.external_keys = 1;
+    key_array = static_cast<LibFloatQuaternionTrackKey*>(keys);
+    state.key_capacity = count;
+    state.key_count = count;
+    last = key_array + last_index;
+    state.span = last->key - key_array[0].key;
+}
 
 /** Set the high packed mode at 0x42 and record whether either mode equals four. */
 void func_004B05A0(void* object, u8 mode)
@@ -590,9 +1611,45 @@ float func_004B06E0(void* object)
     return last - first;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0730);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the value.
+ */
+void LibFloatQuaternionTrackBase::evaluate(float key, void* output)
+{
+    *static_cast<FieldVec4B*>(output) = sample(key);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0780);
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float LibFloatQuaternionTrackBase::wrap_key(float key) const
+{
+    s32 last_index = state.key_count - 1;
+    LibFloatQuaternionTrackKey* entries = key_array;
+    LibFloatQuaternionTrackKey* last = entries + last_index;
+    float first = entries[0].key;
+    float span = last->key - first;
+    float quotient = (key - first) / span;
+    s32 periods;
+
+    if (quotient < 0.0f)
+    {
+        quotient -= 1.0f;
+    }
+
+    periods = quotient;
+
+    if (periods != 0)
+    {
+        return key - (float)periods * span;
+    }
+
+    return key;
+}
 
 /** Return the word at receiver offset 0x4. */
 u32 func_004B0810(const void* object)
@@ -601,19 +1658,171 @@ u32 func_004B0810(const void* object)
     return receiver->unk04;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0820);
+/** @brief Delete the key storage unless it is external, and clear the key pointer. */
+void LibFloatQuaternionTrackBase::free_keys()
+{
+    if (!state.external_keys)
+    {
+        delete[] key_array;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0870);
+    key_array = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0950);
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float LibFloatCurveTrackBase::update_cycle_count(float key)
+{
+    float first = key_array[0].key;
+    float quotient = (key - first) / state.span;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0AB0);
+    if (key < first)
+    {
+        quotient -= 1.0f;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0B20);
+    state.cycle_count = quotient;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0BB0);
+    if (state.cycle_count)
+    {
+        float result = key - (float)state.cycle_count * state.span;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0C50);
+        if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
+        {
+            s32 last_index = state.key_count - 1;
+            LibFloatCurveTrackKey* last_entry = key_array + last_index;
+            float last = last_entry->key;
+
+            if (state.cycle_count & 1)
+            {
+                result = first + (last - result);
+            }
+        }
+
+        return result;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
+ */
+u8 LibFloatCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
+
+    if (state.extends_segment)
+    {
+        if (state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            state.search_index = 0;
+            return 1;
+        }
+
+        if (state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
+        {
+            *lower = state.key_count - 2;
+            *upper = state.key_count - 1;
+            state.search_index = state.key_count - 2;
+            return 1;
+        }
+    }
+
+    index = state.search_index;
+    count = state.key_count;
+
+    while (index > 0 && key < key_array[index].key)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < key_array[next].key))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    state.search_index = index;
+    return 0;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", __dt__22LibFloatCurveTrackBaseFv);
+
+/**
+ * @brief Reset array storage, counts, packed controls, and cached indices.
+ */
+void LibFloatCurveTrackBase::reset_state()
+{
+    key_array = 0;
+    state.before_mode = LIB_TRACK_END_CYCLE;
+    state.after_mode = LIB_TRACK_END_CYCLE;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.search_index = -1;
+    state.cycle_count = 0;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.extends_segment = 0;
+    state.external_keys = 0;
+}
+
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param count Requested keyframe count.
+ */
+void LibFloatCurveTrackBase::allocate_keys(s32 count)
+{
+    state.external_keys = 0;
+    delete[] key_array;
+    key_array = new (0) LibFloatCurveTrackKey[count];
+    state.key_capacity = count;
+
+    if (!key_array)
+    {
+        state.key_capacity = 0;
+    }
+}
+
+/**
+ * @brief Bind an external keyframe array and cache its first-to-last key span.
+ * @param count Keyframe count.
+ * @param keys External keyframe storage.
+ */
+void LibFloatCurveTrackBase::bind_keys(s32 count, void* keys)
+{
+    s32 last_index = count - 1;
+    LibFloatCurveTrackKey* last;
+    state.external_keys = 1;
+    key_array = static_cast<LibFloatCurveTrackKey*>(keys);
+    state.key_capacity = count;
+    state.key_count = count;
+    last = key_array + last_index;
+    state.span = last->key - key_array[0].key;
+}
 
 /** Set the low packed mode at 0x2A and record whether either mode equals four. */
 void func_004B0CA0(void* object, u8 mode)
@@ -718,9 +1927,45 @@ float func_004B0E30(void* object)
     return last - first;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0E80);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the value.
+ */
+void LibFloatCurveTrackBase::evaluate(float key, void* output)
+{
+    *static_cast<float*>(output) = sample(key);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0EB0);
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float LibFloatCurveTrackBase::wrap_key(float key) const
+{
+    s32 last_index = state.key_count - 1;
+    LibFloatCurveTrackKey* entries = key_array;
+    LibFloatCurveTrackKey* last = entries + last_index;
+    float first = entries[0].key;
+    float span = last->key - first;
+    float quotient = (key - first) / span;
+    s32 periods;
+
+    if (quotient < 0.0f)
+    {
+        quotient -= 1.0f;
+    }
+
+    periods = quotient;
+
+    if (periods != 0)
+    {
+        return key - (float)periods * span;
+    }
+
+    return key;
+}
 
 /** Return the word at receiver offset 0x4. */
 u32 func_004B0F40(const void* object)
@@ -729,54 +1974,407 @@ u32 func_004B0F40(const void* object)
     return receiver->unk04;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0F50);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0FA0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B0FF0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1040);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B10A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1100);
-
-void* func_004B11B0(void* value)
+/** @brief Delete the key storage unless it is external, and clear the key pointer. */
+void LibFloatCurveTrackBase::free_keys()
 {
-    return value;
+    if (!state.external_keys)
+    {
+        delete[] key_array;
+    }
+
+    key_array = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B11C0);
+/**
+ * @brief Mark a track's pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void float_curve_track_pool_free(LibTrackPool<LibPooledFloatCurveTrack>* pool, LibPooledFloatCurveTrack* track)
+{
+    pool->free(track);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1240);
+/**
+ * @brief Mark a track's pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void float_quaternion_track_pool_free(LibTrackPool<LibPooledFloatQuaternionTrack>* pool, LibPooledFloatQuaternionTrack* track)
+{
+    pool->free(track);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1360);
+/**
+ * @brief Find the value stored with the first exactly equal scalar key.
+ * @param key Scalar key to find.
+ * @return The first matching value, or zero when the key is absent.
+ */
+float LibFloatCurveTrackBase::find_key_value(float key)
+{
+    s32 index;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1400);
+    for (index = 0; index < state.key_count; index++)
+    {
+        if (key == key_array[index].key)
+        {
+            LibFloatCurveTrackKey* entry = key_array + index;
+            return entry->value;
+        }
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B14C0);
+    return 0.0f;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B14F0);
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A LibFloatQuaternionTrackBase::find_key_value(float key)
+{
+    s32 index;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1520);
+    for (index = 0; index < state.key_count; index++)
+    {
+        if (key == key_array[index].key)
+        {
+            LibFloatQuaternionTrackKey* entry = key_array + index;
+            return *reinterpret_cast<const FieldVec4A*>(&entry->value);
+        }
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1550);
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1580);
+/**
+ * @brief Allocate storage for a number of keyframes, dropping any keys the track owned.
+ * @param count Keyframes to hold.
+ */
+void LibFloatQuaternionTrackBase::allocate_keys(s32 count)
+{
+    state.external_keys = 0;
+    delete[] key_array;
+    key_array = new (0) LibFloatQuaternionTrackKey[count];
+    state.key_capacity = count;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B15B0);
+    if (!key_array)
+    {
+        state.key_capacity = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B15E0);
+/** @brief Leave the keyframe uninitialized. */
+LibFloatQuaternionTrackKey::LibFloatQuaternionTrackKey()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1610);
+/**
+ * @brief Store a single entry in the cached entry.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Sort value.
+ */
+void LibFloatCurveTrack::set_single_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
+{
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    single_key.value = *value;
+    single_key.in_tangent = *in_tangent;
+    single_key.out_tangent = *out_tangent;
+    single_key.key = key;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1640);
+/**
+ * @brief Insert three values and their key before an existing entry.
+ * @param index Nonnegative insertion index, less than the current entry count.
+ * @param key Key associated with the inserted entry.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return One if inserted, or zero if storage, index, or remaining capacity is invalid.
+ */
+s32 LibFloatCurveTrack::insert_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
+{
+    s32 cursor;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B16C0);
+    if (!key_array)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1720);
+    if (index >= state.key_count)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1790);
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (cursor = state.key_count; cursor > index; cursor--)
+    {
+        LibFloatCurveTrackKey* destination = &key_array[cursor];
+        LibFloatCurveTrackKey* source = &key_array[cursor - 1];
+        destination->key = source->key;
+        destination->value = source->value;
+        destination->in_tangent = source->in_tangent;
+        destination->out_tangent = source->out_tangent;
+    }
+
+    key_array[index].value = *value;
+    key_array[index].in_tangent = *in_tangent;
+    key_array[index].out_tangent = *out_tangent;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Replace an indexed three-value entry and update the span for the last entry.
+ * @param index Nonnegative entry index, checked against capacity.
+ * @param key Key associated with the entry.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return One if stored, or zero if storage is absent or the index is outside capacity.
+ */
+s32 LibFloatCurveTrack::replace_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
+{
+    if (!key_array)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[index].value = *value;
+    key_array[index].in_tangent = *in_tangent;
+    key_array[index].out_tangent = *out_tangent;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Append three values and their key, updating the span and entry count.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key associated with the new entry.
+ * @return One if appended, or zero if storage is absent or capacity is exhausted.
+ */
+s32 LibFloatCurveTrack::append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
+{
+    if (!key_array)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[state.key_count].value = *value;
+    key_array[state.key_count].in_tangent = *in_tangent;
+    key_array[state.key_count].out_tangent = *out_tangent;
+    key_array[state.key_count].key = key;
+    state.span = key - key_array[0].key;
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Append a keyframe through on_append_key.
+ * @param value Keyframe value.
+ * @param in_tangent First auxiliary value.
+ * @param out_tangent Second auxiliary value.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatQuaternionTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    return on_append_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
+}
+
+/**
+ * @brief Replace a keyframe through on_replace_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent First auxiliary value.
+ * @param out_tangent Second auxiliary value.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatQuaternionTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_replace_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
+}
+
+/**
+ * @brief Insert a keyframe through on_insert_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent First auxiliary value.
+ * @param out_tangent Second auxiliary value.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatQuaternionTrackBase::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_insert_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
+}
+
+/**
+ * @brief Store a single keyframe through on_set_single_key.
+ * @param value Keyframe value.
+ * @param in_tangent First auxiliary value.
+ * @param out_tangent Second auxiliary value.
+ * @param key Sort key.
+ */
+void LibFloatQuaternionTrackBase::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    on_set_single_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
+}
+
+/**
+ * @brief Append a keyframe through on_append_key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatCurveTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    return on_append_key(static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent), key);
+}
+
+/**
+ * @brief Replace a keyframe through on_replace_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatCurveTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_replace_key(index, key, static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent));
+}
+
+/**
+ * @brief Insert a keyframe through on_insert_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatCurveTrackBase::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_insert_key(index, key, static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent));
+}
+
+/**
+ * @brief Store a single keyframe through on_set_single_key.
+ * @param value Keyframe value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ * @param key Sort key.
+ */
+void LibFloatCurveTrackBase::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    on_set_single_key(static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent), key);
+}
+
+/**
+ * @brief Evaluate the segment at a key.
+ * @param key Evaluation key.
+ * @return Value at the key.
+ */
+FieldVec4B LibVectorSegment::interpolate(float key) const
+{
+    FieldVec4B result;
+
+    get_weights(key, g_vector_segment_weights);
+    vu0_blend_four(g_vector_segment_weights, &start_value, &start_tangent);
+    vu0_store_vf12(&result);
+    return result;
+}
+
+/**
+ * @brief Evaluate the segment at a key.
+ * @param key Evaluation key.
+ * @return Value at the key.
+ */
+float LibFloatSegment::interpolate(float key) const
+{
+    float weights[4];
+
+    get_weights(key, weights);
+    return weights[0] * start_value + weights[1] * end_value + weights[2] * start_tangent + weights[3] * end_tangent;
+}
+
+/**
+ * @brief Compute the Hermite basis weights at a key.
+ * @param key Evaluation key.
+ * @param weights Receives the start value, end value, start tangent and end tangent weights.
+ */
+void LibVectorSegment::get_weights(float key, float* weights) const
+{
+    float t = (key - start_key) / key_span;
+    float rise = 1.0f + 2.0f * t;
+    float fall = 3.0f - 2.0f * t;
+    float before_squared = (1.0f - t) * (1.0f - t);
+    float after = t - 1.0f;
+    float after_squared = after * after;
+    float squared = t * t;
+
+    weights[0] = after_squared * rise;
+    weights[1] = squared * fall;
+    weights[2] = before_squared * t;
+    weights[3] = after * squared;
+}
+
+/**
+ * @brief Compute the Hermite basis weights at a key.
+ * @param key Evaluation key.
+ * @param weights Receives the start value, end value, start tangent and end tangent weights.
+ */
+void LibFloatSegment::get_weights(float key, float* weights) const
+{
+    float t = (key - start_key) / key_span;
+    float rise = 1.0f + 2.0f * t;
+    float fall = 3.0f - 2.0f * t;
+    float before_squared = (1.0f - t) * (1.0f - t);
+    float after = t - 1.0f;
+    float after_squared = after * after;
+    float squared = t * t;
+
+    weights[0] = after_squared * rise;
+    weights[1] = squared * fall;
+    weights[2] = before_squared * t;
+    weights[3] = after * squared;
+}
 
 typedef struct LibResetWrapperState004B1800
 {
@@ -790,7 +2388,7 @@ void func_004B1800(void* object)
     LibResetWrapperState004B1800* receiver = (LibResetWrapperState004B1800*)object;
     receiver->unkB0 = 0;
     receiver->unkB4 = 0;
-    func_004AC770(object);
+    static_cast<LibClass177B50*>(object)->LibClass177B50::reset_state();
 }
 
 void func_004B1820(const void* object, float* value)
@@ -798,15 +2396,32 @@ void func_004B1820(const void* object, float* value)
     *value = *(const float*)((const u8*)object + 0xB8);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1830);
+/** @brief Give the track back to its pool when it came from one, otherwise delete it. */
+void LibClass177EE0::release()
+{
+    if (this != 0)
+    {
+        if (state.pooled)
+        {
+            return_to_pool();
+        }
+        else
+        {
+            delete this;
+        }
+    }
+}
 
 void func_004B1890(void* object)
 {
-    func_004ACAF0(object);
-    func_004B2B80(g_track_1718C0_pool, object);
+    static_cast<LibClass177B50*>(object)->free_keys();
+    track_1718C0_pool_free(g_track_1718C0_pool, static_cast<LibClass177EE0*>(object));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B18C0);
+/** @brief Destroy the track. */
+LibClass177EE0::~LibClass177EE0()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1930);
 
@@ -814,36 +2429,67 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B1A50);
 
 void func_004B24A0(void* object, float value1, float value2)
 {
-    func_004B2EB0(object, &value2, value1);
+    static_cast<LibFloatKeyTrack*>(object)->LibFloatKeyTrack::on_set_single_key(&value2, value1);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B24C0);
+/**
+ * @brief Insert a keyframe.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ */
+void LibPooledFloatTrack::insert_float_key(s32 index, float key, float value)
+{
+    LibFloatKeyTrack::on_insert_key(index, key, &value);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B24E0);
+/**
+ * @brief Replace a keyframe.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ */
+void LibPooledFloatTrack::replace_float_key(s32 index, float key, float value)
+{
+    LibFloatKeyTrack::on_replace_key(index, key, &value);
+}
 
 void func_004B2500(void* object, float value1, float value2)
 {
-    func_004B3120(object, &value2, value1);
+    static_cast<LibFloatKeyTrack*>(object)->LibFloatKeyTrack::on_append_key(&value2, value1);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2520);
+/** @brief Give the track back to its pool when it came from one, otherwise delete it. */
+void LibPooledFloatTrack::release()
+{
+    if (this != 0)
+    {
+        if (state.pooled)
+        {
+            return_to_pool();
+        }
+        else
+        {
+            delete this;
+        }
+    }
+}
 
 void func_004B2580(void* object)
 {
-    func_004B2AE0(object);
-    func_004B2B30(g_float_track_pool, object);
+    static_cast<LibFloatTrackBase*>(object)->free_keys();
+    float_track_pool_free(g_float_track_pool, static_cast<LibPooledFloatTrack*>(object));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B25B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2630);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2690);
+/** @brief Destroy the track. */
+LibPooledFloatTrack::~LibPooledFloatTrack()
+{
+}
 
 void func_004B2700(void* object)
 {
     ((ClearForwardWordOwnertext_004AB8B0*)object)->unk48 = 0;
-    func_004B2870(object);
+    static_cast<LibFloatTrackBase*>(object)->LibFloatTrackBase::reset_state();
 }
 
 void func_004B2720(const void* object, float* output)
@@ -862,22 +2508,72 @@ void func_004B2750(const void* object, float* value)
     *value = *(const float*)((const u8*)object + 0x4C);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2760);
-
-void func_004B27E0(void* object)
+/**
+ * @brief Store a value and key in the two-entry history and count it, up to two.
+ * @param value Value to store.
+ * @param key Key to store.
+ */
+void LibSlerpQuaternionHistory::push_sample(const FieldVec4A* value, float key)
 {
-    u8* bytes = (u8*)object;
-    *(u16*)(bytes + 0x10) = 0;
-    *(u16*)(bytes + 0x12) = 0;
-    *(u32*)(bytes + 0x14) = 0;
-    *(u32*)(bytes + 0x18) = 0;
+    values[next_index] = *value;
+    keys[next_index] = key;
+
+    if (++next_index >= 2)
+    {
+        next_index = 0;
+    }
+
+    if (++sample_count > 2)
+    {
+        sample_count = 2;
+    }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2800);
+/** @brief Forget the stored samples. */
+void LibSlerpQuaternionHistory::reset()
+{
+    sample_count = 0;
+    next_index = 0;
+    unk14 = 0;
+    unk18 = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2870);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", __dt__17LibFloatTrackBaseFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2900);
+/**
+ * @brief Reset float-entry storage, counts, control fields, and cached indices.
+ */
+void LibFloatTrackBase::reset_state()
+{
+    key_array = 0;
+    state.before_mode = LIB_TRACK_END_CYCLE;
+    state.after_mode = LIB_TRACK_END_CYCLE;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.search_index = -1;
+    state.cycle_count = 0;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.extends_segment = 0;
+    state.external_keys = 0;
+}
+
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param count Requested keyframe count.
+ */
+void LibFloatTrackBase::allocate_keys(s32 count)
+{
+    state.external_keys = 0;
+    delete[] key_array;
+    key_array = new (0) LibFloatTrackKey[count];
+    state.key_capacity = count;
+
+    if (!key_array)
+    {
+        state.key_capacity = 0;
+    }
+}
 
 /** Set the low packed mode at 0x22 and record whether either mode equals four. */
 void func_004B29A0(void* object, u8 mode)
@@ -926,7 +2622,15 @@ float func_004B2A90(void* object)
     return 0.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2AA0);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the value.
+ */
+void LibFloatTrackBase::evaluate(float key, void* output)
+{
+    *static_cast<float*>(output) = sample(key);
+}
 
 /** Return the word at receiver offset 0x4. */
 u32 func_004B2AD0(const void* object)
@@ -935,15 +2639,85 @@ u32 func_004B2AD0(const void* object)
     return receiver->unk04;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2AE0);
+/** @brief Delete the key storage unless it is external, and clear the key pointer. */
+void LibFloatTrackBase::free_keys()
+{
+    if (!state.external_keys)
+    {
+        delete[] key_array;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2B30);
+    key_array = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2B80);
+/**
+ * @brief Mark a track's pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void float_track_pool_free(LibTrackPool<LibPooledFloatTrack>* pool, LibPooledFloatTrack* track)
+{
+    pool->free(track);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2BD0);
+/**
+ * @brief Mark a track's pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void track_1718C0_pool_free(LibTrackPool<LibClass177EE0>* pool, LibClass177EE0* track)
+{
+    pool->free(track);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2C60);
+/**
+ * @brief Wrap a key by the span between the first and last entries.
+ * @param key Key to wrap using truncation after adjusting negative positions.
+ * @return Key with the computed whole spans subtracted.
+ */
+float LibFloatTrackBase::wrap_key(float key) const
+{
+    s32 last_index = state.key_count - 1;
+    float first = key_array[0].key;
+    float span = key_array[last_index].key - first;
+    float position = (key - first) / span;
+    s32 cycles;
+
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+
+    cycles = (s32)position;
+
+    if (cycles != 0)
+    {
+        return key - cycles * span;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Read the value associated with the first exactly equal key.
+ * @param key Key to find.
+ * @return Associated value, or zero when no key matches.
+ */
+float LibFloatTrackBase::find_key_value(float key)
+{
+    s32 index;
+
+    for (index = 0; index < state.key_count; index++)
+    {
+        if (key == key_array[index].key)
+        {
+            LibFloatTrackKey* entry = key_array + index;
+            return entry->value;
+        }
+    }
+
+    return 0.0f;
+}
 
 /** Return the key span between the first and last entries. */
 float func_004B2CC0(void* object)
@@ -982,81 +2756,660 @@ s32 func_004B2D10(void* object, float key)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2D60);
+/**
+ * @brief Store a single keyframe through on_set_single_key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @param key Sort key.
+ */
+void LibFloatTrackBase::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    on_set_single_key(static_cast<const float*>(value), key);
+}
 
 void func_004B2D90(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2DA0);
+/**
+ * @brief Insert a keyframe through on_insert_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatTrackBase::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_insert_key(index, key, static_cast<const float*>(value));
+}
 
 s32 func_004B2DD0(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2DE0);
+/**
+ * @brief Replace a keyframe through on_replace_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_replace_key(index, key, static_cast<const float*>(value));
+}
 
 s32 func_004B2E10(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2E20);
+/**
+ * @brief Append a keyframe through on_append_key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibFloatTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    return on_append_key(static_cast<const float*>(value), key);
+}
 
 s32 func_004B2E50(void* object)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2E60);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2EB0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2F10);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B2F90);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3090);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3120);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B31B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3200);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B35A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3680);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B37E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3890);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B38C0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3A00);
-
-void func_004B3A70(void* object, float value1, float value2)
+/**
+ * @brief Bind an external keyframe array and cache its first-to-last key span.
+ * @param count Keyframe count.
+ * @param keys External keyframe storage.
+ */
+void LibFloatTrackBase::bind_keys(s32 count, void* keys)
 {
-    func_004B3C30(object, &value2, value1);
+    s32 last_index = count - 1;
+    state.external_keys = 1;
+    key_array = static_cast<LibFloatTrackKey*>(keys);
+    state.key_capacity = count;
+    state.key_count = count;
+    state.span = key_array[last_index].key - key_array[0].key;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3A90);
+#define LIB_TRACKS_EMIT_DTOR_FLOAT_KEY_TRACK
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3B20);
+/**
+ * @brief Store a single keyframe in the cached key and value.
+ * @param value Keyframe value.
+ * @param key Sort key.
+ */
+void LibFloatKeyTrack::on_set_single_key(const float* value, float key)
+{
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    single_key.value = *value;
+    single_key.key = key;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3BA0);
+#define LIB_TRACKS_EMIT_DTOR_FLOAT_KEY_TRACK
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3C30);
+/**
+ * @brief Read an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Receives the sort key.
+ * @param value Receives the value.
+ * @param first Unused; float keys have no auxiliary values.
+ * @param second Unused; float keys have no auxiliary values.
+ * @return One when the index is within the capacity, otherwise zero.
+ */
+s32 LibFloatKeyTrack::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3CB0);
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
 
-void func_004B3D40(void* object)
+    if (key != 0)
+    {
+        *key = key_array[index].key;
+    }
+
+    if (value != 0)
+    {
+        *static_cast<float*>(value) = key_array[index].value;
+    }
+
+    return 1;
+}
+
+#define LIB_TRACKS_EMIT_DTOR_FLOAT_KEY_TRACK
+
+/**
+ * @brief Insert a float entry before an existing index and shift following entries.
+ * @param index Nonnegative index less than the current count.
+ * @param key Key associated with the entry.
+ * @param value Entry value to copy.
+ * @return One if inserted, or zero if storage is absent, full, or the index is too large.
+ */
+s32 LibFloatKeyTrack::on_insert_key(s32 index, float key, const float* value)
+{
+    s32 cursor;
+
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_count)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (cursor = state.key_count; cursor > index; cursor--)
+    {
+        LibFloatTrackKey* destination = &key_array[cursor];
+        LibFloatTrackKey* source = &key_array[cursor - 1];
+        destination->key = source->key;
+        destination->value = source->value;
+    }
+
+    key_array[index].value = *value;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
+
+#define LIB_TRACKS_EMIT_DTOR_FLOAT_KEY_TRACK
+
+/**
+ * @brief Replace an indexed float entry and update the span when it is the last entry.
+ * @param index Nonnegative entry index, checked against capacity.
+ * @param key Key associated with the entry.
+ * @param value Entry value to copy.
+ * @return One if stored, or zero if storage is absent or the index is outside capacity.
+ */
+s32 LibFloatKeyTrack::on_replace_key(s32 index, float key, const float* value)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[index].value = *value;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    return 1;
+}
+
+#define LIB_TRACKS_EMIT_DTOR_FLOAT_KEY_TRACK
+
+/**
+ * @brief Append a float entry and update the cached key span.
+ * @param value Entry value to copy.
+ * @param key Key associated with the entry.
+ * @return One if appended, or zero if storage is absent or full.
+ */
+s32 LibFloatKeyTrack::on_append_key(const float* value, float key)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    key_array[state.key_count].value = *value;
+    key_array[state.key_count].key = key;
+    state.span = key - key_array[0].key;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
+
+#define LIB_TRACKS_EMIT_DTOR_FLOAT_TRACK
+#define LIB_TRACKS_EMIT_DTOR_FLOAT_KEY_TRACK
+
+/** @brief Reset to a single zero keyframe at key zero, then select the cycle end mode. */
+void LibFloatTrack::reset_keys()
+{
+    float zero = 0.0f;
+    on_set_single_key(&zero, 0.0f);
+    set_before_mode(LIB_TRACK_END_CYCLE);
+}
+
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @return Evaluated value.
+ */
+float LibFloatTrack::sample(float key)
+{
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    float result;
+    u8 extrapolate;
+
+    if (!key_array || !state.key_count)
+    {
+        return 0.0f;
+    }
+
+    if (state.search_index >= state.key_capacity)
+    {
+        state.search_index = 0;
+    }
+
+    if (state.key_count == 1 && (!(key < key_array[0].key) || state.before_mode != LIB_TRACK_END_USE_PRE_START_KEY))
+    {
+        return key_array[0].value;
+    }
+
+    if (key < key_array[0].key && state.before_mode == LIB_TRACK_END_USE_PRE_START_KEY)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = update_cycle_count(key);
+
+        if (state.before_mode == LIB_TRACK_END_HOLD && state.cycle_count < 0)
+        {
+            return key_array[0].value;
+        }
+
+        if (state.after_mode == LIB_TRACK_END_HOLD && state.cycle_count > 0)
+        {
+            return key_array[state.key_count - 1].value;
+        }
+
+        extrapolate = find_surrounding_keys(wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (state.segment_lower != lower || state.segment_upper != upper)
+    {
+        state.segment_lower = lower;
+        state.segment_upper = upper;
+        LibFloatTrackKey* first = lower >= 0 ? key_array + lower : &single_key;
+        sample_history.reset();
+        sample_history.add_sample(first->key, first->value);
+        s32 last = state.key_count - 1;
+        // Keep a separate index for the upper key to preserve register allocation.
+        s32 upper_index = upper;
+
+        if (upper_index == last && ((!(key < key_array[0].key) && state.after_mode == LIB_TRACK_END_CYCLE_TO_FIRST) ||
+            (key < key_array[0].key && state.before_mode == LIB_TRACK_END_CYCLE_TO_FIRST)))
+        {
+            LibFloatTrackKey* entries = key_array;
+            sample_history.add_sample(entries[upper_index].key, entries[0].value);
+        }
+        else if (lower < upper_index)
+        {
+            LibFloatTrackKey* second = key_array + upper_index;
+            sample_history.add_sample(second->key, second->value);
+        }
+        else
+        {
+            sample_history.add_sample(key_array[last].key, key_array[upper_index].value);
+        }
+    }
+
+    result = sample_history.sample(wrapped_key);
+
+    if ((state.before_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+        (state.after_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0))
+    {
+        float delta = key_array[state.key_count - 1].value - key_array[0].value;
+        result += delta * state.cycle_count;
+    }
+
+    value_rate = (result - last_value) / g_frame_ticks;
+    last_value = result;
+    return result;
+}
+
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float LibFloatTrackBase::update_cycle_count(float key)
+{
+    float first = key_array[0].key;
+    float quotient = (key - first) / state.span;
+
+    if (key < first)
+    {
+        quotient -= 1.0f;
+    }
+
+    state.cycle_count = quotient;
+
+    if (state.cycle_count)
+    {
+        float result = key - (float)state.cycle_count * state.span;
+
+        if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
+        {
+            s32 last_index = state.key_count - 1;
+            LibFloatTrackKey* last_entry = key_array + last_index;
+            float last = last_entry->key;
+
+            if (state.cycle_count & 1)
+            {
+                result = first + (last - result);
+            }
+        }
+
+        return result;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
+ */
+u8 LibFloatTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
+
+    if (state.extends_segment)
+    {
+        if (state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            state.search_index = 0;
+            return 1;
+        }
+
+        if (state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
+        {
+            *lower = state.key_count - 2;
+            *upper = state.key_count - 1;
+            state.search_index = state.key_count - 2;
+            return 1;
+        }
+    }
+
+    index = state.search_index;
+    count = state.key_count;
+
+    while (index > 0 && key < key_array[index].key)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < key_array[next].key))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    state.search_index = index;
+    return 0;
+}
+
+/**
+ * @brief Slerp the two stored quaternions at a key and report the blend.
+ * @param key Evaluation key.
+ * @param blend Receives the blend factor when not null.
+ * @return Interpolated quaternion.
+ */
+FieldVec4B LibSlerpQuaternionHistory::sample_with_blend(float key, float* blend)
+{
+    if (!sample_count)
+    {
+        return FieldVec4B(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    s32 lower;
+    s32 upper;
+    float fraction = find_blend(key, &lower, &upper);
+
+    if (blend)
+    {
+        *blend = fraction;
+    }
+
+    FieldVec4B result;
+    lib_quaternion_slerp_async(&result, &values[lower], &values[upper], fraction);
+    return result;
+}
+
+/**
+ * @brief Slerp the two stored quaternions at a key.
+ * @param key Evaluation key.
+ * @return Interpolated quaternion.
+ */
+FieldVec4B LibSlerpQuaternionHistory::sample(float key)
+{
+    return sample_with_blend(key, 0);
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", sample__22LibLinearVectorHistoryFf);
+
+/**
+ * @brief Evaluate the history at a key, blending linearly between its two samples.
+ * @param key Evaluation key.
+ * @return Interpolated value, or zero before any sample.
+ */
+float LibClass178200::sample(float key) const
+{
+    if (!sample_count)
+    {
+        return 0.0f;
+    }
+
+    s32 lower;
+    s32 upper;
+    float blend = find_blend(key, &lower, &upper);
+    return values[lower] + blend * (values[upper] - values[lower]);
+}
+
+/**
+ * @brief Add a key and its value to the record.
+ * @param key Key.
+ * @param value Value at the key.
+ */
+void LibClass178200::add_sample(float key, float value)
+{
+    LibClass178200::push_sample(&value, key);
+}
+
+/**
+ * @brief Find the two stored samples and how far a key lies between them.
+ * @param key Key to place.
+ * @param lower Receives the index of the older sample.
+ * @param upper Receives the index of the newer sample.
+ * @return Blend factor from the older sample to the newer one; zero until both samples are stored.
+ */
+float LibSlerpQuaternionHistory::find_blend(float key, s32* lower, s32* upper) const
+{
+    if (sample_count != 2)
+    {
+        return 0.0f;
+    }
+
+    *lower = next_index;
+    *upper = *lower ^ 1;
+    float span = keys[*upper] - keys[*lower];
+
+    if (span == 0.0f)
+    {
+        return 0.0f;
+    }
+
+    return (key - keys[*lower]) / span;
+}
+
+/**
+ * @brief Store a value and key in the two-entry history and count it, up to two.
+ * @param key Key to store.
+ * @param value Value to store.
+ */
+void LibLinearVectorHistory::push_sample(float key, const FieldVec4A* value)
+{
+    values[next_index] = *value;
+    keys[next_index] = key;
+
+    if (++next_index >= 2)
+    {
+        next_index = 0;
+    }
+
+    if (++sample_count > 2)
+    {
+        sample_count = 2;
+    }
+}
+
+/**
+ * @brief Find the two stored samples and how far a key lies between them.
+ * @param key Key to place.
+ * @param lower Receives the index of the older sample.
+ * @param upper Receives the index of the newer sample.
+ * @return Blend factor from the older sample to the newer one; zero until both samples are stored.
+ */
+float LibLinearVectorHistory::find_blend(float key, s32* lower, s32* upper) const
+{
+    if (sample_count != 2)
+    {
+        return 0.0f;
+    }
+
+    *lower = next_index;
+    *upper = *lower ^ 1;
+    float span = keys[*upper] - keys[*lower];
+
+    if (span == 0.0f)
+    {
+        return 0.0f;
+    }
+
+    return (key - keys[*lower]) / span;
+}
+
+/**
+ * @brief Store a value and key in the two-entry history and count it, up to two.
+ * @param value Value to store.
+ * @param key Key to store.
+ */
+void LibClass178200::push_sample(const float* value, float key)
+{
+    values[next_index] = *value;
+    keys[next_index] = key;
+
+    if (++next_index >= 2)
+    {
+        next_index = 0;
+    }
+
+    if (++sample_count > 2)
+    {
+        sample_count = 2;
+    }
+}
+
+/**
+ * @brief Find the two stored samples and how far a key lies between them.
+ * @param key Key to place.
+ * @param lower Receives the index of the older sample.
+ * @param upper Receives the index of the newer sample.
+ * @return Blend factor from the older sample to the newer one; zero until both samples are stored.
+ */
+float LibClass178200::find_blend(float key, s32* lower, s32* upper) const
+{
+    if (sample_count != 2)
+    {
+        return 0.0f;
+    }
+
+    *lower = next_index;
+    *upper = *lower ^ 1;
+    float span = keys[*upper] - keys[*lower];
+
+    if (span == 0.0f)
+    {
+        return 0.0f;
+    }
+
+    return (key - keys[*lower]) / span;
+}
+
+/** @brief Do nothing; the slot's purpose is unknown. */
+void LibSlerpQuaternionHistory::func_slot08()
 {
 }
 
-void func_004B3D50(void* object)
+/** @brief Do nothing; the slot's purpose is unknown. */
+void LibLinearVectorHistory::func_slot08()
 {
 }
 
@@ -1087,7 +3440,7 @@ extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimati
     if (channel)
     {
         LibVector4 value;
-        channel->func_004C4500(&value);
+        channel->get_end_delta(&value);
         copy_vector(&target->channel_translation, &value);
     }
     else
@@ -1109,7 +3462,7 @@ extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimati
             }
 
             float component;
-            channel->func_004C4500(&component);
+            channel->get_end_delta(&component);
             (&value.x)[i] = component;
             found = 1;
         }
@@ -1125,7 +3478,7 @@ extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimati
     if (channel)
     {
         LibVector4 value;
-        channel->func_004C4500(&value);
+        channel->get_end_delta(&value);
         copy_vector(&target->channel_rotation, &value);
     }
     else
@@ -1147,7 +3500,7 @@ extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimati
             }
 
             float angle;
-            channel->func_004C4500(&angle);
+            channel->get_end_delta(&angle);
             (&angles.x)[i] = angle;
             found = 1;
         }
@@ -1165,7 +3518,7 @@ extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimati
     if (channel)
     {
         LibVector4 value;
-        channel->func_004C4500(&value);
+        channel->get_end_delta(&value);
         copy_vector(&target->channel_scale, &value);
     }
     else
@@ -1187,7 +3540,7 @@ extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimati
             }
 
             float component;
-            channel->func_004C4500(&component);
+            channel->get_end_delta(&component);
             (&value.x)[i] = component;
             found = 1;
         }
@@ -1273,3 +3626,4 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B46E0);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B4840);
 
 }
+

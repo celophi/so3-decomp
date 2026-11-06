@@ -29,7 +29,13 @@ struct LibWidget : public LibListObject
     LibContainer* container;
     LibUiRect16 unk18;
     float draw_alpha;
-    u32 unk2c[2];
+
+    /** Start of the widget's drawing packet. */
+    u64* packet;
+
+    /** DMA tag that ends the drawing packet. */
+    u64* packet_tag;
+
     u32 unk34;
     u8 unk38;
     u8 unk39;

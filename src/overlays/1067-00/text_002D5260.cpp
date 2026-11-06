@@ -549,7 +549,7 @@ void func_002D6AD0(FieldClass15B300* object, u8 value)
 void func_002D6AE0(FieldClass15B300* object, float value)
 {
     object->unkE0 = value;
-    object->unkae = 1;
+    object->geometry_dirty = 1;
 }
 
 /**
@@ -1006,7 +1006,7 @@ void func_002D80E0(FieldClass15B670* object, u8 value)
 void func_002D80F0(FieldClass15B670* object, float value)
 {
     object->unkE0 = value;
-    object->unkae = 1;
+    object->geometry_dirty = 1;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D8100);

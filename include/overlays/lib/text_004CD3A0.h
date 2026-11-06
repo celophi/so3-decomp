@@ -1261,12 +1261,14 @@ void func_4D76C0(void* object, u16 x, u16 y);
 #ifdef __cplusplus
 /**
  * @brief Interpolate along the shorter quaternion arc and normalize the result.
+ *
+ * Same result as lib_quaternion_slerp, but the sines run on the VU0 microprogram while the CPU waits.
  * @param output Aligned destination quaternion; may alias either input.
  * @param first First aligned quaternion.
  * @param second Second aligned quaternion.
  * @param fraction Interpolation fraction.
  */
-void func_004CD3A0(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction);
+void lib_quaternion_slerp_async(FieldVec4B* output, const FieldVec4B* first, const FieldVec4B* second, float fraction);
 
 /**
  * @brief Interpolate along the shorter quaternion arc and normalize the result.

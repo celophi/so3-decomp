@@ -4888,7 +4888,7 @@ void SkillTacticalWindow::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
     selection->ItemCreationClass185050::alpha = 128.0f;
-    selection->unkae = 1;
+    selection->geometry_dirty = 1;
     LibContainer* display = this->attachment->unk10;
     if (display != 0)
     {
@@ -5091,7 +5091,7 @@ void skill_open_tactical_details(SkillTacticalWindow* object)
     skill_select_tactical_detail_mode(window, mode);
     FieldObject23CEA0* selection = object->selection;
     selection->ItemCreationClass185050::alpha = 64.0f;
-    selection->unkae = 1;
+    selection->geometry_dirty = 1;
     LibContainer* display = object->attachment->unk10;
     if (display != 0)
     {
@@ -5530,7 +5530,7 @@ void SkillBattleSetupWindow::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
     selection->ItemCreationClass185050::alpha = 128.0f;
-    selection->unkae = 1;
+    selection->geometry_dirty = 1;
     skill_refresh_battle_selection(this);
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
@@ -7028,7 +7028,7 @@ void SkillSecondarySelection::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
     selection->ItemCreationClass185050::alpha = 128.0f;
-    selection->unkae = 1;
+    selection->geometry_dirty = 1;
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     func_0035AF00(owner, this->code, 1);
     this->state = 0;
@@ -8516,13 +8516,13 @@ void SkillHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
     }
     if (second != 0)
     {
-        unkae = 1;
+        geometry_dirty = 1;
     }
     if (third == 0)
     {
         return;
     }
-    if (unkae != 0)
+    if (geometry_dirty != 0)
     {
         SkillHpMpGaugeDrawer::unk00 = 0xFFFFFE - (SkillHpMpGaugeDrawer::unk04->unka0 << 4);
         func_002BC4F0(0, SkillHpMpGaugeDrawer::unk00, 128.0f);

@@ -2537,7 +2537,7 @@ s32 shop_select_action(void* receiver)
 static inline void set_shop_choice_opacity(FieldObject23CEA0* choice, float opacity)
 {
     choice->ItemCreationClass185050::alpha = opacity;
-    choice->unkae = 1;
+    choice->geometry_dirty = 1;
 }
 /**
  * @brief Update cursor opacity, the selected action, and category text.

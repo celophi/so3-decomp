@@ -30,7 +30,6 @@
 #include "overlays/citemcreation/text_003684D0.h"
 
 // This overlay only has an untyped view of the Lib entry tables these take.
-extern "C" void* func_472EB0(void* table, void* entry);
 
 extern "C" void func_002CEDA0(FieldCountedList* list);
 extern "C" void func_002CEF20(FieldCountedList* list);
@@ -1641,7 +1640,7 @@ void FieldClass15B090::update()
     angles.w = 1.0f;
     lib_direction_angles_xz(&angles, &direction, 0.0f);
     lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&rotation), &angles.x);
-    func_004CD3A0(reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&rotation), 1.0f);
+    lib_quaternion_slerp_async(reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&unk30), reinterpret_cast<FieldVec4B*>(&rotation), 1.0f);
     unk20.y += unka8 * g_frame_ticks;
     unka8 += 0.5f * g_frame_ticks;
 
@@ -1676,7 +1675,7 @@ FieldClass15B090::FieldClass15B090()
     func_00204A10(0xF900);
 
     for (FieldRenderableEntry* entry = static_cast<FieldRenderableEntry*>(lib_find_renderable_entry(static_cast<LibEntryManager*>(unk7c), 0)); entry != 0;
-         entry = static_cast<FieldRenderableEntry*>(func_472EB0(unk7c, entry)))
+         entry = static_cast<FieldRenderableEntry*>(lib_find_next_renderable_entry(static_cast<LibEntryManager*>(unk7c), entry)))
     {
         if (entry->kind == 0x100)
         {

@@ -506,10 +506,11 @@ public:
     /** Next free slot of the vertex position stream. */
     FieldVec4A* positions;
 
-    LibDrawVectorBlock* unk4c_block;
+    /** Block of the vertex normal stream. */
+    LibDrawVectorBlock* normal_block;
 
-    /** Next free slot of the second per-vertex vector stream. */
-    FieldVec4A* unk4c;
+    /** Next free slot of the vertex normal stream. */
+    FieldVec4A* normals;
 
     LibDrawWordBlock* texcoord_block;
 

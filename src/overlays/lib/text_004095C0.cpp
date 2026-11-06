@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/text_0045AD10.h"
+#include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
 #include "main/resident_00101260.h"
 #include "main/resident_00101550.h"
@@ -86,8 +87,6 @@ typedef struct LibCodeWidgetState
     u16 code;
     u8 variation;
 } LibCodeWidgetState;
-extern "C" void func_00464870(void* object, float x, float y, float width, float height);
-extern "C" s32 func_00464900(void* object, s32 first, s32 capacity, s32 second, s32 third);
 
 /** Packed allocation view with the four-bit equipped owner spanning bytes C and D. */
 typedef struct LibAllocationEquipmentView
@@ -573,10 +572,10 @@ void func_00411E20(void* object)
 {
 }
 
-extern "C" void func_00411E30(void* object)
+/** @brief Draw in the bucket stored at unka8. */
+void LibCallbackTransform::set_default_draw_bucket()
 {
-    u8* bytes = (u8*)object;
-    bytes[0x60] = bytes[0xA8];
+    draw_bucket = unka8;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411E40);
@@ -694,10 +693,10 @@ s32 lib_item_code_init_rectangle(LibObject172410* object, float x, float y, floa
     LibCodeWidgetState* state = (LibCodeWidgetState*)object;
     LibRuntimeCodeResources* resources;
     state->flag = flag;
-    func_00464870(object, x, y, width, height);
+    object->set_rectangle(x, y, width, height);
     resources = (LibRuntimeCodeResources*)g_field_runtime;
     state->source = &resources->slots[resources->item_slot];
-    if (!func_00464900(object, 0, 64, 0, 0))
+    if (!object->allocate_storage(0, 64, 0, 0))
     {
         return 0;
     }
@@ -732,10 +731,10 @@ s32 lib_detail_code_init_rectangle(LibObject172440* object, u16 code, u8 variati
     LibCodeWidgetState* state = (LibCodeWidgetState*)object;
     LibRuntimeCodeResources* resources;
     state->flag = flag;
-    func_00464870(object, x, y, width, height);
+    object->set_rectangle(x, y, width, height);
     resources = (LibRuntimeCodeResources*)g_field_runtime;
     state->source = &resources->slots[resources->factor_slot];
-    if (!func_00464900(object, 0, 128, 0, 0))
+    if (!object->allocate_storage(0, 128, 0, 0))
     {
         return 0;
     }

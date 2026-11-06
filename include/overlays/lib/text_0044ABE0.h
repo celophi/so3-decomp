@@ -170,7 +170,9 @@ struct LibSystemSettings
     /** Button mask for the other choice of a two-way prompt. */
     u16 alternate_buttons;
 
-    u16 unk06;
+    /** Fourth button mask; the boot trophy viewer opens the music player with it. */
+    u16 extra_buttons;
+
     u8 unk08[0x1C];
     u8 unk24_low : 2;
     u8 unk24_mid : 2;

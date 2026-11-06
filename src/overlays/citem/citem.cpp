@@ -1136,7 +1136,7 @@ void ItemHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
 
     if (second != 0)
     {
-        unkae = 1;
+        geometry_dirty = 1;
     }
 
     if (third == 0)
@@ -1144,7 +1144,7 @@ void ItemHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
         return;
     }
 
-    if (unkae != 0)
+    if (geometry_dirty != 0)
     {
         ItemHpMpGaugeDrawer::unk00 = 0xFFFFFE - (ItemHpMpGaugeDrawer::unk04->unka0 << 4);
         func_002BC4F0(0, ItemHpMpGaugeDrawer::unk00, 128.0f);

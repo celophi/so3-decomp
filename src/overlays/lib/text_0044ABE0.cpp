@@ -10,6 +10,253 @@
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
+#include "overlays/lib/image_capture.h"
+#include "overlays/lib/vector.h"
+#include "overlays/lib/transform_owner_inlines.h"
+
+class LibCameraContext;
+
+/** Words of each capture's pixel strip. */
+#define LIB_CLASS_1745F0_STRIP_WORDS 64
+
+/** Most captures the object keeps. */
+#define LIB_CLASS_1745F0_CAPTURE_COUNT 5
+
+/** List object that keeps up to five VRAM captures and their positions, with vtable D_1745F0 in main data. */
+class LibClass1745F0 : public LibListObject
+{
+public:
+    /**
+     * @brief Set up the capture positions and one capture.
+     * @param display Display the captures read from.
+     * @param unk78 Object whose transform the update reads.
+     */
+    LibClass1745F0(LibCameraContext* display, void* unk78);
+
+    /** @brief Destroy the captures, then the list object. */
+    virtual ~LibClass1745F0();
+
+    /** @brief Return the fixed list kind 14. @return Always 14. */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Destroy the captures, then queue the object for release. */
+    virtual void destroy();
+
+    /** @brief Queue this frame's captures. */
+    virtual void update();
+
+    /**
+     * @brief Destroy the current captures and create new ones, registering each with the renderer.
+     * @param count Captures to create.
+     */
+    void set_capture_count(s32 count);
+
+    /** @brief Detach and destroy every capture. */
+    void release_captures()
+    {
+        for (s32 i = 0; i < LIB_CLASS_1745F0_CAPTURE_COUNT; i++)
+        {
+            if (captures[i])
+            {
+                lib_object_detach_owner(captures[i]);
+                captures[i]->destroy();
+                captures[i] = 0;
+            }
+        }
+    }
+
+    u8 unk14[0xC];
+
+    /** Screen offset of each capture. */
+    FieldVec4A positions[LIB_CLASS_1745F0_CAPTURE_COUNT];
+
+    s32 capture_count;
+    LibCameraContext* display;
+    void* unk78;
+    u8 unk7c[8];
+    float unk84;
+    u8 unk88;
+
+    /** Set when the captures were just recreated; the next update skips its drawing. */
+    u8 recreated;
+
+    u8 unk8a[6];
+    u32 strips[LIB_CLASS_1745F0_CAPTURE_COUNT][LIB_CLASS_1745F0_STRIP_WORDS];
+    LibImageCapture* captures[LIB_CLASS_1745F0_CAPTURE_COUNT];
+};
+
+/** Corner of a LibClass174790 quad, relative to the widget's position. */
+struct LibQuadCorner
+{
+    float x;
+    float y;
+};
+
+/** Quad widget that grows in and then settles, with vtable D_174790 in main data. */
+class LibClass174790 : public LibWidget
+{
+public:
+    /** @brief Release the drawing storage and the widget base. */
+    virtual ~LibClass174790()
+    {
+    }
+
+    /** @brief Advance the grow-in animation and request a redraw. */
+    virtual void func_00413D20();
+
+    /** @brief Write the quad into the drawing packet. */
+    virtual void draw();
+
+    /**
+     * @brief Set the quad's position, color and shape, and allocate its drawing storage.
+     * @param color Packed vertex color.
+     * @param mirrored Nonzero to mirror the quad horizontally.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param width Extra width added to the quad.
+     * @return One on success, or zero if the storage couldn't be allocated.
+     */
+    s32 init(u32 color, u32 mirrored, float x, float y, float width);
+
+    LibStorageBlock0C storage;
+    u8 unk4c[4];
+    LibQuadCorner corners[4];
+
+    /** Packed vertex color; zero hides the quad. */
+    u32 color;
+
+    float scale_x;
+    float scale_y;
+    float speed;
+
+    /** Animation step: 0 grows in, 1 settles, 2 done. */
+    s32 state;
+};
+
+/** Container with a quad frame and a text line that fade in, wait and fade out; vtable D_1746D0 in main data. */
+class LibClass1746D0 : public LibContainer
+{
+public:
+#ifndef LIB_1746D0_DTOR_FIRST
+    /**
+     * @brief Run the show, wait and fade-out steps.
+     * @param first First update flag.
+     * @param second Second update flag.
+     * @param third Third update flag.
+     */
+    virtual void func_00412C40(u32 first, u32 second, u32 third);
+
+    /** @brief Destroy the text, the frame and the container. */
+    virtual ~LibClass1746D0();
+
+#else
+    /** @brief Destroy the text, the frame and the container. */
+    virtual ~LibClass1746D0();
+
+    /**
+     * @brief Run the show, wait and fade-out steps.
+     * @param first First update flag.
+     * @param second Second update flag.
+     * @param third Third update flag.
+     */
+    virtual void func_00412C40(u32 first, u32 second, u32 third);
+
+#endif
+    /**
+     * @brief Set up the frame and the text and attach them.
+     * @param flags Bit 0 puts the frame at the right edge, bit 1 at the bottom.
+     * @param color Index into the frame color table.
+     * @param slot Text resource slot.
+     * @param key Text resource key.
+     * @return One on success, otherwise zero.
+     */
+    s32 init(u32 flags, s32 color, s32 slot, s32 key);
+
+    LibClass174790 frame;
+    LibTextWidget text;
+    float timer;
+    s32 state;
+};
+
+/** Packed frame colors that LibClass1746D0::init picks from. */
+extern "C" u32 D_4ED130[];
+
+/** Hardware address register of DMA channel 1 (VIF1). Proposed for ee.h next to D1_QWC. */
+#define D1_MADR ((volatile u32*)0x10009010)
+
+extern "C" u64 D_001B6560;
+
+/** Transform owner that sends its own packet on VIF1, with vtable D_174840 in main data. */
+class LibClass174840 : public LibTransformOwner, public DmaSubmission
+{
+public:
+    /**
+     * @brief Build the packet for this frame.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Set up the transform and allocate the packet.
+     * @param unk94 Stored at unk94.
+     */
+    LibClass174840(void* unk94);
+
+    /** @brief Delete the packet and destroy the transform owner. */
+    virtual ~LibClass174840();
+
+    /** @brief Detach from the owner and release the transform. */
+    virtual void destroy();
+
+    /** @brief Queue the packet on VIF1. */
+    virtual void render();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return the bounding sphere D_00508230.
+     * @return Bounding sphere.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Send the packet's pending data on VIF1 in normal mode.
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Finish the packet.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    void* unk94;
+    LibPacketBuffer* packet;
+    u8 unk9c;
+    u8 unk9d;
+    u8 unk9e[2];
+
+    /** Quadwords of the packet's pending data. */
+    u32 qwc;
+
+    u8 unka4[4];
+    u32 unka8;
+    s16 unkac;
+    s16 unkae;
+    float unkb0;
+    s32 unkb4;
+    u8 unkb8[0x18];
+    void* unkd0;
+    s32 unkd4;
+    u8 unkd8[2];
+    s16 unkda;
+    float unkdc;
+    s32 unke0;
+    u32 unke4;
+};
 
 extern "C" u8 D_00174D30[];
 extern "C" void func_004A8F10(void* object);
@@ -28,15 +275,45 @@ extern "C" ResidentDmaQueue* D_001B6604;
 extern "C" void func_00454E90(LibDrawBuffer* buffer);
 extern "C" void func_004D5A50(LibDrawBuffer* buffer, u32* commands);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ABE0);
+/**
+ * @brief Destroy the current captures and create new ones, registering each with the renderer.
+ * @param count Captures to create.
+ */
+void LibClass1745F0::set_capture_count(s32 count)
+{
+    capture_count = count;
+    release_captures();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ACF0);
+    for (s32 i = 0; i < count; i++)
+    {
+        captures[i] = new (0) LibImageCapture;
+
+        if (captures[i])
+        {
+            ((LibUpdateList*)g_renderer)->append_node(captures[i], -1);
+        }
+    }
+
+    recreated = 1;
+}
+
+/** @brief Destroy the captures, then queue the object for release. */
+void LibClass1745F0::destroy()
+{
+    release_captures();
+    resident_enqueue_object(g_resident_release_queues, this);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AD80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AE70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", __dt__20LibCallbackTransformFv);
+#pragma inline_depth(7)
+
+/** @brief Destroy the transform receiver. */
+LibCallbackTransform::~LibCallbackTransform()
+{
+}
 
 /** @brief Run the default transform state hook. */
 void LibCallbackTransform::func_0044B100(u32 first, u32 second, u32 third)
@@ -73,7 +350,7 @@ void LibCallbackTransform::set_codes_and_z(s32 code, u32 first, float z, u32 sec
     translation.y = y;
     translation.z = z;
     translation.w = 1.0f;
-    unkae = 1;
+    geometry_dirty = 1;
 }
 
 /** @brief Update the vector's x and y components while preserving z. */
@@ -110,7 +387,7 @@ extern "C" void func_0044B210(LibCallbackTransform* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B240);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__20LibCallbackTransformFPCvPv);
 
 /** @brief Initialize transform flags and drawing modes after the base receivers. */
 LibCallbackTransform::LibCallbackTransform()
@@ -118,14 +395,87 @@ LibCallbackTransform::LibCallbackTransform()
     draw_flags |= 0x400;
     unk94 = 0;
     unkaf = 0;
-    unkae = 1;
+    geometry_dirty = 1;
     unkad = 1;
     unkac = 1;
     unkab = 1;
     unkaa = 2;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B350);
+/* Proposed for gs.h. */
+#define GS_REGISTER_SCISSOR_2 0x41
+#define GS_SCISSOR(x0, x1, y0, y1) ((u64)(x0) | ((u64)(x1) << 16) | ((u64)(y0) << 32) | ((u64)(y1) << 48))
+#define GIF_TAG_NLOOP(count) ((u64)(count))
+
+/** @brief Write the widget clipping bounds into its drawing packet. */
+void ItemCreationClass1746A0::draw()
+{
+    if (unk3b)
+    {
+        return;
+    }
+
+    u64 scissor;
+
+    if (unk50)
+    {
+        scissor = GS_SCISSOR(0, g_field_runtime->unk52c, 0, g_field_runtime->unk530);
+    }
+    else
+    {
+        s32 x0;
+        s32 x1;
+        s32 y0;
+        s32 y1;
+        FieldRuntime* runtime = g_field_runtime;
+        const LibVector4* origin = &container->translation;
+
+        float left = origin->x + unk18.unk00;
+        float scale_x = runtime->screen_scale_x / 16.0f;
+        x0 = left * scale_x;
+
+        if (x0 < 0)
+        {
+            x0 = 0;
+        }
+
+        x1 = scale_x * (left + unk18.unk08);
+
+        if (x1 > runtime->unk52c)
+        {
+            x1 = runtime->unk52c;
+        }
+
+        float top = origin->y + unk18.unk04;
+        float scale_y = runtime->screen_scale_y / 16.0f;
+        y0 = top * scale_y;
+
+        if (y0 < 0)
+        {
+            y0 = 0;
+        }
+
+        y1 = scale_y * (top + unk18.unk0c);
+
+        if (y1 > runtime->unk530)
+        {
+            y1 = runtime->unk530;
+        }
+
+        scissor = GS_SCISSOR(x0, x1, y0, y1);
+    }
+
+    u64* cursor = reinterpret_cast<u64*>(unk40.dma_address);
+    packet_tag = cursor;
+    packet = cursor;
+    cursor[2] = GIF_TAG_NREG(1) | GIF_TAG_EOP | GIF_TAG_NLOOP(1);
+    cursor[3] = GIF_REGISTER_AD;
+    cursor[4] = scissor;
+    cursor[5] = GS_REGISTER_SCISSOR_2;
+    cursor += 6;
+    *packet_tag = DMA_TAG((reinterpret_cast<u32>(cursor) - reinterpret_cast<u32>(packet_tag) - LIB_DRAW_QWORD_SIZE) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_END, 0);
+    unk3b = 1;
+}
 
 /**
  * @brief Initialize a widget that restores the runtime clipping bounds.
@@ -186,13 +536,119 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B6A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B860);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B9E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", draw__14LibClass174790Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BCC0);
+/** @brief Advance the grow-in animation and request a redraw. */
+void LibClass174790::func_00413D20()
+{
+    switch (state)
+    {
+    case 0:
+    {
+        float alpha = draw_alpha;
+        alpha += 6.0f;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BDF0);
+        if (!(alpha < 128.0f))
+        {
+            alpha = 128.0f;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BEE0);
+        draw_alpha = alpha;
+        float scale = scale_x;
+        scale += speed;
+        scale_x = scale;
+
+        if (!(scale < 1.0f))
+        {
+            state++;
+        }
+
+        break;
+    }
+    case 1:
+    {
+        float velocity = speed;
+        velocity += -0.0075f;
+
+        if (velocity < -0.0075f)
+        {
+            velocity = -0.0075f;
+        }
+
+        speed = velocity;
+        float scale = scale_x;
+        scale += velocity;
+
+        if (scale < 1.0f)
+        {
+            scale = 1.0f;
+        }
+
+        scale_x = scale;
+        float stretch = scale_y;
+        stretch -= 0.02f;
+
+        if (stretch <= 1.0f)
+        {
+            stretch = 1.0f;
+            state++;
+        }
+
+        scale_y = stretch;
+        break;
+    }
+    }
+
+    needs_redraw = 1;
+}
+
+/**
+ * @brief Set the quad's position, color and shape, and allocate its drawing storage.
+ * @param color Packed vertex color.
+ * @param mirrored Nonzero to mirror the quad horizontally.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Extra width added to the quad.
+ * @return One on success, or zero if the storage couldn't be allocated.
+ */
+s32 LibClass174790::init(u32 color, u32 mirrored, float x, float y, float width)
+{
+    unk18.unk00 = x;
+    unk18.unk04 = y;
+    this->color = color;
+
+    if (!lib_allocate_drawing_storage(&storage, 14))
+    {
+        return 0;
+    }
+
+    float left = 0.0f;
+    float middle = 64.0f + width;
+    float right = 80.0f + width;
+
+    if (mirrored)
+    {
+        left = -left;
+        middle = -middle;
+        right = -right;
+    }
+
+    corners[0].x = left;
+    corners[1].x = middle;
+    corners[2].x = left;
+    corners[3].x = right;
+    corners[0].y = -12.0f;
+    corners[1].y = -12.0f;
+    corners[2].y = 8.0f;
+    corners[3].y = 8.0f;
+    draw_alpha = 0.0f;
+    scale_x = 0.0f;
+    scale_y = 2.24f;
+    speed = 0.07f;
+    state = 0;
+    unk39 = 1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF50);
 
@@ -223,7 +679,18 @@ void func_0044C080(void)
     g_texture_cache->expire_texture(1);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C0A0);
+/**
+ * @brief Send the packet's pending data on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
+ */
+void LibClass174840::submit_dma(u32 channel)
+{
+    dma_pending = 1;
+    *D1_QWC = qwc;
+    *D1_MADR = func_0011F760(packet);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
 
 /** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
 void func_0044C0F0(void* object)
@@ -564,8 +1031,6 @@ s32 lib_draw_buffer_add_texture(LibDrawBuffer* buffer, const LibImageResource* r
     return index;
 }
 
-extern "C" void func_00455AD0(LibDrawBuffer* buffer);
-
 /**
  * @brief Start a primitive of some vertices, flushing the buffer first when they wouldn't fit in 40.
  * @param buffer Draw buffer.
@@ -575,7 +1040,7 @@ void lib_draw_buffer_begin_primitive(LibDrawBuffer* buffer, s32 count)
 {
     if (buffer->vertex_count + count >= 40)
     {
-        func_00455AD0(buffer);
+        lib_draw_buffer_start_batch(buffer);
     }
 
     *buffer->primitive_sizes++ = count;
@@ -764,7 +1229,7 @@ void lib_draw_buffer_flush_batch(LibDrawBuffer* buffer)
     size += block_size;
 
     info->vertex_count = buffer->vertex_count;
-    LibDrawVectorBlock* normals = buffer->unk4c_block;
+    LibDrawVectorBlock* normals = buffer->normal_block;
     normals->header.dma_tag = DMA_TAG(buffer->vertex_count + 1, DMA_TAG_ID_CNT, buffer->command_cursor);
     normals->header.vif_qword = 0;
     address += primitive_count;
@@ -774,8 +1239,8 @@ void lib_draw_buffer_flush_batch(LibDrawBuffer* buffer)
         normals->vectors[i] = 0;
     }
 
-    buffer->unk4c_block->header.vif_codes[2] = VIF_STCYCL(4, 1);
-    buffer->unk4c_block->header.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V4_32, buffer->vertex_count, address | VIF_UNPACK_ADD_TOPS);
+    buffer->normal_block->header.vif_codes[2] = VIF_STCYCL(4, 1);
+    buffer->normal_block->header.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V4_32, buffer->vertex_count, address | VIF_UNPACK_ADD_TOPS);
     info->unk4c_offset = size + LIB_DRAW_QWORD_SIZE;
     info->unk4c_address = address;
     block_size = buffer->vertex_count * LIB_DRAW_QWORD_SIZE + LIB_DRAW_QWORD_SIZE;
@@ -886,15 +1351,15 @@ void lib_draw_buffer_start_batch(LibDrawBuffer* buffer)
     buffer->chain_block = reinterpret_cast<LibDrawChainBlock*>(reinterpret_cast<u8*>(EE_SCRATCHPAD) + buffer->scratchpad_index * LIB_DRAW_BATCH_STRIDE);
     buffer->state_block = reinterpret_cast<LibDrawStateBlock*>(buffer->chain_block + 1);
     buffer->primitive_block = reinterpret_cast<LibDrawPrimitiveBlock*>(buffer->state_block + 1);
-    buffer->unk4c_block = reinterpret_cast<LibDrawVectorBlock*>(buffer->primitive_block + 1);
-    buffer->texcoord_block = reinterpret_cast<LibDrawWordBlock*>(buffer->unk4c_block + 1);
+    buffer->normal_block = reinterpret_cast<LibDrawVectorBlock*>(buffer->primitive_block + 1);
+    buffer->texcoord_block = reinterpret_cast<LibDrawWordBlock*>(buffer->normal_block + 1);
     buffer->color_block = buffer->texcoord_block + 1;
     buffer->position_block = reinterpret_cast<LibDrawVectorBlock*>(buffer->color_block + 1);
     buffer->primitive_sizes = buffer->primitive_block->sizes;
     reinterpret_cast<unsigned __int128*>(buffer->primitive_sizes)[0] = 0;
     reinterpret_cast<unsigned __int128*>(buffer->primitive_sizes)[1] = 0;
     buffer->positions = reinterpret_cast<FieldVec4A*>(buffer->position_block->vectors);
-    buffer->unk4c = reinterpret_cast<FieldVec4A*>(buffer->unk4c_block->vectors);
+    buffer->normals = reinterpret_cast<FieldVec4A*>(buffer->normal_block->vectors);
     buffer->texcoords = buffer->texcoord_block->words;
     buffer->colors = buffer->color_block->words;
     buffer->vertex_count = 0;
@@ -991,7 +1456,7 @@ void lib_draw_buffer_begin(LibDrawBuffer* buffer, u8 unk3C, u8 unk3D)
     buffer->batch_count = 0;
     buffer->block_count = 0;
     buffer->unkcc = 0;
-    func_00455AD0(buffer);
+    lib_draw_buffer_start_batch(buffer);
 
     D_001B6604->wait_idle();
     D_001B6604->stop();
