@@ -126,7 +126,7 @@ class BootTitleMenu : public LibListObject
         float idle_time;
 };
 
-/** Partial 0x2C-byte progress bar with vtable D_171BD0 in main data; driven with a done/total pair. */
+/** 0x2C-byte progress bar with vtable D_171BD0 in main data; driven with a done/total pair. */
 class BootProgressBar : public LibListObject
 {
     public:
@@ -147,7 +147,7 @@ class BootProgressBar : public LibListObject
         s32 mode;
 };
 
-/** Partial 0x30-byte image object with vtable D_171C90 in main data, drawn from a decoded FIS image. */
+/** 0x30-byte image object with vtable D_171C90 in main data, drawn from a decoded FIS image. */
 class BootImage : public LibListObject
 {
     public:

@@ -1109,8 +1109,6 @@ void func_00429850(void* object);
  * @param unused Unused first argument.
  * @param output Address to clear.
  */
-void func_004296B0(void* unused, void* output);
-
 #ifdef __cplusplus
 /** Set the low packed mode at its target field and record whether either mode equals four. */
 void func_004297F0(void* object, u8 mode);

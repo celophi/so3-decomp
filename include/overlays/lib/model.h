@@ -125,7 +125,9 @@ public:
     LibVector4 base_color_factor;
     LibVector4 color_modulation;
     LibVector4 combined_color_factor;
-    u32 unk590;
+
+    /** Light groups in the low byte and the bits of the spotlights that reach the model above them. */
+    u32 light_mask;
 
     /** Model this one was cloned from, or null. */
     LibColorModel* original;

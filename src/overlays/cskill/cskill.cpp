@@ -3988,7 +3988,7 @@ u8 SkillModeSelection::func_slotb0()
 s32 SkillModeSelection::func_slotd4()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->ItemCreationClass185050::arrived;
+    u8 inactive = !selection->LibMovementState::arrived;
     if (inactive == 1)
     {
         return 0;
@@ -4050,7 +4050,7 @@ s32 SkillModeSelection::func_slotd4()
 
 s32 SkillModeSelection::func_slotd0()
 {
-    u8 inactive = !this->selection->ItemCreationClass185050::arrived;
+    u8 inactive = !this->selection->LibMovementState::arrived;
     if (inactive == 1)
     {
         return 0;
@@ -4096,7 +4096,7 @@ s32 SkillModeSelection::func_slotd0()
 void SkillModeSelection::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->ItemCreationClass185050::arrived;
+    u8 inactive = !selection->LibMovementState::arrived;
     if (inactive == 1)
     {
         return;
@@ -4130,7 +4130,7 @@ void SkillModeSelection::func_slot6c()
 void SkillModeSelection::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
-    u8 inactive = !selection->ItemCreationClass185050::arrived;
+    u8 inactive = !selection->LibMovementState::arrived;
     if (inactive == 1)
     {
         return;
@@ -4887,7 +4887,7 @@ void SkillTacticalWindow::func_slot5c()
 void SkillTacticalWindow::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
-    selection->ItemCreationClass185050::alpha = 128.0f;
+    selection->LibMovementState::alpha = 128.0f;
     selection->geometry_dirty = 1;
     LibContainer* display = this->attachment->unk10;
     if (display != 0)
@@ -5090,7 +5090,7 @@ void skill_open_tactical_details(SkillTacticalWindow* object)
     SkillTacticalDetailWindow* window = static_cast<SkillTacticalDetailWindow*>(object->func_slot4c());
     skill_select_tactical_detail_mode(window, mode);
     FieldObject23CEA0* selection = object->selection;
-    selection->ItemCreationClass185050::alpha = 64.0f;
+    selection->LibMovementState::alpha = 64.0f;
     selection->geometry_dirty = 1;
     LibContainer* display = object->attachment->unk10;
     if (display != 0)
@@ -5529,7 +5529,7 @@ void skill_set_battle_setup_visibility(SkillBattleSetupWindow* object, u32 flag,
 void SkillBattleSetupWindow::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
-    selection->ItemCreationClass185050::alpha = 128.0f;
+    selection->LibMovementState::alpha = 128.0f;
     selection->geometry_dirty = 1;
     skill_refresh_battle_selection(this);
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
@@ -6371,7 +6371,7 @@ u8 SkillStatusSkillWindow::func_slotb4()
 
 u8 SkillStatusSkillWindow::func_slotb0()
 {
-    bool inactive = this->selection->ItemCreationClass185050::arrived ? false : true;
+    bool inactive = this->selection->LibMovementState::arrived ? false : true;
     if (inactive == 1)
     {
         return 0;
@@ -7027,7 +7027,7 @@ SkillCharacterWindow::SkillCharacterWindow(SkillController* controller)
 void SkillSecondarySelection::func_slot64()
 {
     FieldObject23CEA0* selection = this->selection;
-    selection->ItemCreationClass185050::alpha = 128.0f;
+    selection->LibMovementState::alpha = 128.0f;
     selection->geometry_dirty = 1;
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     func_0035AF00(owner, this->code, 1);
@@ -9608,7 +9608,7 @@ u8 SkillSymbologyWindow::func_slotb4()
  */
 u8 SkillSymbologyWindow::func_slotb0()
 {
-    u8 inactive = !this->selection->ItemCreationClass185050::arrived;
+    u8 inactive = !this->selection->LibMovementState::arrived;
     if (inactive == 1)
     {
         return 0;
@@ -10084,7 +10084,8 @@ SkillCoordinateSelector::~SkillCoordinateSelector()
 {
 }
 
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 

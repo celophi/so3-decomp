@@ -343,7 +343,7 @@ void BootTitleMenu::update()
         check_main_code();
         scene = new (0) LibScene;
         lib_scene_load_data(scene, (ResidentResourceHeader*)scene_data);
-        lib_scene_build_objects(scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
+        lib_scene_build_objects(scene, g_boot_program.display, g_update_list, g_light_list, g_display_manager, g_renderer, 1);
         delete[] scene_data;
         scene_data = 0;
         lib_reset_game_state(game_data);
@@ -377,7 +377,7 @@ void BootTitleMenu::update()
         break;
     }
     case BOOT_TITLE_START_MUSIC:
-        if (resident_sound_play_music(g_sound, 2, 1, 0, 0) == 0)
+        if (resident_sound_play_music(g_sound, BOOT_MUSIC_INTO_THE_UNDISCOVERY_OCEAN, 1, 0, 0) == 0)
         {
             break;
         }
@@ -457,7 +457,7 @@ void BootTitleMenu::update()
             if (accepted)
             {
                 queue_fade();
-                resident_sound_stop_music(g_sound, 0x1E, -1);
+                resident_sound_stop_music(g_sound, BOOT_MUSIC_FADE_FRAMES, -1);
                 resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
             }
             else
@@ -468,7 +468,7 @@ void BootTitleMenu::update()
         else if (!(idle_time < BOOT_TITLE_IDLE_MOVIE_SECONDS) && resident_sound_is_music_playing(g_sound, -1) == 0 && resident_archive_has_resource(g_resource_archive, 1) == 1)
         {
             queue_fade();
-            resident_sound_stop_music(g_sound, 0x1E, -1);
+            resident_sound_stop_music(g_sound, BOOT_MUSIC_FADE_FRAMES, -1);
             step = BOOT_TITLE_REPLAY_OPENING;
         }
 

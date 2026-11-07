@@ -6,8 +6,8 @@
 #include "overlays/lib/text_0046AE20.h"
 
 class LibCameraContext;
-class LibClass179080;
-class LibClass179690;
+class LibCamera;
+class LibLightList;
 class LibDisplayManager;
 class LibRenderer;
 class LibUpdateList;
@@ -64,7 +64,7 @@ public:
      * @param context Resident context the camera starts from.
      * @return The new camera, or null when allocation fails.
      */
-    virtual LibClass179080* func_00471440(void* context);
+    virtual LibCamera* func_00471440(void* context);
 
     /** @brief Virtual slot 0x24. */
     virtual void* func_0046DE90(void* unk1, void* unk2, void* record);
@@ -114,12 +114,12 @@ public:
  * @param scene Scene whose data is loaded.
  * @param display Display the scene draws to.
  * @param list Update list the objects join.
- * @param state D_001B6624; some of the new objects are appended to it.
+ * @param lights Light list (g_light_list) the scene's lights are appended to.
  * @param manager Display manager.
  * @param renderer Renderer.
  * @param flag Boot always passes one.
  */
-extern "C" void lib_scene_build_objects(LibScene* scene, LibCameraContext* display, LibUpdateList* list, LibClass179690* state,
+extern "C" void lib_scene_build_objects(LibScene* scene, LibCameraContext* display, LibUpdateList* list, LibLightList* lights,
                                         LibDisplayManager* manager, LibRenderer* renderer, s32 flag);
 
 #endif

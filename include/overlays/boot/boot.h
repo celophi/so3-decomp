@@ -40,7 +40,7 @@ enum BootScreenResourceId
     BOOT_RES_MUSIC_PLAYER = 0x2C
 };
 
-extern class LibClass179080* g_scene_camera;
+extern class LibCamera* g_scene_camera;
 
 extern FieldRuntime* g_field_runtime;
 
@@ -125,6 +125,17 @@ enum BootTitleItem
     BOOT_TITLE_ITEM_INSTALL = 3
 };
 
+/** Music boot plays by sound ID, named after the track titles in the message bank. */
+enum BootMusic
+{
+    BOOT_MUSIC_THE_DAWN_OF_WISDOM = 1,
+    BOOT_MUSIC_INTO_THE_UNDISCOVERY_OCEAN = 2,
+    BOOT_MUSIC_FLY_BY_CONTACT = 0x48
+};
+
+/** Frames boot's screens take to fade the music out when they close. */
+#define BOOT_MUSIC_FADE_FRAMES 30
+
 /** Message keys in boot's English message bank (resource 38, block 0). */
 enum BootMessage
 {
@@ -158,6 +169,35 @@ enum BootMessage
     BOOT_MSG_UNIT_DATA_DELETED = 0x33,
     BOOT_MSG_FOURTH_DIMENSION_LOCKED = 0x50,
     BOOT_MSG_FOURTH_DIMENSION = 0x51,
+    BOOT_MSG_TROPHY_SELECT_SLOT = 0x65,
+    BOOT_MSG_SLOT1_LABEL = 0x66,
+    BOOT_MSG_SLOT2_LABEL = 0x67,
+    BOOT_MSG_SLOT1_LOADING_TROPHIES = 0x68,
+    BOOT_MSG_TROPHY_PERCENTAGE = 0x6A,
+    BOOT_MSG_TROPHY_NOT_ACQUIRED = 0x6B,
+    BOOT_MSG_TROPHY_DASHES = 0x6C,
+    /** Acquisition date formats for years 2000 to 2009 and from 2010; both are blank in the English bank. */
+    BOOT_MSG_TROPHY_DATE_2000S = 0x6D,
+    BOOT_MSG_TROPHY_DATE_2010S = 0x6E,
+    BOOT_MSG_TROPHY_ACQUISITION_ORDER = 0x6F,
+    BOOT_MSG_TROPHY_NUMERICAL_ORDER = 0x70,
+    /** First of the rewards for each trophy rank, such as the 2P colours and Universe mode. */
+    BOOT_MSG_TROPHY_FIRST_REWARD = 0x71,
+    BOOT_MSG_SLOT1_TROPHY_LOAD_ERROR = 0x78,
+    BOOT_MSG_SLOT1_NO_TROPHY_DATA = 0x7B,
+    BOOT_MSG_SLOT2_LOADING_TROPHIES = 0x82,
+    BOOT_MSG_SLOT2_TROPHY_LOAD_ERROR = 0x83,
+    BOOT_MSG_SLOT2_NO_TROPHY_DATA = 0x84,
+    BOOT_MSG_SLOT1_NO_CARD = 0x85,
+    BOOT_MSG_SLOT2_NO_CARD = 0x86,
+    BOOT_MSG_SLOT1_TROPHY_DATA_CORRUPTED = 0x87,
+    BOOT_MSG_SLOT2_TROPHY_DATA_CORRUPTED = 0x88,
+    /** Labels under the music player's five spectrum meters. */
+    BOOT_MSG_BAND_LOW = 0x96,
+    BOOT_MSG_BAND_MID_LOW = 0x97,
+    BOOT_MSG_BAND_MID = 0x98,
+    BOOT_MSG_BAND_MID_HIGH = 0x99,
+    BOOT_MSG_BAND_HIGH = 0x9A,
     /** The memory card free-space warnings shown at startup. */
     BOOT_MSG_NO_CARD = 0x7D0,
     BOOT_MSG_SLOT1_FULL = 0x7D1,

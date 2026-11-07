@@ -13,14 +13,14 @@ typedef struct LibCharacterRecord
 
     s16 encoded_level;
     s16 encoded_base_level;
-    s32 encoded_flags;
+    u32 encoded_flags;
     s32 encoded_experience;
-    s32 encoded_base_hp;
-    s32 encoded_max_hp;
-    s32 encoded_hp;
-    s32 encoded_base_mp;
-    s32 encoded_max_mp;
-    s32 encoded_mp;
+    u32 encoded_base_hp;
+    u32 encoded_max_hp;
+    u32 encoded_hp;
+    u32 encoded_base_mp;
+    u32 encoded_max_mp;
+    u32 encoded_mp;
     float unk28;
 
     /** Fury is stored at sixteen times its displayed amount. */
@@ -55,15 +55,15 @@ typedef struct LibCharacterRecord
     s16 encoded_effective_critical_rate;
     s16 encoded_critical_rate;
     s32 level_checksum;
-    s32 flags_experience_checksum;
-    s32 hp_checksum;
-    s32 mp_checksum;
+    u32 flags_experience_checksum;
+    u32 hp_checksum;
+    u32 mp_checksum;
     s32 attack_checksum;
     s32 defense_checksum;
     s32 agility_checksum;
     s32 hit_checksum;
     s32 knockback_power_checksum;
-    s32 checksum_salt;
+    u32 checksum_salt;
     s32 critical_rate_checksum;
     s32 knockback_resistance_checksum;
     s32 unkb4[3];

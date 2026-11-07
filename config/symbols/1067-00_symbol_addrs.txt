@@ -1990,7 +1990,7 @@ func_0023D170 = 0x0023D170; // type:func absolute:True allow_duplicated:True
 __dt__17FieldObject23CEA0Fv = 0x0023D0C0; // type:func absolute:True allow_duplicated:True
 __vt__17FieldObject23CEA0 = 0x00153290; // size:0xA0 absolute:True allow_duplicated:True
 __vt__18LibSelectionCursor = 0x00175070; // size:0x9C absolute:True allow_duplicated:True
-__vt__23ItemCreationClass185050 = 0x00151C50; // size:0x10 absolute:True allow_duplicated:True
+__vt__16LibMovementState = 0x00151C50; // size:0x10 absolute:True allow_duplicated:True
 on_packet_complete__18LibSelectionCursorFUi = 0x00467480; // type:func absolute:True allow_duplicated:True
 __dt__18LibSelectionCursorFv = 0x0023BCC0; // type:func absolute:True allow_duplicated:True
 
@@ -2002,7 +2002,7 @@ __ct__16FieldClass15BA90Fv = 0x002F9BB0; // type:func allow_duplicated:True
 
 lib_load_resource_slot = 0x004656B0; // type:func absolute:True allow_duplicated:True
 
-__ct__14LibClass179080FPv = 0x004E29E0; // type:func absolute:True allow_duplicated:True
+__ct__9LibCameraFPv = 0x004E29E0; // type:func absolute:True allow_duplicated:True
 
 field_replace_model_camera = 0x002FD220; // type:func size:0xBC
 
@@ -2017,7 +2017,7 @@ func_4CC1A0 = 0x004CC1A0; // type:func absolute:True allow_duplicated:True
 func_002FD220 = 0x002FD220; // type:func absolute:True allow_duplicated:True
 func_2FD220 = 0x002FD220; // type:func absolute:True allow_duplicated:True
 func_4E2940 = 0x004E2940; // type:func absolute:True allow_duplicated:True
-__dt__14LibClass179080Fv = 0x004E2940; // type:func absolute:True allow_duplicated:True
+__dt__9LibCameraFv = 0x004E2940; // type:func absolute:True allow_duplicated:True
 func_003F4520__14LibClass178EA0CFv = 0x003F4520; // type:func absolute:True allow_duplicated:True
 func_003F4530__14LibClass178EA0CFv = 0x003F4530; // type:func absolute:True allow_duplicated:True
 func_003F4540__14LibClass178EA0CFv = 0x003F4540; // type:func absolute:True allow_duplicated:True
@@ -2055,9 +2055,9 @@ func_004D0090__14LibClass178EA0Fv = 0x004DA8B0; // type:func absolute:True allow
 func_004D00A0__14LibClass178EA0Fv = 0x003F4510; // type:func absolute:True allow_duplicated:True
 update__14LibClass178EA0Fv = 0x004D9D60; // type:func absolute:True allow_duplicated:True
 func_004D0090__16FieldClass175290Fv = 0x0046B8B0; // type:func absolute:True allow_duplicated:True
-func_004D0090__14LibClass179080Fv = 0x004E1BF0; // type:func absolute:True allow_duplicated:True
-update__14LibClass179080Fv = 0x004E1C30; // type:func absolute:True allow_duplicated:True
-update_projection__14LibClass179080Fv = 0x004E24D0; // type:func absolute:True allow_duplicated:True
+func_004D0090__9LibCameraFv = 0x004E1BF0; // type:func absolute:True allow_duplicated:True
+update__9LibCameraFv = 0x004E1C30; // type:func absolute:True allow_duplicated:True
+update_projection__9LibCameraFv = 0x004E24D0; // type:func absolute:True allow_duplicated:True
 
 func_004D00A0__16FieldClass150990Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
 func_004D00A0__16FieldClass155840Fv = 0x001E9B70; // type:func absolute:True allow_duplicated:True
@@ -2983,7 +2983,7 @@ func_004D00A0__17LibTransformOwnerFv = 0x004D00A0; // type:func absolute:True al
 func_001E9B70 = 0x001E9B70; // type:func absolute:True allow_duplicated:True
 
 update_transform_matrix__16FieldClass175290Fv = 0x0046B8B0; // type:func allow_duplicated:True absolute:True
-update_transform_matrix__14LibClass179080Fv = 0x004E1BF0; // type:func allow_duplicated:True absolute:True
+update_transform_matrix__9LibCameraFv = 0x004E1BF0; // type:func allow_duplicated:True absolute:True
 get_transform_matrix__16FieldClass150990Fv = 0x001E9B70; // type:func allow_duplicated:True absolute:True
 get_transform_matrix__16FieldClass155840Fv = 0x001E9B70; // type:func allow_duplicated:True absolute:True
 get_transform_matrix__16FieldClass15B270Fv = 0x001E9B70; // type:func allow_duplicated:True absolute:True

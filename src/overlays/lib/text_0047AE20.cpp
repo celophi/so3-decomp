@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/particle_grid.h"
 #include "overlays/lib/text_0047AE20.h"
 #include "ee.h"
 #include "vu0.h"
@@ -3541,7 +3542,34 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00481500);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00481A60);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00481AC0);
+/**
+ * @brief Copy another grid's size and settings, reallocating this grid to match.
+ *
+ * LibClass176940's copy_settings (vtable slot 0xB4).
+ * @param object Grid to update.
+ * @param other Grid to copy.
+ */
+void func_00481AC0(LibGridEmitter* object, const LibGridEmitter* other)
+{
+    object->cell_count = other->cell_count;
+    object->columns = other->columns;
+    object->resize(object->cell_count, object->columns);
+    object->unk28 = other->unk28;
+    object->unk30 = other->unk30;
+    object->unk34 = other->unk34;
+    object->unk38 = other->unk38;
+    object->unk48 = other->unk48;
+    object->unk4C = other->unk4C;
+    object->unk4D = other->unk4D;
+    object->unk4E = other->unk4E;
+    object->unk4F = other->unk4F;
+    object->unk50 = other->unk50;
+    object->unk54 = other->unk54;
+    object->unk55 = other->unk55;
+    object->unk3C = other->unk3C;
+    object->frame_header = other->frame_header;
+    object->frame_records = other->frame_records;
+}
 
 /** A vector whose fourth word can hold a frame index. */
 typedef union GridFrameVector
@@ -5442,7 +5470,34 @@ extern "C" void func_004822B0(HistoryReceiver60* object, s32 capacity, HistoryOu
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00484D80);
+/**
+ * @brief Copy another grid's size and settings, reallocating this grid to match.
+ *
+ * LibClass176530's copy_settings (vtable slot 0xB4).
+ * @param object Grid to update.
+ * @param other Grid to copy.
+ */
+void func_00484D80(LibGridEmitter* object, const LibGridEmitter* other)
+{
+    object->cell_count = other->cell_count;
+    object->columns = other->columns;
+    object->resize(object->cell_count, object->columns);
+    object->unk28 = other->unk28;
+    object->unk30 = other->unk30;
+    object->unk34 = other->unk34;
+    object->unk38 = other->unk38;
+    object->unk48 = other->unk48;
+    object->unk4C = other->unk4C;
+    object->unk4D = other->unk4D;
+    object->unk4E = other->unk4E;
+    object->unk4F = other->unk4F;
+    object->unk50 = other->unk50;
+    object->unk54 = other->unk54;
+    object->unk55 = other->unk55;
+    object->unk3C = other->unk3C;
+    object->frame_header = other->frame_header;
+    object->frame_records = other->frame_records;
+}
 
 typedef struct GridCell00484E50
 {
@@ -7169,7 +7224,34 @@ extern "C" void func_00485570(HistoryReceiver60* object, s32 capacity, HistoryOu
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00488040);
+/**
+ * @brief Copy another grid's size and settings, reallocating this grid to match.
+ *
+ * LibClass1762C0's copy_settings (vtable slot 0xB4).
+ * @param object Grid to update.
+ * @param other Grid to copy.
+ */
+void func_00488040(LibGridEmitter* object, const LibGridEmitter* other)
+{
+    object->cell_count = other->cell_count;
+    object->columns = other->columns;
+    object->resize(object->cell_count, object->columns);
+    object->unk28 = other->unk28;
+    object->unk30 = other->unk30;
+    object->unk34 = other->unk34;
+    object->unk38 = other->unk38;
+    object->unk48 = other->unk48;
+    object->unk4C = other->unk4C;
+    object->unk4D = other->unk4D;
+    object->unk4E = other->unk4E;
+    object->unk4F = other->unk4F;
+    object->unk50 = other->unk50;
+    object->unk54 = other->unk54;
+    object->unk55 = other->unk55;
+    object->unk3C = other->unk3C;
+    object->frame_header = other->frame_header;
+    object->frame_records = other->frame_records;
+}
 
 typedef struct GridCell00488110
 {

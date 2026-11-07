@@ -1537,7 +1537,7 @@ void LibLodController::copy_state(const LibLodController* source)
 /** @brief Show the objects of the level the camera distance falls in and hide the previous level's. */
 void LibLodController::update()
 {
-    LibClass179080* camera = static_cast<LibClass179080*>(static_cast<LibDisplayManager*>(display_manager)->current_display);
+    LibCamera* camera = static_cast<LibCamera*>(static_cast<LibDisplayManager*>(display_manager)->current_display);
 
     if (camera == 0)
     {

@@ -179,4 +179,129 @@ static inline void vu0_light_store_normalized_vf1(void* out)
         : "memory");
 }
 
+/**
+ * @brief Load a spotlight's frame: position into vf20, direction into vf21, and cone cosine and sine into vf22.
+ * @param frame 16-byte aligned frame from lib_spot_light_get_frame (three vectors).
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); LibLightList::assign_spot_lights (0x4E7830).
+ */
+static inline void vu0_spot_light_load(const void* frame)
+{
+    asm __volatile__(
+        "lqc2      $vf20, 0x0(%0)\n"
+        "lqc2      $vf21, 0x10(%0)\n"
+        "lqc2      $vf22, 0x20(%0)\n"
+        :
+        : "r"(frame)
+        : "memory");
+}
+
+/**
+ * @brief Measure a bounding sphere against the loaded spotlight.
+ *
+ * Leaves the squared distance from the light to the sphere's centre in vf26.x and the squared radius in vf26.w,
+ * the centre's distance along the light's direction in vf30.y, the squared cone cosine in vf29.x, and one in vf31.
+ * @param sphere 16-byte aligned bounding sphere (centre in xyz, radius in w).
+ * @see vu0_spot_light_load.
+ */
+static inline void vu0_spot_light_measure(const void* sphere)
+{
+    asm __volatile__(
+        "lqc2      $vf23, 0x0(%0)\n"
+        "vsub.xyz  $vf24, $vf23, $vf20\n"
+        "vmaxw.xyzw $vf31, $vf0, $vf0w\n"
+        "vmul.w    $vf26, $vf23, $vf23\n"
+        "vmul.xyz  $vf26, $vf24, $vf24\n"
+        "vmul.xyz  $vf27, $vf24, $vf21\n"
+        "vadday.x  $ACC, $vf26, $vf26y\n"
+        "vmaddz.x  $vf26, $vf31, $vf26z\n"
+        "vmul.x    $vf29, $vf22, $vf22\n"
+        "vaddax.y  $ACC, $vf27, $vf27x\n"
+        "vmaddz.y  $vf30, $vf31, $vf27z\n"
+        :
+        : "r"(sphere)
+        : "memory");
+}
+
+/**
+ * @brief Store vf26: the squared distance in x and the squared radius in w.
+ * @param out 16-byte aligned destination.
+ * @see vu0_spot_light_measure.
+ */
+static inline void vu0_spot_light_store_distance(void* out)
+{
+    asm __volatile__(
+        "sqc2      $vf26, 0x0(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Square the distance along the direction into vf29.y and scale the squared distance by the squared cone
+ * cosine into vf30.x.
+ * @see vu0_spot_light_measure.
+ */
+static inline void vu0_spot_light_axis_terms()
+{
+    asm __volatile__(
+        "vmul.y    $vf29, $vf30, $vf30\n"
+        "vmul.x    $vf30, $vf29, $vf26\n"
+        :
+        :
+        : "memory");
+}
+
+/**
+ * @brief Store vf29 and vf30 (the squared and plain distance along the direction in y, the scaled distance in x).
+ * @param out 16-byte aligned destination for two vectors.
+ * @see vu0_spot_light_axis_terms.
+ */
+static inline void vu0_spot_light_store_axis_terms(void* out)
+{
+    asm __volatile__(
+        "sqc2      $vf29, 0x0(%0)\n"
+        "sqc2      $vf30, 0x10(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Test the sphere against the cone's edge: vf28.y is the sphere centre's offset past the edge (distance along
+ * the direction times the cosine plus the distance off the axis times the sine) and vf29.y its square less the squared
+ * distance plus the squared radius.
+ * @see vu0_spot_light_measure.
+ */
+static inline void vu0_spot_light_edge_terms()
+{
+    asm __volatile__(
+        "vsuby.x   $vf28, $vf26, $vf29y\n"
+        "vabs.x    $vf28, $vf28\n"
+        "vsqrt     $Q, $vf28x\n"
+        "vmulax.y  $ACC, $vf30, $vf22x\n"
+        "vwaitq\n"
+        "vmaddq.y  $vf28, $vf22, $Q\n"
+        "vmula.y   $ACC, $vf28, $vf28\n"
+        "vmsubax.y $ACC, $vf31, $vf26x\n"
+        "vmaddw.y  $vf29, $vf31, $vf26w\n"
+        :
+        :
+        : "memory");
+}
+
+/**
+ * @brief Store vf28 and vf29, the edge terms in y.
+ * @param out 16-byte aligned destination for two vectors.
+ * @see vu0_spot_light_edge_terms.
+ */
+static inline void vu0_spot_light_store_edge_terms(void* out)
+{
+    asm __volatile__(
+        "sqc2      $vf28, 0x0(%0)\n"
+        "sqc2      $vf29, 0x10(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
 #endif

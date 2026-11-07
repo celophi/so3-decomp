@@ -84,24 +84,6 @@ s32 func_004B46E0(LibAnimation* object, LibAnimationTarget* target, float frame,
 s32 func_004ABAA0(void* object);
 
 /** Return the fixed value 0. */
-s32 func_004ACC10(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004ACC50(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004ACC90(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004B2DD0(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004B2E10(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004B2E50(void* object);
-
-/** Return the fixed value 0. */
 s32 func_004B3D60(void* object);
 
 /** Return the fixed value 0. */
@@ -109,8 +91,6 @@ s32 func_004B3D70(void* object);
 
 void func_004ABAB0(void* object);
 void func_004ABD30(void* object);
-void func_004ACBD0(void* object);
-void func_004B2D90(void* object);
 
 
 

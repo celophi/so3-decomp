@@ -3033,7 +3033,7 @@ u8 AbortDevelopmentDialog::func_slotb4()
     FieldObject23CEA0* marker = parent->unk10c;
     if (marker != 0)
     {
-        marker->ItemCreationClass185050::alpha = 128.0f;
+        marker->LibMovementState::alpha = 128.0f;
         marker->geometry_dirty = 1;
         parent->unka8->development_processing_enabled = 1;
     }
@@ -3210,7 +3210,7 @@ u8 AbortDevelopmentDialog::func_slotb0()
             FieldObject23CEA0* marker = parent->unk10c;
             if (marker != 0)
             {
-                marker->ItemCreationClass185050::alpha = 128.0f;
+                marker->LibMovementState::alpha = 128.0f;
                 marker->geometry_dirty = 1;
                 parent->unka8->development_processing_enabled = 1;
             }
@@ -3340,7 +3340,7 @@ void InventorStatusWindow::func_slot5c()
                 FieldObject23CEA0* grid = window->unk10c;
                 if (grid != 0)
                 {
-                    grid->ItemCreationClass185050::alpha = 128.0f;
+                    grid->LibMovementState::alpha = 128.0f;
                     grid->geometry_dirty = 1;
                     window->unka8->development_processing_enabled = 1;
                 }
@@ -4421,7 +4421,7 @@ u8 ItemDetailsWindow::func_slotb0()
     FieldObject23CEA0* grid = window->unk10c;
     if (grid != 0)
     {
-        grid->ItemCreationClass185050::alpha = 128.0f;
+        grid->LibMovementState::alpha = 128.0f;
         grid->geometry_dirty = 1;
         window->unka8->development_processing_enabled = 1;
     }
@@ -4569,7 +4569,7 @@ u8 MissingMaterialsDialog::func_slotb0()
     D_001B643C->unk10->unk14->remove_child(this);
     AssignedInventorGrid* parent = static_cast<AssignedInventorGrid*>(func_slot44());
     FieldObject23CEA0* marker = parent->unkb4;
-    marker->ItemCreationClass185050::alpha = 128.0f;
+    marker->LibMovementState::alpha = 128.0f;
     marker->geometry_dirty = 1;
     marker = parent->unkb4;
     if (marker != 0)
@@ -4675,7 +4675,7 @@ u8 DevelopmentCompleteDialog::func_slotb0()
     FieldObject23CEA0* grid = window->unk10c;
     if (grid != 0)
     {
-        grid->ItemCreationClass185050::alpha = 128.0f;
+        grid->LibMovementState::alpha = 128.0f;
         grid->geometry_dirty = 1;
         window->unka8->development_processing_enabled = 1;
     }
@@ -4726,7 +4726,7 @@ u8 LineFailureDialog::func_slotb0()
     FieldObject23CEA0* grid = window->unk10c;
     if (grid != 0)
     {
-        grid->ItemCreationClass185050::alpha = 128.0f;
+        grid->LibMovementState::alpha = 128.0f;
         grid->geometry_dirty = 1;
         window->unka8->development_processing_enabled = 1;
     }
@@ -4842,7 +4842,7 @@ u8 ItemSubmissionDialog::func_slotb4()
     FieldObject23CEA0* marker = parent->unk10c;
     if (marker != 0)
     {
-        marker->ItemCreationClass185050::alpha = 128.0f;
+        marker->LibMovementState::alpha = 128.0f;
         marker->geometry_dirty = 1;
         parent->unka8->development_processing_enabled = 1;
     }
@@ -5021,7 +5021,7 @@ u8 ItemCreationClass186770::func_slotb8()
     FieldObject23CEA0* marker = unk10c;
     if (marker != 0)
     {
-        marker->ItemCreationClass185050::alpha = 64.0f;
+        marker->LibMovementState::alpha = 64.0f;
         marker->geometry_dirty = 1;
         unka8->development_processing_enabled = 0;
         ItemCreationSelectedDisplayState* state = unka8;
@@ -5079,7 +5079,7 @@ u8 ItemCreationClass186770::func_slotb0()
     FieldObject23CEA0* marker = unk10c;
     if (marker != 0)
     {
-        marker->ItemCreationClass185050::alpha = 64.0f;
+        marker->LibMovementState::alpha = 64.0f;
         marker->geometry_dirty = 1;
         unka8->development_processing_enabled = 0;
         ItemCreationSelectedDisplayState* state = unka8;
@@ -5109,7 +5109,7 @@ u8 ItemCreationClass186770::func_slotb4()
     FieldObject23CEA0* marker = unk10c;
     if (marker != 0)
     {
-        marker->ItemCreationClass185050::alpha = 64.0f;
+        marker->LibMovementState::alpha = 64.0f;
         marker->geometry_dirty = 1;
         unka8->development_processing_enabled = 0;
         ItemCreationSelectedDisplayState* state = unka8;
@@ -5473,7 +5473,7 @@ void ItemCreationClass186770::func_slot5c()
                     FieldObject23CEA0* grid = this->unk10c;
                     if (grid != 0)
                     {
-                        grid->ItemCreationClass185050::alpha = 64.0f;
+                        grid->LibMovementState::alpha = 64.0f;
                         grid->geometry_dirty = 1;
                         this->unka8->development_processing_enabled = 0;
                         state = this->unka8;
@@ -6874,13 +6874,13 @@ void InventoryItemInstanceList::func_slot10c(u32 value, u32 alternate)
         if (alternate != 0)
         {
             ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            marker->ItemCreationClass185050::alpha = 128.0f;
+            marker->LibMovementState::alpha = 128.0f;
             marker->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            marker->ItemCreationClass185050::alpha = 64.0f;
+            marker->LibMovementState::alpha = 64.0f;
             marker->needs_redraw = 1;
         }
     }
@@ -7060,7 +7060,7 @@ u8 InventoryItemInstanceList::func_slotb0()
             item_creation_rebuild_line_target(selection_state, group);
             parent = selection_state->assigned_inventor_grid;
             FieldObject23CEA0* marker = parent->unkb4;
-            marker->ItemCreationClass185050::alpha = 128.0f;
+            marker->LibMovementState::alpha = 128.0f;
             marker->geometry_dirty = 1;
             if (parent->unkb4 != 0)
             {
@@ -7086,7 +7086,7 @@ u8 InventoryItemInstanceList::func_slotb0()
             item_creation_rebuild_line_target(selection_state, parent->unk1f0);
             parent = selection_state->assigned_inventor_grid;
             FieldObject23CEA0* marker = parent->unkb4;
-            marker->ItemCreationClass185050::alpha = 128.0f;
+            marker->LibMovementState::alpha = 128.0f;
             marker->geometry_dirty = 1;
             if (parent->unkb4 != 0)
             {
@@ -7123,13 +7123,13 @@ void InventoryItemInstanceList::func_slot5c()
     if (D_001B643C->unk10->unk14->func_00261150() == this)
     {
         ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-        marker->ItemCreationClass185050::alpha = 128.0f;
+        marker->LibMovementState::alpha = 128.0f;
         marker->needs_redraw = 1;
     }
     else
     {
         ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-        marker->ItemCreationClass185050::alpha = 64.0f;
+        marker->LibMovementState::alpha = 64.0f;
         marker->needs_redraw = 1;
     }
     s32 category = item_type_id;
@@ -7494,13 +7494,13 @@ void InventoryItemTypeList::func_slot10c(u32 value, u32 alternate)
         if (alternate != 0)
         {
             ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            marker->ItemCreationClass185050::alpha = 128.0f;
+            marker->LibMovementState::alpha = 128.0f;
             marker->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            marker->ItemCreationClass185050::alpha = 64.0f;
+            marker->LibMovementState::alpha = 64.0f;
             marker->needs_redraw = 1;
         }
     }
@@ -7538,7 +7538,7 @@ u8 InventoryItemTypeList::func_slotb4()
                 }
             }
             FieldObject23CEA0* marker = parent->unkb4;
-            marker->ItemCreationClass185050::alpha = 128.0f;
+            marker->LibMovementState::alpha = 128.0f;
             marker->geometry_dirty = 1;
             marker = parent->unkb4;
             if (marker != 0)
@@ -7608,7 +7608,7 @@ u8 InventoryItemTypeList::func_slotb0()
     ItemCreationClass175030* marker = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
     if (marker != 0)
     {
-        marker->ItemCreationClass185050::alpha = 64.0f;
+        marker->LibMovementState::alpha = 64.0f;
         marker->needs_redraw = 1;
     }
     return 1;
@@ -8086,7 +8086,7 @@ static inline void set_position(LibWidget* widget, float x, float y)
  */
 static inline void set_extent(FieldClass153130* widget, float extent)
 {
-    widget->ItemCreationClass185050::alpha = extent;
+    widget->LibMovementState::alpha = extent;
     widget->needs_redraw = 1;
 }
 
@@ -8342,7 +8342,7 @@ static inline void set_selector_opacity(FieldObject23CEA0* selector, float opaci
 {
     if (selector != 0)
     {
-        selector->ItemCreationClass185050::alpha = opacity;
+        selector->LibMovementState::alpha = opacity;
         selector->LibCallbackTransform::geometry_dirty = 1;
     }
 }
@@ -8386,7 +8386,7 @@ u8 PlanItemGroupWindow::func_slotb4()
             state->saved_first_plan_item_id = 0;
         }
         FieldObject23CEA0* marker = parent->unkb4;
-        marker->ItemCreationClass185050::alpha = 128.0f;
+        marker->LibMovementState::alpha = 128.0f;
         marker->geometry_dirty = 1;
         marker = parent->unkb4;
         if (marker != 0)
@@ -8409,7 +8409,7 @@ u8 PlanItemGroupWindow::func_slotb0()
     {
         return 0;
     }
-    bool inactive = !selector->ItemCreationClass185050::arrived;
+    bool inactive = !selector->LibMovementState::arrived;
     if (inactive)
     {
         return 0;
@@ -8662,7 +8662,7 @@ u8 InventionPolicyWindow::func_slotb4()
             if (unka8 != 0)
             {
                 FieldObject23CEA0* marker = unka8->unkb4;
-                marker->ItemCreationClass185050::alpha = 128.0f;
+                marker->LibMovementState::alpha = 128.0f;
                 marker->geometry_dirty = 1;
                 D_001B643C->unk10->unk14->func_00263C70(unka8);
             }
@@ -8689,7 +8689,7 @@ u8 InventionPolicyWindow::func_slotb0()
         return 0;
     }
 
-    bool inactive = !this->unkcc->ItemCreationClass185050::arrived;
+    bool inactive = !this->unkcc->LibMovementState::arrived;
 
     if (inactive)
     {
@@ -8731,7 +8731,7 @@ u8 InventionPolicyWindow::func_slotb0()
                 this->selection_state->line_plan_modes[(u8)group] = 1;
                 item_creation_rebuild_line_target(this->selection_state, group);
                 FieldObject23CEA0* marker = this->unka8->unkb4;
-                marker->ItemCreationClass185050::alpha = 128.0f;
+                marker->LibMovementState::alpha = 128.0f;
                 marker->geometry_dirty = 1;
                 D_001B643C->unk10->unk14->func_00263C70(this->unka8);
             }
@@ -9063,7 +9063,7 @@ u8 CreationSkillWindow::func_slotb4()
         if (unkac != 0)
         {
             FieldObject23CEA0* marker = unkac->unkb4;
-            marker->ItemCreationClass185050::alpha = 128.0f;
+            marker->LibMovementState::alpha = 128.0f;
             marker->geometry_dirty = 1;
             D_001B643C->unk10->unk14->func_00263C70(unkac);
         }
@@ -9098,7 +9098,7 @@ u8 CreationSkillWindow::func_slotb0()
     {
         return 0;
     }
-    bool inactive = !selector->ItemCreationClass185050::arrived;
+    bool inactive = !selector->LibMovementState::arrived;
     if (inactive)
     {
         return 0;
@@ -9185,7 +9185,7 @@ u8 CreationSkillWindow::func_slotb0()
             }
             item_creation_rebuild_line_target(selection_state, group);
             FieldObject23CEA0* marker = unkac->unkb4;
-            marker->ItemCreationClass185050::alpha = 128.0f;
+            marker->LibMovementState::alpha = 128.0f;
             marker->geometry_dirty = 1;
             D_001B643C->unk10->unk14->func_00263C70(unkac);
         }
@@ -9815,7 +9815,7 @@ u8 AssignedInventorGrid::func_slotb4()
     {
         AvailableInventorGrid* other = state->available_inventor_grid;
         FieldObject23CEA0* primary = unkac;
-        primary->ItemCreationClass185050::alpha = 128.0f;
+        primary->LibMovementState::alpha = 128.0f;
         primary->geometry_dirty = 1;
         func_0023CEA0(unkb0, 0);
         FieldObject23CEA0* alternate = unkb0;
@@ -9825,7 +9825,7 @@ u8 AssignedInventorGrid::func_slotb4()
         unkb4 = unkac;
         func_00361220(this);
         primary = other->unkac;
-        primary->ItemCreationClass185050::alpha = 128.0f;
+        primary->LibMovementState::alpha = 128.0f;
         primary->geometry_dirty = 1;
         func_0023CEA0(other->unkb0, 0);
         alternate = other->unkb0;
@@ -9863,7 +9863,7 @@ u8 AssignedInventorGrid::func_slotb4()
         if (unkb4 == unkb0)
         {
             FieldObject23CEA0* primary = unkac;
-            primary->ItemCreationClass185050::alpha = 128.0f;
+            primary->LibMovementState::alpha = 128.0f;
             primary->geometry_dirty = 1;
             func_0023CEA0(unkb0, 0);
             FieldObject23CEA0* alternate = unkb0;
@@ -9958,7 +9958,7 @@ u8 AssignedInventorGrid::func_slotb0()
     {
         return 0;
     }
-    bool inactive = !marker->ItemCreationClass185050::arrived;
+    bool inactive = !marker->LibMovementState::arrived;
     if (inactive)
     {
         return 0;
@@ -9969,7 +9969,7 @@ u8 AssignedInventorGrid::func_slotb0()
     }
     LibPoint2* position;
     s16 selected = marker->unk114;
-    position = &marker->ItemCreationClass185050::position;
+    position = &marker->LibMovementState::position;
     if (selected == 3 || selected == 8 || selected == 13)
     {
         if (this->unk1e8 != 0)
@@ -9980,7 +9980,7 @@ u8 AssignedInventorGrid::func_slotb0()
             choices->selectable_skill_mask = mask;
             item_creation_update_skill_labels(choices, 0);
             FieldObject23CEA0* marker = this->unkb4;
-            marker->ItemCreationClass185050::alpha = 64.0f;
+            marker->LibMovementState::alpha = 64.0f;
             marker->geometry_dirty = 1;
             this->unk1e8->func_slot20(1);
             static_cast<ItemCreationSelectedDisplayState*>(D_001B643C->unk10->unk14)->selected_line_index = this->unk1f0;
@@ -10023,7 +10023,7 @@ u8 AssignedInventorGrid::func_slotb0()
                 return 3;
             }
             FieldObject23CEA0* marker = this->unkb4;
-            marker->ItemCreationClass185050::alpha = 64.0f;
+            marker->LibMovementState::alpha = 64.0f;
             marker->geometry_dirty = 1;
             s32 index = this->unk1f0;
             InventionPolicyWindow* choice = this->unk1ec;
@@ -10066,14 +10066,14 @@ u8 AssignedInventorGrid::func_slotb0()
     if (this->unka8->inventor_swap_stage == 1)
     {
         FieldObject23CEA0* primary = this->unkac;
-        primary->ItemCreationClass185050::alpha = 96.0f;
+        primary->LibMovementState::alpha = 96.0f;
         primary->geometry_dirty = 1;
         float x = position->x;
         float y = position->y;
         FieldObject23CEA0* alternate = this->unkb0;
-        alternate->ItemCreationClass185050::position.x = x;
-        alternate->ItemCreationClass185050::position.y = y;
-        alternate->ItemCreationClass185050::arrived = 1;
+        alternate->LibMovementState::position.x = x;
+        alternate->LibMovementState::position.y = y;
+        alternate->LibMovementState::arrived = 1;
         alternate->geometry_dirty = 1;
         func_0023CEA0(this->unkb0, 1);
         alternate = this->unkb0;
@@ -10217,7 +10217,7 @@ void AssignedInventorGrid::func_slota8()
 /** @brief Move to the related window from the last row or move the grid marker down. */
 void AssignedInventorGrid::func_slota4()
 {
-    bool inactive = !unkb4->ItemCreationClass185050::arrived;
+    bool inactive = !unkb4->LibMovementState::arrived;
     if (inactive)
     {
         return;
@@ -10281,7 +10281,7 @@ void AssignedInventorGrid::func_slota4()
 /** @brief Move to the related window from the first row or move the grid marker up. */
 void AssignedInventorGrid::func_slota0()
 {
-    bool inactive = !unkb4->ItemCreationClass185050::arrived;
+    bool inactive = !unkb4->LibMovementState::arrived;
     if (inactive)
     {
         return;
@@ -10816,7 +10816,7 @@ u8 AvailableInventorGrid::func_slotb4()
     {
         return 0;
     }
-    bool inactive = !unkb4->ItemCreationClass185050::arrived;
+    bool inactive = !unkb4->LibMovementState::arrived;
     if (inactive)
     {
         return 0;
@@ -10829,7 +10829,7 @@ u8 AvailableInventorGrid::func_slotb4()
     {
         AssignedInventorGrid* other = state->assigned_inventor_grid;
         FieldObject23CEA0* primary = unkac;
-        primary->ItemCreationClass185050::alpha = 128.0f;
+        primary->LibMovementState::alpha = 128.0f;
         primary->geometry_dirty = 1;
         func_0023CEA0(unkb0, 0);
         FieldObject23CEA0* alternate = unkb0;
@@ -10839,7 +10839,7 @@ u8 AvailableInventorGrid::func_slotb4()
         unkb4 = unkac;
         highlight_current_row(this);
         primary = other->unkac;
-        primary->ItemCreationClass185050::alpha = 128.0f;
+        primary->LibMovementState::alpha = 128.0f;
         primary->geometry_dirty = 1;
         func_0023CEA0(other->unkb0, 0);
         alternate = other->unkb0;
@@ -10863,7 +10863,7 @@ u8 AvailableInventorGrid::func_slotb4()
         if (unkb4 == unkb0)
         {
             FieldObject23CEA0* primary = unkac;
-            primary->ItemCreationClass185050::alpha = 128.0f;
+            primary->LibMovementState::alpha = 128.0f;
             primary->geometry_dirty = 1;
             func_0023CEA0(unkb0, 0);
             FieldObject23CEA0* alternate = unkb0;
@@ -10923,7 +10923,7 @@ u8 func_003644F0(AvailableInventorGrid* object)
         FieldObject23CEA0* target;
         float x;
         float y;
-        restore->ItemCreationClass185050::alpha = 96.0f;
+        restore->LibMovementState::alpha = 96.0f;
         restore->geometry_dirty = 1;
         x = position->x;
         y = position->y;
@@ -11545,7 +11545,7 @@ u8 WorkshopExpansionWindow::func_slotb4()
         FieldObject23CEA0* marker = parent->choice_selector;
         if (marker != 0)
         {
-            marker->ItemCreationClass185050::alpha = 128.0f;
+            marker->LibMovementState::alpha = 128.0f;
             marker->geometry_dirty = 1;
         }
         D_001B643C->unk10->unk14->func_00263C70(parent);
@@ -12578,7 +12578,7 @@ u8 ItemCreationMainMenu::func_slotb0()
     }
     ItemCreationSelectedDisplayState* state;
     FieldObject23CEA0* selector = choice_selector;
-    bool inactive = !selector->ItemCreationClass185050::arrived;
+    bool inactive = !selector->LibMovementState::arrived;
     if (inactive)
     {
         return 0;
@@ -13519,7 +13519,7 @@ void item_creation_select_inventor_for_swap(ItemCreationSelectedDisplayState* ob
                 float x;
                 float y;
                 restore = available_grid->unkac;
-                restore->ItemCreationClass185050::alpha = 128.0f;
+                restore->LibMovementState::alpha = 128.0f;
                 restore->geometry_dirty = 1;
                 x = display->position.x;
                 y = display->position.y;
@@ -13559,7 +13559,7 @@ void item_creation_select_inventor_for_swap(ItemCreationSelectedDisplayState* ob
                     float x;
                     float y;
                     restore = assigned_grid->unkac;
-                    restore->ItemCreationClass185050::alpha = 128.0f;
+                    restore->LibMovementState::alpha = 128.0f;
                     restore->geometry_dirty = 1;
                     x = display->position.x;
                     y = display->position.y;
@@ -14161,13 +14161,13 @@ extern "C" void func_0036B360(ItemCreationSelectedDisplayState* object, u32 enab
             if (enabled != 0)
             {
                 FieldObject23CEA0* marker = resource->unk10c;
-                marker->ItemCreationClass185050::alpha = 128.0f;
+                marker->LibMovementState::alpha = 128.0f;
                 marker->geometry_dirty = 1;
             }
             else
             {
                 FieldObject23CEA0* marker = resource->unk10c;
-                marker->ItemCreationClass185050::alpha = 64.0f;
+                marker->LibMovementState::alpha = 64.0f;
                 marker->geometry_dirty = 1;
             }
         }
@@ -15767,8 +15767,8 @@ float ItemCreationClass185030::func_slot18(LibClass1721F0* source)
     return 0.0f;
 }
 
-/** @brief Perform the default movement-completion callback. */
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 

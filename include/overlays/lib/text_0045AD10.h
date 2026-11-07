@@ -403,8 +403,8 @@ struct LibPoint2
     float y;
 };
 
-/** 0x3C-byte storage receiver, with its dispatch pointer after the stored state. */
-class ItemCreationClass185050
+/** 0x3C-byte state that moves a widget towards a target position over a set time, with its vptr after the state. */
+class LibMovementState
 {
 public:
     LibStorageBlock0C unk00;
@@ -431,7 +431,7 @@ public:
     u8 unk36[2];
 
     /** @brief Initialize the storage and clear its three scalar pairs. */
-    ItemCreationClass185050()
+    LibMovementState()
     {
         position.y = 0.0f;
         position.x = 0.0f;
@@ -441,10 +441,12 @@ public:
         target.x = 0.0f;
     }
     /** @brief Release the owned storage. */
-    virtual ~ItemCreationClass185050()
+    virtual ~LibMovementState()
     {
     }
-    virtual void func_slot0c();
+
+    /** @brief Called once the position reaches the target; the base version does nothing. */
+    virtual void on_arrived();
     /**
      * @brief Allocate the drawing storage and show the state at a position at full alpha.
      * @param x Horizontal position.
@@ -461,14 +463,14 @@ public:
     void set_move_target(float x, float y, float duration);
 
     /**
-     * @brief Move one frame's distance towards the target, and report the arrival through slot 0x0C.
+     * @brief Move one frame's distance towards the target, and then call on_arrived once it reaches the target.
      * @return One if the position changed since the last step, otherwise zero.
      */
     s32 step();
 };
 
 /** Partial kind-9 widget with a storage base at offset 0x40. */
-class ItemCreationClass175030 : public LibWidget, public ItemCreationClass185050
+class ItemCreationClass175030 : public LibWidget, public LibMovementState
 {
 public:
     /** @brief Initialize the widget and select kind 9. */
@@ -481,7 +483,6 @@ public:
     virtual void draw();
 };
 
-typedef ItemCreationClass185050 LibMovementState;
 typedef ItemCreationClass175030 LibClass175030;
 
 /** String-backed drawing widget with MAIN vtable at 0x175140. */

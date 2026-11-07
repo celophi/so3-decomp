@@ -1596,8 +1596,8 @@ void func_00359190(void* object)
 {
 }
 
-/** @brief Perform no work. */
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 

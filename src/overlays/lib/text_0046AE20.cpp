@@ -170,14 +170,6 @@ public:
     /** @brief Destroy the grid. */
     virtual ~LibClass173E70();
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_175DE0 in main data. */
@@ -189,14 +181,6 @@ public:
     {
     }
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_175760 in main data. */
@@ -228,14 +212,6 @@ public:
     {
     }
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_175900 in main data. */
@@ -267,14 +243,6 @@ public:
     {
     }
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_175AA0 in main data. */
@@ -296,14 +264,6 @@ public:
     {
     }
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_1761F0 in main data. */
@@ -325,14 +285,6 @@ public:
     {
     }
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_176460 in main data. */
@@ -354,14 +306,6 @@ public:
     {
     }
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_1766D0 in main data. */
@@ -423,14 +367,6 @@ public:
     {
     }
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_176E20 in main data. */
@@ -450,14 +386,6 @@ public:
     /** @brief Destroy the grid. */
     virtual ~LibClass1755C0();
 
-    /**
-     * @brief Free the object through the Lib heap.
-     * @param object Object storage.
-     */
-    static void operator delete(void* object)
-    {
-        func_004350C0(object);
-    }
 };
 
 /** Partial grid with vtable D_175690 in main data. */
@@ -1162,9 +1090,9 @@ s32 LibClass175430::func_00471410(LibUpdateList* links, LibClass175430* source)
  * @param context Resident context the camera starts from.
  * @return The new camera, or null when allocation fails.
  */
-LibClass179080* LibScene::func_00471440(void* context)
+LibCamera* LibScene::func_00471440(void* context)
 {
-    return new (0) LibClass179080(context);
+    return new (0) LibCamera(context);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00471480);

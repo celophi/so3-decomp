@@ -244,7 +244,11 @@ u8 LibSlerpQuaternionTrackBase::find_surrounding_keys(float key, s32* lower, s32
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", __dt__27LibSlerpQuaternionTrackBaseFv);
+/** @brief Free the keys. */
+LibSlerpQuaternionTrackBase::~LibSlerpQuaternionTrackBase()
+{
+    free_keys();
+}
 
 /** @brief Clear the key storage, counts, modes and cached indices. */
 void LibSlerpQuaternionTrackBase::reset_state()
@@ -468,7 +472,12 @@ void LibSlerpQuaternionTrackBase::set_single_key(const void* value, const void* 
     on_set_single_key(static_cast<const FieldVec4A*>(value), key);
 }
 
-void func_004ACBD0(void* object)
+/**
+ * @brief Store the single key; the base ignores it.
+ * @param value Key value.
+ * @param key Key position.
+ */
+void LibSlerpQuaternionTrackBase::on_set_single_key(const FieldVec4A* value, float key)
 {
 }
 
@@ -486,7 +495,14 @@ s32 LibSlerpQuaternionTrackBase::insert_key(s32 index, float key, const void* va
     return on_insert_key(index, key, static_cast<const FieldVec4A*>(value));
 }
 
-s32 func_004ACC10(void* object)
+/**
+ * @brief Insert a key; the base ignores it.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Zero.
+ */
+s32 LibSlerpQuaternionTrackBase::on_insert_key(s32 index, float key, const FieldVec4A* value)
 {
     return 0;
 }
@@ -505,7 +521,14 @@ s32 LibSlerpQuaternionTrackBase::replace_key(s32 index, float key, const void* v
     return on_replace_key(index, key, static_cast<const FieldVec4A*>(value));
 }
 
-s32 func_004ACC50(void* object)
+/**
+ * @brief Replace a key; the base ignores it.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Zero.
+ */
+s32 LibSlerpQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     return 0;
 }
@@ -523,7 +546,13 @@ s32 LibSlerpQuaternionTrackBase::append_key(const void* value, const void* in_ta
     return on_append_key(static_cast<const FieldVec4A*>(value), key);
 }
 
-s32 func_004ACC90(void* object)
+/**
+ * @brief Append a key; the base ignores it.
+ * @param value Key value.
+ * @param key Key position.
+ * @return Zero.
+ */
+s32 LibSlerpQuaternionTrackBase::on_append_key(const FieldVec4A* value, float key)
 {
     return 0;
 }
@@ -818,7 +847,27 @@ s32 LibPooledFloatQuaternionTrack::read_key(s32 index, float* key, void* value, 
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD770);
+/**
+ * @brief Copy an unpacked keyframe after the last key and extend the key span to it.
+ * @param record LibFloatQuaternionKeyRecord to append.
+ */
+void LibPooledFloatQuaternionTrack::append_key_record(const void* record)
+{
+    const LibFloatQuaternionKeyRecord* source = static_cast<const LibFloatQuaternionKeyRecord*>(record);
+
+    if (key_array)
+    {
+        key_array[state.key_count].value.x = source->value[0];
+        key_array[state.key_count].value.y = source->value[1];
+        key_array[state.key_count].value.z = source->value[2];
+        key_array[state.key_count].value.w = source->value[3];
+        key_array[state.key_count].key = source->key;
+        key_array[state.key_count].first = source->first;
+        key_array[state.key_count].second = source->second;
+        state.span = key_array[state.key_count].key - key_array[0].key;
+        state.key_count++;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD860);
 
@@ -1705,7 +1754,11 @@ u8 LibFloatCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* upp
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", __dt__22LibFloatCurveTrackBaseFv);
+/** @brief Free the keys. */
+LibFloatCurveTrackBase::~LibFloatCurveTrackBase()
+{
+    free_keys();
+}
 
 /**
  * @brief Reset array storage, counts, packed controls, and cached indices.
@@ -2519,7 +2572,11 @@ void LibSlerpQuaternionHistory::reset()
     unk18 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", __dt__17LibFloatTrackBaseFv);
+/** @brief Free the keys. */
+LibFloatTrackBase::~LibFloatTrackBase()
+{
+    free_keys();
+}
 
 /**
  * @brief Reset float-entry storage, counts, control fields, and cached indices.
@@ -2768,7 +2825,12 @@ void LibFloatTrackBase::set_single_key(const void* value, const void* in_tangent
     on_set_single_key(static_cast<const float*>(value), key);
 }
 
-void func_004B2D90(void* object)
+/**
+ * @brief Store the single key; the base ignores it.
+ * @param value Key value.
+ * @param key Key position.
+ */
+void LibFloatTrackBase::on_set_single_key(const float* value, float key)
 {
 }
 
@@ -2786,7 +2848,14 @@ s32 LibFloatTrackBase::insert_key(s32 index, float key, const void* value, const
     return on_insert_key(index, key, static_cast<const float*>(value));
 }
 
-s32 func_004B2DD0(void* object)
+/**
+ * @brief Insert a key; the base ignores it.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Zero.
+ */
+s32 LibFloatTrackBase::on_insert_key(s32 index, float key, const float* value)
 {
     return 0;
 }
@@ -2805,7 +2874,14 @@ s32 LibFloatTrackBase::replace_key(s32 index, float key, const void* value, cons
     return on_replace_key(index, key, static_cast<const float*>(value));
 }
 
-s32 func_004B2E10(void* object)
+/**
+ * @brief Replace a key; the base ignores it.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Zero.
+ */
+s32 LibFloatTrackBase::on_replace_key(s32 index, float key, const float* value)
 {
     return 0;
 }
@@ -2823,7 +2899,13 @@ s32 LibFloatTrackBase::append_key(const void* value, const void* in_tangent, con
     return on_append_key(static_cast<const float*>(value), key);
 }
 
-s32 func_004B2E50(void* object)
+/**
+ * @brief Append a key; the base ignores it.
+ * @param value Key value.
+ * @param key Key position.
+ * @return Zero.
+ */
+s32 LibFloatTrackBase::on_append_key(const float* value, float key)
 {
     return 0;
 }

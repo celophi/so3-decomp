@@ -854,7 +854,7 @@ __dt__23SkillCoordinateSelectorFv = 0x00364720; // type:func allow_duplicated:Tr
 
 func_003647E0 = 0x003647E0; // type:func absolute:True allow_duplicated:True
 
-func_slot0c__23ItemCreationClass185050Fv = 0x003647E0; // type:func allow_duplicated:True
+on_arrived__16LibMovementStateFv = 0x003647E0; // type:func allow_duplicated:True
 
 func_0035C100 = 0x0035C100; // type:func absolute:True allow_duplicated:True
 
@@ -870,9 +870,9 @@ render__23SkillCoordinateSelectorFv = 0x0035C120; // type:func allow_duplicated:
 
 func_003610F0 = 0x003610F0; // type:func absolute:True allow_duplicated:True
 
-__dt__23ItemCreationClass185050Fv = 0x003610F0; // type:func allow_duplicated:True
+__dt__16LibMovementStateFv = 0x003610F0; // type:func allow_duplicated:True
 
-__vt__23ItemCreationClass185050 = 0x00183DA0; // size:0x10 absolute:True
+__vt__16LibMovementState = 0x00183DA0; // size:0x10 absolute:True
 
 __vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True
 

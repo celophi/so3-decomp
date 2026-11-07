@@ -33,9 +33,6 @@ void* func_0044A410(void);
  */
 void* func_00448A10(void* object, u32 arg1, u32 arg2);
 
-/** Copy the vector at receiver offset 0x80 to the result. */
-void func_00448CD0(const void* object, void* result);
-
 /**
  * @brief Store the value at receiver offset 0x28.
  * @param object Receiver whose float field is updated.
@@ -177,11 +174,6 @@ u32 func_00444F00(const void* object);
 u32 func_00444F10(const void* object);
 /** Return the word at receiver offset 0x10. */
 u32 func_00444F20(const void* object);
-/** Return the word at receiver offset 0x40. */
-u32 func_00449F40(const void* object);
-/** Return the word at receiver offset 0x4. */
-u32 func_0044A160(const void* object);
-
 
 /** Store the word at receiver offset 0x48. */
 void func_0043D820(void* object, u32 value);
@@ -252,12 +244,6 @@ u8 func_00444D30(const void* object);
 u8 func_00444D60(const void* object);
 
 
-/** Return the signed halfword at receiver offset 0x48. */
-s16 func_00449F50(const void* object);
-
-/** Return the signed halfword at receiver offset 0x4A. */
-s16 func_00449F60(const void* object);
-
 
 /** Store the byte constant at receiver offset 0x60. */
 void func_0044A400(void* object);
@@ -319,15 +305,6 @@ s32 func_00447C90(void* object);
 /** Return the fixed value 0. */
 s32 func_00448900(void* object);
 
-/** Return the fixed value 0. */
-s32 func_00449F70(void* object);
-
-/** Return the fixed value 0. */
-s32 func_00449F80(void* object);
-
-/** Return the fixed value 0. */
-s32 func_00449F90(void* object);
-
 void func_0043BCD0(void* object);
 void func_0043BCE0(void* object);
 void func_0043D220(void* object);
@@ -337,8 +314,6 @@ void func_00441B80(void* object);
 void func_00447190(void* object);
 void func_00447C60(void* object);
 void func_00447C80(void* object);
-void func_00449FA0(void* object);
-
 /** Return the first pointer argument unchanged. */
 void* func_00448690(void* value);
 /** Return the first pointer argument unchanged. */
@@ -356,9 +331,6 @@ void func_0043AD20(void* object, const unsigned __int128* value);
 /** Set the ready flag and copy a 128-bit value into the receiver. */
 void func_0043ADA0(void* object, const unsigned __int128* value);
 
-
-/** Clear four consecutive words at the start of the receiver. */
-void func_0044A000(void* object);
 
 
 #ifdef __cplusplus
@@ -485,17 +457,7 @@ void* func_00444EE0(void* object, s32 row, s32 column);
 /** Return the table address at base + index * 48. */
 void* func_0043D980(void* object, s32 index);
 
-/** Set the low packed mode at its target field and record whether either mode equals four. */
-void func_00448E20(void* object, u8 mode);
 
-
-/** Set the high packed mode at its target field and record whether either mode equals four. */
-void func_00449EE0(void* object, u8 mode);
-
-
-/** Clear the vector at offset 0x70 and update the associated state. */
-void func_00449AF0(void* object);
-s32 func_00449FB0(void* object, float key);
 
 
 }

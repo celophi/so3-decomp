@@ -59,7 +59,7 @@ struct FieldDisplaySlot
 struct FieldDisplayManagerState
 {
     u8 unk00[0x4084];
-    void* unk4084;
+    void* light_list;
     u8 unk4088[0x3DC];
     FieldDisplaySlot* unk4464;
     FieldDisplaySlot* unk4468;
@@ -1878,8 +1878,8 @@ extern "C" void field_initialize_context(ResidentContext* context)
     D_001B6510 = 0;
     D_001B6518 = 0;
     FieldDisplayManagerState* display = static_cast<FieldDisplayManagerState*>(g_renderer);
-    display->unk4084 = D_001B6624;
-    D_001B6624->manager = g_display_manager;
+    display->light_list = g_light_list;
+    g_light_list->manager = g_display_manager;
     static_cast<FieldDisplayManagerState*>(g_renderer)->unk4464->unkaf = 0;
     static_cast<FieldDisplayManagerState*>(g_renderer)->unk4468->unkaf = 0;
     FieldDisplaySlot* slot = static_cast<FieldDisplayManagerState*>(g_renderer)->unk4464;

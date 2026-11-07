@@ -2,6 +2,9 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/camera_vu0.h"
+#include "overlays/lib/light_vu0.h"
+#include "overlays/lib/model.h"
+#include "overlays/lib/tracks.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libkernl_00121940.h"
@@ -9,16 +12,6 @@
 #include "vu0.h"
 #include "ee.h"
 #include "main/resident_data.h"
-
-/** Track pool built by func_004E4590 and its siblings; its data comes before the vptr. */
-class LibTrackPool
-{
-    public:
-        u8 unk00[0x20];
-
-        /** @brief Free the pool. */
-        virtual ~LibTrackPool();
-};
 
 extern "C" {
 extern LibDisplayManager* D_001B6660;
@@ -39,20 +32,66 @@ extern LibDisplayManager* g_scene_display_manager;
 extern LibDisplayManager* g_default_display_manager;
 extern LibListObject* D_001B6634;
 extern LibListObject D_00507CB8;
-extern LibTrackPool* g_float_track_pool;
-extern LibTrackPool* g_vector_track_pool;
-extern LibTrackPool* g_slerp_quaternion_track_pool;
-extern LibTrackPool* g_float_curve_track_pool;
-extern LibTrackPool* g_vector_curve_track_pool;
-extern LibTrackPool* g_float_quaternion_track_pool;
-extern LibTrackPool* g_quaternion_curve_track_pool;
-extern LibTrackPool* g_quaternion_track_pool;
+extern LibTrackPool<LibPooledFloatTrack>* g_float_track_pool;
+extern LibTrackPool<LibPooledVectorTrack>* g_vector_track_pool;
+extern LibTrackPool<LibPooledSlerpQuaternionTrack>* g_slerp_quaternion_track_pool;
+extern LibTrackPool<LibPooledFloatCurveTrack>* g_float_curve_track_pool;
+extern LibTrackPool<LibPooledVectorCurveTrack>* g_vector_curve_track_pool;
+extern LibTrackPool<LibPooledFloatQuaternionTrack>* g_float_quaternion_track_pool;
+extern LibTrackPool<LibPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
+extern LibTrackPool<LibPooledQuaternionTrack>* g_quaternion_track_pool;
 extern void* g_display_callbacks;
 }
-extern "C" void func_004E6690(void* object);
-extern "C" void func_004E6B30(void* owner, void* object);
-extern "C" void func_004E6A90(void* object);
-extern "C" void func_004E6AE0(void* owner, void* object);
+
+/**
+ * @brief Mark a track's g_vector_track_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void vector_track_pool_free(LibTrackPool<LibPooledVectorTrack>* pool, LibPooledVectorTrack* track);
+
+/**
+ * @brief Mark a track's g_vector_curve_track_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void vector_curve_track_pool_free(LibTrackPool<LibPooledVectorCurveTrack>* pool, LibPooledVectorCurveTrack* track);
+
+/**
+ * @brief Return a vector, or a zeroed fallback when it is missing.
+ * @param vector Optional vector.
+ * @param zero Storage for the zero vector.
+ * @return The vector, or zero after clearing it.
+ */
+static inline const FieldVec4A* track_vector(const FieldVec4A* vector, FieldVec4A* zero)
+{
+    if (!vector)
+    {
+        zero->x = 0.0f;
+        zero->y = 0.0f;
+        zero->z = 0.0f;
+        zero->w = 0.0f;
+        return zero;
+    }
+
+    return vector;
+}
+
+/**
+ * @brief Subtract the first three components.
+ * @param left Vector to subtract from.
+ * @param right Vector to subtract.
+ * @return Difference, keeping the left vector's fourth component.
+ */
+static inline FieldVec4A sequence_difference(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4A value;
+    *(unsigned __int128*)&value = *(const unsigned __int128*)&left;
+    value.x -= right.x;
+    value.y -= right.y;
+    value.z -= right.z;
+    return value;
+}
 
 extern "C" u8 D_00179270[];
 extern "C" u8 D_00179260[];
@@ -110,25 +149,6 @@ typedef struct WordClearOwnertext_004DD440
 
 extern "C" u8 D_0050CD80[];
 
-typedef struct HalfwordGetterOwnertext_004DD440
-{
-    u8 unk00[0x28];
-    s16 unk28;
-    s16 unk2a;
-    u8 unk2c[0x1C];
-    s16 unk48;
-    s16 unk4a;
-} HalfwordGetterOwnertext_004DD440;
-
-
-
-typedef struct WordGetterOwnertext_004DD440
-{
-    u8 unk00[0x4];
-    u32 unk04;
-} WordGetterOwnertext_004DD440;
-
-
 static inline void lib_get_transform_translation(FieldVec4B& result, const LibTransform& object);
 static inline float lib_vector_length(const FieldVec4B& vector);
 
@@ -160,59 +180,6 @@ static inline FieldVec4B lib_vector_difference(const FieldVec4B& left, const Fie
     FieldVec4B value(left);
     return value.subtract(right);
 }
-
-typedef struct FourWordClearOwnertext_004DD440 { u32 words[4]; } FourWordClearOwnertext_004DD440;
-
-typedef struct PackedModePair
-{
-    u8 lowMode : 4;
-    u8 highMode : 4;
-    u8 hasModeFour : 1;
-    u8 unk01_1_7 : 7;
-} PackedModePair;
-
-typedef struct PackedModesOwner
-{
-    u8 unk00[0x32];
-    PackedModePair at32;
-    u8 unk34[0x1E];
-    PackedModePair at52;
-} PackedModesOwner;
-
-typedef struct FloatKeyScanEntry_text_004DD440_10
-{
-    float key00;
-    u8 unk04[0x8];
-    float key0c;
-} FloatKeyScanEntry_text_004DD440_10;
-
-typedef struct FloatKeyScanOwner_text_004DD440_10
-{
-    u8 unk00[0x4];
-    FloatKeyScanEntry_text_004DD440_10* entries;
-    u8 unk08[0x20];
-    s16 count28;
-    u8 unk2a[0x1E];
-    s16 count48;
-} FloatKeyScanOwner_text_004DD440_10;
-
-typedef struct FloatKeyScanEntry_text_004DD440_30
-{
-    float key00;
-    u8 unk04[0x8];
-    float key0c;
-    u8 unk10[0x20];
-} FloatKeyScanEntry_text_004DD440_30;
-
-typedef struct FloatKeyScanOwner_text_004DD440_30
-{
-    u8 unk00[0x4];
-    FloatKeyScanEntry_text_004DD440_30* entries;
-    u8 unk08[0x20];
-    s16 count28;
-    u8 unk2a[0x1E];
-    s16 count48;
-} FloatKeyScanOwner_text_004DD440_30;
 
 /** Number of A+D register writes that fill an object after its GIF tag. */
 #define LIB_AD_WRITE_COUNT(type) ((sizeof(type) - sizeof(GsGifTag)) / sizeof(unsigned __int128))
@@ -903,7 +870,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1450);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1460);
 
 /** @brief Clear the manager camera reference, then detach and queue the transform. */
-void LibClass179080::destroy()
+void LibCamera::destroy()
 {
     LibDisplayManager* manager = static_cast<LibDisplayManager*>(owner);
     if (manager != 0 && manager->current_display == this)
@@ -914,7 +881,7 @@ void LibClass179080::destroy()
 }
 
 /** @brief Initialize viewport bounds and default projection settings. @param context Resident viewport context. */
-void LibClass179080::initialize_projection(const LibCameraContext* context)
+void LibCamera::initialize_projection(const LibCameraContext* context)
 {
     horizontal_fov = 0.7853982f;
     s32 half_height = context->display_area.height / 2;
@@ -938,7 +905,7 @@ void LibClass179080::initialize_projection(const LibCameraContext* context)
 }
 
 /** @brief Upload the camera's clip geometry into VU0 data memory. */
-void LibClass179080::upload_clip_geometry() const
+void LibCamera::upload_clip_geometry() const
 {
     vu0_upload_clip_geometry(clip_points, clip_normals);
 }
@@ -946,7 +913,7 @@ void LibClass179080::upload_clip_geometry() const
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1670);
 
 /** @brief Build the local perspective volume for visibility tests. @param volume Destination volume. */
-void LibClass179080::build_projection_volume(LibProjectionVolume* volume) const
+void LibCamera::build_projection_volume(LibProjectionVolume* volume) const
 {
     FieldVec4A transverse_axis;
     FieldVec4A depth_axis;
@@ -980,21 +947,21 @@ void LibClass179080::build_projection_volume(LibProjectionVolume* volume) const
  * @param far_factor Receives the far fog factor.
  * @param near_factor Receives the near fog factor.
  */
-void LibClass179080::get_fog_factors(float* far_factor, float* near_factor) const
+void LibCamera::get_fog_factors(float* far_factor, float* near_factor) const
 {
     *far_factor = far_fog_factor;
     *near_factor = near_fog_factor;
 }
 
 /** @brief Update the transform and extract its rotation components. */
-void LibClass179080::update_transform_matrix()
+void LibCamera::update_transform_matrix()
 {
     LibLookAtTransform::update_transform_matrix();
     func_004CEBA0(rotation_angles, get_transform_matrix());
 }
 
 /** @brief Update camera state and its attached-transform distance. */
-void LibClass179080::update()
+void LibCamera::update()
 {
     unk63 = 0;
     LibTransform::update();
@@ -1019,7 +986,7 @@ void LibClass179080::update()
  * @param offset Constant fog coefficient.
  * @param reciprocal_scale Reciprocal-distance fog coefficient.
  */
-void LibClass179080::set_fog_coefficients(float offset, float reciprocal_scale)
+void LibCamera::set_fog_coefficients(float offset, float reciprocal_scale)
 {
     fog_offset = offset;
     fog_reciprocal_scale = reciprocal_scale;
@@ -1030,21 +997,21 @@ void LibClass179080::set_fog_coefficients(float offset, float reciprocal_scale)
  * @param offset Receives the constant fog coefficient.
  * @param reciprocal_scale Receives the reciprocal-distance fog coefficient.
  */
-void LibClass179080::get_fog_coefficients(float* offset, float* reciprocal_scale) const
+void LibCamera::get_fog_coefficients(float* offset, float* reciprocal_scale) const
 {
     *offset = fog_offset;
     *reciprocal_scale = fog_reciprocal_scale;
 }
 
 /** @brief Set the near fog-distance fraction and recompute fog coefficients. @param fraction Fraction of the configured distance range. */
-void LibClass179080::set_near_fog_fraction(float fraction)
+void LibCamera::set_near_fog_fraction(float fraction)
 {
     near_fog_fraction = fraction;
     update_fog_coefficients(far_fog_factor, near_fog_factor);
 }
 
 /** @brief Set the far fog-distance fraction and recompute fog coefficients. @param fraction Fraction of the configured distance range. */
-void LibClass179080::set_far_fog_fraction(float fraction)
+void LibCamera::set_far_fog_fraction(float fraction)
 {
     far_fog_fraction = fraction;
     update_fog_coefficients(far_fog_factor, near_fog_factor);
@@ -1058,7 +1025,7 @@ void LibClass179080::set_far_fog_fraction(float fraction)
  * @param near_distance Near fog distance.
  * @param far_distance Far fog distance.
  */
-void LibClass179080::set_fog(u32 color, float far_factor, float near_factor, float near_distance, float far_distance)
+void LibCamera::set_fog(u32 color, float far_factor, float near_factor, float near_distance, float far_distance)
 {
     fog_color = color;
     far_fog_factor = far_factor;
@@ -1068,10 +1035,10 @@ void LibClass179080::set_fog(u32 color, float far_factor, float near_factor, flo
     update_fog_coefficients(far_factor, near_factor);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1E70__14LibClass179080Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1E70__9LibCameraFv);
 
 /** @brief Copy camera settings, the attached transform and inherited transform state. @param source Camera to copy. */
-void LibClass179080::copy_camera(const LibClass179080* source)
+void LibCamera::copy_camera(const LibCamera* source)
 {
     copy_view_and_fog(source);
     look_at_target = source->look_at_target;
@@ -1079,7 +1046,7 @@ void LibClass179080::copy_camera(const LibClass179080* source)
 }
 
 /** @brief Copy the camera's view and fog settings. @param source Camera to copy. */
-void LibClass179080::copy_view_and_fog(const LibClass179080* source)
+void LibCamera::copy_view_and_fog(const LibCamera* source)
 {
     unk3c8 = source->unk3c8;
     unk3cc = source->unk3cc;
@@ -1118,7 +1085,7 @@ void LibClass179080::copy_view_and_fog(const LibClass179080* source)
 }
 
 /** @brief Submit the camera's DMA chain. @param channel DMA channel number. */
-void LibClass179080::submit_dma(u32 channel)
+void LibCamera::submit_dma(u32 channel)
 {
     DmaChannel* dma = sceDmaGetChan(channel);
     dma->chcr.tag_transfer_enable = 0;
@@ -1126,17 +1093,17 @@ void LibClass179080::submit_dma(u32 channel)
 }
 
 /** @brief Complete the camera transfer. @param channel DMA channel number; unused. */
-void LibClass179080::complete_dma(u32 channel)
+void LibCamera::complete_dma(u32 channel)
 {
 }
 
 /** @brief Queue the camera for VIF1 DMA. @return 1 on success, 0 when the queue is full. */
-s32 LibClass179080::enqueue_submission()
+s32 LibCamera::enqueue_submission()
 {
     return func_00114100(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2120__14LibClass179080Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2120__9LibCameraFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E22B0);
 
@@ -1144,14 +1111,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E22B0);
 #define LIB_FACE_CAMERA_FOV 1.5707964f
 
 /** @brief Rebuild the view and projection matrices and upload the projection to VU0. */
-void LibClass179080::update_projection()
+void LibCamera::update_projection()
 {
     switch (mode)
     {
     case LIB_CAMERA_MODE_FACE_CURRENT_CAMERA:
         horizontal_fov = LIB_FACE_CAMERA_FOV;
         set_translation_vector(&anchor->translation);
-        LibClass179080* camera = static_cast<LibClass179080*>(g_display_manager->current_display);
+        LibCamera* camera = static_cast<LibCamera*>(g_display_manager->current_display);
 
         if (camera == 0)
         {
@@ -1208,7 +1175,7 @@ void LibClass179080::update_projection()
  * @brief Calculate the scaled screen-plane distance from the horizontal field of view.
  * @return Perspective projection distance.
  */
-float LibClass179080::compute_projection_distance() const
+float LibCamera::compute_projection_distance() const
 {
     float half_width = (unk254 * width_scale) * (screen_max.x - screen_min.x) / 2.0f;
     return half_width / func_00141EC0(horizontal_fov / 2.0f);
@@ -1376,7 +1343,7 @@ extern "C" void lib_shutdown(void)
     g_update_list->func_004295B0(0);
     lib_detach(*g_display_manager);
     lib_detach(*g_scene_display_manager);
-    lib_detach(*D_001B6624);
+    lib_detach(*g_light_list);
     g_scene_camera->destroy();
     D_001B6634->destroy();
     lib_object_detach_owner(g_resource_queue);
@@ -1405,7 +1372,7 @@ extern "C" void lib_shutdown(void)
     D_001B6648->destroy();
     g_default_display_manager->destroy();
     g_scene_display_manager->destroy();
-    D_001B6624->destroy();
+    g_light_list->destroy();
     D_001B6620->destroy();
     delete static_cast<LibRenderer*>(g_renderer);
     delete g_vram_allocator;
@@ -1417,7 +1384,7 @@ extern "C" void lib_shutdown(void)
     D_001B6648 = 0;
     g_default_display_manager = 0;
     g_scene_display_manager = 0;
-    D_001B6624 = 0;
+    g_light_list = 0;
     D_001B6620 = 0;
     g_renderer = 0;
     g_vram_allocator = 0;
@@ -1505,333 +1472,1223 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4A40);
 
 DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E4AD0, D_00179200)
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4B00);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4CA0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4E40);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4EC0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5060);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5200);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E53A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5410);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E55A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5740);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E58E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5940);
-
-void func_004E59A0(void* object)
+/**
+ * @brief Release every track in g_float_track_pool and its storage.
+ * @param pool Pool to clear.
+ */
+void float_track_pool_release(LibTrackPool<LibPooledFloatTrack>* pool)
 {
-    func_004E6690(object);
-    func_004E6B30(g_vector_curve_track_pool, object);
+    pool->release();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E59D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5A30);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5AA0);
-
-void func_004E5B00(void* object)
+/**
+ * @brief Release every track in g_vector_track_pool and its storage.
+ * @param pool Pool to clear.
+ */
+void vector_track_pool_release(LibTrackPool<LibPooledVectorTrack>* pool)
 {
-    func_004E6A90(object);
-    func_004E6AE0(g_vector_track_pool, object);
+    pool->release();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5B30);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5C10);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5C80);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5D30);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5DA0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5E10);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5E80);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5F60);
-
-extern "C" void func_004E5FA0(const void* object, FieldVec4B* output)
+/** @brief Destroy the track. */
+LibPooledVectorTrack::~LibPooledVectorTrack()
 {
-    *output = *(const FieldVec4A*)((const u8*)object + 0xC0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E5FC0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6040);
-
-extern "C" void func_004E60B0(const void* object, FieldVec4B* output)
+/**
+ * @brief Release every track in g_slerp_quaternion_track_pool and its storage.
+ * @param pool Pool to clear.
+ */
+void slerp_quaternion_track_pool_release(LibTrackPool<LibPooledSlerpQuaternionTrack>* pool)
 {
-    *output = *(const FieldVec4A*)((const u8*)object + 0xA0);
+    pool->release();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E60D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6170);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6200);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6280);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E62F0);
-
-/** Set the low packed mode at 0x52 and record whether either mode equals four. */
-void func_004E6340(void* object, u8 mode)
+/**
+ * @brief Release every track in g_float_curve_track_pool and its storage.
+ * @param pool Pool to clear.
+ */
+void float_curve_track_pool_release(LibTrackPool<LibPooledFloatCurveTrack>* pool)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at52.lowMode = mode;
-    receiver->at52.hasModeFour = receiver->at52.lowMode == 4 || receiver->at52.highMode == 4;
+    pool->release();
 }
 
-/** Set the high packed mode at 0x52 and record whether either mode equals four. */
-void func_004E63A0(void* object, u8 mode)
+/**
+ * @brief Release every track in g_vector_curve_track_pool and its storage.
+ * @param pool Pool to clear.
+ */
+void vector_curve_track_pool_release(LibTrackPool<LibPooledVectorCurveTrack>* pool)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at52.highMode = mode;
-    receiver->at52.hasModeFour = receiver->at52.lowMode == 4 || receiver->at52.highMode == 4;
+    pool->release();
 }
 
-/** Return the signed halfword at receiver offset 0x48. */
-s16 func_004E6400(const void* object)
+/** @brief Destroy the track. */
+LibPooledVectorCurveTrack::~LibPooledVectorCurveTrack()
 {
-    const HalfwordGetterOwnertext_004DD440* receiver = static_cast<const HalfwordGetterOwnertext_004DD440*>(object);
-    return receiver->unk48;
 }
 
-/** Return the signed halfword at receiver offset 0x4A. */
-s16 func_004E6410(const void* object)
+/**
+ * @brief Release every track in g_float_quaternion_track_pool and its storage.
+ * @param pool Pool to clear.
+ */
+void float_quaternion_track_pool_release(LibTrackPool<LibPooledFloatQuaternionTrack>* pool)
 {
-    const HalfwordGetterOwnertext_004DD440* receiver = static_cast<const HalfwordGetterOwnertext_004DD440*>(object);
-    return receiver->unk4a;
+    pool->release();
 }
 
-s32 func_004E6420(void* object)
+/**
+ * @brief Release every track in g_quaternion_curve_track_pool and its storage.
+ * @param pool Pool to clear.
+ */
+void quaternion_curve_track_pool_release(LibTrackPool<LibPooledQuaternionCurveTrack>* pool)
+{
+    pool->release();
+}
+
+/**
+ * @brief Release every track in g_quaternion_track_pool and its storage.
+ * @param pool Pool to clear.
+ */
+void quaternion_track_pool_release(LibTrackPool<LibPooledQuaternionTrack>* pool)
+{
+    pool->release();
+}
+
+/** @brief Return a pooled track to its pool, or delete an ordinary track. */
+void LibPooledVectorCurveTrack::release()
+{
+    if (this != 0)
+    {
+        if (state.pooled)
+        {
+            return_to_pool();
+        }
+        else
+        {
+            delete this;
+        }
+    }
+}
+
+/**
+ * @brief Free a pooled track's keys and give the track back to its pool.
+ */
+void LibPooledVectorCurveTrack::return_to_pool()
+{
+    free_keys();
+    vector_curve_track_pool_free(g_vector_curve_track_pool, this);
+}
+
+/** @brief Return a pooled track to its pool, or delete an ordinary track. */
+void LibPooledVectorTrack::release()
+{
+    if (this != 0)
+    {
+        if (state.pooled)
+        {
+            return_to_pool();
+        }
+        else
+        {
+            delete this;
+        }
+    }
+}
+
+/** @brief Free the keys and give the track back to g_vector_track_pool. */
+void LibPooledVectorTrack::return_to_pool()
+{
+    free_keys();
+    vector_track_pool_free(g_vector_track_pool, this);
+}
+
+/**
+ * @brief Append a keyframe.
+ * @param value Keyframe value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrack::append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count].value = *value;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count].in_tangent = *in_tangent;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count].out_tangent = *out_tangent;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count].value.w = key;
+    state.span = key - static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w;
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Append a keyframe, using zero vectors for missing auxiliary vectors.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrack::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    FieldVec4A zero_first;
+    FieldVec4A zero_second;
+    out_tangent = track_vector(static_cast<const FieldVec4A*>(out_tangent), &zero_second);
+    in_tangent = track_vector(static_cast<const FieldVec4A*>(in_tangent), &zero_first);
+    return append_curve_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
+}
+
+/**
+ * @brief Replace an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrack::replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    static_cast<LibVectorCurveTrackKey*>(key_array)[index].value = *value;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[index].in_tangent = *in_tangent;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[index].out_tangent = *out_tangent;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[index].value.w = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Replace an indexed keyframe, using zero vectors for missing auxiliary vectors.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrack::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    FieldVec4A zero_first;
+    FieldVec4A zero_second;
+    out_tangent = track_vector(static_cast<const FieldVec4A*>(out_tangent), &zero_second);
+    in_tangent = track_vector(static_cast<const FieldVec4A*>(in_tangent), &zero_first);
+    return replace_curve_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
+}
+
+/**
+ * @brief Insert a keyframe, using zero vectors for missing auxiliary vectors.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrack::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    FieldVec4A zero_first;
+    FieldVec4A zero_second;
+    out_tangent = track_vector(static_cast<const FieldVec4A*>(out_tangent), &zero_second);
+    in_tangent = track_vector(static_cast<const FieldVec4A*>(in_tangent), &zero_first);
+    return insert_curve_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
+}
+
+/**
+ * @brief Store a single keyframe, using zero vectors for missing auxiliary vectors.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ */
+void LibVectorCurveTrack::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    FieldVec4A zero_first;
+    FieldVec4A zero_second;
+    out_tangent = track_vector(static_cast<const FieldVec4A*>(out_tangent), &zero_second);
+    in_tangent = track_vector(static_cast<const FieldVec4A*>(in_tangent), &zero_first);
+    set_single_curve_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
+}
+
+/**
+ * @brief Read an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Receives the sort key.
+ * @param value Receives the value.
+ * @param first Receives the first auxiliary vector.
+ * @param second Receives the second auxiliary vector.
+ * @return One when the index is within the capacity, otherwise zero.
+ */
+s32 LibVectorCurveTrack::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    if (key)
+    {
+        *key = static_cast<const LibVectorCurveTrackKey*>(key_array)[index].value.w;
+    }
+
+    if (value)
+    {
+        *static_cast<FieldVec4B*>(value) = static_cast<const LibVectorCurveTrackKey*>(key_array)[index].value;
+    }
+
+    if (first)
+    {
+        *static_cast<FieldVec4B*>(first) = static_cast<const LibVectorCurveTrackKey*>(key_array)[index].in_tangent;
+    }
+
+    if (second)
+    {
+        *static_cast<FieldVec4B*>(second) = static_cast<const LibVectorCurveTrackKey*>(key_array)[index].out_tangent;
+    }
+
+    return 1;
+}
+
+/** @brief Reset to a single zero keyframe at key zero. */
+void LibVectorCurveTrack::reset_keys()
+{
+    FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
+    set_single_key(&zero, &zero, &zero, 0.0f);
+}
+
+/**
+ * @brief Return how fast the value changed at the last sample, per second.
+ * @param output Receives the rate.
+ */
+void LibVectorCurveTrack::get_value_rate(void* output) const
+{
+    *static_cast<FieldVec4B*>(output) = *reinterpret_cast<const FieldVec4A*>(&value_rate);
+}
+
+/**
+ * @brief Return the difference between the endpoint vectors.
+ * @param output Receives the difference.
+ */
+void LibVectorCurveTrack::get_end_delta(void* output) const
+{
+    if (key_array != 0)
+    {
+        *static_cast<FieldVec4B*>(output) = sequence_difference(static_cast<const LibVectorCurveTrackKey*>(key_array)[state.key_count - 1].value,
+                                      static_cast<const LibVectorCurveTrackKey*>(key_array)[0].value);
+    }
+}
+
+/**
+ * @brief Write the difference between the last and first key values.
+ * @param output Receives the difference.
+ */
+void LibVectorTrack::get_end_delta(void* output) const
+{
+    if (key_array != 0)
+    {
+        *static_cast<FieldVec4B*>(output) = sequence_difference(static_cast<const LibVectorTrackKey*>(key_array)[state.key_count - 1].value,
+                                                                 static_cast<const LibVectorTrackKey*>(key_array)[0].value);
+    }
+}
+
+/**
+ * @brief Write how fast the value changed at the last sample, per second.
+ * @param output Receives the rate.
+ */
+void LibVectorTrack::get_value_rate(void* output) const
+{
+    *static_cast<FieldVec4B*>(output) = *reinterpret_cast<const FieldVec4A*>(&value_rate);
+}
+
+/**
+ * @brief Append a keyframe.
+ * @param value Keyframe value.
+ * @param key Sort key, stored in the value's w.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorKeyTrack::on_append_key(const FieldVec4A* value, float key)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    static_cast<LibVectorTrackKey*>(key_array)[state.key_count].value = *value;
+    static_cast<LibVectorTrackKey*>(key_array)[state.key_count].value.w = key;
+    state.span = key - static_cast<LibVectorTrackKey*>(key_array)[0].value.w;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Replace an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Sort key, stored in the value's w.
+ * @param value Keyframe value.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorKeyTrack::on_replace_key(s32 index, float key, const FieldVec4A* value)
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    static_cast<LibVectorTrackKey*>(key_array)[index].value = *value;
+    static_cast<LibVectorTrackKey*>(key_array)[index].value.w = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - static_cast<LibVectorTrackKey*>(key_array)[0].value.w;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    return 1;
+}
+
+/**
+ * @brief Read an indexed keyframe.
+ * @param index Keyframe index.
+ * @param key Receives the sort key, or null.
+ * @param value Receives the value, or null.
+ * @param first Unused; these keys have no tangents.
+ * @param second Unused; these keys have no tangents.
+ * @return One when the index is within the capacity, otherwise zero.
+ */
+s32 LibVectorKeyTrack::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    if (key)
+    {
+        *key = static_cast<const LibVectorTrackKey*>(key_array)[index].value.w;
+    }
+
+    if (value)
+    {
+        *static_cast<FieldVec4B*>(value) = static_cast<const LibVectorTrackKey*>(key_array)[index].value;
+    }
+
+    return 1;
+}
+
+/** @brief Release the keyframe storage. */
+LibVectorCurveTrackBase::~LibVectorCurveTrackBase()
+{
+    free_keys();
+}
+
+/**
+ * @brief Bind external 48-byte records and cache their first-to-last key span.
+ * @param count Positive entry count representable in the receiver count fields.
+ * @param keys External storage containing the specified number of entries.
+ */
+void LibVectorCurveTrackBase::bind_keys(s32 count, void* keys)
+{
+    s32 last_index = count - 1;
+    LibVectorCurveTrackKey* last;
+    state.external_keys = 1;
+    key_array = static_cast<LibVectorCurveTrackKey*>(keys);
+    state.key_capacity = count;
+    state.key_count = count;
+    last = static_cast<LibVectorCurveTrackKey*>(key_array) + last_index;
+    state.span = last->value.w - static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w;
+}
+
+/**
+ * @brief Set the low packed value and flag whether either packed value is 4.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibVectorCurveTrackBase::set_before_mode(u32 mode)
+{
+    state.before_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
+}
+
+/**
+ * @brief Set the high packed value and flag whether either packed value is 4.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibVectorCurveTrackBase::set_after_mode(u32 mode)
+{
+    state.after_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
+}
+
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 LibVectorCurveTrackBase::get_key_count() const
+{
+    return state.key_count;
+}
+
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 LibVectorCurveTrackBase::get_key_capacity()
+{
+    return state.key_capacity;
+}
+
+/**
+ * @brief Ignore the keyframe; the tracks that store keys override this.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @param key Key the keyframe sits at.
+ * @return Zero.
+ */
+s32 LibVectorCurveTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return 0;
 }
 
-s32 func_004E6430(void* object)
+/**
+ * @brief Ignore the keyframe; the tracks that store keys override this.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @return Zero.
+ */
+s32 LibVectorCurveTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return 0;
 }
 
-s32 func_004E6440(void* object)
+/**
+ * @brief Ignore the keyframe; the tracks that store keys override this.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @return Zero.
+ */
+s32 LibVectorCurveTrackBase::on_insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return 0;
 }
 
-void func_004E6450(void* object)
+/**
+ * @brief Ignore the keyframe; the tracks that store keys override this.
+ * @param value Key value.
+ * @param first First auxiliary vector.
+ * @param second Second auxiliary vector.
+ * @param key Key the keyframe sits at.
+ */
+void LibVectorCurveTrackBase::on_set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
 }
 
-/** Find a key in the receiver's fixed-size entry array. */
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004E6460(void* object, float key)
+/**
+ * @brief Test whether the 48-byte record array contains an exactly equal key.
+ * @param key Scalar key to find.
+ * @return One for an equal key, or zero when none is present.
+ */
+s32 LibVectorCurveTrackBase::has_key(float key) const
 {
-    FloatKeyScanOwner_text_004DD440_30* receiver = static_cast<FloatKeyScanOwner_text_004DD440_30*>(object);
-    s16 count = receiver->count48;
+    s16 count = state.key_count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
-        if (key == receiver->entries[index].key0c)
+        if (key == static_cast<LibVectorCurveTrackKey*>(key_array)[index].value.w)
         {
             return 1;
         }
     }
+
     return 0;
 }
 
-void func_004E64B0(void* object)
+/**
+ * @brief Return a zero vector; the track's value when it has no keys.
+ * @return Zero vector.
+ */
+FieldVec4A LibVectorCurveTrackBase::get_zero_value() const
 {
-    FourWordClearOwnertext_004DD440* receiver = (FourWordClearOwnertext_004DD440*)object;
-    receiver->words[0] = 0;
-    receiver->words[1] = 0;
-    receiver->words[2] = 0;
-    receiver->words[3] = 0;
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E64D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6520);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6590);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E65E0);
-
-/** Return the word at receiver offset 0x4. */
-u32 func_004E6680(const void* object)
+/**
+ * @brief Return the last-to-first key difference, or zero below two records.
+ * @return Difference between the last and first scalar keys, or zero.
+ */
+float LibVectorCurveTrackBase::get_key_span() const
 {
-    const WordGetterOwnertext_004DD440* receiver = static_cast<const WordGetterOwnertext_004DD440*>(object);
-    return receiver->unk04;
-}
+    s32 last_index;
+    LibVectorCurveTrackKey* last_entry;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6690);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E66E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6750);
-
-/** Set the low packed mode at 0x32 and record whether either mode equals four. */
-void func_004E67A0(void* object, u8 mode)
-{
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at32.lowMode = mode;
-    receiver->at32.hasModeFour = receiver->at32.lowMode == 4 || receiver->at32.highMode == 4;
-}
-
-/** Set the high packed mode at 0x32 and record whether either mode equals four. */
-void func_004E6800(void* object, u8 mode)
-{
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at32.highMode = mode;
-    receiver->at32.hasModeFour = receiver->at32.lowMode == 4 || receiver->at32.highMode == 4;
-}
-
-/** Return the signed halfword at receiver offset 0x28. */
-s16 func_004E6860(const void* object)
-{
-    const HalfwordGetterOwnertext_004DD440* receiver = static_cast<const HalfwordGetterOwnertext_004DD440*>(object);
-    return receiver->unk28;
-}
-
-/** Return the signed halfword at receiver offset 0x2A. */
-s16 func_004E6870(const void* object)
-{
-    const HalfwordGetterOwnertext_004DD440* receiver = static_cast<const HalfwordGetterOwnertext_004DD440*>(object);
-    return receiver->unk2a;
-}
-
-/** Find a key in the receiver's fixed-size entry array. */
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004E6880(void* object, float key)
-{
-    FloatKeyScanOwner_text_004DD440_10* receiver = static_cast<FloatKeyScanOwner_text_004DD440_10*>(object);
-    s16 count = receiver->count28;
-    s32 index;
-    for (index = 0; index < count; index++)
-    {
-        if (key == receiver->entries[index].key0c)
-        {
-            return 1;
-        }
-    }
-    return 0;
-}
-
-void func_004E68D0(void* object)
-{
-    FourWordClearOwnertext_004DD440* receiver = (FourWordClearOwnertext_004DD440*)object;
-    receiver->words[0] = 0;
-    receiver->words[1] = 0;
-    receiver->words[2] = 0;
-    receiver->words[3] = 0;
-}
-
-/** Return the key span between the first and last entries. */
-float func_004E68F0(void* object)
-{
-    const FloatKeyScanOwner_text_004DD440_10* receiver = static_cast<const FloatKeyScanOwner_text_004DD440_10*>(object);
-    s32 count = receiver->count28;
-    if (count < 2)
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
-    const FloatKeyScanEntry_text_004DD440_10* entries = receiver->entries;
-    const FloatKeyScanEntry_text_004DD440_10* lastEntry = entries + --count;
-    float first = entries[0].key0c;
-    float last = lastEntry->key0c;
-    return last - first;
+
+    last_index = state.key_count - 1;
+    last_entry = static_cast<LibVectorCurveTrackKey*>(key_array) + last_index;
+    return last_entry->value.w - static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6940);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E69A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E69F0);
-
-/** Return the word at receiver offset 0x4. */
-u32 func_004E6A80(const void* object)
+/**
+ * @brief Read the vector value associated with the first exactly equal key.
+ * @param key Key to find.
+ * @return Associated value, or a zero vector when no key matches.
+ */
+FieldVec4A LibVectorCurveTrackBase::find_key_value(float key)
 {
-    const WordGetterOwnertext_004DD440* receiver = static_cast<const WordGetterOwnertext_004DD440*>(object);
-    return receiver->unk04;
+    s32 index;
+
+    for (index = 0; index < state.key_count; index++)
+    {
+        if (key == static_cast<LibVectorCurveTrackKey*>(key_array)[index].value.w)
+        {
+            LibVectorCurveTrackKey* entry = static_cast<LibVectorCurveTrackKey*>(key_array) + index;
+            return *reinterpret_cast<const FieldVec4A*>(entry);
+        }
+    }
+
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6A90);
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated value.
+ */
+void LibVectorCurveTrackBase::evaluate(float key, void* output)
+{
+    *static_cast<FieldVec4B*>(output) = sample(key);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6AE0);
+/**
+ * @brief Adjust a scalar key by whole spans determined from the endpoint records.
+ * @param key Scalar key whose normalized span quotient must fit in a signed word.
+ * @return Key minus the computed number of endpoint spans, or the key for zero spans.
+ */
+float LibVectorCurveTrackBase::wrap_key(float key) const
+{
+    s32 last_index = state.key_count - 1;
+    LibVectorCurveTrackKey* entries = static_cast<LibVectorCurveTrackKey*>(key_array);
+    LibVectorCurveTrackKey* last = entries + last_index;
+    float first = entries[0].value.w;
+    float span = last->value.w - first;
+    float quotient = (key - first) / span;
+    s32 periods;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6B30);
+    if (quotient < 0.0f)
+    {
+        quotient -= 1.0f;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6B80);
+    periods = quotient;
 
-void func_004E6BB0(void* object)
+    if (periods != 0)
+    {
+        return key - (float)periods * span;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+void* LibVectorCurveTrackBase::get_keys()
+{
+    return static_cast<LibVectorCurveTrackKey*>(key_array);
+}
+
+/** @brief Delete the key storage unless it is external, and clear the key pointer. */
+void LibVectorCurveTrackBase::free_keys()
+{
+    if (!state.external_keys)
+    {
+        delete[] static_cast<LibVectorCurveTrackKey*>(key_array);
+    }
+
+    key_array = 0;
+}
+
+/** @brief Release the keyframe storage. */
+LibVectorTrackBase::~LibVectorTrackBase()
+{
+    free_keys();
+}
+
+/**
+ * @brief Bind an external keyframe array and cache its first-to-last key span.
+ * @param count Keyframe count.
+ * @param keys External keyframe storage.
+ */
+void LibVectorTrackBase::bind_keys(s32 count, void* keys)
+{
+    s32 last_index = count - 1;
+    LibVectorTrackKey* last;
+    state.external_keys = 1;
+    key_array = static_cast<LibVectorTrackKey*>(keys);
+    state.key_capacity = count;
+    state.key_count = count;
+    last = key_array + last_index;
+    state.span = last->value.w - key_array[0].value.w;
+}
+
+/**
+ * @brief Set the end mode used before the first key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibVectorTrackBase::set_before_mode(u32 mode)
+{
+    state.before_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
+}
+
+/**
+ * @brief Set the end mode used after the last key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibVectorTrackBase::set_after_mode(u32 mode)
+{
+    state.after_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
+}
+
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 LibVectorTrackBase::get_key_count() const
+{
+    return state.key_count;
+}
+
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 LibVectorTrackBase::get_key_capacity()
+{
+    return state.key_capacity;
+}
+
+/**
+ * @brief Test whether a key is stored exactly.
+ * @param key Key to find.
+ * @return One when a key equals it, otherwise zero.
+ */
+s32 LibVectorTrackBase::has_key(float key) const
+{
+    s16 count = state.key_count;
+    s32 index;
+
+    for (index = 0; index < count; index++)
+    {
+        if (key == key_array[index].value.w)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Return the zero vector, the track's value when it has no keys.
+ * @return Zero vector.
+ */
+FieldVec4A LibVectorTrackBase::get_zero_value() const
+{
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+/**
+ * @brief Compute the span between the last and first keys.
+ * @return Key span, or zero when fewer than two keys are stored.
+ */
+float LibVectorTrackBase::get_key_span() const
+{
+    LibVectorTrackKey* last;
+
+    if (state.key_count < 2)
+    {
+        return 0.0f;
+    }
+
+    last = key_array + (state.key_count - 1);
+    return last->value.w - key_array[0].value.w;
+}
+
+/**
+ * @brief Return the value of the first keyframe at exactly a key.
+ * @param key Key to find.
+ * @return Keyframe value, or a zero vector when no key matches.
+ */
+FieldVec4A LibVectorTrackBase::find_key_value(float key)
+{
+    s32 index;
+
+    for (index = 0; index < state.key_count; index++)
+    {
+        if (key == key_array[index].value.w)
+        {
+            LibVectorTrackKey* entry = key_array + index;
+            return *reinterpret_cast<const FieldVec4A*>(entry);
+        }
+    }
+
+    return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+}
+
+/**
+ * @brief Evaluate the track at a key.
+ * @param key Evaluation key.
+ * @param output Receives the evaluated value.
+ */
+void LibVectorTrackBase::evaluate(float key, void* output)
+{
+    *static_cast<FieldVec4B*>(output) = sample(key);
+}
+
+/**
+ * @brief Wrap a key by the first-to-last key span.
+ * @param key Key to wrap.
+ * @return Key with the whole spans it is past the first key removed.
+ */
+float LibVectorTrackBase::wrap_key(float key) const
+{
+    LibVectorTrackKey* last = key_array + (state.key_count - 1);
+    float first = key_array[0].value.w;
+    float span = last->value.w - first;
+    float position = (key - first) / span;
+    s32 cycles;
+
+    if (position < 0.0f)
+    {
+        position -= 1.0f;
+    }
+
+    cycles = (s32)position;
+
+    if (cycles != 0)
+    {
+        return key - cycles * span;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+void* LibVectorTrackBase::get_keys()
+{
+    return key_array;
+}
+
+/** @brief Delete the key storage unless it is external, and clear the key pointer. */
+void LibVectorTrackBase::free_keys()
+{
+    if (!state.external_keys)
+    {
+        delete[] key_array;
+    }
+
+    key_array = 0;
+}
+
+/**
+ * @brief Mark a track's g_vector_track_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void vector_track_pool_free(LibTrackPool<LibPooledVectorTrack>* pool, LibPooledVectorTrack* track)
+{
+    pool->free(track);
+}
+
+/**
+ * @brief Mark a track's g_vector_curve_track_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void vector_curve_track_pool_free(LibTrackPool<LibPooledVectorCurveTrack>* pool, LibPooledVectorCurveTrack* track)
+{
+    pool->free(track);
+}
+
+/**
+ * @brief Store a single keyframe through on_set_single_key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @param key Sort key.
+ */
+void LibVectorTrackBase::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    on_set_single_key(static_cast<const FieldVec4A*>(value), key);
+}
+
+/**
+ * @brief Ignore the keyframe; the tracks that store keys override this.
+ * @param value Keyframe value.
+ * @param key Sort key.
+ */
+void LibVectorTrackBase::on_set_single_key(const FieldVec4A* value, float key)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6BC0);
+/**
+ * @brief Insert a keyframe through on_insert_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorTrackBase::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_insert_key(index, key, static_cast<const FieldVec4A*>(value));
+}
 
-s32 func_004E6BF0(void* object)
+/**
+ * @brief Ignore the keyframe; the tracks that store keys override this.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @return Zero.
+ */
+s32 LibVectorTrackBase::on_insert_key(s32 index, float key, const FieldVec4A* value)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6C00);
+/**
+ * @brief Replace a keyframe through on_replace_key.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_replace_key(index, key, static_cast<const FieldVec4A*>(value));
+}
 
-s32 func_004E6C30(void* object)
+/**
+ * @brief Ignore the keyframe; the tracks that store keys override this.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @return Zero.
+ */
+s32 LibVectorTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6C40);
+/**
+ * @brief Append a keyframe through on_append_key.
+ * @param value Keyframe value.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    return on_append_key(static_cast<const FieldVec4A*>(value), key);
+}
 
-s32 func_004E6C70(void* object)
+/**
+ * @brief Ignore the keyframe; the tracks that store keys override this.
+ * @param value Keyframe value.
+ * @param key Sort key.
+ * @return Zero.
+ */
+s32 LibVectorTrackBase::on_append_key(const FieldVec4A* value, float key)
 {
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6C80);
-
-void* func_004E6D30(void* value)
+/**
+ * @brief Allocate storage for a number of keyframes, dropping any keys the track owned.
+ * @param count Keyframes to hold.
+ */
+void LibVectorTrackBase::allocate_keys(s32 count)
 {
-    return value;
+    state.external_keys = 0;
+    delete[] key_array;
+    key_array = new (0) LibVectorTrackKey[count];
+    state.key_capacity = count;
+
+    if (!key_array)
+    {
+        state.key_capacity = 0;
+    }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6D40);
-
-void* func_004E6DF0(void* value)
+/**
+ * @brief Allocate storage for the requested keyframe count.
+ * @param count Requested keyframe count.
+ */
+void LibVectorCurveTrackBase::allocate_keys(s32 count)
 {
-    return value;
+    state.external_keys = 0;
+    delete[] static_cast<LibVectorCurveTrackKey*>(key_array);
+    key_array = new (0) LibVectorCurveTrackKey[count];
+    state.key_capacity = count;
+
+    if (!key_array)
+    {
+        state.key_capacity = 0;
+    }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6E00);
+/**
+ * @brief Store a single keyframe in the cached key, and use it before the first key.
+ * @param value Keyframe value.
+ * @param key Sort key, stored in the value's w.
+ */
+void LibVectorKeyTrack::on_set_single_key(const FieldVec4A* value, float key)
+{
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    single_key.value = *value;
+    single_key.value.w = key;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6E60);
+/**
+ * @brief Insert a keyframe at an index, moving the later keys up.
+ * @param index Keyframe index.
+ * @param key Sort key, stored in the value's w.
+ * @param value Keyframe value.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorKeyTrack::on_insert_key(s32 index, float key, const FieldVec4A* value)
+{
+    s32 count;
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6F60);
+    if (key_array == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E6FC0);
+    count = state.key_count;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7050);
+    if (index >= count)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7190);
+    if (count >= state.key_capacity)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E71C0);
+    for (i = count; i > index; i--)
+    {
+        static_cast<LibVectorTrackKey*>(key_array)[i] = static_cast<LibVectorTrackKey*>(key_array)[i - 1];
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E71F0);
+    static_cast<LibVectorTrackKey*>(key_array)[index].value = *value;
+    static_cast<LibVectorTrackKey*>(key_array)[index].value.w = key;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7220);
+    if (index == state.key_count - 1)
+    {
+        state.span = key - static_cast<LibVectorTrackKey*>(key_array)[0].value.w;
+    }
+
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.key_count++;
+    return 1;
+}
+
+/** @brief Reset to a single zero keyframe at key zero, then select the cycle end mode. */
+void LibVectorTrack::reset_keys()
+{
+    FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
+    on_set_single_key(&zero, 0.0f);
+    set_before_mode(LIB_TRACK_END_CYCLE);
+}
+
+/**
+ * @brief Store a single keyframe in the cached vectors.
+ * @param value Keyframe value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key, stored in the value's fourth component.
+ */
+void LibVectorCurveTrack::set_single_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key)
+{
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    single_key.value = *value;
+    single_key.in_tangent = *in_tangent;
+    single_key.out_tangent = *out_tangent;
+    single_key.value.w = key;
+}
+
+/**
+ * @brief Insert a keyframe at an index.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrack::insert_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent)
+{
+    s32 count;
+    s32 i;
+
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    count = state.key_count;
+
+    if (index >= count)
+    {
+        return 0;
+    }
+
+    if (count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (i = count; i > index; i--)
+    {
+        static_cast<LibVectorCurveTrackKey*>(key_array)[i] = static_cast<LibVectorCurveTrackKey*>(key_array)[i - 1];
+    }
+
+    static_cast<LibVectorCurveTrackKey*>(key_array)[index].value = *value;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[index].in_tangent = *in_tangent;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[index].out_tangent = *out_tangent;
+    static_cast<LibVectorCurveTrackKey*>(key_array)[index].value.w = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w;
+    }
+
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Forward to slot 0x68.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    return on_append_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
+}
+
+/**
+ * @brief Forward to slot 0x6C.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_replace_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
+}
+
+/**
+ * @brief Forward to slot 0x70.
+ * @param index Key index.
+ * @param key Key the keyframe sits at.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibVectorCurveTrackBase::insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+{
+    return on_insert_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
+}
+
+/**
+ * @brief Forward to slot 0x74.
+ * @param value Key value.
+ * @param in_tangent Tangent arriving at the key.
+ * @param out_tangent Tangent leaving the key.
+ * @param key Key the keyframe sits at.
+ */
+void LibVectorCurveTrackBase::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+{
+    on_set_single_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7250);
 
@@ -1842,7 +2699,120 @@ s32 func_004E7820(void* object)
     return 8;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7830);
+/**
+ * @brief Test whether a list walk has come back to the list.
+ * @param list List sentinel.
+ * @param node Current node.
+ * @return Whether node is the sentinel.
+ */
+static inline bool at_list_end(const LibListSentinel* list, const LibListSentinel* node)
+{
+    if (list == node)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * @brief Give each enabled spotlight its own bit (8 up to 31) in its mask, then set that bit on every model in the
+ * renderer that shares one of the light's groups and whose bounding sphere reaches into the light's cone.
+ * @param renderer Renderer whose models are tested.
+ */
+void LibLightList::assign_spot_lights(LibRenderer* renderer)
+{
+    if (unk382 != 0)
+    {
+        u32 bit = 0x100;
+        LibListSentinel* node = &sentinel;
+
+        for (;;)
+        {
+            node = node->next;
+
+            if (at_list_end(&sentinel, node))
+            {
+                break;
+            }
+
+            LibLight* light = static_cast<LibLight*>(node);
+
+            if (light->enabled && light->kind == LIB_LIGHT_KIND_SPOT)
+            {
+                u32 groups = light->mask;
+                LibVector4 frame[3];
+                light->mask = bit | (groups & 0xFF);
+                lib_spot_light_get_frame(light, frame);
+                vu0_spot_light_load(frame);
+                LibListSentinel* other = &renderer->sentinel;
+
+                for (;;)
+                {
+                    other = other->next;
+
+                    if (at_list_end(&renderer->sentinel, other))
+                    {
+                        break;
+                    }
+
+                    LibColorModel* model = static_cast<LibColorModel*>(other);
+
+                    if (model->draw_flags & 0x59)
+                    {
+                        continue;
+                    }
+
+                    u32 type = model->type_id;
+
+                    if ((type >> 8) != 1 && type != 0x400)
+                    {
+                        continue;
+                    }
+
+                    u32 old_lights = model->light_mask;
+                    model->light_mask = ~bit & old_lights;
+
+                    if (!(groups & model->light_mask))
+                    {
+                        continue;
+                    }
+
+                    LibVector4 terms[2];
+                    vu0_spot_light_measure(model->get_bounding_sphere());
+                    vu0_spot_light_store_distance(terms);
+
+                    if (!(terms[0].x <= terms[0].w))
+                    {
+                        vu0_spot_light_axis_terms();
+                        vu0_spot_light_store_axis_terms(terms);
+
+                        if (terms[0].y < terms[1].x || terms[1].y < 0.0f)
+                        {
+                            vu0_spot_light_edge_terms();
+                            vu0_spot_light_store_edge_terms(terms);
+
+                            if (terms[0].y < 0.0f || terms[1].y < 0.0f)
+                            {
+                                continue;
+                            }
+                        }
+                    }
+
+                    u32 lights = model->light_mask;
+                    model->light_mask = bit | lights;
+                }
+
+                bit <<= 1;
+
+                if (!(bit & ~0xFF))
+                {
+                    break;
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7AA0);
 
@@ -1850,6 +2820,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E8510);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9260);
 
+// LibLightList's per-frame light update; the intensity test's abs.s is still coloured differently.
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9290);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E95C0);

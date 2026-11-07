@@ -160,8 +160,8 @@ func_00413D20__8LibPanelFv = 0x004C56E0; // type:func absolute:True allow_duplic
 draw__8LibPanelFv = 0x004C55E0; // type:func absolute:True allow_duplicated:True
 __dt__17LibStorageBlock0CFv = 0x004618F0; // type:func absolute:True
 
-__vt__23ItemCreationClass185050 = 0x00185050; // absolute:True
-__dt__23ItemCreationClass185050Fv = 0x0034B790; // type:func
+__vt__16LibMovementState = 0x00185050; // absolute:True
+__dt__16LibMovementStateFv = 0x0034B790; // type:func
 __vt__23ItemCreationClass175030 = 0x00175030; // absolute:True
 __dt__23ItemCreationClass175030Fv = 0x00352650; // type:func
 __ct__23ItemCreationClass175030Fv = 0x003529A0; // type:func
@@ -876,8 +876,8 @@ set_default_draw_bucket__20LibCallbackTransformFv = 0x0036E7D0; // type:func all
 func_0036E7D0 = 0x0036E7D0; // type:func absolute:True allow_duplicated:True
 
 func_00466E40 = 0x00466E40; // type:func absolute:True allow_duplicated:True
-func_00466E40__23ItemCreationClass185050Ffff = 0x00466E40; // type:func absolute:True allow_duplicated:True
-set_move_target__23ItemCreationClass185050Ffff = 0x00466E40; // type:func absolute:True allow_duplicated:True
+func_00466E40__16LibMovementStateFfff = 0x00466E40; // type:func absolute:True allow_duplicated:True
+set_move_target__16LibMovementStateFfff = 0x00466E40; // type:func absolute:True allow_duplicated:True
 
 func_slot6c__20StartInventingDialogFv = 0x00358240; // type:func allow_duplicated:True
 func_slot68__20StartInventingDialogFv = 0x00358340; // type:func allow_duplicated:True
@@ -983,7 +983,7 @@ init_numeric_resource_rectangle__15LibObject174F20FffffUiiUc = 0x00464D90; // ty
 func_slot5c__16FieldClass15AE70Fv = 0x0036E810; // type:func allow_duplicated:True
 func_slot70__16FieldClass15AE70Fv = 0x0036E820; // type:func allow_duplicated:True
 func_slot74__16FieldClass15AE70Fv = 0x0036E830; // type:func allow_duplicated:True
-func_slot0c__23ItemCreationClass185050Fv = 0x0036E800; // type:func allow_duplicated:True
+on_arrived__16LibMovementStateFv = 0x0036E800; // type:func allow_duplicated:True
 
 func_slotb0__20InadequateLineDialogFv = 0x0034FF70; // type:func allow_duplicated:True
 func_slotb4__20InadequateLineDialogFv = 0x0034FE00; // type:func allow_duplicated:True

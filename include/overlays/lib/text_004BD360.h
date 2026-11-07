@@ -14,9 +14,6 @@ typedef struct N54Owner84_004BD360 N54Owner84_004BD360;
 /** Opaque Lib text receiver using the main table D_178750. */
 typedef struct LibTextWidget LibTextWidget;
 
-/** Opaque channel implementation with the shared channel word. */
-typedef struct LibChannelWordState LibChannelWordState;
-
 struct ResidentResourceHeader;
 
 
@@ -53,12 +50,6 @@ void func_004BD360(void* object, const unsigned __int128* value);
  * @return The destination vector.
  */
 void* func_004BD4C0(void* object, const unsigned __int128* value);
-
-/**
- * @brief Clear the halfwords at +0x10/+0x12 and words at +0x14/+0x18.
- * @param object Receiver to update.
- */
-void func_004C1440(void* object);
 
 /**
  * @brief Set the byte at +0x64 to zero and the byte at +0x62 to one.
@@ -149,34 +140,10 @@ s32 func_004C8380(void* object);
 s32 func_004C96D0(void* object);
 
 /** Return the fixed value 0. */
-s32 func_004C16E0(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004C26E0(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004C2720(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004C2760(void* object);
-
-/** Return the fixed value 0. */
 s32 func_004C3AC0(void* object);
 
 /** Return the fixed value 0. */
 s32 func_004C3AD0(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004C3D80(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004C4020(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004C4060(void* object);
-
-/** Return the fixed value 0. */
-s32 func_004C40A0(void* object);
 
 /** Return the fixed value 0. */
 s32 func_004C8360(void* object);
@@ -316,7 +283,7 @@ extern "C"
 }
 
 /** Selection cursor: a callback transform with a movement state that slides it between positions; vtable D_175070. */
-class LibSelectionCursor : public LibCallbackTransform, public ItemCreationClass185050
+class LibSelectionCursor : public LibCallbackTransform, public LibMovementState
 {
 public:
     /** @brief Initialize the cursor transform. */
@@ -718,8 +685,11 @@ public:
      */
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    /** @brief Slot 0x24; no family overrides the root's empty version, so its purpose is unknown. */
-    virtual void func_slot24();
+    /**
+     * @brief Append a keyframe from an unpacked record; the root ignores it.
+     * @param record Keyframe record in the track's own layout.
+     */
+    virtual void append_key_record(const void* record);
 
     /**
      * @brief Replace an indexed keyframe; the root ignores it.
@@ -1621,13 +1591,6 @@ void lib_animation_release_channels(LibAnimation* object);
 s32 func_004BFE10(void* object, void* target);
 
 /**
- * @brief Read the shared word of a native channel implementation.
- * @param object Channel implementation.
- * @return Stored channel word.
- */
-u32 lib_channel_read_word(const LibChannelWordState* object);
-
-/**
  * @brief Evaluate the degree-thirteen VU0 cosine approximation.
  * @param angle Angle in radians.
  * @return Approximated cosine.
@@ -1710,34 +1673,7 @@ void lib_build_projective_shadow_matrix(LibMatrix44Value* output, const FieldVec
 #endif
 
 
-/** Return the word at receiver offset 0x10. */
-u32 func_004BD3E0(const void* object);
 
-/** Return the word at receiver offset 0x20. */
-u32 func_004BD4E0(const void* object);
-
-/** Return the word at receiver offset 0x4. */
-u32 func_004C1720(const void* object);
-
-/** Return the word at receiver offset 0x4. */
-u32 func_004C3DC0(const void* object);
-
-
-/** Return the word at receiver offset 0x10. */
-u32 func_004BD490(const void* object);
-
-
-/** Return the signed halfword at receiver offset 0x18. */
-s16 func_004C3D60(const void* object);
-
-/** Return the signed halfword at receiver offset 0x1A. */
-s16 func_004C3D70(const void* object);
-
-/** Return the signed halfword at receiver offset 0x18. */
-s16 func_004C16C0(const void* object);
-
-/** Return the signed halfword at receiver offset 0x1A. */
-s16 func_004C16D0(const void* object);
 
 /** Return the receiver address at byte offset 0x10. */
 const void* func_004BD370(const void* object);
@@ -1756,39 +1692,15 @@ s32 func_004C8510(void* object);
 
 
 #ifdef __cplusplus
-void func_004C26A0(void* object);
 void func_004C3AE0(void* object);
 void func_004C3AF0(void* object);
-void func_004C3FE0(void* object);
 
 void func_004C4500(void* object);
 void func_004C4510(void* object);
-/** Set the low packed mode at its target field and record whether either mode equals four. */
-void func_004C1600(void* object, u8 mode);
-
-/** Set the low packed mode at its target field and record whether either mode equals four. */
-void func_004C3CA0(void* object, u8 mode);
-
-
-/** Set the high packed mode at its target field and record whether either mode equals four. */
-void func_004C1660(void* object, u8 mode);
-
-/** Set the high packed mode at its target field and record whether either mode equals four. */
-void func_004C3D00(void* object, u8 mode);
 
 
 /** Clear the vector at offset 0xB0 and update the associated state. */
 void func_004C2B30(void* object);
-/** Clear the vector at offset 0x90 and update the associated state. */
-void func_004C2B70(void* object);
-s32 func_004C2620(void* object, float key);
-
-/** Return the key span between the first and last entries. */
-float func_004C25D0(void* object);
-float func_004C3F10(void* object);
-
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004C3F60(void* object, float key);
 
 /** Set the active byte and notify the embedded receiver. */
 void func_004C61F0(N54Owner84_004BD360* object);

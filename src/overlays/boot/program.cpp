@@ -776,14 +776,14 @@ void BootProgram::create_pools_and_projection()
     float_quaternion_track_pool_allocate(g_float_quaternion_track_pool, 2000);
     quaternion_curve_track_pool_allocate(g_quaternion_curve_track_pool, 1000);
     quaternion_track_pool_allocate(g_quaternion_track_pool, 1000);
-    projection = new (0) LibClass179080(display);
+    projection = new (0) LibCamera(display);
     projection->initialize_projection(display);
     projection->set_translation(0.0f, 0.0f, -500.0f);
     g_display_manager->append_node(projection, -1);
     g_display_manager->current_display = projection;
     g_display_manager->set_display_effect(display, false, true, false, 2, 0xFFFFFF);
-    g_renderer->unk4084 = D_001B6624;
-    D_001B6624->manager = g_display_manager;
+    g_renderer->light_list = g_light_list;
+    g_light_list->manager = g_display_manager;
 }
 
 /** @brief Run the boot program. */

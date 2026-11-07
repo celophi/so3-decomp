@@ -89,7 +89,7 @@ struct ConfigMenuRuntime
     u8 unk00[0x2D];
     u8 unk2d;
     u8 unk2e[0x22];
-    LibClass179080* camera;
+    LibCamera* camera;
 };
 
 struct ConfigRuntime
@@ -1438,7 +1438,7 @@ u8 func_003499F0(ConfigCornerWindow* object)
     D_001B643C->unk10->unk14->add_child(color);
     D_001B643C->unk10->unk14->func_00263C70(color);
     FieldObject23CEA0* grid = static_cast<FieldObject23CEA0*>(func_00352690(reinterpret_cast<ConfigListOwner*>(&object->unk74), 0)->value);
-    grid->ItemCreationClass185050::alpha = 64.0f;
+    grid->LibMovementState::alpha = 64.0f;
     grid->geometry_dirty = 1;
     return 1;
 }
@@ -2459,7 +2459,7 @@ void func_0034BF40(ConfigOptions* object, u16 input)
     }
 
     ConfigSettings* active_settings = D_001B643C->settings;
-    LibClass179080* camera = D_001B643C->runtime->camera;
+    LibCamera* camera = D_001B643C->runtime->camera;
 
     if (active_settings != 0 && camera != 0)
     {
@@ -3187,7 +3187,7 @@ u8 ConfigOptions::func_slotb0()
     if (opened == true)
     {
         LibClass175030* indicator = scroll;
-        indicator->ItemCreationClass185050::alpha = 64.0f;
+        indicator->LibMovementState::alpha = 64.0f;
         indicator->needs_redraw = 1;
         return 1;
     }
@@ -4717,7 +4717,8 @@ ConfigController::ConfigController()
     preview_window = 0;
 }
 
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 
