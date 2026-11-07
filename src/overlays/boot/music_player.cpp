@@ -741,21 +741,21 @@ void BootMusicPlayer::update()
         if (resource->widescreen)
         {
             number_text = new (0) LibStringLabel(g_first_track_number, 1, 150.0f, 71.0f, 512.0f, 24.0f);
-            name_text = new (0) LibTextWidget(g_boot_program.messages, 0x44C, 1, 185.0f, 71.0f, 512.0f, 24.0f);
+            name_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MUSIC_TRACK_NAME_MESSAGE_OFFSET + BOOT_MUSIC_THE_DAWN_OF_WISDOM, 1, 185.0f, 71.0f, 512.0f, 24.0f);
             mode_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE, 1, 270.0f, 186.0f, 512.0f, 224.0f);
         }
         else
         {
             number_text = new (0) LibStringLabel(g_first_track_number, 1, 175.0f, 74.0f, 512.0f, 24.0f);
-            name_text = new (0) LibTextWidget(g_boot_program.messages, 0x44C, 1, 210.0f, 74.0f, 512.0f, 24.0f);
+            name_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MUSIC_TRACK_NAME_MESSAGE_OFFSET + BOOT_MUSIC_THE_DAWN_OF_WISDOM, 1, 210.0f, 74.0f, 512.0f, 24.0f);
             mode_text = new (0) LibTextWidget(g_boot_program.messages, BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE, 1, 330.0f, 186.0f, 512.0f, 224.0f);
         }
 
-        labels[0] = new (0) LibTextWidget(g_boot_program.messages, 0x96, 1, 50.0f, 435.0f, 128.0f, 24.0f);
-        labels[1] = new (0) LibTextWidget(g_boot_program.messages, 0x97, 1, 160.0f, 435.0f, 128.0f, 24.0f);
-        labels[2] = new (0) LibTextWidget(g_boot_program.messages, 0x98, 1, 270.0f, 435.0f, 128.0f, 24.0f);
-        labels[3] = new (0) LibTextWidget(g_boot_program.messages, 0x99, 1, 380.0f, 435.0f, 128.0f, 24.0f);
-        labels[4] = new (0) LibTextWidget(g_boot_program.messages, 0x9A, 1, 490.0f, 435.0f, 128.0f, 24.0f);
+        labels[0] = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_BAND_LOW, 1, 50.0f, 435.0f, 128.0f, 24.0f);
+        labels[1] = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_BAND_MID_LOW, 1, 160.0f, 435.0f, 128.0f, 24.0f);
+        labels[2] = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_BAND_MID, 1, 270.0f, 435.0f, 128.0f, 24.0f);
+        labels[3] = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_BAND_MID_HIGH, 1, 380.0f, 435.0f, 128.0f, 24.0f);
+        labels[4] = new (0) LibTextWidget(g_boot_program.messages, BOOT_MSG_BAND_HIGH, 1, 490.0f, 435.0f, 128.0f, 24.0f);
         name_text->set_vertical_align(2);
         number_text->set_color(BOOT_TEXT_COLOR);
         name_text->set_color(BOOT_TEXT_COLOR);
@@ -771,7 +771,7 @@ void BootMusicPlayer::update()
         }
 
         next_track_delay = 0.0f;
-        resident_sound_set_volume_scale(g_sound, 0xFFFF);
+        resident_sound_set_volume_scale(g_sound, BOOT_MUSIC_VOLUME_SCALE);
         break;
     case BOOT_MUSIC_ACTIVE:
         if (input->repeated == BOOT_BUTTON_DOWN && cursor->arrived)
@@ -860,7 +860,7 @@ void BootMusicPlayer::update()
                 break;
             case BOOT_MUSIC_ROW_STOP:
                 playing = 0;
-                resident_sound_stop_music(g_sound, 0x3C, -1);
+                resident_sound_stop_music(g_sound, BOOT_MUSIC_STOP_FADE_FRAMES, -1);
                 next_track_delay = 0.0f;
                 break;
             }
@@ -869,7 +869,7 @@ void BootMusicPlayer::update()
         if (input->pressed & resource->cancel_buttons)
         {
             resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
-            resident_sound_stop_music(g_sound, 0x1E, -1);
+            resident_sound_stop_music(g_sound, BOOT_MUSIC_FADE_FRAMES, -1);
             BootScreenFade* fade = new (0) BootScreenFade(g_boot_program.display);
             fade->fade_speed = 2.0f;
             g_renderer->append_node(fade, -1);
@@ -880,7 +880,7 @@ void BootMusicPlayer::update()
         if (play_mode > BOOT_MUSIC_PLAY_SINGLE && resident_sound_is_music_playing(g_sound, -1) != 0 &&
             resident_stream_get_loop_count(g_sound->stream->thread) > 0 && playing)
         {
-            resident_sound_stop_music(g_sound, 0x1E0, -1);
+            resident_sound_stop_music(g_sound, BOOT_MUSIC_TRACK_END_FADE_FRAMES, -1);
             next_track_delay = 8.0f;
             playing = 0;
         }
@@ -1114,7 +1114,7 @@ void BootMusicPlayer::update()
         break;
     case BOOT_MUSIC_RETURN_TO_TITLE:
         clear_to_black();
-        resident_sound_stop_music(g_sound, 0x1E, -1);
+        resident_sound_stop_music(g_sound, BOOT_MUSIC_FADE_FRAMES, -1);
         release();
         g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_AUTO), -1);
         lib_object_detach_owner(this);
@@ -1319,7 +1319,7 @@ BootMusicPlayer::~BootMusicPlayer()
 
     delete fft;
     resident_stream_set_sample_rings(g_sound->stream->thread, 0, 0, 0);
-    resident_sound_set_volume_scale(g_sound, 0x7FFF);
+    resident_sound_set_volume_scale(g_sound, RESIDENT_SOUND_VOLUME_SCALE_FULL);
 }
 
 /** @brief Start loading resource 0x2C, create the meters and build the analysis window. */

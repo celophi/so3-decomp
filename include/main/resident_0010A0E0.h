@@ -2062,6 +2062,9 @@ s32 resident_enqueue_object(ResidentReleaseQueues* queue, void* object);
 /** Pan for a sound effect centred between the speakers. */
 #define RESIDENT_SOUND_PAN_CENTRE 64
 
+/** Volume scale that leaves the music at its set volume. */
+#define RESIDENT_SOUND_VOLUME_SCALE_FULL 0x7FFF
+
 /**
  * @brief Play a sound effect in a free slot.
  * @param sound Sound system.
@@ -2548,11 +2551,11 @@ extern "C"
     /**
      * @brief Stop music.
      * @param sound Sound system.
-     * @param mode Stop mode.
+     * @param fade_frames Frames to fade out over, or zero to stop at once.
      * @param key Music to stop, or -1 for all of it.
      * @return One when music was stopped or music is disabled, otherwise zero.
      */
-    s32 resident_sound_stop_music(ResidentSound* sound, s32 mode, s32 key);
+    s32 resident_sound_stop_music(ResidentSound* sound, s32 fade_frames, s32 key);
 
     /**
      * @brief Delete a heap's child heaps.
@@ -2735,7 +2738,7 @@ s32 resident_sound_set_reverb(ResidentSound* sound, s32 preset);
 /**
  * @brief Scale the sound volume and send it to the stream.
  * @param sound Sound system.
- * @param scale Scale, 0x7FFF for the full volume.
+ * @param scale Scale, RESIDENT_SOUND_VOLUME_SCALE_FULL for the full volume.
  */
 void resident_sound_set_volume_scale(ResidentSound* sound, s32 scale);
 

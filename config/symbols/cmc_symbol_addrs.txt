@@ -158,15 +158,15 @@ func_00413D20__23ItemCreationClass172600Fv = 0x0041ACF0; // type:func absolute:T
 draw__23ItemCreationClass172600Fv = 0x0041A9A0; // type:func absolute:True
 
 __dt__23ItemCreationClass175030Fv = 0x0034CE10; // type:func allow_duplicated:True
-__vt__23ItemCreationClass185050 = 0x00188DC0; // size:0x10 absolute:True
+__vt__16LibMovementState = 0x00188DC0; // size:0x10 absolute:True
 __vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True
-func_slot0c__23ItemCreationClass185050Fv = 0x003591A0; // type:func
+on_arrived__16LibMovementStateFv = 0x003591A0; // type:func
 func_00413D20__23ItemCreationClass175030Fv = 0x00467320; // type:func absolute:True
 draw__23ItemCreationClass175030Fv = 0x004672C0; // type:func absolute:True
 
 func_0034CE10 = 0x0034CE10; // type:func absolute:True
 
-__dt__23ItemCreationClass185050Fv = 0x0034D1D0; // type:func allow_duplicated:True
+__dt__16LibMovementStateFv = 0x0034D1D0; // type:func allow_duplicated:True
 func_0034D1D0 = 0x0034D1D0; // type:func absolute:True
 func_003591A0 = 0x003591A0; // type:func absolute:True
 

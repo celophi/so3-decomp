@@ -789,13 +789,13 @@ void EquipItemInstanceListWindow::func_slot10c(u32 rows, u32 cursor)
         if (cursor != 0)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::alpha = 128.0f;
+            nested->LibMovementState::alpha = 128.0f;
             nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::alpha = 64.0f;
+            nested->LibMovementState::alpha = 64.0f;
             nested->needs_redraw = 1;
         }
     }
@@ -883,13 +883,13 @@ void EquipItemInstanceListWindow::func_slot5c()
         if (D_001B643C->callbacks->state->func_00261150() == this)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::alpha = 128.0f;
+            nested->LibMovementState::alpha = 128.0f;
             nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::alpha = 64.0f;
+            nested->LibMovementState::alpha = 64.0f;
             nested->needs_redraw = 1;
         }
 
@@ -905,7 +905,7 @@ void EquipItemInstanceListWindow::func_slot5c()
             const LibUiRect16* position = &item_icons[FieldStateCE420::unk28]->unk18;
             s32 x = static_cast<s32>(283.0f + position->unk00);
             s32 y = static_cast<s32>(224.0f + (30.0f + position->unk04));
-            bool active = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04)->ItemCreationClass185050::arrived != 0 && FieldClass15AE60::pad29[1] == 0;
+            bool active = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04)->LibMovementState::arrived != 0 && FieldClass15AE60::pad29[1] == 0;
 
             if (active)
             {
@@ -1233,13 +1233,13 @@ void EquipItemListWindow::func_slot10c(u32 unused, u32 cursor)
         if (cursor != 0)
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::alpha = 128.0f;
+            nested->LibMovementState::alpha = 128.0f;
             nested->needs_redraw = 1;
         }
         else
         {
             ItemCreationClass175030* nested = static_cast<ItemCreationClass175030*>(FieldStateCE420::unk04);
-            nested->ItemCreationClass185050::alpha = 64.0f;
+            nested->LibMovementState::alpha = 64.0f;
             nested->needs_redraw = 1;
         }
     }
@@ -1867,7 +1867,7 @@ u8 EquipSlotWindow::func_slotb0()
     current_controller()->func_00263C70(item_list);
     active_slot = category;
     FieldClass153130* selector = equipment_slot_selector;
-    selector->ItemCreationClass185050::alpha = 64.0f;
+    selector->LibMovementState::alpha = 64.0f;
     selector->LibWidget::needs_redraw = 1;
     func_slot20(0);
     lib_factor_tooltip_hide(controller->tooltip);
@@ -1922,7 +1922,7 @@ void EquipSlotWindow::func_slot64()
 
     equip_refresh_record_display(associated);
     FieldClass153130* selector = equipment_slot_selector;
-    selector->ItemCreationClass185050::alpha = 128.0f;
+    selector->LibMovementState::alpha = 128.0f;
     selector->LibWidget::needs_redraw = 1;
 }
 
@@ -1979,7 +1979,7 @@ u8 EquipSlotWindow::func_slotbc()
 /** @brief Test whether a selector is inactive. @param selector Selector state. @return One when its control byte is clear. */
 static inline u8 selector_inactive(FieldClass153130* selector)
 {
-    return !(selector->ItemCreationClass185050::arrived != 0);
+    return !(selector->LibMovementState::arrived != 0);
 }
 
 void EquipSlotWindow::func_slot5c()
@@ -2827,7 +2827,8 @@ void FieldListObject::func_001DD410()
 {
 }
 
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 

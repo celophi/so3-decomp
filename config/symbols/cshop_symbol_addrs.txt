@@ -286,10 +286,10 @@ shop_toggle_parameters = 0x0034CAF0; // type:func allow_duplicated:True
 shop_previous_buy_category = 0x0034CAA0; // type:func allow_duplicated:True
 shop_next_buy_category = 0x0034CA50; // type:func allow_duplicated:True
 
-__dt__23ItemCreationClass185050Fv = 0x0034AE20; // type:func
-func_slot0c__23ItemCreationClass185050Fv = 0x003516C0; // type:func absolute:True allow_duplicated:True
+__dt__16LibMovementStateFv = 0x0034AE20; // type:func
+on_arrived__16LibMovementStateFv = 0x003516C0; // type:func absolute:True allow_duplicated:True
 func_003516C0 = 0x003516C0; // type:func allow_duplicated:True
-__vt__23ItemCreationClass185050 = 0x00187B90; // size:0x10
+__vt__16LibMovementState = 0x00187B90; // size:0x10
 
 __ct__16FieldClass15AD40Fv = 0x002CDA60; // type:func absolute:True allow_duplicated:True
 

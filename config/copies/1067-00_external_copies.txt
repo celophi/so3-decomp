@@ -2,6 +2,6 @@
 // FieldClass173F80 is a Lib-region class; its vtable's destructor slot points to
 // the Lib copy at 0x441600, so the Field copy is dropped without an address.
 __dt__16FieldClass173F80Fv
-// ItemCreationClass185050 (Lib's movement state) has an inline destructor; the
+// LibMovementState has an inline destructor; the
 // cursor destructor at 0x23BCC0 inlines it, so 1067-00 keeps no copy of its own.
-__dt__23ItemCreationClass185050Fv
+__dt__16LibMovementStateFv

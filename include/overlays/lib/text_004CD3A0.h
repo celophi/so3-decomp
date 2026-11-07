@@ -753,6 +753,76 @@ public:
     u32 unk8c;
 };
 
+/** Values of LibLight::kind; kinds with LIB_LIGHT_LOCAL set are local lights, the rest directional. */
+enum
+{
+    LIB_LIGHT_LOCAL = 4,
+    LIB_LIGHT_KIND_SPOT = 6
+};
+
+/** Partial light, kept in g_light_list. */
+class LibLight : public LibTransformOwner
+{
+    public:
+        /** @brief Update the transform matrix if it isn't ready, then cache the position and direction from it. */
+        void update_frame();
+
+        /** World transform; the translation is in the last column. */
+        LibMatrix44Value world;
+
+        u8 unkd0[0x150];
+
+        /** Colour in xyz and intensity in w. */
+        LibVector4 color;
+
+        /** Colour scaled by the current camera's unk260 each frame. */
+        LibVector4 tinted_color;
+
+        /** Position, w one, cached by update_frame. */
+        LibVector4 position;
+
+        /** Direction (the transform's y axis), w one, cached by update_frame. */
+        LibVector4 direction;
+
+        /** Spotlight cone angle in degrees. */
+        float cone_angle;
+
+        /** Intensity last packed for a directional light. */
+        float packed_intensity;
+
+        u8 unk268[0x20];
+        u8 unk288;
+        u8 unk289;
+        u8 unk28a;
+        u8 unk28b;
+        u8 unk28c;
+        u8 unk28d;
+        u8 unk28e;
+        u8 enabled;
+        u8 unk290;
+        u8 unk291[3];
+
+        /** LIB_LIGHT_KIND_*. */
+        s32 kind;
+
+        /** Light groups in the low byte; assign_spot_lights puts a spotlight's own bit (8 up to 31) above them. */
+        u32 mask;
+};
+
+/**
+ * @brief Read a spotlight's position, direction, and the cosine and sine of its cone angle.
+ * @param light Spotlight; its transform matrix is updated first if it isn't ready.
+ * @param frame Receives the position (w 1), the direction, and the cosine and sine in x and y.
+ */
+extern "C" void lib_spot_light_get_frame(LibLight* light, LibVector4* frame);
+
+/**
+ * @brief Read a light's direction (its transform's y axis) from its current transform matrix.
+ * @param out Receives the direction, w one.
+ * @param light Light.
+ */
+extern "C" void lib_light_get_direction(LibVector4* out, LibLight* light);
+
 
 /** Two-callback DMA interface, with vtable D_171FF0 in main data. */
 class LibDmaCallbacks
@@ -913,7 +983,7 @@ public:
     void set_display_effect(LibCameraContext* display, bool enabled, bool first_flag, bool second_flag, s32 level,
                             u32 mask);
 
-    /** @brief Run LibClass179080::func_004E1E70 on the current camera, if there is one. */
+    /** @brief Run LibCamera::func_004E1E70 on the current camera, if there is one. */
     void func_004DB0F0();
 
     /** @brief Queue the current camera, if there is one, for VIF1 DMA. */
@@ -936,25 +1006,75 @@ public:
 };
 
 /**
- * 0x390-byte update list with vtable D_179690 in main data (constructor 0x4E95C0), made once by Lib's initialization
- * and kept in D_001B6624. The renderer holds it at unk4084, calls into it before drawing models and at the end of the
- * frame, and the scene builder appends objects to it and writes three floats at 0x310.
+ * The scene's lights: a 0x390-byte update list with vtable D_179690 in main data (constructor 0x4E95C0), made once by
+ * Lib's initialization and kept in g_light_list. The renderer holds it as light_list and calls into it before drawing
+ * models and at the end of the frame; the scene builder appends a scene's lights to it and writes the three
+ * non-negative floats at 0x310.
  */
-class LibClass179690 : public LibUpdateList, public LibListObject
+class LibLightList : public LibUpdateList, public LibListObject
 {
-public:
-    /** @brief Construct the list. */
-    LibClass179690();
+    public:
+        /** @brief Construct the list. */
+        LibLightList();
 
-    u8 unk8c[0x2D4];
+        /**
+         * @brief Give each enabled spotlight its own bit (8 up to 31) in its mask, then set that bit on every model in the
+         * renderer that shares one of the light's groups and whose bounding sphere reaches into the light's cone.
+         * @param renderer Renderer whose models are tested.
+         */
+        void assign_spot_lights(class LibRenderer* renderer);
 
-    /** Display manager; boot and the field point it at g_display_manager. */
-    LibDisplayManager* manager;
+        u8 unk8c[4];
+        LibMatrix44Value unk90;
+        LibMatrix44Value unkd0;
 
-    u8 unk364[0x2C];
+        /** Up to four directional lights' directions, negated, one light per row. */
+        LibVector4 directions[4];
+
+        /** The same lights' colours times their intensities: one channel per row, one light per column. */
+        float colors[4][4];
+
+        u8 unk190[0x180];
+        LibVector4 unk310;
+        LibVector4 unk320;
+        LibVector4 unk330;
+
+        /** unk320 times unk330. */
+        LibVector4 unk340;
+
+        u8 unk350[0x10];
+
+        /** Display manager; boot and the field point it at g_display_manager. */
+        LibDisplayManager* manager;
+
+        /** Packed directional lights whose unk28C is set. */
+        LibLight* unk364[3];
+
+        /** The packed directional lights' masks ANDed together. */
+        u32 mask;
+
+        u8 unk374[4];
+
+        /** Enabled lights counted this frame (local lights only when unk28E is set). */
+        s16 light_count;
+
+        /** Entries in unk364. */
+        s16 unk364_count;
+
+        u8 unk37c[2];
+
+        /** Set each frame, cleared once the directional lights are packed. */
+        u8 unk37e;
+
+        /** Set when an enabled light is a local (spot or point) light. */
+        u8 has_local_lights;
+
+        u8 unk380[2];
+        u8 unk382;
+        u8 unk383[0xD];
 };
 
-extern LibClass179690* D_001B6624;
+extern LibLightList* g_light_list;
 
 /** Display manager whose current camera objects face by default. */
 extern LibDisplayManager* g_display_manager;
@@ -1041,7 +1161,7 @@ public:
     /** Scene manager whose current camera the frame is drawn with. */
     LibDisplayManager* manager;
 
-    LibClass179690* unk4084;
+    LibLightList* light_list;
     LibCameraContext* display;
     u32 unk408c;
     u8 unk4090[4];

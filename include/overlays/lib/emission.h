@@ -9,6 +9,33 @@ class LibClass173A28 : public LibLink
 public:
     /** @brief Destroy the secondary base. */
     virtual ~LibClass173A28();
+
+    /**
+     * @brief Free an object through the heap at D_001B6684 when one is set, otherwise through operator delete.
+     * @param object Object storage, or null.
+     */
+    static void operator delete(void* object);
+
+    /**
+     * @brief Allocate an array from the heap at D_001B6684 when one is set, otherwise through operator new.
+     * @param size Size in bytes.
+     * @param heap Heap selector passed on to operator new.
+     * @return The allocation.
+     */
+    static void* operator new[](u32 size, s32 heap);
+
+    /**
+     * @brief Free an array through the heap at D_001B6684 when one is set, otherwise through operator delete.
+     * @param object Array storage, or null.
+     */
+    static void operator delete[](void* object);
+
+    /**
+     * @brief Free an array whose construction failed, the same way as operator delete[](void*).
+     * @param object Array storage, or null.
+     * @param heap Heap selector the array was allocated with.
+     */
+    static void operator delete[](void* object, s32 heap);
 };
 
 /** 0x4A0-byte emitter whose remaining resource and grid settings are unrecovered. */

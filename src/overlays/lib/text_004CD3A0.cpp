@@ -1144,7 +1144,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5860);
  * @brief Hand the camera's view-projection matrix to the VU0 microprogram at 0x1F0.
  * @param camera Camera whose matrices are used.
  */
-extern "C" void lib_load_camera_screen_matrix(const LibClass179080* camera)
+extern "C" void lib_load_camera_screen_matrix(const LibCamera* camera)
 {
     LibMatrix44Value matrix = func_004CF7C0(camera->projection_matrix, camera->view_matrix);
     vu0_start_microprogram_1f0_vf5_vf8(&matrix);
@@ -2610,14 +2610,14 @@ void LibTransform::update()
 {
     if (draw_flags & (LIB_DRAW_FACE_CAMERA_X | LIB_DRAW_FACE_CAMERA_Y | LIB_DRAW_FACE_CAMERA_Z))
     {
-        LibClass179080* camera;
+        LibCamera* camera;
         if (display_manager != 0)
         {
-            camera = static_cast<LibClass179080*>(display_manager->current_display);
+            camera = static_cast<LibCamera*>(display_manager->current_display);
         }
         else
         {
-            camera = static_cast<LibClass179080*>(g_display_manager->current_display);
+            camera = static_cast<LibCamera*>(g_display_manager->current_display);
         }
         if (camera != 0)
         {
@@ -2983,12 +2983,12 @@ void LibDisplayManager::set_display_effect(LibCameraContext* display, bool enabl
     }
 }
 
-/** @brief Run LibClass179080::func_004E1E70 on the current camera, if there is one. */
+/** @brief Run LibCamera::func_004E1E70 on the current camera, if there is one. */
 void LibDisplayManager::func_004DB0F0()
 {
     if (current_display != 0)
     {
-        static_cast<LibClass179080*>(current_display)->func_004E1E70();
+        static_cast<LibCamera*>(current_display)->func_004E1E70();
     }
 }
 
@@ -2997,7 +2997,7 @@ void LibDisplayManager::submit_camera()
 {
     if (current_display != 0)
     {
-        static_cast<LibClass179080*>(current_display)->enqueue_submission();
+        static_cast<LibCamera*>(current_display)->enqueue_submission();
     }
 }
 
@@ -3008,7 +3008,7 @@ void LibDisplayManager::prepare_camera()
 
     if (current_display != 0)
     {
-        static_cast<LibClass179080*>(current_display)->func_004E2120();
+        static_cast<LibCamera*>(current_display)->func_004E2120();
     }
 }
 

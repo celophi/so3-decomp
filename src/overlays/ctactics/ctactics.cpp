@@ -1156,7 +1156,7 @@ u8 TacticsFormationWindow::func_slotb8()
 
     if (parent_grid != 0)
     {
-        parent_grid->ItemCreationClass185050::alpha = 64.0f;
+        parent_grid->LibMovementState::alpha = 64.0f;
         parent_grid->geometry_dirty = 1;
     }
 
@@ -1290,7 +1290,7 @@ void TacticsFormationWindow::func_slot64()
 
     if (parent_grid != 0)
     {
-        parent_grid->ItemCreationClass185050::alpha = 128.0f;
+        parent_grid->LibMovementState::alpha = 128.0f;
         parent_grid->geometry_dirty = 1;
     }
 
@@ -3602,8 +3602,8 @@ TacticsCoordinateSelector::~TacticsCoordinateSelector()
 {
 }
 
-/** @brief Perform no work. */
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 

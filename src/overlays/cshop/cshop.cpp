@@ -2536,7 +2536,7 @@ s32 shop_select_action(void* receiver)
  */
 static inline void set_shop_choice_opacity(FieldObject23CEA0* choice, float opacity)
 {
-    choice->ItemCreationClass185050::alpha = opacity;
+    choice->LibMovementState::alpha = opacity;
     choice->geometry_dirty = 1;
 }
 /**
@@ -3731,7 +3731,8 @@ void ShopState::func_001DD410()
 {
 }
 
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 

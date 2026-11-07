@@ -75,6 +75,10 @@
       "flags": ["-inline", "level=7"]
     },
     {
+      "source": "src/overlays/lib/text_004BD360.cpp",
+      "flags": ["-inline", "level=7"]
+    },
+    {
       "source": "src/overlays/boot/startup_checks.cpp",
       "flags": ["-O4,p"]
     },

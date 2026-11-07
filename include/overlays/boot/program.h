@@ -74,10 +74,15 @@ class BootUnitErrorPopup : public LibListObject
         LibPanel* panel;
 };
 
-/** Partial loaded program image; the offset locates the copy of the main executable's code. */
+/** Start of resource 3, the main executable as an ELF file: the ELF header, then the first program header. */
 struct BootProgramImage
 {
-    u8 unk00[0x38];
+    u8 elf_header[0x34];
+
+    /** First program header's segment type. */
+    u32 segment_type;
+
+    /** File offset of the first segment, the executable's code. */
     u32 code_offset;
 };
 
@@ -200,7 +205,7 @@ enum BootCommonUiBlock
     BOOT_COMMON_UI_BLOCK_COUNT
 };
 
-/** Partial 0x20-byte boot object with vtable D_171090 in main data. */
+/** 0x20-byte loader for resource 0x26, with vtable D_171090 in main data. */
 class BootResourceLoader : public LibListObject
 {
     public:
@@ -320,7 +325,7 @@ class BootProgram : public BootResidentProgram
         }
 
         LibCameraContext* display;
-        LibClass179080* projection;
+        LibCamera* projection;
         BootInput* input;
 
         /** Resource 0x26's first block, holding the message bank. */
@@ -363,10 +368,13 @@ class BootProgram : public BootResidentProgram
         BootProgramImage* image;
 };
 
-/** Partial resident object g_display_callbacks that holds the current display. */
+/**
+ * Resident DMA callbacks object g_display_callbacks, with vtable D_0014FDE0 in main data; lib_initialize creates it
+ * and both callbacks do nothing. It records the current display.
+ */
 struct BootResidentDisplay
 {
-    u8 unk00[4];
+    void* vtable;
     LibCameraContext* display;
 };
 

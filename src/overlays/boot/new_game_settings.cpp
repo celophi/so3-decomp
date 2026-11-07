@@ -420,8 +420,8 @@ void BootNewGameSettings::get_speaker_cursor_position(s32 speaker, float* x, flo
     position.z = model->transform.m[2][3];
     position.w = 1.0f;
     LibDisplayManager* manager = g_display_manager;
-    static_cast<LibClass179080*>(manager->current_display)->update_projection();
-    lib_load_camera_screen_matrix(static_cast<LibClass179080*>(g_display_manager->current_display));
+    static_cast<LibCamera*>(manager->current_display)->update_projection();
+    lib_load_camera_screen_matrix(static_cast<LibCamera*>(g_display_manager->current_display));
     vu0_wait_microprogram();
     vu0_start_microprogram_vf5(&position);
     vu0_wait_microprogram();
@@ -1277,7 +1277,7 @@ static inline s32 button_pressed(BootInput* input, u16 mask)
  */
 static inline void place_cursor(LibSelectionCursor* cursor, float x, float y)
 {
-    ItemCreationClass185050& motion = *cursor;
+    LibMovementState& motion = *cursor;
     motion.position.x = x;
     motion.position.y = y;
     motion.arrived = 1;
@@ -1324,7 +1324,7 @@ void BootNewGameSettings::update()
     case BOOT_SETTINGS_STAGE_LOAD:
         if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
-            resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
+            resident_sound_play_music(g_sound, BOOT_MUSIC_FLY_BY_CONTACT, 1, 0, 0);
             resident_queue_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, model_data,
                                             BOOT_RESOURCE_TAG, BOOT_RESOURCE_PRIORITY, 0, 0, 0, BOOT_RESOURCE_READ);
             clear_to_menu_background();
@@ -1416,7 +1416,7 @@ void BootNewGameSettings::update()
             {
                 resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 queue_fade();
-                resident_sound_stop_music(g_sound, 0x1E, -1);
+                resident_sound_stop_music(g_sound, BOOT_MUSIC_FADE_FRAMES, -1);
                 stage = BOOT_SETTINGS_STAGE_EXIT;
                 break;
             }
@@ -1439,9 +1439,9 @@ void BootNewGameSettings::update()
     case BOOT_SETTINGS_STAGE_EXIT:
         clear_to_black();
 
-        if (resident_find_resource_request(g_resource_queue, 0x29, 0, 0, -1, 0) != 0)
+        if (resident_find_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, 0, 0, -1, 0) != 0)
         {
-            resident_cancel_resource_requests(g_resource_queue, 0x29, 0, 0, -1, 0);
+            resident_cancel_resource_requests(g_resource_queue, BOOT_RES_SETTINGS_MODELS, 0, 0, -1, 0);
         }
 
         for (s32 i = 0; i < 21; i++)
@@ -1480,7 +1480,7 @@ void BootNewGameSettings::update()
         if (++page > BOOT_SETTINGS_DIFFICULTY)
         {
             clear_to_black();
-            resident_sound_stop_music(g_sound, 0x1E, -1);
+            resident_sound_stop_music(g_sound, BOOT_MUSIC_FADE_FRAMES, -1);
             stage = BOOT_SETTINGS_STAGE_START_GAME;
         }
         else
@@ -1538,10 +1538,10 @@ void BootNewGameSettings::update()
             resident_pad_set_stick_dpad(g_input_system, 0, 0);
             room_scene = new (0) LibScene;
             lib_scene_use_data(room_scene, (u8*)RESIDENT_ALIGN_RESOURCE(model_blocks[0]));
-            lib_scene_build_objects(room_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
+            lib_scene_build_objects(room_scene, g_boot_program.display, g_update_list, g_light_list, g_display_manager, g_renderer, 1);
             girl_scene = new (0) LibScene;
             lib_scene_use_data(girl_scene, (u8*)RESIDENT_ALIGN_RESOURCE(model_blocks[1]));
-            lib_scene_build_objects(girl_scene, g_boot_program.display, g_update_list, D_001B6624, g_display_manager, g_renderer, 1);
+            lib_scene_build_objects(girl_scene, g_boot_program.display, g_update_list, g_light_list, g_display_manager, g_renderer, 1);
             s32 count = 0;
 
             for (LibModel* model = static_cast<LibModel*>(lib_find_renderable_entry(girl_scene, g_empty_name)); model != 0;
@@ -1582,7 +1582,7 @@ void BootNewGameSettings::update()
             selected_speaker = 0;
             voice_count = 0;
             place_speakers();
-            resident_sound_set_volume_scale(g_sound, 10000);
+            resident_sound_set_volume_scale(g_sound, BOOT_SETTINGS_SPEAKER_VOLUME_SCALE);
             stage++;
         }
 
@@ -1958,7 +1958,7 @@ void BootNewGameSettings::update()
             }
         }
 
-        resident_sound_set_volume_scale(g_sound, 0x8000);
+        resident_sound_set_volume_scale(g_sound, BOOT_SETTINGS_RESTORED_VOLUME_SCALE);
         room_scene->destroy();
         room_scene = 0;
         girl_scene->destroy();
@@ -1991,9 +1991,9 @@ void BootNewGameSettings::update()
         break;
     }
     case BOOT_SETTINGS_STAGE_START_GAME:
-        if (resident_find_resource_request(g_resource_queue, 0x29, 0, 0, -1, 0) != 0)
+        if (resident_find_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, 0, 0, -1, 0) != 0)
         {
-            resident_cancel_resource_requests(g_resource_queue, 0x29, 0, 0, -1, 0);
+            resident_cancel_resource_requests(g_resource_queue, BOOT_RES_SETTINGS_MODELS, 0, 0, -1, 0);
         }
 
         settings->continue_selected = 0;
@@ -2003,7 +2003,7 @@ void BootNewGameSettings::update()
         return;
     }
 
-    if (stage > BOOT_SETTINGS_STAGE_LOAD && resident_find_resource_request(g_resource_queue, 0x29, 0, 0, -1, 0) == 0 && loaded_model_blocks < 8)
+    if (stage > BOOT_SETTINGS_STAGE_LOAD && resident_find_resource_request(g_resource_queue, BOOT_RES_SETTINGS_MODELS, 0, 0, -1, 0) == 0 && loaded_model_blocks < 8)
     {
         model_blocks[loaded_model_blocks] =
             resident_allocate_decode_buffer(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(model_data), loaded_model_blocks, 1);

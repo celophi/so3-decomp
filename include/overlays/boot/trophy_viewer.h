@@ -43,7 +43,7 @@ struct BootTrophyTime
     u8 year;
 };
 
-/** Partial 0xF10-byte record the Battle Trophies viewer keeps for each of the 300 trophies. */
+/** 0xF10-byte record the Battle Trophies viewer keeps for each of the 300 trophies. */
 struct BootTrophyRecord
 {
     /**
@@ -53,7 +53,9 @@ struct BootTrophyRecord
      */
     BootTrophyRecord& operator=(const BootTrophyRecord& other);
 
-    u8 unk00[4];
+    /** Checksum over the rest of the record, which lib_trophy_record_decode checks after decoding it. */
+    u32 checksum;
+
     BootTrophyTime time;
 
     /** Key the game gave this trophy; a record whose key doesn't match is treated as forged. */

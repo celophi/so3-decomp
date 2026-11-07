@@ -79,6 +79,13 @@ enum BootSettingsStage
     BOOT_SETTINGS_STAGE_START_GAME
 };
 
+/** Music volume scales set on entering and leaving the speaker setup. */
+enum BootSettingsVolumeScale
+{
+    BOOT_SETTINGS_SPEAKER_VOLUME_SCALE = 10000,
+    BOOT_SETTINGS_RESTORED_VOLUME_SCALE = 0x8000
+};
+
 /**
  * New-game settings screens, with vtable D_170EF0 in main data. The player steps through six pages (TV mode,
  * sound output, event skip, voice playback, vibration, difficulty), with a speaker setup scene behind the sound

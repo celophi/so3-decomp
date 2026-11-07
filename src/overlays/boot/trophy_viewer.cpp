@@ -624,7 +624,7 @@ void BootBattleTrophyViewer::update()
     case BOOT_TROPHY_WAIT_FOR_RESOURCES:
         if (resident_poll_resource_queue(g_resource_queue) != 0)
         {
-            resident_sound_play_music(g_sound, 0x48, 1, 0, 0);
+            resident_sound_play_music(g_sound, BOOT_MUSIC_FLY_BY_CONTACT, 1, 0, 0);
             clear_to_menu_background();
 
             if (*resident_get_system()->status != RESIDENT_STATUS_TAMPERED)
@@ -673,9 +673,9 @@ void BootBattleTrophyViewer::update()
             cursor->destroy();
         }
 
-        message_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x65, 1, 32.0f, 88.0f, 576.0f, 224.0f);
-        slot1_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x66, 1, 180.0f, 144.0f, 512.0f, 224.0f);
-        slot2_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x67, 1, 180.0f, 184.0f, 512.0f, 224.0f);
+        message_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_SELECT_SLOT, 1, 32.0f, 88.0f, 576.0f, 224.0f);
+        slot1_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_SLOT1_LABEL, 1, 180.0f, 144.0f, 512.0f, 224.0f);
+        slot2_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_SLOT2_LABEL, 1, 180.0f, 184.0f, 512.0f, 224.0f);
         lib_container_attach_widget(container, message_text);
         lib_container_attach_widget(container, slot1_text);
         lib_container_attach_widget(container, slot2_text);
@@ -699,7 +699,7 @@ void BootBattleTrophyViewer::update()
         break;
     case BOOT_TROPHY_RETURN_TO_TITLE:
         clear_to_black();
-        resident_sound_stop_music(g_sound, 0x1E, -1);
+        resident_sound_stop_music(g_sound, BOOT_MUSIC_FADE_FRAMES, -1);
         release();
         g_update_list->append_node(new (0) BootTitleMenu(BOOT_TITLE_ITEM_BATTLE_TROPHIES), -1);
         lib_object_detach_owner(this);
@@ -768,7 +768,7 @@ void BootBattleTrophyViewer::update()
             slot1_text = 0;
             slot2_text->destroy();
             slot2_text = 0;
-            lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? 0x84 : 0x7B, 0);
+            lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? BOOT_MSG_SLOT2_NO_TROPHY_DATA : BOOT_MSG_SLOT1_NO_TROPHY_DATA, 0);
         }
 
         break;
@@ -789,7 +789,7 @@ void BootBattleTrophyViewer::update()
         slot1_text = 0;
         slot2_text->destroy();
         slot2_text = 0;
-        lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? 0x86 : 0x85, 0);
+        lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? BOOT_MSG_SLOT2_NO_CARD : BOOT_MSG_SLOT1_NO_CARD, 0);
         break;
     case BOOT_TROPHY_START_TRANSFER:
         FlushCache(0);
@@ -800,7 +800,7 @@ void BootBattleTrophyViewer::update()
         }
 
         records = new (0) BootTrophyRecord[LIB_TROPHY_COUNT];
-        lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? 0x82 : 0x68, 0);
+        lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? BOOT_MSG_SLOT2_LOADING_TROPHIES : BOOT_MSG_SLOT1_LOADING_TROPHIES, 0);
 
         if (slot1_text != 0)
         {
@@ -891,24 +891,24 @@ void BootBattleTrophyViewer::update()
         scroll_step = 0;
         input_delay = 0;
         step++;
-        sort_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6F, 1, 430.0f, 55.0f, 512.0f, 224.0f);
+        sort_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_ACQUISITION_ORDER, 1, 430.0f, 55.0f, 512.0f, 224.0f);
         sort_text->set_color(BOOT_TEXT_COLOR);
 
         if (settings->widescreen)
         {
-            percentage_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6A, 1, 96.0f, 22.0f, 512.0f, 16.0f);
+            percentage_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_PERCENTAGE, 1, 96.0f, 22.0f, 512.0f, 16.0f);
             scroll_indicator = new (0) LibListIndicator(531.0f, 82.0f, 329.0f, 300.0f / (float)BOOT_TROPHY_GRID_ROWS, 0.0f);
             number_label = new (0) LibStringLabel(g_first_trophy_number, 1, 48.0f, 414.0f, 512.0f, 224.0f);
-            name_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6B, 1, 96.0f, 414.0f, 512.0f, 224.0f);
-            date_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6C, 1, 96.0f, 438.0f, 512.0f, 224.0f);
+            name_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_NOT_ACQUIRED, 1, 96.0f, 414.0f, 512.0f, 224.0f);
+            date_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_DASHES, 1, 96.0f, 438.0f, 512.0f, 224.0f);
         }
         else
         {
-            percentage_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6A, 1, 96.0f, 24.0f, 512.0f, 224.0f);
+            percentage_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_PERCENTAGE, 1, 96.0f, 24.0f, 512.0f, 224.0f);
             scroll_indicator = new (0) LibListIndicator(595.0f, 84.0f, 323.0f, 300.0f / (float)BOOT_TROPHY_GRID_ROWS, 0.0f);
             number_label = new (0) LibStringLabel(g_first_trophy_number, 1, 48.0f, 411.0f, 512.0f, 224.0f);
-            name_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6B, 1, 96.0f, 411.0f, 512.0f, 224.0f);
-            date_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x6C, 1, 96.0f, 435.0f, 512.0f, 224.0f);
+            name_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_NOT_ACQUIRED, 1, 96.0f, 411.0f, 512.0f, 224.0f);
+            date_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_DASHES, 1, 96.0f, 435.0f, 512.0f, 224.0f);
         }
 
         sort_text->set_color(BOOT_TEXT_COLOR);
@@ -940,7 +940,7 @@ void BootBattleTrophyViewer::update()
 
             if (score >= BOOT_TROPHY_FIRST_COLOR_COUNT * BOOT_TROPHY_LOAD_SCORE_PER_EARNED)
             {
-                rank_text = new (0) LibTextWidget(g_boot_program.get_messages(), 0x71, 1, 32.0f, 55.0f, 512.0f, 22.0f);
+                rank_text = new (0) LibTextWidget(g_boot_program.get_messages(), BOOT_MSG_TROPHY_FIRST_REWARD, 1, 32.0f, 55.0f, 512.0f, 22.0f);
                 rank_text->set_vertical_align(2);
                 lib_container_attach_widget(container, rank_text);
                 rank_text->set_color(BOOT_TEXT_COLOR);
@@ -1066,8 +1066,8 @@ void BootBattleTrophyViewer::update()
 
             if (selected >= LIB_TROPHY_COUNT)
             {
-                lib_text_set_resource(name_text, g_boot_program.get_messages(), 0x6C, 0);
-                lib_text_set_resource(date_text, g_boot_program.get_messages(), 0x6C, 0);
+                lib_text_set_resource(name_text, g_boot_program.get_messages(), BOOT_MSG_TROPHY_DASHES, 0);
+                lib_text_set_resource(date_text, g_boot_program.get_messages(), BOOT_MSG_TROPHY_DASHES, 0);
             }
             else
             {
@@ -1086,17 +1086,17 @@ void BootBattleTrophyViewer::update()
 
                     if (time->year >= 0x10)
                     {
-                        lib_text_set_resource(date_text, g_boot_program.get_messages(), 0x6E, 0);
+                        lib_text_set_resource(date_text, g_boot_program.get_messages(), BOOT_MSG_TROPHY_DATE_2010S, 0);
                     }
                     else
                     {
-                        lib_text_set_resource(date_text, g_boot_program.get_messages(), 0x6D, 0);
+                        lib_text_set_resource(date_text, g_boot_program.get_messages(), BOOT_MSG_TROPHY_DATE_2000S, 0);
                     }
                 }
                 else
                 {
-                    lib_text_set_resource(name_text, g_boot_program.get_messages(), 0x6B, 0);
-                    lib_text_set_resource(date_text, g_boot_program.get_messages(), 0x6C, 0);
+                    lib_text_set_resource(name_text, g_boot_program.get_messages(), BOOT_MSG_TROPHY_NOT_ACQUIRED, 0);
+                    lib_text_set_resource(date_text, g_boot_program.get_messages(), BOOT_MSG_TROPHY_DASHES, 0);
                 }
             }
         }
@@ -1124,7 +1124,7 @@ void BootBattleTrophyViewer::update()
                     shown_rank = rank;
                 }
 
-                lib_text_set_resource(rank_text, g_boot_program.get_messages(), shown_rank + 0x71, 0);
+                lib_text_set_resource(rank_text, g_boot_program.get_messages(), shown_rank + BOOT_MSG_TROPHY_FIRST_REWARD, 0);
             }
         }
 
@@ -1295,7 +1295,7 @@ void BootBattleTrophyViewer::update()
                 resident_sound_play(g_sound, BOOT_SOUND_CONFIRM, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 by_time ^= 1;
                 sort_trophies(by_time);
-                lib_text_set_resource(sort_text, g_boot_program.get_messages(), by_time + 0x6F, 0);
+                lib_text_set_resource(sort_text, g_boot_program.get_messages(), by_time + BOOT_MSG_TROPHY_ACQUISITION_ORDER, 0);
             }
         }
 
@@ -1313,14 +1313,14 @@ void BootBattleTrophyViewer::update()
     }
     case BOOT_TROPHY_OPEN_MUSIC_PLAYER:
         clear_to_black();
-        resident_sound_stop_music(g_sound, 0x1E, -1);
+        resident_sound_stop_music(g_sound, BOOT_MUSIC_FADE_FRAMES, -1);
         release();
         g_update_list->append_node(new (0) BootMusicPlayer, -1);
         lib_object_detach_owner(this);
         destroy();
         return;
     case BOOT_TROPHY_SHOW_TRANSFER_ERROR:
-        lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? 0x83 : 0x78, 0);
+        lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? BOOT_MSG_SLOT2_TROPHY_LOAD_ERROR : BOOT_MSG_SLOT1_TROPHY_LOAD_ERROR, 0);
         step++;
         break;
     case BOOT_TROPHY_WAIT_FOR_ERROR_ACKNOWLEDGEMENT:
@@ -1333,7 +1333,7 @@ void BootBattleTrophyViewer::update()
 
         break;
     case BOOT_TROPHY_SHOW_INVALID_RECORD:
-        lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? 0x88 : 0x87, 0);
+        lib_text_set_resource(message_text, g_boot_program.get_messages(), slot != 0 ? BOOT_MSG_SLOT2_TROPHY_DATA_CORRUPTED : BOOT_MSG_SLOT1_TROPHY_DATA_CORRUPTED, 0);
         step = BOOT_TROPHY_WAIT_FOR_ERROR_ACKNOWLEDGEMENT;
         break;
     }

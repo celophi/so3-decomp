@@ -153,7 +153,7 @@ extern "C" void func_413BB0(LibClass1723F0* object);
 /** @brief Dispatch a resident request. @param receiver Request receiver. @param arg1 Request kind. @param arg2 Request argument. @param arg3 Request argument. @param arg4 Request argument. @param arg5 Request argument. @param arg6 Request argument. @return Request result. */
 extern "C" s32 resident_sound_play(ResidentSound* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
 /** @brief Set the movement target. @param object Movement state. @param x Horizontal coordinate. @param y Vertical coordinate. @param duration Movement duration. */
-extern "C" void func_466E40(ItemCreationClass185050* object, float x, float y, float duration);
+extern "C" void func_466E40(LibMovementState* object, float x, float y, float duration);
 
 /** Partial container state with the panel constructed at offset 0x100. */
 struct FieldPanelState2D7820 : public LibContainer

@@ -431,8 +431,8 @@ g_display = 0x001B6650; // size:0x4 absolute:True
 D_001B6694 = 0x001B6694; // size:0x4 absolute:True
 
 func_0034AC90 = 0x0034AC90; // type:func allow_duplicated:True
-__dt__23ItemCreationClass185050Fv = 0x0034AC90; // type:func allow_duplicated:True
-__vt__23ItemCreationClass185050 = 0x001888B0; // size:0x10 absolute:True allow_duplicated:True
+__dt__16LibMovementStateFv = 0x0034AC90; // type:func allow_duplicated:True
+__vt__16LibMovementState = 0x001888B0; // size:0x10 absolute:True allow_duplicated:True
 __vt__8LibPanel = 0x00178630; // size:0x24 absolute:True
 lib_panel_init_rectangle = 0x004C5A80; // type:func absolute:True
 __vt__14LibStringLabel = 0x00175140; // size:0x24 absolute:True
@@ -441,10 +441,10 @@ __vt__23ItemCreationClass172600 = 0x00172600; // size:0x24 absolute:True
 func_002D6440__33ItemCreationOptionResourceDisplayFffP19FieldResourceRecord = 0x002D6440; // type:func absolute:True allow_duplicated:True
 __vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True
 func_00466E40 = 0x00466E40; // type:func absolute:True allow_duplicated:True
-func_00466E40__23ItemCreationClass185050Ffff = 0x00466E40; // type:func absolute:True allow_duplicated:True
-set_move_target__23ItemCreationClass185050Ffff = 0x00466E40; // type:func absolute:True allow_duplicated:True
+func_00466E40__16LibMovementStateFfff = 0x00466E40; // type:func absolute:True allow_duplicated:True
+set_move_target__16LibMovementStateFfff = 0x00466E40; // type:func absolute:True allow_duplicated:True
 func_003509B0 = 0x003509B0; // type:func allow_duplicated:True
-func_slot0c__23ItemCreationClass185050Fv = 0x003509B0; // type:func allow_duplicated:True
+on_arrived__16LibMovementStateFv = 0x003509B0; // type:func allow_duplicated:True
 
 func_00261150__19StatusResourceStateFv = 0x003486E0; // type:func
 func_00263C70__19StatusResourceStateFPv = 0x003486F0; // type:func

@@ -1194,7 +1194,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E30);
  * @param y Target vertical coordinate.
  * @param duration Duration in seconds, converted to sixty frames per second.
  */
-void ItemCreationClass185050::set_move_target(float x, float y, float duration)
+void LibMovementState::set_move_target(float x, float y, float duration)
 {
     target.x = x;
     target.y = y;
@@ -1213,7 +1213,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004670B0);
  * @param y Vertical position.
  * @return One on success, or zero when the storage couldn't be allocated.
  */
-s32 ItemCreationClass185050::init_position(float x, float y)
+s32 LibMovementState::init_position(float x, float y)
 {
     if (!lib_allocate_drawing_storage(&unk00, 0x12))
     {

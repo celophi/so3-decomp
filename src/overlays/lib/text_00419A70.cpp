@@ -12,6 +12,9 @@
 #include "ee.h"
 #include "overlays/lib/image_capture.h"
 #include "vu0.h"
+#include "clamp.h"
+#include "overlays/lib/tracks.h"
+#include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/emission_vu0.h"
 #include "overlays/lib/shape_vu0.h"
 
@@ -1562,29 +1565,161 @@ s32 func_004294F0(void* object)
     return 5;
 }
 
+extern LibTrackPool<LibPooledQuaternionTrack>* g_quaternion_track_pool;
+
+/**
+ * @brief Decode a packed keyframe rotation, rebuilding w.
+ * @param entry Keyframe.
+ * @return Rotation.
+ */
+static inline FieldVec4B decoded_rotation(const LibQuaternionTrackKey* entry)
+{
+    FieldVec4A value;
+    vu0_decode_short_quaternion(entry);
+    vu0_store_decoded_quaternion(&value);
+    return value;
+}
+
+/**
+ * @brief Subtract two rotations, all four components.
+ * @param left Rotation to subtract from.
+ * @param right Rotation to subtract.
+ * @return left - right.
+ */
+static inline FieldVec4B rotation_difference(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4B value;
+    value.x = left.x - right.x;
+    value.y = left.y - right.y;
+    value.z = left.z - right.z;
+    value.w = left.w - right.w;
+    return value;
+}
+
+/**
+ * @brief Pack a unit rotation's x, y and z into 1.15 fixed point, negated when w is negative so w can be rebuilt.
+ * @param value Rotation.
+ * @param x Receives the packed x.
+ * @param y Receives the packed y.
+ * @param z Receives the packed z.
+ */
+static inline void pack_rotation(const FieldVec4A* value, s32& x, s32& y, s32& z)
+{
+    x = value->x * 32768.0f;
+    y = value->y * 32768.0f;
+    z = value->z * 32768.0f;
+
+    if (value->w < 0.0f)
+    {
+        x = -x;
+        y = -y;
+        z = -z;
+    }
+
+    x = clamp_high(x, 0x7FFF);
+    y = clamp_high(y, 0x7FFF);
+    z = clamp_high(z, 0x7FFF);
+    x = clamp_low(x, -0x8000);
+    y = clamp_low(y, -0x8000);
+    z = clamp_low(z, -0x8000);
+}
+
 /** @brief Destroy the list. */
 LibClass173080::~LibClass173080()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004295F0);
+/**
+ * @brief Append a keyframe through append_rotation.
+ * @param value Keyframe rotation.
+ * @param first Unused.
+ * @param second Unused.
+ * @param key Sort key.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibPooledQuaternionTrack::append_key(const void* value, const void* first, const void* second, float key)
+{
+    return append_rotation(static_cast<const FieldVec4A*>(value), key);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429620);
+/**
+ * @brief Replace a keyframe through replace_rotation.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @param first Unused.
+ * @param second Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibPooledQuaternionTrack::replace_key(s32 index, float key, const void* value, const void* first, const void* second)
+{
+    return replace_rotation(index, key, static_cast<const FieldVec4A*>(value));
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429650);
+/**
+ * @brief Insert a keyframe through insert_rotation.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @param first Unused.
+ * @param second Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibPooledQuaternionTrack::insert_key(s32 index, float key, const void* value, const void* first, const void* second)
+{
+    return insert_rotation(index, key, static_cast<const FieldVec4A*>(value));
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429680);
+/**
+ * @brief Store a single keyframe through on_set_single_key.
+ * @param value Keyframe rotation.
+ * @param first Unused.
+ * @param second Unused.
+ * @param key Sort key.
+ */
+void LibPooledQuaternionTrack::set_single_key(const void* value, const void* first, const void* second, float key)
+{
+    on_set_single_key(static_cast<const FieldVec4A*>(value), key);
+}
 
-void func_004296B0(void* unused, void* output)
+/**
+ * @brief Report how fast the sampled rotation was changing; this track always reports zero.
+ * @param output Receives the rate.
+ */
+void LibPooledQuaternionTrack::get_value_rate(void* output) const
 {
     *(unsigned __int128*)output = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004296C0);
+/** @brief Give the track back to g_quaternion_track_pool when it came from one, otherwise delete it. */
+void LibPooledQuaternionTrack::release()
+{
+    if (this != 0)
+    {
+        if (state.pooled)
+        {
+            LibQuaternionTrackBase::free_keys();
+            quaternion_track_pool_free(g_quaternion_track_pool, this);
+        }
+        else
+        {
+            delete this;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429730);
+/** @brief Cycle past the ends, then reset to a single zero keyframe at key zero. */
+void LibPooledQuaternionTrack::reset_keys()
+{
+    set_before_mode(LIB_TRACK_END_CYCLE);
+    FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
+    on_set_single_key(&zero, 0.0f);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429790);
+/** @brief Destroy the track. */
+LibPooledQuaternionTrack::~LibPooledQuaternionTrack()
+{
+}
 
 /** Set the low packed mode at 0x22 and record whether either mode equals four. */
 void func_004297F0(void* object, u8 mode)
@@ -1598,6 +1733,30 @@ void func_00429850(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429860);
+/**
+ * @brief Write the difference between the last and first key rotations, all four components.
+ * @param output Receives the difference.
+ */
+void LibPooledQuaternionTrack::get_end_delta(void* output) const
+{
+    *static_cast<FieldVec4B*>(output) = rotation_difference(decoded_rotation(&key_array[state.key_count - 1]), decoded_rotation(key_array));
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004299C0);
+/**
+ * @brief Pack a rotation into the cached single key, and use it before the first key.
+ * @param value Keyframe rotation.
+ * @param key Sort key.
+ */
+void LibPooledQuaternionTrack::on_set_single_key(const FieldVec4A* value, float key)
+{
+    s32 x;
+    s32 y;
+    s32 z;
+
+    set_before_mode(LIB_TRACK_END_USE_PRE_START_KEY);
+    pack_rotation(value, x, y, z);
+    single_key.packed_rotation[0] = x;
+    single_key.packed_rotation[1] = y;
+    single_key.packed_rotation[2] = z;
+    single_key.key = key;
+}

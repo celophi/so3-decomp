@@ -677,6 +677,26 @@ static inline float set_character_fury(LibCharacterRecord* record, float fury)
 }
 
 /**
+ * @brief Decode the maximum MP without checking it.
+ * @param record Character record.
+ * @return Maximum MP.
+ */
+static inline s32 decoded_max_mp(const LibCharacterRecord* record)
+{
+    return record->encoded_max_mp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Decode the maximum HP without checking it.
+ * @param record Character record.
+ * @return Maximum HP.
+ */
+static inline s32 decoded_max_hp(const LibCharacterRecord* record)
+{
+    return record->encoded_max_hp ^ 0x7DE3F7E3;
+}
+
+/**
  * @brief Store MP, limited by type and to the maximum MP, and update the down flag.
  *
  * Flag bit 0 is set when MP or HP is zero and cleared once both are above it.
@@ -694,9 +714,9 @@ extern "C" s32 lib_character_set_mp(LibCharacterRecord* record, s32 mp)
 
     mp = limit_by_type(record, mp, 99999, 99999999);
 
-    if (mp > (record->encoded_max_mp ^ 0x7DE3F7E3))
+    if (mp > decoded_max_mp(record))
     {
-        mp = record->encoded_max_mp ^ 0x7DE3F7E3;
+        mp = decoded_max_mp(record);
     }
 
     if (mp == 0)
@@ -714,7 +734,46 @@ extern "C" s32 lib_character_set_mp(LibCharacterRecord* record, s32 mp)
     return mp;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F92F0);
+/**
+ * @brief Read the record's checksum salt.
+ * @param record Character record.
+ * @return The salt.
+ */
+static inline u32 character_checksum_salt(const LibCharacterRecord* record)
+{
+    return record->checksum_salt;
+}
+
+/**
+ * @brief Decode current MP, flagging the record when its checksum fails.
+ * @param record Character record.
+ * @return Current MP, or zero for an invalid checksum.
+ */
+extern "C" u32 lib_character_get_mp(LibCharacterRecord* record)
+{
+    u32 first = record->encoded_base_mp;
+    u32 salt = record->encoded_max_mp;
+    u32 key = character_checksum_salt(record);
+    u32 encoded = record->encoded_mp;
+    u32 checksum = record->mp_checksum;
+
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded_flags;
+        s32 flag_salt = record->encoded_experience;
+
+        if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded_flags = ((flags ^ 0x7DE3F7E3) | 1) ^ 0x7DE3F7E3;
+            s32 current_salt = record->encoded_experience;
+            record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
+        }
+
+        return 0;
+    }
+
+    return encoded ^ 0x7DE3F7E3;
+}
 
 /**
  * @brief Limit MP by type to 99999 or 99999999.
@@ -747,9 +806,9 @@ extern "C" s32 lib_character_set_hp(LibCharacterRecord* record, s32 hp)
 
     hp = limit_by_type(record, hp, 99999, 99999999);
 
-    if (hp > (record->encoded_max_hp ^ 0x7DE3F7E3))
+    if (hp > decoded_max_hp(record))
     {
-        hp = record->encoded_max_hp ^ 0x7DE3F7E3;
+        hp = decoded_max_hp(record);
     }
 
     if (hp == 0)
@@ -767,7 +826,36 @@ extern "C" s32 lib_character_set_hp(LibCharacterRecord* record, s32 hp)
     return hp;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F96C0);
+/**
+ * @brief Decode current HP, flagging the record when its checksum fails.
+ * @param record Character record.
+ * @return Current HP, or zero for an invalid checksum.
+ */
+extern "C" u32 lib_character_get_hp(LibCharacterRecord* record)
+{
+    u32 first = record->encoded_base_hp;
+    u32 salt = record->encoded_max_hp;
+    u32 key = character_checksum_salt(record);
+    u32 encoded = record->encoded_hp;
+    u32 checksum = record->hp_checksum;
+
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded_flags;
+        s32 flag_salt = record->encoded_experience;
+
+        if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded_flags = ((flags ^ 0x7DE3F7E3) | 1) ^ 0x7DE3F7E3;
+            s32 current_salt = record->encoded_experience;
+            record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
+        }
+
+        return 0;
+    }
+
+    return encoded ^ 0x7DE3F7E3;
+}
 
 /**
  * @brief Limit HP by type to 99999 or 99999999.
@@ -2498,9 +2586,9 @@ static inline s32 lower_mp(LibCharacterRecord* record, s32 mp)
 
     mp = lib_character_limit_mp(record, mp);
 
-    if (mp > (record->encoded_max_mp ^ 0x7DE3F7E3))
+    if (mp > decoded_max_mp(record))
     {
-        mp = record->encoded_max_mp ^ 0x7DE3F7E3;
+        mp = decoded_max_mp(record);
     }
 
     if (mp == 0)
@@ -2534,9 +2622,9 @@ static inline s32 lower_hp(LibCharacterRecord* record, s32 hp)
 
     hp = lib_character_limit_hp(record, hp);
 
-    if (hp > (record->encoded_max_hp ^ 0x7DE3F7E3))
+    if (hp > decoded_max_hp(record))
     {
-        hp = record->encoded_max_hp ^ 0x7DE3F7E3;
+        hp = decoded_max_hp(record);
     }
 
     if (hp == 0)

@@ -117,33 +117,7 @@ void func_00432710(void* object, u32 value);
  * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
  * @param memory Allocation, or null.
  */
-void func_00434FD0(void* memory);
-
-/**
- * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
- * @param memory Allocation, or null.
- */
-void func_00435020(void* memory);
-
-/**
- * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
- * @param memory Allocation, or null.
- */
 void func_00435070(void* memory);
-
-/**
- * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
- * @param memory Allocation, or null.
- */
-void func_004350C0(void* memory);
-
-/**
- * @brief Allocate from the heap at D_001B6684 when one is set, otherwise through operator new.
- * @param size Size in bytes.
- * @param heap Heap selector passed on to operator new.
- * @return The allocation.
- */
-void* func_00435110(u32 size, s32 heap);
 
 /**
  * @brief Allocate from the heap at D_001B6684 when one is set, otherwise through operator new.

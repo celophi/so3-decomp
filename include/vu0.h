@@ -182,7 +182,7 @@ static inline void vu0_start_microprogram_1b0_vf5(const void* vector)
  * @param matrix 16-byte aligned matrix.
  * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
  * @see func_004D3780, func_004D4010, func_004DB190, func_0044A5F0, func_004D5870, func_004E1670 and
- *      LibClass179080::update_projection in Lib, func_0020E9B0, resolve_field_object_display_position and
+ *      LibCamera::update_projection in Lib, func_0020E9B0, resolve_field_object_display_position and
  *      func_0028BD20 in 1067-00, and func_00230A20 and func_00288830 in 1070-00.
  */
 static inline void vu0_start_microprogram_1f0_vf5_vf8(const void* matrix)

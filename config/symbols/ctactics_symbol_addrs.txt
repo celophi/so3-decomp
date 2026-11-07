@@ -206,7 +206,7 @@ func_slotf4__20TacticsReplaceWindowFUi = 0x0034C120; // type:func
 func_002D6410__33ItemCreationOptionResourceDisplayFv = 0x002D6410; // type:func absolute:True allow_duplicated:True
 func_002D5CF0 = 0x002D5CF0; // type:func absolute:True allow_duplicated:True
 
-__vt__23ItemCreationClass185050 = 0x0018B010; // size:0x10 absolute:True
+__vt__16LibMovementState = 0x0018B010; // size:0x10 absolute:True
 __vt__23ItemCreationClass175030 = 0x00175030; // size:0x34 absolute:True
 __vt__23ItemCreationClass1746A0 = 0x001746A0; // size:0x24 absolute:True
 __dt__23ItemCreationClass175030Fv = 0x0034D900; // type:func
@@ -219,8 +219,8 @@ get_default_list_kind__25TacticsCoordinateSelectorFv = 0x00351030; // type:func
 update__25TacticsCoordinateSelectorFv = 0x00348400; // type:func
 render__25TacticsCoordinateSelectorFv = 0x00351040; // type:func allow_duplicated:True
 func_001DD410__15FieldListObjectFv = 0x00351040; // type:func absolute:True allow_duplicated:True
-__dt__23ItemCreationClass185050Fv = 0x0034D990; // type:func
-func_slot0c__23ItemCreationClass185050Fv = 0x00351020; // type:func
+__dt__16LibMovementStateFv = 0x0034D990; // type:func
+on_arrived__16LibMovementStateFv = 0x00351020; // type:func
 
 __vt__8LibPanel = 0x00178630; // size:0x24 absolute:True allow_duplicated:True
 __ct__13LibDrawWidgetFv = 0x00464B10; // type:func absolute:True allow_duplicated:True

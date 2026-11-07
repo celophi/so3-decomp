@@ -627,13 +627,13 @@ extern "C" void lib_begin_frame_packet(void);
 #define LIB_CAMERA_MODE_FACE_CURRENT_CAMERA 1
 
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */
-class LibClass179080 : public LibLookAtTransform, public DmaSubmission
+class LibCamera : public LibLookAtTransform, public DmaSubmission
 {
 public:
     /** @brief Initialize the camera from the resident context. @param context Resident context. */
-    LibClass179080(void* context);
+    LibCamera(void* context);
     /** @brief Release camera resources and its transform base. */
-    virtual ~LibClass179080();
+    virtual ~LibCamera();
     /** @brief Clear the manager camera reference, then detach and queue the transform. */
     virtual void destroy();
     /** @brief Initialize viewport bounds and default projection settings. @param context Resident viewport context. */
@@ -659,9 +659,9 @@ public:
     /** @brief Write the camera's matrices into its uncached packet. */
     void func_004E2120();
     /** @brief Copy view and projection state from another camera. @param source Camera source. */
-    virtual void copy_camera(const LibClass179080* source);
+    virtual void copy_camera(const LibCamera* source);
     /** @brief Copy the camera's view and fog settings. @param source Camera to copy. */
-    void copy_view_and_fog(const LibClass179080* source);
+    void copy_view_and_fog(const LibCamera* source);
     /**
      * @brief Read the configured far and near fog factors.
      * @param far_factor Receives the far fog factor.
@@ -791,13 +791,13 @@ public:
  * @brief Hand the camera's view-projection matrix to the VU0 microprogram at 0x1F0.
  * @param camera Camera whose matrices are used.
  */
-extern "C" void lib_load_camera_screen_matrix(const LibClass179080* camera);
+extern "C" void lib_load_camera_screen_matrix(const LibCamera* camera);
 
 /**
  * @brief Load the camera's transform into VU0 (microprogram 0x1F0) and build its screen clip data.
  * @param camera Camera to upload.
  */
-extern "C" void func_004E1670(LibClass179080* camera);
+extern "C" void func_004E1670(LibCamera* camera);
 #endif
 
 #ifdef __cplusplus
@@ -809,8 +809,6 @@ extern ResidentDmaQueue* g_vif1_dma_queue;
 
 
 void func_004E59A0(void* object);
-void func_004E5B00(void* object);
-
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
@@ -845,33 +843,6 @@ s32 func_004E6440(void* object);
 void func_004E6450(void* object);
 
 /**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_004E6BB0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_004E6BF0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_004E6C30(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_004E6C70(void* object);
-
-/**
  * @brief Return the fixed value 8.
  * @param object Receiver or first argument; unused.
  * @return Always 8.
@@ -882,21 +853,12 @@ s32 func_004E7820(void* object);
 /** Return the word at receiver offset 0x4. */
 u32 func_004E6680(const void* object);
 
-/** Return the word at receiver offset 0x4. */
-u32 func_004E6A80(const void* object);
-
 
 /** Return the signed halfword at receiver offset 0x48. */
 s16 func_004E6400(const void* object);
 
 /** Return the signed halfword at receiver offset 0x4A. */
 s16 func_004E6410(const void* object);
-
-/** Return the signed halfword at receiver offset 0x28. */
-s16 func_004E6860(const void* object);
-
-/** Return the signed halfword at receiver offset 0x2A. */
-s16 func_004E6870(const void* object);
 
 
 /** Hide the equipment menu's factor tooltip by clearing its visible byte at 0xCB. */
@@ -913,38 +875,21 @@ void func_004E1040(N50Owner114_004DD440* object);
 
 #ifdef __cplusplus
 /** Return the first pointer argument unchanged. */
-void* func_004E6D30(void* value);
-/** Return the first pointer argument unchanged. */
 void* func_004E6DF0(void* value);
 
 /** Clear four consecutive words at the start of the receiver. */
 void func_004E64B0(void* object);
 
-/** Clear four consecutive words at the start of the receiver. */
-void func_004E68D0(void* object);
-
 /** Set the low packed mode at its target field and record whether either mode equals four. */
 void func_004E6340(void* object, u8 mode);
-
-/** Set the low packed mode at its target field and record whether either mode equals four. */
-void func_004E67A0(void* object, u8 mode);
 
 
 /** Set the high packed mode at its target field and record whether either mode equals four. */
 void func_004E63A0(void* object, u8 mode);
 
-/** Set the high packed mode at its target field and record whether either mode equals four. */
-void func_004E6800(void* object, u8 mode);
-
 
 /** Find a key in the receiver's fixed-size entry array. */
 s32 func_004E6460(void* object, float key);
-
-/** Return the key span between the first and last entries. */
-float func_004E68F0(void* object);
-
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004E6880(void* object, float key);
 
 /**
  * @brief Clear the byte at offset 0x64 and run the cleanup helper.

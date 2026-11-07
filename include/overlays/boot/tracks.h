@@ -166,6 +166,7 @@ class BootFloatHistoryBase
         /** @brief Forget the stored samples. */
         void reset();
 
+        // unk00, unk08 and unk0C are only ever cleared, here and in Lib's copy.
         u32 unk00;
         s16 sample_count;
         s16 next_index;
@@ -230,6 +231,7 @@ class BootVectorHistoryBase
         /** @brief Forget the stored samples. */
         void reset();
 
+        // unk00, unk14 and unk18 are only ever cleared, here and in Lib's copy.
         FieldVec4B unk00;
         s16 sample_count;
         s16 next_index;
@@ -290,6 +292,7 @@ class BootQuaternionHistoryBase
         /** @brief Forget the stored samples. */
         void reset();
 
+        // unk00, unk14 and unk18 are only ever cleared, here and in Lib's copy.
         FieldVec4B unk00;
         s16 sample_count;
         s16 next_index;

@@ -796,7 +796,7 @@ static inline void set_selector_brightness(FieldClass153130* selector, float bri
 {
     if (selector != 0)
     {
-        selector->ItemCreationClass185050::alpha = brightness;
+        selector->LibMovementState::alpha = brightness;
         selector->needs_redraw = 1;
     }
 }
@@ -808,7 +808,7 @@ static inline void set_selector_brightness(FieldClass153130* selector, float bri
  */
 static inline s32 selector_is_idle(ItemCoordinateSelector* selector)
 {
-    return ((u32)selector->ItemCreationClass185050::arrived > 0) ^ 1;
+    return ((u32)selector->LibMovementState::arrived > 0) ^ 1;
 }
 
 /** @brief Read the catalog entry's unsellable flag. @param definition Catalog entry. @return Flag as a byte. */
@@ -3416,13 +3416,13 @@ void ItemInstanceListWindow::func_slot10c(u32 value, u32 alternate)
         if (alternate != 0)
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::alpha = 128.0f;
+            control->LibMovementState::alpha = 128.0f;
             control->needs_redraw = 1;
         }
         else
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::alpha = 64.0f;
+            control->LibMovementState::alpha = 64.0f;
             control->needs_redraw = 1;
         }
     }
@@ -3627,7 +3627,7 @@ u8 ItemTypeListWindow::func_slotb0()
     if (FieldClass15AE60::unk04 != 0)
     {
         LibClass175030* selector = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-        selector->ItemCreationClass185050::alpha = 64.0f;
+        selector->LibMovementState::alpha = 64.0f;
         selector->needs_redraw = 1;
     }
 
@@ -3694,8 +3694,8 @@ s32 ItemTypeListWindow::func_slot104(u32 associated)
     return 1;
 }
 
-/** @brief Default storage release hook; does nothing. */
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 
@@ -3898,13 +3898,13 @@ void ItemTypeListWindow::func_slot10c(u32 unused, u32 cursor)
         if (cursor != 0)
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::alpha = 128.0f;
+            control->LibMovementState::alpha = 128.0f;
             control->needs_redraw = 1;
         }
         else
         {
             LibClass175030* control = static_cast<LibClass175030*>(FieldClass15AE60::unk04);
-            control->ItemCreationClass185050::alpha = 64.0f;
+            control->LibMovementState::alpha = 64.0f;
             control->needs_redraw = 1;
         }
     }
@@ -3978,7 +3978,7 @@ u8 ItemCategoryWindow::func_slotb0()
         return 0;
     }
 
-    bool idle = !selector->ItemCreationClass185050::arrived;
+    bool idle = !selector->LibMovementState::arrived;
 
     if (idle)
     {

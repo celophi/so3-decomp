@@ -425,7 +425,7 @@ void BootInstaller::update()
 
         {
             LibSelectionCursor* arrow = cursor;
-            ItemCreationClass185050& motion = *arrow;
+            LibMovementState& motion = *arrow;
             motion.position.x = x;
             motion.position.y = 256.0f;
             motion.arrived = 1;
@@ -1439,7 +1439,7 @@ void LibTransformOwner::release_clone()
 {
 }
 
-/** @brief Default dispatch slot; does nothing. */
-void ItemCreationClass185050::func_slot0c()
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }

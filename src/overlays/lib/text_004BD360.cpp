@@ -23,34 +23,72 @@
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/vector_inlines.h"
 
+/**
+ * @brief Subtract the first three components of one vector from another.
+ * @param left Vector to subtract from.
+ * @param right Vector to subtract.
+ * @return left minus right, keeping left's fourth component.
+ */
+static inline FieldVec4B vector_difference(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4B value(left);
+    value.x -= right.x;
+    value.y -= right.y;
+    value.z -= right.z;
+    return value;
+}
+
+/**
+ * @brief Add the first three components of two vectors.
+ * @param left First vector.
+ * @param right Vector to add.
+ * @return left plus right, keeping left's fourth component.
+ */
+static inline FieldVec4B vector_sum(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4B value(left);
+    value.x += right.x;
+    value.y += right.y;
+    value.z += right.z;
+    return value;
+}
+
+/**
+ * @brief Return a vector curve track's last keyframe.
+ * @param track Track with at least one keyframe.
+ * @return The last keyframe.
+ */
+static inline LibVectorCurveTrackKey& last_entry(LibVectorCurveTrackBase* track)
+{
+    return static_cast<LibVectorCurveTrackKey*>(track->key_array)[track->state.key_count - 1];
+}
+
+/**
+ * @brief Return a keyframe's key.
+ * @param entry Keyframe.
+ * @return The key, stored in the value's fourth component.
+ */
+static inline float key_of(const LibVectorCurveTrackKey* entry)
+{
+    return entry->value.w;
+}
+
+/**
+ * @brief Scale all four components of a vector.
+ * @param scale Factor to multiply by.
+ * @param vector Vector to scale.
+ * @return The scaled vector.
+ */
+static inline FieldVec4B vector_scaled(float scale, const FieldVec4B& vector)
+{
+    FieldVec4B value(vector);
+    return value *= scale;
+}
+
 extern "C" u8 D_00174C90[];
 extern "C" void func_004A8F10(void* object);
 extern "C" void func_004C2BB0(void* object);
-extern "C" void func_004C2C40(void* object);
 extern "C" void func_00461830(void* embedded, void* adjusted);
-
-typedef struct HalfwordGetterOwnertext_004BD360
-{
-    u8 unk00[0x18];
-    s16 unk18;
-    s16 unk1a;
-} HalfwordGetterOwnertext_004BD360;
-
-
-
-
-
-typedef struct WordGetterOwnertext_004BD360
-{
-    u8 unk00[0x4];
-    u32 unk04;
-    u8 unk08[0x8];
-    u32 unk10;
-    u8 unk14[0xC];
-    u32 unk20;
-} WordGetterOwnertext_004BD360;
-
-
 
 struct LibVectorField10View
 {
@@ -64,28 +102,12 @@ struct LibVectorField850View
     LibVector4 value850;
 };
 
-struct LibClearFields10View
-{
-    u8 pad00[0x10];
-    u16 value10;
-    u16 value12;
-    u32 value14;
-    u32 value18;
-};
-
 struct LibStateBytes62View
 {
     u8 pad00[0x62];
     u8 value62;
     u8 value63;
     u8 value64;
-};
-
-/** Partial state shared by the channel implementations using the word getter. */
-struct LibChannelWordState
-{
-    u8 unk00[0x40];
-    u32 channel_word;
 };
 
 /** Packed sine-series coefficients, reduction constants, and shared sign scratch. */
@@ -189,34 +211,6 @@ const void* func_004BD370(const void* object)
     return (const u8*)object + 0x10;
 }
 
-typedef struct PackedModePair
-{
-    u8 lowMode : 4;
-    u8 highMode : 4;
-    u8 hasModeFour : 1;
-    u8 unk01_1_7 : 7;
-} PackedModePair;
-
-typedef struct PackedModesOwner
-{
-    u8 unk00[0x22];
-    PackedModePair at22;
-} PackedModesOwner;
-
-typedef struct FloatKeyScanEntry_text_004BD360_08
-{
-    float key00;
-    u8 unk04[0x4];
-} FloatKeyScanEntry_text_004BD360_08;
-
-typedef struct FloatKeyScanOwner_text_004BD360_08
-{
-    u8 unk00[0x4];
-    FloatKeyScanEntry_text_004BD360_08* entries;
-    u8 unk08[0x10];
-    s16 count18;
-} FloatKeyScanOwner_text_004BD360_08;
-
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD380);
 
 /** @brief Store a float in an indexed array slot. @param values Float array. @param index Slot index. @param value Value to store. */
@@ -230,21 +224,26 @@ const void* func_004BD3D0(const void* object)
     return (const u8*)object + 0x570;
 }
 
-/** Return the word at receiver offset 0x10. */
-u32 func_004BD3E0(const void* object)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 LibClass1784E0::get_cycle_count() const
 {
-    const WordGetterOwnertext_004BD360* receiver = static_cast<const WordGetterOwnertext_004BD360*>(object);
-    return receiver->unk10;
+    return state.cycle_count;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD3F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD420);
 
-extern "C" u32 func_004BD490(const void* object)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 LibWordTrackBase::get_cycle_count() const
 {
-    const WordGetterOwnertext_004BD360* receiver = static_cast<const WordGetterOwnertext_004BD360*>(object);
-    return receiver->unk10;
+    return state.cycle_count;
 }
 
 const void* func_004BD4A0(const void* object)
@@ -265,20 +264,21 @@ extern "C" void* func_004BD4C0(void* object, const unsigned __int128* value)
 }
 
 /**
- * @brief Read the shared word of a native channel implementation.
- * @param object Channel implementation.
- * @return Stored channel word.
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
  */
-extern "C" u32 lib_channel_read_word(const LibChannelWordState* object)
+s32 LibVectorCurveTrackBase::get_cycle_count() const
 {
-    return object->channel_word;
+    return state.cycle_count;
 }
 
-/** Return the word at receiver offset 0x20. */
-u32 func_004BD4E0(const void* object)
+/**
+ * @brief Return how many key spans the last wrapped key was past the first key.
+ * @return Signed cycle count.
+ */
+s32 LibVectorTrackBase::get_cycle_count() const
 {
-    const WordGetterOwnertext_004BD360* receiver = static_cast<const WordGetterOwnertext_004BD360*>(object);
-    return receiver->unk20;
+    return state.cycle_count;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4F0);
@@ -592,22 +592,249 @@ LibAnimation::LibAnimation()
     object_kind |= LIB_OBJECT_KIND_ANIMATION;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0530);
+/**
+ * @brief Evaluate the track at a key, extrapolating past either end, and cache the value and its change per frame.
+ * @param key Evaluation key.
+ * @return Evaluated vector.
+ */
+FieldVec4A LibVectorCurveTrack::sample(float key)
+{
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    u8 extrapolate;
+    FieldVec4B result;
+
+    if (!key_array || !state.key_count)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.search_index >= state.key_capacity)
+    {
+        state.search_index = 0;
+    }
+
+    if (state.key_count == 1 && (!(key < static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w) || state.before_mode != LIB_TRACK_END_USE_PRE_START_KEY))
+    {
+        return *reinterpret_cast<FieldVec4A*>(&static_cast<LibVectorCurveTrackKey*>(key_array)[0].value);
+    }
+
+    extrapolate = 0;
+
+    if (key < static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w && state.before_mode == LIB_TRACK_END_USE_PRE_START_KEY)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = update_cycle_count(key);
+
+        if (state.cycle_count)
+        {
+            if (state.before_mode == LIB_TRACK_END_HOLD && state.cycle_count < 0)
+            {
+                return *reinterpret_cast<FieldVec4A*>(&static_cast<LibVectorCurveTrackKey*>(key_array)[0].value);
+            }
+
+            if (state.after_mode == LIB_TRACK_END_HOLD && state.cycle_count > 0)
+            {
+                return *reinterpret_cast<FieldVec4A*>(&static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count - 1].value);
+            }
+        }
+
+        extrapolate = find_surrounding_keys(wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (!extrapolate)
+    {
+        if (state.segment_lower != lower || state.segment_upper != upper)
+        {
+            state.segment_lower = lower;
+            state.segment_upper = upper;
+            LibVectorCurveTrackKey* first = lower >= 0 ? static_cast<LibVectorCurveTrackKey*>(key_array) + lower : &single_key;
+            s32 last = state.key_count - 1;
+
+            if (upper == last && ((!(key < static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w) && state.after_mode == LIB_TRACK_END_CYCLE_TO_FIRST) ||
+                                  (key < static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w && state.before_mode == LIB_TRACK_END_CYCLE_TO_FIRST)))
+            {
+                LibVectorCurveTrackKey* entries = static_cast<LibVectorCurveTrackKey*>(key_array);
+                LibVectorCurveTrackKey* second = entries + upper;
+                curve_segment.set_endpoints(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                                            reinterpret_cast<const FieldVec4A*>(&first->out_tangent), reinterpret_cast<const FieldVec4A*>(&entries[0].value),
+                                            reinterpret_cast<const FieldVec4A*>(&entries[0].in_tangent));
+            }
+            else if (lower < upper)
+            {
+                LibVectorCurveTrackKey* second = static_cast<LibVectorCurveTrackKey*>(key_array) + upper;
+                curve_segment.set_endpoints(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                                            reinterpret_cast<const FieldVec4A*>(&first->out_tangent), reinterpret_cast<const FieldVec4A*>(&second->value),
+                                            reinterpret_cast<const FieldVec4A*>(&second->in_tangent));
+            }
+            else
+            {
+                LibVectorCurveTrackKey* second = static_cast<LibVectorCurveTrackKey*>(key_array) + last;
+                curve_segment.set_endpoints(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                                            reinterpret_cast<const FieldVec4A*>(&first->out_tangent), reinterpret_cast<const FieldVec4A*>(&second->value),
+                                            reinterpret_cast<const FieldVec4A*>(&second->in_tangent));
+            }
+        }
+
+        result = curve_segment.interpolate(wrapped_key);
+
+        if (state.cycle_count && ((state.before_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+            (state.after_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0)))
+        {
+            FieldVec4B delta = vector_difference(static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count - 1].value,
+                                          static_cast<LibVectorCurveTrackKey*>(key_array)[0].value);
+            result += vector_scaled((float)state.cycle_count, delta);
+        }
+    }
+    else
+    {
+        FieldVec4B slope;
+
+        if (wrapped_key < key)
+        {
+            slope = vector_scaled(1.0f / (last_entry(this).value.w - key_of(static_cast<LibVectorCurveTrackKey*>(key_array) + (state.key_count - 2))),
+                           static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count - 1].in_tangent);
+            result = vector_sum(static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count - 1].value, vector_scaled(key - last_entry(this).value.w, slope));
+        }
+        else
+        {
+            slope = vector_scaled(1.0f / (key_of(static_cast<LibVectorCurveTrackKey*>(key_array) + 1) - key_of(static_cast<LibVectorCurveTrackKey*>(key_array))),
+                           static_cast<LibVectorCurveTrackKey*>(key_array)[0].out_tangent);
+            result = vector_sum(static_cast<LibVectorCurveTrackKey*>(key_array)[0].value,
+                         vector_scaled(key - static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w, slope));
+        }
+    }
+
+    value_rate = vector_scaled(g_inverse_frame_ticks, vector_difference(result, last_value));
+    last_value = result;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0CA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0F50);
-
-extern "C" void func_004C1440(void* object)
+/**
+ * @brief Evaluate the track at a key and cache the value and its change per second.
+ * @param key Evaluation key.
+ * @return Evaluated vector.
+ */
+FieldVec4A LibVectorTrack::sample(float key)
 {
-    LibClearFields10View* state = (LibClearFields10View*)object;
-    state->value10 = 0;
-    state->value12 = 0;
-    state->value14 = 0;
-    state->value18 = 0;
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    u8 extrapolate;
+
+    if (!key_array || !state.key_count)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.search_index >= state.key_capacity)
+    {
+        state.search_index = 0;
+    }
+
+    if (state.key_count == 1 && (!(key < key_array[0].value.w) || state.before_mode != LIB_TRACK_END_USE_PRE_START_KEY))
+    {
+        return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
+    }
+
+    if (key < key_array[0].value.w && state.before_mode == LIB_TRACK_END_USE_PRE_START_KEY)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = update_cycle_count(key);
+
+        if (state.before_mode == LIB_TRACK_END_HOLD && state.cycle_count < 0)
+        {
+            return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
+        }
+
+        if (state.after_mode == LIB_TRACK_END_HOLD && state.cycle_count > 0)
+        {
+            return *reinterpret_cast<FieldVec4A*>(&key_array[state.key_count - 1].value);
+        }
+
+        extrapolate = find_surrounding_keys(wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (state.segment_lower != lower || state.segment_upper != upper)
+    {
+        state.segment_lower = lower;
+        state.segment_upper = upper;
+        LibVectorTrackKey* first = lower >= 0 ? key_array + lower : &single_key;
+        sample_history.reset();
+        sample_history.push_sample(first->value.w, reinterpret_cast<const FieldVec4A*>(&first->value));
+        s32 last = state.key_count - 1;
+        s32 upper_index = upper;
+
+        if (upper_index == last && ((!(key < key_array[0].value.w) && state.after_mode == LIB_TRACK_END_CYCLE_TO_FIRST) ||
+            (key < key_array[0].value.w && state.before_mode == LIB_TRACK_END_CYCLE_TO_FIRST)))
+        {
+            LibVectorTrackKey* entries = key_array;
+            LibVectorTrackKey* second = entries + upper_index;
+            sample_history.push_sample(second->value.w, reinterpret_cast<const FieldVec4A*>(&entries[0].value));
+        }
+        else if (lower < upper_index)
+        {
+            LibVectorTrackKey* second = key_array + upper_index;
+            sample_history.push_sample(second->value.w, reinterpret_cast<const FieldVec4A*>(&second->value));
+        }
+        else
+        {
+            LibVectorTrackKey* second = key_array + last;
+            sample_history.push_sample(second->value.w, reinterpret_cast<const FieldVec4A*>(&key_array[upper_index].value));
+        }
+    }
+
+    FieldVec4B result = sample_history.sample(wrapped_key);
+
+    if ((state.before_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+        (state.after_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0))
+    {
+        FieldVec4B delta = vector_difference(key_array[state.key_count - 1].value, key_array[0].value);
+        result += vector_scaled((float)state.cycle_count, delta);
+    }
+
+    value_rate = vector_scaled(1.0f / g_frame_ticks, vector_difference(result, last_value));
+    last_value = result;
+    return *reinterpret_cast<FieldVec4A*>(&result);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __dt__16LibWordTrackBaseFv);
+/** @brief Forget the stored samples. */
+void LibLinearVectorHistory::reset()
+{
+    sample_count = 0;
+    next_index = 0;
+    unk14 = 0;
+    unk18 = 0;
+}
+
+/** @brief Free the keys. */
+LibWordTrackBase::~LibWordTrackBase()
+{
+    free_keys();
+}
 
 /** @brief Reset the keys, counts, modes and cached indices. */
 void LibWordTrackBase::reset_state()
@@ -642,37 +869,49 @@ void LibWordTrackBase::allocate_keys(s32 count)
     }
 }
 
-/** Set the low packed mode at 0x22 and record whether either mode equals four. */
-void func_004C1600(void* object, u8 mode)
+/**
+ * @brief Set the end mode used before the first key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibWordTrackBase::set_before_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at22.lowMode = mode;
-    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+    state.before_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Set the high packed mode at 0x22 and record whether either mode equals four. */
-void func_004C1660(void* object, u8 mode)
+/**
+ * @brief Set the end mode used after the last key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibWordTrackBase::set_after_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at22.highMode = mode;
-    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+    state.after_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Return the signed halfword at receiver offset 0x18. */
-extern "C" s16 func_004C16C0(const void* object)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 LibWordTrackBase::get_key_count() const
 {
-    const HalfwordGetterOwnertext_004BD360* receiver = static_cast<const HalfwordGetterOwnertext_004BD360*>(object);
-    return receiver->unk18;
+    return state.key_count;
 }
 
-/** Return the signed halfword at receiver offset 0x1A. */
-extern "C" s16 func_004C16D0(const void* object)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 LibWordTrackBase::get_key_capacity()
 {
-    const HalfwordGetterOwnertext_004BD360* receiver = static_cast<const HalfwordGetterOwnertext_004BD360*>(object);
-    return receiver->unk1a;
+    return state.key_capacity;
 }
 
-s32 func_004C16E0(void* object)
+/**
+ * @brief Return the last sampled value; the base has none.
+ * @return Zero.
+ */
+u32 LibWordTrackBase::get_last_value()
 {
     return 0;
 }
@@ -687,11 +926,13 @@ void LibWordTrackBase::evaluate(float key, void* output)
     *(u32*)output = sample(key);
 }
 
-/** Return the word at receiver offset 0x4. */
-u32 func_004C1720(const void* object)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+void* LibWordTrackBase::get_keys()
 {
-    const WordGetterOwnertext_004BD360* receiver = static_cast<const WordGetterOwnertext_004BD360*>(object);
-    return receiver->unk04;
+    return key_array;
 }
 
 /** @brief Delete the key storage unless it is external, and clear the key pointer. */
@@ -705,13 +946,207 @@ void LibWordTrackBase::free_keys()
     key_array = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1780);
+/**
+ * @brief Normalize a key across the cached span and store its signed period count.
+ * @param key Key whose period count is representable as a signed 32-bit integer.
+ * @return Normalized key, with odd-period reflection selected by the control fields.
+ */
+float LibVectorCurveTrackBase::update_cycle_count(float key)
+{
+    float first = static_cast<LibVectorCurveTrackKey*>(key_array)[0].value.w;
+    float quotient = (key - first) / state.span;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1870);
+    if (key < first)
+    {
+        quotient -= 1.0f;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C19E0);
+    state.cycle_count = quotient;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1AC0);
+    if (state.cycle_count)
+    {
+        float result = key - (float)state.cycle_count * state.span;
+
+        if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
+        {
+            s32 last_index = state.key_count - 1;
+            LibVectorCurveTrackKey* last_entry = static_cast<LibVectorCurveTrackKey*>(key_array) + last_index;
+            float last = last_entry->value.w;
+
+            if (state.cycle_count & 1)
+            {
+                result = first + (last - result);
+            }
+        }
+
+        return result;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Find the entries around a key, starting from the cached cursor.
+ * @param key Key to place.
+ * @param lower Receives the lower entry index.
+ * @param upper Receives the upper entry index.
+ * @return One when the active end mode extends the first or last segment, otherwise zero.
+ */
+u8 LibVectorCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
+
+    if (state.extends_segment)
+    {
+        if (state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            state.search_index = 0;
+            return 1;
+        }
+
+        if (state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
+        {
+            *lower = state.key_count - 2;
+            *upper = state.key_count - 1;
+            state.search_index = state.key_count - 2;
+            return 1;
+        }
+    }
+
+    index = state.search_index;
+    count = state.key_count;
+
+    while (index > 0 && key < static_cast<LibVectorCurveTrackKey*>(key_array)[index].value.w)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < static_cast<LibVectorCurveTrackKey*>(key_array)[next].value.w))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    state.search_index = index;
+    return 0;
+}
+
+/**
+ * @brief Wrap a key into the key span and record how many spans it was past the first key.
+ * @param key Key to wrap.
+ * @return Wrapped key, reflected on odd cycles in ping-pong mode.
+ */
+float LibVectorTrackBase::update_cycle_count(float key)
+{
+    float first = key_array[0].value.w;
+    float quotient = (key - first) / state.span;
+
+    if (key < first)
+    {
+        quotient -= 1.0f;
+    }
+
+    state.cycle_count = quotient;
+
+    if (state.cycle_count)
+    {
+        float result = key - (float)state.cycle_count * state.span;
+
+        if ((state.before_mode == LIB_TRACK_END_PING_PONG && state.cycle_count < 0) || (state.after_mode == LIB_TRACK_END_PING_PONG && state.cycle_count > 0))
+        {
+            s32 last_index = state.key_count - 1;
+            LibVectorTrackKey* last_entry = key_array + last_index;
+            float last = last_entry->value.w;
+
+            if (state.cycle_count & 1)
+            {
+                result = first + (last - result);
+            }
+        }
+
+        return result;
+    }
+
+    return key;
+}
+
+/**
+ * @brief Find the keys around a key, starting from the cached search index.
+ * @param key Key to place.
+ * @param lower Receives the lower key index.
+ * @param upper Receives the upper key index.
+ * @return One when an end mode extends the first or last segment, otherwise zero.
+ */
+u8 LibVectorTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
+{
+    s32 index;
+    s32 count;
+    s32 next;
+
+    if (state.extends_segment)
+    {
+        if (state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count < 0)
+        {
+            *lower = 0;
+            *upper = 1;
+            state.search_index = 0;
+            return 1;
+        }
+
+        if (state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT && state.cycle_count > 0)
+        {
+            *lower = state.key_count - 2;
+            *upper = state.key_count - 1;
+            state.search_index = state.key_count - 2;
+            return 1;
+        }
+    }
+
+    index = state.search_index;
+    count = state.key_count;
+
+    while (index > 0 && key < static_cast<LibVectorTrackKey*>(key_array)[index].value.w)
+    {
+        index--;
+    }
+
+    index = clamp_low(index, 0);
+
+    while ((next = index + 1) < count && !(key < static_cast<LibVectorTrackKey*>(key_array)[next].value.w))
+    {
+        index++;
+    }
+
+    if (index >= count - 1)
+    {
+        *lower = count - 2;
+        *upper = count - 1;
+    }
+    else
+    {
+        *lower = index;
+        *upper = index + 1;
+    }
+
+    state.search_index = index;
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1C20);
 
@@ -778,36 +1213,43 @@ u32 LibWordTrackBase::find_key_value(float key)
     return 0;
 }
 
-/** Return the key span between the first and last entries. */
-float func_004C25D0(void* object)
+/**
+ * @brief Return the last key minus the first, or zero below two keys.
+ * @return Key span.
+ */
+float LibWordTrackBase::get_key_span() const
 {
-    const FloatKeyScanOwner_text_004BD360_08* receiver = static_cast<const FloatKeyScanOwner_text_004BD360_08*>(object);
-    s32 count = receiver->count18;
-    if (count < 2)
+    s32 last_index;
+    LibWordTrackKey* last_entry;
+
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
-    const FloatKeyScanEntry_text_004BD360_08* entries = receiver->entries;
-    const FloatKeyScanEntry_text_004BD360_08* lastEntry = entries + --count;
-    float first = entries[0].key00;
-    float last = lastEntry->key00;
-    return last - first;
+
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
-/** Find a key in the receiver's fixed-size entry array. */
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004C2620(void* object, float key)
+/**
+ * @brief Test whether a key is stored exactly.
+ * @param key Key to find.
+ * @return One when a key equals it, otherwise zero.
+ */
+s32 LibWordTrackBase::has_key(float key) const
 {
-    FloatKeyScanOwner_text_004BD360_08* receiver = static_cast<FloatKeyScanOwner_text_004BD360_08*>(object);
-    s16 count = receiver->count18;
+    s16 count = state.key_count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
-        if (key == receiver->entries[index].key00)
+        if (key == key_array[index].key)
         {
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -821,7 +1263,12 @@ void LibWordTrackBase::set_single_key(const void* value, const void* in_tangent,
     on_set_single_key(value, key);
 }
 
-void func_004C26A0(void* object)
+/**
+ * @brief Store the single key; the base ignores it.
+ * @param value Key value.
+ * @param key Key position.
+ */
+void LibWordTrackBase::on_set_single_key(const void* value, float key)
 {
 }
 
@@ -837,7 +1284,14 @@ s32 LibWordTrackBase::insert_key(s32 index, float key, const void* value, const 
     return on_insert_key(index, key, value);
 }
 
-s32 func_004C26E0(void* object)
+/**
+ * @brief Insert a key; the base ignores it.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Zero.
+ */
+s32 LibWordTrackBase::on_insert_key(s32 index, float key, const void* value)
 {
     return 0;
 }
@@ -854,7 +1308,14 @@ s32 LibWordTrackBase::replace_key(s32 index, float key, const void* value, const
     return on_replace_key(index, key, value);
 }
 
-s32 func_004C2720(void* object)
+/**
+ * @brief Replace a key; the base ignores it.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Zero.
+ */
+s32 LibWordTrackBase::on_replace_key(s32 index, float key, const void* value)
 {
     return 0;
 }
@@ -872,7 +1333,15 @@ s32 LibWordTrackBase::append_key(const void* value, const void* in_tangent, cons
     return on_append_key(value, in_tangent, out_tangent, key);
 }
 
-s32 func_004C2760(void* object)
+/**
+ * @brief Append a key; the base ignores it.
+ * @param value Key value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ * @param key Key position.
+ * @return Zero.
+ */
+s32 LibWordTrackBase::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return 0;
 }
@@ -1047,25 +1516,53 @@ s32 LibWordKeyTrack::on_append_key(const void* value, const void* in_tangent, co
     return 1;
 }
 
-struct ResetVectorB0_004BD360 { u8 pad[0xB0]; FieldVec4B value; };
-
-void func_004C2B30(void* object)
+/** @brief Clear the last sampled value, then reset the key state. */
+void LibVectorCurveTrack::reset_state()
 {
-    ((ResetVectorB0_004BD360*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
-    func_004C2BB0(object);
+    last_value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    LibVectorCurveTrackBase::reset_state();
 }
 
-struct ResetVector90_004BD360 { u8 pad[0x90]; FieldVec4B value; };
-
-void func_004C2B70(void* object)
+/** @brief Clear the last sampled value, then reset the key state. */
+void LibVectorTrack::reset_state()
 {
-    ((ResetVector90_004BD360*)object)->value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
-    func_004C2C40(object);
+    last_value = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    LibVectorTrackBase::reset_state();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2BB0);
+/**
+ * @brief Reset 48-byte record storage, counts, packed controls, and cached indices.
+ */
+void LibVectorCurveTrackBase::reset_state()
+{
+    static_cast<LibVectorCurveTrackKey*>(key_array) = 0;
+    state.before_mode = LIB_TRACK_END_CYCLE;
+    state.after_mode = LIB_TRACK_END_CYCLE;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.search_index = -1;
+    state.cycle_count = 0;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.extends_segment = 0;
+    state.external_keys = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2C40);
+/** @brief Reset the keys, counts, modes and cached indices. */
+void LibVectorTrackBase::reset_state()
+{
+    key_array = 0;
+    state.before_mode = LIB_TRACK_END_CYCLE;
+    state.after_mode = LIB_TRACK_END_CYCLE;
+    state.key_capacity = 0;
+    state.key_count = 0;
+    state.search_index = -1;
+    state.cycle_count = 0;
+    state.segment_lower = -1;
+    state.segment_upper = -1;
+    state.extends_segment = 0;
+    state.external_keys = 0;
+}
 
 /**
  * @brief Multiply two quaternions.
@@ -1276,7 +1773,11 @@ void func_004C3AF0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __dt__14LibClass1784E0Fv);
+/** @brief Free the keys. */
+LibClass1784E0::~LibClass1784E0()
+{
+    free_keys();
+}
 
 /** @brief Reset the keys, counts, modes and cached indices. */
 void LibClass1784E0::reset_state()
@@ -1311,37 +1812,49 @@ void LibClass1784E0::allocate_keys(s32 count)
     }
 }
 
-/** Set the low packed mode at 0x22 and record whether either mode equals four. */
-void func_004C3CA0(void* object, u8 mode)
+/**
+ * @brief Set the end mode used before the first key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibClass1784E0::set_before_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at22.lowMode = mode;
-    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+    state.before_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Set the high packed mode at 0x22 and record whether either mode equals four. */
-void func_004C3D00(void* object, u8 mode)
+/**
+ * @brief Set the end mode used after the last key, and note whether either end extends its segment.
+ * @param mode LIB_TRACK_END_* mode.
+ */
+void LibClass1784E0::set_after_mode(u32 mode)
 {
-    PackedModesOwner* receiver = static_cast<PackedModesOwner*>(object);
-    receiver->at22.highMode = mode;
-    receiver->at22.hasModeFour = receiver->at22.lowMode == 4 || receiver->at22.highMode == 4;
+    state.after_mode = mode;
+    state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-/** Return the signed halfword at receiver offset 0x18. */
-s16 func_004C3D60(const void* object)
+/**
+ * @brief Return the number of stored keys.
+ * @return Key count.
+ */
+s16 LibClass1784E0::get_key_count() const
 {
-    const HalfwordGetterOwnertext_004BD360* receiver = static_cast<const HalfwordGetterOwnertext_004BD360*>(object);
-    return receiver->unk18;
+    return state.key_count;
 }
 
-/** Return the signed halfword at receiver offset 0x1A. */
-s16 func_004C3D70(const void* object)
+/**
+ * @brief Return the number of keys the storage can hold.
+ * @return Key capacity.
+ */
+s16 LibClass1784E0::get_key_capacity()
 {
-    const HalfwordGetterOwnertext_004BD360* receiver = static_cast<const HalfwordGetterOwnertext_004BD360*>(object);
-    return receiver->unk1a;
+    return state.key_capacity;
 }
 
-s32 func_004C3D80(void* object)
+/**
+ * @brief Return the last sampled value; the base has none.
+ * @return Zero.
+ */
+u32 LibClass1784E0::get_last_value()
 {
     return 0;
 }
@@ -1356,11 +1869,13 @@ void LibClass1784E0::evaluate(float key, void* output)
     *(u32*)output = sample(key);
 }
 
-/** Return the word at receiver offset 0x4. */
-u32 func_004C3DC0(const void* object)
+/**
+ * @brief Return the key storage.
+ * @return Key array, or null.
+ */
+void* LibClass1784E0::get_keys()
 {
-    const WordGetterOwnertext_004BD360* receiver = static_cast<const WordGetterOwnertext_004BD360*>(object);
-    return receiver->unk04;
+    return key_array;
 }
 
 /** @brief Delete the key storage unless it is external, and clear the key pointer. */
@@ -1423,36 +1938,43 @@ u32 LibClass1784E0::find_key_value(float key)
     return 0;
 }
 
-/** Return the key span between the first and last entries. */
-float func_004C3F10(void* object)
+/**
+ * @brief Return the last key minus the first, or zero below two keys.
+ * @return Key span.
+ */
+float LibClass1784E0::get_key_span() const
 {
-    const FloatKeyScanOwner_text_004BD360_08* receiver = static_cast<const FloatKeyScanOwner_text_004BD360_08*>(object);
-    s32 count = receiver->count18;
-    if (count < 2)
+    s32 last_index;
+    LibWordTrackKey* last_entry;
+
+    if (state.key_count < 2)
     {
         return 0.0f;
     }
-    const FloatKeyScanEntry_text_004BD360_08* entries = receiver->entries;
-    const FloatKeyScanEntry_text_004BD360_08* lastEntry = entries + --count;
-    float first = entries[0].key00;
-    float last = lastEntry->key00;
-    return last - first;
+
+    last_index = state.key_count - 1;
+    last_entry = key_array + last_index;
+    return last_entry->key - key_array[0].key;
 }
 
-/** Find a key in the receiver's fixed-size entry array. */
-/** Find a key in the receiver's fixed-size entry array. */
-s32 func_004C3F60(void* object, float key)
+/**
+ * @brief Test whether a key is stored exactly.
+ * @param key Key to find.
+ * @return One when a key equals it, otherwise zero.
+ */
+s32 LibClass1784E0::has_key(float key) const
 {
-    FloatKeyScanOwner_text_004BD360_08* receiver = static_cast<FloatKeyScanOwner_text_004BD360_08*>(object);
-    s16 count = receiver->count18;
+    s16 count = state.key_count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
-        if (key == receiver->entries[index].key00)
+        if (key == key_array[index].key)
         {
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1466,7 +1988,12 @@ void LibClass1784E0::set_single_key(const void* value, const void* in_tangent, c
     on_set_single_key(value, key);
 }
 
-void func_004C3FE0(void* object)
+/**
+ * @brief Store the single key; the base ignores it.
+ * @param value Key value.
+ * @param key Key position.
+ */
+void LibClass1784E0::on_set_single_key(const void* value, float key)
 {
 }
 
@@ -1482,7 +2009,14 @@ s32 LibClass1784E0::insert_key(s32 index, float key, const void* value, const vo
     return on_insert_key(index, key, value);
 }
 
-s32 func_004C4020(void* object)
+/**
+ * @brief Insert a key; the base ignores it.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Zero.
+ */
+s32 LibClass1784E0::on_insert_key(s32 index, float key, const void* value)
 {
     return 0;
 }
@@ -1499,7 +2033,14 @@ s32 LibClass1784E0::replace_key(s32 index, float key, const void* value, const v
     return on_replace_key(index, key, value);
 }
 
-s32 func_004C4060(void* object)
+/**
+ * @brief Replace a key; the base ignores it.
+ * @param index Key index.
+ * @param key Key position.
+ * @param value Key value.
+ * @return Zero.
+ */
+s32 LibClass1784E0::on_replace_key(s32 index, float key, const void* value)
 {
     return 0;
 }
@@ -1517,7 +2058,15 @@ s32 LibClass1784E0::append_key(const void* value, const void* in_tangent, const 
     return on_append_key(value, in_tangent, out_tangent, key);
 }
 
-s32 func_004C40A0(void* object)
+/**
+ * @brief Append a key; the base ignores it.
+ * @param value Key value.
+ * @param in_tangent Incoming tangent.
+ * @param out_tangent Outgoing tangent.
+ * @param key Key position.
+ * @return Zero.
+ */
+s32 LibClass1784E0::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return 0;
 }
@@ -2321,7 +2870,6 @@ extern "C" void func_004C6150(LibContainer* object, void* position, LibWidget* c
 }
 
 
-
 /**
  * @brief Link the widget into the container and record its owner.
  * @param object Container receiver.
@@ -2707,13 +3255,29 @@ void* func_004C9930(void* receiver)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9970);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C99E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_spot_light_get_frame);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9AC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9BA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9C20);
+/** @brief Update the transform matrix if it isn't ready, then cache the position and direction from it. */
+void LibLight::update_frame()
+{
+    if (!matrix_ready)
+    {
+        update_transform_matrix();
+    }
+
+    position.x = world.m[0][3];
+    position.y = world.m[1][3];
+    position.z = world.m[2][3];
+    position.w = 1.0f;
+    direction.x = world.m[0][1];
+    direction.y = world.m[1][1];
+    direction.z = world.m[2][1];
+    direction.w = 1.0f;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9CA0);
 
@@ -2721,7 +3285,21 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9D80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9E80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9F00);
+/**
+ * @brief Read a light's direction (its transform's y axis) from its current transform matrix.
+ * @param out Receives the direction, w one.
+ * @param light Light.
+ */
+extern "C" void lib_light_get_direction(LibVector4* out, LibLight* light)
+{
+    const LibMatrix44Value* matrix = light->get_transform_matrix();
+    LibVector4 axis;
+    axis.x = matrix->m[0][1];
+    axis.y = matrix->m[1][1];
+    axis.z = matrix->m[2][1];
+    axis.w = 1.0f;
+    copy_vector(out, &axis);
+}
 
 /**
  * @brief Detach a node and clear its links, ignoring the list sentinel and null.

@@ -170,7 +170,16 @@ enum BootMusicConstants
     BOOT_MUSIC_PLAY_MODE_MESSAGE_BASE = 0x3E8,
 
     /** Offset from a track's sound ID to its name message. */
-    BOOT_MUSIC_TRACK_NAME_MESSAGE_OFFSET = 0x44B
+    BOOT_MUSIC_TRACK_NAME_MESSAGE_OFFSET = 0x44B,
+
+    /** Frames the music fades over when the player picks Stop. */
+    BOOT_MUSIC_STOP_FADE_FRAMES = 60,
+
+    /** Frames a looped track fades over before the next one starts, matching the eight-second gap. */
+    BOOT_MUSIC_TRACK_END_FADE_FRAMES = 480,
+
+    /** Music volume scale while the player is open, about twice the usual level. */
+    BOOT_MUSIC_VOLUME_SCALE = 0xFFFF
 };
 
 /** Real and imaginary parts of one channel's spectrum. */

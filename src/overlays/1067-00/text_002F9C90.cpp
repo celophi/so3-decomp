@@ -573,9 +573,9 @@ extern "C" void field_replace_model_camera(FieldStatus14* object, void* attached
         object->display = 0;
     }
     object->previous_display = g_display_manager->current_display;
-    object->display = new (0) LibClass179080(g_display);
-    ((LibClass179080*)object->display)->copy_camera((const LibClass179080*)attached);
-    ((LibClass179080*)object->display)->look_at_target = &object->member;
+    object->display = new (0) LibCamera(g_display);
+    ((LibCamera*)object->display)->copy_camera((const LibCamera*)attached);
+    ((LibCamera*)object->display)->look_at_target = &object->member;
     object->rotation = 1.57f;
 }
 

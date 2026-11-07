@@ -483,6 +483,7 @@ static inline const LibMatrix44Value* get_transposed_transform(LibTransform* tra
     return &transform->transposed_transform;
 }
 
+
 /** Sound bank set Lib plays its sounds through. */
 extern ResidentClass14FC90* D_001B6524;
 
@@ -503,19 +504,20 @@ typedef struct WordSetterOwnertext_00429B00
 
 
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00429B00);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00429BF0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00429DF0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00429F70);
-
-void func_0042A120(void* object)
-{
-    static_cast<LibQuaternionTrackBase*>(object)->LibQuaternionTrackBase::reset_state();
 }
 
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", read_key__24LibPooledQuaternionTrackCFiPfPvPvPv);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", insert_rotation__24LibPooledQuaternionTrackFifPC10FieldVec4A);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", replace_rotation__24LibPooledQuaternionTrackFifPC10FieldVec4A);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", append_rotation__24LibPooledQuaternionTrackFPC10FieldVec4Af);
+
+/** @brief Reset the cached sampling state. */
+void LibPooledQuaternionTrack::reset_state()
+{
+    LibQuaternionTrackBase::reset_state();
 }
 
 /** @brief Free the keys, then destroy the track. */
@@ -701,10 +703,48 @@ float LibQuaternionTrackBase::get_key_span() const
     return (float)last->key - (float)key_array[0].key;
 }
 
-extern "C" {
+/**
+ * @brief Read the result pointer back after the copy.
+ * @param out Result pointer.
+ */
+static inline void reread_result(FieldVec4A*& out)
+{
+    // TODO: The game reads the result pointer back through its address after the copy and never uses it. Every
+    // non-volatile form I tried gets optimised away, so I'm not sure yet what the original wrote here.
+    FieldVec4A* volatile* slot = &out;
+    (void)*slot;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A4E0);
+/**
+ * @brief LibQuaternionTrackBase's find_key_value (slot 0x7C): find the keyframe with a key and decode its rotation.
+ * @param out Receives the rotation, or zero when the key is absent.
+ * @param track Track to search.
+ * @param key Key to find.
+ */
+void quaternion_track_find_key_value(FieldVec4A* out, LibQuaternionTrackBase* track, float key)
+{
+    s32 index;
 
+    for (index = 0; index < track->state.key_count; index++)
+    {
+        LibQuaternionTrackKey* entry = track->key_array + index;
+
+        if (key == entry->key)
+        {
+            FieldVec4A value;
+            vu0_decode_short_quaternion(entry);
+            vu0_store_decoded_quaternion(&value);
+            *out = value;
+            reread_result(out);
+            return;
+        }
+    }
+
+    FieldVec4A* result = out;
+    result->x = 0.0f;
+    result->y = 0.0f;
+    result->z = 0.0f;
+    result->w = 0.0f;
 }
 
 /**
@@ -767,10 +807,14 @@ void LibQuaternionTrackBase::free_keys()
     key_array = 0;
 }
 
-extern "C" {
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042A720);
-
+/**
+ * @brief Mark a track's g_quaternion_track_pool slot as free.
+ * @param pool Pool that owns the track.
+ * @param track Track to release.
+ */
+void quaternion_track_pool_free(LibTrackPool<LibPooledQuaternionTrack>* pool, LibPooledQuaternionTrack* track)
+{
+    pool->free(track);
 }
 
 /**
@@ -893,25 +937,23 @@ s32 LibQuaternionTrackBase::insert_key(s32 index, float key, const void* value, 
 
 /**
  * @brief Ignore the keyframe; the tracks that store keys override this.
- * @param value Keyframe value.
- * @param first First auxiliary value.
- * @param second Second auxiliary value.
+ * @param value Keyframe rotation.
  * @param key Sort key.
  */
-void LibQuaternionTrackBase::on_set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+void LibQuaternionTrackBase::on_set_single_key(const FieldVec4A* value, float key)
 {
 }
 
 /**
  * @brief Store a single keyframe through on_set_single_key.
- * @param value Keyframe value.
- * @param in_tangent First auxiliary value.
- * @param out_tangent Second auxiliary value.
+ * @param value Keyframe rotation.
+ * @param in_tangent Unused.
+ * @param out_tangent Unused.
  * @param key Sort key.
  */
 void LibQuaternionTrackBase::set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
-    on_set_single_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
+    on_set_single_key(static_cast<const FieldVec4A*>(value), key);
 }
 
 extern "C" {
@@ -2160,43 +2202,44 @@ void func_00434FA0(void* object)
     ((LibColorModel*)object)->LibColorModel::destroy();
 }
 
-// TODO: These six look like the operator new and operator delete of classes used all over Lib, but I haven't
-// found which classes yet, so they stay plain functions for now.
+// TODO: func_00435070 and func_00435150 look like another class's operator delete and operator new; I haven't
+// found which class yet, so they stay plain functions for now.
 /**
- * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
- * @param memory Allocation, or null.
+ * @brief Free an array whose construction failed, the same way as operator delete[](void*).
+ * @param object Array storage, or null.
+ * @param heap Heap selector the array was allocated with.
  */
-void func_00434FD0(void* memory)
+void LibClass173A28::operator delete[](void* object, s32 heap)
 {
     if (D_001B6684)
     {
-        if (memory)
+        if (object)
         {
-            resident_heap_release(memory);
+            resident_heap_release(object);
         }
     }
     else
     {
-        ::operator delete(memory);
+        ::operator delete(object);
     }
 }
 
 /**
- * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
- * @param memory Allocation, or null.
+ * @brief Free an array through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @param object Array storage, or null.
  */
-void func_00435020(void* memory)
+void LibClass173A28::operator delete[](void* object)
 {
     if (D_001B6684)
     {
-        if (memory)
+        if (object)
         {
-            resident_heap_release(memory);
+            resident_heap_release(object);
         }
     }
     else
     {
-        ::operator delete(memory);
+        ::operator delete(object);
     }
 }
 
@@ -2220,31 +2263,31 @@ void func_00435070(void* memory)
 }
 
 /**
- * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
- * @param memory Allocation, or null.
+ * @brief Free an object through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @param object Object storage, or null.
  */
-void func_004350C0(void* memory)
+void LibClass173A28::operator delete(void* object)
 {
     if (D_001B6684)
     {
-        if (memory)
+        if (object)
         {
-            resident_heap_release(memory);
+            resident_heap_release(object);
         }
     }
     else
     {
-        ::operator delete(memory);
+        ::operator delete(object);
     }
 }
 
 /**
- * @brief Allocate from the heap at D_001B6684 when one is set, otherwise through operator new.
+ * @brief Allocate an array from the heap at D_001B6684 when one is set, otherwise through operator new.
  * @param size Size in bytes.
  * @param heap Heap selector passed on to operator new.
  * @return The allocation.
  */
-void* func_00435110(u32 size, s32 heap)
+void* LibClass173A28::operator new[](u32 size, s32 heap)
 {
     if (D_001B6684)
     {

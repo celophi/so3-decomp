@@ -305,7 +305,7 @@ extern "C" u8 func_0023CB50(FieldObject23CEA0* object, s16 direction);
 
 s16 FieldObject23CEA0::process_direction(s16 direction)
 {
-    if (ItemCreationClass185050::arrived == 0)
+    if (LibMovementState::arrived == 0)
     {
         return 1;
     }
