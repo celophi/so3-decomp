@@ -3,6 +3,10 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+#include "overlays/lib/emission.h"
+#endif
+
 /** A vector whose fourth word can hold a frame index. */
 typedef union LibGridFrameVector
 {
@@ -48,19 +52,6 @@ typedef struct LibGridFrameMotion
     LibGridFrameState frame;
 } LibGridFrameMotion;
 
-#ifdef __cplusplus
-/** The 0x140-byte element part of a grid cell. */
-struct LibGridElement140
-{
-    u8 unk00[0x140];
-};
-
-/** 0x170-byte grid cell: the element part, then its frame motion as a second base. */
-struct LibGridCell170 : public LibGridElement140, public LibGridFrameMotion
-{
-};
-#endif
-
 /** Common grid element base: a cell's position and second vector, and a scale at 0x3C. */
 typedef struct LibGridElement40
 {
@@ -93,6 +84,226 @@ typedef struct LibGridRow40
     LibGridFrameVector unk30;
 } LibGridRow40;
 
+#ifdef __cplusplus
+/** Bit set of the grid's active cells, with vtable D_173F58 in main data after its data. */
+class LibGridBitset
+{
+public:
+    /**
+     * @brief Allocate word storage for a bit count.
+     * @param count Number of bits.
+     */
+    LibGridBitset(u32 count)
+    {
+        bits = 0;
+        borrowed = 0;
+        resize(count);
+    }
+
+    /**
+     * @brief Replace the word storage with room for a bit count.
+     * @param count Number of bits.
+     */
+    void resize(u32 count)
+    {
+        if (!borrowed)
+        {
+            delete[] bits;
+        }
+        this->count = count;
+        words = (count + 63) >> 6;
+        bits = new (0) u64[words];
+        borrowed = 0;
+    }
+
+    /** @brief Clear every word. */
+    void clear()
+    {
+        s32 total = words;
+        for (s32 i = 0; i < total; i++)
+        {
+            bits[i] = 0;
+        }
+    }
+
+    s32 count;
+    s32 words;
+    u64* bits;
+
+    /** Nonzero when bits is borrowed and must not be freed. */
+    bool borrowed;
+
+    /** @brief Free the words unless they're borrowed. */
+    virtual ~LibGridBitset();
+};
+
+/** Root of the grid element classes, with vtable D_173F48 in main data; its only virtual is the destructor. */
+class LibClass173F48 : public LibClass173A28
+{
+public:
+    /** @brief Construct the element. */
+    LibClass173F48()
+    {
+    }
+
+    /** @brief Destroy the element. */
+    virtual ~LibClass173F48()
+    {
+    }
+};
+
+/** The 64-byte secondary row element, with vtable D_173F38 in main data. */
+class LibClass173F38 : public LibClass173F48
+{
+public:
+    /** @brief Construct the element. */
+    LibClass173F38();
+
+    /** @brief Destroy the element. */
+    virtual ~LibClass173F38();
+
+    u8 unk04[0xC];
+    LibGridVector4 unk10;
+    LibGridVector4 unk20;
+    LibGridFrameVector unk30;
+};
+
+/** The 0x60-byte common grid cell, with vtable D_174228 in main data. */
+class LibClass174228 : public LibClass173F48
+{
+public:
+    /** @brief Construct the cell. */
+    LibClass174228()
+    {
+    }
+
+    /** @brief Destroy the cell. */
+    virtual ~LibClass174228()
+    {
+    }
+
+    u8 unk04[0xC];
+    LibGridVector4 unk10;
+    LibGridVector4 unk20;
+    u8 unk30[0xC];
+    float unk3C;
+    u8 unk40[0x20];
+};
+
+/** 0x80-byte grid cell, with vtable D_174218 in main data. */
+class LibClass174218 : public LibClass174228
+{
+public:
+    /** @brief Construct the cell. */
+    LibClass174218()
+    {
+    }
+
+    /** @brief Destroy the cell. */
+    virtual ~LibClass174218()
+    {
+    }
+
+    u8 unk60[0x20];
+};
+
+/** 0xB0-byte grid cell of LibClass1774E0, with vtable D_177168 in main data. */
+class LibClass177168 : public LibClass174218
+{
+public:
+    /** @brief Construct the cell. */
+    LibClass177168();
+
+    /** @brief Destroy the cell. */
+    virtual ~LibClass177168();
+
+    u8 unk80[0x30];
+};
+
+/** 0xF0-byte grid cell, with vtable D_174208 in main data. */
+class LibClass174208 : public LibClass174218
+{
+public:
+    /** @brief Construct the cell. */
+    LibClass174208()
+    {
+    }
+
+    /** @brief Destroy the cell. */
+    virtual ~LibClass174208()
+    {
+    }
+
+    u8 unk80[0x70];
+};
+
+/** 0x120-byte grid cell of LibClass177680, with vtable D_177158 in main data. */
+class LibClass177158 : public LibClass174208
+{
+public:
+    /** @brief Construct the cell. */
+    LibClass177158();
+
+    /** @brief Destroy the cell. */
+    virtual ~LibClass177158();
+
+    u8 unkF0[0x30];
+};
+
+/** 0x140-byte grid cell of LibClass177750, with vtable D_1741F8 in main data. */
+class LibClass1741F8 : public LibClass174208
+{
+public:
+    /** @brief Construct the cell. */
+    LibClass1741F8()
+    {
+    }
+
+    /** @brief Destroy the cell. */
+    virtual ~LibClass1741F8()
+    {
+    }
+
+    u8 unkF0[0x50];
+};
+
+/** 0x170-byte grid cell of LibClass174240, with vtable D_1741E8 in main data: the element, then its frame motion. */
+class LibGridCell170 : public LibClass1741F8, public LibGridFrameMotion
+{
+public:
+    /** @brief Construct the cell. */
+    LibGridCell170();
+
+    /** @brief Destroy the cell. */
+    virtual ~LibGridCell170();
+};
+
+/** 0x90-byte grid cell of LibClass177340, with vtable D_177178 in main data. */
+class LibClass177178 : public LibClass174228
+{
+public:
+    /** @brief Construct the cell. */
+    LibClass177178();
+
+    /** @brief Destroy the cell. */
+    virtual ~LibClass177178();
+
+    u8 unk60[0x30];
+};
+
+/** 0x60-byte grid cell of LibClass1771A0, with vtable D_177188 in main data. */
+class LibClass177188 : public LibClass173F48
+{
+public:
+    /** @brief Construct the cell. */
+    LibClass177188();
+
+    /** @brief Destroy the cell. */
+    virtual ~LibClass177188();
+
+    u8 unk04[0x5C];
+};
+#else
 /** Bit set of the grid's active cells. */
 typedef struct LibGridBitset
 {
@@ -100,6 +311,7 @@ typedef struct LibGridBitset
     s32 words;
     u64* bits;
 } LibGridBitset;
+#endif
 
 /** Output record containing an updated vector and an optional frame index. */
 typedef struct LibGridOutputRecord
