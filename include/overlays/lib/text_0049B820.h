@@ -7,6 +7,7 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/render_channel.h"
 #include "overlays/lib/emission.h"
+#include "overlays/lib/particle_grid.h"
 
 enum
 {
@@ -159,18 +160,11 @@ class LibClass173A40 : public LibClass173A28
         virtual void func_slotBC() = 0;
         virtual void func_slotC0() = 0;
         virtual void func_slotC4() = 0;
-        virtual void func_slotC8() = 0;
-        virtual void func_slotCC() = 0;
 
         u8 unk04;
         u32 unk08;
         s32 unk0c;
         s32 unk10;
-        void* unk14;
-        void* unk18;
-        void* unk1c;
-        void* unk20;
-        void* unk24;
 };
 
 /** Partial grid with vtable D_1771A0 in main data. */
@@ -188,6 +182,19 @@ class LibClass1771A0 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibClass177188* unk14;
+        LibClass177188* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid with vtable D_177270 in main data. */
@@ -205,6 +212,19 @@ class LibClass177270 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibClass174228* unk14;
+        LibClass174228* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid with vtable D_177340 in main data. */
@@ -222,6 +242,19 @@ class LibClass177340 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibClass177178* unk14;
+        LibClass177178* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid with vtable D_177410 in main data. */
@@ -239,6 +272,19 @@ class LibClass177410 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibClass174218* unk14;
+        LibClass174218* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid with vtable D_1774E0 in main data. */
@@ -256,6 +302,19 @@ class LibClass1774E0 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibClass177168* unk14;
+        LibClass177168* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid with vtable D_1775B0 in main data. */
@@ -273,6 +332,19 @@ class LibClass1775B0 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibClass174208* unk14;
+        LibClass174208* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid with vtable D_177680 in main data. */
@@ -290,6 +362,19 @@ class LibClass177680 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibClass177158* unk14;
+        LibClass177158* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid with vtable D_177750 in main data. */
@@ -307,6 +392,19 @@ class LibClass177750 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibClass1741F8* unk14;
+        LibClass1741F8* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid with vtable D_174240 in main data. */
@@ -324,6 +422,19 @@ class LibClass174240 : public LibClass173A40
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        LibGridCell170* unk14;
+        LibGridCell170* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
 };
 
 /** Partial grid that drives linked emitters, with vtable D_176FC0 in main data. */
@@ -347,7 +458,9 @@ class LibClass176FC0 : public LibClass177750
         }
 
         /** @brief Destroy the grid. */
-        virtual ~LibClass176FC0();
+        virtual ~LibClass176FC0()
+        {
+        }
 
         /**
          * @brief Copy another grid's size and emission settings.
@@ -399,8 +512,8 @@ class LibClass177090 : public LibClass176FC0
          */
         virtual void copy_settings(const LibClass173A40* source);
 
-        void* unkb0;
-        void* unkb4;
+        u8* unkb0;
+        FieldVec4A* unkb4;
         void* unkb8;
         void* unkbc;
         u32 unkc0;
@@ -434,7 +547,9 @@ class LibClass174050 : public LibClass174240
         }
 
         /** @brief Destroy the grid. */
-        virtual ~LibClass174050();
+        virtual ~LibClass174050()
+        {
+        }
 
         /**
          * @brief Copy another grid's size and emission settings.
@@ -480,8 +595,8 @@ class LibClass174120 : public LibClass174050
         /** @brief Free the storage unless it's borrowed, then destroy the grid. */
         virtual ~LibClass174120();
 
-        void* unkb0;
-        void* unkb4;
+        u8* unkb0;
+        FieldVec4A* unkb4;
         void* unkb8;
         void* unkbc;
         u32 unkc0;

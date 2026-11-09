@@ -8,7 +8,9 @@ class LibClass173A28 : public LibLink
 {
 public:
     /** @brief Destroy the secondary base. */
-    virtual ~LibClass173A28();
+    virtual ~LibClass173A28()
+    {
+    }
 
     /**
      * @brief Free an object through the heap at D_001B6684 when one is set, otherwise through operator delete.

@@ -233,7 +233,22 @@ s32 LibClass1784E0::get_cycle_count() const
     return state.cycle_count;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD3F0);
+/**
+ * @brief Copy four quadwords.
+ * @param destination Destination of the copy.
+ * @param source Quadwords to copy.
+ * @return The destination.
+ */
+extern "C" void* func_004BD3F0(void* destination, const void* source)
+{
+    unsigned __int128* destination_words = (unsigned __int128*)destination;
+    const unsigned __int128* source_words = (const unsigned __int128*)source;
+    destination_words[0] = source_words[0];
+    destination_words[1] = source_words[1];
+    destination_words[2] = source_words[2];
+    destination_words[3] = source_words[3];
+    return destination;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD420);
 
@@ -1361,7 +1376,12 @@ void LibWordTrackBase::bind_keys(s32 count, void* keys)
     state.span = key_array[last_index].key - key_array[0].key;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C27C0);
+/** @brief Start with internal key storage and reset the state. */
+LibWordTrackBase::LibWordTrackBase()
+{
+    state.pooled = false;
+    reset_state();
+}
 
 /**
  * @brief Store the single key and evaluate it before the first array key.
@@ -1594,7 +1614,10 @@ void func_004C2CD0(LibAnimationTarget* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __ct__18LibAnimationTargetFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2F50);
+/** @brief Destroy the target. */
+LibAnimationTarget::~LibAnimationTarget()
+{
+}
 
 /**
  * @brief Copy the position and keep its change from the previous position.
@@ -1753,7 +1776,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3590);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C39A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3A50);
+/** @brief Destroy the track. */
+LibClass1783C0::~LibClass1783C0()
+{
+}
 
 s32 func_004C3AC0(void* object)
 {
@@ -2086,7 +2112,12 @@ void LibClass1784E0::bind_keys(s32 count, void* keys)
     state.span = key_array[last_index].key - key_array[0].key;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4100);
+/** @brief Start with internal key storage and reset the state. */
+LibClass1784E0::LibClass1784E0()
+{
+    state.pooled = false;
+    reset_state();
+}
 
 /**
  * @brief Store the single key and evaluate it before the first array key.
@@ -2241,7 +2272,10 @@ s32 LibClass178450::on_append_key(const void* value, const void* in_tangent, con
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4470);
+/** @brief Destroy the track. */
+LibWordTrack::~LibWordTrack()
+{
+}
 
 /**
  * @brief Return the last key's value.

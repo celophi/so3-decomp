@@ -250,8 +250,8 @@ void LibClass177090::copy_settings(const LibClass173A40* source)
     unkc8 = other->unkc8;
     // TODO: The copy marks its own storage borrowed by storing the same pointers back. I think this was
     // an inline setter given unkb0 and unkb4, but every helper form I tried loads them in the other order.
-    void* first = unkb0;
-    void* second = unkb4;
+    u8* first = unkb0;
+    FieldVec4A* second = unkb4;
     unkc9 = 1;
     unkb0 = first;
     unkb4 = second;
@@ -262,7 +262,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049ED80);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A02D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A03C0);
+/** @brief Free the storage unless it's borrowed, then destroy the grid. */
+LibClass177090::~LibClass177090()
+{
+    if (!unkc9)
+    {
+        delete[] unkb0;
+        delete[] unkb4;
+    }
+}
 
 /** @brief Start with no storage. */
 LibClass177090::LibClass177090()
@@ -274,8 +282,6 @@ LibClass177090::LibClass177090()
     unkb0 = 0;
     unkb4 = 0;
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A04F0);
 
 /** @brief Start with no storage. */
 LibClass174120::LibClass174120()
@@ -504,7 +510,13 @@ LibClass177750::LibClass177750()
     unk24 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2120);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass177750::~LibClass177750()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
 float func_004A2200(void* object)
 {

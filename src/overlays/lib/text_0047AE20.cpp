@@ -3,16 +3,13 @@
 #include "overlays/lib/text_0047AE20.h"
 #include "ee.h"
 #include "vu0.h"
+#include "main/resident_001001E0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/emission.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/grid_frame_vu0.h"
 
-extern void* __vt__7LibLink;
-extern u8 D_00173A28[];
-extern u8 D_00173F48[];
-extern u8 D_00177188[];
-extern u8 D_00174228[];
 typedef struct WordNonzeroOwnertext_0047AE20
 {
     u8 unk00[0x14];
@@ -310,7 +307,7 @@ typedef struct MappedOwner0047B000
  * @param index Record index.
  * @return The mapped entry, or null when the record address is null.
  */
-void* func_0047B000(const void* object, s32 index)
+extern "C" void* func_0047B000(const void* object, s32 index)
 {
     const MappedOwner0047B000* owner = (const MappedOwner0047B000*)object;
     MappedEntry0047B000* item = &owner->entries[index];
@@ -824,7 +821,7 @@ typedef struct MappedOwner0047B7A0
  * @param index Record index.
  * @return The mapped entry, or null when the record address is null.
  */
-void* func_0047B7A0(const void* object, s32 index)
+extern "C" void* func_0047B7A0(const void* object, s32 index)
 {
     const MappedOwner0047B7A0* owner = (const MappedOwner0047B7A0*)object;
     MappedEntry0047B7A0* item = &owner->entries[index];
@@ -1286,7 +1283,7 @@ typedef struct MappedOwner0047BF40
  * @param index Record index.
  * @return The mapped entry, or null when the record address is null.
  */
-void* func_0047BF40(const void* object, s32 index)
+extern "C" void* func_0047BF40(const void* object, s32 index)
 {
     const MappedOwner0047BF40* owner = (const MappedOwner0047BF40*)object;
     MappedEntry0047BF40* item = &owner->entries[index];
@@ -3099,7 +3096,16 @@ s32 func_0047DDE0(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047DDF0);
+/** @brief Start with no storage. */
+LibClass177680::LibClass177680()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 void* func_0047DE50(void* object, s32 index)
 {
@@ -3145,7 +3151,16 @@ s32 func_0047DED0(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047DEE0);
+/** @brief Start with no storage. */
+LibClass1775B0::LibClass1775B0()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 typedef struct MappedEntry0047DF40
 {
@@ -3164,7 +3179,7 @@ typedef struct MappedOwner0047DF40
  * @param index Record index.
  * @return The record address.
  */
-void* func_0047DF40(const void* object, s32 index)
+extern "C" void* func_0047DF40(const void* object, s32 index)
 {
     const MappedOwner0047DF40* owner = (const MappedOwner0047DF40*)object;
     return &owner->entries[index];
@@ -3208,7 +3223,16 @@ s32 func_0047DFC0(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047DFD0);
+/** @brief Start with no storage. */
+LibClass1774E0::LibClass1774E0()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 typedef struct MappedEntry0047E030
 {
@@ -3227,7 +3251,7 @@ typedef struct MappedOwner0047E030
  * @param index Record index.
  * @return The record address.
  */
-void* func_0047E030(const void* object, s32 index)
+extern "C" void* func_0047E030(const void* object, s32 index)
 {
     const MappedOwner0047E030* owner = (const MappedOwner0047E030*)object;
     return &owner->entries[index];
@@ -3271,7 +3295,16 @@ s32 func_0047E0B0(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E0C0);
+/** @brief Start with no storage. */
+LibClass177410::LibClass177410()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 typedef struct MappedEntry0047E120
 {
@@ -3290,7 +3323,7 @@ typedef struct MappedOwner0047E120
  * @param index Record index.
  * @return The record address.
  */
-void* func_0047E120(const void* object, s32 index)
+extern "C" void* func_0047E120(const void* object, s32 index)
 {
     const MappedOwner0047E120* owner = (const MappedOwner0047E120*)object;
     return &owner->entries[index];
@@ -3334,7 +3367,16 @@ s32 func_0047E190(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E1A0);
+/** @brief Start with no storage. */
+LibClass177340::LibClass177340()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 void* func_0047E200(void* object, s32 index)
 {
@@ -3380,7 +3422,16 @@ s32 func_0047E280(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E290);
+/** @brief Start with no storage. */
+LibClass177270::LibClass177270()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 void* func_0047E2F0(void* object, s32 index)
 {
@@ -3426,7 +3477,16 @@ s32 func_0047E370(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E380);
+/** @brief Start with no storage. */
+LibClass1771A0::LibClass1771A0()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 void* func_0047E3E0(void* object, s32 index)
 {
@@ -3474,73 +3534,797 @@ s32 func_0047E460(void* receiver)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E470);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E4D0);
-
-void* func_0047EA30(void* receiver)
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass1771A0::resize(s32 rows, s32 columns)
 {
-    *(void**)receiver = &__vt__7LibLink;
-    *(void**)receiver = D_00173A28;
-    *(void**)receiver = D_00173F48;
-    *(void**)receiver = D_00177188;
-    return receiver;
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibClass177188[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047EA70);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047EAF0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047EBD0);
-
-void* func_0047F130(void* receiver)
+/** @brief Construct the cell. */
+LibClass177188::LibClass177188()
 {
-    *(void**)receiver = &__vt__7LibLink;
-    *(void**)receiver = D_00173A28;
-    *(void**)receiver = D_00173F48;
-    *(void**)receiver = D_00174228;
-    return receiver;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047F170);
+/** @brief Destroy the cell. */
+LibClass177188::~LibClass177188()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047F250);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass1771A0::~LibClass1771A0()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047F7B0);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass177270::resize(s32 rows, s32 columns)
+{
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibClass174228[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047F800);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass177270::~LibClass177270()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047F890);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass177340::resize(s32 rows, s32 columns)
+{
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibClass177178[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047F970);
+/** @brief Construct the cell. */
+LibClass177178::LibClass177178()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047FEC0);
+/** @brief Destroy the cell. */
+LibClass177178::~LibClass177178()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047FF10);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass177340::~LibClass177340()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047FFF0);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass177410::resize(s32 rows, s32 columns)
+{
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibClass174218[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00480550);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass177410::~LibClass177410()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_004805A0);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass1774E0::resize(s32 rows, s32 columns)
+{
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibClass177168[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00480640);
+/** @brief Construct the cell. */
+LibClass177168::LibClass177168()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00480720);
+/** @brief Destroy the cell. */
+LibClass177168::~LibClass177168()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00480C80);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass1774E0::~LibClass1774E0()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00480CD0);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass1775B0::resize(s32 rows, s32 columns)
+{
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibClass174208[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00480DB0);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass1775B0::~LibClass1775B0()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00481310);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass177680::resize(s32 rows, s32 columns)
+{
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibClass177158[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00481370);
+/** @brief Construct the cell. */
+LibClass177158::LibClass177158()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00481420);
+/** @brief Destroy the cell. */
+LibClass177158::~LibClass177158()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00481500);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass177680::~LibClass177680()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_00481A60);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass177750::resize(s32 rows, s32 columns)
+{
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibClass1741F8[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
+}
 
 /**
  * @brief Copy another grid's size and settings, reallocating this grid to match.
@@ -3696,7 +4480,7 @@ static inline GridFrameMotion* grid_cell_motion_00481B90(GridCell00481B90* cell)
  * @param output Output records, with each cell written at the start of its row.
  * @param preserve_row_vector Nonzero to retain the saved xyz components in the first row element.
  */
-void func_00481B90(GridOwner00481B90* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
+extern "C" void func_00481B90(GridOwner00481B90* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
 {
     s32 columns = object->unk10;
     s32 index = object->unk2C;
@@ -5547,7 +6331,7 @@ static inline GridFrameMotion* grid_cell_motion_00484E50(GridCell00484E50* cell)
  * @param output Output records, with each cell written at the start of its row.
  * @param preserve_row_vector Nonzero to retain the saved xyz components in the first row element.
  */
-void func_00484E50(GridOwner00484E50* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
+extern "C" void func_00484E50(GridOwner00484E50* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
 {
     s32 columns = object->unk10;
     s32 index = object->unk2C;
@@ -7302,7 +8086,7 @@ static inline GridFrameMotion* grid_cell_motion_00488110(GridCell00488110* cell)
  * @param output Output records, with each cell written at the start of its row.
  * @param preserve_row_vector Nonzero to retain the saved xyz components in the first row element.
  */
-void func_00488110(GridOwner00488110* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
+extern "C" void func_00488110(GridOwner00488110* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
 {
     s32 columns = object->unk10;
     s32 index = object->unk2C;

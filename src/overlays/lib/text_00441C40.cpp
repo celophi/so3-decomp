@@ -10,7 +10,9 @@
 #include "ee.h"
 #include "overlays/lib/blend_transform.h"
 #include "overlays/lib/model.h"
+#include "main/resident_001001E0.h"
 #include "main/resident_data.h"
+#include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/vector.h"
@@ -2013,7 +2015,16 @@ void func_00444EB0(void* object, float value)
     receiver->unk38 = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00444EC0);
+/**
+ * @brief Get a cell.
+ * @param object Grid owning the cells.
+ * @param index Cell index.
+ * @return The cell's address.
+ */
+extern "C" LibGridCell170* func_00444EC0(LibClass174240* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
 void* func_00444EE0(void* object, s32 row, s32 column)
 {
@@ -2053,19 +2064,102 @@ s32 func_00444F40(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00444F50);
+/**
+ * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+ * @param rows Cell count.
+ * @param columns Secondary elements per cell plus one.
+ */
+void LibClass174240::resize(s32 rows, s32 columns)
+{
+    unk14 = 0;
+    unk20 = 0;
+    delete[] unk18;
+    unk18 = new (0) LibGridCell170[rows + 2];
+    if (unk18 == 0)
+    {
+        return;
+    }
+    delete unk1c;
+    if (D_001B6684 != 0)
+    {
+        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            resident_exchange_allocation_heap(heap);
+            return;
+        }
+        resident_exchange_allocation_heap(heap);
+    }
+    else
+    {
+        unk1c = new (0) LibGridBitset(rows);
+        if (unk1c == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            return;
+        }
+        if (unk1c->bits == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    if (columns > 1)
+    {
+        delete[] unk24;
+        unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+        if (unk24 == 0)
+        {
+            delete[] unk18;
+            unk18 = 0;
+            delete unk1c;
+            unk1c = 0;
+            return;
+        }
+    }
+    else
+    {
+        delete[] unk24;
+        unk24 = 0;
+    }
+    if (unk18 != 0)
+    {
+        unk14 = unk18 + 1;
+    }
+    if (unk24 != 0)
+    {
+        unk20 = unk24 + 1;
+    }
+    unk0c = rows;
+    unk10 = columns;
+    unk1c->clear();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004454B0);
+/** @brief Construct the cell. */
+LibGridCell170::LibGridCell170()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445520);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004455D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445670);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445700);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445780);
+/** @brief Destroy the cell. */
+LibGridCell170::~LibGridCell170()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445840);
 
@@ -2073,7 +2167,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445950);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00446EA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00446F90);
+/** @brief Free the storage unless it's borrowed, then destroy the grid. */
+LibClass174120::~LibClass174120()
+{
+    if (!unkc9)
+    {
+        delete[] unkb0;
+        delete[] unkb4;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447030);
 
@@ -2428,7 +2530,13 @@ s32 func_00447C90(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447CA0);
+/** @brief Release the cells, the bit set and the secondary elements. */
+LibClass174240::~LibClass174240()
+{
+    delete[] unk18;
+    delete unk1c;
+    delete[] unk24;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447D80);
 

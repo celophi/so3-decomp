@@ -1,9 +1,11 @@
 #include "include_asm.h"
+#include "overlays/lib/text_00419A70.h"
 #include "main/func_0011EE00.h"
 #include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/text_0044ABE0.h"
 #include "main/resident_001001E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_004DD440.h"
@@ -909,7 +911,10 @@ LibDrawWidget::LibDrawWidget()
     vertical_align = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464BC0);
+/** @brief Destroy the widget. */
+LibObject174F20::~LibObject174F20()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464C20);
 
@@ -1311,7 +1316,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004675E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004675F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467600);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass175110::~ItemCreationClass175110()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467670);
 
@@ -1319,7 +1327,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467750);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467800);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004678F0);
+/** @brief Destroy the label. */
+LibStringLabel::~LibStringLabel()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467950);
 
@@ -1353,7 +1364,10 @@ s32 LibStringLabel::init_text_rectangle(float x, float y, float width, float hei
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467B50);
+/** @brief Destroy the widget. */
+LibClass175170::~LibClass175170()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467BC0);
 

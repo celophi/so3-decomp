@@ -230,7 +230,11 @@ LibPacketBuffer::~LibPacketBuffer()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __ct__13LibClipRegionFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", destroy__13LibListObjectFv);
+/** @brief Delete the object through its virtual destructor; null is ignored. */
+void LibListObject::destroy()
+{
+    delete this;
+}
 
 /** @brief Store the position components and set the homogeneous component to one. */
 void LibPositionTransform::set_translation(float x, float y, float z)
