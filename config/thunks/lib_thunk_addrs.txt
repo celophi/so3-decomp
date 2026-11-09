@@ -19,3 +19,8 @@
 @1600@complete_dma__8LibModelFUi = 0x0042D970;
 @1600@complete_dma__14LibClass173270FUi = 0x0042D980;
 @1600@submit_dma__8LibModelFUi = 0x0042D990;
+@64@__dt__23ItemCreationClass175030Fv = 0x004673B0;
+@32@__dt__14LibClass172320Fv = 0x00412FA0;
+@32@render__12LibContainerFv = 0x00412FB0;
+@176@on_packet_complete__12LibContainerFUi = 0x00412FC0;
+@32@func_0044B100__12LibContainerFUiUiUi = 0x00412FD0;

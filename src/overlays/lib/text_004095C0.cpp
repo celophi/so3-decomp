@@ -1,6 +1,8 @@
 #include "include_asm.h"
+#include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/text_0045AD10.h"
+#include "overlays/lib/widget_aggregate.h"
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
 #include "main/resident_00101260.h"
@@ -1929,55 +1931,80 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004127E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412930);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412B10);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412BA0);
-
-void func_00412C00(void* object)
+/** @brief Destroy the panel. */
+LibClass1722E0::~LibClass1722E0()
 {
 }
 
-void func_00412C10(void* object)
-{
-}
-
-void func_00412C20(void* object)
+/** @brief Called once the position reaches the target; the base version does nothing. */
+void LibMovementState::on_arrived()
 {
 }
 
 /**
- * @brief Return the floating-point value 0.
- * @param object Receiver or first argument; unused.
- * @return 0.0f.
+ * @brief Update the aggregate index; the base does nothing.
+ * @param index Requested index.
  */
-float func_00412C30(void* object)
+void LibClass1723F0::func_00412C10(s32 index)
+{
+}
+
+/**
+ * @brief Update the aggregate float setting; the base does nothing.
+ * @param value Requested setting.
+ */
+void LibClass1723F0::func_00412C20(float value)
+{
+}
+
+/**
+ * @brief Read the aggregate float setting.
+ * @return Zero in the base.
+ */
+float LibClass1723F0::func_00412C30()
 {
     return 0.0f;
 }
 
-void func_00412C40(void* object)
+/**
+ * @brief Run the default container state hook; the base does nothing.
+ * @param first First update flag.
+ * @param second Second update flag.
+ * @param third Third update flag.
+ */
+void LibContainer::func_00412C40(u32 first, u32 second, u32 third)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412C50);
+/** @brief Destroy the aggregate and the container. */
+LibClass172320::~LibClass172320()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412D50);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass1746A0::~ItemCreationClass1746A0()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412DC0);
+/** @brief Destroy the indicator. */
+LibListIndicator::~LibListIndicator()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412E30);
+/** @brief Release the widget storage and destroy its bases. */
+ItemCreationClass175030::~ItemCreationClass175030()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412EC0);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass172600::~ItemCreationClass172600()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412F30);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412FA0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412FB0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412FC0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412FD0);
+/** @brief Release the widget storage and destroy its base. */
+ItemCreationClass172870::~ItemCreationClass172870()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412FE0);
 
@@ -2001,7 +2028,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413BB0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413C00);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413CC0);
+/** @brief Destroy the widget. */
+LibObject172410::~LibObject172410()
+{
+}
 
 void LibWidget::func_00413D20()
 {
@@ -2045,7 +2075,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414010);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414130);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414280);
+/** @brief Destroy the widget. */
+LibObject172440::~LibObject172440()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004142E0);
 

@@ -94,6 +94,13 @@ class LibClass175170 : public LibWidget
 public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~LibClass175170();
+
+    /** @brief Refresh the widget's drawing state. */
+    virtual void func_00413D20();
+
+    /** @brief Draw the widget. */
+    virtual void draw();
+
     LibStorageBlock0C unk40;
 };
 
