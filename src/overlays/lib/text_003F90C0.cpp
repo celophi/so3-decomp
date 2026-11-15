@@ -786,7 +786,23 @@ extern "C" s32 lib_character_limit_mp(const LibCharacterRecord* record, s32 mp)
     return limit_by_type(record, mp, 99999, 99999999);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F9410);
+/**
+ * @brief Keep only the given flag bits after validating the flags/experience checksum.
+ * @param record Character record.
+ * @param bits Bits to keep.
+ * @return Updated flags, or five for an invalid checksum.
+ */
+extern "C" u32 lib_character_mask_flags(LibCharacterRecord* record, u32 bits)
+{
+    if (record->flags_experience_checksum != (((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt))
+    {
+        return 5;
+    }
+    u32 value = record->encoded_flags;
+    record->encoded_flags = ((value ^ 0x7DE3F7E3) & bits) ^ 0x7DE3F7E3;
+    record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;
+    return record->encoded_flags ^ 0x7DE3F7E3;
+}
 
 /**
  * @brief Store HP, limited by type and to the maximum HP, and update the down flag.
@@ -868,7 +884,23 @@ extern "C" s32 lib_character_limit_hp(const LibCharacterRecord* record, s32 hp)
     return limit_by_type(record, hp, 99999, 99999999);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003F97E0);
+/**
+ * @brief Set flag bits after validating the flags/experience checksum.
+ * @param record Character record.
+ * @param bits Bits to set.
+ * @return Updated flags, or five for an invalid checksum.
+ */
+extern "C" u32 lib_character_add_flags(LibCharacterRecord* record, u32 bits)
+{
+    if (record->flags_experience_checksum != (((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt))
+    {
+        return 5;
+    }
+    u32 value = record->encoded_flags;
+    record->encoded_flags = ((value ^ 0x7DE3F7E3) | bits) ^ 0x7DE3F7E3;
+    record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;
+    return record->encoded_flags ^ 0x7DE3F7E3;
+}
 
 /**
  * @brief Store one of three value pairs.
@@ -2563,9 +2595,6 @@ static inline s32 character_hp(LibCharacterRecord* record)
     return record->encoded_hp ^ 0x7DE3F7E3;
 }
 
-extern "C" s32 func_003F9410(LibCharacterRecord* record, s32 mask);
-extern "C" s32 func_003F97E0(LibCharacterRecord* record, s32 bits);
-
 // TODO: The maximum HP/MP setters have the HP/MP setter inlined with its
 // helpers called out of line, like the knockback and defense ones. These
 // copies are a guess at that.
@@ -2580,7 +2609,7 @@ static inline s32 lower_mp(LibCharacterRecord* record, s32 mp)
 {
     if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
     {
-        func_003F97E0(record, 1);
+        lib_character_add_flags(record, 1);
         return 0;
     }
 
@@ -2593,12 +2622,12 @@ static inline s32 lower_mp(LibCharacterRecord* record, s32 mp)
 
     if (mp == 0)
     {
-        func_003F97E0(record, 1);
+        lib_character_add_flags(record, 1);
     }
 
     if (mp != 0 && (record->encoded_hp ^ 0x7DE3F7E3) != 0)
     {
-        func_003F9410(record, ~1);
+        lib_character_mask_flags(record, ~1);
     }
 
     record->encoded_mp = mp ^ 0x7DE3F7E3;
@@ -2616,7 +2645,7 @@ static inline s32 lower_hp(LibCharacterRecord* record, s32 hp)
 {
     if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
     {
-        func_003F97E0(record, 1);
+        lib_character_add_flags(record, 1);
         return 0;
     }
 
@@ -2629,12 +2658,12 @@ static inline s32 lower_hp(LibCharacterRecord* record, s32 hp)
 
     if (hp == 0)
     {
-        func_003F97E0(record, 1);
+        lib_character_add_flags(record, 1);
     }
 
     if (hp != 0 && (record->encoded_mp ^ 0x7DE3F7E3) != 0)
     {
-        func_003F9410(record, ~1);
+        lib_character_mask_flags(record, ~1);
     }
 
     record->encoded_hp = hp ^ 0x7DE3F7E3;
