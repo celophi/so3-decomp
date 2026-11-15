@@ -42,6 +42,24 @@
 #define ITEM_STAT_WORD_XOR_KEY 0x7DE3F7E3
 #define ITEM_STAT_HALFWORD_XOR_KEY 0x7E93
 
+/** GIF tag FLG value for REGLIST mode: each loop holds one 64-bit value per listed register. */
+#define GIF_TAG_REGLIST ((u64)1 << 58)
+
+/** GIF register descriptor that discards its value. */
+#define GIF_REGISTER_NOP 0xF
+
+/** Quadwords reserved for each gauge; only eighteen of them get written. */
+#define ITEM_GAUGE_RESERVED_QUADWORDS 26
+
+/** PRIM value of every gauge strip: a Gouraud-shaded, alpha-blended triangle strip in the second drawing context. */
+#define ITEM_GAUGE_PRIM 0x24C
+
+/** Colour of the shadow strip under a gauge. */
+#define ITEM_GAUGE_SHADOW_COLOR 0x70101010
+
+/** Colour of the unfilled part of a gauge. */
+#define ITEM_GAUGE_EMPTY_COLOR 0x800838C0
+
 enum ItemMessageKey
 {
     ITEM_MSG_SEPARATOR = 0x7E4,
@@ -149,7 +167,7 @@ struct ItemAllocationOwnerView
 /** Partial 0xC4-byte character record with checksum-protected flags, HP and MP. */
 typedef struct ItemCharacterStats
 {
-    u8 unk00[2];
+    s16 character_id;
     /** Selects the clamping rules used by the character stat setters. */
     s16 stat_limit_type;
     u8 unk04[4];
@@ -465,6 +483,56 @@ struct ItemMenuRef
     FieldBufferSlots* resources;
 };
 
+/** GIF tag whose register list names ten registers, four bits each. */
+struct ItemGaugeBarTag
+{
+    u64 tag;
+
+    union
+    {
+        u64 registers;
+
+        struct
+        {
+            u64 register0 : 4;
+            u64 register1 : 4;
+            u64 register2 : 4;
+            u64 register3 : 4;
+            u64 register4 : 4;
+            u64 register5 : 4;
+            u64 register6 : 4;
+            u64 register7 : 4;
+            u64 register8 : 4;
+            u64 register9 : 4;
+            u64 unused : 24;
+        } fields;
+    };
+};
+
+/** One corner of a gauge's filled part: RGBAQ, then XYZ2. */
+struct ItemGaugeBarVertex
+{
+    u32 rgba;
+    u32 q;
+    u64 position;
+};
+
+/** Packed GIF tag, PRIM and four coloured vertices drawing a gauge's filled part, padded to whole quadwords. */
+struct ItemGaugeBarPacket
+{
+    ItemGaugeBarTag tag;
+    u64 prim;
+    ItemGaugeBarVertex vertices[4];
+    u64 padding;
+};
+
+/** One gauge's drawing data: the shadow, edge and empty strips, then the filled part. */
+struct ItemGaugePacket
+{
+    ResidentRectanglePacket strips[3];
+    ItemGaugeBarPacket bar;
+};
+
 extern ResidentObject1B64F8* D_001B64F8;
 extern ItemMenuRef* D_001B643C;
 extern u16 g_item_valuable_models[];
@@ -473,6 +541,8 @@ extern u64 D_004ED330[];
 extern LibWidgetColors4C5590 g_item_drop_title_colors;
 extern const char g_item_empty_name[];
 extern LibCameraContext* g_display;
+extern u32 D_354C00[];
+extern u32 D_354C10[][4];
 
 // Lib defines these under C names without a shared declaration, and the record functions take this overlay's own types.
 extern "C"
@@ -1203,8 +1273,161 @@ ItemHpMpGauge::~ItemHpMpGauge()
 {
 }
 
-// The registers holding the packed vertex depth and bottom still come out swapped.
-INCLUDE_ASM("build/overlays/citem/asm/nonmatchings/citem", build_packet__19ItemHpMpGaugeDrawerFv);
+/**
+ * @brief Build an XYZ2 register value.
+ * @param x Horizontal GS coordinate.
+ * @param y Vertical GS coordinate.
+ * @param z Depth.
+ * @return Packed XYZ2 value.
+ */
+static inline u64 item_gs_xyz(s32 x, u64 y, s32 z)
+{
+    return (u64)x | (y << 16) | ((u64)z << 32);
+}
+
+/** @brief Build the paired HP and MP gauge drawing packet. */
+void ItemHpMpGaugeDrawer::build_packet()
+{
+    ResidentPacket* packet = unk08;
+
+    if (packet != 0)
+    {
+        for (s32 row = 0; row < 2; ++row)
+        {
+            float y = origin.y + row_spacing * row;
+            s32 left = (s32)(origin.x + unk04->translation.x);
+            s32 top = (s32)(unk04->translation.y + y);
+            s32 depth = unk00 + 4;
+            s32 width = (s32)unk0c;
+            s32 height = (s32)unk10;
+            FieldRuntime* runtime = g_field_runtime;
+            float scale_x = runtime->screen_scale_x;
+            float scale_y = runtime->screen_scale_y;
+            float offset_x = runtime->screen_offset_x;
+            float offset_y = runtime->screen_offset_y;
+            s32 x0 = (s32)(offset_x + left * scale_x);
+            s32 x1 = (s32)(offset_x + (left + width) * scale_x);
+            s32 x2 = (s32)(offset_x + (left - 6) * scale_x);
+            s32 bottom = top + height;
+
+            top = (s32)(offset_y + top * scale_y);
+            bottom = (s32)(offset_y + scale_y * bottom);
+
+            ItemGaugePacket* data = reinterpret_cast<ItemGaugePacket*>(resident_packet_reserve(packet, ITEM_GAUGE_RESERVED_QUADWORDS));
+            ResidentRectanglePacket* strip = &data->strips[0];
+
+            strip->tag.tag = GIF_TAG_NREG(6) | GIF_TAG_REGLIST | 1;
+            strip->tag.registers = 0;
+            strip->tag.fields.register0 = GIF_REGISTER_PRIM;
+            strip->tag.fields.register1 = GIF_REGISTER_RGBAQ;
+            strip->tag.fields.register2 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register3 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register4 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register5 = GIF_REGISTER_XYZ2;
+            strip->prim = ITEM_GAUGE_PRIM;
+            strip->rgba = ITEM_GAUGE_SHADOW_COLOR;
+
+            // TODO: Giving each corner its own 64-bit y is a guess; it's the only way I found to match.
+            u64 top_left_y = top;
+            u64 top_right_y = top;
+
+            strip->vertices[0] = item_gs_xyz(x0, top_left_y, depth);
+            strip->vertices[1] = item_gs_xyz(x1, top_right_y, depth);
+
+            u64 bottom_left_y = bottom;
+            u64 bottom_right_y = bottom;
+
+            strip->vertices[2] = item_gs_xyz(x2, bottom_left_y, depth);
+            strip->vertices[3] = item_gs_xyz((s32)(offset_x + (left - 6 + width) * scale_x), bottom_right_y, depth);
+
+            strip = &data->strips[1];
+            strip->tag.tag = GIF_TAG_NREG(6) | GIF_TAG_REGLIST | 1;
+            strip->tag.registers = 0;
+            strip->tag.fields.register0 = GIF_REGISTER_PRIM;
+            strip->tag.fields.register1 = GIF_REGISTER_RGBAQ;
+            strip->tag.fields.register2 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register3 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register4 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register5 = GIF_REGISTER_XYZ2;
+            strip->prim = ITEM_GAUGE_PRIM;
+            strip->rgba = D_354C00[row];
+            strip->vertices[0] = item_gs_xyz(x0, top_left_y, depth);
+            strip->vertices[1] = item_gs_xyz(x1, top_right_y, depth);
+            strip->vertices[2] = item_gs_xyz((s32)(offset_x + (left - 7) * scale_x), bottom_left_y, depth);
+            strip->vertices[3] = item_gs_xyz((s32)(offset_x + (left - 7 + width) * scale_x), bottom_right_y, depth);
+
+            strip = &data->strips[2];
+            strip->tag.tag = GIF_TAG_NREG(6) | GIF_TAG_REGLIST | 1;
+            strip->tag.registers = 0;
+            strip->tag.fields.register0 = GIF_REGISTER_PRIM;
+            strip->tag.fields.register1 = GIF_REGISTER_RGBAQ;
+            strip->tag.fields.register2 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register3 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register4 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register5 = GIF_REGISTER_XYZ2;
+            strip->prim = ITEM_GAUGE_PRIM;
+            strip->rgba = ITEM_GAUGE_EMPTY_COLOR;
+            strip->vertices[0] = item_gs_xyz(x0, top_left_y, depth);
+            strip->vertices[1] = item_gs_xyz(x1, top_right_y, depth);
+            strip->vertices[2] = item_gs_xyz(x2, bottom_left_y, depth);
+            strip->vertices[3] = item_gs_xyz((s32)(offset_x + (left - 6 + width) * scale_x), bottom_right_y, depth);
+
+            data->bar.tag.tag = GIF_TAG_NREG(10) | GIF_TAG_REGLIST | 1;
+            data->bar.tag.registers = 0;
+            data->bar.tag.fields.register0 = GIF_REGISTER_PRIM;
+            data->bar.tag.fields.register1 = GIF_REGISTER_RGBAQ;
+            data->bar.tag.fields.register2 = GIF_REGISTER_XYZ2;
+            data->bar.tag.fields.register3 = GIF_REGISTER_RGBAQ;
+            data->bar.tag.fields.register4 = GIF_REGISTER_XYZ2;
+            data->bar.tag.fields.register5 = GIF_REGISTER_RGBAQ;
+            data->bar.tag.fields.register6 = GIF_REGISTER_XYZ2;
+            data->bar.tag.fields.register7 = GIF_REGISTER_RGBAQ;
+            data->bar.tag.fields.register8 = GIF_REGISTER_XYZ2;
+            data->bar.tag.fields.register9 = GIF_REGISTER_NOP;
+
+            ItemCharacterStats* record;
+            ItemCharacterStats* entry = characters;
+            s32 maximum = 0;
+            s32 current = 0;
+
+            for (s32 i = 0; i < 8; ++i, ++entry)
+            {
+                record = entry;
+
+                if (entry->character_id == (u16)character_id)
+                {
+                    break;
+                }
+            }
+
+            if (row == 0)
+            {
+                current = character_hp(record);
+                maximum = character_max_hp(record);
+            }
+            else if (row == 1)
+            {
+                current = character_mp(record);
+                maximum = character_max_mp(record);
+            }
+
+            s32 span = x1 - x0;
+            s32 filled = (s32)((float)span * (float)current / (float)maximum);
+
+            data->bar.prim = ITEM_GAUGE_PRIM;
+            data->bar.vertices[0].rgba = D_354C10[row][0];
+            data->bar.vertices[0].position = item_gs_xyz(x0, top_left_y, depth);
+            data->bar.vertices[1].rgba = D_354C10[row][1];
+            data->bar.vertices[1].position = item_gs_xyz(x0 + filled, top_left_y, depth);
+            data->bar.vertices[2].rgba = D_354C10[row][2];
+            data->bar.vertices[2].position = item_gs_xyz(x2, bottom_left_y, depth);
+            data->bar.vertices[3].rgba = D_354C10[row][3];
+            data->bar.vertices[3].position = item_gs_xyz(x2 + filled, bottom_left_y, depth);
+            data->bar.padding = 0;
+            resident_packet_align_cursor(packet, reinterpret_cast<u8*>(data + 1));
+        }
+    }
+}
 
 /**
  * @brief Rebuild the drawing packet.
