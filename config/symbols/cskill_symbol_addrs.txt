@@ -160,7 +160,6 @@ func_0035DEA0 = 0x0035DEA0; // type:func allow_duplicated:True
 func_slot5c__18SkillOptionsWindowFv = 0x0035DEA0; // type:func allow_duplicated:True
 func_slot60__18SkillOptionsWindowFi = 0x00359480; // type:func allow_duplicated:True
 func_slotb0__18SkillOptionsWindowFv = 0x0035E5C0; // type:func allow_duplicated:True
-func_0035E5C0 = 0x0035E5C0; // type:func allow_duplicated:True
 func_slotf4__18SkillOptionsWindowFUi = 0x0035FAA0; // type:func allow_duplicated:True
 __vt__18SkillOptionsWindow = 0x00183E60; // size:0xF8 absolute:True
 func_00359480 = 0x00359480; // type:func allow_duplicated:True
@@ -940,9 +939,8 @@ func_0035D340 = 0x0035D340; // type:func absolute:True allow_duplicated:True
 
 func_0044B100__14SkillHpMpGaugeFUiUiUi = 0x0035D340; // type:func allow_duplicated:True
 
-func_0035D540 = 0x0035D540; // type:func absolute:True allow_duplicated:True
 
-skill_build_hp_mp_gauge_packet = 0x0035D540; // type:func allow_duplicated:True
+build_packet__20SkillHpMpGaugeDrawerFv = 0x0035D540; // type:func
 
 func_0035C130 = 0x0035C130; // type:func absolute:True allow_duplicated:True
 

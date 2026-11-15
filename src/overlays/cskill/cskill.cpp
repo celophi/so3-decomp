@@ -30,6 +30,24 @@
 #define SKILL_TACTICAL_CHECKSUM_SEED 0x8D3C43F9
 #define SKILL_TACTICAL_STATE_XOR_KEY 0x77
 
+/** GIF tag FLG value for REGLIST mode: each loop holds one 64-bit value per listed register. */
+#define GIF_TAG_REGLIST ((u64)1 << 58)
+
+/** GIF register descriptor that discards its value. */
+#define GIF_REGISTER_NOP 0xF
+
+/** Quadwords reserved for each gauge; only eighteen of them get written. */
+#define SKILL_GAUGE_RESERVED_QUADWORDS 26
+
+/** PRIM value of every gauge strip: a Gouraud-shaded, alpha-blended triangle strip in the second drawing context. */
+#define SKILL_GAUGE_PRIM 0x24C
+
+/** Colour of the shadow strip under a gauge. */
+#define SKILL_GAUGE_SHADOW_COLOR 0x70101010
+
+/** Colour of the unfilled part of a gauge. */
+#define SKILL_GAUGE_EMPTY_COLOR 0x800838C0
+
 /** Message keys in the skill menu bank (resource 89). */
 enum SkillMessageKey
 {
@@ -123,7 +141,7 @@ enum SkillTacticalMode
 /** Partial 0xC4-byte character record with checksum-protected flags, HP and MP. */
 typedef struct SkillCharacterStats
 {
-    u8 unk00[2];
+    s16 character_id;
     /** Selects the clamping rules used by the character stat setters. */
     s16 stat_limit_type;
     u8 unk04[4];
@@ -748,6 +766,8 @@ struct SkillHpMpGaugeDrawer : public FieldClass159A70
     virtual ~SkillHpMpGaugeDrawer();
     /** @brief Rebuild the drawing packet. @param first Unused draw flag. @param depth Unused drawing depth. @param value Unused drawing value. */
     virtual void func_002BC4F0(u32 first, u32 depth, float value);
+    /** @brief Build the paired HP and MP gauge drawing packet. */
+    void build_packet();
     SkillGaugeOrigin origin;
     float row_spacing;
     s16 character_id;
@@ -1128,6 +1148,56 @@ struct SkillTacticalPromptWindow : FieldClass15AE70
     LibTextWidget* details_hint;
 };
 
+/** GIF tag whose register list names ten registers, four bits each. */
+struct SkillGaugeBarTag
+{
+    u64 tag;
+
+    union
+    {
+        u64 registers;
+
+        struct
+        {
+            u64 register0 : 4;
+            u64 register1 : 4;
+            u64 register2 : 4;
+            u64 register3 : 4;
+            u64 register4 : 4;
+            u64 register5 : 4;
+            u64 register6 : 4;
+            u64 register7 : 4;
+            u64 register8 : 4;
+            u64 register9 : 4;
+            u64 unused : 24;
+        } fields;
+    };
+};
+
+/** One corner of a gauge's filled part: RGBAQ, then XYZ2. */
+struct SkillGaugeBarVertex
+{
+    u32 rgba;
+    u32 q;
+    u64 position;
+};
+
+/** Packed GIF tag, PRIM and four coloured vertices drawing a gauge's filled part, padded to whole quadwords. */
+struct SkillGaugeBarPacket
+{
+    SkillGaugeBarTag tag;
+    u64 prim;
+    SkillGaugeBarVertex vertices[4];
+    u64 padding;
+};
+
+/** One gauge's drawing data: the shadow, edge and empty strips, then the filled part. */
+struct SkillGaugePacket
+{
+    ResidentRectanglePacket strips[3];
+    SkillGaugeBarPacket bar;
+};
+
 extern "C" SkillRuntime* D_001B643C;
 extern "C" LibCameraContext* g_display;
 
@@ -1139,6 +1209,10 @@ extern "C" u64 D_4ED330[];
 extern "C" LibVector4 g_default_bounding_sphere;
 
 extern "C" const char D_364EF8[];
+
+extern "C" u32 D_364D80[];
+
+extern "C" u32 D_364D90[][4];
 
 extern "C" void func_2CEAF0(void* object, s32 flag);
 
@@ -1614,6 +1688,9 @@ static inline void append_available_aura(SkillTacticalDetailWindow* object, u8 a
 
 extern "C" s32 func_40AE00(s32 character, s32 code);
 extern "C" s32 func_4087A0(s32 skill, s32 level, SkillCharacterEquipment* record);
+
+extern "C" s32 func_408200(s32 skill, s32 unused, s32 level, SkillCharacterStats* caster, s32* power, s32* second, s32* third,
+                           s32* fourth, s32* fifth, s32* sixth, s32* seventh);
 
 extern "C" s32 func_4086D0(SkillCharacterEquipment* record, s32 level, s32 kind);
 
@@ -4672,7 +4749,190 @@ void skill_build_mode_candidates(SkillModeSelection* object, s32 mode, s16 kind)
     }
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_00350890);
+/** @brief Set how many rows a selection list scrolls over. @param list Selection list. @param rows Row count. */
+static inline void set_visible_rows(FieldObject23CEB0* list, s32 rows)
+{
+    list->unk116 = rows;
+}
+
+/** @brief Rebuild the mode rows for a signed mode code. @param object Mode-selection window. @param mode Signed mode. @return One on success, or zero on failure. */
+s32 func_00350890(SkillModeSelection* object, s16 mode)
+{
+    if (object->visible == 0)
+    {
+        return 0;
+    }
+    object->mode = -1;
+    clear_selection_rows(object);
+    object->state = 0;
+    if (object->selection != 0)
+    {
+        func_0023C710(object->selection);
+    }
+    SkillCharacterEquipment* record = selected_equipment(object->record_selection);
+    s32 character = object->record_selection->slots[object->record_selection->current];
+    object->mode = mode;
+    skill_build_mode_candidates(object, character, object->mode);
+    LibTextWidget* label;
+    LibObject174F20* cp_row = 0;
+    // TODO: A second variable for the later cost rows is a guess; with one shared variable it doesn't match.
+    LibObject174F20* row_cost;
+    s32 count;
+    for (count = 0; count < 42; count++)
+    {
+        label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), count)->value);
+        label->visible = 0;
+        cp_row = static_cast<LibObject174F20*>(func_0035C890(reinterpret_cast<SkillList*>(&object->cp_rows), count)->value);
+        cp_row->visible = 0;
+    }
+    object->scroll_range = 0.0f;
+    count = 0;
+    label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), count)->value);
+    label->visible = object->visible;
+    object->skill_name_keys[count] = SKILL_MSG_NONE;
+    object->row_cp_costs[count] = 0;
+    lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[count], 0);
+    cp_row->visible = 0;
+    count++;
+    s32 found;
+    s32 skill_id = -1;
+    s32 mastery = -1;
+    s32 level = -1;
+    s32 remaining = -1;
+    FieldRecord* entry = &object->record_selection->records[object->record_selection->current];
+    SkillCharacterEquipment* detail = selected_equipment(object->record_selection);
+    s32 minor_mp = 0;
+    s32 minor_hp = 0;
+    s32 cp_cost = 0;
+    s32 minor_fury = 0;
+    s32 major_damage_scale = 0;
+    s32 selected_row = 0;
+    SkillBattleSetupWindow* setup = static_cast<SkillBattleSetupWindow*>(object->func_slot44());
+    for (s32 index = 0; index < 42; index++)
+    {
+        found = func_00408850(detail, character, index, &skill_id, &mastery, &level, &remaining);
+        bool excluded = true;
+        if (found != 0)
+        {
+            for (s32 candidate = 0; candidate < 42; candidate++)
+            {
+                if (object->candidate_skill_ids[candidate] == skill_id)
+                {
+                    excluded = false;
+                    break;
+                }
+            }
+        }
+        if (excluded)
+        {
+            continue;
+        }
+        func_4095C0(skill_id, entry, detail, &minor_mp, &minor_hp, &cp_cost, &minor_fury, &major_damage_scale, 0, 0, 0);
+        label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), count)->value);
+        row_cost = static_cast<LibObject174F20*>(func_0035C890(reinterpret_cast<SkillList*>(&object->cp_rows), count)->value);
+        label->visible = object->visible;
+        if (found == 0)
+        {
+            object->skill_name_keys[count] = SKILL_MSG_NONE;
+            object->row_cp_costs[count] = 0xFF;
+            object->row_enabled[count] = 0;
+            lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[count], 0);
+            label->draw_scale = 0.9f;
+            label->needs_redraw = 1;
+            continue;
+        }
+        row_cost->visible = object->visible;
+        object->skill_name_keys[count] = skill_id + SKILL_MSG_NAME_BASE;
+        lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[count], 0);
+        object->row_cp_costs[count] = cp_cost;
+        set_cost_value(row_cost, cp_cost);
+        label->draw_scale = 0.9f;
+        label->needs_redraw = 1;
+        float scale = 214.0f / lib_text_measure_bounds(label)->width;
+        scale = ee_min(scale, 1.0f);
+        label->draw_scale = 0.9f * scale;
+        label->needs_redraw = 1;
+        s32 code = func_40AE00(character, skill_id);
+        s32 equipped = battle_skill_index(record, mode);
+        if (equipped != 0 && equipped - 1 == code)
+        {
+            selected_row = count;
+        }
+        count++;
+    }
+    if (count != 0)
+    {
+        object->scroll_range = (float)count;
+    }
+    object->item_count = count;
+    s32 sum = skill_refresh_battle_cp_displays(setup, 1);
+    s32 current_cost = setup->cp_costs[object->mode];
+    current_cost = (current_cost == -1) ? 0 : current_cost;
+    s32 base = sum - current_cost;
+    s32 available = checked_character_cp(record);
+    object->row_enabled[0] = 1;
+    for (s32 row = 1; row < count; row++)
+    {
+        label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), row)->value);
+        row_cost = static_cast<LibObject174F20*>(func_0035C890(reinterpret_cast<SkillList*>(&object->cp_rows), row)->value);
+        if (available < base + object->row_cp_costs[row])
+        {
+            object->row_enabled[row] = 0;
+            label->set_tint(0x505050);
+            row_cost->set_tint(0x505050);
+        }
+        else
+        {
+            object->row_enabled[row] = 1;
+        }
+    }
+    FieldObject23CEA0* selection;
+    if (selected_row >= 3 && count > 6)
+    {
+        if (selected_row + 3 < count)
+        {
+            selection = object->selection;
+            selection->row_count = selected_row - 3;
+            selection = object->selection;
+            selection->index = 3;
+            func_0023CB30(selection);
+            func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(object->selection));
+        }
+        else
+        {
+            selection = object->selection;
+            selection->row_count = count - 6;
+            selection = object->selection;
+            selection->index = selected_row - count + 6;
+            func_0023CB30(selection);
+            func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(object->selection));
+        }
+    }
+    else
+    {
+        selection = object->selection;
+        selection->index = selected_row;
+        func_0023CB30(selection);
+        func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(object->selection));
+    }
+    if (count != 0)
+    {
+        if (count < 6)
+        {
+            object->count = count;
+        }
+        else
+        {
+            object->count = count - 6;
+        }
+        set_visible_rows(reinterpret_cast<FieldObject23CEB0*>(object->selection), object->count);
+    }
+    skill_position_selection_rows(object, object->row_spacing * (float)object->selection->row_count);
+    skill_refresh_selection_rows(object);
+    skill_refresh_selection_marker(object);
+    refresh_battle_cp_values(static_cast<SkillController*>(D_001B643C->callbacks->controller)->status, sum);
+    return 1;
+}
 
 s32 skill_create_mode_rows(SkillModeSelection* object)
 {
@@ -8565,7 +8825,167 @@ SkillHpMpGauge::~SkillHpMpGauge()
 {
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", skill_build_hp_mp_gauge_packet);
+/**
+ * @brief Build an XYZ2 register value.
+ * @param x Horizontal GS coordinate.
+ * @param y Vertical GS coordinate.
+ * @param z Depth.
+ * @return Packed XYZ2 value.
+ */
+static inline u64 skill_gs_xyz(s32 x, u64 y, s32 z)
+{
+    return (u64)x | (y << 16) | ((u64)z << 32);
+}
+
+// TODO: This only matches at optimization level 4; the rest of the file is at 3.
+#pragma push
+#pragma optimization_level 4
+
+/** @brief Build the paired HP and MP gauge drawing packet. */
+void SkillHpMpGaugeDrawer::build_packet()
+{
+    ResidentPacket* packet = unk08;
+
+    if (packet != 0)
+    {
+        for (s32 row = 0; row < 2; ++row)
+        {
+            float y = origin.y + row_spacing * row;
+            s32 left = (s32)(origin.x + unk04->translation.x);
+            s32 top = (s32)(unk04->translation.y + y);
+            s32 depth = unk00 + 4;
+            s32 width = (s32)unk0c;
+            s32 height = (s32)unk10;
+            FieldRuntime* runtime = g_field_runtime;
+            float scale_x = runtime->screen_scale_x;
+            float scale_y = runtime->screen_scale_y;
+            float offset_x = runtime->screen_offset_x;
+            float offset_y = runtime->screen_offset_y;
+            s32 x0 = (s32)(offset_x + left * scale_x);
+            s32 x1 = (s32)(offset_x + (left + width) * scale_x);
+            s32 x2 = (s32)(offset_x + (left - 6) * scale_x);
+            s32 bottom = top + height;
+
+            top = (s32)(offset_y + top * scale_y);
+            bottom = (s32)(offset_y + scale_y * bottom);
+
+            SkillGaugePacket* data = reinterpret_cast<SkillGaugePacket*>(resident_packet_reserve(packet, SKILL_GAUGE_RESERVED_QUADWORDS));
+            ResidentRectanglePacket* strip = &data->strips[0];
+
+            strip->tag.tag = GIF_TAG_NREG(6) | GIF_TAG_REGLIST | 1;
+            strip->tag.registers = 0;
+            strip->tag.fields.register0 = GIF_REGISTER_PRIM;
+            strip->tag.fields.register1 = GIF_REGISTER_RGBAQ;
+            strip->tag.fields.register2 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register3 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register4 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register5 = GIF_REGISTER_XYZ2;
+            strip->prim = SKILL_GAUGE_PRIM;
+            strip->rgba = SKILL_GAUGE_SHADOW_COLOR;
+
+            // TODO: Giving each corner its own 64-bit y is a guess; it's the only way I found to match.
+            u64 top_left_y = top;
+            u64 top_right_y = top;
+
+            strip->vertices[0] = skill_gs_xyz(x0, top_left_y, depth);
+            strip->vertices[1] = skill_gs_xyz(x1, top_right_y, depth);
+
+            u64 bottom_left_y = bottom;
+            u64 bottom_right_y = bottom;
+
+            strip->vertices[2] = skill_gs_xyz(x2, bottom_left_y, depth);
+            strip->vertices[3] = skill_gs_xyz((s32)(offset_x + (left - 6 + width) * scale_x), bottom_right_y, depth);
+
+            strip = &data->strips[1];
+            strip->tag.tag = GIF_TAG_NREG(6) | GIF_TAG_REGLIST | 1;
+            strip->tag.registers = 0;
+            strip->tag.fields.register0 = GIF_REGISTER_PRIM;
+            strip->tag.fields.register1 = GIF_REGISTER_RGBAQ;
+            strip->tag.fields.register2 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register3 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register4 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register5 = GIF_REGISTER_XYZ2;
+            strip->prim = SKILL_GAUGE_PRIM;
+            strip->rgba = D_364D80[row];
+            strip->vertices[0] = skill_gs_xyz(x0, top_left_y, depth);
+            strip->vertices[1] = skill_gs_xyz(x1, top_right_y, depth);
+            strip->vertices[2] = skill_gs_xyz((s32)(offset_x + (left - 7) * scale_x), bottom_left_y, depth);
+            strip->vertices[3] = skill_gs_xyz((s32)(offset_x + (left - 7 + width) * scale_x), bottom_right_y, depth);
+
+            strip = &data->strips[2];
+            strip->tag.tag = GIF_TAG_NREG(6) | GIF_TAG_REGLIST | 1;
+            strip->tag.registers = 0;
+            strip->tag.fields.register0 = GIF_REGISTER_PRIM;
+            strip->tag.fields.register1 = GIF_REGISTER_RGBAQ;
+            strip->tag.fields.register2 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register3 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register4 = GIF_REGISTER_XYZ2;
+            strip->tag.fields.register5 = GIF_REGISTER_XYZ2;
+            strip->prim = SKILL_GAUGE_PRIM;
+            strip->rgba = SKILL_GAUGE_EMPTY_COLOR;
+            strip->vertices[0] = skill_gs_xyz(x0, top_left_y, depth);
+            strip->vertices[1] = skill_gs_xyz(x1, top_right_y, depth);
+            strip->vertices[2] = skill_gs_xyz(x2, bottom_left_y, depth);
+            strip->vertices[3] = skill_gs_xyz((s32)(offset_x + (left - 6 + width) * scale_x), bottom_right_y, depth);
+
+            data->bar.tag.tag = GIF_TAG_NREG(10) | GIF_TAG_REGLIST | 1;
+            data->bar.tag.registers = 0;
+            data->bar.tag.fields.register0 = GIF_REGISTER_PRIM;
+            data->bar.tag.fields.register1 = GIF_REGISTER_RGBAQ;
+            data->bar.tag.fields.register2 = GIF_REGISTER_XYZ2;
+            data->bar.tag.fields.register3 = GIF_REGISTER_RGBAQ;
+            data->bar.tag.fields.register4 = GIF_REGISTER_XYZ2;
+            data->bar.tag.fields.register5 = GIF_REGISTER_RGBAQ;
+            data->bar.tag.fields.register6 = GIF_REGISTER_XYZ2;
+            data->bar.tag.fields.register7 = GIF_REGISTER_RGBAQ;
+            data->bar.tag.fields.register8 = GIF_REGISTER_XYZ2;
+            data->bar.tag.fields.register9 = GIF_REGISTER_NOP;
+
+            SkillCharacterStats* record;
+            SkillCharacterStats* entry = characters;
+            s32 maximum = 0;
+            s32 current = 0;
+
+            for (s32 i = 0; i < 8; ++i, ++entry)
+            {
+                record = entry;
+
+                if (entry->character_id == (u16)character_id)
+                {
+                    break;
+                }
+            }
+
+            if (row == 0)
+            {
+                current = character_hp(record);
+                maximum = character_max_hp(record);
+            }
+            else if (row == 1)
+            {
+                current = character_mp(record);
+                maximum = character_max_mp(record);
+            }
+
+            s32 span = x1 - x0;
+            s32 filled = (s32)((float)span * (float)current / (float)maximum);
+
+            data->bar.prim = SKILL_GAUGE_PRIM;
+            data->bar.vertices[0].rgba = D_364D90[row][0];
+            data->bar.vertices[0].position = skill_gs_xyz(x0, top_left_y, depth);
+            data->bar.vertices[1].rgba = D_364D90[row][1];
+            data->bar.vertices[1].position = skill_gs_xyz(x0 + filled, top_left_y, depth);
+            data->bar.vertices[2].rgba = D_364D90[row][2];
+            data->bar.vertices[2].position = skill_gs_xyz(x2, bottom_left_y, depth);
+            data->bar.vertices[3].rgba = D_364D90[row][3];
+            data->bar.vertices[3].position = skill_gs_xyz(x2 + filled, bottom_left_y, depth);
+            data->bar.padding = 0;
+            resident_packet_align_cursor(packet, reinterpret_cast<u8*>(data + 1));
+        }
+    }
+}
+
+#pragma pop
 
 void SkillHpMpGaugeDrawer::func_002BC4F0(u32 first, u32 depth, float value)
 {
@@ -8576,7 +8996,7 @@ void SkillHpMpGaugeDrawer::func_002BC4F0(u32 first, u32 depth, float value)
         packet->unk0c = packet->unk08;
         packet->unk15 = 0;
         func_0011F140(packet, D_4ED330[0]);
-        skill_build_hp_mp_gauge_packet(this);
+        build_packet();
     }
 }
 
@@ -8758,7 +9178,219 @@ u8 SkillOptionsWindow::func_slotb4()
     return 2;
 }
 
-INCLUDE_ASM("build/overlays/cskill/asm/nonmatchings/cskill", func_0035E5C0);
+/** @brief Store a clamped current HP and update the defeated flag, or flag a corrupted record. @param record Character stats. @param value Requested HP. */
+static inline void set_character_current_hp(SkillCharacterStats* record, s32 value)
+{
+    if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
+    {
+        skill_add_character_flags(record, 1);
+        return;
+    }
+    value = skill_clamp_character_hp(record, value);
+    s32 max_hp = record->encoded_max_hp ^ SKILL_FLAG_ENCODING_MASK;
+    if (value > max_hp)
+    {
+        value = max_hp;
+    }
+    if (value == 0)
+    {
+        skill_add_character_flags(record, 1);
+    }
+    if (value != 0 && (record->encoded_mp ^ SKILL_FLAG_ENCODING_MASK) != 0)
+    {
+        skill_mask_character_flags(record, ~1);
+    }
+    record->encoded_hp = value ^ SKILL_FLAG_ENCODING_MASK;
+    record->hp_checksum = (record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt;
+}
+
+/** @brief Store a clamped current MP and update the defeated flag, or flag a corrupted record. @param record Character stats. @param value Requested MP. */
+static inline void set_character_current_mp(SkillCharacterStats* record, s32 value)
+{
+    if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
+    {
+        skill_add_character_flags(record, 1);
+        return;
+    }
+    value = skill_clamp_character_mp(record, value);
+    s32 max_mp = record->encoded_max_mp ^ SKILL_FLAG_ENCODING_MASK;
+    if (value > max_mp)
+    {
+        value = max_mp;
+    }
+    if (value == 0)
+    {
+        skill_add_character_flags(record, 1);
+    }
+    if (value != 0 && (record->encoded_hp ^ SKILL_FLAG_ENCODING_MASK) != 0)
+    {
+        skill_mask_character_flags(record, ~1);
+    }
+    record->encoded_mp = value ^ SKILL_FLAG_ENCODING_MASK;
+    record->mp_checksum = (record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt;
+}
+
+/** @brief Replace the protected flags when their checksum is valid. @param record Character stats. @param flags New decoded flags. */
+static inline void set_character_flags(SkillCharacterStats* record, u32 flags)
+{
+    if (record->flags_experience_checksum == (((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt))
+    {
+        record->encoded_flags = flags ^ SKILL_FLAG_ENCODING_MASK;
+        record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;
+    }
+}
+
+/** @brief Locate a party member's protected stats. @param selection Character record selection. @param index Party slot. @return Stats record of that slot. */
+static inline SkillCharacterStats* member_stats(FieldRecordSelection* selection, s32 index)
+{
+    return &reinterpret_cast<SkillCharacterStats*>(selection->records)[index];
+}
+
+// TODO: This only matches at optimization level 4; the rest of the file is at 3.
+#pragma push
+#pragma optimization_level 4
+
+/**
+ * @brief Cast the selected restorative spell on the chosen party member, or on the whole party for spell 3.
+ * @return Three when the caster lacks the MP, otherwise zero.
+ */
+u8 SkillOptionsWindow::func_slotb0()
+{
+    s32 selected = this->child->selected;
+    SkillCharacterStats* caster = selected_stats(this->records);
+    SkillCharacterEquipment* equipment = selected_equipment(this->records);
+    s32 mp_cost = 0;
+    func_4095C0(this->selected_kind, reinterpret_cast<FieldRecord*>(caster), equipment, &mp_cost, 0, 0, 0, 0, 0, 0, 0);
+    if ((s32)character_mp(caster) <= mp_cost)
+    {
+        return 3;
+    }
+    s16 index = selected;
+    bool changed = false;
+    if (this->records->slots[index] > 0)
+    {
+        SkillCharacterStats* target = member_stats(this->records, index);
+        switch (this->selected_kind)
+        {
+        case 18:
+        case 3:
+        {
+            s32 power;
+            if (func_408200(this->selected_kind, 0, this->selected_index, caster, &power, 0, 0, 0, 0, 0, 0) == 0)
+            {
+                break;
+            }
+            if (this->selected_kind == 18)
+            {
+                if (character_hp(target) != character_max_hp(target) && !(target->get_flags() & 5))
+                {
+                    set_character_current_hp(target, character_hp(target) + power * (s32)character_max_hp(target) / 100);
+                    changed = true;
+                }
+                break;
+            }
+            for (s32 row = 0; row < 8; row++)
+            {
+                s16 member_index = row;
+                if (this->records->slots[member_index] > 0)
+                {
+                    SkillCharacterStats* member = member_stats(this->records, member_index);
+                    if (character_hp(member) != character_max_hp(member) && !(member->get_flags() & 5))
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if (changed)
+            {
+                for (s32 row = 0; row < 8; row++)
+                {
+                    s16 member_index = row;
+                    if (this->records->slots[member_index] > 0)
+                    {
+                        SkillCharacterStats* member = member_stats(this->records, member_index);
+                        if (!(member->get_flags() & 5))
+                        {
+                            set_character_current_hp(member, character_hp(member) + power * (s32)character_max_hp(member) / 100);
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case 19:
+            if (target->get_flags() & 8)
+            {
+                set_character_flags(target, target->get_flags() ^ 8);
+                changed = true;
+            }
+            break;
+        case 20:
+            if (target->get_flags() & 0xE)
+            {
+                if (target->get_flags() & 8)
+                {
+                    set_character_flags(target, target->get_flags() ^ 8);
+                }
+                if (target->get_flags() & 2)
+                {
+                    set_character_flags(target, target->get_flags() ^ 2);
+                }
+                if (target->get_flags() & 4)
+                {
+                    set_character_flags(target, target->get_flags() ^ 4);
+                }
+                changed = true;
+            }
+            break;
+        case 27:
+            if (target->get_flags() & 1)
+            {
+                set_character_flags(target, target->get_flags() ^ 1);
+                float ratio = (float)(this->selected_index - 1);
+                ratio = 0.1f + 0.045f * ratio;
+                if (ratio > 0.5f)
+                {
+                    ratio = 0.5f;
+                }
+                s32 hp = (s32)((float)(s32)character_hp(target) + ratio * (float)(s32)character_max_hp(target));
+                s32 mp = (s32)((float)(s32)character_mp(target) + ratio * (float)(s32)character_max_mp(target));
+                if (hp <= 0)
+                {
+                    hp = 1;
+                }
+                if (mp <= 0)
+                {
+                    mp = 1;
+                }
+                set_character_current_hp(target, hp);
+                set_character_current_mp(target, mp);
+                changed = true;
+            }
+            break;
+        }
+    }
+    if (changed)
+    {
+        set_character_current_mp(caster, character_mp(caster) - mp_cost);
+        resident_sound_play(g_sound, 0x1B4, 0, 0, 127, 64, 0);
+    }
+    else
+    {
+        resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
+    }
+    skill_refresh_symbology_character_markers(static_cast<SkillController*>(D_001B643C->callbacks->controller)->symbology_character);
+    SkillListNode* node = this->nested.head->next;
+    while (node != 0)
+    {
+        static_cast<LibCallbackTransform*>(node->value)->func_0044B100(1, 1, 1);
+        node = node->next;
+    }
+    return 0;
+}
+
+#pragma pop
 
 u32 skill_mask_character_flags(SkillCharacterStats* record, u32 flags)
 {
