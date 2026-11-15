@@ -638,9 +638,6 @@ void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag,
  */
 void skill_refresh_mastery_display(SkillCharacterWindow* owner, s32 level, s32 mastery, s32 remaining);
 
-/** @brief Append the character HP and MP gauge geometry. @param drawer Gauge packet drawer. */
-void skill_build_hp_mp_gauge_packet(SkillHpMpGaugeDrawer* drawer);
-
 #ifdef __cplusplus
 }
 #endif
