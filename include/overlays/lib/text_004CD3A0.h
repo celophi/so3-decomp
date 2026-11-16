@@ -4,6 +4,7 @@
 #include "types.h"
 #include "gs.h"
 #include "ee.h"
+#include "main/microcode_loader.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/render_channel.h"
@@ -29,70 +30,13 @@ typedef struct LibListNode
 
 #ifdef __cplusplus
 
-/** VU1 microprograms Lib can load. */
 #define LIB_VU1_PROGRAM_COUNT 11
-
-/** LibMicrocodeLoader::current_program before any program is loaded. */
-#define LIB_VU1_PROGRAM_NONE 0xFF
 
 /** Data of each VU1 microprogram, for LibMicrocodeLoader::select_program. */
 extern "C" const void* const lib_vu1_programs[LIB_VU1_PROGRAM_COUNT];
 
 /** DMA chain that uploads Lib's resident VU1 microcode. */
 extern "C" u8 lib_vu1_upload_chain[];
-
-/** Tracks which VU1 microprogram is loaded, with vtable D_178E80 in main data. */
-class LibMicrocodeLoader : public DmaSubmission
-{
-public:
-    /** @brief Start with no program and an empty upload packet. */
-    LibMicrocodeLoader();
-
-    /**
-     * @brief Send the resident microcode upload chain on VIF1.
-     * @param channel DMA channel; unused.
-     */
-    virtual void submit_dma(u32 channel);
-
-    /**
-     * @brief Nothing to do once the upload finishes.
-     * @param channel DMA channel; unused.
-     */
-    virtual void complete_dma(u32 channel);
-
-    /** @brief Forget the loaded program and queue the resident microcode upload. */
-    void start_upload();
-
-    /**
-     * @brief Switch to a microprogram.
-     * @param program Program index.
-     * @return The program's data when it has to be uploaded, or null when it's already loaded.
-     */
-    const void* select_program(s32 program);
-
-    /**
-     * @brief Return the DMA tag that uploads a microprogram.
-     * @param program Program index.
-     * @return DMA REF tag.
-     */
-    u64 get_program_tag(s32 program);
-
-    u8 unk04;
-
-    /** Program now in VU1 micro memory, or LIB_VU1_PROGRAM_NONE. */
-    u8 current_program;
-
-    u8 unk06;
-    u8 unk07[0xD];
-    u32 unk14[3];
-    u32 unk20[3];
-
-    /** VIF FLUSH code that ends the packet. */
-    u32 flush;
-};
-
-/** Lib's VU1 microcode loader, made by lib_initialize. */
-extern LibMicrocodeLoader* g_microcode_loader;
 
 /** Aligned four-row matrix whose assignment returns a copy of the matrix. */
 class LibMatrix44Value
@@ -263,10 +207,7 @@ extern "C"
 class LibDisplayManager;
 class LibCameraContext;
 
-/** Entries a texture cache tracks; entry 0 is the head of the most-recently-used list. */
 #define LIB_TEXTURE_CACHE_ENTRY_COUNT 256
-
-/** Most CLUTs a texture cache can hold. */
 #define LIB_TEXTURE_CACHE_MAX_CLUTS 64
 
 /** Partial object that owns a cached texture. */
@@ -355,14 +296,9 @@ struct LibTextureRequest
     u8 height_log2;
 };
 
-/** Request tag ('MlPs') whose misses are only loaded when an address is wanted. */
 #define LIB_TEXTURE_TAG_MLPS 0x4D6C5073
-
-/** Highest and lowest priority a cached texture's user can reach. */
 #define LIB_TEXTURE_PRIORITY_MAX 10
 #define LIB_TEXTURE_PRIORITY_MIN -10
-
-/** Lowest priority at which a hit still moves a user's texture to the front. */
 #define LIB_TEXTURE_PRIORITY_KEEP -5
 
 /** Partial 0x2910-byte VRAM texture cache (g_texture_cache). It may sit at the start of scratchpad memory. */
@@ -1085,7 +1021,6 @@ extern LibCameraContext* g_display;
 /** Second copy of the draw display that LibRenderer::set_display keeps; Lib's image code reads it. */
 extern LibCameraContext* D_001B6520;
 
-/** Bytes in each of the renderer's two packet buffers. */
 #define LIB_RENDERER_BUFFER_SIZE 0x2000
 
 /** Partial renderer pass that draws to the display at 0x94. */

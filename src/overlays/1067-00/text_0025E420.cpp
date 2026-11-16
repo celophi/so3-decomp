@@ -1,6 +1,11 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_0025E420.h"
 #include "overlays/1067-00/text_00257750.h"
+#include "overlays/1067-00/text_001ED7E0.h"
+#include "overlays/1067-00/text_001DED80.h"
+#include "overlays/1067-00/text_0022DC70.h"
+#include "overlays/lib/text_00429B00.h"
+#include "sdk/main/libc_guess_00137290.h"
 
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025E420);
@@ -66,7 +71,18 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025EA
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025EBC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025ED00);
+/**
+ * @brief Release resources in every allocated request slot.
+ * @param object Loader view containing the request array and slot capacity.
+ */
+extern "C" void func_0025ED00(FieldLateNodes* object)
+{
+    for (int i = 0; i < object->count; i++)
+    {
+        FieldLateNode20* node = &object->nodes[i];
+        node->unk00();
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025ED80);
 
@@ -76,7 +92,18 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025EF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025F030);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025F170);
+/**
+ * @brief Release resources in every allocated request slot.
+ * @param object Loader view containing the request array and slot capacity.
+ */
+extern "C" void func_0025F170(FieldLateNodes* object)
+{
+    for (int i = 0; i < object->count; i++)
+    {
+        FieldLateNode20* node = &object->nodes[i];
+        node->unk00();
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025F1F0);
 
@@ -94,9 +121,73 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_0025FF
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_00260410);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_002605B0);
+/**
+ * @brief Allocate a 128-byte-aligned buffer, retrying after other listed loaders release storage.
+ * @param loader Loader attached to the resource list.
+ * @param size Requested buffer size in bytes.
+ * @param mode Nonzero for the library allocator, zero for the resident allocator.
+ * @return Allocated buffer, or null when allocation or recovery fails after at most eight attempts.
+ */
+extern "C" void* func_002605B0(FieldListObject* loader, u32 size, s32 mode)
+{
+    FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(loader->owner);
+    for (s32 attempt = 0; attempt < 8; attempt++)
+    {
+        void* result;
+        if (mode)
+        {
+            func_00433AA0();
+            result = func_00433880(size, 128);
+        }
+        else
+        {
+            result = memalign(128, size);
+        }
+        if (result)
+        {
+            return result;
+        }
+        if (manager->node_count == 1 || !field_reclaim_loader_buffers(manager, loader))
+        {
+            break;
+        }
+    }
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_00260690);
+/**
+ * @brief Allocate a 128-byte-aligned buffer, retrying after other listed loaders release storage.
+ * @param loader Loader attached to the resource list.
+ * @param size Requested buffer size in bytes.
+ * @param mode Nonzero for the library allocator, zero for the resident allocator.
+ * @return Allocated buffer, or null when allocation or recovery fails after at most eight attempts.
+ */
+extern "C" void* func_00260690(FieldListObject* loader, u32 size, s32 mode)
+{
+    FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(loader->owner);
+    for (s32 attempt = 0; attempt < 8; attempt++)
+    {
+        void* result;
+        if (mode)
+        {
+            func_00433AA0();
+            result = func_00433880(size, 128);
+        }
+        else
+        {
+            result = memalign(128, size);
+        }
+        if (result)
+        {
+            return result;
+        }
+        if (manager->node_count == 1 || !field_reclaim_loader_buffers(manager, loader))
+        {
+            break;
+        }
+    }
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_00260770);
 

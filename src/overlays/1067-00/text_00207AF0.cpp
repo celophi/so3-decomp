@@ -707,8 +707,8 @@ extern "C" s32 func_0020C230(FieldClass1515B0* node, FieldShapeOwner18* other)
     FieldShapeRecord20* record = &records[node->unk1c];
     for (;;)
     {
-        record->unk0c_4 = 0;
-        if (record->unk0c_5)
+        record->unk0c.unk00_4 = 0;
+        if (record->unk0c.unk00_5)
         {
             break;
         }
@@ -718,8 +718,8 @@ extern "C" s32 func_0020C230(FieldClass1515B0* node, FieldShapeOwner18* other)
     record = &records[node->unk1c];
     for (;;)
     {
-        record->unk0c_4 = 1;
-        if (record->unk0c_5)
+        record->unk0c.unk00_4 = 1;
+        if (record->unk0c.unk00_5)
         {
             break;
         }
@@ -847,8 +847,8 @@ extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
         for (;;)
         {
             FieldShapeRecord20& record = records[index];
-            record.unk0c_4 = 0;
-            if (record.unk0c_5)
+            record.unk0c.unk00_4 = 0;
+            if (record.unk0c.unk00_5)
             {
                 break;
             }
@@ -860,8 +860,8 @@ extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
         for (;;)
         {
             FieldShapeRecord20& record = restore_records[restore_index];
-            record.unk0c_4 = 1;
-            if (record.unk0c_5)
+            record.unk0c.unk00_4 = 1;
+            if (record.unk0c.unk00_5)
             {
                 break;
             }
@@ -1168,8 +1168,8 @@ extern "C" void func_0020D810(FieldClass151640* object, FieldShapeOwner18* shape
             object->unk1f0.append_node(node, -1);
             for (;; index++)
             {
-                records[index].unk0c_4 = 1;
-                if (records[index].unk0c_5)
+                records[index].unk0c.unk00_4 = 1;
+                if (records[index].unk0c.unk00_5)
                 {
                     break;
                 }

@@ -106,7 +106,7 @@ static inline void field_append_indexed_shapes(FieldClass1504C0* manager, FieldS
     for (;;)
     {
         manager->append_shape(owner, record);
-        if (record->unk0c_5)
+        if (record->unk0c.unk00_5)
         {
             break;
         }
@@ -863,7 +863,7 @@ void FieldClass150330::func_001EA2E0(FieldShapeOwner18* owner, FieldShapeRecord2
     {
         size *= 1.05f;
     }
-    switch (record->unk0c_0_3)
+    switch (record->unk0c.unk00_0_3)
     {
     case 0:
     {
@@ -948,7 +948,7 @@ void FieldClass1504C0::func_001EA730()
             {
                 continue;
             }
-            if (item->unk1c->unk0c_4 && unkc0 % 3 != 0)
+            if (item->unk1c->unk0c.unk00_4 && unkc0 % 3 != 0)
             {
                 continue;
             }
@@ -1022,7 +1022,7 @@ void FieldClass1504C0::func_001EAA10(ResidentPacket* packet)
             {
                 continue;
             }
-            if (item->unk1c->unk0c_4 && unkc0 % 3 != 0)
+            if (item->unk1c->unk0c.unk00_4 && unkc0 % 3 != 0)
             {
                 continue;
             }

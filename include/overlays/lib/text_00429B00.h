@@ -181,7 +181,6 @@ s32 func_0042EB40(void* object);
 }
 #endif
 
-/** Entry-table key the shared font (archive resources 8 and 9) is stored under. */
 #define LIB_ENTRY_SHARED_FONT 0x25466887
 
 #ifdef __cplusplus

@@ -14,7 +14,6 @@ extern const char g_first_track_number[];
 /** Format of the track number label. */
 extern const char g_track_number_format[];
 
-/** Frame rate used to advance the music visualizer's sample position. */
 #define BOOT_MUSIC_FRAME_RATE 59.94f
 
 /** Stages of the music player's loading, playback screen, and exit. */

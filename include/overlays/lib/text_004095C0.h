@@ -67,14 +67,9 @@ struct ItemCreationCategoryDefinition
     u32 unk1c_high : 12;
 };
 
-/** Item allocation records in the game state. */
 #define LIB_ALLOCATION_COUNT 3000
-
-/** Twelve-byte and 0x34-byte records in the game state. */
 #define LIB_GAME_STATE_RECORD0C_COUNT 38
 #define LIB_GAME_STATE_RECORD34_COUNT 12
-
-/** LibGameStateTimer and LibGameStateBitset entries in the game state. */
 #define LIB_GAME_STATE_TIMER_COUNT 32
 #define LIB_GAME_STATE_BITSET_COUNT 11
 

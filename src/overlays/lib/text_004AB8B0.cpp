@@ -877,11 +877,42 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AE5A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", sample__29LibPooledFloatQuaternionTrackCFf);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AEFE0);
+/** One row of the quadratic fit's system: three coefficients and the right-hand side. */
+struct LibFitRow
+{
+    float value[4];
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AEFF0);
+/** The quadratic fit's 3x4 system. */
+struct LibMatrix34
+{
+    LibFitRow rows[3];
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AF060);
+/**
+ * @brief Find one row of a 3x4 system.
+ * @param rows Rows.
+ * @param index Row.
+ * @return The row.
+ */
+LibFitRow* func_004AEFE0(LibFitRow* rows, s32 index)
+{
+    return &rows[index];
+}
+
+/**
+ * @brief Copy a 3x4 system.
+ * @param destination Copy.
+ * @param source System copied.
+ * @return The copy.
+ */
+LibMatrix34* func_004AEFF0(LibMatrix34* destination, const LibMatrix34* source)
+{
+    *destination = *source;
+    return destination;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", compute_tangents__23LibVectorCurveTrackBaseFv);
 
 /**
  * @brief Store the single keyframe and its tangents from plain floats.

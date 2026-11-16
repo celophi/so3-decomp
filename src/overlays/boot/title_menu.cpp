@@ -31,7 +31,6 @@ enum BootTitleStep
     BOOT_TITLE_OPEN_BATTLE_TROPHIES = 7
 };
 
-/** Idle time before the title screen replays the opening movie. */
 #define BOOT_TITLE_IDLE_MOVIE_SECONDS 45.0f
 
 /** Progress bar fill is computed in thousandths of its inner width. */

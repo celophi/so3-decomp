@@ -69,8 +69,6 @@ extern "C" u8 _stack_size[];
 #define D_CHCR_TRANSFER_TAG 0x40
 #define D_CHCR_START 0x100
 #define D_STAT_CHANNEL_0 0x1
-
-/** End of the EE's 32 MB of main memory; the main thread's stack sits right below it. */
 #define RESIDENT_MEMORY_END 0x2000000
 
 #define RESIDENT_MAIN_THREAD_PRIORITY 0x2D

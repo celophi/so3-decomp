@@ -17,26 +17,13 @@
 #include "clamp.h"
 #include "overlays/lib/memory_card.h"
 
-/** Archive key of the game data resource, which holds the item catalog. */
 #define LIB_GAME_DATA_RESOURCE 10
-
-/** Twelve-byte records from this one-based ID on get no starting word; this one gets byte 8 set to 3. */
 #define LIB_GAME_STATE_RECORD0C_FIXED_ID 29
-
-/** Item types in each D_501EE0 row. */
 #define LIB_RECORD0C_ITEM_TYPE_COUNT 200
-
-/** Resident entry table key of the LibValueTable. */
 #define LIB_ENTRY_VALUE_TABLE 0x76505730
-
-/** Sizes of the icon.sys and save data files. */
 #define LIB_ICON_SYS_SIZE 0x3C4
 #define LIB_SAVE_DATA_SIZE 0x11ABA2
-
-/** Entries in each LibValueTable array. */
 #define LIB_VALUE_TABLE_COUNT 51
-
-/** Code lists at D_001B64CC and the entries in each. */
 #define LIB_CODE_LIST_COUNT 10
 #define LIB_CODE_LIST_ENTRY_COUNT 32
 

@@ -30,13 +30,8 @@
 #include "overlays/lib/marker_widget_inlines.h"
 #include "overlays/1067-00/text_marker.h"
 
-/** Half a degree, in radians. */
 #define MODEL_TURN_STEP 0.008726646f
-
-/** Thirty degrees, in radians. */
 #define MODEL_TURN_LIMIT 0.5235988f
-
-/** Event flag of the first valuable; the rest follow in order. */
 #define ITEM_VALUABLE_FIRST_FLAG 1900
 
 #define ITEM_STAT_WORD_XOR_KEY 0x7DE3F7E3
@@ -45,19 +40,10 @@
 /** GIF tag FLG value for REGLIST mode: each loop holds one 64-bit value per listed register. */
 #define GIF_TAG_REGLIST ((u64)1 << 58)
 
-/** GIF register descriptor that discards its value. */
 #define GIF_REGISTER_NOP 0xF
-
-/** Quadwords reserved for each gauge; only eighteen of them get written. */
 #define ITEM_GAUGE_RESERVED_QUADWORDS 26
-
-/** PRIM value of every gauge strip: a Gouraud-shaded, alpha-blended triangle strip in the second drawing context. */
 #define ITEM_GAUGE_PRIM 0x24C
-
-/** Colour of the shadow strip under a gauge. */
 #define ITEM_GAUGE_SHADOW_COLOR 0x70101010
-
-/** Colour of the unfilled part of a gauge. */
 #define ITEM_GAUGE_EMPTY_COLOR 0x800838C0
 
 enum ItemMessageKey

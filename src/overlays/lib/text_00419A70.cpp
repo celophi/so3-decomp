@@ -210,12 +210,12 @@ s32 lib_movie_play(LibMoviePlayer* player, s32 movie, s32 loop)
     {
         if (!g_resource_archive->read_busy)
         {
-            g_resource_archive->unk64 = &player->loop_listener;
+            g_resource_archive->disc_thread.unk64 = &player->loop_listener;
         }
     }
     else if (!g_resource_archive->read_busy)
     {
-        g_resource_archive->unk64 = 0;
+        g_resource_archive->disc_thread.unk64 = 0;
     }
 
     g_resource_queue->unk2c = 1;
@@ -252,7 +252,7 @@ LibMoviePlayer::~LibMoviePlayer()
 
     if (!g_resource_archive->read_busy)
     {
-        g_resource_archive->unk64 = 0;
+        g_resource_archive->disc_thread.unk64 = 0;
     }
 
     g_movie_player = 0;
@@ -271,7 +271,6 @@ enum
     LIB_MPEG_CALLBACK_BACKGROUND = 4
 };
 
-/** Type ID of the movie player. */
 #define LIB_TYPE_ID_MOVIE_PLAYER 0xC00
 
 extern "C"

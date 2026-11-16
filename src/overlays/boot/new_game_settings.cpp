@@ -44,7 +44,6 @@ extern const char g_bone_root_name[];
 extern const char g_camera_node_name[];
 extern const char g_face_model_name[];
 
-/** Reverb the settings screen plays under (studio A). */
 #define BOOT_SETTINGS_REVERB_PRESET 2
 
 /** Horizontal offsets of the six option labels. */

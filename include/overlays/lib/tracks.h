@@ -1181,6 +1181,12 @@ public:
      */
     virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key) = 0;
 
+    /**
+     * @brief Set every key's tangents from a quadratic through it and its two neighbours (the first and last keys
+     * use the three keys at their end, and get a zero outer tangent).
+     */
+    void compute_tangents();
+
     /** @brief Delete the key storage unless it is external, and clear the key pointer. */
     void free_keys();
 

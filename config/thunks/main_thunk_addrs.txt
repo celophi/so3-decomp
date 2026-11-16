@@ -8,3 +8,6 @@
 @528@__dt__19ResidentClass14FD30Fv = 0x00121820;
 @528@func_001217E0__19ResidentClass14FD30Fv = 0x00121810;
 @528@func_001217D0__19ResidentClass14FD30Fv = 0x00121800;
+// ResidentStreamThread (vtable D_0014FAE0); its thread base is at 4.
+@4@__dt__20ResidentStreamThreadFv = 0x0010BC00;
+@4@run__20ResidentStreamThreadFv = 0x0010BBF0;

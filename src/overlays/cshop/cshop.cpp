@@ -19,7 +19,6 @@
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 
-/** Item-name rectangle and scale shared by the shop lists. */
 #define SHOP_ITEM_NAME_WIDTH 323.99997f
 #define SHOP_ITEM_NAME_HEIGHT 21.599998f
 #define SHOP_ITEM_NAME_SCALE 0.9f

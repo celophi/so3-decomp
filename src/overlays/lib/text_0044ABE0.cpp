@@ -16,10 +16,7 @@
 
 class LibCameraContext;
 
-/** Words of each capture's pixel strip. */
 #define LIB_CLASS_1745F0_STRIP_WORDS 64
-
-/** Most captures the object keeps. */
 #define LIB_CLASS_1745F0_CAPTURE_COUNT 5
 
 /** List object that keeps up to five VRAM captures and their positions, with vtable D_1745F0 in main data. */
@@ -402,7 +399,6 @@ LibCallbackTransform::LibCallbackTransform()
     unkaa = 2;
 }
 
-/* Proposed for gs.h. */
 #define GS_REGISTER_SCISSOR_2 0x41
 #define GS_SCISSOR(x0, x1, y0, y1) ((u64)(x0) | ((u64)(x1) << 16) | ((u64)(y0) << 32) | ((u64)(y1) << 48))
 #define GIF_TAG_NLOOP(count) ((u64)(count))
@@ -1805,10 +1801,7 @@ void lib_free_system_data(void)
 
 #pragma pop
 
-/** Times the allocation order is shuffled. */
 #define LIB_SYSTEM_DATA_SHUFFLES 100
-
-/** Records in each of the two record arrays. */
 #define LIB_RESOURCE_RECORD_COUNT 8
 
 extern "C" void func_0040B760(void);

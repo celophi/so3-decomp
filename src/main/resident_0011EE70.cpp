@@ -7,35 +7,18 @@
 #include "sdk/main/libdma_0012B2C8.h"
 #include "vu0.h"
 
-/** GIF tag for one A+D register write: NLOOP 1, EOP clear, NREG 1. */
 #define GIF_TAG_AD_WRITE 0x1000000000000001ULL
-
-/** GIF tag that only ends the transfer: NLOOP 0, EOP set. */
 #define GIF_TAG_END 0x8000
-
-/** GIF tag for one packed line: NLOOP 1, register list mode, NREG 4. */
 #define GIF_TAG_LINE 0x4400000000000001ULL
-
-/** GIF tag for one packed rectangle: NLOOP 1, register list mode, NREG 6. */
 #define GIF_TAG_RECTANGLE 0x6400000000000001ULL
 
 #define VIF_CODE_FLUSH 0x11000000
 
 #define VIF_CODE_MSKPATH3 0x06000000
-
-/** GS PRIM: antialiased line drawn with the second drawing context. */
 #define GS_PRIM_LINE 0x281
-
-/** GS PRIM: triangle strip drawn with the second drawing context. */
 #define GS_PRIM_TRIANGLE_STRIP 0x204
-
-/** GS PRIM alpha blending enable bit. */
 #define GS_PRIM_ALPHA_BLEND 0x40
-
-/** Budget one slot's random bank pick costs. */
 #define SOUND_BANK_PICK_COST 300
-
-/** Bank data parts are placed on 2048-byte sector boundaries. */
 #define SOUND_BANK_SECTOR_SHIFT 11
 
 extern "C" {

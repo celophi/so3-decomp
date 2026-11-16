@@ -3,6 +3,7 @@
 #include "overlays/1067-00/text_002E1870.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/text_002CD390.h"
+#include "overlays/lib/character_record.h"
 
 extern "C" {
 
@@ -42,62 +43,86 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E18
 // Large dispatcher; needs callback and runtime-record interfaces.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E19D0);
 
-s32 func_002E7D20(FieldCheckedWordsState1870* object, s32 value)
+/**
+ * @brief Store the effective agility, limited by type to 9999.
+ *
+ * It then compares the new value with the effective agility it just stored, so
+ * the recursive step never runs.
+ * @param record Character record.
+ * @param agility Effective agility.
+ * @return Stored effective agility, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_effective_agility(LibCharacterRecord* record, s32 agility)
 {
-    if (object->unk9C != (object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50))))
+    if (record->agility_checksum != (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility))))
     {
         return 0;
     }
-    value += 32113;
-    if (object->unk02 == 0)
+
+    agility = limit_by_type(record, agility, 9999, 9999);
+    record->encoded_effective_agility = agility ^ 0x7DE3F7E3;
+    record->agility_checksum = agility_checksum(record);
+
+    if (agility < character_effective_agility(record))
     {
-        value = clamp(value, 32113, 42112);
+        set_effective_agility_again(record, agility);
     }
-    if (object->unk02 == 1)
-    {
-        value = clamp(value, 32113, 42112);
-    }
-    value -= 32113;
-    object->unk50 = value ^ 0x7DE3F7E3;
-    object->unk9C = object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50));
-    s32 current;
-    if (object->unk9C != (object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50))))
-    {
-        current = 0;
-    }
-    else
-    {
-        current = object->unk50 ^ 0x7DE3F7E3;
-    }
-    if (value < current)
-    {
-        if (object->unk9C == (object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50))))
-        {
-            s32 next = func_002E7F30(object, value);
-            object->unk50 = next ^ 0x7DE3F7E3;
-            object->unk9C = object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50));
-            if (next < func_002E7EF0(object))
-            {
-                func_002E7D20(object, next);
-            }
-        }
-    }
-    return value;
+
+    return agility;
 }
 
-s32 func_002E7EF0(const FieldCheckedWordsState1870* object)
+/**
+ * @brief Decode effective agility after validating the agility checksum.
+ * @param record Character record.
+ * @return Effective agility, or zero for an invalid checksum.
+ */
+s32 lib_character_get_effective_agility(const LibCharacterRecord* record)
 {
-    u32 check = object->unkA8 ^ (object->unk54 ^ (object->unk4C + object->unk50));
-    if (object->unk9C != check)
+    u32 check = record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility));
+
+    if (record->agility_checksum != check)
     {
         return 0;
     }
-    return object->unk50 ^ 0x7DE3F7E3;
+
+    return record->encoded_effective_agility ^ 0x7DE3F7E3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E7F30);
+/**
+ * @brief Limit agility by type to 9999.
+ * @param record Character record.
+ * @param agility Agility to limit.
+ * @return Limited agility.
+ */
+extern "C" s32 lib_character_limit_agility(const LibCharacterRecord* record, s32 agility)
+{
+    return limit_by_type(record, agility, 9999, 9999);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E7FA0);
+/**
+ * @brief Store HIT, limited by type to 9999 and to the effective HIT.
+ * @param record Character record.
+ * @param hit HIT to store.
+ * @return Stored HIT, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_hit(LibCharacterRecord* record, s32 hit)
+{
+    if (record->hit_checksum != (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        return 0;
+    }
+
+    hit = limit_by_type(record, hit, 9999, 9999);
+
+    if (hit > (record->encoded_effective_hit ^ 0x7DE3F7E3))
+    {
+        hit = record->encoded_effective_hit ^ 0x7DE3F7E3;
+    }
+
+    record->encoded_hit = hit ^ 0x7DE3F7E3;
+    record->hit_checksum = hit_checksum(record);
+    return hit;
+}
 
 s32 func_002E80A0(const FieldCheckedWordsState1870* object)
 {
@@ -109,9 +134,41 @@ s32 func_002E80A0(const FieldCheckedWordsState1870* object)
     return object->unk60 ^ 0x7DE3F7E3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E80E0);
+/**
+ * @brief Limit HIT by type to 9999.
+ * @param record Character record.
+ * @param hit HIT to limit.
+ * @return Limited HIT.
+ */
+extern "C" s32 lib_character_limit_hit(const LibCharacterRecord* record, s32 hit)
+{
+    return limit_by_type(record, hit, 9999, 9999);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8150);
+/**
+ * @brief Store defense, limited by type to 9999 or 99999 and to the effective defense.
+ * @param record Character record.
+ * @param defense Defense to store.
+ * @return Stored defense, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_defense(LibCharacterRecord* record, s32 defense)
+{
+    if (record->defense_checksum != (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense))))
+    {
+        return 0;
+    }
+
+    defense = limit_by_type_above(record, defense, 9999, 9999, 99999, 99999);
+
+    if (defense > (record->encoded_effective_defense ^ 0x7DE3F7E3))
+    {
+        defense = record->encoded_effective_defense ^ 0x7DE3F7E3;
+    }
+
+    record->encoded_defense = defense ^ 0x7DE3F7E3;
+    record->defense_checksum = defense_checksum(record);
+    return defense;
+}
 
 s32 func_002E8270(const FieldCheckedWordsState1870* object)
 {
@@ -123,9 +180,41 @@ s32 func_002E8270(const FieldCheckedWordsState1870* object)
     return object->unk48 ^ 0x7DE3F7E3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E82B0);
+/**
+ * @brief Limit defense by type to 9999 or 99999.
+ * @param record Character record.
+ * @param defense Defense to limit.
+ * @return Limited defense.
+ */
+extern "C" s32 lib_character_limit_defense(const LibCharacterRecord* record, s32 defense)
+{
+    return limit_by_type_above(record, defense, 9999, 9999, 99999, 99999);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8340);
+/**
+ * @brief Store intelligence, limited by type to 9999 and to the effective intelligence.
+ * @param record Character record.
+ * @param intelligence Intelligence to store.
+ * @return Stored intelligence, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_intelligence(LibCharacterRecord* record, s32 intelligence)
+{
+    if (record->hit_checksum != (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        return 0;
+    }
+
+    intelligence = limit_by_type(record, intelligence, 9999, 9999);
+
+    if (intelligence > (record->encoded_effective_intelligence ^ 0x7DE3F7E3))
+    {
+        intelligence = record->encoded_effective_intelligence ^ 0x7DE3F7E3;
+    }
+
+    record->encoded_intelligence = intelligence ^ 0x7DE3F7E3;
+    record->hit_checksum = hit_checksum(record);
+    return intelligence;
+}
 
 s32 func_002E8440(const FieldCheckedWordsState1870* object)
 {
@@ -137,9 +226,41 @@ s32 func_002E8440(const FieldCheckedWordsState1870* object)
     return object->unk6C ^ 0x7DE3F7E3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8490);
+/**
+ * @brief Limit intelligence by type to 9999.
+ * @param record Character record.
+ * @param intelligence Intelligence to limit.
+ * @return Limited intelligence.
+ */
+extern "C" s32 lib_character_limit_intelligence(const LibCharacterRecord* record, s32 intelligence)
+{
+    return limit_by_type(record, intelligence, 9999, 9999);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8500);
+/**
+ * @brief Store attack, limited by type to 9999 or 99999 and to the effective attack.
+ * @param record Character record.
+ * @param attack Attack to store.
+ * @return Stored attack, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_attack(LibCharacterRecord* record, s32 attack)
+{
+    if (record->attack_checksum != (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack))))
+    {
+        return 0;
+    }
+
+    attack = limit_by_type(record, attack, 9999, 99999);
+
+    if (attack > (record->encoded_effective_attack ^ 0x7DE3F7E3))
+    {
+        attack = record->encoded_effective_attack ^ 0x7DE3F7E3;
+    }
+
+    record->encoded_attack = attack ^ 0x7DE3F7E3;
+    record->attack_checksum = attack_checksum(record);
+    return attack;
+}
 
 s32 func_002E8600(const FieldCheckedWordsState1870* object)
 {
@@ -151,24 +272,163 @@ s32 func_002E8600(const FieldCheckedWordsState1870* object)
     return object->unk3C ^ 0x7DE3F7E3;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8640);
+/**
+ * @brief Limit attack by type to 9999 or 99999.
+ * @param record Character record.
+ * @param attack Attack to limit.
+ * @return Limited attack.
+ */
+extern "C" s32 lib_character_limit_attack(const LibCharacterRecord* record, s32 attack)
+{
+    return limit_by_type(record, attack, 9999, 99999);
+}
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E86C0);
+/**
+ * @brief Store MP, limited by type and to the maximum MP, and update the down flag.
+ *
+ * Flag bit 0 is set when MP or HP is zero and cleared once both are above it.
+ * @param record Character record.
+ * @param mp MP to store.
+ * @return Stored MP, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_mp(LibCharacterRecord* record, s32 mp)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    mp = limit_by_type(record, mp, 99999, 99999999);
+
+    if (mp > decoded_max_mp(record))
+    {
+        mp = decoded_max_mp(record);
+    }
+
+    if (mp == 0)
+    {
+        add_character_flags(record, 1);
+    }
+
+    if (mp != 0 && (record->encoded_hp ^ 0x7DE3F7E3) != 0)
+    {
+        remove_character_flags(record, 1);
+    }
+
+    record->encoded_mp = mp ^ 0x7DE3F7E3;
+    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
+    return mp;
+}
 
 // Checked-value getter; failure-path register allocation remains unresolved.
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E88F0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8990);
+/**
+ * @brief Store HP, limited by type and to the maximum HP, and update the down flag.
+ *
+ * Flag bit 0 is set when HP or MP is zero and cleared once both are above it.
+ * @param record Character record.
+ * @param hp HP to store.
+ * @return Stored HP, or zero for an invalid checksum.
+ */
+extern "C" s32 lib_character_set_hp(LibCharacterRecord* record, s32 hp)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    hp = limit_by_type(record, hp, 99999, 99999999);
+
+    if (hp > decoded_max_hp(record))
+    {
+        hp = decoded_max_hp(record);
+    }
+
+    if (hp == 0)
+    {
+        add_character_flags(record, 1);
+    }
+
+    if (hp != 0 && (record->encoded_mp ^ 0x7DE3F7E3) != 0)
+    {
+        remove_character_flags(record, 1);
+    }
+
+    record->encoded_hp = hp ^ 0x7DE3F7E3;
+    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
+    return hp;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8BC0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8C60);
+/**
+ * @brief Decode current MP, flagging the record when its checksum fails.
+ * @param record Character record.
+ * @return Current MP, or zero for an invalid checksum.
+ */
+extern "C" u32 lib_character_get_mp(LibCharacterRecord* record)
+{
+    u32 first = record->encoded_base_mp;
+    u32 salt = record->encoded_max_mp;
+    u32 key = character_checksum_salt(record);
+    u32 encoded = record->encoded_mp;
+    u32 checksum = record->mp_checksum;
+
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded_flags;
+        s32 flag_salt = record->encoded_experience;
+
+        if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded_flags = ((flags ^ 0x7DE3F7E3) | 1) ^ 0x7DE3F7E3;
+            s32 current_salt = record->encoded_experience;
+            record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
+        }
+
+        return 0;
+    }
+
+    return encoded ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8D00);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8DA0);
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8E40);
+/**
+ * @brief Decode current HP, flagging the record when its checksum fails.
+ * @param record Character record.
+ * @return Current HP, or zero for an invalid checksum.
+ */
+extern "C" u32 lib_character_get_hp(LibCharacterRecord* record)
+{
+    u32 first = record->encoded_base_hp;
+    u32 salt = record->encoded_max_hp;
+    u32 key = character_checksum_salt(record);
+    u32 encoded = record->encoded_hp;
+    u32 checksum = record->hp_checksum;
+
+    if (checksum != ((first + salt) ^ encoded ^ key))
+    {
+        u32 flags = record->encoded_flags;
+        s32 flag_salt = record->encoded_experience;
+
+        if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
+        {
+            record->encoded_flags = ((flags ^ 0x7DE3F7E3) | 1) ^ 0x7DE3F7E3;
+            s32 current_salt = record->encoded_experience;
+            record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
+        }
+
+        return 0;
+    }
+
+    return encoded ^ 0x7DE3F7E3;
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002E1870", func_002E8EE0);
 

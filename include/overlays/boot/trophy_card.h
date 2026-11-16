@@ -4,8 +4,6 @@
 #include "overlays/boot/boot.h"
 
 #define BOOT_TRANSFER_NAME_CAPACITY 64
-
-/** Mask used to align memory card query buffers to 64 bytes. */
 #define BOOT_CARD_QUERY_ALIGNMENT_MASK 0x3F
 
 #define BOOT_ALIGN_CARD_QUERY(value) (((u32)(value) + BOOT_CARD_QUERY_ALIGNMENT_MASK) & ~BOOT_CARD_QUERY_ALIGNMENT_MASK)

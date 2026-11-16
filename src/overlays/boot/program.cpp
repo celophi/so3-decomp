@@ -37,16 +37,9 @@ extern BootTrackPool<BootPooledQuaternionTrack>* g_quaternion_track_pool;
 extern struct LibPacketQueue* g_packet_queue;
 extern const struct BootCaption g_opening_captions[];
 
-/** Timebase used to convert frame ticks to seconds. */
 #define BOOT_FRAME_TICKS_PER_SECOND 60.0f
-
-/** Display width in pixels. */
 #define BOOT_SCREEN_WIDTH 640
-
-/** Height of one interlaced field, half the 448-line frame. */
 #define BOOT_FIELD_HEIGHT 224
-
-/** Reverb the settings screen plays under (studio A). */
 #define BOOT_SETTINGS_REVERB_PRESET 2
 
 /** One timed caption of the opening movie; the list ends with a frame of -1. */

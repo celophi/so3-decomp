@@ -31,7 +31,7 @@ BootStartupChecks::~BootStartupChecks()
  */
 static inline u8 unit_state(ResidentArchive* archive)
 {
-    return archive->unk12184 != 0 ? archive->unit_state : 3;
+    return archive->unk12184 != 0 ? archive->worker.unit_state : 3;
 }
 
 /** @brief Run the memory card, progressive display and BB Unit screens in turn, then start the opening movie. */

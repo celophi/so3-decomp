@@ -362,6 +362,28 @@ s32 func_001EF6C0(FieldScriptCursorU32* cursor);
 typedef struct FieldRecords FieldRecords;
 typedef struct FieldScriptVec FieldScriptVec;
 typedef struct FieldLateNodes FieldLateNodes;
+#ifdef __cplusplus
+struct FieldLateNodePrefix
+{
+    u8 unk00[0x18];
+};
+
+struct FieldLateNode20 : FieldLateNodePrefix
+{
+    virtual void unk00();
+    virtual void unk04();
+    virtual void unk08();
+    u8 unk1C[4];
+};
+
+struct FieldLateNodes
+{
+    u8 unk00[0x1C];
+    FieldLateNode20* nodes;
+    u8 unk20[4];
+    s32 count;
+};
+#endif
 typedef struct FieldLateFlag30 FieldLateFlag30;
 typedef struct FieldLateCommandStream FieldLateCommandStream;
 typedef struct FieldLatePointer40 FieldLatePointer40;

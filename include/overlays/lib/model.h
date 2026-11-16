@@ -40,7 +40,6 @@ struct LibMeshHeader
     u16 unk54;
 };
 
-/** Packet sets a model can build for a payload override. */
 #define LIB_MODEL_PACKET_SET_COUNT 2
 
 /** Partial transform with color factors and GS state, with vtable D_174310 in main data. */

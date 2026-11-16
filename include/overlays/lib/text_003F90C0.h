@@ -123,7 +123,7 @@ extern "C" {
  * @param record Character record.
  * @return Effective agility, or zero for an invalid checksum.
  */
-s32 func_003FF740(const LibCharacterRecord* record);
+s32 lib_character_get_effective_agility(const LibCharacterRecord* record);
 
 /**
  * @brief Decode HIT after validating its checksum.

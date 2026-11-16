@@ -34,7 +34,73 @@ extern "C" s32 func_0028E240(FieldRecordSelection* selection, s8 value)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E240", func_0028E2B0);
+/**
+ * @brief Move the current slot to the next filled one forward or backward, wrapping round, unless a move is already
+ * active, then mark a move active.
+ * @param selection Record selection.
+ * @param forward Nonzero to move forward.
+ */
+extern "C" void func_0028E2B0(FieldRecordSelection* selection, s32 forward)
+{
+    s32 index;
+    u8 found = 0;
+
+    if (selection->active)
+    {
+        return;
+    }
+
+    if (forward)
+    {
+        for (index = selection->current + 1; index < 8; index++)
+        {
+            if (selection->slots[index] > 0)
+            {
+                selection->current = index;
+                found = 1;
+                break;
+            }
+        }
+
+        if (found == 0)
+        {
+            for (index = 0; index < 8; index++)
+            {
+                if (selection->slots[index] > 0)
+                {
+                    selection->current = index;
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        for (index = selection->current - 1; index >= 0; index--)
+        {
+            if (selection->slots[index] > 0)
+            {
+                selection->current = index;
+                found = 1;
+                break;
+            }
+        }
+
+        if (found == 0)
+        {
+            for (index = 7; index >= 0; index--)
+            {
+                if (selection->slots[index] > 0)
+                {
+                    selection->current = index;
+                    break;
+                }
+            }
+        }
+    }
+
+    selection->active = 1;
+}
 
 extern "C" s32 func_0028E3D0(FieldRecordSelection* selection)
 {

@@ -407,6 +407,23 @@ class LibClass177750 : public LibClass173A40
         LibClass173F38* unk24;
 };
 
+/** Partial grid with vtable D_173E70 in main data. */
+class LibClass173E70 : public LibClass173A40
+{
+    public:
+        /** @brief Start with no storage. */
+        LibClass173E70();
+
+        /** @brief Destroy the grid. */
+        virtual ~LibClass173E70();
+
+        void* unk14;
+        void* unk18;
+        void* unk1c;
+        void* unk20;
+        void* unk24;
+};
+
 /** Partial grid with vtable D_174240 in main data. */
 class LibClass174240 : public LibClass173A40
 {

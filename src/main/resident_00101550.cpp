@@ -4,28 +4,28 @@
 #include "main/resident_001001E0.h"
 #include "main/resident_00101260.h"
 #include "main/resident_00121860.h"
+#include "main/microcode_loader.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 
-/** Chunk tags of the sound files, as they read in memory. */
 #define SOUND_TAG_SEQ 0x20514553
 #define SOUND_TAG_SEQW 0x57514553
 #define SOUND_TAG_WAV 0x20564157
-
-/** Sequence uploads are sent in 4 KiB blocks. */
 #define STREAM_BLOCK_SIZE 0x1000
 
 extern "C" {
 extern void* g_packet_queue;
 extern u8 D_00148400[];
+extern u8 D_0014A830[];
+extern u8 D_0014A834[];
 extern u8 D_0014A9E0[];
+extern u8 D_0014A9E4[];
 s32 DIntr(void);
 s32 EIntr(void);
 s32 SleepThread(void);
 void func_0010B510(ResidentStreamThread* thread, s32 command);
 void* func_0010B810(void* memory, ResidentSoundStream* stream);
 bool func_00114E00(ResidentThread* thread);
-u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 arg3, s32 arg4, s32 arg5);
 s32 func_4DC4F0(void* queue, u32 operation, u32 flags, void* packet, u32 value, void* completion);
 }
 
@@ -311,7 +311,7 @@ extern "C" void func_00102AE0(ResidentResourceQueue* queue)
     ResidentArchive* archive = queue->archive;
 
     archive->unk12186 = 0;
-    archive->unkc9 = 0;
+    archive->disc_thread.unkAC.unk1d = 0;
 
     if (queue->unk2c)
     {
@@ -364,7 +364,148 @@ extern "C" s32 resident_poll_resource_queue(ResidentResourceQueue* queue)
     return queue->requests[0].next == 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102D50);
+/**
+ * @brief Claim the archive for a kind-4 request, with interrupts off.
+ * @param archive Resource archive.
+ * @return True when unkAC.unk1c is set and nothing was claimed.
+ */
+static inline bool archive_claim_unk1d(ResidentArchive* archive)
+{
+    ResidentInterruptLock lock;
+
+    if (archive->disc_thread.unkAC.unk1c)
+    {
+        return true;
+    }
+
+    archive->disc_thread.unkAC.unk1d = 1;
+    return false;
+}
+
+/**
+ * @brief Mark the archive as busy with a kind-4 request.
+ * @param archive Resource archive.
+ */
+static inline void archive_begin_object_request(ResidentArchive* archive)
+{
+    archive->unk12186 = 1;
+    archive->disc_thread.unkAC.unk1d = 1;
+}
+
+/**
+ * @brief Start the request at the head of the queued list when the archive is idle.
+ *
+ * With unk2c set and a kind-4 request queued, that request is moved to the head and only it is considered: it starts
+ * once nothing else is active and the archive is not reading.
+ *
+ * @param queue Resident resource queue.
+ */
+extern "C" void func_00102D50(ResidentResourceQueue* queue)
+{
+    if (queue->unk2c && func_00102B30(queue))
+    {
+        s32 index = queue->requests[0].next;
+
+        if (index == 0)
+        {
+            return;
+        }
+
+        if (!queue->status && !queue->unk2e)
+        {
+            func_0011BC80(queue->archive);
+
+            ResidentArchive* archive = queue->archive;
+
+            (void)archive->disc_thread.semaphore.wait();
+            u8 unk69 = archive->disc_thread.unk69;
+            (void)archive->disc_thread.semaphore.signal();
+
+            if (!unk69)
+            {
+                queue->unk30 = 1;
+                queue->requests[index].context->notify(&queue->requests[index]);
+                queue->status = 1;
+                queue->requests[index].state = 1;
+                queue->archive->disc_thread.unk70 = 0;
+                queue->active_request = index;
+            }
+        }
+
+        return;
+    }
+
+    if (queue->archive->read_busy)
+    {
+        return;
+    }
+
+    if (queue->status)
+    {
+        return;
+    }
+
+    if (queue->unk2e)
+    {
+        return;
+    }
+
+    s32 index = queue->requests[0].next;
+
+    if (index == 0)
+    {
+        return;
+    }
+
+    switch (queue->requests[index].request_kind)
+    {
+    case 0:
+        queue->status = 1;
+        queue->requests[index].state = 1;
+        break;
+
+    case 1:
+        if (func_0011D080(queue->archive, queue->requests[index].file_key))
+        {
+            func_0011D060(queue->archive, queue->requests[index].buffer, queue->requests[index].byte_count);
+            queue->status = 1;
+            queue->requests[index].state = 1;
+        }
+        break;
+
+    case 2:
+        if (func_0011CB00(queue->archive, queue->requests[index].file_offset, queue->requests[index].file_key))
+        {
+            queue->status = 1;
+            queue->requests[index].state = 1;
+        }
+        break;
+
+    case 3:
+        if (func_0011C6E0(queue->archive) &&
+            func_0011CB00(queue->archive, queue->requests[index].file_offset, queue->requests[index].file_key))
+        {
+            func_0011D060(queue->archive, queue->requests[index].buffer, queue->requests[index].byte_count);
+            queue->status = 1;
+            queue->requests[index].state = 1;
+        }
+        break;
+
+    case 4:
+        if (!archive_claim_unk1d(queue->archive))
+        {
+            queue->unk30 = 1;
+            queue->status = 1;
+            queue->requests[index].state = 1;
+            queue->requests[index].context->notify(&queue->requests[index]);
+            archive_begin_object_request(queue->archive);
+            queue->archive->disc_thread.unk70 = 0;
+        }
+        break;
+    }
+
+    queue->active_request = index;
+}
 
 /**
  * @brief Notify the active request's completion callback, if it has one.
@@ -486,7 +627,7 @@ void ResidentResourceQueue::func_00104770()
 
     if (unk30)
     {
-        archive->unk70++;
+        archive->disc_thread.unk70++;
     }
 
     do
@@ -2131,7 +2272,80 @@ extern "C" void func_00109CB0(ResidentStreamThread* thread)
     (void)thread->semaphore.signal();
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109D50);
+/**
+ * @brief Start the VIF1 transfer of the next output block: log its first byte, put the unpack code at the start of
+ * both halves, point the two DMA chains at them and queue the transfer.
+ * @param thread Stream thread.
+ */
+static inline void start_output_dma(ResidentStreamThread* thread)
+{
+    thread->dma->phase = 1;
+    *thread->log_cursor++ = *(u8*)((u32)thread->output_cursor | UNCACHED_SEGMENT);
+    *(u32*)((u32)thread->output_cursor | UNCACHED_SEGMENT) = 0x6DE80100;
+    *(u32*)((u32)(thread->output_cursor + 0x800) | UNCACHED_SEGMENT) = 0x6DE80100;
+    *(u16*)((u32)D_0014A830 | UNCACHED_SEGMENT) = 0x74;
+    *(u32*)((u32)D_0014A834 | UNCACHED_SEGMENT) = (u32)thread->output_cursor;
+    *(u16*)((u32)D_0014A9E0 | UNCACHED_SEGMENT) = 0x74;
+    *(u32*)((u32)D_0014A9E4 | UNCACHED_SEGMENT) = (u32)(thread->output_cursor + 0x800);
+    thread->dma->output = (u32)thread->input_cursor | UNCACHED_SEGMENT;
+
+    LibMicrocodeLoader* loader = g_microcode_loader;
+    loader->unk06 = 1;
+    loader->current_program = LIB_VU1_PROGRAM_NONE;
+
+    if (!g_vif1_dma_queue->push(thread->dma))
+    {
+        g_microcode_loader->unk06 = 0;
+    }
+}
+
+/**
+ * @brief Account for one finished 4 KiB block and queue the next VIF1 transfer, or swap buffers once both are full.
+ * @param thread Stream thread.
+ */
+extern "C" void func_00109D50(ResidentStreamThread* thread)
+{
+    u8* input_cursor = thread->input_cursor;
+
+    thread->output_cursor += 0x1000;
+    thread->input_cursor = input_cursor + 0x1000;
+    thread->output_pending[thread->output_half]--;
+
+    if (thread->output_pending[thread->output_half] != 0)
+    {
+        start_output_dma(thread);
+    }
+    else
+    {
+        thread->input_ready[thread->input_half] = 1;
+
+        if (thread->output_half == 0)
+        {
+            thread->output_half = 1;
+            thread->output_cursor = thread->output_buffers[1] + 0x80;
+        }
+        else
+        {
+            thread->output_half = 0;
+            thread->output_cursor = thread->output_buffers[0] + 0x80;
+        }
+
+        if (thread->input_half == 0)
+        {
+            thread->input_half = 1;
+            thread->input_cursor = thread->input_buffers[1] + 0x80;
+        }
+        else
+        {
+            thread->input_half = 0;
+            thread->input_cursor = thread->input_buffers[0] + 0x80;
+        }
+
+        thread->unkB9 = 0;
+        thread->dma->phase = 0;
+        g_microcode_loader->unk06 = 0;
+    }
+}
 
 /**
  * @brief Take samples out of one of the stream thread's sample rings and convert them to floats.

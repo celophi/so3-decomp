@@ -76,19 +76,13 @@ struct LibDisplayRegisters
     u64 display;
 };
 
-/** Number of draw buffers a display keeps (two alternate; the third is drawn separately). */
 #define LIB_DISPLAY_BUFFER_COUNT 3
-
-/** Number of packets in each of a display's two packet sets. */
 #define LIB_DISPLAY_PACKET_COUNT 18
-
-/** Number of packet sets a display alternates between. */
 #define LIB_DISPLAY_PACKET_SET_COUNT 2
 
 /** Number of packet lists a display keeps: one per field in each set. */
 #define LIB_DISPLAY_PACKET_LIST_COUNT (LIB_DISPLAY_PACKET_SET_COUNT * 2)
 
-/** Number of screens a display can show (one per interlaced field per read circuit). */
 #define LIB_DISPLAY_SCREEN_COUNT 4
 
 /** One screen the display can show: its output registers, draw buffers and settings. */
@@ -623,7 +617,6 @@ public:
  */
 extern "C" void lib_begin_frame_packet(void);
 
-/** Camera mode that sits at the anchor transform and faces the current camera. */
 #define LIB_CAMERA_MODE_FACE_CURRENT_CAMERA 1
 
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */
@@ -803,10 +796,6 @@ extern "C" void func_004E1670(LibCamera* camera);
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/** Resident VIF1 DMA queue initialized by the Lib runtime. */
-extern ResidentDmaQueue* g_vif1_dma_queue;
-
 
 void func_004E59A0(void* object);
 /**

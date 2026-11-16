@@ -6,10 +6,7 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "main/resident_0010A0E0.h"
 
-/** Thread priority of the movie decoder thread. */
 #define LIB_MOVIE_THREAD_PRIORITY 44
-
-/** Stack size of the movie decoder thread, in bytes. */
 #define LIB_MOVIE_THREAD_STACK_SIZE 0x4000
 
 /** Partial movie decoder state reached through the player. */
@@ -56,7 +53,6 @@ struct LibMovieState
     u8 widescreen;
 };
 
-/** Streaming buffer the archive reads a movie into. */
 #define LIB_MOVIE_STREAM_BUFFER_SIZE 0x90000
 
 class LibMoviePlayer;

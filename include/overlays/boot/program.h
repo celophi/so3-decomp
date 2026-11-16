@@ -6,19 +6,13 @@
 #include "overlays/boot/trophy_card.h"
 #include "angle.h"
 
-/** Aspect ratio of a 4:3 television picture. */
 #define BOOT_ASPECT_STANDARD 1.3333334f
-
-/** Aspect ratio of a 16:9 widescreen picture. */
 #define BOOT_ASPECT_WIDE 1.7777778f
-
-/** 480 / 448: stretches the 448-line frame to the 480 lines of a full NTSC picture. */
 #define BOOT_FRAME_LINE_SCALE 1.0714285f
 
 /** Horizontal field of view on a 4:3 picture: 90 degrees. */
 #define BOOT_FOV_STANDARD HALF_PI
 
-/** Horizontal field of view on a widescreen picture: 105 degrees. */
 #define BOOT_FOV_WIDE 1.8325958f
 
 /** Pixel aspect that shows a LibDisplayArea as a 4:3 picture. */
