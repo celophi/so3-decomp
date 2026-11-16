@@ -22,7 +22,6 @@ s32 SleepThread(void);
 void func_0010B510(ResidentStreamThread* thread, s32 command);
 void* func_0010B810(void* memory, ResidentSoundStream* stream);
 bool func_00114E00(ResidentThread* thread);
-u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 arg3, s32 arg4, s32 arg5);
 s32 func_4DC4F0(void* queue, u32 operation, u32 flags, void* packet, u32 value, void* completion);
 }
 

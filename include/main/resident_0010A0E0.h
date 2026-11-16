@@ -1081,6 +1081,7 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         /** Per ring half: nonzero once the half is full. */
         u8 unk78[2];
 
+        /** Ring half being read. */
         u8 unk7A;
 
         /** Ring half being written. */
@@ -1120,7 +1121,10 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         /** Second state the IOP reports; func_0010A080 sets it to one from the SIF interrupt handler. */
         volatile s32 second_state;
 
-        u8 unkB4[4];
+        u8 unkB4[3];
+
+        /** Set once request 0xA has been sent; cleared when the IOP next asks for ring data (unk74). */
+        u8 unkB7;
 
         /** Nonzero while a send block is queued. */
         u8 unkB8;
@@ -1739,6 +1743,18 @@ bool func_0010C0E0(ResidentSif* sif, u32 handle);
  * @param size Data size in bytes; zero sends nothing.
  */
 void func_0010BFA0(ResidentSif* sif, s32 command, void* source, void* destination, s32 size);
+
+/**
+ * @brief Send a request to the IOP with the argument block from get_request_arguments.
+ * @param sif SIF link.
+ * @param command Request command.
+ * @param reply Receives the reply, or null.
+ * @param arg3 Request argument.
+ * @param arg4 Request argument.
+ * @param arg5 Request argument.
+ * @return Request handle, or zero when every reply slot is taken.
+ */
+u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 arg3, s32 arg4, s32 arg5);
 
 /**
  * @brief Move to the next reply slot and deliver the reply in the reply buffer to it.

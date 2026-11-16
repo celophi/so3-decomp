@@ -183,7 +183,7 @@ void func_0010BC50(void* packet, void* data);
 void func_0010BC90(void* packet, void* data);
 void func_0010BCD0(void* packet, void* data);
 void func_0010C6D0(s32 alarm_id, u16 time, void* common);
-void func_0010A7A0(ResidentStreamThread* stream);
+s32 func_0010A7A0(ResidentStreamThread* stream);
 void func_0010AA30(ResidentStreamThread* stream);
 void func_0010B600(ResidentStreamThread* stream, s32 value);
 typedef struct ResidentSpeakerAngles
@@ -531,7 +531,68 @@ s32 func_0010A650(ResidentStreamThread* stream, const u32* words, s32 size)
     return i * 4;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010A7A0);
+/**
+ * @brief Second streaming pass: send the full ring half to the IOP when it asks for data, then ask for more with
+ * request 0xA.
+ * @param stream Streaming thread.
+ * @return Zero, or -1 when no reply slot is free for the request.
+ */
+s32 func_0010A7A0(ResidentStreamThread* stream)
+{
+    if (stream->second_state == 4)
+    {
+        stream->second_state = 0;
+    }
+
+    if (stream->second_state == 2)
+    {
+        stream->second_state = 4;
+    }
+
+    if (stream->unk74 != 0)
+    {
+        stream->unkB7 = 0;
+        stream->unk74 = 0;
+        void* destination = *(void**)((u32)stream->unk70 | UNCACHED_SEGMENT);
+
+        if (destination != 0 && stream->unk78[stream->unk7A] != 0)
+        {
+            func_0010BFA0(&D_001CC590, 2, stream->unk7C, destination, 0x2000);
+            stream->unk78[stream->unk7A] = 0;
+
+            if (stream->unk7A == 0)
+            {
+                stream->unk7A = 1;
+                stream->unk7C = stream->unk88;
+            }
+            else
+            {
+                stream->unk7A = 0;
+                stream->unk7C = stream->unk84;
+            }
+        }
+    }
+
+    if (stream->second_state != 0 && stream->unkB7 == 0)
+    {
+        ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+        u32* arguments = D_001CC590.get_request_arguments();
+
+        if (!arguments)
+        {
+            return -1;
+        }
+
+        arguments[0] = (u32)stream->unk70;
+
+        if (func_0010C200(&D_001CC590, 0xA, 0, 0, 0, 0))
+        {
+            stream->unkB7 = 1;
+        }
+    }
+
+    return 0;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010AA30);
 
