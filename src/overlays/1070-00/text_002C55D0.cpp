@@ -4,8 +4,11 @@
 #include "overlays/1070-00/text_001E2B40.h"
 
 extern "C" void* D_001B6620;
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" void __ct__17LibReceiver4DD1F0Fv(void* object);
+
 extern "C" u32 D_17C610[];
 
 
@@ -14,7 +17,9 @@ class FieldCallbackDispatch10
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void callback();
 };
 
@@ -27,19 +32,29 @@ struct FieldConstructorReceiver210
 };
 
 extern "C" void func_002CFA20(void* object);
+
 extern "C" void func_002CE8E0(void* object);
 #include "overlays/lib/vector.h"
 
 extern "C" void func_4815A0(void);
+
 extern "C" void func_481620(void);
+
 extern "C" void* D_001B66A0;
 extern "C" void* D_001B6694;
+
 extern "C" void func_002D7D00(void* object);
+
 extern "C" void func_002D7EA0(void* context, void* object);
+
 extern "C" void func_002D70E0(void* object);
+
 extern "C" void func_002D7E50(void* context, void* object);
+
 extern "C" void func_137F40(void* object, s32 start, s32 size);
+
 extern "C" void* g_quaternion_curve_track_pool;
+
 extern "C" void func_4F4840(void* object);
 
 INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002C55D0", func_002C55D0);
@@ -359,6 +374,7 @@ s32 func_002D1DE0(const FieldBitCountState* object)
 {
     s32 limit = object->unk00;
     s32 count = 0;
+
     for (s32 index = 0; index < limit; index++)
     {
         if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
@@ -366,6 +382,7 @@ s32 func_002D1DE0(const FieldBitCountState* object)
             count++;
         }
     }
+
     return count;
 }
 
@@ -385,6 +402,7 @@ s32 func_002D2490(const FieldBitCountState* object)
 {
     s32 limit = object->unk00;
     s32 count = 0;
+
     for (s32 index = 0; index < limit; index++)
     {
         if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
@@ -392,6 +410,7 @@ s32 func_002D2490(const FieldBitCountState* object)
             count++;
         }
     }
+
     return count;
 }
 
@@ -411,6 +430,7 @@ s32 func_002D2B50(const FieldBitCountState* object)
 {
     s32 limit = object->unk00;
     s32 count = 0;
+
     for (s32 index = 0; index < limit; index++)
     {
         if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
@@ -418,6 +438,7 @@ s32 func_002D2B50(const FieldBitCountState* object)
             count++;
         }
     }
+
     return count;
 }
 
@@ -435,6 +456,7 @@ s32 func_002D3180(const FieldBitCountState* object)
 {
     s32 limit = object->unk00;
     s32 count = 0;
+
     for (s32 index = 0; index < limit; index++)
     {
         if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
@@ -442,6 +464,7 @@ s32 func_002D3180(const FieldBitCountState* object)
             count++;
         }
     }
+
     return count;
 }
 
@@ -455,6 +478,7 @@ s32 func_002D36F0(const FieldBitCountState* object)
 {
     s32 limit = object->unk00;
     s32 count = 0;
+
     for (s32 index = 0; index < limit; index++)
     {
         if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
@@ -462,6 +486,7 @@ s32 func_002D36F0(const FieldBitCountState* object)
             count++;
         }
     }
+
     return count;
 }
 
@@ -479,6 +504,7 @@ s32 func_002D3D30(const FieldBitCountState* object)
 {
     s32 limit = object->unk00;
     s32 count = 0;
+
     for (s32 index = 0; index < limit; index++)
     {
         if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
@@ -486,6 +512,7 @@ s32 func_002D3D30(const FieldBitCountState* object)
             count++;
         }
     }
+
     return count;
 }
 
@@ -516,6 +543,7 @@ s32 func_002D42B0(const FieldBitCountState* object)
 {
     s32 limit = object->unk00;
     s32 count = 0;
+
     for (s32 index = 0; index < limit; index++)
     {
         if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
@@ -523,6 +551,7 @@ s32 func_002D42B0(const FieldBitCountState* object)
             count++;
         }
     }
+
     return count;
 }
 
@@ -544,6 +573,7 @@ s32 func_002D4850(const FieldBitCountState* object)
 {
     s32 limit = object->unk00;
     s32 count = 0;
+
     for (s32 index = 0; index < limit; index++)
     {
         if ((object->unk14[(u32)index >> 6] >> ((u32)index & 0x3F)) & 1)
@@ -551,6 +581,7 @@ s32 func_002D4850(const FieldBitCountState* object)
             count++;
         }
     }
+
     return count;
 }
 
@@ -628,6 +659,7 @@ void func_002D5520(void* object)
 extern "C" void func_002D5540(void* object, float* result)
 {
     float* values = *(float**)((u8*)object + 4);
+
     if (values != 0)
     {
         s16 count = *(s16*)((u8*)object + 0x18);

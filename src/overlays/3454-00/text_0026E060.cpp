@@ -3,10 +3,15 @@
 
 extern "C" {
 void func_002AE610(void* object);
+
 s32 func_002AB490(void* object);
+
 s32 func_00291A40(void* object);
+
 s32 func_0029F6A0(void* object);
+
 void func_002A0720(void* object, s32 value);
+
 typedef struct ByteGetterOwnertext_0026E060
 {
     u8 unk00[0xCD2];

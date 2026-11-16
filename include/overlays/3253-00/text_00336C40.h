@@ -17,6 +17,7 @@ void func_0033EB10(void* object);
 
 /** Set two state bytes when previous is 13, then forward the state pair. */
 void func_0033DD80(BattleObject2F26* object, u8 current, u8 previous);
+
 void func_00342200(BattleObject2F26* object, u8 current, u8 previous);
 
 #ifdef __cplusplus

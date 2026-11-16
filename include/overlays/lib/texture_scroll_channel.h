@@ -38,7 +38,6 @@ public:
     /** @brief Initialize four inactive texture-transfer templates. */
     LibTextureScrollChannel();
 
-    /** @brief Destroy the channel and its intrusive-link base. */
     virtual ~LibTextureScrollChannel();
 
     /**

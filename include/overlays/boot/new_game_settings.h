@@ -11,7 +11,6 @@
 class BootReflectedModel : public LibModel
 {
     public:
-        /** @brief Destroy the model object. */
         virtual ~BootReflectedModel();
 
         /**
@@ -151,92 +150,41 @@ class BootNewGameSettings : public LibListObject
         /** @brief Create the page's images once their textures are loaded, then place and highlight them. */
         void update_page_images();
 
-        /** Resource 0x28: the page images. */
         u8* image_data;
-
-        /** Decoded blocks of image_data. */
         u8* image_blocks[5];
-
-        /** Resource 0x29: the speaker room, the girl and her six walk animations. */
         u8* model_data;
-
-        /** Decoded blocks of model_data. */
         u8* model_blocks[8];
-
         s32 stage;
-
-        /** The girl's angle around the listener in the middle. */
         float girl_angle;
-
-        /** Turn from the analog stick, eased back to zero when released. */
         float turn_speed;
-
-        /** Frame within the current walk animation. */
         float animation_frame;
-
-        /** The girl's lean into the turn. */
         float girl_lean;
-
-        /** Angle of the speaker being moved, restored on cancel. */
         float saved_speaker_angle;
-
         u8 page;
-
-        /** Page the option rows were last built for, or 0xFF to rebuild them. */
         u8 shown_page;
-
         u8 selection;
         u8 loaded_image_blocks;
-
-        /** Highlight pulse on the selected row: zero darkening, one brightening. */
         u8 highlight_phase;
-
-        /** Nonzero while the speaker setup scene replaces the option rows. */
         u8 on_speaker_setup;
-
         u8 loaded_model_blocks;
         u8 selected_speaker;
         u8 walk_state;
-
-        /** Voice lines played so far; after twelve the later lines are used. */
         u8 voice_count;
-
-        /** Nonzero while the selected speaker is being moved: one while its pulse grows, two while it shrinks. */
         u8 adjusting_speaker;
-
         u8 unk73;
-
-        /** Voice line the girl's face lip-syncs to, or zero. */
         s32 voice_line;
-
-        /** Blink frame counter, zero while her eyes are open. */
         s32 blink_frame;
-
-        /** Frames left of the vibration that confirms turning it on. */
         s32 rumble_frames;
-
-        /** Horizontal position of the current page's rows. */
         float row_x;
-
         BootImage* images[21];
         LibScene* room_scene;
         LibScene* girl_scene;
-        /** Mirrored copies of the girl's models (type 0x100) for the floor reflection. */
         BootReflectedModel* girl_reflections[10];
-
-        /** Walk animations, one per walk_state. */
         LibAnimation* girl_animations[6];
-
         LibAnimationTarget* animation_targets[6];
-
-        /** Installed in g_floor_query while the screen runs, so Lib sees a floor at height zero. */
         BootFlatFloor flat_floor;
-
         LibContainer* container;
-
-        /** Description of the selected option. */
         LibTextWidget* description_text;
-
         LibSelectionCursor* cursor;
 };
 

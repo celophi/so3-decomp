@@ -24,21 +24,26 @@ typedef struct FieldResourceDescriptor
 class FieldClass154CC0 : public FieldListObject, public FieldClass1502A0
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object)
     {
         func_004DB570(object);
     }
 
-    /** @brief Initialize the inherited node and list. */
     FieldClass154CC0()
     {
     }
 
-    /** @brief Destroy both list bases. */
     virtual ~FieldClass154CC0();
 
     /**
@@ -91,12 +96,16 @@ extern FieldResourceDescriptor D_303CB0[];
 
 /** @brief Return the type value for the D_154BB0 callback table. */
 s32 func_0026EED0(const void* object);
+
 /** @brief Return the type value for the D_154BF0 callback table. */
 s32 func_002716B0(const void* object);
+
 /** @brief Default callback for the embedded-list field object. */
 void func_00272130(void* object);
+
 /** @brief Default callback for the embedded-list field object. */
 void func_002721A0(void* object);
+
 /** @brief Default callback for the embedded-list field object. */
 void func_00272220(void* object);
 
@@ -211,8 +220,10 @@ class FieldClass154C10 : public FieldClass150F90
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass154C10();
+
     /** @brief Detach and delete the child, release the base object and notify the field context. */
     virtual void func_001DD7B0();
+
     /**
      * @brief Test the inherited gate while the field context permits it.
      * @return False when context flag bit 5 at offset 0xF5 is clear, context
@@ -220,6 +231,7 @@ public:
      *         otherwise the inherited gate result.
      */
     virtual bool func_00204420();
+
     u8 unka0[0x38];
     FieldListObject* unkd8;
 };
@@ -273,10 +285,7 @@ public:
     u8 unk34[8];
     s32 start_delay;
     u32 unk40;
-
-    /** Zero compares auxiliary file offsets, one loads the file, and two skips it. */
     u8 auxiliary_policy;
-
     u8 load_auxiliary : 1;
     u8 unk45_1_7 : 7;
     u8 unk46[2];

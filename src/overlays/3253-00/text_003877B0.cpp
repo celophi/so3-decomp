@@ -2,7 +2,9 @@
 #include "overlays/3253-00/text_003877B0.h"
 
 extern "C" void func_003AD020(void* object);
+
 extern "C" u32 func_4A0820(u32 value, const void* data);
+
 extern "C" const u8 D_3E8F28[];
 extern "C" u8 D_15A410[];
 extern "C" u8 D_167F00[];
@@ -79,6 +81,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_0038A9
 void func_0038AA70(void* object)
 {
     func_003AD020(object);
+
     if (((u8*)object)[0x391] != 0) {
         ((u8*)object)[0xEB] = 0;
     }
@@ -410,14 +413,17 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003877B0", func_00393B
 u32 func_00393BA0(const u8* object)
 {
     u32 flags = 0;
+
     if (object[0x38] != 0)
     {
         flags |= 1;
     }
+
     if (object[0x39] != 0)
     {
         flags |= 4;
     }
+
     return flags;
 }
 

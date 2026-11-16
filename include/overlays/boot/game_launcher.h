@@ -19,9 +19,7 @@ class BootGameLauncher : public LibListObject
         /** @brief Run the launch steps: seed, movie, load, hand over. */
         virtual void update();
 
-        /** Resource 0x42B, the program to run next. */
         u8* program;
-
         u8* buffer;
         s32 step;
         s32 timer;

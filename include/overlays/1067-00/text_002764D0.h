@@ -421,7 +421,6 @@ void func_0027CB20(ResidentContextObject58* object, s32 value);
 class FieldClass155610 : public FieldClass1553B0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass155610();
 
     /** @brief Update the controller. */
@@ -451,7 +450,10 @@ class FieldClass1557B0 : public FieldListObject, public FieldClass1502A0
 public:
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
 
     FieldClass1557B0();

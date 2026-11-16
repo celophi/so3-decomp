@@ -4,14 +4,19 @@
 #include "overlays/1070-00/text_001E2B40.h"
 
 extern "C" void func_4F87D0(void);
+
 extern "C" void func_0025A770(void* target, u16 value);
+
 extern "C" void func_00259EC0(void* target, u32 key, s32 value);
+
 extern "C" s32 func_0025C620(void* object);
+
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" u32 D_001B65CC;
 extern "C" u8 D_001B64CC;
 extern "C" u8 D_001B6568;
 extern "C" void* D_001B6620;
+
 extern "C" void func_121E80(void* owner, void* object);
 
 
@@ -968,18 +973,22 @@ FieldKeyedListElement18* func_002492E0(FieldContext38* object, u32 key)
 {
     FieldListNode* node = &object->unk4c4;
     FieldListNode* sentinel = node;
+
     for (;;)
     {
         node = node->next;
+
         if (sentinel == node)
         {
             break;
         }
+
         if (key == ((FieldKeyedListElement18*)node)->unk18)
         {
             return (FieldKeyedListElement18*)node;
         }
     }
+
     return 0;
 }
 
@@ -990,6 +999,7 @@ void func_00249490(FieldByteTargets548* object, u8 value)
     for (s32 i = 0; i < 16; i++)
     {
         FieldByteTargetCD* target = object->targets[i];
+
         if (target != 0)
         {
             target->unkcd = value;
@@ -997,6 +1007,7 @@ void func_00249490(FieldByteTargets548* object, u8 value)
     }
 
     FieldByteTargetCD* target = object->targets[16];
+
     if (target != 0)
     {
         target->unkcd = value;
@@ -1317,10 +1328,12 @@ struct FieldPointerAtE0
 extern "C" s32 func_0024F760(void* object)
 {
     FieldPointerAtE0* state = (FieldPointerAtE0*)object;
+
     if (state->unkE0 == 0)
     {
         return 0;
     }
+
     return func_0025C620(state->unkE0);
 }
 

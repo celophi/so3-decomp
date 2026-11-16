@@ -49,7 +49,10 @@ struct FieldNameOwner;
 extern "C" {
 #endif
 
-/** @brief Test the resident actor-registration mode. @return Mode result; currently always one. */
+/**
+ * @brief Test the resident actor-registration mode.
+ * @return Mode result; currently always one.
+ */
 s32 func_002CAE30(void);
 
 /**

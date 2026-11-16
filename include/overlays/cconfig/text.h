@@ -23,7 +23,6 @@ typedef struct ConfigNode
     void* value;
     struct ConfigNode* next;
 #ifdef __cplusplus
-    /** @brief Release the link without destroying its payload. */
     ~ConfigNode()
     {
     }
@@ -47,8 +46,10 @@ struct ConfigList182210
 {
     ConfigNode* head;
     s32 count;
+
     /** @brief Allocate the sentinel and initialize the empty list. */
     ConfigList182210();
+
     /** @brief Release the list nodes and sentinel storage. */
     virtual ~ConfigList182210();
 };
@@ -58,8 +59,10 @@ struct ConfigList182200
 {
     ConfigNode* head;
     s32 count;
+
     /** @brief Allocate the sentinel and initialize the empty list. */
     ConfigList182200();
+
     /** @brief Release the list nodes and sentinel storage. */
     virtual ~ConfigList182200();
 };
@@ -69,36 +72,52 @@ struct ConfigOptions : public FieldClass15AE70
 {
     /** @brief Initialize the options window and its owned lists. */
     ConfigOptions();
-    /** @brief Release the owned display lists and the window base. */
+
     virtual ~ConfigOptions();
+
     /** @brief Refresh the bindings while this window is active. */
     virtual void func_slot5c();
+
     /** @brief Refresh the moving selection marker and update the window message. */
     virtual void func_slot64();
+
     /** @brief Forward to the previous-option hook. */
     virtual void func_slot68();
+
     /** @brief Forward to the next-option hook. */
     virtual void func_slot6c();
+
     /** @brief Move the selection to the previous available option. */
     virtual void func_slota0();
+
     /** @brief Move the selection to the next available option. */
     virtual void func_slota4();
+
     /** @brief Apply option control mask 0x80. */
     virtual void func_slota8();
+
     /** @brief Apply option control mask 0x20. */
     virtual void func_slotac();
+
     /**
      * @brief Confirm the button or window-color row: open its editor, or restore the defaults when the row offers that.
      * @return One after opening an editor or restoring defaults, otherwise zero.
      */
     virtual u8 func_slotb0();
+
     /**
      * @brief Leave the options: close at once when the menu runtime asks for it, otherwise open the end-configuration prompt.
      * @return Zero without a menu runtime, otherwise two.
      */
     virtual u8 func_slotb4();
-    /** @brief Create the option displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the option displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     ConfigController* controller;
     LibClass175030* scroll;
     bool unkb0;

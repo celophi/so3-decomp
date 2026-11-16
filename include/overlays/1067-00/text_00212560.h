@@ -18,7 +18,11 @@ public:
     /** @brief Reset the script command state. */
     virtual void func_00217AD0();
 
-    /** @brief Select a command and event packet. @param offset Script byte offset. @param packet Packed event value. */
+    /**
+     * @brief Select a command and event packet.
+     * @param offset Script byte offset.
+     * @param packet Packed event value.
+     */
     virtual void func_0021DC60(u32 offset, u32 packet);
 
     /**
@@ -58,13 +62,24 @@ public:
      */
     virtual void clear_field_requests(s8 index, u32 release) = 0;
 
-    /** @brief Get the interpolated progress value for a request slot. @param index Request slot. @return Progress value, or -1 for a negative slot. */
+    /**
+     * @brief Get the interpolated progress value for a request slot.
+     * @param index Request slot.
+     * @return Progress value, or -1 for a negative slot.
+     */
     virtual s32 get_field_request_progress(s8 index) = 0;
 
-    /** @brief Get the state code for a request slot. @param index Request slot. @return Request state, or -1 for a negative slot. */
+    /**
+     * @brief Get the state code for a request slot.
+     * @param index Request slot.
+     * @return Request state, or -1 for a negative slot.
+     */
     virtual s32 get_field_request_state(s8 index) = 0;
 
-    /** @brief Test whether no field work is pending. @return One when no work is pending, otherwise zero. */
+    /**
+     * @brief Test whether no field work is pending.
+     * @return One when no work is pending, otherwise zero.
+     */
     virtual s32 has_no_pending_field_work();
 
     /** @brief Refresh character state and its attached field display. */

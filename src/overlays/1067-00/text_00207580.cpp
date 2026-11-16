@@ -2,10 +2,15 @@
 #include "overlays/1067-00/text_00207580.h"
 
 typedef unsigned __int128 FieldLocalQword;
+
 extern "C" s32 func_0022A160(void*);
+
 extern "C" void func_00208C30(void*);
+
 extern "C" void func_00209160(void*, void*, u32);
+
 extern "C" void func_001FF5A0(void*, u32, u32);
+
 extern "C" void func_001FF7F0(FieldFlaggedPointerA0*, u32);
 
 union FieldLocalVector4
@@ -13,7 +18,9 @@ union FieldLocalVector4
     u32 words[4];
     FieldLocalQword packed;
 };
+
 extern "C" void func_00228DD0(FieldTransform*);
+
 extern "C" bool func_00227280(FieldState3BA*);
 
 struct FieldSlot { u8 pad[0x20]; FieldLocalQword unk20; };
@@ -37,10 +44,15 @@ struct FieldStateAD { u8 pad[0xA0]; void* unka0; u8 pad_a4[9]; u8 unkad_0 : 1; u
 struct FieldState820 { u8 pad[0x820]; void* unk820; };
 struct FieldState634 { u8 pad[0x5A0]; u8 unk5a0; u8 pad5a1[0x93]; void* unk634; };
 struct FieldState2C { u8 pad[0x1C]; u32 unk1c; u32 unk20; float unk24; u8 pad28[4]; u8 unk2c_0 : 1; u8 unk2c_rest : 7; };
+
 extern "C" int func_00206280(void*);
+
 extern "C" void func_4C9010(FieldOuter870*, void*, void*);
+
 extern "C" void func_4A5E60(FieldState820*, void*, void*);
+
 extern "C" void func_4D5C90(void*);
+
 extern "C" void func_448250(FieldState634*);
 
 struct FieldState544 { u8 pad[0x544]; float source; };
@@ -84,12 +96,16 @@ class FieldCallbackObject : FieldCallbackBase
 {
 public:
     virtual void action(s32);
+
     virtual void finish();
 };
+
 extern "C" void func_00205260(FieldCallbackState*);
+
 extern "C" void func_00204E40(FieldCallbackState*);
 
 extern "C" void* func_00204A10(void*);
+
 extern "C" void func_45B0E0(void*, void*, bool);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207580", func_00207580);

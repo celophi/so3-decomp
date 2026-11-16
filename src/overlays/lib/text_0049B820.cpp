@@ -34,10 +34,7 @@ struct LibModelPart
     u8 unk68[0xC];
     u32 second_tag_high;
     u8 unk78[0xC];
-
-    /** Nonzero when the part has the second pair of GIF tags. */
     u32 unk84;
-
     u8 unk88[8];
     u32 unk90;
     u8 unk94[8];
@@ -421,10 +418,12 @@ extern "C" void* func_004A08C0(const void* object, s32 index)
     const MappedOwner004A08C0* owner = (const MappedOwner004A08C0*)object;
     MappedEntry004A08C0* item = &owner->entries[index];
     void* result = item;
+
     if (item != 0)
     {
         result = (u8*)item + 0x140;
     }
+
     return result;
 }
 
@@ -927,10 +926,12 @@ void func_004A4550(void* object)
 s32 func_004A4570(void* object)
 {
     DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+
     if (object != 0)
     {
         submission = (DmaSubmission*)((u8*)submission + 0x640);
     }
+
     return func_00114100(g_vif1_dma_queue, submission);
 }
 
@@ -1246,6 +1247,7 @@ void LibModel::build_packets()
         if (mesh->unk38 != 0)
         {
             delete unk720;
+
             if (D_001B659C != 0)
             {
                 unk720 = resident_heap_allocate(D_001B659C,
@@ -1515,19 +1517,23 @@ void LibLodController::copy_state(const LibLodController* source)
     s32 index;
     position_offset_applied = source->position_offset_applied;
     object_count = source->object_count;
+
     for (index = 0; index < LIB_LOD_LEVEL_CAPACITY; index++)
     {
         level_boundaries[index] = source->level_boundaries[index];
         range_minimums[index] = source->range_minimums[index];
         range_maximums[index] = source->range_maximums[index];
     }
+
     level_count = source->level_count;
     active_level = source->active_level;
     display_manager = source->display_manager;
+
     for (index = 0; index < LIB_LOD_OBJECT_CAPACITY; index++)
     {
         objects[index] = source->objects[index];
     }
+
     position_offset = source->position_offset;
     LibTransform::copy_offset_transform_state(source);
 }

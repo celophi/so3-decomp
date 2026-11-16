@@ -42,9 +42,16 @@ public:
     u8 unk08_rest : 4;
     u8 unk09[3];
 
-    /** @brief Store the current scalar in the receiving object. @param value Scalar to store. */
+    /**
+     * @brief Store the current scalar in the receiving object.
+     * @param value Scalar to store.
+     */
     virtual void func_slot08(float value) = 0;
-    /** @brief Store the callback's byte value. @param value Byte to store. */
+
+    /**
+     * @brief Store the callback's byte value.
+     * @param value Byte to store.
+     */
     virtual void func_slot0c(u8 value) = 0;
 };
 
@@ -83,12 +90,25 @@ public:
     u8 unk317;
     u8 unk318;
     u8 unk319[3];
-    /** @brief Update the aggregate index. @param index Requested index. */
+
+    /**
+     * @brief Update the aggregate index.
+     * @param index Requested index.
+     */
     virtual void func_00412C10(s32 index);
-    /** @brief Update the aggregate float setting. @param value Requested setting. */
+
+    /**
+     * @brief Update the aggregate float setting.
+     * @param value Requested setting.
+     */
     virtual void func_00412C20(float value);
-    /** @brief Read the aggregate float setting. @return Current setting. */
+
+    /**
+     * @brief Read the aggregate float setting.
+     * @return Current setting.
+     */
     virtual float func_00412C30();
+
     /** @brief Refresh the aggregate. */
     virtual void func_00413020();
 };
@@ -98,6 +118,7 @@ class LibClass172320 : public LibContainer, public LibClass1723F0
 public:
     /** @brief Initialize the container and its widget aggregate. */
     LibClass172320();
+
     /** @brief Destroy the aggregate and object bases. */
     virtual ~LibClass172320();
 };
@@ -107,22 +128,52 @@ class LibClass1721F0 : public LibClass172320
 public:
     /** @brief Initialize the option container transform code. */
     LibClass1721F0();
+
     /** @brief Destroy the option row collection. */
     virtual ~LibClass1721F0();
-    /** @brief Update row values. @param first First value. @param second Second value. @param third Third value. */
+
+    /**
+     * @brief Update row values.
+     * @param first First value.
+     * @param second Second value.
+     * @param third Third value.
+     */
     virtual void func_00412C40(u32 first, u32 second, u32 third);
-    /** @brief Create an option row. @param index Row index. @return Created row. */
+
+    /**
+     * @brief Create an option row.
+     * @param index Row index.
+     * @return Created row.
+     */
     virtual ItemCreationClass185030* create_row(s32 index) = 0;
-    /** @brief Notify the selected index. @param index Selected index. */
+
+    /**
+     * @brief Notify the selected index.
+     * @param index Selected index.
+     */
     virtual void notify_index(s32 index);
+
     /** @brief Notify cancellation. */
     virtual void notify_cancel();
-    /** @brief Update the aggregate index. @param index Requested index. */
+
+    /**
+     * @brief Update the aggregate index.
+     * @param index Requested index.
+     */
     virtual void func_00412C10(s32 index);
-    /** @brief Update the aggregate float setting. @param value Requested setting. */
+
+    /**
+     * @brief Update the aggregate float setting.
+     * @param value Requested setting.
+     */
     virtual void func_00412C20(float value);
-    /** @brief Read the aggregate float setting. @return Current setting. */
+
+    /**
+     * @brief Read the aggregate float setting.
+     * @return Current setting.
+     */
     virtual float func_00412C30();
+
     ItemCreationClass185030* unk410[32];
     float unk490;
     float unk494;
@@ -148,11 +199,32 @@ class FieldClass15B670 : public LibContainer, public FieldScalarTransition2D6AF0
 {
 };
 
-/** @brief Refresh the aggregate's scalar display. @param object Widget aggregate. */
+/**
+ * @brief Refresh the aggregate's scalar display.
+ * @param object Widget aggregate.
+ */
 extern "C" void func_413BB0(LibClass1723F0* object);
-/** @brief Dispatch a resident request. @param receiver Request receiver. @param arg1 Request kind. @param arg2 Request argument. @param arg3 Request argument. @param arg4 Request argument. @param arg5 Request argument. @param arg6 Request argument. @return Request result. */
+
+/**
+ * @brief Dispatch a resident request.
+ * @param receiver Request receiver.
+ * @param arg1 Request kind.
+ * @param arg2 Request argument.
+ * @param arg3 Request argument.
+ * @param arg4 Request argument.
+ * @param arg5 Request argument.
+ * @param arg6 Request argument.
+ * @return Request result.
+ */
 extern "C" s32 resident_sound_play(ResidentSound* receiver, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6);
-/** @brief Set the movement target. @param object Movement state. @param x Horizontal coordinate. @param y Vertical coordinate. @param duration Movement duration. */
+
+/**
+ * @brief Set the movement target.
+ * @param object Movement state.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ * @param duration Movement duration.
+ */
 extern "C" void func_466E40(LibMovementState* object, float x, float y, float duration);
 
 /** Partial container state with the panel constructed at offset 0x100. */
@@ -172,6 +244,7 @@ struct FieldPanelState2D7820 : public LibContainer
 void func_002D5260(FieldClass15B200* object, float first, float second)
 {
     LibWidget* state = object->unk30;
+
     if (state != 0)
     {
         state->unk18.unk08 = first;
@@ -221,6 +294,7 @@ static inline void set_resource_record(ItemCreationClass175110* object, FieldRes
                                       const FieldResourceDescriptor8* descriptor)
 {
     object->unkb4 = record;
+
     if (descriptor != 0)
     {
         object->unkb8 = descriptor->unk00;
@@ -230,6 +304,7 @@ static inline void set_resource_record(ItemCreationClass175110* object, FieldRes
         object->unkbe = descriptor->unk06;
         object->unkbf = descriptor->unk07;
     }
+
     object->unkc4 = 0;
     object->unkc9 = 1;
     object->needs_redraw = 1;
@@ -247,18 +322,22 @@ void ItemCreationOptionResourceDisplay::func_002D5CF0(void* allocation, FieldRes
     {
         unkcc = allocation;
     }
+
     if (record != 0)
     {
         unk108 = record;
     }
+
     if (index != 0)
     {
         unkd0 = index;
     }
+
     if (unkcc != 0 && record != 0)
     {
         set_resource_record(this, unk108, reinterpret_cast<const FieldResourceDescriptor8*>(&unk10c));
     }
+
     unk114 = 1;
 }
 
@@ -297,10 +376,12 @@ s32 ItemCreationOptionResourceDisplay::func_002D6440(float x, float y, FieldReso
 {
     unk18.unk00 = x;
     unk18.unk04 = y;
+
     if (func_461860(&unk40, 56) == 0)
     {
         return 0;
     }
+
     unkc0 = 0;
     unk108 = record;
     unkb4 = record;
@@ -313,6 +394,7 @@ s32 ItemCreationOptionResourceDisplay::func_002D6440(float x, float y, FieldReso
     unkc9 = 1;
     unk34 = 6;
     unk39 = 1;
+
     if (unkcc == 0 && record == 0)
     {
         unk3b = 0;
@@ -322,6 +404,7 @@ s32 ItemCreationOptionResourceDisplay::func_002D6440(float x, float y, FieldReso
         set_resource_record(this, unk108, reinterpret_cast<const FieldResourceDescriptor8*>(&unk10c));
         unk3b = 1;
     }
+
     return 1;
 }
 
@@ -331,6 +414,7 @@ class FieldClass15B210 : public LibWidget
 public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~FieldClass15B210();
+
     LibStorageBlock0C unk40;
 };
 
@@ -496,8 +580,12 @@ public:
      */
     virtual const LibVector4* get_offset_scale() const;
 
-    /** @brief Return the object transformation matrix. @return Transformation matrix. */
+    /**
+     * @brief Return the object transformation matrix.
+     * @return Transformation matrix.
+     */
     virtual const LibMatrix44Value* get_transform_matrix();
+
     /** @brief Update the object transformation and its additional matrices. */
     virtual void update_transform_matrix();
 };
@@ -562,40 +650,50 @@ s32 func_002D6AF0(FieldScalarTransition2D6AF0* object)
     if (object->unk08_0)
     {
         object->unk00 -= 16.0f * g_frame_ticks;
+
         if (object->unk00 <= object->unk04)
         {
             object->unk00 = object->unk04;
             object->unk08_0 = 0;
+
             if (object->unk04 == 0.0f)
             {
                 object->func_slot0c(0);
             }
         }
+
         object->func_slot08(object->unk00);
         return 1;
     }
+
     if (object->unk08_1)
     {
         object->unk00 += 16.0f * g_frame_ticks;
+
         if (!(object->unk00 < 128.0f))
         {
             object->unk00 = 128.0f;
             object->unk08_1 = 0;
         }
+
         object->func_slot08(object->unk00);
         return 1;
     }
+
     if (object->unk08_2)
     {
         object->unk00 -= 16.0f * g_frame_ticks;
+
         if (object->unk00 <= 0.0f)
         {
             object->unk00 = 0.0f;
             object->unk08_3 = 1;
         }
+
         object->func_slot08(object->unk00);
         return 1;
     }
+
     return 0;
 }
 
@@ -611,6 +709,7 @@ bool func_002D6CB0(FieldClass15B300* object)
     s32 row_step = 0;
     u16 buttons = g_field_runtime->inputs[object->unk315].unk04;
     s32 page_step = 0;
+
     if (buttons & 0x10)
     {
         if (selection < object->unk310)
@@ -685,9 +784,11 @@ bool func_002D6CB0(FieldClass15B300* object)
             selection = selection % object->unk310 + object->unk310 * (object->unk311 - 1);
         }
     }
+
     if (object->unk4c0 & 1)
     {
         bool wrapped = false;
+
         if (row_step < 0 && object->unk304 <= 0)
         {
             object->unk304 = object->unk300;
@@ -700,6 +801,7 @@ bool func_002D6CB0(FieldClass15B300* object)
             wrapped = true;
             selection %= object->unk310;
         }
+
         if (wrapped)
         {
             object->func_00412C10(object->unk304);
@@ -707,10 +809,12 @@ bool func_002D6CB0(FieldClass15B300* object)
             changed = true;
         }
     }
+
     if (selection != object->unk312)
     {
         object->unk312 = selection;
         float duration;
+
         if (row_step != 0)
         {
             duration = object->unk2c8 / 60.0f;
@@ -719,22 +823,26 @@ bool func_002D6CB0(FieldClass15B300* object)
         {
             duration = 0.05f;
         }
+
         func_466E40(&object->unk190,
                      object->unk2cc + object->unk2c0 * (selection % object->unk310),
                      object->unk2d0 + object->unk2c4 * (selection / object->unk310), duration);
         changed = true;
     }
+
     if ((row_step < 0 && object->unk304 > 0) || (row_step > 0 && object->unk304 < object->unk300))
     {
         object->unk313 = row_step;
         object->unk314 = 1;
         changed = true;
     }
+
     if (page_step != 0)
     {
         if (page_step < 0)
         {
             object->unk304 -= object->unk311;
+
             if (object->unk304 < 0)
             {
                 object->unk304 = 0;
@@ -743,19 +851,23 @@ bool func_002D6CB0(FieldClass15B300* object)
         else
         {
             object->unk304 += object->unk311;
+
             if (object->unk304 > object->unk300)
             {
                 object->unk304 = object->unk300;
             }
         }
+
         object->func_00412C10(object->unk304);
         func_413BB0(&static_cast<LibClass1723F0&>(*object));
         changed = true;
     }
+
     if (changed)
     {
         resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     }
+
     return changed;
 }
 
@@ -766,6 +878,7 @@ bool func_002D6CB0(FieldClass15B300* object)
 void func_002D70F0(LibContainer* object)
 {
     FieldRegistry1B66A0* registry = D_001B66A0;
+
     if (registry != 0)
     {
         for (s32 i = 0; i < 32; i++)
@@ -777,6 +890,7 @@ void func_002D70F0(LibContainer* object)
             }
         }
     }
+
     object->LibCallbackTransform::destroy();
 }
 
@@ -802,6 +916,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D5260", func_002D75
 void func_002D7630(LibContainer* object)
 {
     FieldRegistry1B66A0* registry = D_001B66A0;
+
     if (registry != 0)
     {
         for (s32 i = 0; i < 32; i++)
@@ -813,6 +928,7 @@ void func_002D7630(LibContainer* object)
             }
         }
     }
+
     object->LibCallbackTransform::destroy();
 }
 
@@ -835,10 +951,12 @@ s32 func_002D7820(FieldPanelState2D7820* object, u32 value, s8 mode, s32 transfo
 {
     lib_container_init(object, mode, x, y, 9, 0.0f, transform);
     object->type_id = 0x400E;
+
     if (lib_panel_init_rectangle(&object->unk100, 0, 0.0f, 0.0f, width, height, 88.0f) == 0)
     {
         return 0;
     }
+
     object->unk100.unk3d = 1;
     lib_container_attach_widget(object, &object->unk100);
     object->unk190 = value;
@@ -868,6 +986,7 @@ s32 func_002D79D0(FieldPackedTable2D79D0* object, s32 index, FieldPackedValues2D
     {
         return 0;
     }
+
     u64 first = object->entries[index].unk00;
     u64 second = object->entries[index].unk08;
     output->unk04 = (first >> 14) & 0x3F;
@@ -897,6 +1016,7 @@ s32 func_002D7A50(FieldSlotTable2D7A50* object, void* first, void* second)
             return index;
         }
     }
+
     return -1;
 }
 
@@ -942,6 +1062,7 @@ extern "C" s32 func_4DC4F0(LibPacketQueue* queue, u32 operation, u32 flags, u32 
 void func_002D7AD0(FieldClass15B770* object)
 {
     object->unk60[4] = 1;
+
     for (s32 index = 0; index < object->packet_count; index++)
     {
         FieldClass1DD400* completion = index == object->packet_count - 1 ?

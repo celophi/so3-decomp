@@ -110,6 +110,7 @@ public:
         {
             delete[] bits;
         }
+
         this->count = count;
         words = (count + 63) >> 6;
         bits = new (0) u64[words];
@@ -120,6 +121,7 @@ public:
     void clear()
     {
         s32 total = words;
+
         for (s32 i = 0; i < total; i++)
         {
             bits[i] = 0;
@@ -129,8 +131,6 @@ public:
     s32 count;
     s32 words;
     u64* bits;
-
-    /** Nonzero when bits is borrowed and must not be freed. */
     bool borrowed;
 
     /** @brief Free the words unless they're borrowed. */
@@ -141,12 +141,10 @@ public:
 class LibClass173F48 : public LibClass173A28
 {
 public:
-    /** @brief Construct the element. */
     LibClass173F48()
     {
     }
 
-    /** @brief Destroy the element. */
     virtual ~LibClass173F48()
     {
     }
@@ -172,12 +170,10 @@ public:
 class LibClass174228 : public LibClass173F48
 {
 public:
-    /** @brief Construct the cell. */
     LibClass174228()
     {
     }
 
-    /** @brief Destroy the cell. */
     virtual ~LibClass174228()
     {
     }
@@ -194,12 +190,10 @@ public:
 class LibClass174218 : public LibClass174228
 {
 public:
-    /** @brief Construct the cell. */
     LibClass174218()
     {
     }
 
-    /** @brief Destroy the cell. */
     virtual ~LibClass174218()
     {
     }
@@ -211,10 +205,8 @@ public:
 class LibClass177168 : public LibClass174218
 {
 public:
-    /** @brief Construct the cell. */
     LibClass177168();
 
-    /** @brief Destroy the cell. */
     virtual ~LibClass177168();
 
     u8 unk80[0x30];
@@ -224,12 +216,10 @@ public:
 class LibClass174208 : public LibClass174218
 {
 public:
-    /** @brief Construct the cell. */
     LibClass174208()
     {
     }
 
-    /** @brief Destroy the cell. */
     virtual ~LibClass174208()
     {
     }
@@ -241,10 +231,8 @@ public:
 class LibClass177158 : public LibClass174208
 {
 public:
-    /** @brief Construct the cell. */
     LibClass177158();
 
-    /** @brief Destroy the cell. */
     virtual ~LibClass177158();
 
     u8 unkF0[0x30];
@@ -254,12 +242,10 @@ public:
 class LibClass1741F8 : public LibClass174208
 {
 public:
-    /** @brief Construct the cell. */
     LibClass1741F8()
     {
     }
 
-    /** @brief Destroy the cell. */
     virtual ~LibClass1741F8()
     {
     }
@@ -271,10 +257,8 @@ public:
 class LibGridCell170 : public LibClass1741F8, public LibGridFrameMotion
 {
 public:
-    /** @brief Construct the cell. */
     LibGridCell170();
 
-    /** @brief Destroy the cell. */
     virtual ~LibGridCell170();
 };
 
@@ -282,10 +266,8 @@ public:
 class LibClass177178 : public LibClass174228
 {
 public:
-    /** @brief Construct the cell. */
     LibClass177178();
 
-    /** @brief Destroy the cell. */
     virtual ~LibClass177178();
 
     u8 unk60[0x30];
@@ -295,10 +277,8 @@ public:
 class LibClass177188 : public LibClass173F48
 {
 public:
-    /** @brief Construct the cell. */
     LibClass177188();
 
-    /** @brief Destroy the cell. */
     virtual ~LibClass177188();
 
     u8 unk04[0x5C];
@@ -349,23 +329,41 @@ class LibGridBase
         virtual ~LibGridBase();
 
         virtual void func_slot0c() = 0;
+
         virtual void func_slot10();
+
         virtual void func_slot14();
+
         virtual void func_slot18() = 0;
+
         virtual void func_slot1c() = 0;
+
         virtual void func_slot20() = 0;
+
         virtual void func_slot24() = 0;
+
         virtual void func_slot28() = 0;
+
         virtual void func_slot2c() = 0;
+
         virtual LibGridBitset* func_slot30() = 0;
+
         virtual void func_slot34() = 0;
+
         virtual void func_slot38() = 0;
+
         virtual s32 func_slot3c();
+
         virtual void func_slot40() = 0;
+
         virtual void func_slot44() = 0;
+
         virtual void func_slot48() = 0;
+
         virtual void func_slot4c() = 0;
+
         virtual void func_slot50() = 0;
+
         virtual void func_slot54() = 0;
 
         /**

@@ -10,19 +10,29 @@ typedef union LibQuad128
     float value[4];
     u32 word[4];
 #ifdef __cplusplus
-    /** @brief Access the vector's four floating-point components. @return The components. */
+    /**
+     * @brief Access the vector's four floating-point components.
+     * @return The components.
+     */
     float* data()
     {
         return value;
     }
 
-    /** @brief Access the vector's four floating-point components. @return The components. */
+    /**
+     * @brief Access the vector's four floating-point components.
+     * @return The components.
+     */
     const float* data() const
     {
         return value;
     }
 
-    /** @brief Copy all four words at once. @param other Vector to copy. @return This vector. */
+    /**
+     * @brief Copy all four words at once.
+     * @param other Vector to copy.
+     * @return This vector.
+     */
     LibQuad128& operator=(const LibQuad128& other)
     {
         raw = other.raw;

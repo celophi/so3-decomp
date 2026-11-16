@@ -2,13 +2,21 @@
 #include "overlays/3454-00/text_002EF9F0.h"
 
 extern void func_003C86F0(void* object);
+
 extern void func_003B3DF0(void* object);
+
 extern void func_003C8A10(void);
+
 extern void func_003C90D0(void* object);
+
 extern void func_003C9360(void);
+
 extern void func_002AE3F0(void* object);
+
 extern u32 func_473390(u32 value, const void* data);
+
 extern u32 func_473940(u32 value, const void* data);
+
 extern const u8 D_3E1008[];
 extern const u8 D_3E1018[];
 extern const u8 D_3E1048[];
@@ -541,6 +549,7 @@ void func_002F6F20(void* object, u32 value)
 {
     ConditionalByteUpdate2FE0text_002EF9F0* receiver = object;
     receiver->updateFlag = 1;
+
     if (value == receiver->comparison)
     {
         receiver->matchFlag = 1;
@@ -631,6 +640,7 @@ void func_002FD1D0(void* object, u32 value)
 {
     ConditionalByteUpdate3010text_002EF9F0* receiver = object;
     receiver->updateFlag = 1;
+
     if (value == receiver->comparison)
     {
         receiver->matchFlag = 1;
@@ -667,6 +677,7 @@ void func_002FF350(void* object, u32 value)
 {
     ConditionalByteUpdate3020text_002EF9F0* receiver = object;
     receiver->updateFlag = 1;
+
     if (value == receiver->comparison)
     {
         receiver->matchFlag = 1;

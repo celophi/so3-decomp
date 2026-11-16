@@ -21,13 +21,22 @@ class LibLodController : public LibTransform
 public:
     /** @brief Initialize the level-selection controller. */
     LibLodController();
-    /** @brief Destroy the controller. */
+
     virtual ~LibLodController();
-    /** @brief Report the controller kind. @return Kind nine. */
+
+    /**
+     * @brief Report the controller kind.
+     * @return Kind nine.
+     */
     virtual s32 get_default_list_kind();
+
     /** @brief Select the active object range from the current transformed depth. */
     virtual void update();
-    /** @brief Copy level-selection state and inherited transform state. @param source Source controller. */
+
+    /**
+     * @brief Copy level-selection state and inherited transform state.
+     * @param source Source controller.
+     */
     virtual void copy_state(const LibLodController* source);
 
     /**
@@ -56,7 +65,6 @@ typedef LibLodController LibEntryHandleCollection;
 class LibClass177940 : public LibListObject
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~LibClass177940();
 
     /**
@@ -68,9 +76,7 @@ public:
     /** @brief Draw the renderer's frame and wait for its packets, between two calls on the resident sound. */
     virtual void update();
 
-    /** EE timer 0 count when the frame was drawn. */
     u32 frame_start_time;
-
     LibRenderer* renderer;
 };
 
@@ -84,7 +90,6 @@ class LibClass173A40 : public LibClass173A28
             unk08 = 0;
         }
 
-        /** @brief Destroy the grid base. */
         virtual ~LibClass173A40()
         {
         }
@@ -98,13 +103,21 @@ class LibClass173A40 : public LibClass173A28
         virtual void func_slot14();
 
         virtual void func_slot18() = 0;
+
         virtual void func_slot1C() = 0;
+
         virtual void func_slot20() = 0;
+
         virtual void func_slot24() = 0;
+
         virtual void func_slot28() = 0;
+
         virtual void func_slot2C() = 0;
+
         virtual void func_slot30() = 0;
+
         virtual void func_slot34() = 0;
+
         virtual void func_slot38() = 0;
 
         /**
@@ -114,10 +127,15 @@ class LibClass173A40 : public LibClass173A28
         virtual s32 func_slot3C();
 
         virtual void func_slot40() = 0;
+
         virtual void func_slot44() = 0;
+
         virtual void func_slot48() = 0;
+
         virtual void func_slot4C() = 0;
+
         virtual void func_slot50() = 0;
+
         virtual void func_slot54() = 0;
 
         /**
@@ -128,26 +146,47 @@ class LibClass173A40 : public LibClass173A28
         virtual void resize(s32 rows, s32 columns) = 0;
 
         virtual void func_slot5C() = 0;
+
         virtual void func_slot60() = 0;
+
         virtual void func_slot64() = 0;
+
         virtual void func_slot68() = 0;
+
         virtual void func_slot6C() = 0;
+
         virtual void func_slot70() = 0;
+
         virtual void func_slot74() = 0;
+
         virtual void func_slot78() = 0;
+
         virtual void func_slot7C() = 0;
+
         virtual void func_slot80() = 0;
+
         virtual void func_slot84() = 0;
+
         virtual void func_slot88() = 0;
+
         virtual void func_slot8C() = 0;
+
         virtual void func_slot90() = 0;
+
         virtual void func_slot94() = 0;
+
         virtual void func_slot98() = 0;
+
         virtual void func_slot9C() = 0;
+
         virtual void func_slotA0() = 0;
+
         virtual void func_slotA4() = 0;
+
         virtual void func_slotA8() = 0;
+
         virtual void func_slotAC() = 0;
+
         virtual void func_slotB0() = 0;
 
         /**
@@ -157,8 +196,11 @@ class LibClass173A40 : public LibClass173A28
         virtual void copy_settings(const LibClass173A40* source) = 0;
 
         virtual void func_slotB8() = 0;
+
         virtual void func_slotBC() = 0;
+
         virtual void func_slotC0() = 0;
+
         virtual void func_slotC4() = 0;
 
         u8 unk04;
@@ -474,7 +516,6 @@ class LibClass176FC0 : public LibClass177750
             unk04 = 1;
         }
 
-        /** @brief Destroy the grid. */
         virtual ~LibClass176FC0()
         {
         }
@@ -493,10 +534,7 @@ class LibClass176FC0 : public LibClass177750
         float unk3c;
         u8 unk40[4];
         u32 unk44;
-
-        /** Primary linked emitter. */
         LibClass173990* unk48;
-
         u8 unk4c;
         u8 unk4d;
         u8 unk4e;
@@ -536,10 +574,7 @@ class LibClass177090 : public LibClass176FC0
         u32 unkc0;
         u32 unkc4;
         u8 unkc8;
-
-        /** Nonzero when unkb0 and unkb4 are borrowed and must not be freed. */
         u8 unkc9;
-
         u8 unkca[6];
 };
 
@@ -563,7 +598,6 @@ class LibClass174050 : public LibClass174240
             unk04 = 1;
         }
 
-        /** @brief Destroy the grid. */
         virtual ~LibClass174050()
         {
         }
@@ -582,10 +616,7 @@ class LibClass174050 : public LibClass174240
         float unk3c;
         u8 unk40[4];
         u32 unk44;
-
-        /** Primary linked emitter. */
         LibClass173990* unk48;
-
         u8 unk4c;
         u8 unk4d;
         u8 unk4e;
@@ -619,10 +650,7 @@ class LibClass174120 : public LibClass174050
         u32 unkc0;
         u32 unkc4;
         u8 unkc8;
-
-        /** Nonzero when unkb0 and unkb4 are borrowed and must not be freed. */
         u8 unkc9;
-
         u8 unkca[6];
 };
 #else
@@ -698,9 +726,13 @@ s32 func_004A0C70(void* object);
 s32 func_004AA410(void* object);
 
 void func_004A08A0(void* object);
+
 void func_004A0C40(void* object);
+
 void func_004A0C60(void* object);
+
 void func_004A9220(void* object);
+
 void func_004A9230(void* object);
 
 /** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */

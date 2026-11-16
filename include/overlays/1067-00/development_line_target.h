@@ -13,10 +13,15 @@ struct ItemCreationTargetPrefix : public FieldStateTargets
 class ItemCreationClass184EF0 : public ItemCreationTargetPrefix
 {
 public:
-    /** @brief Run the target status callback. @return Callback status. */
+    /**
+     * @brief Run the target status callback.
+     * @return Callback status.
+     */
     virtual s32 func_slot08();
+
     /** @brief Run the target update callback. */
     virtual void func_slot0c();
+
     /** @brief Run the additional target callback. */
     virtual void func_slot10();
 };
@@ -25,10 +30,15 @@ public:
 class FieldClass15BB30 : public ItemCreationClass184EF0
 {
 public:
-    /** @brief Advance this development target. @return Zero or one. */
+    /**
+     * @brief Advance this development target.
+     * @return Zero or one.
+     */
     virtual s32 func_slot08();
+
     /** @brief Apply the target result and clear active inventor flags. */
     virtual void func_slot0c();
+
     /** @brief Clear the target's active inventor flags. */
     virtual void func_slot10();
 
@@ -42,10 +52,15 @@ public:
 class FieldClass15BB50 : public ItemCreationClass184EF0
 {
 public:
-    /** @brief Advance this development target. @return Target status from zero through two. */
+    /**
+     * @brief Advance this development target.
+     * @return Target status from zero through two.
+     */
     virtual s32 func_slot08();
+
     /** @brief Apply the target result and clear active inventor flags. */
     virtual void func_slot0c();
+
     /** @brief Clear the target's active inventor flags. */
     virtual void func_slot10();
 
@@ -57,10 +72,15 @@ public:
 class FieldClass15BB70 : public ItemCreationClass184EF0
 {
 public:
-    /** @brief Advance this development target. @return Target status from zero through two. */
+    /**
+     * @brief Advance this development target.
+     * @return Target status from zero through two.
+     */
     virtual s32 func_slot08();
+
     /** @brief Apply the target result and clear active inventor flags. */
     virtual void func_slot0c();
+
     /** @brief Clear the target's active inventor flags. */
     virtual void func_slot10();
 

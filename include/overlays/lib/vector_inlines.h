@@ -4,7 +4,6 @@
 #include "overlays/lib/vector.h"
 
 #ifdef __cplusplus
-/** @brief Leave all vector components uninitialized. */
 inline FieldVec4B::FieldVec4B()
 {
 }

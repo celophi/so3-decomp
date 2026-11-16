@@ -11,12 +11,10 @@
 class FieldClass154D40 : public FieldClass150050
 {
 public:
-    /** @brief Construct the object. */
     FieldClass154D40()
     {
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass154D40()
     {
     }
@@ -53,12 +51,10 @@ public:
 class FieldClass154E70 : public FieldClass154D40
 {
 public:
-    /** @brief Construct the object. */
     FieldClass154E70()
     {
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass154E70()
     {
     }
@@ -68,10 +64,8 @@ public:
 class FieldClass154E60 : public FieldClass154E70
 {
 public:
-    /** @brief Construct the object. */
     FieldClass154E60();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass154E60();
 
     u8 unk04[0xC];
@@ -104,6 +98,7 @@ struct FieldBitset154E80
         {
             delete[] unk08;
         }
+
         unk00 = count;
         unk04 = (count + 63) >> 6;
         unk08 = new (0) u64[unk04];
@@ -114,6 +109,7 @@ struct FieldBitset154E80
     void clear()
     {
         s32 words = unk04;
+
         for (s32 i = 0; i < words; i++)
         {
             unk08[i] = 0;
@@ -139,7 +135,6 @@ public:
         unk08 = 0;
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass154D50()
     {
     }
@@ -147,31 +142,53 @@ public:
     // Virtuals in vtable order (byte offset in the name). Most slots are pure here
     // and filled by the grid classes; only the slots used so far are listed.
     virtual void func_slot0c() = 0;
+
     /** @brief Do nothing (shared by every grid). */
     virtual void func_002729A0();
+
     /** @brief Do nothing (shared by every grid). */
     virtual void func_002729B0();
+
     virtual void func_slot18() = 0;
+
     virtual void func_slot1c() = 0;
+
     virtual void func_slot20() = 0;
+
     virtual void func_slot24() = 0;
+
     virtual void func_slot28() = 0;
+
     virtual void func_slot2c() = 0;
-    /** @brief Read the grid bit set. @return The bit set. */
+
+    /**
+     * @brief Read the grid bit set.
+     * @return The bit set.
+     */
     virtual FieldBitset154E80* func_slot30() = 0;
+
     virtual void func_slot34() = 0;
+
     virtual void func_slot38() = 0;
+
     /**
      * @brief Report no selected cell.
      * @return -1.
      */
     virtual s32 func_00272D60();
+
     virtual void func_slot40() = 0;
+
     virtual void func_slot44() = 0;
+
     virtual void func_slot48() = 0;
+
     virtual void func_slot4c() = 0;
+
     virtual void func_slot50() = 0;
+
     virtual void func_slot54() = 0;
+
     /**
      * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
      * @param rows Cell count.

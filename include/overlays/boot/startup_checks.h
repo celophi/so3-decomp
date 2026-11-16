@@ -54,30 +54,18 @@ class BootStartupChecks : public LibListObject
         /** @brief Start on the memory card check. */
         BootStartupChecks();
 
-        /** @brief Destroy the object. */
         virtual ~BootStartupChecks();
 
         /** @brief Run the memory card, progressive display and BB Unit screens in turn, then start the opening movie. */
         virtual void update();
 
         s32 step;
-
-        /** Frames spent in the current step. */
         s32 frames;
-
         s32 screen;
-
-        /** Memory card warning being shown. */
         s32 message;
-
         u8 unk24[8];
-
-        /** Slot 1 state the warning was chosen for; it closes if either slot changes. */
         s32 shown_slot1;
-
-        /** Slot 2 state the warning was chosen for. */
         s32 shown_slot2;
-
         LibContainer* container;
         LibTextWidget* text;
 };

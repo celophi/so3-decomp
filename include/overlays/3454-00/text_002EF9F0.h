@@ -8,10 +8,13 @@ extern "C" {
 #endif
 
 void func_002F5480(void* object);
+
 /** Initialize the object and store the resolved field value at offset 0x600. */
 void func_002EFE00(void* receiver);
+
 /** Initialize the object and store the resolved field value at offset 0x600. */
 void func_002F09B0(void* receiver);
+
 /** Initialize the object and store the resolved field value at offset 0x460. */
 void func_002F18C0(void* receiver);
 
@@ -72,6 +75,7 @@ void func_002F41D0(void* object);
 
 /** Run the paired update helpers in order. */
 void func_002F44B0(void* object);
+
 void func_002F4680(void* object);
 
 #ifdef __cplusplus

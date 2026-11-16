@@ -10,23 +10,35 @@ void func_00375280(u8* receiver, void* value1, void* value2, void* value3);
 
 /** Forward the receiver to the corresponding shared animation helper. */
 void func_00370920(void* object);
+
 void func_00370940(void* object);
+
 void func_003730D0(void* object);
+
 void func_003730F0(void* object);
+
 void func_00373110(void* object);
 
 /** Call the selected helper when the float at receiver offset 0x6A8 is zero. */
 void func_00371850(void* object);
+
 void func_00371890(void* object);
+
 void func_003720C0(void* object);
+
 void func_00372730(void* object);
+
 void func_00372770(void* object);
+
 void func_00373830(void* object);
 
 /** Return zero unless the float at 0x6A8 is zero, then return the helper result. */
 s32 func_003718D0(void* object);
+
 s32 func_00372150(void* object);
+
 s32 func_003727B0(void* object);
+
 s32 func_003738D0(void* object);
 
 /** Initialize the receiver's child object when its counter is zero. */

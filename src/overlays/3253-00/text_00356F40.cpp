@@ -9,13 +9,18 @@ extern "C" void func_0032A150(void* object, s32 value);
 extern "C" void func_00326C00(void* object, s32 value);
 
 extern "C" void func_0031FA50(void* object, s32 value);
+
 extern "C" void func_003AF250(void* object);
+
 extern "C" s32 func_00285E20(void);
 #include "overlays/3253-00/text_00356F40.h"
 
 extern "C" void func_00309800(void* object);
+
 extern "C" void func_003452D0(void* object);
+
 extern "C" void func_00286130(void* object);
+
 extern "C" void func_002864B0(void* object);
 
 struct FloatField6B0_00356F40 { u8 pad[0x6B0]; float value; };
@@ -167,6 +172,7 @@ void func_00360E50(void* object, u32 value)
 {
     BattleConditionalByteUpdate* receiver = (BattleConditionalByteUpdate*)object;
     receiver->updateFlag = 1;
+
     if (value == receiver->comparison)
     {
         receiver->matchFlag = 1;
@@ -204,6 +210,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00356F40", func_003630
 void func_003631B0(void* object)
 {
     u8* state = static_cast<u8*>(object);
+
     if (*(u32*)(state + 0x504) == 0)
     {
         func_003AF250(state + 0x290);
@@ -231,6 +238,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_00356F40", func_003635
 void func_00363680(void* object)
 {
     u8* state = static_cast<u8*>(object);
+
     if (*(u32*)(state + 0x2C4) == 0)
     {
         func_003AF250(state + 0xD0);
@@ -278,6 +286,7 @@ void func_00363D40(void* object)
 void func_00363D50(void* object)
 {
     u8* state = static_cast<u8*>(object);
+
     if (*(u32*)(state + 0x274) == 0)
     {
         func_003AF250(state + 0xD0);
@@ -386,6 +395,7 @@ s32 func_00364BD0(void* object)
     {
         return 0;
     }
+
     return func_00285E20();
 }
 
@@ -451,6 +461,7 @@ s32 func_00365450(void* object)
     {
         return 0;
     }
+
     return func_00285E20();
 }
 
@@ -502,6 +513,7 @@ s32 func_00365AB0(void* object)
     {
         return 0;
     }
+
     return func_00285E20();
 }
 
@@ -618,6 +630,7 @@ s32 func_00366BD0(void* object)
     {
         return 0;
     }
+
     return func_00285E20();
 }
 

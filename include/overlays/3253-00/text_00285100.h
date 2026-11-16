@@ -31,6 +31,7 @@ s32 func_00285280(void* object);
 
 /** Clear the selected state when the 0x2A4B00 check succeeds. */
 void func_002851E0(void* object);
+
 /** Clear the selected state when the 0x2983E0 check succeeds. */
 void func_00285DE0(void* object);
 

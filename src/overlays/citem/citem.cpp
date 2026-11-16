@@ -154,7 +154,6 @@ struct ItemAllocationOwnerView
 typedef struct ItemCharacterStats
 {
     s16 character_id;
-    /** Selects the clamping rules used by the character stat setters. */
     s16 stat_limit_type;
     u8 unk04[4];
     u32 encoded_flags;
@@ -166,10 +165,7 @@ typedef struct ItemCharacterStats
     u32 encoded_max_mp;
     u32 encoded_mp;
     float unk28;
-
-    /** Fury is stored at sixteen times its displayed amount. */
     float scaled_max_fury;
-
     float scaled_fury;
     s32 encoded_base_attack;
     s32 encoded_effective_attack;
@@ -183,10 +179,7 @@ typedef struct ItemCharacterStats
     s32 encoded_base_hit;
     s32 encoded_effective_hit;
     s32 encoded_hit;
-
-    /** Intelligence is validated through the HIT checksum. */
     s32 encoded_base_intelligence;
-
     s32 encoded_effective_intelligence;
     s32 encoded_intelligence;
     u8 unk70[0x14];
@@ -202,7 +195,10 @@ typedef struct ItemCharacterStats
     u32 checksum_salt;
     u8 unkac[0x18];
 
-    /** @brief Decode the protected flag word. @return Flags, or five when the check word is invalid. */
+    /**
+     * @brief Decode the protected flag word.
+     * @return Flags, or five when the check word is invalid.
+     */
     u32 get_flags() const
     {
         s32 experience = encoded_experience;
@@ -221,10 +217,7 @@ class ItemCharacterEquipment
 {
     public:
         u8 unk00[0xE];
-
-        /** Highest valid index into encoded_equipment_ids. */
         s16 encoded_slot_limit;
-
         s16 encoded_equipment_ids[4];
         s16 encoded_sp;
         s16 encoded_cp;
@@ -236,7 +229,10 @@ class ItemCharacterEquipment
         u32 checksum_salt;
         u32 unk110;
 
-        /** @brief Test the stored equipment checksum. @return True when it agrees with the encoded IDs and the salt. */
+        /**
+         * @brief Test the stored equipment checksum.
+         * @return True when it agrees with the encoded IDs and the salt.
+         */
         bool equipment_valid() const
         {
             return equipment_checksum ==
@@ -283,13 +279,21 @@ class ItemCharacterEquipment
         }
 };
 
-/** @brief Read a character record's checksum salt. @param record Character stats. @return Salt. */
+/**
+ * @brief Read a character record's checksum salt.
+ * @param record Character stats.
+ * @return Salt.
+ */
 static inline u32 character_checksum_salt(ItemCharacterStats* record)
 {
     return record->checksum_salt;
 }
 
-/** @brief Decode current HP, marking valid flags when its checksum fails. @param record Character stats. @return HP, or zero after corruption. */
+/**
+ * @brief Decode current HP, marking valid flags when its checksum fails.
+ * @param record Character stats.
+ * @return HP, or zero after corruption.
+ */
 static inline u32 character_hp(ItemCharacterStats* record)
 {
     u32 first = record->encoded_base_hp;
@@ -316,7 +320,11 @@ static inline u32 character_hp(ItemCharacterStats* record)
     return encoded ^ ITEM_STAT_WORD_XOR_KEY;
 }
 
-/** @brief Decode maximum HP, marking valid flags when its checksum fails. @param record Character stats. @return Maximum HP, or zero after corruption. */
+/**
+ * @brief Decode maximum HP, marking valid flags when its checksum fails.
+ * @param record Character stats.
+ * @return Maximum HP, or zero after corruption.
+ */
 static inline u32 character_max_hp(ItemCharacterStats* record)
 {
     u32 first = record->encoded_base_hp;
@@ -343,7 +351,11 @@ static inline u32 character_max_hp(ItemCharacterStats* record)
     return salt ^ ITEM_STAT_WORD_XOR_KEY;
 }
 
-/** @brief Decode current MP, marking valid flags when its checksum fails. @param record Character stats. @return MP, or zero after corruption. */
+/**
+ * @brief Decode current MP, marking valid flags when its checksum fails.
+ * @param record Character stats.
+ * @return MP, or zero after corruption.
+ */
 static inline u32 character_mp(ItemCharacterStats* record)
 {
     u32 first = record->encoded_base_mp;
@@ -370,7 +382,11 @@ static inline u32 character_mp(ItemCharacterStats* record)
     return encoded ^ ITEM_STAT_WORD_XOR_KEY;
 }
 
-/** @brief Decode maximum MP, marking valid flags when its checksum fails. @param record Character stats. @return Maximum MP, or zero after corruption. */
+/**
+ * @brief Decode maximum MP, marking valid flags when its checksum fails.
+ * @param record Character stats.
+ * @return Maximum MP, or zero after corruption.
+ */
 static inline u32 character_max_mp(ItemCharacterStats* record)
 {
     u32 first = record->encoded_base_mp;
@@ -397,7 +413,11 @@ static inline u32 character_max_mp(ItemCharacterStats* record)
     return salt ^ ITEM_STAT_WORD_XOR_KEY;
 }
 
-/** @brief Decode the protected flag word. @param record Character stats. @return Flags, or five when the check word is invalid. */
+/**
+ * @brief Decode the protected flag word.
+ * @param record Character stats.
+ * @return Flags, or five when the check word is invalid.
+ */
 static inline u32 character_flags(ItemCharacterStats* record)
 {
     u32 key = record->checksum_salt;
@@ -534,7 +554,9 @@ extern u32 D_354C10[][4];
 extern "C"
 {
 void func_4D00B0(void* object);
+
 s32 lib_allocation_set_equipped_owner(ResidentObject1B64F8* inventory, s16 identifier, s32 owner);
+
 void lib_character_recalculate_stats(ItemCharacterStats* record, ItemCharacterEquipment* equipment, const ItemCreationAllocationRecord* candidate, s32 index);
 }
 
@@ -551,31 +573,49 @@ static inline void set_item_window_message(ItemHelpWindow* window, s16 key)
     }
 }
 
-/** @brief Allocate and construct the native panel widget. @return The panel storage, or null. */
+/**
+ * @brief Allocate and construct the native panel widget.
+ * @return The panel storage, or null.
+ */
 static inline LibPanel* allocate_panel(void)
 {
     return new (0) LibPanel;
 }
 
-/** @brief Allocate the native text widget with an empty rectangle. @return The text-widget storage, or null. */
+/**
+ * @brief Allocate the native text widget with an empty rectangle.
+ * @return The text-widget storage, or null.
+ */
 static inline LibTextWidget* allocate_text_widget(void)
 {
     return new (0) LibTextWidget;
 }
 
-/** @brief Set the text mode and mark the widget for update. @param widget Text widget. @param mode Text mode. */
+/**
+ * @brief Set the text mode and mark the widget for update.
+ * @param widget Text widget.
+ * @param mode Text mode.
+ */
 static inline void set_text_mode(LibTextWidget* widget, u32 mode)
 {
     widget->set_horizontal_align(mode);
 }
 
-/** @brief Set the packed text color and mark the widget for update. @param widget Text widget. @param color Packed color. */
+/**
+ * @brief Set the packed text color and mark the widget for update.
+ * @param widget Text widget.
+ * @param color Packed color.
+ */
 static inline void set_text_color(LibTextWidget* widget, u32 color)
 {
     widget->set_tint(color);
 }
 
-/** @brief Apply the window's text scale to one prompt. @param window Control help window. @param index Prompt index. */
+/**
+ * @brief Apply the window's text scale to one prompt.
+ * @param window Control help window.
+ * @param index Prompt index.
+ */
 static inline void scale_prompt(ItemControlHelpWindow* window, u32 index)
 {
     LibTextWidget* prompt = window->prompts[index];
@@ -595,7 +635,10 @@ static inline ItemAlignedResource* aligned_resource(void* buffer)
     return reinterpret_cast<ItemAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
 }
 
-/** @brief Delete an owned party selection and clear its pointer. @param selection Owned selection. */
+/**
+ * @brief Delete an owned party selection and clear its pointer.
+ * @param selection Owned selection.
+ */
 static inline void release_record_selection(FieldRecordSelection*& selection)
 {
     if (selection != 0)
@@ -867,79 +910,119 @@ static inline s32 selector_is_idle(ItemCoordinateSelector* selector)
     return ((u32)selector->LibMovementState::arrived > 0) ^ 1;
 }
 
-/** @brief Read the catalog entry's unsellable flag. @param definition Catalog entry. @return Flag as a byte. */
+/**
+ * @brief Read the catalog entry's unsellable flag.
+ * @param definition Catalog entry.
+ * @return Flag as a byte.
+ */
 static inline u8 item_definition_unsellable(const ItemCreationCategoryDefinition* definition)
 {
     return definition->unsellable;
 }
 
-/** @brief Store the window control byte. @param value Control value. */
+/**
+ * @brief Store the window control byte.
+ * @param value Control value.
+ */
 void FieldClass15AE70::func_slot24(u8 value)
 {
     unk0c = value;
 }
 
-/** @brief Read the window control byte. @return Control value. */
+/**
+ * @brief Read the window control byte.
+ * @return Control value.
+ */
 u8 FieldClass15AE70::func_slot28()
 {
     return unk0c;
 }
 
-/** @brief Store the byte state code. @param value State code. */
+/**
+ * @brief Store the byte state code.
+ * @param value State code.
+ */
 void FieldClass15AE70::func_slot2c(u8 value)
 {
     unk08 = value;
 }
 
-/** @brief Read the byte state code. @return State code. */
+/**
+ * @brief Read the byte state code.
+ * @return State code.
+ */
 u8 FieldClass15AE70::func_slot30()
 {
     return unk08;
 }
 
-/** @brief Store the halfword state flags. @param value State flags. */
+/**
+ * @brief Store the halfword state flags.
+ * @param value State flags.
+ */
 void FieldClass15AE70::func_slot34(u16 value)
 {
     unk0a = value;
 }
 
-/** @brief Read the halfword state flags. @return State flags. */
+/**
+ * @brief Read the halfword state flags.
+ * @return State flags.
+ */
 u16 FieldClass15AE70::func_slot38()
 {
     return unk0a;
 }
 
-/** @brief Store the alternate window pointer. @param associated Pointer to store. */
+/**
+ * @brief Store the alternate window pointer.
+ * @param associated Pointer to store.
+ */
 void FieldClass15AE70::func_slot48(void* associated)
 {
     unk9c = associated;
 }
 
-/** @brief Return the alternate window pointer. @return Stored pointer. */
+/**
+ * @brief Return the alternate window pointer.
+ * @return Stored pointer.
+ */
 void* FieldClass15AE70::func_slot4c()
 {
     return unk9c;
 }
 
-/** @brief Store the resource source word. @param value Word to store. */
+/**
+ * @brief Store the resource source word.
+ * @param value Word to store.
+ */
 void FieldClass15AE70::func_slot50(u32 value)
 {
     unk04 = value;
 }
 
-/** @brief Return the resource source word. @return Stored word. */
+/**
+ * @brief Return the resource source word.
+ * @return Stored word.
+ */
 u32 FieldClass15AE70::func_slot54()
 {
     return unk04;
 }
 
-/** @brief Return the nested widget container. @return Stored container. */
+/**
+ * @brief Return the nested widget container.
+ * @return Stored container.
+ */
 LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }
 
-/** @brief Default window hook; does nothing. @param text_key Unused. */
+/**
+ * @brief Default window hook; does nothing.
+ * @param text_key Unused.
+ */
 void FieldClass15AE70::func_slot60(s32 text_key)
 {
 }
@@ -1029,61 +1112,91 @@ void FieldClass15AE70::func_slotac()
 {
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc0()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc4()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc8()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotcc()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd0()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd4()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd8()
 {
     return 0;
 }
 
-/** @brief Default window hook. @return Zero. */
+/**
+ * @brief Default window hook.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotdc()
 {
     return 0;
@@ -1099,13 +1212,19 @@ void FieldClass15AE70::func_slote4()
 {
 }
 
-/** @brief Read the second window control byte. @return Control value. */
+/**
+ * @brief Read the second window control byte.
+ * @return Control value.
+ */
 u8 FieldClass15AE70::func_slote8()
 {
     return unk0d;
 }
 
-/** @brief Store the second window control byte. @param value Control value. */
+/**
+ * @brief Store the second window control byte.
+ * @param value Control value.
+ */
 void FieldClass15AE70::func_slotec(u8 value)
 {
     unk0d = value;
@@ -1116,7 +1235,10 @@ void FieldClass15AE70::func_slotf0()
 {
 }
 
-/** @brief Return the focused window. @return Window that receives input. */
+/**
+ * @brief Return the focused window.
+ * @return Window that receives input.
+ */
 void* FieldClass153E30::func_00261150()
 {
     return unk20;
@@ -1164,7 +1286,10 @@ void ItemDropConfirmWindow::func_slot70()
     }
 }
 
-/** @brief Give a window the focus. @param value Window that receives input. */
+/**
+ * @brief Give a window the focus.
+ * @param value Window that receives input.
+ */
 void FieldClass153E30::func_00263C70(void* value)
 {
     unk20 = value;
@@ -1232,7 +1357,10 @@ s32 ItemHpMpGauge::initialize(s32 code, s32 first, void* source, float x, float 
     return 1;
 }
 
-/** @brief Complete DMA notification processing. @param value Unused notification value. */
+/**
+ * @brief Complete DMA notification processing.
+ * @param value Unused notification value.
+ */
 void ItemHpMpGauge::on_packet_complete(u32 value)
 {
     func_4D00B0(this);
@@ -1435,7 +1563,10 @@ void ItemHpMpGaugeDrawer::func_002BC4F0(u32 first, u32 depth, float value)
     }
 }
 
-/** @brief Return the loaded resource slot. @return Resource slot. */
+/**
+ * @brief Return the loaded resource slot.
+ * @return Resource slot.
+ */
 u32 ItemController::get_resource_slot()
 {
     return resource_slot;
@@ -1647,7 +1778,10 @@ s32 ItemEquipWindow::func_slotc0()
     return 0;
 }
 
-/** @brief Same as func_slotc0. @return Its result. */
+/**
+ * @brief Same as func_slotc0.
+ * @return Its result.
+ */
 s32 ItemEquipWindow::func_slotc4()
 {
     return this->func_slotc0();
@@ -1759,7 +1893,10 @@ void ItemEquipWindow::func_slot68()
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selector), index, 0);
 }
 
-/** @brief Close the window and return to the instance list, or to the type list when none remain. @return Two. */
+/**
+ * @brief Close the window and return to the instance list, or to the type list when none remain.
+ * @return Two.
+ */
 u8 ItemEquipWindow::func_slotb4()
 {
     ItemCreationAllocationRecord* records[100];
@@ -2082,7 +2219,10 @@ inline ItemCreationClass175030::~ItemCreationClass175030()
 {
 }
 
-/** @brief Return the party selection. @return Party selection. */
+/**
+ * @brief Return the party selection.
+ * @return Party selection.
+ */
 FieldRecordSelection* ItemController::selected_records()
 {
     return party;
@@ -2263,7 +2403,10 @@ void ItemUseWindow::func_slot68()
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(selector), index, 0);
 }
 
-/** @brief Close the window and return to the instance list, or to the type list when none remain. @return Two. */
+/**
+ * @brief Close the window and return to the instance list, or to the type list when none remain.
+ * @return Two.
+ */
 u8 ItemUseWindow::func_slotb4()
 {
     ItemCreationAllocationRecord* records[100];
@@ -2290,7 +2433,10 @@ u8 ItemUseWindow::func_slotb4()
     return 2;
 }
 
-/** @brief Use the selected item on the selected member. @return Three when it can't be used, otherwise zero. */
+/**
+ * @brief Use the selected item on the selected member.
+ * @return Three when it can't be used, otherwise zero.
+ */
 u8 ItemUseWindow::func_slotb0()
 {
     ItemController* owner = static_cast<ItemController*>(D_001B643C->callbacks->state);
@@ -3082,7 +3228,10 @@ void ItemTypeListWindow::rebuild_list(s32 reset, s32 category)
     configure_selection(unk88, start, selected);
 }
 
-/** @brief Clear the row widgets and link the controller. @param owner Parent item controller. */
+/**
+ * @brief Clear the row widgets and link the controller.
+ * @param owner Parent item controller.
+ */
 ItemTypeListWindow::ItemTypeListWindow(ItemController* owner)
 {
     for (s32 index = 0; index < 14; index++)
@@ -3642,7 +3791,10 @@ void ItemInstanceListWindow::func_slot10c(u32 value, u32 alternate)
     }
 }
 
-/** @brief Position the rows. @param start Vertical offset. */
+/**
+ * @brief Position the rows.
+ * @param start Vertical offset.
+ */
 void ItemInstanceListWindow::set_scroll_position(float offset)
 {
     ItemController* controller = static_cast<ItemController*>(D_001B643C->callbacks->state);
@@ -3667,7 +3819,10 @@ void ItemInstanceListWindow::set_scroll_position(float offset)
     }
 }
 
-/** @brief Fill the visible rows. @param start First list index. */
+/**
+ * @brief Fill the visible rows.
+ * @param start First list index.
+ */
 void ItemInstanceListWindow::refresh_rows(s32 start)
 {
     ItemCreationAllocationRecord* records[99];
@@ -3963,7 +4118,10 @@ void ItemTypeListWindow::func_slot5c()
     }
 }
 
-/** @brief Fill the visible rows with names and counts. @param start First list index. */
+/**
+ * @brief Fill the visible rows with names and counts.
+ * @param start First list index.
+ */
 void ItemTypeListWindow::refresh_rows(s32 start)
 {
     if (controller != 0)
@@ -4054,13 +4212,19 @@ ItemTypeListWindow::~ItemTypeListWindow()
 {
 }
 
-/** @brief Set the list flag. @param value Flag value to store. */
+/**
+ * @brief Set the list flag.
+ * @param value Flag value to store.
+ */
 void FieldClass15AD40::func_slot110(u8 value)
 {
     unk84 = value;
 }
 
-/** @brief Toggle sorting and refresh the visible rows. @return Zero for Valuables, otherwise one. */
+/**
+ * @brief Toggle sorting and refresh the visible rows.
+ * @return Zero for Valuables, otherwise one.
+ */
 u8 ItemTypeListWindow::func_slotbc()
 {
     if (this->FieldClass15AE60::unk8c == ITEM_CATEGORY_VALUABLES)
@@ -4083,7 +4247,10 @@ u8 ItemTypeListWindow::func_slotbc()
     return 1;
 }
 
-/** @brief Hide the cursor and return to the category window. @return Two. */
+/**
+ * @brief Hide the cursor and return to the category window.
+ * @return Two.
+ */
 u8 ItemTypeListWindow::func_slotb4()
 {
     this->func_slot10c(0, 0);
@@ -4119,7 +4286,10 @@ void ItemTypeListWindow::func_slot10c(u32 unused, u32 cursor)
     }
 }
 
-/** @brief Position the row widgets. @param start Base vertical coordinate. */
+/**
+ * @brief Position the row widgets.
+ * @param start Base vertical coordinate.
+ */
 void ItemTypeListWindow::set_scroll_position(float start)
 {
     s32 index;
@@ -4169,7 +4339,10 @@ void ItemCategoryWindow::func_slot64()
     set_selector_brightness(selector, 128.0f);
 }
 
-/** @brief Handle Back by setting window state one with flag 0x80. @return Two. */
+/**
+ * @brief Handle Back by setting window state one with flag 0x80.
+ * @return Two.
+ */
 u8 ItemCategoryWindow::func_slotb4()
 {
     this->set_state(1, 0x80);
@@ -4542,7 +4715,10 @@ void ItemController::func_slot5c()
     field_queue_allocation_release(D_001B643C->resources, 14);
 }
 
-/** @brief Collect the owned valuables and create the menu windows. @return One. */
+/**
+ * @brief Collect the owned valuables and create the menu windows.
+ * @return One.
+ */
 s32 ItemController::init_windows()
 {
     ItemFlagBlock* flag_block = reinterpret_cast<ItemFlagBlock*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
@@ -4703,17 +4879,26 @@ ItemController::ItemController()
     }
 }
 
-/** @brief Leave the default DMA notification hook unchanged. @param value Unused notification value. */
+/**
+ * @brief Leave the default DMA notification hook unchanged.
+ * @param value Unused notification value.
+ */
 void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
 
-/** @brief Leave the default DMA completion hook unchanged. @param value Unused notification value. */
+/**
+ * @brief Leave the default DMA completion hook unchanged.
+ * @param value Unused notification value.
+ */
 void LibDmaCallbacks::on_packet_complete(u32 value)
 {
 }
 
-/** @brief Report the intrusive object kind. @return Three. */
+/**
+ * @brief Report the intrusive object kind.
+ * @return Three.
+ */
 s32 ItemCoordinateSelector::get_default_list_kind()
 {
     return 3;
@@ -4729,21 +4914,32 @@ void ItemCoordinateSelector::render()
 {
 }
 
-/** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
+/**
+ * @brief Copy the translation vector and mark the transform dirty.
+ * @param value Translation vector.
+ */
 void LibOrientedTransform::copy_translation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&translation, value);
 }
 
-/** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
+/**
+ * @brief Copy the translation vector and mark the transform dirty.
+ * @param value Translation vector.
+ */
 void LibOrientedTransform::set_translation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&translation, value);
 }
 
-/** @brief Set the translation coordinates and mark the transform dirty. @param x Horizontal translation. @param y Vertical translation. @param z Third translation component. */
+/**
+ * @brief Set the translation coordinates and mark the transform dirty.
+ * @param x Horizontal translation.
+ * @param y Vertical translation.
+ * @param z Third translation component.
+ */
 void LibOrientedTransform::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
@@ -4753,7 +4949,13 @@ void LibOrientedTransform::set_translation(float x, float y, float z)
     translation.w = 1.0f;
 }
 
-/** @brief Set all quaternion components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
+/**
+ * @brief Set all quaternion components and mark the transform dirty.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
 void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
@@ -4763,35 +4965,52 @@ void LibOrientedTransform::set_orientation_components(float x, float y, float z,
     orientation.w = w;
 }
 
-/** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
+/**
+ * @brief Copy the quaternion and mark the transform dirty.
+ * @param value Quaternion components.
+ */
 void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
 }
 
-/** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
+/**
+ * @brief Copy the quaternion and mark the transform dirty.
+ * @param value Quaternion components.
+ */
 void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
 }
 
-/** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
+/**
+ * @brief Update the rotation state and mark the transform dirty.
+ * @param value Rotation components.
+ */
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
     lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
-/** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
+/**
+ * @brief Update the rotation state and mark the transform dirty.
+ * @param value Rotation components.
+ */
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value->x);
 }
 
-/** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
+/**
+ * @brief Set the rotation components and mark the transform dirty.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
 void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
@@ -4803,21 +5022,32 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value.x);
 }
 
-/** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
+/**
+ * @brief Copy the scale vector and mark the transform dirty.
+ * @param value Scale vector.
+ */
 void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
 }
 
-/** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
+/**
+ * @brief Copy the scale vector and mark the transform dirty.
+ * @param value Scale vector.
+ */
 void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
 }
 
-/** @brief Set the scale coordinates and mark the transform dirty. @param x First scale component. @param y Second scale component. @param z Third scale component. */
+/**
+ * @brief Set the scale coordinates and mark the transform dirty.
+ * @param x First scale component.
+ * @param y Second scale component.
+ * @param z Third scale component.
+ */
 void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
@@ -4826,13 +5056,22 @@ void LibOrientedTransform::set_scale(float x, float y, float z)
     scale.z = z;
 }
 
-/** @brief Return the default output status. @param output Unused output object. @return Zero. */
+/**
+ * @brief Return the default output status.
+ * @param output Unused output object.
+ * @return Zero.
+ */
 s32 LibTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
 
-/** @brief Test whether the supplied value is negative. @param value Value to test. @param mode Unused mode. @return One if negative, otherwise zero. */
+/**
+ * @brief Test whether the supplied value is negative.
+ * @param value Value to test.
+ * @param mode Unused mode.
+ * @return One if negative, otherwise zero.
+ */
 s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
     s32 result = 1;
@@ -4845,13 +5084,19 @@ s32 LibTransformOwner::set_fade_alpha(float value, float mode)
     return result;
 }
 
-/** @brief Return the default transform vector. @return Resident vector pointer. */
+/**
+ * @brief Return the default transform vector.
+ * @return Resident vector pointer.
+ */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
     return &g_default_bounding_sphere;
 }
 
-/** @brief Return the default transform receiver. @return Null. */
+/**
+ * @brief Return the default transform receiver.
+ * @return Null.
+ */
 LibTransformOwner* LibTransformOwner::clone()
 {
     return 0;
@@ -4867,7 +5112,10 @@ ItemCoordinateSelector::~ItemCoordinateSelector()
 {
 }
 
-/** @brief Report the transform kind. @return Fourteen. */
+/**
+ * @brief Report the transform kind.
+ * @return Fourteen.
+ */
 s32 ItemHpMpGauge::get_default_list_kind()
 {
     return 14;
@@ -4899,49 +5147,73 @@ void FieldClass15AE70::func_slot74()
 {
 }
 
-/** @brief Default confirm handler. @return Zero. */
+/**
+ * @brief Default confirm handler.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
-/** @brief Default back handler. @return Zero. */
+/**
+ * @brief Default back handler.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }
 
-/** @brief Store the pointer at offset 0x24. @param value Pointer to store. */
+/**
+ * @brief Store the pointer at offset 0x24.
+ * @param value Pointer to store.
+ */
 void FieldClass153E30::func_00263C80(void* value)
 {
     unk24 = value;
 }
 
-/** @brief Return the pointer at offset 0x24. @return Stored pointer. */
+/**
+ * @brief Return the pointer at offset 0x24.
+ * @return Stored pointer.
+ */
 void* FieldClass153E30::func_00263C90()
 {
     return unk24;
 }
 
-/** @brief Store the signed byte at offset 0x28. @param value Byte to store. */
+/**
+ * @brief Store the signed byte at offset 0x28.
+ * @param value Byte to store.
+ */
 void FieldClass153E30::func_00263CA0(s8 value)
 {
     unk28 = value;
 }
 
-/** @brief Return the signed byte at offset 0x28. @return Stored byte. */
+/**
+ * @brief Return the signed byte at offset 0x28.
+ * @return Stored byte.
+ */
 s8 FieldClass153E30::func_00263CB0()
 {
     return unk28;
 }
 
-/** @brief Default receiver hook. @return Zero. */
+/**
+ * @brief Default receiver hook.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot60()
 {
     return 0;
 }
 
-/** @brief Default receiver hook. @return Zero. */
+/**
+ * @brief Default receiver hook.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot64()
 {
     return 0;
@@ -4967,31 +5239,46 @@ void FieldClass153E30::func_slot78()
 {
 }
 
-/** @brief Default receiver hook. @return Zero. */
+/**
+ * @brief Default receiver hook.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot7c()
 {
     return 0;
 }
 
-/** @brief Default receiver hook. @return Zero. */
+/**
+ * @brief Default receiver hook.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot80()
 {
     return 0;
 }
 
-/** @brief Default receiver hook. @return Zero. */
+/**
+ * @brief Default receiver hook.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot84()
 {
     return 0;
 }
 
-/** @brief Report this object's default list kind. @return Four. */
+/**
+ * @brief Report this object's default list kind.
+ * @return Four.
+ */
 s32 ItemController::get_default_list_kind()
 {
     return 4;
 }
 
-/** @brief Report whether window setup finished. @return Setup flag. */
+/**
+ * @brief Report whether window setup finished.
+ * @return Setup flag.
+ */
 u8 ItemController::windows_ready()
 {
     return windows_initialized;

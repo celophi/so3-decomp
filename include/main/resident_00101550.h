@@ -23,7 +23,6 @@ void lib_object_detach_owner(void* object);
 class ResidentClass14FA20
 {
 public:
-    /** @brief Destroy the resident root. */
     virtual ~ResidentClass14FA20()
     {
     }
@@ -38,7 +37,6 @@ public:
     {
     }
 
-    /** @brief Destroy the intrusive node. */
     virtual ~ResidentClass14FA30()
     {
     }
@@ -62,7 +60,10 @@ public:
         lib_object_detach_owner(this);
     }
 
-    /** @brief Return the object's kind. @return Object kind. */
+    /**
+     * @brief Return the object's kind.
+     * @return Object kind.
+     */
     virtual s32 func_00104730();
 
     /** @brief Destroy the object through its virtual destructor. */
@@ -82,13 +83,13 @@ public:
 
 #ifdef __cplusplus
 extern "C" s32 DIntr(void);
+
 extern "C" s32 EIntr(void);
 
 /** Scoped lock that disables interrupts while it lives, if they were enabled; vtable at 0x14FA60. */
 class ResidentInterruptLock
 {
 public:
-    /** Nonzero when the lock disabled interrupts and must enable them again. */
     u8 disabled;
 
     /** @brief Disable interrupts if they're enabled. */
@@ -157,34 +158,17 @@ struct ResidentArchive;
 /** One entry of the resource queue's request table; entry 0 is the head of the queued list. */
 typedef struct ResidentResourceRequest
 {
-    /** Caller's tag, used to find and cancel the request. */
     u32 tag;
-
     void* buffer;
     s32 byte_count;
-
-    /** Lower values run first; each queue pass lowers the positive ones, so waiting requests move up. */
     s32 priority;
-
     s32 file_key;
-
-    /** Table index of the next queued request, or zero at the end of the list. */
     s32 next;
-
-    /** Table index of the previous queued request. */
     s32 previous;
-
     s32 file_offset;
-
-    /** Notified with the request when it finishes, or null. */
     struct ResidentListener* completion_callback;
-
-    /** Object a kind-4 request carries instead of a read; it's notified with the request when the request starts. */
     struct ResidentListener* context;
-
-    /** Nonzero while the entry holds a request. */
     u8 in_use;
-
     u8 state;
     u8 request_kind;
     u8 unk2b;
@@ -211,7 +195,10 @@ class ResidentListener
 class ResidentResourceQueueListener : public ResidentListener
 {
     public:
-        /** @brief Update the object the archive passes back. @param data Resource queue. */
+        /**
+         * @brief Update the object the archive passes back.
+         * @param data Resource queue.
+         */
         virtual void notify(void* data);
 };
 
@@ -219,30 +206,16 @@ class ResidentResourceQueueListener : public ResidentListener
 class ResidentResourceQueue : public ResidentClass14FA40
 {
 public:
-    /** Request table; entry 0 is the list head. */
     ResidentResourceRequest* requests;
-
-    /** Number of entries in the request table. */
     s32 request_capacity;
-
-    /** Table index of the request the archive is reading. */
     s32 active_request;
-
     struct ResidentArchive* archive;
     ResidentSemaphore semaphore;
     u8 unk2c;
-
-    /** Read status, registered for display as "StorageQueue Status". */
     u8 status;
-
     u8 unk2e;
-
-    /** Nonzero while cancellation of the active read is still pending. */
     u8 cancel_pending;
-
     u8 unk30;
-
-    /** Listener registered with the archive; it calls this queue's update. */
     ResidentResourceQueueListener listener;
 
     /** @brief Create the semaphore, register with the archive and allocate a 256-entry request table. */
@@ -267,9 +240,7 @@ typedef struct ResidentDecodeObject
 /** Header of an SLZ/SLE compression block; next_offset is relative to this header. */
 typedef struct ResidentResourceHeader
 {
-    /** Three-byte SLZ/SLE tag, without a terminating null byte. */
     u8 signature[3];
-
     u8 compression_kind;
     u32 compressed_size;
     u32 decoded_size;
@@ -279,15 +250,9 @@ typedef struct ResidentResourceHeader
 /** State of a block that is decoded a part at a time. */
 typedef struct ResidentDecodeStream
 {
-    /** LZ flag bits not yet used. */
     u32 flags;
-
-    /** Flags left before the next flag word is read. */
     s32 flag_count;
-
-    /** Bytes left to copy from a stored block. */
     s32 remaining;
-
     u8* destination;
     u8* source;
     u8* destination_end;
@@ -313,10 +278,7 @@ typedef struct SoundFileHeader
     u32 unk0C;
     u32 unk10;
     u32 unk14;
-
-    /** Nonzero when a LIP chunk follows the WAV chunk. */
     u8 has_lip;
-
     u8 unk19[0xD];
     s16 bank_id;
     s8 priority;
@@ -413,7 +375,10 @@ bool func_00103AE0(ResidentResourceQueue* queue, s32 file_key, void* buffer, s32
 bool func_001037E0(ResidentResourceQueue* queue, s32 priority, ResidentListener* context, u32 tag, void* completion_callback);
 #endif
 
-/** @brief Start the next queued read when the archive is idle. @param queue Resident resource queue. */
+/**
+ * @brief Start the next queued read when the archive is idle.
+ * @param queue Resident resource queue.
+ */
 void func_00102D50(ResidentResourceQueue* queue);
 
 #ifdef __cplusplus
@@ -425,7 +390,10 @@ void func_00102D50(ResidentResourceQueue* queue);
 bool func_001031C0(ResidentResourceQueue* queue);
 #endif
 
-/** @brief Cancel the active read, then empty the request table and its queued list. @param queue Resident resource queue. */
+/**
+ * @brief Cancel the active read, then empty the request table and its queued list.
+ * @param queue Resident resource queue.
+ */
 void func_001041C0(ResidentResourceQueue* queue);
 
 /**
@@ -441,7 +409,10 @@ void func_00102AE0(ResidentResourceQueue* queue);
  */
 s32 resident_poll_resource_queue(ResidentResourceQueue* queue);
 
-/** @brief Lower the priority of every queued request that is still positive. @param queue Resident resource queue. */
+/**
+ * @brief Lower the priority of every queued request that is still positive.
+ * @param queue Resident resource queue.
+ */
 void func_00103510(ResidentResourceQueue* queue);
 
 /**
@@ -452,7 +423,10 @@ void func_00103510(ResidentResourceQueue* queue);
  */
 s32 func_00104370(ResidentResourceQueue* queue, s32 capacity);
 
-/** @brief Register the queue's listener with the archive again. @param queue Resident resource queue. */
+/**
+ * @brief Register the queue's listener with the archive again.
+ * @param queue Resident resource queue.
+ */
 void func_001043F0(ResidentResourceQueue* queue);
 
 #ifdef __cplusplus
@@ -577,6 +551,7 @@ s32 func_00104C90(ResidentDecodeObject* decoder, ResidentDecodeStream* stream, s
 s32 func_00105210(ResidentDecodeObject* decoder, ResidentDecodeStream* stream, s32 limit);
 
 void func_00101550(void* object);
+
 void func_00102A90(void* object);
 
 /**
@@ -667,7 +642,10 @@ s32 func_00107B60(struct ResidentSoundStream* stream, u32 arg1, void (*callback)
  */
 s32 func_00109000(struct ResidentSoundStream* stream, u32 arg1, u32 arg2, u32 arg3, u32 arg4, u32 arg5, u32 arg6, s32 arg7, s32 arg8);
 
-/** @brief Stream setup step run after func_00109000 completes. @param stream Sound stream. */
+/**
+ * @brief Stream setup step run after func_00109000 completes.
+ * @param stream Sound stream.
+ */
 void func_00108E10(struct ResidentSoundStream* stream);
 
 /**

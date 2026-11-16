@@ -3,20 +3,33 @@
 #include "overlays/1070-00/text_00284BF0.h"
 
 extern "C" void func_494D80(void* object);
+
 extern "C" u8 D_178C60[];
 extern "C" u8 D_1799E0[];
+
 extern "C" void func_00234930(void* object);
+
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" void* D_001B6620;
+
 extern "C" void func_002CE4F0(FieldContext* context, float value);
+
 extern "C" void func_4D7EB0(void* object);
+
 extern "C" void func_00203B90(void* object);
+
 extern "C" void func_002656C0(void* object);
+
 extern "C" void func_002CE6C0(void* context, float value);
+
 extern "C" u32 func_00248B10(void* object, u32 first, u32 second);
+
 extern "C" void func_001E30E0(void* object, float value, s32 first, s32 second);
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" void func_123020(void* owner, void* object);
+
 extern "C" void func_42C4B0(void* object);
 
 /** Partial receiver with a float pointer at offset 0x540. */
@@ -38,7 +51,9 @@ class FieldCallbackDispatch10Local
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void callback();
 };
 
@@ -120,6 +135,7 @@ struct FieldWordState250
 };
 
 extern "C" void func_4967C0(void);
+
 extern "C" void func_4EABF0(void);
 
 /** Minimal observed prefix containing three independent flags at offset 0x1059. */
@@ -225,6 +241,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_002360
 void func_002362D0(void* receiver)
 {
     FieldOptionalChild90* object = (FieldOptionalChild90*)receiver;
+
     if (object->unk90 != 0)
     {
         func_00234930(object->unk90);
@@ -234,6 +251,7 @@ void func_002362D0(void* receiver)
 void func_00236300(void* receiver)
 {
     FieldOptionalChild90* object = (FieldOptionalChild90*)receiver;
+
     if (object->unk90 != 0)
     {
         ((FieldCallbackDispatch10Local*)object->unk90)->callback();
@@ -248,6 +266,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_002364
 void func_002364C0(FieldOptionalColor44* object)
 {
     FieldColorState30* state = object->unk44;
+
     if (state != 0)
     {
         state->unk34 = (state->unk30->unk1c & 1) != 0 ? 0xFF008000 : 0xFF0040E0;
@@ -257,6 +276,7 @@ void func_002364C0(FieldOptionalColor44* object)
 void func_00236500(void* receiver)
 {
     FieldOptionalCallback44* object = (FieldOptionalCallback44*)receiver;
+
     if (object->callback != 0)
     {
         ((FieldCallbackDispatch10Local*)object->callback)->callback();
@@ -369,6 +389,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_002383
 void func_00238420(void* receiver)
 {
     FieldOptionalChild5BC* object = (FieldOptionalChild5BC*)receiver;
+
     if (object->child != 0)
     {
         ((FieldChildCallbackAt20*)object->child)->callback.callback();
@@ -482,28 +503,51 @@ class FieldCallbackDispatch64WithValues
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void slot58();
+
     virtual void slot5c();
+
     virtual void slot60();
+
     virtual void dispatch(u32 first, u32 second);
 };
 
@@ -593,6 +637,7 @@ void func_0023A2D0(FieldConditionalState103C* object)
     if (!object->unk103c_2)
     {
         object->unk103c_2 = 1;
+
         if (object->unkcb != 0 && object->unk100c >= 3)
         {
             object->unkabd = 0;
@@ -700,6 +745,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023BC
 void func_0023BC60(FieldConditionalVectorState* object)
 {
     object->unk90 = object->unk10;
+
     if (object->unk70 & 0x10)
     {
         object->unka8 = object->unka4;
@@ -762,6 +808,7 @@ void func_0023C5D0(void)
 extern "C" void func_0023C5F0(void* object)
 {
     FieldContext38* state = D_001B64B0->context->unk38;
+
     if (object == state->unk5b8)
     {
         state->unk5b8 = 0;
@@ -786,6 +833,7 @@ bool func_0023D480(const FieldSlotObject* object)
     {
         return true;
     }
+
     if (!(object->unka4 < object->unka8))
     {
         return false;
@@ -811,10 +859,12 @@ extern "C" void func_0023D5F0(FieldOptionalOwnerC4* object)
 {
     object->unk64 = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
+
     func_123020(object->owner, adjusted);
 }
 
@@ -826,6 +876,7 @@ void func_0023DDC0(void* object)
     FieldSlotIndexF1* receiver = (FieldSlotIndexF1*)object;
     FieldContext38* state = D_001B64B0->context->unk38;
     u8 index = receiver->unkf1;
+
     if (object == state->unk598[index])
     {
         state->unk598[index] = 0;
@@ -866,14 +917,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00234310", func_0023E6
 s32 func_0023E800(void)
 {
     void* object = D_001B64B0->context->unke0;
+
     if (object != 0)
     {
         void* target = *(void**)((u8*)object + 0x78);
+
         if (target != 0)
         {
             func_42C4B0(target);
         }
     }
+
     return 1;
 }
 

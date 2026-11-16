@@ -694,6 +694,7 @@ static inline s32 character_effective_agility(const LibCharacterRecord* record)
 }
 
 extern "C" s32 lib_character_set_effective_agility(LibCharacterRecord* record, s32 agility);
+
 extern "C" s32 lib_character_limit_agility(const LibCharacterRecord* record, s32 agility);
 
 // TODO: The target has this function inlined into itself once, with the

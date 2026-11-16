@@ -241,7 +241,6 @@ typedef struct FieldContext
     void* unk54;
     FieldContext58* unk58;
     u8 unk5c[0xC];
-    /** Circular list sentinel traversed by func_002EC930. */
     void* unk68;
     u8 unk6c[0x38];
     u16 unka4;
@@ -609,6 +608,7 @@ s32 func_00290D70(const FieldValueSource* object);
 
 /** Set the callback value when target flag 0x400 is present. */
 s32 func_00291370(FieldFlagCallback10* object);
+
 /** Set the callback value when target flag 0x100 is present. */
 s32 func_002914F0(FieldFlagCallback10* object);
 
@@ -1171,6 +1171,7 @@ s32 func_00291610(void* object);
  * @return The initialized object pointer.
  */
 void* func_0028B380(void* object);
+
 s32 func_0028FF70(const FieldValueSource* object);
 
 /**

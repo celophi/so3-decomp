@@ -114,7 +114,9 @@ struct BattleByte518View
 };
 
 extern "C" float func_003C9460(BattleNestedStateView* state, s32 index);
+
 extern "C" void func_003ADF00(void* object);
+
 extern "C" void func_003AEAB0(void* object);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003B7870);
@@ -388,6 +390,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C53
 void func_003C5430(void* object)
 {
     BattleReady36CView* state = (BattleReady36CView*)object;
+
     if (state->ready == 0)
     {
         state->ready = 1;
@@ -571,6 +574,7 @@ s32 func_003C6BC0(void* object)
 }
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6BD0);
+
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6C00);
 
 s32 func_003C6C30(void* object)
@@ -601,6 +605,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6D
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6EB0);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6F90);
+
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6FC0);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003B7870", func_003C6FF0);

@@ -70,6 +70,7 @@ typedef struct FieldContext29310
 } FieldContext29310;
 
 extern "C" s32 func_00202310(void* object);
+
 extern "C" void func_4CEE30(float* vector);
 
 struct FieldObject2B440
@@ -114,6 +115,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0021FF
 void func_00220150(void* object, s32 flag)
 {
     FieldObject220150* state = static_cast<FieldObject220150*>(object);
+
     if (state->unk6D3_2 == 0)
     {
         state->unk6D2_6 = 1;
@@ -154,6 +156,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00221C
 void func_002227F0(void* object)
 {
     func_00233660((FieldObject232640*)object);
+
     while (!func_00202310(object))
     {
     }
@@ -186,16 +189,20 @@ s32 func_00222CC0(FieldObject22CC0* object)
 {
     FieldContext22CC0* context;
     u32 value;
+
     if (object->flags & 0x200)
     {
         return 0;
     }
+
     context = (FieldContext22CC0*)D_001B6430->context;
     value = context->unk10->value;
+
     if (value != 0)
     {
         return func_001EF150(context->unk3C, reinterpret_cast<FieldClass151510*>(object), value);
     }
+
     return 0;
 }
 
@@ -245,7 +252,10 @@ void FieldInputState::func_001DD7B0()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_00224D10);
 
-/** @brief Clear all transient control words. @param unused Unused reset argument. */
+/**
+ * @brief Clear all transient control words.
+ * @param unused Unused reset argument.
+ */
 void FieldInputState::clear(s32 unused)
 {
     button_masks[0] = 0;
@@ -273,6 +283,7 @@ void FieldClass152410::func_001DD7B0()
         unk300->func_001DD7B0();
         unk300 = 0;
     }
+
     lib_object_detach_owner(this);
     resident_enqueue_object(g_resident_release_queues, this);
 }
@@ -392,7 +403,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002292
 
 extern "C" void func_4D00B0(void* object);
 
-/** @brief Forward the object to func_4D00B0. @param object Object to forward. */
+/**
+ * @brief Forward the object to func_4D00B0.
+ * @param object Object to forward.
+ */
 extern "C" void func_002292F0(void* object)
 {
     func_4D00B0(object);
@@ -402,6 +416,7 @@ void func_00229310(void* object)
 {
     FieldContext29310* context = (FieldContext29310*)D_001B6430->context;
     FieldOwner29310* owner = context->owner;
+
     if (object == owner->linked)
     {
         owner->linked = 0;
@@ -422,7 +437,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A0
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_0022A160);
 
-/** @brief Forward the object to func_4D00B0. @param object Object to forward. */
+/**
+ * @brief Forward the object to func_4D00B0.
+ * @param object Object to forward.
+ */
 extern "C" void func_0022A1C0(void* object)
 {
     func_4D00B0(object);
@@ -436,10 +454,12 @@ void func_0022A2D0(N50OwnerC4_1067* object)
 {
     object->active = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
+
     resident_packet_submit(object->owner, adjusted);
 }
 
@@ -474,6 +494,7 @@ extern "C" void func_0022AA90(FieldObject2AA90* object)
 {
     void** links = ((FieldContext2AA90*)D_001B6430->context)->owner->linked;
     void** link = &links[object->index];
+
     if (object == *link)
     {
         *link = 0;

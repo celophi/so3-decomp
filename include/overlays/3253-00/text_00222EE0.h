@@ -8,8 +8,10 @@ typedef struct N54Owner64_00222EE0 N54Owner64_00222EE0;
 #ifdef __cplusplus
 extern "C" {
 void* func_0022D170(void* receiver);
+
 /** Initialize the receiver and select state 6. */
 void* func_0022D330(void* object);
+
 /** Initialize the receiver and select state 5. */
 void* func_0022D5C0(void* object);
 #endif
@@ -93,12 +95,16 @@ s32 func_002246A0(void* object);
 
 /** Return the word at receiver offset 0x4. */
 u32 func_00222F80(const void* object);
+
 /** Return the word at receiver offset 0x40. */
 u32 func_002231B0(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_002234F0(const void* object);
+
 /** Return the word at receiver offset 0x30. */
 u32 func_00223900(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_00223A90(const void* object);
 
@@ -115,6 +121,7 @@ s16 func_00223910(const void* object);
 
 /** Return the first pointer argument unchanged. */
 void* func_00224040(void* value);
+
 /** Return the first pointer argument unchanged. */
 void* func_00224050(void* value);
 

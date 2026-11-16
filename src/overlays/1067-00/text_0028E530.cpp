@@ -65,27 +65,32 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E530", func_00290D
 s32 func_00291080(const ResidentContextRef* object)
 {
     FieldState5CC* state = ((FieldContext38*)object->context)->state;
+
     if (state != 0)
     {
         if (state->unk5CC != 0)
         {
             return 1;
         }
+
         if (state->unk5D0 != 0)
         {
             return 1;
         }
     }
+
     return 0;
 }
 
 s32 func_002910D0(void)
 {
     s32 result = (0xF2 - D_001B6648->unk14 % 0x106) * 1024;
+
     if (result < 0x400)
     {
         result = 0x400;
     }
+
     return result;
 }
 

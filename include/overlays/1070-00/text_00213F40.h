@@ -147,7 +147,10 @@ typedef struct FieldEntry1C
     u8 unk16_3_7 : 5;
     u8 unk17[5];
 #ifdef __cplusplus
-    /** @brief Read the entry's byte count. @return Stored byte count. */
+    /**
+     * @brief Read the entry's byte count.
+     * @return Stored byte count.
+     */
     u32 byte_count() const
     {
         return unk00;
@@ -163,6 +166,7 @@ typedef struct FieldEntry1C
         {
             return unk04;
         }
+
         return (unk04 + 127) & ~127;
     }
 #endif
@@ -690,6 +694,7 @@ s32 func_002179B0(const FieldKeyList18* object, s32 key);
  * @return True when a collected receiver reports the observed condition.
  */
 bool func_0021AB20(FieldReceiver21AB20* object, void* excluded);
+
 /** Set the low packed mode at its target field and record whether either mode equals four. */
 void func_00223ED0(void* object, u8 mode);
 

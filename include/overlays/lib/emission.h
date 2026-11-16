@@ -7,7 +7,6 @@
 class LibClass173A28 : public LibLink
 {
 public:
-    /** @brief Destroy the secondary base. */
     virtual ~LibClass173A28()
     {
     }
@@ -50,7 +49,10 @@ public:
     /** @brief Release the emitter's resource and storage. */
     virtual ~LibClass173990();
 
-    /** @brief Report the emitter object kind. @return Six. */
+    /**
+     * @brief Report the emitter object kind.
+     * @return Six.
+     */
     virtual s32 get_default_list_kind();
 
     /** @brief Detach and queue the emitter. */
@@ -89,13 +91,8 @@ public:
     float unk40c;
     float unk410;
     float unk414;
-
-    /** Squared cosine of half of unk414. */
     float unk418;
-
-    /** One over the squared cosines of half of unk410 and half of unk414 subtracted. */
     float unk41c;
-
     u8 unk420[8];
     u32 unk428;
     u8 unk42c[0x65];

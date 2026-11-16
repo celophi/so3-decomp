@@ -431,6 +431,7 @@ void BootInstaller::update()
             motion.arrived = 1;
             arrow->geometry_dirty = 1;
         }
+
         choice_growing = 0;
         menu_frames = 0;
         step++;
@@ -1400,10 +1401,12 @@ s32 LibTransformOwner::get_box_cull_center(void* output)
 s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
     s32 result = 1;
+
     if (!(value < 0.0f))
     {
         result = 0;
     }
+
     return result;
 }
 

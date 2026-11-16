@@ -2,8 +2,11 @@
 #include "overlays/3454-00/text_003A1210.h"
 
 extern u32 func_003AA650(void* item);
+
 extern void func_003AA760(void* item);
+
 extern void func_0039B180(u8* object);
+
 extern u8 D_15EDA0[];
 extern u8 D_16EB10[];
 
@@ -172,14 +175,17 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003A1210", func_003AA7
 u32 func_003AA8A0(u8* object)
 {
     u32 flags = 0;
+
     if (object[0x3C] != 0)
     {
         flags |= 1;
     }
+
     if (object[0x3D] != 0)
     {
         flags |= 4;
     }
+
     return flags;
 }
 
@@ -188,16 +194,19 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003A1210", func_003AA8
 u32 func_003AA980(u8* object)
 {
     void* item = *(void**)(object + 0x920);
+
     if (item != 0)
     {
         return (u8)func_003AA650(item);
     }
+
     return 0;
 }
 
 void func_003AA9B0(u8* object)
 {
     void* item = *(void**)(object + 0x920);
+
     if (item != 0)
     {
         func_003AA760(item);
@@ -207,6 +216,7 @@ void func_003AA9B0(u8* object)
 void func_003AA9E0(u8* object, float value)
 {
     u8* item = *(u8**)(object + 0x920);
+
     if (item != 0)
     {
         *(float*)(item + 0x30) = value / *(float*)(object + 0x950);

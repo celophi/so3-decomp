@@ -11,7 +11,6 @@
 class FieldVec4A
 {
 public:
-    /** @brief Leave the components uninitialized. */
     FieldVec4A()
     {
     }
@@ -65,7 +64,6 @@ public:
 class FieldVec4B
 {
 public:
-    /** @brief Leave the components uninitialized. */
     inline FieldVec4B();
 
     /**

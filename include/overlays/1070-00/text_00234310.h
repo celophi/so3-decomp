@@ -82,6 +82,7 @@ extern "C" {
 
 /** Initialize the receiver and select state 6. */
 void* func_00239E90(void* object);
+
 /** Initialize the receiver and select state 5. */
 void* func_00239ED0(void* object);
 

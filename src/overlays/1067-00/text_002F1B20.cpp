@@ -39,7 +39,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F24
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F2740);
 
-extern "C" u8 func_002F2880(void)
+extern "C" u8 func_002F2880(void* object)
 {
     return D_001B643C->target->value;
 }
@@ -57,10 +57,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F2F
 FieldClass15B9F8::FieldClass15B9F8()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -68,6 +70,7 @@ FieldClass15B9F8::FieldClass15B9F8()
 FieldClass15B9F8::~FieldClass15B9F8()
 {
     func_002F31D0(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -75,20 +78,27 @@ FieldClass15B9F8::~FieldClass15B9F8()
     }
 }
 
-/** @brief Append a value at the tail of the list. @param list List to extend. @param value Value to append. */
+/**
+ * @brief Append a value at the tail of the list.
+ * @param list List to extend.
+ * @param value Value to append.
+ */
 extern "C" void func_002F30A0(FieldCountedList* list, void* value)
 {
     FieldListNode* node = new (0) FieldListNode;
+
     if (node != 0)
     {
         FieldListNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -96,20 +106,26 @@ extern "C" void func_002F30A0(FieldCountedList* list, void* value)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F1B20", func_002F3130);
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002F31D0(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -120,15 +136,18 @@ extern "C" void* func_002F3250(void* object, s32 count)
     s32 traversed;
     node = *(void**)(*(u8**)object + 4);
     traversed = 0;
+
     while (traversed < count)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = *(void**)((u8*)node + 4);
         traversed += 1;
     }
+
     return node;
 }
 
@@ -141,6 +160,7 @@ extern "C" void* func_002F3250(void* object, s32 count)
 extern "C" s32 func_002F3290(FieldCountedList* list, void** value)
 {
     FieldListNode* node = list->head->next;
+
     if (node != 0)
     {
         *value = node->value;
@@ -149,6 +169,7 @@ extern "C" s32 func_002F3290(FieldCountedList* list, void** value)
     {
         return 0;
     }
+
     list->head->next = node->next;
     delete node;
     list->count--;

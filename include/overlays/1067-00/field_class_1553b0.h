@@ -15,7 +15,6 @@ public:
         unk18 = 0;
     }
 
-    /** @brief Destroy the controller. */
     virtual ~FieldClass1553B0()
     {
     }
@@ -35,7 +34,10 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_002721A0();
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
 
     u8 unk14[4];

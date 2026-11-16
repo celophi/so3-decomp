@@ -2,7 +2,9 @@
 #include "overlays/1070-00/text_00305890.h"
 
 extern "C" void func_137F40(void* object, s32 start, s32 size);
+
 extern "C" void func_4781A0(void* object);
+
 extern "C" void* D_001B64BC;
 extern "C" u8 D_178930[];
 
@@ -294,10 +296,12 @@ u8 func_0030BE80(const FieldByte121E* object)
 void* func_0030BE90(const FieldHalfwordByteState105A* object, s16 index)
 {
     s32 count = object->unk1050;
+
     if (index < 0 || count < index)
     {
         return 0;
     }
+
     return func_003100B0(&object->unk104c, index)->value;
 }
 
@@ -327,6 +331,7 @@ void func_0030C130(FieldHalfwordByteState105A* object, s16 value)
     {
         object->unk105a = 50;
     }
+
     object->unk105a = value;
 }
 
@@ -400,14 +405,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00305890", func_003100
 FieldIndexedListNode* func_003100B0(const FieldIndexedList* list, s32 index)
 {
     FieldIndexedListNode* node = list->head->next;
+
     for (s32 i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 

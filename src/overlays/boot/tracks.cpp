@@ -1454,6 +1454,7 @@ u8 BootVectorCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* u
     state.search_index = index;
     return 0;
 }
+
 /** @brief Release the keyframe storage. */
 BootVectorCurveTrackBase::~BootVectorCurveTrackBase()
 {
@@ -2113,6 +2114,7 @@ u8 BootVectorTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
     state.search_index = index;
     return 0;
 }
+
 /** @brief Release the keyframe storage. */
 BootVectorTrackBase::~BootVectorTrackBase()
 {
@@ -4494,6 +4496,7 @@ u8 BootFloatCurveTrackBase::find_surrounding_keys(float key, s32* lower, s32* up
     state.search_index = index;
     return 0;
 }
+
 /**
  * @brief Forward to slot 0x68.
  * @param value Key value.
@@ -4647,6 +4650,7 @@ u8 BootFloatTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
     state.search_index = index;
     return 0;
 }
+
 /**
  * @brief Reset signed-key entry storage, counts, control fields, and cached indices.
  */

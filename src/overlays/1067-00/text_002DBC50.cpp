@@ -129,15 +129,18 @@ void FieldClass15B900::func_002DD7B0(float* key)
         delete unk8c;
         unk8c = 0;
     }
+
     if (unkA0)
     {
         unk8c = new(0) FieldClass1514F8;
         s32 capacity;
         FieldClass1514F8* array = unk8c;
+
         if (!array)
         {
             return;
         }
+
         capacity = unkA4 + 2;
         array->unk00 = 0;
         delete[] array->unk04;
@@ -145,13 +148,16 @@ void FieldClass15B900::func_002DD7B0(float* key)
         array->unk04 = new(0) FieldVec4B[capacity];
         func_00272950(unk8c, 0.0f, 0.0f);
         FieldFloatPair8* pair = unkA0;
+
         for (s32 i = 0; i < unkA4; i++, pair++)
         {
             func_00272950(unk8c, pair->unk00, pair->unk04);
         }
+
         func_00272950(unk8c, 1.0f, 1.0f);
         func_002723E0(unk8c);
     }
+
     FieldClass15B950::func_002DD7B0(key);
 }
 
@@ -173,6 +179,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002DBC50", func_002DD9
 void FieldClass15B950::func_002DDA70()
 {
     func_001DD730();
+
     if (unk78)
     {
         unk78->func_001DF230();

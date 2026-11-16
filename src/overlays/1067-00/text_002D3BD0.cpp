@@ -267,8 +267,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D40
 class FieldClass15B130 : public FieldClass150EB0
 {
 public:
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Destroy the object. */
     virtual ~FieldClass15B130();
 };
@@ -290,6 +294,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D41
 void func_002D47A0(void* receiver)
 {
     FieldAttached2D47A0* object = (FieldAttached2D47A0*)receiver;
+
     if (object->unk40 != 0)
     {
         lib_object_detach_owner(object->unk40);
@@ -305,17 +310,21 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002D3BD0", func_002D49
 void func_002D4A30(FieldLinkedAttached2D4A30* list)
 {
     FieldLinkedAttached2D4A30* current = list;
+
     for (;;)
     {
         current = current->next;
+
         if (list == current)
         {
             break;
         }
+
         if (current->unk40 == 0)
         {
             continue;
         }
+
         lib_object_detach_owner(current->unk40);
         current->unk40->func_001DD7B0();
         current->unk40 = 0;

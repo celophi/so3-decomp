@@ -25,6 +25,7 @@ class ItemCreationClass187A60 : public ItemCreationCountedList
 public:
     /** @brief Allocate the head node and initialize the list count. */
     ItemCreationClass187A60();
+
     /** @brief Release the list nodes and head node. */
     virtual ~ItemCreationClass187A60();
 };
@@ -39,78 +40,114 @@ typedef struct ItemCreationSelectedDisplayState
 #ifdef __cplusplus
     /** @brief Initialize the selected-display windows and resource state. */
     ItemCreationSelectedDisplayState();
+
     /** @brief Destroy the selection state and its Field base. */
     virtual ~ItemCreationSelectedDisplayState();
+
     /** @brief Save workshop lines and append the selection state to the resident queue. */
     virtual void func_001DD7B0();
+
     /**
      * @brief Report this object's default list kind.
      * @return The class's default list kind.
      */
     virtual s32 get_default_list_kind();
+
     /** @brief Advance display transitions and the active target animation. */
     virtual void update();
-    /** @brief Prepare record selection and count available option records. @return One on success, zero when required runtime data is missing. */
+
+    /**
+     * @brief Prepare record selection and count available option records.
+     * @return One on success, zero when required runtime data is missing.
+     */
     virtual u8 func_00264110();
-    /** @brief Store the associated state pointer. @param value Pointer to store. */
+
+    /**
+     * @brief Store the associated state pointer.
+     * @param value Pointer to store.
+     */
     virtual void func_00263C70(void* value);
-    /** @brief Return the associated state pointer. @return Stored pointer. */
+
+    /**
+     * @brief Return the associated state pointer.
+     * @return Stored pointer.
+     */
     virtual void* func_00261150();
-    /** @brief Store the alternate associated object. @param value Object to store. */
+
+    /**
+     * @brief Store the alternate associated object.
+     * @param value Object to store.
+     */
     virtual void func_00263C80(void* value);
-    /** @brief Read the alternate associated object. @return Stored object. */
+
+    /**
+     * @brief Read the alternate associated object.
+     * @return Stored object.
+     */
     virtual void* func_00263C90();
-    /** @brief Store the signed state byte. @param value State byte to store. */
+
+    /**
+     * @brief Store the signed state byte.
+     * @param value State byte to store.
+     */
     virtual void func_00263CA0(s8 value);
-    /** @brief Read the signed state byte. @return Stored state byte. */
+
+    /**
+     * @brief Read the signed state byte.
+     * @return Stored state byte.
+     */
     virtual s8 func_00263CB0();
-    /** @brief Read the selected-display state flag. @return Stored state flag. */
+
+    /**
+     * @brief Read the selected-display state flag.
+     * @return Stored state flag.
+     */
     virtual u8 windows_ready();
-    /** @brief Read the resource source word. @return Stored word. */
+
+    /**
+     * @brief Read the resource source word.
+     * @return Stored word.
+     */
     virtual u32 get_resource_slot();
+
     /**
      * @brief Set a slot, consume an available category record, and reset its status bytes.
      * @param index Slot index from zero through two.
      * @param enabled Full-word state copied into the slot byte and tested for zero.
      */
     void func_0036BF30(s32 index, bool enabled);
+
     /**
      * @brief Load the completed buffer into the Field runtime and finish setup.
      * @param buffer Completed buffer, or null.
      * @return Zero without a buffer, otherwise the setup result.
      */
     virtual s32 on_resource_loaded(void* buffer);
-    /** @brief Allocate and attach the selected-display windows. @return One. */
+
+    /**
+     * @brief Allocate and attach the selected-display windows.
+     * @return One.
+     */
     virtual s32 init_windows();
 #else
     u8 unk00[0x34];
 #endif
     u32 unk34;
-    /** @brief Readiness byte set after the entry screen setup. */
     u8 window_setup_ready;
     u8 unk39[3];
-    /** @brief Cached Field resource buffer slots. */
     struct FieldBufferSlots* resource_buffer_slots;
     struct FieldRuntimeValues* unk40;
-    /** @brief Phase used by the State update and exit paths. */
     u8 update_phase;
-    /** @brief Manager argument selecting the entry screen set. */
     u8 entry_mode;
-    /** @brief Requested window group copied after group handling. */
     u8 window_group_snapshot;
-    /** @brief Window group requested by the menu, dialog and grid handlers. */
     u8 requested_window_group;
-    /** @brief Field record selection used by inventor screens. */
     struct FieldRecordSelection* record_selection;
-    /** @brief Pending window-group activation across the transition phases. */
     u8 window_group_change_pending;
     u8 workshop_id;
-    /** Enabled workshop skills; the ninth appraisal entry is always enabled. */
     u8 workshop_skill_enabled[9];
     u8 line_count;
     u8 source_transfer_workshop_id;
     u8 destination_transfer_workshop_id;
-    /** @brief Inventor option codes in the fourteen-slot available grid. */
     u8 available_inventor_option_codes[14];
     u8 assigned_inventor_option_codes[9];
     u8 source_transfer_inventor_option_codes[6];
@@ -118,11 +155,8 @@ typedef struct ItemCreationSelectedDisplayState
     u8 unk7d;
     u16 workshop_facility_masks[12];
     u8 unk96[2];
-    /** @brief Background image window. */
     struct ItemCreationBackground* background;
-    /** @brief Title and scrolling status-message banner. */
     struct ItemCreationStatusBanner* status_banner;
-    /** @brief Main invention, expansion and transfer menu. */
     struct ItemCreationMainMenu* main_menu;
     struct WorkshopNameWindow* workshop_name_window;
     struct WorkshopFacilitiesWindow* workshop_facilities_window;
@@ -151,61 +185,37 @@ typedef struct ItemCreationSelectedDisplayState
     struct WorkshopInventorStrip* workshop_inventor_strip;
     struct PendingInventorSummary* pending_inventor_summary;
     struct AssignInventorDialog* assign_inventor_dialog;
-    /** @brief Workshop-capacity warning dialog. */
     struct WorkshopFullDialog* workshop_full_dialog;
-    /** @brief Selected inventor's creation-skill talent display. */
     struct InventorTalentsWindow* inventor_talents_window;
-    /** @brief Grid supplying inventor information during a refresh. */
     void* inventor_information_grid;
-    /** @brief Grid containing the source slot of the pending inventor swap. */
     void* swap_source_grid;
-    /** @brief Grid containing the destination slot of the pending inventor swap. */
     void* swap_destination_grid;
-    /** @brief Source grid slot selected for the inventor swap; -1 when unset. */
     s16 swap_source_slot_index;
-    /** @brief Destination grid slot selected for the inventor swap; -1 when unset. */
     s16 swap_destination_slot_index;
-    /** @brief Selection stage for the two-slot inventor swap. */
     u8 inventor_swap_stage;
-    /** @brief Selection stage for the workshop/inventor transfer. */
     u8 inventor_transfer_stage;
-    /** @brief Source workshop selected for the pending transfer. */
     u8 pending_transfer_source_workshop_id;
-    /** @brief Source inventor option code selected for the pending transfer. */
     u8 pending_transfer_source_inventor_option_code;
-    /** @brief Destination workshop selected for the pending transfer. */
     u8 pending_transfer_destination_workshop_id;
-    /** @brief Destination inventor option code selected for the pending transfer. */
     u8 pending_transfer_destination_inventor_option_code;
     u8 unk12e[2];
     u16 facility_mask;
     u8 unk132[2];
     struct ItemCreationWorkshopRecord* workshop;
     u32 unk138;
-    /** @brief Offset advanced while positioning the resource window. */
     float resource_motion_offset;
-    /** @brief Offset used to position the resource window. */
     float resource_placement_offset;
-    /** @brief Radial distance used to position the resource window. */
     float resource_placement_radius;
-    /** @brief Development enable bytes for the three lines. */
     u8 line_development_enabled[3];
     u8 unk14b;
-    /** @brief Countdown for each line's target updates. */
     float line_target_update_countdowns[3];
-    /** @brief Quality percentage displayed for each line. */
     float line_quality_percentages[3];
-    /** @brief Interval used to reset each line's target update countdown. */
     float line_target_update_intervals[3];
     float unk170[3];
-    /** @brief Width of each line's Time bar. */
     float line_time_meter_widths[3];
-    /** @brief Cached target states for each line's three inventor slots. */
     u8 line_inventor_states[3][3];
     s8 unk191[3][3];
-    /** @brief Enable development-line processing and the main development window's actions. */
     u8 development_processing_enabled;
-    /** @brief Tally accumulated by scans of contracted inventors. */
     u8 contracted_inventor_tally;
     /** @brief Window used to display keyed resources. */
 #ifdef __cplusplus
@@ -213,18 +223,12 @@ typedef struct ItemCreationSelectedDisplayState
 #else
     struct FieldStatus14* resource_window;
 #endif
-    /** @brief Primary resource key awaiting display. */
     s32 pending_resource_key;
-    /** @brief Optional secondary resource key awaiting display. */
     s32 pending_secondary_resource_key;
-    /** @brief Pending release of the current resource window. */
     u8 resource_window_release_pending;
     u8 unk1a9[3];
-    /** @brief Countdown used to schedule inventor resources. */
     s32 inventor_resource_countdown;
-    /** @brief Line used by submission, abort, details and outcome dialogs; 0xFF when unset. */
     u8 dialog_line_index;
-    /** @brief Lines excluded from further processing in the current run. */
     u8 line_stopped[3];
     /** @brief Development target for each workshop line, or null. */
 #ifdef __cplusplus
@@ -233,23 +237,17 @@ typedef struct ItemCreationSelectedDisplayState
     struct FieldStateTargets* line_targets[3];
 #endif
     u8 line_skill_ids[3];
-    /** @brief Target mode per line: zero unset, one original invention, two/three use one/two items. */
     u8 line_plan_modes[3];
     u8 unk1c6[2];
     u32 line_fol_costs[3];
     s32 line_target_update_results[3];
-    /** @brief Zero-based line selected for skill and invention-policy editing. */
     s8 selected_line_index;
     u8 unk1e1;
-    /** @brief One-based inventory allocation-record IDs for each line; zero marks an unused slot. */
     s16 line_item_ids[3][2];
     u8 unk1ee[2];
     s32 unk1f0;
-    /** @brief Countdown for periodic runtime-data updates. */
     s32 runtime_data_update_countdown;
-    /** @brief First plan item ID saved for cancellation of item selection. */
     s16 saved_first_plan_item_id;
-    /** @brief Second plan item ID saved for cancellation of item selection. */
     s16 saved_second_plan_item_id;
 } ItemCreationSelectedDisplayState;
 
@@ -276,21 +274,20 @@ typedef struct ItemCreationSelection
 #endif
     ItemCreationFloatPair workshop_map_positions[12];
     u8 workshop_selection_flags[12];
-    /** Workshop ID used by the map selection. */
     u8 selected_workshop_id;
-    /** Navigation index for each workshop map entry. */
     u8 workshop_navigation_indices[12];
     u8 unk79;
 #ifdef __cplusplus
-    /** @brief Destroy the selection state. */
     virtual ~ItemCreationSelection()
     {
     }
+
     /**
      * @brief Refresh the enabled selection slots.
      * @return Always one.
      */
     virtual s32 func_slot0c();
+
     /** @brief Initialize the float pairs and selection order. */
     virtual void func_slot10();
 #else
@@ -324,7 +321,10 @@ void item_creation_rebuild_line_target(ItemCreationSelectedDisplayState* object,
  */
 void func_0036F270(ItemCreationCountedList* object, void* value);
 
-/** @brief Release every data node while retaining the list head node. @param object List to clear. */
+/**
+ * @brief Release every data node while retaining the list head node.
+ * @param object List to clear.
+ */
 void func_0036EEF0(ItemCreationCountedList* object);
 
 /**
@@ -386,14 +386,21 @@ void func_0036B1E0(ItemCreationSelectedDisplayState* object, u32 enabled);
  * @param group Window group to activate.
  */
 void item_creation_activate_window_group(ItemCreationSelectedDisplayState* object, u8 group);
-/** @brief Enable or disable one option window group. @param object Selection state. @param enabled Full-word control flag. */
+
+/**
+ * @brief Enable or disable one option window group.
+ * @param object Selection state.
+ * @param enabled Full-word control flag.
+ */
 void func_0036B360(ItemCreationSelectedDisplayState* object, u32 enabled);
+
 /**
  * @brief Enable or disable inventor team selection and reset its subsidiary windows.
  * @param object State owning the assigned/available inventor grids and their detail windows.
  * @param enabled Full-word control flag; nonzero refreshes the inventor grids and team-selection prompt.
  */
 void func_0036B6E0(ItemCreationSelectedDisplayState* object, u32 enabled);
+
 /**
  * @brief Enable or disable the main menu and workshop summary windows.
  * @param object State owning the main menu, facilities, workshop name and development-team summary.

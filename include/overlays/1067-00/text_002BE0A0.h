@@ -16,12 +16,16 @@ extern "C" {
 
 /** @brief Return the signed category for the D_159B60 callback table. */
 s32 func_002BE180(const FieldObject159B60* object);
+
 /** @brief Reset the current entry index. */
 void func_002BE190(FieldObject159B60* object);
+
 /** @brief Return the fixed distance limit for the field object. */
 float func_002BE1A0(const FieldObject159B60* object);
+
 /** @brief Report that the field object is active. */
 u8 func_002BE1C0(const FieldObject159B60* object);
+
 /** @brief Default callback for the field object. */
 void func_002BE410(FieldObject159B60* object);
 

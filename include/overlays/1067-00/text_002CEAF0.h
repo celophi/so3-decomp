@@ -126,14 +126,20 @@ class FieldClass15B0E0 : public FieldListObject, public FieldClass1DD400
     public:
         static void* operator new(u32 size);
 
-        /** @brief Release storage through the Lib heap. @param object Storage to release. */
+        /**
+         * @brief Release storage through the Lib heap.
+         * @param object Storage to release.
+         */
         static void operator delete(void* object);
 
         FieldClass15B0E0();
 
         virtual ~FieldClass15B0E0();
 
-        /** @brief Report this object's list kind. @return Always 4. */
+        /**
+         * @brief Report this object's list kind.
+         * @return Always 4.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Release the display objects and add the object to the resident release queue. */
@@ -141,7 +147,10 @@ class FieldClass15B0E0 : public FieldListObject, public FieldClass1DD400
 
         virtual void update();
 
-        /** @brief Clear the display object at offset 0x20. @param arg Unused. */
+        /**
+         * @brief Clear the display object at offset 0x20.
+         * @param arg Unused.
+         */
         virtual void func_001DDB30(void* arg);
 
         /** @brief Release the Lib container and clear its state bit. */

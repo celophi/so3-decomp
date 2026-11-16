@@ -25,11 +25,15 @@ public:
             unk24 = -1;
         }
     }
+
     // Placeholder virtuals in their vtable order (byte offset in the name); only
     // their positions are known.
     virtual void func_slot1c();
+
     virtual void func_slot20();
+
     virtual void func_slot24();
+
     void* unk14;
     u8 unk18[0xC];
     s32 unk24;
@@ -49,6 +53,7 @@ public:
     {
         func_slot20();
     }
+
     /** @brief Release the object at offset 0x50 and update the state bits at offset 0x4C. */
     virtual void func_slot20();
 };
@@ -57,14 +62,15 @@ public:
 class FieldClass152740 : public FieldClass155750
 {
 public:
-    /** @brief Destroy the embedded Lib object, then the object. */
     virtual ~FieldClass152740();
+
     /** @brief Run the base handler, then point offset 0x50 at the embedded Lib object. */
     virtual void func_slot20()
     {
         FieldClass155750::func_slot20();
         unk50 = &unk60;
     }
+
     LibTransform unk60;
 };
 #endif

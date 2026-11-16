@@ -2,8 +2,11 @@
 #include "overlays/3253-00/text_002750F0.h"
 
 extern "C" s32 func_002B08B0(void* object);
+
 extern "C" s32 func_002983E0(void* object);
+
 extern "C" s32 func_002A4B00(void* object);
+
 extern "C" void func_002A5B60(void* object, s32 value);
 
 typedef struct ByteGetterOwnertext_002750F0

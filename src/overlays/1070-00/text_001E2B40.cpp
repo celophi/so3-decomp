@@ -2,21 +2,37 @@
 #include "overlays/1070-00/text_001E2B40.h"
 
 extern "C" void func_494D80(void* object);
+
 extern "C" u8 D_179B40[];
+
 extern "C" void func_001E5080(void* object, s32 value);
+
 extern "C" void func_001F1380(void* object, s32 value);
+
 extern "C" s32 func_001FD640(void);
+
 extern "C" void func_46E730(void* object, void* value, s32 enabled);
+
 extern "C" void func_002F4250(void* object);
+
 extern "C" void func_002F4580(void* object);
+
 extern "C" void func_4E8EE0(void* object, ...);
+
 extern "C" void func_001FCCA0(void* object);
+
 extern "C" s32 func_001FCF10(void);
+
 extern "C" void func_001FD9E0(void* object);
+
 extern "C" void func_001FE050(void);
+
 extern "C" void func_001FDE00(void* object);
+
 extern "C" void* __nw__FUiiPCc(u32 size, s32 line, const char* file);
+
 extern "C" void* func_001E4EB0(void* object);
+
 extern "C" void func_115C20(s32 error, const char* file, s32 code, s32 arg3, s32 arg4, s32 arg5,
                              s32 arg6);
 
@@ -25,13 +41,21 @@ extern "C" char D_334380[];
 extern "C" char D_16AAD0[];
 extern "C" float D_001B66B4;
 extern "C" void* g_renderer;
+
 extern "C" void func_120ED0(void* object);
+
 extern "C" void* D_001B6620;
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" void func_43AC90(void* object);
+
 extern "C" void func_001EEA50(void* object);
+
 extern "C" void func_46E760(void* object, s32 value);
+
 extern "C" void func_46E860(void* object, s32 value);
+
 extern "C" void func_001E4A50(void* object);
 
 /** Partial callback interface with a virtual method at offset 0x5C. */
@@ -39,26 +63,47 @@ class FieldCallbackDispatch5C
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual s32 slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void slot58();
+
     virtual void callback();
 };
 
@@ -69,12 +114,19 @@ public:
     u32 unk00;
     u32 unk04;
     u32 unk08;
+
     virtual void slot08(s32 value);
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14(void* value);
+
     virtual void slot18();
+
     virtual void slot1c(void* value);
+
     u32 unk10;
     void* unk14;
 };
@@ -316,21 +368,26 @@ s32 func_001E2C60(void* receiver, void* source)
 {
     FieldProcessingReceiver2C60* object = (FieldProcessingReceiver2C60*)receiver;
     FieldProcessingSourceA8* input = (FieldProcessingSourceA8*)source;
+
     if (func_001FCF10() == 0)
     {
         return 0;
     }
+
     void* child = input->unka8;
+
     if (child != 0)
     {
         if (((FieldCallbackDispatch5C*)object)->slot4c() == 0)
         {
             return 0;
         }
+
         object->unka8->unk14 = object->unk80;
         object->unka8->slot14(child);
         object->unka8->slot1c(object->unk80);
     }
+
     return 1;
 }
 
@@ -346,6 +403,7 @@ void func_001E2D40(void* receiver)
 {
     FieldConditionalProcessorA8* object = (FieldConditionalProcessorA8*)receiver;
     func_001FCCA0(object);
+
     if (object->unkb0 != 0 && object->unka8 == 0)
     {
         ((FieldCallbackDispatch5C*)object)->slot48();
@@ -356,6 +414,7 @@ void func_001E2D90(void* receiver)
 {
     FieldConditionalProcessorA8* object = (FieldConditionalProcessorA8*)receiver;
     func_001FDE00(object);
+
     if (object->unka8 != 0)
     {
         ((FieldSecondaryCallback08*)object->unka8)->slot10();
@@ -374,6 +433,7 @@ s32 func_001E2DE0(void)
 void func_001E2E00(void* receiver, void* value, s32 enabled)
 {
     FieldConditionalProcessorA8* object = (FieldConditionalProcessorA8*)receiver;
+
     if (object->unkb0 != 0)
     {
         func_46E730(object->unka8, value, enabled != 0);
@@ -385,16 +445,19 @@ void func_001E2E30(void* receiver)
     FieldConditionalProcessorA8* object = (FieldConditionalProcessorA8*)receiver;
     func_001FD9E0(object);
     object->unkb0 = 0;
+
     if (object->unka8 != 0)
     {
         ((FieldSecondaryCallback08*)object->unka8)->slot08(1);
     }
+
     object->unka8 = 0;
 }
 
 void func_001E2E80(void* receiver)
 {
     FieldProcessingReceiver2E80* object = (FieldProcessingReceiver2E80*)receiver;
+
     if (((FieldCallbackDispatch5C*)object)->slot4c() != 0)
     {
         FieldProcessingChild2E80* child = (FieldProcessingChild2E80*)object->unka8;
@@ -417,16 +480,20 @@ s32 func_001E2F30(void* receiver)
 {
     FieldOwnedChildA8* object = (FieldOwnedChildA8*)receiver;
     void* child = __nw__FUiiPCc(0x150, 0x2B, D_334380);
+
     if (child != 0)
     {
         child = func_001E4EB0(child);
     }
+
     object->unka8 = child;
+
     if (object->unka8 == 0)
     {
         func_115C20(0x2E, D_334380, 0xA081, 0, 0, 0, 0);
         return 0;
     }
+
     return 1;
 }
 
@@ -1269,6 +1336,7 @@ void func_001EDC20(FieldTimeState* object, u32 seconds)
     {
         object->seconds = seconds % 60;
         object->minutes = (seconds / 60) % 60;
+
         if (seconds >= 3600000)
         {
             object->hours = 999;
@@ -1437,6 +1505,7 @@ s32 func_001EE530(void* object, s32 enabled)
     {
         return 0;
     }
+
     func_001EEA50((u8*)object + 0x14);
     return 1;
 }

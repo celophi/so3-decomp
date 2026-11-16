@@ -10,10 +10,13 @@ struct FieldObject23BE00 : public ItemCreationClass172870
 {
     /** @brief Construct the marker with no grid and unit vertical scale. */
     FieldObject23BE00();
+
     /** @brief Destroy inherited drawing storage and the widget base. */
     virtual ~FieldObject23BE00();
+
     /** @brief Empty refresh callback. */
     virtual void func_00413D20();
+
     /**
      * @brief Configure the marker rectangle and the grid it follows.
      * @param x Horizontal marker origin.
@@ -26,6 +29,7 @@ struct FieldObject23BE00 : public ItemCreationClass172870
      */
     s32 func_0023BB20(float x, float y, float width, float scale,
                      FieldObject23CEA0* target, u32 color);
+
     /**
      * @brief Position the marker at a grid entry.
      * @param size Positive width of the selected entry.
@@ -33,6 +37,7 @@ struct FieldObject23BE00 : public ItemCreationClass172870
      * @return One after updating, or zero for no grid or invalid dimensions/index.
      */
     s32 func_0023B9B0(float size, s16 index);
+
     FieldObject23CEA0* grid;
     float origin_x;
     float origin_y;

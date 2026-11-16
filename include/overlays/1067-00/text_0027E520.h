@@ -77,10 +77,8 @@ typedef struct FieldBitset154E80 FieldBitset154E80;
 class FieldClass1565E0 : public FieldClass154E70
 {
 public:
-    /** @brief Construct the object. */
     FieldClass1565E0();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass1565E0();
 
     u8 unk04[0x7C];
@@ -93,7 +91,6 @@ public:
     /** @brief Start with a random delay from 60 to 120 and cleared state. */
     FieldClass156620();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass156620();
 
     u8 unk04[0x2C];
@@ -112,7 +109,6 @@ public:
     /** @brief Start with a unit scale. */
     FieldClass156610();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass156610();
 
     u8 unk04[0x5C];
@@ -127,7 +123,6 @@ public:
     /** @brief Start with a cleared word and a unit scale. */
     FieldClass156600();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass156600();
 
     u8 unk04[0x5C];
@@ -143,7 +138,6 @@ public:
     /** @brief Start with a 64.0 extent and the first flag set. */
     FieldClass1565F0();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass1565F0();
 
     u8 unk04[0x3C];
@@ -160,7 +154,6 @@ public:
     /** @brief Start with 15.0 extents and both flags clear. */
     FieldClass156E80();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass156E80();
 
     u8 unk04[0x5C];
@@ -282,7 +275,6 @@ public:
     /** @brief Start with a unit scale and no flags. */
     FieldClass156630();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass156630();
 
     u8 unk04[0x5C];
@@ -312,7 +304,6 @@ public:
 class FieldClass1559A0 : public FieldClass156A50
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1559A0()
     {
     }
@@ -322,7 +313,6 @@ public:
 class FieldClass155C50 : public FieldClass156980
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass155C50()
     {
     }
@@ -332,7 +322,6 @@ public:
 class FieldClass155E60 : public FieldClass1568B0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass155E60()
     {
     }
@@ -342,7 +331,6 @@ public:
 class FieldClass156080 : public FieldClass156640
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass156080()
     {
     }
@@ -352,7 +340,6 @@ public:
 class FieldClass156220 : public FieldClass1567E0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass156220()
     {
     }
@@ -362,7 +349,6 @@ public:
 class FieldClass1564D0 : public FieldClass156710
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1564D0()
     {
     }
@@ -372,7 +358,6 @@ public:
 class FieldClass156D50 : public FieldClass156E90
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass156D50()
     {
     }
@@ -382,7 +367,6 @@ public:
 class FieldClass155A70 : public FieldClass1559A0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass155A70()
     {
     }
@@ -392,7 +376,6 @@ public:
 class FieldClass155B80 : public FieldClass155C50
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass155B80();
 };
 
@@ -400,7 +383,6 @@ public:
 class FieldClass155D90 : public FieldClass155E60
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass155D90();
 };
 
@@ -408,7 +390,6 @@ public:
 class FieldClass155FB0 : public FieldClass156080
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass155FB0()
     {
     }
@@ -418,7 +399,6 @@ public:
 class FieldClass1562F0 : public FieldClass156220
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1562F0()
     {
     }
@@ -428,7 +408,6 @@ public:
 class FieldClass156400 : public FieldClass1564D0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass156400();
 };
 
@@ -436,7 +415,6 @@ public:
 class FieldClass156C80 : public FieldClass156D50
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass156C80();
 };
 
@@ -444,7 +422,6 @@ public:
 class FieldClass1558D0 : public FieldClass155A70
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1558D0();
 };
 
@@ -452,7 +429,6 @@ public:
 class FieldClass156150 : public FieldClass1562F0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass156150();
 };
 
@@ -460,7 +436,6 @@ public:
 class FieldClass156B70 : public FieldClass155FB0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass156B70();
 };
 #else
@@ -2873,10 +2848,11 @@ void func_00289730(FieldClass156E90* object, const FieldClass156E90* other);
 class FieldClass156E60 : public FieldListObject
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass156E60();
+
     /** @brief Detach and delete the child, then detach this object and queue it for release. */
     virtual void func_001DD7B0();
+
     u8 unk14[0x2C];
     FieldListObject* unk40;
 };

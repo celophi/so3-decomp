@@ -6,14 +6,23 @@ extern "C" void* __vt__16FieldClass16AB70;
 extern "C" u8 D_16CF78[];
 extern "C" u8 D_16D0B0[];
 extern "C" u8 D_1708B0[];
+
 extern "C" void func_4DC5C0(void);
+
 extern "C" FieldContextRef* D_001B64B0;
+
 extern "C" void func_00209330(void* object);
+
 extern "C" void func_002093C0(void* context, u32 value);
+
 extern "C" void func_00207050(void* object);
+
 extern "C" void func_00208F60(void* context, u32 value, u32 flags);
+
 extern "C" void func_00208FC0(void* context, u32 first, u32 second);
+
 extern "C" void func_0020A000(void* context, u32 first, u32 second);
+
 extern "C" void func_00205840(void* context, u32 value, u32 flags);
 
 /** Partial callback interface with a method at offset 0x20. */
@@ -21,11 +30,17 @@ class FieldCallbackDispatch20
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void callback(void* value);
 };
 
@@ -34,25 +49,45 @@ class FieldCallbackDispatch58
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void callback(u32 first, u32 second);
 };
 
@@ -96,6 +131,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00265A
 void func_00265B90(FieldFlagAt20* object)
 {
     func_00237FF0(object);
+
     if (object->unk20_2)
     {
         return;
@@ -126,6 +162,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_002662
 void func_002668D0(FieldFlagAt20* object)
 {
     func_00237FF0(object);
+
     if (object->unk20_2)
     {
         return;
@@ -143,6 +180,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00266E
 void func_00267340(FieldFlagAt20* object)
 {
     func_00237FF0(object);
+
     if (object->unk20_2)
     {
         return;
@@ -321,6 +359,7 @@ void func_002688F0(FieldSourceFlag34* object, const u8* source, u32 value)
 {
     object->source = source;
     object->unk30 = value;
+
     if (*object->source == 1)
     {
         object->unk34 = 1;
@@ -337,6 +376,7 @@ void func_00268F70(FieldSourceFlag34* object, const u8* source, u32 value)
 {
     object->source = source;
     object->unk30 = value;
+
     if (*object->source == 1)
     {
         object->unk34 = 1;
@@ -353,6 +393,7 @@ void func_002695F0(FieldSourceFlag34* object, const u8* source, u32 value)
 {
     object->source = source;
     object->unk30 = value;
+
     if (*object->source == 1)
     {
         object->unk34 = 1;
@@ -1787,6 +1828,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_0026F8
 void func_0026FB50(FieldKeyedFloatOwner3A0* object)
 {
     object->unk3a4 = 0.0f;
+
     if (object->unk3a0 != 0)
     {
         u32 flags = object->unk3bb_2 ? 0x20 : 0;
@@ -1844,28 +1886,51 @@ class FieldCallbackDispatch64TwoArgs
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void slot58();
+
     virtual void slot5c();
+
     virtual void slot60();
+
     virtual void dispatch(void* object, u32 value);
 };
 
@@ -1984,10 +2049,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002649B0", func_00273E
 void func_00273FB0(void* object)
 {
     FieldVectorAssignmentState300* state = (FieldVectorAssignmentState300*)object;
+
     if (state->target != 0)
     {
         *(float*)((u8*)state->target + 0x22C) = *(float*)((u8*)object + 0x330);
     }
+
     func_00207050(object);
 }
 

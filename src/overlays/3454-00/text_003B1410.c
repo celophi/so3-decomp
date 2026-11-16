@@ -86,10 +86,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003B1410", func_003B5B
 u32 func_003B5C90(u8* object, u8 index)
 {
     u32* entries = *(u32**)(object + 0x54);
+
     if (entries != 0)
     {
         return entries[index];
     }
+
     return 0;
 }
 

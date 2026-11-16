@@ -22,7 +22,6 @@ public:
         unk41 = 0;
     }
 
-    /** @brief Destroy the channel and its intrusive-link base. */
     virtual ~LibRenderChannel()
     {
     }
@@ -64,13 +63,8 @@ public:
     u32 unk1c;
     u32 unk20;
     u32 unk24;
-
-    /** Packed GS TEX0 value used as the source of channel transfers. */
     u64 source_tex0;
-
-    /** Packed GS TEX0 value used as the destination of channel transfers. */
     u64 destination_tex0;
-
     u32 unk38;
     u32 unk3c;
     u8 unk40;

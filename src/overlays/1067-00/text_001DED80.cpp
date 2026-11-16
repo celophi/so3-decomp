@@ -17,10 +17,12 @@
 bool FieldClass154C10::func_00204420()
 {
     ResidentContext* context = D_001B6430->context;
+
     if (!context->unk08->unkf5_5 || context->unkdd.unk7 || context->unkde_1)
     {
         return false;
     }
+
     return FieldClass150F90::func_00204420();
 }
 
@@ -38,31 +40,38 @@ void func_001DEDF0(void* list, void* object)
 FieldFlaggedListObject* func_001DEE30(FieldFlaggedListObject* list, s32 key, u32 mask)
 {
     FieldFlaggedListObject* node = list;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || list == node)
         {
             break;
         }
+
         if ((mask & node->unk78) && key == node->unk70)
         {
             return node;
         }
     }
+
     return 0;
 }
 
 void func_001DEE90(FieldFlaggedListObject* list)
 {
     FieldFlaggedListObject* node = list;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || list == node)
         {
             break;
         }
+
         if (node->unk78 & 8)
         {
             func_00234000(node);
@@ -73,13 +82,16 @@ void func_001DEE90(FieldFlaggedListObject* list)
 void func_001DEF00(FieldFlaggedListObject* list)
 {
     FieldFlaggedListObject* node = list;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || list == node)
         {
             break;
         }
+
         if (node->unk78 & 8)
         {
             func_00233620(node);
@@ -96,14 +108,18 @@ void func_001DEF70(FieldClass150060* list, s32 preserve_focus)
 {
     FieldClass150060* node = list->unk08;
     FieldClass151510* focus = static_cast<FieldClass151510*>(D_001B6430->context->unk18);
+
     for (;;)
     {
         FieldClass150060* current = node;
+
         if (!node || list == node)
         {
             break;
         }
+
         node = node->unk08;
+
         if (!preserve_focus || focus != current)
         {
             lib_object_detach_owner(current);
@@ -120,12 +136,14 @@ void func_001DEF70(FieldClass150060* list, s32 preserve_focus)
 void FieldClass15B890::func_002DDA70()
 {
     FieldClass15B950::func_002DDA70();
+
     if (unk90)
     {
         unk90->func_001DF230();
         unk90 = 0;
     }
 }
+
 /** @brief Destroy the keyframe object. */
 FieldClass177C70::~FieldClass177C70()
 {
@@ -218,6 +236,7 @@ s32 FieldListObject::get_default_list_kind()
 void FieldResourcePreloader::start_current_read()
 {
     FieldPreloadRequest* record = &requests[current_request];
+
     if (record->buffer_address())
     {
         FieldClass1DD400* owner = this;
@@ -248,9 +267,11 @@ s32 FieldResourcePreloader::request_removal()
     case 1:
     {
         FieldPreloadRequest* record = requests;
+
         for (s32 i = 0; i < request_count; i++, record++)
         {
             const FieldResourceRequest* entry = record;
+
             if (!entry->unk08_0)
             {
                 u32 byte_count = entry->byte_capacity;
@@ -258,6 +279,7 @@ s32 FieldResourcePreloader::request_removal()
                 resident_cancel_resource_requests(g_resource_queue, entry->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
         }
+
         request_state = 7;
         break;
     }
@@ -271,12 +293,14 @@ s32 FieldResourcePreloader::request_removal()
         func_001DD7B0();
         return 1;
     }
+
     return 0;
 }
 
 void FieldResourcePreloader::release_requests()
 {
     s32 i;
+
     for (i = 0; i < request_capacity; i++)
     {
         FieldPreloadRequest* record = &requests[i];
@@ -357,6 +381,7 @@ void FieldClass14FEB0::func_001DFA30(float* out) const
 void FieldClass14FEB0::func_001DFA40(float* out) const
 {
     FieldArrayEntry10* entries = unk04;
+
     if (entries)
     {
         *out = entries[unk20 - 1].unk04 - entries[0].unk04;
@@ -393,6 +418,7 @@ void FieldClass150090::func_001DFB70(s32 count)
     delete[] unk04;
     unk04 = new(0) FieldArrayEntry10[count];
     unk22 = count;
+
     if (!unk04)
     {
         unk22 = 0;
@@ -466,6 +492,7 @@ void FieldClass150090::func_001DFD90()
     {
         delete[] unk04;
     }
+
     unk04 = 0;
 }
 
@@ -477,15 +504,19 @@ float FieldClass150090::func_001DFDE0(float value) const
     float span = entries[last].unk00 - first;
     float cycles = (value - first) / span;
     s32 count;
+
     if (cycles < 0.0f)
     {
         cycles -= 1.0f;
     }
+
     count = cycles;
+
     if (count != 0)
     {
         return value - count * span;
     }
+
     return value;
 }
 
@@ -504,16 +535,19 @@ float FieldClass150090::func_001DFE70(float key)
             return entry->unk04;
         }
     }
+
     return 0.0f;
 }
 
 float FieldClass150090::func_001DFED0() const
 {
     s32 last;
+
     if (unk20 < 2)
     {
         return 0.0f;
     }
+
     last = unk20 - 1;
     return unk04[last].unk00 - unk04[0].unk00;
 }
@@ -522,6 +556,7 @@ s32 FieldClass150090::func_001DFF20(float key) const
 {
     s16 count = unk20;
     s32 i;
+
     for (i = 0; i < count; i++)
     {
         if (key == unk04[i].unk00)
@@ -529,6 +564,7 @@ s32 FieldClass150090::func_001DFF20(float key) const
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -548,26 +584,32 @@ s32 FieldClass14FEB0::func_001DF2E0(s32 index, float* key, float* x, float* y, f
     {
         return 0;
     }
+
     if (index >= unk22)
     {
         return 0;
     }
+
     if (key)
     {
         *key = unk04[index].unk00;
     }
+
     if (x)
     {
         *x = unk04[index].unk04;
     }
+
     if (y)
     {
         *y = unk04[index].unk08;
     }
+
     if (z)
     {
         *z = unk04[index].unk0c;
     }
+
     return 1;
 }
 
@@ -584,31 +626,39 @@ s32 FieldClass14FEB0::func_001E0100(s32 index, float key, const float* x, const 
 {
     s16 count;
     s32 i;
+
     if (unk04 == 0)
     {
         return 0;
     }
+
     count = unk20;
+
     if (index >= count)
     {
         return 0;
     }
+
     if (count >= unk22)
     {
         return 0;
     }
+
     for (i = count; i > index; i--)
     {
         unk04[i] = unk04[i - 1];
     }
+
     unk04[index].unk04 = *x;
     unk04[index].unk08 = *y;
     unk04[index].unk0c = *z;
     unk04[index].unk00 = key;
+
     if (index == unk20 - 1)
     {
         unk1c = key - unk04[0].unk00;
     }
+
     unk20++;
     return 1;
 }
@@ -619,18 +669,22 @@ s32 FieldClass14FEB0::func_001E0220(s32 index, float key, const float* x, const 
     {
         return 0;
     }
+
     if (index >= unk22)
     {
         return 0;
     }
+
     unk04[index].unk04 = *x;
     unk04[index].unk08 = *y;
     unk04[index].unk0c = *z;
     unk04[index].unk00 = key;
+
     if (index == unk20 - 1)
     {
         unk1c = key - unk04[0].unk00;
     }
+
     return 1;
 }
 
@@ -640,10 +694,12 @@ s32 FieldClass14FEB0::func_001E02C0(const float* x, const float* y, const float*
     {
         return 0;
     }
+
     if (unk20 >= unk22)
     {
         return 0;
     }
+
     unk04[unk20].unk04 = *x;
     unk04[unk20].unk08 = *y;
     unk04[unk20].unk0c = *z;
@@ -665,19 +721,24 @@ float FieldClass14FEB0::func_001E0380(float key)
     float wrapped_key;
     u8 extrapolate;
     float result;
+
     if (!unk04 || !unk20)
     {
         return 0.0f;
     }
+
     if (unk24 >= unk22)
     {
         unk24 = 0;
     }
+
     if (unk20 == 1 && (!(key < unk04[0].unk00) || unk2a_0_3 != 6))
     {
         return unk04[0].unk04;
     }
+
     extrapolate = 0;
+
     if (key < unk04[0].unk00 && unk2a_0_3 == 6)
     {
         upper = 0;
@@ -687,23 +748,28 @@ float FieldClass14FEB0::func_001E0380(float key)
     else
     {
         wrapped_key = func_001E1230(reinterpret_cast<FieldEntryArrayObject*>(this), key);
+
         if (unk18)
         {
             if (unk2a_0_3 == 0 && unk18 < 0)
             {
                 return unk04[0].unk04;
             }
+
             if (unk2a_4_7 == 0 && unk18 > 0)
             {
                 return unk04[unk20 - 1].unk04;
             }
         }
+
         extrapolate = func_001E1310(reinterpret_cast<FieldEntryArrayObject*>(this), wrapped_key, &lower, &upper);
+
         if (extrapolate)
         {
             wrapped_key = key;
         }
     }
+
     if (!extrapolate)
     {
         if (unk26 != lower || unk28 != upper)
@@ -712,6 +778,7 @@ float FieldClass14FEB0::func_001E0380(float key)
             unk28 = upper;
             FieldArrayEntry10* first = lower >= 0 ? unk04 + lower : &unk08;
             s32 last = unk20 - 1;
+
             if (upper == last && ((!(key < unk04[0].unk00) && unk2a_4_7 == 2) ||
                                 (key < unk04[0].unk00 && unk2a_0_3 == 2)))
             {
@@ -730,7 +797,9 @@ float FieldClass14FEB0::func_001E0380(float key)
                 unk2c.func_001E11E0(&first->unk04, &first->unk0c, &second->unk04, &second->unk08, first->unk00, second->unk00);
             }
         }
+
         result = func_4B16C0(&unk2c, wrapped_key);
+
         if (unk18 && ((unk2a_0_3 == 5 && unk18 < 0) || (unk2a_4_7 == 5 && unk18 > 0)))
         {
             float delta = unk04[unk20 - 1].unk04 - unk04[0].unk04;
@@ -754,6 +823,7 @@ float FieldClass14FEB0::func_001E0380(float key)
         float first_key = entries[0].unk00;
         result = entries[0].unk04 + (entries[0].unk0c / (entries[1].unk00 - first_key)) * (key - first_key);
     }
+
     unk50 = g_inverse_frame_ticks * (result - unk4c);
     unk4c = result;
     return result;
@@ -767,6 +837,7 @@ s32 FieldResourcePreloader::poll_request_release()
 {
     s32 result = 0;
     FieldPreloadRequest* records = requests;
+
     switch (request_state)
     {
     case 1:
@@ -774,6 +845,7 @@ s32 FieldResourcePreloader::poll_request_release()
         for (s32 i = 0; i < request_count; i++)
         {
             const FieldResourceRequest* record = records + i;
+
             if (!record->unk08_0)
             {
                 u32 byte_count = record->byte_capacity;
@@ -781,6 +853,7 @@ s32 FieldResourcePreloader::poll_request_release()
                 resident_cancel_resource_requests(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
         }
+
         request_state = 10;
         break;
     }
@@ -796,26 +869,31 @@ s32 FieldResourcePreloader::poll_request_release()
         for (s32 i = 0; i < request_count; i++)
         {
             FieldPreloadRequest* record = records + i;
+
             if (record->buffer_address())
             {
                 result = 1;
                 break;
             }
         }
+
         for (s32 i = 0; i < request_capacity; i++)
         {
             records[i].release_buffer();
         }
+
         request_state = 0;
         current_request = 0;
         break;
     }
     }
+
     if (result != 1)
     {
         for (s32 i = 0; i < request_count; i++)
         {
             FieldPreloadRequest* record = records + i;
+
             if (record->buffer_address())
             {
                 result = 2;
@@ -823,6 +901,7 @@ s32 FieldResourcePreloader::poll_request_release()
             }
         }
     }
+
     return result;
 }
 
@@ -836,6 +915,7 @@ void FieldResourcePreloader::update_requests(s32 flag)
             FlushCache(0);
             FieldPreloadRequest* record = &requests[current_request];
             void* buffer = field_allocate_preload_buffer(this, (record->byte_capacity + 0x7FF) & ~0x7FF, 1);
+
             if (buffer)
             {
                 record->buffer_base = (u32)buffer;
@@ -843,6 +923,7 @@ void FieldResourcePreloader::update_requests(s32 flag)
                 start_current_read();
             }
         }
+
         break;
     case 1:
         if (flag == 1)
@@ -854,6 +935,7 @@ void FieldResourcePreloader::update_requests(s32 flag)
                 u32 buffer_address = record->buffer_address();
                 resident_cancel_resource_requests(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
             }
+
             request_state = 9;
         }
         else
@@ -861,73 +943,88 @@ void FieldResourcePreloader::update_requests(s32 flag)
             FieldPreloadRequest* record = &requests[current_request];
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
+
             if (!resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0) && !field_records_blocked())
             {
                 func_001DDB30(0);
             }
         }
+
         break;
     case 9:
         if (!flag)
         {
             start_current_read();
         }
+
         break;
     case 10:
     {
         bool done = true;
         FieldPreloadRequest* records = requests;
+
         for (s32 i = 0; i < request_count; i++)
         {
             FieldPreloadRequest* record = &records[i];
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
             record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+
             if (record->request_address)
             {
                 done = false;
             }
         }
+
         if (field_records_blocked())
         {
             done = false;
         }
+
         if (done)
         {
             for (s32 i = 0; i < request_capacity; i++, records++)
             {
                 records->release_buffer();
             }
+
             current_request = 0;
             request_state = 0;
         }
+
         break;
     }
     case 7:
     {
         bool done = true;
         FieldPreloadRequest* record = requests;
+
         for (s32 i = 0; i < request_count; i++, record++)
         {
             u32 byte_count = record->byte_capacity;
             u32 buffer_address = record->buffer_address();
             record->request_address = resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0);
+
             if (record->request_address)
             {
                 done = false;
             }
         }
+
         if (field_records_blocked())
         {
             done = false;
         }
+
         if (done)
         {
             func_001DD7B0();
         }
+
         break;
     }
     }
+
     advance_requests();
 }
 
@@ -937,27 +1034,33 @@ void FieldResourcePreloader::advance_requests()
     {
         return;
     }
+
     if (request_state == 1)
     {
         if (field_records_blocked())
         {
             return;
         }
+
         FieldPreloadRequest* record = &requests[current_request];
         u32 byte_count = record->byte_capacity;
         u32 buffer_address = record->buffer_address();
+
         if (resident_find_resource_request(g_resource_queue, record->file_key, buffer_address, 0x80000000, byte_count, 0))
         {
             return;
         }
+
         for (; current_request < request_count;)
         {
             current_request++;
+
             if (!requests[current_request].unk16_0)
             {
                 break;
             }
         }
+
         if (current_request >= request_count)
         {
             request_state = 5;
@@ -967,6 +1070,7 @@ void FieldResourcePreloader::advance_requests()
             request_state = 0;
         }
     }
+
     callback_ready = 0;
 }
 
@@ -980,9 +1084,11 @@ void FieldResourcePreloader::advance_requests()
 void* field_allocate_preload_buffer(FieldListObject* loader, u32 size, s32 mode)
 {
     FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(loader->owner);
+
     for (s32 attempt = 0; attempt < 8; attempt++)
     {
         void* result;
+
         if (mode)
         {
             func_00433AA0();
@@ -992,15 +1098,18 @@ void* field_allocate_preload_buffer(FieldListObject* loader, u32 size, s32 mode)
         {
             result = memalign(128, size);
         }
+
         if (result)
         {
             return result;
         }
+
         if (manager->node_count == 1 || !field_reclaim_loader_buffers(manager, loader))
         {
             break;
         }
     }
+
     return 0;
 }
 
@@ -1013,6 +1122,7 @@ void FieldClass159960::func_001E11E0(const float* a, const float* b, const float
     unk14 = end;
     unk0c = *d;
     unk18 = end - start;
+
     if (unk18 == 0.0f)
     {
         unk18 = 1.0f;
@@ -1023,25 +1133,32 @@ float func_001E1230(FieldEntryArrayObject* object, float key)
 {
     float first = object->unk04[0].unk00;
     float cycles = (key - first) / object->unk1c;
+
     if (key < first)
     {
         cycles -= 1.0f;
     }
+
     object->unk18 = cycles;
+
     if (object->unk18 != 0)
     {
         float result = key - object->unk18 * object->unk1c;
+
         if ((object->unk2a_0_3 == 3 && object->unk18 < 0) || (object->unk2a_4_7 == 3 && object->unk18 > 0))
         {
             s32 index = object->unk20 - 1;
             float last = object->unk04[index].unk00;
+
             if (object->unk18 & 1)
             {
                 result = first + (last - result);
             }
         }
+
         return result;
     }
+
     return key;
 }
 

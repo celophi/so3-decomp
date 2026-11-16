@@ -2,8 +2,11 @@
 #include "overlays/3253-00/text_00285100.h"
 
 extern "C" s32 func_002B08B0(void* object);
+
 extern "C" s32 func_002983E0(void* object);
+
 extern "C" s32 func_002A4B00(void* object);
+
 extern "C" void func_002A5B60(void* object, s32 value);
 
 struct BattleObject2E0B
@@ -121,16 +124,19 @@ void func_0028E2A0(BattleObject2E0B* object, u8 current, u8 previous)
     {
         object->unk2E04 = 0;
     }
+
     if (previous >= 5 && current == 0)
     {
         object->unk2E06 = 0;
         object->unk2E0B = 0;
         object->unk2E08 = 0;
     }
+
     if (current == 5 || current == 10 || current == 12 || current == 13)
     {
         object->unk2DC8 = 0;
     }
+
     if (current == 6 || current == 7)
     {
         object->unk2E06 = 0;
@@ -164,15 +170,18 @@ void func_00292930(BattleObject2F26* object, u8 current, u8 previous)
     {
         object->unk2F20 = 0;
     }
+
     if (previous >= 5 && current == 0)
     {
         object->unk2F22 = 0;
         object->unk2F26 = 0;
     }
+
     if (current == 5 || current == 10 || current == 12 || current == 13)
     {
         object->unk2EEC = 0;
     }
+
     if (current == 6 || current == 7)
     {
         object->unk2F22 = 0;

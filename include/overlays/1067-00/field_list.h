@@ -11,7 +11,6 @@
 class FieldClass1502A0 : public LibUpdateList
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1502A0()
     {
     }

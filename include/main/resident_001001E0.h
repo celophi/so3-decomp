@@ -55,14 +55,19 @@ struct ResidentAllocationHeader
 };
 
 extern "C" void resident_heap_release(void* memory);
+
 extern "C" void free_guess(void* memory);
 
-/** @brief Release resident heap allocations or use the default free routine. @param memory Allocation, or null. */
+/**
+ * @brief Release resident heap allocations or use the default free routine.
+ * @param memory Allocation, or null.
+ */
 inline void resident_delete(void* memory) throw()
 {
     if (memory != 0)
     {
         ResidentAllocationHeader* header = (ResidentAllocationHeader*)((u8*)memory - 0x20);
+
         if (header->tag == 0x4D655279 && header->marker == 0x4058)
         {
             resident_heap_release(memory);
@@ -79,13 +84,15 @@ inline void resident_delete(void* memory) throw()
 class ResidentSemaphore
 {
 public:
-    /** @brief Free a semaphore through the resident heap. @param memory Allocation, or null. */
+    /**
+     * @brief Free a semaphore through the resident heap.
+     * @param memory Allocation, or null.
+     */
     static void operator delete(void* memory) throw()
     {
         resident_delete(memory);
     }
 
-    /** Kernel semaphore ID, or a negative value when none was created. */
     s32 id;
 
     /** @brief Start without a kernel semaphore. */
@@ -214,10 +221,7 @@ public:
 class ResidentSemaphoreLock
 {
 public:
-    /** Semaphore held. */
     ResidentSemaphore* semaphore;
-
-    /** Nonzero while the lock holds the semaphore. */
     u8 held;
 
     /**

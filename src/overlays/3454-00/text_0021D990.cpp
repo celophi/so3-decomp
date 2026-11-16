@@ -2,13 +2,18 @@
 #include "overlays/3454-00/text_0021D990.h"
 
 extern "C" void func_4C4960(void* object);
+
 extern "C" u8 D_172870[];
 extern "C" u8 D_172600[];
 extern "C" u8 D_172410[];
+
 extern "C" void func_464B10(void* object);
+
 extern "C" {
 void func_4D00B0(void* object);
+
 void func_461830(void* embedded, void* adjusted);
+
 typedef struct ByteSetterOwnertext_0021D990
 {
     u8 unk00[0x3D];
@@ -264,10 +269,12 @@ void func_00228AB0(N54Owner64_0021D990* object)
 {
     object->active = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
+
     func_461830((u8*)object + 0xB0, adjusted);
 }
 

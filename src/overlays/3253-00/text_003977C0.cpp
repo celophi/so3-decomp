@@ -234,14 +234,17 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003977C0", func_003A55
 u32 func_003A5650(const u8* object)
 {
     u32 flags = 0;
+
     if (object[0x3C] != 0)
     {
         flags |= 1;
     }
+
     if (object[0x3D] != 0)
     {
         flags |= 4;
     }
+
     return flags;
 }
 

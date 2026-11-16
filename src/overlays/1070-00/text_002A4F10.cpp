@@ -5,6 +5,7 @@ extern "C" void* __vt__16FieldClass16AB70;
 extern "C" u8 D_16CF78[];
 extern "C" u8 D_16D0B0[];
 extern "C" u8 D_1737F8[];
+
 extern "C" void func_002B0AD0(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
 
 /** Partial callback interface with a method at offset 0x58. */
@@ -12,31 +13,53 @@ class FieldCallbackDispatch58
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void callback(u32 first, u32 second);
 };
 
 extern "C" void func_002B0EE0(void* object, void* output);
+
 extern "C" u8 D_173E50[];
 extern "C" void* D_001B6620;
+
 extern "C" void func_121E80(void* owner, void* object);
 
 /** Partial receiver with a state byte at offset 0x60. */
@@ -205,6 +228,7 @@ void func_002A5160(void* receiver, const u8* input, u32 value)
 	FieldParticleInputA0* object = (FieldParticleInputA0*)receiver;
     object->unka0 = input;
     object->unka4 = value;
+
     if (*object->unka0 == 1)
     {
         object->unk57 = 1;
@@ -219,6 +243,7 @@ void func_002A51A0(u8* object, u32 enabled)
 {
     *(u32*)(object + 0xA0) = 0;
     *(u32*)(object + 0xA4) = 0;
+
     if (enabled != 0)
     {
         object[0x57] = 1;
@@ -277,10 +302,12 @@ s32 func_002A7D30(void* object)
 u8* func_002A7D40(u8* object, s32 index)
 {
     u8* entry = *(u8**)(object + 0x14) + index * 96;
+
     if (entry != 0)
     {
         entry += 0x30;
     }
+
     return entry;
 }
 
@@ -398,6 +425,7 @@ void func_002A83D0(void* receiver, const u8* input, u32 value)
     FieldParticleInputA0* object = (FieldParticleInputA0*)receiver;
     object->unka0 = input;
     object->unka4 = value;
+
     if (*object->unka0 == 1)
     {
         object->unk57 = 1;
@@ -412,6 +440,7 @@ void func_002A8410(u8* object, u32 enabled)
 {
     *(u32*)(object + 0xA0) = 0;
     *(u32*)(object + 0xA4) = 0;
+
     if (enabled != 0)
     {
         object[0x57] = 1;
@@ -909,14 +938,18 @@ s32 func_002B2950(FieldResourceList14* object, s32 first, s32 second)
 {
     FieldListNode* node = &object->unk14;
     s32 count = 0;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+
         if (entry->unk49_1 &&
             (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
               first == (u16)entry->unk20) ||
@@ -925,21 +958,26 @@ s32 func_002B2950(FieldResourceList14* object, s32 first, s32 second)
             count++;
         }
     }
+
     return count;
 }
 
 void func_002B29F0(FieldResourceList14* object, s32 first, s32 second)
 {
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
         u8 enabled = entry->unk49_1;
+
         if (enabled && (enabled ? entry->unk49_3 : 1) &&
             (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
               first == (u16)entry->unk20) ||
@@ -953,15 +991,19 @@ void func_002B29F0(FieldResourceList14* object, s32 first, s32 second)
 void func_002B2AB0(FieldResourceList14* object, s32 first, s32 second)
 {
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
         u8 enabled = entry->unk49_1;
+
         if (enabled && (enabled ? entry->unk49_3 : 1) &&
             (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
               first == (u16)entry->unk20) ||
@@ -984,19 +1026,24 @@ u32 func_002B3140(FieldResourceList14* object, u32 kind, u32 key)
 {
     FieldListNode* node = &object->unk14;
     FieldListNode* sentinel = node;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || sentinel == node)
         {
             break;
         }
+
         FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+
         if (kind == entry->unk1c && key == entry->unk20)
         {
             return entry->unk49_1 ? entry->unk18 : entry->unk14;
         }
     }
+
     return 0;
 }
 
@@ -1039,6 +1086,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002A4F10", func_002B37
 extern "C" void func_002B3800(void* receiver)
 {
     FieldChildState1B4* object = (FieldChildState1B4*)receiver;
+
     if (object->child != 0)
     {
         object->child->unk6c |= 1;
@@ -1048,6 +1096,7 @@ extern "C" void func_002B3800(void* receiver)
 extern "C" void func_002B3820(void* receiver)
 {
     FieldChildState1B4* object = (FieldChildState1B4*)receiver;
+
     if (object->child != 0)
     {
         object->child->unk6c &= 0xFFFE;

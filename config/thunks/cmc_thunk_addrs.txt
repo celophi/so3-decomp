@@ -1,1 +1,9 @@
 @64@__dt__23ItemCreationClass175030Fv = 0x004673B0;
+@32@render__12LibContainerFv = 0x00359920;
+@176@on_packet_complete__12LibContainerFUi = 0x00359930;
+@32@func_0044B100__12LibContainerFUiUiUi = 0x00359940;
+@32@__dt__14LibClass172320Fv = 0x00359950;
+@32@__dt__12CardFileListFv = 0x003598E0;
+@240@func_00412C30__14LibClass1721F0Fv = 0x003598F0;
+@240@func_00412C20__12CardFileListFf = 0x00359900;
+@240@func_00412C10__12CardFileListFi = 0x00359910;

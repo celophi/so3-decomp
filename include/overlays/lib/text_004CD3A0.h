@@ -14,9 +14,7 @@
 typedef struct LibBusyObject
 {
     u8 unk00[0x50];
-    /** Nonzero while the object is busy. It changes outside the code that waits on it. */
     volatile u8 busy;
-    /** Channel selector stored with the queued DMA submission. */
     u8 channel;
 } LibBusyObject;
 
@@ -42,7 +40,6 @@ extern "C" u8 lib_vu1_upload_chain[];
 class LibMatrix44Value
 {
 public:
-    /** @brief Leave the matrix uninitialized. */
     LibMatrix44Value()
     {
     }
@@ -50,7 +47,10 @@ public:
     /** @brief Set the matrix to the identity transformation. */
     void set_identity();
 
-    /** @brief Copy all sixteen components. @param other Matrix to copy. */
+    /**
+     * @brief Copy all sixteen components.
+     * @param other Matrix to copy.
+     */
     LibMatrix44Value(const LibMatrix44Value& other)
     {
         ((unsigned __int128*)this)[0] = ((const unsigned __int128*)&other)[0];
@@ -59,7 +59,11 @@ public:
         ((unsigned __int128*)this)[3] = ((const unsigned __int128*)&other)[3];
     }
 
-    /** @brief Copy all components. @param other Source matrix. @return A copy of this matrix. */
+    /**
+     * @brief Copy all components.
+     * @param other Source matrix.
+     * @return A copy of this matrix.
+     */
     LibMatrix44Value operator=(const LibMatrix44Value& other)
     {
         ((unsigned __int128*)this)[0] = ((const unsigned __int128*)&other)[0];
@@ -86,14 +90,36 @@ extern "C"
      * @return Quaternion extracted from the converted matrix.
      */
     FieldVec4B func_004CD570(const FieldVec4B& quaternion);
-    /** @brief Invert an orthonormal rotation and its row-vector translation. @param input Source matrix. @param output Destination matrix, distinct from input. */
+
+    /**
+     * @brief Invert an orthonormal rotation and its row-vector translation.
+     * @param input Source matrix.
+     * @param output Destination matrix, distinct from input.
+     */
     void func_004CEF20(const LibMatrix44Value* input, LibMatrix44Value* output);
-    /** @brief Invert an orthonormal rotation and its translation column. @param input Source transformation matrix. @return Inverse transformation matrix. */
+
+    /**
+     * @brief Invert an orthonormal rotation and its translation column.
+     * @param input Source transformation matrix.
+     * @return Inverse transformation matrix.
+     */
     LibMatrix44Value func_004CF0B0(const LibMatrix44Value& input);
-    /** @brief Invert a nonsingular matrix. @param input Source matrix. @param output Destination matrix, which may alias input. */
+
+    /**
+     * @brief Invert a nonsingular matrix.
+     * @param input Source matrix.
+     * @param output Destination matrix, which may alias input.
+     */
     void func_004CF1C0(const LibMatrix44Value* input, LibMatrix44Value* output);
-    /** @brief Multiply a matrix by a column vector. @param matrix Source matrix. @param value Source vector. @return Transformed vector. */
+
+    /**
+     * @brief Multiply a matrix by a column vector.
+     * @param matrix Source matrix.
+     * @param value Source vector.
+     * @return Transformed vector.
+     */
     FieldVec4A func_004CF6C0(const LibMatrix44Value& matrix, const FieldVec4A& value);
+
     /**
      * @brief Combine two matrices with the VU0 microprogram at 0x250.
      * @param left First matrix (vf1-vf4).
@@ -101,8 +127,15 @@ extern "C"
      * @return Combined matrix.
      */
     LibMatrix44Value func_004CF7C0(const LibMatrix44Value& left, const LibMatrix44Value& right);
-    /** @brief Multiply a row vector by a matrix. @param value Source vector. @param matrix Source matrix. @return Transformed vector. */
+
+    /**
+     * @brief Multiply a row vector by a matrix.
+     * @param value Source vector.
+     * @param matrix Source matrix.
+     * @return Transformed vector.
+     */
     FieldVec4A func_004CF830(const FieldVec4A& value, const LibMatrix44Value& matrix);
+
     /**
      * @brief Compose a projection that exchanges depth and homogeneous coordinates with an inverse transform.
      * @param output Destination matrix.
@@ -114,6 +147,7 @@ extern "C"
      * @param y_offset Vertical projection offset.
      */
     void func_004CFB20(LibMatrix44Value* output, const LibMatrix44Value& input, float scale, float x_divisor, float y_divisor, float x_offset, float y_offset);
+
     /**
      * @brief Compose a projection with third-column offsets with an inverse transform.
      * @param output Destination matrix.
@@ -125,6 +159,7 @@ extern "C"
      * @param y_offset Vertical projection offset.
      */
     void func_004CFC50(LibMatrix44Value* output, const LibMatrix44Value& input, float scale, float x_divisor, float y_divisor, float x_offset, float y_offset);
+
     /**
      * @brief Build a perspective matrix with depth-range coefficients.
      * @param output Destination matrix.
@@ -139,46 +174,89 @@ extern "C"
      */
     void func_004CFD80(LibMatrix44Value* output, float x_scale, float y_scale_factor, float x_offset, float y_offset,
                       float first_depth, float second_depth, float near_plane, float far_plane);
-    /** @brief Set the upper 3x3 rotation from three angles. @param output Matrix whose rotation is updated. @param angles Three rotation angles in radians. */
+
+    /**
+     * @brief Set the upper 3x3 rotation from three angles.
+     * @param output Matrix whose rotation is updated.
+     * @param angles Three rotation angles in radians.
+     */
     void func_004CFDE0(LibMatrix44Value* output, const float* angles);
-    /** @brief Set the upper 3x3 rotation about the Y axis. @param output Matrix whose rotation is updated. @param angle Rotation angle in radians. */
+
+    /**
+     * @brief Set the upper 3x3 rotation about the Y axis.
+     * @param output Matrix whose rotation is updated.
+     * @param angle Rotation angle in radians.
+     */
     void func_004CFEE0(LibMatrix44Value* output, float angle);
-    /** @brief Clear all sixteen matrix components. @param matrix Matrix to clear. */
+
+    /**
+     * @brief Clear all sixteen matrix components.
+     * @param matrix Matrix to clear.
+     */
     void func_004CFF80(LibMatrix44Value* matrix);
-    /** @brief Extract three rotation components from a matrix. @param angles Destination for three floats. @param matrix Transformation matrix. */
+
+    /**
+     * @brief Extract three rotation components from a matrix.
+     * @param angles Destination for three floats.
+     * @param matrix Transformation matrix.
+     */
     void func_004CEBA0(float* angles, const LibMatrix44Value* matrix);
-    /** @brief Extract rotation components from a quaternion. @param angles Destination rotation vector. @param quaternion Source quaternion. */
+
+    /**
+     * @brief Extract rotation components from a quaternion.
+     * @param angles Destination rotation vector.
+     * @param quaternion Source quaternion.
+     */
     void func_004CDA40(LibVector4* angles, const LibVector4* quaternion);
-    /** @brief Normalize a quaternion in place. @param quaternion Quaternion to normalize. */
+
+    /**
+     * @brief Normalize a quaternion in place.
+     * @param quaternion Quaternion to normalize.
+     */
     void lib_normalize_quaternion(FieldVec4B* quaternion);
+
     /**
      * @brief Build the unit quaternion for a rotation about an axis.
      * @param output Receives the quaternion.
      * @param axis_angle Axis in x, y and z, angle in radians in w.
      */
     void lib_quaternion_from_axis_angle(FieldVec4B* output, const LibVector4* axis_angle);
-    /** @brief Convert a quaternion to a matrix. @param quaternion Rotation to convert. @return Rotation matrix. */
+
+    /**
+     * @brief Convert a quaternion to a matrix.
+     * @param quaternion Rotation to convert.
+     * @return Rotation matrix.
+     */
     LibMatrix44Value func_004CE930(const FieldVec4B& quaternion);
+
     /**
      * @brief Build a matrix from quaternion products, retaining the quaternion's squared norm.
      * @param quaternion Quaternion components in x, y, z, w order.
      * @return Row-vector rotation matrix with the squared norm in its homogeneous diagonal.
      */
     LibMatrix44Value func_004CE980(const FieldVec4B& quaternion);
+
     /**
      * @brief Build a rotation quaternion from three angles.
      * @param output Destination quaternion.
      * @param angles Angles in radians in x, y and z.
      */
     void func_004CE040(LibVector4* output, const LibVector4* angles);
-    /** @brief Transpose a matrix. @param input Source matrix. @return Transposed matrix. */
+
+    /**
+     * @brief Transpose a matrix.
+     * @param input Source matrix.
+     * @return Transposed matrix.
+     */
     LibMatrix44Value func_004CECD0(const LibMatrix44Value& input);
+
     /**
      * @brief Invert a rigid transform.
      * @param input Source transform, or null for the identity.
      * @param output Destination matrix.
      */
     void func_004CEFD0(const LibMatrix44Value* input, LibMatrix44Value* output);
+
     /**
      * @brief Build a matrix from a camera's screen bounds.
      * @param output Destination matrix.
@@ -188,6 +266,7 @@ extern "C"
      * @param aspect Aspect factor.
      */
     void func_004CF930(LibMatrix44Value* output, const FieldVec4A* min, const FieldVec4A* max, float distance, float aspect);
+
     /**
      * @brief Build a clip matrix from a camera's screen bounds and depth range.
      * @param output Destination matrix.
@@ -239,22 +318,12 @@ enum LibTextureBlockState
  */
 struct LibTextureBlock
 {
-    /** Texture ID the block holds. */
     u32 id;
-
-    /** Start of the block, in the units of LibTextureCache::texture_address. */
     u32 address;
-
-    /** Size of the block. */
     u32 size;
-
     u8 previous_block;
     u8 next_block;
-
-    /** LibTextureBlockState. */
     u8 state;
-
-    /** Cache stamp of the last lookup that found the texture. */
     u8 stamp;
 };
 
@@ -263,8 +332,6 @@ struct LibTextureClut
 {
     u32 unk00;
     u8 unk04[4];
-
-    /** CLUT half of TEX0 (CBP and CPSM) for textures that use it. */
     u64 tex0;
 };
 
@@ -273,8 +340,6 @@ struct LibTextureEntry
 {
     u32 tag;
     LibTextureUser* user;
-
-    /** TEX0 value for the texture; TBP0 gives its VRAM address. */
     u64 tex0;
 };
 
@@ -285,14 +350,8 @@ struct LibTextureRequest
     s16 height;
     s32 size;
     u8 unk08[4];
-
-    /** GS pixel storage mode (1 is PSMCT24). */
     s16 psm;
-
-    /** Texture width as a power of two (TEX0's TW). */
     u8 width_log2;
-
-    /** Texture height as a power of two (TEX0's TH). */
     u8 height_log2;
 };
 
@@ -435,52 +494,28 @@ public:
         next[0] = index;
     }
 
-    /** VRAM slot of the texture area. */
     s16 texture_slot;
-
-    /** VRAM slot of the CLUT area. */
     s16 clut_slot;
-
     u32 unk04;
-
-    /** VRAM blocks of the texture area; record 0 heads the list. */
     LibTextureBlock blocks[LIB_TEXTURE_CACHE_ENTRY_COUNT];
-
     LibTextureEntry entries[LIB_TEXTURE_CACHE_ENTRY_COUNT];
     u8 next[LIB_TEXTURE_CACHE_ENTRY_COUNT];
     u8 previous[LIB_TEXTURE_CACHE_ENTRY_COUNT];
-
-    /** Size of the texture area in bytes. */
     s32 texture_size;
-
     u32 unk220c;
     u32 unk2210;
     u8 unk2214[4];
-
-    /** CLUT records, clut_count of them. */
     LibTextureClut cluts[LIB_TEXTURE_CACHE_MAX_CLUTS];
-
     u8 unk2618[8];
-
-    /** Nonzero for each CLUT record in use. */
     u8 clut_used[LIB_TEXTURE_CACHE_MAX_CLUTS];
 
 
-    /** VRAM word address of the texture area. */
     u32 texture_address;
-
     u32 unk2664;
     u8 unk2668[4];
-
-    /** Number of CLUTs the CLUT area holds. */
     s32 clut_count;
-
-    /** Entry each slot last found. */
     u16 slot_entries[LIB_TEXTURE_CACHE_ENTRY_COUNT];
-
-    /** CLUT record each slot last found. */
     s16 clut_slot_entries[LIB_TEXTURE_CACHE_MAX_CLUTS];
-
     u8 stamp;
     u8 unk28f1[0x1F];
 };
@@ -538,9 +573,7 @@ class LibDisplayManager;
 /** One 0x68-byte layer record of a scene. */
 struct LibSceneLayer
 {
-    /** Display manager whose camera the layer's objects face. */
     LibDisplayManager* display_manager;
-
     u8 unk04[0x64];
 };
 
@@ -655,34 +688,19 @@ public:
      */
     inline void set_type_id(u16 value);
 
-    /** Lib's renderer draws objects with zero in its main list and the rest in bucket[draw_bucket]. */
     u8 draw_bucket;
-
-    /** Nonzero when callers can reuse the cached matrix without an update. */
     u8 matrix_ready;
-
     u8 unk62;
     u8 unk63;
-
-    /** Nonzero while the submitted packet awaits its DMA notification. */
     u8 dma_pending;
-
     u8 unk65;
     u8 unk66;
     u8 unk67;
-
-    /** Layer of the owning scene the object belongs to; picks its display manager from the scene's layer records. */
     u8 layer;
-
     u8 unk69;
     u16 draw_flags;
-
-    /** Type ID that Lib and scene code compare against (0x100 for scene models, 0x110 in Lib's scene setup). */
     u16 type_id;
-
     u8 unk6e[0x12];
-
-    /** Display manager whose current camera the object faces; null for g_display_manager's. */
     LibDisplayManager* display_manager;
     u8 unk84[4];
     u32 unk88;
@@ -703,29 +721,14 @@ class LibLight : public LibTransformOwner
         /** @brief Update the transform matrix if it isn't ready, then cache the position and direction from it. */
         void update_frame();
 
-        /** World transform; the translation is in the last column. */
         LibMatrix44Value world;
-
         u8 unkd0[0x150];
-
-        /** Colour in xyz and intensity in w. */
         LibVector4 color;
-
-        /** Colour scaled by the current camera's unk260 each frame. */
         LibVector4 tinted_color;
-
-        /** Position, w one, cached by update_frame. */
         LibVector4 position;
-
-        /** Direction (the transform's y axis), w one, cached by update_frame. */
         LibVector4 direction;
-
-        /** Spotlight cone angle in degrees. */
         float cone_angle;
-
-        /** Intensity last packed for a directional light. */
         float packed_intensity;
-
         u8 unk268[0x20];
         u8 unk288;
         u8 unk289;
@@ -737,11 +740,7 @@ class LibLight : public LibTransformOwner
         u8 enabled;
         u8 unk290;
         u8 unk291[3];
-
-        /** LIB_LIGHT_KIND_*. */
         s32 kind;
-
-        /** Light groups in the low byte; assign_spot_lights puts a spotlight's own bit (8 up to 31) above them. */
         u32 mask;
 };
 
@@ -764,7 +763,6 @@ extern "C" void lib_light_get_direction(LibVector4* out, LibLight* light);
 class LibDmaCallbacks
 {
 public:
-    /** @brief Install the interface's vtable. */
     inline LibDmaCallbacks();
 
     /**
@@ -787,7 +785,6 @@ public:
     /** @brief Initialize the transform subclass. */
     LibClass172000();
 
-    /** @brief Destroy the transform subclass. */
     virtual ~LibClass172000()
     {
     }
@@ -805,10 +802,14 @@ public:
 
     /** @brief Initialize the list owner, kind counts, and node-buffer state. */
     LibUpdateList();
+
     /** @brief Release the owned node buffer and destroy the list base. */
     virtual ~LibUpdateList();
 
-    /** @brief Remove a registered node and clear its pending buffer entries. @param object Node to remove. */
+    /**
+     * @brief Remove a registered node and clear its pending buffer entries.
+     * @param object Node to remove.
+     */
     virtual void remove_node(void* object);
 
     /**
@@ -819,11 +820,26 @@ public:
      */
     virtual void update_nodes();
 
-    /** @brief Register and append a node. @param object Node to append. @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind. */
+    /**
+     * @brief Register and append a node.
+     * @param object Node to append.
+     * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+     */
     virtual void append_node(void* object, s32 kind);
-    /** @brief Register and prepend a node. @param object Node to prepend. @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind. */
+
+    /**
+     * @brief Register and prepend a node.
+     * @param object Node to prepend.
+     * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+     */
     virtual void prepend_node(void* object, s32 kind);
-    /** @brief Register a node after a list position. @param position Insertion position. @param object Node to insert. @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind. */
+
+    /**
+     * @brief Register a node after a list position.
+     * @param position Insertion position.
+     * @param object Node to insert.
+     * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+     */
     virtual void insert_node_after(void* position, void* object, s32 kind);
 
     /**
@@ -900,10 +916,16 @@ class LibDisplayManager : public LibUpdateList, public LibListObject
 public:
     /** @brief Initialize the manager interfaces and current display. */
     LibDisplayManager();
+
     /** @brief Destroy both manager interfaces. */
     virtual ~LibDisplayManager();
-    /** @brief Report the manager type. @return Manager type value. */
+
+    /**
+     * @brief Report the manager type.
+     * @return Manager type value.
+     */
     virtual s32 get_default_list_kind();
+
     /** @brief Update the manager's intrusive receiver. */
     virtual void update();
 
@@ -928,15 +950,10 @@ public:
     /** @brief Set unk94 and write the current camera's matrices, if there is one. */
     void prepare_camera();
 
-    /** Display the effect is set on, or null while it's off. */
     LibCameraContext* effect_display;
-
     LibListObject* current_display;
     u8 unk94;
-
-    /** Nonzero while the display effect is on. */
     u8 effect_enabled;
-
     u8 unk96;
     u8 effect_level;
 };
@@ -963,48 +980,23 @@ class LibLightList : public LibUpdateList, public LibListObject
         u8 unk8c[4];
         LibMatrix44Value unk90;
         LibMatrix44Value unkd0;
-
-        /** Up to four directional lights' directions, negated, one light per row. */
         LibVector4 directions[4];
-
-        /** The same lights' colours times their intensities: one channel per row, one light per column. */
         float colors[4][4];
-
         u8 unk190[0x180];
         LibVector4 unk310;
         LibVector4 unk320;
         LibVector4 unk330;
-
-        /** unk320 times unk330. */
         LibVector4 unk340;
-
         u8 unk350[0x10];
-
-        /** Display manager; boot and the field point it at g_display_manager. */
         LibDisplayManager* manager;
-
-        /** Packed directional lights whose unk28C is set. */
         LibLight* unk364[3];
-
-        /** The packed directional lights' masks ANDed together. */
         u32 mask;
-
         u8 unk374[4];
-
-        /** Enabled lights counted this frame (local lights only when unk28E is set). */
         s16 light_count;
-
-        /** Entries in unk364. */
         s16 unk364_count;
-
         u8 unk37c[2];
-
-        /** Set each frame, cleared once the directional lights are packed. */
         u8 unk37e;
-
-        /** Set when an enabled light is a local (spot or point) light. */
         u8 has_local_lights;
-
         u8 unk380[2];
         u8 unk382;
         u8 unk383[0xD];
@@ -1036,10 +1028,7 @@ struct LibRendererPass
 struct LibRendererExtra
 {
     u8 unk00[0x96];
-
-    /** Set when Lib starts with both extra renderer arguments nonzero. */
     u8 enabled;
-
     u8 unk97[0x91];
     LibCameraContext* display;
 };
@@ -1077,7 +1066,9 @@ public:
     void begin_frame();
 
     void func_004D4700();
+
     void func_004D4560();
+
     void func_004D2C70();
 
     /**
@@ -1087,64 +1078,32 @@ public:
      */
     s32 func_004D44D0(s32 poll);
 
-    /** Write position in the current packet buffer. */
     u8* cursor;
-
     u8 unk7c[4];
     u8 buffers[2][LIB_RENDERER_BUFFER_SIZE];
-
-    /** Scene manager whose current camera the frame is drawn with. */
     LibDisplayManager* manager;
-
     LibLightList* light_list;
     LibCameraContext* display;
     u32 unk408c;
     u8 unk4090[4];
-
-    /** Entry of lists picked for this frame. */
     void* current_list;
-
     void* lists[2];
     u32 unk40a0;
-
-    /** EE timer 0 ticks the last finished packet took. */
     s32 packet_ticks;
-
-    /** Object whose main-list packet is in flight. */
     LibTransformOwner* main_packet;
-
-    /** Object whose bucket-list packet is in flight. */
     LibTransformOwner* bucket_packet;
-
     u32 unk40b0;
     u8 unk40b4[0xC];
-
-    /** EE timer 0 count when the in-flight packet started. */
     s32 packet_start_time;
-
     u8 unk40c4[4];
-
-    /** Nonzero while the main-list packet is in flight. */
     u8 main_packet_busy;
-
-    /** Nonzero while the bucket-list packet is in flight. */
     u8 bucket_packet_busy;
-
     u8 unk40ca;
     u8 unk40cb;
     u8 unk40cc[2];
-
-    /**
-     * Nonzero (the default) to give bucket 0's own list the main-list objects whose unk66 byte is set; boot clears
-     * it while its own frame loop runs.
-     */
     u8 unk40ce;
-
     u8 unk40cf[2];
-
-    /** Packet buffer the next frame writes to. */
     u8 buffer_index;
-
     u8 unk40d2[0x386];
     LibRendererPass* unk4458;
     u8 unk445c[4];
@@ -1169,6 +1128,7 @@ extern "C" u64 D_001B65C8;
 extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel);
 
 extern "C" void func_004C8390(LibDisplayManager* manager);
+
 extern "C" u64 func_004DBCA0(LibCameraContext* display, s32 index);
 
 /** Transform with local vectors, a cached matrix, and a parent link. */
@@ -1204,37 +1164,29 @@ public:
      * @param source Transform to copy.
      */
     virtual void copy_offset_transform_state(const LibTransform* source);
+
     /** @brief Update transform state relative to the current camera. */
     virtual void update();
+
     /** @brief Update the cached transformation matrices. */
     virtual void update_transform_matrix();
+
     /**
      * @brief Read the cached combined transformation matrix.
      * @return Pointer to the stored matrix; this call does not update it.
      */
     virtual const LibMatrix44Value* get_transform_matrix();
+
     LibMatrix44Value transform;
-    /** Transform composed from the inherited components and the parent. */
     LibMatrix44Value base_transform;
-
-    /** Additional local transform composed with the base transform. */
     LibMatrix44Value offset_transform;
-
-    /** Transpose of transform, which func_004D9E70 inverts into inverse_transform. */
     LibMatrix44Value transposed_transform;
-
-    /** Inverse of transform: world space to local space. */
     LibMatrix44Value inverse_transform;
-
     LibVector4 offset_translation;
-
-    /** Quaternion used to build the offset transform. */
     LibVector4 offset_rotation;
-
     LibVector4 offset_scale;
     float unk200;
     u8 unk204[4];
-    /** Parent used when updating the matrix and invalidating the transform chain. */
     LibTransform* parent_transform;
     u16 unk20c;
     u8 unk20e_0 : 1;
@@ -1318,22 +1270,44 @@ public:
     LibResourceBuffer* resource;
 };
 
-/** @brief Copy a complete local vector. @param output Destination vector. @param input Source vector. */
+/**
+ * @brief Copy a complete local vector.
+ * @param output Destination vector.
+ * @param input Source vector.
+ */
 extern "C" void func_004DA040(LibVector4* output, const LibVector4* input);
-/** @brief Return the transform's 16-bit state value. @param object Transform owner. @return Stored state value. */
+
+/**
+ * @brief Return the transform's 16-bit state value.
+ * @param object Transform owner.
+ * @return Stored state value.
+ */
 extern "C" u16 func_004DA2B0(const LibTransform* object);
 
-/** @brief Extract the transform's translation column. @param object Transform owner. @return Translation coordinates with homogeneous component one. */
+/**
+ * @brief Extract the transform's translation column.
+ * @param object Transform owner.
+ * @return Translation coordinates with homogeneous component one.
+ */
 extern "C" FieldVec4B func_004DA6F0(const LibTransform* object);
-/** @brief Store the local scalar and update its threshold flag. @param object Transform receiver. @param value Local scalar value. */
+
+/**
+ * @brief Store the local scalar and update its threshold flag.
+ * @param object Transform receiver.
+ * @param value Local scalar value.
+ */
 extern "C" void func_004DA050(LibTransform* object, float value);
+
 /**
  * @brief Rebuild the offset matrix from the stored translation, quaternion and scale.
  * @param object Transform whose offset matrix is updated.
  */
 extern "C" void lib_rebuild_offset_transform(LibTransform* object);
 
-/** @brief Mark each transform in the parent chain dirty. @param object First transform, or null. */
+/**
+ * @brief Mark each transform in the parent chain dirty.
+ * @param object First transform, or null.
+ */
 extern "C" void lib_invalidate_transform_chain(LibTransform* object);
 
 /**
@@ -1481,14 +1455,9 @@ void func_004DB570(void* object);
 /** VRAM allocator: hands out texture space after the display's buffers. */
 typedef struct LibVramAllocator
 {
-    /** Word address allocations start from. */
     u32 base_address;
-
     u32* unk04;
-
-    /** Word address of each allocation. */
     u32* allocations;
-
     s16 unk04_count;
     s16 allocation_count;
     s16 unk04_capacity;
@@ -1654,6 +1623,7 @@ s32 func_004DAFD0(void* object);
 
 #ifdef __cplusplus
 extern "C" s32 func_004D04C0(void* object);
+
 extern "C" s32 func_004D0740(void* object);
 #endif
 
@@ -1712,10 +1682,7 @@ struct LibPacketQueue
     s16 unk0C;
     u8 unk0E;
     u8 unk0F;
-
-    /** Queued packets may start; func_004DC420 sets it. */
     u8 enabled;
-
     u8 unk11;
 
     /** @brief Destroy the queue. */

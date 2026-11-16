@@ -7,7 +7,9 @@ extern "C" {
 extern void* D_153D40[];
 extern void* D_153D50[];
 extern void* D_153DD8[];
+
 void __dl__FPv(void* object);
+
 FieldObject262E20* func_4E2940(FieldObject262E20* object, s16 flags);
 }
 
@@ -170,13 +172,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_002629
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002607B0", func_00262A80);
 
-/** @brief Read the halfword state flags. @return Stored value. */
+/**
+ * @brief Read the halfword state flags.
+ * @return Stored value.
+ */
 u16 FieldClass15AE70::func_slot38()
 {
     return unk0a;
 }
 
-/** @brief Read the byte state code. @return Stored value. */
+/**
+ * @brief Read the byte state code.
+ * @return Stored value.
+ */
 u8 FieldClass15AE70::func_slot30()
 {
     return unk08;
@@ -191,11 +199,13 @@ FieldObject262E20* func_00262E20(FieldObject262E20* object, s16 flags)
         object->table = D_153D50;
         object->secondary_table = D_153DD8;
         func_4E2940(object, 0);
+
         if (flags > 0)
         {
             __dl__FPv(object);
         }
     }
+
     return object;
 }
 
@@ -206,11 +216,13 @@ FieldObject262F70* func_00262F70(FieldObject262F70* object, s16 flags)
     if (object != 0)
     {
         object->table = D_153D40;
+
         if (flags > 0)
         {
             __dl__FPv(object);
         }
     }
+
     return object;
 }
 

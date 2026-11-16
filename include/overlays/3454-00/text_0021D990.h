@@ -8,8 +8,10 @@ typedef struct N54Owner64_0021D990 N54Owner64_0021D990;
 #ifdef __cplusplus
 extern "C" {
 void* func_002264B0(void* receiver);
+
 /** Initialize the receiver and select state 6. */
 void* func_00226670(void* object);
+
 /** Initialize the receiver and select state 5. */
 void* func_00226900(void* object);
 #endif

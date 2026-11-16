@@ -67,14 +67,18 @@ class FieldClass16CF78 : public FieldClass16AB70
 public:
     /** Destroy the allocator-family receiver. */
     virtual ~FieldClass16CF78();
+
     /** Allocate from the particle allocator, recording the caller's line and file. */
     static void* operator new(u32 size, s32 line, const char* file);
+
     /** Release storage obtained from the particle allocator. */
     static void operator delete(void* object);
+
     /** Placement delete matching the debug operator new; does nothing. */
     static void operator delete(void* object, s32 line, const char* file)
     {
     }
+
     u8 unk04;
     u8 unk05[0x13];
 };
@@ -93,8 +97,10 @@ class FieldClass173A80 : public FieldClass16CF90
 public:
     /** Construct the receiver and its bases. */
     FieldClass173A80();
+
     /** Destroy the receiver and release its owned storage. */
     virtual ~FieldClass173A80();
+
     u8 unk18[0x18];
 };
 
@@ -104,8 +110,10 @@ class FieldClass1739B0 : public FieldClass16CF90
 public:
     /** Construct the receiver and its bases. */
     FieldClass1739B0();
+
     /** Destroy the receiver and release its owned storage. */
     virtual ~FieldClass1739B0();
+
     u8 unk18[0x18];
 };
 
@@ -115,8 +123,10 @@ class FieldClass1738E0 : public FieldClass16CF90
 public:
     /** Construct the receiver and its bases. */
     FieldClass1738E0();
+
     /** Destroy the receiver and release its owned storage. */
     virtual ~FieldClass1738E0();
+
     u8 unk18[0x18];
 };
 
@@ -126,8 +136,10 @@ class FieldClass173810 : public FieldClass16CF90
 public:
     /** Construct the receiver and its bases. */
     FieldClass173810();
+
     /** Destroy the receiver and release its owned storage. */
     virtual ~FieldClass173810();
+
     u8 unk18[0x18];
 };
 
@@ -137,8 +149,10 @@ class FieldClass173B50 : public FieldClass16CF90
 public:
     /** Construct the receiver and its bases. */
     FieldClass173B50();
+
     /** Destroy the receiver and release its callback registrations. */
     virtual ~FieldClass173B50();
+
     u8 unk18[0x18];
 };
 
@@ -161,10 +175,11 @@ public:
         unk57 = 0;
         unk04 = 1;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass1735E0()
     {
     }
+
     float unk30;
     u8 unk34[4];
     float unk38;
@@ -188,8 +203,10 @@ class FieldClass1736B0 : public FieldClass1735E0
 public:
     /** Construct the receiver with empty particle arrays. */
     FieldClass1736B0();
+
     /** Destroy the receiver and release its owned storage. */
     virtual ~FieldClass1736B0();
+
     u8 unk58[0x58];
     u8* unkb0;
     FieldVector1FAD90* unkb4;

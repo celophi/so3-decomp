@@ -212,10 +212,12 @@ s32 func_001E3BA0(const void* object)
 {
     const BattleCheckedWordState* state = (const BattleCheckedWordState*)object;
     u32 check = state->unka8 ^ (state->unk54 ^ (state->unk4c + state->unk50));
+
     if (state->unk9c != check)
     {
         return 0;
     }
+
     return state->unk50 ^ 0x7DE3F7E3;
 }
 
@@ -299,10 +301,12 @@ s32 func_001E7B20(const void* object)
 {
     const BattleCheckedWordState* state = (const BattleCheckedWordState*)object;
     u32 check = state->unka8 ^ (state->unk60 ^ (state->unk58 + state->unk5c));
+
     if (state->unka0 != check)
     {
         return 0;
     }
+
     return state->unk60 ^ 0x7DE3F7E3;
 }
 
@@ -312,10 +316,12 @@ s32 func_001E7BD0(const void* object)
 {
     const BattleCheckedWordState* state = (const BattleCheckedWordState*)object;
     u32 check = state->unka8 ^ (state->unk48 ^ (state->unk40 + state->unk44));
+
     if (state->unk98 != check)
     {
         return 0;
     }
+
     return state->unk48 ^ 0x7DE3F7E3;
 }
 
@@ -323,10 +329,12 @@ s32 func_001E7C10(const void* object)
 {
     const BattleCheckedWordState* state = (const BattleCheckedWordState*)object;
     u32 check = state->unka8 ^ (state->unk3c ^ (state->unk34 + state->unk38));
+
     if (state->unk94 != check)
     {
         return 0;
     }
+
     return state->unk3c ^ 0x7DE3F7E3;
 }
 
@@ -336,10 +344,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7C
 s32 func_001E7CD0(const void* object)
 {
     const BattleChecksumState* state = (const BattleChecksumState*)object;
+
     if (state->checksumA4 != (state->checksumA8 ^ (state->unk74 ^ (state->unk70 + state->unk72))))
     {
         return 0;
     }
+
     return state->unk74 ^ 0x7E93;
 }
 
@@ -351,10 +361,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7D
 s32 func_001E7E50(const void* object)
 {
     const BattleChecksumState* state = (const BattleChecksumState*)object;
+
     if (state->checksumAC != (state->checksumA8 ^ (state->unk80 ^ (state->unk7C + state->unk7E))))
     {
         return 0;
     }
+
     return state->unk80 ^ 0x7E93;
 }
 
@@ -364,10 +376,12 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_001DD3C0", func_001E7E
 s32 func_001E7EC0(const void* object)
 {
     const BattleChecksumState* state = (const BattleChecksumState*)object;
+
     if (state->checksumB0 != (state->checksumA8 ^ (state->unk7A ^ (state->unk76 + state->unk78))))
     {
         return 0;
     }
+
     return state->unk7A ^ 0x7E93;
 }
 

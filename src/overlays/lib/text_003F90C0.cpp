@@ -32,6 +32,7 @@ extern LibCharacterTableEntry* D_001B64E8;
 extern u8 D_4EC260[10][3][2];
 
 extern "C" s32 func_00456F10(void* flags, s32 bit);
+
 extern "C" void func_00409A10(LibCharacterEquipment* equipment);
 
 /**
@@ -126,6 +127,7 @@ extern "C" u32 lib_character_mask_flags(LibCharacterRecord* record, u32 bits)
     {
         return 5;
     }
+
     u32 value = record->encoded_flags;
     record->encoded_flags = ((value ^ 0x7DE3F7E3) & bits) ^ 0x7DE3F7E3;
     record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;
@@ -224,6 +226,7 @@ extern "C" u32 lib_character_add_flags(LibCharacterRecord* record, u32 bits)
     {
         return 5;
     }
+
     u32 value = record->encoded_flags;
     record->encoded_flags = ((value ^ 0x7DE3F7E3) | bits) ^ 0x7DE3F7E3;
     record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;

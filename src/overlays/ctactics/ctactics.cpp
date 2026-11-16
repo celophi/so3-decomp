@@ -75,7 +75,10 @@ public:
         selected = -1;
     }
 
-    /** @brief Report the default list kind. @return Three. */
+    /**
+     * @brief Report the default list kind.
+     * @return Three.
+     */
     virtual s32 get_default_list_kind();
 
     /** @brief Leave the default update hook unchanged. */
@@ -194,10 +197,7 @@ public:
     s32 encoded_max_mp;
     s32 encoded_mp;
     float unk28;
-
-    /** Fury is stored at sixteen times its displayed amount. */
     float scaled_max_fury;
-
     float scaled_fury;
     s32 encoded_base_attack;
     s32 encoded_effective_attack;
@@ -211,10 +211,7 @@ public:
     s32 encoded_base_hit;
     s32 encoded_effective_hit;
     s32 encoded_hit;
-
-    /** The resident INT helpers validate these values through the HIT checksum. */
     s32 encoded_base_intelligence;
-
     s32 encoded_effective_intelligence;
     s32 encoded_intelligence;
     s16 encoded_base_knockback_power;
@@ -241,7 +238,10 @@ public:
     s32 unkb4[3];
     s32 unkc0;
 
-    /** @brief Decode current HP, marking valid flags when the HP checksum fails. @return Current HP, or zero for corruption. */
+    /**
+     * @brief Decode current HP, marking valid flags when the HP checksum fails.
+     * @return Current HP, or zero for corruption.
+     */
     u32 get_hp()
     {
         u32 value = encoded_hp;
@@ -266,7 +266,10 @@ public:
         return value ^ TACTICS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode maximum HP, marking valid flags when the HP checksum fails. @return Maximum HP, or zero for corruption. */
+    /**
+     * @brief Decode maximum HP, marking valid flags when the HP checksum fails.
+     * @return Maximum HP, or zero for corruption.
+     */
     u32 get_max_hp()
     {
         u32 value = encoded_max_hp;
@@ -291,7 +294,10 @@ public:
         return value ^ TACTICS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode current MP, marking valid flags when the MP checksum fails. @return Current MP, or zero for corruption. */
+    /**
+     * @brief Decode current MP, marking valid flags when the MP checksum fails.
+     * @return Current MP, or zero for corruption.
+     */
     u32 get_mp()
     {
         u32 value = encoded_mp;
@@ -316,7 +322,10 @@ public:
         return value ^ TACTICS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode maximum MP, marking valid flags when the MP checksum fails. @return Maximum MP, or zero for corruption. */
+    /**
+     * @brief Decode maximum MP, marking valid flags when the MP checksum fails.
+     * @return Maximum MP, or zero for corruption.
+     */
     u32 get_max_mp()
     {
         u32 value = encoded_max_mp;
@@ -341,7 +350,10 @@ public:
         return value ^ TACTICS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode the protected level. @return Level, or one for an invalid checksum. */
+    /**
+     * @brief Decode the protected level.
+     * @return Level, or one for an invalid checksum.
+     */
     s32 get_level() const
     {
         if (level_checksum != (checksum_salt ^ (encoded_level ^ (encoded_base_level + checksum_salt))))
@@ -352,7 +364,10 @@ public:
         return encoded_level ^ TACTICS_STAT_HALFWORD_XOR_KEY;
     }
 
-    /** @brief Decode the protected flags. @return Flags, or five for an invalid checksum. */
+    /**
+     * @brief Decode the protected flags.
+     * @return Flags, or five for an invalid checksum.
+     */
     u32 get_flags() const
     {
         u32 experience = encoded_experience;
@@ -795,7 +810,10 @@ void TacticsExitConfirmWindow::func_slot5c()
     }
 }
 
-/** @brief Return the associated object. @return Stored object. */
+/**
+ * @brief Return the associated object.
+ * @return Stored object.
+ */
 void* FieldClass153E30::func_00261150()
 {
     return unk20;
@@ -835,7 +853,10 @@ u8 TacticsExitConfirmWindow::func_slotb4()
     return 2;
 }
 
-/** @brief Store the associated object. @param value Object to store. */
+/**
+ * @brief Store the associated object.
+ * @param value Object to store.
+ */
 void FieldClass153E30::func_00263C70(void* value)
 {
     unk20 = value;
@@ -1178,7 +1199,10 @@ u8 TacticsFormationWindow::func_slotb8()
     return 1;
 }
 
-/** @brief Return the alternate associated window. @return Stored window pointer. */
+/**
+ * @brief Return the alternate associated window.
+ * @return Stored window pointer.
+ */
 void* FieldClass15AE70::func_slot4c()
 {
     return unk9c;
@@ -1226,7 +1250,10 @@ u8 TacticsFormationWindow::func_slotb4()
     return 2;
 }
 
-/** @brief Return the stored resource source word. @return Stored word. */
+/**
+ * @brief Return the stored resource source word.
+ * @return Stored word.
+ */
 u32 FieldClass15AE70::func_slot54()
 {
     return unk04;
@@ -2515,12 +2542,18 @@ void TacticsStrategyWindow::func_slot5c()
     selected = index;
 }
 
-/** @brief Set the window message by signed text key. @param text_key Message key or relative index. */
+/**
+ * @brief Set the window message by signed text key.
+ * @param text_key Message key or relative index.
+ */
 void FieldClass15AE70::func_slot60(s32 text_key)
 {
 }
 
-/** @brief Return the alternate associated object. @return Stored object. */
+/**
+ * @brief Return the alternate associated object.
+ * @return Stored object.
+ */
 void* FieldClass153E30::func_00263C90()
 {
     return unk24;
@@ -3528,7 +3561,10 @@ s32 TacticsController::init_windows()
     return 1;
 }
 
-/** @brief Store the alternate window pointer. @param associated Pointer to store. */
+/**
+ * @brief Store the alternate window pointer.
+ * @param associated Pointer to store.
+ */
 void FieldClass15AE70::func_slot48(void* associated)
 {
     unk9c = associated;
@@ -3607,7 +3643,10 @@ void LibMovementState::on_arrived()
 {
 }
 
-/** @brief Report the default list kind. @return Three. */
+/**
+ * @brief Report the default list kind.
+ * @return Three.
+ */
 s32 TacticsCoordinateSelector::get_default_list_kind()
 {
     return 3;
@@ -3618,49 +3657,73 @@ void TacticsCoordinateSelector::render()
 {
 }
 
-/** @brief Store the window control byte. @param value Control value. */
+/**
+ * @brief Store the window control byte.
+ * @param value Control value.
+ */
 void FieldClass15AE70::func_slot24(u8 value)
 {
     unk0c = value;
 }
 
-/** @brief Read the window control byte. @return Stored control value. */
+/**
+ * @brief Read the window control byte.
+ * @return Stored control value.
+ */
 u8 FieldClass15AE70::func_slot28()
 {
     return unk0c;
 }
 
-/** @brief Store the byte state code. @param value State code. */
+/**
+ * @brief Store the byte state code.
+ * @param value State code.
+ */
 void FieldClass15AE70::func_slot2c(u8 value)
 {
     unk08 = value;
 }
 
-/** @brief Read the byte state code. @return Stored state code. */
+/**
+ * @brief Read the byte state code.
+ * @return Stored state code.
+ */
 u8 FieldClass15AE70::func_slot30()
 {
     return unk08;
 }
 
-/** @brief Store the halfword state flags. @param value State flags. */
+/**
+ * @brief Store the halfword state flags.
+ * @param value State flags.
+ */
 void FieldClass15AE70::func_slot34(u16 value)
 {
     unk0a = value;
 }
 
-/** @brief Read the halfword state flags. @return Stored state flags. */
+/**
+ * @brief Read the halfword state flags.
+ * @return Stored state flags.
+ */
 u16 FieldClass15AE70::func_slot38()
 {
     return unk0a;
 }
 
-/** @brief Store the opaque resource source word. @param value Word to store. */
+/**
+ * @brief Store the opaque resource source word.
+ * @param value Word to store.
+ */
 void FieldClass15AE70::func_slot50(u32 value)
 {
     unk04 = value;
 }
 
-/** @brief Return the nested display container. @return Stored container. */
+/**
+ * @brief Return the nested display container.
+ * @return Stored container.
+ */
 LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
@@ -3751,61 +3814,91 @@ void FieldClass15AE70::func_slotac()
 {
 }
 
-/** @brief Return the default byte result. @return Zero. */
+/**
+ * @brief Return the default byte result.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
-/** @brief Return the default byte result. @return Zero. */
+/**
+ * @brief Return the default byte result.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
 
-/** @brief Return the default status. @return Zero. */
+/**
+ * @brief Return the default status.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc0()
 {
     return 0;
 }
 
-/** @brief Return the default status. @return Zero. */
+/**
+ * @brief Return the default status.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc4()
 {
     return 0;
 }
 
-/** @brief Return the default status. @return Zero. */
+/**
+ * @brief Return the default status.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc8()
 {
     return 0;
 }
 
-/** @brief Return the default status. @return Zero. */
+/**
+ * @brief Return the default status.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotcc()
 {
     return 0;
 }
 
-/** @brief Return the default status. @return Zero. */
+/**
+ * @brief Return the default status.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd0()
 {
     return 0;
 }
 
-/** @brief Return the default status. @return Zero. */
+/**
+ * @brief Return the default status.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd4()
 {
     return 0;
 }
 
-/** @brief Return the default status. @return Zero. */
+/**
+ * @brief Return the default status.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd8()
 {
     return 0;
 }
 
-/** @brief Return the default status. @return Zero. */
+/**
+ * @brief Return the default status.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotdc()
 {
     return 0;
@@ -3821,13 +3914,19 @@ void FieldClass15AE70::func_slote4()
 {
 }
 
-/** @brief Read the nested display byte flag. @return Stored flag. */
+/**
+ * @brief Read the nested display byte flag.
+ * @return Stored flag.
+ */
 u8 FieldClass15AE70::func_slote8()
 {
     return unk0d;
 }
 
-/** @brief Set the nested display byte flag. @param value Flag value. */
+/**
+ * @brief Set the nested display byte flag.
+ * @param value Flag value.
+ */
 void FieldClass15AE70::func_slotec(u8 value)
 {
     unk0d = value;
@@ -3853,61 +3952,91 @@ void FieldClass15AE70::func_slot6c()
 {
 }
 
-/** @brief Return the default window action status. @return Zero. */
+/**
+ * @brief Return the default window action status.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
-/** @brief Return the default window action status. @return Zero. */
+/**
+ * @brief Return the default window action status.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }
 
-/** @brief Report whether window setup finished. @return Setup flag. */
+/**
+ * @brief Report whether window setup finished.
+ * @return Setup flag.
+ */
 u8 TacticsController::windows_ready()
 {
     return windows_initialized;
 }
 
-/** @brief Return the loaded resource slot. @return Resource slot. */
+/**
+ * @brief Return the loaded resource slot.
+ * @return Resource slot.
+ */
 u32 TacticsController::get_resource_slot()
 {
     return resource_slot;
 }
 
-/** @brief Report this object's default list kind. @return Four. */
+/**
+ * @brief Report this object's default list kind.
+ * @return Four.
+ */
 s32 TacticsController::get_default_list_kind()
 {
     return 4;
 }
 
-/** @brief Store the alternate associated object. @param value Object to store. */
+/**
+ * @brief Store the alternate associated object.
+ * @param value Object to store.
+ */
 void FieldClass153E30::func_00263C80(void* value)
 {
     unk24 = value;
 }
 
-/** @brief Store the receiver state byte. @param value State byte. */
+/**
+ * @brief Store the receiver state byte.
+ * @param value State byte.
+ */
 void FieldClass153E30::func_00263CA0(s8 value)
 {
     unk28 = value;
 }
 
-/** @brief Return the receiver state byte. @return State byte. */
+/**
+ * @brief Return the receiver state byte.
+ * @return State byte.
+ */
 s8 FieldClass153E30::func_00263CB0()
 {
     return unk28;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot60()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot64()
 {
     return 0;
@@ -3918,7 +4047,10 @@ void FieldClass153E30::func_slot68()
 {
 }
 
-/** @brief Return the receiver's selection object. @return Null in the base implementation. */
+/**
+ * @brief Return the receiver's selection object.
+ * @return Null in the base implementation.
+ */
 FieldRecordSelection* FieldClass153E30::selected_records()
 {
     return 0;
@@ -3939,19 +4071,28 @@ void FieldClass153E30::func_slot78()
 {
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot7c()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot80()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot84()
 {
     return 0;

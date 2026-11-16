@@ -86,8 +86,11 @@ static inline FieldVec4B vector_scaled(float scale, const FieldVec4B& vector)
 }
 
 extern "C" u8 D_00174C90[];
+
 extern "C" void func_004A8F10(void* object);
+
 extern "C" void func_004C2BB0(void* object);
+
 extern "C" void func_00461830(void* embedded, void* adjusted);
 
 struct LibVectorField10View
@@ -167,13 +170,22 @@ extern "C" LibScalarTrigQuotient D_0050CCD0;
 extern "C" LibScalarTrigQuotient D_0050CCE0;
 extern "C" LibScalarTrigQuotient D_0050CCC0;
 
-/** @brief View an aligned matrix row as a vector. @param matrix Destination matrix. @param row Row index. @return Writable row vector. */
+/**
+ * @brief View an aligned matrix row as a vector.
+ * @param matrix Destination matrix.
+ * @param row Row index.
+ * @return Writable row vector.
+ */
 static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 row)
 {
     return *(FieldVec4A*)matrix.m[row];
 }
 
-/** @brief Unlink a container child. @param object Container. @param child Widget to unlink. */
+/**
+ * @brief Unlink a container child.
+ * @param object Container.
+ * @param child Widget to unlink.
+ */
 extern "C" void func_004C6120(LibContainer* object, LibWidget* child);
 
 /** Partial text resource fields and the inherited redraw flag. */
@@ -213,7 +225,12 @@ const void* func_004BD370(const void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD380);
 
-/** @brief Store a float in an indexed array slot. @param values Float array. @param index Slot index. @param value Value to store. */
+/**
+ * @brief Store a float in an indexed array slot.
+ * @param values Float array.
+ * @param index Slot index.
+ * @param value Value to store.
+ */
 extern "C" void func_004BD3C0(float* values, s32 index, float value)
 {
     values[index] = value;
@@ -385,11 +402,13 @@ extern "C" LibClass173180* lib_animation_channel_at(LibAnimation* object, s32 in
     {
         return 0;
     }
+
     if (object->entries[index].channel && nibble == (object->entries[index].flags & 0xF))
     {
         object->cached_entry = &object->entries[index];
         return object->cached_entry->channel;
     }
+
     object->cached_entry = 0;
     return 0;
 }
@@ -416,9 +435,11 @@ extern "C" LibClass173180* lib_animation_find_channel(LibAnimation* object, cons
 extern "C" void lib_animation_bind_state(LibAnimation* object, LibAnimationTarget* target, const char* name)
 {
     s32 count = object->entry_count;
+
     for (s32 index = 0; index < count; index++)
     {
         LibAnimationEntry14* entry = &object->entries[index];
+
         if (entry->channel && lib_compare_bounded_strings(entry->state_name, name, 16) == 0)
         {
             object->entries[index].target = target;
@@ -433,6 +454,7 @@ extern "C" void lib_animation_bind_state(LibAnimation* object, LibAnimationTarge
 extern "C" void lib_animation_clear_targets(LibAnimation* object)
 {
     s32 count = object->entry_count;
+
     for (s32 index = 0; index < count; index++)
     {
         if (object->entries[index].channel)
@@ -440,6 +462,7 @@ extern "C" void lib_animation_clear_targets(LibAnimation* object)
             object->entries[index].target = 0;
         }
     }
+
     object->targets_bound = 0;
 }
 
@@ -451,6 +474,7 @@ extern "C" void lib_animation_clear_targets(LibAnimation* object)
 extern "C" void lib_animation_clear_targets_by_kind(LibAnimation* object, u8 kind)
 {
     s32 count = object->entry_count;
+
     for (s32 index = 0; index < count; index++)
     {
         if (object->entries[index].channel && kind == object->entries[index].kind)
@@ -468,6 +492,7 @@ extern "C" void lib_animation_clear_targets_by_kind(LibAnimation* object, u8 kin
 extern "C" void lib_animation_clear_matching_target(LibAnimation* object, const void* target)
 {
     s32 count = object->entry_count;
+
     for (s32 index = 0; index < count; index++)
     {
         if (object->entries[index].channel && object->entries[index].target == target)
@@ -486,6 +511,7 @@ extern "C" void lib_animation_release_channels(LibAnimation* object)
     if (object->entries)
     {
         s32 count = object->entry_count;
+
         for (s32 index = 0; index < count; index++)
         {
             if (object->entries[index].channel)
@@ -494,13 +520,16 @@ extern "C" void lib_animation_release_channels(LibAnimation* object)
                 object->entries[index].channel = 0;
             }
         }
+
         if (object->primary_binding_owner)
         {
             lib_animation_register_binding(object->primary_binding_owner, 0, 0);
             object->primary_binding_owner = 0;
         }
+
         s32 slot;
         LibAnimationBindingOwner* owner = object->secondary_binding_owner;
+
         if (owner)
         {
             for (slot = 0; slot < LIB_ANIMATION_BINDING_CAPACITY; slot++)
@@ -510,6 +539,7 @@ extern "C" void lib_animation_release_channels(LibAnimation* object)
                     owner->animation_slots[slot] = 0;
                 }
             }
+
             object->secondary_binding_owner = 0;
         }
     }
@@ -533,13 +563,16 @@ extern "C" void lib_animation_load_resource(LibAnimation* object, ResidentResour
         lib_animation_release_channels(object);
         delete[] object->entries;
     }
+
     if (!object->resource_is_borrowed)
     {
         delete (u8*)object->resource_data;
     }
+
     object->targets_bound = 0;
     object->resource_is_borrowed = 0;
     u8* data = resident_allocate_decode_buffer(g_resident_resource_decoder, source, 0, 0);
+
     if (data)
     {
         resident_decode_resource_block(g_resident_resource_decoder, source, data, 0);
@@ -2449,6 +2482,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4A00);
 extern "C" void lib_panel_detach(LibPanel* object)
 {
     LibPanelAssociationState* state = (LibPanelAssociationState*)object;
+
     if (state->association != 0)
     {
         state->association->panel = 0;
@@ -2462,16 +2496,25 @@ class FieldClass15BA90 : public LibTransformOwner, public LibDmaCallbacks
 public:
     /** @brief Initialize the panel transform and its callback interface. */
     FieldClass15BA90();
+
     /** @brief Release the association and destroy the transform. */
     virtual ~FieldClass15BA90();
-    /** @brief Set the transform translation. @param x Horizontal component. @param y Vertical component. @param z Third component. */
+
+    /**
+     * @brief Set the transform translation.
+     * @param x Horizontal component.
+     * @param y Vertical component.
+     * @param z Third component.
+     */
     virtual void set_translation(float x, float y, float z);
+
     void* unk94;
     u8 unk98[4];
     LibPanel* panel;
     u8 pending;
     u8 unka1[0xF];
 };
+
 extern "C" s32 func_002F99F0(FieldClass15BA90*, LibPanel*);
 
 extern "C" s32 lib_panel_init_transform(LibPanel* object, float z)
@@ -2482,11 +2525,13 @@ extern "C" s32 lib_panel_init_transform(LibPanel* object, float z)
     if (func_002F99F0((FieldClass15BA90*)object->unk60, object) == 0)
         return 0;
     ((FieldClass15BA90*)object->unk60)->set_translation(0.0f, 0.0f, z);
+
     if (object->unk8c != 0)
     {
         ((FieldClass15BA90*)object->unk60)->pending = 1;
         object->unk8c = 0;
     }
+
     ((LibUpdateList*)g_renderer)->append_node(object->unk60, -1);
     return 1;
 }
@@ -2543,6 +2588,7 @@ struct LibPanelInitState
     u8 unk8b;
     u8 pending;
 };
+
 /**
  * @brief Allocate panel drawing storage and initialize its rectangle and colors.
  * @param object Panel widget.
@@ -2560,10 +2606,12 @@ extern "C" s32 lib_panel_init_rectangle(LibPanel* object, s32 mode, float x, flo
     object->unk18.unk04 = y;
     object->unk18.unk08 = width;
     object->unk18.unk0c = height;
+
     if (!lib_allocate_drawing_storage(&object->unk40, 0x44))
     {
         return 0;
     }
+
     LibPanelDefaults* defaults = ((LibPanelContext*)g_field_runtime)->defaults;
     LibPanelInitState* state = (LibPanelInitState*)object;
     state->colors[0] = defaults->colors[0] & 0xFFFFFF;
@@ -2637,8 +2685,6 @@ struct LibFontImage
     s16 width;
     s16 height;
     u8 unk04[4];
-
-    /** Offset of its LibImagePacket from the texture header. */
     s32 packet_offset;
 };
 
@@ -2646,15 +2692,9 @@ struct LibFontImage
 struct LibFontTextureHeader
 {
     u8 unk00[0xC];
-
-    /** Offset of the glyph page's LibFontImage from this header. */
     s32 image_offset;
-
     u8 unk10[4];
-
-    /** Offset of the palette's LibImagePacket from this header. */
     s32 palette_offset;
-
     s16 palette_format;
 };
 
@@ -2662,10 +2702,7 @@ struct LibFontTextureHeader
 struct LibFontGlyphHeader
 {
     u8 unk00[0x1C];
-
-    /** Bytes of the table copied into the shared font. */
     u32 table_size;
-
     s32 glyph_count;
 };
 
@@ -2674,10 +2711,7 @@ struct LibFontChunk
 {
     u32 tag;
     u8 unk04[8];
-
-    /** Offset of the next chunk from this one, or zero for none. */
     s32 next_offset;
-
     ResidentResourceHeader resource;
 };
 
@@ -2923,10 +2957,12 @@ void func_004C61F0(N54Owner84_004BD360* object)
 {
     object->active = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0xB0;
     }
+
     func_00461830((u8*)object + 0xD0, adjusted);
 }
 
@@ -2949,6 +2985,7 @@ extern "C" s32 lib_container_init(LibContainer* object, s32 code, float x, float
     {
         return 0;
     }
+
     object->LibCallbackTransform::translation.x = x;
     object->LibCallbackTransform::translation.y = y;
     object->LibCallbackTransform::translation.z = 0.0f;
@@ -2984,8 +3021,11 @@ typedef struct LibTextBoundsState
     u8 flag;
     u8 pending;
 } LibTextBoundsState;
+
 extern "C" s32 func_004C7D40(LibTextWidget* object, u32 source, u32 key, u8 flag);
+
 extern "C" void* func_100B00(u32 size, s32 flags);
+
 extern "C" void func_004C74E0(LibTextWidget* object);
 
 /**
@@ -2996,6 +3036,7 @@ extern "C" void func_004C74E0(LibTextWidget* object);
 extern "C" LibTextExtent* lib_text_measure_bounds(LibTextWidget* object)
 {
     LibTextBoundsState* state = (LibTextBoundsState*)object;
+
     if (state->pending)
     {
         if (!func_004C7D40(object, state->source, state->key, state->flag))
@@ -3003,11 +3044,14 @@ extern "C" LibTextExtent* lib_text_measure_bounds(LibTextWidget* object)
             return 0;
         }
     }
+
     state->drawing = func_100B00(state->count * 32, 0);
+
     if (!state->drawing)
     {
         return 0;
     }
+
     func_004C74E0(object);
     delete[] (u8*)state->drawing;
     return &state->bounds;
@@ -3095,6 +3139,7 @@ typedef struct LibTextRectangleState
     u8 pad100[0x11];
     u8 pending;
 } LibTextRectangleState;
+
 /**
  * @brief Initialize the text rectangle and clear its allocation and pending flag.
  * @param object Text widget.
@@ -3214,10 +3259,7 @@ struct LibMorphOwner
 {
     u8 unk00[0x8D];
     u8 unk8d_0 : 1;
-
-    /** Set when a morph target of the model becomes active. */
     u8 morph_dirty : 1;
-
     u8 unk8d_2 : 6;
 };
 
@@ -3339,28 +3381,35 @@ extern "C" void lib_light_get_direction(LibVector4* out, LibLight* light)
 void LibListReceiver::unlink(void* node)
 {
     LibListSentinel* removed = static_cast<LibListSentinel*>(node);
+
     if (removed == &sentinel)
     {
         return;
     }
+
     if (removed == 0)
     {
         return;
     }
+
     LibListSentinel* previous = removed->previous;
     LibListSentinel* next = removed->next;
+
     if (previous)
     {
         previous->next = next;
     }
+
     if (next)
     {
         next->previous = previous;
     }
+
     if (node_count != 0)
     {
         --node_count;
     }
+
     removed->previous = 0;
     removed->next = 0;
 }
@@ -3378,10 +3427,12 @@ void LibListReceiver::insert_after(void* position, void* node)
     inserted->previous = after;
     inserted->next = next;
     after->next = inserted;
+
     if (next)
     {
         next->previous = inserted;
     }
+
     ++node_count;
 }
 
@@ -3459,6 +3510,7 @@ extern "C" void lib_compute_sine_cosine_pair(LibVector4* output, float angle)
     bool sine_negative = bool(D_0050CD10.sine_half_turns & 1);
     vu0_sincos_square();
     float cosine_sign;
+
     if (cosine_negative)
     {
         cosine_sign = -1.0f;
@@ -3499,6 +3551,7 @@ extern "C" void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float a
     bool sine_negative = bool(D_0050CD00.sine_half_turns & 1);
     vu0_sincos_square();
     float cosine_sign;
+
     if (cosine_negative)
     {
         cosine_sign = -1.0f;
@@ -3538,6 +3591,7 @@ extern "C" float lib_cosine(float angle)
     bool negative = bool(D_0050CCF0.half_turns & 1);
     vu0_trig_square_scalar();
     float sign;
+
     if (negative)
     {
         sign = -1.0f;
@@ -3566,6 +3620,7 @@ extern "C" float lib_cosine_degree9(float angle)
     bool negative = bool(D_0050CCE0.half_turns & 1);
     vu0_trig_square_scalar();
     float sign;
+
     if (negative)
     {
         sign = -1.0f;
@@ -3594,6 +3649,7 @@ extern "C" float lib_sine(float angle)
     bool negative = bool(D_0050CCD0.half_turns & 1);
     vu0_trig_square_scalar();
     float sign;
+
     if (negative)
     {
         sign = -1.0f;
@@ -3622,6 +3678,7 @@ extern "C" float lib_sine_degree9(float angle)
     bool negative = bool(D_0050CCC0.half_turns & 1);
     vu0_trig_square_scalar();
     float sign;
+
     if (negative)
     {
         sign = -1.0f;

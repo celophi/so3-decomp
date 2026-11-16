@@ -10,16 +10,22 @@ struct FieldEntry1C;
 class FieldClass16C940 : public FieldClass16AB90
 {
 public:
-    /** Destroy the request base through its primary interface. */
     virtual ~FieldClass16C940()
     {
     }
+
     virtual s32 func_slot0c();
+
     virtual void func_slot10();
+
     virtual void func_slot1c(s32 flag) = 0;
+
     virtual s32 func_slot20() = 0;
+
     virtual s32 func_slot24() = 0;
+
     virtual u8 func_slot28();
+
     u8 unk14;
     u8 unk15;
 };
@@ -29,18 +35,27 @@ class FieldClass16C970 : public FieldClass16C940, public FieldClass16AB60
 public:
     /** Release the entry buffer and notification token, then destroy the request. */
     virtual ~FieldClass16C970();
+
     /** Advance record requests according to the current state and supplied flag. */
     virtual void func_slot1c(s32 flag);
+
     /** Finish or reset record requests and report whether their addresses remain set. */
     virtual s32 func_slot20();
+
     /** Release the records in state 1, or detach and delete the request. */
     virtual s32 func_slot24();
+
     virtual void func_slot3c();
+
     virtual void func_slot40();
+
     virtual void func_slot44();
+
     virtual void func_slot48();
+
     /** Mark the request callback as complete; the callback value is unused. */
     virtual void func_slot0c(void* arg);
+
     FieldEntry1C* unk1c;
     s32 unk20;
     s32 unk24;
@@ -371,21 +386,25 @@ static inline void advance_record_queue(Queue* object)
     if ((*(const u8*)&object->unk34 & 1) != 0)
     {
         object->unk34.bits.bit0 = 0;
+
         if (object->unk15 == 1)
         {
             u8 index = object->unk32;
+
             if (index < object->unk31)
             {
                 do
                 {
                     object->unk32++;
                     index = object->unk32;
+
                     if (object->unk1c[index].unk16_0 == 0)
                     {
                         break;
                     }
                 } while (index < object->unk31);
             }
+
             if (index >= object->unk31)
             {
                 object->unk15 = 5;
@@ -722,6 +741,7 @@ void func_00208E70(FieldFlagListElement* object, u32 value14, u32 value18,
 void func_0020DC50(FieldBytePairOwner* object);
 
 void func_0020D240(FieldBytePairOwner* object);
+
 void func_0020D810(FieldBytePairOwner* object, float value);
 
 /**

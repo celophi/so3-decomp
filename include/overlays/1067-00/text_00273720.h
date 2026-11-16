@@ -75,7 +75,6 @@ public:
     /** @brief Start with a zero vector and a zero scalar. */
     FieldClass1550E8();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass1550E8();
 
     u8 unk04[0x5C];
@@ -110,7 +109,6 @@ public:
         unk28 = 0;
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass155100()
     {
     }
@@ -130,7 +128,6 @@ public:
         unk34 = 0;
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass1551D0()
     {
     }
@@ -153,7 +150,6 @@ public:
         unkE4 = 128.0f;
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass154F30();
 
     float unk38;

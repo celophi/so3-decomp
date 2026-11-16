@@ -332,6 +332,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
     s32 mask_index = index / 64;
     s32 processed = 0;
     u64 mask = masks[mask_index++];
+
     switch (object->policy)
     {
         case 0:
@@ -339,6 +340,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -347,15 +349,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -378,6 +384,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -400,6 +407,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -408,15 +416,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -439,6 +451,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -461,6 +474,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -469,15 +483,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -495,6 +513,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -515,6 +534,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -523,15 +543,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -550,6 +574,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -571,6 +596,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -585,15 +611,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -616,6 +646,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -635,6 +666,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -643,15 +675,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -674,6 +710,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -693,6 +730,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -701,15 +739,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -727,6 +769,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -744,6 +787,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -752,15 +796,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -779,6 +827,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -797,10 +846,12 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 1:
@@ -808,6 +859,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -816,15 +868,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -846,6 +902,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -867,6 +924,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -875,15 +933,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -905,6 +967,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -926,6 +989,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -934,15 +998,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -959,6 +1027,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -978,6 +1047,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -986,15 +1056,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1012,6 +1086,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -1032,6 +1107,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -1046,15 +1122,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1076,6 +1156,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -1094,6 +1175,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -1102,15 +1184,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1132,6 +1218,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -1150,6 +1237,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -1158,15 +1246,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1183,6 +1275,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -1199,6 +1292,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -1207,15 +1301,19 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1233,6 +1331,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibHistorySource170* source = &object->source[index - 1];
@@ -1250,10 +1349,12 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 2:
@@ -1261,6 +1362,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -1269,12 +1371,15 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -1285,6 +1390,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1305,6 +1411,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibQuad128* current_attributes = &current->attributes;
@@ -1324,6 +1431,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -1332,12 +1440,15 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -1348,6 +1459,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1368,6 +1480,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibQuad128* current_attributes = &current->attributes;
@@ -1387,6 +1500,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -1395,12 +1509,15 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -1411,6 +1528,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1426,6 +1544,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibQuad128* current_attributes = &current->attributes;
@@ -1443,6 +1562,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -1451,12 +1571,15 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -1467,6 +1590,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1483,6 +1607,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibQuad128* current_attributes = &current->attributes;
@@ -1501,6 +1626,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -1515,12 +1641,15 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -1531,6 +1660,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1551,6 +1681,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibQuad128* current_attributes = &current->attributes;
@@ -1567,6 +1698,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -1575,12 +1707,15 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             LibHistorySource170* source = &object->source[index - 1];
@@ -1591,6 +1726,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1611,6 +1747,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibQuad128* current_attributes = &current->attributes;
@@ -1627,6 +1764,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -1635,12 +1773,15 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -1651,6 +1792,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1666,6 +1808,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibQuad128* current_attributes = &current->attributes;
@@ -1680,6 +1823,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -1688,12 +1832,15 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -1704,6 +1851,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 LibHistoryOutput30* out = &output[sample];
@@ -1720,6 +1868,7 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             LibHistoryOutput30* out = &output[1];
                             LibHistoryRecord40* current = &object->history[history_index];
                             LibQuad128* current_attributes = &current->attributes;
@@ -1735,10 +1884,12 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
     }
@@ -2113,6 +2264,7 @@ void func_00444E40(void* object, const u8* source, u32 value)
     ByteSourceStateOwnertext_0043A920* receiver = (ByteSourceStateOwnertext_0043A920*)object;
     receiver->sourceA0 = (const u8*)source;
     receiver->valueA4 = value;
+
     if (*receiver->sourceA0 == 1)
     {
         receiver->state57 = 1;
@@ -2128,6 +2280,7 @@ void func_00444E80(void* object, s32 enabled)
     TwoWordClearArgStateOwnertext_0043A920* receiver = (TwoWordClearArgStateOwnertext_0043A920*)object;
     receiver->unkA0 = 0;
     receiver->unkA4 = 0;
+
     if (enabled)
     {
         receiver->state57 = 1;
@@ -2209,15 +2362,19 @@ void LibClass174240::resize(s32 rows, s32 columns)
     unk20 = 0;
     delete[] unk18;
     unk18 = new (0) LibGridCell170[rows + 2];
+
     if (unk18 == 0)
     {
         return;
     }
+
     delete unk1c;
+
     if (D_001B6684 != 0)
     {
         void* heap = resident_exchange_allocation_heap(D_001B6684);
         unk1c = new (0) LibGridBitset(rows);
+
         if (unk1c == 0)
         {
             delete[] unk18;
@@ -2225,6 +2382,7 @@ void LibClass174240::resize(s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         if (unk1c->bits == 0)
         {
             delete[] unk18;
@@ -2234,17 +2392,20 @@ void LibClass174240::resize(s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         resident_exchange_allocation_heap(heap);
     }
     else
     {
         unk1c = new (0) LibGridBitset(rows);
+
         if (unk1c == 0)
         {
             delete[] unk18;
             unk18 = 0;
             return;
         }
+
         if (unk1c->bits == 0)
         {
             delete[] unk18;
@@ -2254,10 +2415,12 @@ void LibClass174240::resize(s32 rows, s32 columns)
             return;
         }
     }
+
     if (columns > 1)
     {
         delete[] unk24;
         unk24 = new (0) LibClass173F38[rows * (columns - 1) + 2];
+
         if (unk24 == 0)
         {
             delete[] unk18;
@@ -2272,14 +2435,17 @@ void LibClass174240::resize(s32 rows, s32 columns)
         delete[] unk24;
         unk24 = 0;
     }
+
     if (unk18 != 0)
     {
         unk14 = unk18 + 1;
     }
+
     if (unk24 != 0)
     {
         unk20 = unk24 + 1;
     }
+
     unk0c = rows;
     unk10 = columns;
     unk1c->clear();
@@ -2597,6 +2763,7 @@ void func_00447500(LibGridReceiver447500* object, s32 capacity, LibGridOutputRec
                 {
                     previous->packed = state->value.packed;
                 }
+
                 previous->components.frame_index = frame_index;
                 vu0_load_grid_frame_vectors(&state->value, &state->rate);
 

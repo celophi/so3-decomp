@@ -3,61 +3,110 @@
 #include "overlays/3454-00/text_003906F0.h"
 
 void func_003940F0(void* object);
+
 void func_003B5E00(void* object);
+
 void* func_00394790(void* object);
+
 void func_00393750(void* object);
+
 void* func_00393C80(void* object, s16 count);
+
 void func_00393170(void* object);
+
 void* func_00393300(void* object, s16 count);
+
 void* func_00392CD0(void* object, s16 count);
+
 void* func_00391FA0(void* object, s16 count);
+
 void* func_00391CC0(void* object, s16 count);
+
 void func_0038F8C0(void* object);
+
 void* func_003906F0(void* object, s16 count);
+
 void func_0038DFF0(void* object);
+
 void func_0038C850(void* object);
+
 void* func_0038D570(void* object, s16 count);
+
 void* func_0038C7B0(void* object, s16 count);
+
 void* func_0038BFD0(void* object, s16 count);
+
 void* func_0038ACD0(void* object, s16 count);
+
 void* func_00389720(void* object, s16 count);
+
 void* func_00388B30(void* object, s16 count);
+
 void* func_00387A60(void* object, s16 count);
+
 void* func_00385F70(void* object, s16 count);
+
 void* func_00384FD0(void* object, s16 count);
+
 void* func_00384C00(void* object, s16 count);
+
 void* func_00383D40(void* object, s16 count);
+
 void func_00382D70(void* object);
+
 void* func_00383450(void* object, s16 count);
+
 void func_00382A30(void* object);
+
 void* func_00382CD0(void* object, s16 count);
+
 void* func_00382220(void* object, s16 count);
+
 void* func_00381CA0(void* object, s16 count);
+
 void* func_00381450(void* object, s16 count);
+
 void* func_0037FD20(void* object, s16 count);
+
 void* func_003750E0(void* object, s16 count);
+
 void* func_00375180(void* object, s16 count);
+
 void* func_003752C0(void* object, s16 count);
+
 void* func_00375600(void* object, s16 count);
+
 void* func_00375980(void* object, s16 count);
+
 void* func_00374BB0(void* object, s16 count);
+
 void* func_0026F900(void* object, s16 count);
+
 void func_003766F0(void* object, void* source);
+
 void func_00375F30(void* object, void* source);
+
 s32 func_00397480(void* object);
+
 void func_4A8E30(void* object, s32 flags);
+
 void func_100B40(void* object);
+
 void func_100BE0(void* allocation);
+
 extern u8 D_16BC50[];
 extern u8 D_15D380[];
 extern u8 D_16DFE0[];
 extern u8 D_16BC70[];
 extern u8 D_16BAE0[];
 extern u8 D_16BB00[];
+
 void func_00381180(void* object);
+
 void func_0037DC00(void* object);
 
 extern void func_003B24E0(void* object);
+
 typedef struct WordNonzeroOwnertext_003906F0
 {
     u8 unk00[0x14];
@@ -114,6 +163,7 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_00391C
 void func_00391E20(void* object)
 {
     func_003B24E0(object);
+
     if (((u8*)object)[0x39D] != 0) {
         ((u8*)object)[0xEB] = 0;
     }
@@ -189,17 +239,22 @@ void* func_00394B70(void* object, s16 count)
 
     if (receiver != 0) {
         receiver->vtable = D_16BAE0;
+
         if (receiver != 0) {
             receiver->vtable = D_16BB00;
+
             if (receiver->allocation != 0) {
                 func_100BE0((u8*)receiver->allocation - 0x10);
             }
+
             receiver->allocation = 0;
         }
+
         if (count > 0) {
             func_100B40(object);
         }
     }
+
     return object;
 }
 
@@ -216,17 +271,21 @@ void* func_00394CE0(void* object, s16 count)
 {
     if (object != 0) {
         *(void**)object = D_16DFE0;
+
         if (object != 0) {
             *(void**)object = D_16BC50;
+
             if (object != 0) {
                 *(void**)object = D_15D380;
                 func_4A8E30(object, 0);
             }
         }
+
         if (count > 0) {
             func_100B40(object);
         }
     }
+
     return object;
 }
 
@@ -244,14 +303,17 @@ void* func_00394D90(void* object, s16 count)
 {
     if (object != 0) {
         *(void**)object = D_16BC50;
+
         if (object != 0) {
             *(void**)object = D_15D380;
             func_4A8E30(object, 0);
         }
+
         if (count > 0) {
             func_100B40(object);
         }
     }
+
     return object;
 }
 
@@ -259,20 +321,25 @@ void* func_00394E00(void* object, s16 count)
 {
     if (object != 0) {
         *(void**)object = D_16BC70;
+
         if (object != 0) {
             *(void**)object = D_16DFE0;
+
             if (object != 0) {
                 *(void**)object = D_16BC50;
+
                 if (object != 0) {
                     *(void**)object = D_15D380;
                     func_4A8E30(object, 0);
                 }
             }
         }
+
         if (count > 0) {
             func_100B40(object);
         }
     }
+
     return object;
 }
 
@@ -719,14 +786,17 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003906F0", func_0039A2
 u32 func_0039A340(const u8* object)
 {
     u32 flags = 0;
+
     if (object[0x38] != 0)
     {
         flags |= 1;
     }
+
     if (object[0x39] != 0)
     {
         flags |= 4;
     }
+
     return flags;
 }
 

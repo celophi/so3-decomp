@@ -299,6 +299,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3A
 void func_002B3B60(BattleParent23* object)
 {
     BattleChild20B* child = object->children[object->selector];
+
     if (child)
     {
         child->unk204 = 0;
@@ -308,16 +309,19 @@ void func_002B3B60(BattleParent23* object)
 s32 func_002B3B90(BattleParent23* object)
 {
     BattleChild20B* child = object->children[object->selector];
+
     if (child == 0)
     {
         return 0;
     }
+
     return child->unk204;
 }
 
 void func_002B3BC0(BattleParent23* object, u8 value)
 {
     BattleChild20B* child = object->children[object->selector];
+
     if (child)
     {
         child->unk209 = value;
@@ -327,6 +331,7 @@ void func_002B3BC0(BattleParent23* object, u8 value)
 void func_002B3BF0(BattleParent23* object)
 {
     BattleChild20B* child = object->children[object->selector];
+
     if (child)
     {
         child->unk20B = 1;
@@ -340,6 +345,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3C
 void func_002B3CD0(BattleParent23* object, u8 value)
 {
     BattleChild20B* child = object->children[object->selector];
+
     if (child)
     {
         child->unk208 = value;
@@ -351,10 +357,12 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3D
 s32 func_002B3D40(BattleParent23* object)
 {
     BattleChild20B* child = object->children[object->selector];
+
     if (child == 0)
     {
         return 0;
     }
+
     return child->unk206;
 }
 
@@ -365,6 +373,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002A5AE0", func_002B3D
 void func_002B3DD0(BattleParent23* object, float value)
 {
     BattleChild20B* child = object->children[object->selector];
+
     if (child)
     {
         child->unk90 = value;

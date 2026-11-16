@@ -4,13 +4,18 @@
 extern "C" void func_003AF250(void* object);
 
 extern "C" void func_00280800(void);
+
 extern "C" void func_00280840(void);
+
 extern "C" void func_002E4240(void* object);
 
 
 extern "C" u32 func_4A0B70(u32 value, const void* data);
+
 extern "C" s32 func_003ADF00(void* object, s32 arg2, s32 arg3);
+
 extern "C" void func_00298370(void* object);
+
 extern "C" const u8 D_3E3390[];
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002D61C0", func_002D61C0);

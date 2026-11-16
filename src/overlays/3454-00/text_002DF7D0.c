@@ -2,9 +2,13 @@
 #include "overlays/3454-00/text_002DF7D0.h"
 
 extern void func_002EB1B0(void* object, void* context);
+
 extern void func_003B41F0(void* object);
+
 extern void func_002AE3F0(void* object);
+
 extern u32 func_473390(u32 value, const void* data);
+
 extern const u8 D_3E0DA8[];
 
 typedef struct N57Owner510text_002DF7D0

@@ -45,18 +45,11 @@ public:
     u64 get_program_tag(s32 program);
 
     u8 unk04;
-
-    /** Program now in VU1 micro memory, or LIB_VU1_PROGRAM_NONE. */
     u8 current_program;
-
-    /** Set while a sound stream transfer is queued on VIF1, which replaces the loaded program. */
     u8 unk06;
-
     u8 unk07[0xD];
     u32 unk14[3];
     u32 unk20[3];
-
-    /** VIF FLUSH code that ends the packet. */
     u32 flush;
 };
 

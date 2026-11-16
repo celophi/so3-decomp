@@ -152,6 +152,7 @@ u8 field_attach_allocation(FieldBufferSlots* object, void* allocation, u8 index)
  * @return Always 14.
  */
 s32 func_002D3BD0(FieldListObject* object);
+
 /**
  * @brief Report this object's type value.
  * @param object Callback receiver.

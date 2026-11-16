@@ -5,6 +5,7 @@ extern void* __vt__7LibLink;
 extern u8 D_00173A28[];
 extern u8 D_00173F48[];
 extern u8 D_00173F38[];
+
 extern void func_004447E0(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
 
 typedef struct ConstantByteSetterOwnertext_0043A920
@@ -807,10 +808,12 @@ void* func_0043D240(const void* object, s32 index)
     const MappedOwner0043D240* owner = (const MappedOwner0043D240*)object;
     MappedEntry0043D240* item = &owner->entries[index];
     void* result = item;
+
     if (item != 0)
     {
         result = (u8*)item + 0x30;
     }
+
     return result;
 }
 
@@ -994,6 +997,7 @@ void func_0043D8C0(void* object, const u8* source, u32 value)
     ByteSourceStateOwnertext_0043A920* receiver = object;
     receiver->sourceA0 = source;
     receiver->valueA4 = value;
+
     if (*receiver->sourceA0 == 1)
     {
         receiver->state57 = 1;
@@ -1009,6 +1013,7 @@ void func_0043D900(void* object, s32 enabled)
     TwoWordClearArgStateOwnertext_0043A920* receiver = object;
     receiver->unkA0 = 0;
     receiver->unkA4 = 0;
+
     if (enabled)
     {
         receiver->state57 = 1;

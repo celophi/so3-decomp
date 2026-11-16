@@ -26,49 +26,22 @@ enum LibMemoryCardOperation
 struct LibMemoryCardSlot
 {
     u8 unk00[0x40];
-
-    /** Set when the slot is opened: bit 4 and bits 0-1 come from the open call. */
     u16 config;
-
-    /** LIB_MEMORY_CARD_SLOT_OPEN once the slot is opened. */
     u16 state_flags;
-
     u16 unk44;
-
-    /** Status of the last operation; zero or 0x10-0x17 once it can be read. */
     u8 status;
-
-    /** Nonzero while an operation is running. */
     u8 busy;
-
-    /** Card state; two once the card is ready. */
     s32 card_state;
-
-    /** Free space. */
     s32 free_space;
-
-    /** Nonzero when the card is formatted. */
     s32 formatted;
-
-    /** Result of the last operation. */
     s32 result;
-
     u8 unk58[4];
-
-    /** File request the running transfer works through. */
     struct LibCardFileRequest* request;
-
     u8 unk60[0x14];
-
-    /** Buffer a file probe reads into, aligned to 64 bytes. */
     u8* buffer;
-
     s32 unk78;
     s32 unk7C;
-
-    /** File a probe looks for. */
     char name[0x40];
-
     u8 unkC0[0x40];
 };
 
@@ -79,7 +52,6 @@ class LibMemoryCard : public LibListObject
         /** @brief Initialize the memory card object. */
         LibMemoryCard();
 
-        /** @brief Destroy the memory card object. */
         virtual ~LibMemoryCard();
 
         /** @brief Wait for the card command in progress, then detach and queue the object once the library is set up. */
@@ -94,23 +66,14 @@ class LibMemoryCard : public LibListObject
          */
         virtual s32 func_slot1C();
 
-        /** The two card slots. */
         LibMemoryCardSlot* slots;
-
-        /** Static storage the slot records are carved from. */
         u8* slot_storage;
-
-        /** Set once the card library is set up. */
         u8 initialized : 1;
-
         u8 unk1c_bits : 7;
 
         u8 unk1d;
         u16 unk1e;
-
-        /** Zero while the card object is busy. */
         u8 ready;
-
         u8 unk21[3];
         u32 unk24;
         u8 unk28;

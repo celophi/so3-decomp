@@ -11,15 +11,17 @@
 class FieldClass150F50 : public FieldListObject
 {
 public:
-    /** @brief Destroy the queued object. */
     virtual ~FieldClass150F50();
+
     /**
      * @brief Report this object's default list kind.
      * @return The class's default list kind.
      */
     virtual s32 get_default_list_kind();
+
     /** @brief Process the selected channel using the stored value and flags. */
     virtual void update();
+
     s32 unk14;
     float unk18;
     u32 unk1c;
@@ -265,7 +267,11 @@ public:
     /** @brief Virtual handler slot 7. */
     virtual void func_00204E40();
 
-    /** @brief Test or update the actor using another object. @param other Other object. @return Status result. */
+    /**
+     * @brief Test or update the actor using another object.
+     * @param other Other object.
+     * @return Status result.
+     */
     virtual s32 func_00204480(void* other);
 
     /**
@@ -319,6 +325,7 @@ public:
         {
             return true;
         }
+
         return false;
     }
 

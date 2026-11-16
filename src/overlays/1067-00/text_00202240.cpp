@@ -6,10 +6,15 @@
 #include "overlays/1067-00/text_0021FB80.h"
 
 typedef unsigned __int128 FieldLocalQword;
+
 extern "C" s32 func_0022A160(void*);
+
 extern "C" void func_00208C30(void*);
+
 extern "C" void func_00209160(void*, void*, u32);
+
 extern "C" void func_001FF5A0(void*, u32, u32);
+
 extern "C" void func_001FF7F0(FieldFlaggedPointerA0*, u32);
 
 union FieldLocalVector4
@@ -17,7 +22,9 @@ union FieldLocalVector4
     u32 words[4];
     FieldLocalQword packed;
 };
+
 extern "C" void func_00228DD0(FieldTransform*);
+
 extern "C" bool func_00227280(FieldState3BA*);
 
 struct FieldState704 { u8 pad[0x704]; u32 unk704; };
@@ -40,10 +47,15 @@ struct FieldStateAD { u8 pad[0xA0]; void* unka0; u8 pad_a4[9]; u8 unkad_0 : 1; u
 struct FieldState820 { u8 pad[0x820]; void* unk820; };
 struct FieldState634 { u8 pad[0x5A0]; u8 unk5a0; u8 pad5a1[0x93]; void* unk634; };
 struct FieldState2C { u8 pad[0x1C]; u32 unk1c; u32 unk20; float unk24; u8 pad28[4]; u8 unk2c_0 : 1; u8 unk2c_rest : 7; };
+
 extern "C" int func_00206280(void*);
+
 extern "C" void func_4C9010(FieldOuter870*, void*, void*);
+
 extern "C" void func_4A5E60(FieldState820*, void*, void*);
+
 extern "C" void func_4D5C90(void*);
+
 extern "C" void func_448250(FieldState634*);
 
 struct FieldState544 { u8 pad[0x544]; float source; };
@@ -87,12 +99,16 @@ class FieldCallbackObject : FieldCallbackBase
 {
 public:
     virtual void action(s32);
+
     virtual void finish();
 };
+
 extern "C" void func_00205260(FieldCallbackState*);
+
 extern "C" void func_00204E40(FieldCallbackState*);
 
 extern "C" void* func_00204A10(void*);
+
 extern "C" void func_45B0E0(void*, void*, bool);
 
 u32 func_00202240(const FieldPackedKeySource* object)
@@ -165,6 +181,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_002036
 extern "C" bool func_00203930(FieldState3BA* obj)
 {
     if (!func_00227280(obj)) { return false; }
+
     obj->unk3bb_0 = 1;
     obj->unk3ba = 0;
     return true;
@@ -214,7 +231,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", update__16F
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00202240", func_00203CB0);
 
-/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+/**
+ * @brief Detach the object and add it to the resident release queue.
+ * @param object Object to release.
+ */
 extern "C" void func_00203DF0(void* object)
 {
     lib_object_detach_owner(object);
@@ -278,11 +298,14 @@ extern "C" void func_00203E20(FieldItemOwner* object, bool enabled)
     {
         return;
     }
+
     s32 count = object->unk7c->unk20->unk04;
+
     for (s32 index = 0; index < count; ++index)
     {
         FieldItemRecord* records = object->unk7c->unk18;
         FieldItemFlags* flags = records[index].unk08;
+
         if (records[index].unk00 == 0 && records[index].unk0c->unk0f == 1)
         {
             if (enabled)
@@ -319,10 +342,12 @@ bool FieldClass150F90::func_00204420()
     {
         return false;
     }
+
     if (unk8c_0)
     {
         return false;
     }
+
     return !(unk90 > 0.0f);
 }
 
@@ -476,6 +501,7 @@ extern "C" void func_00206200(FieldListAC* object, bool value)
     for (int i = 0; i < object->count; i++)
     {
         FieldItem10* item = &object->items[i];
+
         if (item->unk2)
         {
             if (value)
@@ -543,6 +569,7 @@ extern "C" void func_00207400(FieldState634* object)
     {
         func_4D5C90(object->unk634);
     }
+
     func_448250(object);
 }
 

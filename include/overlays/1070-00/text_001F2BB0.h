@@ -9,8 +9,8 @@
 class FieldVector1FAD90
 {
 public:
-    /** Leave the components uninitialized. */
     FieldVector1FAD90();
+
     /** Set the four components. */
     FieldVector1FAD90(float x, float y, float z, float w)
     {
@@ -19,6 +19,7 @@ public:
         value[2] = z;
         value[3] = w;
     }
+
     union
     {
         unsigned __int128 raw;
@@ -36,11 +37,13 @@ static inline void release_curve_buffer(void* buffer)
         func_100CB0((u8*)buffer - 0x10);
     }
 }
+
 /** Interpolation table with its secondary dispatch pointer after the table fields. */
 class FieldClass16C478
 {
 public:
     FieldFloatCurve curve;
+
     /** Release the curve entries and clear their pointer. */
     virtual ~FieldClass16C478()
     {
@@ -55,16 +58,19 @@ public:
 class FieldClass172140 : public FieldClass16AB90, public FieldClass16C478
 {
 public:
-    /** Destroy both observed base interfaces. */
     virtual ~FieldClass172140()
     {
     }
+
     /** Delete the receiver through its virtual destructor. */
     virtual void func_slot10();
+
     /** Return the receiver type value 4. */
     virtual s32 func_slot0c();
+
     /** Advance the active transition through its interpolation curve. */
     virtual void func_slot14();
+
     /**
      * @brief Initialize the float transition and its control flags.
      * @param first Initial value.
@@ -72,6 +78,7 @@ public:
      * @param third Progress limit.
      */
     void func_00296310(float first, float second, float third);
+
     float unk20;
     float unk24;
     float unk28;

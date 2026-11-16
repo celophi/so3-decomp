@@ -14,17 +14,16 @@ class ConfigController : public FieldClass153E30
         /** @brief Initialize the Field receiver base and clear the controller state. */
         ConfigController();
 
-        /** @brief Create and register the configuration windows. @return One after creation. */
+        /**
+         * @brief Create and register the configuration windows.
+         * @return One after creation.
+         */
         virtual s32 init_windows();
 
-        /** @brief Destroy the controller and its Field receiver base. */
         virtual ~ConfigController();
 
         u32 resource;
-
-        /** Set once init_windows has registered the windows. */
         u8 ready;
-
         u8 unk39[3];
         ConfigFrameWindow* frame_window;
         ConfigPreviewWindow* preview_window;

@@ -146,7 +146,6 @@ struct FieldRecord150220
 class FieldClass150220 : public FieldListObject
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass150220()
     {
     }
@@ -185,7 +184,6 @@ public:
 class FieldClass1501F0 : public FieldClass150220
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1501F0();
 
     /**
@@ -219,7 +217,6 @@ public:
 class FieldClass150250 : public FieldClass150220
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass150250();
 
     /**
@@ -425,18 +422,22 @@ public:
     {
         FieldClass150060* list = reinterpret_cast<FieldClass150060*>(&sentinel);
         FieldClass150060* node = list;
+
         for (;;)
         {
             node = node->unk08;
+
             if (list == node)
             {
                 break;
             }
+
             if (key == static_cast<FieldClass150280*>(node)->unk54)
             {
                 return static_cast<FieldClass150280*>(node);
             }
         }
+
         return 0;
     }
 
@@ -523,7 +524,6 @@ struct FieldShapeData10
 /** Two vertex indices of one line segment. */
 struct FieldIndexPair
 {
-    /** @brief Leave the indices uninitialized. */
     FieldIndexPair();
 
     /**
@@ -622,10 +622,13 @@ public:
     u8 unk14[4];
     u32 unk18;
 
-    /** @brief Allocate storage from the Lib heap. @param size Requested byte count. @return Allocated storage, or null. */
+    /**
+     * @brief Allocate storage from the Lib heap.
+     * @param size Requested byte count.
+     * @return Allocated storage, or null.
+     */
     static void* operator new(u32 size);
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass150440()
     {
     }
@@ -648,7 +651,6 @@ public:
 class FieldClass150420 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass150420();
 };
 
@@ -707,7 +709,6 @@ extern "C" FieldClass1504F0* D_001B6428;
 class FieldClass150460 : public FieldListObject
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass150460()
     {
     }
@@ -717,7 +718,6 @@ public:
 class FieldClass150350 : public FieldClass150460
 {
 public:
-    /** @brief Detach the object through its inherited node destructor. */
     virtual ~FieldClass150350()
     {
     }
@@ -743,6 +743,7 @@ public:
         u32 previous = D_001B65BC;
         unk8c &= mask;
         D_001B65BC &= mask;
+
         if (previous != D_001B65BC)
         {
             D_001B65C0 = 1;
@@ -757,7 +758,6 @@ public:
 class FieldClass1503A0 : public FieldClass178A90
 {
 public:
-    /** @brief Destroy the inherited transform state. */
     virtual ~FieldClass1503A0();
 };
 
@@ -775,11 +775,15 @@ public:
     u32 unk38;
     u8 unk3c[4];
 
-    /** @brief Detach the object through the inherited node destructor. */
     virtual ~FieldClass1505B0()
     {
     }
-    /** @brief Allocate storage through the Lib heap selection routine. @param size Byte count to allocate. @return Allocated storage or null. */
+
+    /**
+     * @brief Allocate storage through the Lib heap selection routine.
+     * @param size Byte count to allocate.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
 
     /** @brief Release storage through the Lib heap selection routine. */
@@ -790,10 +794,10 @@ public:
 class FieldClass150510 : public FieldClass1505B0
 {
 public:
-    /** @brief Destroy the base shape. */
     virtual ~FieldClass150510()
     {
     }
+
     float unk40;
     float unk44;
     float unk48;
@@ -817,8 +821,9 @@ public:
      * @param flags Condition flags.
      */
     FieldClass150590(void* owner, FieldVec4A position, FieldVec4A dimensions, FieldVec4A angles, u32 word38, u32 word34, u32 mask, u8 flags);
-    /** @brief Destroy the conditional shape. */
+
     virtual ~FieldClass150590();
+
     FieldCondition16 unk90;
 };
 
@@ -836,8 +841,9 @@ public:
      * @param word34 Word stored at offset 0x34, also used as the script offset.
      */
     FieldClass150570(void* owner, FieldVec4A position, FieldVec4A dimensions, u8 flags, u32 word38, u32 word34);
-    /** @brief Destroy the rectangular shape and its inherited state. */
+
     virtual ~FieldClass150570();
+
     u8 unk90;
     u8 unk91;
     FieldVec4A unka0;
@@ -851,10 +857,10 @@ public:
 class FieldClass1505D0 : public FieldClass1505B0
 {
 public:
-    /** @brief Destroy the shape and detach its inherited node. */
     virtual ~FieldClass1505D0()
     {
     }
+
     float unk40;
 };
 
@@ -872,8 +878,9 @@ public:
      * @param word34 Word stored at offset 0x34, also used as the script byte offset.
      */
     FieldClass150530(void* owner, FieldVec4A position, FieldVec4A dimensions, u8 flags, u32 word38, u32 word34);
-    /** @brief Destroy the cylinder and detach its inherited node. */
+
     virtual ~FieldClass150530();
+
     u8 unk50;
     u8 unk51;
     FieldVec4A unk60;
@@ -898,8 +905,9 @@ public:
      * @param flags Condition flags.
      */
     FieldClass150550(void* owner, FieldVec4A position, FieldVec4A dimensions, u32 word38, u32 word34, u32 mask, u8 flags);
-    /** @brief Destroy the cylinder and its inherited state. */
+
     virtual ~FieldClass150550();
+
     FieldCondition16 unk50;
 };
 
@@ -907,7 +915,6 @@ public:
 class FieldClass150490 : public FieldClass150460
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass150490();
 
     /**

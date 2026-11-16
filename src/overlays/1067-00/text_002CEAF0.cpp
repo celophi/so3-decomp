@@ -24,7 +24,7 @@
 #include "overlays/cskill/text.h"
 #include "overlays/citem/citem.h"
 #include "overlays/cconfig/config_controller.h"
-#include "overlays/cmc/text.h"
+#include "overlays/cmc/cmc.h"
 #include "overlays/ctactics/ctactics.h"
 #include "overlays/cshop/cshop.h"
 #include "overlays/citemcreation/text_003684D0.h"
@@ -32,16 +32,25 @@
 // This overlay only has an untyped view of the Lib entry tables these take.
 
 extern "C" void func_002CEDA0(FieldCountedList* list);
+
 extern "C" void func_002CEF20(FieldCountedList* list);
 
 extern "C" void func_002CF110(FieldCountedList* list);
+
 extern "C" void func_002CF300(FieldCountedList* list);
+
 extern "C" void func_002CF480(FieldCountedList* list);
+
 extern "C" void func_002CF600(FieldCountedList* list);
+
 extern "C" void func_002CF780(FieldCountedList* list);
+
 extern "C" void func_002CF900(FieldCountedList* list);
+
 extern "C" void func_002CFA80(FieldCountedList* list);
+
 extern "C" void func_002CFC00(FieldCountedList* list);
+
 extern "C" void func_002CFD80(FieldCountedList* list);
 
 /** Partial runtime directory containing the deferred window-removal list. */
@@ -64,7 +73,10 @@ class FieldMenuManager : public FieldListObject
 
         virtual ~FieldMenuManager();
 
-        /** @brief Report this object's list kind. @return Always 3. */
+        /**
+         * @brief Report this object's list kind.
+         * @return Always 3.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Detach the manager and add it to the resident release queue. */
@@ -153,13 +165,19 @@ struct FieldMenuPad
     u32 repeat;
 };
 
-/** @brief Return the pad state. @return Pad state. */
+/**
+ * @brief Return the pad state.
+ * @return Pad state.
+ */
 static inline FieldMenuPad* menu_pad()
 {
     return reinterpret_cast<FieldMenuPad*>(D_001B6430->context->input);
 }
 
-/** @brief Return the configured button masks. @return Button masks, one per menu command. */
+/**
+ * @brief Return the configured button masks.
+ * @return Button masks, one per menu command.
+ */
 static inline u16* menu_buttons()
 {
     return reinterpret_cast<u16*>(D_001B6430->unk04);
@@ -169,7 +187,10 @@ extern "C" void func_00264580(FieldCountedList* list);
 
 extern "C" s32 func_00264650(FieldCountedList* list, void** value);
 
-/** @brief Return the field object that owns the screen effects. @return Field display object. */
+/**
+ * @brief Return the field object that owns the screen effects.
+ * @return Field display object.
+ */
 static inline FieldClass1516A0* field_display()
 {
     return reinterpret_cast<FieldClass1516A0*>(D_001B6430->context->unk38);
@@ -210,10 +231,12 @@ FieldClass15AE70::FieldClass15AE70()
 FieldClass15B008::FieldClass15B008()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -221,6 +244,7 @@ FieldClass15B008::FieldClass15B008()
 FieldClass15B008::~FieldClass15B008()
 {
     func_002CEDA0(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -228,20 +252,26 @@ FieldClass15B008::~FieldClass15B008()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CEDA0(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -249,10 +279,12 @@ extern "C" void func_002CEDA0(FieldCountedList* list)
 FieldClass15AFF8::FieldClass15AFF8()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -260,6 +292,7 @@ FieldClass15AFF8::FieldClass15AFF8()
 FieldClass15AFF8::~FieldClass15AFF8()
 {
     func_002CEF20(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -267,20 +300,26 @@ FieldClass15AFF8::~FieldClass15AFF8()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CEF20(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -294,6 +333,7 @@ extern "C" void func_002CEF20(FieldCountedList* list)
 extern "C" s32 func_002CEFA0(FieldCountedList* list, void** value)
 {
     FieldListNode* node = list->head->next;
+
     if (node != 0)
     {
         *value = node->value;
@@ -302,6 +342,7 @@ extern "C" s32 func_002CEFA0(FieldCountedList* list, void** value)
     {
         return 0;
     }
+
     list->head->next = node->next;
     delete node;
     list->count--;
@@ -311,10 +352,12 @@ extern "C" s32 func_002CEFA0(FieldCountedList* list, void** value)
 FieldClass15AFE8::FieldClass15AFE8()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -322,6 +365,7 @@ FieldClass15AFE8::FieldClass15AFE8()
 FieldClass15AFE8::~FieldClass15AFE8()
 {
     func_002CF110(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -329,20 +373,26 @@ FieldClass15AFE8::~FieldClass15AFE8()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CF110(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -356,6 +406,7 @@ extern "C" void func_002CF110(FieldCountedList* list)
 extern "C" s32 func_002CF190(FieldCountedList* list, void** value)
 {
     FieldListNode* node = list->head->next;
+
     if (node != 0)
     {
         *value = node->value;
@@ -364,6 +415,7 @@ extern "C" s32 func_002CF190(FieldCountedList* list, void** value)
     {
         return 0;
     }
+
     list->head->next = node->next;
     delete node;
     list->count--;
@@ -373,10 +425,12 @@ extern "C" s32 func_002CF190(FieldCountedList* list, void** value)
 FieldClass15AFD8::FieldClass15AFD8()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -384,6 +438,7 @@ FieldClass15AFD8::FieldClass15AFD8()
 FieldClass15AFD8::~FieldClass15AFD8()
 {
     func_002CF300(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -391,20 +446,26 @@ FieldClass15AFD8::~FieldClass15AFD8()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CF300(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -412,10 +473,12 @@ extern "C" void func_002CF300(FieldCountedList* list)
 FieldClass15AFC8::FieldClass15AFC8()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -423,6 +486,7 @@ FieldClass15AFC8::FieldClass15AFC8()
 FieldClass15AFC8::~FieldClass15AFC8()
 {
     func_002CF480(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -430,20 +494,26 @@ FieldClass15AFC8::~FieldClass15AFC8()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CF480(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -451,10 +521,12 @@ extern "C" void func_002CF480(FieldCountedList* list)
 FieldClass15AFB8::FieldClass15AFB8()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -462,6 +534,7 @@ FieldClass15AFB8::FieldClass15AFB8()
 FieldClass15AFB8::~FieldClass15AFB8()
 {
     func_002CF600(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -469,20 +542,26 @@ FieldClass15AFB8::~FieldClass15AFB8()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CF600(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -490,10 +569,12 @@ extern "C" void func_002CF600(FieldCountedList* list)
 FieldClass15AFA8::FieldClass15AFA8()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -501,6 +582,7 @@ FieldClass15AFA8::FieldClass15AFA8()
 FieldClass15AFA8::~FieldClass15AFA8()
 {
     func_002CF780(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -508,20 +590,26 @@ FieldClass15AFA8::~FieldClass15AFA8()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CF780(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -529,10 +617,12 @@ extern "C" void func_002CF780(FieldCountedList* list)
 FieldClass15AF98::FieldClass15AF98()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -540,6 +630,7 @@ FieldClass15AF98::FieldClass15AF98()
 FieldClass15AF98::~FieldClass15AF98()
 {
     func_002CF900(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -547,20 +638,26 @@ FieldClass15AF98::~FieldClass15AF98()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CF900(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -568,10 +665,12 @@ extern "C" void func_002CF900(FieldCountedList* list)
 FieldClass15AF88::FieldClass15AF88()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -579,6 +678,7 @@ FieldClass15AF88::FieldClass15AF88()
 FieldClass15AF88::~FieldClass15AF88()
 {
     func_002CFA80(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -586,20 +686,26 @@ FieldClass15AF88::~FieldClass15AF88()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CFA80(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -607,10 +713,12 @@ extern "C" void func_002CFA80(FieldCountedList* list)
 FieldClass15AF78::FieldClass15AF78()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -618,6 +726,7 @@ FieldClass15AF78::FieldClass15AF78()
 FieldClass15AF78::~FieldClass15AF78()
 {
     func_002CFC00(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -625,20 +734,26 @@ FieldClass15AF78::~FieldClass15AF78()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CFC00(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -646,10 +761,12 @@ extern "C" void func_002CFC00(FieldCountedList* list)
 FieldClass15AF68::FieldClass15AF68()
 {
     head = new (0) FieldListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -657,6 +774,7 @@ FieldClass15AF68::FieldClass15AF68()
 FieldClass15AF68::~FieldClass15AF68()
 {
     func_002CFD80(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -664,20 +782,26 @@ FieldClass15AF68::~FieldClass15AF68()
     }
 }
 
-/** @brief Delete every node after the head node and reset the count. @param list List to clear. */
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
 extern "C" void func_002CFD80(FieldCountedList* list)
 {
     FieldListNode* node = list->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         FieldListNode* next = node->next;
         delete node;
         node = next;
     }
+
     list->head->next = 0;
     list->count = 0;
 }
@@ -1054,7 +1178,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         }
         case FIELD_MENU_7:
         {
-            CmcClass18AF20* controller = new (0) CmcClass18AF20;
+            CardMenuController* controller = new (0) CardMenuController;
             g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             controller->func_00263CA0(manager->argument);
@@ -1380,6 +1504,7 @@ void FieldMenuManager::update()
 s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags)
 {
     object->menu = value;
+
     if (flags != 0)
     {
         object->argument = flags;
@@ -1388,6 +1513,7 @@ s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags)
     {
         object->argument = 0;
     }
+
     if (((u16)flags) & 8)
     {
         object->unk88 = 0;
@@ -1396,6 +1522,7 @@ s32 func_002D1440(FieldMenuManager* object, u8 value, u32 flags)
     {
         object->unk88 = 1;
     }
+
     return 1;
 }
 
@@ -1542,7 +1669,10 @@ FieldClass15B040::~FieldClass15B040()
 
 extern "C" u32 D_001B65B8;
 
-/** @brief Advance the field random seed with the 1664525/1013904223 linear congruential step. @return New seed. */
+/**
+ * @brief Advance the field random seed with the 1664525/1013904223 linear congruential step.
+ * @return New seed.
+ */
 static inline u32 field_random()
 {
     return D_001B65B8 = 1664525L * D_001B65B8 + 1013904223L;
@@ -1697,7 +1827,10 @@ struct FieldResidentEntry4
     u8 unk1d4[0xC];
 };
 
-/** @brief Return resident state entry 4. @return Entry 4. */
+/**
+ * @brief Return resident state entry 4.
+ * @return Entry 4.
+ */
 static inline FieldResidentEntry4* resident_entry4()
 {
     return reinterpret_cast<FieldResidentEntry4*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 4));

@@ -24,7 +24,10 @@ static inline void vu0_inverse_translation(void* output, const void* input)
         : "memory");
 }
 
-/** @brief Load four aligned rows and begin collecting absolute component maxima. @param input Aligned source matrix. */
+/**
+ * @brief Load four aligned rows and begin collecting absolute component maxima.
+ * @param input Aligned source matrix.
+ */
 static inline void vu0_inverse_load(const void* input)
 {
     asm __volatile__(
@@ -111,7 +114,10 @@ static inline void vu0_inverse_scale_row1()
         : "memory");
 }
 
-/** @brief Store normalized row 0. @param output Aligned destination matrix. */
+/**
+ * @brief Store normalized row 0.
+ * @param output Aligned destination matrix.
+ */
 static inline void vu0_inverse_store_row0(void* output)
 {
     asm __volatile__(
@@ -135,7 +141,10 @@ static inline void vu0_inverse_scale_row2()
         : "memory");
 }
 
-/** @brief Store normalized row 1. @param output Aligned destination matrix. */
+/**
+ * @brief Store normalized row 1.
+ * @param output Aligned destination matrix.
+ */
 static inline void vu0_inverse_store_row1(void* output)
 {
     asm __volatile__(
@@ -156,7 +165,10 @@ static inline void vu0_inverse_scale_row3()
         : "memory");
 }
 
-/** @brief Store normalized rows 2 and 3. @param output Aligned destination matrix. */
+/**
+ * @brief Store normalized rows 2 and 3.
+ * @param output Aligned destination matrix.
+ */
 static inline void vu0_inverse_store_row2(void* output)
 {
     asm __volatile__(
@@ -167,7 +179,11 @@ static inline void vu0_inverse_store_row2(void* output)
         : "memory");
 }
 
-/** @brief Transform translation coordinates by three matrix rows. @param vector Aligned vector whose xyz components are transformed in place. @param matrix Aligned source matrix. */
+/**
+ * @brief Transform translation coordinates by three matrix rows.
+ * @param vector Aligned vector whose xyz components are transformed in place.
+ * @param matrix Aligned source matrix.
+ */
 static inline void vu0_transform_translation(void* vector, const void* matrix)
 {
     asm __volatile__(

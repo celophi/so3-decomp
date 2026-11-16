@@ -24,7 +24,7 @@ struct FieldRecordSelection
 
     /** @brief Clear the selection links, slots, and active state. */
     FieldRecordSelection();
-    /** @brief Destroy the record selection. */
+
     virtual ~FieldRecordSelection();
 };
 #else

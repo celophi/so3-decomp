@@ -67,7 +67,6 @@ class LibPooledQuaternionCurveTrack;
 /** 32-byte keyframe of LibSlerpQuaternionTrackBase: a key and a rotation quaternion at offset 0x10. */
 struct LibSlerpQuaternionTrackKey
 {
-    /** @brief Leave the keyframe uninitialized. */
     LibSlerpQuaternionTrackKey();
 
     float key;
@@ -85,21 +84,37 @@ public:
     virtual ~LibSlerpQuaternionTrackBase();
 
     virtual void allocate_keys(s32 count);
+
     virtual void bind_keys(s32 count, void* keys);
+
     virtual void set_before_mode(u32 mode);
+
     virtual void set_after_mode(u32 mode);
+
     virtual s32 get_cycle_count() const;
+
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 has_key(float key) const;
+
     virtual float wrap_key(float key) const;
+
     virtual float get_key_span() const;
+
     virtual void evaluate(float key, void* output);
+
     virtual s16 get_key_count() const;
+
     virtual void* get_keys();
+
     virtual void reset_state();
+
     virtual s16 get_key_capacity();
 
     /**
@@ -163,15 +178,9 @@ public:
 
     LibSlerpQuaternionTrackKey* key_array;
     u8 unk08[8];
-
-    /** Key of the single cached keyframe, used before an array is allocated. */
     float single_key;
-
     u8 unk14[0xC];
-
-    /** Value of the single cached keyframe. */
     FieldVec4B single_value;
-
     LibTrackState state;
 
     /** @brief Clear the pooled flag and reset the sequence. */
@@ -198,15 +207,18 @@ public:
 class LibSlerpQuaternionKeyTrack : public LibSlerpQuaternionTrackBase
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibSlerpQuaternionKeyTrack()
     {
     }
 
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     virtual s32 on_append_key(const FieldVec4A* value, float key);
+
     virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
+
     virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
+
     virtual void on_set_single_key(const FieldVec4A* value, float key);
 };
 
@@ -214,26 +226,25 @@ public:
 class LibPooledSlerpQuaternionTrack : public LibSlerpQuaternionKeyTrack
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibPooledSlerpQuaternionTrack();
 
     virtual void get_end_delta(void* output) const;
+
     virtual void get_value_rate(void* output) const;
+
     virtual void release();
+
     virtual void reset_state();
+
     virtual FieldVec4A sample(float key) const;
+
     virtual void return_to_pool();
 
-    /** Two-sample LibSlerpQuaternionHistory the sampler fills and slerps through. */
     u8 unk50[0x50];
-
     u8 unkA0[0x10];
     u32 unkB0;
     u32 unkB4;
-
-    /** How fast the sampled rotation was changing. */
     float value_rate;
-
     u8 unkBC[4];
 };
 
@@ -267,21 +278,37 @@ public:
     virtual ~LibFloatTrackBase();
 
     virtual void allocate_keys(s32 count);
+
     virtual void bind_keys(s32 count, void* keys);
+
     virtual void set_before_mode(u32 mode);
+
     virtual void set_after_mode(u32 mode);
+
     virtual s32 get_cycle_count() const;
+
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 has_key(float key) const;
+
     virtual float wrap_key(float key) const;
+
     virtual float get_key_span() const;
+
     virtual void evaluate(float key, void* output);
+
     virtual s16 get_key_count() const;
+
     virtual void* get_keys();
+
     virtual void reset_state();
+
     virtual s16 get_key_capacity();
 
     /**
@@ -357,10 +384,7 @@ public:
     u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
     LibFloatTrackKey* key_array;
-
-    /** Single cached keyframe, used before the first array key. */
     LibFloatTrackKey single_key;
-
     LibTrackState state;
 };
 
@@ -368,15 +392,18 @@ public:
 class LibFloatKeyTrack : public LibFloatTrackBase
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibFloatKeyTrack()
     {
     }
 
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     virtual s32 on_append_key(const float* value, float key);
+
     virtual s32 on_replace_key(s32 index, float key, const float* value);
+
     virtual s32 on_insert_key(s32 index, float key, const float* value);
+
     virtual void on_set_single_key(const float* value, float key);
 };
 
@@ -532,20 +559,21 @@ public:
 class LibFloatTrack : public LibFloatKeyTrack
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibFloatTrack()
     {
     }
 
     virtual void reset_keys();
+
     virtual void get_end_delta(void* output) const;
+
     virtual void get_value_rate(void* output) const;
+
     virtual void reset_state();
+
     virtual float sample(float key);
 
-    /** Two-sample history the sampler fills; a Lib history object with vtable D_178200. */
     LibLinearFloatHistory sample_history;
-
     float last_value;
     float value_rate;
 };
@@ -554,7 +582,6 @@ public:
 class LibPooledFloatTrack : public LibFloatTrack
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibPooledFloatTrack();
 
     virtual void release();
@@ -677,7 +704,6 @@ extern float g_vector_segment_weights[4];
 /** 16-byte vector keyframe: a value whose w is the key. */
 struct LibVectorTrackKey
 {
-    /** @brief Leave the key unset. */
     LibVectorTrackKey()
     {
     }
@@ -696,21 +722,37 @@ class LibVectorTrackBase : public LibClass173180
         virtual ~LibVectorTrackBase();
 
         virtual void allocate_keys(s32 count);
+
         virtual void bind_keys(s32 count, void* keys);
+
         virtual void set_before_mode(u32 mode);
+
         virtual void set_after_mode(u32 mode);
+
         virtual s32 get_cycle_count() const;
+
         virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
         virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
         virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
         virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
         virtual s32 has_key(float key) const;
+
         virtual float wrap_key(float key) const;
+
         virtual float get_key_span() const;
+
         virtual void evaluate(float key, void* output);
+
         virtual s16 get_key_count() const;
+
         virtual void* get_keys();
+
         virtual void reset_state();
+
         virtual s16 get_key_capacity();
 
         /**
@@ -790,10 +832,7 @@ class LibVectorTrackBase : public LibClass173180
 
         LibVectorTrackKey* key_array;
         u8 unk08[8];
-
-        /** Single cached keyframe, used before the first array key. */
         LibVectorTrackKey single_key;
-
         LibTrackState state;
 };
 
@@ -801,15 +840,18 @@ class LibVectorTrackBase : public LibClass173180
 class LibVectorKeyTrack : public LibVectorTrackBase
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~LibVectorKeyTrack()
         {
         }
 
         virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
         virtual s32 on_append_key(const FieldVec4A* value, float key);
+
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
+
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
+
         virtual void on_set_single_key(const FieldVec4A* value, float key);
 };
 
@@ -817,24 +859,22 @@ class LibVectorKeyTrack : public LibVectorTrackBase
 class LibVectorTrack : public LibVectorKeyTrack
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~LibVectorTrack()
         {
         }
 
         virtual void reset_keys();
+
         virtual void get_end_delta(void* output) const;
+
         virtual void get_value_rate(void* output) const;
+
         virtual void reset_state();
+
         virtual FieldVec4A sample(float key);
 
-        /** Two-sample history the sampler fills. */
         LibLinearVectorHistory sample_history;
-
-        /** Value returned by the last sample. */
         FieldVec4B last_value;
-
-        /** Change in value per second at the last sample. */
         FieldVec4B value_rate;
 };
 
@@ -842,7 +882,6 @@ class LibVectorTrack : public LibVectorKeyTrack
 class LibPooledVectorTrack : public LibVectorTrack
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~LibPooledVectorTrack();
 
         /** @brief Return a pooled track to its pool, or delete an ordinary track. */
@@ -855,7 +894,6 @@ class LibPooledVectorTrack : public LibVectorTrack
 /** 48-byte keyframe of LibQuaternionCurveTrackBase: a key, a rotation and its control rotation. */
 struct LibQuaternionCurveTrackKey
 {
-    /** @brief Leave the keyframe uninitialized. */
     LibQuaternionCurveTrackKey();
 
     float key;
@@ -874,21 +912,37 @@ class LibQuaternionCurveTrackBase : public LibClass173180
         virtual ~LibQuaternionCurveTrackBase();
 
         virtual void allocate_keys(s32 count);
+
         virtual void bind_keys(s32 count, void* keys);
+
         virtual void set_before_mode(u32 mode);
+
         virtual void set_after_mode(u32 mode);
+
         virtual s32 get_cycle_count() const;
+
         virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
         virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
         virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
         virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
         virtual s32 has_key(float key) const;
+
         virtual float wrap_key(float key) const;
+
         virtual float get_key_span() const;
+
         virtual void evaluate(float key, void* output);
+
         virtual s16 get_key_count() const;
+
         virtual void* get_keys();
+
         virtual void reset_state();
+
         virtual s16 get_key_capacity();
 
         /**
@@ -973,10 +1027,7 @@ class LibQuaternionCurveTrackBase : public LibClass173180
 
         LibQuaternionCurveTrackKey* key_array;
         u8 unk08[8];
-
-        /** Single cached keyframe, used before the first array key. */
         LibQuaternionCurveTrackKey single_key;
-
         LibTrackState state;
 };
 
@@ -996,16 +1047,22 @@ extern "C" void func_004CCE10(FieldVec4B* output, const FieldVec4B* from, const 
 class LibPooledQuaternionCurveTrack : public LibQuaternionCurveTrackBase
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~LibPooledQuaternionCurveTrack();
 
         virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
         virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
         virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
         virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
         virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
         virtual void reset_keys();
+
         virtual void get_end_delta(void* output) const;
+
         virtual void get_value_rate(void* output) const;
 
         /** @brief Return a pooled track to its pool, or delete an ordinary track. */
@@ -1061,22 +1118,15 @@ class LibPooledQuaternionCurveTrack : public LibQuaternionCurveTrackBase
          */
         virtual void set_single_curve_key(const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused, float key);
 
-        /** Key of the last sample. */
         float last_key;
-
         u8 unk64[0xC];
-
-        /** Rotation returned by the last sample. */
         FieldVec4B last_value;
-
-        /** Change in rotation per second at the last sample. */
         FieldVec4B value_rate;
 };
 
 /** 48-byte keyframe of LibVectorCurveTrackBase: a LibVectorTrackKey and two tangents. */
 struct LibVectorCurveTrackKey : public LibVectorTrackKey
 {
-    /** @brief Leave the key unset. */
     LibVectorCurveTrackKey()
     {
     }
@@ -1093,21 +1143,37 @@ public:
     virtual ~LibVectorCurveTrackBase();
 
     virtual void allocate_keys(s32 count);
+
     virtual void bind_keys(s32 count, void* keys);
+
     virtual void set_before_mode(u32 mode);
+
     virtual void set_after_mode(u32 mode);
+
     virtual s32 get_cycle_count() const;
+
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 has_key(float key) const;
+
     virtual float wrap_key(float key) const;
+
     virtual float get_key_span() const;
+
     virtual void evaluate(float key, void* output);
+
     virtual s16 get_key_count() const;
+
     virtual void* get_keys();
+
     virtual void reset_state();
+
     virtual s16 get_key_capacity();
 
     /**
@@ -1208,10 +1274,7 @@ public:
 
     LibVectorCurveTrackKey* key_array;
     u8 unk08[8];
-
-    /** Single cached keyframe, used before the first array key. */
     LibVectorCurveTrackKey single_key;
-
     LibTrackState state;
     u8 unk54[0xC];
 };
@@ -1220,21 +1283,30 @@ public:
 class LibVectorCurveTrack : public LibVectorCurveTrackBase
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibVectorCurveTrack()
     {
     }
 
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual void reset_keys();
+
     virtual void get_end_delta(void* output) const;
+
     virtual void get_value_rate(void* output) const;
+
     virtual void reset_state();
+
     virtual FieldVec4A sample(float key);
+
     virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
     /**
@@ -1268,9 +1340,7 @@ public:
      */
     virtual void set_single_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
-    /** Hermite segment between the keys around the last sample. */
     LibVectorSegment curve_segment;
-
     FieldVec4B last_value;
     FieldVec4B value_rate;
 };
@@ -1279,7 +1349,6 @@ public:
 class LibPooledVectorCurveTrack : public LibVectorCurveTrack
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibPooledVectorCurveTrack();
 
     virtual void release();
@@ -1322,21 +1391,37 @@ public:
     virtual ~LibFloatCurveTrackBase();
 
     virtual void allocate_keys(s32 count);
+
     virtual void bind_keys(s32 count, void* keys);
+
     virtual void set_before_mode(u32 mode);
+
     virtual void set_after_mode(u32 mode);
+
     virtual s32 get_cycle_count() const;
+
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 has_key(float key) const;
+
     virtual float wrap_key(float key) const;
+
     virtual float get_key_span() const;
+
     virtual void evaluate(float key, void* output);
+
     virtual s16 get_key_count() const;
+
     virtual void* get_keys();
+
     virtual void reset_state();
+
     virtual s16 get_key_capacity();
 
     /**
@@ -1430,10 +1515,7 @@ public:
     u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
     LibFloatCurveTrackKey* key_array;
-
-    /** Single cached keyframe, used before the first array key. */
     LibFloatCurveTrackKey single_key;
-
     LibTrackState state;
 };
 
@@ -1441,21 +1523,30 @@ public:
 class LibFloatCurveTrack : public LibFloatCurveTrackBase
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibFloatCurveTrack()
     {
     }
 
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual void reset_keys();
+
     virtual void get_end_delta(void* output) const;
+
     virtual void get_value_rate(void* output) const;
+
     virtual void reset_state();
+
     virtual float sample(float key);
+
     virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
     /**
@@ -1489,9 +1580,7 @@ public:
      */
     virtual void set_single_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
-    /** Hermite segment between the keys around the last sample. */
     LibFloatSegment curve_segment;
-
     float last_value;
     float value_rate;
 };
@@ -1500,7 +1589,6 @@ public:
 class LibPooledFloatCurveTrack : public LibFloatCurveTrack
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibPooledFloatCurveTrack();
 
     virtual void release();
@@ -1547,25 +1635,19 @@ public:
 /** 32-byte keyframe of LibFloatQuaternionTrackBase: a key and a rotation quaternion at offset 0x10. */
 struct LibFloatQuaternionTrackKey
 {
-    /** @brief Leave the keyframe uninitialized. */
     LibFloatQuaternionTrackKey();
 
     float key;
-
-    /** Extra values the pooled track stores with each key; their meaning is unknown. */
     float first;
     float second;
 
     u8 unk0c[4];
-
-    /** Rotation quaternion (x, y, z, w). */
     FieldVec4B value;
 };
 
 /** Unpacked keyframe that LibPooledFloatQuaternionTrack::append_key_record copies in. */
 struct LibFloatQuaternionKeyRecord
 {
-    /** Rotation quaternion (x, y, z, w). */
     float value[4];
     float key;
     float first;
@@ -1583,21 +1665,37 @@ public:
     virtual ~LibFloatQuaternionTrackBase();
 
     virtual void allocate_keys(s32 count);
+
     virtual void bind_keys(s32 count, void* keys);
+
     virtual void set_before_mode(u32 mode);
+
     virtual void set_after_mode(u32 mode);
+
     virtual s32 get_cycle_count() const;
+
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 has_key(float key) const;
+
     virtual float wrap_key(float key) const;
+
     virtual float get_key_span() const;
+
     virtual void evaluate(float key, void* output);
+
     virtual s16 get_key_count() const;
+
     virtual void* get_keys();
+
     virtual void reset_state();
+
     virtual s16 get_key_capacity();
 
     /**
@@ -1685,10 +1783,7 @@ public:
 
     LibFloatQuaternionTrackKey* key_array;
     u8 unk08[8];
-
-    /** Single cached keyframe, used before the first array key. */
     LibFloatQuaternionTrackKey single_key;
-
     LibTrackState state;
 };
 
@@ -1696,21 +1791,32 @@ public:
 class LibPooledFloatQuaternionTrack : public LibFloatQuaternionTrackBase
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibPooledFloatQuaternionTrack();
 
     virtual s32 append_key(const void* value, const void* first, const void* second, float key);
+
     virtual void append_key_record(const void* record);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* first, const void* second);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* first, const void* second);
+
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     virtual void set_single_key(const void* value, const void* first, const void* second, float key);
+
     virtual void reset_keys();
+
     virtual void get_end_delta(void* output) const;
+
     virtual void get_value_rate(void* output) const;
+
     virtual void release();
+
     virtual void reset_state();
+
     virtual FieldVec4A sample(float key) const;
+
     virtual void return_to_pool();
 
     /**
@@ -1725,10 +1831,7 @@ public:
     s32 insert_entry(s32 index, float key, const FieldVec4A* value, float first, float second);
 
     u32 unk50;
-
-    /** How fast the sampled rotation was changing. */
     float value_rate;
-
     u32 unk58;
     u8 unk5c[0x24];
 };
@@ -1760,9 +1863,7 @@ struct LibQuaternionTrackKey
         return key;
     }
 
-    /** Rotation as the quaternion's x, y and z in 1.15 fixed point; w is rebuilt from them. */
     s16 packed_rotation[3];
-
     s16 key;
 };
 
@@ -1774,21 +1875,37 @@ public:
     virtual ~LibQuaternionTrackBase();
 
     virtual void allocate_keys(s32 count);
+
     virtual void bind_keys(s32 count, void* keys);
+
     virtual void set_before_mode(u32 mode);
+
     virtual void set_after_mode(u32 mode);
+
     virtual s32 get_cycle_count() const;
+
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 has_key(float key) const;
+
     virtual float wrap_key(float key) const;
+
     virtual float get_key_span() const;
+
     virtual void evaluate(float key, void* output);
+
     virtual s16 get_key_count() const;
+
     virtual void* get_keys();
+
     virtual void reset_state();
+
     virtual s16 get_key_capacity();
 
     /**
@@ -1870,10 +1987,7 @@ public:
     u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
     LibQuaternionTrackKey* key_array;
-
-    /** Single cached keyframe, used before the first array key. */
     LibQuaternionTrackKey single_key;
-
     LibTrackState state;
 };
 
@@ -1881,20 +1995,30 @@ public:
 class LibPooledQuaternionTrack : public LibQuaternionTrackBase
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibPooledQuaternionTrack();
 
     virtual s32 append_key(const void* value, const void* first, const void* second, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* first, const void* second);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* first, const void* second);
+
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     virtual void set_single_key(const void* value, const void* first, const void* second, float key);
+
     virtual void reset_keys();
+
     virtual void get_end_delta(void* output) const;
+
     virtual void get_value_rate(void* output) const;
+
     virtual void release();
+
     virtual void reset_state();
+
     virtual void on_set_single_key(const FieldVec4A* value, float key);
+
     virtual FieldVec4A sample(float key) const;
 
     /**

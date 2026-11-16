@@ -99,10 +99,7 @@ public:
     virtual void func_slot4C();
 
     LibVector4 unk820;
-
-    /** Shared model whose unk790 counts the models built from it. */
     LibModel* unk830;
-
     u8 unk834;
     u8 unk835;
     u8 unk836;
@@ -114,26 +111,17 @@ public:
     u8 unk83c;
     u8 unk83d;
     u8 unk83e;
-
-    /** Set once the model was built from another one. */
     u8 built_from_source;
-
     float unk840;
     float unk844;
-
-    /** Scale applied to LibModel's bounding sphere radius. */
     float unk848;
-
     float unk84c;
     float unk850;
     float unk854;
     float unk858;
     u32 unk85c;
     u32 unk860[6];
-
-    /** Owned objects, destroyed with the model. */
     LibTransformOwner* children[3];
-
     LibUpdateList objects;
 };
 
@@ -191,6 +179,7 @@ public:
     virtual ~LibClass173490();
 
     virtual void set_borrowed_data(void* value);
+
     virtual void func_slot10();
 
     /**
@@ -238,7 +227,6 @@ public:
      */
     virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal) = 0;
 
-    /** Light kind; the factory sets it after the constructor. */
     u8 kind;
 };
 
@@ -262,13 +250,8 @@ public:
      */
     virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
 
-    /** Last result of func_slot88. */
     LibVector4 unk220;
-
-    /** Factors: x scales the result, w is added to the squared distance. */
     LibVector4 unk230;
-
-    /** Position in the view's space. */
     LibVector4 view_position;
 };
 
@@ -294,10 +277,7 @@ public:
      */
     virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
 
-    /** Last result of func_slot88. */
     LibVector4 unk220;
-
-    /** Factors: the result is normal * w * (|normal| * x + y). */
     LibVector4 unk230;
 };
 
@@ -321,30 +301,14 @@ public:
      */
     virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
 
-    /** Position in the view's space; w holds radius squared. */
     LibVector4 view_position;
-
-    /** First direction in the light's own space. */
     LibVector4 unk230;
-
-    /** unk230 in the view's space. */
     LibVector4 unk240;
-
-    /** unk240 normalised: the light's axis. */
     LibVector4 axis;
-
-    /** Second direction in the light's own space. */
     LibVector4 unk260;
-
-    /** unk260 in the view's space. */
     LibVector4 unk270;
-
-    /** Half of unk270. */
     LibVector4 unk280;
-
-    /** Last result of func_slot88. */
     LibVector4 unk290;
-
     float radius;
 };
 
@@ -368,22 +332,11 @@ public:
      */
     virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
 
-    /** First direction in the light's own space. */
     LibVector4 unk220;
-
-    /** unk220 in the view's space. */
     LibVector4 unk230;
-
-    /** Second direction in the light's own space. */
     LibVector4 unk240;
-
-    /** unk240 in the view's space. */
     LibVector4 unk250;
-
-    /** Half of unk250. */
     LibVector4 unk260;
-
-    /** Last result of func_slot88. */
     LibVector4 unk270;
 };
 
@@ -410,10 +363,7 @@ public:
         return &unk230;
     }
 
-    /** Direction in the light's own space. */
     LibVector4 unk220;
-
-    /** unk220 in the view's space. */
     LibVector4 unk230;
 };
 
@@ -1704,6 +1654,7 @@ s32 lib_memory_card_get_result(LibMemoryCard* card, s32 slot, s32* result)
     }
 
     u8 status = card->slots[slot].status;
+
     if (status != 0 && (status & LIB_MEMORY_CARD_STATUS_GROUP_MASK) != LIB_MEMORY_CARD_STATUS_DONE)
     {
         return 0;

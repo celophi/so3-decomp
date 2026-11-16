@@ -14,7 +14,6 @@ public:
     /** @brief Flush the data cache and initialize an empty palette blend. */
     LibPaletteBlendChannel();
 
-    /** @brief Destroy the channel; its palette, source colors and indices are borrowed. */
     virtual ~LibPaletteBlendChannel();
 
     /**
@@ -38,10 +37,7 @@ public:
     const u8* palette_indices;
     LibImageDataHeader* target;
     LibResourceBuffer* resource;
-
-    /** Weight of end_colors; start_colors uses 1 - blend. */
     float blend;
-
     s16 entry_count;
 };
 

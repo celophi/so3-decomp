@@ -49,7 +49,6 @@ class BootBattleTrophyCard : public LibListObject
         /** @brief Clear the transfer state, both modes, and the filename. */
         BootBattleTrophyCard();
 
-        /** @brief Destroy the object. */
         virtual ~BootBattleTrophyCard();
 
         /**
@@ -141,72 +140,39 @@ class BootBattleTrophyCard : public LibListObject
         s32 initialize();
 
         LibMemoryCard* card;
-
-        /** Selected slot, or -1. */
         s16 slot;
-
-        /** Card status last read for the selected slot; a change restarts card_step. */
         s16 last_card_status;
-
-        /** Step of update()'s card state machine; 0 is idle, 8 runs the transfer. */
         s16 card_step;
-
-        /** Skip polling the selected card while a slot result awaits consumption. */
         u8 card_poll_paused;
         u8 unk1F;
-
-        /** Copy of the slot's formatted flag from the last check. */
         u32 card_formatted;
-
         s32 free_space;
-        /** Reset slot 0 after a caller reads a pending slot result. */
         u8 pending_slot_reset;
         u8 slot1_status_valid;
         u8 slot2_status_valid;
         u8 slot1_status;
         u8 slot2_status;
-
-        /** Set when the slot had under 175 units free. */
         u8 low_space;
-
         char filename[BOOT_TRANSFER_NAME_CAPACITY];
-        /** Backing storage for the general save-file card query. */
         u8 save_file_probe_storage[0xCC0];
-
-        /** 64-byte-aligned pointer into save_file_probe_storage. */
         u8* save_file_probe_buffer;
         u8 card_mode;
-        /** Whether each direct mode status has been set. */
         u8 mode_status_valid[2];
-
-        /** Direct status returned by get_slot_state for each mode. */
         u8 mode_status[2];
-        /** Backing storage for the Battle Trophies file query. */
         u8 trophy_file_probe_storage[0x80];
-
-        /** 64-byte-aligned pointer into trophy_file_probe_storage. */
         u8* trophy_file_probe_buffer;
         s16 transfer_phase;
         u8* transfer_buffer;
         void* transfer_destination;
         s16 transfer_slot;
-
-        /** 1 once the transfer has finished, -1 while it runs or after a reset. */
         s16 transfer_state;
-
         s32 transfer_result;
         LibCardFileBuffer file_buffer;
         LibCardFileRequest file_request;
         LibSystemSettings* settings;
-
-        /** Set by start_transfer until the transfer finishes or fails. */
         u8 transfer_pending;
-
-        /** Set once the card file has been opened for the transfer. */
         u8 transfer_open;
-
         s32 slot_free_space[2];
-        /** Save-file probe status used when classifying each slot. */
         s32 save_probe_status[2];
 };
 

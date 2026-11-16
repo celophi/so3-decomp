@@ -14,5 +14,6 @@ s32 func_0010A080(void* object, const s32* value)
         ((ResidentHelperObjectB0*)object)->unkB0 = 1;
         return *value;
     }
+
     return 0;
 }

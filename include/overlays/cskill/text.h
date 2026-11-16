@@ -9,7 +9,6 @@ typedef struct SkillListNode
     void* value;
     struct SkillListNode* next;
 #ifdef __cplusplus
-    /** @brief Destroy a node without releasing its stored value. */
     ~SkillListNode()
     {
     }
@@ -85,8 +84,10 @@ struct SkillList183C48
 {
     SkillListNode* head;
     u32 count;
+
     /** @brief Allocate the anchor and initialize an empty list. */
     SkillList183C48();
+
     /** @brief Release the linked nodes and the anchor. */
     virtual ~SkillList183C48();
 };
@@ -96,8 +97,10 @@ struct SkillList183C38
 {
     SkillListNode* head;
     u32 count;
+
     /** @brief Allocate the anchor and initialize an empty list. */
     SkillList183C38();
+
     /** @brief Release the linked nodes and the anchor. */
     virtual ~SkillList183C38();
 };
@@ -107,8 +110,10 @@ struct SkillList184268
 {
     SkillListNode* head;
     u32 count;
+
     /** @brief Allocate the anchor and initialize an empty list. */
     SkillList184268();
+
     /** @brief Release the linked nodes and the anchor. */
     virtual ~SkillList184268();
 };
@@ -118,8 +123,10 @@ struct SkillPairList184258
 {
     SkillPairListNode* head;
     u32 count;
+
     /** @brief Allocate the anchor and initialize an empty list. */
     SkillPairList184258();
+
     /** @brief Release the linked nodes and the anchor. */
     virtual ~SkillPairList184258();
 };
@@ -129,29 +136,59 @@ struct SkillController : public LibDmaCallbacks, public FieldClass153E30
 {
     /** @brief Initialize the controller and clear its window links. */
     SkillController();
+
     /** @brief Delete the owned record selection and destroy the Field receiver base. */
     virtual ~SkillController();
-    /** @brief Report whether window setup finished. @return Setup flag. */
+
+    /**
+     * @brief Report whether window setup finished.
+     * @return Setup flag.
+     */
     virtual u8 windows_ready();
-    /** @brief Get the loaded resource handle. @return Resource handle. */
+
+    /**
+     * @brief Get the loaded resource handle.
+     * @return Resource handle.
+     */
     virtual u32 get_resource_slot();
+
     /**
      * @brief Report this object's default list kind.
      * @return The class's default list kind.
      */
     virtual s32 get_default_list_kind();
+
     /** @brief Submit the Field receiver to the resident object queue. */
     virtual void func_001DD7B0();
-    /** @brief Allocate and initialize the character record selection. @return One on success, or zero on failure. */
+
+    /**
+     * @brief Allocate and initialize the character record selection.
+     * @return One on success, or zero on failure.
+     */
     virtual u8 func_00264110();
-    /** @brief Load a completed menu resource and create the windows. @param buffer Completed resource buffer. @return Setup result, or zero without a buffer. */
+
+    /**
+     * @brief Load a completed menu resource and create the windows.
+     * @param buffer Completed resource buffer.
+     * @return Setup result, or zero without a buffer.
+     */
     virtual s32 on_resource_loaded(void* buffer);
-    /** @brief Create the skill or symbology windows and attach their navigation links. @return One. */
+
+    /**
+     * @brief Create the skill or symbology windows and attach their navigation links.
+     * @return One.
+     */
     virtual s32 init_windows();
+
     /** @brief Release the status attachment and menu resource, then queue the controller for removal. */
     virtual void func_slot5c();
-    /** @brief Get the character record selection. @return Owned record selection. */
+
+    /**
+     * @brief Get the character record selection.
+     * @return Owned record selection.
+     */
     virtual FieldRecordSelection* selected_records();
+
     u8 menu_kind;
     u8 unk39[3];
     u32 resource_slot;
@@ -304,13 +341,31 @@ u32 skill_mask_character_flags(SkillCharacterStats* record, u32 flags);
  */
 void func_00364B70(SkillPairList184258* record);
 
-/** @brief Show help for the selected tactical detail entry. @param object Tactical detail window. */
+/**
+ * @brief Show help for the selected tactical detail entry.
+ * @param object Tactical detail window.
+ */
 void skill_refresh_tactical_detail_help(SkillTacticalDetailWindow* object);
-/** @brief Select the Aura or Damage Conversion detail grid, or hide both grids. @param object Tactical detail window. @param mode Zero for Aura, one for Damage Conversion, or two to hide both. */
+
+/**
+ * @brief Select the Aura or Damage Conversion detail grid, or hide both grids.
+ * @param object Tactical detail window.
+ * @param mode Zero for Aura, one for Damage Conversion, or two to hide both.
+ */
 void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mode);
-/** @brief Refresh Aura labels, the selected-type marker and current cursor. @param object Tactical detail window. @param reset Nonzero to select the saved Aura type. */
+
+/**
+ * @brief Refresh Aura labels, the selected-type marker and current cursor.
+ * @param object Tactical detail window.
+ * @param reset Nonzero to select the saved Aura type.
+ */
 void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset);
-/** @brief Refresh Damage Conversion labels, the selected-row marker and current cursor. @param object Tactical detail window. @param reset Nonzero to select the saved conversion direction. */
+
+/**
+ * @brief Refresh Damage Conversion labels, the selected-row marker and current cursor.
+ * @param object Tactical detail window.
+ * @param reset Nonzero to select the saved conversion direction.
+ */
 void skill_refresh_damage_conversion_rows(SkillTacticalDetailWindow* object, s32 reset);
 
 /**
@@ -464,10 +519,17 @@ s32 skill_create_mode_rows(SkillModeSelection* object);
  */
 s32 skill_cycle_symbology_character(SkillSymbologyCharacterWindow* object, s32 forward);
 
-/** @brief Refresh the selected symbol's description, mastery and MP expenditure. @param object Help window. @param selected_index Selected entry index. */
+/**
+ * @brief Refresh the selected symbol's description, mastery and MP expenditure.
+ * @param object Help window.
+ * @param selected_index Selected entry index.
+ */
 void skill_refresh_symbology_help(SkillSymbologyHelpWindow* object, s32 selected_index);
 
-/** @brief Refresh party and condition markers for the selected symbology character. @param object Character window. */
+/**
+ * @brief Refresh party and condition markers for the selected symbology character.
+ * @param object Character window.
+ */
 void skill_refresh_symbology_character_markers(SkillSymbologyCharacterWindow* object);
 
 /**
@@ -583,10 +645,18 @@ s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode);
  */
 void skill_set_battle_setup_visibility(SkillBattleSetupWindow* object, u32 flag, s32 active);
 
-/** @brief Refresh the selected skill's costs and damage multiplier. @param object Skill cost window. */
+/**
+ * @brief Refresh the selected skill's costs and damage multiplier.
+ * @param object Skill cost window.
+ */
 void skill_refresh_costs(FieldClass15AE70* object);
 
-/** @brief Set mode-window display and selection activity. @param object Mode window. @param flag Display flag word. @param active Grid activity value. */
+/**
+ * @brief Set mode-window display and selection activity.
+ * @param object Mode window.
+ * @param flag Display flag word.
+ * @param active Grid activity value.
+ */
 void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 active);
 
 /**
@@ -601,24 +671,51 @@ void skill_refresh_battle_selection(SkillBattleSetupWindow* record);
  */
 void func_00358310(SkillCharacterWindow* object);
 
-/** @brief Refresh the status-skill levels, next-level SP costs, and maximum-level labels. @param object Status-skill window. */
+/**
+ * @brief Refresh the status-skill levels, next-level SP costs, and maximum-level labels.
+ * @param object Status-skill window.
+ */
 void func_003559F0(SkillStatusSkillWindow* object);
+
 /**
  * @brief Refresh the six battle skill rows: names, scaled labels, levels, mastery, CP costs, and the CP displays.
  * @param object Battle setup window.
  * @return One.
  */
 s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object);
-/** @brief Create battle slot labels, separators, skill names, and slot icons. @param object Battle setup window. @return Row refresh result, or zero on allocation failure. */
+
+/**
+ * @brief Create battle slot labels, separators, skill names, and slot icons.
+ * @param object Battle setup window.
+ * @return Row refresh result, or zero on allocation failure.
+ */
 s32 func_003547C0(SkillBattleSetupWindow* object);
-/** @brief Refresh the tactical modes, selected character's row, and associated displays. @param object Tactical selection window. */
+
+/**
+ * @brief Refresh the tactical modes, selected character's row, and associated displays.
+ * @param object Tactical selection window.
+ */
 void skill_refresh_tactical_rows(SkillTacticalWindow* object);
-/** @brief Rebuild the mode rows for a signed mode code. @param object Mode-selection window. @param mode Signed mode. @return One on success, or zero on failure. */
+
+/**
+ * @brief Rebuild the mode rows for a signed mode code.
+ * @param object Mode-selection window.
+ * @param mode Signed mode.
+ * @return One on success, or zero on failure.
+ */
 s32 func_00350890(SkillModeSelection* object, s16 mode);
-/** @brief Create the Aura and Damage Conversion labels and selection markers. @param object Tactical detail window. @return One after setup, or zero on failure. */
+
+/**
+ * @brief Create the Aura and Damage Conversion labels and selection markers.
+ * @param object Tactical detail window.
+ * @return One after setup, or zero on failure.
+ */
 u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object);
 
-/** @brief Rebuild available Aura types and the saved conversion direction. @param object Tactical detail window. */
+/**
+ * @brief Rebuild available Aura types and the saved conversion direction.
+ * @param object Tactical detail window.
+ */
 void skill_refresh_tactical_detail_choices(SkillTacticalDetailWindow* object);
 
 /**

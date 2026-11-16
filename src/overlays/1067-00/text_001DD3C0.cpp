@@ -20,8 +20,11 @@ class FieldDelta
 {
 public:
     FieldDelta() {}
+
     FieldDelta(const FieldDelta& other) { *(unsigned __int128*)this = *(const unsigned __int128*)&other; }
+
     FieldDelta(const FieldVec4A& other) { *(unsigned __int128*)this = *(const unsigned __int128*)&other; }
+
     FieldDelta operator=(const FieldDelta& other)
     {
         *(unsigned __int128*)this = *(const unsigned __int128*)&other;
@@ -57,6 +60,7 @@ static inline bool is_list_head(const void* head, const void* node)
     {
         return true;
     }
+
     return false;
 }
 
@@ -106,13 +110,16 @@ FieldClass14FE30::~FieldClass14FE30()
 void func_001DD570(FieldFlaggedListObject* list)
 {
     FieldFlaggedListObject* node = list;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || list == node)
         {
             break;
         }
+
         if (node->unk78 & 8)
         {
             func_002379A0(node, 1);
@@ -124,21 +131,27 @@ void func_001DD5E0(FieldClass150060* list)
 {
     void* entries[0x20];
     FieldClass150060* link = list;
+
     for (;;)
     {
         link = link->unk08;
+
         if (!link || list == link)
         {
             break;
         }
+
         FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
+
         if ((object->unk78 & 0x8) && object->func_00204420())
         {
             LibEntryManager* table = (LibEntryManager*)object->unk7c;
+
             if (table)
             {
                 s32 count = 0;
                 void* entry = lib_find_renderable_entry(table, 0);
+
                 while (entry && count < 0x20)
                 {
                     entries[count++] = entry;
@@ -157,13 +170,16 @@ void func_001DD5E0(FieldClass150060* list)
 void func_001DD6E0(FieldFlaggedListObject* list)
 {
     FieldFlaggedListObject* node = list;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || list == node)
         {
             break;
         }
+
         if (node->unk78 & 2)
         {
             node->unk208 = 0;
@@ -176,13 +192,16 @@ void FieldClass1502A0::func_001DD730()
     FieldClass150060* list = reinterpret_cast<FieldClass150060*>(&sentinel);
     FieldClass150060* current;
     FieldClass150060* node = list->unk08;
+
     for (;;)
     {
         current = node;
+
         if (!node || list == node)
         {
             break;
         }
+
         node = node->unk08;
         lib_object_detach_owner(current);
         static_cast<FieldListObject*>(current)->func_001DD7B0();
@@ -199,14 +218,18 @@ void func_001DD860(FieldClass150060* list)
 {
     FieldClass150F90* current;
     FieldClass150060* node = list->unk08;
+
     for (;;)
     {
         current = static_cast<FieldClass150F90*>(node);
+
         if (!node || list == node)
         {
             break;
         }
+
         node = node->unk08;
+
         if (current->unk78 & 0x400)
         {
             static_cast<FieldClass153330*>(current)->func_0023DE90(1);
@@ -219,13 +242,16 @@ void func_001DD860(FieldClass150060* list)
         else if (current->unk78 & 0x20)
         {
             FieldClass152FE0* actor = static_cast<FieldClass152FE0*>(current);
+
             if (!actor->test_unk148())
             {
                 actor->func_00205710(&actor->unk670);
             }
         }
     }
+
     FieldHeldObject20* holder = D_001B645C;
+
     if (holder)
     {
         func_0027E7D0(holder);
@@ -242,20 +268,25 @@ void FieldClass152F00::func_00205710(const FieldVec4A* value)
 void func_001DD9A0(FieldClass150060* list, s8 mode, s32 arg)
 {
     FieldClass150060* link = list;
+
     if (mode >= 2)
     {
         for (;;)
         {
             link = link->unk08;
+
             if (list == link)
             {
                 break;
             }
+
             FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
+
             if ((object->unk78 & 0x20002) && !object->test_unk70(0x80000000))
             {
                 object->func_00204370(!object->unk8c_5, 0);
                 object->func_002042A0(!object->unk8c_6);
+
                 if (object->unk78 & 0x10)
                 {
                     FieldClass152350* actor = static_cast<FieldClass152350*>(object);
@@ -269,11 +300,14 @@ void func_001DD9A0(FieldClass150060* list, s8 mode, s32 arg)
         for (;;)
         {
             link = link->unk08;
+
             if (!link || list == link)
             {
                 break;
             }
+
             FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
+
             if ((object->unk78 & 0x20002) && !object->test_unk70(0x80000000))
             {
                 object->func_00204370(mode, arg);
@@ -286,13 +320,16 @@ void FieldClass14FE30::func_001DDB30(void* arg)
 {
     FieldFlaggedListObject* list = reinterpret_cast<FieldFlaggedListObject*>(this);
     FieldFlaggedListObject* node = list;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || list == node)
         {
             break;
         }
+
         if (node->unk78 & 2)
         {
             func_00227130(node);
@@ -306,44 +343,57 @@ s32 func_001DDBA0(FieldClass150060* list, FieldClass151510* self, void* arg0, vo
     {
         return 0;
     }
+
     FieldClass150060* link = list;
     FieldClass150060* skip = self;
+
     for (;;)
     {
         link = link->unk08;
+
         if (!link || list == link)
         {
             break;
         }
+
         if (link == skip)
         {
             continue;
         }
+
         FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
         u32 flags = object->unk78;
+
         if (!(flags & 0x1))
         {
             continue;
         }
+
         if ((flags & 0x10000) && !(flags & 0x200))
         {
             continue;
         }
+
         FieldClass151510* body = static_cast<FieldClass151510*>(object);
+
         if (!body->func_00204420())
         {
             continue;
         }
+
         if (body->test_unk204(0x8))
         {
             continue;
         }
+
         FieldClass154D20* shape = body->unkA8;
+
         if (shape && func_0045BD20(shape->func_001DDCD0(), arg0, arg1))
         {
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -352,13 +402,17 @@ FieldClass1515D0* FieldClass154D20::func_001DDCD0()
     return this;
 }
 
-/** @brief Test the actor gate and require its disable flag to be clear. @return Whether the actor passes both tests. */
+/**
+ * @brief Test the actor gate and require its disable flag to be clear.
+ * @return Whether the actor passes both tests.
+ */
 bool FieldClass152430::func_00204420()
 {
     if (!FieldClass150F90::func_00204420())
     {
         return false;
     }
+
     return unk8c_5 ? false : true;
 }
 
@@ -368,56 +422,73 @@ bool func_001DDD30(FieldListOwner94* list, FieldClass151510** target)
     {
         return false;
     }
+
     bool active = false;
+
     if (((*target)->unk78 & 0x10) && static_cast<FieldClass152350*>(*target)->unk638 > 0.0f)
     {
         active = true;
     }
+
     FieldClass150060* link = list;
     FieldClass154D20* own = (*target)->unkA8;
+
     for (;;)
     {
         link = link->unk08;
+
         if (!link || list == link)
         {
             break;
         }
+
         if (link == *target)
         {
             continue;
         }
+
         FieldClass150F90* object = static_cast<FieldClass150F90*>(link);
         u32 flags = object->unk78;
+
         if (!(flags & 0x1))
         {
             continue;
         }
+
         if ((flags & 0x10000) && !(flags & 0x200))
         {
             continue;
         }
+
         if ((flags & 0x10) && static_cast<FieldClass152350*>(object)->unk638 > 0.0f)
         {
             continue;
         }
+
         FieldClass151510* body = static_cast<FieldClass151510*>(object);
+
         if (!body->func_00204420())
         {
             continue;
         }
+
         if (body->test_unk204(0x8))
         {
             continue;
         }
+
         if (((*target)->unk78 & 0x20) && static_cast<FieldClass152FE0*>(*target)->unk69f_0 && (body->unk78 & 0x10))
         {
             continue;
         }
+
         if ((body->unk78 & 0x20) && (static_cast<FieldClass152FE0*>(body)->unk69f_0 || active))
         {
             continue;
         }
+
         FieldClass154D20* shape = body->unkA8;
+
         if (shape && func_0045F5A0(shape->func_001DDCD0(), own->func_001DDCD0()))
         {
             list->unk94 = body;
@@ -425,6 +496,7 @@ bool func_001DDD30(FieldListOwner94* list, FieldClass151510** target)
             return true;
         }
     }
+
     return false;
 }
 
@@ -436,18 +508,22 @@ FieldClass1515D0* FieldClass153570::func_001DDCD0()
 FieldFlaggedListObject* func_001DDF50(FieldFlaggedListObject* list, s32 key)
 {
     FieldFlaggedListObject* node = list;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || list == node)
         {
             break;
         }
+
         if (!node->unk8c_2 && key == node->unk74 && node->unk7c != 0)
         {
             return node;
         }
     }
+
     return 0;
 }
 
@@ -463,18 +539,22 @@ void FieldClass14FE30::update_nodes()
     {
         return;
     }
+
     active_node_count = node_count;
     active_node_buffer = new(0) void*[active_node_count];
     lib_list_collect_nodes_by_kind(this, active_node_buffer);
+
     for (bool swapped = true; swapped;)
     {
         swapped = false;
+
         for (s32 i = 1; i < active_node_count - 1; i++)
         {
             FieldClass150F90* first = static_cast<FieldClass150F90*>(active_node_buffer[i]);
             FieldClass150F90* second = static_cast<FieldClass150F90*>(active_node_buffer[i + 1]);
             float first_key = (first->unk78 & 0x400) ? static_cast<FieldClass153330*>(first)->unk464 : first->unk20.y;
             float second_key = (second->unk78 & 0x400) ? static_cast<FieldClass153330*>(second)->unk464 : second->unk20.y;
+
             if (first_key > second_key)
             {
                 active_node_buffer[i] = second;
@@ -483,38 +563,47 @@ void FieldClass14FE30::update_nodes()
             }
         }
     }
+
     s32 count = active_node_count;
     FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
+
     if (!focus || (focus && focus->unk90 <= 0.0f))
     {
         for (active_node_index = 0; active_node_index < active_node_count; active_node_index++)
         {
             FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[active_node_index]);
+
             if (object && object->is_listed && !object->test_unk70(0x80000000))
             {
                 func_004D6700(this, object);
             }
         }
+
         for (s32 i = 0; i < count; i++)
         {
             FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
+
             if (object && object->is_listed && !object->test_unk70(0x80000000) && (object->unk78 & 0x2))
             {
                 static_cast<FieldClass152430*>(object)->func_001DE3D0();
             }
         }
+
         for (s32 i = 0; i < count; i++)
         {
             FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
+
             if (object && object->is_listed && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
                 && object->func_00204420())
             {
                 static_cast<FieldClass152430*>(object)->func_00227CC0();
             }
         }
+
         for (s32 i = 0; i < count; i++)
         {
             FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[i]);
+
             if (object && object->is_listed && !object->test_unk70(0x80000000) && (object->unk78 & 0x2)
                 && object->func_00204420())
             {
@@ -522,14 +611,17 @@ void FieldClass14FE30::update_nodes()
             }
         }
     }
+
     for (s32 j = 0; j < count; j++)
     {
         FieldClass150F90* object = static_cast<FieldClass150F90*>(active_node_buffer[j]);
+
         if (object && object->is_listed && !object->test_unk70(0x80000000))
         {
             object->func_001DE3B0();
         }
     }
+
     delete[] active_node_buffer;
     active_node_buffer = 0;
 }
@@ -553,13 +645,16 @@ void FieldClass152430::func_001DE3D0()
 void func_001DE400(FieldFlaggedListObject* list, s32 flag)
 {
     FieldFlaggedListObject* node = list;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || list == node)
         {
             break;
         }
+
         if (node->unk7c)
         {
             func_004728A0(node->unk7c, flag != 0, 0);
@@ -570,14 +665,18 @@ void func_001DE400(FieldFlaggedListObject* list, s32 flag)
 void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
 {
     FieldFlaggedListObject* node = list->next;
+
     for (;;)
     {
         FieldFlaggedListObject* current = node;
+
         if (!node || list == node)
         {
             break;
         }
+
         node = node->next;
+
         if (!only_keyed || current->unk70)
         {
             func_0024CE10(D_001B6430->context->unk40, current);
@@ -597,70 +696,89 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
 void FieldClass14FE30::update()
 {
     ResidentContext* ctx = D_001B6430->context;
+
     if (ctx->unkdd.unk4 || func_002B0BC0((FieldFlagOwner2B0BC0*)ctx) || D_001B6430->context->unkde_1
         || D_001B6430->context->unkdd.unk5 || !D_001B6430->context->unk08->current_object)
     {
         return;
     }
+
     if (D_001B6430->context->unkdd.unk6)
     {
         return;
     }
+
     update_nodes();
     FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
+
     if (!focus)
     {
         return;
     }
+
     if (!focus->func_00204420())
     {
         return;
     }
+
     if (D_001B6430->context->unk38->unk4c8_0)
     {
         return;
     }
+
     if (D_001B6430->context->unk08->unkf5_3)
     {
         return;
     }
+
     const FieldVec4A* center = &static_cast<FieldClass150F90*>(D_001B6430->context->unk18)->unk20;
     FieldClass152FE0* nearest = 0;
     float best = 3.4028235e38f;
     FieldClass150060* node = reinterpret_cast<FieldClass150060*>(this);
+
     for (;;)
     {
         node = node->unk08;
+
         if (!node || is_list_head(this, node))
         {
             break;
         }
+
         FieldClass152FE0* item = static_cast<FieldClass152FE0*>(node);
+
         if (!(item->unk78 & 0x20) || item->test_unk70(0x80000000) || item->unk690 == -1)
         {
             continue;
         }
+
         FieldDelta delta;
         delta = field_delta(item->unk20, *center);
         float distance = field_length(delta);
+
         if (distance < best)
         {
             best = distance;
             nearest = item;
         }
     }
+
     if (!nearest)
     {
         return;
     }
+
     FieldBattleResourcePreloader* preloader = static_cast<FieldBattleResourcePreloader*>(D_001B6430->context->unk1c);
+
     if (!preloader)
     {
         preloader = new(0) FieldBattleResourcePreloader;
         D_001B6430->context->unk1c = preloader;
         static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30)->insert(preloader);
     }
+
     s32 current_id = preloader->unk7c8;
+
     if (nearest->unk690 != current_id || !same_area(preloader->unk7cc, nearest) || !same_kind(preloader->unk7d4, nearest))
     {
         s32 id = nearest->unk690;
@@ -677,18 +795,22 @@ void FieldResourcePreloader::allocate_requests(s32 count)
         {
             delete[] requests;
         }
+
         requests = new(0) FieldPreloadRequest[count];
     }
     else
     {
         void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk6c);
+
         if (requests)
         {
             delete[] requests;
         }
+
         requests = new(0) FieldPreloadRequest[count];
         resident_exchange_allocation_heap(heap);
     }
+
     request_capacity = count;
 }
 
@@ -701,6 +823,7 @@ FieldPreloadRequest::FieldPreloadRequest()
 void FieldResourcePreloader::reset_requests()
 {
     s32 i;
+
     if (requests)
     {
         for (i = 0; i < request_capacity; i++)
@@ -717,6 +840,7 @@ void FieldResourcePreloader::reset_requests()
             record->kind = 0;
         }
     }
+
     unk20 = 0;
     unk2f = 0;
     request_count = 0;

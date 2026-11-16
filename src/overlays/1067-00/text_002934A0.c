@@ -30,6 +30,7 @@ void func_00293540(FieldObject1573D0* object)
     if (object->unk38_0 && !object->unk38_1)
     {
         object->unk30 += g_frame_ticks;
+
         if (object->unk30 >= object->unk2c)
         {
             object->unk34 = object->unk20;

@@ -24,7 +24,10 @@ struct LibWordPairView
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EEB50);
 
-/** @brief Report the list kind used when registration requests the default. @return Three. */
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Three.
+ */
 s32 LibListObject::get_default_list_kind()
 {
     return 3;
@@ -64,24 +67,38 @@ void* func_003EEDF0(void)
     return result;
 }
 
-/** @brief Return the default output-handler result. @param output Unused output object. @return Zero. */
+/**
+ * @brief Return the default output-handler result.
+ * @param output Unused output object.
+ * @return Zero.
+ */
 s32 LibTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
 
-/** @brief Test whether the supplied value is negative. @param value Value to test. @param mode Unused mode. @return One if negative, otherwise zero. */
+/**
+ * @brief Test whether the supplied value is negative.
+ * @param value Value to test.
+ * @param mode Unused mode.
+ * @return One if negative, otherwise zero.
+ */
 s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
     s32 result = 1;
+
     if (!(value < 0.0f))
     {
         result = 0;
     }
+
     return result;
 }
 
-/** @brief Return no replacement transform receiver. @return Null. */
+/**
+ * @brief Return no replacement transform receiver.
+ * @return Null.
+ */
 LibTransformOwner* LibTransformOwner::clone()
 {
     return 0;
@@ -116,7 +133,13 @@ void LibOrientedTransform::set_translation(float x, float y, float z)
     translation.w = 1.0f;
 }
 
-/** @brief Set all four components of the primary transform vector and mark it dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
+/**
+ * @brief Set all four components of the primary transform vector and mark it dirty.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
 void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
@@ -126,14 +149,20 @@ void LibOrientedTransform::set_orientation_components(float x, float y, float z,
     orientation.w = w;
 }
 
-/** @brief Copy the primary transform vector and mark it dirty. @param value Source vector. */
+/**
+ * @brief Copy the primary transform vector and mark it dirty.
+ * @param value Source vector.
+ */
 void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
 }
 
-/** @brief Copy the primary transform vector and mark it dirty. @param value Source vector. */
+/**
+ * @brief Copy the primary transform vector and mark it dirty.
+ * @param value Source vector.
+ */
 void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
@@ -166,21 +195,32 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     lib_quaternion_from_euler(reinterpret_cast<FieldVec4B*>(&orientation), &value.x);
 }
 
-/** @brief Copy the secondary transform vector and mark it dirty. @param value Source vector. */
+/**
+ * @brief Copy the secondary transform vector and mark it dirty.
+ * @param value Source vector.
+ */
 void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
 }
 
-/** @brief Copy the secondary transform vector and mark it dirty. @param value Source vector. */
+/**
+ * @brief Copy the secondary transform vector and mark it dirty.
+ * @param value Source vector.
+ */
 void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
 }
 
-/** @brief Set the secondary transform vector's xyz components and mark it dirty. @param x First component. @param y Second component. @param z Third component. */
+/**
+ * @brief Set the secondary transform vector's xyz components and mark it dirty.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
 void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
@@ -198,7 +238,10 @@ void func_003EF030(u8* object)
     *(volatile u32*)0x10009000 = 0x101;
 }
 
-/** @brief Finish the transform receiver's packet. @param object Transform owner. */
+/**
+ * @brief Finish the transform receiver's packet.
+ * @param object Transform owner.
+ */
 extern "C" void func_003EF070(LibTransformOwner* object)
 {
     lib_finish_packet(object);
@@ -208,10 +251,12 @@ extern "C" void func_003EF070(LibTransformOwner* object)
 s32 func_003EF090(void* object)
 {
     DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+
     if (object != 0)
     {
         submission = (DmaSubmission*)((u8*)submission + 0x90);
     }
+
     return func_00114100(g_vif1_dma_queue, submission);
 }
 
@@ -265,13 +310,20 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF860);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF8A0);
 
-/** @brief Return the fixed value 9. @param object Unused receiver. @return Always 9. */
+/**
+ * @brief Return the fixed value 9.
+ * @param object Unused receiver.
+ * @return Always 9.
+ */
 extern "C" s32 func_003EF900(void* object)
 {
     return 9;
 }
 
-/** @brief Store state value 9 in the transform's byte at offset 0x60. @param object Transform owner. */
+/**
+ * @brief Store state value 9 in the transform's byte at offset 0x60.
+ * @param object Transform owner.
+ */
 extern "C" void func_003EF910(LibTransformOwner* object)
 {
     object->draw_bucket = 9;
@@ -309,10 +361,12 @@ void func_003EFAF0(N50Owner94_003E68C0* object)
 {
     object->active = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
+
     resident_packet_submit(object->owner, adjusted);
 }
 
@@ -342,10 +396,12 @@ void func_003F2550(LibTransformOwner* object)
 s32 func_003F2570(void* object)
 {
     DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+
     if (object != 0)
     {
         submission = (DmaSubmission*)((u8*)submission + 0x90);
     }
+
     return func_00114100(g_vif1_dma_queue, submission);
 }
 
@@ -403,7 +459,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F42B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4320);
 
-/** @brief Return the fixed value 9. @param object Unused receiver. @return Always 9. */
+/**
+ * @brief Return the fixed value 9.
+ * @param object Unused receiver.
+ * @return Always 9.
+ */
 extern "C" s32 func_003F4370(void* object)
 {
     return 9;
@@ -427,7 +487,11 @@ void LibTransformOwner::render()
 {
 }
 
-/** @brief Leave the default transform output handler unchanged. @param matrix Unused matrix. @param context Unused caller context. */
+/**
+ * @brief Leave the default transform output handler unchanged.
+ * @param matrix Unused matrix.
+ * @param context Unused caller context.
+ */
 void LibTransformOwner::build_packet(const void* matrix, void* context)
 {
 }
@@ -481,7 +545,11 @@ const LibVector4* LibTransform::get_offset_scale() const
     return &offset_scale;
 }
 
-/** @brief Return the fixed value 14. @param object Receiver or first argument; unused. @return Always 14. */
+/**
+ * @brief Return the fixed value 14.
+ * @param object Receiver or first argument; unused.
+ * @return Always 14.
+ */
 extern "C" s32 func_003F4550(void* object)
 {
     return 14;
@@ -518,37 +586,56 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F45F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F49E0);
 
-/** @brief Store a byte in one of three backing-buffer slots. @param index Slot index. @param value Byte value. */
+/**
+ * @brief Store a byte in one of three backing-buffer slots.
+ * @param index Slot index.
+ * @param value Byte value.
+ */
 void LibClass3F5B80::func_003F4A10(s32 index, u8 value)
 {
     if (index <= -1 || index >= 3)
     {
         return;
     }
+
     buffer->unk67B[index] = value;
 }
 
-/** @brief Store a byte in one of three backing-buffer slots. @param index Slot index. @param value Byte value. */
+/**
+ * @brief Store a byte in one of three backing-buffer slots.
+ * @param index Slot index.
+ * @param value Byte value.
+ */
 void LibClass3F5B80::func_003F4A50(s32 index, u8 value)
 {
     if (index <= -1 || index >= 3)
     {
         return;
     }
+
     buffer->unk678[index] = value;
 }
 
-/** @brief Store a byte in one of three backing-buffer slots. @param index Slot index. @param value Byte value. */
+/**
+ * @brief Store a byte in one of three backing-buffer slots.
+ * @param index Slot index.
+ * @param value Byte value.
+ */
 void LibClass3F5B80::func_003F4A90(s32 index, u8 value)
 {
     if (index <= -1 || index >= 3)
     {
         return;
     }
+
     buffer->unk675[index] = value;
 }
 
-/** @brief Read an entry's state byte when the index is in range. @param index Entry index. @return The state byte, or zero when the index is invalid. */
+/**
+ * @brief Read an entry's state byte when the index is in range.
+ * @param index Entry index.
+ * @return The state byte, or zero when the index is invalid.
+ */
 u8 LibClass3F5B80::func_003F4AD0(s32 index)
 {
     if (index >= 0)
@@ -558,10 +645,15 @@ u8 LibClass3F5B80::func_003F4AD0(s32 index)
             return buffer->entries[index].unk04;
         }
     }
+
     return 0;
 }
 
-/** @brief Read an entry's first word when the index is in range. @param index Entry index. @return The word, or zero when the index is invalid. */
+/**
+ * @brief Read an entry's first word when the index is in range.
+ * @param index Entry index.
+ * @return The word, or zero when the index is invalid.
+ */
 u32 LibClass3F5B80::func_003F4B10(s32 index)
 {
     if (index >= 0)
@@ -571,10 +663,15 @@ u32 LibClass3F5B80::func_003F4B10(s32 index)
             return buffer->entries[index].unk00;
         }
     }
+
     return 0;
 }
 
-/** @brief Return an entry's signed 16-bit value when the index is in range. @param index Entry index. @return The entry value, or -1 when the index is invalid. */
+/**
+ * @brief Return an entry's signed 16-bit value when the index is in range.
+ * @param index Entry index.
+ * @return The entry value, or -1 when the index is invalid.
+ */
 s32 LibClass3F5B80::func_003F4B50(s32 index)
 {
     if (index >= 0)
@@ -584,20 +681,30 @@ s32 LibClass3F5B80::func_003F4B50(s32 index)
             return buffer->entries[index].unk06;
         }
     }
+
     return -1;
 }
 
-/** @brief Store a halfword value in the backing buffer, mapping -1 to 0x37. @param value Value to store. */
+/**
+ * @brief Store a halfword value in the backing buffer, mapping -1 to 0x37.
+ * @param value Value to store.
+ */
 void LibClass3F5B80::func_003F4B90(s32 value)
 {
     if ((s16)value == -1)
     {
         value = 0x37;
     }
+
     buffer->unk668 = value;
 }
 
-/** @brief Store two values in an entry when the index is in range. @param index Entry index. @param value Word value. @param state Byte value. */
+/**
+ * @brief Store two values in an entry when the index is in range.
+ * @param index Entry index.
+ * @param value Word value.
+ * @param state Byte value.
+ */
 void LibClass3F5B80::func_003F4BC0(s32 index, u32 value, u8 state)
 {
     if (index >= 0)

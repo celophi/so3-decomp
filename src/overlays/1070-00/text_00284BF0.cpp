@@ -4,39 +4,66 @@
 #include "include_asm.h"
 
 extern "C" void* D_001B6620;
+
 extern "C" void func_121E80(void* owner, void* object);
 
 extern "C" u64 D_4FC540[];
 extern "C" float D_001B66B4;
 extern "C" FieldContextRef* D_001B64B0;
+
 extern "C" void func_4EA1E0(void);
+
 extern "C" void* g_renderer;
+
 extern "C" u32 func_120ED0(void* object);
+
 extern "C" void func_441010(void* object);
+
 extern "C" void func_441070(void* object);
+
 extern "C" void func_4DC5C0(void);
+
 extern "C" void func_002776B0(void* object);
+
 extern "C" void func_002881D0(void* object);
+
 extern "C" s32 func_002064D0(void* object);
+
 extern "C" void func_00248FD0(void* object, u32 value, u32 nextValue);
+
 extern "C" void func_002783E0(void* object, float first, float second, float third);
+
 extern "C" void func_002772B0(void* object, u32 value);
+
 extern "C" void func_0020CE90(void* object, u32 value);
+
 extern "C" void func_001FCB70(void* object, float value);
+
 extern "C" void func_001FCB00(void* object, u32 value);
+
 extern "C" void func_00273B00(void* object, u32 value);
+
 extern "C" void func_00276D80(void* object, float value);
 
 extern "C" void func_0020A000(FieldContext58* context, u32 first, u32 second);
+
 extern "C" void func_00223580(void* owner, void* object);
+
 extern "C" void* __vt__16FieldClass16AB80;
+
 extern "C" void func_4441E0(void* object);
+
 extern "C" u8 D_171680[];
 extern "C" u8 D_171690[];
+
 extern "C" void func_123230(void);
+
 extern "C" u8 D_16C380[];
+
 extern "C" void func_0025A0C0(void* target, u32 nested_value, u32 receiver_value);
+
 extern "C" void func_0025A230(void* target, u32 nested_value, u32 receiver_value);
+
 extern "C" s32 func_108030(void* object, u32 first, u32 second, u32 third, u32 fourth);
 
 /** Partial receiver initialized by func_00288210. */
@@ -857,6 +884,7 @@ s32 func_0028F880(FieldWordSource540* object)
         object->unk18 = *object->unk540;
         return 0;
     }
+
     return 1;
 }
 
@@ -1024,10 +1052,12 @@ s32 func_00290D70(const FieldValueSource* object)
 {
     FieldTargetValues* target = object->unk10->unk7c;
     u32 value = object->unk1c;
+
     if (value == 0xFFFFFFFF)
     {
         value = target->unk3b0;
     }
+
     target->unk3ac = value;
     return 1;
 }
@@ -1042,17 +1072,20 @@ static inline s32 field_has_flag_n56(FieldFlagTarget204* target, u32 mask)
     {
         return 1;
     }
+
     return 0;
 }
 
 s32 func_00291370(FieldFlagCallback10* object)
 {
     FieldFlagHandle78* handle = object->handle;
+
     if (field_has_flag_n56(handle->target, 0x400))
     {
         handle->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -1061,11 +1094,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_002913
 s32 func_002914F0(FieldFlagCallback10* object)
 {
     FieldFlagHandle78* handle = object->handle;
+
     if (field_has_flag_n56(handle->target, 0x100))
     {
         handle->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -1141,11 +1176,13 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00284BF0", func_002922
 s32 func_00292480(FieldFlagCallback10* object)
 {
     FieldFlagHandle78* handle = object->handle;
+
     if (field_has_flag_n56(handle->target, 0x1))
     {
         handle->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 

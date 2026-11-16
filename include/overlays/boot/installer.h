@@ -65,43 +65,22 @@ class BootInstaller : public LibListObject
         BootImage* tip_image;
         u8* tip_image_buffer;
         u8* tip_image_data;
-
-        /** Current step of the install sequence. */
         s32 step;
-
-        /** Step taken when the player answers no or cancels. */
         s32 no_step;
-
-        /** Step taken when the player answers yes. */
         s32 yes_step;
-
         u8 selection;
         u8 screen_images_loaded;
         u8 sound_started;
         u8 exiting;
-
-        /** Nonzero while the selected choice image grows back to full size. */
         u8 choice_growing;
-
         u8 unkb9[3];
-        /** Freed and cleared with the installer's other storage; boot never allocates it. */
         u8* unkbc;
-
-        /** Install size used as the progress denominator. */
         s32 install_total;
-
-        /** Next tip to show. */
         s32 tip_index;
-
-        /** Progress percentage at which the next tip is shown. */
         s32 next_tip_percent;
-
         s32 menu_frames;
         s32 wait_frames;
-
-        /** 0x200-byte buffer the resident install code fills with the icon.sys header. */
         u8* icon_header;
-
         LibContainer* container;
         LibTextWidget* message_text;
         LibTextWidget* progress_text;

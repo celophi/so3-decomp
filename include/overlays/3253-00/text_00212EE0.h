@@ -28,15 +28,19 @@ void func_00218D40(u8* object, float x, float y, float z);
 
 /** Install the record's pointer at offset 0x1C, reset it, and return it. */
 void* func_0021E540(void* object);
+
 /** Install the record's pointer at offset 0x1C, reset it, and return it. */
 void* func_0021E5A0(void* object);
+
 /** Install the record's pointer at offset 0x10, reset it, and return it. */
 void* func_0021E600(void* object);
 
 /** Initialize the receiver and install its primary vtable. */
 void* func_0021BCD0(void* object);
+
 /** Initialize the receiver and install its primary vtable. */
 void* func_0021C260(void* object);
+
 /** Initialize the receiver and install its primary vtable. */
 void* func_0021C810(void* object);
 
@@ -882,9 +886,12 @@ void func_002200F0(void* object, u8 mode);
 
 /** Clear the vector at offset 0x90 and update the associated state. */
 void func_0021CC40(void* object);
+
 /** Clear the vector at offset 0xB0 and update the associated state. */
 void func_0021D570(void* object);
+
 s32 func_0021FC00(void* object, float key);
+
 s32 func_0021F000(void* object, float key);
 
 /** Return the key span between the first and last entries. */
@@ -895,8 +902,11 @@ void func_0021D220(const void* object, float* output);
 
 /** Write the difference between the selected 16-byte entry value and the first value. */
 void func_0021E420(const void* object, float* output);
+
 float func_002203E0(void* object);
+
 float func_00220800(void* object);
+
 float func_00220DA0(void* object);
 
 /** Find a key in the receiver's fixed-size entry array. */

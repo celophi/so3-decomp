@@ -25,7 +25,10 @@ public:
         reset_requests();
     }
 
-    /** @brief Test whether the request callback is ready. @return True when ready. */
+    /**
+     * @brief Test whether the request callback is ready.
+     * @return True when ready.
+     */
     bool request_ready() const
     {
         return callback_ready;
@@ -34,7 +37,10 @@ public:
     /** @brief Destroy the common resource-loader state. */
     virtual ~FieldSceneResourceLoader();
 
-    /** @brief Advance reads or handle cancellation. @param cancel_request One requests cancellation; zero advances reads. */
+    /**
+     * @brief Advance reads or handle cancellation.
+     * @param cancel_request One requests cancellation; zero advances reads.
+     */
     virtual void update_requests(s32 cancel_request);
 
     /**
@@ -64,7 +70,10 @@ public:
     /** @brief Release resources in every allocated request slot. */
     virtual void release_requests();
 
-    /** @brief Mark the pending request ready. @param arg Unused callback argument. */
+    /**
+     * @brief Mark the pending request ready.
+     * @param arg Unused callback argument.
+     */
     virtual void func_001DDB30(void* arg);
 
     FieldSceneResourceRequest* requests;
@@ -84,16 +93,21 @@ public:
 class FieldHeapSceneResourceLoader : public FieldSceneResourceLoader
 {
 public:
-    /** @brief Initialize the inherited loader. */
     inline FieldHeapSceneResourceLoader();
 
-    /** @brief Destroy the inherited loader. */
     virtual ~FieldHeapSceneResourceLoader();
 
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Storage or null.
+     */
     static void* operator new(u32 size);
 
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
 };
 
@@ -108,10 +122,16 @@ public:
         unk1c = 0;
         unk20 = 0;
     }
+
     /** @brief Release the retained record buffer and destroy the node. */
     virtual ~FieldClass152C70();
-    /** @brief Apply the retained records. @return One when complete. */
+
+    /**
+     * @brief Apply the retained records.
+     * @return One when complete.
+     */
     virtual s32 func_0022D6C0();
+
     void* unk1c;
     s32 unk20;
 };
@@ -134,9 +154,13 @@ public:
     {
         unk18 = 0x10014;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass152DD0();
-    /** @brief Wait for the owning actor's state. @return Zero while waiting, otherwise one. */
+
+    /**
+     * @brief Wait for the owning actor's state.
+     * @return Zero while waiting, otherwise one.
+     */
     virtual s32 func_0022E170();
 };
 
@@ -152,10 +176,15 @@ public:
      * @param duration Duration.
      */
     FieldClass152DF0(float value, u32 word, float duration);
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass152DF0();
-    /** @brief Update the owning actor. @return One when complete, otherwise zero. */
+
+    /**
+     * @brief Update the owning actor.
+     * @return One when complete, otherwise zero.
+     */
     virtual s32 func_0022E1B0();
+
     float unk1c;
     float unk20;
     u32 unk24;
@@ -173,9 +202,13 @@ public:
     {
         unk18 = 0x10012;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass152E10();
-    /** @brief Remove the owning actor. @return Always one. */
+
+    /**
+     * @brief Remove the owning actor.
+     * @return Always one.
+     */
     virtual s32 func_0022E350();
 };
 
@@ -184,16 +217,24 @@ public:
 class FieldClass152E30 : public FieldClass150440
 {
 public:
-    /** @brief Set the command kind and timer. @param timer Timer value. */
+    /**
+     * @brief Set the command kind and timer.
+     * @param timer Timer value.
+     */
     FieldClass152E30(float timer)
     {
         unk18 = 0x10011;
         unk1c = timer;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass152E30();
-    /** @brief Set the owning command-list timer. @return Always one. */
+
+    /**
+     * @brief Set the owning command-list timer.
+     * @return Always one.
+     */
     virtual s32 func_0022E380();
+
     float unk1c;
 };
 
@@ -207,16 +248,27 @@ public:
     {
         unk18 = 0;
     }
-    /** @brief Allocate through the Lib heap. @param size Required storage. @return Allocated storage or null. */
+
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Required storage.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
-    /** @brief Destroy the inherited queue state. */
+
     virtual ~FieldClass1507A0()
     {
     }
+
     /** @brief Add this object to the resident queue. */
     virtual void func_001DD7B0();
+
     u8 unk14[4];
     u32 unk18;
 };
@@ -225,12 +277,14 @@ public:
 class FieldClass150650 : public FieldClass1507A0
 {
 public:
-    /** @brief Destroy the queue object. */
     virtual ~FieldClass150650();
+
     /** @brief Unlink and add this object to the resident queue. */
     virtual void func_001DD7B0();
+
     /** @brief Process the resident entries. */
     virtual void update();
+
     float unk1c;
 };
 
@@ -238,21 +292,33 @@ public:
 class FieldClass150630 : public FieldListObject
 {
 public:
-    /** @brief Allocate from the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    /**
+     * @brief Allocate from the Lib heap.
+     * @param size Allocation size.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
-    /** @brief Destroy the callback object. */
+
     virtual ~FieldClass150630();
+
     /**
      * @brief Report this object's default list kind.
      * @return The class's default list kind.
      */
     virtual s32 get_default_list_kind();
+
     /** @brief Unlink and release the object. */
     virtual void func_001DD7B0();
+
     /** @brief Invoke the packed-field callback and release this object. */
     virtual void update();
+
     u8 unk14[4];
     u8 unk18;
     u8 unk19;
@@ -264,17 +330,24 @@ public:
 class FieldClass1505F0 : public FieldClass1502A0
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
 
-    /** @brief Initialize the inherited list. */
     FieldClass1505F0()
     {
     }
 
     /** @brief Release every listed shape and the inherited list state. */
     virtual ~FieldClass1505F0();
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
 
     u8 unk78[4];
@@ -295,9 +368,22 @@ struct FieldClass150060;
 extern "C" {
 #endif
 
-/** @brief Test listed conditional shapes and dispatch their events. @param list Circular shape sentinel. @param actor Query receiver. @param mask Condition selection mask. @return One when an event was dispatched, otherwise zero. */
+/**
+ * @brief Test listed conditional shapes and dispatch their events.
+ * @param list Circular shape sentinel.
+ * @param actor Query receiver.
+ * @param mask Condition selection mask.
+ * @return One when an event was dispatched, otherwise zero.
+ */
 s32 func_001EF150(struct FieldClass150060* list, struct FieldClass151510* actor, u32 mask);
-/** @brief Test listed script shapes and dispatch their events. @param list Circular shape list. @param actor Query receiver. @param kind Shape flag selector. @return Whether an event was dispatched. */
+
+/**
+ * @brief Test listed script shapes and dispatch their events.
+ * @param list Circular shape list.
+ * @param actor Query receiver.
+ * @param kind Shape flag selector.
+ * @return Whether an event was dispatched.
+ */
 bool func_001EF4A0(struct LibUpdateList* list, struct FieldClass151510* actor, u8 kind);
 #ifdef __cplusplus
 }
@@ -359,6 +445,7 @@ typedef struct FieldClass150F90 FieldClass150F90;
 extern "C"
 #endif
 s32 func_001EF6C0(FieldScriptCursorU32* cursor);
+
 typedef struct FieldRecords FieldRecords;
 typedef struct FieldScriptVec FieldScriptVec;
 typedef struct FieldLateNodes FieldLateNodes;
@@ -371,8 +458,11 @@ struct FieldLateNodePrefix
 struct FieldLateNode20 : FieldLateNodePrefix
 {
     virtual void unk00();
+
     virtual void unk04();
+
     virtual void unk08();
+
     u8 unk1C[4];
 };
 
@@ -444,9 +534,19 @@ s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* actor, u32 cou
  */
 s32 func_001F8AE0(FieldScriptCursorU32* cursor, u32 count);
 
-/** @brief Queue an actor command with optional byte and scalar settings. @param cursor Script operands. @param count Operand count. @return Always one. */
+/**
+ * @brief Queue an actor command with optional byte and scalar settings.
+ * @param cursor Script operands.
+ * @param count Operand count.
+ * @return Always one.
+ */
 s32 func_001F75C0(FieldScriptCursorU32* cursor, u32 count);
-/** @brief Reset the actor command queue and attached scalar track. @param cursor Script receiver selecting the actor. @return Always one. */
+
+/**
+ * @brief Reset the actor command queue and attached scalar track.
+ * @param cursor Script receiver selecting the actor.
+ * @return Always one.
+ */
 s32 func_001F7690(FieldScriptCursorU32* cursor);
 
 /**
@@ -455,7 +555,11 @@ s32 func_001F7690(FieldScriptCursorU32* cursor);
  * @return Always one.
  */
 s32 func_001F7850(FieldScriptCursorU32* cursor);
-/** @brief Clear the actor command queue and mark its state flag when required. @param actor Actor command state. */
+
+/**
+ * @brief Clear the actor command queue and mark its state flag when required.
+ * @param actor Actor command state.
+ */
 void func_001F76F0(FieldActorCommandState* actor);
 
 /**
@@ -487,106 +591,248 @@ s32 func_001EFEC0(FieldScriptCursorU32* cursor);
  */
 s32 func_001F02E0(FieldScriptCursorF32* cursor, u32 count);
 
-/** @brief Queue a command borrowing pairs from the script. @param cursor Script cursor and channel selection. @param count Operand count. @return Always one. */
+/**
+ * @brief Queue a command borrowing pairs from the script.
+ * @param cursor Script cursor and channel selection.
+ * @param count Operand count.
+ * @return Always one.
+ */
 s32 func_001F0360(FieldScriptCursorU32* cursor, u32 count);
 
-/** @brief Queue a command with a float value and duration. @param cursor Script cursor and channel selection. @return Always one. */
+/**
+ * @brief Queue a command with a float value and duration.
+ * @param cursor Script cursor and channel selection.
+ * @return Always one.
+ */
 s32 func_001F04D0(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a target and duration command. @param cursor Script operands and channel selection. @return One. */
+/**
+ * @brief Queue a target and duration command.
+ * @param cursor Script operands and channel selection.
+ * @return One.
+ */
 s32 func_001F0C00(FieldScriptCursorU32* cursor);
 
-/** @brief Wait while the selected command list is pending. @param cursor Channel selection and wait state. @return Zero while waiting, otherwise one. */
+/**
+ * @brief Wait while the selected command list is pending.
+ * @param cursor Channel selection and wait state.
+ * @return Zero while waiting, otherwise one.
+ */
 s32 func_001F0B80(FieldScriptCursorU32* cursor);
 
-/** @brief Allocate a packed-field callback and append it to the object list. @param cursor Script packed operand. @return One. */
+/**
+ * @brief Allocate a packed-field callback and append it to the object list.
+ * @param cursor Script packed operand.
+ * @return One.
+ */
 s32 func_001F09C0(FieldScriptCursorU32* cursor);
 
-/** @brief Set the current bound or its transition rate. @param cursor Script operands. @param count Operand count. @return One. */
+/**
+ * @brief Set the current bound or its transition rate.
+ * @param cursor Script operands.
+ * @param count Operand count.
+ * @return One.
+ */
 s32 func_001F0A80(FieldScriptCursorU32* cursor, u32 count);
 
-/** @brief Queue planar movement from the script duration and magnitude. @param cursor Script operands and channel selection. @return One. */
+/**
+ * @brief Queue planar movement from the script duration and magnitude.
+ * @param cursor Script operands and channel selection.
+ * @return One.
+ */
 s32 func_001F0D20(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a command that waits for the owning motion. @param cursor Script channel selection. @return One. */
+/**
+ * @brief Queue a command that waits for the owning motion.
+ * @param cursor Script channel selection.
+ * @return One.
+ */
 s32 func_001F10B0(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a planar target and duration. @param cursor Script operands and channel selection. @return One. */
+/**
+ * @brief Queue a planar target and duration.
+ * @param cursor Script operands and channel selection.
+ * @return One.
+ */
 s32 func_001F14F0(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a motion target on the selected owner. @param cursor Script operands and channel selection. @return One. */
+/**
+ * @brief Queue a motion target on the selected owner.
+ * @param cursor Script operands and channel selection.
+ * @return One.
+ */
 s32 func_001F1610(FieldScriptCursorU32* cursor);
 
-/** @brief Queue an angular target converted from script degrees. @param cursor Script operands and channel selection. @return One. */
+/**
+ * @brief Queue an angular target converted from script degrees.
+ * @param cursor Script operands and channel selection.
+ * @return One.
+ */
 s32 func_001F1730(FieldScriptCursorU32* cursor);
 
-/** @brief Queue rotation from the script duration and target. @param cursor Script operands and channel selection. @return One. */
+/**
+ * @brief Queue rotation from the script duration and target.
+ * @param cursor Script operands and channel selection.
+ * @return One.
+ */
 s32 func_001F1880(FieldScriptCursorU32* cursor);
 
-/** @brief Test the default camera name and save motion state for other names. @param cursor Script wait state. @return Zero for the default name, otherwise one. */
+/**
+ * @brief Test the default camera name and save motion state for other names.
+ * @param cursor Script wait state.
+ * @return Zero for the default name, otherwise one.
+ */
 s32 func_001F0E80(FieldScriptCursorU32* cursor);
 
-/** @brief Clear the selected command list and motion track. @param cursor Channel selection. @return One. */
+/**
+ * @brief Clear the selected command list and motion track.
+ * @param cursor Channel selection.
+ * @return One.
+ */
 s32 func_001F0F00(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a command waiting to set the selected owner timer. @param cursor Duration and channel selection. @return One. */
+/**
+ * @brief Queue a command waiting to set the selected owner timer.
+ * @param cursor Duration and channel selection.
+ * @return One.
+ */
 s32 func_001F0FC0(FieldScriptCursorU32* cursor);
 
-/** @brief Apply a script flag to the selected resident entries. @param cursor Script flag operand. @return One. */
+/**
+ * @brief Apply a script flag to the selected resident entries.
+ * @param cursor Script flag operand.
+ * @return One.
+ */
 s32 func_001F20B0(FieldScriptCursorU32* cursor);
 
-/** @brief Queue the selected channel with a script value and flags. @param cursor Script operands and channel selection. @return One. */
+/**
+ * @brief Queue the selected channel with a script value and flags.
+ * @param cursor Script operands and channel selection.
+ * @return One.
+ */
 s32 func_001F2140(FieldScriptCursorU32* cursor);
 
-/** @brief Apply a script flag to each selected resident entry. @param cursor Script flag operand. @return One. */
+/**
+ * @brief Apply a script flag to each selected resident entry.
+ * @param cursor Script flag operand.
+ * @return One.
+ */
 s32 func_001F2230(FieldScriptCursorU32* cursor);
 
-/** @brief Queue the resource-key setting on the selected object. @param cursor Script operands and selection. @return One. */
+/**
+ * @brief Queue the resource-key setting on the selected object.
+ * @param cursor Script operands and selection.
+ * @return One.
+ */
 s32 func_001F22C0(FieldScriptCursorU32* cursor);
 
-/** @brief Wait while the selected actor has command-list activity. @param cursor Actor selection and wait state. @return Zero while waiting, otherwise one. */
+/**
+ * @brief Wait while the selected actor has command-list activity.
+ * @param cursor Actor selection and wait state.
+ * @return Zero while waiting, otherwise one.
+ */
 s32 func_001F7A90(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a wait command on the selected actor. @param cursor Actor selection. @return One. */
+/**
+ * @brief Queue a wait command on the selected actor.
+ * @param cursor Actor selection.
+ * @return One.
+ */
 s32 func_001F7B80(FieldScriptCursorU32* cursor);
 
-/** @brief Queue scalar interpolation on the selected actor. @param cursor Script operands and actor selection. @return One. */
+/**
+ * @brief Queue scalar interpolation on the selected actor.
+ * @param cursor Script operands and actor selection.
+ * @return One.
+ */
 s32 func_001F7C30(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a motion callback after resident readiness. @param cursor Channel selection. @return One. */
+/**
+ * @brief Queue a motion callback after resident readiness.
+ * @param cursor Channel selection.
+ * @return One.
+ */
 s32 func_001F1410(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a script word on the selected object. @param cursor Script operand and object selection. @return One. */
+/**
+ * @brief Queue a script word on the selected object.
+ * @param cursor Script operand and object selection.
+ * @return One.
+ */
 s32 func_001F2470(FieldScriptCursorU32* cursor);
 
-/** @brief Queue an actor removal request and set its state bit. @param cursor Actor selection. @return One. */
+/**
+ * @brief Queue an actor removal request and set its state bit.
+ * @param cursor Actor selection.
+ * @return One.
+ */
 s32 func_001F7D10(FieldScriptCursorU32* cursor);
 
-/** @brief Queue an unsigned script timer on the selected actor. @param cursor Actor selection and timer operand. @return One. */
+/**
+ * @brief Queue an unsigned script timer on the selected actor.
+ * @param cursor Actor selection and timer operand.
+ * @return One.
+ */
 s32 func_001F7DE0(FieldScriptCursorU32* cursor);
 
-/** @brief Create an actor at script coordinates or a matching resident position. @param cursor Script operands. @return One. */
+/**
+ * @brief Create an actor at script coordinates or a matching resident position.
+ * @param cursor Script operands.
+ * @return One.
+ */
 s32 func_001F7EE0(FieldScriptCursorU32* cursor);
 
-/** @brief Create a named actor when the resident timer allows it. @param cursor Script key and name. @return One when created, otherwise zero. */
+/**
+ * @brief Create a named actor when the resident timer allows it.
+ * @param cursor Script key and name.
+ * @return One when created, otherwise zero.
+ */
 s32 func_001F80E0(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a script float on the selected object. @param cursor Script operand and object selection. @return One. */
+/**
+ * @brief Queue a script float on the selected object.
+ * @param cursor Script operand and object selection.
+ * @return One.
+ */
 s32 func_001F2560(FieldScriptCursorU32* cursor);
 
-/** @brief Queue a motion vector and its command flags. @param cursor Script operands and channel selection. @return One. */
+/**
+ * @brief Queue a motion vector and its command flags.
+ * @param cursor Script operands and channel selection.
+ * @return One.
+ */
 s32 func_001F1CD0(FieldScriptCursorU32* cursor);
 
-/** @brief Fill the selected actor resource slots. @param cursor Script keys. @param count Operand count. @return One. */
+/**
+ * @brief Fill the selected actor resource slots.
+ * @param cursor Script keys.
+ * @param count Operand count.
+ * @return One.
+ */
 s32 func_001F2650(FieldScriptCursorU32* cursor, u32 count);
 
-/** @brief Wait for pending releases, then remove requested resource entries. @param cursor Script keys. @param count Operand count. @return Zero while waiting, otherwise one. */
+/**
+ * @brief Wait for pending releases, then remove requested resource entries.
+ * @param cursor Script keys.
+ * @param count Operand count.
+ * @return Zero while waiting, otherwise one.
+ */
 s32 func_001F2840(FieldScriptCursorU32* cursor, u32 count);
 
-/** @brief Copy script words into a command and append it to the selected receiver. @param cursor Script operands and selection. @param word_count Number of words to copy. @return One. */
+/**
+ * @brief Copy script words into a command and append it to the selected receiver.
+ * @param cursor Script operands and selection.
+ * @param word_count Number of words to copy.
+ * @return One.
+ */
 s32 func_001F7470(FieldScriptCursorU32* cursor, s32 word_count);
 
-/** @brief Select a range mode and update its transition. @param cursor Script operands. @param count Operand count. @return One. */
+/**
+ * @brief Select a range mode and update its transition.
+ * @param cursor Script operands.
+ * @param count Operand count.
+ * @return One.
+ */
 s32 func_001F06E0(FieldScriptCursorU32* cursor, u32 count);
 
 /**

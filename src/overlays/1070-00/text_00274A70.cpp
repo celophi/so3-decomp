@@ -4,7 +4,9 @@
 #include "overlays/1070-00/text_001E2B40.h"
 
 extern "C" void func_001E8430(void* object);
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" void* D_001B6620;
 extern "C" u32 D_001B65CC;
@@ -41,25 +43,45 @@ class FieldCallbackDispatch58Local
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void callback(u32 first, u32 second);
 };
 
@@ -70,6 +92,7 @@ extern "C" void func_00237FF0(void* object);
 void func_00274DB0(FieldUpdateComplete20* object)
 {
     func_00237FF0(object);
+
     if (object->unk20_2)
     {
         return;
@@ -334,6 +357,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00274A70", func_00276C
 void func_00276D80(FieldFloatOwner540* object, float value)
 {
     object->unk540 = value;
+
     if (object->unk144 != 0)
     {
         object->unk144->unk90 = value;
@@ -348,6 +372,7 @@ void func_00276FE0(FieldCappedByte4A4* object, s8 value)
     {
         value = 4;
     }
+
     object->unk4a4 = value;
     object->unk4a5_0 = 1;
 }
@@ -355,6 +380,7 @@ void func_00276FE0(FieldCappedByte4A4* object, s8 value)
 void func_00277020(void* receiver)
 {
     FieldOptionalChild548* object = (FieldOptionalChild548*)receiver;
+
     if (object->unk548 != 0)
     {
         func_001E8430(object->unk548);
@@ -381,6 +407,7 @@ void* func_00277690(const FieldPointerOwner588* object)
     {
         return 0;
     }
+
     return object->unk588->unk48;
 }
 

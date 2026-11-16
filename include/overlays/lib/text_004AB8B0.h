@@ -90,6 +90,7 @@ s32 func_004B3D60(void* object);
 s32 func_004B3D70(void* object);
 
 void func_004ABAB0(void* object);
+
 void func_004ABD30(void* object);
 
 

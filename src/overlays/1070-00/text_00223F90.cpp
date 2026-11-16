@@ -7,37 +7,64 @@ class FieldCallbackDispatch58
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void callback(u32 first, u32 second);
 };
 
 extern "C" float D_001B66B4;
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" void* D_001B6620;
+
 extern "C" void func_4D7EB0(void* object);
+
 extern "C" void func_4EAB40(void* object);
+
 extern "C" s32 func_00209810(void* object);
+
 extern "C" s32 func_00209860(void* object);
+
 extern "C" void func_00248FD0(void* object, u32 value, u32 nextValue);
+
 extern "C" void func_0023BC00(void* object);
+
 extern "C" void func_001FE900(void* object);
 
 /** Partial receiver with a word cursor at offset 0x540. */
@@ -56,10 +83,15 @@ struct FieldSharedFlag230
     u8 bit2 : 1;
     u8 bits3_7 : 5;
 };
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" void func_002090B0(void* object);
+
 extern "C" u8 func_002CDB60(void* object);
+
 extern "C" void func_4D9140(void* object);
+
 extern "C" u8 D_16ACE0[];
 
 /** Partial receiver exposing the secondary vtable pointer at offset 0x10. */
@@ -74,34 +106,63 @@ class FieldCallbackDispatch64
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34(s32 value);
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void slot58();
+
     virtual void slot5c();
+
     virtual void slot60();
+
     virtual void slot64();
+
     virtual void slot68();
+
     virtual void slot6c();
+
     virtual void slot70();
+
     virtual void slot74();
+
     virtual void slot78();
+
     virtual float slot7c();
 };
 
@@ -110,11 +171,17 @@ class FieldCallbackDispatch98 : public FieldCallbackDispatch64
 {
 public:
     virtual void slot80();
+
     virtual void slot84();
+
     virtual void slot88();
+
     virtual void slot8c();
+
     virtual void slot90();
+
     virtual void slot94();
+
     virtual void callback98();
 };
 
@@ -236,6 +303,7 @@ float func_00224180(const FieldFloatValueSequence20* object)
     {
         return 0.0f;
     }
+
     s32 lastIndex = object->count - 1;
     const FieldFloatValueEntry16* last = object->entries + lastIndex;
     return last->unk00 - object->entries[0].unk00;
@@ -248,6 +316,7 @@ s32 func_002241D0(void* object, float key)
     FloatKeyScanOwner_text_00223F90_10* receiver = static_cast<FloatKeyScanOwner_text_00223F90_10*>(object);
     s16 count = receiver->count20;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -255,6 +324,7 @@ s32 func_002241D0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -425,6 +495,7 @@ void func_00228670(FieldFloatResetState1C* object, u8 first_state, u8 second_sta
     object->unk1d = second_state;
     object->unk20 = first;
     object->unk28 = second;
+
     if (second == 0.0f)
     {
         object->unk1e = object->unk1d;
@@ -611,10 +682,12 @@ s32 func_0022F160(void* object)
 void* func_0022F170(const void* object)
 {
     const FieldOptionalValue2F170* state = (const FieldOptionalValue2F170*)object;
+
     if (state->present != 0)
     {
         return (u8*)object + 0x620;
     }
+
     return 0;
 }
 
@@ -630,6 +703,7 @@ void func_0022FA30(FieldByteSourceState* object, const u8* source, u32 value)
 {
     object->source = source;
     object->unk30 = value;
+
     if (*object->source == 1)
     {
         object->unk34 = 1;
@@ -900,6 +974,7 @@ extern "C" s32 func_00230790(void* object, s8 value)
     {
         return -1;
     }
+
     return func_00209810(D_001B64B0->context->unk58);
 }
 
@@ -915,6 +990,7 @@ extern "C" s32 func_002307D0(void* object, s8 value)
     {
         return -1;
     }
+
     return func_00209860(D_001B64B0->context->unk58);
 }
 

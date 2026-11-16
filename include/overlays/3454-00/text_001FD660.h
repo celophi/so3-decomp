@@ -13,6 +13,7 @@ void func_00208EA0(void* object);
 
 /** Forward the receiver to func_4D00B0. */
 void func_001FF090(void* object);
+
 void func_001FF1C0(void* object);
 
 #ifdef __cplusplus

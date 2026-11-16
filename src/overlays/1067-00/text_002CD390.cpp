@@ -11,9 +11,13 @@
 extern "C" void func_420D20(ItemCreationClass172870* object, u32 color);
 
 extern "C" s32 func_002CF190(FieldCountedList* list, void** object);
+
 extern "C" s32 func_002CEFA0(FieldCountedList* list, void** object);
+
 extern "C" void func_002CDB20(FieldClass15AE60* object);
+
 extern "C" void func_002CE010(FieldClass15AE60* object);
+
 struct FieldListInputFlags
 {
     u16 unk00;
@@ -186,8 +190,11 @@ struct FieldCollection50
     u8 pad[0x14];
     FieldEntry50* entries;
 };
+
 extern "C" void func_113EA0();
+
 extern "C" void func_4C74E0(FieldState100* state);
+
 extern "C" void func_462320(FieldState100* state, s32, s32);
 
 struct FieldWord28
@@ -300,6 +307,7 @@ extern "C" s32 func_002CD390(FieldStateCD390* object)
         object->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -323,22 +331,27 @@ void FieldClass15AD40::func_slot5c()
     {
         this->FieldClass15AE60::unk2c--;
     }
+
     if (this->FieldClass15AE60::unk84)
     {
         s32 active = ((FieldState23B3A0*)this->FieldClass15AE60::unk04)->unk75 != 0;
         active = active ? this->FieldClass15AE60::pad29[1] == 0 : active;
+
         if (active)
         {
             this->FieldClass15AE60::unk24 = this->FieldClass15AE60::unk28 + this->FieldClass15AE60::unk22 * this->FieldClass15AE60::unk26;
             FieldListInputRuntime* runtime = (FieldListInputRuntime*)g_field_runtime;
             FieldListInputFlags* flags = runtime->flags;
             u16 mask = runtime->mask;
+
             if (!(mask & flags->unk00) && (mask & flags->unk02))
             {
                 this->FieldClass15AE60::unk24 = -1;
             }
+
             func_002CDB20(&static_cast<FieldClass15AE60&>(*this));
         }
+
         func_002CE010(&static_cast<FieldClass15AE60&>(*this));
     }
     else if (this->FieldClass15AE60::unk85)
@@ -355,20 +368,24 @@ void FieldClass15AD40::set_selection_marker(LibDrawWidget* target, u32 color)
         this->selection_marker = new (0) FieldClass153170;
         func_0023B850((FieldObject23B850*)this->selection_marker, (FieldTarget23B850*)target, color);
         lib_container_attach_widget(this->FieldClass15AE70::unk10, this->selection_marker);
+
         if (this->FieldClass15AE60::unk3c)
         {
             this->selection_marker->unk5c = 1;
         }
     }
+
     if (target)
     {
         if (this->FieldClass15AE60::pad29[1] == 0 || this->FieldClass15AE60::unk3c)
         {
             this->selection_marker->visible = 1;
+
             if (this->FieldClass15AE60::unk3c && this->FieldClass15AE60::pad29[1] == 2 && (s8)this->FieldClass15AE60::pad29[0] > 0)
             {
                 this->selection_marker->visible = 0;
             }
+
             func_0023B7E0((FieldObject23B950*)this->selection_marker, (FieldTarget23B850*)target);
             func_420D20(this->selection_marker, color);
             func_0023B780((FieldObject23B950*)this->selection_marker);
@@ -399,10 +416,12 @@ FieldClass15AD40::FieldClass15AD40()
     unk84 = 0;
     unk85 = 0;
     FieldClass15AE60::unk8c = 0xFF;
+
     for (s32 i = 0; i <= 14; i++)
     {
         unk48[i] = 0;
     }
+
     FieldClass15AE70();
     FieldClass15AE60::unk3c = 0;
 }
@@ -426,15 +445,18 @@ static inline void set_selector_position(ItemCreationClass175030* selector, floa
     selector->arrived = 1;
     selector->needs_redraw = 1;
 }
+
 void FieldClass15AE60::configure_selection(s32 count, s32 start, s32 selected)
 {
     this->unk18 = count;
     this->unk1e = (this->unk18 + this->unk26 - 1) / this->unk26;
     this->unk20 = this->unk1e - this->unk27;
+
     if (this->unk20 < 0)
     {
         this->unk20 = 0;
     }
+
     this->unk22 = start;
     this->refresh_rows(this->unk22);
     this->unk14 = 0.0f;
@@ -475,6 +497,7 @@ extern "C" void func_002CE420(FieldStateCE420* object, u8 first, u32 second, u16
 void* FieldClass15AE70::func_slot3c()
 {
     FieldClass15AE70* window = this;
+
     if (window->func_slot44())
     {
         do
@@ -482,6 +505,7 @@ void* FieldClass15AE70::func_slot3c()
             window = (FieldClass15AE70*)window->func_slot44();
         } while (window->func_slot44());
     }
+
     return window;
 }
 
@@ -512,13 +536,18 @@ extern "C" void func_002CE510(FieldBytePtr10* object, u32 value)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CD390", func_002CE530);
 
-/** @brief Queue a constructed container. @param container Container to queue. @return Zero for a null container, otherwise one. */
+/**
+ * @brief Queue a constructed container.
+ * @param container Container to queue.
+ * @return Zero for a null container, otherwise one.
+ */
 static inline u8 queue_container(LibContainer* container)
 {
     if (!container)
     {
         return 0;
     }
+
     lib_queue_display_object(g_field_runtime, container);
     return 1;
 }
@@ -527,10 +556,12 @@ static inline u8 queue_container(LibContainer* container)
 s32 FieldClass15AE70::func_slot14(u32 associated, s32 first, s32 second, s32 third, float x, float y, float z)
 {
     unk10 = new (0) LibContainer;
+
     if (queue_container(unk10) == 0 || !associated)
     {
         return 0;
     }
+
     lib_container_init(unk10, first, x, y, second, z, third);
     func_slot50(associated);
     unka0 = x;
@@ -542,10 +573,12 @@ s32 FieldClass15AE70::func_slot14(u32 associated, s32 first, s32 second, s32 thi
 s32 FieldClass15AE70::func_slot10(u32 associated, float x, float y, s32 code)
 {
     unk10 = new (0) LibContainer;
+
     if (queue_container(unk10) == 0 || !associated)
     {
         return 0;
     }
+
     lib_container_init(unk10, code, x, y, 0, 0.0f, 0);
     func_slot50(associated);
     unka0 = x;
@@ -556,18 +589,23 @@ s32 FieldClass15AE70::func_slot10(u32 associated, float x, float y, s32 code)
 void FieldClass15AE70::func_slot0c()
 {
     void* first = 0;
+
     while (func_002CF190(&unk74, &first))
     {
         ((LibListObject*)first)->destroy();
     }
+
     void* second = 0;
+
     while (func_002CEFA0(&unk80, &second))
     {
         ((LibListObject*)second)->destroy();
     }
+
     if (unk10)
     {
         static_cast<LibCallbackTransform&>(*unk10).destroy();
     }
+
     resident_enqueue_object(g_resident_release_queues, this);
 }

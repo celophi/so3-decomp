@@ -69,7 +69,11 @@ s32 func_0020E4F0(void* object);
 class FieldCharacterNames
 {
 public:
-    /** @brief Get a stored character name. @param index One-based character slot. @return Stored name. */
+    /**
+     * @brief Get a stored character name.
+     * @param index One-based character slot.
+     * @return Stored name.
+     */
     virtual char* get_character_name(s32 index) = 0;
 };
 
@@ -84,10 +88,7 @@ struct FieldScreenTransition
 {
     u8 unk00[0xB0];
     FieldTransitionRect rect;
-
-    /** Depth the transition draws at. */
     s32 depth;
-
     u8 unkc4[0x2C];
     u8 unkf0;
 };

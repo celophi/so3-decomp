@@ -144,7 +144,12 @@ void sceGsSetHalfOffset(void* draw, s16 center_x, s16 center_y, s16 half_offset)
  */
 void sceGsSetHalfOffset2(void* draw, s16 center_x, s16 center_y, s16 half_offset);
 
-/** @brief Send an image to VRAM. @param image Transfer packet. @param source 16-byte aligned pixels. @return Zero. */
+/**
+ * @brief Send an image to VRAM.
+ * @param image Transfer packet.
+ * @param source 16-byte aligned pixels.
+ * @return Zero.
+ */
 s32 sceGsExecLoadImage(GsLoadImage* image, void* source);
 
 #ifdef __cplusplus

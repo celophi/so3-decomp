@@ -169,7 +169,6 @@ enum StatusNameByte
 struct StatusCharacterRecord
 {
     s16 character_id;
-    /** Selects the clamping rules used by the character stat setters. */
     s16 stat_limit_type;
     s16 encoded_level;
     s16 encoded_base_level;
@@ -182,7 +181,6 @@ struct StatusCharacterRecord
     s32 encoded_max_mp;
     s32 encoded_mp;
     float unk28;
-    /** Fury is stored at sixteen times its displayed amount. */
     float scaled_max_fury;
     float scaled_fury;
     s32 encoded_base_attack;
@@ -197,7 +195,6 @@ struct StatusCharacterRecord
     s32 encoded_base_hit;
     s32 encoded_effective_hit;
     s32 encoded_hit;
-    /** The resident INT helpers validate these values through the HIT checksum. */
     s32 encoded_base_intelligence;
     s32 encoded_effective_intelligence;
     s32 encoded_intelligence;
@@ -225,7 +222,10 @@ struct StatusCharacterRecord
     s32 unkb4[3];
     s32 unkc0;
 
-    /** @brief Decode current HP, marking valid flags when the HP checksum fails. @return Current HP, or zero for corruption. */
+    /**
+     * @brief Decode current HP, marking valid flags when the HP checksum fails.
+     * @return Current HP, or zero for corruption.
+     */
     u32 get_hp()
     {
         u32 value = encoded_hp;
@@ -250,7 +250,10 @@ struct StatusCharacterRecord
         return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode maximum HP, marking valid flags when the HP checksum fails. @return Maximum HP, or zero for corruption. */
+    /**
+     * @brief Decode maximum HP, marking valid flags when the HP checksum fails.
+     * @return Maximum HP, or zero for corruption.
+     */
     u32 get_max_hp()
     {
         u32 value = encoded_max_hp;
@@ -275,7 +278,10 @@ struct StatusCharacterRecord
         return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode current MP, marking valid flags when the MP checksum fails. @return Current MP, or zero for corruption. */
+    /**
+     * @brief Decode current MP, marking valid flags when the MP checksum fails.
+     * @return Current MP, or zero for corruption.
+     */
     u32 get_mp()
     {
         u32 value = encoded_mp;
@@ -300,7 +306,10 @@ struct StatusCharacterRecord
         return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode maximum MP, marking valid flags when the MP checksum fails. @return Maximum MP, or zero for corruption. */
+    /**
+     * @brief Decode maximum MP, marking valid flags when the MP checksum fails.
+     * @return Maximum MP, or zero for corruption.
+     */
     u32 get_max_mp()
     {
         u32 value = encoded_max_mp;
@@ -325,7 +334,10 @@ struct StatusCharacterRecord
         return value ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode the protected level. @return Level, or one for an invalid checksum. */
+    /**
+     * @brief Decode the protected level.
+     * @return Level, or one for an invalid checksum.
+     */
     s32 get_level() const
     {
         if (level_checksum != (checksum_salt ^ (encoded_level ^ (encoded_base_level + checksum_salt))))
@@ -336,7 +348,10 @@ struct StatusCharacterRecord
         return encoded_level ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
 
-    /** @brief Decode the protected experience. @return Experience, or zero for an invalid checksum. */
+    /**
+     * @brief Decode the protected experience.
+     * @return Experience, or zero for an invalid checksum.
+     */
     s32 get_experience() const
     {
         if (flags_experience_checksum != (checksum_salt ^ (encoded_experience ^ (encoded_flags + checksum_salt))))
@@ -347,7 +362,10 @@ struct StatusCharacterRecord
         return encoded_experience ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode the protected attack value. @return Attack, or zero for an invalid checksum. */
+    /**
+     * @brief Decode the protected attack value.
+     * @return Attack, or zero for an invalid checksum.
+     */
     s32 get_attack() const
     {
         if (attack_checksum != (checksum_salt ^ (encoded_attack ^ (encoded_base_attack + encoded_effective_attack))))
@@ -358,7 +376,10 @@ struct StatusCharacterRecord
         return encoded_attack ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode the protected defense value. @return Defense, or zero for an invalid checksum. */
+    /**
+     * @brief Decode the protected defense value.
+     * @return Defense, or zero for an invalid checksum.
+     */
     s32 get_defense() const
     {
         if (defense_checksum != (checksum_salt ^ (encoded_defense ^ (encoded_base_defense + encoded_effective_defense))))
@@ -369,7 +390,10 @@ struct StatusCharacterRecord
         return encoded_defense ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode the protected agility value. @return Agility, or zero for an invalid checksum. */
+    /**
+     * @brief Decode the protected agility value.
+     * @return Agility, or zero for an invalid checksum.
+     */
     s32 get_agility() const
     {
         if (agility_checksum != (checksum_salt ^ (encoded_agility ^ (encoded_base_agility + encoded_effective_agility))))
@@ -380,7 +404,10 @@ struct StatusCharacterRecord
         return encoded_agility ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode the protected HIT value. @return HIT, or zero for an invalid checksum. */
+    /**
+     * @brief Decode the protected HIT value.
+     * @return HIT, or zero for an invalid checksum.
+     */
     s32 get_hit() const
     {
         if (hit_checksum != (checksum_salt ^ (encoded_hit ^ (encoded_base_hit + encoded_effective_hit))))
@@ -391,7 +418,10 @@ struct StatusCharacterRecord
         return encoded_hit ^ STATUS_STAT_WORD_XOR_KEY;
     }
 
-    /** @brief Decode INT after validating the HIT checksum. @return INT, or zero when the HIT checksum is invalid. */
+    /**
+     * @brief Decode INT after validating the HIT checksum.
+     * @return INT, or zero when the HIT checksum is invalid.
+     */
     s32 get_intelligence() const
     {
         if (hit_checksum != (checksum_salt ^ (encoded_hit ^ (encoded_base_hit + encoded_effective_hit))))
@@ -407,6 +437,7 @@ struct StatusCharacterRecord
 struct StatusExperienceTable
 {
     u8 unknown[0x508];
+
     /** @brief Initialize the experience table and its encoded table offset. */
     StatusExperienceTable();
 };
@@ -434,7 +465,6 @@ struct StatusCharacterEquipment
     u8 unk1c[4];
     char character_name[24];
     u8 battle_strategy;
-    /** Strategy saved when the tactics selection window opens. */
     u8 previous_battle_strategy;
     u8 unk3a;
     u8 encoded_anti_attack_aura_mask;
@@ -443,10 +473,8 @@ struct StatusCharacterEquipment
     u8 encoded_tactical_skill_states[7];
     s16 encoded_symbology_mastery[32];
     s16 encoded_battle_skill_mastery[42];
-    /** Damage responses in earth, water, fire, wind order. */
     u8 elemental_damage_responses[4];
     u8 attack_element_mask;
-    /** Variant index used with character-specific resource groups. */
     u8 character_resource_variant;
     u32 luck_checksum;
     u32 stamina_checksum;
@@ -459,7 +487,12 @@ struct StatusCharacterEquipment
     u32 status_skill_levels_checksum;
     u32 checksum_salt;
     u32 unk110;
-    /** @brief Decode a protected equipment allocation ID. @param index Signed equipment slot index. @return Allocation ID, or zero for an invalid checksum or index. */
+
+    /**
+     * @brief Decode a protected equipment allocation ID.
+     * @param index Signed equipment slot index.
+     * @return Allocation ID, or zero for an invalid checksum or index.
+     */
     s16 get_allocation_id(s32 index) const
     {
         if (equipment_checksum != (checksum_salt ^ ((encoded_equipment_ids[1] + encoded_equipment_ids[2]) ^ (encoded_equipment_ids[3] + encoded_equipment_ids[0]))))
@@ -480,7 +513,10 @@ struct StatusCharacterEquipment
         return encoded_equipment_ids[index] ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
 
-    /** @brief Decode protected SP. @return SP, or zero for an invalid checksum. */
+    /**
+     * @brief Decode protected SP.
+     * @return SP, or zero for an invalid checksum.
+     */
     s32 get_sp() const
     {
         s32 salt = checksum_salt;
@@ -494,7 +530,10 @@ struct StatusCharacterEquipment
         return value ^ STATUS_STAT_HALFWORD_XOR_KEY;
     }
 
-    /** @brief Decode protected CP. @return CP, or zero for an invalid checksum. */
+    /**
+     * @brief Decode protected CP.
+     * @return CP, or zero for an invalid checksum.
+     */
     s32 get_cp() const
     {
         s32 salt = checksum_salt;
@@ -555,10 +594,7 @@ struct StatusRuntimeResource
 struct StatusTransitionEffect
 {
     u8 unk00[0xC0];
-
-    /** Depth the transition draws at. */
     s32 depth;
-
     u8 unkc4[0x2C];
     u8 mode;
 };
@@ -568,7 +604,9 @@ struct StatusTransitionOwner
     u8 unk00[0x5A4];
     StatusTransitionEffect* effect;
 };
+
 extern "C" void* func_0020F230(ResidentContextObject38* state, u32 index, u32 first, u32 second, s32 mode, u32 third, u32 flags, float duration, float x, float y);
+
 extern "C" s32 func_0022A160(void* object);
 
 struct StatusRuntimeCallbacks;
@@ -597,6 +635,7 @@ typedef struct StatusWidgetNode
 {
     void* value;
     struct StatusWidgetNode* next;
+
     /** @brief Release the link without destroying its payload. */
     ~StatusWidgetNode()
     {
@@ -615,8 +654,10 @@ extern StatusRuntime* D_001B643C;
 
 /** @brief Apply an allocation to character statistics and equipment. */
 extern "C" s32 lib_character_recalculate_stats(StatusCharacterRecord*, StatusCharacterEquipment*, ItemCreationAllocationRecord*, s32);
+
 /** @brief Compute the experience remaining for the requested level and optionally return its threshold. */
 extern "C" s32 func_004028C0(StatusExperienceTable*, s32, StatusCharacterRecord*, s32*);
+
 extern "C" ItemCreationAllocationRecord* D_001B64F8;
 
 /**
@@ -682,7 +723,12 @@ static inline void initialize_status_resource(ItemCreationOptionResourceDisplay*
     func_002D6440(display, x, y, record);
 }
 
-/** @brief Set widget coordinates and request refresh. @param widget Display widget. @param x Horizontal coordinate. @param y Vertical coordinate. */
+/**
+ * @brief Set widget coordinates and request refresh.
+ * @param widget Display widget.
+ * @param x Horizontal coordinate.
+ * @param y Vertical coordinate.
+ */
 static inline void set_status_widget_position(LibWidget* widget, float x, float y)
 {
     widget->unk18.unk00 = x;
@@ -690,7 +736,11 @@ static inline void set_status_widget_position(LibWidget* widget, float x, float 
     widget->needs_redraw = 1;
 }
 
-/** @brief Move each non-null display by the current scroll delta. @param list Display list to move. @param object Window supplying the delta. */
+/**
+ * @brief Move each non-null display by the current scroll delta.
+ * @param list Display list to move.
+ * @param object Window supplying the delta.
+ */
 template <class List>
 static inline void move_status_display_list(List* list, StatusCharacterWindow* object)
 {
@@ -710,7 +760,12 @@ static inline void move_status_display_list(List* list, StatusCharacterWindow* o
     }
 }
 
-/** @brief Set resource display scales and request refresh. @param display Resource display. @param x Horizontal scale. @param y Vertical scale. */
+/**
+ * @brief Set resource display scales and request refresh.
+ * @param display Resource display.
+ * @param x Horizontal scale.
+ * @param y Vertical scale.
+ */
 static inline void set_status_resource_scale(LibClass175110* display, float x, float y)
 {
     display->unk50.unk34 = y;
@@ -718,13 +773,20 @@ static inline void set_status_resource_scale(LibClass175110* display, float x, f
     display->needs_redraw = 1;
 }
 
-/** @brief Align a resource descriptor to 128 bytes. @param buffer Raw resource buffer. @return Aligned resource descriptor. */
+/**
+ * @brief Align a resource descriptor to 128 bytes.
+ * @param buffer Raw resource buffer.
+ * @return Aligned resource descriptor.
+ */
 static inline StatusAlignedResource* aligned_status_resource(void* buffer)
 {
     return reinterpret_cast<StatusAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
 }
 
-/** @brief Restore the character window after a selection command. @param object Selection window to detach. */
+/**
+ * @brief Restore the character window after a selection command.
+ * @param object Selection window to detach.
+ */
 static inline void close_status_selection(StatusNameWindow* object)
 {
     StatusResourceState* target = D_001B643C->callbacks->status_receiver;
@@ -736,45 +798,73 @@ static inline void close_status_selection(StatusNameWindow* object)
     D_001B643C->callbacks->input_enabled = 0;
 }
 
-/** @brief Set vertical glyph spacing and request refresh. @param label Text widget. @param value Vertical spacing. */
+/**
+ * @brief Set vertical glyph spacing and request refresh.
+ * @param label Text widget.
+ * @param value Vertical spacing.
+ */
 static inline void set_label_spacing_y(LibTextWidget* label, float value)
 {
     label->unk8c = value;
     label->needs_redraw = 1;
 }
 
-/** @brief Get the current character record. @param selection Current record selection. @return Selected character record. */
+/**
+ * @brief Get the current character record.
+ * @param selection Current record selection.
+ * @return Selected character record.
+ */
 static inline StatusCharacterRecord* status_character(FieldRecordSelection* selection)
 {
     return &reinterpret_cast<StatusCharacterRecord*>(selection->records)[selection->current];
 }
 
-/** @brief Get the signed current record index. @param selection Current record selection. @return Signed record index. */
+/**
+ * @brief Get the signed current record index.
+ * @param selection Current record selection.
+ * @return Signed record index.
+ */
 static inline s8 status_selected_index(FieldRecordSelection* selection)
 {
     return selection->current;
 }
 
-/** @brief Get the character-record table. @param selection Current record selection. @return Record table. */
+/**
+ * @brief Get the character-record table.
+ * @param selection Current record selection.
+ * @return Record table.
+ */
 static inline FieldRecord* status_record_table(FieldRecordSelection* selection)
 {
     return selection->records;
 }
 
-/** @brief Get the current character equipment. @param selection Current record selection. @return Selected equipment record. */
+/**
+ * @brief Get the current character equipment.
+ * @param selection Current record selection.
+ * @return Selected equipment record.
+ */
 static inline StatusCharacterEquipment* status_equipment(FieldRecordSelection* selection)
 {
     return &static_cast<StatusCharacterEquipment*>(selection->unk04)[selection->current];
 }
 
-/** @brief Update a numeric display and mark it dirty. @param widget Numeric display. @param value Display value. */
+/**
+ * @brief Update a numeric display and mark it dirty.
+ * @param widget Numeric display.
+ * @param value Display value.
+ */
 static inline void status_set_numeric(LibObject174F20* widget, u32 value)
 {
     widget->numeric_value = value;
     widget->needs_redraw = 1;
 }
 
-/** @brief Find a one-based item allocation. @param index Signed allocation ID. @return Allocation record, or null outside one through three thousand. */
+/**
+ * @brief Find a one-based item allocation.
+ * @param index Signed allocation ID.
+ * @return Allocation record, or null outside one through three thousand.
+ */
 static inline ItemCreationAllocationRecord* status_allocation(s16 index)
 {
     ItemCreationAllocationRecord* base = D_001B64F8;
@@ -788,7 +878,12 @@ static inline ItemCreationAllocationRecord* status_allocation(s16 index)
     return 0;
 }
 
-/** @brief Update an equipment display and mark it dirty. @param widget Equipment display. @param item Display item code. @param modification Item modification number. */
+/**
+ * @brief Update an equipment display and mark it dirty.
+ * @param widget Equipment display.
+ * @param item Display item code.
+ * @param modification Item modification number.
+ */
 static inline void status_set_item(LibObject172410* widget, u16 item, u8 modification)
 {
     widget->unkfc = item;
@@ -796,28 +891,45 @@ static inline void status_set_item(LibObject172410* widget, u16 item, u8 modific
     widget->needs_redraw = 1;
 }
 
-/** @brief Set text spacing and mark the widget dirty. @param widget Text widget. @param spacing Character spacing. */
+/**
+ * @brief Set text spacing and mark the widget dirty.
+ * @param widget Text widget.
+ * @param spacing Character spacing.
+ */
 static inline void status_set_spacing(LibDrawWidget* widget, float spacing)
 {
     widget->unk88 = spacing;
     widget->needs_redraw = 1;
 }
 
-/** @brief Set a divider color and mark the widget dirty. @param widget Divider widget. @param color Packed color. */
+/**
+ * @brief Set a divider color and mark the widget dirty.
+ * @param widget Divider widget.
+ * @param color Packed color.
+ */
 static inline void status_set_marker_color(ItemCreationClass172870* widget, u32 color)
 {
     widget->unk50 = color;
     widget->needs_redraw = 1;
 }
 
-/** @brief Set the item display flag and mark the widget dirty. @param widget Item widget. @param flag Display flag. */
+/**
+ * @brief Set the item display flag and mark the widget dirty.
+ * @param widget Item widget.
+ * @param flag Display flag.
+ */
 static inline void status_set_item_flag(LibObject172410* widget, u8 flag)
 {
     widget->unkfa = flag;
     widget->needs_redraw = 1;
 }
 
-/** @brief Find a stat row position. @param origin First row position. @param row Row index. @return Row position. */
+/**
+ * @brief Find a stat row position.
+ * @param origin First row position.
+ * @param row Row index.
+ * @return Row position.
+ */
 static inline float status_row_y(float origin, s32 row)
 {
     return origin + 24.0f * static_cast<float>(row);
@@ -837,73 +949,109 @@ static inline void status_delete_owned(T*& pointer)
     }
 }
 
-/** @brief Store the inherited window state field. @param value Value to store. */
+/**
+ * @brief Store the inherited window state field.
+ * @param value Value to store.
+ */
 void FieldClass15AE70::func_slot24(u8 value)
 {
     unk0c = value;
 }
 
-/** @brief Read the inherited window state field. @return Stored value. */
+/**
+ * @brief Read the inherited window state field.
+ * @return Stored value.
+ */
 u8 FieldClass15AE70::func_slot28()
 {
     return unk0c;
 }
 
-/** @brief Store the inherited window state field. @param value Value to store. */
+/**
+ * @brief Store the inherited window state field.
+ * @param value Value to store.
+ */
 void FieldClass15AE70::func_slot2c(u8 value)
 {
     unk08 = value;
 }
 
-/** @brief Read the inherited window state field. @return Stored value. */
+/**
+ * @brief Read the inherited window state field.
+ * @return Stored value.
+ */
 u8 FieldClass15AE70::func_slot30()
 {
     return unk08;
 }
 
-/** @brief Store the inherited window state field. @param value Value to store. */
+/**
+ * @brief Store the inherited window state field.
+ * @param value Value to store.
+ */
 void FieldClass15AE70::func_slot34(u16 value)
 {
     unk0a = value;
 }
 
-/** @brief Read the inherited window state field. @return Stored value. */
+/**
+ * @brief Read the inherited window state field.
+ * @return Stored value.
+ */
 u16 FieldClass15AE70::func_slot38()
 {
     return unk0a;
 }
 
-/** @brief Store the inherited window state field. @param value Value to store. */
+/**
+ * @brief Store the inherited window state field.
+ * @param value Value to store.
+ */
 void FieldClass15AE70::func_slot48(void* value)
 {
     unk9c = value;
 }
 
-/** @brief Read the inherited window state field. @return Stored value. */
+/**
+ * @brief Read the inherited window state field.
+ * @return Stored value.
+ */
 void* FieldClass15AE70::func_slot4c()
 {
     return unk9c;
 }
 
-/** @brief Store the inherited window state field. @param value Value to store. */
+/**
+ * @brief Store the inherited window state field.
+ * @param value Value to store.
+ */
 void FieldClass15AE70::func_slot50(u32 value)
 {
     unk04 = value;
 }
 
-/** @brief Read the inherited window state field. @return Stored value. */
+/**
+ * @brief Read the inherited window state field.
+ * @return Stored value.
+ */
 u32 FieldClass15AE70::func_slot54()
 {
     return unk04;
 }
 
-/** @brief Read the inherited window container. @return Stored value. */
+/**
+ * @brief Read the inherited window container.
+ * @return Stored value.
+ */
 LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
 }
 
-/** @brief Default window callback with no action. @param text_key Unused message key. */
+/**
+ * @brief Default window callback with no action.
+ * @param text_key Unused message key.
+ */
 void FieldClass15AE70::func_slot60(s32 text_key)
 {
 }
@@ -993,61 +1141,91 @@ void FieldClass15AE70::func_slotac()
 {
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc0()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc4()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc8()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotcc()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd0()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd4()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd8()
 {
     return 0;
 }
 
-/** @brief Default window callback returning zero. @return Zero. */
+/**
+ * @brief Default window callback returning zero.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotdc()
 {
     return 0;
@@ -1063,13 +1241,19 @@ void FieldClass15AE70::func_slote4()
 {
 }
 
-/** @brief Read the inherited window state field. @return Stored value. */
+/**
+ * @brief Read the inherited window state field.
+ * @return Stored value.
+ */
 u8 FieldClass15AE70::func_slote8()
 {
     return unk0d;
 }
 
-/** @brief Store the inherited window state field. @param value Value to store. */
+/**
+ * @brief Store the inherited window state field.
+ * @param value Value to store.
+ */
 void FieldClass15AE70::func_slotec(u8 value)
 {
     unk0d = value;
@@ -1080,13 +1264,19 @@ void FieldClass15AE70::func_slotf0()
 {
 }
 
-/** @brief Get the active window. @return Stored window pointer. */
+/**
+ * @brief Get the active window.
+ * @return Stored window pointer.
+ */
 void* StatusResourceState::func_00261150()
 {
     return unk20;
 }
 
-/** @brief Set the active window. @param value Window pointer to store. */
+/**
+ * @brief Set the active window.
+ * @param value Window pointer to store.
+ */
 void StatusResourceState::func_00263C70(void* value)
 {
     unk20 = value;
@@ -1770,6 +1960,7 @@ u8 StatusNameWindow::func_slotb0()
             do
             {
             } while ((*destination++ = *source++) != 0);
+
             StatusNameSection* section = reinterpret_cast<StatusNameSection*>(
                 resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
             memcpy_guess(section->names[selection->slots[selection->current] - 1], name_bytes, 24);
@@ -1955,6 +2146,7 @@ s32 StatusNameWindow::func_slotf4(void* associated)
         LibTextWidget* marker = new (0) LibTextWidget;
         lib_text_init_resource_rectangle(marker, reinterpret_cast<s32>(associated), STATUS_TEXT_NAME_UNDERLINE, 0,
                                          (152.0f + 36.0f * index) - 2.0f, 57.0f, 0.0f, 0.0f);
+
         if (first_name_marker == 0)
         {
             first_name_marker = unk2c.count;
@@ -2621,6 +2813,7 @@ s32 StatusCharacterWindow::func_slotf4(u32 associated)
 {
     StatusFlagsSection* flags = reinterpret_cast<StatusFlagsSection*>(
         resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
+
     if (flags != 0)
     {
         alternate_portrait_group = (flags->flags & 0x10) != 0;
@@ -3382,7 +3575,10 @@ void StatusResourceState::update()
     }
 }
 
-/** @brief Get the text window. @return Stored text window pointer. */
+/**
+ * @brief Get the text window.
+ * @return Stored text window pointer.
+ */
 void* StatusResourceState::func_00263C90()
 {
     return unk24;
@@ -3453,7 +3649,10 @@ s32 StatusResourceState::on_resource_loaded(void* buffer)
     return object->init_windows();
 }
 
-/** @brief Report the receiver state. @return One. */
+/**
+ * @brief Report the receiver state.
+ * @return One.
+ */
 u8 StatusResourceState::func_00264110()
 {
     return 1;
@@ -3503,13 +3702,19 @@ void FieldClass15AE70::func_slot6c()
 {
 }
 
-/** @brief Report the default window callback result. @return Zero. */
+/**
+ * @brief Report the default window callback result.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
-/** @brief Report the default window callback result. @return Zero. */
+/**
+ * @brief Report the default window callback result.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
@@ -3520,13 +3725,19 @@ void FieldClass15AE70::func_slot5c()
 {
 }
 
-/** @brief Report whether window setup finished. @return Setup flag. */
+/**
+ * @brief Report whether window setup finished.
+ * @return Setup flag.
+ */
 u8 StatusResourceState::windows_ready()
 {
     return setup_complete;
 }
 
-/** @brief Get the loaded resource handle. @return Resource handle. */
+/**
+ * @brief Get the loaded resource handle.
+ * @return Resource handle.
+ */
 u32 StatusResourceState::get_resource_slot()
 {
     return resource;
@@ -3541,37 +3752,55 @@ s32 StatusResourceState::get_default_list_kind()
     return 4;
 }
 
-/** @brief Get the record selection. @return Owned record selection. */
+/**
+ * @brief Get the record selection.
+ * @return Owned record selection.
+ */
 FieldRecordSelection* StatusResourceState::selected_records()
 {
     return selection;
 }
 
-/** @brief Set the text window. @param value Window pointer to store. */
+/**
+ * @brief Set the text window.
+ * @param value Window pointer to store.
+ */
 void StatusResourceState::func_00263C80(void* value)
 {
     unk24 = value;
 }
 
-/** @brief Set the receiver byte. @param value Signed byte to store. */
+/**
+ * @brief Set the receiver byte.
+ * @param value Signed byte to store.
+ */
 void StatusResourceState::func_00263CA0(s8 value)
 {
     unk28 = value;
 }
 
-/** @brief Get the receiver byte. @return Stored signed byte. */
+/**
+ * @brief Get the receiver byte.
+ * @return Stored signed byte.
+ */
 s8 StatusResourceState::func_00263CB0()
 {
     return unk28;
 }
 
-/** @brief Report the default command result. @return Zero. */
+/**
+ * @brief Report the default command result.
+ * @return Zero.
+ */
 s32 StatusResourceState::func_slot60()
 {
     return 0;
 }
 
-/** @brief Report the default command result. @return Zero. */
+/**
+ * @brief Report the default command result.
+ * @return Zero.
+ */
 s32 StatusResourceState::func_slot64()
 {
     return 0;
@@ -3597,19 +3826,28 @@ void StatusResourceState::func_slot78()
 {
 }
 
-/** @brief Default receiver callback returning zero. @return Zero. */
+/**
+ * @brief Default receiver callback returning zero.
+ * @return Zero.
+ */
 s32 StatusResourceState::func_slot7c()
 {
     return 0;
 }
 
-/** @brief Default receiver callback returning zero. @return Zero. */
+/**
+ * @brief Default receiver callback returning zero.
+ * @return Zero.
+ */
 s32 StatusResourceState::func_slot80()
 {
     return 0;
 }
 
-/** @brief Default receiver callback returning zero. @return Zero. */
+/**
+ * @brief Default receiver callback returning zero.
+ * @return Zero.
+ */
 s32 StatusResourceState::func_slot84()
 {
     return 0;

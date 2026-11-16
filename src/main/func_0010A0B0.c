@@ -17,5 +17,6 @@ s32 func_0010A0B0(void* object, const s32* value)
         ((ResidentHelperObjectAC110*)object)->unkAC = 1;
         return *value;
     }
+
     return 0;
 }

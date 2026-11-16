@@ -103,10 +103,7 @@ struct LibEntryMetadata
 {
     u16 unk00;
     u16 data_offset;
-
-    /** Negative values link the entry to entry -1 - link of the manager's link_names. */
     s32 link;
-
     u8 unk08[4];
     s16 child_count;
     u8 state;
@@ -492,8 +489,6 @@ struct LibObject1751A0
     u8 unk00[0xA80];
     LibReferenceCounted* reference;
     u8 unkA84[0x58];
-
-    /** Set when the reference came from func_0046B480, which only counts it; releasing it then never deletes it. */
     u8 holds_reference;
 };
 
@@ -631,9 +626,7 @@ public:
      */
     virtual s32 func_00471410(LibUpdateList* links, LibClass175430* source);
 
-    /** Position the translation is measured from. */
     FieldVec4B base;
-
     FieldVec4B target;
 };
 
@@ -646,8 +639,6 @@ public:
 
     u8 unk210[0x40];
     u8* unk250;
-
-    /** Nonzero when unk250 belongs to someone else. */
     u8 unk254;
 };
 
@@ -701,28 +692,49 @@ typedef struct LibRenderableEntryObject
 extern "C"
 {
     void func_0047A130(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
+
     void func_004B3D80(void* object, void* handle);
+
     void func_004A22C0(void* object);
+
     s32 func_004A9000(void* object);
 
     void func_0046B480(LibObject1751A0* holder, LibReferenceCounted* reference);
+
     void func_0046C090(LibEntryManager* manager, void* handle);
+
     void func_004720F0(LibFloat4* vector);
+
     LibFloat4* func_00472110(LibFloat4* vector, float value);
+
     void func_00472570(LibEntryManager* manager, s32 check);
+
     void func_00472720(LibEntryManager* manager, s32 enable);
+
     void* func_00472C90(const LibEntryManager* manager, void* handle);
+
     void* func_00472DA0(const LibEntryManager* manager, void* handle);
+
     void* func_00473040(LibEntryManager* manager, const char* name);
+
     void* func_004731A0(const LibEntryManager* manager);
+
     void func_00473E20(LibEntryManager* manager);
+
     void func_00478F90(LibFlagState8D* object);
+
     LibFloat4* func_004790A0(LibFloat4* vector, float x, float y, float z);
+
     void func_004790D0(unsigned __int128* first, unsigned __int128* second, const unsigned __int128* source);
+
     LibFloat4* func_004790E0(LibFloat4* vector, float x, float y, float z, float w);
+
     s32 func_00479C90(const ByteSourceStateOwnertext_0046AE20* object);
+
     s32 func_00479D30(const ByteSourceStateOwnertext_0046AE20* object);
+
     void func_00479EF0(LibKeyedVectorList* list, u8 key, const LibFloat4* value);
+
     void func_00479F50(LibKeyedVectorList* list, u8 key, const LibFloat4* value);
 }
 
@@ -1997,6 +2009,7 @@ void func_00473E20(LibEntryManager* manager)
                                 group->object->unk208 = target;
                             }
                         }
+
                         /* fall through */
 
                         default:
@@ -2064,7 +2077,11 @@ LibPointerList::LibPointerList(s32 size)
     reserve(size);
 }
 
-/** @brief Copy one aligned 16-byte value. @param output Destination value. @param input Source value. */
+/**
+ * @brief Copy one aligned 16-byte value.
+ * @param output Destination value.
+ * @param input Source value.
+ */
 void func_00479090(void* output, const void* input)
 {
     *(unsigned __int128*)output = *(const unsigned __int128*)input;

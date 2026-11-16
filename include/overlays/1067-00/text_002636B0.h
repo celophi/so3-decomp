@@ -75,21 +75,32 @@ typedef struct FieldObject1549D0
 
 /** @brief Store the unsigned byte at offset 0x12C. */
 void func_00265490(FieldObject15AD40* object, u8 value);
+
 /** @brief Read the unsigned byte at offset 0x3C. */
 u8 func_0026E3C0(const FieldObject1549D0* object);
+
 /** @brief Read the object pointer at offset 0x38. */
 void* func_0026E3D0(const FieldObject1549D0* object);
 
 /** Field object callbacks used by secondary-base adjustment thunks. */
 void func_00264CB0(void* object);
+
 void* func_00264D30(void* object, s32 flags);
+
 void func_00265870(void* object, float value);
+
 void func_002658E0(void* object, s32 value);
+
 u8 func_0026DAF0(void* object);
+
 u8 func_0026DF90(void* object, void* value);
+
 void func_0026E050(void* object);
+
 void func_0026E0F0(void* object);
+
 void func_0026E170(void* object);
+
 void* func_0026E1A0(void* object, s32 flags);
 
 
@@ -224,7 +235,10 @@ void func_0026C000(FieldOuterC000* object);
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_001E1590.h"
 
-/** @brief Release every child the receiver holds. @param receiver Callback receiver. */
+/**
+ * @brief Release every child the receiver holds.
+ * @param receiver Callback receiver.
+ */
 extern "C" void func_00264010(FieldClass153E30* receiver);
 
 /** Field menu controller created for menu 1, with vtables D_154AD0 and D_154AE0 in main data. Partial. */
@@ -243,7 +257,10 @@ class FieldClass154AD0 : public FieldClass1DD400, public FieldClass153E30
          */
         virtual u8 func_00264110();
 
-        /** @brief Report whether window setup finished. @return Setup flag. */
+        /**
+         * @brief Report whether window setup finished.
+         * @return Setup flag.
+         */
         virtual u8 windows_ready();
 
         /**
@@ -253,10 +270,16 @@ class FieldClass154AD0 : public FieldClass1DD400, public FieldClass153E30
          */
         virtual s32 on_resource_loaded(void* buffer);
 
-        /** @brief Create the menu windows. @return One after setup. */
+        /**
+         * @brief Create the menu windows.
+         * @return One after setup.
+         */
         virtual s32 init_windows();
 
-        /** @brief Return the loaded resource slot. @return Resource slot. */
+        /**
+         * @brief Return the loaded resource slot.
+         * @return Resource slot.
+         */
         virtual u32 get_resource_slot();
 
         /** @brief Release the controller's resources and dispatch its release handler. */
@@ -274,8 +297,10 @@ class FieldClass1547D0 : public FieldClass15AE70
 public:
     /** @brief Destroy the window. */
     virtual ~FieldClass1547D0();
+
     /** @brief Delete the listed objects, reset the list, then run the base handler. */
     virtual void func_slot0c();
+
     u8 unka8[0x54];
     u8 unkfc[4];
 };
@@ -286,8 +311,10 @@ class FieldClass1548D0 : public FieldClass15AE70
 public:
     /** @brief Destroy the window. */
     virtual ~FieldClass1548D0();
+
     /** @brief Run the base handler, then delete the listed objects. */
     virtual void func_slot0c();
+
     u8 unka8[0x10];
     u8 unkb8[4];
 };

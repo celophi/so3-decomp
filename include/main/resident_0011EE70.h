@@ -57,9 +57,7 @@ typedef struct ResidentSoundBankLoad
 /** One part of registered sound bank data, which starts with a word holding its part count followed by the parts. */
 typedef struct ResidentSoundBankPart
 {
-    /** Offset of the part from the start of the data, in 2048-byte sectors. */
     u16 sector;
-
     u16 unk02;
 } ResidentSoundBankPart;
 
@@ -180,14 +178,19 @@ void func_00120360(const void* value);
 
 /** Return the word at receiver offset 0x14. */
 u32 func_001205A0(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_001205E0(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_00120630(const void* object);
+
 /** Return the word at receiver offset 0x8. */
 u32 func_00120670(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_001206B0(const void* object);
+
 /** Return the word at receiver offset 0x0. */
 u32 func_001206F0(const void* object);
 
@@ -206,6 +209,7 @@ s32 func_001206C0(void* object, s32 value);
 
 /** Store a byte at offset 0x2C4 and a word at offset 0x2B8. */
 void func_00120A50(void* object, u8 flag, u32 value);
+
 /** Store a byte at offset 0x2C3 and a word at offset 0x2B4. */
 void func_00120A60(void* object, u8 flag, u32 value);
 
@@ -344,39 +348,23 @@ public:
     /** @brief Advance the bank loads by one step each frame while loads are in progress. */
     virtual void func_00104770();
 
-    /** Variant loaded into each slot, or -1 when none has been picked. */
     s16 variants[RESIDENT_SOUND_BANK_SLOT_COUNT];
-
-    /** Bank assigned to each slot (one-based index into the variant table), or zero. */
     u8 banks[RESIDENT_SOUND_BANK_SLOT_COUNT];
-
     u8 unk1d[3];
-
-    /** Staging buffer the bank files are read into. */
     u8* buffer;
-
     u8 unk24;
-
-    /** Nonzero while loads are in progress. */
     u8 loading;
-
     u8 unk26[2];
     ResidentSoundBankLoad loads[10];
     u8 load_count;
     u8 load_index;
     u8 load_step;
-
-    /** Nonzero to upload the registered data lists instead of the picked bank files. */
     u8 upload_lists;
-
     u8 list_index;
     u8 part_index;
     u8 first_part;
     u8 unk7f;
-
-    /** Registered sound bank data (see ResidentSoundBankPart) uploaded instead of picked files. */
     s32* lists[RESIDENT_SOUND_BANK_SLOT_COUNT][RESIDENT_SOUND_BANK_LIST_COUNT];
-
     s32 list_sizes[RESIDENT_SOUND_BANK_SLOT_COUNT];
 };
 #endif
@@ -437,7 +425,6 @@ public:
         unk01 = 0;
     }
 
-    /** @brief Destroy the registration part. */
     virtual ~ResidentClass14FD10()
     {
     }
@@ -638,37 +625,21 @@ public:
 
     u8 unk14[0xC];
     ResidentVector4 translation;
-
-    /** Rotation as a quaternion. */
     ResidentVector4 orientation;
-
     ResidentVector4 scale;
-
-    /** Nonzero when the transformation matrices need rebuilding. */
     u8 transform_dirty;
-
     u8 unk51;
     u8 unk52[0xE];
-
-    /** Draw bucket; zero is the main list. */
     u8 draw_bucket;
-
-    /** Nonzero once transform holds the current matrix. */
     u8 matrix_ready;
-
     u8 unk62[0xA];
     u16 unk6c;
     u8 unk6e[0x22];
     ResidentMatrix transform;
     ResidentMatrix base_transform;
     ResidentMatrix offset_transform;
-
-    /** Transpose of transform, which func_4D9E70 inverts into inverse_transform. */
     ResidentMatrix transposed_transform;
-
-    /** Inverse of transform: world space to local space. */
     ResidentMatrix inverse_transform;
-
     ResidentVector4 offset_translation;
     ResidentVector4 offset_rotation;
     ResidentVector4 offset_scale;
@@ -921,53 +892,26 @@ public:
     float unk21c;
     float unk220;
     float unk224;
-
-    /** Frame ticks since the image started, which drive the image channel. */
     float elapsed;
-
-    /** Bits matched against the hit-test mask. */
     u32 hit_mask;
-
-    /** Box that hit tests check against. */
     ResidentHitBox* hit_volume;
-
     u8 unk234[4];
     ResidentRenderDataRecord record;
     u8 unk268[8];
     ResidentMatrix unk270;
-
-    /** Channel animating the record's image sequence, or null. */
     ResidentImageSequenceChannel* channel;
-
-    /** Transform whose position and orientation this object copies, used while follow_position is set. */
     ResidentClass14FD30Base* position_source;
-
-    /** Camera whose position and orientation this object copies, used while follow_camera is set. */
     ResidentClass14FD30Base* camera;
-
-    /** Nonzero to face func_001210B0's target point instead of using the plain transform. */
     u8 faces_target;
-
     u8 unk2bd;
     u8 unk2be;
-
-    /** Nonzero to animate the record through an image channel. */
     u8 animated;
-
-    /** Nonzero while the second base is registered. */
     u8 registered;
-
     u8 unk2c1;
-
-    /** One-based index of a shared display-manager image, or zero to use the record's own. */
     u8 shared_image;
-
     u8 follow_position;
     u8 follow_camera;
-
-    /** Zero to size unk218 from the camera's projection distance. */
     u8 unk2c5;
-
     u8 unk2c6;
     u8 unk2c7;
 };
@@ -1061,7 +1005,6 @@ public:
 class ResidentClass14FCB0 : public ResidentObjectList, public ResidentClass14FA40
 {
 public:
-    /** @brief Destroy the list. */
     virtual ~ResidentClass14FCB0();
 
     /**
@@ -1088,7 +1031,6 @@ public:
     /** @brief Update every node: follow targets, advance the images and rebuild hit boxes. */
     virtual void func_00104770();
 
-    /** Updates left during which the list is walked from the start; set to two when a node is removed. */
     u32 unk8c;
 };
 #endif

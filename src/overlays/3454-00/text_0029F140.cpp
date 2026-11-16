@@ -293,10 +293,12 @@ s32 func_002AED30(void* object)
 {
     SelectedChildParent23* parent = static_cast<SelectedChildParent23*>(object);
     u8* child = static_cast<u8*>(parent->children[parent->selector]);
+
     if (child == 0)
     {
         return 0;
     }
+
     return child[0x204];
 }
 
@@ -316,10 +318,12 @@ s32 func_002AEEE0(void* object)
 {
     SelectedChildParent23* parent = static_cast<SelectedChildParent23*>(object);
     u8* child = static_cast<u8*>(parent->children[parent->selector]);
+
     if (child == 0)
     {
         return 0;
     }
+
     return child[0x206];
 }
 

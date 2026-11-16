@@ -352,21 +352,27 @@ extern "C" void func_0047A540(RowFillOwner* object, RowFillCell* cell, RowFillEl
     {
         cell->unk3c = object->unk3c;
     }
+
     bool blend = false;
+
     if (object->unk4d != 1 && object->unk4d != 3)
     {
         blend = true;
     }
+
     s32 count = object->unk10 - 1;
+
     if (source == 0)
     {
         for (s32 i = 0; i < count; i++)
         {
             row->unk10 = cell->position();
+
             if (blend)
             {
                 row->unk20 = cell->unk20;
             }
+
             row->unk30.packed = 0;
             row++;
         }
@@ -376,10 +382,12 @@ extern "C" void func_0047A540(RowFillOwner* object, RowFillCell* cell, RowFillEl
         for (s32 i = 0; i < count; i++)
         {
             row->unk10 = *source;
+
             if (blend)
             {
                 row->unk20 = cell->unk20;
             }
+
             row->unk30.packed = 0;
             row++;
         }
@@ -562,6 +570,7 @@ void func_0047A790(void* object, const u8* source, u32 value)
     ByteSourceStateOwnertext_0046AE20* receiver = (ByteSourceStateOwnertext_0046AE20*)object;
     receiver->sourceA0 = source;
     receiver->valueA4 = value;
+
     if (*receiver->sourceA0 == 1)
     {
         receiver->state57 = 1;
@@ -577,6 +586,7 @@ void func_0047A7D0(void* object, s32 enabled)
     TwoWordClearArgStateOwnertext_0046AE20* receiver = (TwoWordClearArgStateOwnertext_0046AE20*)object;
     receiver->unkA0 = 0;
     receiver->unkA4 = 0;
+
     if (enabled)
     {
         receiver->state57 = 1;
@@ -634,10 +644,12 @@ void* func_0047A860(const void* object, s32 index)
     const MappedOwner0047A860* owner = (const MappedOwner0047A860*)object;
     MappedEntry0047A860* item = &owner->entries[index];
     void* result = item;
+
     if (item != 0)
     {
         result = (u8*)item + 0xF0;
     }
+
     return result;
 }
 
@@ -790,21 +802,27 @@ extern "C" void func_0047ACA0(RowFillOwner* object, RowFillCell* cell, RowFillEl
     {
         cell->unk3c = object->unk3c;
     }
+
     bool blend = false;
+
     if (object->unk4d != 1 && object->unk4d != 3)
     {
         blend = true;
     }
+
     s32 count = object->unk10 - 1;
+
     if (source == 0)
     {
         for (s32 i = 0; i < count; i++)
         {
             row->unk10 = cell->position();
+
             if (blend)
             {
                 row->unk20 = cell->unk20;
             }
+
             row->unk30.packed = 0;
             row++;
         }
@@ -814,10 +832,12 @@ extern "C" void func_0047ACA0(RowFillOwner* object, RowFillCell* cell, RowFillEl
         for (s32 i = 0; i < count; i++)
         {
             row->unk10 = *source;
+
             if (blend)
             {
                 row->unk20 = cell->unk20;
             }
+
             row->unk30.packed = 0;
             row++;
         }

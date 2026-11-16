@@ -150,7 +150,6 @@ struct ShopRuntimeFlags
     u8 unk00[0x81];
     u8 flags;
     u8 unk82[0x13E];
-    /** Invincibility effect countdown; also triggers the maximum shop discount while active. */
     s32 invincibility_timer;
 };
 
@@ -165,7 +164,6 @@ typedef struct ShopRuntime
     u8 unk04[0xC];
     ShopCallbacks* callbacks;
     u8 unk14[0x8];
-    /** Field camera supplying the item preview's view and projection settings. */
     void* field_camera;
     FieldBufferSlots* resource_buffers;
 } ShopRuntime;
@@ -242,49 +240,73 @@ ShopSellAllConfirmWindow::~ShopSellAllConfirmWindow()
 {
 }
 
-/** @brief Store the window byte at offset 0xC. @param value Unsigned byte to store. */
+/**
+ * @brief Store the window byte at offset 0xC.
+ * @param value Unsigned byte to store.
+ */
 void FieldClass15AE70::func_slot24(u8 value)
 {
     unk0c = value;
 }
 
-/** @brief Read the window byte at offset 0xC. @return Stored unsigned byte. */
+/**
+ * @brief Read the window byte at offset 0xC.
+ * @return Stored unsigned byte.
+ */
 u8 FieldClass15AE70::func_slot28()
 {
     return unk0c;
 }
 
-/** @brief Store the window byte at offset 0x8. @param value Unsigned byte to store. */
+/**
+ * @brief Store the window byte at offset 0x8.
+ * @param value Unsigned byte to store.
+ */
 void FieldClass15AE70::func_slot2c(u8 value)
 {
     unk08 = value;
 }
 
-/** @brief Read the window byte at offset 0x8. @return Stored unsigned byte. */
+/**
+ * @brief Read the window byte at offset 0x8.
+ * @return Stored unsigned byte.
+ */
 u8 FieldClass15AE70::func_slot30()
 {
     return unk08;
 }
 
-/** @brief Store the window halfword at offset 0xA. @param value Unsigned halfword to store. */
+/**
+ * @brief Store the window halfword at offset 0xA.
+ * @param value Unsigned halfword to store.
+ */
 void FieldClass15AE70::func_slot34(u16 value)
 {
     unk0a = value;
 }
 
-/** @brief Read the window halfword at offset 0xA. @return Stored unsigned halfword. */
+/**
+ * @brief Read the window halfword at offset 0xA.
+ * @return Stored unsigned halfword.
+ */
 u16 FieldClass15AE70::func_slot38()
 {
     return unk0a;
 }
 
-/** @brief Store the alternate associated pointer. @param associated Pointer to store. */
+/**
+ * @brief Store the alternate associated pointer.
+ * @param associated Pointer to store.
+ */
 void FieldClass15AE70::func_slot48(void* associated)
 {
     unk9c = associated;
 }
 
-/** @brief Read the alternate associated pointer. @return Stored pointer. */
+/**
+ * @brief Read the alternate associated pointer.
+ * @return Stored pointer.
+ */
 void* FieldClass15AE70::func_slot4c()
 {
     return unk9c;
@@ -308,7 +330,10 @@ u32 FieldClass15AE70::func_slot54()
     return unk04;
 }
 
-/** @brief Return the nested display container. @return Stored container. */
+/**
+ * @brief Return the nested display container.
+ * @return Stored container.
+ */
 LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
@@ -448,13 +473,19 @@ void FieldClass15AE70::func_slote4()
 {
 }
 
-/** @brief Read the window byte at offset 0x0D. @return Stored unsigned byte. */
+/**
+ * @brief Read the window byte at offset 0x0D.
+ * @return Stored unsigned byte.
+ */
 u8 FieldClass15AE70::func_slote8()
 {
     return unk0d;
 }
 
-/** @brief Store the window byte at offset 0x0D. @param value Unsigned byte to store. */
+/**
+ * @brief Store the window byte at offset 0x0D.
+ * @param value Unsigned byte to store.
+ */
 void FieldClass15AE70::func_slotec(u8 value)
 {
     unk0d = value;
@@ -1228,6 +1259,7 @@ static inline void set_shop_item_name_auto_fit(LibObject172410* object, u8 enabl
     object->unkfa = enabled;
     object->needs_redraw = 1;
 }
+
 /**
  * @brief Set the item name glyph spacing and request a refresh.
  * @param object Item name display.
@@ -1238,6 +1270,7 @@ static inline void set_shop_item_name_spacing(LibObject172410* object, float spa
     object->unk88 = spacing;
     object->needs_redraw = 1;
 }
+
 /**
  * @brief Configure the separator's display rectangle.
  * @param object Separator widget.
@@ -1330,7 +1363,10 @@ s32 ShopSaleItemWindow::func_slot104(u32 associated)
     return 1;
 }
 
-/** @brief Store the list byte at offset 0x12C. @param value Unsigned byte to store. */
+/**
+ * @brief Store the list byte at offset 0x12C.
+ * @param value Unsigned byte to store.
+ */
 void FieldClass15AD40::func_slot110(u8 value)
 {
     FieldClass15AE60::unk84 = value;
@@ -2538,6 +2574,7 @@ static inline void set_shop_choice_opacity(FieldObject23CEA0* choice, float opac
     choice->LibMovementState::alpha = opacity;
     choice->geometry_dirty = 1;
 }
+
 /**
  * @brief Update cursor opacity, the selected action, and category text.
  */
@@ -2774,7 +2811,6 @@ s32 ShopDescriptionWindow::func_slotf4(u32 associated)
 struct ShopCharacterRecord
 {
     s16 character_id;
-    /** Selects the clamping rules used by the character stat setters. */
     s16 stat_limit_type;
     s16 encoded_level;
     s16 encoded_base_level;
@@ -2787,7 +2823,6 @@ struct ShopCharacterRecord
     s32 encoded_max_mp;
     s32 encoded_mp;
     float unk28;
-    /** Fury is stored at sixteen times its displayed amount. */
     float scaled_max_fury;
     float scaled_fury;
     s32 encoded_base_attack;
@@ -2802,7 +2837,6 @@ struct ShopCharacterRecord
     s32 encoded_base_hit;
     s32 encoded_effective_hit;
     s32 encoded_hit;
-    /** The resident INT helpers validate these values through the HIT checksum. */
     s32 encoded_base_intelligence;
     s32 encoded_effective_intelligence;
     s32 encoded_intelligence;
@@ -2848,7 +2882,6 @@ struct ShopCharacterEquipment
     u8 unk1c[4];
     char character_name[24];
     u8 battle_strategy;
-    /** Strategy saved when the tactics selection window opens. */
     u8 previous_battle_strategy;
     u8 unk3a;
     u8 encoded_anti_attack_aura_mask;
@@ -2857,10 +2890,8 @@ struct ShopCharacterEquipment
     u8 encoded_tactical_skill_states[7];
     s16 encoded_symbology_mastery[32];
     s16 encoded_battle_skill_mastery[42];
-    /** Damage responses in earth, water, fire, wind order. */
     u8 elemental_damage_responses[4];
     u8 attack_element_mask;
-    /** Variant index used with character-specific resource groups. */
     u8 character_resource_variant;
     u32 luck_checksum;
     u32 stamina_checksum;
@@ -3654,11 +3685,16 @@ s32 ShopState::init_windows()
     return 1;
 }
 
-/** @brief Align a packed resource buffer. @param buffer Resource buffer. @return Aligned resource header. */
+/**
+ * @brief Align a packed resource buffer.
+ * @param buffer Resource buffer.
+ * @return Aligned resource header.
+ */
 static inline ShopAlignedResource* aligned_shop_resource(void* buffer)
 {
     return reinterpret_cast<ShopAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
 }
+
 /**
  * @brief Register the loaded resource and select its item-name bank.
  * @param receiver Shop controller.

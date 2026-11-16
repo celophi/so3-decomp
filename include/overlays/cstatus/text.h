@@ -24,13 +24,17 @@ struct ItemCreationOptionResourceDisplay;
 /** Status background window displaying the three resource panels. */
 struct StatusBackgroundWindow : public FieldClass15AE70
 {
-    /** @brief Initialize the background window base. */
     StatusBackgroundWindow()
     {
     }
-    /** @brief Destroy the background window base. */
+
     virtual ~StatusBackgroundWindow();
-    /** @brief Create the status resource panels. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the status resource panels.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
 };
 /** Status caption window with a timed scrolling text display. */
@@ -49,14 +53,25 @@ struct StatusHelpWindow : public FieldClass15AE70
         clip_x = 0;
         clip_width = 0;
     }
-    /** @brief Destroy the caption window base. */
+
     virtual ~StatusHelpWindow();
+
     /** @brief Update the scrolling text position. */
     virtual void func_slot5c();
-    /** @brief Set the selected caption. @param key Signed caption key. */
+
+    /**
+     * @brief Set the selected caption.
+     * @param key Signed caption key.
+     */
     virtual void func_slot60(s32 key);
-    /** @brief Create the captions and frame geometry. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the captions and frame geometry.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     LibTextWidget* help_caption;
     s32 scroll_distance;
     u8 unkb0[2];
@@ -75,8 +90,10 @@ struct StatusItemWidgetList
 {
     StatusWidgetNode* head;
     s32 count;
+
     /** @brief Allocate the sentinel and initialize the empty list. */
     StatusItemWidgetList();
+
     /** @brief Release the list nodes and sentinel storage. */
     virtual ~StatusItemWidgetList();
 };
@@ -86,8 +103,10 @@ struct StatusNumericWidgetList
 {
     StatusWidgetNode* head;
     s32 count;
+
     /** @brief Allocate the sentinel and initialize the empty list. */
     StatusNumericWidgetList();
+
     /** @brief Release the list nodes and sentinel storage. */
     virtual ~StatusNumericWidgetList();
 };
@@ -97,8 +116,10 @@ struct StatusTextWidgetList
 {
     StatusWidgetNode* head;
     s32 count;
+
     /** @brief Allocate the sentinel and initialize the empty list. */
     StatusTextWidgetList();
+
     /** @brief Release the list nodes and sentinel storage. */
     virtual ~StatusTextWidgetList();
 };
@@ -108,30 +129,61 @@ struct StatusCharacterWindow : public FieldClass15AE70
 {
     /** @brief Initialize the character window and its three owned widget lists. */
     StatusCharacterWindow();
-    /** @brief Release the three display lists and window base. */
+
     virtual ~StatusCharacterWindow();
+
     /** @brief Detach the nested container and release the window state. */
     virtual void func_slot0c();
+
     /** @brief Update model cancellation and window transitions. */
     virtual void func_slot5c();
+
     /** @brief Refresh the character name, surname, and name-entry hint. */
     virtual void func_slot64();
+
     /** @brief Select the preceding status display page. */
     virtual void func_slot68();
+
     /** @brief Select the following status display page. */
     virtual void func_slot6c();
-    /** @brief Open the character name editor. @return Handler result. */
+
+    /**
+     * @brief Open the character name editor.
+     * @return Handler result.
+     */
     virtual u8 func_slotb0();
-    /** @brief Close the character window. @return Handler result. */
+
+    /**
+     * @brief Close the character window.
+     * @return Handler result.
+     */
     virtual u8 func_slotb4();
-    /** @brief Cycle the selected character's model variant. @return Handler result. */
+
+    /**
+     * @brief Cycle the selected character's model variant.
+     * @return Handler result.
+     */
     virtual u8 func_slotb8();
-    /** @brief Select the preceding character. @return Handler result. */
+
+    /**
+     * @brief Select the preceding character.
+     * @return Handler result.
+     */
     virtual s32 func_slotd8();
-    /** @brief Select the following character. @return Handler result. */
+
+    /**
+     * @brief Select the following character.
+     * @return Handler result.
+     */
     virtual s32 func_slotdc();
-    /** @brief Create the character's portrait, stats, equipment, and scroll widgets. @param associated Full resource source word. @return One on completion, zero on failure. */
+
+    /**
+     * @brief Create the character's portrait, stats, equipment, and scroll widgets.
+     * @param associated Full resource source word.
+     * @return One on completion, zero on failure.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldRecordSelection* selection;
     u8 character_change_pending;
     u8 unkad[3];
@@ -215,32 +267,61 @@ struct StatusNameWindow : public FieldClass15AE70
 {
     /** @brief Initialize the glyph grid and default character names. */
     StatusNameWindow();
-    /** @brief Destroy the name editor window base. */
+
     virtual ~StatusNameWindow();
+
     /** @brief Move the name cursor to the selected glyph. */
     virtual void func_slot5c();
+
     /** @brief Move the selection to the preceding row. */
     virtual void func_slot68();
+
     /** @brief Move the selection to the following row. */
     virtual void func_slot6c();
+
     /** @brief Move the selection to the preceding column. */
     virtual void func_slot70();
+
     /** @brief Move the selection to the following column. */
     virtual void func_slot74();
-    /** @brief Handle the current selection command. @return Handler result. */
+
+    /**
+     * @brief Handle the current selection command.
+     * @return Handler result.
+     */
     virtual u8 func_slotb0();
-    /** @brief Delete the last name entry. @return Handler result. */
+
+    /**
+     * @brief Delete the last name entry.
+     * @return Handler result.
+     */
     virtual u8 func_slotb4();
-    /** @brief Return the default command result. @return Zero. */
+
+    /**
+     * @brief Return the default command result.
+     * @return Zero.
+     */
     virtual s32 func_slotc0();
-    /** @brief Return the default command result. @return Zero. */
+
+    /**
+     * @brief Return the default command result.
+     * @return Zero.
+     */
     virtual s32 func_slotc4();
+
     /** @brief Select the Confirm command. */
     virtual void func_slote0();
+
     /** @brief Restore the default character name and refresh its glyphs. */
     virtual void func_slote4();
-    /** @brief Create the name-entry displays. @param associated Associated object. @return Creation result. */
+
+    /**
+     * @brief Create the name-entry displays.
+     * @param associated Associated object.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(void* associated);
+
     FieldRecordSelection* selection;
     LibTextWidget* surname_caption;
     LibTextWidget* name_glyph_widgets[7];
@@ -280,70 +361,143 @@ struct StatusResourceState : public FieldClass153E30
 {
     /** @brief Initialize the resource handle, selection, and transition state. */
     StatusResourceState();
+
     /** @brief Destroy the owned record selection and the Field receiver base. */
     virtual ~StatusResourceState();
+
     /**
      * @brief Report this object's default list kind.
      * @return The class's default list kind.
      */
     virtual s32 get_default_list_kind();
+
     /** @brief Submit this receiver to the resident object queue. */
     virtual void func_001DD7B0();
+
     /** @brief Switch between record and name windows through a timed transition. */
     virtual void update();
+
     /** @brief Leave the status receiver unchanged. */
     virtual void func_001DD410();
-    /** @brief Report the receiver state. @return One. */
+
+    /**
+     * @brief Report the receiver state.
+     * @return One.
+     */
     virtual u8 func_00264110();
-    /** @brief Set the active window. @param value Window pointer to store. */
+
+    /**
+     * @brief Set the active window.
+     * @param value Window pointer to store.
+     */
     virtual void func_00263C70(void* value);
-    /** @brief Get the active window. @return Stored window pointer. */
+
+    /**
+     * @brief Get the active window.
+     * @return Stored window pointer.
+     */
     virtual void* func_00261150();
-    /** @brief Set the text window. @param value Window pointer to store. */
+
+    /**
+     * @brief Set the text window.
+     * @param value Window pointer to store.
+     */
     virtual void func_00263C80(void* value);
-    /** @brief Get the text window. @return Stored text window pointer. */
+
+    /**
+     * @brief Get the text window.
+     * @return Stored text window pointer.
+     */
     virtual void* func_00263C90();
-    /** @brief Set the receiver byte. @param value Signed byte to store. */
+
+    /**
+     * @brief Set the receiver byte.
+     * @param value Signed byte to store.
+     */
     virtual void func_00263CA0(s8 value);
-    /** @brief Get the receiver byte. @return Stored signed byte. */
+
+    /**
+     * @brief Get the receiver byte.
+     * @return Stored signed byte.
+     */
     virtual s8 func_00263CB0();
-    /** @brief Get the loaded resource handle. @return Resource handle. */
+
+    /**
+     * @brief Get the loaded resource handle.
+     * @return Resource handle.
+     */
     virtual u32 get_resource_slot();
-    /** @brief Report whether window setup finished. @return Setup flag. */
+
+    /**
+     * @brief Report whether window setup finished.
+     * @return Setup flag.
+     */
     virtual u8 windows_ready();
+
     /**
      * @brief Load the completed status resource and finish receiver setup.
      * @param buffer Completed resource buffer, or null.
      * @return Zero without a buffer, otherwise the receiver setup result.
      */
     virtual s32 on_resource_loaded(void* buffer);
+
     /**
      * @brief Create and attach the status windows and record selection.
      * @return One after setup succeeds, or zero otherwise.
      */
     virtual s32 init_windows();
+
     /** @brief Release the status resource, queue this receiver, and clear its allocation slots. */
     virtual void func_slot5c();
-    /** @brief Report the default command result. @return Zero. */
+
+    /**
+     * @brief Report the default command result.
+     * @return Zero.
+     */
     virtual s32 func_slot60();
-    /** @brief Report the default command result. @return Zero. */
+
+    /**
+     * @brief Report the default command result.
+     * @return Zero.
+     */
     virtual s32 func_slot64();
+
     /** @brief Leave the resource state unchanged. */
     virtual void func_slot68();
-    /** @brief Get the record selection. @return Owned record selection. */
+
+    /**
+     * @brief Get the record selection.
+     * @return Owned record selection.
+     */
     virtual FieldRecordSelection* selected_records();
+
     /** @brief Default receiver callback with no action. */
     virtual void func_slot70();
+
     /** @brief Default receiver callback with no action. */
     virtual void func_slot74();
+
     /** @brief Default receiver callback with no action. */
     virtual void func_slot78();
-    /** @brief Default receiver callback returning zero. @return Zero. */
+
+    /**
+     * @brief Default receiver callback returning zero.
+     * @return Zero.
+     */
     virtual s32 func_slot7c();
-    /** @brief Default receiver callback returning zero. @return Zero. */
+
+    /**
+     * @brief Default receiver callback returning zero.
+     * @return Zero.
+     */
     virtual s32 func_slot80();
-    /** @brief Default receiver callback returning zero. @return Zero. */
+
+    /**
+     * @brief Default receiver callback returning zero.
+     * @return Zero.
+     */
     virtual s32 func_slot84();
+
     s32 resource;
     u8 setup_complete : 1;
     u8 unknown_38 : 7;
@@ -444,11 +598,22 @@ s32 status_remove_last_name_entry(StatusNameWindow* object);
  */
 void status_select_alphanumeric_grid(StatusNameWindow* object, u8 mode);
 
-/** @brief Refresh the selected entry and its cursor. @param object Character name editor. */
+/**
+ * @brief Refresh the selected entry and its cursor.
+ * @param object Character name editor.
+ */
 void status_refresh_name_markers(StatusNameWindow* object);
-/** @brief Refresh the current entry display. @param object Character name editor. */
+
+/**
+ * @brief Refresh the current entry display.
+ * @param object Character name editor.
+ */
 void status_refresh_name_glyphs(StatusNameWindow* object);
-/** @brief Decode the current entry bytes into glyph keys. @param object Character name editor. */
+
+/**
+ * @brief Decode the current entry bytes into glyph keys.
+ * @param object Character name editor.
+ */
 void status_decode_name_glyphs(StatusNameWindow* object);
 
 /**

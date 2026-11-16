@@ -9,8 +9,10 @@ extern "C" {
 
 /** Call the object cleanup helper, then clear the byte at receiver offset 0x2FE8. */
 void func_00307350(void* receiver);
+
 /** Call the object cleanup helper, then clear the byte at receiver offset 0x570. */
 void func_0030A850(void* receiver);
+
 /** Initialize the object and store the resolved field value at offset 0x2FEC. */
 void func_003093C0(void* receiver);
 

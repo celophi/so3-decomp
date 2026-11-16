@@ -6,15 +6,19 @@
 #ifdef __cplusplus
 extern "C" {
 void func_002B3BE0(u8* object, void* context);
+
 void func_002B0EF0(u8* receiver, void* value1, void* value2, void* value3);
+
 /** Set the output values when the input float is positive. */
 s32 func_002B0AF0(void* object, const void* value, float* zero_output, float* small_output);
 #endif
 
 /** Call the object cleanup helper, then clear the byte at receiver offset 0x570. */
 void func_002B3D20(void* receiver);
+
 /** Initialize the object and store the resolved field value at offset 0x2F0C. */
 void func_002B5490(void* receiver);
+
 /** Initialize the object and store the resolved field value at offset 0x2F24. */
 void func_002BAB10(void* receiver);
 
@@ -76,7 +80,10 @@ void func_002B08E0(void* object);
  */
 s32 func_002B0920(void* object);
 
-/** @brief Copy the word at receiver offset 0x178 to offset 0x14. @param object Receiver containing both words. */
+/**
+ * @brief Copy the word at receiver offset 0x178 to offset 0x14.
+ * @param object Receiver containing both words.
+ */
 void func_002B0930(void* object);
 
 /**
@@ -189,8 +196,10 @@ s32 func_002B11E0(void* object);
 
 /** Return the word at receiver offset 0xD30. */
 u32 func_002B10A0(const void* object);
+
 /** Return the word at receiver offset 0xD34. */
 u32 func_002B10B0(const void* object);
+
 /** Return the word at receiver offset 0xD38. */
 u32 func_002B10C0(const void* object);
 

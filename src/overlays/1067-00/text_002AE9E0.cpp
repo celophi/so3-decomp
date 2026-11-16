@@ -93,7 +93,10 @@ struct FieldRuntimeState
 {
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
 
     /** @brief Clear runtime values and restore the default character names. */
@@ -170,7 +173,10 @@ struct FieldLoaderState
 {
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
 
     /** @brief Clear retained loader commands and reset their data buffer. */
@@ -232,7 +238,9 @@ static inline void field_detach_release_context_object(T*& object);
 
 template <class T>
 static inline void field_release_slot_object(T*& object);
+
 static inline void field_delete_render_buffer(LibDrawBuffer*& buffer);
+
 static inline void field_apply_time_step(ResidentContext* context, float step);
 
 /** Partial fixed pool of tracks with a bitmap of used slots. */
@@ -278,9 +286,13 @@ struct FieldContextOwner20
 
 extern "C" FieldTrackPool<FieldClass159130>* g_vector_curve_track_pool;
 extern "C" FieldTrackPool<FieldClass159390>* g_vector_track_pool;
+
 extern "C" void func_002B9090(FieldClass1595D0* track);
+
 extern "C" void func_002B87A0(FieldClass159780* track);
+
 extern "C" void func_002B91F0(FieldTrackPool<FieldClass159130>* pool, FieldClass159130* track);
+
 extern "C" void func_002B91A0(FieldTrackPool<FieldClass159390>* pool, FieldClass159390* track);
 
 extern "C" u8 D_001B6518;
@@ -866,7 +878,10 @@ static inline void field_release_slot_object(T*& object)
     }
 }
 
-/** @brief Release an object through its native Field node prefix and clear its pointer. @param object Object to release. */
+/**
+ * @brief Release an object through its native Field node prefix and clear its pointer.
+ * @param object Object to release.
+ */
 template <class T>
 static inline void field_release_context_object(T*& object)
 {
@@ -877,7 +892,10 @@ static inline void field_release_context_object(T*& object)
     }
 }
 
-/** @brief Detach and release an object through its native Field node prefix. @param object Object to detach and release. */
+/**
+ * @brief Detach and release an object through its native Field node prefix.
+ * @param object Object to detach and release.
+ */
 template <class T>
 static inline void field_detach_release_context_object(T*& object)
 {
@@ -1093,6 +1111,7 @@ void FieldTimedQuadController::func_00272220()
 void FieldTimedQuadController::func_00272130()
 {
     LibTransform* target = attached_object;
+
     if (target != 0)
     {
         target->draw_flags |= 1;
@@ -1103,6 +1122,7 @@ void FieldTimedQuadController::func_00272130()
 void FieldTimedQuadController::func_002721A0()
 {
     LibTransform* target = attached_object;
+
     if (target != 0)
     {
         target->draw_flags &= 0xFFFE;
@@ -1206,10 +1226,12 @@ void FieldShutdownSequence::update()
 bool func_002B0BC0(FieldFlagOwner2B0BC0* object)
 {
     FieldFlagTarget2B0BC0* target = object->target;
+
     if (target == 0)
     {
         return false;
     }
+
     return target->first || target->second;
 }
 
@@ -1591,6 +1613,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
             delete context->unk68;
             context->unk68 = 0;
         }
+
         break;
 
     case 1:
@@ -1614,6 +1637,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
                 field_release_context_object(context->unk14);
             }
         }
+
         break;
 
     case 4:
@@ -2170,6 +2194,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
             else
             {
                 previous_heap = resident_exchange_allocation_heap(D_001B6430->context->unk6c);
+
                 if (loader->requests != 0)
                 {
                     delete[] loader->requests;
@@ -2434,49 +2459,89 @@ static inline FieldVec4A sequence_difference(const FieldVec4B& left, const Field
     return value;
 }
 
-/** @brief Return a FieldClass1595D0 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+/**
+ * @brief Return a FieldClass1595D0 keyframe.
+ * @param object Sequence receiver.
+ * @param index Entry index.
+ * @return Entry.
+ */
 static inline const FieldTrackKey1595D0* entry_1595D0(const FieldSequenceState40* object, s32 index)
 {
     return &static_cast<const FieldTrackKey1595D0*>(object->unk04)[index];
 }
 
-/** @brief Return a FieldClass159780 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+/**
+ * @brief Return a FieldClass159780 keyframe.
+ * @param object Sequence receiver.
+ * @param index Entry index.
+ * @return Entry.
+ */
 static inline const FieldTrackKey159780* entry_159780(const FieldSequenceState20* object, s32 index)
 {
     return &static_cast<const FieldTrackKey159780*>(object->unk04)[index];
 }
 
-/** @brief Return a FieldClass159810 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+/**
+ * @brief Return a FieldClass159810 keyframe.
+ * @param object Sequence receiver.
+ * @param index Entry index.
+ * @return Entry.
+ */
 static inline const FieldTrackKey159810* entry_159810(const FieldSequenceState30* object, s32 index)
 {
     return &static_cast<const FieldTrackKey159810*>(object->unk04)[index];
 }
 
-/** @brief Return a FieldClass1598A0 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+/**
+ * @brief Return a FieldClass1598A0 keyframe.
+ * @param object Sequence receiver.
+ * @param index Entry index.
+ * @return Entry.
+ */
 static inline const FieldTrackKey1598A0* entry_1598A0(const FieldSequenceState40* object, s32 index)
 {
     return &static_cast<const FieldTrackKey1598A0*>(object->unk04)[index];
 }
 
-/** @brief Return a FieldClass159660 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+/**
+ * @brief Return a FieldClass159660 keyframe.
+ * @param object Sequence receiver.
+ * @param index Entry index.
+ * @return Entry.
+ */
 static inline const FieldTrackKey159660* entry_159660(const FieldSequenceState30* object, s32 index)
 {
     return &static_cast<const FieldTrackKey159660*>(object->unk04)[index];
 }
 
-/** @brief Return a FieldClass159540 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+/**
+ * @brief Return a FieldClass159540 keyframe.
+ * @param object Sequence receiver.
+ * @param index Entry index.
+ * @return Entry.
+ */
 static inline const FieldTrackKey159540* entry_159540(const FieldSequenceState10* object, s32 index)
 {
     return &static_cast<const FieldTrackKey159540*>(object->unk04)[index];
 }
 
-/** @brief Return a FieldClass159540 keyframe's key. @param object Sequence receiver. @param index Entry index. @return Key as a float. */
+/**
+ * @brief Return a FieldClass159540 keyframe's key.
+ * @param object Sequence receiver.
+ * @param index Entry index.
+ * @return Key as a float.
+ */
 static inline float key_159540(const FieldSequenceState10* object, s32 index)
 {
     return entry_159540(object, index)->key;
 }
 
-/** @brief Return a FieldClass1596F0 keyframe. @param object Sequence receiver. @param index Entry index. @return Entry. */
+/**
+ * @brief Return a FieldClass1596F0 keyframe.
+ * @param object Sequence receiver.
+ * @param index Entry index.
+ * @return Entry.
+ */
 static inline const FieldTrackKey1596F0* entry_1596F0(const FieldSequenceState10* object, s32 index)
 {
     return &static_cast<const FieldTrackKey1596F0*>(object->unk04)[index];
@@ -2494,18 +2559,22 @@ extern "C" s32 func_002B41A0(FieldTrackPool<FieldClass177F70>* pool, s32 count)
     s32 words;
     s32 word;
     pool->items = new (0) FieldClass177F70[count];
+
     if (pool->items == 0)
     {
         return 0;
     }
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = true;
     }
+
     if (!pool->external)
     {
         delete[] pool->used;
     }
+
     pool->capacity = count;
     pool->words = (u32)(count + 63) >> 6;
     pool->used = new (0) u64[pool->words];
@@ -2513,10 +2582,12 @@ extern "C" s32 func_002B41A0(FieldTrackPool<FieldClass177F70>* pool, s32 count)
     pool->count = count;
     pool->unk04 = 0;
     words = pool->words;
+
     for (word = 0; word < words; word++)
     {
         pool->used[word] = 0;
     }
+
     return 1;
 }
 
@@ -2536,16 +2607,20 @@ extern "C" void func_002B4620(FieldTrackPool<FieldClass177F70>* pool)
 {
     s32 count = pool->count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = false;
     }
+
     delete[] pool->items;
+
     if (!pool->external)
     {
         delete[] pool->used;
         pool->used = 0;
     }
+
     pool->items = 0;
     pool->count = 0;
 }
@@ -2562,18 +2637,22 @@ extern "C" s32 func_002B47C0(FieldTrackPool<FieldClass159390>* pool, s32 count)
     s32 words;
     s32 word;
     pool->items = new (0) FieldClass159390[count];
+
     if (pool->items == 0)
     {
         return 0;
     }
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = true;
     }
+
     if (!pool->external)
     {
         delete[] pool->used;
     }
+
     pool->capacity = count;
     pool->words = (u32)(count + 63) >> 6;
     pool->used = new (0) u64[pool->words];
@@ -2581,10 +2660,12 @@ extern "C" s32 func_002B47C0(FieldTrackPool<FieldClass159390>* pool, s32 count)
     pool->count = count;
     pool->unk04 = 0;
     words = pool->words;
+
     for (word = 0; word < words; word++)
     {
         pool->used[word] = 0;
     }
+
     return 1;
 }
 
@@ -2604,16 +2685,20 @@ extern "C" void func_002B4C50(FieldTrackPool<FieldClass159390>* pool)
 {
     s32 count = pool->count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = false;
     }
+
     delete[] pool->items;
+
     if (!pool->external)
     {
         delete[] pool->used;
         pool->used = 0;
     }
+
     pool->items = 0;
     pool->count = 0;
 }
@@ -2630,18 +2715,22 @@ extern "C" s32 func_002B4DF0(FieldTrackPool<FieldClass177EE0>* pool, s32 count)
     s32 words;
     s32 word;
     pool->items = new (0) FieldClass177EE0[count];
+
     if (pool->items == 0)
     {
         return 0;
     }
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = true;
     }
+
     if (!pool->external)
     {
         delete[] pool->used;
     }
+
     pool->capacity = count;
     pool->words = (u32)(count + 63) >> 6;
     pool->used = new (0) u64[pool->words];
@@ -2649,10 +2738,12 @@ extern "C" s32 func_002B4DF0(FieldTrackPool<FieldClass177EE0>* pool, s32 count)
     pool->count = count;
     pool->unk04 = 0;
     words = pool->words;
+
     for (word = 0; word < words; word++)
     {
         pool->used[word] = 0;
     }
+
     return 1;
 }
 
@@ -2671,16 +2762,20 @@ extern "C" void func_002B51F0(FieldTrackPool<FieldClass177EE0>* pool)
 {
     s32 count = pool->count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = false;
     }
+
     delete[] pool->items;
+
     if (!pool->external)
     {
         delete[] pool->used;
         pool->used = 0;
     }
+
     pool->items = 0;
     pool->count = 0;
 }
@@ -2697,18 +2792,22 @@ extern "C" s32 func_002B5390(FieldTrackPool<FieldClass177C70>* pool, s32 count)
     s32 words;
     s32 word;
     pool->items = new (0) FieldClass177C70[count];
+
     if (pool->items == 0)
     {
         return 0;
     }
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].unk2b_2 = true;
     }
+
     if (!pool->external)
     {
         delete[] pool->used;
     }
+
     pool->capacity = count;
     pool->words = (u32)(count + 63) >> 6;
     pool->used = new (0) u64[pool->words];
@@ -2716,10 +2815,12 @@ extern "C" s32 func_002B5390(FieldTrackPool<FieldClass177C70>* pool, s32 count)
     pool->count = count;
     pool->unk04 = 0;
     words = pool->words;
+
     for (word = 0; word < words; word++)
     {
         pool->used[word] = 0;
     }
+
     return 1;
 }
 
@@ -2733,16 +2834,20 @@ extern "C" void func_002B56D0(FieldTrackPool<FieldClass177C70>* pool)
 {
     s32 count = pool->count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].unk2b_2 = false;
     }
+
     delete[] pool->items;
+
     if (!pool->external)
     {
         delete[] pool->used;
         pool->used = 0;
     }
+
     pool->items = 0;
     pool->count = 0;
 }
@@ -2759,18 +2864,22 @@ extern "C" s32 func_002B5870(FieldTrackPool<FieldClass159130>* pool, s32 count)
     s32 words;
     s32 word;
     pool->items = new (0) FieldClass159130[count];
+
     if (pool->items == 0)
     {
         return 0;
     }
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = true;
     }
+
     if (!pool->external)
     {
         delete[] pool->used;
     }
+
     pool->capacity = count;
     pool->words = (u32)(count + 63) >> 6;
     pool->used = new (0) u64[pool->words];
@@ -2778,10 +2887,12 @@ extern "C" s32 func_002B5870(FieldTrackPool<FieldClass159130>* pool, s32 count)
     pool->count = count;
     pool->unk04 = 0;
     words = pool->words;
+
     for (word = 0; word < words; word++)
     {
         pool->used[word] = 0;
     }
+
     return 1;
 }
 
@@ -2800,16 +2911,20 @@ extern "C" void func_002B5C80(FieldTrackPool<FieldClass159130>* pool)
 {
     s32 count = pool->count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = false;
     }
+
     delete[] pool->items;
+
     if (!pool->external)
     {
         delete[] pool->used;
         pool->used = 0;
     }
+
     pool->items = 0;
     pool->count = 0;
 }
@@ -2826,18 +2941,22 @@ extern "C" s32 func_002B5E20(FieldTrackPool<FieldClass177BE0>* pool, s32 count)
     s32 words;
     s32 word;
     pool->items = new (0) FieldClass177BE0[count];
+
     if (pool->items == 0)
     {
         return 0;
     }
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = true;
     }
+
     if (!pool->external)
     {
         delete[] pool->used;
     }
+
     pool->capacity = count;
     pool->words = (u32)(count + 63) >> 6;
     pool->used = new (0) u64[pool->words];
@@ -2845,10 +2964,12 @@ extern "C" s32 func_002B5E20(FieldTrackPool<FieldClass177BE0>* pool, s32 count)
     pool->count = count;
     pool->unk04 = 0;
     words = pool->words;
+
     for (word = 0; word < words; word++)
     {
         pool->used[word] = 0;
     }
+
     return 1;
 }
 
@@ -2874,18 +2995,22 @@ extern "C" s32 func_002B6310(FieldTrackPool<FieldClass174440>* pool, s32 count)
     s32 words;
     s32 word;
     pool->items = new (0) FieldClass174440[count];
+
     if (pool->items == 0)
     {
         return 0;
     }
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = true;
     }
+
     if (!pool->external)
     {
         delete[] pool->used;
     }
+
     pool->capacity = count;
     pool->words = (u32)(count + 63) >> 6;
     pool->used = new (0) u64[pool->words];
@@ -2893,10 +3018,12 @@ extern "C" s32 func_002B6310(FieldTrackPool<FieldClass174440>* pool, s32 count)
     pool->count = count;
     pool->unk04 = 0;
     words = pool->words;
+
     for (word = 0; word < words; word++)
     {
         pool->used[word] = 0;
     }
+
     return 1;
 }
 
@@ -2916,16 +3043,20 @@ extern "C" void func_002B6680(FieldTrackPool<FieldClass174440>* pool)
 {
     s32 count = pool->count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = false;
     }
+
     delete[] pool->items;
+
     if (!pool->external)
     {
         delete[] pool->used;
         pool->used = 0;
     }
+
     pool->items = 0;
     pool->count = 0;
 }
@@ -2942,18 +3073,22 @@ extern "C" s32 func_002B6820(FieldTrackPool<FieldClass1730F0>* pool, s32 count)
     s32 words;
     s32 word;
     pool->items = new (0) FieldClass1730F0[count];
+
     if (pool->items == 0)
     {
         return 0;
     }
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = true;
     }
+
     if (!pool->external)
     {
         delete[] pool->used;
     }
+
     pool->capacity = count;
     pool->words = (u32)(count + 63) >> 6;
     pool->used = new (0) u64[pool->words];
@@ -2961,10 +3096,12 @@ extern "C" s32 func_002B6820(FieldTrackPool<FieldClass1730F0>* pool, s32 count)
     pool->count = count;
     pool->unk04 = 0;
     words = pool->words;
+
     for (word = 0; word < words; word++)
     {
         pool->used[word] = 0;
     }
+
     return 1;
 }
 
@@ -2984,23 +3121,30 @@ extern "C" void func_002B6BA0(FieldTrackPool<FieldClass1730F0>* pool)
 {
     s32 count = pool->count;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         pool->items[index].state.unk13_2 = false;
     }
+
     delete[] pool->items;
+
     if (!pool->external)
     {
         delete[] pool->used;
         pool->used = 0;
     }
+
     pool->items = 0;
     pool->count = 0;
 }
 
 extern "C" void func_4B1640(void* object);
 
-/** @brief Forward the object to func_4B1640. @param object Object to forward. */
+/**
+ * @brief Forward the object to func_4B1640.
+ * @param object Object to forward.
+ */
 extern "C" void func_002B6D40(void* object)
 {
     func_4B1640(object);
@@ -3083,6 +3227,7 @@ void FieldClass1594B0::func_002B8860()
 void func_002B7480(FieldSampleOwner2B7480* object, float* output)
 {
     float* values = object->values;
+
     if (values != 0)
     {
         *output = values[2 * object->index - 1] - values[1];
@@ -3111,10 +3256,12 @@ s32 FieldClass159270::func_002B9900(const FieldVec4A* value, float key)
     {
         return 0;
     }
+
     if (state.unk08 >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<FieldTrackKey159780*>(unk04)[state.unk08].value = *value;
     static_cast<FieldTrackKey159780*>(unk04)[state.unk08].value.w = key;
     state.span = key - static_cast<FieldTrackKey159780*>(unk04)[0].value.w;
@@ -3130,16 +3277,20 @@ s32 FieldClass159270::func_002B98C0(s32 index, float key, const FieldVec4A* valu
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<FieldTrackKey159780*>(unk04)[index].value = *value;
     static_cast<FieldTrackKey159780*>(unk04)[index].value.w = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<FieldTrackKey159780*>(unk04)[0].value.w;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     return 1;
@@ -3151,18 +3302,22 @@ s32 FieldClass159270::func_001DF2E0(s32 index, float* key, FieldVec4B* value, Fi
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     if (key)
     {
         *key = static_cast<const FieldTrackKey159780*>(unk04)[index].value.w;
     }
+
     if (value)
     {
         *value = static_cast<const FieldTrackKey159780*>(unk04)[index].value;
     }
+
     return 1;
 }
 
@@ -3178,10 +3333,12 @@ s32 FieldClass159090::func_002B7810(const FieldVec4A* value, const FieldVec4A* f
     {
         return 0;
     }
+
     if (state.unk08 >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<FieldTrackKey1595D0*>(unk04)[state.unk08].value = *value;
     static_cast<FieldTrackKey1595D0*>(unk04)[state.unk08].first = *first;
     static_cast<FieldTrackKey1595D0*>(unk04)[state.unk08].second = *second;
@@ -3207,6 +3364,7 @@ static inline const FieldVec4A* track_vector(const FieldVec4A* vector, FieldVec4
         zero->w = 0.0f;
         return zero;
     }
+
     return vector;
 }
 
@@ -3225,18 +3383,22 @@ s32 FieldClass159090::func_002B7960(s32 index, float key, const FieldVec4A* valu
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<FieldTrackKey1595D0*>(unk04)[index].value = *value;
     static_cast<FieldTrackKey1595D0*>(unk04)[index].first = *first;
     static_cast<FieldTrackKey1595D0*>(unk04)[index].second = *second;
     static_cast<FieldTrackKey1595D0*>(unk04)[index].value.w = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<FieldTrackKey1595D0*>(unk04)[0].value.w;
     }
+
     return 1;
 }
 
@@ -3273,26 +3435,32 @@ s32 FieldClass159090::func_001DF2E0(s32 index, float* key, FieldVec4B* value, Fi
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     if (key)
     {
         *key = static_cast<const FieldTrackKey1595D0*>(unk04)[index].value.w;
     }
+
     if (value)
     {
         *value = static_cast<const FieldTrackKey1595D0*>(unk04)[index].value;
     }
+
     if (first)
     {
         *first = static_cast<const FieldTrackKey1595D0*>(unk04)[index].first;
     }
+
     if (second)
     {
         *second = static_cast<const FieldTrackKey1595D0*>(unk04)[index].second;
     }
+
     return 1;
 }
 
@@ -3384,6 +3552,7 @@ extern "C" void func_002B7EF0(FieldClass1598A0* track)
     {
         delete[] static_cast<FieldTrackKey1598A0*>(track->unk04);
     }
+
     track->unk04 = 0;
 }
 
@@ -3512,6 +3681,7 @@ extern "C" s32 func_002B8590(const FieldSequenceState20* object, float key)
 {
     s16 count = object->state.unk08;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == entry_159780(object, index)->value.w)
@@ -3519,6 +3689,7 @@ extern "C" s32 func_002B8590(const FieldSequenceState20* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -3541,6 +3712,7 @@ extern "C" float func_002B8600(const FieldSequenceState20* object)
     {
         return 0.0f;
     }
+
     return entry_159780(object, object->state.unk08 - 1)->value.w - entry_159780(object, 0)->value.w;
 }
 
@@ -3568,15 +3740,19 @@ extern "C" float func_002B8700(const FieldSequenceState20* object, float key)
     float range = entry_159780(object, object->state.unk08 - 1)->value.w - first;
     float position = (key - first) / range;
     s32 spans;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     spans = (s32)position;
+
     if (spans != 0)
     {
         return key - spans * range;
     }
+
     return key;
 }
 
@@ -3595,6 +3771,7 @@ extern "C" void func_002B87A0(FieldClass159780* track)
     {
         delete[] static_cast<FieldTrackKey159780*>(track->unk04);
     }
+
     track->unk04 = 0;
 }
 
@@ -3631,6 +3808,7 @@ extern "C" void func_002B88F0(FieldSequenceState10* object, s32 count)
     delete[] static_cast<FieldTrackKey1596F0*>(object->unk04);
     object->unk04 = new (0) FieldTrackKey1596F0[count];
     object->state.unk0a = count;
+
     if (!object->unk04)
     {
         object->state.unk0a = 0;
@@ -3694,6 +3872,7 @@ extern "C" void func_002B8AD0(FieldClass1596F0* track)
     {
         delete[] static_cast<FieldTrackKey1596F0*>(track->unk04);
     }
+
     track->unk04 = 0;
 }
 
@@ -3714,6 +3893,7 @@ extern "C" void func_002B8B90(FieldClass159660* track)
     {
         delete[] static_cast<FieldTrackKey159660*>(track->unk04);
     }
+
     track->unk04 = 0;
 }
 
@@ -3808,6 +3988,7 @@ extern "C" s32 func_002B8E60(const FieldSequenceState40* object, float key)
 {
     s16 count = object->state.unk08;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == entry_1595D0(object, index)->value.w)
@@ -3815,6 +3996,7 @@ extern "C" s32 func_002B8E60(const FieldSequenceState40* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -3837,6 +4019,7 @@ extern "C" float func_002B8ED0(const FieldSequenceState40* object)
     {
         return 0.0f;
     }
+
     return entry_1595D0(object, object->state.unk08 - 1)->value.w - entry_1595D0(object, 0)->value.w;
 }
 
@@ -3864,15 +4047,19 @@ extern "C" float func_002B8FE0(const FieldSequenceState40* object, float key)
     float range = entry_1595D0(object, object->state.unk08 - 1)->value.w - first;
     float position = (key - first) / range;
     s32 spans;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     spans = (s32)position;
+
     if (spans != 0)
     {
         return key - spans * range;
     }
+
     return key;
 }
 
@@ -3891,6 +4078,7 @@ extern "C" void func_002B9090(FieldClass1595D0* track)
     {
         delete[] static_cast<FieldTrackKey1595D0*>(track->unk04);
     }
+
     track->unk04 = 0;
 }
 
@@ -3911,6 +4099,7 @@ extern "C" void func_002B9150(FieldClass159540* track)
     {
         delete[] static_cast<FieldTrackKey159540*>(track->unk04);
     }
+
     track->unk04 = 0;
 }
 
@@ -3955,6 +4144,7 @@ extern "C" void func_002B9320(FieldSequenceState40* object, s32 count)
     delete[] static_cast<FieldTrackKey1595D0*>(object->unk04);
     object->unk04 = new (0) FieldTrackKey1595D0[count];
     object->state.unk0a = count;
+
     if (!object->unk04)
     {
         object->state.unk0a = 0;
@@ -3986,15 +4176,19 @@ extern "C" float func_002B94C0(const FieldSequenceState10* object, float key)
     float range = entry_1596F0(object, object->state.unk08 - 1)->key - first;
     float position = (key - first) / range;
     s32 spans;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     spans = (s32)position;
+
     if (spans != 0)
     {
         return key - spans * range;
     }
+
     return key;
 }
 
@@ -4011,6 +4205,7 @@ extern "C" float func_002B95B0(const FieldSequenceState10* object)
     {
         return 0.0f;
     }
+
     return entry_1596F0(object, object->state.unk08 - 1)->key - entry_1596F0(object, 0)->key;
 }
 
@@ -4024,6 +4219,7 @@ extern "C" s32 func_002B9600(const FieldSequenceState10* object, float key)
 {
     s16 count = object->state.unk08;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == entry_1596F0(object, index)->key)
@@ -4031,6 +4227,7 @@ extern "C" s32 func_002B9600(const FieldSequenceState10* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -4152,6 +4349,7 @@ extern "C" void func_002B9910(FieldSequenceState20* object, s32 count)
     delete[] static_cast<FieldTrackKey159780*>(object->unk04);
     object->unk04 = new (0) FieldTrackKey159780[count];
     object->state.unk0a = count;
+
     if (!object->unk04)
     {
         object->state.unk0a = 0;
@@ -4177,15 +4375,19 @@ extern "C" float func_002B9A40(const FieldSequenceState30* object, float key)
     float range = entry_159810(object, object->state.unk08 - 1)->key - first;
     float position = (key - first) / range;
     s32 spans;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     spans = (s32)position;
+
     if (spans != 0)
     {
         return key - spans * range;
     }
+
     return key;
 }
 
@@ -4202,6 +4404,7 @@ extern "C" float func_002B9B30(const FieldSequenceState30* object)
     {
         return 0.0f;
     }
+
     return entry_159810(object, object->state.unk08 - 1)->key - entry_159810(object, 0)->key;
 }
 
@@ -4215,6 +4418,7 @@ extern "C" s32 func_002B9B80(const FieldSequenceState30* object, float key)
 {
     s16 count = object->state.unk08;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == entry_159810(object, index)->key)
@@ -4222,6 +4426,7 @@ extern "C" s32 func_002B9B80(const FieldSequenceState30* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -4294,6 +4499,7 @@ extern "C" void func_002B9D20(FieldSequenceState30* object, s32 count)
     delete[] static_cast<FieldTrackKey159810*>(object->unk04);
     object->unk04 = new (0) FieldTrackKey159810[count];
     object->state.unk0a = count;
+
     if (!object->unk04)
     {
         object->state.unk0a = 0;
@@ -4329,31 +4535,39 @@ s32 FieldClass159090::func_002B9F50(s32 index, float key, const FieldVec4A* valu
 {
     s32 count;
     s32 i;
+
     if (unk04 == 0)
     {
         return 0;
     }
+
     count = state.unk08;
+
     if (index >= count)
     {
         return 0;
     }
+
     if (count >= state.unk0a)
     {
         return 0;
     }
+
     for (i = count; i > index; i--)
     {
         static_cast<FieldTrackKey1595D0*>(unk04)[i] = static_cast<FieldTrackKey1595D0*>(unk04)[i - 1];
     }
+
     static_cast<FieldTrackKey1595D0*>(unk04)[index].value = *value;
     static_cast<FieldTrackKey1595D0*>(unk04)[index].first = *first;
     static_cast<FieldTrackKey1595D0*>(unk04)[index].second = *second;
     static_cast<FieldTrackKey1595D0*>(unk04)[index].value.w = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<FieldTrackKey1595D0*>(unk04)[0].value.w;
     }
+
     state.unk08++;
     return 1;
 }
@@ -4371,19 +4585,23 @@ s32 FieldClass159420::func_001DF2E0(s32 index, float* key, float* value, float* 
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     if (key)
     {
         *key = static_cast<const FieldTrackKey1596F0*>(unk04)[index].key;
     }
+
     if (value)
     {
         const FieldTrackKey1596F0* entries = static_cast<const FieldTrackKey1596F0*>(unk04);
         *value = entries[index].value;
     }
+
     return 1;
 }
 
@@ -4391,30 +4609,38 @@ s32 FieldClass159420::func_002B96C0(s32 index, float key, const float* value)
 {
     s32 count;
     s32 i;
+
     if (unk04 == 0)
     {
         return 0;
     }
+
     count = state.unk08;
+
     if (index >= count)
     {
         return 0;
     }
+
     if (count >= state.unk0a)
     {
         return 0;
     }
+
     for (i = count; i > index; i--)
     {
         static_cast<FieldTrackKey1596F0*>(unk04)[i] = static_cast<FieldTrackKey1596F0*>(unk04)[i - 1];
     }
+
     FieldTrackKey1596F0* entries = static_cast<FieldTrackKey1596F0*>(unk04);
     entries[index].value = *value;
     static_cast<FieldTrackKey1596F0*>(unk04)[index].key = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<FieldTrackKey1596F0*>(unk04)[0].key;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     state.unk08++;
@@ -4427,17 +4653,21 @@ s32 FieldClass159420::func_002B9700(s32 index, float key, const float* value)
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     FieldTrackKey1596F0* entries = static_cast<FieldTrackKey1596F0*>(unk04);
     entries[index].value = *value;
     static_cast<FieldTrackKey1596F0*>(unk04)[index].key = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<FieldTrackKey1596F0*>(unk04)[0].key;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     return 1;
@@ -4449,10 +4679,12 @@ s32 FieldClass159420::func_002B9740(const float* value, float key)
     {
         return 0;
     }
+
     if (state.unk08 >= state.unk0a)
     {
         return 0;
     }
+
     FieldTrackKey1596F0* entries = static_cast<FieldTrackKey1596F0*>(unk04);
     entries[state.unk08].value = *value;
     static_cast<FieldTrackKey1596F0*>(unk04)[state.unk08].key = key;
@@ -4474,29 +4706,37 @@ s32 FieldClass159270::func_002B9880(s32 index, float key, const FieldVec4A* valu
 {
     s32 count;
     s32 i;
+
     if (unk04 == 0)
     {
         return 0;
     }
+
     count = state.unk08;
+
     if (index >= count)
     {
         return 0;
     }
+
     if (count >= state.unk0a)
     {
         return 0;
     }
+
     for (i = count; i > index; i--)
     {
         static_cast<FieldTrackKey159780*>(unk04)[i] = static_cast<FieldTrackKey159780*>(unk04)[i - 1];
     }
+
     static_cast<FieldTrackKey159780*>(unk04)[index].value = *value;
     static_cast<FieldTrackKey159780*>(unk04)[index].value.w = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<FieldTrackKey159780*>(unk04)[0].value.w;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     state.unk08++;
@@ -4516,18 +4756,22 @@ s32 FieldClass1591E0::func_001DF2E0(s32 index, float* key, FieldVec4B* value, Fi
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     if (key)
     {
         *key = static_cast<const FieldTrackKey159810*>(unk04)[index].key;
     }
+
     if (value)
     {
         *value = static_cast<const FieldTrackKey159810*>(unk04)[index].value;
     }
+
     return 1;
 }
 
@@ -4535,29 +4779,37 @@ s32 FieldClass1591E0::func_002B9C40(s32 index, float key, const FieldVec4A* valu
 {
     s32 count;
     s32 i;
+
     if (unk04 == 0)
     {
         return 0;
     }
+
     count = state.unk08;
+
     if (index >= count)
     {
         return 0;
     }
+
     if (count >= state.unk0a)
     {
         return 0;
     }
+
     for (i = count; i > index; i--)
     {
         static_cast<FieldTrackKey159810*>(unk04)[i] = static_cast<FieldTrackKey159810*>(unk04)[i - 1];
     }
+
     static_cast<FieldTrackKey159810*>(unk04)[index].value = *value;
     static_cast<FieldTrackKey159810*>(unk04)[index].key = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<FieldTrackKey159810*>(unk04)[0].key;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     state.unk08++;
@@ -4570,16 +4822,20 @@ s32 FieldClass1591E0::func_002B9C80(s32 index, float key, const FieldVec4A* valu
     {
         return 0;
     }
+
     if (index >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<FieldTrackKey159810*>(unk04)[index].value = *value;
     static_cast<FieldTrackKey159810*>(unk04)[index].key = key;
+
     if (index == state.unk08 - 1)
     {
         state.span = key - static_cast<FieldTrackKey159810*>(unk04)[0].key;
     }
+
     state.unk0e = -1;
     state.unk10 = -1;
     return 1;
@@ -4591,10 +4847,12 @@ s32 FieldClass1591E0::func_002B9CC0(const FieldVec4A* value, float key)
     {
         return 0;
     }
+
     if (state.unk08 >= state.unk0a)
     {
         return 0;
     }
+
     static_cast<FieldTrackKey159810*>(unk04)[state.unk08].value = *value;
     static_cast<FieldTrackKey159810*>(unk04)[state.unk08].key = key;
     state.span = key - static_cast<FieldTrackKey159810*>(unk04)[0].key;
@@ -4680,6 +4938,7 @@ extern "C" void func_002BAF20(FieldSequenceState40* object, s32 count)
     delete[] static_cast<FieldTrackKey1598A0*>(object->unk04);
     object->unk04 = new (0) FieldTrackKey1598A0[count];
     object->state.unk0a = count;
+
     if (!object->unk04)
     {
         object->state.unk0a = 0;
@@ -4775,6 +5034,7 @@ extern "C" s32 func_002BB1B0(const FieldSequenceState40* object, float key)
 {
     s16 count = object->state.unk08;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == entry_1598A0(object, index)->key)
@@ -4782,6 +5042,7 @@ extern "C" s32 func_002BB1B0(const FieldSequenceState40* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -4804,6 +5065,7 @@ extern "C" float func_002BB220(const FieldSequenceState40* object)
     {
         return 0.0f;
     }
+
     return entry_1598A0(object, object->state.unk08 - 1)->key - entry_1598A0(object, 0)->key;
 }
 
@@ -4831,15 +5093,19 @@ extern "C" float func_002BB330(const FieldSequenceState40* object, float key)
     float range = entry_1598A0(object, object->state.unk08 - 1)->key - first;
     float position = (key - first) / range;
     s32 spans;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     spans = (s32)position;
+
     if (spans != 0)
     {
         return key - spans * range;
     }
+
     return key;
 }
 
@@ -4865,6 +5131,7 @@ extern "C" void func_002BB6B0(FieldSequenceState30* object, s32 count)
     delete[] static_cast<FieldTrackKey159660*>(object->unk04);
     object->unk04 = new (0) FieldTrackKey159660[count];
     object->state.unk0a = count;
+
     if (!object->unk04)
     {
         object->state.unk0a = 0;
@@ -5008,6 +5275,7 @@ extern "C" void func_002BBAC0(FieldSequenceState10* object, s32 count)
     delete[] static_cast<FieldTrackKey159540*>(object->unk04);
     object->unk04 = new (0) FieldTrackKey159540[count];
     object->state.unk0a = count;
+
     if (!object->unk04)
     {
         object->state.unk0a = 0;
@@ -5103,6 +5371,7 @@ extern "C" s32 func_002BBD50(const FieldSequenceState10* object, float key)
 {
     s16 count = object->state.unk08;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == key_159540(object, index))
@@ -5110,6 +5379,7 @@ extern "C" s32 func_002BBD50(const FieldSequenceState10* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -5132,6 +5402,7 @@ extern "C" float func_002BBDD0(const FieldSequenceState10* object)
     {
         return 0.0f;
     }
+
     return key_159540(object, object->state.unk08 - 1) - key_159540(object, 0);
 }
 
@@ -5159,15 +5430,19 @@ extern "C" float func_002BBF70(const FieldSequenceState10* object, float key)
     float range = key_159540(object, object->state.unk08 - 1) - first;
     float position = (key - first) / range;
     s32 spans;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     spans = (s32)position;
+
     if (spans != 0)
     {
         return key - spans * range;
     }
+
     return key;
 }
 
@@ -5188,15 +5463,19 @@ extern "C" float func_002BC020(const FieldSequenceState30* object, float key)
     float range = entry_159660(object, object->state.unk08 - 1)->key - first;
     float position = (key - first) / range;
     s32 spans;
+
     if (position < 0.0f)
     {
         position -= 1.0f;
     }
+
     spans = (s32)position;
+
     if (spans != 0)
     {
         return key - spans * range;
     }
+
     return key;
 }
 
@@ -5213,6 +5492,7 @@ extern "C" float func_002BC110(const FieldSequenceState30* object)
     {
         return 0.0f;
     }
+
     return entry_159660(object, object->state.unk08 - 1)->key - entry_159660(object, 0)->key;
 }
 
@@ -5226,6 +5506,7 @@ extern "C" s32 func_002BC160(const FieldSequenceState30* object, float key)
 {
     s16 count = object->state.unk08;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == entry_159660(object, index)->key)
@@ -5233,6 +5514,7 @@ extern "C" s32 func_002BC160(const FieldSequenceState30* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 

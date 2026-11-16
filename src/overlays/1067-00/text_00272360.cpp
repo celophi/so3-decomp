@@ -9,6 +9,7 @@
 #include "main/resident_data.h"
 
 extern "C" void func_4486A0(void* object);
+
 extern "C" void func_448250(FieldState634* object);
 
 
@@ -28,15 +29,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00272360", func_002723
 extern "C" float func_00272820(FieldClass1514F8* curve, float position)
 {
     s32 count = curve->unk00;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     s32 lower = 0;
     s32 upper = count - 1;
+
     while (lower < upper)
     {
         s32 middle = (s32)((float)(lower + upper) / 2.0f);
+
         if (curve->unk04[middle].x < position)
         {
             lower = middle + 1;
@@ -46,10 +51,12 @@ extern "C" float func_00272820(FieldClass1514F8* curve, float position)
             upper = middle;
         }
     }
+
     if (lower > 0)
     {
         lower--;
     }
+
     FieldVec4B* point = &curve->unk04[lower];
     float delta = position - point->x;
     float width = point[1].x - point->x;
@@ -91,6 +98,7 @@ s32 FieldClass154EF0::get_default_list_kind()
 void FieldClass154EF0::func_001DD7B0()
 {
     lib_object_detach_owner(this);
+
     if (!unk20_3)
     {
         func_slot28();
@@ -109,12 +117,14 @@ void FieldClass154EF0::func_slot28()
     if (unk18 != 0)
     {
         func_0046B3F0(unk18);
+
         if (unk18 != 0)
         {
             unk18->func_00434FA0();
             unk18 = 0;
         }
     }
+
     if (unk1c != 0 && unk1c->unk08 == 0)
     {
         delete unk1c;

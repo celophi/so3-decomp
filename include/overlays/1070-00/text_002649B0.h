@@ -355,7 +355,9 @@ void func_00273E80(FieldVectorAssignmentState300* object);
  * @param object Receiver containing the state byte.
  */
 void func_002668D0(FieldFlagAt20* object);
+
 void func_00265B90(FieldFlagAt20* object);
+
 void func_00267340(FieldFlagAt20* object);
 
 /**

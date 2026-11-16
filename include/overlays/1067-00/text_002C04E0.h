@@ -14,10 +14,8 @@ typedef struct FieldFloat48 FieldFloat48;
 class FieldClass15A220 : public FieldClass154E70
 {
 public:
-    /** @brief Construct the object. */
     FieldClass15A220();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A220();
 
     u8 unk04[0x4C];
@@ -44,10 +42,8 @@ public:
 class FieldClass15A5B0 : public FieldClass154E70
 {
 public:
-    /** @brief Construct the object. */
     FieldClass15A5B0();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A5B0();
 
     u8 unk04[0x9C];
@@ -77,7 +73,6 @@ public:
     /** @brief Start with a 60.0 extent. */
     FieldClass15AB58();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass15AB58();
 
     u8 unk04[0x2C];
@@ -106,7 +101,6 @@ public:
 class FieldClass15A110 : public FieldClass15A230
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A110()
     {
     }
@@ -116,7 +110,6 @@ public:
 class FieldClass15A3D0 : public FieldClass15A5C0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A3D0()
     {
     }
@@ -126,7 +119,6 @@ public:
 class FieldClass15A8D0 : public FieldClass15AB70
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A8D0()
     {
     }
@@ -136,7 +128,6 @@ public:
 class FieldClass15A040 : public FieldClass15A110
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A040();
 };
 
@@ -144,7 +135,6 @@ public:
 class FieldClass15A4A0 : public FieldClass15A3D0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A4A0()
     {
     }
@@ -154,7 +144,6 @@ public:
 class FieldClass15A9A0 : public FieldClass15A8D0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A9A0()
     {
     }
@@ -164,7 +153,6 @@ public:
 class FieldClass15A300 : public FieldClass15A4A0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A300();
 };
 
@@ -172,7 +160,6 @@ public:
 class FieldClass15A800 : public FieldClass15A9A0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A800();
 };
 #endif
@@ -1134,7 +1121,6 @@ float func_002CABA0(void* object);
 class FieldClass15A760 : public FieldListObject
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A760()
     {
     }
@@ -1150,7 +1136,6 @@ public:
 class FieldClass15A690 : public FieldClass15A760
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A690();
 };
 
@@ -1158,7 +1143,6 @@ public:
 class FieldClass15A7E0 : public FieldClass15A760
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A7E0()
     {
     }
@@ -1168,7 +1152,6 @@ public:
 class FieldClass15A780 : public FieldClass15A7E0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A780();
 };
 
@@ -1176,7 +1159,6 @@ public:
 class FieldClass15A7A0 : public FieldClass15A7E0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A7A0();
 };
 
@@ -1184,7 +1166,6 @@ public:
 class FieldClass15A7C0 : public FieldClass15A7E0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15A7C0();
 };
 
@@ -1192,7 +1173,6 @@ public:
 class FieldClass15AAD0 : public FieldClass15A760
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15AAD0();
 };
 
@@ -1200,10 +1180,11 @@ public:
 class FieldClass15AAB0 : public FieldClass15A760
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass15AAB0();
+
     /** @brief Delete the child, then detach this object and queue it for release. */
     virtual void func_001DD7B0();
+
     u8 unk14[0x18];
     FieldListObject* unk2C;
 };

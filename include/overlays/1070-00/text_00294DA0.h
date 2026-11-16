@@ -26,10 +26,12 @@ typedef union FieldQuad128
     {
         return value;
     }
+
     const float* data() const
     {
         return value;
     }
+
     FieldQuad128& operator=(const FieldQuad128& other)
     {
         raw = other.raw;
@@ -479,6 +481,7 @@ public:
     u8 unk00[0xC];
     u8* unk0c;
     u8 unk10[0x80];
+
     /** Release the buffer's allocation and destroy the receiver. */
     virtual ~FieldClass173568();
 };
@@ -490,6 +493,7 @@ class FieldClass179470 : public FieldClass16AB90
 public:
     /** Initialize the observed fields and enable control bit 2. */
     FieldClass179470();
+
     /** Destroy the receiver and release its owned buffers. */
     virtual ~FieldClass179470()
     {
@@ -497,6 +501,7 @@ public:
         func_100CB0(unk28);
         func_100CB0(unk2c);
     }
+
     s16 unk14;
     s16 unk16;
     u8 unk18[2];
@@ -521,16 +526,21 @@ class FieldClass172110 : public FieldClass16AB90, public FieldClass16AB60
 public:
     /** Initialize the control fields and clear the context control bit. */
     FieldClass172110();
-    /** Destroy the receiver through both of its base interfaces. */
+
     virtual ~FieldClass172110();
+
     /** Return the fixed receiver type value 4. */
     virtual s32 func_slot0c();
+
     /** Delete the receiver through its virtual destructor. */
     virtual void func_slot10();
+
     /** Update the receiver state. */
     virtual void func_slot14();
+
     /** Handle a callback through the secondary interface. */
     virtual void func_slot0c(void* value);
+
     s32 unk18;
     u32 unk1c;
     float unk20;
@@ -544,8 +554,8 @@ public:
 class FieldClass172170 : public FieldClass179470, public FieldInitialWordPair
 {
 public:
-    /** Destroy the receiver and its owned buffers through the primary base. */
     virtual ~FieldClass172170();
+
     u8 unk58[8];
 };
 
@@ -555,6 +565,7 @@ class LibReceiver43EA30
 public:
     /** Construct the external base receiver. */
     LibReceiver43EA30();
+
     /** Destroy the external base receiver. */
     virtual ~LibReceiver43EA30();
 };
@@ -565,14 +576,19 @@ class LibReceiver4A71F0
 public:
     /** Destroy the external base receiver. */
     virtual ~LibReceiver4A71F0();
+
     /** Return the receiver type. */
     virtual s32 func_slot0c();
+
     /** Delete the receiver through its primary interface. */
     virtual void func_slot10();
+
     /** Update the receiver. */
     virtual void func_slot14();
+
     /** Invoke its default handler. */
     virtual void func_slot18();
+
     /** Create a receiver for the selected byte-sized kind. */
     virtual void* func_slot1c(u8 kind);
 };
@@ -581,8 +597,8 @@ public:
 class FieldClass173580 : public LibReceiver43EA30
 {
 public:
-    /** Destroy the callback receiver through its external base. */
     virtual ~FieldClass173580();
+
     u8 unk04[0x4C];
 };
 
@@ -590,7 +606,6 @@ public:
 class FieldClass1735A0 : public LibReceiver4A71F0
 {
 public:
-    /** Destroy the callback receiver through its external base. */
     virtual ~FieldClass1735A0();
 };
 
@@ -604,10 +619,11 @@ public:
         delay = 5.0f;
         key = -1;
     }
-    /** Destroy the receiver through its Lib base. */
+
     virtual ~FieldClass179210()
     {
     }
+
     u8 unk218[0x18];
     float delay;
     s32 key;
@@ -617,8 +633,8 @@ public:
 class FieldClass172190 : public FieldClass179210
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172190();
+
     u8 unk238[8];
 };
 
@@ -632,10 +648,11 @@ public:
         delay = 5.0f;
         key = -1;
     }
-    /** Destroy the receiver through its Lib base. */
+
     virtual ~FieldClass179330()
     {
     }
+
     u8 unk214[0x2C];
     float delay;
     s32 key;
@@ -645,8 +662,8 @@ public:
 class FieldClass172220 : public FieldClass179330
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172220();
+
     u8 unk248[8];
 };
 
@@ -659,10 +676,11 @@ public:
     {
         unkd0 = D_001B64B8;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass17A810()
     {
     }
+
     u8 unkcc[4];
     u32 unkd0;
 };
@@ -671,8 +689,8 @@ public:
 class FieldClass1722C0 : public FieldClass17A810
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass1722C0();
+
     u8 unkd4[0xC];
 };
 
@@ -695,10 +713,11 @@ public:
         unk57 = 0;
         unk04 = 1;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass172870()
     {
     }
+
     float unk30;
     u8 unk34[4];
     float unk38;
@@ -735,10 +754,11 @@ public:
         unk57 = 0;
         unk04 = 1;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass172BB0()
     {
     }
+
     float unk30;
     u8 unk34[4];
     float unk38;
@@ -775,10 +795,11 @@ public:
         unk57 = 0;
         unk04 = 1;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass172EF0()
     {
     }
+
     float unk30;
     u8 unk34[4];
     float unk38;
@@ -815,10 +836,11 @@ public:
         unk57 = 0;
         unk04 = 1;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass1734A0()
     {
     }
+
     float unk30;
     u8 unk34[4];
     float unk38;
@@ -846,10 +868,11 @@ public:
         unkb0 = 0;
         unkb4 = 0;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass172530()
     {
     }
+
     u8 unk58[0x58];
     u32 unkb0;
     u32 unkb4;
@@ -864,10 +887,11 @@ public:
     {
         unkc0 = D_001B64B8;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass172460()
     {
     }
+
     u8 unkb8[8];
     u32 unkc0;
 };
@@ -876,7 +900,6 @@ public:
 class FieldClass1727A0 : public FieldClass172870
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass1727A0()
     {
     }
@@ -891,10 +914,11 @@ public:
     {
         unkb0 = D_001B64B8;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass1726D0()
     {
     }
+
     u8 unk58[0x58];
     u32 unkb0;
 };
@@ -903,7 +927,6 @@ public:
 class FieldClass172AE0 : public FieldClass172BB0
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172AE0()
     {
     }
@@ -918,10 +941,11 @@ public:
     {
         unkb0 = D_001B64B8;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass172A10()
     {
     }
+
     u8 unk58[0x58];
     u32 unkb0;
 };
@@ -930,7 +954,6 @@ public:
 class FieldClass172E20 : public FieldClass172EF0
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172E20()
     {
     }
@@ -945,10 +968,11 @@ public:
     {
         unkb0 = D_001B64B8;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass172D50()
     {
     }
+
     u8 unk58[0x58];
     u32 unkb0;
 };
@@ -957,7 +981,6 @@ public:
 class FieldClass173160 : public FieldClass1734A0
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass173160()
     {
     }
@@ -972,10 +995,11 @@ public:
     {
         unkb0 = D_001B64B8;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass173090()
     {
     }
+
     u8 unk58[0x58];
     u32 unkb0;
 };
@@ -984,7 +1008,6 @@ public:
 class FieldClass1733D0 : public FieldClass1734A0
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass1733D0()
     {
     }
@@ -999,10 +1022,11 @@ public:
     {
         unkb0 = D_001B64B8;
     }
-    /** Destroy the receiver through its primary base. */
+
     virtual ~FieldClass173300()
     {
     }
+
     u8 unk58[0x58];
     u32 unkb0;
 };
@@ -1011,8 +1035,8 @@ public:
 class FieldClass172390 : public FieldClass172460
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172390();
+
     u8 unkc4[0xC];
 };
 
@@ -1020,8 +1044,8 @@ public:
 class FieldClass172600 : public FieldClass1726D0
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172600();
+
     u8 unkb4[0xC];
 };
 
@@ -1029,8 +1053,8 @@ public:
 class FieldClass172940 : public FieldClass172A10
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172940();
+
     u8 unkb4[0xC];
 };
 
@@ -1038,8 +1062,8 @@ public:
 class FieldClass172C80 : public FieldClass172D50
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172C80();
+
     u8 unkb4[0xC];
 };
 
@@ -1047,8 +1071,8 @@ public:
 class FieldClass172FC0 : public FieldClass173090
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass172FC0();
+
     u8 unkb4[0xC];
 };
 
@@ -1056,8 +1080,8 @@ public:
 class FieldClass173230 : public FieldClass173300
 {
 public:
-    /** Destroy the receiver through its primary base. */
     virtual ~FieldClass173230();
+
     u8 unkb4[0xC];
 };
 

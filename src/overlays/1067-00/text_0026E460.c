@@ -35,15 +35,18 @@ void* func_0026EB20(void* object, s32 count)
     s32 traversed;
     node = *(void**)(*(u8**)object + 4);
     traversed = 0;
+
     while (traversed < count)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = *(void**)((u8*)node + 4);
         traversed += 1;
     }
+
     return node;
 }
 
@@ -55,15 +58,18 @@ void* func_0026EBF0(void* object, s32 count)
     s32 traversed;
     node = *(void**)(*(u8**)object + 4);
     traversed = 0;
+
     while (traversed < count)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = *(void**)((u8*)node + 4);
         traversed += 1;
     }
+
     return node;
 }
 

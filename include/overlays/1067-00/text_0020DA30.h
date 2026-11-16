@@ -9,14 +9,14 @@
 class FieldClass1515B0 : public FieldListObject
 {
 public:
-    /** @brief Initialize the inherited list node. */
     FieldClass1515B0()
     {
     }
-    /** @brief Destroy the shape node. */
+
     virtual ~FieldClass1515B0()
     {
     }
+
     /**
      * @brief Bind the descriptor, shape data and starting record index.
      * @param shape Descriptor associated with the node.
@@ -24,6 +24,7 @@ public:
      * @param index Starting record index.
      */
     virtual void func_0020DBC0(FieldShapeOwner18* shape, FieldShapeData10* data, s32 index);
+
     FieldShapeData10* unk14;
     FieldShapeOwner18* unk18;
     s32 unk1c;
@@ -38,8 +39,9 @@ public:
     {
         unk20 = 0;
     }
-    /** @brief Destroy the specialized shape node. */
+
     virtual ~FieldClass1515E0();
+
     /**
      * @brief Bind shape data and find the transform's associated kind-seven node.
      * @param shape Descriptor associated with the node.
@@ -47,17 +49,17 @@ public:
      * @param index Starting record index.
      */
     virtual void func_0020DBC0(FieldShapeOwner18* shape, FieldShapeData10* data, s32 index);
+
     FieldListObject* unk20;
 };
 /** Shape node used for descriptors whose kind lies in the range 0x40-0x7E. */
 class FieldClass151590 : public FieldClass1515B0
 {
 public:
-    /** @brief Initialize the inherited shape node. */
     FieldClass151590()
     {
     }
-    /** @brief Destroy the shape node. */
+
     virtual ~FieldClass151590();
 };
 
@@ -65,12 +67,12 @@ public:
 class FieldClass151600 : public FieldClass1515B0
 {
 public:
-    /** @brief Initialize the inherited shape node. */
     FieldClass151600()
     {
     }
-    /** @brief Destroy the shape node and its inherited list state. */
+
     virtual ~FieldClass151600();
+
     /**
      * @brief Bind the descriptor and compute its matrix and plane.
      * @param shape Associated shape descriptor.
@@ -78,6 +80,7 @@ public:
      * @param index Record index.
      */
     virtual void func_0020DBC0(FieldShapeOwner18* shape, FieldShapeData10* data, s32 index);
+
     LibMatrix44Value unk20;
     FieldVec4A unk60;
 };
@@ -94,21 +97,60 @@ struct FieldShapeOwner18;
 #ifdef __cplusplus
 extern "C" {
 #endif
-/** @brief Create nodes for range-kind descriptors and mark their records. @param object Shape data and node lists. @param shape First descriptor in the terminated array. */
+/**
+ * @brief Create nodes for range-kind descriptors and mark their records.
+ * @param object Shape data and node lists.
+ * @param shape First descriptor in the terminated array.
+ */
 void func_0020DA30(struct FieldClass151640* object, struct FieldShapeOwner18* shape);
-/** @brief Create shape nodes for descriptors. @param object Shape data and destination lists. @param shape First descriptor in the terminated array. */
+
+/**
+ * @brief Create shape nodes for descriptors.
+ * @param object Shape data and destination lists.
+ * @param shape First descriptor in the terminated array.
+ */
 void func_0020DBD0(struct FieldClass151640* object, struct FieldShapeOwner18* shape);
-/** @brief Create shape nodes and optional animation attachments. @param object Shape data and destination lists. @param context Optional animation context. */
+
+/**
+ * @brief Create shape nodes and optional animation attachments.
+ * @param object Shape data and destination lists.
+ * @param context Optional animation context.
+ */
 void func_0020DDD0(struct FieldClass151640* object, struct FieldContext26FF70* context);
-/** @brief Refresh the named transforms of the attached shape entries. @param object Shape data and list owner. */
+
+/**
+ * @brief Refresh the named transforms of the attached shape entries.
+ * @param object Shape data and list owner.
+ */
 void func_0020DE80(struct FieldClass151640* object);
-/** @brief Move source nodes into the inherited shape list. @param object Destination shape list owner. @param source Source list. */
+
+/**
+ * @brief Move source nodes into the inherited shape list.
+ * @param object Destination shape list owner.
+ * @param source Source list.
+ */
 void func_0020DEF0(struct FieldClass151640* object, struct LibUpdateList* source);
-/** @brief Move the inherited shape nodes into a destination list. @param object Source shape list owner. @param destination Destination list. */
+
+/**
+ * @brief Move the inherited shape nodes into a destination list.
+ * @param object Source shape list owner.
+ * @param destination Destination list.
+ */
 void func_0020DF80(struct FieldClass151640* object, struct LibUpdateList* destination);
-/** @brief Detach and delete an optional shape node. @param object Shape list owner. @param node Node to remove, or null. */
+
+/**
+ * @brief Detach and delete an optional shape node.
+ * @param object Shape list owner.
+ * @param node Node to remove, or null.
+ */
 void func_0020E090(struct FieldClass151640* object, struct FieldListObject* node);
-/** @brief Append the shape entry and bind an optional animation attachment. @param object Shape list owner. @param entry Entry to append. @return Created attachment, or null. */
+
+/**
+ * @brief Append the shape entry and bind an optional animation attachment.
+ * @param object Shape list owner.
+ * @param entry Entry to append.
+ * @return Created attachment, or null.
+ */
 struct FieldClass151570* func_0020E0D0(struct FieldClass151640* object, struct FieldClass151620* entry);
 #ifdef __cplusplus
 }

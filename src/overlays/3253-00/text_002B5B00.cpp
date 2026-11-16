@@ -2,26 +2,47 @@
 #include "overlays/3253-00/text_002B5B00.h"
 
 extern "C" void func_0036ABF0(void* first, void* second, void* third, void* fourth, u32 flags);
+
 extern "C" void func_00298370(void* object);
+
 extern "C" void func_002A6040(void);
+
 extern "C" void func_002A6780(void);
+
 extern "C" void func_002B3270(void* object);
+
 extern "C" void func_002825F0(void* object, s32 value);
+
 extern "C" void func_002B3BC0(void* object, u8 value);
+
 extern "C" void func_002B8FB0(void* receiver, s32 value);
+
 extern "C" u8 func_003ADF00(void* object);
+
 extern "C" u8 func_003C3B80(void* object);
+
 extern "C" float func_4E70B0(float value);
+
 extern "C" void func_4D7EB0(void* object);
+
 extern "C" void func_003B09E0(void* object, s32 value);
+
 extern "C" void func_003B0E50(void* object, s32 value);
+
 extern "C" void func_002B39A0(void* object, s32 value);
+
 extern "C" void func_100D60(void* object);
+
 extern "C" void func_0026D7A0(void* object, s32 value);
+
 extern "C" void func_100CB0(void* object);
+
 extern "C" void func_00272990(void* object);
+
 extern "C" void func_0026F920(void* object, s32 value);
+
 extern "C" u32 func_4A1120(u32 value, const void* data);
+
 extern "C" const u8 D_3E27A8[];
 extern "C" const u8 D_3E22A8[];
 extern "C" const u8 D_3E26F8[];
@@ -61,11 +82,17 @@ extern "C" const u8 D_157600[];
 extern "C" const u8 D_1575F0[];
 extern "C" const u8 D_15B140[];
 extern "C" const u8 D_15B410[];
+
 extern "C" u32 func_4A0B70(u32 value, const void* data);
+
 extern "C" const u8 D_3E28A8[];
+
 extern "C" float func_4E1F10(s32 value);
+
 extern "C" void func_003C37C0(void* object, s32 value);
+
 extern "C" void func_100D60(void* object);
+
 extern "C" void func_002826F0(void);
 
 struct FieldValue194
@@ -98,12 +125,14 @@ struct FieldFloat04
 s32 func_002B5CA0(void* object, const void* value, float* result0, float* result1)
 {
     const FieldFloat04* input = (const FieldFloat04*)value;
+
     if (input->unk04 > 0.0f)
     {
         *result0 = 0.0f;
         *result1 = 0.05f;
         return 1;
     }
+
     return 0;
 }
 
@@ -119,24 +148,29 @@ void* func_002B5CE0(void* receiver, s16 value)
     if (receiver != 0)
     {
         object->vtable = D_15A5C0;
+
         if (receiver != 0)
         {
             object->vtable = D_157610;
             func_4D7EB0(receiver);
+
             if (receiver != 0)
             {
                 object->vtable = D_157600;
+
                 if (receiver != 0)
                 {
                     object->vtable = D_1575F0;
                 }
             }
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -157,24 +191,29 @@ void* func_002B5D80(void* receiver, s16 value)
     if (receiver != 0)
     {
         object->vtable = D_15A5E0;
+
         if (receiver != 0)
         {
             object->vtable = D_157610;
             func_4D7EB0(receiver);
+
             if (receiver != 0)
             {
                 object->vtable = D_157600;
+
                 if (receiver != 0)
                 {
                     object->vtable = D_1575F0;
                 }
             }
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -183,10 +222,12 @@ float func_002B5E10(void* receiver)
     FieldValue194* object = (FieldValue194*)receiver;
     float result = 0.0f;
     s32 child = object->unk194;
+
     if (child != 0)
     {
         result = func_4E1F10(child);
     }
+
     return result;
 }
 
@@ -227,11 +268,13 @@ void* func_002B5F30(void* receiver, s16 value)
         object->unkD4 = D_15A71C;
         object->unk2C4 = D_15A734;
         func_0026D7A0(receiver, 0);
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -267,33 +310,40 @@ void* func_002B5FD0(void* receiver, s16 value)
         object->vtable = D_15A8C0;
         object->unk2A8 = D_15A8E4;
         object->unk46C = D_15A920;
+
         if (receiver != 0)
         {
             object->vtable = D_15A940;
             object->unk2A8 = D_15A964;
             object->unk46C = D_15A9A0;
+
             if (object->unk4D8 != 0)
             {
                 func_100CB0(object->unk4D8);
                 object->unk4D8 = 0;
             }
+
             func_00272990(receiver);
             func_0026F920(receiver, 0);
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
 void func_002B60A0(u8* receiver, void* value1, void* value2, void* value3)
 {
     u8* adjusted = receiver;
+
     if (adjusted != 0) {
         adjusted = adjusted + 0x290;
     }
+
     func_0036ABF0(receiver + 0x450, adjusted, value1, value2, 1);
 }
 
@@ -322,24 +372,29 @@ void* func_002B6100(void* receiver, s16 value)
     if (receiver != 0)
     {
         object->vtable = D_15AC00;
+
         if (receiver != 0)
         {
             object->vtable = D_157610;
             func_4D7EB0(receiver);
+
             if (receiver != 0)
             {
                 object->vtable = D_157600;
+
                 if (receiver != 0)
                 {
                     object->vtable = D_1575F0;
                 }
             }
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -369,24 +424,29 @@ void* func_002B6270(void* receiver, s16 value)
     if (receiver != 0)
     {
         object->vtable = D_15ACC0;
+
         if (receiver != 0)
         {
             object->vtable = D_157610;
             func_4D7EB0(receiver);
+
             if (receiver != 0)
             {
                 object->vtable = D_157600;
+
                 if (receiver != 0)
                 {
                     object->vtable = D_1575F0;
                 }
             }
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -555,15 +615,25 @@ struct FieldListResult
 struct FieldListReceiver
 {
     virtual void slot00() = 0;
+
     virtual void slot04() = 0;
+
     virtual void slot08() = 0;
+
     virtual void slot0C() = 0;
+
     virtual void slot10() = 0;
+
     virtual void slot14() = 0;
+
     virtual void slot18() = 0;
+
     virtual void slot1C() = 0;
+
     virtual void slot20() = 0;
+
     virtual void slot24() = 0;
+
     virtual FieldListResult* getList() = 0;
 };
 
@@ -584,10 +654,12 @@ s32 func_002B6580(void* receiver)
             {
                 return 1;
             }
+
             i++;
             values++;
         }
     }
+
     return 0;
 }
 
@@ -607,17 +679,21 @@ s32 func_002B6600(void* receiver)
     {
         return 0;
     }
+
     s32 count = list->count;
     s32 set_count = 0;
     u32 index = 0;
+
     while ((s32)index < count)
     {
         if ((list->words[index >> 6] >> (index & 0x3F)) & 1)
         {
             set_count++;
         }
+
         index++;
     }
+
     return set_count;
 }
 
@@ -678,6 +754,7 @@ void* func_002B68C0(void* receiver, s16 value)
     {
         object->vtable = D_15B060;
         object->unk2A8 = D_15B084;
+
         if (receiver != 0)
         {
             object->vtable = D_169320;
@@ -685,11 +762,13 @@ void* func_002B68C0(void* receiver, s16 value)
             func_003B0E50((u8*)receiver + 0x290, 0);
             func_002B39A0(receiver, 0);
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -721,10 +800,12 @@ s32 func_002B8CD0(void* receiver)
 {
     FieldByte448* object = (FieldByte448*)receiver;
     object->unk448 = 0;
+
     if (func_003ADF00(receiver) == 0)
     {
         return 0;
     }
+
     func_002B3BC0((u8*)receiver + 0x1F0, 1);
     return 1;
 }
@@ -754,10 +835,12 @@ struct FieldHalfword2F28
 void func_002B9CB0(void* receiver, s32 value)
 {
     FieldHalfword2F28* object = (FieldHalfword2F28*)receiver;
+
     if ((value & 0xFF) == 8)
     {
         object->unk2F28 = 1;
     }
+
     func_002A6040();
 }
 
@@ -772,6 +855,7 @@ struct FieldBytesCE1CEE
 void func_002B9CF0(void* receiver, s32 value)
 {
     FieldBytesCE1CEE* object = (FieldBytesCE1CEE*)receiver;
+
     if (object->unkCE1 != 0 && object->unkCEE == 0x21)
     {
         func_002B8FB0(receiver, value);
@@ -840,11 +924,13 @@ void* func_002BB780(void* receiver, s16 value)
         FieldVtable* object = (FieldVtable*)receiver;
         object->vtable = D_15B140;
         func_002825F0(receiver, 0);
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -897,6 +983,7 @@ void* func_002BC470(void* receiver, s16 value)
     {
         object->vtable = D_15B250;
         object->unk2A8 = D_15B274;
+
         if (receiver != 0)
         {
             object->vtable = D_169320;
@@ -904,11 +991,13 @@ void* func_002BC470(void* receiver, s16 value)
             func_003B0E50((u8*)receiver + 0x290, 0);
             func_002B39A0(receiver, 0);
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -953,6 +1042,7 @@ void* func_002BDF20(void* receiver, s16 value)
     {
         object->vtable = D_169EF0;
         object->unk2A8 = D_169F14;
+
         if (receiver != 0)
         {
             object->vtable = D_169320;
@@ -960,11 +1050,13 @@ void* func_002BDF20(void* receiver, s16 value)
             func_003B0E50((u8*)receiver + 0x290, 0);
             func_002B39A0(receiver, 0);
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -1087,6 +1179,7 @@ s32 func_002C0A40(void* receiver)
     {
         return 0;
     }
+
     state.packed = object->unk60;
     value = &state.values[1];
     object->unk484 = *value;
@@ -1100,7 +1193,9 @@ s32 func_002C0A40(void* receiver)
 struct FieldReleaseObject
 {
     virtual void slot08() = 0;
+
     virtual void slot0C() = 0;
+
     virtual void release() = 0;
 };
 
@@ -1121,11 +1216,13 @@ void* func_002C0AE0(void* receiver, s16 value)
     {
         object->vtable = D_15B3B0;
         object->unk2A8 = D_15B3D4;
+
         if (object->unk478 != 0)
         {
             object->unk478->release();
             object->unk478 = 0;
         }
+
         if (receiver != 0)
         {
             object->vtable = D_169320;
@@ -1133,11 +1230,13 @@ void* func_002C0AE0(void* receiver, s16 value)
             func_003B0E50((u8*)receiver + 0x290, 0);
             func_002B39A0(receiver, 0);
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -1181,11 +1280,13 @@ void* func_002C2070(void* receiver, s16 value)
         FieldVtable* object = (FieldVtable*)receiver;
         object->vtable = D_15B410;
         func_002825F0(receiver, 0);
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -1257,10 +1358,12 @@ void* func_002C3FE0(void* receiver, s16 value)
     {
         object->vtable = D_15B520;
         object->unk2A8 = D_15B544;
+
         if (receiver != 0)
         {
             object->vtable = D_169EF0;
             object->unk2A8 = D_169F14;
+
             if (receiver != 0)
             {
                 object->vtable = D_169320;
@@ -1269,11 +1372,13 @@ void* func_002C3FE0(void* receiver, s16 value)
                 func_002B39A0(receiver, 0);
             }
         }
+
         if (value > 0)
         {
             func_100D60(receiver);
         }
     }
+
     return receiver;
 }
 
@@ -1312,10 +1417,12 @@ struct FieldBytes38EAnd5BC
 s32 func_002C42B0(void* receiver)
 {
     FieldBytes38EAnd5BC* object = (FieldBytes38EAnd5BC*)receiver;
+
     if (func_003C3B80(receiver) == 0)
     {
         return 0;
     }
+
     object->unk38E = 1;
     object->unk5BC = 0xF;
     return 1;

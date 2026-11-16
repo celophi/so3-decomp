@@ -172,9 +172,12 @@ struct FieldCollection50
     u8 pad[0x14];
     FieldEntry50* entries;
 };
+
 // This overlay uses shorter aliases for these resident functions.
 extern "C" void func_113EA0();
+
 extern "C" void func_4C74E0(FieldState100* state);
+
 extern "C" void func_462320(FieldState100* state, s32, s32);
 
 struct FieldWord28
@@ -287,22 +290,27 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002CABC0", func_002CAE
 void func_002CB100(FieldStateCB100* object, u32 mask)
 {
     object->mask = mask;
+
     if (mask & 1)
     {
         object->unk4b5_2 = 0;
     }
+
     if (mask & 2)
     {
         object->unk4b5_0 = 0;
     }
+
     if (mask & 4)
     {
         object->unk4b5_5 = 1;
     }
+
     if (mask & 0x10)
     {
         object->unk4b5_6 = 1;
     }
+
     if (mask & 0x100)
     {
         object->unk4b6_2 = 1;
@@ -323,22 +331,28 @@ FieldNameEntry* func_002CB9D0(FieldNameOwner* object, FieldNameGroup** group_ptr
     FieldNameGroup* group = *group_ptr;
     entry = (FieldNameEntry*)((u8*)group + 0x30);
     char buffer[17];
+
     for (s32 index = 0; index < group->count; index++, entry++)
     {
         const char* source = (const char*)(group->names + entry->name_index * 0x14 + 4);
         strncpy_guess(buffer, source, 16);
         buffer[16] = 0;
+
         if (strcmp(buffer, object->name) == 0)
         {
             return entry;
         }
     }
+
     return 0;
 }
 
 extern "C" int func_002CBAA0(void* object) { return 9; }
 
-/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+/**
+ * @brief Detach the object and add it to the resident release queue.
+ * @param object Object to release.
+ */
 extern "C" void func_002CBAB0(void* object)
 {
     lib_object_detach_owner(object);

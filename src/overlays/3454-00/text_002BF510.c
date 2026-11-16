@@ -21,6 +21,7 @@ typedef struct NestedWordResultOwnertext_002BF510
 } NestedWordResultOwnertext_002BF510;
 
 extern u32 func_473390(u32 value, const void* data);
+
 extern const u8 D_3E08F0[];
 extern const u8 D_3E06E0[];
 

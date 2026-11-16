@@ -145,6 +145,7 @@ void func_0024C340(FieldObject24C300* object);
 void* func_0024C380(FieldObject24C380* object);
 
 void func_00246960(FieldObject24C300* object);
+
 void func_002468A0(FieldObject24C300* object);
 
 /**

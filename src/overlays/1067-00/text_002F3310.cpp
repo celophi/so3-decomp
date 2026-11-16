@@ -2,6 +2,7 @@
 #include "overlays/1067-00/text_002F3310.h"
 
 extern "C" void func_114100(void* queue, void* submission);
+
 extern "C" void* D_001B6610;
 
 /** Partial receiver with a byte at offset 0x60. */
@@ -25,6 +26,7 @@ void FieldClass15BA10::func_001DD7B0()
         unk14->func_001DD7B0();
         unk14 = 0;
     }
+
     delete this;
 }
 
@@ -59,11 +61,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F3B
 void FieldClass15BA50::func_001DD7B0()
 {
     lib_object_detach_owner(this);
+
     if (unk18 != 0)
     {
         lib_object_detach_owner(this);
         unk18->func_001DD7B0();
     }
+
     unk18 = 0;
     delete this;
 }
@@ -113,7 +117,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F97
 
 extern "C" void func_4D00B0(void* object);
 
-/** @brief Forward the object to func_4D00B0. @param object Object to forward. */
+/**
+ * @brief Forward the object to func_4D00B0.
+ * @param object Object to forward.
+ */
 extern "C" void func_002F97C0(void* object)
 {
     func_4D00B0(object);
@@ -122,10 +129,12 @@ extern "C" void func_002F97C0(void* object)
 extern "C" void func_002F97E0(void* object)
 {
     u8* submission = static_cast<u8*>(object);
+
     if (object != 0)
     {
         submission += 0x90;
     }
+
     func_114100(D_001B6610, submission);
 }
 

@@ -38,7 +38,6 @@ class ItemListNode
         void* value;
         ItemListNode* next;
 
-        /** @brief Destroy the link without releasing its payload. */
         ~ItemListNode()
         {
         }
@@ -58,7 +57,6 @@ class ItemCoordinateNode
             x = y = 0.0f;
         }
 
-        /** @brief Destroy the link. */
         ~ItemCoordinateNode()
         {
         }
@@ -70,7 +68,11 @@ struct ItemCoordinate
     float x;
     float y;
 
-    /** @brief Store both coordinates. @param x Horizontal coordinate. @param y Vertical coordinate. */
+    /**
+     * @brief Store both coordinates.
+     * @param x Horizontal coordinate.
+     * @param y Vertical coordinate.
+     */
     ItemCoordinate(float x, float y) : x(x), y(y)
     {
     }
@@ -183,16 +185,28 @@ class ItemController : public LibDmaCallbacks, public FieldClass153E30
          */
         virtual s32 on_resource_loaded(void* buffer);
 
-        /** @brief Collect the owned valuables and create the menu windows. @return One. */
+        /**
+         * @brief Collect the owned valuables and create the menu windows.
+         * @return One.
+         */
         virtual s32 init_windows();
 
-        /** @brief Report whether window setup finished. @return Setup flag. */
+        /**
+         * @brief Report whether window setup finished.
+         * @return Setup flag.
+         */
         virtual u8 windows_ready();
 
-        /** @brief Return the loaded resource slot. @return Resource slot. */
+        /**
+         * @brief Return the loaded resource slot.
+         * @return Resource slot.
+         */
         virtual u32 get_resource_slot();
 
-        /** @brief Report this object's default list kind. @return Four. */
+        /**
+         * @brief Report this object's default list kind.
+         * @return Four.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Release the party selection and queue the controller's Field receiver. */
@@ -201,7 +215,10 @@ class ItemController : public LibDmaCallbacks, public FieldClass153E30
         /** @brief Release the loaded resources, detach the controller, and queue its receiver. */
         virtual void func_slot5c();
 
-        /** @brief Return the party selection. @return Party selection. */
+        /**
+         * @brief Return the party selection.
+         * @return Party selection.
+         */
         virtual FieldRecordSelection* selected_records();
 
         u32 resource_slot;
@@ -215,28 +232,16 @@ class ItemController : public LibDmaCallbacks, public FieldClass153E30
         ItemTypeListWindow* type_list_window;
         ItemControlHelpWindow* control_help_window;
         ItemListPanel* list_panel;
-
-        /** The windows aren't created when this is one. */
         u8 unk5c;
-
         u8 unk5d;
         u16 unk5e;
-
-        /** Indices of the valuables the player owns, in flag order. */
         u8 valuables[ITEM_VALUABLE_COUNT];
-
         s32 valuable_count;
         u8 unka8;
         u8 remove_flagged_records;
         s16 record_identifiers[5];
-
-        /** Category window row: 0 to 9, in the order of the category labels. */
         s32 selected_category;
-
-        /** One-based item type ID, or a valuable index while Valuables is selected. */
         u32 selected_item_type;
-
-        /** Individual item highlighted in the instance list, or null. */
         ItemCreationAllocationRecord* selected_allocation;
 };
 
@@ -252,7 +257,6 @@ class ItemDropConfirmWindow : public FieldClass15AE70
             no_text = 0;
         }
 
-        /** @brief Destroy the window. */
         virtual ~ItemDropConfirmWindow();
 
         /** @brief Enable the Yes/No grid while this is the focused window. */
@@ -283,9 +287,7 @@ class ItemDropConfirmWindow : public FieldClass15AE70
          */
         virtual s32 func_slotf4(u32 associated);
 
-        /** Two-column Yes/No grid; its unk114 is the selected column. */
         FieldObject23CEA0* grid;
-
         LibTextWidget* yes_text;
         LibTextWidget* no_text;
 };
@@ -317,7 +319,6 @@ class ItemHpMpGaugeDrawer : public FieldClass159A70
             characters = 0;
         }
 
-        /** @brief Release the drawing packet and base. */
         virtual ~ItemHpMpGaugeDrawer();
 
         /**
@@ -335,8 +336,6 @@ class ItemHpMpGaugeDrawer : public FieldClass159A70
         float row_spacing;
         s16 character_id;
         u8 unk3e[2];
-
-        /** Party character records, indexed by character_id. */
         ItemCharacterStats* characters;
 };
 
@@ -350,7 +349,6 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
             queued_for_release = 0;
         }
 
-        /** @brief Release the drawing and transform bases. */
         virtual ~ItemHpMpGauge();
 
         /** @brief Submit the drawing packet for DMA notification. */
@@ -359,7 +357,10 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
         /** @brief Leave the default update state unchanged. */
         virtual void update();
 
-        /** @brief Report the transform kind. @return Fourteen. */
+        /**
+         * @brief Report the transform kind.
+         * @return Fourteen.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Detach and queue the gauge for release. */
@@ -376,7 +377,10 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
          */
         virtual void func_0044B100(u32 first, u32 second, u32 third);
 
-        /** @brief Complete DMA notification processing. @param value Unused notification value. */
+        /**
+         * @brief Complete DMA notification processing.
+         * @param value Unused notification value.
+         */
         virtual void on_packet_complete(u32 value);
 
         /**
@@ -404,10 +408,12 @@ class ItemCoordinateSelector : public LibClass175030
             selected = -1;
         }
 
-        /** @brief Destroy the positions and the movement base. */
         virtual ~ItemCoordinateSelector();
 
-        /** @brief Report the intrusive object kind. @return Three. */
+        /**
+         * @brief Report the intrusive object kind.
+         * @return Three.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Leave the default update hook unchanged. */
@@ -417,8 +423,6 @@ class ItemCoordinateSelector : public LibClass175030
         virtual void render();
 
         ItemCoordinateList positions;
-
-        /** Index into positions, or -1. */
         s32 selected;
 };
 
@@ -426,12 +430,10 @@ class ItemCoordinateSelector : public LibClass175030
 class ItemListPanel : public FieldClass15AE70
 {
     public:
-        /** @brief Initialize the panel's Field base. */
         ItemListPanel()
         {
         }
 
-        /** @brief Destroy the panel window. */
         virtual ~ItemListPanel();
 
         /**
@@ -449,10 +451,12 @@ class ItemListPanel : public FieldClass15AE70
 class ItemTypeListWindow : public FieldClass15AD40
 {
     public:
-        /** @brief Clear the row widgets and link the controller. @param owner Parent item controller. */
+        /**
+         * @brief Clear the row widgets and link the controller.
+         * @param owner Parent item controller.
+         */
         ItemTypeListWindow(ItemController* owner);
 
-        /** @brief Destroy the item type list and the Field window. */
         virtual ~ItemTypeListWindow();
 
         /** @brief Process list input, publish the highlighted item type and move the row marker. */
@@ -464,10 +468,16 @@ class ItemTypeListWindow : public FieldClass15AD40
          */
         virtual u8 func_slotb0();
 
-        /** @brief Hide the cursor and return to the category window. @return Two. */
+        /**
+         * @brief Hide the cursor and return to the category window.
+         * @return Two.
+         */
         virtual u8 func_slotb4();
 
-        /** @brief Toggle sorting and refresh the visible rows. @return Zero for Valuables, otherwise one. */
+        /**
+         * @brief Toggle sorting and refresh the visible rows.
+         * @return Zero for Valuables, otherwise one.
+         */
         virtual u8 func_slotbc();
 
         /**
@@ -484,10 +494,16 @@ class ItemTypeListWindow : public FieldClass15AD40
          */
         virtual void func_slot10c(u32 unused, u32 cursor);
 
-        /** @brief Fill the visible rows with names and counts. @param start First list index. */
+        /**
+         * @brief Fill the visible rows with names and counts.
+         * @param start First list index.
+         */
         virtual void refresh_rows(s32 start);
 
-        /** @brief Position the row widgets. @param start Base vertical coordinate. */
+        /**
+         * @brief Position the row widgets.
+         * @param start Base vertical coordinate.
+         */
         virtual void set_scroll_position(float start);
 
         /**
@@ -497,16 +513,11 @@ class ItemTypeListWindow : public FieldClass15AD40
          */
         virtual void rebuild_list(s32 reset, s32 category);
 
-        /** ":" after each item name. */
         LibTextWidget* separators[14];
-
         LibObject174F20* counts[14];
         ItemController* controller;
         ItemTypeList item_types;
-
-        /** One bit per item type ID that includes a newly acquired item. */
         u32 new_item_types[24];
-
         u8 sort_enabled;
 };
 
@@ -514,7 +525,10 @@ class ItemTypeListWindow : public FieldClass15AD40
 class ItemCategoryWindow : public FieldClass15AE70
 {
     public:
-        /** @brief Initialize the controller link and window fields. @param owner Parent item controller. */
+        /**
+         * @brief Initialize the controller link and window fields.
+         * @param owner Parent item controller.
+         */
         ItemCategoryWindow(ItemController* owner)
         {
             selector = 0;
@@ -526,7 +540,6 @@ class ItemCategoryWindow : public FieldClass15AE70
             FieldClass15AE70();
         }
 
-        /** @brief Destroy the window. */
         virtual ~ItemCategoryWindow();
 
         /** @brief Publish the highlighted category and hide the Sort prompt while this window is focused. */
@@ -547,7 +560,10 @@ class ItemCategoryWindow : public FieldClass15AE70
          */
         virtual u8 func_slotb0();
 
-        /** @brief Handle Back by setting window state one with flag 0x80. @return Two. */
+        /**
+         * @brief Handle Back by setting window state one with flag 0x80.
+         * @return Two.
+         */
         virtual u8 func_slotb4();
 
         /**
@@ -586,7 +602,6 @@ class ItemControlHelpWindow : public FieldClass15AE70
             unkd0 = 0.0f;
         }
 
-        /** @brief Destroy the window. */
         virtual ~ItemControlHelpWindow();
 
         /**
@@ -596,9 +611,7 @@ class ItemControlHelpWindow : public FieldClass15AE70
          */
         virtual s32 func_slotf4(u32 associated);
 
-        /** Sort, Back and Select. */
         LibTextWidget* prompts[3];
-
         float width;
         float height;
         float scale;
@@ -626,7 +639,6 @@ class ItemHelpWindow : public FieldClass15AE70
             clip_width = 0.0f;
         }
 
-        /** @brief Destroy the window. */
         virtual ~ItemHelpWindow();
 
         /** @brief Hold the help line at its start for 120 frames, then scroll it left and wrap. */
@@ -646,10 +658,7 @@ class ItemHelpWindow : public FieldClass15AE70
         virtual s32 func_slotf4(u32 associated);
 
         LibTextWidget* text_display;
-
-        /** Help line width plus a six-pixel gap. */
         s32 scroll_extent;
-
         s16 delay_frames;
         u8 scrolling;
         u8 unkb3;
@@ -671,7 +680,6 @@ class ItemResourceWindow : public FieldClass15AE70
             right_tile = 0;
         }
 
-        /** @brief Destroy the window. */
         virtual ~ItemResourceWindow();
 
         /**
@@ -729,7 +737,10 @@ class ItemEquipWindow : public FieldClass15AE70
          */
         virtual u8 func_slotb0();
 
-        /** @brief Close the window and return to the instance list, or to the type list when none remain. @return Two. */
+        /**
+         * @brief Close the window and return to the instance list, or to the type list when none remain.
+         * @return Two.
+         */
         virtual u8 func_slotb4();
 
         /**
@@ -738,7 +749,10 @@ class ItemEquipWindow : public FieldClass15AE70
          */
         virtual s32 func_slotc0();
 
-        /** @brief Same as func_slotc0. @return Its result. */
+        /**
+         * @brief Same as func_slotc0.
+         * @return Its result.
+         */
         virtual s32 func_slotc4();
 
         /**
@@ -752,23 +766,13 @@ class ItemEquipWindow : public FieldClass15AE70
         ItemCoordinateSelector* selector;
         float x;
         float y;
-
-        /** Height of each character panel. */
         float row_height;
-
         s32 pulse_level;
         s32 pulse_step;
-
-        /** Equipment slot an accessory goes in: 2 for accessory 1, 3 for accessory 2. */
         s32 accessory_slot;
-
-        /** The help line was replaced and has to be restored on close. */
         u8 message_changed;
-
         u8 unkc9[3];
         ItemCreationOptionResourceDisplay* portraits[8];
-
-        /** "Up!", "Down!", "Same!" or "..." for ATK, DEF and INT. */
         LibTextWidget* stat_results[8][3];
 };
 
@@ -808,10 +812,16 @@ class ItemUseWindow : public FieldClass15AE70
         /** @brief Move the selector forward one member, wrapping after the eighth. */
         virtual void func_slot74();
 
-        /** @brief Use the selected item on the selected member. @return Three when it can't be used, otherwise zero. */
+        /**
+         * @brief Use the selected item on the selected member.
+         * @return Three when it can't be used, otherwise zero.
+         */
         virtual u8 func_slotb0();
 
-        /** @brief Close the window and return to the instance list, or to the type list when none remain. @return Two. */
+        /**
+         * @brief Close the window and return to the instance list, or to the type list when none remain.
+         * @return Two.
+         */
         virtual u8 func_slotb4();
 
         /**
@@ -825,10 +835,7 @@ class ItemUseWindow : public FieldClass15AE70
         ItemCoordinateSelector* selector;
         float x;
         float y;
-
-        /** Height of each character panel. */
         float row_height;
-
         ItemGaugeList gauges;
         LibObject174F20* hp_values[8];
         LibObject174F20* mp_values[8];
@@ -836,13 +843,8 @@ class ItemUseWindow : public FieldClass15AE70
         LibObject174F20* max_mp_values[8];
         LibStringLabel* names[8];
         ItemCreationOptionResourceDisplay* portraits[8];
-
-        /** Three status icons, then the incapacitated portrait. */
         ItemCreationOptionResourceDisplay* status_badges[8][4];
-
-        /** The help line was replaced and has to be restored on close. */
         u8 message_changed;
-
         u8 unk209[3];
 };
 
@@ -861,6 +863,7 @@ class ItemInstanceListWindow : public FieldClass15AD40
             {
                 item_rows[index] = 0;
             }
+
             details_shown = 0;
             model = 0;
             closing_details = 0;
@@ -920,10 +923,16 @@ class ItemInstanceListWindow : public FieldClass15AD40
          */
         virtual void func_slot10c(u32 rows, u32 cursor);
 
-        /** @brief Fill the visible rows. @param start First list index. */
+        /**
+         * @brief Fill the visible rows.
+         * @param start First list index.
+         */
         virtual void refresh_rows(s32 start);
 
-        /** @brief Position the rows. @param start Vertical offset. */
+        /**
+         * @brief Position the rows.
+         * @param start Vertical offset.
+         */
         virtual void set_scroll_position(float start);
 
         /**
@@ -932,41 +941,22 @@ class ItemInstanceListWindow : public FieldClass15AD40
          */
         void refresh_instances(s32 reset);
 
-        /** Name and modification number of each visible item. */
         LibObject172410* item_rows[6];
-
         LibObject172440* factors[8];
-
-        /** Line under the rows; it moves up while the details are shown. */
         ItemCreationClass172870* divider;
-
         LibPanel* panel;
-
-        /** "Drop / Details" prompt. */
         LibTextWidget* details_prompt;
-
-        /** "Back / Use"; with the details shown, "Switch / Back", or "Back" for a valuable. */
         LibTextWidget* action_prompt;
-
-        /** Icon showing how many factors each visible item has. */
         ItemCreationOptionResourceDisplay* factor_marks[6];
-
         LibContainer* detail_container;
         LibTextWidget* category_label;
         u8 unk1a0[4];
         LibTextWidget* description;
-
-        /** "Factor". */
         LibTextWidget* factor_heading;
-
-        /** Name of the selected item type, drawn large. */
         LibObject172410* selected_item;
-
         u8 details_shown;
         u8 unk1b1[7];
         FieldClass15BB90* model;
-
-        /** Set when the player asked to close the details; they close once the model is released. */
         u8 closing_details;
 };
 

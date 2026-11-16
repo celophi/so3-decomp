@@ -2,6 +2,7 @@
 #include "overlays/3454-00/text_0025DFE0.h"
 
 extern "C" u8 D_15EF20[];
+
 extern "C" void func_00263400(void* object);
 
 struct WrapperPointer200
@@ -11,8 +12,11 @@ struct WrapperPointer200
 };
 
 extern "C" void func_43B6A0(void);
+
 extern "C" void func_4D0020(void* object);
+
 extern "C" void func_4D7620(void* object);
+
 extern "C" u8 D_15BE00[];
 
 struct N59Receiver78_0025DFE0
@@ -26,7 +30,9 @@ struct N59Receiver78_0025DFE0
 
 extern "C" {
 void func_4D00B0(void* object);
+
 void func_002651E0(void* object);
+
 typedef struct ConstantByteSetterOwnertext_0025DFE0
 {
     u8 unk00[0x60];

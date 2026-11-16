@@ -120,39 +120,18 @@ enum BootTrackEndMode
 /** Bookkeeping every track keeps after its key storage: counts, the cached lookup and how it extends past its ends. */
 struct BootSequenceTail
 {
-    /** Whole key spans the last wrapped key was past the first key; negative before it. */
     s32 cycle_count;
-
-    /** Last key minus first key. */
     float span;
-
     s16 key_count;
     s16 key_capacity;
-
-    /** Lower key index the last search found; the next search starts there. */
     s16 search_index;
-
-    /** Lower key index the cached segment was built from; -1 after the keys change. */
     s16 segment_lower;
-
-    /** Upper key index the cached segment was built from; -1 after the keys change. */
     s16 segment_upper;
-
-    /** BootTrackEndMode applied before the first key. */
     u8 before_mode : 4;
-
-    /** BootTrackEndMode applied after the last key. */
     u8 after_mode : 4;
-
-    /** Set when either end extends its first or last keyframe segment. */
     u8 extends_segment : 1;
-
-    /** Set when the keys are bound from outside, so the track doesn't free them. */
     u8 external_keys : 1;
-
-    /** Set while the track belongs to a pool. */
     u8 pooled : 1;
-
     u8 unk13_3_7 : 5;
 };
 
@@ -166,7 +145,6 @@ class BootFloatHistoryBase
         /** @brief Forget the stored samples. */
         void reset();
 
-        // unk00, unk08 and unk0C are only ever cleared, here and in Lib's copy.
         u32 unk00;
         s16 sample_count;
         s16 next_index;
@@ -231,7 +209,6 @@ class BootVectorHistoryBase
         /** @brief Forget the stored samples. */
         void reset();
 
-        // unk00, unk14 and unk18 are only ever cleared, here and in Lib's copy.
         FieldVec4B unk00;
         s16 sample_count;
         s16 next_index;
@@ -292,7 +269,6 @@ class BootQuaternionHistoryBase
         /** @brief Forget the stored samples. */
         void reset();
 
-        // unk00, unk14 and unk18 are only ever cleared, here and in Lib's copy.
         FieldVec4B unk00;
         s16 sample_count;
         s16 next_index;
@@ -344,7 +320,6 @@ class BootSlerpQuaternionHistory : public BootQuaternionHistory
 class BootFloatSegmentBase
 {
     public:
-        /** @brief Install the vtable; the range is left unset. */
         BootFloatSegmentBase();
 
         float start_value;
@@ -391,7 +366,6 @@ class BootFloatSegment : public BootFloatSegmentBase
 class BootTrack
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~BootTrack()
         {
         }
@@ -641,10 +615,7 @@ class BootFloatTrackBase : public BootTrack
         u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
         BootFloatTrackKey* key_array;
-
-        /** Single cached keyframe, used before an array is allocated. */
         BootFloatTrackKey single_key;
-
         BootSequenceTail state;
 };
 
@@ -652,7 +623,6 @@ class BootFloatTrackBase : public BootTrack
 class BootFloatKeyTrack : public BootFloatTrackBase
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~BootFloatKeyTrack()
         {
         }
@@ -706,7 +676,6 @@ class BootFloatKeyTrack : public BootFloatTrackBase
 class BootFloatTrack : public BootFloatKeyTrack
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~BootFloatTrack()
         {
         }
@@ -745,10 +714,8 @@ class BootFloatTrack : public BootFloatKeyTrack
 class BootPooledFloatTrack : public BootFloatTrack
 {
     public:
-        /** @brief Construct the track. */
         BootPooledFloatTrack();
 
-        /** @brief Destroy the track. */
         virtual ~BootPooledFloatTrack();
 
         /** @brief Free the keys and give the track back to its pool; boot uses the Lib implementation. */
@@ -758,7 +725,6 @@ class BootPooledFloatTrack : public BootFloatTrack
 /** 16-byte keyframe of BootVectorTrackBase; the value's fourth component is its key. */
 struct BootVectorTrackKey
 {
-    /** @brief Leave the value uninitialized. */
     BootVectorTrackKey()
     {
     }
@@ -997,10 +963,7 @@ class BootVectorTrackBase : public BootTrack
 
         BootVectorTrackKey* key_array;
         u8 unk08[8];
-
-        /** Single cached keyframe, used before an array is allocated. */
         BootVectorTrackKey single_key;
-
         BootSequenceTail state;
 };
 
@@ -1008,7 +971,6 @@ class BootVectorTrackBase : public BootTrack
 class BootVectorKeyTrack : public BootVectorTrackBase
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~BootVectorKeyTrack()
         {
         }
@@ -1017,8 +979,11 @@ class BootVectorKeyTrack : public BootVectorTrackBase
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
         virtual s32 on_append_key(const FieldVec4A* value, float key);
+
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
+
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
+
         virtual void on_set_single_key(const FieldVec4A* value, float key);
 };
 
@@ -1026,7 +991,6 @@ class BootVectorKeyTrack : public BootVectorTrackBase
 class BootVectorTrack : public BootVectorKeyTrack
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~BootVectorTrack()
         {
         }
@@ -1035,8 +999,11 @@ class BootVectorTrack : public BootVectorKeyTrack
         virtual void reset_keys();
 
         virtual void get_end_delta(FieldVec4B* output) const;
+
         virtual void get_value_rate(FieldVec4B* output) const;
+
         virtual void reset_state();
+
         virtual FieldVec4A sample(float key);
 
         BootLinearVectorHistory sample_history;
@@ -1048,10 +1015,8 @@ class BootVectorTrack : public BootVectorKeyTrack
 class BootPooledVectorTrack : public BootVectorTrack
 {
     public:
-        /** @brief Construct the track. */
         BootPooledVectorTrack();
 
-        /** @brief Destroy the track. */
         virtual ~BootPooledVectorTrack();
 
         // Overrides of the base slots of the same names.
@@ -1063,7 +1028,6 @@ class BootPooledVectorTrack : public BootVectorTrack
 /** 32-byte keyframe of BootSlerpQuaternionTrackBase: a key and a rotation quaternion at offset 0x10. */
 struct BootSlerpQuaternionTrackKey
 {
-    /** @brief Leave the keyframe uninitialized. */
     BootSlerpQuaternionTrackKey();
 
     float key;
@@ -1290,15 +1254,9 @@ class BootSlerpQuaternionTrackBase : public BootTrack
 
         BootSlerpQuaternionTrackKey* key_array;
         u8 unk08[8];
-
-        /** Key of the single cached keyframe, used before an array is allocated. */
         float single_key;
-
         u8 unk14[0xC];
-
-        /** Value of the single cached keyframe. */
         FieldVec4B single_value;
-
         BootSequenceTail state;
 };
 
@@ -1306,7 +1264,6 @@ class BootSlerpQuaternionTrackBase : public BootTrack
 class BootSlerpQuaternionKeyTrack : public BootSlerpQuaternionTrackBase
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~BootSlerpQuaternionKeyTrack()
         {
         }
@@ -1315,8 +1272,11 @@ class BootSlerpQuaternionKeyTrack : public BootSlerpQuaternionTrackBase
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
 
         virtual s32 on_append_key(const FieldVec4A* value, float key);
+
         virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
+
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
+
         virtual void on_set_single_key(const FieldVec4A* value, float key);
 };
 
@@ -1324,22 +1284,20 @@ class BootSlerpQuaternionKeyTrack : public BootSlerpQuaternionTrackBase
 class BootPooledSlerpQuaternionTrack : public BootSlerpQuaternionKeyTrack
 {
     public:
-        /** @brief Construct the track. */
         BootPooledSlerpQuaternionTrack();
 
-        /** @brief Destroy the track. */
         virtual ~BootPooledSlerpQuaternionTrack();
 
         // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
 
         virtual void get_value_rate(FieldVec4B* output) const;
+
         virtual FieldVec4A sample(float key) const;
+
         virtual void return_to_pool();
 
-        /** Two-sample history the sampler fills and slerps through. */
         BootSlerpQuaternionHistory sample_history;
-
         u8 unkA0[0x20];
 };
 
@@ -1627,7 +1585,6 @@ class BootFloatCurveTrackBase : public BootTrack
 class BootFloatCurveTrack : public BootFloatCurveTrackBase
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~BootFloatCurveTrack()
         {
         }
@@ -1636,14 +1593,23 @@ class BootFloatCurveTrack : public BootFloatCurveTrackBase
         virtual s32 append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         virtual s32 replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
+
         virtual s32 insert_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
+
         virtual s32 read_key(s32 index, float* key, float* value, float* in_tangent, float* out_tangent) const;
+
         virtual void set_single_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
+
         virtual void reset_keys();
+
         virtual void get_end_delta(float* output) const;
+
         virtual void get_value_rate(float* output) const;
+
         virtual void reset_state();
+
         virtual float sample(float key);
+
         virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
         /**
@@ -1686,10 +1652,8 @@ class BootFloatCurveTrack : public BootFloatCurveTrackBase
 class BootPooledFloatCurveTrack : public BootFloatCurveTrack
 {
     public:
-        /** @brief Construct the track. */
         BootPooledFloatCurveTrack();
 
-        /** @brief Destroy the track. */
         virtual ~BootPooledFloatCurveTrack();
 };
 
@@ -1697,7 +1661,6 @@ class BootPooledFloatCurveTrack : public BootFloatCurveTrack
 class BootVectorSegmentBase
 {
     public:
-        /** @brief Install the vtable; the range is left unset. */
         BootVectorSegmentBase();
 
         FieldVec4B start_value;
@@ -1743,7 +1706,6 @@ class BootVectorSegment : public BootVectorSegmentBase
 /** 48-byte vector keyframe of BootVectorCurveTrackBase: a BootVectorTrackBase keyframe and two auxiliary vectors. */
 struct BootVectorCurveTrackKey : public BootVectorTrackKey
 {
-    /** @brief Leave the vectors uninitialized. */
     BootVectorCurveTrackKey()
     {
     }
@@ -2014,10 +1976,7 @@ class BootVectorCurveTrackBase : public BootTrack
 
         void* key_array;
         u8 unk08[8];
-
-        /** Single cached keyframe, used before an array is allocated. */
         BootVectorCurveTrackKey single_key;
-
         BootSequenceTail state;
         u8 unk54[0xC];
 };
@@ -2026,7 +1985,6 @@ class BootVectorCurveTrackBase : public BootTrack
 class BootVectorCurveTrack : public BootVectorCurveTrackBase
 {
     public:
-        /** @brief Destroy the track. */
         virtual ~BootVectorCurveTrack()
         {
         }
@@ -2035,14 +1993,23 @@ class BootVectorCurveTrack : public BootVectorCurveTrackBase
         virtual s32 append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         virtual s32 replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
         virtual s32 insert_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
         virtual s32 read_key(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
         virtual void set_single_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
         virtual void reset_keys();
+
         virtual void get_end_delta(FieldVec4B* output) const;
+
         virtual void get_value_rate(FieldVec4B* output) const;
+
         virtual void reset_state();
+
         virtual FieldVec4A sample(float key);
+
         virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
         /**
@@ -2085,10 +2052,8 @@ class BootVectorCurveTrack : public BootVectorCurveTrackBase
 class BootPooledVectorCurveTrack : public BootVectorCurveTrack
 {
     public:
-        /** @brief Construct the track. */
         BootPooledVectorCurveTrack();
 
-        /** @brief Destroy the track. */
         virtual ~BootPooledVectorCurveTrack();
 
         // Overrides of the base slots of the same names.
@@ -2101,13 +2066,10 @@ class BootPooledVectorCurveTrack : public BootVectorCurveTrack
 /** 32-byte keyframe of BootFloatQuaternionTrackBase: a key and a rotation quaternion at offset 0x10. */
 struct BootFloatQuaternionTrackKey
 {
-    /** @brief Leave the keyframe uninitialized. */
     BootFloatQuaternionTrackKey();
 
     float key;
     u8 unk04[0xC];
-
-    /** Rotation quaternion (x, y, z, w). */
     float value[4];
 };
 
@@ -2353,17 +2315,17 @@ class BootFloatQuaternionTrackBase : public BootTrack
 class BootPooledFloatQuaternionTrack : public BootFloatQuaternionTrackBase
 {
     public:
-        /** @brief Construct the track. */
         BootPooledFloatQuaternionTrack();
 
-        /** @brief Destroy the track. */
         virtual ~BootPooledFloatQuaternionTrack();
 
         // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
 
         virtual void get_value_rate(FieldVec4B* output) const;
+
         virtual FieldVec4A sample(float key) const;
+
         virtual void return_to_pool();
 
         u8 unk44[0x3C];
@@ -2372,16 +2334,11 @@ class BootPooledFloatQuaternionTrack : public BootFloatQuaternionTrackBase
 /** 48-byte keyframe of BootQuaternionCurveTrackBase: a key, a rotation quaternion and its squad control quaternion. */
 struct BootQuaternionCurveTrackKey
 {
-    /** @brief Leave the keyframe uninitialized. */
     BootQuaternionCurveTrackKey();
 
     float key;
     u8 unk04[0xC];
-
-    /** Rotation quaternion (x, y, z, w). */
     float value[4];
-
-    /** Inner control quaternion that squad blends through between this key and the next. */
     float control[4];
 };
 
@@ -2627,17 +2584,17 @@ class BootQuaternionCurveTrackBase : public BootTrack
 class BootPooledQuaternionCurveTrack : public BootQuaternionCurveTrackBase
 {
     public:
-        /** @brief Construct the track. */
         BootPooledQuaternionCurveTrack();
 
-        /** @brief Destroy the track. */
         virtual ~BootPooledQuaternionCurveTrack();
 
         // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
 
         virtual void get_value_rate(FieldVec4B* output) const;
+
         virtual FieldVec4A sample(float key) const;
+
         virtual void return_to_pool();
 
         u8 unk54[0x3C];
@@ -2660,9 +2617,7 @@ struct BootQuaternionTrackKey
         return *this;
     }
 
-    /** Rotation as the quaternion's x, y and z in 1.15 fixed point; w is rebuilt from them. */
     s16 packed_rotation[3];
-
     s16 key;
 };
 
@@ -2905,17 +2860,17 @@ class BootQuaternionTrackBase : public BootTrack
 class BootPooledQuaternionTrack : public BootQuaternionTrackBase
 {
     public:
-        /** @brief Construct the track. */
         BootPooledQuaternionTrack();
 
-        /** @brief Destroy the track. */
         virtual ~BootPooledQuaternionTrack();
 
         // Boot uses the Lib implementations of these.
         virtual void get_end_delta(FieldVec4B* output) const;
 
         virtual void get_value_rate(FieldVec4B* output) const;
+
         virtual FieldVec4A sample(float key) const;
+
         virtual void return_to_pool();
 
         u8 unk24[8];

@@ -2,6 +2,7 @@
 #include "overlays/3253-00/text_00243600.h"
 
 extern "C" void func_459DB0(void* object);
+
 extern "C" void func_459960(void* object);
 
 struct BattleByte92

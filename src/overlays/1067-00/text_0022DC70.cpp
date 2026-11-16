@@ -19,7 +19,9 @@
 // header limits them to C because their C++ declarations are class members.
 extern "C" {
 void func_00202580(void* object);
+
 s32 func_00202620(void* object);
+
 void func_00204370(void* object, u8 enable, s32 update);
 }
 
@@ -203,11 +205,13 @@ s32 FieldClass152DD0::func_0022E170()
 {
     FieldClass152E50* owner = static_cast<FieldClass152E50*>(this->owner);
     s32 enabled = (owner->unk7c->unk204 & 1) ? 1 : 0;
+
     if (enabled)
     {
         owner->unk78 = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -526,6 +530,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00231D
 void func_00231E30(FieldObject31E30* object, float value)
 {
     object->unk540 = value;
+
     if (object->attached != 0)
     {
         object->attached->unk94 = value;
@@ -540,6 +545,7 @@ void func_00232090(FieldObject232090* object, s8 value)
     {
         value = 4;
     }
+
     object->value = value;
     object->active = 1;
 }
@@ -555,6 +561,7 @@ void func_002320D0(FieldObject2320D0* object, bool value)
 void func_00232100(FieldObject2320D0* object, bool enable, s32 update)
 {
     func_00204370(object, enable, update);
+
     if (object->target != 0)
     {
         func_00206200(static_cast<FieldListAC*>(object->target), enable);
@@ -584,10 +591,12 @@ void func_00232690(FieldObject232640* object, u8 flags, float value)
     {
         object->previous = object->current;
     }
+
     object->current = 3;
     object->active = 0;
     object->flags = flags;
     object->value = value;
+
     if ((flags & 4) == 0)
     {
         object->table = object->mode ? D_3014A0 : D_3013A0;
@@ -601,6 +610,7 @@ FieldObject32710Result* func_00232710(FieldObject32710* object)
     {
         return 0;
     }
+
     return object->attached->target;
 }
 
@@ -616,6 +626,7 @@ s32 func_00232A10(void* object)
     {
         return 0;
     }
+
     func_00234110(object);
     return 1;
 }
@@ -627,6 +638,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_00232A
 void func_00233470(FieldObject233470* object, float first, float second, float third)
 {
     s32 set = (object->flags & 0x100) ? 1 : 0;
+
     if (!set)
     {
         object->unk20c = second;
@@ -640,10 +652,12 @@ void func_002334B0(FieldObject234B0* object)
 {
     object->flags &= ~0x40;
     object->current = object->previous;
+
     if ((object->flags & 0x20) == 0 && (object->flags & 0x2000000) == 0)
     {
         func_002274F0(object, &object->vector, 0.25f);
     }
+
     object->value = 15.0f;
 }
 
@@ -653,6 +667,7 @@ void func_00233620(void* object)
 {
     FieldObject2320D0* owner = static_cast<FieldObject2320D0*>(object);
     FieldListObject* attached = static_cast<FieldListObject*>(owner->target);
+
     if (attached != 0)
     {
         attached->func_001DD7B0();
@@ -670,15 +685,18 @@ void func_00233660(FieldObject232640* object)
 void func_002336B0(FieldObject232640* object, s32 state)
 {
     object->state = state;
+
     if (state == 0xFF)
     {
         FieldAttachment336B0* attachment = object->attachment;
+
         if (attachment != 0)
         {
             if (attachment->current != 0)
             {
                 lib_morph_target_set_weight((LibMorphTarget*)attachment->current, 0.0f);
             }
+
             if (attachment->target != 0)
             {
                 attachment->target->value = 0;
@@ -734,10 +752,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002387
 FieldClass152F00::~FieldClass152F00()
 {
     FieldResourceList14* resources = D_001B6430->context->unk2c;
+
     if (unk5cd_4)
     {
         func_00201870(resources, unk74, unk3ac);
     }
+
     operator delete(unk588);
     unk588 = 0;
 }
@@ -764,6 +784,7 @@ s32 func_00239880(FieldObject239880* object)
     {
         return 1;
     }
+
     return object->unk0c != 0;
 }
 
@@ -858,15 +879,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_0023AD
 extern "C" void field_request_loader_removal(FieldResourceLoaderList* owner, s16 load_kind)
 {
     FieldResourceLoadTask* loader;
+
     for (FieldResourceLoadTask* next = reinterpret_cast<FieldResourceLoadTask*>(owner->sentinel.next);;)
     {
         loader = next;
+
         if (!next || static_cast<void*>(&owner->sentinel) == next)
         {
             break;
         }
+
         // Removal can detach this node, so keep the following link first.
         next = static_cast<FieldResourceLoadTask*>(next->unk08);
+
         if (load_kind == -1 || static_cast<u8>(load_kind) == loader->get_load_kind())
         {
             loader->request_removal();
@@ -887,15 +912,18 @@ extern "C" u8 field_reclaim_loader_buffers(FieldResourceLoaderList* owner, Field
     LibUpdateList& list = *owner;
     lib_list_collect_nodes_by_kind(&list, owner->active_node_buffer);
     u8 released = 0;
+
     for (owner->active_node_index = owner->active_node_count - 1; owner->active_node_index >= 0; owner->active_node_index--)
     {
         FieldResourceLoadTask* loader = static_cast<FieldResourceLoadTask*>(owner->active_node_buffer[owner->active_node_index]);
+
         if (loader && loader->is_listed && excluded != loader && loader->poll_request_release() == 1)
         {
             released = 1;
             break;
         }
     }
+
     delete[] owner->active_node_buffer;
     owner->active_node_buffer = 0;
     return released;
@@ -912,23 +940,30 @@ void FieldResourceLoaderList::update_nodes()
     {
         return;
     }
+
     active_node_count = node_count;
+
     if (active_node_count == 0)
     {
         return;
     }
+
     void** items = new(0) void*[active_node_count];
+
     if (!items)
     {
         // This resident hook currently does no work, but still receives the selected heap.
         func_00113180(resident_get_allocation_heap());
         return;
     }
+
     LibUpdateList& list = *this;
     lib_list_collect_nodes_by_kind(&list, items);
+
     for (s32 index = 0; index < active_node_count; index++)
     {
         FieldResourceLoadTask* loader = static_cast<FieldResourceLoadTask*>(items[index]);
+
         if (loader && loader->is_listed)
         {
             if (index == 0)
@@ -941,6 +976,7 @@ void FieldResourceLoaderList::update_nodes()
             }
         }
     }
+
     delete[] items;
 }
 

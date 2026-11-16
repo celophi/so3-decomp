@@ -35,7 +35,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_0020FD
 
 extern "C" void func_4C61F0(void* object);
 
-/** @brief Forward the object to func_4C61F0. @param object Object to forward. */
+/**
+ * @brief Forward the object to func_4C61F0.
+ * @param object Object to forward.
+ */
 extern "C" void func_0020FE90(void* object)
 {
     func_4C61F0(object);
@@ -70,7 +73,10 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_002105
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020F9F0", func_00210770);
 
-/** @brief Forward the object to func_4C61F0. @param object Object to forward. */
+/**
+ * @brief Forward the object to func_4C61F0.
+ * @param object Object to forward.
+ */
 extern "C" void func_002107F0(void* object)
 {
     func_4C61F0(object);

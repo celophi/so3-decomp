@@ -161,8 +161,11 @@ struct FieldCollection50
     u8 pad[0x14];
     FieldEntry50* entries;
 };
+
 extern "C" void func_113EA0();
+
 extern "C" void func_4C74E0(FieldState100* state);
+
 extern "C" void func_462320(FieldState100* state, s32, s32);
 
 struct FieldWord28
@@ -318,6 +321,7 @@ class FieldClass15A1E0 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15A1E0();
+
     /** @brief Create the grid for this object. */
     virtual void func_slot30();
 };
@@ -529,15 +533,19 @@ extern "C" void func_002C1870(FieldClass15A230* object, s32 rows, s32 columns)
     object->unk20 = 0;
     delete[] object->unk18;
     object->unk18 = new (0) FieldClass15A220[rows + 2];
+
     if (object->unk18 == 0)
     {
         return;
     }
+
     delete object->unk1C;
+
     if (D_001B6684 != 0)
     {
         void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
+
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
@@ -545,6 +553,7 @@ extern "C" void func_002C1870(FieldClass15A230* object, s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         if (object->unk1C->unk08 == 0)
         {
             delete[] object->unk18;
@@ -554,17 +563,20 @@ extern "C" void func_002C1870(FieldClass15A230* object, s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         resident_exchange_allocation_heap(heap);
     }
     else
     {
         object->unk1C = new (0) FieldBitset154E80(rows);
+
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
             return;
         }
+
         if (object->unk1C->unk08 == 0)
         {
             delete[] object->unk18;
@@ -574,10 +586,12 @@ extern "C" void func_002C1870(FieldClass15A230* object, s32 rows, s32 columns)
             return;
         }
     }
+
     if (columns > 1)
     {
         delete[] object->unk24;
         object->unk24 = new (0) FieldClass154E60[rows * (columns - 1) + 2];
+
         if (object->unk24 == 0)
         {
             delete[] object->unk18;
@@ -592,14 +606,17 @@ extern "C" void func_002C1870(FieldClass15A230* object, s32 rows, s32 columns)
         delete[] object->unk24;
         object->unk24 = 0;
     }
+
     if (object->unk18 != 0)
     {
         object->unk14 = (u8*)(object->unk18 + 1);
     }
+
     if (object->unk24 != 0)
     {
         object->unk20 = (u8*)(object->unk24 + 1);
     }
+
     object->unk0C = rows;
     object->unk10 = columns;
     object->unk1C->clear();
@@ -665,6 +682,7 @@ class FieldClass15A570 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15A570();
+
     /** @brief Create the grid for this object. */
     virtual void func_slot30();
 };
@@ -679,6 +697,7 @@ extern "C" void func_002C29D0(FieldInputState* state, u8* input, u32 unk30)
 {
     state->input = input;
     state->unk30 = unk30;
+
     if (state->input[0] == 1)
     {
         state->mode = 1;
@@ -896,15 +915,19 @@ extern "C" void func_002C2D40(FieldClass15A5C0* object, s32 rows, s32 columns)
     object->unk20 = 0;
     delete[] object->unk18;
     object->unk18 = new (0) FieldClass15A5B0[rows + 2];
+
     if (object->unk18 == 0)
     {
         return;
     }
+
     delete object->unk1C;
+
     if (D_001B6684 != 0)
     {
         void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
+
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
@@ -912,6 +935,7 @@ extern "C" void func_002C2D40(FieldClass15A5C0* object, s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         if (object->unk1C->unk08 == 0)
         {
             delete[] object->unk18;
@@ -921,17 +945,20 @@ extern "C" void func_002C2D40(FieldClass15A5C0* object, s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         resident_exchange_allocation_heap(heap);
     }
     else
     {
         object->unk1C = new (0) FieldBitset154E80(rows);
+
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
             return;
         }
+
         if (object->unk1C->unk08 == 0)
         {
             delete[] object->unk18;
@@ -941,10 +968,12 @@ extern "C" void func_002C2D40(FieldClass15A5C0* object, s32 rows, s32 columns)
             return;
         }
     }
+
     if (columns > 1)
     {
         delete[] object->unk24;
         object->unk24 = new (0) FieldClass154E60[rows * (columns - 1) + 2];
+
         if (object->unk24 == 0)
         {
             delete[] object->unk18;
@@ -959,14 +988,17 @@ extern "C" void func_002C2D40(FieldClass15A5C0* object, s32 rows, s32 columns)
         delete[] object->unk24;
         object->unk24 = 0;
     }
+
     if (object->unk18 != 0)
     {
         object->unk14 = (u8*)(object->unk18 + 1);
     }
+
     if (object->unk24 != 0)
     {
         object->unk20 = (u8*)(object->unk24 + 1);
     }
+
     object->unk0C = rows;
     object->unk10 = columns;
     object->unk1C->clear();
@@ -998,7 +1030,10 @@ FieldClass15A690::~FieldClass15A690()
 {
 }
 
-/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+/**
+ * @brief Detach the object and add it to the resident release queue.
+ * @param object Object to release.
+ */
 extern "C" void func_002C3B70(void* object)
 {
     lib_object_detach_owner(object);
@@ -1027,6 +1062,7 @@ extern "C" void func_002C4FC0(FieldPair* object, FieldThing* first, FieldThing* 
 {
     object->first = first;
     object->second = second;
+
     if (object->second->unk45 == D_30EAFC[object->first->unk45 * 16])
     {
         object->flag0 = 1;
@@ -1052,6 +1088,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C55
 extern "C" void func_002C5640(FieldMotion* object, u8 value, s16 index, float rate)
 {
     object->flag4 = 1;
+
     if (index != -1)
     {
         object->unk3E = index;
@@ -1060,6 +1097,7 @@ extern "C" void func_002C5640(FieldMotion* object, u8 value, s16 index, float ra
     {
         object->unk3E = object->unk3C;
     }
+
     object->unk46 = value;
     object->unk41 = 0;
     object->unk30 = rate;
@@ -1073,6 +1111,7 @@ extern "C" void func_002C5A10(FieldMotion* object, s32 value, s32 mode, float ra
     {
         return;
     }
+
     object->flag0 = 1;
     object->flag1 = mode;
     object->unk40 = 0;
@@ -1087,6 +1126,7 @@ void FieldClass15AAB0::func_001DD7B0()
         unk2C->func_001DD7B0();
         unk2C = 0;
     }
+
     lib_object_detach_owner(this);
     resident_enqueue_object(g_resident_release_queues, this);
 }
@@ -1110,18 +1150,22 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002C04E0", func_002C77
 extern "C" void func_002C7780(FieldList* object)
 {
     FieldNode* node = &object->sentinel;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->sentinel == node)
         {
             break;
         }
+
         if (node->flags & 0x10000)
         {
             node->unk64 = 1;
         }
     }
+
     object->unk126 = 0;
 }
 
@@ -1195,6 +1239,7 @@ class FieldClass15AA70 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass15AA70();
+
     /** @brief Create the grid for this object. */
     virtual void func_slot30();
 };
@@ -1226,6 +1271,7 @@ extern "C" void func_002CA150(FieldSelector* object, const u8* value, void* cont
 {
     object->unk2C = value;
     object->unk30 = context;
+
     if (*object->unk2C == 1)
     {
         object->unk34 = 1;
@@ -1422,15 +1468,19 @@ extern "C" void func_002CA4B0(FieldClass15AB70* object, s32 rows, s32 columns)
     object->unk20 = 0;
     delete[] object->unk18;
     object->unk18 = new (0) FieldClass15AB58[rows + 2];
+
     if (object->unk18 == 0)
     {
         return;
     }
+
     delete object->unk1C;
+
     if (D_001B6684 != 0)
     {
         void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
+
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
@@ -1438,6 +1488,7 @@ extern "C" void func_002CA4B0(FieldClass15AB70* object, s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         if (object->unk1C->unk08 == 0)
         {
             delete[] object->unk18;
@@ -1447,17 +1498,20 @@ extern "C" void func_002CA4B0(FieldClass15AB70* object, s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         resident_exchange_allocation_heap(heap);
     }
     else
     {
         object->unk1C = new (0) FieldBitset154E80(rows);
+
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
             return;
         }
+
         if (object->unk1C->unk08 == 0)
         {
             delete[] object->unk18;
@@ -1467,10 +1521,12 @@ extern "C" void func_002CA4B0(FieldClass15AB70* object, s32 rows, s32 columns)
             return;
         }
     }
+
     if (columns > 1)
     {
         delete[] object->unk24;
         object->unk24 = new (0) FieldClass154E60[rows * (columns - 1) + 2];
+
         if (object->unk24 == 0)
         {
             delete[] object->unk18;
@@ -1485,14 +1541,17 @@ extern "C" void func_002CA4B0(FieldClass15AB70* object, s32 rows, s32 columns)
         delete[] object->unk24;
         object->unk24 = 0;
     }
+
     if (object->unk18 != 0)
     {
         object->unk14 = (u8*)(object->unk18 + 1);
     }
+
     if (object->unk24 != 0)
     {
         object->unk20 = (u8*)(object->unk24 + 1);
     }
+
     object->unk0C = rows;
     object->unk10 = columns;
     object->unk1C->clear();
