@@ -75,7 +75,12 @@ typedef struct ResidentClock
  */
 typedef struct ResidentArchive
 {
-    u8 unk00[0x18];
+    u8 unk00[0x10];
+#ifdef __cplusplus
+    ResidentSemaphore unk10;
+#else
+    u8 unk10[8];
+#endif
 
     /** Held while the clock is read or changed. */
 #ifdef __cplusplus
@@ -112,7 +117,9 @@ typedef struct ResidentArchive
     u8 unk5d;
     u8 unk5e;
     u8 unk5f;
-    u8 unk60[4];
+    u8 unk60;
+    u8 unk61;
+    u8 unk62[2];
     void* unk64;
     u8 unk68;
     u8 unk69;
@@ -132,10 +139,13 @@ typedef struct ResidentArchive
     /** Running timeout alarm, or -1. */
     s32 timeout_alarm;
 
-    u8 unk7c[0xC];
+    u8 unk7c[4];
+    u32 unk80;
+    void* unk84;
     s32 unk88;
     u32 unk8c;
-    u8 unk90[0xC];
+    u8 unk90[8];
+    s32 unk98;
 
     /** Listener notified when a read finishes, or null. */
     struct ResidentListener* listener;
@@ -148,7 +158,8 @@ typedef struct ResidentArchive
 
     u8 unka8[0x18];
     s32 unkc0;
-    u8 unkc4[5];
+    u32 unkc4;
+    u8 unkc8;
     u8 unkc9;
     u8 unkca[6];
 
@@ -1650,18 +1661,20 @@ s32 func_0011D470(ResidentArchive* archive);
  * @brief Select the resource the next read loads; main passes 1 for the IOP modules and 2 for the programs.
  * @param archive Resource archive.
  * @param key Resource key.
- * @return Nonzero when the resource was selected.
+ * @return One when the resource was selected, or zero while a read is running.
  */
 s32 func_0011D080(ResidentArchive* archive, s32 key);
 
 /**
- * @brief Start streaming the selected resource into a buffer.
+ * @brief Start streaming the selected resource through a ring buffer.
  * @param archive Resource archive.
- * @param buffer Destination.
- * @param size Buffer size in bytes.
- * @param flag Passed through.
+ * @param buffer Ring buffer.
+ * @param ring_size Ring size in bytes; a multiple of 64 KiB.
+ * @param size Bytes to read, or zero for the whole resource.
+ * @return One once the read is started, or zero while another read is running, the ring size is wrong or nothing is
+ * selected.
  */
-void func_0011C120(ResidentArchive* archive, void* buffer, u32 size, s32 flag);
+s32 func_0011C120(ResidentArchive* archive, void* buffer, u32 ring_size, s32 size);
 
 /**
  * @brief Stop the archive's streaming read.
@@ -1763,16 +1776,17 @@ bool func_0010C0E0(ResidentSif* sif, u32 handle);
 void func_0010BFA0(ResidentSif* sif, s32 command, void* source, void* destination, s32 size);
 
 /**
- * @brief Send a request to the IOP with the argument block from get_request_arguments.
+ * @brief Send a request to the IOP with the argument block from get_request_arguments: fill the next reply slot,
+ * number the request and release the request semaphore.
  * @param sif SIF link.
  * @param command Request command.
  * @param reply Receives the reply, or null.
- * @param arg3 Request argument.
- * @param arg4 Request argument.
- * @param arg5 Request argument.
+ * @param callback Called with the reply, or zero.
+ * @param argument Passed to callback.
+ * @param in_interrupt Nonzero when called with interrupts already disabled.
  * @return Request handle, or zero when every reply slot is taken.
  */
-u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 arg3, s32 arg4, s32 arg5);
+u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 callback, s32 argument, s32 in_interrupt);
 
 /**
  * @brief Move to the next reply slot and deliver the reply in the reply buffer to it.
@@ -2171,13 +2185,15 @@ void resident_archive_clear_unit_error(ResidentArchive* archive);
 s32 resident_archive_is_unit_ready(const ResidentArchive* archive);
 
 /**
- * @brief Start a query of the unit and any existing install when the unit is usable.
+ * @brief Start a query of the unit and any existing install when the unit is usable (worker command 6), or end it
+ * (command 7).
  * @param archive Resource archive.
- * @param first Nonzero to start the query.
- * @param second Selects which checks the query skips.
- * @return Nonzero when a query is running or already done.
+ * @param first Nonzero to start the query, zero to end it.
+ * @param second Nonzero to skip the unk139 check when starting.
+ * @return True when a query is running or already done (or ended); false while a read is running, the unit isn't
+ * usable or the worker couldn't start the command.
  */
-s32 resident_archive_query_unit(ResidentArchive* archive, s32 first, s32 second);
+bool resident_archive_query_unit(ResidentArchive* archive, s32 first, s32 second);
 
 /**
  * @brief Queue a command for the hard disk worker.
@@ -2611,6 +2627,16 @@ extern "C"
      * @return One when the music was queued or music is disabled, otherwise zero.
      */
     s32 resident_sound_play_music(ResidentSound* sound, s32 music, s32 stop_others, s32 value, s32 second);
+
+    /**
+     * @brief Start the pending music (unk33c): stop every queued track, stop the one being faded (or the stream's
+     * current one), then queue the pending key as the track being started.
+     * @param sound Sound system.
+     * @param key Stored at unk3c with the new track.
+     * @return One when the music was queued or music is disabled; zero when nothing is pending, the queue is busy or
+     * full.
+     */
+    s32 func_0010DBB0(ResidentSound* sound, s32 key);
 
     /**
      * @brief Stop music.

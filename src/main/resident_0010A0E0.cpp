@@ -1031,7 +1031,82 @@ bool func_0010C0E0(ResidentSif* sif, u32 handle)
     return false;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C200);
+/**
+ * @brief Send a request to the IOP with the argument block from get_request_arguments: fill the next reply slot,
+ * number the request and release the request semaphore.
+ * @param sif SIF link.
+ * @param command Request command.
+ * @param reply Receives the reply, or null.
+ * @param callback Called with the reply, or zero.
+ * @param argument Passed to callback.
+ * @param in_interrupt Nonzero when called with interrupts already disabled.
+ * @return Request handle, or zero when every reply slot is taken.
+ */
+u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 callback, s32 argument, s32 in_interrupt)
+{
+    if (!in_interrupt)
+    {
+        DIntr();
+    }
+
+    s32 read = sif->reply_index;
+    s32 index = sif->unk1C;
+
+    if (read == index)
+    {
+        if (!in_interrupt)
+        {
+            EIntr();
+            (void)sif->unk32C.signal();
+        }
+        else
+        {
+            (void)sif->unk32C.isignal();
+        }
+
+        return 0;
+    }
+
+    sif->replies[index].unk00 = command;
+    sif->replies[index].buffer = (u32*)reply;
+    sif->replies[index].callback = (void (*)(void*, void*))callback;
+    sif->replies[index].argument = (void*)argument;
+    sif->unk14++;
+
+    if (sif->unk14 == 0)
+    {
+        sif->unk14 = 1;
+    }
+
+    sif->replies[index].unk10 = sif->unk14;
+    index++;
+
+    if (index == 32)
+    {
+        index = 0;
+    }
+
+    sif->unk1C = index;
+
+    if (sif->unk2DC[0])
+    {
+        if (!in_interrupt)
+        {
+            EIntr();
+        }
+    }
+    else if (!in_interrupt)
+    {
+        EIntr();
+        (void)sif->unk32C.signal();
+    }
+    else
+    {
+        (void)sif->unk32C.isignal();
+    }
+
+    return sif->unk14;
+}
 
 /**
  * @brief Move to the next reply slot and deliver the reply in the reply buffer to it: copy it into the slot's buffer,
@@ -1471,7 +1546,115 @@ void resident_sound_set_volume_scale(ResidentSound* sound, s32 scale)
     func_00107250(sound->stream, 0, 0, 0, sound->scaled_volume);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010DBB0);
+/**
+ * @brief Stop a queued music track and remove it from the queue.
+ * @param sound Sound system.
+ * @param index Queue position of the track.
+ * @param mode Stop mode.
+ */
+static inline void sound_remove_music_track(ResidentSound* sound, s32 index, s32 mode)
+{
+    if (sound->music_count == 0)
+    {
+        return;
+    }
+
+    func_00107B60(sound->stream, 0, func_0010EE50, 0, sound->music_handles[index], mode, 0);
+
+    if (index == sound->unk38)
+    {
+        sound->unk38 = -1;
+        sound->unk40 = 0;
+    }
+
+    if (sound->unk38 > index)
+    {
+        sound->unk38--;
+    }
+
+    for (s32 i = index; i < sound->music_count; i++)
+    {
+        sound->music_handles[i] = sound->music_handles[i + 1];
+        sound->music_keys[i] = sound->music_keys[i + 1];
+    }
+
+    sound->music_count--;
+    sound->unk34--;
+}
+
+// TODO: This only matches at optimization level 4; the rest of the file is at 3.
+#pragma push
+#pragma optimization_level 4
+
+/**
+ * @brief Start the pending music (unk33c): stop every queued track, stop the one being faded (or the stream's
+ * current one), then queue the pending key as the track being started.
+ * @param sound Sound system.
+ * @param key Stored at unk3c with the new track.
+ * @return One when the music was queued or music is disabled; zero when nothing is pending, the queue is busy or full.
+ */
+s32 func_0010DBB0(ResidentSound* sound, s32 key)
+{
+    if (sound->music_disabled)
+    {
+        return 1;
+    }
+
+    if (sound->unk33c == 0)
+    {
+        return 0;
+    }
+
+    if (sound->unk350)
+    {
+        return 0;
+    }
+
+    if (sound->music_count != sound->unk34)
+    {
+        func_0010F250(sound, 0);
+        return 0;
+    }
+
+    if (sound->music_count != 0)
+    {
+        do
+        {
+            sound_remove_music_track(sound, 0, 0);
+        } while (sound->music_count != 0);
+    }
+
+    if (sound->state)
+    {
+        return 0;
+    }
+
+    s32 current = sound->unk38;
+
+    if (current >= 0)
+    {
+        sound_remove_music_track(sound, current, 0);
+    }
+    else if (func_00107B10(sound->stream, 0, 0, 0, 1))
+    {
+        func_00107B60(sound->stream, 0, func_0010EE50, 0, sound->unk338, 0, 0);
+    }
+
+    if (sound->music_count >= 3)
+    {
+        return 0;
+    }
+
+    sound->unk40 = sound->unk33c;
+    sound->state = 7;
+    sound->unk38 = sound->music_count;
+    sound->music_keys[sound->music_count++] = sound->unk33c;
+    sound->unk3c = key;
+    sound->unk33c = 0;
+    return 1;
+}
+
+#pragma pop
 
 /**
  * @brief Send stream command func_00107420 when unk30 is set and unk38 isn't minus one, then copy unk40 to unk33C.
@@ -1974,43 +2157,58 @@ static inline ResidentRequestSlot* request_slot(ResidentRequestSlot* slots, s32 
     return &slots[index];
 }
 
+// TODO: This only matches at optimization level 4; the rest of the file is at 3.
+#pragma push
+#pragma optimization_level 4
+
 /**
- * @brief Stop a queued music track and remove it from the queue.
+ * @brief Stop music.
  * @param sound Sound system.
- * @param index Queue position of the track.
- * @param mode Stop mode.
+ * @param fade_frames Frames to fade out over, or zero to stop at once.
+ * @param key Music to stop, or -1 for all of it.
+ * @return One when music was stopped or music is disabled, otherwise zero.
  */
-static inline void sound_remove_music_track(ResidentSound* sound, s32 index, s32 mode)
+s32 resident_sound_stop_music(ResidentSound* sound, s32 fade_frames, s32 key)
 {
+    if (sound->music_disabled)
+    {
+        return 1;
+    }
+
     if (sound->music_count == 0)
     {
-        return;
+        return 0;
     }
 
-    func_00107B60(sound->stream, 0, func_0010EE50, 0, sound->music_handles[index], mode, 0);
-
-    if (index == sound->unk38)
+    if (sound->music_count != sound->unk34)
     {
-        sound->unk38 = -1;
-        sound->unk40 = 0;
+        func_0010F250(sound, 0);
+        return 0;
     }
 
-    if (sound->unk38 > index)
+    if (key == -1)
     {
-        sound->unk38--;
+        while (sound->music_count != 0)
+        {
+            sound_remove_music_track(sound, 0, fade_frames);
+        }
+
+        return 1;
     }
 
-    for (s32 i = index; i < sound->music_count; i++)
+    for (s32 i = 0; i < sound->music_count; i++)
     {
-        sound->music_handles[i] = sound->music_handles[i + 1];
-        sound->music_keys[i] = sound->music_keys[i + 1];
+        if (sound->music_keys[i] == key)
+        {
+            sound_remove_music_track(sound, i, fade_frames);
+            return 1;
+        }
     }
 
-    sound->music_count--;
-    sound->unk34--;
+    return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_stop_music);
+#pragma pop
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010F250);
 
@@ -3007,9 +3205,178 @@ s32 resident_sound_is_music_playing(ResidentSound* sound, s32 key)
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_load_bank);
+// TODO: These two only match at optimization level 4; the rest of the file is at 3.
+#pragma push
+#pragma optimization_level 4
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_play_music);
+/**
+ * @brief Queue streamed music from a music file already in memory.
+ * @param sound Sound system.
+ * @param music Music file, non-null.
+ * @param stop_others Nonzero to stop the queued music first.
+ * @param value Stored for the music; its use is unknown.
+ * @return One when the music was queued or music is disabled, otherwise zero.
+ */
+s32 resident_sound_load_bank(ResidentSound* sound, const void* music, s32 stop_others, s32 value)
+{
+    if (sound->music_disabled)
+    {
+        return 1;
+    }
+
+    if (music == 0)
+    {
+        return 0;
+    }
+
+    if (stop_others)
+    {
+        while (sound->music_count != 0)
+        {
+            sound_remove_music_track(sound, 0, 0);
+        }
+    }
+
+    if (sound->state != RESIDENT_SOUND_IDLE)
+    {
+        return 0;
+    }
+
+    if (sound->unk38 >= 0)
+    {
+        sound_remove_music_track(sound, sound->unk38, 0);
+    }
+    else if (func_00107B10(sound->stream, 0, 0, 0, 1))
+    {
+        func_00107B60(sound->stream, 0, func_0010EE50, 0, sound->unk338, 0, 0);
+    }
+
+    if (sound->music_count >= 3)
+    {
+        return 0;
+    }
+
+    sound->unk40 = SOUND_RESOURCE_MUSIC_KEY;
+    sound->state = 8;
+    sound->unk368 = music;
+    sound->unk38 = sound->music_count;
+    sound->music_keys[sound->music_count++] = SOUND_RESOURCE_MUSIC_KEY;
+    sound->unk3c = value;
+    return 1;
+}
+
+/**
+ * @brief Queue music.
+ * @param sound Sound system.
+ * @param music Music number, from one.
+ * @param stop_others Nonzero to stop the queued music first.
+ * @param value Stored for the music; its use is unknown.
+ * @param second Stored for streamed music; nonzero also sets a flag.
+ * @return One when the music was queued or music is disabled, otherwise zero.
+ */
+s32 resident_sound_play_music(ResidentSound* sound, s32 music, s32 stop_others, s32 value, s32 second)
+{
+    if (sound->music_disabled)
+    {
+        return 1;
+    }
+
+    if (music == 0)
+    {
+        return 0;
+    }
+
+    if (sound->unk350)
+    {
+        return 0;
+    }
+
+    if (sound->music_entry_count < music)
+    {
+        return 0;
+    }
+
+    if (sound->music_count != sound->unk34)
+    {
+        func_0010F250(sound, 0);
+        return 0;
+    }
+
+    const ResidentMusicEntry* entry = &sound->music_entries[music - 1];
+
+    if (stop_others)
+    {
+        while (sound->music_count != 0)
+        {
+            sound_remove_music_track(sound, 0, 0);
+        }
+    }
+
+    if (!entry->in_memory)
+    {
+        if (sound->state != RESIDENT_SOUND_IDLE)
+        {
+            return 0;
+        }
+
+        if (sound->unk38 >= 0)
+        {
+            sound_remove_music_track(sound, sound->unk38, 0);
+        }
+        else if (func_00107B10(sound->stream, 0, 0, 0, 1))
+        {
+            func_00107B60(sound->stream, 0, func_0010EE50, 0, sound->unk338, 0, 0);
+        }
+
+        if (sound->music_count >= 3)
+        {
+            return 0;
+        }
+
+        sound->unk40 = music;
+        sound->state = 3;
+        sound->unk38 = sound->music_count;
+        sound->unk4d4 = second;
+
+        if (second)
+        {
+            sound->unk452 = 1;
+        }
+    }
+    else
+    {
+        if (sound->state != RESIDENT_SOUND_IDLE)
+        {
+            return 0;
+        }
+
+        if (sound->music_count >= 3)
+        {
+            return 0;
+        }
+
+        delete sound->unk400;
+        sound->unk404 = resident_get_resource_size(sound->archive, entry->resource);
+        sound->unk400 = (u8*)memalign(0x40, sound->unk404);
+
+        if (sound->unk400 == 0)
+        {
+            return 0;
+        }
+
+        resident_queue_resource_request(sound->resource_queue, entry->resource, sound->unk400, SOUND_MUSIC_READ_TAG,
+                                        SOUND_VOICE_READ_PRIORITY, 0, 0, 0, 1);
+        sound->state = 2;
+    }
+
+    sound->music_keys[sound->music_count++] = music;
+    sound->unk3c = value;
+    sound->unk3bc = 0;
+    sound->unk356 = 0;
+    return 1;
+}
+
+#pragma pop
 
 /**
  * @brief Set the table of music the sound system plays.
@@ -4459,7 +4826,7 @@ void resident_archive_clear_unit_error(ResidentArchive* archive)
  * @param archive Resource archive.
  * @return Whether an error is pending.
  */
-static inline bool archive_unit_error_pending(const ResidentArchive* archive)
+static inline bool archive_unit_error_pending(const ResidentArchive* const& archive)
 {
     return archive->unk140 || archive->unk6c;
 }
@@ -4474,7 +4841,114 @@ bool resident_archive_has_unit_error(const ResidentArchive* archive)
     return archive_unit_error_pending(archive);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_archive_query_unit);
+// TODO: This only matches with the conditional rebuild off: with it on, MWCC turns the inlined checks into
+// conditional expressions and their joins lose the padding nops the game has. Turning it off for the whole file
+// breaks seven other functions, so it was probably off just here.
+#pragma push
+#pragma opt_rebuildconditionals off
+
+/**
+ * @brief Get unk139, or zero while a unit error is pending.
+ * @param archive Resource archive.
+ * @return unk139, or zero.
+ */
+static inline s32 archive_unit_unk139(const ResidentArchive* archive)
+{
+    if (archive_unit_error_pending(archive))
+    {
+        return 0;
+    }
+
+    return archive->unk139;
+}
+
+/**
+ * @brief Get unkfc, or zero while a unit error is pending.
+ * @param archive Resource archive.
+ * @return unkfc, or zero.
+ */
+static inline s32 archive_unit_unkfc(const ResidentArchive* archive)
+{
+    if (archive_unit_error_pending(archive))
+    {
+        return 0;
+    }
+
+    return archive->unkfc;
+}
+
+/**
+ * @brief Get unit_ready, or zero while a unit error is pending.
+ * @param archive Resource archive.
+ * @return unit_ready, or zero.
+ */
+static inline s32 archive_unit_ready(const ResidentArchive* archive)
+{
+    if (archive_unit_error_pending(archive))
+    {
+        return 0;
+    }
+
+    return archive->unit_ready;
+}
+
+/**
+ * @brief Start a query of the unit and any existing install when the unit is usable (worker command 6), or end it
+ * (command 7).
+ * @param archive Resource archive.
+ * @param first Nonzero to start the query, zero to end it.
+ * @param second Nonzero to skip the unk139 check when starting.
+ * @return True when a query is running or already done (or ended); false while a read is running, the unit isn't
+ * usable or the worker couldn't start the command.
+ */
+bool resident_archive_query_unit(ResidentArchive* archive, s32 first, s32 second)
+{
+    if (archive->read_busy)
+    {
+        return 0;
+    }
+
+    if (!archive_unit_ready(archive))
+    {
+        return 0;
+    }
+
+    if (!archive_unit_unkfc(archive))
+    {
+        return 0;
+    }
+
+    if (first && !second && !archive_unit_unk139(archive))
+    {
+        return 0;
+    }
+
+    if (first)
+    {
+        if (!archive->unk12185)
+        {
+            if (archive_unit_error_pending(archive))
+            {
+                return 0;
+            }
+
+            archive->unk12185 = 1;
+            return func_00118880(archive->disk_worker(), 6, 0);
+        }
+
+        return 1;
+    }
+
+    if (archive->unk12185)
+    {
+        archive->unk12185 = 0;
+        return func_00118880(archive->disk_worker(), 7, 0);
+    }
+
+    return 1;
+}
+
+#pragma pop
 
 /**
  * @brief Get the result of the last worker command.
@@ -4891,7 +5365,97 @@ s32 func_0011BFD0(ResidentArchive* archive, u32* position)
     return result;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011C120);
+/**
+ * @brief Start streaming the selected resource through a ring buffer: reset the read state, keep the ring, mark the
+ * read busy and wake the disc thread.
+ * @param archive Resource archive.
+ * @param buffer Ring buffer.
+ * @param ring_size Ring size in bytes; a multiple of 64 KiB.
+ * @param size Bytes to read, or zero for the whole resource.
+ * @return One once the read is started, or zero while another read is running, the ring size is wrong or nothing is
+ * selected.
+ */
+s32 func_0011C120(ResidentArchive* archive, void* buffer, u32 ring_size, s32 size)
+{
+    if (archive->read_busy)
+    {
+        return 0;
+    }
+
+    if (ring_size & 0xFFFF)
+    {
+        return 0;
+    }
+
+    (void)archive->semaphore.wait();
+    u8 busy = archive->unk5c;
+    (void)archive->semaphore.signal();
+
+    if (busy)
+    {
+        return 0;
+    }
+
+    (void)archive->semaphore.wait();
+    archive->unk68 = 0;
+    (void)archive->semaphore.signal();
+
+    (void)archive->semaphore.wait();
+    archive->unk69 = 0;
+    (void)archive->semaphore.signal();
+
+    (void)archive->semaphore.wait();
+    archive->unk5e = 1;
+    (void)archive->semaphore.signal();
+
+    (void)archive->semaphore.wait();
+    archive->unk6a = 0;
+    (void)archive->semaphore.signal();
+
+    (void)archive->unk28.signal();
+    archive->unk12194 = (u32)buffer;
+    archive->unk121a0 = ring_size;
+    u32 end = (u32)buffer + archive->unk121a0 - 1;
+
+    (void)archive->semaphore.wait();
+    archive->unk8c = end;
+    (void)archive->semaphore.signal();
+
+    (void)archive->semaphore.wait();
+    archive->unk88 = 0;
+    (void)archive->semaphore.signal();
+
+    if (archive->unk12181)
+    {
+        if (size)
+        {
+            archive->unk80 = size;
+        }
+
+        archive->unk84 = buffer;
+        archive->read_busy = 1;
+        archive->unkc4 = 0;
+
+        (void)archive->semaphore.wait();
+
+        if (archive->unk5c)
+        {
+            (void)archive->semaphore.signal();
+        }
+        else
+        {
+            archive->unk5c = 1;
+            (void)archive->semaphore.signal();
+            (void)archive->unk10.signal();
+        }
+    }
+    else
+    {
+        return 0;
+    }
+
+    return 1;
+}
 
 void func_0011C6B0(void* object)
 {
@@ -5045,7 +5609,79 @@ u8 func_0011CB00(ResidentArchive* archive, s32 size, s32 key)
     return selected;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011CC00);
+/**
+ * @brief Start reading the resource func_0011D080 selected: reset the read state, keep the buffer and size, mark the
+ * read busy and wake the disc thread.
+ * @param archive Resource archive.
+ * @param buffer Destination.
+ * @param size Bytes to read, or zero for the whole resource.
+ * @return One once the read is started, or zero while another read is running or nothing is selected.
+ */
+s32 func_0011CC00(ResidentArchive* archive, void* buffer, s32 size)
+{
+    if (archive->read_busy)
+    {
+        return 0;
+    }
+
+    (void)archive->semaphore.wait();
+    u8 busy = archive->unk5c;
+    (void)archive->semaphore.signal();
+
+    if (busy)
+    {
+        return 0;
+    }
+
+    (void)archive->semaphore.wait();
+    archive->unk68 = 0;
+    (void)archive->semaphore.signal();
+
+    (void)archive->semaphore.wait();
+    archive->unk69 = 0;
+    (void)archive->semaphore.signal();
+
+    (void)archive->semaphore.wait();
+    archive->unk5e = 0;
+    (void)archive->semaphore.signal();
+
+    (void)archive->semaphore.wait();
+    archive->unk6a = 0;
+    (void)archive->semaphore.signal();
+
+    (void)archive->unk28.signal();
+    archive->unk70 = 0;
+
+    if (archive->unk12181)
+    {
+        if (size)
+        {
+            archive->unk80 = size;
+        }
+
+        archive->unk84 = buffer;
+        archive->read_busy = 1;
+
+        (void)archive->semaphore.wait();
+
+        if (archive->unk5c)
+        {
+            (void)archive->semaphore.signal();
+        }
+        else
+        {
+            archive->unk5c = 1;
+            (void)archive->semaphore.signal();
+            (void)archive->unk10.signal();
+        }
+    }
+    else
+    {
+        return 0;
+    }
+
+    return 1;
+}
 
 /**
  * @brief Start reading the selected resource without checking the result.
@@ -5058,7 +5694,48 @@ void func_0011D060(ResidentArchive* archive, void* buffer, s32 size)
     func_0011CC00(archive, buffer, size);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011D080);
+/**
+ * @brief Select the resource the next read loads: keep its position and size, and the install entry when unk12185
+ * is set.
+ * @param archive Resource archive.
+ * @param key Resource key.
+ * @return One when the resource was selected, or zero while a read is running.
+ */
+s32 func_0011D080(ResidentArchive* archive, s32 key)
+{
+    if (archive->read_busy)
+    {
+        return 0;
+    }
+
+    (void)archive->semaphore.wait();
+    archive->unk98 = 0;
+    (void)archive->semaphore.signal();
+
+    archive->unk54 = archive->resource_positions[key] & 0x00FFFFFF;
+    archive->unk12181 = 1;
+
+    (void)archive->semaphore.wait();
+    archive->unk68 = 0;
+    (void)archive->semaphore.signal();
+
+    if (archive->unk12185 && archive->install_flags[key] && key)
+    {
+        (void)archive->semaphore.wait();
+        archive->unk61 = 1;
+        (void)archive->semaphore.signal();
+        archive->unk58 = archive->install_flags[key] - 1;
+    }
+    else
+    {
+        (void)archive->semaphore.wait();
+        archive->unk61 = 0;
+        (void)archive->semaphore.signal();
+    }
+
+    archive->unk80 = (archive->resource_entries[key] & 0x00FFFFFF) << 11;
+    return 1;
+}
 
 /**
  * @brief Set the listener the archive notifies when a read finishes.

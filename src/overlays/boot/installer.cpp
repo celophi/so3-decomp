@@ -551,7 +551,7 @@ void BootInstaller::update()
 
         break;
     case BOOT_INSTALL_QUERY_UNIT:
-        if (resident_archive_query_unit(g_resource_archive, 1, 1) != 0)
+        if (resident_archive_query_unit(g_resource_archive, 1, 1))
         {
             step = BOOT_INSTALL_WAIT_FOR_UNIT_STATUS;
         }
