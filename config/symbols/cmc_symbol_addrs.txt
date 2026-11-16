@@ -665,3 +665,5 @@ __vt__20LibPositionTransform = 0x00171EC0; // size:0x28 absolute:True
 set_type_id__17LibTransformOwnerFUs = 0x0034CF80; // type:func allow_duplicated:True
 func_00359C10__8CardTaskFv = 0x00359C10; // type:func
 func_00359C20__8CardTaskFv = 0x00359C20; // type:func
+__vt__15LibListReceiver = 0x00178A70; // size:0x1C absolute:True
+__vt__15LibDmaCallbacks = 0x00171FF0; // size:0x10 absolute:True
