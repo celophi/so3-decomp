@@ -74,7 +74,6 @@ typedef struct FieldFloatSpan1C
 class FieldClass159960 : public FieldFloatSpan1C
 {
 public:
-    /** @brief Construct the interpolation state. */
     FieldClass159960();
 
     /**
@@ -191,7 +190,6 @@ float func_001E1230(FieldEntryArrayObject* object, float key);
 class FieldClass14FF50
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass14FF50()
     {
     }
@@ -503,7 +501,6 @@ public:
      */
     virtual float func_001E0380(float key);
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass14FEB0()
     {
     }
@@ -616,7 +613,7 @@ class FieldClass177C70 : public FieldClass14FEB0
 public:
     /** @brief Construct the keyframe object. */
     FieldClass177C70();
-    /** @brief Destroy the keyframe object. */
+
     virtual ~FieldClass177C70();
 };
 extern "C" {

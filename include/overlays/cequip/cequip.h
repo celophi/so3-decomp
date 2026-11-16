@@ -61,7 +61,6 @@ class EquipTooltipFrame : public LibWidget
             unk38 = 0x12;
         }
 
-        /** @brief Release tooltip drawing storage and the widget base. */
         virtual ~EquipTooltipFrame();
 
         /** @brief Draw the tooltip rectangle and its stored resource. */
@@ -84,14 +83,16 @@ class EquipFactorTooltip : public LibContainer
         /** @brief Destroy the text array, tooltip, and container bases. */
         virtual ~EquipFactorTooltip();
 
-        /** @brief Update the tooltip text animation. @param first First update flag. @param second Second update flag. @param third Third update flag. */
+        /**
+         * @brief Update the tooltip text animation.
+         * @param first First update flag.
+         * @param second Second update flag.
+         * @param third Third update flag.
+         */
         virtual void func_00412C40(u32 first, u32 second, u32 third);
 
         EquipTooltipFrame frame;
-
-        /** One line per factor slot of the item allocation. */
         LibTextWidget factor_texts[8];
-
         u8 unk9e0[0x30];
 };
 
@@ -113,13 +114,15 @@ class EquipHelpWindow : public FieldClass15AE70
             clip_width = 0.0f;
         }
 
-        /** @brief Destroy the scrolling text window. */
         virtual ~EquipHelpWindow();
 
         /** @brief Hold the display position until its timer expires, then scroll and wrap it. */
         virtual void func_slot5c();
 
-        /** @brief Reset the text display and recompute its width for the supported key range. @param text_key Text resource key. */
+        /**
+         * @brief Reset the text display and recompute its width for the supported key range.
+         * @param text_key Text resource key.
+         */
         virtual void func_slot60(s32 text_key);
 
         /**
@@ -152,7 +155,6 @@ class EquipExitConfirmWindow : public FieldClass15AE70
             selected = -1;
         }
 
-        /** @brief Destroy the initial equipment window. */
         virtual ~EquipExitConfirmWindow();
 
         /**
@@ -168,10 +170,16 @@ class EquipExitConfirmWindow : public FieldClass15AE70
         /** @brief Refresh icon colors while this window is selected. */
         virtual void func_slot5c();
 
-        /** @brief Activate the selected icon or set the empty-selection state. @return One to stay, or two after cancellation. */
+        /**
+         * @brief Activate the selected icon or set the empty-selection state.
+         * @return One to stay, or two after cancellation.
+         */
         virtual u8 func_slotb0();
 
-        /** @brief Hide this window and restore the associated State window. @return Two. */
+        /**
+         * @brief Hide this window and restore the associated State window.
+         * @return Two.
+         */
         virtual u8 func_slotb4();
 
         /** @brief Forward direction zero to the selection grid and test its result. */
@@ -180,7 +188,10 @@ class EquipExitConfirmWindow : public FieldClass15AE70
         /** @brief Forward direction one to the selection grid and test its result. */
         virtual void func_slot6c();
 
-        /** @brief Color each active icon according to its selection index. @param selected Selected icon index. */
+        /**
+         * @brief Color each active icon according to its selection index.
+         * @param selected Selected icon index.
+         */
         virtual void func_slotf4(s16 selected);
 
         FieldObject23CEA0* grid;
@@ -197,13 +208,16 @@ class EquipCharacterWindow : public FieldClass15AE70
         /** @brief Show the portrait of the selected character and hide the others. */
         void show_current_portrait();
 
-        /** @brief Destroy the equipment window. */
         virtual ~EquipCharacterWindow();
 
         /** @brief Enable the display widget while its State window is selected. */
         virtual void func_slot5c();
 
-        /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+        /**
+         * @brief Create the window displays.
+         * @param associated Full resource source word.
+         * @return Creation result.
+         */
         virtual s32 func_slotf4(u32 associated);
 
         s16 character_slot;
@@ -232,10 +246,13 @@ class EquipResourceWindow : public FieldClass15AE70
             right_tile = 0;
         }
 
-        /** @brief Destroy the option window. */
         virtual ~EquipResourceWindow();
 
-        /** @brief Create and attach the three option displays. @param associated Full resource source word. @return One. */
+        /**
+         * @brief Create and attach the three option displays.
+         * @param associated Full resource source word.
+         * @return One.
+         */
         virtual s32 func_slotf4(u32 associated);
 
         ItemCreationOptionResourceDisplay* left_tile;
@@ -247,15 +264,17 @@ class EquipResourceWindow : public FieldClass15AE70
 class EquipItemListPanel : public FieldClass15AE70
 {
     public:
-        /** @brief Initialize the panel's Field base. */
         EquipItemListPanel()
         {
         }
 
-        /** @brief Destroy the panel window. */
         virtual ~EquipItemListPanel();
 
-        /** @brief Create and attach the panel display. @param associated Full resource source word. @return One. */
+        /**
+         * @brief Create and attach the panel display.
+         * @param associated Full resource source word.
+         * @return One.
+         */
         virtual s32 func_slotf4(u32 associated);
 };
 
@@ -293,10 +312,7 @@ class EquipCharacterRecord
         s32 encoded_max_mp;
         s32 encoded_mp;
         float unk28;
-
-        /** Fury is stored at sixteen times its displayed amount. */
         float scaled_max_fury;
-
         float scaled_fury;
         s32 encoded_base_attack;
         s32 encoded_effective_attack;
@@ -310,10 +326,7 @@ class EquipCharacterRecord
         s32 encoded_base_hit;
         s32 encoded_effective_hit;
         s32 encoded_hit;
-
-        /** Intelligence is validated through the HIT checksum. */
         s32 encoded_base_intelligence;
-
         s32 encoded_effective_intelligence;
         s32 encoded_intelligence;
         s16 encoded_base_knockback_power;
@@ -325,10 +338,7 @@ class EquipCharacterRecord
         s16 encoded_base_critical_rate;
         s16 encoded_effective_critical_rate;
         s16 encoded_critical_rate;
-
-        /** Indexed by EquipCharacterCheck; the last three entries are unidentified. */
         s32 checksums[15];
-
         s32 unkc0;
 
         /**
@@ -350,7 +360,10 @@ class EquipCharacterRecord
             return value ^ EQUIP_STAT_WORD_XOR_KEY;
         }
 
-        /** @brief Decode the level. @return Level, or one for an invalid checksum. */
+        /**
+         * @brief Decode the level.
+         * @return Level, or one for an invalid checksum.
+         */
         s32 get_level() const
         {
             if (checksums[EQUIP_CHECK_LEVEL] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_level ^ (encoded_base_level + checksums[EQUIP_CHECK_SALT]))))
@@ -361,20 +374,29 @@ class EquipCharacterRecord
             return encoded_level ^ EQUIP_STAT_HALFWORD_XOR_KEY;
         }
 
-        /** @brief Decode the current attack. @return Attack, or zero for an invalid checksum. */
+        /**
+         * @brief Decode the current attack.
+         * @return Attack, or zero for an invalid checksum.
+         */
         s32 get_attack() const
         {
             return decode_statistic(encoded_base_attack, encoded_effective_attack, encoded_attack, checksums[EQUIP_CHECK_ATTACK], checksums[EQUIP_CHECK_SALT]);
         }
 
-        /** @brief Decode the current defense. @return Defense, or zero for an invalid checksum. */
+        /**
+         * @brief Decode the current defense.
+         * @return Defense, or zero for an invalid checksum.
+         */
         s32 get_defense() const
         {
             return decode_statistic(encoded_base_defense, encoded_effective_defense, encoded_defense, checksums[EQUIP_CHECK_DEFENSE],
                                     checksums[EQUIP_CHECK_SALT]);
         }
 
-        /** @brief Decode the effective attack. @return Effective attack, or zero for an invalid checksum. */
+        /**
+         * @brief Decode the effective attack.
+         * @return Effective attack, or zero for an invalid checksum.
+         */
         u32 get_effective_attack() const
         {
             if (checksums[EQUIP_CHECK_ATTACK] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_attack ^ (encoded_base_attack + encoded_effective_attack))))
@@ -385,7 +407,10 @@ class EquipCharacterRecord
             return encoded_effective_attack ^ EQUIP_STAT_WORD_XOR_KEY;
         }
 
-        /** @brief Decode the effective defense. @return Effective defense, or zero for an invalid checksum. */
+        /**
+         * @brief Decode the effective defense.
+         * @return Effective defense, or zero for an invalid checksum.
+         */
         u32 get_effective_defense() const
         {
             if (checksums[EQUIP_CHECK_DEFENSE] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_defense ^ (encoded_base_defense + encoded_effective_defense))))
@@ -396,7 +421,10 @@ class EquipCharacterRecord
             return encoded_effective_defense ^ EQUIP_STAT_WORD_XOR_KEY;
         }
 
-        /** @brief Decode the effective agility. @return Effective agility, or zero for an invalid checksum. */
+        /**
+         * @brief Decode the effective agility.
+         * @return Effective agility, or zero for an invalid checksum.
+         */
         u32 get_effective_agility() const
         {
             if (checksums[EQUIP_CHECK_AGILITY] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_agility ^ (encoded_base_agility + encoded_effective_agility))))
@@ -407,7 +435,10 @@ class EquipCharacterRecord
             return encoded_effective_agility ^ EQUIP_STAT_WORD_XOR_KEY;
         }
 
-        /** @brief Decode the effective hit. @return Effective hit, or zero for an invalid checksum. */
+        /**
+         * @brief Decode the effective hit.
+         * @return Effective hit, or zero for an invalid checksum.
+         */
         u32 get_effective_hit() const
         {
             if (checksums[EQUIP_CHECK_HIT] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_hit ^ (encoded_base_hit + encoded_effective_hit))))
@@ -418,7 +449,10 @@ class EquipCharacterRecord
             return encoded_effective_hit ^ EQUIP_STAT_WORD_XOR_KEY;
         }
 
-        /** @brief Decode the effective intelligence, which shares the HIT checksum. @return Effective intelligence, or zero for an invalid checksum. */
+        /**
+         * @brief Decode the effective intelligence, which shares the HIT checksum.
+         * @return Effective intelligence, or zero for an invalid checksum.
+         */
         u32 get_effective_intelligence() const
         {
             if (checksums[EQUIP_CHECK_HIT] != (checksums[EQUIP_CHECK_SALT] ^ (encoded_hit ^ (encoded_base_hit + encoded_effective_hit))))
@@ -456,10 +490,7 @@ class EquipCharacterEquipment
         s16 encoded_effective_stamina;
         s16 encoded_stamina;
         s16 encoded_equipment_slot_count;
-
-        /** Highest valid index into encoded_equipment_ids. */
         s16 encoded_slot_limit;
-
         s16 encoded_equipment_ids[4];
         s16 encoded_sp;
         s16 encoded_cp;
@@ -474,22 +505,25 @@ class EquipCharacterEquipment
         s8 encoded_tactical_skill_states[7];
         s16 encoded_symbology_mastery[32];
         s16 encoded_battle_skill_mastery[42];
-
-        /** Damage responses in earth, water, fire, wind order. */
         u8 elemental_damage_responses[4];
-
         u8 attack_element_mask;
         u8 character_resource_variant;
         EquipEquipmentChecksums checksums;
         u32 unk110;
 
-        /** @brief Compute the equipment checksum from the encoded IDs and the salt. @return Equipment checksum. */
+        /**
+         * @brief Compute the equipment checksum from the encoded IDs and the salt.
+         * @return Equipment checksum.
+         */
         s32 compute_equipment_checksum() const
         {
             return checksums.salt ^ ((encoded_equipment_ids[1] + encoded_equipment_ids[2]) ^ (encoded_equipment_ids[3] + encoded_equipment_ids[0]));
         }
 
-        /** @brief Test the stored equipment checksum. @return True when it agrees with the encoded IDs and the salt. */
+        /**
+         * @brief Test the stored equipment checksum.
+         * @return True when it agrees with the encoded IDs and the salt.
+         */
         bool equipment_valid() const
         {
             return checksums.equipment ==
@@ -540,16 +574,26 @@ class EquipCharacterEquipment
 class EquipStatComparisonWindow : public FieldClass15AE70
 {
     public:
-        /** @brief Initialize item comparison records and display pointers. @param state Owning equipment State. */
+        /**
+         * @brief Initialize item comparison records and display pointers.
+         * @param state Owning equipment State.
+         */
         EquipStatComparisonWindow(EquipController* state);
 
-        /** @brief Refresh the selected item icon and both statistic columns. @param category Selected category. @param selected Selected item record index. */
+        /**
+         * @brief Refresh the selected item icon and both statistic columns.
+         * @param category Selected category.
+         * @param selected Selected item record index.
+         */
         void refresh_item_details(u8 category, s16 selected);
 
-        /** @brief Destroy the item-details window. */
         virtual ~EquipStatComparisonWindow();
 
-        /** @brief Create and attach the item-details displays. @param associated Full resource source word. @return One. */
+        /**
+         * @brief Create and attach the item-details displays.
+         * @param associated Full resource source word.
+         * @return One.
+         */
         virtual s32 func_slotf4(u32 associated);
 
         EquipController* controller;
@@ -560,10 +604,7 @@ class EquipStatComparisonWindow : public FieldClass15AE70
         u8 unkb2;
         u8 unkb3;
         EquipCharacterRecord preview_record;
-
-        /** Encoded resource record used for the comparison. */
         EquipCharacterEquipment preview_equipment;
-
         LibTextWidget* slot_label;
         LibObject172410* item_icon;
         LibTextWidget* stat_labels[5];
@@ -577,15 +618,17 @@ class EquipStatComparisonWindow : public FieldClass15AE70
 class EquipSlotPanel : public FieldClass15AE70
 {
     public:
-        /** @brief Initialize the category panel's Field base. */
         EquipSlotPanel()
         {
         }
 
-        /** @brief Destroy the category panel window. */
         virtual ~EquipSlotPanel();
 
-        /** @brief Create and attach the category panel display. @param associated Full resource source word. @return One. */
+        /**
+         * @brief Create and attach the category panel display.
+         * @param associated Full resource source word.
+         * @return One.
+         */
         virtual s32 func_slotf4(u32 associated);
 };
 
@@ -599,7 +642,10 @@ class EquipController : public FieldClass153E30
         /** @brief Destroy the equipment State. */
         virtual ~EquipController();
 
-        /** @brief Create and connect the equipment State displays. @return One after display setup. */
+        /**
+         * @brief Create and connect the equipment State displays.
+         * @return One after display setup.
+         */
         virtual s32 init_windows();
 
         /**
@@ -609,7 +655,10 @@ class EquipController : public FieldClass153E30
          */
         virtual s32 on_resource_loaded(void* buffer);
 
-        /** @brief Report this object's default list kind. @return Four. */
+        /**
+         * @brief Report this object's default list kind.
+         * @return Four.
+         */
         virtual s32 get_default_list_kind();
 
         /** @brief Submit the State to the resident object queue. */
@@ -621,16 +670,25 @@ class EquipController : public FieldClass153E30
          */
         virtual u8 func_00264110();
 
-        /** @brief Return the loaded resource slot. @return Resource slot. */
+        /**
+         * @brief Return the loaded resource slot.
+         * @return Resource slot.
+         */
         virtual u32 get_resource_slot();
 
-        /** @brief Report whether window setup finished. @return Setup flag. */
+        /**
+         * @brief Report whether window setup finished.
+         * @return Setup flag.
+         */
         virtual u8 windows_ready();
 
         /** @brief Release the State resources and queue its receiver. */
         virtual void func_slot5c();
 
-        /** @brief Return the record selection. @return Current record selection. */
+        /**
+         * @brief Return the record selection.
+         * @return Current record selection.
+         */
         virtual FieldRecordSelection* selected_records();
 
         s32 resource_slot;
@@ -669,7 +727,6 @@ class EquipParameterWindow : public FieldClass15AE70
             }
         }
 
-        /** @brief Destroy the category detail window. */
         virtual ~EquipParameterWindow();
 
         /** @brief Refresh the selected category detail displays. */
@@ -695,10 +752,12 @@ class EquipParameterWindow : public FieldClass15AE70
 class EquipSlotWindow : public FieldClass15AE70
 {
     public:
-        /** @brief Initialize the category widgets and attach the State selection. @param state Owning equipment State. */
+        /**
+         * @brief Initialize the category widgets and attach the State selection.
+         * @param state Owning equipment State.
+         */
         EquipSlotWindow(EquipController* state);
 
-        /** @brief Destroy the category window. */
         virtual ~EquipSlotWindow();
 
         /** @brief Update the selected category tooltip. */
@@ -713,25 +772,47 @@ class EquipSlotWindow : public FieldClass15AE70
         /** @brief Cycle the selector forward and rebuild the associated category list. */
         virtual void func_slot6c();
 
-        /** @brief Activate a supported category and restore its associated list window. @return One on activation, or three for an unsupported category. */
+        /**
+         * @brief Activate a supported category and restore its associated list window.
+         * @return One on activation, or three for an unsupported category.
+         */
         virtual u8 func_slotb0();
 
-        /** @brief Activate the alternate selection window. @return Selection result. */
+        /**
+         * @brief Activate the alternate selection window.
+         * @return Selection result.
+         */
         virtual u8 func_slotb4();
 
-        /** @brief Apply the selected record action and refresh category displays. @return One. */
+        /**
+         * @brief Apply the selected record action and refresh category displays.
+         * @return One.
+         */
         virtual u8 func_slotb8();
 
-        /** @brief Switch the parameter window between the item description and its parameter changes. @return One. */
+        /**
+         * @brief Switch the parameter window between the item description and its parameter changes.
+         * @return One.
+         */
         virtual u8 func_slotbc();
 
-        /** @brief Cycle to the previous record and rebuild its displays. @return Four after cycling, or zero when unavailable. */
+        /**
+         * @brief Cycle to the previous record and rebuild its displays.
+         * @return Four after cycling, or zero when unavailable.
+         */
         virtual s32 func_slotd8();
 
-        /** @brief Cycle to the next record and rebuild its displays. @return Four after cycling, or zero when unavailable. */
+        /**
+         * @brief Cycle to the next record and rebuild its displays.
+         * @return Four after cycling, or zero when unavailable.
+         */
         virtual s32 func_slotdc();
 
-        /** @brief Create category widgets. @param associated Full resource source word. @return Creation result. */
+        /**
+         * @brief Create category widgets.
+         * @param associated Full resource source word.
+         * @return Creation result.
+         */
         virtual s32 func_slotf4(u32 associated);
 
         EquipController* controller;
@@ -756,34 +837,58 @@ class EquipSlotWindow : public FieldClass15AE70
 class EquipItemInstanceListWindow : public FieldClass15AD40
 {
     public:
-        /** @brief Initialize list display pointers and attach the option State. @param state Owning equipment State. */
+        /**
+         * @brief Initialize list display pointers and attach the option State.
+         * @param state Owning equipment State.
+         */
         EquipItemInstanceListWindow(EquipController* state);
 
-        /** @brief Destroy the Field list window. */
         virtual ~EquipItemInstanceListWindow();
 
         /** @brief Run the equipment list update hook. */
         virtual void func_slot5c();
 
-        /** @brief Activate the selected record and restore the category window. @return One on success, or three when no record is selectable. */
+        /**
+         * @brief Activate the selected record and restore the category window.
+         * @return One on success, or three when no record is selectable.
+         */
         virtual u8 func_slotb0();
 
-        /** @brief Restore the associated window and clear the detail display. @return Two. */
+        /**
+         * @brief Restore the associated window and clear the detail display.
+         * @return Two.
+         */
         virtual u8 func_slotb4();
 
-        /** @brief Return the empty equipment selection result. @return Zero. */
+        /**
+         * @brief Return the empty equipment selection result.
+         * @return Zero.
+         */
         virtual u8 func_slotb8();
 
-        /** @brief Switch the parameter window between the item description and its parameter changes. @return One. */
+        /**
+         * @brief Switch the parameter window between the item description and its parameter changes.
+         * @return One.
+         */
         virtual u8 func_slotbc();
 
-        /** @brief Refresh the visible equipment rows. @param start First record index. */
+        /**
+         * @brief Refresh the visible equipment rows.
+         * @param start First record index.
+         */
         virtual void refresh_rows(s32 start);
 
-        /** @brief Set the visible equipment row positions. @param start Base row position. */
+        /**
+         * @brief Set the visible equipment row positions.
+         * @param start Base row position.
+         */
         virtual void set_scroll_position(float start);
 
-        /** @brief Create the equipment list displays. @param associated Full resource source word. @return Creation result. */
+        /**
+         * @brief Create the equipment list displays.
+         * @param associated Full resource source word.
+         * @return Creation result.
+         */
         virtual s32 func_slot104(u32 associated);
 
         /**
@@ -809,34 +914,58 @@ class EquipItemInstanceListWindow : public FieldClass15AD40
 class EquipItemListWindow : public FieldClass15AD40
 {
     public:
-        /** @brief Initialize the display pointers and owned lists. @param state Owning equipment State. */
+        /**
+         * @brief Initialize the display pointers and owned lists.
+         * @param state Owning equipment State.
+         */
         EquipItemListWindow(EquipController* state);
 
-        /** @brief Destroy the owned lists and the Field window. */
         virtual ~EquipItemListWindow();
 
         /** @brief Update the selected category, row highlight, and detail window. */
         virtual void func_slot5c();
 
-        /** @brief Activate the category list or create the selected record window. @return Selection result. */
+        /**
+         * @brief Activate the category list or create the selected record window.
+         * @return Selection result.
+         */
         virtual u8 func_slotb0();
 
-        /** @brief Restore the associated window and hide the alternate window. @return Two. */
+        /**
+         * @brief Restore the associated window and hide the alternate window.
+         * @return Two.
+         */
         virtual u8 func_slotb4();
 
-        /** @brief Switch the parameter window between the item description and its parameter changes. @return One. */
+        /**
+         * @brief Switch the parameter window between the item description and its parameter changes.
+         * @return One.
+         */
         virtual u8 func_slotbc();
 
-        /** @brief Refresh category names, availability counts, and selection colors. @param start First category row. */
+        /**
+         * @brief Refresh category names, availability counts, and selection colors.
+         * @param start First category row.
+         */
         virtual void refresh_rows(s32 start);
 
-        /** @brief Position all three displays in each row. @param start Base row position. */
+        /**
+         * @brief Position all three displays in each row.
+         * @param start Base row position.
+         */
         virtual void set_scroll_position(float start);
 
-        /** @brief Create the category names, counts, and selection displays. @param associated Full resource source word. @return One. */
+        /**
+         * @brief Create the category names, counts, and selection displays.
+         * @param associated Full resource source word.
+         * @return One.
+         */
         virtual s32 func_slot104(u32 associated);
 
-        /** @brief Rebuild the list for the selected category. @param category Category index, clamped to two. */
+        /**
+         * @brief Rebuild the list for the selected category.
+         * @param category Category index, clamped to two.
+         */
         virtual void func_slot108(u8 category);
 
         /**

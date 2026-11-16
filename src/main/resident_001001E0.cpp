@@ -23,7 +23,10 @@ public:
     /** @brief First virtual slot; nothing here calls it. */
     virtual void func_slot08();
 
-    /** @brief Report running out of memory. @param data D_001CC510. */
+    /**
+     * @brief Report running out of memory.
+     * @param data D_001CC510.
+     */
     virtual void func_slot0c(void* data);
 };
 
@@ -31,10 +34,7 @@ public:
 struct ResidentStartupState
 {
     ResidentMemoryHook* hook;
-
-    /** Nonzero to start in progressive (525p) output. */
     u8 progressive;
-
     s32 argc;
     char** argv;
 };
@@ -392,6 +392,7 @@ void* operator new(u32 size, s32 unused)
     {
         return resident_heap_allocate(g_allocation_heap, size);
     }
+
     return ::operator new(size);
 }
 
@@ -407,6 +408,7 @@ void* operator new[](u32 size, s32 unused)
     {
         return resident_heap_allocate(g_allocation_heap, size);
     }
+
     return ::operator new(size);
 }
 
@@ -419,6 +421,7 @@ void operator delete(void* memory) throw()
     if (memory != 0)
     {
         ResidentAllocationHeader* header = (ResidentAllocationHeader*)((u8*)memory - 0x20);
+
         if (header->tag == 0x4D655279 && header->marker == 0x4058)
         {
             resident_heap_release(memory);
@@ -440,6 +443,7 @@ void operator delete[](void* memory) throw()
     if (memory != 0)
     {
         ResidentAllocationHeader* header = (ResidentAllocationHeader*)((u8*)memory - 0x20);
+
         if (header->tag == 0x4D655279 && header->marker == 0x4058)
         {
             resident_heap_release(memory);
@@ -519,6 +523,7 @@ s32 resident_system_iset_alarm(ResidentSystem* system, u16 time, KernelAlarmHand
     {
         time *= 2;
     }
+
     return iSetAlarm(time, handler, common);
 }
 
@@ -536,6 +541,7 @@ s32 resident_system_set_alarm(ResidentSystem* system, u16 time, KernelAlarmHandl
     {
         time *= 2;
     }
+
     return SetAlarm(time, handler, common);
 }
 

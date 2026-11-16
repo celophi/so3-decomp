@@ -177,8 +177,10 @@ class FieldClass176230 : public LibReceiver4DD1F0
 public:
     /** Construct the receiver, its two embedded members, and its flags. */
     FieldClass176230();
+
     /** Destroy the receiver. */
     virtual ~FieldClass176230();
+
     u8 unk210[0x90];
 };
 #endif

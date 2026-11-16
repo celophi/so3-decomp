@@ -5,12 +5,19 @@
 typedef struct N66Vector4Source { float x; float y; float z; float w; } N66Vector4Source;
 extern "C" {
 void func_4B1640(void* object);
+
 float func_4B16C0(void* object, float key);
+
 void func_00217720(void* object);
+
 void func_00218270(void* object);
+
 void func_00217280(void* object);
+
 void func_00217D70(void* object);
+
 void func_4CE4C0(float* output, const float* input);
+
 extern u8 g_default_bounding_sphere[];
 extern u8 D_177BE0[];
 extern u8 D_174440[];
@@ -19,11 +26,17 @@ extern u8 D_15D2D0[];
 extern u8 D_15D2C0[];
 extern u8 D_15D2B0[];
 extern u8 D_15D300[];
+
 void func_00218990(void);
+
 void func_00219390(void);
+
 void func_00219400(void);
+
 void func_00216AB0(void* object);
+
 void func_00216B10(void* object);
+
 void func_00216B70(void* object);
 
 typedef struct WrapperPointerSlots
@@ -393,10 +406,12 @@ s32 func_00211960(void* object)
 s32 func_00211970(float value)
 {
     s32 result = 1;
+
     if (!(value < 0.0f))
     {
         result = 0;
     }
+
     return result;
 }
 
@@ -743,6 +758,7 @@ void func_00215750(const void* object, float* output)
 {
     const FloatKeyScanOwner_text_0020D730_08* receiver = (const FloatKeyScanOwner_text_0020D730_08*)object;
     FloatDiffEntry_text_0020D730_08* entries = (FloatDiffEntry_text_0020D730_08*)receiver->entries;
+
     if (entries != 0)
     {
         *output = entries[receiver->count18 - 1].value - entries[0].value;
@@ -834,6 +850,7 @@ void func_00216950(const void* object, float* output)
 {
     const FloatKeyScanOwner_text_0020D730_10* receiver = (const FloatKeyScanOwner_text_0020D730_10*)object;
     FloatDiffEntry_text_0020D730_10* entries = (FloatDiffEntry_text_0020D730_10*)receiver->entries;
+
     if (entries != 0)
     {
         *output = entries[receiver->count20 - 1].value - entries[0].value;
@@ -1019,6 +1036,7 @@ s32 func_00217450(void* object, float key)
     FloatKeyScanOwner_text_0020D730_10* receiver = static_cast<FloatKeyScanOwner_text_0020D730_10*>(object);
     s16 count = receiver->count28;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key0c)
@@ -1026,6 +1044,7 @@ s32 func_00217450(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1043,10 +1062,12 @@ float func_002174C0(void* object)
 {
     const FloatKeyScanOwner_text_0020D730_10* receiver = static_cast<const FloatKeyScanOwner_text_0020D730_10*>(object);
     s32 count = receiver->count28;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_0020D730_10* entries = receiver->entries;
     const FloatKeyScanEntry_text_0020D730_10* lastEntry = entries + --count;
     float first = entries[0].key0c;
@@ -1210,6 +1231,7 @@ s32 func_00217F80(void* object, float key)
     FloatKeyScanOwner_text_0020D730_30* receiver = static_cast<FloatKeyScanOwner_text_0020D730_30*>(object);
     s16 count = receiver->count48;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key0c)
@@ -1217,6 +1239,7 @@ s32 func_00217F80(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1342,10 +1365,12 @@ float func_00218700(void* object)
 {
     const FloatKeyScanOwner_text_0020D730_10* receiver = static_cast<const FloatKeyScanOwner_text_0020D730_10*>(object);
     s32 count = receiver->count20;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_0020D730_10* entries = receiver->entries;
     const FloatKeyScanEntry_text_0020D730_10* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -1360,6 +1385,7 @@ s32 func_00218750(void* object, float key)
     FloatKeyScanOwner_text_0020D730_10* receiver = static_cast<FloatKeyScanOwner_text_0020D730_10*>(object);
     s16 count = receiver->count20;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1367,6 +1393,7 @@ s32 func_00218750(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1394,10 +1421,12 @@ float func_00218AF0(void* object)
 {
     const FloatKeyScanOwner_text_0020D730_08* receiver = static_cast<const FloatKeyScanOwner_text_0020D730_08*>(object);
     s32 count = receiver->count18;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_0020D730_08* entries = receiver->entries;
     const FloatKeyScanEntry_text_0020D730_08* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -1412,6 +1441,7 @@ s32 func_00218B40(void* object, float key)
     FloatKeyScanOwner_text_0020D730_08* receiver = static_cast<FloatKeyScanOwner_text_0020D730_08*>(object);
     s16 count = receiver->count18;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1419,6 +1449,7 @@ s32 func_00218B40(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1498,10 +1529,12 @@ float func_00219070(void* object)
 {
     const FloatKeyScanOwner_text_0020D730_20* receiver = static_cast<const FloatKeyScanOwner_text_0020D730_20*>(object);
     s32 count = receiver->count38;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_0020D730_20* entries = receiver->entries;
     const FloatKeyScanEntry_text_0020D730_20* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -1516,6 +1549,7 @@ s32 func_002190C0(void* object, float key)
     FloatKeyScanOwner_text_0020D730_20* receiver = static_cast<FloatKeyScanOwner_text_0020D730_20*>(object);
     s16 count = receiver->count38;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1523,6 +1557,7 @@ s32 func_002190C0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1811,6 +1846,7 @@ s32 func_0021B540(void* object, float key)
     FloatKeyScanOwner_text_0020D730_30* receiver = static_cast<FloatKeyScanOwner_text_0020D730_30*>(object);
     s16 count = receiver->count48;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1818,6 +1854,7 @@ s32 func_0021B540(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1956,10 +1993,12 @@ float func_0021C1B0(void* object)
 {
     const FloatKeyScanOwner_text_0020D730_20* receiver = static_cast<const FloatKeyScanOwner_text_0020D730_20*>(object);
     s32 count = receiver->count38;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_0020D730_20* entries = receiver->entries;
     const FloatKeyScanEntry_text_0020D730_20* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -1974,6 +2013,7 @@ s32 func_0021C200(void* object, float key)
     FloatKeyScanOwner_text_0020D730_20* receiver = static_cast<FloatKeyScanOwner_text_0020D730_20*>(object);
     s16 count = receiver->count38;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1981,6 +2021,7 @@ s32 func_0021C200(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 

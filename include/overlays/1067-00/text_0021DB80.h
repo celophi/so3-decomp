@@ -11,10 +11,17 @@
 class FieldClass1522C0 : public FieldListObject, public FieldClass1502A0
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object)
     {
         func_004DB570(object);
@@ -26,7 +33,6 @@ public:
         unk90 = 0;
     }
 
-    /** @brief Destroy both list bases. */
     virtual ~FieldClass1522C0();
 
     /**
@@ -49,7 +55,6 @@ public:
 class FieldSceneResourceRequest : public FieldResourceRequest
 {
 public:
-    /** @brief Initialize the inherited resource-record state. */
     FieldSceneResourceRequest();
 
     u8 unk1c[4];
@@ -113,13 +118,16 @@ public:
     {
         load_kind = 0;
     }
+
     /** @brief Release the byte-buffer loader. */
     virtual ~FieldClass152220();
+
     /**
      * @brief Advance resource-block decoding or handle a cancellation request.
      * @param cancel_request One requests cancellation; zero advances loading.
      */
     virtual void update_requests(s32 cancel_request);
+
     u8* unk40;
     s32 unk44;
     ResidentDecodeState1C unk48;

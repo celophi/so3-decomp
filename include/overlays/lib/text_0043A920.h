@@ -7,6 +7,7 @@ void func_00441BE0(void* object, void* cell, void* row, s32 index, void* extra4,
 
 /** Return the mapped array entry after its 0x30-byte prefix, or null. */
 void* func_0043D240(const void* object, s32 index);
+
 /** Clear four state bytes before updating the row through the owner. */
 #ifdef __cplusplus
 extern "C" {
@@ -152,26 +153,37 @@ float func_00444D90(void* object);
 
 /** Return the word at receiver offset 0x48. */
 u32 func_0043D830(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0043D870(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0043D9C0(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0043D9D0(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0043D9E0(const void* object);
+
 /** Return the word at receiver offset 0xB8. */
 u32 func_00441BB0(const void* object);
+
 /** Return the word at receiver offset 0xBC. */
 u32 func_00441BD0(const void* object);
+
 /** Return the word at receiver offset 0x48. */
 u32 func_00444DB0(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_00444DF0(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_00444F00(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_00444F10(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_00444F20(const void* object);
 
@@ -306,16 +318,26 @@ s32 func_00447C90(void* object);
 s32 func_00448900(void* object);
 
 void func_0043BCD0(void* object);
+
 void func_0043BCE0(void* object);
+
 void func_0043D220(void* object);
+
 void func_0043D940(void* object);
+
 void func_0043D960(void* object);
+
 void func_00441B80(void* object);
+
 void func_00447190(void* object);
+
 void func_00447C60(void* object);
+
 void func_00447C80(void* object);
+
 /** Return the first pointer argument unchanged. */
 void* func_00448690(void* value);
+
 /** Return the first pointer argument unchanged. */
 void* func_0044A330(void* value);
 
@@ -387,7 +409,11 @@ void func_0043A9C0(void* object, const unsigned __int128* first, const unsigned 
 #ifdef __cplusplus
 extern "C" {
 #endif
-/** @brief Set byte 0x490 and store a float at receiver offset 0x43C. @param object Receiver to update. @param value Float value to store. */
+/**
+ * @brief Set byte 0x490 and store a float at receiver offset 0x43C.
+ * @param object Receiver to update.
+ * @param value Float value to store.
+ */
 void func_0043A9B0(void* object, float value);
 #ifdef __cplusplus
 }

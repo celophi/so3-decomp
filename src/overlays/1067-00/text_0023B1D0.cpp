@@ -7,19 +7,28 @@
 
 extern "C" {
 void func_44B210(void* object);
+
 extern void* __vt__23ItemCreationClass172870[];
 extern void* D_153170[];
 extern void* D_1531D0[];
 extern void* D_153244[];
 extern void* D_153258[];
+
 FieldObject23B950* func_4C4960(FieldObject23B950* object);
+
 FieldObject23C180* func_0023D0C0(FieldObject23C180* object, s16 flags);
+
 void __dl__FPv(void* object);
+
 void func_466E40(void* point, float x, float y, float scale);
+
 s32 field_play_menu_sound(struct FieldMenuManager* manager, s16 sound);
+
 void func_467570(FieldObject23D020* object, s32 enabled, s32 first, s32 second, float first_float, float second_float, float third_float);
+
 void func_421170(FieldObject23B850* object, FieldTarget23B850* target,
                  float x, float y, float z, float scale);
+
 void func_420D20(FieldObject23B850* object, u32 color);
 }
 
@@ -122,10 +131,12 @@ extern struct FieldGlobal643C* D_001B643C;
 s32 func_0023B1D0(FieldObject23B1D0* object, s32 index, s32 direct)
 {
     FieldNode23D310* node = func_0023D310(&object->nodes, index);
+
     if (node == 0)
     {
         return 0;
     }
+
     if (direct != 0)
     {
         float y = node->y;
@@ -140,6 +151,7 @@ s32 func_0023B1D0(FieldObject23B1D0* object, s32 index, s32 direct)
         func_466E40(object->point40, node->x, node->y, 0.05f);
         field_play_menu_sound(D_001B643C->menu_manager, 0);
     }
+
     object->selected = index;
     return 1;
 }
@@ -194,6 +206,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023B7
 void func_0023B850(FieldObject23B850* object, FieldTarget23B850* target, u32 color)
 {
     object->target = target;
+
     if (object->target != 0)
     {
         func_421170(object, target, target->x, target->y, target->z, 2.2f);
@@ -202,6 +215,7 @@ void func_0023B850(FieldObject23B850* object, FieldTarget23B850* target, u32 col
     {
         func_421170(object, target, 0.0f, 0.0f, 0.0f, 0.0f);
     }
+
     func_420D20(object, color);
 }
 
@@ -211,6 +225,7 @@ inline ItemCreationClass172870::ItemCreationClass172870()
 {
     unk38 = 6;
 }
+
 FieldClass153170::FieldClass153170() : unk58(0), unk5c(0)
 {
 }
@@ -223,10 +238,12 @@ s32 func_0023BAB0(FieldObject23BAB0* object, float x, float y, float z)
     {
         return 0;
     }
+
     if (z == 0.0f)
     {
         return 0;
     }
+
     object->unk64 = z;
     object->x = x;
     object->y = y;
@@ -262,11 +279,13 @@ FieldObject23C180* func_0023C180(FieldObject23C180* object, s16 flags)
         object->secondary_table = D_153244;
         object->third_table = D_153258;
         func_0023D0C0(object, 0);
+
         if (flags > 0)
         {
             __dl__FPv(object);
         }
     }
+
     return object;
 }
 
@@ -301,6 +320,7 @@ void func_0023CB30(FieldObject23CB30* object)
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023B1D0", func_0023CB50);
 
 extern "C" u8 func_0023C830(FieldObject23CEA0* object, s16 direction);
+
 extern "C" u8 func_0023CB50(FieldObject23CEA0* object, s16 direction);
 
 s16 FieldObject23CEA0::process_direction(s16 direction)
@@ -309,7 +329,9 @@ s16 FieldObject23CEA0::process_direction(s16 direction)
     {
         return 1;
     }
+
     unkF3[0] = 0;
+
     switch (unkF2)
     {
     case 0:
@@ -320,10 +342,12 @@ s16 FieldObject23CEA0::process_direction(s16 direction)
         unkF3[0] = func_0023CB50(this, direction);
         break;
     }
+
     if (unkF3[0] != 1)
     {
         field_play_menu_sound(D_001B643C->menu_manager, 0);
     }
+
     return unkF3[0];
 }
 
@@ -386,11 +410,13 @@ s32 func_0023CF50(FieldObject23CEB0* object, s16 value, float first_delta, float
     object->unk108 = second_delta;
     object->unkF4 = first_delta + object->unkC0;
     object->unkF8 = 16.0f + (second_delta + object->unkC4);
+
     if (value > 0)
     {
         object->count = value;
         object->unk114 = object->count + object->unk110 * object->width;
     }
+
     width = object->width;
     count = object->count;
     second = object->unkF8 + object->unk100 * (float)(count / width);
@@ -474,14 +500,17 @@ FieldNode23D310* func_0023D310(FieldObject23D310* object, s32 count)
 {
     FieldNode23D310* node = object->first->next;
     s32 i;
+
     for (i = 0; i < count; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 

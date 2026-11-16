@@ -3,6 +3,7 @@
 #include "overlays/3253-00/text_002C5F00.h"
 
 extern "C" u32 func_4A0B70(u32 value, const void* data);
+
 extern "C" const u8 D_3E2B38[];
 
 /** Packed four-component value initialized to the identity quaternion. */
@@ -59,10 +60,14 @@ struct BattleObject7760View
 };
 
 extern "C" void func_4DD1F0(void* object);
+
 extern "C" u32 D_17C610[];
+
 extern "C" void func_003AE200(void* object);
+
 extern "C" u32 D_15B600[];
 extern "C" u32 D_15B624[];
+
 extern "C" u8 func_003C3B80(void* object);
 
 INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_002C5F00", func_002C5F00);

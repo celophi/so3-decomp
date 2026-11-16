@@ -8,13 +8,18 @@
 
 // This overlay only has an untyped view of the Lib entry tables these take.
 
-/** @brief Test the descriptor terminal flag. @param shape Descriptor to test. @return Whether the array ends here. */
+/**
+ * @brief Test the descriptor terminal flag.
+ * @param shape Descriptor to test.
+ * @return Whether the array ends here.
+ */
 static inline bool field_owner_is_last(const FieldShapeOwner18* shape)
 {
     if (shape->unk0a & 0x20)
     {
         return true;
     }
+
     return false;
 }
 
@@ -27,27 +32,33 @@ static inline bool field_owner_is_last(const FieldShapeOwner18* shape)
 extern "C" void func_0020DA30(FieldClass151640* object, FieldShapeOwner18* shape)
 {
     FieldShapeRecord20* records = ((FieldShapeData10*)object->FieldClass1515D0::unk00)->unk0c;
+
     for (;; shape++)
     {
         s32 index = shape->unk0e;
+
         if (shape->unk0b >= 0x40 && shape->unk0b < 0x7F && shape->unk04 && index != -1)
         {
             FieldClass151590* node = new (0) FieldClass151590;
             node->func_0020DBC0(shape, (FieldShapeData10*)object->FieldClass1515D0::unk00, index);
             object->unk178.append_node(node, -1);
+
             for (;; index++)
             {
                 records[index].unk0c.unk00_4 = 1;
+
                 if (records[index].unk0c.unk00_5)
                 {
                     break;
                 }
             }
         }
+
         if (shape->unk00)
         {
             func_0020DA30(object, shape->unk00);
         }
+
         if (field_owner_is_last(shape))
         {
             break;
@@ -77,9 +88,11 @@ void FieldClass1515B0::func_0020DBC0(FieldShapeOwner18* shape, FieldShapeData10*
 extern "C" void func_0020DBD0(FieldClass151640* object, FieldShapeOwner18* shape)
 {
     FieldShapeRecord20* records = ((FieldShapeData10*)object->FieldClass1515D0::unk00)->unk0c;
+
     for (;; shape++)
     {
         s32 index = shape->unk0e;
+
         if ((shape->unk0b == 0x80 || shape->unk0b == 0x81) && shape->unk04 && index != -1)
         {
             for (;; index++)
@@ -91,6 +104,7 @@ extern "C" void func_0020DBD0(FieldClass151640* object, FieldShapeOwner18* shape
                 for (;;)
                 {
                     node = (FieldClass1515B0*)node->unk08;
+
                     if (!node || (FieldClass1515B0*)&object->unk100 == node)
                     {
                         break;
@@ -117,10 +131,12 @@ extern "C" void func_0020DBD0(FieldClass151640* object, FieldShapeOwner18* shape
                 }
             }
         }
+
         if (shape->unk00)
         {
             func_0020DBD0(object, shape->unk00);
         }
+
         if (field_owner_is_last(shape))
         {
             break;
@@ -140,6 +156,7 @@ extern "C" void func_0020DDD0(FieldClass151640* object, FieldContext26FF70* cont
         func_0020DBD0(object, (FieldShapeOwner18*)((FieldShapeData30*)object->FieldClass1515D0::unk00 + 1));
         func_0020DA30(object, (FieldShapeOwner18*)((FieldShapeData30*)object->FieldClass1515D0::unk00 + 1));
         func_0020D810(object, (FieldShapeOwner18*)((FieldShapeData30*)object->FieldClass1515D0::unk00 + 1));
+
         if (context)
         {
             func_0020D5E0(object, context->unk8c, (FieldShapeOwner18*)((FieldShapeData30*)object->FieldClass1515D0::unk00 + 1));
@@ -160,13 +177,16 @@ void FieldClass151640::func_0020BDA0()
 extern "C" void func_0020DE80(FieldClass151640* object)
 {
     FieldClass151620* node = reinterpret_cast<FieldClass151620*>(&object->FieldClass1502A0::sentinel);
+
     for (;;)
     {
         node = static_cast<FieldClass151620*>(node->unk08);
+
         if (reinterpret_cast<FieldClass151620*>(&object->FieldClass1502A0::sentinel) == node)
         {
             break;
         }
+
         memcpy_guess(node->unk84, node->unk84, 0x11);
         node->shape.unk04 = (LibTransformOwner*)lib_find_named_entry(static_cast<LibEntryManager*>(D_001B6430->context->unk08->current_object->unk7c), node->unk84);
     }
@@ -181,13 +201,16 @@ extern "C" void func_0020DEF0(FieldClass151640* object, LibUpdateList* source)
 {
     FieldClass150060* current;
     FieldClass150060* node = ((FieldClass150060*)source)->unk08;
+
     for (;;)
     {
         current = node;
+
         if (!node || (FieldClass150060*)source == node)
         {
             break;
         }
+
         node = node->unk08;
         lib_object_detach_owner(current);
         object->append_node(current, -1);
@@ -203,13 +226,16 @@ extern "C" void func_0020DF80(FieldClass151640* object, LibUpdateList* destinati
 {
     FieldClass150060* current;
     FieldClass150060* node = (reinterpret_cast<FieldClass150060*>(&object->FieldClass1502A0::sentinel))->unk08;
+
     for (;;)
     {
         current = node;
+
         if (!node || reinterpret_cast<FieldClass150060*>(&object->FieldClass1502A0::sentinel) == node)
         {
             break;
         }
+
         node = node->unk08;
         lib_object_detach_owner(current);
         destination->append_node(current, -1);
@@ -221,13 +247,16 @@ void FieldClass151640::func_001DD730()
 {
     FieldClass150060* current;
     FieldClass150060* node = (reinterpret_cast<FieldClass150060*>(&this->FieldClass1502A0::sentinel))->unk08;
+
     for (;;)
     {
         current = node;
+
         if (!node || reinterpret_cast<FieldClass150060*>(&this->FieldClass1502A0::sentinel) == node)
         {
             break;
         }
+
         node = node->unk08;
         lib_object_detach_owner(current);
         static_cast<FieldListObject*>(current)->func_001DD7B0();
@@ -259,11 +288,13 @@ extern "C" FieldClass151570* func_0020E0D0(FieldClass151640* object, FieldClass1
     object->append_node(entry, -1);
     FieldClass151570* attachment = func_0020D5E0(object,
         ((FieldRoot26FF70*)D_001B6430->context->unk08->current_object)->unkD8->unk8c, &entry->shape);
+
     if (attachment)
     {
         attachment->unk20 = entry;
         entry->unk80 = attachment;
     }
+
     return attachment;
 }
 

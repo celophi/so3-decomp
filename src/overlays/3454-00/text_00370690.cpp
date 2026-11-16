@@ -2,6 +2,7 @@
 #include "types.h"
 
 extern "C" void func_003776F0(void* first, void* second, void* third, void* fourth, u32 flags);
+
 extern "C" void func_0035D2B0(void* object, s32 value);
 
 extern "C" void func_00338840(void* object, s32 value);
@@ -13,11 +14,17 @@ extern "C" void func_0032E520(void* object, s32 value);
 
 extern "C" {
 void func_0027E740(void* object);
+
 void func_0027EAF0(void* object);
+
 s32 func_0027E420(void);
+
 void func_00318860(void* object);
+
 void func_003527E0(void* object);
+
 void func_003B41F0(void* object);
+
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00370690);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_00370710);
@@ -49,6 +56,7 @@ void func_00370A40(void* object)
 void func_00370A50(void* object)
 {
     u8* state = static_cast<u8*>(object);
+
     if (*(u32*)(state + 0x284) == 0)
     {
         func_003B41F0(state + 0xD0);
@@ -159,6 +167,7 @@ s32 func_003718D0(void* object)
     {
         return 0;
     }
+
     return func_0027E420();
 }
 
@@ -224,6 +233,7 @@ s32 func_00372150(void* object)
     {
         return 0;
     }
+
     return func_0027E420();
 }
 
@@ -275,6 +285,7 @@ s32 func_003727B0(void* object)
     {
         return 0;
     }
+
     return func_0027E420();
 }
 
@@ -391,6 +402,7 @@ s32 func_003738D0(void* object)
     {
         return 0;
     }
+
     return func_0027E420();
 }
 
@@ -628,9 +640,11 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00370690", func_003752
 void func_00375280(u8* receiver, void* value1, void* value2, void* value3)
 {
     u8* adjusted = receiver;
+
     if (adjusted != 0) {
         adjusted = adjusted + 0xD0;
     }
+
     func_003776F0(receiver + 0x220, adjusted, value1, value2, 1);
 }
 

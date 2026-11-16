@@ -21,12 +21,10 @@ struct ItemCreationCategoryDefinition
     u32 stamina : 8;
     u32 attack : 14;
     u32 hit : 14;
-    /** Variant added to character-specific weapon resource IDs. */
     u32 weapon_variant : 4;
     u32 agility : 14;
     u32 defense : 14;
     u32 category : 3;
-    /** Unused catalog entry, excluded from invention candidate lists. */
     u32 unused : 1;
     u32 intelligence : 14;
     u32 equipment_mask : 10;
@@ -46,22 +44,18 @@ struct ItemCreationCategoryDefinition
             u32 initial_factor : 10;
             u32 usage_flags : 2;
         };
-        /** Low halfword containing the ten-bit list-order key. */
         u16 sort_key_bits;
     };
 #endif
     u8 unk14[3];
     u8 unk17_low : 6;
     u8 unlimited_stock : 1;
-    /** Also selects the reserved 100-allocation inventory pool. */
     u8 unsellable : 1;
     u8 unk18[3];
     u8 unk1b_low : 6;
-    /** May supply factors as the second item in synthesis. */
     u8 synthesis_material : 1;
     u8 unk1b_high : 1;
     u32 final_factor : 10;
-    /** Base difficulty used by invention and Specify Plan. */
     u32 creation_difficulty : 7;
     u32 creation_skill_id : 3;
     u32 unk1c_high : 12;
@@ -112,12 +106,8 @@ typedef struct LibGameStateRecord34
 /** Six-byte game state entry that counts up once it has an item type. */
 typedef struct LibGameStateTimer
 {
-    /** One-based item type ID, or zero when the entry is free. */
     u16 item_type;
-
-    /** One bit per LibGameStateBitset, lowest first. */
     u16 bitset_mask;
-
     u16 elapsed;
 } LibGameStateTimer;
 
@@ -144,10 +134,7 @@ typedef struct LibGameState
     u32 unk116ac;
     s32 unk116b0;
     u8 unk116b4[0x6C];
-
-    /** Count a LibGameStateTimer reaches before it fires. */
     u16 timer_limit;
-
     u16 unk11722;
     u16 unk11724;
     u16 unk11726;
@@ -157,15 +144,9 @@ typedef struct LibGameState
     u16 unk1172e;
     u8 unk11730[0x30];
     u8 unk11760[0x1C];
-
-    /** IDs of the active LibGameStateRecord0C entries, highest unk00 first, then zeros. */
     u8 record0c_order[LIB_GAME_STATE_RECORD0C_COUNT];
-
     u8 unk117a2;
-
-    /** Active entries in record0c_order. */
     u8 record0c_order_count;
-
     u8 unk117a4;
     u8 unk117a5;
     u8 unk117a6[0x1E];
@@ -178,7 +159,10 @@ typedef ItemCreationCategoryDefinition LibCategoryDefinition;
 extern "C" {
 #endif
 
-/** @brief Follow count list links from the object's first node. @return The node reached, or null if traversal ends early. */
+/**
+ * @brief Follow count list links from the object's first node.
+ * @return The node reached, or null if traversal ends early.
+ */
 void* func_00411DD0(void* object, s32 count);
 
 /** Resident category catalog. */
@@ -293,7 +277,11 @@ float func_00412C30(void* object);
 /** Store the word at receiver offset 0x0. */
 void func_0040B690(void* object, u32 value);
 
-/** @brief Check whether the byte at receiver offset 0x6 is at least 0x1D. @param object Receiver containing the byte. @return One when the byte is at least 0x1D; otherwise zero. */
+/**
+ * @brief Check whether the byte at receiver offset 0x6 is at least 0x1D.
+ * @param object Receiver containing the byte.
+ * @return One when the byte is at least 0x1D; otherwise zero.
+ */
 s32 func_0040B6A0(void* object);
 
 
@@ -535,10 +523,15 @@ s32 func_004194F0(void* object);
 s32 func_004152B0(void* object);
 
 void func_00411E10(void* object);
+
 void func_00411E20(void* object);
+
 void func_00412C00(void* object);
+
 void func_00412C10(void* object);
+
 void func_00412C20(void* object);
+
 void func_00412C40(void* object);
 
 #ifdef __cplusplus

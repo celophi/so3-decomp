@@ -187,117 +187,166 @@ class FieldClass153E30 : public FieldListObject
 public:
     /** @brief Initialize the callback receiver and its Field base storage. */
     FieldClass153E30();
-    /**
-     * @brief Destroy the callback receiver.
-     */
+
     virtual ~FieldClass153E30();
+
     /**
      * @brief Release the callback receiver through its virtual handler.
      */
     virtual void func_001DD7B0();
+
     /**
      * @brief Report the receiver state.
      * @return Receiver state byte.
      */
     virtual u8 func_00264110();
+
     /**
      * @brief Append a non-null display child to the receiver list.
      * @param value Child to append.
      * @return One when a child was supplied, otherwise zero.
      */
     virtual s32 add_child(void* value);
+
     /**
      * @brief Unlink a registered display child and invoke its release hook.
      * @param value Child to remove.
      * @return Zero for a null child, otherwise one.
      */
     virtual s32 remove_child(void* value);
+
     /**
      * @brief Report the handler state.
      * @return Handler result.
      */
     virtual s32 func_00264080();
+
     /**
      * @brief Store the pointer at offset 0x20.
      * @param value Pointer to store.
      */
     virtual void func_00263C70(void* value);
+
     /**
      * @brief Get the pointer at offset 0x20.
      * @return Stored pointer.
      */
     virtual void* func_00261150();
+
     /**
      * @brief Store the pointer at offset 0x24.
      * @param value Pointer to store.
      */
     virtual void func_00263C80(void* value);
+
     /**
      * @brief Get the pointer at offset 0x24.
      * @return Stored pointer.
      */
     virtual void* func_00263C90();
+
     /**
      * @brief Store the byte at offset 0x28.
      * @param value Byte to store.
      */
     virtual void func_00263CA0(s8 value);
+
     /**
      * @brief Get the signed byte at offset 0x28.
      * @return Stored byte.
      */
     virtual s8 func_00263CB0();
+
     /**
      * @brief Return the loaded resource slot.
      * @return Zero in the base implementation.
      */
     virtual u32 get_resource_slot();
+
     /**
      * @brief Update the callback receiver.
      */
     virtual void func_00263E90();
+
     /**
      * @brief Report whether window setup finished.
      * @return Zero in the base implementation.
      */
     virtual u8 windows_ready();
+
     /**
      * @brief Load the completed resource buffer and create the windows.
      * @param buffer Completed resource buffer.
      * @return Zero in the base implementation.
      */
     virtual s32 on_resource_loaded(void* buffer);
-    /** @brief Create the menu windows. @return Zero in the base implementation. */
+
+    /**
+     * @brief Create the menu windows.
+     * @return Zero in the base implementation.
+     */
     virtual s32 init_windows();
+
     /**
      * @brief Forward the flag to each child with all seven list bits selected.
      * @param flag Flag forwarded without narrowing.
      */
     virtual void func_00263E20(u32 flag);
+
     /** @brief Release the receiver's associated objects and queued children. */
     virtual void func_slot5c();
-    /** @brief Default receiver hook. @return Zero. */
+
+    /**
+     * @brief Default receiver hook.
+     * @return Zero.
+     */
     virtual s32 func_slot60();
-    /** @brief Default receiver hook. @return Zero. */
+
+    /**
+     * @brief Default receiver hook.
+     * @return Zero.
+     */
     virtual s32 func_slot64();
+
     /** @brief Default receiver hook. */
     virtual void func_slot68();
-    /** @brief Return the receiver's selection object. @return Null in the base implementation. */
+
+    /**
+     * @brief Return the receiver's selection object.
+     * @return Null in the base implementation.
+     */
     virtual FieldRecordSelection* selected_records();
+
     /** @brief Default receiver hook. */
     virtual void func_slot70();
+
     /** @brief Default receiver hook. */
     virtual void func_slot74();
+
     /** @brief Default receiver hook. */
     virtual void func_slot78();
-    /** @brief Default receiver hook. @return Zero. */
+
+    /**
+     * @brief Default receiver hook.
+     * @return Zero.
+     */
     virtual s32 func_slot7c();
-    /** @brief Default receiver hook. @return Zero. */
+
+    /**
+     * @brief Default receiver hook.
+     * @return Zero.
+     */
     virtual s32 func_slot80();
-    /** @brief Default receiver hook. @return Zero. */
+
+    /**
+     * @brief Default receiver hook.
+     * @return Zero.
+     */
     virtual s32 func_slot84();
+
     /** @brief Default receiver hook. */
     virtual void func_slot88();
+
     FieldClass153EC0 unk14;
     void* unk20;
     void* unk24;

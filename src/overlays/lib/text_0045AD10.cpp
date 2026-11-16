@@ -258,6 +258,7 @@ typedef struct LibMultilineRectangleState
     u8 pad568[0xC];
     u8 unk574;
 } LibMultilineRectangleState;
+
 /**
  * @brief Initialize the text rectangle and reset the multiline drawing state.
  * @param object Multiline text widget.
@@ -325,11 +326,14 @@ extern "C" s32 lib_allocate_drawing_storage(LibStorageBlock0C* storage, s32 word
     {
         return 0;
     }
+
     storage->allocation = new (0) u8[word_count * sizeof(u64) + DRAWING_STORAGE_PREFIX + DRAWING_STORAGE_ALIGNMENT];
+
     if (storage->allocation == 0)
     {
         return 0;
     }
+
     u8* buffer = static_cast<u8*>(storage->allocation) + DRAWING_STORAGE_PREFIX;
     storage->aligned = reinterpret_cast<void*>((reinterpret_cast<u32>(buffer) + DRAWING_STORAGE_ALIGNMENT - 1) & ~(DRAWING_STORAGE_ALIGNMENT - 1u));
     storage->dma_address = reinterpret_cast<u32>(storage->aligned) | DRAWING_STORAGE_DMA_ADDRESS_TAG;
@@ -525,6 +529,7 @@ void LibDrawWidget::align_records_vertically(LibDrawRecord* records, s32 count)
     if (vertical_align != 0)
     {
         float offset = unk18.unk0c - (pen_y - unk8c);
+
         if (vertical_align == LIB_ALIGN_CENTER)
         {
             offset /= 2.0f;
@@ -579,10 +584,12 @@ s32 LibDrawWidget::format_number_codes(u16* codes, s32 value)
     s32 count = 0;
 
     sprintf_guess(text, D_505CF8, value);
+
     for (char* cursor = text;; count++)
     {
         u16 character = *cursor++;
         u16 code;
+
         // TODO: Comparing with 0L (long is 64 bits here) is the only way I've found to get the sign extension before
         // this test. My guess is the original compared the character with NULL.
         if (character == 0L)
@@ -676,11 +683,13 @@ void LibDrawWidget::add_glyph(s32 code)
     next_record->glyph = code - 1;
     slot = resource_slot;
     spacing = unk88;
+
     if (slot->flag)
     {
         if (code <= LIB_SHARED_GLYPH_COUNT)
         {
             slot = g_field_runtime->resource_slots;
+
             if (code == 0xE8 || code == 0xE9)
             {
                 code = 0xFFFF;
@@ -714,6 +723,7 @@ void LibDrawWidget::add_glyph(s32 code)
     next_record->top = pen_y;
     next_record->bottom = pen_y + height;
     line_height = height;
+
     if (height < min_height)
     {
         min_height = height;
@@ -745,6 +755,7 @@ void LibDrawWidget::begin_layout(LibDrawRecord* records, float y)
     run_head = 0;
     next_record = records;
     record_count = 0;
+
     if (y == 0.0f)
     {
         extent.unk00 = LIB_LAYOUT_HEIGHT_MAX;
@@ -827,6 +838,7 @@ s32 LibDrawWidget::allocate_storage(s32 first, s32 capacity, s32 second, s32 thi
     unka8 = capacity;
     unkac = second;
     unkb0 = third;
+
     if (capacity == 0)
     {
         lines = 0;
@@ -840,6 +852,7 @@ s32 LibDrawWidget::allocate_storage(s32 first, s32 capacity, s32 second, s32 thi
     unk4c = (unkf8 ? 368 : 96) * (first + capacity);
     unk50 = second == 0 ? 0 : unkac * 16 + 48 + unkb0 * 80;
     allocation = new (0) u8[unk48 + unk4c + unk50 + 256];
+
     if (allocation == 0)
     {
         return 0;
@@ -966,10 +979,12 @@ extern "C" s32 lib_numeric_widget_init_rectangle(LibObject174F20* object, u32 va
     state->flag = flag;
     object->set_rectangle(x, y, width, height);
     state->source = &((LibNumericResourceOwner*)g_field_runtime)->slots[slot];
+
     if (!object->allocate_storage(0, 16, 0, 0))
     {
         return 0;
     }
+
     state->value = value;
     state->mode = 2;
     state->initialized = 1;
@@ -1005,6 +1020,7 @@ typedef struct LibResourceSlotOwner
 extern "C" void lib_release_resource_slot(void* manager, s32 index)
 {
     LibManagedResourceSlot* slot = &((LibResourceSlotOwner*)manager)->slots[index];
+
     if (slot->active)
     {
         if (slot->allocation)
@@ -1012,6 +1028,7 @@ extern "C" void lib_release_resource_slot(void* manager, s32 index)
             resident_queue_allocation_release(g_resident_release_queues, slot->allocation);
             slot->allocation = 0;
         }
+
         slot->active = 0;
         FlushCache(0);
     }
@@ -1029,7 +1046,9 @@ struct LibResourceGap {
     u8 unk01[3];
     s32 start, end, size;
 };
+
 extern "C" LibManagedResourceSlot* func_004659B0(FieldRuntime*, LibResourceGap*);
+
 extern "C" u8* func_00451C00(LibResourceHeader*, s32, s32);
 
 
@@ -1053,6 +1072,7 @@ extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
     slot->unk30 = source->unk3c;
     slot->flag = source->unk38 != 1;
     remainder_size = 0;
+
     if (slot->unk18 > 0)
     {
         slot->unit_count = 1024 / slot->unk28;
@@ -1060,11 +1080,13 @@ extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
         s32 selected = -1;
         s32 capacity = 0;
         LibResourceGap* gap = gaps;
+
         for (s32 i = 0; i < 16; i++, gap++)
         {
             if (gap->available)
             {
                 s32 units = gap->size / slot->unk2c;
+
                 if (capacity < required)
                 {
                     if (capacity < units)
@@ -1080,10 +1102,12 @@ extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
                 }
             }
         }
+
         if (selected >= 0)
         {
             prefix = source->offsets[3];
             slot->start = gaps[selected].start;
+
             if (capacity >= required)
             {
                 slot->loaded = source->unk20;
@@ -1099,6 +1123,7 @@ extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
                 remainder = func_00451C00(source, slot->start, slot->loaded);
                 remainder_size = source->size - (remainder - (u8*)source);
             }
+
             slot->end = slot->start + slot->unk2c * slot->loaded_units;
         }
         else
@@ -1114,6 +1139,7 @@ extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
         slot->unk48 = 0;
         slot->loaded = 0;
     }
+
     u8* allocation = new (0) u8[prefix + remainder_size + 128];
     if (allocation == 0)
         return 0;
@@ -1146,11 +1172,14 @@ extern "C" s32 lib_queue_display_object(FieldRuntime* runtime, LibTransformOwner
 {
     LibRuntimeListState* list = (LibRuntimeListState*)runtime;
     LibRuntimeListNode* node = (LibRuntimeListNode*)object;
+
     if (node->owner)
     {
         return 0;
     }
+
     node->owner = runtime;
+
     if (!list->first)
     {
         list->last = node;
@@ -1166,6 +1195,7 @@ extern "C" s32 lib_queue_display_object(FieldRuntime* runtime, LibTransformOwner
         node->next = 0;
         list->last = node;
     }
+
     list->count++;
     return 1;
 }
@@ -1245,6 +1275,7 @@ typedef struct LibFieldWidgetState
     u8 pad3a[6];
     LibMovementState movement;
 } LibFieldWidgetState;
+
 /**
  * @brief Initialize the moving widget storage and position, then set its drawing flags.
  * @param object Moving widget.
@@ -1255,10 +1286,12 @@ typedef struct LibFieldWidgetState
 extern "C" s32 lib_moving_widget_init_position(LibClass175030* object, float x, float y)
 {
     LibFieldWidgetState* state = (LibFieldWidgetState*)object;
+
     if (!state->movement.init_position(x, y))
     {
         return 0;
     }
+
     state->unk34 = 8;
     state->unk39 = 1;
     return 1;
@@ -1283,10 +1316,12 @@ void func_004674A0(N54Owner64_0045AD10* object)
 {
     object->active = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
+
     func_00461830((u8*)object + 0xB0, adjusted);
 }
 
@@ -1426,10 +1461,12 @@ void func_0046A3F0(void* object)
 s32 func_0046A410(void* object)
 {
     DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+
     if (object != 0)
     {
         submission = (DmaSubmission*)((u8*)submission + 0x5a0);
     }
+
     return func_00114100(g_vif1_dma_queue, submission);
 }
 

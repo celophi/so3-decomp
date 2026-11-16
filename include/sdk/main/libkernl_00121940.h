@@ -125,6 +125,7 @@ s32 iSetAlarm(u16 time, KernelAlarmHandler handler, void* common);
  * @return -1.
  */
 s32 close(s32 fd);
+
 /**
  * @brief Report an unsupported ioctl request.
  * @param fd File descriptor.
@@ -133,6 +134,7 @@ s32 close(s32 fd);
  * @return -1.
  */
 s32 ioctl(s32 fd, s32 request, void* argp);
+
 /**
  * @brief Report that seeking is unsupported.
  * @param fd File descriptor.
@@ -141,23 +143,29 @@ s32 ioctl(s32 fd, s32 request, void* argp);
  * @return -1.
  */
 s32 lseek(s32 fd, s32 offset, s32 whence);
+
 /**
  * @brief Report that a file descriptor is a terminal.
  * @param fd File descriptor.
  * @return 1.
  */
 s32 isatty(s32 fd);
+
 /**
  * @brief Return the fixed process identifier.
  * @return 1.
  */
 s32 getpid(void);
+
 /**
  * @brief Reinitialize the TLB before library termination.
  */
 void TerminateLibrary(void);
 
-/** @brief Return the calling thread's ID. @return Thread ID. */
+/**
+ * @brief Return the calling thread's ID.
+ * @return Thread ID.
+ */
 s32 GetThreadId(void);
 
 s32 WakeupThread(s32 thread_id);
@@ -172,20 +180,17 @@ s32 iWakeupThread(s32 thread_id);
 /** Header that starts every SIF command packet. */
 typedef struct SifCommandHeader
 {
-    /** Packet size in the low 8 bits, extra data size in the upper 24. */
     u32 size;
-
-    /** IOP address of the extra data. */
     void* destination;
-
-    /** Command ID. */
     s32 command;
-
-    /** Free word for the sender. */
     u32 option;
 } SifCommandHeader;
 
-/** @brief Handle a SIF command. @param packet Received packet. @param data Value registered with the handler. */
+/**
+ * @brief Handle a SIF command.
+ * @param packet Received packet.
+ * @param data Value registered with the handler.
+ */
 typedef void (*SifCommandHandler)(void* packet, void* data);
 
 /** One registered SIF command handler. */
@@ -210,8 +215,6 @@ typedef struct SifClientData
     void* cache_buffer;
     void (*end_function)(void* parameter);
     void* end_parameter;
-
-    /** Server the binding reached, or null until the IOP side is ready. */
     SifServeData* server;
 } SifClientData;
 
@@ -240,7 +243,10 @@ s32 EIntr(void);
  */
 s32 ChangeThreadPriority(s32 thread_id, s32 priority);
 
-/** @brief Initialize the SIF remote procedure call layer. @param mode Initialization mode; 0 for normal. */
+/**
+ * @brief Initialize the SIF remote procedure call layer.
+ * @param mode Initialization mode; 0 for normal.
+ */
 void sceSifInitRpc(u32 mode);
 
 /**
@@ -250,36 +256,50 @@ void sceSifInitRpc(u32 mode);
  */
 s32 sceSifRebootIop(const char* image);
 
-/** @brief Check whether the IOP has finished rebooting. @return Nonzero once it has. */
+/**
+ * @brief Check whether the IOP has finished rebooting.
+ * @return Nonzero once it has.
+ */
 s32 sceSifSyncIop(void);
 
-/** @brief Reset the IOP module loader's RPC binding. @return Zero on success. */
+/**
+ * @brief Reset the IOP module loader's RPC binding.
+ * @return Zero on success.
+ */
 s32 sceSifLoadFileReset(void);
 
-/** @brief Reset the file system RPC binding. @return Zero on success. */
+/**
+ * @brief Reset the file system RPC binding.
+ * @return Zero on success.
+ */
 s32 sceFsReset(void);
 
-/** @brief Initialize the IOP heap RPC binding. @return Zero on success. */
+/**
+ * @brief Initialize the IOP heap RPC binding.
+ * @return Zero on success.
+ */
 s32 sceSifInitIopHeap(void);
 
-/** @brief Allocate IOP memory. @param size Bytes to allocate. @return IOP address, or null. */
+/**
+ * @brief Allocate IOP memory.
+ * @param size Bytes to allocate.
+ * @return IOP address, or null.
+ */
 void* sceSifAllocIopHeap(u32 size);
 
-/** @brief Free IOP memory. @param address IOP address. @return Zero on success. */
+/**
+ * @brief Free IOP memory.
+ * @param address IOP address.
+ * @return Zero on success.
+ */
 s32 sceSifFreeIopHeap(void* address);
 
 /** One EE-to-IOP SIF DMA transfer. */
 typedef struct SifDmaTransfer
 {
-    /** EE source address. */
     void* data;
-
-    /** IOP destination address. */
     void* address;
-
-    /** Bytes to transfer, a multiple of 16. */
     u32 size;
-
     u32 mode;
 } SifDmaTransfer;
 
@@ -291,7 +311,11 @@ typedef struct SifDmaTransfer
  */
 u32 sceSifSetDma(SifDmaTransfer* transfers, s32 count);
 
-/** @brief Check a SIF DMA transfer. @param id Transfer ID. @return Negative once the transfer is done. */
+/**
+ * @brief Check a SIF DMA transfer.
+ * @param id Transfer ID.
+ * @return Negative once the transfer is done.
+ */
 s32 sceSifDmaStat(u32 id);
 
 /**

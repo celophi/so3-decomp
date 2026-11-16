@@ -729,6 +729,7 @@ void BootMusicPlayer::update()
             cursor = new (0) LibSelectionCursor;
             cursor->init(1, 0, 0, 54.0f, y, 0.0f);
         }
+
         lib_queue_display_object(g_field_runtime, reinterpret_cast<LibTransformOwner*>(static_cast<LibTransformOwner*>(cursor)));
         g_renderer->append_node(meters[0], -1);
         g_renderer->append_node(meters[1], -1);

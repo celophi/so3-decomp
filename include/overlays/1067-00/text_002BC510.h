@@ -32,8 +32,8 @@ struct FieldState2BDF70;
 class FieldClass159A80 : public FieldListObject
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass159A80();
+
     void* unk14;
     u16 unk18;
 };

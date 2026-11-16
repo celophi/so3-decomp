@@ -41,6 +41,7 @@ class FieldClass1537C0 : public FieldListObject, public FieldClass1DD400
 {
 public:
     FieldClass1537C0();
+
     virtual ~FieldClass1537C0();
 
     u8 unk18[8];

@@ -7,10 +7,18 @@
 extern "C" {
 #endif
 
-/** @brief Initialize the CD/DVD library. @param mode 0 for a normal initialization. @return Nonzero on success. */
+/**
+ * @brief Initialize the CD/DVD library.
+ * @param mode 0 for a normal initialization.
+ * @return Nonzero on success.
+ */
 s32 sceCdInit(s32 mode);
 
-/** @brief Set the disc media type. @param media 1 for CD, 2 for DVD. @return Nonzero on success. */
+/**
+ * @brief Set the disc media type.
+ * @param media 1 for CD, 2 for DVD.
+ * @return Nonzero on success.
+ */
 s32 sceCdMmode(s32 media);
 
 /**
@@ -48,13 +56,23 @@ typedef struct sceCdRMode
  */
 s32 sceCdRead(u32 lsn, u32 sectors, void* buffer, sceCdRMode* mode);
 
-/** @brief Wait for the current disc command. @param mode 0 to block until it finishes. @return Zero when finished. */
+/**
+ * @brief Wait for the current disc command.
+ * @param mode 0 to block until it finishes.
+ * @return Zero when finished.
+ */
 s32 sceCdSync(s32 mode);
 
-/** @brief Abort the current disc command. @return Nonzero when the abort was issued. */
+/**
+ * @brief Abort the current disc command.
+ * @return Nonzero when the abort was issued.
+ */
 s32 sceCdBreak(void);
 
-/** @brief Get the last disc command's error. @return The error code, zero for none, or -1 when it can't be read. */
+/**
+ * @brief Get the last disc command's error.
+ * @return The error code, zero for none, or -1 when it can't be read.
+ */
 s32 sceCdGetError(void);
 
 #ifdef __cplusplus

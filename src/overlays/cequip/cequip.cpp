@@ -127,7 +127,10 @@ extern "C" void equip_item_in_active_slot(EquipSlotWindow* object, s16 identifie
  */
 extern "C" s32 lib_allocation_set_equipped_owner(ResidentObject1B64F8* inventory, s16 identifier, s32 owner);
 
-/** @brief Hide the factor tooltip. @param tooltip Factor tooltip. */
+/**
+ * @brief Hide the factor tooltip.
+ * @param tooltip Factor tooltip.
+ */
 extern "C" void lib_factor_tooltip_hide(EquipFactorTooltip* tooltip);
 
 /**
@@ -141,7 +144,11 @@ extern "C" void lib_factor_tooltip_hide(EquipFactorTooltip* tooltip);
  */
 extern "C" void lib_factor_tooltip_show(EquipFactorTooltip* tooltip, float x, float y, float z, s16 identifier, u32 flag);
 
-/** @brief Create the tooltip frame and factor lines, starting hidden. @param tooltip Factor tooltip. @return One after initialization, otherwise zero. */
+/**
+ * @brief Create the tooltip frame and factor lines, starting hidden.
+ * @param tooltip Factor tooltip.
+ * @return One after initialization, otherwise zero.
+ */
 extern "C" s32 lib_factor_tooltip_init(EquipFactorTooltip* tooltip);
 
 static inline void set_visibility(LibWidget* display, const u8& flag);
@@ -173,38 +180,60 @@ static inline void attach_comparison(EquipSlotWindow* object, EquipParameterWind
 template <class T>
 static inline void release_owned(T*& resource);
 
-/** @brief Align a resource buffer to the next 128-byte boundary. @param buffer Resource buffer. @return Aligned resource header. */
+/**
+ * @brief Align a resource buffer to the next 128-byte boundary.
+ * @param buffer Resource buffer.
+ * @return Aligned resource header.
+ */
 static inline EquipAlignedResource* aligned_resource(void* buffer)
 {
     return reinterpret_cast<EquipAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
 }
 
-/** @brief Set the item icon's mode flag and mark its display dirty. @param icon Item icon. @param enabled Mode flag. */
+/**
+ * @brief Set the item icon's mode flag and mark its display dirty.
+ * @param icon Item icon.
+ * @param enabled Mode flag.
+ */
 static inline void equip_set_icon_enabled(LibObject172410* icon, u8 enabled)
 {
     icon->unkfa = enabled;
     icon->needs_redraw = 1;
 }
 
-/** @brief Return the equipment menu's active State. @return Active equipment controller. */
+/**
+ * @brief Return the equipment menu's active State.
+ * @return Active equipment controller.
+ */
 static inline EquipController* current_controller()
 {
     return static_cast<EquipController*>(D_001B643C->callbacks->state);
 }
 
-/** @brief Return the selected character's record. @param selection Character selection. @return Record of the current character. */
+/**
+ * @brief Return the selected character's record.
+ * @param selection Character selection.
+ * @return Record of the current character.
+ */
 static inline EquipCharacterRecord* selected_character(FieldRecordSelection* selection)
 {
     return &reinterpret_cast<EquipCharacterRecord*>(selection->records)[selection->current];
 }
 
-/** @brief Return the selected character's equipment. @param selection Character selection. @return Equipment record of the current character. */
+/**
+ * @brief Return the selected character's equipment.
+ * @param selection Character selection.
+ * @return Equipment record of the current character.
+ */
 static inline EquipCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
 {
     return &static_cast<EquipCharacterEquipment*>(selection->unk04)[selection->current];
 }
 
-/** @brief Refresh the selected record description, code, and active display widgets. @param associated Record display window. */
+/**
+ * @brief Refresh the selected record description, code, and active display widgets.
+ * @param associated Record display window.
+ */
 static inline void equip_refresh_record_display(EquipCharacterWindow* associated)
 {
     if (associated->selection != 0)
@@ -221,7 +250,11 @@ static inline void equip_refresh_record_display(EquipCharacterWindow* associated
     }
 }
 
-/** @brief Find a category in resident storage. @param value One-based category index. @return Category, or null outside one through seven hundred fifty. */
+/**
+ * @brief Find a category in resident storage.
+ * @param value One-based category index.
+ * @return Category, or null outside one through seven hundred fifty.
+ */
 static inline ItemCreationCategoryRecord* equip_category_record(s32 value)
 {
     ResidentObject1B64F8* base = D_001B64F8;
@@ -241,7 +274,11 @@ static inline ItemCreationCategoryRecord* equip_category_record(s32 value)
     return 0;
 }
 
-/** @brief Check the one-based packed record index. @param index Record index. @return True for indices from one through 3000. */
+/**
+ * @brief Check the one-based packed record index.
+ * @param index Record index.
+ * @return True for indices from one through 3000.
+ */
 static inline bool valid_record_index(s16 index)
 {
     return index > 0 && index <= 3000;
@@ -265,7 +302,11 @@ static inline ItemCreationAllocationRecord* allocation_record(s32 value)
     return 0;
 }
 
-/** @brief Set a numeric widget value and mark it dirty. @param widget Numeric widget. @param value Display value. */
+/**
+ * @brief Set a numeric widget value and mark it dirty.
+ * @param widget Numeric widget.
+ * @param value Display value.
+ */
 static inline void set_number(LibObject174F20* widget, u32 value)
 {
     widget->numeric_value = value;
@@ -289,67 +330,100 @@ static inline void equip_set_position(LibWidget* target, float x, float y, float
     target->needs_redraw = 1;
 }
 
-/** @brief Store the window byte at offset 0xC. @param value Unsigned byte to store. */
+/**
+ * @brief Store the window byte at offset 0xC.
+ * @param value Unsigned byte to store.
+ */
 void FieldClass15AE70::func_slot24(u8 value)
 {
     unk0c = value;
 }
 
-/** @brief Read the window byte at offset 0xC. @return Stored unsigned byte. */
+/**
+ * @brief Read the window byte at offset 0xC.
+ * @return Stored unsigned byte.
+ */
 u8 FieldClass15AE70::func_slot28()
 {
     return unk0c;
 }
 
-/** @brief Store the window byte at offset 0x8. @param value Unsigned byte to store. */
+/**
+ * @brief Store the window byte at offset 0x8.
+ * @param value Unsigned byte to store.
+ */
 void FieldClass15AE70::func_slot2c(u8 value)
 {
     unk08 = value;
 }
 
-/** @brief Read the window byte at offset 0x8. @return Stored unsigned byte. */
+/**
+ * @brief Read the window byte at offset 0x8.
+ * @return Stored unsigned byte.
+ */
 u8 FieldClass15AE70::func_slot30()
 {
     return unk08;
 }
 
-/** @brief Store the window halfword at offset 0xA. @param value Unsigned halfword to store. */
+/**
+ * @brief Store the window halfword at offset 0xA.
+ * @param value Unsigned halfword to store.
+ */
 void FieldClass15AE70::func_slot34(u16 value)
 {
     unk0a = value;
 }
 
-/** @brief Read the window halfword at offset 0xA. @return Stored unsigned halfword. */
+/**
+ * @brief Read the window halfword at offset 0xA.
+ * @return Stored unsigned halfword.
+ */
 u16 FieldClass15AE70::func_slot38()
 {
     return unk0a;
 }
 
-/** @brief Store the alternate associated pointer. @param associated Pointer to store. */
+/**
+ * @brief Store the alternate associated pointer.
+ * @param associated Pointer to store.
+ */
 void FieldClass15AE70::func_slot48(void* associated)
 {
     unk9c = associated;
 }
 
-/** @brief Read the alternate associated pointer. @return Stored pointer. */
+/**
+ * @brief Read the alternate associated pointer.
+ * @return Stored pointer.
+ */
 void* FieldClass15AE70::func_slot4c()
 {
     return unk9c;
 }
 
-/** @brief Store the resource source word. @param value Word to store. */
+/**
+ * @brief Store the resource source word.
+ * @param value Word to store.
+ */
 void FieldClass15AE70::func_slot50(u32 value)
 {
     unk04 = value;
 }
 
-/** @brief Return the resource source word. @return Stored word. */
+/**
+ * @brief Return the resource source word.
+ * @return Stored word.
+ */
 u32 FieldClass15AE70::func_slot54()
 {
     return unk04;
 }
 
-/** @brief Return the nested display container. @return Stored container. */
+/**
+ * @brief Return the nested display container.
+ * @return Stored container.
+ */
 LibContainer* FieldClass15AE70::func_slot58()
 {
     return unk10;
@@ -485,13 +559,19 @@ void FieldClass15AE70::func_slote4()
 {
 }
 
-/** @brief Read the window byte at offset 0xD. @return Stored unsigned byte. */
+/**
+ * @brief Read the window byte at offset 0xD.
+ * @return Stored unsigned byte.
+ */
 u8 FieldClass15AE70::func_slote8()
 {
     return unk0d;
 }
 
-/** @brief Store the window byte at offset 0xD. @param value Unsigned byte to store. */
+/**
+ * @brief Store the window byte at offset 0xD.
+ * @param value Unsigned byte to store.
+ */
 void FieldClass15AE70::func_slotec(u8 value)
 {
     unk0d = value;
@@ -535,7 +615,10 @@ void EquipExitConfirmWindow::func_slot5c()
     }
 }
 
-/** @brief Return the stored window pointer. @return Stored pointer. */
+/**
+ * @brief Return the stored window pointer.
+ * @return Stored pointer.
+ */
 void* FieldClass153E30::func_00261150()
 {
     return unk20;
@@ -566,7 +649,10 @@ u8 EquipExitConfirmWindow::func_slotb4()
     return 2;
 }
 
-/** @brief Store the window pointer. @param value Pointer to store. */
+/**
+ * @brief Store the window pointer.
+ * @param value Pointer to store.
+ */
 void FieldClass153E30::func_00263C70(void* value)
 {
     unk20 = value;
@@ -760,7 +846,11 @@ EquipResourceWindow::~EquipResourceWindow()
 {
 }
 
-/** @brief Write a stored display flag. @param display Display to update. @param flag Low-byte flag to store. */
+/**
+ * @brief Write a stored display flag.
+ * @param display Display to update.
+ * @param flag Low-byte flag to store.
+ */
 static inline void set_visibility(LibWidget* display, const u8& flag)
 {
     display->visible = flag;
@@ -806,13 +896,19 @@ void EquipItemInstanceListWindow::func_slot10c(u32 rows, u32 cursor)
     }
 }
 
-/** @brief Return the empty equipment selection result. @return Zero. */
+/**
+ * @brief Return the empty equipment selection result.
+ * @return Zero.
+ */
 u8 EquipItemInstanceListWindow::func_slotb8()
 {
     return 0;
 }
 
-/** @brief Toggle the linked display flag. @return One. */
+/**
+ * @brief Toggle the linked display flag.
+ * @return One.
+ */
 u8 EquipItemInstanceListWindow::func_slotbc()
 {
     EquipParameterWindow* target = controller->parameter_window;
@@ -950,7 +1046,12 @@ void EquipItemInstanceListWindow::set_scroll_position(float offset)
     } while (index < 9);
 }
 
-/** @brief Select the displayed item code. @param icon Code widget. @param category Category identifier. @param variant Packed record variant. */
+/**
+ * @brief Select the displayed item code.
+ * @param icon Code widget.
+ * @param category Category identifier.
+ * @param variant Packed record variant.
+ */
 static inline void set_equipment_icon(LibObject172410* icon, s32 category, u8 variant)
 {
     icon->unkfc = category;
@@ -1039,14 +1140,23 @@ void EquipItemInstanceListWindow::recount_rows()
     FieldClass15AE60::configure_selection(FieldClass15AE60::unk88, start, row);
 }
 
-/** @brief Set the drawing depth and mark the display dirty. @param icon Drawing widget. @param depth Drawing depth. */
+/**
+ * @brief Set the drawing depth and mark the display dirty.
+ * @param icon Drawing widget.
+ * @param depth Drawing depth.
+ */
 static inline void set_display_depth(LibDrawWidget* icon, float depth)
 {
     icon->unk88 = depth;
     icon->needs_redraw = 1;
 }
 
-/** @brief Set both resource drawing scales and mark the display dirty. @param display Resource display. @param x Horizontal scale. @param y Vertical scale. */
+/**
+ * @brief Set both resource drawing scales and mark the display dirty.
+ * @param display Resource display.
+ * @param x Horizontal scale.
+ * @param y Vertical scale.
+ */
 static inline void set_resource_scale(ItemCreationOptionResourceDisplay* display, float x, float y)
 {
     display->unk50.unk34 = y;
@@ -1107,7 +1217,10 @@ s32 EquipItemInstanceListWindow::func_slot104(u32 associated)
     return 1;
 }
 
-/** @brief Store the selection byte at offset 0x84. @param value Byte to store. */
+/**
+ * @brief Store the selection byte at offset 0x84.
+ * @param value Byte to store.
+ */
 void FieldClass15AD40::func_slot110(u8 value)
 {
     FieldClass15AE60::unk84 = value;
@@ -1131,7 +1244,10 @@ EquipItemInstanceListWindow::EquipItemInstanceListWindow(EquipController* state)
     tooltip_item = 0;
 }
 
-/** @brief Toggle the linked display flag. @return One. */
+/**
+ * @brief Toggle the linked display flag.
+ * @return One.
+ */
 u8 EquipItemListWindow::func_slotbc()
 {
     EquipParameterWindow* target = controller->parameter_window;
@@ -1213,7 +1329,10 @@ u8 EquipItemListWindow::func_slotb0()
     return 1;
 }
 
-/** @brief Return the loaded resource slot. @return Resource slot. */
+/**
+ * @brief Return the loaded resource slot.
+ * @return Resource slot.
+ */
 u32 EquipController::get_resource_slot()
 {
     return resource_slot;
@@ -1412,7 +1531,10 @@ void EquipItemListWindow::func_slot108(u8 category)
     FieldClass15AE60::configure_selection(FieldClass15AE60::unk88, 0, 0);
 }
 
-/** @brief Return the State's record selection. @return Record selection. */
+/**
+ * @brief Return the State's record selection.
+ * @return Record selection.
+ */
 FieldRecordSelection* EquipController::selected_records()
 {
     return selection;
@@ -1976,7 +2098,11 @@ u8 EquipSlotWindow::func_slotbc()
     return 1;
 }
 
-/** @brief Test whether a selector is inactive. @param selector Selector state. @return One when its control byte is clear. */
+/**
+ * @brief Test whether a selector is inactive.
+ * @param selector Selector state.
+ * @return One when its control byte is clear.
+ */
 static inline u8 selector_inactive(FieldClass153130* selector)
 {
     return !(selector->LibMovementState::arrived != 0);
@@ -2279,7 +2405,10 @@ void EquipParameterWindow::func_slot5c()
     }
 }
 
-/** @brief Clear the multiline display scroll offsets. @param display Multiline text display. */
+/**
+ * @brief Clear the multiline display scroll offsets.
+ * @param display Multiline text display.
+ */
 static inline void reset_scroll(LibObject174D90* display)
 {
     display->unk52c = 0.0f;
@@ -2378,7 +2507,11 @@ void EquipCharacterWindow::func_slot5c()
     }
 }
 
-/** @brief Update a resource display string. @param display String display. @param text String to display. */
+/**
+ * @brief Update a resource display string.
+ * @param display String display.
+ * @param text String to display.
+ */
 static inline void set_resource_text(LibStringLabel* display, const char* text)
 {
     display->text = text;
@@ -2874,49 +3007,73 @@ EquipCharacterWindow::~EquipCharacterWindow()
 {
 }
 
-/** @brief Report whether window setup finished. @return Setup flag. */
+/**
+ * @brief Report whether window setup finished.
+ * @return Setup flag.
+ */
 u8 EquipController::windows_ready()
 {
     return windows_initialized;
 }
 
-/** @brief Report this object's default list kind. @return Four. */
+/**
+ * @brief Report this object's default list kind.
+ * @return Four.
+ */
 s32 EquipController::get_default_list_kind()
 {
     return 4;
 }
 
-/** @brief Store the alternate associated object. @param value Object to store. */
+/**
+ * @brief Store the alternate associated object.
+ * @param value Object to store.
+ */
 void FieldClass153E30::func_00263C80(void* value)
 {
     unk24 = value;
 }
 
-/** @brief Return the alternate associated object. @return Stored object. */
+/**
+ * @brief Return the alternate associated object.
+ * @return Stored object.
+ */
 void* FieldClass153E30::func_00263C90()
 {
     return unk24;
 }
 
-/** @brief Store the receiver state byte. @param value State byte. */
+/**
+ * @brief Store the receiver state byte.
+ * @param value State byte.
+ */
 void FieldClass153E30::func_00263CA0(s8 value)
 {
     unk28 = value;
 }
 
-/** @brief Return the receiver state byte. @return State byte. */
+/**
+ * @brief Return the receiver state byte.
+ * @return State byte.
+ */
 s8 FieldClass153E30::func_00263CB0()
 {
     return unk28;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot60()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot64()
 {
     return 0;
@@ -2942,19 +3099,28 @@ void FieldClass153E30::func_slot78()
 {
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot7c()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot80()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot84()
 {
     return 0;

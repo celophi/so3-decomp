@@ -76,10 +76,7 @@ typedef struct ResidentSoundEmitter
 {
     u8 unk000[0x20E];
     u8 unk20e_0_3 : 4;
-
-    /** Set while a sound slot plays from the object; cleared once no slot follows it any more. */
     u8 has_sound : 1;
-
     u8 unk20e_5_7 : 3;
 } ResidentSoundEmitter;
 
@@ -87,22 +84,13 @@ typedef struct ResidentSoundEmitter
 typedef struct ResidentRequestSlot
 {
     u8 active;
-
-    /** Set once the stream has answered the play request with a voice handle. */
     u8 started;
-
-    /** A stop that has to wait for the stream's answer. */
     u8 stop_requested;
-
     u8 unk03;
-
-    /** Set when the slot owns buffer and deletes it when it stops. */
     u8 owns_buffer;
 
     // TODO: volatile is my guess for selector and value, like handle below; the lip sync lookups read value again
-    // after testing it and keep the selector load for the call's delay slot only when both are volatile.
     volatile u8 selector;
-
     u8 unk06[2];
     volatile u16 value;
     u8 unk0a[2];
@@ -115,10 +103,7 @@ typedef struct ResidentRequestSlot
     volatile u32 handle;
 
     s32 identifier;
-
-    /** Mode passed with the stop. */
     s32 stop_mode;
-
     s32 volume;
     u8 unk1c;
     u8 unk1d[3];
@@ -128,17 +113,12 @@ typedef struct ResidentRequestSlot
      * TODO: volatile is my guess; the reply callbacks reread it after every use, and nothing else I tried does that.
      */
     struct ResidentSoundEmitter* volatile target;
-
-    /** Sound data the slot plays. */
     u8* buffer;
-
     u32 unk28;
     u32 unk2c;
     union
     {
         u32 unk30;
-
-        /** The same word read as a float: frames added to the time a voice level is sampled at. */
         float unk30_float;
     };
 
@@ -153,23 +133,12 @@ class ResidentStreamThread;
 /** A sound bank load waiting in the stream's bank queue. */
 struct ResidentBankRequest
 {
-    /** Sound file: a SEQ or SEQW file (optionally followed by its WAV chunk), or a bare WAV chunk. */
     const void* file;
-
-    /** Receives the loaded size once the bank is in place, or zero when it was dropped; may be null. */
     s32* result;
-
-    /** Bank ID and priority from the sequence header. */
     s16 bank_id;
-
     s8 priority;
-
-    /** Set once the upload is done and the load waits for func_00106640 to continue it. */
     u8 waiting;
-
-    /** Wave data size from the WAV chunk. */
     s32 wave_size;
-
     u32 unk10;
     u32 unk14;
     u32 unk18;
@@ -180,43 +149,24 @@ struct ResidentBankRequest
 /** A sequence upload waiting in the stream's sequence queue. */
 struct ResidentSequenceRequest
 {
-    /** Bytes still to send. */
     s32 remaining;
-
-    /** Next byte to send. */
     const u8* cursor;
-
-    /** Sound file the request was made for. */
     const void* file;
-
     s32 unk0C;
-
-    /** Entry of the stream's slot table the sequence belongs to. */
     u8 slot;
-
     u32 unk14;
     u32 unk18;
-
-    /** Receives the IOP's reply once the upload finishes; may be null. */
     s32* result;
 };
 
 /** One of the four regions of sound memory the stream loads banks into. */
 struct ResidentStreamChannel
 {
-    /** Size of the bank held here; zero when free, negative when the region continues the previous one's bank. */
     s32 size;
-
     s16 bank_id;
     s8 priority;
-
-    /** Load counter value when the bank was loaded; the oldest bank is replaced first. */
     u32 age;
-
-    /** Sound memory address of the region. */
     u32 address;
-
-    /** Entry of the stream's slot table for this region. */
     u8 slot;
 };
 
@@ -227,64 +177,32 @@ class ResidentSoundStream : public ResidentListener
         u8 unk04[0x40];
         u32 unk44;
         u8 unk48[0x44];
-
-        /** Set while a thread is waiting for the stream thread. */
         u8 waiting;
-
-        /** Thread that talks to the IOP. */
         ResidentStreamThread* thread;
-
-        /** Load counter stored in each channel's age. */
         u32 next_age;
-
         ResidentStreamChannel channels[4];
-
-        /** Step of the bank load at the front of the bank queue. */
         u8 bank_state;
-
         u8 bank_channel;
         u8 bank_first_channel;
         u8 bank_channel_count;
-
-        /** IOP request the bank load waits for. */
         s32 bank_request;
-
-        /** Results of the bank load's IOP requests. */
         s32 bank_status[4];
-
         u8 unk100[0x30];
         u32 bank_address;
         u8 bank_slot;
-
-        /** Ring of 32 bank requests: storage, read and write positions, and end. */
         ResidentBankRequest* bank_queue;
-
         ResidentBankRequest* bank_read;
         ResidentBankRequest* bank_write;
         ResidentBankRequest* bank_queue_end;
-
-        /** Step of the upload at the front of the sequence queue. */
         u8 sequence_state;
-
-        /** IOP address uploads are sent to. */
         u32 sequence_address;
-
-        /** IOP request the upload waits for. */
         s32 sequence_request;
-
-        /** Result of the upload's IOP request. */
         s32 sequence_status;
-
         u8 unk158[0x3C];
-
-        /** Ring of 32 sequence requests: storage, read and write positions, and end. */
         ResidentSequenceRequest* sequence_queue;
-
         ResidentSequenceRequest* sequence_read;
         ResidentSequenceRequest* sequence_write;
         ResidentSequenceRequest* sequence_queue_end;
-
-        /** Loaded sound files, by slot. */
         void* slots[32];
 
         /**
@@ -310,10 +228,7 @@ typedef struct ResidentVoiceTable
 
     struct
     {
-        /** First 2048-byte block of the voice. */
         u16 block;
-
-        /** Length of the voice in 2048-byte blocks. */
         u16 block_count;
     } entries[1];
 } ResidentVoiceTable;
@@ -321,12 +236,8 @@ typedef struct ResidentVoiceTable
 /** How one piece of music is played. */
 typedef struct ResidentMusicEntry
 {
-    /** Nonzero when the music is read into memory in one piece, zero when it streams. */
     u8 in_memory;
-
     u8 unk01;
-
-    /** Resource key of the music. */
     u16 resource;
 } ResidentMusicEntry;
 
@@ -361,23 +272,11 @@ struct ResidentSound
     struct ResidentSoundStream* stream;
     ResidentArchive* archive;
     ResidentResourceQueue* resource_queue;
-
-    /** Lib renderer the sound interrupt counts on, or null. */
     struct ResidentSoundRenderer* unk0c;
-
-    /** Number of entries in music_entries. */
     s32 music_entry_count;
-
-    /** Every piece of music, by music number minus one. */
     const ResidentMusicEntry* music_entries;
-
-    /** Stream handle of each queued music track, oldest first; request callbacks push the handles they get back. */
     u32 music_handles[3];
-
-    /** Key of each queued music track. */
     s32 music_keys[3];
-
-    /** Number of queued music tracks. */
     s32 music_count;
 
     /**
@@ -385,15 +284,10 @@ struct ResidentSound
      * TODO: volatile is my guess from that; it's the only form I found where func_0010DEF0 rereads the count.
      */
     volatile u32 unk34;
-
-    /** Index of the music track being faded, or -1. */
     s32 unk38;
-
     s32 unk3c;
     s32 unk40;
     u8 unk44[0xCC];
-
-    /** What the sound system is busy with (ResidentSoundState). */
     u8 state;
     u8 unk111;
     u8 unk112[2];
@@ -403,13 +297,8 @@ struct ResidentSound
     u32 unk334;
     u32 unk338;
     s32 unk33c;
-
-    /** Volume, 0 to 0x7FFF. */
     s32 volume;
-
-    /** Volume after the volume scale, 0 to 0x7FFF. */
     s32 scaled_volume;
-
     u8 unk348;
     u8 unk349[3];
     float unk34c;
@@ -417,10 +306,7 @@ struct ResidentSound
     u8 unk351;
     u8 unk352;
     u8 unk353;
-    /** Reverb preset, an index into the SPU2 effect settings table at D_001441A0. */
     u8 reverb_preset;
-
-    /** Progress through applying the reverb preset. */
     u8 reverb_step;
     u8 unk356;
     u8 unk357[9];
@@ -428,59 +314,32 @@ struct ResidentSound
     u8 unk364[4];
     const void* unk368;
     u8 unk36c[4];
-
-    /** Set when music is unavailable; the music calls then do nothing and report success. */
     u8 music_disabled;
-
-    /** Set when sound effects and voices are unavailable; their calls then do nothing and report success. */
     u8 effects_disabled;
-
     u8 unk372[0x4A];
     s32 unk3bc;
     u8 unk3c0[0x40];
     u8* unk400;
     u32 unk404;
-
-    /** Table of the voices in the voice file, read when the file is set. */
     ResidentVoiceTable* voice_table;
-
-    /** File key of the voice file, or zero when there is none. */
     s32 voice_file_key;
-
-    /** Voices read ahead of time, or null. */
     u8* voice_buffers[8];
-
-    /** Voice index held in each of voice_buffers. */
     s32 voice_indices[8];
-
-    /** Sound output mode: 1 mono, 0 stereo, 2 Dolby Pro Logic II, 3 headphones. */
     u8 output_mode;
-
     u8 unk451;
     u8 unk452;
     u8 unk453;
     u32 unk454[32];
     s32 unk4d4;
-
-    /** Handler of the sound interrupt. */
     s32 interrupt_handler;
-
     u32 next_identifier;
     s32 cursor;
     ResidentRequestSlot slots[60];
     u8 unk12f4[0x9C];
-
-    /** Object the positional sounds are heard from. */
     void* listener;
-
     float unk1394;
-
-    /** Square of the distance positional sounds reach. */
     float range_squared;
-
-    /** Angle of each of the four surround speakers. */
     float speaker_angles[4];
-
     float unk13ac[4];
     void* unk13bc[32];
     s32 unk143c;
@@ -506,30 +365,17 @@ class DmaSubmission;
 class ResidentDmaQueue
 {
     public:
-        /** Submissions waiting for the channel. */
         DmaSubmission* entries[0x400];
-
-        /** Submission whose transfer is running, or null. */
         DmaSubmission* current;
 
         // TODO: The indices are volatile because the DMAC handler changes them from interrupt context; the target
         // reloads them after every store, and nothing else I tried does that.
 
-        /** Next free entry. */
         volatile s32 write_index;
-
-        /** Next entry to start. */
         volatile s32 read_index;
-
-        /** DMAC handler ID from AddDmacHandler. */
         s32 handler_id;
-
-        /** DMA channel number. */
         u8 channel;
-
-        /** Set while a transfer is running; the DMAC handler clears it. */
         volatile u8 busy;
-
         u8 unk1012;
 
         /**
@@ -587,22 +433,15 @@ class ResidentHeap;
 /** Header in front of every block of a resident heap, allocated or free. */
 struct ResidentHeapBlock
 {
-    /** Size of the block, header included. */
     s32 size;
-
     u8 flags;
     u8 allocated;
-
-    /** RESIDENT_HEAP_BLOCK_MARKER while the block is allocated. */
     u16 marker;
-
     ResidentHeapBlock* physical_previous;
     ResidentHeapBlock* physical_next;
     ResidentHeap* owner;
     ResidentHeapBlock* free_next;
     ResidentHeapBlock* free_previous;
-
-    /** RESIDENT_HEAP_BLOCK_TAG while the block is allocated. */
     u32 tag;
 };
 
@@ -610,26 +449,13 @@ struct ResidentHeapBlock
 class ResidentHeap
 {
     public:
-        /** Permanently allocated block that starts and ends the block lists. */
         ResidentHeapBlock head;
-
-        /** Block the free list starts and ends at; it points to head once the heap has memory. */
         ResidentHeapBlock* free_anchor;
-
-        /** Memory the heap allocated for itself, or null. */
         void* memory;
-
-        /** Nonzero to allocate from the child heaps when this one has no room. */
         u8 use_fallbacks;
-
-        /** Nonzero to allocate from the top of the free blocks instead. */
         u8 alternate;
-
         u8 unk2a[2];
-
-        /** Alignment of every allocation, a power of two. */
         s32 alignment;
-
         s32 fallback_count;
         ResidentHeap* fallbacks[8];
 
@@ -646,9 +472,16 @@ class ResidentHeap
 class DmaSubmission
 {
 public:
-    /** @brief Start the queued DMA transfer. @param channel DMA channel number. */
+    /**
+     * @brief Start the queued DMA transfer.
+     * @param channel DMA channel number.
+     */
     virtual void submit_dma(u32 channel) = 0;
-    /** @brief Complete the queued DMA transfer. @param channel DMA channel number. */
+
+    /**
+     * @brief Complete the queued DMA transfer.
+     * @param channel DMA channel number.
+     */
     virtual void complete_dma(u32 channel) = 0;
 };
 #else
@@ -665,19 +498,17 @@ class ResidentThread
         {
         }
 
-        /** Priority the thread was created with. */
         s32 priority;
-
-        /** Stack the thread runs on. */
         u8* stack;
-
-        /** Kernel thread ID, or negative before the thread is created. */
         s32 thread_id;
 
         /** @brief Stop and delete the kernel thread. */
         virtual ~ResidentThread();
 
-        /** @brief Start the kernel thread. @return Nonzero on success. */
+        /**
+         * @brief Start the kernel thread.
+         * @return Nonzero on success.
+         */
         virtual s32 start();
 
         /** @brief The thread's body; the base class does nothing. */
@@ -688,7 +519,6 @@ class ResidentThread
 class ResidentTimeSlicedThread : public ResidentThread
 {
     public:
-        /** Horizontal syncs the thread runs before the next one gets its turn. */
         s16 time_slice;
 
         /** @brief Remove the thread from the scheduler and destroy it. */
@@ -699,35 +529,20 @@ class ResidentTimeSlicedThread : public ResidentThread
 class ResidentThreadScheduler : public ResidentThread
 {
     public:
-        /** Threads added to the scheduler, or null; each round copies them to threads. */
         ResidentTimeSlicedThread* registered[8];
-
-        /** Threads that take turns, or null. */
         ResidentTimeSlicedThread* threads[8];
-
-        /** Thread whose slice is running, or null. */
         ResidentTimeSlicedThread* current;
 
         // TODO: next and alarm_id are volatile because the alarm handler changes them from interrupt context; the
         // target reloads them after every store and test, and nothing else I tried does that.
 
-        /** Index of the next thread to get a slice. */
         volatile s32 next;
-
         ResidentSemaphore semaphore;
-
-        /** Set while slices are being handed out. */
         u8 active;
-
         u8 unk61[3];
-
-        /** Horizontal syncs before the first slice of a round, less two. */
         s32 unk64;
-
-        /** Alarm that ends the running slice, or -1. */
         volatile s32 alarm_id;
 
-        /** @brief Destroy the scheduler and its semaphore. */
         virtual ~ResidentThreadScheduler();
 };
 
@@ -737,14 +552,11 @@ extern "C" s32 func_00115000(ResidentThread* thread, s32 priority, s32 stack_siz
 struct ResidentHddIconHeader
 {
     char magic[0x10];
-
-    /** Where each file starts in the data, starting at 0x200 and rounded up to 0x200 bytes, and its size. */
     struct
     {
         u32 offset;
         u32 size;
     } files[4];
-
     u8 unk30[0x1D0];
 };
 
@@ -752,7 +564,10 @@ struct ResidentHddIconHeader
 class ResidentArchiveWorkerListener : public ResidentListener
 {
     public:
-        /** @brief Wake a thread. @param data Thread to wake. */
+        /**
+         * @brief Wake a thread.
+         * @param data Thread to wake.
+         */
         virtual void notify(void* data);
 };
 
@@ -763,73 +578,35 @@ class ResidentArchiveWorker : public ResidentThread
         u8 unk10;
         u8 unk11[3];
         s32 unk14;
-
-        /** Free space the last space query found on the unit. */
         u32 free_space;
-
-        /** Set once the unit is present and initialized. */
         u8 unit_ready;
-
         u8 unk1d[3];
-
-        /** Command being run, or zero while the worker is idle. */
         s32 command;
-
-        /** Result of the last command; nonzero is an error. */
         s32 command_result;
-
         s32 unk28;
-
-        /** Words left to copy while installing. */
         s32 copy_remaining;
-
-        /** The archive the worker belongs to. */
         struct ResidentArchive* archive;
-
-        /** Held while a command is started or cancelled. */
         ResidentSemaphore command_semaphore;
-
         ResidentSemaphore unk3c;
-
-        /** Argument of the command. */
         s32 argument;
-
-        /** Buffer the install copies through. */
         u8* copy_buffer;
-
-        /** Set to ask the running command to stop. */
         u8 cancel_requested;
-
         u8 unk4d;
         u8 unk4e;
-
-        /** Set while the install's abort prompt is up. */
         u8 copy_paused;
-
         s32 unk50;
         u8 unk54;
-
-        /** Unit state: one when it isn't initialized, two when it's ready. */
         u8 unit_state;
-
         u8 unk56[2];
         ResidentArchiveWorkerListener listener;
-
-        /** Icon header written in front of the system files. */
         struct ResidentHddIconHeader* icon_header;
-
-        /** The four system files the header describes. */
         u8* system_files[4];
-
-        /** BB Navigator files written next to the installed archive. */
         u8* navigator_files[3];
-
         s32 navigator_file_sizes[3];
 
         /** @brief Create the worker's thread and semaphores, idle and with no files. */
         ResidentArchiveWorker();
 
-        /** @brief Destroy the worker and its semaphores. */
         virtual ~ResidentArchiveWorker();
 
         virtual void run();
@@ -839,17 +616,13 @@ class ResidentArchiveWorker : public ResidentThread
 class ResidentClass14FC40 : public ResidentThread
 {
     public:
-        /** Disc thread that owns it. */
         class ResidentClass14FC10* owner;
-
         s32 unk14;
         u32 unk18;
         u8 unk1c;
         u8 unk1d;
         u8 unk1e[2];
         u32 unk20;
-
-        /** Clock the disc drive last reported. */
         ResidentClock clock;
 
         /** @brief Create the kernel thread with the clock at 2003-02-27 12:00:00. */
@@ -869,7 +642,6 @@ class ResidentClass14FC40 : public ResidentThread
             clock.year = 3;
         }
 
-        /** @brief Destroy the thread. */
         virtual ~ResidentClass14FC40();
 
         virtual void run();
@@ -879,7 +651,6 @@ class ResidentClass14FC40 : public ResidentThread
 class ResidentClass14FBF0 : public ResidentThread
 {
     public:
-        /** Hard disk worker. */
         ResidentArchiveWorker* worker;
 
         /** @brief Create the kernel thread, with no worker yet. */
@@ -889,7 +660,6 @@ class ResidentClass14FBF0 : public ResidentThread
             worker = 0;
         }
 
-        /** @brief Destroy the thread. */
         virtual ~ResidentClass14FBF0();
 
         virtual void run();
@@ -914,17 +684,11 @@ class ResidentClass14FC10 : public ResidentThread
 {
     public:
         ResidentSemaphore unk10;
-
-        /** Held while the clock is read or changed. */
         ResidentSemaphore semaphore;
-
         ResidentSemaphore unk20;
         ResidentSemaphore unk28;
         ResidentSemaphore unk30;
-
-        /** Signalled when a disc command finishes or times out. */
         ResidentSemaphore timeout_semaphore;
-
         ResidentSemaphore unk40;
         ResidentSemaphore unk48;
         s32 unk50;
@@ -938,27 +702,17 @@ class ResidentClass14FC10 : public ResidentThread
         u8 unk61;
         u8 unk62;
         u8 unk63;
-        /** ResidentReadListener told about each block read while streaming, or null. */
         void* unk64;
-
         u8 unk68;
         u8 unk69;
         u8 unk6a;
         u8 unk6b;
         u8 unk6c;
-
-        /** Set when the timeout alarm ran out. */
         u8 timed_out;
-
         u8 unk6e[2];
         s32 unk70;
-
-        /** Alarm ticks counted since the timeout alarm started. */
         s32 timeout_ticks;
-
-        /** Running timeout alarm, or -1; the alarm handler changes it from interrupt context. */
         volatile s32 timeout_alarm;
-
         s32 unk7c;
         // TODO: Other threads set the size left to read; only a volatile field makes the read loop load it again.
         volatile s32 unk80;
@@ -969,23 +723,15 @@ class ResidentClass14FC10 : public ResidentThread
         s32 unk90;
         s32 unk94;
         s32 unk98;
-
-        /** Listener notified when a read finishes, or null. */
         struct ResidentListener* listener;
-
-        /** Object passed back to the listener. */
         void* listener_context;
-
-        /** The archive; the archive constructor points it back at the archive. */
         struct ResidentArchive* owner;
-
         u8 unka8[4];
         ResidentClass14FC40 unkAC;
 
         /** @brief Create the semaphores and start the status thread. */
         ResidentClass14FC10();
 
-        /** @brief Destroy the thread and its semaphores. */
         virtual ~ResidentClass14FC10();
 
         /** @brief Thread body: wait for a read request, do the read, and notify the listener. */
@@ -998,38 +744,19 @@ class ResidentClass14FC10 : public ResidentThread
  */
 struct ResidentArchive
 {
-    /** Thread that reads the disc. */
     ResidentClass14FC10 disc_thread;
-
-    /** Thread the disc power-off callback is given. */
     ResidentClass14FBF0 unkD8;
-
-    /** Hard disk worker thread. */
     ResidentArchiveWorker worker;
-
-    /** Thread that constructed the archive. */
     s32 main_thread_id;
-
-    /** RESIDENT_ARCHIVE_TABLE_TAG once the resource table is decrypted; the first table word holds it until then. */
     u32 table_tag;
-
-    /** Per resource: its position in the archive in 2048-byte blocks in the low 24 bits. */
     u32 resource_positions[RESIDENT_RESOURCE_COUNT];
-
-    /** Per resource: its size in 2048-byte blocks in the low 24 bits. */
     u32 resource_entries[RESIDENT_RESOURCE_COUNT];
-
-    /** Per resource: nonzero when the install copies it. */
     u32 install_flags[RESIDENT_RESOURCE_COUNT];
-
     u8 unk1217c[4];
     u8 unk12180;
     u8 unk12181;
     u8 unk12182;
-
-    /** Set while a resource read is in progress; the reading thread clears it. */
     volatile u8 read_busy;
-
     u8 unk12184;
     u8 unk12185;
     u8 unk12186;
@@ -1041,16 +768,12 @@ struct ResidentArchive
     u32 unk121a0;
     u8 unk121a4[4];
     s32 unk121a8;
-
-    /** Stack of the disc callback thread. */
     void* cd_callback_stack;
-
     u8 unk121b0[0x18];
 
     /** @brief Construct the archive's threads and start them. */
     ResidentArchive();
 
-    /** @brief Destroy the archive and its threads. */
     virtual ~ResidentArchive();
 };
 
@@ -1066,71 +789,37 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
     public:
         u8* allocation;
         u8 unk18[2];
-
-        /** Which of the two output buffers is filling. */
         u8 output_half;
-
-        /** Which of the two output buffers unk20 points into. */
         u8 unk1B;
 
         // TODO: output_cursor and input_cursor are volatile because the DMA completion (func_00109D50) moves them from
         // interrupt context; it reads input_cursor before output_cursor, and nothing else I tried keeps that order.
 
-        /** Next block of the output buffer. */
         u8* volatile output_cursor;
-
         u8* unk20;
         u8* unk24;
         s32 unk28;
-
-        /** Blocks left to transfer into each output buffer. */
         s32 output_pending[2];
-
         u32 unk34[2];
-
-        /** The two output buffers; the first is the allocation rounded up to 128 bytes. */
         u8* output_buffers[2];
-
         u8* unk44;
-
-        /** Per input (send) block: set once the block has data. */
         u8 input_ready[2];
 
         // TODO: unk4A and unk4C are volatile because the send path (func_0010B600) also runs from the SIF interrupt;
         // the target rereads both after every use, and nothing else I tried does that.
 
-        /** Send block in use. */
         volatile u8 unk4A;
-
-        /** Which of the two input buffers is filling. */
         u8 input_half;
-
-        /** Next 0x1000-byte chunk of the send block, behind its 0x40-byte header. */
         u8* volatile unk4C;
-
-        /** Next block of the input buffer. */
         u8* volatile input_cursor;
-
-        /** Per send block: chunks left to send. */
         s32 unk54[2];
-
-        /** Per send block: IOP address the chunks go to. */
         void* unk5C[2];
-
-        /** The two input buffers. */
         u8* input_buffers[2];
-
         u8* unk6C;
         u8* unk70;
         s32 unk74;
-
-        /** Per ring half: nonzero once the half is full. */
         u8 unk78[2];
-
-        /** Ring half being read. */
         u8 unk7A;
-
-        /** Ring half being written. */
         u8 unk7B;
 
         /**
@@ -1138,19 +827,10 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
          * TODO: volatile is my guess from that; nothing else rereads them the way func_0010A530 does.
          */
         u8* volatile unk7C;
-
-        /** Write position in the ring. */
         u8* volatile unk80;
-
-        /** Start of the ring (uncached address). */
         u8* volatile unk84;
-
-        /** Start of the ring's second half (uncached address). */
         u8* volatile unk88;
-
-        /** End of the ring (uncached address). */
         u8* volatile unk8C;
-
         s32 unk90;
         u8 unk94;
         u8 unk95;
@@ -1160,46 +840,20 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         s32 unkA0;
         u32 unkA4;
         u32 unkA8;
-
-        /** First state the IOP reports; func_0010A0B0 sets it to one from the SIF interrupt handler. */
         volatile s32 first_state;
-
-        /** Second state the IOP reports; func_0010A080 sets it to one from the SIF interrupt handler. */
         volatile s32 second_state;
-
         u8 unkB4[3];
-
-        /** Set once request 0xA has been sent; cleared when the IOP next asks for ring data (unk74). */
         u8 unkB7;
-
-        /** Nonzero while a send block is queued. */
         u8 unkB8;
-
         u8 unkB9;
-
-        /** Set while the send path runs, so it isn't entered twice. */
         u8 unkBA;
-
-        /** Chunks sent from the current block. */
         u8 unkBB;
-
-        /**
-         * Nonzero when the channels hold mid (sum) and side (difference) instead of left and right; copied from byte
-         * 0x28 of the stream header.
-         */
         s8 mid_side;
-
         u8 unkBD;
         u8 unkBE;
-        /** Times the stream has looped; the IOP fills this in, and a new stream starts it at zero. */
         s32 loop_count;
-
         u8 unkC4[4];
-
-        /** Next free byte of the debug byte log. */
         u8* log_cursor;
-
-        /** Byte sent in the header of each chunk, by chunk number. */
         u8 unkCC[0x20];
 
         /**
@@ -1212,10 +866,7 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         u32* unkF4;
         ResidentSoundStream* stream;
         u8 unkFC[4];
-
-        /** DMA transfer the thread queues on VIF1. */
         ResidentStreamDma* dma;
-
         u8 unk104;
         ResidentSemaphore semaphore;
         s32 unk110;
@@ -1232,7 +883,10 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         /** @brief Run the streaming passes on every wakeup, then wake the waiting thread, if any. */
         virtual void run();
 
-        /** @brief Handle a SIF command forwarded to the thread. @param data Command data. */
+        /**
+         * @brief Handle a SIF command forwarded to the thread.
+         * @param data Command data.
+         */
         virtual void notify(void* data);
 };
 
@@ -1241,21 +895,17 @@ class ResidentStreamDma : public DmaSubmission
 {
     public:
         ResidentStreamThread* owner;
-
-        /** Uncached address the next transfer writes to. */
         u32 output;
-
-        /** Which DMA chain the next transfer sends: 1 or 2, or 0 when idle. */
         s8 phase;
-
-        /** Each ring's start, the shared ring size, and each ring's read and write positions. */
         u32 ring_start[2];
-
         u32 ring_size;
         u32 ring_read[2];
         u32 ring_write[2];
 
-        /** @brief Start with both rings unset. @param owner Stream thread the transfer belongs to. */
+        /**
+         * @brief Start with both rings unset.
+         * @param owner Stream thread the transfer belongs to.
+         */
         ResidentStreamDma(ResidentStreamThread* owner) : owner(owner)
         {
             ring_start[0] = 0;
@@ -1263,6 +913,7 @@ class ResidentStreamDma : public DmaSubmission
         }
 
         virtual void submit_dma(u32 channel);
+
         virtual void complete_dma(u32 channel);
 };
 
@@ -1279,15 +930,9 @@ typedef struct ResidentSifQueuedCommand
 typedef struct ResidentSifReply
 {
     // TODO: volatile is my guess; the link's thread reads this and the link's buffer into locals before the RPC call,
-    // and only volatile reads stay where they are written.
     volatile u32 unk00;
-
-    /** Receives a copy of the reply, or null to leave it in the link's reply buffer. */
     u32* buffer;
-
-    /** Called with the reply and argument, or null. */
     void (*callback)(void* reply, void* argument);
-
     void* argument;
     u32 unk10;
 } ResidentSifReply;
@@ -1299,28 +944,18 @@ typedef struct ResidentSifReply
 class ResidentSif : public ResidentThread
 {
 public:
-    /** Allocation the buffers below are carved from. */
     u8* allocation;
-
     s32 unk14;
 
     // TODO: The two ring indices are volatile because the reply interrupt moves them; the request wrappers
     // reread unk1C after comparing it, and nothing else I tried does that.
 
-    /** Reply slot the last reply went to. */
     volatile s32 reply_index;
-
     volatile s32 unk1C;
     ResidentSifReply replies[32];
-
-    /** The allocation rounded up to 64 bytes. */
     u8* volatile buffer;
-
     u8* unk2A4;
-
-    /** Where replies from the IOP arrive. */
     u32* reply_data;
-
     u8* unk2AC;
     u8* unk2B0;
     SifClientData rpc_client;
@@ -1329,8 +964,6 @@ public:
     SifCommandHandlerEntry handlers[5];
     u8 unk31C[0x10];
     ResidentSemaphore unk32C;
-
-    /** Held while a request is being queued for the IOP. */
     ResidentSemaphore request_semaphore;
 
     /**
@@ -1358,17 +991,10 @@ public:
         return (u32*)(base + unk1C * 64);
     }
 
-    /** Next packet for sends from interrupt context. */
     s32 interrupt_packet_index;
-
     SifCommandHeader interrupt_packets[256];
-
-    /** Queue slot sent last; the queue is empty when the next slot is write_index. */
     s32 queue_read_index;
-
-    /** Next free queue slot; the queue is full when it equals queue_read_index. */
     s32 queue_write_index;
-
     ResidentSifQueuedCommand queue[256];
     u8 unk2348[8];
     SifCommandHeader queue_packets[256];
@@ -1384,12 +1010,8 @@ public:
 class ResidentClass14FC60 : public ResidentThread
 {
     public:
-        /** Input system the thread polls. */
         ResidentInputSystem* input;
-
-        /** Set while the thread is reading the pads. */
         u8 polling;
-
         u8 unk15[3];
 
         /** @brief Create the kernel thread, not polling yet. */
@@ -1399,7 +1021,6 @@ class ResidentClass14FC60 : public ResidentThread
             polling = 0;
         }
 
-        /** @brief Destroy the thread. */
         virtual ~ResidentClass14FC60()
         {
         }
@@ -1411,8 +1032,6 @@ struct ResidentDisplay
     u8 unk0000[0x3E40];
     s32 unk3e40;
     u8 unk3e44[0x21];
-
-    /** Set while the input system's vblank handler updates this display. */
     u8 vblank_enabled;
 };
 
@@ -1422,7 +1041,10 @@ class ResidentPadHook
     public:
         virtual void func_slot08();
 
-        /** @brief Handle the pads the poll just read. @param input Input system. */
+        /**
+         * @brief Handle the pads the poll just read.
+         * @param input Input system.
+         */
         virtual void update(ResidentInputSystem* input);
 };
 
@@ -1433,119 +1055,48 @@ class ResidentPadHook
 struct ResidentInputSystem
 {
     u8 unk000[4];
-
-    /** Vblank interrupt handler ID. */
     s32 vblank_handler;
-
-    /** Seconds counted from vblanks. */
     u32 seconds;
-
-    /** Vblanks since a wait for the next vblank cleared it; the vblank handler counts it. */
     volatile u32 vblank_wait_count;
-
-    /** Vblanks since the count was last taken. */
     u32 vblank_count;
-
-    /** Object that takes over pad input, or null for normal button processing. */
     ResidentPadHook* hook;
-
     u8 unk018[0x28];
-
-    /** DMA buffer of each pad's socket. */
     u8 pad_buffers[RESIDENT_PAD_COUNT][0x100];
-
     s32 sockets[RESIDENT_PAD_COUNT];
-
-    /** Socket state from the last poll; one when the pad is ready. */
     s32 states[RESIDENT_PAD_COUNT];
-
     s32 unk250;
     u8 unk254[0xC];
-
-    /** Buttons held this frame. */
     u16 held[RESIDENT_PAD_COUNT];
-
-    /** Buttons held last frame. */
     u16 previous_held[RESIDENT_PAD_COUNT];
-
-    /** Buttons held at some point since the latches were cleared. */
     u16 held_since_clear[RESIDENT_PAD_COUNT];
-
-    /** Buttons newly pressed since the latches were cleared. */
     u16 pressed[RESIDENT_PAD_COUNT];
-
-    /** Frames the same buttons have been held, up to repeat_delay. */
     u8 repeat_counts[RESIDENT_PAD_COUNT];
-
-    /** Polls to skip after a pad error before reading it again. */
     u8 retry_delays[RESIDENT_PAD_COUNT];
-
-    /** Raw analog stick axes. */
     u8 sticks[RESIDENT_PAD_COUNT][RESIDENT_PAD_AXIS_COUNT];
-
-    /** Pressure of each pressure-sensitive button. */
     u8 pressures[RESIDENT_PAD_COUNT][RESIDENT_PAD_PRESSURE_COUNT];
-
-    /** Set while the pad reports analog sticks. */
     u8 analog[RESIDENT_PAD_COUNT];
-
-    /** Set to map the left stick onto the direction buttons. */
     u8 stick_dpad[RESIDENT_PAD_COUNT];
-
     u8 vibration_enabled[RESIDENT_PAD_COUNT];
-
-    /** Set when the motor levels changed and must be sent to the pad. */
     u8 vibration_dirty[RESIDENT_PAD_COUNT];
-
-    /** Set once the pad's vibration profile has been read. */
     u8 vibration_profile_read[RESIDENT_PAD_COUNT];
-
-    /** Largest value each stick axis reports. */
     u8 stick_limits[RESIDENT_PAD_COUNT][RESIDENT_PAD_AXIS_COUNT];
-
-    /** Stick distance from centre that reads as zero. */
     u8 dead_zones[RESIDENT_PAD_COUNT];
-
     u8 unk2a8[RESIDENT_PAD_COUNT];
-
-    /** Vibration profile, then the motor parameters sent to the pad. */
     u8 vibration_profiles[RESIDENT_PAD_COUNT][0x20];
-
     u8 unk2ea[2];
-
-    /** Centre offset of each stick axis. */
     s8 stick_offsets[RESIDENT_PAD_COUNT][RESIDENT_PAD_AXIS_COUNT];
-
-    /** Small motor, on when nonzero. */
     u8 small_motor[RESIDENT_PAD_COUNT];
-
-    /** Large motor strength. */
     u8 large_motor[RESIDENT_PAD_COUNT];
-
-    /** Frames buttons must be held before they repeat. */
     u8 repeat_delay;
-
-    /** Vblanks counted towards the next second. */
     u8 second_vblanks;
-
-    /** GS field (zero or one) at the last vblank. */
     u8 field;
-
-    /** Set to update the attached display each vblank. */
     u8 display_enabled;
-
     u8 unk2fc;
     u8 unk2fd[3];
-
-    /** Vblanks since the input system started. */
     u32 vblank_total;
-
     ResidentClass14FC60 poll_thread;
     ResidentSemaphore semaphore;
-
-    /** Display updated each vblank, or null. */
     ResidentDisplay* display;
-
     u8 unk328[0x18];
 
     /** @brief Create the polling thread and the semaphore, with no pad hook. */
@@ -1559,48 +1110,40 @@ struct ResidentInputSystem
  */
 struct ResidentSystem
 {
-    /** @brief Destroy every part of the system. */
     ~ResidentSystem();
 
-    /** @brief Free the system through the resident heap. @param memory Allocation, or null. */
+    /**
+     * @brief Free the system through the resident heap.
+     * @param memory Allocation, or null.
+     */
     static void operator delete(void* memory) throw()
     {
         resident_delete(memory);
     }
 
     ResidentSound sound;
+
     u8 unk_sound_end[0x1480 - sizeof(ResidentSound)];
+
     ResidentInputSystem input;
     ResidentArchive archive;
-
-    /** Decoder that unpacks each program's overlay. */
     ResidentDecodeObject decoder;
-
     u8 unk1398D[3];
     ResidentEntryTable entry_table;
     ResidentReleaseQueues release_queues;
     ResidentResourceQueue resource_queue;
     ResidentSoundStream sound_stream;
     u32 unk15C80;
-
-    /** Nonzero for progressive (525p) output. */
     u8 progressive;
-
     u8 unk15C85[0xB];
     u32 unk15C90;
     u32 unk15C94;
     u32 unk15C98;
-
-    /** Main's stack and frame pointers, restored when switching programs. */
     void* saved_sp;
     void* saved_fp;
 
     u8 unk15CA4[0xC];
-
-    /** Key that decrypts SLE resource blocks. */
     unsigned __int128 sle_key;
-
-    /** Status byte (a ResidentStatus), allocated on first use at a random heap address. */
     u8* status;
 };
 #endif
@@ -1674,10 +1217,16 @@ extern ResidentSystem g_system;
  */
 s32 resident_archive_get_clock(ResidentArchive* archive, ResidentClock* clock);
 
-/** @brief Seed the resident random sequence; main seeds it from timer 0. @param seed Seed value. */
+/**
+ * @brief Seed the resident random sequence; main seeds it from timer 0.
+ * @param seed Seed value.
+ */
 void func_0010D100(u32 seed);
 
-/** @brief Archive setup that main runs right after rebooting the IOP. @param archive Resource archive. */
+/**
+ * @brief Archive setup that main runs right after rebooting the IOP.
+ * @param archive Resource archive.
+ */
 void func_0011DA80(ResidentArchive* archive);
 
 /**
@@ -1729,7 +1278,10 @@ struct ResidentListener* func_0011D320(ResidentArchive* archive, struct Resident
  */
 s32 func_0011BFD0(ResidentArchive* archive, u32* position);
 
-/** @brief Abort the archive's current read. @param archive Resource archive. */
+/**
+ * @brief Abort the archive's current read.
+ * @param archive Resource archive.
+ */
 void func_0011BA90(ResidentArchive* archive);
 
 /**
@@ -1840,10 +1392,16 @@ u32 func_0010C200(ResidentSif* sif, s32 command, void* reply, s32 callback, s32 
 void func_0010C420(ResidentSif* sif);
 #endif
 
-/** @brief Start the input system. @param input Input system. */
+/**
+ * @brief Start the input system.
+ * @param input Input system.
+ */
 void func_0011EA80(struct ResidentInputSystem* input);
 
-/** @brief Start the sound system and its stream. @param sound Sound system. */
+/**
+ * @brief Start the sound system and its stream.
+ * @param sound Sound system.
+ */
 void func_00112D80(ResidentSound* sound);
 
 /** One entry of the table func_0010EC00 sends to the stream. */
@@ -1980,15 +1538,19 @@ void resident_sound_set_speaker_angle(ResidentSound* sound, s32 speaker, float a
  * @param angles Four speaker angles in radians.
  */
 void resident_sound_set_speaker_angles(ResidentSound* sound, const float* angles);
+
 /** Append the pointer at object offset zero to the resident manager array. */
 void func_0010EF50(const void* reply);
+
 /** Run the resident helper on the pointer at offset zero with its final flag set. */
 s32 func_0010EFD0(ResidentSound* sound);
 
 /** Return whether the resident double comparison reports left greater than right. */
 s32 func_001143E0(double left, double right);
+
 /** Return whether the resident double comparison reports left less than right. */
 s32 func_00114400(double left, double right);
+
 /** Return whether the resident double comparison reports the values equal. */
 s32 func_00114420(double left, double right);
 
@@ -2000,6 +1562,7 @@ s32 func_00114420(double left, double right);
  * @return Nonzero when the thread was created.
  */
 s32 func_00114560(ResidentTimeSlicedThread* thread, s16 time_slice, s32 stack_size);
+
 /**
  * @brief Advance the resident random sequence and return its next word.
  * @return Next unsigned random word.
@@ -2384,7 +1947,9 @@ void func_0010EE50(void* object);
  * @param entries Music entries, by music number minus one.
  */
 void func_00112D70(ResidentSound* sound, s32 count, const ResidentMusicEntry* entries);
+
 void func_00113180(void* object);
+
 void func_00113EA0(void* object);
 
 /**
@@ -2394,17 +1959,24 @@ void func_00113EA0(void* object);
  * @return The busy flag when polling, otherwise zero.
  */
 u32 func_00113EB0(ResidentDmaQueue* queue, s32 poll);
+
 void func_00114450(void* object);
 
 /** Return whether waking the resident thread succeeds. */
 s32 func_00114DD0(const void* object);
+
 /** Return whether the resident thread sleep request succeeds. */
 s32 func_00114E80(void);
+
 /** Return whether the resident thread starts successfully. */
 s32 func_00114EB0(void* object);
 
-/** @brief Do nothing. @param object Unused. */
+/**
+ * @brief Do nothing.
+ * @param object Unused.
+ */
 void func_0011C6B0(void* object);
+
 /** Return bit 0 of the word at receiver offset 0xCC. */
 s32 func_0011C7C0(const void* object);
 

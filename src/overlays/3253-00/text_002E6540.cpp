@@ -2,9 +2,13 @@
 #include "overlays/3253-00/text_002E6540.h"
 
 extern "C" void func_002EDC10(void* object, void* context);
+
 extern "C" void func_003AF250(void* object);
+
 extern "C" void func_002B3270(void* object);
+
 extern "C" u32 func_4A0B70(u32 value, const void* data);
+
 extern "C" const u8 D_3E3600[];
 extern "C" const u8 D_3E42F8[];
 

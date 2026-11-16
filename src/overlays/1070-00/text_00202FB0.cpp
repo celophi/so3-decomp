@@ -4,17 +4,28 @@
 #include "overlays/1070-00/text_00284BF0.h"
 
 extern "C" void func_001FCE00(void);
+
 extern "C" void func_002074B0(void* receiver, void* child);
+
 extern "C" void func_0020E850(void* receiver, void* child);
+
 extern "C" s32 func_0020AA00(void* object, s32 value, s32 flags, s32 parameter);
+
 extern "C" void* D_001B64E4;
+
 extern "C" void func_00265A70(void* owner, void* value, s32 enabled);
+
 extern "C" void* D_001B6620;
 extern "C" FieldContextRef* D_001B64B0;
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" void func_00206880(void* object);
+
 extern "C" void func_002B3010(void* context, u32 value);
+
 extern "C" void func_002C84A0(void* object);
+
 extern "C" void func_4F0EF0(void);
 
 /** Partial receiver with an optional child pointer at offset 0x300. */
@@ -72,18 +83,22 @@ static inline FieldStateListElement3C* find_state_element(FieldContext34* object
 static inline FieldStateListElement3C* find_state_element(FieldContext34* object, s32 key)
 {
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         if (key == ((FieldStateListElement3C*)node)->unk3c)
         {
             return (FieldStateListElement3C*)node;
         }
     }
+
     return 0;
 }
 
@@ -129,6 +144,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002038
 extern "C" void func_00203850(FieldBytePairOwner* object)
 {
     u8 flags = object->unk590_0 | object->unk590_1;
+
     if (flags == 0) {
         func_002C84A0(object);
     }
@@ -224,6 +240,7 @@ void func_00204480(FieldRecordQueue* object)
             record->unk15 = 0;
         }
     }
+
     object->unk20 = 0;
     object->unk33 = 0;
     object->unk31 = 0;
@@ -285,10 +302,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002058
 u8 func_002058A0(FieldContext34* object, s32 key)
 {
     FieldStateListElement3C* found = find_state_element(object, key);
+
     if (found == 0)
     {
         return 0xFE;
     }
+
     return found->unk15;
 }
 
@@ -418,10 +437,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002074
 void func_002075F0(void* object, s32 value)
 {
     FieldOptionalChild300* state = (FieldOptionalChild300*)object;
+
     if (value != -1)
     {
         state->unk88 = value;
     }
+
     if (state->unk300 != 0)
     {
         func_002074B0(object, state->unk300);
@@ -517,13 +538,16 @@ void func_00208EF0(FieldFlagListElement* object)
 void func_00208F20(FieldContext58* object)
 {
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         ((FieldFlagListElement*)node)->unk4c_2 = 1;
     }
 }
@@ -537,19 +561,24 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_002090
 s32 func_002091E0(FieldContext58* object)
 {
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         s32 nonnegative = ((FieldFlagListElement*)node)->unk24 > -1;
+
         if (nonnegative)
         {
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -561,14 +590,18 @@ void func_00209230(FieldContext58* object, u32 key)
         FIELD_LIST_FLAG_3 = 0x8
     };
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         FieldFlagListElement* element = (FieldFlagListElement*)node;
+
         if (element->unk1c & FIELD_LIST_FLAG_1)
         {
             if (key == ((FieldKeyListElement54*)element)->unk54)
@@ -589,13 +622,16 @@ void func_00209230(FieldContext58* object, u32 key)
 void func_002092C0(FieldContext58* object)
 {
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         ((FieldFlagListElement*)node)->unk4c_0 = 1;
     }
 }
@@ -638,6 +674,7 @@ void func_00209720(FieldRecordQueue18* object)
             record->unk15 = 0;
         }
     }
+
     object->unk20 = 0;
     object->unk33 = 0;
     object->unk31 = 0;
@@ -654,14 +691,17 @@ void func_002097F0(FieldContext58* object, void* value, s32 unused)
 s32 func_00209810(const FieldContext58* object, s8 index)
 {
     const FieldContext58Entry* entry = &object->unkb0[index];
+
     if (entry->unk16_2 != 0)
     {
         return 1;
     }
+
     if (entry->unk16_0 != 0)
     {
         return 2;
     }
+
     return 0;
 }
 
@@ -674,18 +714,22 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_00209C
 FieldFlagListElement* func_00209E40(FieldContext58* object, u32 key)
 {
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (node == 0 || &object->unk14 == node)
         {
             break;
         }
+
         if (key == ((FieldFlagListElement*)node)->unk14)
         {
             return (FieldFlagListElement*)node;
         }
     }
+
     return 0;
 }
 
@@ -708,14 +752,18 @@ void func_00209F50(FieldFlagListElement* object)
 void func_00209FA0(FieldContext58* object, u32 key, u32 value38, u32 value44, u32 value3c, u32 value40)
 {
     FieldListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         FieldFlagListElement* element = (FieldFlagListElement*)node;
+
         if (key == element->unk14)
         {
             element->unk38 = value38;
@@ -913,11 +961,13 @@ void func_0020DC50(FieldBytePairOwner* object)
     object->unk58d = 4;
     object->unk570 = 40.0f;
     FieldBytePair* pair = object->unk448;
+
     if (pair != 0)
     {
         pair->unk08 = 0;
         pair->unk09 = 0;
     }
+
     func_0020D240(object);
     func_0020D810(object, 70.0f);
 }
@@ -935,6 +985,7 @@ s32 func_0020DDA0(const FieldWordFlags8C* object)
     {
         return 0;
     }
+
     return 1;
 }
 
@@ -948,10 +999,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00202FB0", func_0020E8
 void func_0020EA40(void* object, s32 value)
 {
     FieldOptionalChild80* state = (FieldOptionalChild80*)object;
+
     if (value != -1)
     {
         state->unk88 = value;
     }
+
     if (state->unk80 != 0)
     {
         func_0020E850(object, state->unk80);

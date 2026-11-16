@@ -28,8 +28,10 @@ public:
     {
         allocation = 0;
     }
+
     /** @brief Release the owned allocation. */
     ~LibStorageBlock0C();
+
     void* allocation;
     void* aligned;
     u32 dma_address;
@@ -64,17 +66,11 @@ struct LibManagedResourceSlot
 {
     void* allocation;
     LibResourceHeader* data;
-
-    /** Section pointers; the third holds one width byte per glyph. */
     u8* sections[4];
-
     s32 unk18;
     s32 unk1c;
     s32 unk20;
-
-    /** Height of the slot's glyphs. */
     s32 unk24;
-
     s32 unk28;
     s32 unk2c;
     s32 unk30;
@@ -100,21 +96,13 @@ struct LibDrawRecord
 
     union
     {
-        /** Glyph width in pixels. */
         s32 width;
-
         float scale;
-
-        /** Record after the last one of a run. */
         LibDrawRecord* end;
     } unk14;
 
     u32 color;
-
-    /** Character code, or a record kind with bit 14 set. */
     u16 code;
-
-    /** Glyph index within the resource slot. */
     u16 glyph;
 };
 
@@ -132,6 +120,7 @@ struct LibDrawWidget : public LibWidget
 {
     /** @brief Initialize the drawing widget. */
     LibDrawWidget();
+
     /** @brief Destroy the drawing widget. */
     virtual ~LibDrawWidget();
 
@@ -277,25 +266,15 @@ struct LibDrawWidget : public LibWidget
      * @param code Character code.
      */
     void add_glyph(s32 code);
-    /** Backing drawing-storage allocation. */
+
     void* allocation;
-
-    /** The allocation rounded up to a 128-byte boundary past a 64-byte prefix. */
     void* aligned;
-
     u32 unk48;
     u32 unk4c;
     u32 unk50;
-
-    /** Uncached DMA address of the aligned storage. */
     u32 dma_address;
-
     u8 unk58[0x14];
-
-    /** Runtime resource slot the widget draws from. */
     LibManagedResourceSlot* resource_slot;
-
-    /** Laid-out records, and the end of them. */
     u8* unk70;
     u8* unk74;
 
@@ -306,9 +285,7 @@ struct LibDrawWidget : public LibWidget
     float unk88;
     float unk8c;
     float unk90;
-    /** Colour the widget is modulated by (0x80 per channel is full brightness). */
     u32 tint;
-
     u32 draw_color;
     s32 horizontal_align;
     s32 vertical_align;
@@ -317,69 +294,83 @@ struct LibDrawWidget : public LibWidget
     s32 unkac;
     s32 unkb0;
     u32 unkb4;
-
-    /** Number of records laid out so far. */
     s32 record_count;
-
-    /** Head record of the run being laid out. */
     LibDrawRecord* run_head;
-
-    /** Next record to lay out. */
     LibDrawRecord* next_record;
-
-    /** Layout pen position. */
     float pen_x;
     float pen_y;
-
-    /** Height of the last glyph laid out. */
     float line_height;
-
-    /** Smallest and largest glyph heights laid out. */
     float min_height;
     float max_height;
     u8 unkd8[0x10];
-
-    /** Extent of the last layout. */
     LibTextExtent extent;
-
     u8 unkf8;
     u8 unkf9;
     u8 unkfa;
     u8 unkfb;
-    /** @brief Set the display scale. @param x Horizontal scale. @param y Vertical scale. */
+
+    /**
+     * @brief Set the display scale.
+     * @param x Horizontal scale.
+     * @param y Vertical scale.
+     */
     void set_scale(float x, float y)
     {
         draw_scale_y = y;
         draw_scale = x;
         needs_redraw = 1;
     }
-    /** @brief Set the draw colour and mark the widget for redraw. @param color Packed colour. */
+
+    /**
+     * @brief Set the draw colour and mark the widget for redraw.
+     * @param color Packed colour.
+     */
     void set_color(u32 color)
     {
         draw_color = color;
         needs_redraw = 1;
     }
 
-    /** @brief Set the scale and mark the widget for redraw. @param scale Horizontal scale. */
+    /**
+     * @brief Set the scale and mark the widget for redraw.
+     * @param scale Horizontal scale.
+     */
     void set_scale(float scale)
     {
         draw_scale = scale;
         needs_redraw = 1;
     }
 
-    /** @brief Set the alpha and mark the widget for redraw. @param alpha Alpha. */
+    /**
+     * @brief Set the spacing added between glyphs and mark the widget for redraw.
+     * @param spacing Spacing added between glyphs before horizontal scaling.
+     */
+    void set_glyph_spacing(float spacing)
+    {
+        unk88 = spacing;
+        needs_redraw = 1;
+    }
+
+    /**
+     * @brief Set the alpha and mark the widget for redraw.
+     * @param alpha Alpha.
+     */
     void set_alpha(float alpha)
     {
         draw_alpha = alpha;
         needs_redraw = 1;
     }
 
-    /** @brief Set the colour the widget is modulated by and mark it for redraw. @param color Packed colour. */
+    /**
+     * @brief Set the colour the widget is modulated by and mark it for redraw.
+     * @param color Packed colour.
+     */
     void set_tint(u32 color)
     {
         tint = color;
         needs_redraw = 1;
     }
+
     /**
      * @brief Select vertical alignment within the display rectangle.
      * @param alignment Zero uses the origin; one centers; other values align to the end.
@@ -389,7 +380,11 @@ struct LibDrawWidget : public LibWidget
         vertical_align = alignment;
         needs_redraw = 1;
     }
-    /** @brief Set the horizontal alignment and mark the widget for redraw. @param align Alignment. */
+
+    /**
+     * @brief Set the horizontal alignment and mark the widget for redraw.
+     * @param align Alignment.
+     */
     void set_horizontal_align(s32 align)
     {
         horizontal_align = align;
@@ -413,21 +408,11 @@ public:
     float unk18;
     float unk1c;
     LibPoint2 target;
-
-    /** Frames the move to the target takes. */
     float move_frames;
-
-    /** Distance moved per frame, worked out on the first step of a move. */
     float speed;
-
     float alpha;
-
-    /** Set once the move's speed has been worked out. */
     u8 speed_ready;
-
-    /** Set once the position has reached the target. */
     u8 arrived;
-
     u8 unk36[2];
 
     /** @brief Initialize the storage and clear its three scalar pairs. */
@@ -440,13 +425,23 @@ public:
         target.y = 0.0f;
         target.x = 0.0f;
     }
-    /** @brief Release the owned storage. */
+
     virtual ~LibMovementState()
     {
     }
 
     /** @brief Called once the position reaches the target; the base version does nothing. */
     virtual void on_arrived();
+
+    /**
+     * @brief Check whether the state is still moving towards its target.
+     * @return True until the position reaches the target.
+     */
+    bool is_moving() const
+    {
+        return !arrived;
+    }
+
     /**
      * @brief Allocate the drawing storage and show the state at a position at full alpha.
      * @param x Horizontal position.
@@ -454,6 +449,7 @@ public:
      * @return One on success, or zero when the storage couldn't be allocated.
      */
     s32 init_position(float x, float y);
+
     /**
      * @brief Set the movement target and reset its completion flags.
      * @param x Target horizontal coordinate.
@@ -475,10 +471,12 @@ class ItemCreationClass175030 : public LibWidget, public LibMovementState
 public:
     /** @brief Initialize the widget and select kind 9. */
     inline ItemCreationClass175030();
-    /** @brief Destroy the storage base and widget base. */
+
     virtual ~ItemCreationClass175030();
+
     /** @brief Update the movement state and its refresh flag. */
     virtual void func_00413D20();
+
     /** @brief Draw the moving widget. */
     virtual void draw();
 };
@@ -518,8 +516,9 @@ struct LibStringLabel : public LibDrawWidget
         text = value;
         needs_redraw = 1;
     }
-    /** @brief Destroy the string-backed drawing widget. */
+
     virtual ~LibStringLabel();
+
     /** @brief Draw the string-backed widget. */
     virtual void draw();
 
@@ -534,6 +533,7 @@ struct LibStringLabel : public LibDrawWidget
      * @return Number of codes.
      */
     s32 count_codes();
+
     /**
      * @brief Configure the drawing rectangle and string.
      * @param x Horizontal position.
@@ -545,7 +545,7 @@ struct LibStringLabel : public LibDrawWidget
      * @return One on success, or zero when the drawing storage couldn't be set up.
      */
     s32 init_text_rectangle(float x, float y, float width, float height, const char* value, u8 flag);
-    /** String the label draws. */
+
     const char* text;
 };
 
@@ -557,10 +557,12 @@ struct LibObject174F20 : public LibDrawWidget
     {
         unk38 = 13;
     }
-    /** @brief Destroy the numeric widget. */
+
     virtual ~LibObject174F20();
+
     /** @brief Draw the numeric widget. */
     virtual void draw();
+
     /**
      * @brief Configure the numeric widget and its rectangle.
      * @param x Rectangle origin x.
@@ -590,10 +592,12 @@ struct LibObject172410 : public LibDrawWidget
     {
         unk38 = 15;
     }
-    /** @brief Destroy the item code widget. */
+
     virtual ~LibObject172410();
+
     /** @brief Draw the code widget. */
     virtual void draw();
+
     u16 unkfc;
     u8 unkfe;
     u8 unkff;
@@ -606,10 +610,12 @@ struct LibObject172440 : public LibDrawWidget
     {
         unk38 = 16;
     }
-    /** @brief Destroy the detail code widget. */
+
     virtual ~LibObject172440();
+
     /** @brief Draw the code widget. */
     virtual void draw();
+
     u16 unkfc;
     u8 unkfe;
     u8 unkff;
@@ -638,22 +644,16 @@ public:
     /** @brief Release the runtime's retained objects and storage. */
     virtual ~FieldRuntime();
 
-    /** Sixteen resource slots. */
     LibManagedResourceSlot resource_slots[16];
-
-    /** Resource slot and first message key of the two text banks a menu loads. */
     struct TextBank
     {
         s32 resource_slot;
         u32 base_key;
     } text_banks[2];
-
     float unk524;
     float unk528;
     s32 unk52c;
     s32 unk530;
-
-    /** Screen scale and offset applied to menu coordinates. */
     float screen_scale_x;
     float screen_scale_y;
     float screen_offset_x;
@@ -662,27 +662,19 @@ public:
     u8 unk544[0xC];
     s32 unk550;
     u8 unk554[8];
-
-    /** First and last object queued for display, and how many there are. */
     void* display_first;
     void* display_last;
     s32 display_count;
-
-    /** Integer arguments substituted into the next formatted message. */
     s32 message_arguments[10];
-
     u8 unk590[0x58];
     struct FieldCharacterNames* character_names;
     float rate;
-
-    /** Two six-byte controller records. */
     struct Input
     {
         u16 unk00;
         u16 unk02;
         u16 unk04;
     } inputs[2];
-
     u8 unk5fc[2];
     u8 unk5fe;
     u8 unk5ff;
@@ -697,13 +689,13 @@ typedef struct LibTransformOwner LibTransformOwner;
 /** Partial 0x1C-byte prefix of the result selected by Lib shape predicates. */
 typedef struct LibShapeTestResult1C
 {
-    u32 unk00; /**< Predicate result state. */
-    void* unk04; /**< First matched descriptor. */
-    void* unk08; /**< Second matched descriptor. */
-    void* unk0c; /**< First matched 0x20-byte record. */
-    void* unk10; /**< Second matched 0x20-byte record. */
-    struct LibTransformOwner* unk14; /**< Transform for the first record. */
-    struct LibTransformOwner* unk18; /**< Transform for the second record. */
+    u32 unk00;
+    void* unk04;
+    void* unk08;
+    void* unk0c;
+    void* unk10;
+    struct LibTransformOwner* unk14;
+    struct LibTransformOwner* unk18;
 } LibShapeTestResult1C;
 
 
@@ -740,7 +732,8 @@ s32 lib_item_code_init_rectangle(LibObject172410* object, float x, float y, floa
  */
 s32 lib_detail_code_init_rectangle(LibObject172440* object, u16 code, u8 variation, u8 flag, float x, float y, float width, float height);
 
-/** @brief Select the multiline text resource and drawing mode, then request a redraw.
+/**
+ * @brief Select the multiline text resource and drawing mode, then request a redraw.
  * @param object Multiline text widget.
  * @param source Resource source word.
  * @param key Text resource key.
@@ -796,7 +789,12 @@ s32 lib_moving_widget_init_position(LibClass175030* object, float x, float y);
  * @return Four bounds components stored at offset 0xE8.
  */
 LibTextExtent* func_00467950(LibStringLabel* object);
-/** @brief Count glyphs in the widget's current text. @param object String-backed widget. @return Converted glyph count. */
+
+/**
+ * @brief Count glyphs in the widget's current text.
+ * @param object String-backed widget.
+ * @return Converted glyph count.
+ */
 s32 func_004679B0(LibStringLabel* object);
 
 /** Last result selected by the Lib shape predicates. */
@@ -849,6 +847,7 @@ s32 func_0045CBE0(void* shape, void* query);
  * @return One when queued, or zero if the receiver already has an owner.
  */
 s32 lib_queue_display_object(FieldRuntime* runtime, LibTransformOwner* object);
+
 /**
  * @brief Load resource data into an owned runtime slot.
  * @param runtime Runtime manager.
@@ -906,6 +905,7 @@ extern struct FieldShapeRecord20* D_001B656C;
 extern struct FieldShapeRecord20* D_001B6570;
 
 s32 func_0045D140(void* shape, s32 arg0, s32 arg1, float value);
+
 s32 func_0045D5C0(void* shape, s32 arg0, s32 arg1, s32 arg2, float value);
 
 /**
@@ -936,20 +936,35 @@ s32 func_00468360(void* object);
 s32 func_00468370(void* object);
 
 void func_0045F600(void* object);
+
 void func_0045F610(void* object);
+
 void func_0045F620(void* object);
+
 void func_0045F630(void* object);
+
 void func_0045F640(void* object);
+
 void func_0045F650(void* object);
+
 void func_00461960(void* object);
+
 void func_00461970(void* object);
+
 void func_00461980(void* object);
+
 void func_00461990(void* object);
+
 void func_004619A0(void* object);
+
 void func_004619B0(void* object);
+
 void func_004619C0(void* object);
+
 void func_004619D0(void* object);
+
 void func_004619E0(void* object);
+
 void func_004662A0(void* object);
 
 

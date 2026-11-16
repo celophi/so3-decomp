@@ -10,12 +10,21 @@
 class FieldClass152C90 : public FieldClass150440
 {
 public:
-    /** @brief Initialize the actor setting command. @param setting Byte setting to apply. @param value Scalar passed to the actor. */
+    /**
+     * @brief Initialize the actor setting command.
+     * @param setting Byte setting to apply.
+     * @param value Scalar passed to the actor.
+     */
     FieldClass152C90(u8 setting, float value);
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass152C90();
-    /** @brief Apply the actor setting when ready. @return One on completion, zero while waiting. */
+
+    /**
+     * @brief Apply the actor setting when ready.
+     * @return One on completion, zero while waiting.
+     */
     virtual s32 func_0022D800();
+
     u8 unk1c;
     u8 unk1d[3];
     float unk20;
@@ -39,10 +48,15 @@ public:
         memcpy_guess(unk1c, words, sizeof(unk1c));
         unk2c = 0;
     }
-    /** @brief Destroy the command. */
+
     virtual ~FieldClass1526C0();
-    /** @brief Apply the resource setting. @return Whether the command completed. */
+
+    /**
+     * @brief Apply the resource setting.
+     * @return Whether the command completed.
+     */
     virtual s32 func_0022B850();
+
     u8 unk1c[16];
     u8 unk2c;
     u8 unk2d_0 : 1;
@@ -53,16 +67,24 @@ public:
 class FieldClass152770 : public FieldClass150440
 {
 public:
-    /** @brief Store the target word. @param value Word to apply. */
+    /**
+     * @brief Store the target word.
+     * @param value Word to apply.
+     */
     FieldClass152770(u32 value)
     {
         unk18 = 0x100E1;
         unk1c = value;
     }
-    /** @brief Destroy the command. */
+
     virtual ~FieldClass152770();
-    /** @brief Apply the stored word. @return Always one. */
+
+    /**
+     * @brief Apply the stored word.
+     * @return Always one.
+     */
     virtual s32 func_0022B8F0();
+
     u32 unk1c;
 };
 
@@ -70,16 +92,24 @@ public:
 class FieldClass152790 : public FieldClass150440
 {
 public:
-    /** @brief Store the target float. @param value Float to apply. */
+    /**
+     * @brief Store the target float.
+     * @param value Float to apply.
+     */
     FieldClass152790(float value)
     {
         unk18 = 0x100E0;
         unk1c = value;
     }
-    /** @brief Destroy the command. */
+
     virtual ~FieldClass152790();
-    /** @brief Apply the stored float. @return Always one. */
+
+    /**
+     * @brief Apply the stored float.
+     * @return Always one.
+     */
     virtual s32 func_0022B920();
+
     float unk1c;
 };
 
@@ -283,7 +313,6 @@ s32 func_0022C9E0(struct FieldCallback22C9E0* object);
 class FieldClass1527B0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass1527B0();
 };
 
@@ -291,7 +320,6 @@ public:
 class FieldClass1527D0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass1527D0();
 };
 
@@ -299,7 +327,6 @@ public:
 class FieldClass152810 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152810();
 };
 
@@ -307,7 +334,6 @@ public:
 class FieldClass152830 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152830();
 };
 
@@ -315,7 +341,6 @@ public:
 class FieldClass152850 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152850();
 };
 
@@ -323,7 +348,6 @@ public:
 class FieldClass152870 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152870();
 };
 
@@ -331,7 +355,6 @@ public:
 class FieldClass152890 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152890();
 };
 
@@ -339,7 +362,6 @@ public:
 class FieldClass1528B0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass1528B0();
 };
 
@@ -347,7 +369,6 @@ public:
 class FieldClass1528D0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass1528D0();
 };
 
@@ -355,7 +376,6 @@ public:
 class FieldClass1528F0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass1528F0();
 };
 
@@ -363,7 +383,6 @@ public:
 class FieldClass152910 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152910();
 };
 
@@ -371,7 +390,6 @@ public:
 class FieldClass152930 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152930();
 };
 
@@ -379,7 +397,6 @@ public:
 class FieldClass152950 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152950();
 };
 
@@ -387,7 +404,6 @@ public:
 class FieldClass152970 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152970();
 };
 
@@ -395,7 +411,6 @@ public:
 class FieldClass152990 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152990();
 };
 
@@ -403,7 +418,6 @@ public:
 class FieldClass1529B0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass1529B0();
 };
 
@@ -411,7 +425,6 @@ public:
 class FieldClass1529D0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass1529D0();
 };
 
@@ -419,7 +432,6 @@ public:
 class FieldClass1529F0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass1529F0();
 };
 
@@ -427,7 +439,6 @@ public:
 class FieldClass152A10 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152A10();
 };
 
@@ -435,7 +446,6 @@ public:
 class FieldClass152A30 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152A30();
 };
 
@@ -443,7 +453,6 @@ public:
 class FieldClass152A50 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152A50();
 };
 
@@ -451,7 +460,6 @@ public:
 class FieldClass152A70 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152A70();
 };
 
@@ -459,7 +467,6 @@ public:
 class FieldClass152A90 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152A90();
 };
 
@@ -467,7 +474,6 @@ public:
 class FieldClass152AB0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152AB0();
 };
 
@@ -475,7 +481,6 @@ public:
 class FieldClass152AD0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152AD0();
 };
 
@@ -483,7 +488,6 @@ public:
 class FieldClass152AF0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152AF0();
 };
 
@@ -491,7 +495,6 @@ public:
 class FieldClass152B10 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152B10();
 };
 
@@ -499,7 +502,6 @@ public:
 class FieldClass152B30 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152B30();
 };
 
@@ -507,7 +509,6 @@ public:
 class FieldClass152B50 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152B50();
 };
 
@@ -515,7 +516,6 @@ public:
 class FieldClass152B70 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152B70();
 };
 
@@ -523,7 +523,6 @@ public:
 class FieldClass152B90 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152B90();
 };
 
@@ -531,7 +530,6 @@ public:
 class FieldClass152BB0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152BB0();
 };
 
@@ -539,7 +537,6 @@ public:
 class FieldClass152BD0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152BD0();
 };
 
@@ -547,7 +544,6 @@ public:
 class FieldClass152BF0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152BF0();
 };
 
@@ -555,7 +551,6 @@ public:
 class FieldClass152C10 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152C10();
 };
 
@@ -563,7 +558,6 @@ public:
 class FieldClass152C30 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152C30();
 };
 
@@ -571,7 +565,6 @@ public:
 class FieldClass152C50 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152C50();
 };
 
@@ -579,7 +572,6 @@ public:
 class FieldClass152CB0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152CB0();
 };
 
@@ -587,7 +579,6 @@ public:
 class FieldClass152CD0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152CD0();
 };
 
@@ -595,7 +586,6 @@ public:
 class FieldClass152CF0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152CF0();
 };
 
@@ -603,7 +593,6 @@ public:
 class FieldClass152D10 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152D10();
 };
 
@@ -611,7 +600,6 @@ public:
 class FieldClass152D30 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152D30();
 };
 
@@ -619,7 +607,6 @@ public:
 class FieldClass152D50 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152D50();
 };
 
@@ -627,7 +614,6 @@ public:
 class FieldClass152D70 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152D70();
 };
 
@@ -635,7 +621,6 @@ public:
 class FieldClass152D90 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152D90();
 };
 
@@ -643,7 +628,6 @@ public:
 class FieldClass152DB0 : public FieldClass150440
 {
 public:
-    /** @brief Destroy the command. */
     virtual ~FieldClass152DB0();
 };
 

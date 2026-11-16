@@ -2,7 +2,9 @@
 #include "overlays/3253-00/text_003C7950.h"
 
 extern "C" void func_4EABF0(void* object);
+
 extern "C" void func_4D7EB0(void* object);
+
 extern "C" void func_123020(void* owner, void* object);
 
 void func_003C7950(BattlePairedWords* object, u32 first, u32 second)
@@ -74,6 +76,7 @@ void func_003CB910(BattleLinkState* object, s32 flag)
 {
     object->unk48 = 0;
     object->unk4c = 0;
+
     if (flag)
     {
         object->unk50 = 1;
@@ -97,6 +100,7 @@ void func_003CC030(BattleLinkState* object, s32 flag)
 {
     object->unk48 = 0;
     object->unk4c = 0;
+
     if (flag)
     {
         object->unk50 = 1;
@@ -120,6 +124,7 @@ void func_003CC750(BattleLinkState* object, s32 flag)
 {
     object->unk48 = 0;
     object->unk4c = 0;
+
     if (flag)
     {
         object->unk50 = 1;
@@ -143,6 +148,7 @@ void func_003CCE30(BattleLinkState* object, s32 flag)
 {
     object->unk48 = 0;
     object->unk4c = 0;
+
     if (flag)
     {
         object->unk50 = 1;
@@ -1803,10 +1809,12 @@ void func_003D7070(N50Owner98_003C7950* object)
 {
     object->active = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
+
     func_123020(object->owner, adjusted);
 }
 

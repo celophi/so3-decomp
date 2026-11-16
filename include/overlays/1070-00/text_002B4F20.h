@@ -71,6 +71,7 @@ typedef struct FieldFourValueState48
 #ifdef __cplusplus
 extern "C" {
 void* func_002BAA50(void* receiver);
+
 void* func_002B8920(void* receiver);
 
 /**

@@ -133,7 +133,6 @@ enum SkillTacticalMode
 typedef struct SkillCharacterStats
 {
     s16 character_id;
-    /** Selects the clamping rules used by the character stat setters. */
     s16 stat_limit_type;
     u8 unk04[4];
     u32 encoded_flags;
@@ -151,14 +150,20 @@ typedef struct SkillCharacterStats
     u8 unk94[0x14];
     u32 checksum_salt;
     u8 unkac[0x18];
-    /** @brief Decode the protected flag word. @return Flags, or five when the check word is invalid. */
+
+    /**
+     * @brief Decode the protected flag word.
+     * @return Flags, or five when the check word is invalid.
+     */
     u32 get_flags() const
     {
         s32 experience = encoded_experience;
+
         if (flags_experience_checksum != (checksum_salt ^ (experience ^ (encoded_flags + checksum_salt))))
         {
             return 5;
         }
+
         return encoded_flags ^ SKILL_FLAG_ENCODING_MASK;
     }
 } SkillCharacterStats;
@@ -178,7 +183,14 @@ typedef struct SkillVector4
     {
         x = y = z = w = 0.0f;
     }
-    /** @brief Initialize a position from its components. @param x_value Horizontal component. @param y_value Vertical component. @param z_value Depth component. @param w_value Fourth component. */
+
+    /**
+     * @brief Initialize a position from its components.
+     * @param x_value Horizontal component.
+     * @param y_value Vertical component.
+     * @param z_value Depth component.
+     * @param w_value Fourth component.
+     */
     SkillVector4(float x_value, float y_value, float z_value, float w_value)
     {
         x = x_value;
@@ -186,6 +198,7 @@ typedef struct SkillVector4
         z = z_value;
         w = w_value;
     }
+
     float x;
     float y;
     float z;
@@ -199,10 +212,17 @@ struct SkillSymbologyHelpWindow : public FieldClass15AE70
 {
     /** @brief Initialize the window links and display state. */
     SkillSymbologyHelpWindow();
+
     /** @brief Release the window base and its display lists. */
     virtual ~SkillSymbologyHelpWindow();
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldRecordSelection* selection;
     LibObject174D90* description;
     LibTextWidget* mastery_label;
@@ -216,14 +236,22 @@ struct SkillSymbologyCharacterWindow : public FieldClass15AE70
 {
     /** @brief Initialize the window links and display state. */
     SkillSymbologyCharacterWindow();
+
     /** @brief Release the window base and its display lists. */
     virtual ~SkillSymbologyCharacterWindow();
+
     /**
      * @brief Refresh the selected character's MP display.
      */
     virtual void func_slot5c();
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldRecordSelection* selection;
     LibStringLabel* character_name;
     LibTextWidget* mp_label;
@@ -250,12 +278,20 @@ struct SkillResourceWindow : FieldClass15AE70
     {
         unka8 = 0;
     }
+
     /** @brief Destroy the window base and its display lists. */
     virtual ~SkillResourceWindow();
+
     /** @brief Leave the resource-window drawing state unchanged. */
     virtual void func_slot5c();
-    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the display widgets.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     u32 unka8;
 };
 
@@ -266,11 +302,21 @@ struct SkillStatusMessageWindow : FieldClass15AE70
     SkillStatusMessageWindow()
     {
     }
+
     /** @brief Destroy the window base and its display lists. */
     virtual ~SkillStatusMessageWindow();
-    /** @brief Handle a window message key. @param key Signed message key. */
+
+    /**
+     * @brief Handle a window message key.
+     * @param key Signed message key.
+     */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the display widgets.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
 };
 
@@ -281,11 +327,21 @@ struct SkillModeMessageWindow : FieldClass15AE70
     SkillModeMessageWindow()
     {
     }
+
     /** @brief Destroy the window base and its display lists. */
     virtual ~SkillModeMessageWindow();
-    /** @brief Handle a window message key. @param key Signed message key. */
+
+    /**
+     * @brief Handle a window message key.
+     * @param key Signed message key.
+     */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the display widgets.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
 };
 
@@ -296,24 +352,50 @@ struct SkillTacticalDetailWindow : public FieldClass15AE70
 {
     /** @brief Initialize both detail grids, the conversion labels and empty selection state. */
     SkillTacticalDetailWindow();
+
     /** @brief Release the conversion labels and destroy the window base. */
     virtual ~SkillTacticalDetailWindow();
+
     /** @brief Move the active grid in direction zero. */
     virtual void func_slot68();
+
     /** @brief Move the active grid in direction one. */
     virtual void func_slot6c();
+
     /** @brief Cancel the active grid. */
     virtual void func_slot70();
-    /** @brief Process the active grid selection. @return Selection event code. */
+
+    /**
+     * @brief Process the active grid selection.
+     * @return Selection event code.
+     */
     virtual u8 func_slotb0();
-    /** @brief Restore the associated window. @return Two after restoring the window, or three when absent. */
+
+    /**
+     * @brief Restore the associated window.
+     * @return Two after restoring the window, or three when absent.
+     */
     virtual u8 func_slotb4();
-    /** @brief Leave the grid selection unchanged. @return Zero. */
+
+    /**
+     * @brief Leave the grid selection unchanged.
+     * @return Zero.
+     */
     virtual s32 func_slotd8();
-    /** @brief Leave the grid selection unchanged. @return Zero. */
+
+    /**
+     * @brief Leave the grid selection unchanged.
+     * @return Zero.
+     */
     virtual s32 func_slotdc();
-    /** @brief Initialize both grids. @param associated Full resource source word. @return One on success; zero on allocation failure. */
+
+    /**
+     * @brief Initialize both grids.
+     * @param associated Full resource source word.
+     * @return One on success; zero on allocation failure.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldObject23CEA0* aura_grid;
     FieldObject23CEA0* conversion_grid;
     FieldObject23BE00* aura_cursor;
@@ -341,32 +423,73 @@ struct SkillTacticalDetailWindow : public FieldClass15AE70
 /** Mode window with its selection, positions, display lists, and row values. */
 struct SkillModeSelection : public FieldClass15AE70
 {
-    /** @brief Initialize the mode rows, owned list, and controller link. @param owner Window controller. */
+    /**
+     * @brief Initialize the mode rows, owned list, and controller link.
+     * @param owner Window controller.
+     */
     SkillModeSelection(SkillController* owner);
+
     /** @brief Destroy the mode list and base display lists. */
     virtual ~SkillModeSelection();
+
     /** @brief Update the active mode window and its list indicator. */
     virtual void func_slot5c();
-    /** @brief Ignore the supplied message key. @param key Unused signed message key. */
+
+    /**
+     * @brief Ignore the supplied message key.
+     * @param key Unused signed message key.
+     */
     virtual void func_slot60(s32 key);
+
     /** @brief Move the mode selection in direction zero. */
     virtual void func_slot68();
+
     /** @brief Move the mode selection in direction one. */
     virtual void func_slot6c();
-    /** @brief Process the selected mode entry. @return Mode selection event code. */
+
+    /**
+     * @brief Process the selected mode entry.
+     * @return Mode selection event code.
+     */
     virtual u8 func_slotb0();
-    /** @brief Cancel skill selection and restore battle setup focus. @return Zero when inactive, otherwise two. */
+
+    /**
+     * @brief Cancel skill selection and restore battle setup focus.
+     * @return Zero when inactive, otherwise two.
+     */
     virtual u8 func_slotb4();
-    /** @brief Move to the preceding page of mode entries. @return Zero after processing. */
+
+    /**
+     * @brief Move to the preceding page of mode entries.
+     * @return Zero after processing.
+     */
     virtual s32 func_slotd0();
-    /** @brief Move to the following page of mode entries. @return Zero after processing. */
+
+    /**
+     * @brief Move to the following page of mode entries.
+     * @return Zero after processing.
+     */
     virtual s32 func_slotd4();
-    /** @brief Leave the mode window unchanged. @return Zero. */
+
+    /**
+     * @brief Leave the mode window unchanged.
+     * @return Zero.
+     */
     virtual s32 func_slotd8();
-    /** @brief Leave the mode window unchanged. @return Zero. */
+
+    /**
+     * @brief Leave the mode window unchanged.
+     * @return Zero.
+     */
     virtual s32 func_slotdc();
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     u8 state;
     u8 animation_mode;
     u8 unkaa[2];
@@ -382,9 +505,7 @@ struct SkillModeSelection : public FieldClass15AE70
     u8 unke6[2];
     s32 skill_name_keys[42];
     u8 unk190[42];
-    /** CP costs for the displayed skill rows. */
     u8 row_cp_costs[42];
-    /** Row flags set by skill availability and CP checks. */
     u8 row_enabled[42];
     u8 unk20e[2];
     SkillList183C48 cp_rows;
@@ -406,8 +527,10 @@ struct SkillGridChoice : public FieldClass15AE70
 {
     /** @brief Initialize an empty grid choice with no selected entry. */
     SkillGridChoice();
+
     /** @brief Release the window base and optionally its storage. */
     virtual ~SkillGridChoice();
+
     /**
      * @brief Create the choice panel, text widgets, and two-entry grid.
      * @param associated Full resource source word.
@@ -417,20 +540,40 @@ struct SkillGridChoice : public FieldClass15AE70
      * @return One after setup, or zero when an allocation fails.
      */
     virtual s32 func_slot10(u32 associated, float x, float y, s32 code);
+
     /** @brief Refresh the current grid choice. */
     virtual void func_slot5c();
-    /** @brief Leave the current choice message unchanged. @param text_key Unused message key. */
+
+    /**
+     * @brief Leave the current choice message unchanged.
+     * @param text_key Unused message key.
+     */
     virtual void func_slot60(s32 text_key);
+
     /** @brief Move the choice grid in direction zero. */
     virtual void func_slot68();
+
     /** @brief Move the choice grid in direction one. */
     virtual void func_slot6c();
-    /** @brief Process the current choice. @return Choice event code. */
+
+    /**
+     * @brief Process the current choice.
+     * @return Choice event code.
+     */
     virtual u8 func_slotb0();
-    /** @brief Cancel the choice window. @return Two after queuing cancellation. */
+
+    /**
+     * @brief Cancel the choice window.
+     * @return Two after queuing cancellation.
+     */
     virtual u8 func_slotb4();
-    /** @brief Handle the current grid choice. @param selected Selected grid index. */
+
+    /**
+     * @brief Handle the current grid choice.
+     * @param selected Selected grid index.
+     */
     virtual void func_slotf4(s16 selected);
+
     FieldObject23CEA0* selection;
     s16 selected;
 };
@@ -451,28 +594,59 @@ struct SkillSecondarySelection : FieldClass15AE70
         mode_query = 0;
         cursor = 0;
     }
+
     /** @brief Destroy the window base and its display lists. */
     virtual ~SkillSecondarySelection();
+
     /** @brief Refresh the visible window state. */
     virtual void func_slot5c();
-    /** @brief Handle a window message key. @param key Signed message key. */
+
+    /**
+     * @brief Handle a window message key.
+     * @param key Signed message key.
+     */
     virtual void func_slot60(s32 key);
+
     /** @brief Refresh the associated owner and reset the selection state. */
     virtual void func_slot64();
+
     /** @brief Move the selection in direction zero. */
     virtual void func_slot68();
+
     /** @brief Move the selection in direction one. */
     virtual void func_slot6c();
-    /** @brief Process the selected window. @return Selection event code. */
+
+    /**
+     * @brief Process the selected window.
+     * @return Selection event code.
+     */
     virtual u8 func_slotb0();
-    /** @brief Open the grid choice. @return Selection event code. */
+
+    /**
+     * @brief Open the grid choice.
+     * @return Selection event code.
+     */
     virtual u8 func_slotb4();
-    /** @brief Cycle the status record in direction zero. @return Selection event code. */
+
+    /**
+     * @brief Cycle the status record in direction zero.
+     * @return Selection event code.
+     */
     virtual s32 func_slotd8();
-    /** @brief Cycle the status record in direction one. @return Selection event code. */
+
+    /**
+     * @brief Cycle the status record in direction one.
+     * @return Selection event code.
+     */
     virtual s32 func_slotdc();
-    /** @brief Initialize the display widgets. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the display widgets.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     SkillController* owner;
     FieldObject23CEA0* selection;
     s16 code;
@@ -492,31 +666,51 @@ struct SkillStatusSkillWindow : public FieldClass15AE70
 {
     /** @brief Initialize the window links and display state. */
     SkillStatusSkillWindow();
+
     /** @brief Release the window base and its display lists. */
     virtual ~SkillStatusSkillWindow();
+
     /** @brief Refresh status-skill help and the next HP or MP increase. */
     virtual void func_slot5c();
+
     /**
      * @brief Move the four-row grid in direction zero and update its row colors and cursor.
      */
     virtual void func_slot68();
+
     /**
      * @brief Move the four-row grid in direction one and update its row colors and cursor.
      */
     virtual void func_slot6c();
+
     /** @brief Process the selected entry. */
     virtual u8 func_slotb0();
+
     /**
      * @brief Reset the four row colors and return to the associated window.
      * @return Two after switching windows, or zero while the grid is inactive.
      */
     virtual u8 func_slotb4();
-    /** @brief Retreat the selected record through the active controller. @return Byte event code zero or four. */
+
+    /**
+     * @brief Retreat the selected record through the active controller.
+     * @return Byte event code zero or four.
+     */
     virtual s32 func_slotd8();
-    /** @brief Advance the selected record through the active controller. @return Byte event code zero or four. */
+
+    /**
+     * @brief Advance the selected record through the active controller.
+     * @return Byte event code zero or four.
+     */
     virtual s32 func_slotdc();
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldRecordSelection* records;
     FieldObject23CEA0* selection;
     FieldClass15AE70* message;
@@ -546,7 +740,6 @@ struct SkillRuntimeCallbacks
 struct SkillRuntime
 {
     u8 unk00[4];
-    /** Party character stats. */
     SkillCharacterStats* characters;
     u8 unk08[4];
     FieldSlotRecordOwner1C* loader;
@@ -577,16 +770,31 @@ typedef struct SkillPairListNode
 
 typedef struct SkillCharacterWindow : public FieldClass15AE70
 {
-    /** @brief Initialize the status display and controller link. @param owner Window controller. */
+    /**
+     * @brief Initialize the status display and controller link.
+     * @param owner Window controller.
+     */
     SkillCharacterWindow(SkillController* owner);
+
     /** @brief Destroy the status window and its base display lists. */
     virtual ~SkillCharacterWindow();
+
     /** @brief Refresh the active status message. */
     virtual void func_slot5c();
-    /** @brief Ignore the supplied message key. @param key Unused signed message key. */
+
+    /**
+     * @brief Ignore the supplied message key.
+     * @param key Unused signed message key.
+     */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldRecordSelection* selection;
     LibStringLabel* character_name;
     LibTextWidget* sp_label;
@@ -601,7 +809,6 @@ typedef struct SkillCharacterWindow : public FieldClass15AE70
     LibObject174F20* mastery_values[3];
     LibTextWidget* max_level_label;
     u32 unke4[3];
-    /** SP shown when the window was opened. */
     s32 cached_sp;
     u8 changed;
     u8 unkf5[3];
@@ -636,20 +843,16 @@ struct SkillCharacterEquipment
     u8 unk1c[4];
     char character_name[24];
     u8 battle_strategy;
-    /** Strategy saved when the tactics selection window opens. */
     u8 previous_battle_strategy;
     u8 unk3a;
     u8 encoded_anti_attack_aura_mask;
     u8 encoded_status_skill_levels[5];
     u8 encoded_battle_skill_indices[6];
     u8 encoded_tactical_skill_states[7];
-    /** XOR-protected spell states: positive enables, negative disables; magnitude is mastery plus one. */
     s16 encoded_symbology_states[32];
     s16 encoded_battle_skill_mastery[42];
-    /** Damage responses in earth, water, fire, wind order. */
     u8 elemental_damage_responses[4];
     u8 attack_element_mask;
-    /** Variant index used with character-specific resource groups. */
     u8 character_resource_variant;
     u32 luck_checksum;
     u32 stamina_checksum;
@@ -672,14 +875,22 @@ struct SkillCoordinateSelector : public LibClass175030
     {
         selected = -1;
     }
+
     /** @brief Destroy the coordinate list and movement bases. */
     virtual ~SkillCoordinateSelector();
-    /** @brief Report the intrusive object kind. @return Three. */
+
+    /**
+     * @brief Report the intrusive object kind.
+     * @return Three.
+     */
     virtual s32 get_default_list_kind();
+
     /** @brief Leave the default update hook unchanged. */
     virtual void update();
+
     /** @brief Leave the default notification hook unchanged. */
     virtual void render();
+
     SkillPairList184258 nodes;
     s32 selected;
 };
@@ -689,33 +900,57 @@ struct SkillOptionsWindow : public FieldClass15AE70
 {
     /** @brief Initialize an empty options window and its display list. */
     SkillOptionsWindow();
+
     /** @brief Release the display list and window base. */
     virtual ~SkillOptionsWindow();
+
     /** @brief Release the listed displays and window attachments. */
     virtual void func_slot0c();
+
     /** @brief Refresh option display values. */
     virtual void func_slot5c();
-    /** @brief Handle an unused message key. @param key Message key. */
+
+    /**
+     * @brief Handle an unused message key.
+     * @param key Message key.
+     */
     virtual void func_slot60(s32 key);
+
     /** @brief Move the selector to the preceding row. */
     virtual void func_slot68();
+
     /** @brief Move the selector to the following row. */
     virtual void func_slot6c();
+
     /** @brief Move the selector to the preceding entry. */
     virtual void func_slot70();
+
     /** @brief Move the selector to the following entry. */
     virtual void func_slot74();
-    /** @brief Apply the selected options. @return Action status. */
+
+    /**
+     * @brief Apply the selected options.
+     * @return Action status.
+     */
     virtual u8 func_slotb0();
-    /** @brief Restore the associated window. @return Two after cancellation. */
+
+    /**
+     * @brief Restore the associated window.
+     * @return Two after cancellation.
+     */
     virtual u8 func_slotb4();
-    /** @brief Create the option displays. @param associated Full resource source word. @return Setup status. */
+
+    /**
+     * @brief Create the option displays.
+     * @param associated Full resource source word.
+     * @return Setup status.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldRecordSelection* records;
     SkillCoordinateSelector* child;
     float x;
     float y;
-    /** Height of each character panel. */
     float row_height;
     SkillList184268 nested;
     LibObject174F20* hp_values[8];
@@ -737,6 +972,7 @@ struct SkillGaugeOrigin
     {
         x = y = 0.0f;
     }
+
     float x;
     float y;
 };
@@ -753,12 +989,21 @@ struct SkillHpMpGaugeDrawer : public FieldClass159A70
         character_id = 0;
         characters = 0;
     }
+
     /** @brief Release the drawing packet and base. */
     virtual ~SkillHpMpGaugeDrawer();
-    /** @brief Rebuild the drawing packet. @param first Unused draw flag. @param depth Unused drawing depth. @param value Unused drawing value. */
+
+    /**
+     * @brief Rebuild the drawing packet.
+     * @param first Unused draw flag.
+     * @param depth Unused drawing depth.
+     * @param value Unused drawing value.
+     */
     virtual void func_002BC4F0(u32 first, u32 depth, float value);
+
     /** @brief Build the paired HP and MP gauge drawing packet. */
     void build_packet();
+
     SkillGaugeOrigin origin;
     float row_spacing;
     s16 character_id;
@@ -771,42 +1016,67 @@ typedef struct SkillTacticalWindow : public FieldClass15AE70
 {
     /** @brief Initialize tactical row positions, character links, and selection state. */
     SkillTacticalWindow();
+
     /** @brief Release the window base and its display lists. */
     virtual ~SkillTacticalWindow();
+
     /**
      * @brief Refresh the selection rows and clear the associated active window's grid-list flags.
      */
     virtual void func_slot5c();
+
     /**
      * @brief Enable the selection display and show the current row's mode description.
      */
     virtual void func_slot64();
+
     /**
      * @brief Dispatch direction zero and refresh when the grid reports a change.
      */
     virtual void func_slot68();
+
     /**
      * @brief Dispatch direction one and refresh when the grid reports a change.
      */
     virtual void func_slot6c();
+
     /**
      * @brief Apply an eligible selected mode and hide its status displays.
      * @return Zero when inactive or ineligible, three when unavailable, or one after applying the mode.
      */
     virtual u8 func_slotb0();
-    /** @brief Save the mode-query choice, clear its pending state, and restore the associated window. @return Zero while inactive, or two after completing the transition. */
+
+    /**
+     * @brief Save the mode-query choice, clear its pending state, and restore the associated window.
+     * @return Zero while inactive, or two after completing the transition.
+     */
     virtual u8 func_slotb4();
+
     /**
      * @brief Store the cursor for the selected slot and apply its mode.
      * @return Zero when inactive or empty, three when the mode reports three, or one otherwise.
      */
     virtual u8 func_slotbc();
-    /** @brief Save the mode-query choice and retreat to the preceding record. @return Event code zero or four. */
+
+    /**
+     * @brief Save the mode-query choice and retreat to the preceding record.
+     * @return Event code zero or four.
+     */
     virtual s32 func_slotd8();
-    /** @brief Save the mode-query choice and advance the selected record. @return Event code zero or four. */
+
+    /**
+     * @brief Save the mode-query choice and advance the selected record.
+     * @return Event code zero or four.
+     */
     virtual s32 func_slotdc();
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldObject23CEA0* selection;
     s16 unkac[5];
     s16 unkb6;
@@ -832,24 +1102,54 @@ struct SkillHpMpGauge : public FieldClass1599E0, public SkillHpMpGaugeDrawer
     {
         queued_for_release = 0;
     }
+
     /** @brief Release the drawing and transform bases. */
     virtual ~SkillHpMpGauge();
+
     /** @brief Submit the drawing packet for DMA notification. */
     virtual void render();
+
     /** @brief Leave the default update state unchanged. */
     virtual void update();
-    /** @brief Report the transform kind. @return Fourteen. */
+
+    /**
+     * @brief Report the transform kind.
+     * @return Fourteen.
+     */
     virtual s32 get_default_list_kind();
+
     /** @brief Detach and queue the gauge for release. */
     virtual void destroy();
+
     /** @brief Restore the saved transform state. */
     virtual void set_default_draw_bucket();
-    /** @brief Update gauge visibility and rebuild changed packets. @param first Update enabled. @param second Mark the packet changed. @param third Allow drawing. */
+
+    /**
+     * @brief Update gauge visibility and rebuild changed packets.
+     * @param first Update enabled.
+     * @param second Mark the packet changed.
+     * @param third Allow drawing.
+     */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
-    /** @brief Complete DMA notification processing. @param value Unused notification value. */
+
+    /**
+     * @brief Complete DMA notification processing.
+     * @param value Unused notification value.
+     */
     virtual void on_packet_complete(u32 value);
-    /** @brief Initialize the gauge transform. @param code Transform code. @param first First transform flag. @param source Transform source. @param x Unused first coordinate. @param y Unused second coordinate. @param z Third coordinate. @return One. */
+
+    /**
+     * @brief Initialize the gauge transform.
+     * @param code Transform code.
+     * @param first First transform flag.
+     * @param source Transform source.
+     * @param x Unused first coordinate.
+     * @param y Unused second coordinate.
+     * @param z Third coordinate.
+     * @return One.
+     */
     virtual s32 initialize(s32 code, s32 first, void* source, float x, float y, float z);
+
     u8 queued_for_release;
 };
 
@@ -870,56 +1170,76 @@ typedef struct SkillSymbologyWindow : public FieldClass15AE70
 {
     /** @brief Initialize the window links and display state. */
     SkillSymbologyWindow();
+
     /** @brief Release the window base and its display lists. */
     virtual ~SkillSymbologyWindow();
+
     /** @brief Refresh the window displays. */
     virtual void func_slot5c();
+
     /**
      * @brief Set the selected display object's status to one.
      */
     virtual void func_slot64();
+
     /** @brief Move back two grid entries, scrolling the paired rows at the top edge. */
     virtual void func_slot68();
+
     /** @brief Advance two grid entries, scrolling the paired rows at the bottom edge. */
     virtual void func_slot6c();
+
     /** @brief Move back one grid entry, scrolling the paired rows at the top edge. */
     virtual void func_slot70();
+
     /** @brief Advance one grid entry, scrolling the paired rows at the bottom edge. */
     virtual void func_slot74();
+
     /**
      * @brief Validate the selected entry and open its options window.
      * @return Zero while inactive, three for a rejected entry, or one after opening its options.
      */
     virtual u8 func_slotb0();
+
     /**
      * @brief Open a grid-choice window or mark the receiver when its source is busy.
      * @return Two after opening or marking the source, otherwise zero without a loader or allocation.
      */
     virtual u8 func_slotb4();
+
     /** @brief Refresh the selection display. */
     virtual u8 func_slotbc();
+
     /**
      * @brief Move the paired display lists toward scroll position zero.
      * @return Zero.
      */
     virtual s32 func_slotc0();
+
     /**
      * @brief Advance the paired display lists toward scroll position 16.
      * @return Zero.
      */
     virtual s32 func_slotc4();
+
     /**
      * @brief Move to the previous symbology character when the spell grid is enabled.
      * @return Character change event, or zero when navigation is unavailable.
      */
     virtual s32 func_slotd8();
+
     /**
      * @brief Advance to the next symbology character when the spell grid is enabled.
      * @return Character change event, or zero when navigation is unavailable.
      */
     virtual s32 func_slotdc();
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     SkillSymbologyCharacterWindow* character_window;
     FieldRecordSelection* records;
     FieldObject23CEA0* selection;
@@ -941,30 +1261,64 @@ typedef struct ListNode0035CCE0
 /** Six battle skill slots with paired labels, CP values, and selection state. */
 typedef struct SkillBattleSetupWindow : public FieldClass15AE70
 {
-    /** @brief Initialize both display lists, the value tables and controller link. @param owner Window controller. */
+    /**
+     * @brief Initialize both display lists, the value tables and controller link.
+     * @param owner Window controller.
+     */
     SkillBattleSetupWindow(SkillController* owner);
+
     /** @brief Release both owned display lists and the window base. */
     virtual ~SkillBattleSetupWindow();
+
     /** @brief Refresh the active row message. */
     virtual void func_slot5c();
-    /** @brief Ignore the supplied message key. @param key Unused signed message key. */
+
+    /**
+     * @brief Ignore the supplied message key.
+     * @param key Unused signed message key.
+     */
     virtual void func_slot60(s32 key);
+
     /** @brief Refresh the row positions and selected cursor. */
     virtual void func_slot64();
+
     /** @brief Move the row selection in direction zero. */
     virtual void func_slot68();
+
     /** @brief Move the row selection in direction one. */
     virtual void func_slot6c();
-    /** @brief Open skill selection for the current battle slot. @return Selection event one. */
+
+    /**
+     * @brief Open skill selection for the current battle slot.
+     * @return Selection event one.
+     */
     virtual u8 func_slotb0();
-    /** @brief Restore the associated window. @return Two after restoring the window. */
+
+    /**
+     * @brief Restore the associated window.
+     * @return Two after restoring the window.
+     */
     virtual u8 func_slotb4();
-    /** @brief Cycle the status record in direction zero. @return Record-change event code. */
+
+    /**
+     * @brief Cycle the status record in direction zero.
+     * @return Record-change event code.
+     */
     virtual s32 func_slotd8();
-    /** @brief Cycle the status record in direction one. @return Record-change event code. */
+
+    /**
+     * @brief Cycle the status record in direction one.
+     * @return Record-change event code.
+     */
     virtual s32 func_slotdc();
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     SkillStatusAttachment* attachment;
     FieldObject23CEA0* selection;
     FieldObject23BAB0* display;
@@ -997,19 +1351,28 @@ typedef struct SkillHelpWindow : public FieldClass15AE70
 {
     /** @brief Initialize the window links and help_text state. */
     SkillHelpWindow();
+
     /** @brief Release the window base and its help_text lists. */
     virtual ~SkillHelpWindow();
+
     /**
      * @brief Scroll the help text horizontally after the initial delay.
      */
     virtual void func_slot5c();
+
     /**
      * @brief Set the menu help text and measure its scrolling width.
      * @param key Text resource key.
      */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     LibTextWidget* help_text;
     s32 text_width;
     u8 unkb0;
@@ -1033,16 +1396,25 @@ class FieldClass159FE0 : public LibWidget
 public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~FieldClass159FE0();
-    /** @brief Report the intrusive widget kind. @return Three. */
+
+    /**
+     * @brief Report the intrusive widget kind.
+     * @return Three.
+     */
     virtual s32 get_default_list_kind();
+
     /** @brief Leave the default update hook unchanged. */
     virtual void update();
+
     /** @brief Leave the default notification hook unchanged. */
     virtual void render();
+
     /** @brief Update the widget drawing state. */
     virtual void func_00413D20();
+
     /** @brief Draw the widget. */
     virtual void draw();
+
     LibStorageBlock0C storage;
 };
 
@@ -1051,6 +1423,7 @@ struct FieldClass15A010 : public LibTextWidget
 {
     /** @brief Release the text drawing storage and widget base. */
     virtual ~FieldClass15A010();
+
     /** @brief Draw the text widget. */
     virtual void draw();
 };
@@ -1064,17 +1437,30 @@ struct SkillStatusAttachment : public LibContainer
         resource_source = 0;
         fade_state = 0;
     }
+
     /** @brief Release the embedded widgets and container. */
     virtual ~SkillStatusAttachment();
-    /** @brief Advance the fade toward full opacity. @param first Unused flag. @param second Unused flag. @param third Unused flag. */
+
+    /**
+     * @brief Advance the fade toward full opacity.
+     * @param first Unused flag.
+     * @param second Unused flag.
+     * @param third Unused flag.
+     */
     virtual void func_00412C40(u32 first, u32 second, u32 third);
-    /** @brief Allocate drawing storage and attach the embedded widgets. @return One on success, or zero on failure. */
+
+    /**
+     * @brief Allocate drawing storage and attach the embedded widgets.
+     * @return One on success, or zero on failure.
+     */
     u8 initialize();
+
     /** @brief Disable the attachment's active transform flag. */
     void deactivate()
     {
         unkab = 0;
     }
+
     u32 resource_source;
     FieldClass159FE0 panel;
     u8 unk140[4];
@@ -1085,14 +1471,28 @@ struct SkillStatusAttachment : public LibContainer
 /** Skill CP, Fury and HP/MP costs, with the attack damage multiplier. */
 struct SkillCostWindow : FieldClass15AE70
 {
-    /** @brief Initialize the skill cost displays and controller link. @param owner Window controller. */
+    /**
+     * @brief Initialize the skill cost displays and controller link.
+     * @param owner Window controller.
+     */
     SkillCostWindow(SkillController* owner);
+
     /** @brief Destroy the skill cost window and its base display lists. */
     virtual ~SkillCostWindow();
-    /** @brief Set the skill cost title key. @param key Signed message key. */
+
+    /**
+     * @brief Set the skill cost title key.
+     * @param key Signed message key.
+     */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the window displays. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the window displays.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     LibTextWidget* title;
     u32 unkac;
     LibTextWidget* multiplier_label;
@@ -1124,12 +1524,23 @@ struct SkillTacticalPromptWindow : FieldClass15AE70
         details_icon = 0;
         details_hint = 0;
     }
+
     /** @brief Destroy the window base and its initiate_label lists. */
     virtual ~SkillTacticalPromptWindow();
-    /** @brief Handle a window message key. @param key Signed message key. */
+
+    /**
+     * @brief Handle a window message key.
+     * @param key Signed message key.
+     */
     virtual void func_slot60(s32 key);
-    /** @brief Initialize the initiate_label widgets. @param associated Full resource source word. @return Initialization result. */
+
+    /**
+     * @brief Initialize the initiate_label widgets.
+     * @param associated Full resource source word.
+     * @return Initialization result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     LibTextWidget* initiate_label;
     LibTextWidget* yes_label;
     LibTextWidget* no_label;
@@ -1192,7 +1603,12 @@ struct SkillGaugePacket
 extern "C" SkillRuntime* D_001B643C;
 extern "C" LibCameraContext* g_display;
 
-/** @brief Set display flags for the selected window lists. @param object Window base. @param flag Flag value. @param lists List-selection bit mask. */
+/**
+ * @brief Set display flags for the selected window lists.
+ * @param object Window base.
+ * @param flag Flag value.
+ * @param lists List-selection bit mask.
+ */
 extern "C" void func_002CE530(FieldClass15AE70* object, u32 flag, u32 lists);
 
 extern "C" u64 D_4ED330[];
@@ -1225,14 +1641,22 @@ extern "C" void func_4CE4C0(void* destination, const void* source);
 
 extern "C" void func_4D00B0(void* object);
 
-/** @brief Brighten and clamp marker RGB channels and mark the widget for refresh. @param object Marker widget base. @param color Packed RGB color. */
+/**
+ * @brief Brighten and clamp marker RGB channels and mark the widget for refresh.
+ * @param object Marker widget base.
+ * @param color Packed RGB color.
+ */
 extern "C" void lib_marker_set_bright_color(ItemCreationClass172870* object, u64 color);
 
 extern "C" void func_0034BD30(SkillModeSelection* record, s32 index);
 
 extern "C" s32 func_4C6A40(void* item);
 
-/** @brief Return the absolute value of a signed integer. @param value Integer to convert. @return Absolute value. */
+/**
+ * @brief Return the absolute value of a signed integer.
+ * @param value Integer to convert.
+ * @return Absolute value.
+ */
 extern "C" s32 abs(s32 value);
 
 /**
@@ -1264,13 +1688,20 @@ extern "C" u8 func_4095C0(s32 code, FieldRecord* entry, SkillCharacterEquipment*
                          s32* cp_cost, s32* minor_fury_cost, s32* major_damage_scale, s32* major_fury_cost,
                          s32* major_mp_cost, s32* major_hp_cost);
 
-/** @brief Locate the aligned resource header. @param buffer Completed resource buffer. @return Aligned header. */
+/**
+ * @brief Locate the aligned resource header.
+ * @param buffer Completed resource buffer.
+ * @return Aligned header.
+ */
 static inline SkillAlignedResource* aligned_skill_resource(void* buffer)
 {
     return reinterpret_cast<SkillAlignedResource*>((reinterpret_cast<u32>(buffer) + 0x7F) & ~0x7F);
 }
 
-/** @brief Delete an owned object and clear its stored pointer. @param pointer Owned pointer. */
+/**
+ * @brief Delete an owned object and clear its stored pointer.
+ * @param pointer Owned pointer.
+ */
 template <class T>
 static inline void skill_delete_owned(T*& pointer)
 {
@@ -1281,12 +1712,16 @@ static inline void skill_delete_owned(T*& pointer)
     }
 }
 
-/** @brief Refresh the owner message window when its kind requires it. @param owner Controller owner. */
+/**
+ * @brief Refresh the owner message window when its kind requires it.
+ * @param owner Controller owner.
+ */
 static inline void refresh_owner_message(SkillController* owner)
 {
     if (owner->menu_kind == 2)
     {
         FieldClass15AE70* window = owner->window;
+
         if (window != 0)
         {
             skill_refresh_costs(window);
@@ -1294,11 +1729,16 @@ static inline void refresh_owner_message(SkillController* owner)
     }
 }
 
-/** @brief Convert an entry resource key to its message index. @param key Entry resource key. @return Message index, or zero for the special entry. */
+/**
+ * @brief Convert an entry resource key to its message index.
+ * @param key Entry resource key.
+ * @return Message index, or zero for the special entry.
+ */
 static inline s32 message_from_key(s32 key)
 {
     s32 message;
     s32 index = key - SKILL_MSG_NONE;
+
     if (index == 0)
     {
         message = 0;
@@ -1307,10 +1747,16 @@ static inline s32 message_from_key(s32 key)
     {
         message = key - SKILL_MSG_NAME_BASE;
     }
+
     return message;
 }
 
-/** @brief Update the optional controller owner's row message. @param owner Optional controller owner. @param row Selected row. @param key Selected entry resource key. */
+/**
+ * @brief Update the optional controller owner's row message.
+ * @param owner Optional controller owner.
+ * @param row Selected row.
+ * @param key Selected entry resource key.
+ */
 static inline void set_row_message(SkillController* owner, s16 row, s32 key)
 {
     if (owner != 0)
@@ -1323,11 +1769,14 @@ static inline void set_row_message(SkillController* owner, s16 row, s32 key)
         {
             owner->row_mode = 0;
         }
+
         s32 message = key - SKILL_MSG_NAME_BASE;
+
         if (message < 0)
         {
             message = 0;
         }
+
         owner->message = message;
         refresh_owner_message(owner);
     }
@@ -1353,46 +1802,60 @@ static inline void show_grid_message(FieldClass153E30* controller, FieldObject23
 static inline void move_active_grid(FieldObject23CEA0* selection, s16 direction)
 {
     u8 inactive = !selection->arrived;
+
     if (inactive != 1)
     {
         selection->process_direction(direction);
     }
 }
 
-/** @brief Advance or retreat the record selection and refresh its linked windows. @param status Status window. @param forward Nonzero to advance. @return Byte event code zero or four. */
+/**
+ * @brief Advance or retreat the record selection and refresh its linked windows.
+ * @param status Status window.
+ * @param forward Nonzero to advance.
+ * @return Byte event code zero or four.
+ */
 static inline s32 cycle_status_record(SkillCharacterWindow* status, s32 forward)
 {
     if (status->changed == 1)
     {
         return 0;
     }
+
     status->selection->active = 0;
     status->changed = 1;
     func_0028E2B0(status->selection, forward);
+
     if (status->active != 0)
     {
         func_00358310(status);
     }
+
     if (status->status_skills != 0)
     {
         func_003559F0(status->status_skills);
     }
+
     if (status->status_rows != 0)
     {
         skill_refresh_battle_skill_rows(status->status_rows);
     }
+
     if (status->mode_query != 0)
     {
         skill_refresh_tactical_rows(status->mode_query);
     }
+
     if (status->mode_window != 0)
     {
         func_00350890(status->mode_window, status->mode_window->mode);
     }
+
     if (status->tactical_details != 0)
     {
         skill_refresh_tactical_detail_choices(status->tactical_details);
     }
+
     return (u8)(status->selection->count == 1 ? 0 : 4);
 }
 
@@ -1487,13 +1950,16 @@ static inline void refresh_mode_message(SkillModeSelection* object)
 {
     s16 selected = object->selection->unk114;
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+
     if (owner != 0)
     {
         s32 message = object->skill_name_keys[selected] - SKILL_MSG_NAME_BASE;
+
         if (message < 0)
         {
             message = 0;
         }
+
         owner->message = message;
         refresh_owner_message(owner);
     }
@@ -1520,22 +1986,30 @@ static inline u32 character_mp(SkillCharacterStats* record)
     u32 key = character_checksum_salt(record);
     u32 encoded = record->encoded_mp;
     u32 checksum = record->mp_checksum;
+
     if (checksum != ((first + salt) ^ encoded ^ key))
     {
         u32 flags = record->encoded_flags;
         s32 flag_salt = record->encoded_experience;
+
         if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
         {
             record->encoded_flags = ((flags ^ SKILL_FLAG_ENCODING_MASK) | 1) ^ SKILL_FLAG_ENCODING_MASK;
             s32 current_salt = record->encoded_experience;
             record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
         }
+
         return 0;
     }
+
     return encoded ^ SKILL_FLAG_ENCODING_MASK;
 }
 
-/** @brief Decode current HP, marking valid flags when its checksum fails. @param record Character stats. @return HP, or zero after corruption. */
+/**
+ * @brief Decode current HP, marking valid flags when its checksum fails.
+ * @param record Character stats.
+ * @return HP, or zero after corruption.
+ */
 static inline u32 character_hp(SkillCharacterStats* record)
 {
     u32 first = record->encoded_base_hp;
@@ -1543,18 +2017,22 @@ static inline u32 character_hp(SkillCharacterStats* record)
     u32 key = character_checksum_salt(record);
     u32 encoded = record->encoded_hp;
     u32 checksum = record->hp_checksum;
+
     if (checksum != ((first + salt) ^ encoded ^ key))
     {
         u32 flags = record->encoded_flags;
         s32 flag_salt = record->encoded_experience;
+
         if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
         {
             record->encoded_flags = ((flags ^ SKILL_FLAG_ENCODING_MASK) | 1) ^ SKILL_FLAG_ENCODING_MASK;
             s32 current_salt = record->encoded_experience;
             record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
         }
+
         return 0;
     }
+
     return encoded ^ SKILL_FLAG_ENCODING_MASK;
 }
 
@@ -1570,6 +2048,7 @@ static inline u32 add_character_flags(SkillCharacterStats* record, u32 flags)
     {
         return 5;
     }
+
     u32 value = record->encoded_flags;
     record->encoded_flags = ((value ^ SKILL_FLAG_ENCODING_MASK) | flags) ^ SKILL_FLAG_ENCODING_MASK;
     record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;
@@ -1588,6 +2067,7 @@ static inline u32 mask_character_flags(SkillCharacterStats* record, u32 flags)
     {
         return 5;
     }
+
     u32 value = record->encoded_flags;
     record->encoded_flags = ((value ^ SKILL_FLAG_ENCODING_MASK) & flags) ^ SKILL_FLAG_ENCODING_MASK;
     record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt;
@@ -1603,45 +2083,62 @@ static inline u32 mask_character_flags(SkillCharacterStats* record, u32 flags)
 static inline s32 clamp_character_stat(SkillCharacterStats* record, s32 value)
 {
     value += 32113;
+
     if (record->stat_limit_type == 0)
     {
         value = clamp(value, 32113, 132112);
     }
+
     if (record->stat_limit_type == 1)
     {
         value = clamp(value, 32113, 100032112);
     }
+
     value -= 32113;
     return value;
 }
 
-/** @brief Checksum the seven protected tactical state bytes. @param states Encoded states. @return Checksum value. */
+/**
+ * @brief Checksum the seven protected tactical state bytes.
+ * @param states Encoded states.
+ * @return Checksum value.
+ */
 static inline u32 tactical_skill_states_checksum(const u8* states)
 {
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+
     for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
     {
         checksum ^= *states++;
         checksum = checksum * 2 + 0x31;
     }
+
     return checksum;
 }
 
-/** @brief Decode a saved tactical state after validating its checksum. @param record Character equipment and skill setup. @param index Known tactical skill index. @return Signed state, or zero for an invalid checksum. */
+/**
+ * @brief Decode a saved tactical state after validating its checksum.
+ * @param record Character equipment and skill setup.
+ * @param index Known tactical skill index.
+ * @return Signed state, or zero for an invalid checksum.
+ */
 static inline s32 saved_tactical_state(SkillCharacterEquipment* record, s32 index)
 {
     if (record->tactical_skill_states_checksum != tactical_skill_states_checksum(record->encoded_tactical_skill_states))
     {
         return 0;
     }
+
     if (index < 0)
     {
         return 0;
     }
+
     if (static_cast<u32>(index) >= SKILL_TACTICAL_MODE_COUNT)
     {
         return 0;
     }
+
     return reinterpret_cast<const s8*>(record->encoded_tactical_skill_states)[index] ^ SKILL_TACTICAL_STATE_XOR_KEY;
 }
 
@@ -1657,18 +2154,26 @@ static inline s32 tactical_mode_state(SkillCharacterEquipment* record, s32 mode)
     {
         return 0;
     }
+
     if (mode < 0)
     {
         return 0;
     }
+
     if (static_cast<u32>(mode) >= SKILL_TACTICAL_MODE_COUNT)
     {
         return 0;
     }
+
     return (s8)record->encoded_tactical_skill_states[mode] ^ SKILL_TACTICAL_STATE_XOR_KEY;
 }
 
-/** @brief Append an available Aura type to the detail grid choices. @param object Tactical detail window. @param available Decoded availability mask. @param aura One-based Aura type. */
+/**
+ * @brief Append an available Aura type to the detail grid choices.
+ * @param object Tactical detail window.
+ * @param available Decoded availability mask.
+ * @param aura One-based Aura type.
+ */
 static inline void append_available_aura(SkillTacticalDetailWindow* object, u8 available, u8 aura)
 {
     if (available & (1 << (aura - 1)))
@@ -1678,6 +2183,7 @@ static inline void append_available_aura(SkillTacticalDetailWindow* object, u8 a
 }
 
 extern "C" s32 func_40AE00(s32 character, s32 code);
+
 extern "C" s32 func_4087A0(s32 skill, s32 level, SkillCharacterEquipment* record);
 
 extern "C" s32 func_408200(s32 skill, s32 unused, s32 level, SkillCharacterStats* caster, s32* power, s32* second, s32* third,
@@ -1685,7 +2191,11 @@ extern "C" s32 func_408200(s32 skill, s32 unused, s32 level, SkillCharacterStats
 
 extern "C" s32 func_4086D0(SkillCharacterEquipment* record, s32 level, s32 kind);
 
-/** @brief Decode base HP after validating its checksum. @param record Character stats. @return Base HP, or zero after marking a corrupted record. */
+/**
+ * @brief Decode base HP after validating its checksum.
+ * @param record Character stats.
+ * @return Base HP, or zero after marking a corrupted record.
+ */
 static inline u32 character_base_hp(SkillCharacterStats* record)
 {
     if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
@@ -1693,10 +2203,15 @@ static inline u32 character_base_hp(SkillCharacterStats* record)
         add_character_flags(record, 1);
         return 0;
     }
+
     return record->encoded_base_hp ^ SKILL_FLAG_ENCODING_MASK;
 }
 
-/** @brief Decode maximum HP after validating its checksum. @param record Character stats. @return Maximum HP, or zero after marking a corrupted record. */
+/**
+ * @brief Decode maximum HP after validating its checksum.
+ * @param record Character stats.
+ * @return Maximum HP, or zero after marking a corrupted record.
+ */
 static inline u32 checked_max_hp(SkillCharacterStats* record)
 {
     if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
@@ -1704,10 +2219,15 @@ static inline u32 checked_max_hp(SkillCharacterStats* record)
         add_character_flags(record, 1);
         return 0;
     }
+
     return record->encoded_max_hp ^ SKILL_FLAG_ENCODING_MASK;
 }
 
-/** @brief Decode base MP after validating its checksum. @param record Character stats. @return Base MP, or zero after marking a corrupted record. */
+/**
+ * @brief Decode base MP after validating its checksum.
+ * @param record Character stats.
+ * @return Base MP, or zero after marking a corrupted record.
+ */
 static inline u32 character_base_mp(SkillCharacterStats* record)
 {
     if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
@@ -1715,10 +2235,15 @@ static inline u32 character_base_mp(SkillCharacterStats* record)
         add_character_flags(record, 1);
         return 0;
     }
+
     return record->encoded_base_mp ^ SKILL_FLAG_ENCODING_MASK;
 }
 
-/** @brief Decode maximum MP after validating its checksum. @param record Character stats. @return Maximum MP, or zero after marking a corrupted record. */
+/**
+ * @brief Decode maximum MP after validating its checksum.
+ * @param record Character stats.
+ * @return Maximum MP, or zero after marking a corrupted record.
+ */
 static inline u32 checked_max_mp(SkillCharacterStats* record)
 {
     if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
@@ -1726,22 +2251,35 @@ static inline u32 checked_max_mp(SkillCharacterStats* record)
         add_character_flags(record, 1);
         return 0;
     }
+
     return record->encoded_max_mp ^ SKILL_FLAG_ENCODING_MASK;
 }
 
-/** @brief Read a record selection's current index. @param selection Character record selection. @return Current index. */
+/**
+ * @brief Read a record selection's current index.
+ * @param selection Character record selection.
+ * @return Current index.
+ */
 static inline s32 selection_current(FieldRecordSelection* selection)
 {
     return selection->current;
 }
 
-/** @brief Locate a record selection's equipment array. @param selection Character record selection. @return First equipment record. */
+/**
+ * @brief Locate a record selection's equipment array.
+ * @param selection Character record selection.
+ * @return First equipment record.
+ */
 static inline SkillCharacterEquipment* selection_equipment(FieldRecordSelection* selection)
 {
     return static_cast<SkillCharacterEquipment*>(selection->unk04);
 }
 
-/** @brief Locate the selected character's equipment and skill setup. @param selection Character record selection. @return Selected record. */
+/**
+ * @brief Locate the selected character's equipment and skill setup.
+ * @param selection Character record selection.
+ * @return Selected record.
+ */
 static inline SkillCharacterEquipment* selected_equipment(FieldRecordSelection* selection)
 {
     return &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
@@ -1759,21 +2297,31 @@ static inline SkillCharacterEquipment* current_equipment(FieldRecordSelection* s
     return &equipment[current];
 }
 
-/** @brief Locate the selected character's protected stats. @param selection Character record selection. @return Selected stats record. */
+/**
+ * @brief Locate the selected character's protected stats.
+ * @param selection Character record selection.
+ * @return Selected stats record.
+ */
 static inline SkillCharacterStats* selected_stats(FieldRecordSelection* selection)
 {
     return &reinterpret_cast<SkillCharacterStats*>(selection->records)[selection->current];
 }
 
-/** @brief Checksum the five protected status skill level bytes. @param levels Encoded levels. @return Checksum value. */
+/**
+ * @brief Checksum the five protected status skill level bytes.
+ * @param levels Encoded levels.
+ * @return Checksum value.
+ */
 static inline u32 status_skill_levels_checksum(const u8* levels)
 {
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+
     for (s32 entry = 0; entry < 5; entry++)
     {
         checksum ^= *levels++;
         checksum = checksum * 2 + 0x31;
     }
+
     return checksum;
 }
 
@@ -1789,14 +2337,17 @@ static inline s32 status_skill_level(SkillCharacterEquipment* record, s32 index)
     {
         return 0;
     }
+
     if (index < 0)
     {
         return 0;
     }
+
     if (static_cast<u32>(index) >= 5)
     {
         return 0;
     }
+
     return record->encoded_status_skill_levels[index] ^ SKILL_TACTICAL_STATE_XOR_KEY;
 }
 
@@ -1812,10 +2363,12 @@ static inline void set_status_skill_level(SkillCharacterEquipment* record, s32 i
     {
         return;
     }
+
     if (index < 0 || static_cast<u32>(index) >= 5)
     {
         return;
     }
+
     level += 32113;
     level = clamp(level, 32113, 32123);
     level -= 32113;
@@ -1823,17 +2376,26 @@ static inline void set_status_skill_level(SkillCharacterEquipment* record, s32 i
     record->status_skill_levels_checksum = status_skill_levels_checksum(record->encoded_status_skill_levels);
 }
 
-/** @brief Decode SP after validating the SP/CP checksum. @param record Character equipment and skill setup. @return SP, or zero after corruption. */
+/**
+ * @brief Decode SP after validating the SP/CP checksum.
+ * @param record Character equipment and skill setup.
+ * @return SP, or zero after corruption.
+ */
 static inline s32 character_sp(SkillCharacterEquipment* record)
 {
     if (record->sp_cp_checksum != (((record->encoded_cp + record->checksum_salt) ^ record->encoded_sp) ^ record->checksum_salt))
     {
         return 0;
     }
+
     return record->encoded_sp ^ 0x7E93;
 }
 
-/** @brief Decode CP after validating the SP/CP checksum. @param record Character equipment and skill setup. @return CP, or zero after corruption. */
+/**
+ * @brief Decode CP after validating the SP/CP checksum.
+ * @param record Character equipment and skill setup.
+ * @return CP, or zero after corruption.
+ */
 static inline s32 character_cp(SkillCharacterEquipment* record)
 {
     u32 key = record->checksum_salt;
@@ -1841,25 +2403,36 @@ static inline s32 character_cp(SkillCharacterEquipment* record)
     return (record->sp_cp_checksum != (key ^ (record->encoded_sp ^ (encoded + key)))) ? 0 : (encoded ^ 0x7E93);
 }
 
-/** @brief Decode CP after validating the SP/CP checksum, reading the checksum first. @param record Character equipment and skill setup. @return CP, or zero after corruption. */
+/**
+ * @brief Decode CP after validating the SP/CP checksum, reading the checksum first.
+ * @param record Character equipment and skill setup.
+ * @return CP, or zero after corruption.
+ */
 static inline s32 checked_character_cp(SkillCharacterEquipment* record)
 {
     if (record->sp_cp_checksum != (record->checksum_salt ^ (record->encoded_sp ^ (record->encoded_cp + record->checksum_salt))))
     {
         return 0;
     }
+
     return record->encoded_cp ^ 0x7E93;
 }
 
-/** @brief Checksum the six protected battle skill index bytes. @param indices Encoded indices. @return Checksum value. */
+/**
+ * @brief Checksum the six protected battle skill index bytes.
+ * @param indices Encoded indices.
+ * @return Checksum value.
+ */
 static inline u32 battle_skill_indices_checksum(const u8* indices)
 {
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+
     for (s32 entry = 0; entry < 6; entry++)
     {
         checksum ^= *indices++;
         checksum = checksum * 2 + 0x31;
     }
+
     return checksum;
 }
 
@@ -1875,14 +2448,17 @@ static inline s32 battle_skill_index(SkillCharacterEquipment* record, s32 slot)
     {
         return 0;
     }
+
     if (slot < 0)
     {
         return 0;
     }
+
     if (static_cast<u32>(slot) >= 6)
     {
         return 0;
     }
+
     return record->encoded_battle_skill_indices[slot] ^ SKILL_TACTICAL_STATE_XOR_KEY;
 }
 
@@ -1899,11 +2475,14 @@ static inline void refresh_battle_cp_values(SkillCharacterWindow* status, s32 su
         {
             sum = 0;
         }
+
         set_cost_value(status->assigned_cp_value, sum);
     }
+
     if (status->selection != 0)
     {
         SkillCharacterEquipment* record = selected_equipment(status->selection);
+
         if (record != 0)
         {
             s32 cp = checked_character_cp(record);
@@ -1912,13 +2491,18 @@ static inline void refresh_battle_cp_values(SkillCharacterWindow* status, s32 su
     }
 }
 
-/** @brief Store SP, limited to 0..9999, when the SP/CP checksum is valid. @param record Character equipment and skill setup. @param sp New SP. */
+/**
+ * @brief Store SP, limited to 0..9999, when the SP/CP checksum is valid.
+ * @param record Character equipment and skill setup.
+ * @param sp New SP.
+ */
 static inline void set_character_sp(SkillCharacterEquipment* record, s32 sp)
 {
     if (record->sp_cp_checksum != (((record->encoded_cp + record->checksum_salt) ^ record->encoded_sp) ^ record->checksum_salt))
     {
         return;
     }
+
     sp += 32113;
     sp = clamp(sp, 32113, 42112);
     sp -= 32113;
@@ -1926,7 +2510,11 @@ static inline void set_character_sp(SkillCharacterEquipment* record, s32 sp)
     record->sp_cp_checksum = ((record->encoded_cp + record->checksum_salt) ^ record->encoded_sp) ^ record->checksum_salt;
 }
 
-/** @brief Store a clamped base HP when the HP checksum is valid, otherwise flag the record. @param record Character stats. @param value Requested base HP. */
+/**
+ * @brief Store a clamped base HP when the HP checksum is valid, otherwise flag the record.
+ * @param record Character stats.
+ * @param value Requested base HP.
+ */
 static inline void set_character_base_hp(SkillCharacterStats* record, s32 value)
 {
     if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
@@ -1934,16 +2522,23 @@ static inline void set_character_base_hp(SkillCharacterStats* record, s32 value)
         skill_add_character_flags(record, 1);
         return;
     }
+
     value = skill_clamp_character_hp(record, value);
+
     if (value < 0)
     {
         value = 0;
     }
+
     record->encoded_base_hp = value ^ SKILL_FLAG_ENCODING_MASK;
     record->hp_checksum = (record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt;
 }
 
-/** @brief Store a clamped maximum HP and lower current HP to it, or flag a corrupted record. @param record Character stats. @param value Requested maximum HP. */
+/**
+ * @brief Store a clamped maximum HP and lower current HP to it, or flag a corrupted record.
+ * @param record Character stats.
+ * @param value Requested maximum HP.
+ */
 static inline void set_character_max_hp(SkillCharacterStats* record, s32 value)
 {
     if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
@@ -1951,20 +2546,28 @@ static inline void set_character_max_hp(SkillCharacterStats* record, s32 value)
         skill_add_character_flags(record, 1);
         return;
     }
+
     value = skill_clamp_character_hp(record, value);
+
     if (value < 0)
     {
         value = 0;
     }
+
     record->encoded_max_hp = value ^ SKILL_FLAG_ENCODING_MASK;
     record->hp_checksum = (record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt;
+
     if (value < (s32)skill_character_hp(record))
     {
         skill_set_character_hp(record, value);
     }
 }
 
-/** @brief Store a clamped base MP when the MP checksum is valid, otherwise flag the record. @param record Character stats. @param value Requested base MP. */
+/**
+ * @brief Store a clamped base MP when the MP checksum is valid, otherwise flag the record.
+ * @param record Character stats.
+ * @param value Requested base MP.
+ */
 static inline void set_character_base_mp(SkillCharacterStats* record, s32 value)
 {
     if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
@@ -1972,12 +2575,17 @@ static inline void set_character_base_mp(SkillCharacterStats* record, s32 value)
         skill_add_character_flags(record, 1);
         return;
     }
+
     value = skill_clamp_character_mp(record, value);
     record->encoded_base_mp = value ^ SKILL_FLAG_ENCODING_MASK;
     record->mp_checksum = (record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt;
 }
 
-/** @brief Store a clamped maximum MP and lower current MP to it, or flag a corrupted record. @param record Character stats. @param value Requested maximum MP. */
+/**
+ * @brief Store a clamped maximum MP and lower current MP to it, or flag a corrupted record.
+ * @param record Character stats.
+ * @param value Requested maximum MP.
+ */
 static inline void set_character_max_mp(SkillCharacterStats* record, s32 value)
 {
     if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
@@ -1985,24 +2593,32 @@ static inline void set_character_max_mp(SkillCharacterStats* record, s32 value)
         skill_add_character_flags(record, 1);
         return;
     }
+
     value = skill_clamp_character_mp(record, value);
     record->encoded_max_mp = value ^ SKILL_FLAG_ENCODING_MASK;
     record->mp_checksum = (record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt;
+
     if (value < (s32)skill_character_mp(record))
     {
         skill_set_character_mp(record, value);
     }
 }
 
-/** @brief Checksum the seven protected tactical state bytes. @param states Encoded states. @return Checksum value. */
+/**
+ * @brief Checksum the seven protected tactical state bytes.
+ * @param states Encoded states.
+ * @return Checksum value.
+ */
 static inline u32 tactical_states_checksum(const u8* states)
 {
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+
     for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
     {
         checksum ^= *states++;
         checksum = checksum * 2 + 0x31;
     }
+
     return checksum;
 }
 
@@ -2030,24 +2646,30 @@ static inline void set_tactical_state(SkillCharacterEquipment* record, s32 index
 static inline s32 tactical_menu_state(SkillCharacterEquipment* record, s32 row)
 {
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+
     for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
     {
         checksum ^= record->encoded_tactical_skill_states[entry];
         checksum = checksum * 2 + 0x31;
     }
+
     if (record->tactical_skill_states_checksum != checksum)
     {
         return 0;
     }
+
     s32 index = row + SKILL_TACTICAL_BERSERK;
+
     if (index < 0)
     {
         return 0;
     }
+
     if (static_cast<u32>(index) >= SKILL_TACTICAL_MODE_COUNT)
     {
         return 0;
     }
+
     return static_cast<s8>(record->encoded_tactical_skill_states[row + SKILL_TACTICAL_BERSERK]) ^ SKILL_TACTICAL_STATE_XOR_KEY;
 }
 
@@ -2059,19 +2681,23 @@ static inline void collect_tactical_rows(SkillTacticalWindow* window)
 {
     window->row_count = 0;
     u8 character = window->records->slots[window->records->current];
+
     for (s32 row = 0; row < 5; row++)
     {
         window->row_modes[row] = 0;
     }
+
     for (s32 skill = 0; skill < 5; skill++)
     {
         SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(window->records->unk04)[window->records->current];
+
         if (tactical_menu_state(record, skill) != 0)
         {
             window->row_modes[window->row_count] = skill + SKILL_TACTICAL_BERSERK;
             window->row_count++;
         }
     }
+
     if (window->row_count != 0)
     {
         window->selection->func_0023CE80(1, window->row_count);
@@ -2080,24 +2706,30 @@ static inline void collect_tactical_rows(SkillTacticalWindow* window)
     {
         window->selection->func_0023CE80(1, 1);
     }
+
     for (s32 row = 0; row < 5; row++)
     {
         LibTextWidget* label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&window->unk2c), row)->value);
         label->visible = 0;
     }
+
     FieldObject23CEA0* selection = window->selection;
     selection->index = window->character_rows[character];
     func_0023CB30(selection);
     func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(window->selection));
 }
 
-/** @brief Clear tactical choice state and its available row count. @param window Tactical selection window. */
+/**
+ * @brief Clear tactical choice state and its available row count.
+ * @param window Tactical selection window.
+ */
 static inline void clear_tactical_choices(SkillTacticalWindow* window)
 {
     for (s32 i = 0; i < 5; i++)
     {
         window->unkac[i] = 0;
     }
+
     window->row_count = 0;
 }
 
@@ -2164,7 +2796,11 @@ static inline void status_detail_group(SkillCharacterWindow* object, u8 visible)
     object->available_cp_value->visible = visible;
 }
 
-/** @brief Decode maximum HP after validating its checksum. @param record Character stats. @return Maximum HP, or zero after corruption. */
+/**
+ * @brief Decode maximum HP after validating its checksum.
+ * @param record Character stats.
+ * @return Maximum HP, or zero after corruption.
+ */
 static inline u32 character_max_hp(SkillCharacterStats* record)
 {
     u32 first = record->encoded_base_hp;
@@ -2172,22 +2808,30 @@ static inline u32 character_max_hp(SkillCharacterStats* record)
     u32 key = character_checksum_salt(record);
     u32 encoded = record->encoded_hp;
     u32 checksum = record->hp_checksum;
+
     if (checksum != ((first + salt) ^ encoded ^ key))
     {
         u32 flags = record->encoded_flags;
         s32 flag_salt = record->encoded_experience;
+
         if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
         {
             record->encoded_flags = ((flags ^ SKILL_FLAG_ENCODING_MASK) | 1) ^ SKILL_FLAG_ENCODING_MASK;
             s32 current_salt = record->encoded_experience;
             record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
         }
+
         return 0;
     }
+
     return salt ^ SKILL_FLAG_ENCODING_MASK;
 }
 
-/** @brief Decode maximum MP after validating its checksum. @param record Character stats. @return Maximum MP, or zero after corruption. */
+/**
+ * @brief Decode maximum MP after validating its checksum.
+ * @param record Character stats.
+ * @return Maximum MP, or zero after corruption.
+ */
 static inline u32 character_max_mp(SkillCharacterStats* record)
 {
     u32 first = record->encoded_base_mp;
@@ -2195,18 +2839,22 @@ static inline u32 character_max_mp(SkillCharacterStats* record)
     u32 key = character_checksum_salt(record);
     u32 encoded = record->encoded_mp;
     u32 checksum = record->mp_checksum;
+
     if (checksum != ((first + salt) ^ encoded ^ key))
     {
         u32 flags = record->encoded_flags;
         s32 flag_salt = record->encoded_experience;
+
         if (record->flags_experience_checksum == ((flags + key) ^ flag_salt ^ key))
         {
             record->encoded_flags = ((flags ^ SKILL_FLAG_ENCODING_MASK) | 1) ^ SKILL_FLAG_ENCODING_MASK;
             s32 current_salt = record->encoded_experience;
             record->flags_experience_checksum = ((record->encoded_flags + record->checksum_salt) ^ current_salt) ^ record->checksum_salt;
         }
+
         return 0;
     }
+
     return salt ^ SKILL_FLAG_ENCODING_MASK;
 }
 
@@ -2220,10 +2868,12 @@ static inline u32 character_flags(SkillCharacterStats* record)
     u32 key = record->checksum_salt;
     u32 value = record->encoded_flags;
     s32 salt = record->encoded_experience;
+
     if (record->flags_experience_checksum != ((value + key) ^ salt ^ key))
     {
         return 5;
     }
+
     return value ^ SKILL_FLAG_ENCODING_MASK;
 }
 
@@ -2426,73 +3076,109 @@ void FieldClass15AE70::func_slotac()
 {
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb0()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb4()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotb8()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 u8 FieldClass15AE70::func_slotbc()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc0()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc4()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotc8()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotcc()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd0()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd4()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotd8()
 {
     return 0;
 }
 
-/** @brief Return the default window action result. @return Zero. */
+/**
+ * @brief Return the default window action result.
+ * @return Zero.
+ */
 s32 FieldClass15AE70::func_slotdc()
 {
     return 0;
@@ -2534,23 +3220,28 @@ void FieldClass15AE70::func_slotf0()
 void skill_refresh_costs(FieldClass15AE70* receiver)
 {
     SkillCostWindow* object = static_cast<SkillCostWindow*>(receiver);
+
     if (object->owner == 0)
     {
         return;
     }
+
     s32 minor_mp_cost = -1, minor_hp_cost = -1, cp_cost = -1, minor_fury_cost = -1, major_damage_scale = -1, major_fury_cost = -1, major_mp_cost = -1,
         major_hp_cost = -1;
     s32 code = object->owner->message;
     FieldRecord* entry = object->owner->entry;
     SkillCharacterEquipment* detail = object->owner->detail;
     s32 mode = object->owner->row_mode;
+
     if (code == 0)
     {
         cost_labels(object, 0);
         cost_values(object, 0);
         return;
     }
+
     cost_labels(object, 1);
+
     if (func_4095C0(code, entry, detail, &minor_mp_cost, &minor_hp_cost, &cp_cost, &minor_fury_cost, &major_damage_scale, &major_fury_cost, &major_mp_cost,
                     &major_hp_cost) != 0)
     {
@@ -2562,6 +3253,7 @@ void skill_refresh_costs(FieldClass15AE70* receiver)
         s32 tenths = (percent % 100) / 10;
         s32 hundredths = percent % 10;
         s32 value;
+
         if (mode != 0)
         {
             if (major_mp_cost == 0)
@@ -2574,6 +3266,7 @@ void skill_refresh_costs(FieldClass15AE70* receiver)
                 lib_text_set_resource(object->hp_mp_label, object->func_slot54(), SKILL_MSG_MP_COST, 0);
                 value = major_mp_cost;
             }
+
             set_cost_value(object->multiplier_units, units);
             set_cost_value(object->multiplier_tenths, tenths);
             set_cost_value(object->multiplier_hundredths, hundredths);
@@ -2594,6 +3287,7 @@ void skill_refresh_costs(FieldClass15AE70* receiver)
                 lib_text_set_resource(object->hp_mp_label, object->func_slot54(), SKILL_MSG_MP_COST, 0);
                 value = minor_mp_cost;
             }
+
             set_cost_value(object->multiplier_units, 1);
             set_cost_value(object->multiplier_tenths, 0);
             set_cost_value(object->multiplier_hundredths, 0);
@@ -2602,16 +3296,19 @@ void skill_refresh_costs(FieldClass15AE70* receiver)
             set_cost_value(object->hp_mp_value, value);
             cost_colors(object, 0x288080);
         }
+
         cost_values(object, 1);
     }
     else
     {
         cost_values(object, 0);
     }
+
     if (code == 97 || code == 98 || code == 100 || code == 99)
     {
         hide_damage_multiplier(object);
     }
+
     if (code >= 131 && code < 155)
     {
         hide_damage_multiplier(object);
@@ -2637,6 +3334,7 @@ s32 SkillCostWindow::func_slotf4(u32 associated)
     {
         return 0;
     }
+
     FieldClass15AE70::func_slot10(associated, 16.0f, 384.0f, 16);
     LibPanel* frame = new (0) LibPanel;
     this->title = new (0) LibTextWidget;
@@ -2759,6 +3457,7 @@ s32 SkillCostWindow::func_slotf4(u32 associated)
 SkillCostWindow::~SkillCostWindow()
 {
 }
+
 SkillCostWindow::SkillCostWindow(SkillController* controller)
 {
     title = 0;
@@ -2858,6 +3557,7 @@ void skill_refresh_tactical_detail_help(SkillTacticalDetailWindow* object)
 void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mode)
 {
     object->mode = mode;
+
     if (object->mode == SKILL_TACTICAL_DETAILS_AURA)
     {
         FieldObject23BE00* aura_cursor = object->aura_cursor;
@@ -2869,12 +3569,14 @@ void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mo
         conversion_cursor->draw_alpha = 0.0f;
         conversion_cursor->needs_redraw = 1;
         func_0023CEA0(object->conversion_grid, 0);
+
         for (s32 row = 0; row < 2; row++)
         {
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->conversion_labels), row);
             LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
             label->visible = 0;
         }
+
         skill_refresh_aura_rows(object, 1);
         skill_refresh_tactical_detail_help(object);
     }
@@ -2884,12 +3586,14 @@ void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mo
         conversion_cursor->draw_alpha = 128.0f;
         conversion_cursor->needs_redraw = 1;
         func_0023CEA0(object->conversion_grid, 1);
+
         for (s32 row = 0; row < 2; row++)
         {
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->conversion_labels), row);
             LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
             label->visible = 1;
         }
+
         FieldObject23BE00* aura_cursor = object->aura_cursor;
         aura_cursor->draw_alpha = 0.0f;
         aura_cursor->needs_redraw = 1;
@@ -2910,12 +3614,14 @@ void skill_select_tactical_detail_mode(SkillTacticalDetailWindow* object, s16 mo
         conversion_cursor->draw_alpha = 0.0f;
         conversion_cursor->needs_redraw = 1;
         func_0023CEA0(object->conversion_grid, 0);
+
         for (s32 row = 0; row < 2; row++)
         {
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->conversion_labels), row);
             LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
             label->visible = 0;
         }
+
         object->conversion_selection_marker->unk3d = 0;
     }
 }
@@ -2929,6 +3635,7 @@ void skill_refresh_damage_conversion_rows(SkillTacticalDetailWindow* object, s32
             SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&object->conversion_labels), row);
             u8& selected = object->conversion_selected[row];
             LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
+
             if (selected == 1)
             {
                 label->tint = 0x808080;
@@ -2944,6 +3651,7 @@ void skill_refresh_damage_conversion_rows(SkillTacticalDetailWindow* object, s32
                 marker->unk18.unk08 = width;
                 marker->unk18.unk0c = 24.0f;
                 marker->needs_redraw = 1;
+
                 if (reset)
                 {
                     FieldObject23CEA0* grid = object->conversion_grid;
@@ -2957,6 +3665,7 @@ void skill_refresh_damage_conversion_rows(SkillTacticalDetailWindow* object, s32
                 label->tint = 0x505050;
                 label->needs_redraw = 1;
             }
+
             if (row == object->conversion_grid->unk114)
             {
                 LibTextExtent* bounds = lib_text_measure_bounds(label);
@@ -2977,8 +3686,10 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
             LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
             label->visible = 0;
         }
+
         SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current];
         s32 state = saved_tactical_state(record, SKILL_TACTICAL_ANTI_ATTACK_AURA);
+
         for (s32 row = 0; row < 7; row++)
         {
             s32 aura;
@@ -2986,6 +3697,7 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
             LibTextWidget* label = static_cast<LibTextWidget*>(node->value);
             u8 value = object->aura_indices[row];
             aura = -1;
+
             if (value != 0)
             {
                 aura = value & 0xFF;
@@ -2994,6 +3706,7 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
                 label->visible = 1;
                 label->tint = 0x505050;
                 label->needs_redraw = 1;
+
                 if (state == aura || state == -aura)
                 {
                     object->aura_selection_marker->unk3d = 1;
@@ -3009,6 +3722,7 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
                     marker->needs_redraw = 1;
                     label->tint = 0x808080;
                     label->needs_redraw = 1;
+
                     if (reset)
                     {
                         FieldObject23CEA0* grid = object->aura_grid;
@@ -3018,6 +3732,7 @@ void skill_refresh_aura_rows(SkillTacticalDetailWindow* object, s32 reset)
                     }
                 }
             }
+
             if (row == object->aura_grid->unk114)
             {
                 LibTextExtent* bounds = lib_text_measure_bounds(label);
@@ -3042,27 +3757,36 @@ s32 SkillTacticalDetailWindow::func_slotd8()
 u8 SkillTacticalDetailWindow::func_slotb4()
 {
     FieldClass15AE70* window = static_cast<FieldClass15AE70*>(this->func_slot44());
+
     if (window == 0)
     {
         return 3;
     }
+
     LibWidget* first = this->owner->status->first_display;
+
     if (first != 0)
     {
         first->visible = 1;
     }
+
     LibWidget* second = this->owner->status->second_display;
+
     if (second != 0)
     {
         second->visible = 1;
     }
+
     skill_select_tactical_detail_mode(this, SKILL_TACTICAL_DETAILS_HIDDEN);
     window->func_slot64();
     D_001B643C->callbacks->controller->func_00263C70(window);
     return 2;
 }
 
-/** @brief Store the associated object. @param value Object to store. */
+/**
+ * @brief Store the associated object.
+ * @param value Object to store.
+ */
 void FieldClass153E30::func_00263C70(void* value)
 {
     unk20 = value;
@@ -3074,25 +3798,31 @@ u8 SkillTacticalDetailWindow::func_slotb0()
     {
         FieldObject23CEA0* grid = this->aura_grid;
         u8 inactive = !grid->arrived;
+
         if (inactive == 1)
         {
             return 0;
         }
+
         s32 aura = this->aura_indices[grid->unk114];
+
         if (saved_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_ANTI_ATTACK_AURA) < 0)
         {
             aura = -aura;
         }
+
         set_tactical_state(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], SKILL_TACTICAL_ANTI_ATTACK_AURA, aura);
     }
     else if (this->mode == SKILL_TACTICAL_DETAILS_CONVERSION)
     {
         FieldObject23CEA0* grid = this->conversion_grid;
         u8 inactive = !grid->arrived;
+
         if (inactive == 1)
         {
             return 0;
         }
+
         switch (grid->unk114)
         {
         case 0:
@@ -3121,6 +3851,7 @@ u8 SkillTacticalDetailWindow::func_slotb0()
         }
         }
     }
+
     skill_refresh_tactical_detail_choices(this);
     return 1;
 }
@@ -3130,6 +3861,7 @@ void SkillTacticalDetailWindow::func_slot70()
     if (this->mode == SKILL_TACTICAL_DETAILS_AURA)
     {
         u8 inactive = !this->aura_grid->arrived;
+
         if (inactive == 1)
         {
             return;
@@ -3138,11 +3870,13 @@ void SkillTacticalDetailWindow::func_slot70()
     else if (this->mode == SKILL_TACTICAL_DETAILS_CONVERSION)
     {
         u8 inactive = !this->conversion_grid->arrived;
+
         if (inactive == 1)
         {
             return;
         }
     }
+
     this->func_slotb4();
 }
 
@@ -3154,12 +3888,15 @@ void SkillTacticalDetailWindow::func_slot6c()
         {
             return;
         }
+
         FieldObject23CEA0* selection = this->aura_grid;
         u8 inactive = !selection->arrived;
+
         if (inactive == 1)
         {
             return;
         }
+
         if (selection->process_direction(1) != 1)
         {
             skill_refresh_aura_rows(this, 0);
@@ -3170,10 +3907,12 @@ void SkillTacticalDetailWindow::func_slot6c()
     {
         FieldObject23CEA0* selection = this->conversion_grid;
         u8 inactive = !selection->arrived;
+
         if (inactive == 1)
         {
             return;
         }
+
         if (selection->process_direction(1) != 1)
         {
             skill_refresh_damage_conversion_rows(this, 0);
@@ -3190,12 +3929,15 @@ void SkillTacticalDetailWindow::func_slot68()
         {
             return;
         }
+
         FieldObject23CEA0* selection = this->aura_grid;
         u8 inactive = !selection->arrived;
+
         if (inactive == 1)
         {
             return;
         }
+
         if (selection->process_direction(0) != 1)
         {
             skill_refresh_aura_rows(this, 0);
@@ -3206,10 +3948,12 @@ void SkillTacticalDetailWindow::func_slot68()
     {
         FieldObject23CEA0* selection = this->conversion_grid;
         u8 inactive = !selection->arrived;
+
         if (inactive == 1)
         {
             return;
         }
+
         if (selection->process_direction(0) != 1)
         {
             skill_refresh_damage_conversion_rows(this, 0);
@@ -3227,10 +3971,12 @@ s32 skill_initialize_damage_conversion_grid(SkillTacticalDetailWindow* record)
 {
     float x;
     float y;
+
     if (record->conversion_grid == 0)
     {
         return 0;
     }
+
     x = record->unk10->translation.x + record->conversion_x;
     y = record->unk10->translation.y + record->conversion_y;
     record->conversion_cursor = new (0) FieldObject23BE00;
@@ -3256,10 +4002,12 @@ s32 skill_initialize_aura_grid(SkillTacticalDetailWindow* record)
 {
     float x;
     float y;
+
     if (record->aura_grid == 0)
     {
         return 0;
     }
+
     x = record->unk10->translation.x + record->aura_x;
     y = record->unk10->translation.y + record->aura_y;
     record->aura_cursor = new (0) FieldObject23BE00;
@@ -3279,26 +4027,33 @@ s32 skill_initialize_aura_grid(SkillTacticalDetailWindow* record)
 void skill_refresh_tactical_detail_choices(SkillTacticalDetailWindow* object)
 {
     SkillTacticalWindow* tactical = object->owner->mode_query;
+
     if (static_cast<FieldClass150050*>(tactical) == D_001B643C->callbacks->controller)
     {
         SkillTacticalPromptWindow* prompt = tactical->attachment;
+
         if (prompt != 0)
         {
             LibContainer* container = prompt->unk10;
+
             if (container != 0)
             {
                 container->unkab = 0;
             }
         }
+
         return;
     }
+
     for (s32 row = 0; row < 7; row++)
     {
         object->aura_indices[row] = 0;
     }
+
     object->conversion_selected[0] = 0;
     object->conversion_selected[1] = 0;
     object->records = D_001B643C->callbacks->controller->selected_records();
+
     if (object->records != 0)
     {
         object->aura_row_count = 0;
@@ -3311,13 +4066,16 @@ void skill_refresh_tactical_detail_choices(SkillTacticalDetailWindow* object)
         append_available_aura(object, available, SKILL_AURA_WIDE_AREA_HOMING);
         append_available_aura(object, available, SKILL_AURA_REGENERATION);
         append_available_aura(object, available, SKILL_AURA_STAR_GUARD);
+
         if (object->aura_row_count == 0)
         {
             object->aura_row_count = 1;
         }
+
         object->aura_grid->func_0023CE80(1, object->aura_row_count);
         SkillCharacterEquipment* conversion_record = &static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current];
         s32 state = saved_tactical_state(conversion_record, SKILL_TACTICAL_DAMAGE_CONVERSION);
+
         if (state == SKILL_DAMAGE_CONVERSION_PRESERVE_HP || state == -SKILL_DAMAGE_CONVERSION_PRESERVE_HP)
         {
             object->conversion_selected[0] = 1;
@@ -3326,6 +4084,7 @@ void skill_refresh_tactical_detail_choices(SkillTacticalDetailWindow* object)
         {
             object->conversion_selected[1] = 1;
         }
+
         skill_refresh_aura_rows(object, 1);
         skill_refresh_damage_conversion_rows(object, 1);
     }
@@ -3342,13 +4101,16 @@ u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object)
     object->aura_row_spacing = 26.0f;
     object->aura_x = 64.0f;
     object->aura_y = 14.0f;
+
     for (s32 index = 0; index < 7; index++)
     {
         LibTextWidget* item = new (0) LibTextWidget;
+
         if (item == 0)
         {
             return 0;
         }
+
         s32 slot = static_cast<s32>(object->func_slot54());
         lib_text_init_resource_rectangle(item, slot, index + SKILL_MSG_AURA_NAME_BASE, 0, object->aura_x, object->aura_y + object->aura_row_spacing * (float)index, 0.0f, 0.0f);
         item->unk88 = -1.0f;
@@ -3356,6 +4118,7 @@ u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object)
         lib_container_attach_widget(object->unk10, item);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), item);
     }
+
     object->aura_selection_marker = new (0) LibClass172600;
     func_0041AD10(object->aura_selection_marker, object->aura_x, object->aura_y, 72.0f, 24.0f);
     object->aura_selection_marker->unk3d = 0;
@@ -3363,13 +4126,16 @@ u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object)
     object->conversion_row_spacing = 48.0f;
     object->conversion_x = 116.0f;
     object->conversion_y = 8.0f + (104.0f - object->conversion_row_spacing);
+
     for (s32 index = 0; index < 2; index++)
     {
         LibTextWidget* item = new (0) LibTextWidget;
+
         if (item == 0)
         {
             return 0;
         }
+
         s32 slot = static_cast<s32>(object->func_slot54());
         lib_text_init_resource_rectangle(item, slot, index + SKILL_MSG_DAMAGE_CONVERSION_NAME_BASE, 0, object->conversion_x, object->conversion_y + object->conversion_row_spacing * (float)index, 0.0f, 0.0f);
         item->unk88 = -1.0f;
@@ -3377,6 +4143,7 @@ u8 skill_initialize_tactical_detail_labels(SkillTacticalDetailWindow* object)
         lib_container_attach_widget(object->unk10, item);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->conversion_labels), item);
     }
+
     object->conversion_selection_marker = new (0) LibClass172600;
     func_0041AD10(object->conversion_selection_marker, object->conversion_x, object->conversion_y, 96.0f, 24.0f);
     object->conversion_selection_marker->unk3d = 0;
@@ -3391,25 +4158,31 @@ s32 SkillTacticalDetailWindow::func_slotf4(u32 associated)
     LibClass1746A0* second = new (0) LibClass1746A0;
     this->aura_grid = new (0) FieldObject23CEA0;
     this->conversion_grid = new (0) FieldObject23CEA0;
+
     if (first == 0 || second == 0 || this->aura_grid == 0 || this->conversion_grid == 0)
     {
         return 0;
     }
+
     lib_scissor_init_rectangle(first, 14.0f, 14.0f, 278.0f, 182.0f);
     lib_container_attach_widget(this->unk10, first);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), first);
+
     if ((u8)skill_initialize_tactical_detail_labels(this) == 0)
     {
         return 0;
     }
+
     lib_scissor_init_reset(second, 1);
     lib_container_attach_widget(this->unk10, second);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), second);
+
     if ((u8)skill_initialize_aura_grid(this) == 0 ||
         (u8)skill_initialize_damage_conversion_grid(this) == 0)
     {
         return 0;
     }
+
     skill_refresh_tactical_detail_choices(this);
     skill_refresh_aura_rows(this, 1);
     skill_refresh_damage_conversion_rows(this, 1);
@@ -3453,16 +4226,20 @@ void func_0034BD30(SkillModeSelection* object, s32 index)
     s32 character;
     s32* keys = object->skill_name_keys;
     s32* key = index + keys;
+
     if (*key == 0)
     {
         return;
     }
+
     controller = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     status = static_cast<SkillCharacterWindow*>(object->func_slot4c());
+
     if (controller == 0 || status == 0)
     {
         return;
     }
+
     if (*key == SKILL_MSG_NONE)
     {
         controller->window->func_slot60(SKILL_MSG_BLANK);
@@ -3475,6 +4252,7 @@ void func_0034BD30(SkillModeSelection* object, s32 index)
     {
         controller->window->func_slot60(*key + 200);
     }
+
     FieldRecordSelection* selection = object->record_selection;
     SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
     character = selection->slots[selection->current];
@@ -3483,6 +4261,7 @@ void func_0034BD30(SkillModeSelection* object, s32 index)
     s32 mastery = -1;
     s32 remainder = -1;
     s32 entry = func_40AE00(character, *key - SKILL_MSG_NAME_BASE);
+
     if (func_00408850(detail, character, entry, &kind, &value, &mastery, &remainder) == 0)
     {
         skill_refresh_mastery_display(status, -1, -1, -1);
@@ -3493,14 +4272,19 @@ void func_0034BD30(SkillModeSelection* object, s32 index)
     }
 }
 
-/** @brief Refresh skill-name and CP row visibility, colors, and selection help. @param record Skill selection window. */
+/**
+ * @brief Refresh skill-name and CP row visibility, colors, and selection help.
+ * @param record Skill selection window.
+ */
 void skill_refresh_selection_rows(SkillModeSelection* record)
 {
     s32 index;
+
     for (index = 0; index < 42; index++)
     {
         ListItem0035CCE0* name_label = (ListItem0035CCE0*)func_0035CAE0(reinterpret_cast<SkillList*>(&record->unk2c), index)->value;
         ListItem0035CCE0* cp_label = (ListItem0035CCE0*)func_0035C890(reinterpret_cast<SkillList*>(&record->cp_rows), index)->value;
+
         if (record->skill_name_keys[index] == 0 && index > 0)
         {
             name_label->unk3f = 0;
@@ -3522,6 +4306,7 @@ void skill_refresh_selection_rows(SkillModeSelection* record)
                 cp_label->unk94 = 0x505050;
                 cp_label->unk3c = 1;
             }
+
             func_0034BD30(record, index);
             lib_text_measure_bounds(reinterpret_cast<LibTextWidget*>(name_label));
             func_4C6A40(name_label);
@@ -3567,25 +4352,33 @@ float skill_step_mode_scroll(SkillModeSelection* object)
 {
     SkillListNode* name = reinterpret_cast<SkillListNode*>(object->unk2c.head->next);
     SkillListNode* cp = object->cp_rows.head->next;
+
     while (name != 0)
     {
         scroll_row(object, name);
         name = name->next;
+
         if (cp != 0)
         {
             scroll_row(object, cp);
             cp = cp->next;
         }
     }
+
     return object->scroll_frames_remaining -= 1.0f;
 }
 
-/** @brief Position skill-name and CP rows at the given scroll offset. @param record Skill selection window. @param scroll_offset Vertical scroll offset. */
+/**
+ * @brief Position skill-name and CP rows at the given scroll offset.
+ * @param record Skill selection window.
+ * @param scroll_offset Vertical scroll offset.
+ */
 void skill_position_selection_rows(SkillModeSelection* record, float scroll_offset)
 {
     s32 index = 0;
     ListNode0035CCE0* name_node = reinterpret_cast<ListNode0035CCE0*>(record->unk2c.head)->next;
     ListNode0035CCE0* cp_node = reinterpret_cast<ListNode0035CCE0*>(record->cp_rows.head)->next;
+
     while (name_node != 0)
     {
         ListItem0035CCE0* item = name_node->value;
@@ -3614,6 +4407,7 @@ void skill_position_selection_rows(SkillModeSelection* record, float scroll_offs
         item->unk94 = 0x808080;
         item->unk3c = 1;
         name_node = name_node->next;
+
         if (cp_node != 0)
         {
             second_x = record->cp_column_position.x;
@@ -3633,6 +4427,7 @@ void skill_position_selection_rows(SkillModeSelection* record, float scroll_offs
             item->unk3c = 1;
             cp_node = cp_node->next;
         }
+
         index++;
     }
 }
@@ -3644,6 +4439,7 @@ void skill_position_selection_rows(SkillModeSelection* record, float scroll_offs
 void skill_refresh_selection_marker(SkillModeSelection* record)
 {
     SkillListNode* node = func_0035CAE0(reinterpret_cast<SkillList*>(&record->unk2c), record->selection->unk114);
+
     if (record->selection_marker != 0)
     {
         if (record->state != 0 && record->animation_mode == 2)
@@ -3655,6 +4451,7 @@ void skill_refresh_selection_marker(SkillModeSelection* record)
             record->selection_marker->flag3F = 1;
         }
     }
+
     if (node != 0)
     {
         if (record->selection_marker == 0)
@@ -3663,7 +4460,9 @@ void skill_refresh_selection_marker(SkillModeSelection* record)
             func_0023B850((FieldObject23B850*)record->selection_marker, (FieldTarget23B850*)node->value, 0x288080);
             lib_container_attach_widget(record->unk10, reinterpret_cast<LibWidget*>(record->selection_marker));
         }
+
         func_0023B7E0(record->selection_marker, (FieldTarget23B850*)node->value);
+
         if (record->row_enabled[record->selection->unk114] != 0)
         {
             lib_marker_set_bright_color(reinterpret_cast<ItemCreationClass172870*>(record->selection_marker), 0x288080);
@@ -3672,6 +4471,7 @@ void skill_refresh_selection_marker(SkillModeSelection* record)
         {
             lib_marker_set_bright_color(reinterpret_cast<ItemCreationClass172870*>(record->selection_marker), 0x505050);
         }
+
         func_0023B780(record->selection_marker);
     }
 }
@@ -3685,26 +4485,32 @@ void SkillModeSelection::func_slot5c()
     {
         return;
     }
+
     switch (this->state)
     {
     case 0:
     {
         s32 key = this->skill_name_keys[this->selection->unk114];
+
         if (key == 0)
         {
             return;
         }
+
         s32 message = message_from_key(key);
         SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+
         if (owner != 0)
         {
             if (message < 0)
             {
                 message = 0;
             }
+
             owner->message = message;
             refresh_owner_message(owner);
         }
+
         break;
     }
     case 1:
@@ -3712,9 +4518,11 @@ void SkillModeSelection::func_slot5c()
         {
             this->scroll_step *= -1.0f;
         }
+
         this->state = 2;
     case 2:
         skill_step_mode_scroll(this);
+
         if (this->scroll_frames_remaining <= 0.0f)
         {
             this->state = 3;
@@ -3730,6 +4538,7 @@ void SkillModeSelection::func_slot5c()
         this->state = 0;
         break;
     }
+
     if (this->count > 0)
     {
         this->scroll_indicator->visible = 1;
@@ -3744,10 +4553,14 @@ void SkillModeSelection::func_slot5c()
     {
         this->scroll_indicator->visible = 0;
     }
+
     skill_refresh_selection_marker(this);
 }
 
-/** @brief Return the associated object. @return Stored object. */
+/**
+ * @brief Return the associated object.
+ * @return Stored object.
+ */
 void* FieldClass153E30::func_00261150()
 {
     return unk20;
@@ -3763,7 +4576,10 @@ s32 SkillModeSelection::func_slotd8()
     return 0;
 }
 
-/** @brief Clear the skill rows and their saved row metadata. @param window Skill selection window. */
+/**
+ * @brief Clear the skill rows and their saved row metadata.
+ * @param window Skill selection window.
+ */
 static inline void clear_selection_rows(SkillModeSelection* window)
 {
     for (s32 index = 0; index < 42; index++)
@@ -3776,57 +4592,76 @@ static inline void clear_selection_rows(SkillModeSelection* window)
     }
 }
 
-/** @brief Cancel skill selection and restore the battle setup window. @return Zero when inactive, otherwise event two. */
+/**
+ * @brief Cancel skill selection and restore the battle setup window.
+ * @return Zero when inactive, otherwise event two.
+ */
 u8 SkillModeSelection::func_slotb4()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     this->mode = -1;
     clear_selection_rows(this);
     this->state = 0;
+
     if (this->selection != 0)
     {
         func_0023C710(this->selection);
     }
+
     if (this->selection != 0)
     {
         FieldObject23B950* marker = this->selection_marker;
+
         if (marker != 0)
         {
             marker->unk28 = 0;
             marker->flag3C = 1;
         }
+
         func_0023CEA0(this->selection, 0);
     }
+
     FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(this->func_slot44());
     associated->func_slot64();
     D_001B643C->callbacks->controller->func_00263C70(associated);
     SkillController* owner = this->owner;
+
     if (owner != 0)
     {
         owner->message = 0;
         refresh_owner_message(owner);
     }
+
     ListItem0035CCE0* label = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), this->selection->unk114)->value);
+
     if (label != 0)
     {
         label->unk94 = 0x808080;
         label->unk3c = 1;
     }
+
     skill_set_selection_visibility(this, 0, 0);
+
     if (this->owner->status->first_display != 0 && this->owner->selected_records()->count > 1)
     {
         this->owner->status->first_display->visible = 1;
         this->owner->status->second_display->visible = 1;
     }
+
     return 2;
 }
 
 
-/** @brief Return the character record selection. @return Owned record selection. */
+/**
+ * @brief Return the character record selection.
+ * @return Owned record selection.
+ */
 FieldRecordSelection* SkillController::selected_records()
 {
     return record_selection;
@@ -3843,21 +4678,25 @@ static inline void set_battle_skill_index(SkillCharacterEquipment* record, s32 s
     u8* entry;
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
     entry = record->encoded_battle_skill_indices;
+
     for (s32 i = 0; i < 6; i++)
     {
         checksum ^= *entry++;
         checksum = checksum * 2 + 0x31;
     }
+
     if (record->battle_skill_indices_checksum == checksum && slot >= 0 && static_cast<u32>(slot) < 6 && value + 0x7D70 < 0x7D9B)
     {
         record->encoded_battle_skill_indices[slot] = value ^ SKILL_TACTICAL_STATE_XOR_KEY;
         checksum = SKILL_TACTICAL_CHECKSUM_SEED;
         entry = record->encoded_battle_skill_indices;
+
         for (s32 i = 0; i < 6; i++)
         {
             checksum ^= *entry++;
             checksum = checksum * 2 + 0x31;
         }
+
         record->battle_skill_indices_checksum = checksum;
     }
 }
@@ -3866,17 +4705,22 @@ u8 SkillModeSelection::func_slotb0()
 {
     FieldObject23CEA0* grid = this->selection;
     u8 inactive = !grid->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     s16 row = grid->unk114;
     s32 key = this->skill_name_keys[row];
+
     if (key == 0)
     {
         return 3;
     }
+
     s32 skill;
+
     if (key - SKILL_MSG_NONE == 0)
     {
         skill = -1;
@@ -3885,33 +4729,42 @@ u8 SkillModeSelection::func_slotb0()
     {
         skill = key - SKILL_MSG_NAME_BASE;
     }
+
     s32 character;
     s32 cp_cost = this->row_cp_costs[row];
     FieldRecordSelection* records = this->record_selection;
     character = records->slots[records->current];
     SkillBattleSetupWindow* battle = static_cast<SkillBattleSetupWindow*>(this->func_slot44());
+
     if (battle == 0)
     {
         return 0;
     }
+
     s32 assigned = battle->cp_costs[this->mode];
+
     if (assigned == -1)
     {
         assigned = 0;
     }
+
     assigned = skill_refresh_battle_cp_displays(battle, 1) - assigned;
     SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(this->record_selection->unk04)[this->record_selection->current];
+
     if (cp_cost + assigned > character_cp(record))
     {
         return 3;
     }
+
     if (skill >= 0)
     {
         s32 mapped = func_40AE00(character, skill);
+
         if (mapped == -1)
         {
             return 3;
         }
+
         switch (this->mode)
         {
         case 0:
@@ -3949,6 +4802,7 @@ u8 SkillModeSelection::func_slotb0()
     else
     {
         cp_cost = -1;
+
         switch (this->mode)
         {
         case 0:
@@ -3971,6 +4825,7 @@ u8 SkillModeSelection::func_slotb0()
             break;
         }
     }
+
     if (character == 2)
     {
         func_40AE00(2, 0x94);
@@ -3978,28 +4833,35 @@ u8 SkillModeSelection::func_slotb0()
         s8 index = selection->current;
         lib_character_recalculate_stats(&selection->records[index], &static_cast<SkillCharacterEquipment*>(selection->unk04)[index], 0, -1);
     }
+
     skill_refresh_battle_skill_rows(battle);
     battle->cp_costs[this->mode] = cp_cost;
     skill_refresh_battle_cp_displays(battle, 1);
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+
     if (owner != 0)
     {
         s32 value = skill_refresh_battle_cp_displays(owner->status_rows, 1);
         SkillCharacterWindow* status = owner->status;
         LibObject174F20* item = status->assigned_cp_value;
+
         if (item != 0)
         {
             if (value < 0)
             {
                 value = 0;
             }
+
             item->numeric_value = value;
             item->needs_redraw = 1;
         }
+
         FieldRecordSelection* selection = status->selection;
+
         if (selection != 0)
         {
             SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+
             if (record != 0)
             {
                 s32 value = character_cp(record);
@@ -4009,47 +4871,60 @@ u8 SkillModeSelection::func_slotb0()
             }
         }
     }
+
     this->mode = -1;
     clear_selection_rows(this);
     this->state = 0;
+
     if (this->selection != 0)
     {
         func_0023C710(this->selection);
     }
+
     if (this->selection != 0)
     {
         FieldObject23B950* marker = this->selection_marker;
+
         if (marker != 0)
         {
             marker->unk28 = 0;
             marker->flag3C = 1;
         }
+
         func_0023CEA0(this->selection, 0);
     }
+
     FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(this->func_slot44());
     associated->func_slot64();
     D_001B643C->callbacks->controller->func_00263C70(associated);
     ListItem0035CCE0* label = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), this->selection->unk114)->value);
+
     if (label != 0)
     {
         label->unk94 = 0x808080;
         label->unk3c = 1;
     }
+
     SkillController* controller = this->owner;
+
     if (controller != 0)
     {
         FieldClass15AE70* window = controller->window;
+
         if (window != 0)
         {
             skill_refresh_costs(window);
         }
     }
+
     skill_set_selection_visibility(this, 0, 0);
+
     if (this->owner->status->first_display != 0 && this->owner->selected_records()->count > 1)
     {
         this->owner->status->first_display->visible = 1;
         this->owner->status->second_display->visible = 1;
     }
+
     return 1;
 }
 
@@ -4057,28 +4932,35 @@ s32 SkillModeSelection::func_slotd4()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->LibMovementState::arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     if ((s32)this->state > 0)
     {
         return 0;
     }
+
     s16 first = selection->row_count;
     s16 selected = selection->unk114;
     s32 count = this->item_count;
     s32 first_index;
     s32 last_index = count - 1;
+
     if (selected >= last_index)
     {
         return 0;
     }
+
     if (count < 2)
     {
         return 0;
     }
+
     s32 visible_index;
+
     if (count < 6)
     {
         visible_index = last_index;
@@ -4089,16 +4971,19 @@ s32 SkillModeSelection::func_slotd4()
         visible_index = selected - first;
         first_index = first + 6;
         s32 end = first_index + 6;
+
         if (end >= count)
         {
             visible_index += end - count;
             first_index = count - 6;
+
             if (visible_index >= 6)
             {
                 visible_index = 5;
             }
         }
     }
+
     this->scroll_step = -this->row_spacing * (float)(first_index - first);
     this->animation_mode = 2;
     skill_step_mode_scroll(this);
@@ -4119,31 +5004,39 @@ s32 SkillModeSelection::func_slotd4()
 s32 SkillModeSelection::func_slotd0()
 {
     u8 inactive = !this->selection->LibMovementState::arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     if ((s32)this->state > 0)
     {
         return 0;
     }
+
     s16 first = this->selection->row_count;
     s16 selected = this->selection->unk114;
+
     if (selected <= 0 && first <= 0)
     {
         return 0;
     }
+
     s32 first_index = first - 6;
     s32 visible_index = selected - first;
+
     if (first_index < 0)
     {
         visible_index += first_index;
         first_index = 0;
+
         if (visible_index < 0)
         {
             visible_index = 0;
         }
     }
+
     this->scroll_step = this->row_spacing * (float)(first - first_index);
     this->animation_mode = 1;
     skill_step_mode_scroll(this);
@@ -4165,23 +5058,29 @@ void SkillModeSelection::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->LibMovementState::arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->state > 0)
     {
         return;
     }
+
     if (selection->unk114 + 1 >= this->item_count)
     {
         return;
     }
+
     u8 result = selection->process_direction(1);
+
     if (result == 1)
     {
         return;
     }
+
     if (result == 3)
     {
         this->state = 1;
@@ -4189,6 +5088,7 @@ void SkillModeSelection::func_slot6c()
         this->scroll_frames_remaining = 4.0f;
         this->animation_mode = 2;
     }
+
     skill_refresh_selection_rows(this);
     skill_refresh_selection_marker(this);
     refresh_mode_message(this);
@@ -4199,24 +5099,31 @@ void SkillModeSelection::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->LibMovementState::arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->state > 0)
     {
         return;
     }
+
     s16 selected = selection->unk114;
+
     if (selection->row_count == 0 && selected == 0)
     {
         return;
     }
+
     u8 result = selection->process_direction(0);
+
     if (result == 1)
     {
         return;
     }
+
     if (result == 2)
     {
         this->state = 1;
@@ -4224,6 +5131,7 @@ void SkillModeSelection::func_slot68()
         this->scroll_frames_remaining = 4.0f;
         this->animation_mode = 1;
     }
+
     skill_refresh_selection_rows(this);
     skill_refresh_selection_marker(this);
     refresh_mode_message(this);
@@ -4240,14 +5148,17 @@ s32 skill_initialize_selection_grid(SkillModeSelection* record, s16 row_count)
 {
     float x;
     float y;
+
     if (row_count == 0)
     {
         return 1;
     }
+
     if (record->unk10 == 0)
     {
         return 0;
     }
+
     x = record->unk10->translation.x + record->list_x;
     y = 16.0f + record->unk10->translation.y;
     func_0023CE80((FieldObject23CE80*)record->selection, 1, row_count);
@@ -4257,16 +5168,20 @@ s32 skill_initialize_selection_grid(SkillModeSelection* record, s16 row_count)
     reinterpret_cast<FieldObject23CEB0*>(record->selection)->unk116 = 36;
     func_0023CF50(reinterpret_cast<FieldObject23CEB0*>(record->selection), 0, x, y);
     func_0035C4D0(reinterpret_cast<SkillList*>(&record->unk74), record->selection);
+
     if (record->selection != 0)
     {
         FieldObject23B950* recipient = record->selection_marker;
+
         if (recipient != 0)
         {
             recipient->unk28 = 0;
             recipient->flag3C = 1;
         }
+
         func_0023CEA0((FieldObject23CEA0*)record->selection, 0);
     }
+
     return 1;
 }
 
@@ -4281,6 +5196,7 @@ static inline u8 skill_not_assigned(SkillModeSelection* object, s32 mode, s32 co
 {
     s32 slot;
     SkillCharacterEquipment* record = selected_equipment(object->record_selection);
+
     if (record != 0)
     {
         if (object->mode == 5)
@@ -4291,67 +5207,81 @@ static inline u8 skill_not_assigned(SkillModeSelection* object, s32 mode, s32 co
         {
             slot = 5;
         }
+
         if (func_40AE00(mode, code) == battle_skill_index(record, slot) - 1)
         {
             return 0;
         }
     }
+
     return 1;
 }
 
 s32 func_0034E380(SkillModeSelection* object, s32 mode, s32 index)
 {
     s32 count = index;
+
     if (skill_not_assigned(object, mode, 0x8F))
     {
         object->candidate_skill_ids[count++] = 0x8F;
     }
+
     if (mode != 2)
     {
         if (skill_not_assigned(object, mode, 0x90))
         {
             object->candidate_skill_ids[count++] = 0x90;
         }
+
         if (skill_not_assigned(object, mode, 0x91))
         {
             object->candidate_skill_ids[count++] = 0x91;
         }
     }
+
     if (skill_not_assigned(object, mode, 0x92))
     {
         object->candidate_skill_ids[count++] = 0x92;
     }
+
     if (mode == 2 || mode == 9)
     {
         if (skill_not_assigned(object, mode, 0x94))
         {
             object->candidate_skill_ids[count++] = 0x94;
         }
+
         if (skill_not_assigned(object, mode, 0x95))
         {
             object->candidate_skill_ids[count++] = 0x95;
         }
     }
+
     if (skill_not_assigned(object, mode, 0x96))
     {
         object->candidate_skill_ids[count++] = 0x96;
     }
+
     if (skill_not_assigned(object, mode, 0x97))
     {
         object->candidate_skill_ids[count++] = 0x97;
     }
+
     if (skill_not_assigned(object, mode, 0x98))
     {
         object->candidate_skill_ids[count++] = 0x98;
     }
+
     if (skill_not_assigned(object, mode, 0x99))
     {
         object->candidate_skill_ids[count++] = 0x99;
     }
+
     if (skill_not_assigned(object, mode, 0x9A))
     {
         object->candidate_skill_ids[count++] = 0x9A;
     }
+
     return count;
 }
 
@@ -4359,6 +5289,7 @@ s32 func_0034F1A0(SkillModeSelection* object, s32 mode, s32 index)
 {
     s32 count = 0;
     count += index;
+
     switch (mode)
     {
     case 1:
@@ -4499,6 +5430,7 @@ s32 func_0034F1A0(SkillModeSelection* object, s32 mode, s32 index)
         object->candidate_skill_ids[count++] = 127;
         break;
     }
+
     return count;
 }
 
@@ -4506,6 +5438,7 @@ s32 func_0034FB40(SkillModeSelection* object, s32 mode, s32 index)
 {
     s32 count = 0;
     count += index;
+
     switch (mode)
     {
     case 2:
@@ -4522,6 +5455,7 @@ s32 func_0034FB40(SkillModeSelection* object, s32 mode, s32 index)
         object->candidate_skill_ids[count++] = 16;
         break;
     }
+
     return count;
 }
 
@@ -4529,6 +5463,7 @@ s32 func_0034FC30(SkillModeSelection* object, s32 mode, s32 index)
 {
     s32 count = 0;
     count += index;
+
     switch (mode)
     {
     case 1:
@@ -4668,6 +5603,7 @@ s32 func_0034FC30(SkillModeSelection* object, s32 mode, s32 index)
         object->candidate_skill_ids[count++] = 127;
         break;
     }
+
     return count;
 }
 
@@ -4675,6 +5611,7 @@ s32 func_003505C0(SkillModeSelection* object, s32 mode, s32 index)
 {
     s32 count = 0;
     count += index;
+
     switch (mode)
     {
     case 2:
@@ -4691,12 +5628,14 @@ s32 func_003505C0(SkillModeSelection* object, s32 mode, s32 index)
         object->candidate_skill_ids[count++] = 16;
         break;
     }
+
     return count;
 }
 
 void skill_build_mode_candidates(SkillModeSelection* object, s32 mode, s16 kind)
 {
     s32 count = 0;
+
     switch (kind)
     {
     case 0:
@@ -4721,6 +5660,7 @@ void skill_build_mode_candidates(SkillModeSelection* object, s32 mode, s16 kind)
         count = index;
         break;
     }
+
     switch (kind)
     {
     case 0:
@@ -4740,26 +5680,38 @@ void skill_build_mode_candidates(SkillModeSelection* object, s32 mode, s16 kind)
     }
 }
 
-/** @brief Set how many rows a selection list scrolls over. @param list Selection list. @param rows Row count. */
+/**
+ * @brief Set how many rows a selection list scrolls over.
+ * @param list Selection list.
+ * @param rows Row count.
+ */
 static inline void set_visible_rows(FieldObject23CEB0* list, s32 rows)
 {
     list->unk116 = rows;
 }
 
-/** @brief Rebuild the mode rows for a signed mode code. @param object Mode-selection window. @param mode Signed mode. @return One on success, or zero on failure. */
+/**
+ * @brief Rebuild the mode rows for a signed mode code.
+ * @param object Mode-selection window.
+ * @param mode Signed mode.
+ * @return One on success, or zero on failure.
+ */
 s32 func_00350890(SkillModeSelection* object, s16 mode)
 {
     if (object->visible == 0)
     {
         return 0;
     }
+
     object->mode = -1;
     clear_selection_rows(object);
     object->state = 0;
+
     if (object->selection != 0)
     {
         func_0023C710(object->selection);
     }
+
     SkillCharacterEquipment* record = selected_equipment(object->record_selection);
     s32 character = object->record_selection->slots[object->record_selection->current];
     object->mode = mode;
@@ -4769,6 +5721,7 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
     // TODO: A second variable for the later cost rows is a guess; with one shared variable it doesn't match.
     LibObject174F20* row_cost;
     s32 count;
+
     for (count = 0; count < 42; count++)
     {
         label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), count)->value);
@@ -4776,6 +5729,7 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
         cp_row = static_cast<LibObject174F20*>(func_0035C890(reinterpret_cast<SkillList*>(&object->cp_rows), count)->value);
         cp_row->visible = 0;
     }
+
     object->scroll_range = 0.0f;
     count = 0;
     label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), count)->value);
@@ -4799,10 +5753,12 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
     s32 major_damage_scale = 0;
     s32 selected_row = 0;
     SkillBattleSetupWindow* setup = static_cast<SkillBattleSetupWindow*>(object->func_slot44());
+
     for (s32 index = 0; index < 42; index++)
     {
         found = func_00408850(detail, character, index, &skill_id, &mastery, &level, &remaining);
         bool excluded = true;
+
         if (found != 0)
         {
             for (s32 candidate = 0; candidate < 42; candidate++)
@@ -4814,14 +5770,17 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
                 }
             }
         }
+
         if (excluded)
         {
             continue;
         }
+
         func_4095C0(skill_id, entry, detail, &minor_mp, &minor_hp, &cp_cost, &minor_fury, &major_damage_scale, 0, 0, 0);
         label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), count)->value);
         row_cost = static_cast<LibObject174F20*>(func_0035C890(reinterpret_cast<SkillList*>(&object->cp_rows), count)->value);
         label->visible = object->visible;
+
         if (found == 0)
         {
             object->skill_name_keys[count] = SKILL_MSG_NONE;
@@ -4832,6 +5791,7 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
             label->needs_redraw = 1;
             continue;
         }
+
         row_cost->visible = object->visible;
         object->skill_name_keys[count] = skill_id + SKILL_MSG_NAME_BASE;
         lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[count], 0);
@@ -4845,16 +5805,20 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
         label->needs_redraw = 1;
         s32 code = func_40AE00(character, skill_id);
         s32 equipped = battle_skill_index(record, mode);
+
         if (equipped != 0 && equipped - 1 == code)
         {
             selected_row = count;
         }
+
         count++;
     }
+
     if (count != 0)
     {
         object->scroll_range = (float)count;
     }
+
     object->item_count = count;
     s32 sum = skill_refresh_battle_cp_displays(setup, 1);
     s32 current_cost = setup->cp_costs[object->mode];
@@ -4862,10 +5826,12 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
     s32 base = sum - current_cost;
     s32 available = checked_character_cp(record);
     object->row_enabled[0] = 1;
+
     for (s32 row = 1; row < count; row++)
     {
         label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), row)->value);
         row_cost = static_cast<LibObject174F20*>(func_0035C890(reinterpret_cast<SkillList*>(&object->cp_rows), row)->value);
+
         if (available < base + object->row_cp_costs[row])
         {
             object->row_enabled[row] = 0;
@@ -4877,7 +5843,9 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
             object->row_enabled[row] = 1;
         }
     }
+
     FieldObject23CEA0* selection;
+
     if (selected_row >= 3 && count > 6)
     {
         if (selected_row + 3 < count)
@@ -4906,6 +5874,7 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
         func_0023CB30(selection);
         func_0023CEE0(reinterpret_cast<FieldObject23CEB0*>(object->selection));
     }
+
     if (count != 0)
     {
         if (count < 6)
@@ -4916,8 +5885,10 @@ s32 func_00350890(SkillModeSelection* object, s16 mode)
         {
             object->count = count - 6;
         }
+
         set_visible_rows(reinterpret_cast<FieldObject23CEB0*>(object->selection), object->count);
     }
+
     skill_position_selection_rows(object, object->row_spacing * (float)object->selection->row_count);
     skill_refresh_selection_rows(object);
     skill_refresh_selection_marker(object);
@@ -4930,10 +5901,12 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
     for (s32 row = 0; row < 42; row++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
+
         if (text == 0)
         {
             return 0;
         }
+
         float y = object->row_height + object->row_spacing * (float)row;
         text->init_resource_rectangle(4.0f + object->list_x, y, 180.0f, 22.0f, (s32)object->func_slot54(), SKILL_MSG_NONE, 0);
         text->unk88 = -1.0f;
@@ -4942,10 +5915,12 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
         lib_container_attach_widget(object->unk10, text);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), text);
         LibObject174F20* cost = new (0) LibObject174F20;
+
         if (cost == 0)
         {
             return 0;
         }
+
         y = (8.0f + object->row_height) + object->row_spacing * (float)row;
         lib_numeric_widget_init_rectangle(cost, 0, (s32)object->func_slot54(), 1, 250.0f, y, 16.0f, 8.0f);
         cost->set_scale(0.9f, 0.9f);
@@ -4956,12 +5931,15 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
         lib_container_attach_widget(object->unk10, cost);
         func_0035C780(reinterpret_cast<SkillList*>(&object->cp_rows), cost);
     }
+
     SkillListNode* node = reinterpret_cast<SkillListNode*>(object->unk2c.head->next);
     const LibUiRect16* position = &static_cast<LibWidget*>(node->value)->unk18;
+
     if (node == 0 || position == 0)
     {
         return 0;
     }
+
     float y = position->unk04;
     float z = position->unk08;
     float w = position->unk0c;
@@ -4972,10 +5950,12 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
     object->name_column_position.w = w;
     node = object->cp_rows.head->next;
     position = &static_cast<LibWidget*>(node->value)->unk18;
+
     if (node == 0 || position == 0)
     {
         return 0;
     }
+
     y = position->unk04;
     z = position->unk08;
     w = position->unk0c;
@@ -4987,14 +5967,21 @@ s32 skill_create_mode_rows(SkillModeSelection* object)
     return 1;
 }
 
-/** @brief Set skill rows, CP heading, and grid activity. @param object Skill selection window. @param flag Display visibility word. @param active Grid activity value. */
+/**
+ * @brief Set skill rows, CP heading, and grid activity.
+ * @param object Skill selection window.
+ * @param flag Display visibility word.
+ * @param active Grid activity value.
+ */
 void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 active)
 {
     object->visible = flag;
     object->func_slot18(flag, 2);
+
     if (object->selection != 0)
     {
         LibWidget* recipient = reinterpret_cast<LibWidget*>(object->selection_marker);
+
         if (recipient != 0)
         {
             if (active != 0)
@@ -5008,10 +5995,13 @@ void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 ac
                 recipient->needs_redraw = 1;
             }
         }
+
         func_0023CEA0(object->selection, active);
     }
+
     SkillListNode* node = object->cp_rows.head->next;
     s32 index = 0;
+
     for (; node != 0; node = node->next, index++)
     {
         if (index == 0)
@@ -5023,11 +6013,14 @@ void skill_set_selection_visibility(SkillModeSelection* object, u32 flag, s32 ac
             static_cast<LibWidget*>(node->value)->visible = flag & 0xFF;
         }
     }
+
     object->cp_heading->visible = flag;
+
     if ((u8)flag == 1 && (u8)active == 1)
     {
         skill_refresh_selection_rows(object);
     }
+
     if ((u8)flag == 0)
     {
         object->scroll_indicator->visible = 0;
@@ -5044,26 +6037,32 @@ s32 SkillModeSelection::func_slotf4(u32 associated)
     lib_container_attach_widget(this->unk10, this->cp_heading);
     this->cp_heading->set_tint(0x288CFF);
     this->cp_heading->set_scale(0.6f, 0.6f);
+
     {
         LibTextWidget* display = this->cp_heading;
         display->unk88 = 2.0f;
         display->needs_redraw = 1;
     }
+
     this->cp_heading->visible = 0;
     LibClass1746A0* first = new (0) LibClass1746A0;
     LibClass1746A0* second = new (0) LibClass1746A0;
     this->selection = new (0) FieldObject23CEA0;
+
     if (first == 0 || second == 0 || this->selection == 0)
     {
         return 0;
     }
+
     lib_scissor_init_rectangle(first, 14.0f, 20.0f, 278.0f, 176.0f);
     lib_container_attach_widget(this->unk10, first);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), first);
+
     if ((u8)skill_create_mode_rows(this) == 0)
     {
         return 0;
     }
+
     this->scroll_indicator = new (0) LibClass1725D0;
     lib_list_indicator_init(this->scroll_indicator, 280.0f, 18.0f, 178.0f, 100.0f, 0.0f);
     lib_container_attach_widget(this->unk10, this->scroll_indicator);
@@ -5071,16 +6070,19 @@ s32 SkillModeSelection::func_slotf4(u32 associated)
     lib_scissor_init_reset(second, 1);
     lib_container_attach_widget(this->unk10, second);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), second);
+
     if ((u8)skill_initialize_selection_grid(this, 6) == 0)
     {
         return 0;
     }
+
     return 1;
 }
 
 SkillModeSelection::~SkillModeSelection()
 {
 }
+
 SkillModeSelection::SkillModeSelection(SkillController* controller)
 {
     selection = 0;
@@ -5096,10 +6098,12 @@ SkillModeSelection::SkillModeSelection(SkillController* controller)
     mode = -1;
     clear_selection_rows(this);
     state = 0;
+
     if (selection != 0)
     {
         func_0023C710(selection);
     }
+
     scroll_indicator = 0;
     scroll_range = 0;
     owner = 0;
@@ -5112,10 +6116,12 @@ s32 SkillModeMessageWindow::func_slotf4(u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(this), associated, 320.0f, 176.0f, 0xF);
     LibPanel* widget = new (0) LibPanel;
+
     if (widget == 0)
     {
         return 0;
     }
+
     lib_panel_init_rectangle(widget, 0, 0.0f, 0.0f, 304.0f, 208.0f, 88.0f);
     lib_container_attach_widget(this->unk10, widget);
     return 1;
@@ -5128,6 +6134,7 @@ SkillModeMessageWindow::~SkillModeMessageWindow()
 void SkillTacticalWindow::func_slot5c()
 {
     func_00351BE0(this);
+
     if (D_001B643C->callbacks->controller->func_00261150() == this)
     {
         FieldClass15AE70* window = static_cast<FieldClass15AE70*>(this->func_slot4c());
@@ -5141,12 +6148,15 @@ void SkillTacticalWindow::func_slot64()
     selection->LibMovementState::alpha = 128.0f;
     selection->geometry_dirty = 1;
     LibContainer* display = this->attachment->unk10;
+
     if (display != 0)
     {
         display->unkab = 1;
     }
+
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     FieldClass15AE70* window = owner->window;
+
     if (this->row_count > 0)
     {
         window->func_slot60(this->row_modes[this->selection->unk114] + SKILL_MSG_TACTICAL_HELP_BASE);
@@ -5165,6 +6175,7 @@ void SkillTacticalWindow::func_slot64()
 static inline void show_tactical_prompt(SkillTacticalPromptWindow* prompt, s32 state)
 {
     prompt->initiate_label->visible = 1;
+
     if (state > 0)
     {
         prompt->yes_label->visible = 1;
@@ -5194,14 +6205,17 @@ void func_00351BE0(SkillTacticalWindow* object)
     {
         static_cast<LibWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->unk2c), index)->value)->visible = 0;
     }
+
     if (object->row_count > 0)
     {
         lib_marker_set_bright_color(object->cursor, 0x808080);
+
         for (s32 index = 0; index < object->row_count; index++)
         {
             LibTextWidget* text = tactical_row_label(object, index);
             text->visible = object->active;
             s32 value = tactical_mode_state(&static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current], object->row_modes[index]);
+
             if (value > 0)
             {
                 text->set_tint(0x808080);
@@ -5210,6 +6224,7 @@ void func_00351BE0(SkillTacticalWindow* object)
             {
                 text->set_tint(0x505050);
             }
+
             if (index == object->selection->unk114)
             {
                 if (object == D_001B643C->callbacks->controller->func_00261150())
@@ -5223,13 +6238,16 @@ void func_00351BE0(SkillTacticalWindow* object)
                     {
                         lib_marker_set_bright_color(object->cursor, 0x505050);
                     }
+
                     func_0023B9B0(object->cursor, (s16)index, lib_text_measure_bounds(text)->width);
                 }
             }
+
             if (object == D_001B643C->callbacks->controller->func_00261150())
             {
                 SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
                 FieldClass15AE70* window = owner->window;
+
                 if (object->row_count > 0)
                 {
                     window->func_slot60(object->row_modes[object->selection->unk114] + SKILL_MSG_TACTICAL_HELP_BASE);
@@ -5240,8 +6258,10 @@ void func_00351BE0(SkillTacticalWindow* object)
                 }
             }
         }
+
         s32 mode = object->row_modes[object->selection->unk114];
         s32 value = tactical_mode_state(&static_cast<SkillCharacterEquipment*>(object->records->unk04)[object->records->current], mode);
+
         if (object == D_001B643C->callbacks->controller->func_00261150())
         {
             if (mode == SKILL_TACTICAL_CURE_CONDITION || mode == SKILL_TACTICAL_BERSERK || mode == SKILL_TACTICAL_COMBAT_TRAINING)
@@ -5255,6 +6275,7 @@ void func_00351BE0(SkillTacticalWindow* object)
                 prompt->details_icon->visible = 0;
                 prompt->details_hint->visible = 0;
             }
+
             if (mode == SKILL_TACTICAL_DAMAGE_CONVERSION)
             {
                 SkillTacticalPromptWindow* prompt = object->attachment;
@@ -5264,6 +6285,7 @@ void func_00351BE0(SkillTacticalWindow* object)
                 prompt->details_icon->visible = 1;
                 prompt->details_hint->visible = 1;
             }
+
             if (mode == SKILL_TACTICAL_ANTI_ATTACK_AURA)
             {
                 SkillTacticalPromptWindow* prompt = object->attachment;
@@ -5292,14 +6314,17 @@ void SkillTacticalWindow::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->row_count < 2)
     {
         return;
     }
+
     if (selection->process_direction(1) != 1)
     {
         func_00351BE0(this);
@@ -5310,14 +6335,17 @@ void SkillTacticalWindow::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->row_count < 2)
     {
         return;
     }
+
     if (selection->process_direction(0) != 1)
     {
         func_00351BE0(this);
@@ -5327,6 +6355,7 @@ void SkillTacticalWindow::func_slot68()
 void skill_open_tactical_details(SkillTacticalWindow* object)
 {
     u8 mode;
+
     switch (object->row_modes[object->selection->unk114])
     {
     case SKILL_TACTICAL_ANTI_ATTACK_AURA:
@@ -5338,63 +6367,87 @@ void skill_open_tactical_details(SkillTacticalWindow* object)
     default:
         return;
     }
+
     SkillTacticalDetailWindow* window = static_cast<SkillTacticalDetailWindow*>(object->func_slot4c());
     skill_select_tactical_detail_mode(window, mode);
     FieldObject23CEA0* selection = object->selection;
     selection->LibMovementState::alpha = 64.0f;
     selection->geometry_dirty = 1;
     LibContainer* display = object->attachment->unk10;
+
     if (display != 0)
     {
         display->unkab = 0;
     }
+
     D_001B643C->callbacks->controller->func_00263C70(window);
 }
 
-/** @brief Decode one tactical skill state if the checksum holds. @param states Encoded states. @param stored_checksum Stored checksum. @param index Mode index. @return Decoded state, or zero. */
+/**
+ * @brief Decode one tactical skill state if the checksum holds.
+ * @param states Encoded states.
+ * @param stored_checksum Stored checksum.
+ * @param index Mode index.
+ * @return Decoded state, or zero.
+ */
 static inline s32 tactical_skill_state(const u8* states, const u32& stored_checksum, s32 index)
 {
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+
     for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
     {
         checksum ^= states[entry];
         checksum = checksum * 2 + 0x31;
     }
+
     if (stored_checksum != checksum)
     {
         return 0;
     }
+
     if (index < 0)
     {
         return 0;
     }
+
     if (static_cast<u32>(index) >= SKILL_TACTICAL_MODE_COUNT)
     {
         return 0;
     }
+
     return static_cast<s8>(states[index]) ^ SKILL_TACTICAL_STATE_XOR_KEY;
 }
 
-/** @brief Encode one tactical skill state and refresh the checksum. @param states Encoded states. @param stored_checksum Stored checksum. @param index Mode index. @param state New state. */
+/**
+ * @brief Encode one tactical skill state and refresh the checksum.
+ * @param states Encoded states.
+ * @param stored_checksum Stored checksum.
+ * @param index Mode index.
+ * @param state New state.
+ */
 static inline void set_tactical_skill_state(u8* states, u32& stored_checksum, s32 index, s32 state)
 {
     u8* entry_byte = states;
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
+
     for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
     {
         checksum ^= *entry_byte++;
         checksum = checksum * 2 + 0x31;
     }
+
     if (stored_checksum == checksum && index >= 0 && static_cast<u32>(index) < SKILL_TACTICAL_MODE_COUNT)
     {
         states[index] = state ^ SKILL_TACTICAL_STATE_XOR_KEY;
         checksum = SKILL_TACTICAL_CHECKSUM_SEED;
         entry_byte = states;
+
         for (s32 entry = 0; entry < SKILL_TACTICAL_MODE_COUNT; entry++)
         {
             checksum ^= *entry_byte++;
             checksum = checksum * 2 + 0x31;
         }
+
         stored_checksum = checksum;
     }
 }
@@ -5404,16 +6457,20 @@ u8 func_003523A0(SkillTacticalWindow* object)
     s32 mode = object->row_modes[object->selection->unk114];
     SkillCharacterEquipment* record = current_equipment(object->records);
     s32 state = tactical_skill_state(record->encoded_tactical_skill_states, record->tactical_skill_states_checksum, mode);
+
     if (state != 0)
     {
         s32 next_state = -state;
         set_tactical_skill_state(record->encoded_tactical_skill_states, record->tactical_skill_states_checksum, mode, next_state);
     }
+
     skill_refresh_tactical_rows(object);
+
     if (state != 0)
     {
         skill_set_tactical_prompt_state(object->attachment, -state);
     }
+
     return 1;
 }
 
@@ -5421,16 +6478,20 @@ s32 SkillTacticalWindow::func_slotdc()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner == 0 || status == 0)
     {
         return 0;
     }
+
     this->character_rows[(u8)this->records->slots[this->records->current]] = selection->index;
     return cycle_status_record(status, 1);
 }
@@ -5439,16 +6500,20 @@ s32 SkillTacticalWindow::func_slotd8()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner == 0 || status == 0)
     {
         return 0;
     }
+
     this->character_rows[(u8)this->records->slots[this->records->current]] = selection->index;
     return cycle_status_record(status, 0);
 }
@@ -5456,22 +6521,27 @@ s32 SkillTacticalWindow::func_slotd8()
 u8 SkillTacticalWindow::func_slotb4()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     this->character_rows[(u8)this->records->slots[this->records->current]] = this->selection->index;
     clear_tactical_choices(this);
     LibContainer* display = this->attachment->unk10;
+
     if (display != 0)
     {
         display->unkab = 0;
     }
+
     FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(this->func_slot44());
     associated->func_slot64();
     D_001B643C->callbacks->controller->func_00263C70(associated);
     this->active = 1;
     func_00351BE0(this);
+
     if (D_001B643C->callbacks->controller->func_00261150() == this)
     {
         s32 opacity = this->row_count ? 128 : 0;
@@ -5485,6 +6555,7 @@ u8 SkillTacticalWindow::func_slotb4()
         cursor->draw_alpha = 0.0f;
         cursor->needs_redraw = 1;
     }
+
     func_0023CEA0(this->selection, 0);
     return 2;
 }
@@ -5493,19 +6564,24 @@ u8 SkillTacticalWindow::func_slotbc()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     if (this->row_count == 0)
     {
         return 0;
     }
+
     this->character_rows[(u8)this->records->slots[this->records->current]] = selection->index;
+
     if (func_003523A0(this) == 3)
     {
         return 3;
     }
+
     return 1;
 }
 
@@ -5521,27 +6597,36 @@ u8 SkillTacticalWindow::func_slotb0()
     {
         return 0;
     }
+
     index = selection->unk114;
+
     if (this->row_count == 0)
     {
         return 3;
     }
+
     mode = this->row_modes[index];
+
     if (mode == SKILL_TACTICAL_ANTI_ATTACK_AURA || mode == SKILL_TACTICAL_DAMAGE_CONVERSION)
     {
         skill_open_tactical_details(this);
         display = this->parent->status->first_display;
+
         if (display != 0)
         {
             display->visible = 0;
         }
+
         display = this->parent->status->second_display;
+
         if (display != 0)
         {
             display->visible = 0;
         }
+
         return 1;
     }
+
     return 0;
 }
 
@@ -5552,12 +6637,15 @@ u8 SkillTacticalWindow::func_slotb0()
 void skill_refresh_tactical_rows(SkillTacticalWindow* object)
 {
     object->records = D_001B643C->callbacks->controller->selected_records();
+
     if (object->records == 0 || object->attachment == 0)
     {
         return;
     }
+
     clear_tactical_choices(object);
     collect_tactical_rows(object);
+
     if (object->row_count > 0)
     {
         for (s32 row = 0; row < object->row_count; row++)
@@ -5567,6 +6655,7 @@ void skill_refresh_tactical_rows(SkillTacticalWindow* object)
             lib_text_set_resource(label, source, object->row_modes[row] + SKILL_MSG_TACTICAL_NAME_BASE, 0);
             label->visible = object->active;
         }
+
         if (object->active != 0)
         {
             if (D_001B643C->callbacks->controller->func_00261150() == object)
@@ -5575,11 +6664,13 @@ void skill_refresh_tactical_rows(SkillTacticalWindow* object)
                 {
                     skill_refresh_tactical_detail_choices(object->parent->tactical_details);
                 }
+
                 if (object->attachment != 0)
                 {
                     if (object->row_count != 0)
                     {
                         LibContainer* display = object->attachment->unk10;
+
                         if (display != 0)
                         {
                             display->unkab = 1;
@@ -5588,12 +6679,14 @@ void skill_refresh_tactical_rows(SkillTacticalWindow* object)
                     else
                     {
                         LibContainer* display = object->attachment->unk10;
+
                         if (display != 0)
                         {
                             display->unkab = 0;
                         }
                     }
                 }
+
                 object->cursor->visible = 1;
                 s32 opacity = object->row_count ? 128 : 0;
                 LibWidget* cursor = object->cursor;
@@ -5613,6 +6706,7 @@ void skill_refresh_tactical_rows(SkillTacticalWindow* object)
         object->cursor->visible = 0;
         SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
         FieldClass15AE70* window = owner->window;
+
         if (object->row_count > 0)
         {
             window->func_slot60(object->row_modes[object->selection->unk114] + SKILL_MSG_TACTICAL_HELP_BASE);
@@ -5650,10 +6744,12 @@ s32 SkillTacticalWindow::func_slotf4(u32 associated)
     LibClass1746A0* clip = new (0) LibClass1746A0;
     LibClass1746A0* reset = new (0) LibClass1746A0;
     selection = new (0) FieldObject23CEA0;
+
     if (clip == 0 || reset == 0 || selection == 0)
     {
         return 0;
     }
+
     lib_scissor_init_rectangle(clip, 8.0f, 8.0f, 288.0f, 192.0f);
     lib_container_attach_widget(unk10, clip);
     func_0035CB20(reinterpret_cast<SkillList*>(&unk20), clip);
@@ -5696,14 +6792,17 @@ SkillTacticalWindow::SkillTacticalWindow()
     row_count = 0;
     records = D_001B643C->callbacks->controller->selected_records();
     clear_tactical_choices(this);
+
     for (s32 i = 0; i < 5; i++)
     {
         row_modes[i] = 0;
     }
+
     for (s32 i = 0; i < 12; i++)
     {
         character_rows[i] = 0;
     }
+
     active = 0;
 }
 
@@ -5718,6 +6817,7 @@ s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode)
     s32 sum = 0;
     s32 i;
     owner->cp_heading->visible = mode;
+
     if (mode != 0)
     {
         for (i = 0; i < 6; i++)
@@ -5726,6 +6826,7 @@ s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode)
             LibObject174F20* item = owner->cp_values[i];
             item->numeric_value = value;
             item->needs_redraw = 1;
+
             if (value == -1)
             {
                 owner->cp_values[i]->visible = 0;
@@ -5735,6 +6836,7 @@ s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode)
             {
                 owner->cp_values[i]->visible = 1;
             }
+
             sum += value;
         }
     }
@@ -5745,6 +6847,7 @@ s32 skill_refresh_battle_cp_displays(SkillBattleSetupWindow* owner, s32 mode)
             owner->cp_values[i]->visible = 0;
         }
     }
+
     return sum;
 }
 
@@ -5761,6 +6864,7 @@ void skill_set_battle_setup_visibility(SkillBattleSetupWindow* object, u32 flag,
     object->func_slot18(flag, 0x42);
     set_list_display_flags(&object->slot_separators, flag);
     set_list_display_flags(&object->skill_name_labels, flag);
+
     if (active != 0)
     {
         LibWidget* display = reinterpret_cast<LibWidget*>(object->display);
@@ -5773,6 +6877,7 @@ void skill_set_battle_setup_visibility(SkillBattleSetupWindow* object, u32 flag,
         display->draw_alpha = 0.0f;
         display->needs_redraw = 1;
     }
+
     func_0023CEA0(object->selection, active);
     skill_refresh_battle_cp_displays(object, flag);
 }
@@ -5785,9 +6890,11 @@ void SkillBattleSetupWindow::func_slot64()
     skill_refresh_battle_selection(this);
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner != 0 && status != 0)
     {
         s32 index = this->selection->unk114;
+
         if (this->skill_name_keys[index] == SKILL_MSG_NONE)
         {
             skill_refresh_mastery_display(status, -1, -1, -1);
@@ -5799,18 +6906,24 @@ void SkillBattleSetupWindow::func_slot64()
     }
 }
 
-/** @brief Show the equipped battle skill's description, or clear it for an empty slot. @param object Battle setup window. */
+/**
+ * @brief Show the equipped battle skill's description, or clear it for an empty slot.
+ * @param object Battle setup window.
+ */
 void skill_refresh_battle_message(SkillBattleSetupWindow* object)
 {
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     FieldObject23CEA0* selection = object->selection;
     FieldClass15AE70* window = owner->window;
+
     if (selection == 0 || owner == 0 || window == 0)
     {
         return;
     }
+
     s16 row = selection->unk114;
     s32 key = object->skill_name_keys[row];
+
     if (key == SKILL_MSG_NONE)
     {
         owner->message = 0;
@@ -5821,6 +6934,7 @@ void skill_refresh_battle_message(SkillBattleSetupWindow* object)
     {
         set_row_message(owner, row, key);
         s32 text = key + 0xC8;
+
         if (text >= SKILL_MSG_INVALID_DESCRIPTION)
         {
             window->func_slot60(SKILL_MSG_INVALID_DESCRIPTION);
@@ -5840,14 +6954,19 @@ void SkillBattleSetupWindow::func_slot5c()
     }
 }
 
-/** @brief Color the selected battle row and position its highlight. @param record Battle setup window. */
+/**
+ * @brief Color the selected battle row and position its highlight.
+ * @param record Battle setup window.
+ */
 void skill_refresh_battle_selection(SkillBattleSetupWindow* record)
 {
     s32 index;
+
     for (index = 0; index < 6; index++)
     {
         ListItem0035CCE0* slot_label = (ListItem0035CCE0*)func_0035CAE0(reinterpret_cast<SkillList*>(&record->unk2c), index)->value;
         ListItem0035CCE0* separator = (ListItem0035CCE0*)func_0035CAE0(reinterpret_cast<SkillList*>(&record->slot_separators), index)->value;
+
         if (index == record->selection->unk114)
         {
             LibTextExtent* metrics;
@@ -5872,32 +6991,40 @@ void skill_refresh_battle_selection(SkillBattleSetupWindow* record)
 s32 SkillBattleSetupWindow::func_slotdc()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner == 0 || status == 0)
     {
         return 0;
     }
+
     return cycle_status_record(status, 1);
 }
 
 s32 SkillBattleSetupWindow::func_slotd8()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner == 0 || status == 0)
     {
         return 0;
     }
+
     return cycle_status_record(status, 0);
 }
 
@@ -5905,30 +7032,37 @@ void SkillBattleSetupWindow::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (selection != 0 && selection->unk114 == 3)
     {
         func_0023CE70(reinterpret_cast<FieldObject23CEB0*>(selection), this->selection_x, this->selection_y + this->support_row_gap);
     }
+
     if (this->selection->process_direction(1) == 1)
     {
         return;
     }
+
     if (this->attachment != 0)
     {
         this->attachment->deactivate();
     }
+
     skill_refresh_battle_selection(this);
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner != 0)
     {
         if (status != 0)
         {
             s32 index = this->selection->unk114;
+
             if (this->skill_name_keys[index] == SKILL_MSG_NONE)
             {
                 skill_refresh_mastery_display(status, -1, -1, -1);
@@ -5945,30 +7079,37 @@ void SkillBattleSetupWindow::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (selection != 0 && selection->unk114 == 4)
     {
         func_0023CE70(reinterpret_cast<FieldObject23CEB0*>(selection), this->selection_x, this->selection_y);
     }
+
     if (this->selection->process_direction(0) == 1)
     {
         return;
     }
+
     if (this->attachment != 0)
     {
         this->attachment->deactivate();
     }
+
     skill_refresh_battle_selection(this);
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner != 0)
     {
         if (status != 0)
         {
             s32 index = this->selection->unk114;
+
             if (this->skill_name_keys[index] == SKILL_MSG_NONE)
             {
                 skill_refresh_mastery_display(status, -1, -1, -1);
@@ -5984,36 +7125,46 @@ void SkillBattleSetupWindow::func_slot68()
 u8 SkillBattleSetupWindow::func_slotb4()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     SkillController* owner = this->owner;
+
     if (owner != 0)
     {
         owner->message = 0;
         refresh_owner_message(owner);
     }
+
     for (s32 index = 0; index < 6; index++)
     {
         ListItem0035CCE0* slot_label = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
+
         if (slot_label != 0)
         {
             slot_label->unk94 = 0x808080;
             slot_label->unk3c = 1;
         }
+
         ListItem0035CCE0* separator = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->slot_separators), index)->value);
+
         if (separator != 0)
         {
             separator->unk94 = 0x808080;
             separator->unk3c = 1;
         }
     }
+
     SkillModeSelection* mode = static_cast<SkillModeSelection*>(this->func_slot4c());
+
     if (mode != 0 && this->selection != 0)
     {
         skill_set_selection_visibility(mode, 0, 0);
     }
+
     skill_set_battle_setup_visibility(this, 1, 0);
     FieldClass15AE70* associated = static_cast<FieldClass15AE70*>(this->func_slot44());
     associated->func_slot64();
@@ -6021,19 +7172,25 @@ u8 SkillBattleSetupWindow::func_slotb4()
     return 2;
 }
 
-/** @brief Open skill selection for the current battle slot and hide character navigation. @return Selection event one. */
+/**
+ * @brief Open skill selection for the current battle slot and hide character navigation.
+ * @return Selection event one.
+ */
 u8 SkillBattleSetupWindow::func_slotb0()
 {
     if (this->attachment != 0)
     {
         this->attachment->deactivate();
     }
+
     SkillModeSelection* mode = static_cast<SkillModeSelection*>(this->func_slot4c());
+
     if (mode != 0 && this->selection != 0)
     {
         skill_set_selection_visibility(mode, 1, 1);
         func_00350890(mode, this->selection->unk114);
     }
+
     FieldClass153E30* controller = D_001B643C->callbacks->controller;
     controller->func_00263C70(static_cast<FieldClass15AE70*>(this->func_slot4c()));
     FieldObject23CE80* grid = reinterpret_cast<FieldObject23CE80*>(this->selection);
@@ -6041,20 +7198,25 @@ u8 SkillBattleSetupWindow::func_slotb0()
     grid->unkAE = 1;
     s16 row = this->selection->unk114;
     u8 row_mode = 0;
+
     if (this->owner != 0)
     {
         if (row == 2 || row == 3)
         {
             row_mode = 1;
         }
+
         this->owner->row_mode = row_mode;
     }
+
     SkillCharacterWindow* status = this->owner->status;
+
     if (status->first_display != 0)
     {
         status->first_display->visible = 0;
         this->owner->status->second_display->visible = 0;
     }
+
     return 1;
 }
 
@@ -6065,6 +7227,7 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
         object->skill_name_keys[i] = SKILL_MSG_NONE;
         object->cp_costs[i] = -1;
     }
+
     s32 sum = 0;
     s32 character = object->record_selection->slots[object->record_selection->current];
     s32 saved_index = -1;
@@ -6080,10 +7243,12 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
     s32 cp_cost = 0;
     s32 minor_fury = 0;
     s32 major_damage_scale = 0;
+
     for (s32 i = 0; i <= 5; i++)
     {
         label = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&object->skill_name_labels), i)->value);
         saved_index = battle_skill_index(record, i);
+
         if (saved_index == 0)
         {
             object->skill_name_keys[i] = SKILL_MSG_NONE;
@@ -6104,6 +7269,7 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
         {
             func_4095C0(skill_id, entry, record, &minor_mp, &minor_hp, &cp_cost, &minor_fury, &major_damage_scale, 0, 0, 0);
             object->skill_name_keys[i] = skill_id + SKILL_MSG_NAME_BASE;
+
             switch (i)
             {
             case 0:
@@ -6117,6 +7283,7 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
                 lib_text_set_resource(label, object->func_slot54(), object->skill_name_keys[i], 0);
                 break;
             }
+
             if (label != 0)
             {
                 label->draw_scale = 0.9f;
@@ -6126,6 +7293,7 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
                 label->draw_scale = 0.9f * scale;
                 label->needs_redraw = 1;
             }
+
             object->skill_levels[i] = level;
             object->mastery_values[i] = mastery;
             object->next_level_remaining[i] = remaining;
@@ -6133,17 +7301,22 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
             sum += cp_cost;
         }
     }
+
     skill_refresh_battle_cp_displays(object, object->visible);
+
     if (object->visible != 0)
     {
         SkillCharacterWindow* status = static_cast<SkillController*>(D_001B643C->callbacks->controller)->status;
+
         if (object->selection_active != 0)
         {
             SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
             SkillCharacterWindow* owner_status = owner->status;
+
             if (owner != 0 && owner_status != 0)
             {
                 s32 index = object->selection->unk114;
+
                 if (object->skill_name_keys[index] == SKILL_MSG_NONE)
                 {
                     skill_refresh_mastery_display(owner_status, -1, -1, -1);
@@ -6153,6 +7326,7 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
                     skill_refresh_mastery_display(owner_status, object->skill_levels[index], object->mastery_values[index], object->next_level_remaining[index]);
                 }
             }
+
             refresh_battle_cp_values(status, sum);
         }
         else
@@ -6161,20 +7335,25 @@ s32 skill_refresh_battle_skill_rows(SkillBattleSetupWindow* object)
             skill_refresh_mastery_display(status, -1, -1, -1);
         }
     }
+
     return 1;
 }
 
 s32 func_003547C0(SkillBattleSetupWindow* object)
 {
     s32 key;
+
     for (key = 0x1780; key < 0x1786; key++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
+
         if (text == 0)
         {
             return 0;
         }
+
         s32 index = key - 0x1780;
+
         if (index < 4)
         {
             s32 source = static_cast<s32>(object->func_slot54());
@@ -6185,12 +7364,15 @@ s32 func_003547C0(SkillBattleSetupWindow* object)
             s32 source = static_cast<s32>(object->func_slot54());
             text->init_resource_rectangle(object->row_x - 30.0f, 4.0f + ((object->row_y + (object->support_row_gap + object->row_spacing * (float)index)) - 1.0f), 0.0f, 0.0f, source, index + 0x1780, 0);
         }
+
         lib_container_attach_widget(object->unk10, text);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->unk2c), text);
     }
+
     for (s32 index = 0; index < 6; index++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
+
         if (index < 4)
         {
             s32 source = static_cast<s32>(object->func_slot54());
@@ -6201,36 +7383,45 @@ s32 func_003547C0(SkillBattleSetupWindow* object)
             s32 source = static_cast<s32>(object->func_slot54());
             text->init_resource_rectangle(shifted_position(object->row_x, 21.0f), -4.0f + (object->row_y + (object->support_row_gap + object->row_spacing * (float)index)), 0.0f, 0.0f, source, 0x1796, 0);
         }
+
         lib_container_attach_widget(object->unk10, text);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->slot_separators), text);
         text->visible = 0;
     }
+
     s32 resource = 0;
+
     for (s32 index = 0; index < 4; index++)
     {
         if (index >= 2)
         {
             resource = 1;
         }
+
         ItemCreationClass174C40* image = new (0) ItemCreationClass174C40;
         lib_indexed_resource_init(image, object->row_x - 32.0f, (object->row_y + (float)index * object->row_spacing) - 4.0f, resource + 32);
         image->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(object->unk10, image);
         func_0035C560(reinterpret_cast<SkillList*>(&object->unk5c), image);
     }
+
     for (s32 index = 0; index < 6; index++)
     {
         object->skill_name_keys[index] = SKILL_MSG_NONE;
         object->cp_costs[index] = -1;
     }
+
     for (s32 index = 0; index < 6; index++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
+
         if (text == 0)
         {
             return 0;
         }
+
         object->skill_name_keys[index] = SKILL_MSG_NONE;
+
         if (index < 4)
         {
             s32 key = object->skill_name_keys[index];
@@ -6243,30 +7434,39 @@ s32 func_003547C0(SkillBattleSetupWindow* object)
             s32 source = static_cast<s32>(object->func_slot54());
             text->init_resource_rectangle(shifted_position(object->row_x, 34.0f), object->row_y + (object->support_row_gap + object->row_spacing * (float)index), 0.0f, 0.0f, source, key, 0);
         }
+
         text->unk88 = -1.0f;
         text->needs_redraw = 1;
         text->set_scale(0.9f, 0.9f);
         lib_container_attach_widget(object->unk10, text);
         func_0035C9D0(reinterpret_cast<SkillList*>(&object->skill_name_labels), text);
     }
+
     return skill_refresh_battle_skill_rows(object);
 }
 
-/** @brief Create the battle slot displays, selection grid, and status attachment. @param associated Full resource source word. @return One on success, or zero on allocation or setup failure. */
+/**
+ * @brief Create the battle slot displays, selection grid, and status attachment.
+ * @param associated Full resource source word.
+ * @return One on success, or zero on allocation or setup failure.
+ */
 s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
 {
     if (this->owner == 0)
     {
         return 0;
     }
+
     this->FieldClass15AE70::func_slot10(associated, 16.0f, 176.0f, 16);
     ItemCreationClass1746A0* clip = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* reset_clip = new (0) ItemCreationClass1746A0;
     this->selection = new (0) FieldObject23CEA0;
+
     if (clip == 0 || reset_clip == 0 || this->selection == 0)
     {
         return 0;
     }
+
     this->row_x = 44.0f;
     this->row_y = 24.0f;
     this->row_spacing = 28.0f;
@@ -6285,10 +7485,12 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
     heading->needs_redraw = 1;
     lib_container_attach_widget(this->unk10, this->cp_heading);
     LibTextExtent* bounds = lib_text_measure_bounds(this->cp_heading);
+
     for (s32 row = 0; row < 6; row++)
     {
         this->cp_values[row] = new (0) LibObject174F20;
         float y;
+
         if (row < 4)
         {
             y = 3.0f + (this->row_y + this->row_spacing * (float)row);
@@ -6297,6 +7499,7 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
         {
             y = 3.0f + (this->row_y + (this->support_row_gap + this->row_spacing * (float)row));
         }
+
         s32 resource = (s32)this->func_slot54();
         lib_numeric_widget_init_rectangle(this->cp_values[row], 0, resource, 1,
                                           cp_x, y, bounds->width, 19.2f);
@@ -6313,13 +7516,16 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
         value->needs_redraw = 1;
         lib_container_attach_widget(this->unk10, this->cp_values[row]);
     }
+
     lib_scissor_init_rectangle(clip, 8.0f, 8.0f, this->clip_width, 192.0f);
     lib_container_attach_widget(this->unk10, clip);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), clip);
+
     if ((u8)func_003547C0(this) == 0)
     {
         return 0;
     }
+
     lib_scissor_init_reset(reset_clip, 1);
     lib_container_attach_widget(this->unk10, reset_clip);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), reset_clip);
@@ -6332,14 +7538,17 @@ s32 SkillBattleSetupWindow::func_slotf4(u32 associated)
     SkillStatusAttachment* attachment = new (0) SkillStatusAttachment;
     this->attachment = attachment;
     attachment = this->attachment;
+
     if (attachment == 0)
     {
         return 0;
     }
+
     if (attachment->initialize() == 0)
     {
         return 0;
     }
+
     this->attachment->set_codes_and_z(0, 9, 0.0f, this->unk10->unka4 + 0x20, 0);
     this->attachment->resource_source = associated;
     lib_queue_display_object(g_field_runtime, static_cast<LibCallbackTransform*>(this->attachment));
@@ -6371,6 +7580,7 @@ LibListReceiver::~LibListReceiver()
 SkillBattleSetupWindow::~SkillBattleSetupWindow()
 {
 }
+
 SkillBattleSetupWindow::SkillBattleSetupWindow(SkillController* controller)
 {
     attachment = 0;
@@ -6385,6 +7595,7 @@ SkillBattleSetupWindow::SkillBattleSetupWindow(SkillController* controller)
     display = 0;
     cp_heading = 0;
     clip_width = 258.0f;
+
     for (s32 index = 0; index < 6; index++)
     {
         skill_name_keys[index] = 0;
@@ -6394,6 +7605,7 @@ SkillBattleSetupWindow::SkillBattleSetupWindow(SkillController* controller)
         mastery_values[index] = -1;
         next_level_remaining[index] = -1;
     }
+
     visible = 0;
     selection_active = 0;
     owner = 0;
@@ -6403,17 +7615,22 @@ SkillBattleSetupWindow::SkillBattleSetupWindow(SkillController* controller)
 void SkillStatusSkillWindow::func_slot5c()
 {
     SkillController* controller = static_cast<SkillController*>(D_001B643C->callbacks->controller);
+
     if (controller != 0 && controller->func_00261150() != this)
     {
         return;
     }
+
     s32 row = this->selection->unk114;
+
     if (row == 2 || row == 3)
     {
         this->message->func_slot60(row + SKILL_MSG_STATUS_HELP_BASE);
         return;
     }
+
     s32 level = status_skill_level(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], row);
+
     if (level == 10)
     {
         g_field_runtime->message_arguments[0] = 0;
@@ -6423,6 +7640,7 @@ void SkillStatusSkillWindow::func_slot5c()
     {
         SkillCharacterEquipment* record = &static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current];
         s32 increase = 0;
+
         switch (row)
         {
         case 0:
@@ -6432,12 +7650,18 @@ void SkillStatusSkillWindow::func_slot5c()
             increase = func_4086D0(record, level + 1, 2);
             break;
         }
+
         g_field_runtime->message_arguments[0] = increase;
         this->message->func_slot60(this->selection->unk114 + SKILL_MSG_STATUS_HELP_BASE);
     }
 }
 
-/** @brief Set status-skill display visibility and selection activity. @param object Status-skill window. @param flag Full display flag word. @param active Nonzero to activate the selection grid. */
+/**
+ * @brief Set status-skill display visibility and selection activity.
+ * @param object Status-skill window.
+ * @param flag Full display flag word.
+ * @param active Nonzero to activate the selection grid.
+ */
 void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag, s32 active)
 {
     object->visible = flag;
@@ -6446,6 +7670,7 @@ void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag,
     object->next_level_heading->visible = flag;
     object->heading_separator->visible = flag;
     object->cursor->visible = flag;
+
     if (active != 0)
     {
         LibWidget* cursor = object->cursor;
@@ -6458,11 +7683,14 @@ void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag,
         cursor->draw_alpha = 0.0f;
         cursor->needs_redraw = 1;
     }
+
     func_0023CEA0(object->selection, active);
+
     if (active != 0)
     {
         object->message->func_slot60(SKILL_MSG_STATUS_HELP_BASE + object->selection->unk114);
     }
+
     if ((u8)flag == 0)
     {
         for (s32 index = 0; index < 4; index++)
@@ -6477,12 +7705,14 @@ void skill_set_status_skill_visibility(SkillStatusSkillWindow* object, u32 flag,
 void func_003559F0(SkillStatusSkillWindow* object)
 {
     s32 index;
+
     for (index = 0; index < 4; index++)
     {
         object->skill_levels[index]->visible = 0;
         object->next_level_costs[index]->visible = 0;
         object->max_level_labels[index]->visible = 0;
     }
+
     for (index = 0; index < 4; index++)
     {
         s32 level = status_skill_level(selected_equipment(object->records), index);
@@ -6492,6 +7722,7 @@ void func_003559F0(SkillStatusSkillWindow* object)
         value->numeric_value = level;
         value->needs_redraw = 1;
         object->skill_levels[index]->visible = object->visible;
+
         if (cost == -1)
         {
             object->next_level_costs[index]->visible = 0;
@@ -6512,17 +7743,21 @@ void SkillStatusSkillWindow::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (selection->process_direction(1) == 1)
     {
         return;
     }
+
     for (s32 index = 0; index < 4; index++)
     {
         LibTextWidget* item = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
+
         if (index == this->selection->unk114)
         {
             item->tint = 0x288080;
@@ -6542,17 +7777,21 @@ void SkillStatusSkillWindow::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (selection->process_direction(0) == 1)
     {
         return;
     }
+
     for (s32 index = 0; index < 4; index++)
     {
         LibTextWidget* item = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
+
         if (index == this->selection->unk114)
         {
             item->tint = 0x288080;
@@ -6571,48 +7810,59 @@ void SkillStatusSkillWindow::func_slot68()
 s32 SkillStatusSkillWindow::func_slotdc()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner == 0 || status == 0)
     {
         return 0;
     }
+
     return cycle_status_record(status, 1);
 }
 
 s32 SkillStatusSkillWindow::func_slotd8()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     SkillCharacterWindow* status = owner->status;
+
     if (owner == 0 || status == 0)
     {
         return 0;
     }
+
     return cycle_status_record(status, 0);
 }
 
 u8 SkillStatusSkillWindow::func_slotb4()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     for (s32 index = 0; index < 4; index++)
     {
         LibTextWidget* item = static_cast<LibTextWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
         item->tint = 0x808080;
         item->needs_redraw = 1;
     }
+
     skill_set_status_skill_visibility(this, 1, 0);
     static_cast<FieldClass15AE70*>(this->func_slot44())->func_slot64();
     FieldClass153E30* controller = D_001B643C->callbacks->controller;
@@ -6623,23 +7873,28 @@ u8 SkillStatusSkillWindow::func_slotb4()
 u8 SkillStatusSkillWindow::func_slotb0()
 {
     bool inactive = this->selection->LibMovementState::arrived ? false : true;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     s16 row = this->selection->unk114;
     s32 level = status_skill_level(&static_cast<SkillCharacterEquipment*>(this->records->unk04)[this->records->current], row);
     s32 cost = func_4087A0(row + 1, level, 0);
     s32 sp = character_sp(selected_equipment(this->records));
+
     if (cost == -1)
     {
         return 3;
     }
+
     if (level == 10)
     {
         LibTextWidget* label = this->max_level_labels[row];
         label->visible = 1;
     }
+
     if (cost <= sp)
     {
         sp -= cost;
@@ -6648,11 +7903,13 @@ u8 SkillStatusSkillWindow::func_slotb0()
         SkillCharacterWindow* status = this->status;
         set_cost_value(status->sp_value, character_sp(selected_equipment(status->selection)));
         SkillCharacterEquipment* record = selected_equipment(this->records);
+
         switch (row)
         {
         case 0:
         {
             s32 increase = func_4086D0(record, level + 1, 1);
+
             if (increase != 0)
             {
                 s32 base = character_base_hp(selected_stats(this->records));
@@ -6660,11 +7917,13 @@ u8 SkillStatusSkillWindow::func_slotb0()
                 set_character_base_hp(selected_stats(this->records), base + increase);
                 set_character_max_hp(selected_stats(this->records), max + increase);
             }
+
             break;
         }
         case 1:
         {
             s32 increase = func_4086D0(record, level + 1, 2);
+
             if (increase != 0)
             {
                 s32 base = character_base_mp(selected_stats(this->records));
@@ -6672,13 +7931,16 @@ u8 SkillStatusSkillWindow::func_slotb0()
                 set_character_base_mp(selected_stats(this->records), base + increase);
                 set_character_max_mp(selected_stats(this->records), max + increase);
             }
+
             break;
         }
         }
+
         func_003559F0(this);
         resident_sound_play(g_sound, 0x12, 0, 0, 127, 64, 0);
         return 0;
     }
+
     return 3;
 }
 
@@ -6689,20 +7951,25 @@ s32 skill_set_character_mp(SkillCharacterStats* record, s32 value)
         add_character_flags(record, 1);
         return 0;
     }
+
     value = clamp_character_stat(record, value);
     s32 max_mp = record->encoded_max_mp ^ SKILL_FLAG_ENCODING_MASK;
+
     if (value > max_mp)
     {
         value = max_mp;
     }
+
     if (value == 0)
     {
         add_character_flags(record, 1);
     }
+
     if (value != 0 && (record->encoded_hp ^ SKILL_FLAG_ENCODING_MASK) != 0)
     {
         mask_character_flags(record, ~1);
     }
+
     record->encoded_mp = value ^ SKILL_FLAG_ENCODING_MASK;
     record->mp_checksum = (record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt;
     return value;
@@ -6725,20 +7992,25 @@ s32 skill_set_character_hp(SkillCharacterStats* record, s32 value)
         add_character_flags(record, 1);
         return 0;
     }
+
     value = clamp_character_stat(record, value);
     s32 max_hp = record->encoded_max_hp ^ SKILL_FLAG_ENCODING_MASK;
+
     if (value > max_hp)
     {
         value = max_hp;
     }
+
     if (value == 0)
     {
         add_character_flags(record, 1);
     }
+
     if (value != 0 && (record->encoded_mp ^ SKILL_FLAG_ENCODING_MASK) != 0)
     {
         mask_character_flags(record, ~1);
     }
+
     record->encoded_hp = value ^ SKILL_FLAG_ENCODING_MASK;
     record->hp_checksum = (record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt;
     return value;
@@ -6775,10 +8047,12 @@ s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object)
     for (s32 key = 0x1779; key < 0x177F; key++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
+
         if (text == 0)
         {
             return 0;
         }
+
         switch (key)
         {
         case 0x1779:
@@ -6802,16 +8076,21 @@ s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object)
         default:
             return 0;
         }
+
         lib_container_attach_widget(object->unk10, text);
     }
+
     object->heading_separator = new (0) LibClass172870;
+
     if (object->heading_separator == 0)
     {
         return 0;
     }
+
     lib_marker_init_rectangle(object->heading_separator, 16.0f, 42.0f, 272.0f, 3.25f);
     lib_container_attach_widget(object->unk10, object->heading_separator);
     skill_ensure_status_skill_levels(object);
+
     for (s32 index = 0; index < 4; index++)
     {
         LibObject174F20* level = new (0) LibObject174F20;
@@ -6819,6 +8098,7 @@ s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object)
         lib_container_attach_widget(object->unk10, level);
         object->skill_levels[index] = level;
     }
+
     for (s32 index = 0; index < 4; index++)
     {
         LibObject174F20* cost = new (0) LibObject174F20;
@@ -6831,12 +8111,14 @@ s32 skill_create_status_skill_rows(SkillStatusSkillWindow* object)
         object->max_level_labels[index]->set_tint(0x508050);
         lib_container_attach_widget(object->unk10, object->max_level_labels[index]);
         object->max_level_labels[index]->visible = 0;
+
         if (value == -1)
         {
             object->next_level_costs[index]->visible = 0;
             object->max_level_labels[index]->visible = 1;
         }
     }
+
     return 1;
 }
 
@@ -6847,17 +8129,21 @@ s32 SkillStatusSkillWindow::func_slotf4(u32 associated)
     ItemCreationClass1746A0* clip = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* reset_clip = new (0) ItemCreationClass1746A0;
     this->selection = new (0) FieldObject23CEA0;
+
     if (clip == 0 || reset_clip == 0 || this->selection == 0 || this->records == 0)
     {
         return 0;
     }
+
     lib_scissor_init_rectangle(clip, 8.0f, 8.0f, 288.0f, 192.0f);
     lib_container_attach_widget(this->unk10, clip);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), clip);
+
     if ((u8)skill_create_status_skill_rows(this) == 0)
     {
         return 0;
     }
+
     lib_scissor_init_reset(reset_clip, 1);
     lib_container_attach_widget(this->unk10, reset_clip);
     func_0035CB20(reinterpret_cast<SkillList*>(&this->unk20), reset_clip);
@@ -6892,6 +8178,7 @@ SkillStatusSkillWindow::SkillStatusSkillWindow()
     heading_separator = 0;
     cursor = 0;
     visible = 0;
+
     for (s32 i = 0; i < 4; i++)
     {
         skill_levels[i] = 0;
@@ -6904,10 +8191,12 @@ s32 SkillStatusMessageWindow::func_slotf4(u32 associated)
 {
     func_002CE8D0(reinterpret_cast<FieldObjectCE8D0*>(this), associated, 16.0f, 176.0f, 0x11);
     LibPanel* widget = new (0) LibPanel;
+
     if (widget == 0)
     {
         return 0;
     }
+
     lib_panel_init_rectangle(widget, 0, 0.0f, 0.0f, 304.0f, 208.0f, 88.0f);
     func_0035CBB0(reinterpret_cast<SkillList*>(&this->unk14), widget);
     lib_container_attach_widget(this->unk10, widget);
@@ -6938,6 +8227,7 @@ void skill_refresh_mastery_display(SkillCharacterWindow* owner, s32 level, s32 m
         item->needs_redraw = 1;
         owner->mastery_values[1]->visible = 1;
     }
+
     if (level == -1)
     {
         owner->mastery_values[0]->visible = 0;
@@ -6949,6 +8239,7 @@ void skill_refresh_mastery_display(SkillCharacterWindow* owner, s32 level, s32 m
         item->needs_redraw = 1;
         owner->mastery_values[0]->visible = 1;
     }
+
     if (remaining == -1)
     {
         owner->mastery_values[2]->visible = 0;
@@ -6972,6 +8263,7 @@ void skill_refresh_mastery_display(SkillCharacterWindow* owner, s32 level, s32 m
 void SkillCharacterWindow::func_slot5c()
 {
     SkillCharacterWindow* record = this;
+
     if (record->changed == 1)
     {
         if (record->selection->active == 1)
@@ -6999,9 +8291,11 @@ void func_00358200(SkillCharacterWindow* record)
     item = record->sp_value;
     item->numeric_value = value;
     item->needs_redraw = 1;
+
     if (record->selection != 0)
     {
         detail = &static_cast<SkillCharacterEquipment*>(record->selection->unk04)[record->selection->current];
+
         if (detail != 0)
         {
             key = detail->checksum_salt;
@@ -7019,28 +8313,36 @@ void func_00358310(SkillCharacterWindow* object)
     {
         u16 code = object->selection->slots[object->selection->current];
         s32 selected = 0;
+
         for (s32 i = 0; i < 8; i++)
         {
             LibWidget* icon = object->icons[i];
+
             if (icon != 0)
             {
                 icon->visible = 0;
             }
         }
+
         for (s32 i = 0; i < 8; i++)
         {
             if (code == object->codes[i])
             {
                 break;
             }
+
             selected++;
         }
+
         LibWidget* icon = object->icons[selected];
+
         if (icon != 0)
         {
             icon->visible = 1;
         }
+
         SkillController* record = object->owner;
+
         if (record != 0)
         {
             FieldRecordSelection* selection = object->selection;
@@ -7054,7 +8356,12 @@ void func_00358310(SkillCharacterWindow* object)
     }
 }
 
-/** @brief Read a character slot code. @param selection Character record selection. @param index Slot index. @return Slot code. */
+/**
+ * @brief Read a character slot code.
+ * @param selection Character record selection.
+ * @param index Slot index.
+ * @return Slot code.
+ */
 static inline u16 selection_slot(FieldRecordSelection* selection, s16 index)
 {
     return selection->slots[index];
@@ -7166,14 +8473,17 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
     value->horizontal_align = 2;
     value->needs_redraw = 1;
     this->available_cp_value->visible = 0;
+
     if (this->selection->count > 1)
     {
         ItemCreationClass174C40* left = new (0) ItemCreationClass174C40;
         ItemCreationClass174C40* right = new (0) ItemCreationClass174C40;
+
         if (left == 0 || right == 0)
         {
             return 0;
         }
+
         lib_indexed_resource_init(left, 104.0f, 8.0f, 10);
         lib_indexed_resource_init(right, 360.0f, 8.0f, 11);
         left->set_scale(1.0f, 1.0f);
@@ -7183,10 +8493,13 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
         this->first_display = left;
         this->second_display = right;
     }
+
     u8 hidden = 1;
+
     for (s32 index = 0; index < 8; index++)
     {
         s32 code = selection_slot(this->selection, index);
+
         if (code != 0)
         {
             this->codes[index] = code;
@@ -7196,6 +8509,7 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
             this->icons[index]->unkcc = resource;
             this->icons[index]->unkd0 = code;
             this->icons[index]->func_002D6440(20.0f, 14.0f, record);
+
             if (hidden)
             {
                 hidden = 0;
@@ -7205,11 +8519,14 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
             {
                 this->icons[index]->visible = 1;
             }
+
             lib_container_attach_widget(this->unk10, this->icons[index]);
         }
     }
+
     this->active = 1;
     SkillController* owner = this->owner;
+
     if (owner != 0)
     {
         FieldRecordSelection* selection = this->selection;
@@ -7221,6 +8538,7 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
         owner->detail = detail;
         owner->code = code;
     }
+
     func_00358310(this);
     this->sp_label->visible = 0;
     this->sp_value->visible = 0;
@@ -7241,6 +8559,7 @@ s32 SkillCharacterWindow::func_slotf4(u32 associated)
 SkillCharacterWindow::~SkillCharacterWindow()
 {
 }
+
 SkillCharacterWindow::SkillCharacterWindow(SkillController* controller)
 {
     selection = 0;
@@ -7262,11 +8581,13 @@ SkillCharacterWindow::SkillCharacterWindow(SkillController* controller)
     assigned_cp_value = 0;
     cp_separator = 0;
     available_cp_value = 0;
+
     for (s32 index = 0; index < 8; index++)
     {
         icons[index] = 0;
         codes[index] = 0;
     }
+
     active = 0;
     first_display = 0;
     second_display = 0;
@@ -7291,22 +8612,28 @@ void SkillSecondarySelection::func_slot5c()
     {
         return;
     }
+
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->state != 1)
     {
         return;
     }
+
     s32 key = this->code + SKILL_MSG_BATTLE_SETUP_HELP;
     FieldClass15AE70* window = static_cast<FieldClass15AE70*>(D_001B643C->callbacks->controller->func_00263C90());
     window->func_slot60(key);
     s16 selected = this->code;
+
     for (s32 index = 0; index <= 2; index++)
     {
         ListItem0035CCE0* item = static_cast<ListItem0035CCE0*>(func_0035CAE0(reinterpret_cast<SkillList*>(&this->unk2c), index)->value);
+
         if (index == selected)
         {
             item->unk94 = 0x288080;
@@ -7320,6 +8647,7 @@ void SkillSecondarySelection::func_slot5c()
             item->unk3c = 1;
         }
     }
+
     this->state = 0;
 }
 
@@ -7327,7 +8655,10 @@ void FieldClass15AE70::func_slot60(s32 key)
 {
 }
 
-/** @brief Return the alternate associated object. @return Stored object. */
+/**
+ * @brief Return the alternate associated object.
+ * @return Stored object.
+ */
 void* FieldClass153E30::func_00263C90()
 {
     return unk24;
@@ -7339,11 +8670,14 @@ s32 SkillSecondarySelection::func_slotdc()
     {
         return 0;
     }
+
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     return cycle_status_record(this->status, 1);
 }
 
@@ -7353,22 +8687,28 @@ s32 SkillSecondarySelection::func_slotd8()
     {
         return 0;
     }
+
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     return cycle_status_record(this->status, 0);
 }
 
 u8 SkillSecondarySelection::func_slotb4()
 {
     FieldSlotRecordOwner1C* loader = D_001B643C->loader;
+
     if (loader == 0)
     {
         return 0;
     }
+
     u8 ready = loader->unk2d != 0;
+
     if (ready == 1)
     {
         this->set_state(1, 0x80);
@@ -7376,38 +8716,46 @@ u8 SkillSecondarySelection::func_slotb4()
     else
     {
         SkillGridChoice* choice = new (0) SkillGridChoice;
+
         if (choice == 0)
         {
             return 0;
         }
+
         choice->func_slot10(this->func_slot54(), 192.0f, 160.0f, 5);
         choice->func_slot40(this);
         D_001B643C->callbacks->controller->add_child(choice);
         D_001B643C->callbacks->controller->func_00263C70(choice);
     }
+
     return 2;
 }
 
 u8 SkillSecondarySelection::func_slotb0()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     u16 code = this->selection->unk114;
     SkillController* selected_owner = this->owner;
     selected_owner->selected = code;
     func_0035AF00(selected_owner, selected_owner->selected, 1);
+
     switch (code)
     {
     case 1:
     {
         func_003559F0(this->status_skills);
         SkillStatusSkillWindow* window = this->status_skills;
+
         for (s32 index = 0; index < 4; index++)
         {
             LibDrawWidget* item = static_cast<LibDrawWidget*>(func_0035CAE0(reinterpret_cast<SkillList*>(&window->unk2c), index)->value);
+
             if (index == window->selection->unk114)
             {
                 item->tint = 0x288080;
@@ -7421,6 +8769,7 @@ u8 SkillSecondarySelection::func_slotb0()
                 item->needs_redraw = 1;
             }
         }
+
         skill_set_status_skill_visibility(this->status_skills, 1, 1);
         skill_set_battle_setup_visibility(this->status_rows, 0, 0);
         SkillTacticalWindow* query = this->mode_query;
@@ -7441,9 +8790,11 @@ u8 SkillSecondarySelection::func_slotb0()
         SkillBattleSetupWindow* window = this->status_rows;
         SkillController* owner = static_cast<SkillController*>(controller);
         SkillCharacterWindow* status = owner->status;
+
         if (owner != 0 && status != 0)
         {
             s32 index = window->selection->unk114;
+
             if (window->skill_name_keys[index] == SKILL_MSG_NONE)
             {
                 skill_refresh_mastery_display(status, -1, -1, -1);
@@ -7453,6 +8804,7 @@ u8 SkillSecondarySelection::func_slotb0()
                 skill_refresh_mastery_display(status, window->skill_levels[index], window->mastery_values[index], window->next_level_remaining[index]);
             }
         }
+
         skill_set_battle_setup_visibility(this->status_rows, 1, 1);
         skill_set_status_skill_visibility(this->status_skills, 0, 0);
         SkillTacticalWindow* query = this->mode_query;
@@ -7468,17 +8820,21 @@ u8 SkillSecondarySelection::func_slotb0()
     {
         this->owner->func_00263C70(this->mode_query);
         skill_refresh_tactical_rows(this->mode_query);
+
         if (this->owner->tactical_details != 0)
         {
             skill_refresh_tactical_detail_choices(this->owner->tactical_details);
         }
+
         func_00351BE0(this->mode_query);
         SkillTacticalWindow* query = this->mode_query;
+
         if (query->attachment != 0)
         {
             if (query->row_count != 0)
             {
                 LibContainer* display = query->attachment->unk10;
+
                 if (display != 0)
                 {
                     display->unkab = 1;
@@ -7487,12 +8843,14 @@ u8 SkillSecondarySelection::func_slotb0()
             else
             {
                 LibContainer* display = query->attachment->unk10;
+
                 if (display != 0)
                 {
                     display->unkab = 0;
                 }
             }
         }
+
         query = this->mode_query;
         query->active = 1;
         func_00351BE0(query);
@@ -7504,6 +8862,7 @@ u8 SkillSecondarySelection::func_slotb0()
         query = this->mode_query;
         SkillController* owner = static_cast<SkillController*>(controller);
         FieldClass15AE70* window = owner->window;
+
         if (query->row_count > 0)
         {
             window->func_slot60(query->row_modes[query->selection->unk114] + SKILL_MSG_TACTICAL_HELP_BASE);
@@ -7512,9 +8871,11 @@ u8 SkillSecondarySelection::func_slotb0()
         {
             window->func_slot60(SKILL_MSG_BLANK);
         }
+
         break;
     }
     }
+
     FieldObject23CE80* selection = reinterpret_cast<FieldObject23CE80*>(this->selection);
     selection->unkE0 = 64.0f;
     selection->unkAE = 1;
@@ -7527,16 +8888,20 @@ void SkillSecondarySelection::func_slot6c()
     {
         return;
     }
+
     if (this->selection->process_direction(1) == 1)
     {
         return;
     }
+
     this->previous = this->code;
     this->code = this->selection->unk114;
+
     if (this->previous == this->code)
     {
         return;
     }
+
     this->direction = 1;
     this->state = 1;
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
@@ -7549,16 +8914,20 @@ void SkillSecondarySelection::func_slot68()
     {
         return;
     }
+
     if (this->selection->process_direction(0) == 1)
     {
         return;
     }
+
     this->previous = this->code;
     this->code = this->selection->unk114;
+
     if (this->previous == this->code)
     {
         return;
     }
+
     this->direction = 0;
     this->state = 1;
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
@@ -7574,10 +8943,12 @@ s32 SkillSecondarySelection::func_slotf4(u32 associated)
     LibTextWidget* second = new (0) LibTextWidget;
     LibTextWidget* third = new (0) LibTextWidget;
     this->selection = new (0) FieldObject23CEA0;
+
     if (this->owner == 0 || panel == 0 || first == 0 || second == 0 || third == 0 || this->selection == 0)
     {
         return 0;
     }
+
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 200.0f, 104.0f, 88.0f);
     func_0035CBB0(reinterpret_cast<SkillList*>(&this->unk14), panel);
     lib_container_attach_widget(this->unk10, panel);
@@ -7633,6 +9004,7 @@ void SkillHelpWindow::func_slot5c()
     float y = help_text->unk18.unk04;
     float z = help_text->unk18.unk08;
     float w = help_text->unk18.unk0c;
+
     if (this->scrolling == 0)
     {
         help_text->unk18.unk00 = this->text_start_x;
@@ -7641,20 +9013,25 @@ void SkillHelpWindow::func_slot5c()
         help_text->unk18.unk0c = w;
         help_text->needs_redraw = 1;
         this->scroll_delay_frames++;
+
         if (!((float)this->scroll_delay_frames <= 120.0f))
         {
             this->scroll_delay_frames = 0;
             this->scrolling = 1;
         }
+
         return;
     }
+
     {
         float clip_left = this->clip_left;
         x -= 108.0f * g_frame_seconds;
+
         if (x < clip_left - (float)this->text_width)
         {
             x = 2.0f + (clip_left + this->clip_width);
         }
+
         help_text->unk18.unk00 = x;
         help_text->unk18.unk04 = y;
         help_text->unk18.unk08 = z;
@@ -7682,6 +9059,7 @@ s32 SkillHelpWindow::func_slotf4(u32 associated)
     LibTextWidget* first = new (0) LibTextWidget;
     LibTextWidget* second = new (0) LibTextWidget;
     s32 menu_kind = this->menu_kind;
+
     if (menu_kind == 1)
     {
         first->init_resource_rectangle(16.0f, 5.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_SYMBOLOGY_TITLE, 0);
@@ -7698,6 +9076,7 @@ s32 SkillHelpWindow::func_slotf4(u32 associated)
         first->init_resource_rectangle(16.0f, 5.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_TITLE, 0);
         second->init_resource_rectangle(36.0f, 40.0f, 0.0f, 0.0f, (s32)associated, SKILL_MSG_SKILL, 0);
     }
+
     lib_container_attach_widget(this->unk10, first);
     func_0035C9D0(reinterpret_cast<SkillList*>(&this->unk2c), first);
     second->set_scale(0.65f, 0.65f);
@@ -7706,10 +9085,12 @@ s32 SkillHelpWindow::func_slotf4(u32 associated)
     this->help_text = new (0) LibTextWidget;
     ItemCreationClass1746A0* first_frame = new (0) ItemCreationClass1746A0;
     ItemCreationClass1746A0* second_frame = new (0) ItemCreationClass1746A0;
+
     if (this->help_text == 0 || first_frame == 0 || second_frame == 0)
     {
         return 0;
     }
+
     this->title_width = lib_text_measure_bounds(first)->width;
     this->clip_left = 18.0f + this->title_width;
     this->clip_width = 640.0f - (16.0f + shifted_position(this->clip_left, 32.0f));
@@ -7810,23 +9191,29 @@ void func_0035AF00(SkillController* owner, s32 code, u8 enabled)
         s32 value = skill_refresh_battle_cp_displays(owner->status_rows, 1);
         SkillCharacterWindow* status = owner->status;
         LibObject174F20* item = status->assigned_cp_value;
+
         if (item != 0)
         {
             if (value < 0)
             {
                 value = 0;
             }
+
             item->numeric_value = value;
             item->needs_redraw = 1;
         }
+
         FieldRecordSelection* selection = status->selection;
+
         if (selection != 0)
         {
             SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(selection->unk04)[selection->current];
+
             if (detail != 0)
             {
                 u32 key = detail->checksum_salt;
                 s32 value;
+
                 if (detail->sp_cp_checksum != (((detail->encoded_cp + key) ^ detail->encoded_sp) ^ key))
                 {
                     value = 0;
@@ -7835,11 +9222,13 @@ void func_0035AF00(SkillController* owner, s32 code, u8 enabled)
                 {
                     value = detail->encoded_cp ^ 0x7E93;
                 }
+
                 LibObject174F20* item = status->available_cp_value;
                 item->numeric_value = value;
                 item->needs_redraw = 1;
             }
         }
+
         status_primary_group(owner->status, 0);
         status_detail_group(owner->status, 1);
         SkillTacticalWindow* query = owner->mode_query;
@@ -7867,14 +9256,17 @@ void func_0035AF00(SkillController* owner, s32 code, u8 enabled)
         break;
     }
     }
+
     if (enabled == 1)
     {
         FieldClass15AE70* window = owner->window;
+
         if (window != 0)
         {
             window->func_slot60(SKILL_MSG_BLANK);
         }
     }
+
     skill_refresh_mastery_display(owner->status, -1, -1, -1);
 }
 
@@ -7882,15 +9274,19 @@ void func_0035AF00(SkillController* owner, s32 code, u8 enabled)
 void SkillController::func_slot5c()
 {
     SkillStatusAttachment* attachment = this->status_attachment;
+
     if (attachment != 0)
     {
         attachment->destroy();
     }
+
     s32 resource = this->resource_slot;
+
     if (resource != 0)
     {
         lib_release_resource_slot(g_field_runtime, resource);
     }
+
     lib_object_detach_owner(&static_cast<FieldClass153E30&>(*this));
     this->func_001DD7B0();
 }
@@ -7902,7 +9298,10 @@ void SkillController::func_001DD7B0()
     resident_enqueue_object(g_resident_release_queues, entry);
 }
 
-/** @brief Create the skill or symbology windows and attach their navigation links. @return One. */
+/**
+ * @brief Create the skill or symbology windows and attach their navigation links.
+ * @return One.
+ */
 s32 SkillController::init_windows()
 {
     SkillResourceWindow* resource = new (0) SkillResourceWindow;
@@ -7915,6 +9314,7 @@ s32 SkillController::init_windows()
     FieldClass153E30::add_child(message);
     unk24 = message;
     message->func_slot40(resource);
+
     if (menu_kind == 1)
     {
         SkillSymbologyCharacterWindow* list = new (0) SkillSymbologyCharacterWindow;
@@ -7988,10 +9388,12 @@ s32 SkillController::init_windows()
         FieldClass153E30::add_child(tactical_prompt);
         tactical_prompt->func_slot40(mode_query);
         LibContainer* attachment = tactical_prompt->unk10;
+
         if (attachment != 0)
         {
             attachment->LibCallbackTransform::unkab = 0;
         }
+
         mode_query->func_slot40(secondary);
         mode_query->func_slot48(tactical_details);
         mode_query->attachment = tactical_prompt;
@@ -8024,42 +9426,55 @@ s32 SkillController::init_windows()
         skill_select_tactical_detail_mode(tactical_details, SKILL_TACTICAL_DETAILS_HIDDEN);
         unk20 = secondary;
     }
+
     state = 6;
     windows_initialized = 1;
     return 1;
 }
 
-/** @brief Load a completed menu resource and create its windows. @param buffer Completed resource buffer. @return Setup result, or zero without a buffer. */
+/**
+ * @brief Load a completed menu resource and create its windows.
+ * @param buffer Completed resource buffer.
+ * @return Setup result, or zero without a buffer.
+ */
 s32 SkillController::on_resource_loaded(void* buffer)
 {
     if (buffer == 0)
     {
         return 0;
     }
+
     SkillAlignedResource* aligned = aligned_skill_resource(buffer);
     s32 size = aligned->size + 128;
     void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
+
     if (memory != 0)
     {
         resident_heap_release(memory);
         resident_exchange_allocation_heap(heap);
     }
+
     resource_slot = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
     return init_windows();
 }
 
-/** @brief Allocate and initialize the character record selection. @return One on success, or zero on failure. */
+/**
+ * @brief Allocate and initialize the character record selection.
+ * @return One on success, or zero on failure.
+ */
 u8 SkillController::func_00264110()
 {
     FieldRecordSelection* selection = new (0) FieldRecordSelection;
     this->record_selection = selection;
+
     if (this->record_selection == 0)
     {
         return 0;
     }
+
     return (u8)func_0028E3D0(this->record_selection) != 0;
 }
 
@@ -8102,7 +9517,10 @@ SkillController::SkillController()
     message = 0;
 }
 
-/** @brief Leave the default DMA notification hook unchanged. @param value Unused notification value. */
+/**
+ * @brief Leave the default DMA notification hook unchanged.
+ * @param value Unused notification value.
+ */
 void LibDmaCallbacks::on_packet_notify(u32 value)
 {
 }
@@ -8124,21 +9542,32 @@ void SkillCoordinateSelector::render()
 {
 }
 
-/** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
+/**
+ * @brief Copy the translation vector and mark the transform dirty.
+ * @param value Translation vector.
+ */
 void LibOrientedTransform::copy_translation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&translation, value);
 }
 
-/** @brief Copy the translation vector and mark the transform dirty. @param value Translation vector. */
+/**
+ * @brief Copy the translation vector and mark the transform dirty.
+ * @param value Translation vector.
+ */
 void LibOrientedTransform::set_translation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&translation, value);
 }
 
-/** @brief Set the translation coordinates and mark the transform dirty. @param x Horizontal translation. @param y Vertical translation. @param z Third translation component. */
+/**
+ * @brief Set the translation coordinates and mark the transform dirty.
+ * @param x Horizontal translation.
+ * @param y Vertical translation.
+ * @param z Third translation component.
+ */
 void LibOrientedTransform::set_translation(float x, float y, float z)
 {
     transform_dirty = 1;
@@ -8148,7 +9577,13 @@ void LibOrientedTransform::set_translation(float x, float y, float z)
     translation.w = 1.0f;
 }
 
-/** @brief Set all quaternion components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. @param w Fourth component. */
+/**
+ * @brief Set all quaternion components and mark the transform dirty.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ * @param w Fourth component.
+ */
 void LibOrientedTransform::set_orientation_components(float x, float y, float z, float w)
 {
     transform_dirty = 1;
@@ -8158,35 +9593,52 @@ void LibOrientedTransform::set_orientation_components(float x, float y, float z,
     orientation.w = w;
 }
 
-/** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
+/**
+ * @brief Copy the quaternion and mark the transform dirty.
+ * @param value Quaternion components.
+ */
 void LibOrientedTransform::copy_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
 }
 
-/** @brief Copy the quaternion and mark the transform dirty. @param value Quaternion components. */
+/**
+ * @brief Copy the quaternion and mark the transform dirty.
+ * @param value Quaternion components.
+ */
 void LibOrientedTransform::set_orientation(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&orientation, value);
 }
 
-/** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
+/**
+ * @brief Update the rotation state and mark the transform dirty.
+ * @param value Rotation components.
+ */
 void LibOrientedTransform::convert_rotation(const LibVector4* value)
 {
     transform_dirty = 1;
     func_4CE4C0(&orientation, value);
 }
 
-/** @brief Update the rotation state and mark the transform dirty. @param value Rotation components. */
+/**
+ * @brief Update the rotation state and mark the transform dirty.
+ * @param value Rotation components.
+ */
 void LibOrientedTransform::set_rotation_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     func_4CE4C0(&orientation, value);
 }
 
-/** @brief Set the rotation components and mark the transform dirty. @param x First component. @param y Second component. @param z Third component. */
+/**
+ * @brief Set the rotation components and mark the transform dirty.
+ * @param x First component.
+ * @param y Second component.
+ * @param z Third component.
+ */
 void LibOrientedTransform::set_rotation(float x, float y, float z)
 {
     transform_dirty = 1;
@@ -8198,21 +9650,32 @@ void LibOrientedTransform::set_rotation(float x, float y, float z)
     func_4CE4C0(&orientation, &value);
 }
 
-/** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
+/**
+ * @brief Copy the scale vector and mark the transform dirty.
+ * @param value Scale vector.
+ */
 void LibOrientedTransform::copy_scale(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
 }
 
-/** @brief Copy the scale vector and mark the transform dirty. @param value Scale vector. */
+/**
+ * @brief Copy the scale vector and mark the transform dirty.
+ * @param value Scale vector.
+ */
 void LibOrientedTransform::set_scale_vector(const LibVector4* value)
 {
     transform_dirty = 1;
     copy_vector(&scale, value);
 }
 
-/** @brief Set the scale coordinates and mark the transform dirty. @param x First scale component. @param y Second scale component. @param z Third scale component. */
+/**
+ * @brief Set the scale coordinates and mark the transform dirty.
+ * @param x First scale component.
+ * @param y Second scale component.
+ * @param z Third scale component.
+ */
 void LibOrientedTransform::set_scale(float x, float y, float z)
 {
     transform_dirty = 1;
@@ -8221,30 +9684,47 @@ void LibOrientedTransform::set_scale(float x, float y, float z)
     scale.z = z;
 }
 
-/** @brief Return the default output status. @param output Unused output object. @return Zero. */
+/**
+ * @brief Return the default output status.
+ * @param output Unused output object.
+ * @return Zero.
+ */
 s32 LibTransformOwner::get_box_cull_center(void* output)
 {
     return 0;
 }
 
-/** @brief Test whether the supplied value is negative. @param value Value to test. @param mode Unused mode. @return One if negative, otherwise zero. */
+/**
+ * @brief Test whether the supplied value is negative.
+ * @param value Value to test.
+ * @param mode Unused mode.
+ * @return One if negative, otherwise zero.
+ */
 s32 LibTransformOwner::set_fade_alpha(float value, float mode)
 {
     s32 result = 1;
+
     if (!(value < 0.0f))
     {
         result = 0;
     }
+
     return result;
 }
 
-/** @brief Return the default transform vector. @return Resident vector pointer. */
+/**
+ * @brief Return the default transform vector.
+ * @return Resident vector pointer.
+ */
 const LibVector4* LibTransformOwner::get_bounding_sphere()
 {
     return &g_default_bounding_sphere;
 }
 
-/** @brief Return the default transform receiver. @return Null. */
+/**
+ * @brief Return the default transform receiver.
+ * @return Null.
+ */
 LibTransformOwner* LibTransformOwner::clone()
 {
     return 0;
@@ -8255,31 +9735,46 @@ void LibTransformOwner::release_clone()
 {
 }
 
-/** @brief Store the alternate associated object. @param value Object to store. */
+/**
+ * @brief Store the alternate associated object.
+ * @param value Object to store.
+ */
 void FieldClass153E30::func_00263C80(void* value)
 {
     unk24 = value;
 }
 
-/** @brief Store the receiver state byte. @param value State byte. */
+/**
+ * @brief Store the receiver state byte.
+ * @param value State byte.
+ */
 void FieldClass153E30::func_00263CA0(s8 value)
 {
     unk28 = value;
 }
 
-/** @brief Return the receiver state byte. @return State byte. */
+/**
+ * @brief Return the receiver state byte.
+ * @return State byte.
+ */
 s8 FieldClass153E30::func_00263CB0()
 {
     return unk28;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot60()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot64()
 {
     return 0;
@@ -8305,19 +9800,28 @@ void FieldClass153E30::func_slot78()
 {
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot7c()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot80()
 {
     return 0;
 }
 
-/** @brief Return the default receiver result. @return Zero. */
+/**
+ * @brief Return the default receiver result.
+ * @return Zero.
+ */
 s32 FieldClass153E30::func_slot84()
 {
     return 0;
@@ -8332,13 +9836,19 @@ s32 SkillController::get_default_list_kind()
     return 4;
 }
 
-/** @brief Report whether window setup finished. @return Setup flag. */
+/**
+ * @brief Report whether window setup finished.
+ * @return Setup flag.
+ */
 u8 SkillController::windows_ready()
 {
     return windows_initialized;
 }
 
-/** @brief Return the loaded resource slot. @return Resource slot. */
+/**
+ * @brief Return the loaded resource slot.
+ * @return Resource slot.
+ */
 u32 SkillController::get_resource_slot()
 {
     return resource_slot;
@@ -8347,15 +9857,18 @@ u32 SkillController::get_resource_slot()
 void func_0035C440(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         node->value = value;
         node->next = 0;
         SkillListNode* tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -8364,6 +9877,7 @@ void func_0035C440(SkillList* list, void* value)
 void func_0035C4D0(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         SkillListNode* current;
@@ -8372,11 +9886,13 @@ void func_0035C4D0(SkillList* list, void* value)
         node->next = 0;
         current = list->head;
         next = current->next;
+
         while (next != 0)
         {
             current = next;
             next = next->next;
         }
+
         current->next = node;
         list->count++;
     }
@@ -8385,6 +9901,7 @@ void func_0035C4D0(SkillList* list, void* value)
 void func_0035C560(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         SkillListNode* current;
@@ -8393,11 +9910,13 @@ void func_0035C560(SkillList* list, void* value)
         node->next = 0;
         current = list->head;
         next = current->next;
+
         while (next != 0)
         {
             current = next;
             next = next->next;
         }
+
         current->next = node;
         list->count++;
     }
@@ -8406,6 +9925,7 @@ void func_0035C560(SkillList* list, void* value)
 void func_0035C5F0(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         SkillListNode* current;
@@ -8414,11 +9934,13 @@ void func_0035C5F0(SkillList* list, void* value)
         node->next = 0;
         current = list->head;
         next = current->next;
+
         while (next != 0)
         {
             current = next;
             next = next->next;
         }
+
         current->next = node;
         list->count++;
     }
@@ -8427,10 +9949,12 @@ void func_0035C5F0(SkillList* list, void* value)
 SkillList183C48::SkillList183C48()
 {
     head = new (0) SkillListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -8438,6 +9962,7 @@ SkillList183C48::SkillList183C48()
 SkillList183C48::~SkillList183C48()
 {
     func_0035C810(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -8448,6 +9973,7 @@ SkillList183C48::~SkillList183C48()
 void func_0035C780(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         SkillListNode* current;
@@ -8456,11 +9982,13 @@ void func_0035C780(SkillList* list, void* value)
         node->next = 0;
         current = list->head;
         next = current->next;
+
         while (next != 0)
         {
             current = next;
             next = next->next;
         }
+
         current->next = node;
         list->count++;
     }
@@ -8469,16 +9997,19 @@ void func_0035C780(SkillList* list, void* value)
 void func_0035C810(SkillList183C48* record)
 {
     SkillListNode* node = record->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         SkillListNode* next = node->next;
         delete node;
         node = next;
     }
+
     record->head->next = 0;
     record->count = 0;
 }
@@ -8487,24 +10018,29 @@ SkillListNode* func_0035C890(SkillList* list, s32 index)
 {
     SkillListNode* node = list->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
 SkillList183C38::SkillList183C38()
 {
     head = new (0) SkillListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -8512,6 +10048,7 @@ SkillList183C38::SkillList183C38()
 SkillList183C38::~SkillList183C38()
 {
     func_0035CA60(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -8522,6 +10059,7 @@ SkillList183C38::~SkillList183C38()
 void func_0035C9D0(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         SkillListNode* current;
@@ -8530,11 +10068,13 @@ void func_0035C9D0(SkillList* list, void* value)
         node->next = 0;
         current = list->head;
         next = current->next;
+
         while (next != 0)
         {
             current = next;
             next = next->next;
         }
+
         current->next = node;
         list->count++;
     }
@@ -8543,16 +10083,19 @@ void func_0035C9D0(SkillList* list, void* value)
 void func_0035CA60(SkillList183C38* record)
 {
     SkillListNode* node = record->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         SkillListNode* next = node->next;
         delete node;
         node = next;
     }
+
     record->head->next = 0;
     record->count = 0;
 }
@@ -8561,20 +10104,24 @@ SkillListNode* func_0035CAE0(SkillList* list, s32 index)
 {
     SkillListNode* node = list->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
 void func_0035CB20(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         SkillListNode* current;
@@ -8583,11 +10130,13 @@ void func_0035CB20(SkillList* list, void* value)
         node->next = 0;
         current = list->head;
         next = current->next;
+
         while (next != 0)
         {
             current = next;
             next = next->next;
         }
+
         current->next = node;
         list->count++;
     }
@@ -8596,6 +10145,7 @@ void func_0035CB20(SkillList* list, void* value)
 void func_0035CBB0(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         SkillListNode* current;
@@ -8604,11 +10154,13 @@ void func_0035CBB0(SkillList* list, void* value)
         node->next = 0;
         current = list->head;
         next = current->next;
+
         while (next != 0)
         {
             current = next;
             next = next->next;
         }
+
         current->next = node;
         list->count++;
     }
@@ -8624,14 +10176,19 @@ void func_0035CBB0(SkillList* list, void* value)
 
 
 
-/** @brief Color the choice text entries for the selected index. @param selected Selected grid index. */
+/**
+ * @brief Color the choice text entries for the selected index.
+ * @param selected Selected grid index.
+ */
 void SkillGridChoice::func_slotf4(s16 selected)
 {
     s32 index = 0;
     SkillListNode* node = reinterpret_cast<SkillListNode*>(unk2c.head->next);
+
     while (node != 0)
     {
         LibTextWidget* item = static_cast<LibTextWidget*>(node->value);
+
         if (index == selected)
         {
             item->tint = 0x288080;
@@ -8642,6 +10199,7 @@ void SkillGridChoice::func_slotf4(s16 selected)
             item->tint = 0x808080;
             item->needs_redraw = 1;
         }
+
         node = node->next;
         index++;
     }
@@ -8684,6 +10242,7 @@ u8 SkillGridChoice::func_slotb0()
 {
     u8 result = 0;
     this->selected = this->selection->unk114;
+
     if (this->selected == 0)
     {
         this->set_state(0xFF, 0x80);
@@ -8692,7 +10251,9 @@ u8 SkillGridChoice::func_slotb0()
     {
         result = this->func_slotb4();
     }
+
     u8 status;
+
     if (result == 0)
     {
         status = 1;
@@ -8701,6 +10262,7 @@ u8 SkillGridChoice::func_slotb0()
     {
         status = 2;
     }
+
     return status;
 }
 
@@ -8708,20 +10270,24 @@ s32 SkillGridChoice::func_slot10(u32 associated, float x, float y, s32 code)
 {
     FieldClass15AE70::func_slot10(associated, x, y, code);
     LibPanel* panel = new (0) LibPanel;
+
     if (panel == 0)
     {
         return 0;
     }
+
     lib_panel_init_rectangle(panel, 1, 0.0f, 0.0f, 256.0f, 160.0f, 88.0f);
     lib_container_attach_widget(unk10, panel);
     func_0035CBB0(reinterpret_cast<SkillList*>(&unk14), panel);
     LibTextWidget* first = new (0) LibTextWidget;
     LibTextWidget* second = new (0) LibTextWidget;
     LibTextWidget* title = new (0) LibTextWidget;
+
     if (first == 0 || second == 0 || title == 0)
     {
         return 0;
     }
+
     lib_text_init_resource_rectangle(first, static_cast<s32>(associated), 0x7E8, 0, 92.0f, 84.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(second, static_cast<s32>(associated), 0x7E9, 0, 92.0f, 120.0f, 0.0f, 0.0f);
     lib_text_init_resource_rectangle(title, static_cast<s32>(associated), SKILL_MSG_CONFIRM_END_SETUP, 0, 16.0f, 16.0f, 0.0f, 0.0f);
@@ -8732,10 +10298,12 @@ s32 SkillGridChoice::func_slot10(u32 associated, float x, float y, s32 code)
     func_0035C9D0(reinterpret_cast<SkillList*>(&unk2c), second);
     func_0035C9D0(reinterpret_cast<SkillList*>(&unk2c), title);
     selection = new (0) FieldObject23CEA0;
+
     if (selection == 0)
     {
         return 0;
     }
+
     selection->func_0023CE80(1, 2);
     selection->func_0023CE60(0.0f, 36.0f);
     selection->unkF2 = 0;
@@ -8760,24 +10328,30 @@ void SkillHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
     {
         return;
     }
+
     unk63 = 0;
+
     if (first == 0)
     {
         return;
     }
+
     if (second != 0)
     {
         geometry_dirty = 1;
     }
+
     if (third == 0)
     {
         return;
     }
+
     if (geometry_dirty != 0)
     {
         SkillHpMpGaugeDrawer::unk00 = 0xFFFFFE - (SkillHpMpGaugeDrawer::unk04->unka0 << 4);
         func_002BC4F0(0, SkillHpMpGaugeDrawer::unk00, 128.0f);
     }
+
     unk63 = 1;
 }
 
@@ -8802,6 +10376,7 @@ void SkillHpMpGauge::on_packet_complete(u32 value)
 void SkillHpMpGauge::render()
 {
     dma_pending = 1;
+
     if (unk08 != 0)
     {
         resident_packet_submit(unk08, static_cast<LibDmaCallbacks*>(this));
@@ -8981,6 +10556,7 @@ void SkillHpMpGaugeDrawer::build_packet()
 void SkillHpMpGaugeDrawer::func_002BC4F0(u32 first, u32 depth, float value)
 {
     ResidentPacket* packet = unk08;
+
     if (packet != 0)
     {
         packet->unk08 = packet->unk00 + 64;
@@ -8996,6 +10572,7 @@ void SkillOptionsWindow::func_slot5c()
     for (s32 row = 0; row < 8; ++row)
     {
         s16 index = row;
+
         if (records->slots[index] > 0)
         {
             SkillCharacterStats* entry = &reinterpret_cast<SkillCharacterStats*>(records->records)[index];
@@ -9007,6 +10584,7 @@ void SkillOptionsWindow::func_slot5c()
             LibObject174F20* mp_display = mp_values[row];
             mp_display->numeric_value = mp;
             mp_display->needs_redraw = 1;
+
             if (row < 3)
             {
                 u32 max_hp = character_max_hp(entry);
@@ -9018,13 +10596,16 @@ void SkillOptionsWindow::func_slot5c()
                 max_mp_display->numeric_value = max_mp;
                 max_mp_display->needs_redraw = 1;
             }
+
             badges[row][0]->visible = character_flags(entry) & 2;
             badges[row][1]->visible = character_flags(entry) & 8;
             badges[row][2]->visible = character_flags(entry) & 4;
+
             if (character_flags(entry) & 5)
             {
                 indicators[row]->visible = 0;
                 badges[row][3]->visible = 1;
+
                 if (row < 3)
                 {
                     LibStringLabel* label = labels[row];
@@ -9036,6 +10617,7 @@ void SkillOptionsWindow::func_slot5c()
             {
                 indicators[row]->visible = 1;
                 badges[row][3]->visible = 0;
+
                 if (row < 3)
                 {
                     LibStringLabel* label = labels[row];
@@ -9051,13 +10633,16 @@ void SkillOptionsWindow::func_slot70()
 {
     SkillCoordinateSelector* child = this->child;
     bool inactive = !child->LibMovementState::arrived;
+
     if (!inactive)
     {
         s32 index = child->selected - 1;
+
         if (index < 0)
         {
             index = 7;
         }
+
         func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(child), index, 0);
     }
 }
@@ -9066,13 +10651,16 @@ void SkillOptionsWindow::func_slot74()
 {
     SkillCoordinateSelector* child = this->child;
     bool inactive = !child->LibMovementState::arrived;
+
     if (!inactive)
     {
         s32 index = child->selected + 1;
+
         if (index >= 8)
         {
             index = 0;
         }
+
         func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(child), index, 0);
     }
 }
@@ -9081,9 +10669,11 @@ void SkillOptionsWindow::func_slot6c()
 {
     SkillCoordinateSelector* child = this->child;
     bool inactive = !child->LibMovementState::arrived;
+
     if (!inactive)
     {
         s32 index = child->selected;
+
         switch (index)
         {
         case 0:
@@ -9098,6 +10688,7 @@ void SkillOptionsWindow::func_slot6c()
         default:
             return;
         }
+
         func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(child), index, 0);
     }
 }
@@ -9106,9 +10697,11 @@ void SkillOptionsWindow::func_slot68()
 {
     SkillCoordinateSelector* child = this->child;
     bool inactive = !child->LibMovementState::arrived;
+
     if (!inactive)
     {
         s32 index = child->selected;
+
         switch (index)
         {
         case 3:
@@ -9129,6 +10722,7 @@ void SkillOptionsWindow::func_slot68()
         default:
             return;
         }
+
         func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(child), index, 0);
     }
 }
@@ -9142,34 +10736,45 @@ u8 SkillOptionsWindow::func_slotb4()
     this->child->visible = 0;
     this->unk10->LibCallbackTransform::unkab = 0;
     SkillListNode* node = this->nested.head->next;
+
     while (node != 0)
     {
         static_cast<LibCallbackTransform*>(node->value)->unkab = 0;
         node = node->next;
     }
+
     node = this->nested.head->next;
+
     while (node != 0)
     {
         static_cast<LibCallbackTransform*>(node->value)->func_0044B100(1, 1, 1);
         node = node->next;
     }
+
     FieldClass15AE70* window = static_cast<FieldClass15AE70*>(this->func_slot44());
     window->func_slot64();
     D_001B643C->callbacks->controller->func_00263C70(window);
     SkillSymbologyCharacterWindow* symbology_character = static_cast<SkillController*>(D_001B643C->callbacks->controller)->symbology_character;
+
     if (symbology_character->left_character_icon != 0)
     {
         symbology_character->left_character_icon->visible = 1;
     }
+
     if (symbology_character->right_character_icon != 0)
     {
         symbology_character->right_character_icon->visible = 1;
     }
+
     static_cast<FieldClass15AE70*>(D_001B643C->callbacks->controller->func_00263C90())->func_slot60(SKILL_MSG_SYMBOLOGY_ENABLE_HELP);
     return 2;
 }
 
-/** @brief Store a clamped current HP and update the defeated flag, or flag a corrupted record. @param record Character stats. @param value Requested HP. */
+/**
+ * @brief Store a clamped current HP and update the defeated flag, or flag a corrupted record.
+ * @param record Character stats.
+ * @param value Requested HP.
+ */
 static inline void set_character_current_hp(SkillCharacterStats* record, s32 value)
 {
     if (record->hp_checksum != ((record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt))
@@ -9177,25 +10782,34 @@ static inline void set_character_current_hp(SkillCharacterStats* record, s32 val
         skill_add_character_flags(record, 1);
         return;
     }
+
     value = skill_clamp_character_hp(record, value);
     s32 max_hp = record->encoded_max_hp ^ SKILL_FLAG_ENCODING_MASK;
+
     if (value > max_hp)
     {
         value = max_hp;
     }
+
     if (value == 0)
     {
         skill_add_character_flags(record, 1);
     }
+
     if (value != 0 && (record->encoded_mp ^ SKILL_FLAG_ENCODING_MASK) != 0)
     {
         skill_mask_character_flags(record, ~1);
     }
+
     record->encoded_hp = value ^ SKILL_FLAG_ENCODING_MASK;
     record->hp_checksum = (record->encoded_base_hp + record->encoded_max_hp) ^ record->encoded_hp ^ record->checksum_salt;
 }
 
-/** @brief Store a clamped current MP and update the defeated flag, or flag a corrupted record. @param record Character stats. @param value Requested MP. */
+/**
+ * @brief Store a clamped current MP and update the defeated flag, or flag a corrupted record.
+ * @param record Character stats.
+ * @param value Requested MP.
+ */
 static inline void set_character_current_mp(SkillCharacterStats* record, s32 value)
 {
     if (record->mp_checksum != ((record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt))
@@ -9203,25 +10817,34 @@ static inline void set_character_current_mp(SkillCharacterStats* record, s32 val
         skill_add_character_flags(record, 1);
         return;
     }
+
     value = skill_clamp_character_mp(record, value);
     s32 max_mp = record->encoded_max_mp ^ SKILL_FLAG_ENCODING_MASK;
+
     if (value > max_mp)
     {
         value = max_mp;
     }
+
     if (value == 0)
     {
         skill_add_character_flags(record, 1);
     }
+
     if (value != 0 && (record->encoded_hp ^ SKILL_FLAG_ENCODING_MASK) != 0)
     {
         skill_mask_character_flags(record, ~1);
     }
+
     record->encoded_mp = value ^ SKILL_FLAG_ENCODING_MASK;
     record->mp_checksum = (record->encoded_base_mp + record->encoded_max_mp) ^ record->encoded_mp ^ record->checksum_salt;
 }
 
-/** @brief Replace the protected flags when their checksum is valid. @param record Character stats. @param flags New decoded flags. */
+/**
+ * @brief Replace the protected flags when their checksum is valid.
+ * @param record Character stats.
+ * @param flags New decoded flags.
+ */
 static inline void set_character_flags(SkillCharacterStats* record, u32 flags)
 {
     if (record->flags_experience_checksum == (((record->encoded_flags + record->checksum_salt) ^ record->encoded_experience) ^ record->checksum_salt))
@@ -9231,7 +10854,12 @@ static inline void set_character_flags(SkillCharacterStats* record, u32 flags)
     }
 }
 
-/** @brief Locate a party member's protected stats. @param selection Character record selection. @param index Party slot. @return Stats record of that slot. */
+/**
+ * @brief Locate a party member's protected stats.
+ * @param selection Character record selection.
+ * @param index Party slot.
+ * @return Stats record of that slot.
+ */
 static inline SkillCharacterStats* member_stats(FieldRecordSelection* selection, s32 index)
 {
     return &reinterpret_cast<SkillCharacterStats*>(selection->records)[index];
@@ -9252,25 +10880,31 @@ u8 SkillOptionsWindow::func_slotb0()
     SkillCharacterEquipment* equipment = selected_equipment(this->records);
     s32 mp_cost = 0;
     func_4095C0(this->selected_kind, reinterpret_cast<FieldRecord*>(caster), equipment, &mp_cost, 0, 0, 0, 0, 0, 0, 0);
+
     if ((s32)character_mp(caster) <= mp_cost)
     {
         return 3;
     }
+
     s16 index = selected;
     bool changed = false;
+
     if (this->records->slots[index] > 0)
     {
         SkillCharacterStats* target = member_stats(this->records, index);
+
         switch (this->selected_kind)
         {
         case 18:
         case 3:
         {
             s32 power;
+
             if (func_408200(this->selected_kind, 0, this->selected_index, caster, &power, 0, 0, 0, 0, 0, 0) == 0)
             {
                 break;
             }
+
             if (this->selected_kind == 18)
             {
                 if (character_hp(target) != character_max_hp(target) && !(target->get_flags() & 5))
@@ -9278,14 +10912,18 @@ u8 SkillOptionsWindow::func_slotb0()
                     set_character_current_hp(target, character_hp(target) + power * (s32)character_max_hp(target) / 100);
                     changed = true;
                 }
+
                 break;
             }
+
             for (s32 row = 0; row < 8; row++)
             {
                 s16 member_index = row;
+
                 if (this->records->slots[member_index] > 0)
                 {
                     SkillCharacterStats* member = member_stats(this->records, member_index);
+
                     if (character_hp(member) != character_max_hp(member) && !(member->get_flags() & 5))
                     {
                         changed = true;
@@ -9293,14 +10931,17 @@ u8 SkillOptionsWindow::func_slotb0()
                     }
                 }
             }
+
             if (changed)
             {
                 for (s32 row = 0; row < 8; row++)
                 {
                     s16 member_index = row;
+
                     if (this->records->slots[member_index] > 0)
                     {
                         SkillCharacterStats* member = member_stats(this->records, member_index);
+
                         if (!(member->get_flags() & 5))
                         {
                             set_character_current_hp(member, character_hp(member) + power * (s32)character_max_hp(member) / 100);
@@ -9308,6 +10949,7 @@ u8 SkillOptionsWindow::func_slotb0()
                     }
                 }
             }
+
             break;
         }
         case 19:
@@ -9316,6 +10958,7 @@ u8 SkillOptionsWindow::func_slotb0()
                 set_character_flags(target, target->get_flags() ^ 8);
                 changed = true;
             }
+
             break;
         case 20:
             if (target->get_flags() & 0xE)
@@ -9324,16 +10967,20 @@ u8 SkillOptionsWindow::func_slotb0()
                 {
                     set_character_flags(target, target->get_flags() ^ 8);
                 }
+
                 if (target->get_flags() & 2)
                 {
                     set_character_flags(target, target->get_flags() ^ 2);
                 }
+
                 if (target->get_flags() & 4)
                 {
                     set_character_flags(target, target->get_flags() ^ 4);
                 }
+
                 changed = true;
             }
+
             break;
         case 27:
             if (target->get_flags() & 1)
@@ -9341,27 +10988,34 @@ u8 SkillOptionsWindow::func_slotb0()
                 set_character_flags(target, target->get_flags() ^ 1);
                 float ratio = (float)(this->selected_index - 1);
                 ratio = 0.1f + 0.045f * ratio;
+
                 if (ratio > 0.5f)
                 {
                     ratio = 0.5f;
                 }
+
                 s32 hp = (s32)((float)(s32)character_hp(target) + ratio * (float)(s32)character_max_hp(target));
                 s32 mp = (s32)((float)(s32)character_mp(target) + ratio * (float)(s32)character_max_mp(target));
+
                 if (hp <= 0)
                 {
                     hp = 1;
                 }
+
                 if (mp <= 0)
                 {
                     mp = 1;
                 }
+
                 set_character_current_hp(target, hp);
                 set_character_current_mp(target, mp);
                 changed = true;
             }
+
             break;
         }
     }
+
     if (changed)
     {
         set_character_current_mp(caster, character_mp(caster) - mp_cost);
@@ -9371,13 +11025,16 @@ u8 SkillOptionsWindow::func_slotb0()
     {
         resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
     }
+
     skill_refresh_symbology_character_markers(static_cast<SkillController*>(D_001B643C->callbacks->controller)->symbology_character);
     SkillListNode* node = this->nested.head->next;
+
     while (node != 0)
     {
         static_cast<LibCallbackTransform*>(node->value)->func_0044B100(1, 1, 1);
         node = node->next;
     }
+
     return 0;
 }
 
@@ -9416,13 +11073,16 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
     this->y = 216.0f;
     FieldClass15AE70::func_slot10(source, this->x, this->y, 15);
     this->child = new (0) SkillCoordinateSelector;
+
     if (this->child == 0)
     {
         return 0;
     }
+
     lib_moving_widget_init_position(this->child, 0.0f, 0.0f);
     lib_container_attach_widget(this->unk10, this->child);
     this->row_height = 128.0f;
+
     for (s32 row = 0; row < 8; row++)
     {
         float panel_y;
@@ -9437,6 +11097,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
         float value_height;
         float column_width;
         s32 column;
+
         if (row < 3)
         {
             column_width = 196.0f;
@@ -9449,12 +11110,14 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             column = row - 3;
             column_width = 118.0f;
         }
+
         LibPanel* panel = new (0) LibPanel;
         panel_x = 8.0f + column_width * (float)column;
         lib_panel_init_rectangle(panel, 1, panel_x, panel_y, 3.0f + column_width, 2.0f + this->row_height, 88.0f);
         lib_container_attach_widget(this->unk10, panel);
         hp_row_y = 50.0f + panel_y;
         mp_row_y = 78.0f + panel_y;
+
         if (row < 3)
         {
             value_x = 68.0f + panel_x;
@@ -9467,8 +11130,10 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             badge_x = 65.0f + panel_x;
             badge_y = 12.0f + panel_y;
         }
+
         s16 index = row;
         s8 slot = this->records->slots[index];
+
         if (slot > 0)
         {
             if (row < 3)
@@ -9479,6 +11144,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                                                        0);
                 lib_container_attach_widget(this->unk10, this->labels[row]);
                 this->labels[row]->set_scale(0.8f, 0.8f);
+
                 if (reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5)
                 {
                     this->labels[row]->set_tint(0x505080);
@@ -9488,7 +11154,9 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                     this->labels[row]->set_tint(0x808080);
                 }
             }
+
             this->hp_values[row] = new (0) LibObject174F20;
+
             if (row < 3)
             {
                 hp_y = 16.0f + hp_row_y;
@@ -9503,9 +11171,11 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 column_width = 56.0f;
                 this->hp_values[row]->init_numeric_resource_rectangle(40.0f + value_x, hp_y, column_width, value_height, 0, 1, 0);
             }
+
             this->hp_values[row]->set_scale(0.8f, 0.8f);
             set_cost_value(this->hp_values[row], character_hp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
             lib_container_attach_widget(this->unk10, this->hp_values[row]);
+
             if (row < 3)
             {
                 LibTextWidget* separator = new (0) LibTextWidget;
@@ -9518,7 +11188,9 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 set_cost_value(this->max_hp_values[row], character_max_hp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
                 lib_container_attach_widget(this->unk10, this->max_hp_values[row]);
             }
+
             this->mp_values[row] = new (0) LibObject174F20;
+
             if (row < 3)
             {
                 value_height = 16.0f + mp_row_y;
@@ -9529,9 +11201,11 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 value_height = 16.0f + mp_row_y;
                 this->mp_values[row]->init_numeric_resource_rectangle(40.0f + value_x, value_height, column_width, 0.0f, 1, 0, 0);
             }
+
             this->mp_values[row]->set_scale(0.8f, 0.8f);
             set_cost_value(this->mp_values[row], character_mp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
             lib_container_attach_widget(this->unk10, this->mp_values[row]);
+
             if (row < 3)
             {
                 LibTextWidget* separator = new (0) LibTextWidget;
@@ -9544,12 +11218,14 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 set_cost_value(this->max_mp_values[row], character_max_mp(&reinterpret_cast<SkillCharacterStats*>(this->records->records)[index]));
                 lib_container_attach_widget(this->unk10, this->max_mp_values[row]);
             }
+
             this->indicators[row] = new (0) ItemCreationOptionResourceDisplay;
             u8 character = slot;
             void* resource = field_get_aligned_allocation(D_001B643C->resources, character);
             FieldResourceRecord* record = field_find_resource_record(D_001B643C->resources, 4);
             this->indicators[row]->unkcc = resource;
             this->indicators[row]->unkd0 = character;
+
             if (row < 3)
             {
                 indicator_x = 14.0f + panel_x;
@@ -9568,6 +11244,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 indicator->unk50.unk30 = 0.65f;
                 indicator->needs_redraw = 1;
             }
+
             this->indicators[row]->visible = 0;
             lib_container_attach_widget(this->unk10, this->indicators[row]);
             resource = field_get_aligned_allocation(D_001B643C->resources, 0);
@@ -9590,6 +11267,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             badge->unk50.unk34 = 0.8f;
             badge->unk50.unk30 = 0.8f;
             badge->needs_redraw = 1;
+
             if (row < 3)
             {
                 this->badges[row][1]->func_002D6440(35.0f + badge_x, badge_y, record);
@@ -9598,6 +11276,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             {
                 this->badges[row][1]->func_002D6440(25.0f + badge_x, badge_y, record);
             }
+
             this->badges[row][1]->visible = 0;
             lib_container_attach_widget(this->unk10, this->badges[row][1]);
             record = field_find_resource_record(D_001B643C->resources, 38);
@@ -9608,6 +11287,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             badge->unk50.unk34 = 0.8f;
             badge->unk50.unk30 = 0.8f;
             badge->needs_redraw = 1;
+
             if (row < 3)
             {
                 this->badges[row][2]->func_002D6440(70.0f + badge_x, badge_y, record);
@@ -9616,6 +11296,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             {
                 this->badges[row][2]->func_002D6440(25.0f + badge_x, 30.0f + badge_y, record);
             }
+
             this->badges[row][2]->visible = 0;
             lib_container_attach_widget(this->unk10, this->badges[row][2]);
             resource = field_get_aligned_allocation(D_001B643C->resources, (u8)(slot + 0x30));
@@ -9623,6 +11304,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             this->badges[row][3] = new (0) ItemCreationOptionResourceDisplay;
             this->badges[row][3]->unkcc = resource;
             this->badges[row][3]->unkd0 = 0;
+
             if (row < 3)
             {
                 this->badges[row][3]->func_002D6440(indicator_x, 48.0f + panel_y, record);
@@ -9639,6 +11321,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 badge->unk50.unk30 = 0.65f;
                 badge->needs_redraw = 1;
             }
+
             this->badges[row][3]->visible = reinterpret_cast<SkillCharacterStats*>(this->records->records)[index].get_flags() & 5;
             lib_container_attach_widget(this->unk10, this->badges[row][3]);
             SkillHpMpGauge* gauge = new (0) SkillHpMpGauge;
@@ -9650,6 +11333,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             gauge->FieldClass159A70::unk24 = 0x800 + context->display_area.width / 2;
             gauge->FieldClass159A70::unk28 = 0x800 + context->display_area.height / 2;
             gauge->initialize(1, 0, 0, 0.0f, 0.0f, 0.0f);
+
             if (row < 3)
             {
                 gauge->origin.x = 22.0f + value_x;
@@ -9664,6 +11348,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
                 gauge->FieldClass159A70::unk0c = 80.0f;
                 gauge->FieldClass159A70::unk10 = 5.0f;
             }
+
             gauge->func_002BC370(0x80);
             gauge->FieldClass159A70::unk04 = this->unk10;
             lib_queue_display_object(g_field_runtime, gauge);
@@ -9676,6 +11361,7 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             empty->init_resource_rectangle(16.0f + panel_x, 10.0f + panel_y, 0.0f, 0.0f, source, 0x179E, 0);
             set_widget_rectangle(empty, panel_x, (panel_y + this->row_height / 2.0f) - 9.6f, column_width, 24.0f);
             empty->set_horizontal_align(1);
+
             if (row < 3)
             {
                 empty->set_scale(0.8f, 0.8f);
@@ -9684,9 +11370,11 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             {
                 empty->set_scale(0.8f * 0.8f, 0.8f * 0.8f);
             }
+
             empty->visible = 1;
             lib_container_attach_widget(this->unk10, empty);
         }
+
         if (row < 3)
         {
             append_selector_position(this->child, 14.0f + panel_x, 88.0f + panel_y);
@@ -9696,21 +11384,26 @@ s32 SkillOptionsWindow::func_slotf4(u32 associated)
             append_selector_position(this->child, 14.0f + panel_x, 47.0f + panel_y);
         }
     }
+
     func_0023B1D0(reinterpret_cast<FieldObject23B1D0*>(this->child), 0, 1);
     this->child->visible = 0;
     this->unk10->LibCallbackTransform::unkab = 0;
     SkillListNode* node = this->nested.head->next;
+
     while (node != 0)
     {
         static_cast<LibCallbackTransform*>(node->value)->unkab = 0;
         node = node->next;
     }
+
     node = this->nested.head->next;
+
     while (node != 0)
     {
         static_cast<LibCallbackTransform*>(node->value)->func_0044B100(1, 1, 1);
         node = node->next;
     }
+
     return 1;
 }
 
@@ -9722,12 +11415,14 @@ inline ItemCreationClass175030::~ItemCreationClass175030()
 void SkillOptionsWindow::func_slot0c()
 {
     SkillListNode* node = this->nested.head->next;
+
     while (node != 0)
     {
         LibListObject* display = (LibListObject*)node->value;
         display->destroy();
         node = node->next;
     }
+
     this->FieldClass15AE70::func_slot0c();
 }
 
@@ -9762,7 +11457,9 @@ void SkillSymbologyWindow::func_slot5c()
             item->unk18.unk04 = y;
             item->needs_redraw = 1;
         }
+
         shift -= 11;
+
         if (shift < 0)
         {
             shift = 0;
@@ -9780,12 +11477,15 @@ void SkillSymbologyWindow::func_slot5c()
             item->unk18.unk04 = y;
             item->needs_redraw = 1;
         }
+
         shift += 11;
+
         if (shift > 0)
         {
             shift = 0;
         }
     }
+
     LibListIndicator* indicator = scroll_indicator;
     indicator->extent = 100.0f * (14.0f / 30.0f);
     indicator->needs_redraw = 1;
@@ -9795,17 +11495,21 @@ void SkillSymbologyWindow::func_slot5c()
     FieldRecordSelection* current = records;
     SkillCharacterStats* stats = &reinterpret_cast<SkillCharacterStats*>(current->records)[current->current];
     SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(current->unk04)[current->current];
+
     for (s32 entry = 0; entry < 30; entry++)
     {
         spell_icons[entry]->visible = 0;
         spell_labels[entry]->visible = 0;
     }
+
     s32 skill_id, mastery, result_index, remainder;
+
     for (s32 row = 0; row < 14; row++)
     {
         s32 entry = position + row;
         s32 result = func_408EA0(equipment, records->slots[records->current], entry,
             &skill_id, &mastery, &result_index, &remainder, 1);
+
         if (result == 0 || entry == 29)
         {
             if (row == selected)
@@ -9819,10 +11523,12 @@ void SkillSymbologyWindow::func_slot5c()
             label->visible = 1;
             lib_text_set_resource(label, static_cast<s32>(static_cast<SkillController*>(D_001B643C->callbacks->controller)->get_resource_slot()),
                 skill_id + SKILL_MSG_NAME_BASE, 0);
+
             if (skill_id == 3 || skill_id == 18 || skill_id == 19 || skill_id == 20 || skill_id == 27)
             {
                 s32 mp_cost = 0;
                 func_4095C0(skill_id, reinterpret_cast<FieldRecord*>(stats), equipment, &mp_cost, 0, 0, 0, 0, 0, 0, 0);
+
                 if ((s32)character_mp(stats) <= mp_cost)
                 {
                     label->set_tint(0x505050);
@@ -9836,6 +11542,7 @@ void SkillSymbologyWindow::func_slot5c()
             {
                 label->set_tint(0x505050);
             }
+
             if (skill_id == 17)
             {
                 spell_icons[entry]->visible = 0;
@@ -9844,29 +11551,35 @@ void SkillSymbologyWindow::func_slot5c()
             {
                 spell_icons[entry]->visible = result == 1;
             }
+
             if (row == selected)
             {
                 cursor->unk3d = 1;
+
                 if (shift == 0)
                 {
                     cursor->func_0023B7E0(spell_labels[entry]);
                     // TODO: This is my guess at the shape. The original seems to read the label in two separate
                     // blocks here, and this always-true check is the only way I found to get that.
                     s32 colour = 0;
+
                     if (colour == 0)
                     {
                         colour = spell_labels[entry]->tint;
                     }
+
                     lib_marker_set_bright_color(cursor, colour);
                     func_0023B780(reinterpret_cast<FieldObject23B950*>(cursor));
                 }
             }
         }
     }
+
     if (shift != 0)
     {
         cursor->unk3d = 0;
     }
+
     FieldClass153E30* controller = D_001B643C->callbacks->controller;
     SkillController* owner = static_cast<SkillController*>(controller);
     s32 entry = position + selected;
@@ -9874,6 +11587,7 @@ void SkillSymbologyWindow::func_slot5c()
     FieldRecordSelection* current_records = static_cast<SkillController*>(controller)->selected_records();
     SkillCharacterEquipment* detail = &static_cast<SkillCharacterEquipment*>(current_records->unk04)[current_records->current];
     s32 selected_skill, selected_mastery, symbology_level, selected_remainder;
+
     if (func_408EA0(detail, character->selection->slots[character->selection->current], entry,
         &selected_skill, &selected_mastery, &symbology_level, &selected_remainder, 1) == 0 || entry == 29)
     {
@@ -9886,6 +11600,7 @@ void SkillSymbologyWindow::func_slot5c()
         display->needs_redraw = 1;
         character->symbology_level_value->visible = 1;
     }
+
     skill_refresh_symbology_help(owner->symbology_help, position + selected);
 }
 
@@ -9896,23 +11611,29 @@ void SkillSymbologyWindow::func_slot5c()
 s32 SkillSymbologyWindow::func_slotc4()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     if (this->shift == 0)
     {
         s32 old_position = this->position;
+
         if (old_position < 16)
         {
             s32 offset;
             s32 i;
             this->position += 14;
+
             if (this->position > 16)
             {
                 this->position = 16;
             }
+
             offset = ((this->position - old_position) / 2) * 33;
+
             for (i = 0; i < 30; i++)
             {
                 LibWidget* item = this->spell_labels[i];
@@ -9925,6 +11646,7 @@ s32 SkillSymbologyWindow::func_slotc4()
             }
         }
     }
+
     resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     return 0;
 }
@@ -9936,23 +11658,29 @@ s32 SkillSymbologyWindow::func_slotc4()
 s32 SkillSymbologyWindow::func_slotc0()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     if (this->shift == 0)
     {
         s32 old_position = this->position;
+
         if (old_position > 0)
         {
             s32 offset;
             s32 i;
             this->position -= 14;
+
             if (this->position < 0)
             {
                 this->position = 0;
             }
+
             offset = ((this->position - old_position) / 2) * 33;
+
             for (i = 0; i < 30; i++)
             {
                 LibWidget* item = this->spell_labels[i];
@@ -9965,6 +11693,7 @@ s32 SkillSymbologyWindow::func_slotc0()
             }
         }
     }
+
     resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
     return 0;
 }
@@ -9972,20 +11701,24 @@ s32 SkillSymbologyWindow::func_slotc0()
 void SkillSymbologyWindow::func_slot74()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->selected == 13)
     {
         if (this->position == 16)
         {
             return;
         }
+
         if (this->shift != 0)
         {
             return;
         }
+
         this->shift = -33;
         this->position += 2;
         this->selected = 12;
@@ -10001,20 +11734,24 @@ void SkillSymbologyWindow::func_slot74()
 void SkillSymbologyWindow::func_slot70()
 {
     u8 inactive = !this->selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->selected == 0)
     {
         if (this->position == 0)
         {
             return;
         }
+
         if (this->shift != 0)
         {
             return;
         }
+
         this->shift = 33;
         this->position -= 2;
         this->selected = 1;
@@ -10031,20 +11768,24 @@ void SkillSymbologyWindow::func_slot6c()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->selected == 12 || this->selected == 13)
     {
         if (this->shift != 0)
         {
             return;
         }
+
         if (this->position == 16)
         {
             return;
         }
+
         this->shift = -33;
         this->position += 2;
         resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
@@ -10060,20 +11801,24 @@ void SkillSymbologyWindow::func_slot68()
 {
     FieldObject23CEA0* selection = this->selection;
     u8 inactive = !selection->arrived;
+
     if (inactive == 1)
     {
         return;
     }
+
     if (this->selected == 0 || this->selected == 1)
     {
         if (this->shift != 0)
         {
             return;
         }
+
         if (this->position == 0)
         {
             return;
         }
+
         this->shift = 33;
         this->position -= 2;
         resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
@@ -10089,19 +11834,24 @@ s32 SkillSymbologyWindow::func_slotdc()
 {
     u8 inactive = !this->selection->arrived;
     SkillSymbologyCharacterWindow* character_window;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     character_window = this->character_window;
+
     if (character_window == 0)
     {
         return 0;
     }
+
     if (this->records->count < 2)
     {
         return 0;
     }
+
     return skill_cycle_symbology_character(character_window, 1);
 }
 
@@ -10109,19 +11859,24 @@ s32 SkillSymbologyWindow::func_slotd8()
 {
     u8 inactive = !this->selection->arrived;
     SkillSymbologyCharacterWindow* character_window;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     character_window = this->character_window;
+
     if (character_window == 0)
     {
         return 0;
     }
+
     if (this->records->count < 2)
     {
         return 0;
     }
+
     return skill_cycle_symbology_character(character_window, 0);
 }
 
@@ -10143,11 +11898,13 @@ static inline u32 symbology_states_checksum(const s16* states, s32 size)
 {
     u32 checksum = SKILL_TACTICAL_CHECKSUM_SEED;
     size /= 2;
+
     for (s32 entry = 0; entry < size; entry++)
     {
         checksum ^= *states++;
         checksum = checksum * 2 + 0x73;
     }
+
     return checksum;
 }
 
@@ -10179,14 +11936,17 @@ u8 SkillSymbologyWindow::func_slotbc()
     SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(records->unk04)[current];
     s32 selected = this->position + this->selected;
     s32 enabled = func_408EA0(equipment, records->slots[records->current], selected, &skill_id, &mastery, &result_index, &remaining, 1);
+
     if (enabled == 0 || selected == 29)
     {
         return 3;
     }
+
     if (skill_id == 17)
     {
         return 3;
     }
+
     if (enabled == 1)
     {
         set_symbology_state(equipment, selected, -(mastery + 1));
@@ -10195,17 +11955,21 @@ u8 SkillSymbologyWindow::func_slotbc()
     {
         set_symbology_state(equipment, selected, mastery + 1);
     }
+
     return 1;
 }
 
 u8 SkillSymbologyWindow::func_slotb4()
 {
     FieldSlotRecordOwner1C* loader = D_001B643C->loader;
+
     if (loader == 0)
     {
         return 0;
     }
+
     u8 ready = loader->unk2d != 0;
+
     if (ready == 1)
     {
         this->set_state(1, 0x80);
@@ -10213,15 +11977,18 @@ u8 SkillSymbologyWindow::func_slotb4()
     else
     {
         SkillGridChoice* choice = new (0) SkillGridChoice;
+
         if (choice == 0)
         {
             return 0;
         }
+
         choice->func_slot10(this->func_slot54(), 192.0f, 160.0f, 5);
         choice->func_slot40(this);
         D_001B643C->callbacks->controller->add_child(choice);
         D_001B643C->callbacks->controller->func_00263C70(choice);
     }
+
     return 2;
 }
 
@@ -10232,61 +11999,76 @@ u8 SkillSymbologyWindow::func_slotb4()
 u8 SkillSymbologyWindow::func_slotb0()
 {
     u8 inactive = !this->selection->LibMovementState::arrived;
+
     if (inactive == 1)
     {
         return 0;
     }
+
     s32 skill_id, mastery, result_index, remaining;
     FieldRecordSelection* records = this->records;
     s32 current = records->current;
     s32 selected = this->position + this->selected;
     SkillCharacterStats* stats = &reinterpret_cast<SkillCharacterStats*>(records->records)[current];
     SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(records->unk04)[current];
+
     if (func_408EA0(equipment, records->slots[records->current], selected, &skill_id, &mastery, &result_index, &remaining, 1) == 0 || selected == 29)
     {
         return 3;
     }
+
     if (skill_id != SKILL_SYMBOLOGY_FAIRIE_LIGHT && skill_id != SKILL_SYMBOLOGY_HEALING && skill_id != SKILL_SYMBOLOGY_ANTIDOTE &&
         skill_id != SKILL_SYMBOLOGY_CURE_CONDITION && skill_id != SKILL_SYMBOLOGY_RESTORATION)
     {
         return 3;
     }
+
     if (character_flags(stats) & 7)
     {
         return 3;
     }
+
     s32 mp_cost = 0;
     func_4095C0(skill_id, reinterpret_cast<FieldRecord*>(stats), equipment, &mp_cost, 0, 0, 0, 0, 0, 0, 0);
     s32 available_mp = (s32)character_mp(stats);
+
     if (available_mp <= mp_cost)
     {
         return 3;
     }
+
     func_0023CEA0(this->selection, 0);
     SkillSymbologyCharacterWindow* symbology_character = static_cast<SkillController*>(D_001B643C->callbacks->controller)->symbology_character;
+
     if (symbology_character->left_character_icon != 0)
     {
         symbology_character->left_character_icon->visible = 0;
     }
+
     if (symbology_character->right_character_icon != 0)
     {
         symbology_character->right_character_icon->visible = 0;
     }
+
     SkillOptionsWindow* options = static_cast<SkillOptionsWindow*>(this->func_slot4c());
     options->child->visible = 1;
     options->unk10->LibCallbackTransform::unkab = 1;
     SkillListNode* node = options->nested.head->next;
+
     while (node != 0)
     {
         static_cast<LibCallbackTransform*>(node->value)->unkab = 1;
         node = node->next;
     }
+
     node = options->nested.head->next;
+
     while (node != 0)
     {
         static_cast<LibCallbackTransform*>(node->value)->func_0044B100(1, 1, 1);
         node = node->next;
     }
+
     s32 option_index = result_index;
     options->selected_kind = skill_id;
     options->selected_index = option_index;
@@ -10305,10 +12087,12 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     records = owner->selected_records();
     character_window = static_cast<SkillSymbologyCharacterWindow*>(func_slot44());
+
     if (records == 0 || character_window == 0)
     {
         return 0;
     }
+
     FieldClass15AE70::func_slot10(associated, 16.0f, 216.0f, 16);
     LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 608.0f, 264.0f, 88.0f);
@@ -10319,6 +12103,7 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, clip_begin);
     FieldBufferSlots* resources = D_001B643C->resources;
     void* icon_resource = field_get_aligned_allocation(resources, 0);
+
     for (s32 entry = 0; entry < 30; entry++)
     {
         spell_labels[entry] = new (0) LibTextWidget;
@@ -10341,13 +12126,16 @@ s32 SkillSymbologyWindow::func_slotf4(u32 associated)
         spell_icons[entry]->visible = 0;
         lib_container_attach_widget(unk10, spell_icons[entry]);
     }
+
     lib_scissor_init_reset(clip_end, 1);
     lib_container_attach_widget(unk10, clip_end);
     selection = new (0) FieldObject23CEA0;
+
     if (selection == 0)
     {
         return 0;
     }
+
     selection->func_0023CE80(2, 7);
     selection->func_0023CE60(256.0f, 33.0f);
     selection->unkF2 = 2;
@@ -10387,6 +12175,7 @@ void skill_refresh_symbology_help(SkillSymbologyHelpWindow* object, s32 selected
     records = owner->selected_records();
     SkillCharacterEquipment* equipment = &static_cast<SkillCharacterEquipment*>(records->unk04)[records->current];
     s32 skill_id, mastery, result_index, remainder;
+
     if (func_408EA0(equipment, object->selection->slots[object->selection->current], selected_index,
                    &skill_id, &mastery, &result_index, &remainder, 1) == 0 || selected_index == 29)
     {
@@ -10395,6 +12184,7 @@ void skill_refresh_symbology_help(SkillSymbologyHelpWindow* object, s32 selected
         object->mp_cost_value->visible = 0;
         return;
     }
+
     object->description->visible = 1;
     lib_multiline_text_set_resource(object->description, object->func_slot54(), SKILL_MSG_SKILL_DESCRIPTION_BASE + skill_id, 8, 1);
     s32 mastery_value = abs(mastery);
@@ -10480,6 +12270,7 @@ s32 skill_cycle_symbology_character(SkillSymbologyCharacterWindow* object, s32 f
     {
         return 0;
     }
+
     object->selection->active = 0;
     func_0028E2B0(object->selection, forward);
     LibStringLabel* text = object->character_name;
@@ -10506,6 +12297,7 @@ void skill_refresh_symbology_character_markers(SkillSymbologyCharacterWindow* ob
         object->selection = owner->selected_records();
         s32 marker = 0;
         u16 current_character = object->selection->slots[object->selection->current];
+
         for (s32 slot = 0; slot < 8; slot++)
         {
             if ((u16)object->selection->slots[(s16)slot] != 0)
@@ -10514,15 +12306,19 @@ void skill_refresh_symbology_character_markers(SkillSymbologyCharacterWindow* ob
                 object->character_markers[slot].unavailable->visible = 0;
             }
         }
+
         for (s32 slot = 0; slot < 8; slot++)
         {
             if (current_character == object->character_slots[slot])
             {
                 break;
             }
+
             marker++;
         }
+
         SkillCharacterStats* record = &reinterpret_cast<SkillCharacterStats*>(object->selection->records)[object->selection->current];
+
         if (character_flags(record) & 5)
         {
             object->character_markers[marker].available->visible = 0;
@@ -10533,6 +12329,7 @@ void skill_refresh_symbology_character_markers(SkillSymbologyCharacterWindow* ob
             object->character_markers[marker].available->visible = 1;
             object->character_markers[marker].unavailable->visible = 0;
         }
+
         object->condition_markers[0]->visible = character_flags(record) & 2;
         object->condition_markers[1]->visible = character_flags(record) & 8;
         object->condition_markers[2]->visible = character_flags(record) & 4;
@@ -10548,10 +12345,12 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
 {
     SkillController* owner = static_cast<SkillController*>(D_001B643C->callbacks->controller);
     selection = owner->selected_records();
+
     if (static_cast<signed long long>(static_cast<s32>(associated)) == 0)
     {
         return 0;
     }
+
     FieldClass15AE70::func_slot10(associated, 16.0f, 72.0f, 16);
     LibPanel* panel = new (0) LibPanel;
     lib_panel_init_rectangle(panel, 0, 0.0f, 0.0f, 256.0f, 136.0f, 88.0f);
@@ -10592,9 +12391,11 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
     void* marker_resource;
     FieldResourceRecord* marker_record;
     bool first_character = true;
+
     for (s32 slot = 0; slot < 8; slot++)
     {
         u16 character = selection->slots[(s16)slot];
+
         if (character != 0)
         {
             character_slots[slot] = character;
@@ -10615,6 +12416,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
             character_markers[slot].unavailable->func_002D6440(36.0f, 46.0f, marker_record);
             character_markers[slot].unavailable->visible = 0;
             lib_container_attach_widget(unk10, character_markers[slot].unavailable);
+
             if (first_character)
             {
                 first_character = false;
@@ -10677,6 +12479,7 @@ s32 SkillSymbologyCharacterWindow::func_slotf4(u32 associated)
         lib_container_attach_widget(unk10, left_character_icon);
         lib_container_attach_widget(unk10, right_character_icon);
     }
+
     show_party = 1;
     skill_refresh_symbology_character_markers(this);
     return 1;
@@ -10694,12 +12497,14 @@ SkillSymbologyCharacterWindow::SkillSymbologyCharacterWindow()
     mp_value = 0;
     right_character_icon = 0;
     left_character_icon = 0;
+
     for (s32 i = 0; i < 8; i++)
     {
         character_markers[i].available = 0;
         character_markers[i].unavailable = 0;
         character_slots[i] = 0;
     }
+
     show_party = 0;
 }
 
@@ -10733,10 +12538,12 @@ SkillSymbologyWindow::~SkillSymbologyWindow()
 SkillList184268::SkillList184268()
 {
     head = new (0) SkillListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -10744,6 +12551,7 @@ SkillList184268::SkillList184268()
 SkillList184268::~SkillList184268()
 {
     func_00364A70(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -10754,6 +12562,7 @@ SkillList184268::~SkillList184268()
 void func_003649E0(SkillList* list, void* value)
 {
     SkillListNode* node = new (0) SkillListNode;
+
     if (node != 0)
     {
         SkillListNode* current;
@@ -10762,11 +12571,13 @@ void func_003649E0(SkillList* list, void* value)
         node->next = 0;
         current = list->head;
         next = current->next;
+
         while (next != 0)
         {
             current = next;
             next = next->next;
         }
+
         current->next = node;
         list->count++;
     }
@@ -10775,16 +12586,19 @@ void func_003649E0(SkillList* list, void* value)
 void func_00364A70(SkillList184268* record)
 {
     SkillListNode* node = record->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         SkillListNode* next = node->next;
         delete node;
         node = next;
     }
+
     record->head->next = 0;
     record->count = 0;
 }
@@ -10792,6 +12606,7 @@ void func_00364A70(SkillList184268* record)
 SkillPairList184258::~SkillPairList184258()
 {
     func_00364B70(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -10802,16 +12617,19 @@ SkillPairList184258::~SkillPairList184258()
 void func_00364B70(SkillPairList184258* record)
 {
     SkillPairListNode* node = record->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         SkillPairListNode* next = node->next;
         delete node;
         node = next;
     }
+
     record->head->next = 0;
     record->count = 0;
 }
@@ -10819,6 +12637,7 @@ void func_00364B70(SkillPairList184258* record)
 void func_00364BF0(SkillPairList184258* list, SkillPairValue value)
 {
     SkillPairListNode* node = new (0) SkillPairListNode;
+
     if (node != 0)
     {
         node->first = value.first;
@@ -10826,11 +12645,13 @@ void func_00364BF0(SkillPairList184258* list, SkillPairValue value)
         node->next = 0;
         SkillPairListNode* tail = list->head;
         SkillPairListNode* next = tail->next;
+
         while (next != 0)
         {
             tail = next;
             next = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -10839,10 +12660,12 @@ void func_00364BF0(SkillPairList184258* list, SkillPairValue value)
 SkillPairList184258::SkillPairList184258()
 {
     head = new (0) SkillPairListNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }

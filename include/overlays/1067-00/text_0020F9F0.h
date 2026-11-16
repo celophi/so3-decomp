@@ -44,10 +44,11 @@ typedef struct FieldState6C
 class FieldClass151C00 : public FieldListObject
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass151C00();
+
     /** @brief Pass the four words to the Lib manager, then detach and delete this object. */
     virtual void update();
+
     u32 unk14;
     u32 unk18;
     u32 unk1c;

@@ -5,16 +5,32 @@
 extern "C" {
 #endif
 
-/** @brief Compute the single-precision cosine. @param angle Angle in radians. @return Cosine of the angle. */
+/**
+ * @brief Compute the single-precision cosine.
+ * @param angle Angle in radians.
+ * @return Cosine of the angle.
+ */
 float cosf_guess(float angle);
 
-/** @brief Compute the single-precision sine. @param angle Angle in radians. @return Sine of the angle. */
+/**
+ * @brief Compute the single-precision sine.
+ * @param angle Angle in radians.
+ * @return Sine of the angle.
+ */
 float sinf_guess(float angle);
 
-/** @brief Compute the single-precision absolute value. @param value Value. @return Absolute value. */
+/**
+ * @brief Compute the single-precision absolute value.
+ * @param value Value.
+ * @return Absolute value.
+ */
 float fabsf(float value);
 
-/** @brief Compute the single-precision square root. @param value Value. @return Square root. */
+/**
+ * @brief Compute the single-precision square root.
+ * @param value Value.
+ * @return Square root.
+ */
 float sqrtf(float value);
 
 /**

@@ -34,10 +34,18 @@ typedef struct DmaSourceTag
 extern "C" {
 #endif
 
-/** @brief Select a DMA channel. @param channel Channel number. @return Register block, or null for an invalid channel. */
+/**
+ * @brief Select a DMA channel.
+ * @param channel Channel number.
+ * @return Register block, or null for an invalid channel.
+ */
 DmaChannel* sceDmaGetChan(u32 channel);
 
-/** @brief Start a source-chain DMA transfer. @param channel Channel register block. @param chain Source-chain head. */
+/**
+ * @brief Start a source-chain DMA transfer.
+ * @param channel Channel register block.
+ * @param chain Source-chain head.
+ */
 void sceDmaSend(DmaChannel* channel, void* chain);
 
 /**
@@ -57,7 +65,11 @@ s32 sceDmaSync(DmaChannel* channel, s32 mode, s32 timeout);
  */
 void sceDmaSendN(DmaChannel* channel, void* address, s32 count);
 
-/** @brief Reset the DMA controller. @param mode 1 to reset it. @return Zero on success. */
+/**
+ * @brief Reset the DMA controller.
+ * @param mode 1 to reset it.
+ * @return Zero on success.
+ */
 s32 sceDmaReset(s32 mode);
 
 #ifdef __cplusplus

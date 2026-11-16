@@ -2,7 +2,9 @@
 #include "overlays/3454-00/text_003806E0.h"
 
 extern void func_003B24E0(void* object);
+
 extern s32 func_003B31B0(void* object, s32 arg2, s32 arg3);
+
 extern void func_003B41F0(void* object);
 
 typedef struct ConstantByteSetterOwnertext_003806E0
@@ -23,8 +25,11 @@ typedef struct NestedWordResultOwnertext_003806E0
 } NestedWordResultOwnertext_003806E0;
 
 extern u32 func_473390(u32 value, const void* data);
+
 extern u32 func_4737E0(u32 value, const void* data);
+
 extern u32 func_473040(u32 value, const void* data);
+
 extern const u8 D_3E3FE8[];
 extern const u8 D_3E3FF8[];
 extern const u8 D_3E41A8[];
@@ -205,6 +210,7 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003806E0", func_003888
 void func_003889F0(void* object)
 {
     func_003B24E0(object);
+
     if (((u8*)object)[0x39D] != 0) {
         ((u8*)object)[0xEB] = 0;
     }

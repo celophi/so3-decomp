@@ -12,6 +12,7 @@ void func_0026FB30(void* object);
 
 /** Forward the receiver to func_002AB490 and return its result. */
 s32 func_002775D0(void* object);
+
 s32 func_0027D880(void* object);
 
 /** Perform no work. */
@@ -47,8 +48,10 @@ u8 func_002785A0(const void* object);
 
 /** Clear the selected state when the 0x291A40 check succeeds. */
 void func_00277C10(void* object);
+
 /** Clear the selected state when the 0x29F6A0 check succeeds. */
 void func_00278210(void* object);
+
 /** Clear the selected state when the 0x29F6A0 check succeeds. */
 void func_0027D7E0(void* object);
 

@@ -7,6 +7,7 @@ typedef struct N66Vector4Source { float x; float y; float z; float w; } N66Vecto
 
 
 extern "C" void func_4815A0(void);
+
 extern "C" void func_481620(void);
 
 extern "C" u8 D_51E050[];
@@ -15,11 +16,17 @@ extern "C" u8 D_158900[];
 extern "C" u8 D_17BB30[];
 extern "C" u8 D_17ACD0[];
 extern "C" u8 D_179540[];
+
 extern "C" void func_002206A0(void);
+
 extern "C" void func_002210E0(void);
+
 extern "C" void func_00221150(void);
+
 extern "C" void func_0021EE40(void* object);
+
 extern "C" void func_0021FA00(void* object);
+
 extern "C" u8 D_1588F0[];
 extern "C" u8 D_1588E0[];
 extern "C" u8 D_1588D0[];
@@ -281,6 +288,7 @@ struct BattleStateByte60
 };
 
 extern "C" void func_0021F310(void* object);
+
 extern "C" void func_0021FF30(void* object);
 
 typedef struct PackedModePair
@@ -572,10 +580,12 @@ s32 func_00218E80(void* object)
 s32 battle_float_is_negative(float value)
 {
     s32 result = 1;
+
     if (!(value < 0.0f))
     {
         result = 0;
     }
+
     return result;
 }
 
@@ -915,6 +925,7 @@ void func_0021D220(const void* object, float* output)
 {
     const BattleFloatSpanView18* receiver = (const BattleFloatSpanView18*)object;
     BattleFloatSpanEntry8* entries = receiver->entries;
+
     if (entries != 0)
     {
         *output = entries[receiver->index - 1].value - entries[0].value;
@@ -1006,6 +1017,7 @@ void func_0021E420(const void* object, float* output)
 {
     const BattleFloatSpanView20* receiver = (const BattleFloatSpanView20*)object;
     BattleFloatSpanEntry16* entries = receiver->entries;
+
     if (entries != 0)
     {
         *output = entries[receiver->index - 1].value - entries[0].value;
@@ -1177,6 +1189,7 @@ s32 func_0021F000(void* object, float key)
     FloatKeyScanOwner_text_00212EE0_10* receiver = static_cast<FloatKeyScanOwner_text_00212EE0_10*>(object);
     s16 count = receiver->count28;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key0c)
@@ -1184,6 +1197,7 @@ s32 func_0021F000(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1201,10 +1215,12 @@ float func_0021F070(void* object)
 {
     const FloatKeyScanOwner_text_00212EE0_10* receiver = static_cast<const FloatKeyScanOwner_text_00212EE0_10*>(object);
     s32 count = receiver->count28;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_00212EE0_10* entries = receiver->entries;
     const FloatKeyScanEntry_text_00212EE0_10* lastEntry = entries + --count;
     float first = entries[0].key0c;
@@ -1337,6 +1353,7 @@ s32 func_0021FC00(void* object, float key)
     FloatKeyScanOwner_text_00212EE0_30* receiver = static_cast<FloatKeyScanOwner_text_00212EE0_30*>(object);
     s16 count = receiver->count48;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key0c)
@@ -1344,6 +1361,7 @@ s32 func_0021FC00(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1449,10 +1467,12 @@ float func_002203E0(void* object)
 {
     const FloatKeyScanOwner_text_00212EE0_10* receiver = static_cast<const FloatKeyScanOwner_text_00212EE0_10*>(object);
     s32 count = receiver->count20;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_00212EE0_10* entries = receiver->entries;
     const FloatKeyScanEntry_text_00212EE0_10* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -1467,6 +1487,7 @@ s32 func_00220430(void* object, float key)
     FloatKeyScanOwner_text_00212EE0_10* receiver = static_cast<FloatKeyScanOwner_text_00212EE0_10*>(object);
     s16 count = receiver->count20;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1474,6 +1495,7 @@ s32 func_00220430(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1501,10 +1523,12 @@ float func_00220800(void* object)
 {
     const FloatKeyScanOwner_text_00212EE0_08* receiver = static_cast<const FloatKeyScanOwner_text_00212EE0_08*>(object);
     s32 count = receiver->count18;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_00212EE0_08* entries = receiver->entries;
     const FloatKeyScanEntry_text_00212EE0_08* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -1519,6 +1543,7 @@ s32 func_00220850(void* object, float key)
     FloatKeyScanOwner_text_00212EE0_08* receiver = static_cast<FloatKeyScanOwner_text_00212EE0_08*>(object);
     s16 count = receiver->count18;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1526,6 +1551,7 @@ s32 func_00220850(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1605,10 +1631,12 @@ float func_00220DA0(void* object)
 {
     const FloatKeyScanOwner_text_00212EE0_20* receiver = static_cast<const FloatKeyScanOwner_text_00212EE0_20*>(object);
     s32 count = receiver->count38;
+
     if (count < 2)
     {
         return 0.0f;
     }
+
     const FloatKeyScanEntry_text_00212EE0_20* entries = receiver->entries;
     const FloatKeyScanEntry_text_00212EE0_20* lastEntry = entries + --count;
     float first = entries[0].key00;
@@ -1623,6 +1651,7 @@ s32 func_00220DF0(void* object, float key)
     FloatKeyScanOwner_text_00212EE0_20* receiver = static_cast<FloatKeyScanOwner_text_00212EE0_20*>(object);
     s16 count = receiver->count38;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1630,6 +1659,7 @@ s32 func_00220DF0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1851,23 +1881,30 @@ s32 battle_has_quaternion_key(const BattleQuaternionTrackFields* object, float k
     const BattleQuaternionKey* cursor;
     s32 index = 0;
     s32 key_count = object->key_count;
+
     if (index < key_count)
     {
         cursor = object->keys;
+
         do
         {
             if (key == (float)cursor->key)
             {
                 return 1;
             }
+
             ++index;
             ++cursor;
         } while (index < key_count);
     }
+
     return 0;
 }
 
-/** @brief Clear all four vector components. @param vector Vector to clear. */
+/**
+ * @brief Clear all four vector components.
+ * @param vector Vector to clear.
+ */
 void battle_clear_vector4(LibVector4* vector)
 {
     vector->x = 0.0f;
@@ -1883,6 +1920,7 @@ float battle_quaternion_key_span(const BattleQuaternionTrackFields* object)
     {
         return 0.0f;
     }
+
     s32 last_index = object->key_count - 1;
     const BattleQuaternionKey* last_key = object->keys + last_index;
     return (float)last_key->key - (float)object->keys[0].key;

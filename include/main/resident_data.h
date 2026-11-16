@@ -29,12 +29,10 @@ typedef struct ResidentHudSection1B4
 typedef struct ResidentContext08
 {
     u8 unk00[0x60];
-    /** Unidentified flags; bit zero blocks the registered field-object list update. */
     u8 unk60;
     u8 unk61[0x57];
     s32 unkb8;
     u8 unkbc[0x20];
-    /** Selected field object from the context's object array. */
     struct FieldClass150F90* current_object;
     u8 unke0[0x15];
     u8 unkf5_0_2 : 3;
@@ -146,17 +144,11 @@ typedef struct ResidentContext
     ResidentContextObject52* unk44;
     struct LibListObject* unk48;
     struct FieldClass154CC0* unk4c;
-
-    /** Node that rebuilds drawing commands while display blending is active. */
     struct FieldDisplayBlendNode* display_blend_node;
-
     struct FieldListObject* unk54;
     ResidentContextObject58* unk58;
     void* unk5c;
-
-    /** Slot owner whose objects can be detached and registered again. */
     struct FieldObjectSlotOwner* object_slots;
-
     ResidentContextObject64* unk64;
     struct FieldClass1502A0* unk68;
     void* unk6c;
@@ -165,33 +157,15 @@ typedef struct ResidentContext
     struct ResidentHeap* unk78;
     void* unk7c;
     void* unk80;
-
-    /** Optional receiver updated by the field loop. */
     struct FieldClass150C10* update_callback;
-
-    /** Render iteration passed to the display-buffer functions. */
     s32 render_count;
-
-    /** Display field returned by the resident synchronization functions. */
     u32 display_field;
-
-    /** Number of completed object-list updates. */
     s32 update_count;
-
-    /** Integer interval used when waiting for the next field update. */
     s32 time_step_level;
-
-    /** Unscaled increment retained when the update argument is nonpositive. */
     float time_step;
-
-    /** Remaining updates before the current time-step level can reset. */
     float time_step_hold;
-
     float unkA0;
-
-    /** Multiplier applied to the retained time step. */
     float time_scale;
-
     s16 unka8;
     s16 unkaa;
     u8 unkac[4];
@@ -200,10 +174,7 @@ typedef struct ResidentContext
     u8 unkb4[0x1C];
     u32 unkd0;
     u32 unkd4;
-
-    /** Remaining updates that skip the normal interval wait. */
     s32 wait_skip_count;
-
     s8 unkdc;
     ResidentContextFlagsDD unkdd;
     u8 exit_requested : 1;
@@ -227,17 +198,17 @@ typedef struct ResidentCheckedRecord
     u16 unk02;
     u16 unk04;
     u16 unk06;
-    u8 unk08[0x1D];
+    u8 unk08[0x1B];
+    u8 unk23;
+    u8 unk24;
     u8 unk25_0_3 : 4;
     u8 unk25_4_5 : 2;
-    u8 unk25_6_7 : 2;
+    u8 unk25_6 : 1;
+    u8 unk25_7 : 1;
     u8 unk26[0xE];
-    /** Fol XOR-encoded with 0x7CE3C7F7. */
     u32 encoded_fol;
     u8 unk38[0x6C];
-    /** Checksum of the 126 bytes beginning at offset 0x26. */
     u16 checksum;
-    /** Random seed used to calculate the checksum. */
     u16 checksum_seed;
 } ResidentCheckedRecord;
 
@@ -292,6 +263,7 @@ static inline bool field_records_blocked()
     {
         return true;
     }
+
     return false;
 }
 #endif

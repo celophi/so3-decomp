@@ -2,10 +2,15 @@
 #include "overlays/1070-00/text_00254730.h"
 
 extern "C" void func_43ACC0(void* object);
+
 extern "C" void func_4DB530(void* context, u32 first, u32 second);
+
 extern "C" void func_4EABF0(void* object);
+
 extern "C" void* g_vector_track_pool;
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" void* D_001B6620;
 
 /** Partial callback interface with a method at vtable offset 0x10. */
@@ -13,7 +18,9 @@ class FieldCallbackDispatch10
 {
 public:
     virtual void slot00();
+
     virtual void slot04();
+
     virtual void callback();
 };
 
@@ -187,6 +194,7 @@ bool func_002553D0(void* object, const void* input, float* zero_output, float* s
         *small_output = 0.05f;
         return true;
     }
+
     return false;
 }
 
@@ -391,19 +399,24 @@ s32 func_00259E20(const FieldKeyedFlagOwnerD8* object, u32 key)
     FieldKeyedFlagList14* list = object->unkd8;
     FieldListNode* sentinel = &list->unk14;
     node = sentinel;
+
     for (;;)
     {
         node = node->next;
+
         if (node == 0 || sentinel == node)
         {
             break;
         }
+
         FieldKeyedFlagElement28* element = (FieldKeyedFlagElement28*)node;
+
         if (key == element->unk28)
         {
             return element->unk2c_0;
         }
     }
+
     return 0;
 }
 
@@ -413,19 +426,24 @@ u32 func_00259E70(const FieldKeyedFlagOwnerD8* object, u32 key)
     FieldKeyedFlagList14* list = object->unkd8;
     FieldListNode* sentinel = &list->unk14;
     node = sentinel;
+
     for (;;)
     {
         node = node->next;
+
         if (node == 0 || sentinel == node)
         {
             break;
         }
+
         const FieldKeyedWordElement28* element = (const FieldKeyedWordElement28*)node;
+
         if (key == element->unk28)
         {
             return element->unk14;
         }
     }
+
     return 0;
 }
 
@@ -433,14 +451,18 @@ void func_00259EC0(FieldKeyedFlagOwnerD8* object, u32 key, s32 value)
 {
     FieldListNode* sentinel = &object->unkd8->unk14;
     FieldListNode* node = sentinel;
+
     for (;;)
     {
         node = node->next;
+
         if (node == 0 || sentinel == node)
         {
             break;
         }
+
         FieldKeyedFlagElement28* element = (FieldKeyedFlagElement28*)node;
+
         if (key == element->unk28)
         {
             func_001E7020(element, value);
@@ -457,18 +479,23 @@ s32 func_0025A040(const FieldKeyedFlagOwnerD8* object, s32 key)
 {
     const FieldListNode* node = &object->unkdc;
     const FieldListNode* sentinel = node;
+
     for (;;)
     {
         node = node->next;
         bool absent = !node;
+
         if (absent || sentinel == node)
         {
             break;
         }
+
         const FieldKeyedStateElementE4* element = (const FieldKeyedStateElementE4*)node;
+
         if (key == element->unke4)
         {
             bool active;
+
             if (element->unkfd <= 0 || element->unkfd >= 6)
             {
                 active = false;
@@ -477,12 +504,14 @@ s32 func_0025A040(const FieldKeyedFlagOwnerD8* object, s32 key)
             {
                 active = true;
             }
+
             if (active)
             {
                 return 1;
             }
         }
     }
+
     return 0;
 }
 
@@ -711,18 +740,22 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_00261F
 s32 func_00262000(const void* source)
 {
     const FieldRelativeRecord18* record = (const FieldRelativeRecord18*)source;
+
     for (;;)
     {
         if (record->unk00 == 0x53414648)
         {
             break;
         }
+
         record = record->unk0c == 0 ? 0 : (const FieldRelativeRecord18*)((const u8*)record + record->unk0c);
+
         if (record == 0)
         {
             return 0;
         }
     }
+
     return record->unk18 == 8;
 }
 
@@ -755,18 +788,22 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00254730", func_002630
 FieldKeyedListElement54* func_00263230(FieldKeyedFloatState98* object, u32 key)
 {
     FieldListNode* node = &object->link;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->link == node)
         {
             break;
         }
+
         if (key == ((FieldKeyedListElement54*)node)->unk54)
         {
             return (FieldKeyedListElement54*)node;
         }
     }
+
     return 0;
 }
 

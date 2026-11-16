@@ -30,7 +30,6 @@ public:
     /** @brief Initialize the window and its owned display object. */
     FieldClass15BB90();
 
-    /** @brief Destroy the window and its owned display object. */
     virtual ~FieldClass15BB90();
 
     /** @brief Release the window resources. */
@@ -300,8 +299,8 @@ public:
     u8 unk9ca;
     u8 unk9cb[5];
     FieldVec4A unk9d0;
-    u32 unk9e0;
-    u32 unk9e4;
+    float unk9e0;
+    float unk9e4;
     u32 unk9e8;
     char name[0x11];
     u8 unk9fd_0 : 1;

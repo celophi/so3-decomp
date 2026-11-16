@@ -83,8 +83,11 @@ typedef struct PackedModesOwner
 } PackedModesOwner;
 
 extern "C" void func_00414490(void* object);
+
 extern "C" void func_00414BD0(void* object);
+
 extern "C" void func_004159E0(void* object);
+
 extern "C" s32 func_00418540(LibMovieState* state);
 
 // TODO: The retained-set transforms' destructors inline these two ordinary functions, and LibMoviePlayer::destroy
@@ -425,10 +428,12 @@ s32 lib_list_indicator_init(LibListIndicator* object, float x, float y, float he
     state->height = height;
     state->extent = extent;
     state->position = position;
+
     if (!lib_allocate_drawing_storage(&state->storage, 38))
     {
         return 0;
     }
+
     state->unk34 = 6;
     state->unk39 = 1;
     return 1;
@@ -871,10 +876,12 @@ s32 lib_marker_init_rectangle(ItemCreationClass172870* object, float x, float y,
     state->y = y;
     state->width = width;
     state->height = height;
+
     if (!lib_allocate_drawing_storage(&state->storage, 12))
     {
         return 0;
     }
+
     intensity = 0.9f;
     shade = (u32)(256.0f * intensity);
     state->color = (shade << 16) | (shade << 8) | shade;
@@ -1328,12 +1335,14 @@ struct SmallConditionalInput04
 extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output, float* small_output)
 {
     const SmallConditionalInput04* state = (const SmallConditionalInput04*)value;
+
     if (!(state->unk04 <= 0.0f))
     {
         *zero_output = 0.0f;
         *small_output = 0.05f;
         return 1;
     }
+
     return 0;
 }
 

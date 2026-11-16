@@ -33,7 +33,12 @@ typedef struct LibContainer LibContainer;
 extern "C" {
 void* func_004C9930(void* receiver);
 #endif
-/** @brief Store a float in an indexed array slot. @param values Float array. @param index Slot index. @param value Value to store. */
+/**
+ * @brief Store a float in an indexed array slot.
+ * @param values Float array.
+ * @param index Slot index.
+ * @param value Value to store.
+ */
 void func_004BD3C0(float* values, s32 index, float value);
 
 /**
@@ -63,6 +68,7 @@ void func_004C8530(void* object);
  * @param value Source vector.
  */
 void func_004C94D0(void* object, const unsigned __int128* value);
+
 /** Native panel table stored in MAIN; its contents remain opaque here. */
 extern u8 D_178630[];
 /** Native text-widget table stored in MAIN; its contents remain opaque here. */
@@ -88,6 +94,7 @@ LibWidget* func_004C4960(LibWidget* object);
  * @return Configuration status.
  */
 s32 lib_text_init_resource_rectangle(LibTextWidget* object, s32 slot, s32 key, u8 flag, float x, float y, float width, float height);
+
 /**
  * @brief Set the text widget's source and resource key.
  * @param object Text widget.
@@ -96,12 +103,14 @@ s32 lib_text_init_resource_rectangle(LibTextWidget* object, s32 slot, s32 key, u
  * @param flag Resource state flag.
  */
 void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, u8 flag);
+
 /**
  * @brief Attach a widget to the container.
  * @param object Container receiver.
  * @param child Widget to attach.
  */
 void lib_container_attach_widget(LibContainer* object, LibWidget* child);
+
 /**
  * @brief Detach the widget from its associated object.
  * @param object Widget receiver.
@@ -128,8 +137,14 @@ s32 lib_panel_init_transform(LibPanel* object, float z);
  * @return Configuration status.
  */
 s32 lib_panel_init_rectangle(LibPanel* object, s32 mode, float x, float y, float width, float height, float extra);
-/** @brief Set the four packed panel colors. @param object Panel widget. @param colors Four packed colors. */
+
+/**
+ * @brief Set the four packed panel colors.
+ * @param object Panel widget.
+ * @param colors Four packed colors.
+ */
 void lib_panel_set_colors(LibPanel* object, const LibWidgetColors4C5590* colors);
+
 /** Return the fixed integer value 11. */
 s32 func_004C8370(void* object);
 
@@ -192,18 +207,22 @@ class LibCallbackTransform : public LibClass172000, public LibDmaCallbacks
 public:
     /** @brief Initialize the transform and callback interface. */
     LibCallbackTransform();
-    /** @brief Destroy the transform receiver. */
+
     virtual ~LibCallbackTransform();
+
     /** @brief Copy the stored transform state byte into the active state. */
     virtual void set_default_draw_bucket();
+
     /** @brief Queue the transform receiver for release. */
     virtual void destroy();
+
     /**
      * @brief Dispatch the transform state flags.
      * @param matrix Unused matrix argument.
      * @param context Unused context argument.
      */
     virtual void build_packet(const void* matrix, void* context);
+
     /**
      * @brief Run the default transform state hook.
      * @param first First state value.
@@ -211,6 +230,7 @@ public:
      * @param third Third state value.
      */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
+
     /**
      * @brief Set the transform codes and its third coordinate.
      * @param code Transform code.
@@ -220,6 +240,7 @@ public:
      * @param third Second byte value.
      */
     void set_codes_and_z(s32 code, u32 first, float z, u32 second, u32 third);
+
     void* unk94;
     u8 unk98[8];
     s32 unka0;
@@ -230,19 +251,14 @@ public:
     u8 unkab;
     u8 unkac;
     u8 unkad;
-
-    /** Set when the position or codes change; the packet builder rebuilds the geometry and clears it. */
     u8 geometry_dirty;
-
     u8 unkaf;
 };
 
 /** Shape a morph target blends toward, with the weight range it may use. */
 struct LibMorphShape
 {
-    /** Shape number, such as a mouth shape or zero for closed eyes. */
     s32 id;
-
     u8 unk04[0x14];
     float min_weight;
     float max_weight;
@@ -252,23 +268,13 @@ struct LibMorphShape
 struct LibMorphTarget : public LibListObject
 {
     u8 unk14[4];
-
-    /** Set while the target has a nonzero weight. */
     u8 active;
-
     u8 unk19[0x17];
     LibMorphShape* shape;
     u8 unk34[0xC];
-
-    /** Weight clamped to the shape's range. */
     float clamped_weight;
-
     u8 unk44[0xC];
-
-    /** Weight last asked for. */
     float weight;
-
-    /** Frames left before an idle target is dropped. */
     s32 idle_frames;
 };
 
@@ -314,6 +320,7 @@ public:
 };
 
 class LibContainer;
+
 /**
  * @brief Configure the container transform and modes.
  * @param object Container receiver.
@@ -347,6 +354,7 @@ public:
     {
         type_id = 0x6FF1;
     }
+
     /**
      * @brief Initialize the container with its default mode and supplied transform.
      * @param x First transform component.
@@ -371,8 +379,10 @@ public:
         type_id = 0x6FF1;
         lib_container_init(this, code, x, y, 0, z, 0);
     }
+
     /** @brief Destroy the container. */
     virtual ~LibContainer();
+
     /**
      * @brief Update the container and its widgets.
      * @param first First update flag.
@@ -380,10 +390,16 @@ public:
      * @param third Third update flag.
      */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
+
     /** @brief Prepare the container storage. */
     virtual void render();
-    /** @brief Prepare the container transform. @param value Notification value. */
+
+    /**
+     * @brief Prepare the container transform.
+     * @param value Notification value.
+     */
     virtual void on_packet_complete(u32 value);
+
     /**
      * @brief Run the default container state hook.
      * @param first First update flag.
@@ -391,6 +407,7 @@ public:
      * @param third Third update flag.
      */
     virtual void func_00412C40(u32 first, u32 second, u32 third);
+
     LibStorageBlock0C unkD0;
     u8 unkDC[4];
     float unkE0;
@@ -422,12 +439,16 @@ struct LibTextWidget : public LibDrawWidget
         unk38 = 11;
         lib_text_init_resource_rectangle(this, slot, key, flag, x, y, width, height);
     }
+
     /** @brief Destroy the text widget. */
     virtual ~LibTextWidget();
+
     /** @brief Refresh the text widget drawing state. */
     virtual void func_00413D20();
+
     /** @brief Draw the text widget. */
     virtual void draw();
+
     /**
      * @brief Configure a text slot and its rectangle.
      * @param x Origin x.
@@ -440,6 +461,7 @@ struct LibTextWidget : public LibDrawWidget
      * @return Configuration status.
      */
     s32 init_resource_rectangle(float x, float y, float width, float height, s32 slot, u32 key, u8 flag);
+
     LibListObject* unkfc;
     u8 unk100[0x14];
 };
@@ -453,10 +475,13 @@ struct LibObject174D90 : public LibTextWidget
         unk38 = 12;
         lib_multiline_text_init_rectangle(this, 0.0f, 0.0f, 0.0f, 0.0f);
     }
+
     /** @brief Release the multiline allocation and destroy the text widget. */
     virtual ~LibObject174D90();
+
     /** @brief Advance and refresh the multiline text state. */
     virtual void func_00413D20();
+
     /** @brief Draw the multiline text widget. */
     virtual void draw();
 
@@ -502,6 +527,7 @@ struct LibObject174D90 : public LibTextWidget
      * @return One on successful setup, otherwise zero.
      */
     s32 init_multiline_resource_rectangle(float x, float y, float width, float height, s32 slot, s32 key, u32 mode, u32 flag);
+
     u8 unk114[0x410];
     float unk524;
     float unk528;
@@ -532,6 +558,7 @@ struct LibPanel : public LibWidget
         unk38 = 1;
         unk60 = 0;
     }
+
     /**
      * @brief Initialize widget state and drawing dimensions.
      * @param mode Drawing mode.
@@ -550,15 +577,19 @@ struct LibPanel : public LibWidget
         unk38 = 1;
         lib_panel_init_rectangle(this, mode, x, y, width, height, extra);
     }
+
     /** @brief Destroy the widget. */
     virtual ~LibPanel()
     {
         lib_panel_detach(this);
     }
+
     /** @brief Refresh the panel drawing state. */
     virtual void func_00413D20();
+
     /** @brief Draw the panel. */
     virtual void draw();
+
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     LibUiRect16 unk50;
@@ -596,39 +627,18 @@ enum
 /** Bookkeeping every track keeps after its key storage: counts, the cached lookup and how it extends past its ends. */
 struct LibTrackState
 {
-    /** Whole key spans the last wrapped key was past the first key; negative before it. */
     s32 cycle_count;
-
-    /** Last key minus first key. */
     float span;
-
     s16 key_count;
     s16 key_capacity;
-
-    /** Lower key index the last search found; the next search starts there. */
     s16 search_index;
-
-    /** Lower key index the cached segment was built from; -1 after the keys change. */
     s16 segment_lower;
-
-    /** Upper key index the cached segment was built from; -1 after the keys change. */
     s16 segment_upper;
-
-    /** LIB_TRACK_END_* mode applied before the first key. */
     u8 before_mode : 4;
-
-    /** LIB_TRACK_END_* mode applied after the last key. */
     u8 after_mode : 4;
-
-    /** Set when either end extends its first or last keyframe segment. */
     u8 extends_segment : 1;
-
-    /** Set when the keys are bound from outside, so the track doesn't free them. */
     u8 external_keys : 1;
-
-    /** Set while the track belongs to a pool. */
     u8 pooled : 1;
-
     u8 unk_3_7 : 5;
 };
 
@@ -639,7 +649,6 @@ struct LibTrackState
 class LibClass173180
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibClass173180()
     {
     }
@@ -830,21 +839,37 @@ public:
     virtual ~LibWordTrackBase();
 
     virtual void allocate_keys(s32 count);
+
     virtual void bind_keys(s32 count, void* keys);
+
     virtual void set_before_mode(u32 mode);
+
     virtual void set_after_mode(u32 mode);
+
     virtual s32 get_cycle_count() const;
+
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 has_key(float key) const;
+
     virtual float wrap_key(float key) const;
+
     virtual float get_key_span() const;
+
     virtual void evaluate(float key, void* output);
+
     virtual s16 get_key_count() const;
+
     virtual void* get_keys();
+
     virtual void reset_state();
+
     virtual s16 get_key_capacity();
 
     /**
@@ -922,10 +947,7 @@ public:
     u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
     LibWordTrackKey* key_array;
-
-    /** Single key, used before key storage exists. */
     LibWordTrackKey single_key;
-
     LibTrackState state;
 };
 
@@ -933,15 +955,18 @@ public:
 class LibWordKeyTrack : public LibWordTrackBase
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibWordKeyTrack()
     {
     }
 
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 on_replace_key(s32 index, float key, const void* value);
+
     virtual s32 on_insert_key(s32 index, float key, const void* value);
+
     virtual void on_set_single_key(const void* value, float key);
 };
 
@@ -949,12 +974,14 @@ public:
 class LibWordTrack : public LibWordKeyTrack
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibWordTrack();
 
     virtual void get_end_delta(void* output) const;
+
     virtual void get_value_rate(void* output) const;
+
     virtual u32 get_last_value();
+
     virtual u32 sample(float key);
 };
 
@@ -969,21 +996,37 @@ public:
     virtual ~LibClass1784E0();
 
     virtual void allocate_keys(s32 count);
+
     virtual void bind_keys(s32 count, void* keys);
+
     virtual void set_before_mode(u32 mode);
+
     virtual void set_after_mode(u32 mode);
+
     virtual s32 get_cycle_count() const;
+
     virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+
     virtual void set_single_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 has_key(float key) const;
+
     virtual float wrap_key(float key) const;
+
     virtual float get_key_span() const;
+
     virtual void evaluate(float key, void* output);
+
     virtual s16 get_key_count() const;
+
     virtual void* get_keys();
+
     virtual void reset_state();
+
     virtual s16 get_key_capacity();
 
     /**
@@ -1061,10 +1104,7 @@ public:
     u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
     LibWordTrackKey* key_array;
-
-    /** Single key, used before key storage exists. */
     LibWordTrackKey single_key;
-
     LibTrackState state;
 };
 
@@ -1072,15 +1112,18 @@ public:
 class LibClass178450 : public LibClass1784E0
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~LibClass178450()
     {
     }
 
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
+
     virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+
     virtual s32 on_replace_key(s32 index, float key, const void* value);
+
     virtual s32 on_insert_key(s32 index, float key, const void* value);
+
     virtual void on_set_single_key(const void* value, float key);
 };
 
@@ -1091,12 +1134,14 @@ public:
     /** @brief Construct the track with both trailing words cleared. */
     LibClass1783C0();
 
-    /** @brief Destroy the track. */
     virtual ~LibClass1783C0();
 
     virtual void get_end_delta(void* output) const;
+
     virtual void get_value_rate(void* output) const;
+
     virtual u32 get_last_value();
+
     virtual u32 sample(float key);
 
     u32 unk24;
@@ -1116,6 +1161,7 @@ struct LibAnimationEntry14
 };
 
 class LibAnimation;
+
 extern "C" void lib_animation_release_channels(LibAnimation* object);
 
 /**
@@ -1163,11 +1209,14 @@ public:
             lib_animation_release_channels(this);
             delete[] entries;
         }
+
         targets_bound = 0;
+
         if (!resource_is_borrowed)
         {
             operator delete(resource_data);
         }
+
         resource_is_borrowed = 1;
         resource_data = data;
     }
@@ -1179,34 +1228,20 @@ public:
     s32 entry_count;
     u8 unk3c[4];
     LibAnimationEntry14* entries;
-
-    /** Frame applied by update(), or null when the animation isn't playing. */
     float* frame;
-
     u32 unk48;
     u8 unk4c[4];
     LibAnimationEntry14* cached_entry;
     u8 unk54[4];
     LibAnimationBindingOwner* primary_binding_owner;
     LibAnimationBindingOwner* secondary_binding_owner;
-
-    /** Compared with each entry's target; the frame is truncated to a whole number when they match. */
     void* unk60;
-
     float unk64;
     u8 resource_is_borrowed;
-
-    /** Set while the animation is in an update list. */
     u8 playing;
-
-    /** Set once a frame has been applied; cleared to restart, which applies the restart-only entries again. */
     u8 started;
-
     u8 unk6b;
-
-    /** Whether the last update applied a nonzero status. */
     u8 unk6c;
-
     u8 unk6d;
     u8 targets_bound;
     u8 unk6f;
@@ -1219,7 +1254,6 @@ public:
     /** @brief Construct an empty object. */
     LibAnimationTarget();
 
-    /** @brief Destroy the target. */
     virtual ~LibAnimationTarget();
 
     /**
@@ -1283,33 +1317,15 @@ public:
      */
     virtual void copy_scale(const LibVector4* value);
 
-    /** Position change at the last update, once a position has been set. */
     FieldVec4B translation_delta;
-
-    /** Rotation from the previous rotation to the current one, once a rotation has been set. */
     FieldVec4B orientation_delta;
-
-    /** Scale change at the last update, once a scale has been set. */
     FieldVec4B scale_delta;
-
-    /** Translation read from the target's translation channels by lib_animation_read_channel_pose. */
     FieldVec4B channel_translation;
-
-    /** Rotation quaternion read from the target's rotation channels. */
     FieldVec4B channel_rotation;
-
-    /** Scale read from the target's scale channels. */
     FieldVec4B channel_scale;
-
-    /** Set once a position has been set, so later updates keep a change. */
     u8 has_translation;
-
-    /** Set once a rotation has been set. */
     u8 has_orientation;
-
-    /** Set once a scale has been set. */
     u8 has_scale;
-
     u8 unkc3[0xD];
 };
 
@@ -1693,9 +1709,11 @@ s32 func_004C8510(void* object);
 
 #ifdef __cplusplus
 void func_004C3AE0(void* object);
+
 void func_004C3AF0(void* object);
 
 void func_004C4500(void* object);
+
 void func_004C4510(void* object);
 
 
@@ -1755,7 +1773,6 @@ public:
     /** @brief Flag a control code for the window and set its flag byte at 0x1064. */
     virtual void func_0045F650();
 
-    /** Window the text belongs to. */
     LibMessageWindow* owner;
 };
 

@@ -27,6 +27,7 @@ struct FieldState2BDF70
 extern "C" FieldGlobal643C* D_001B643C;
 
 extern "C" void func_4D00B0(void* object);
+
 extern "C" void func_44B210(void* object);
 
 

@@ -21,16 +21,9 @@ typedef struct {
     u8 unk65[0x1AB];
     u8 unk210;
     u8 unk211[0x34F];
-
-    /** Packed four-float RGBA factor supplied by the object's own state. */
     unsigned __int128 base_color_factor;
-
-    /** Packed four-float RGBA factor applied over the base factor. */
     unsigned __int128 color_modulation;
-
-    /** Component-wise product of the base and modulation factors. */
     unsigned __int128 combined_color_factor;
-
     u8 unk590[0xD];
     u8 unk59d_0_2 : 3;
     u8 unk59d_3 : 1;

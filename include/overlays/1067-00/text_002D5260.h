@@ -31,9 +31,14 @@ public:
     u8 unk29[3];
     float unk2c;
     LibWidget* unk30;
-    /** @brief Initialize the resource owner. @param parent Associated owner. @param flag Initial resource flag. */
+
+    /**
+     * @brief Initialize the resource owner.
+     * @param parent Associated owner.
+     * @param flag Initial resource flag.
+     */
     FieldClass15B200(LibContainer* parent, u8 flag);
-    /** @brief Destroy the resource owner. */
+
     virtual ~FieldClass15B200();
 };
 
@@ -345,6 +350,7 @@ struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
         unk118 = 0;
         func_002D6410();
     }
+
     /**
      * @brief Replace non-null resource pointers and a nonzero resource index, then request an update.
      * @param allocation Allocation pointer, or null to keep the current pointer.
@@ -352,8 +358,10 @@ struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
      * @param index Nonzero full word whose low byte replaces the resource index.
      */
     void func_002D5CF0(void* allocation, FieldResourceRecord* record, u32 index);
+
     /** @brief Clear the resource pointers, indices and trailing update flags. */
     void func_002D6410();
+
     /**
      * @brief Allocate the resource drawing storage and set its record and position.
      * @param x Horizontal coordinate.
@@ -362,12 +370,16 @@ struct ItemCreationOptionResourceDisplay : public ItemCreationClass175110
      * @return One on success, or zero if drawing-storage allocation fails.
      */
     s32 func_002D6440(float x, float y, FieldResourceRecord* record);
+
     /** @brief Destroy the resource widget. */
     virtual ~ItemCreationOptionResourceDisplay();
+
     /** @brief Refresh the resource widget. */
     virtual void func_00413D20();
+
     /** @brief Draw the resource widget. */
     virtual void draw();
+
     void* unkcc;
     u8 unkd0;
     u8 unkd1[0x37];

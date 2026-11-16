@@ -4,6 +4,7 @@
 extern "C" {
 
 void* func_001F30E0(void* object);
+
 void func_4D00B0(void* object);
 
 typedef struct StateEntryF5E10

@@ -11,10 +11,12 @@ class LibListIndicator : public LibWidget
 public:
     /** @brief Initialize the widget storage and select kind 3. */
     inline LibListIndicator();
-    /** @brief Release the widget storage and destroy its base. */
+
     virtual ~LibListIndicator();
+
     /** @brief Draw the list indicator. */
     virtual void draw();
+
     /**
      * @brief Select widget kind 3, then place the indicator and set its scroll extent and position.
      * @param x Horizontal position.
@@ -37,11 +39,7 @@ public:
 
     LibStorageBlock0C unk40;
     u8 unk4c[4];
-
-    /** Size of one scroll step, as a share of the bar. */
     float extent;
-
-    /** Scroll position, from 0 to 100. */
     float position;
 };
 
@@ -51,10 +49,12 @@ class ItemCreationClass172870 : public LibWidget
 public:
     /** @brief Initialize the widget storage and select kind 6. */
     inline ItemCreationClass172870();
-    /** @brief Release the widget storage and destroy its base. */
+
     virtual ~ItemCreationClass172870();
+
     /** @brief Draw the marker widget. */
     virtual void draw();
+
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     u32 unk50;
@@ -67,12 +67,15 @@ class ItemCreationClass172600 : public LibWidget
 public:
     /** @brief Initialize the widget storage and select kind 5. */
     inline ItemCreationClass172600();
-    /** @brief Release the widget storage and destroy its base. */
+
     virtual ~ItemCreationClass172600();
+
     /** @brief Advance the scalar indicator and mark it for refresh. */
     virtual void func_00413D20();
+
     /** @brief Draw the scalar indicator. */
     virtual void draw();
+
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     float unk50;
@@ -83,8 +86,8 @@ public:
 class LibClass174790 : public LibWidget
 {
 public:
-    /** @brief Release the widget storage and destroy its base. */
     virtual ~LibClass174790();
+
     LibStorageBlock0C unk40;
 };
 
@@ -92,7 +95,6 @@ public:
 class LibClass175170 : public LibWidget
 {
 public:
-    /** @brief Release the widget storage and destroy its base. */
     virtual ~LibClass175170();
 
     /** @brief Refresh the widget's drawing state. */
@@ -212,7 +214,6 @@ public:
 class LibClass172BD0 : public LibTransform
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172BD0()
     {
     }
@@ -231,7 +232,6 @@ public:
 class LibClass172B40 : public LibClass172BD0
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172B40();
 
     /**
@@ -258,8 +258,6 @@ public:
     float unk224;
     float unk228;
     u8 unk22c[4];
-
-    /** Origin in world space. */
     LibVector4 position;
 };
 
@@ -267,7 +265,6 @@ public:
 class LibClass172C60 : public LibClass172BD0
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172C60();
 
     /** @brief Update the matrices, the inverse copy and the world down axis. */
@@ -283,11 +280,7 @@ public:
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
     u8 unk210[0x10];
-
-    /** Copy of the inverse transform. */
     LibMatrix44Value inverse;
-
-    /** Down axis in world space. */
     LibVector4 down;
 };
 
@@ -295,7 +288,6 @@ public:
 class LibClass172CF0 : public LibClass172BD0
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172CF0();
 
     /** @brief Update the matrix and the world down axis. */
@@ -311,8 +303,6 @@ public:
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
     u8 unk210[0x20];
-
-    /** Down axis in world space. */
     LibVector4 down;
 };
 
@@ -320,7 +310,6 @@ public:
 class LibClass172D80 : public LibClass172A20
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172D80();
 
     /** @brief Update the matrices, the world position and the world down axis. */
@@ -335,10 +324,7 @@ public:
      */
     virtual s32 func_00425870(const LibVector4* position, LibVector4* output, float radius);
 
-    /** Down axis in world space. */
     LibVector4 down;
-
-    /** Origin in world space. */
     LibVector4 position;
 };
 
@@ -346,7 +332,6 @@ public:
 class LibClass172E10 : public LibClass172A20
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172E10();
 
     /** @brief Update the matrices. */
@@ -366,7 +351,6 @@ public:
 class LibClass172EA0 : public LibClass172A20
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172EA0();
 
     /** @brief Update the matrix, the world position and the world down axis. */
@@ -381,10 +365,7 @@ public:
      */
     virtual s32 func_00425870(const LibVector4* position, LibVector4* output, float radius);
 
-    /** Down axis in world space. */
     LibVector4 down;
-
-    /** Origin in world space. */
     LibVector4 position;
 };
 
@@ -392,7 +373,6 @@ public:
 class LibClass172F30 : public LibClass172AB0
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172F30();
 
     /** @brief Update the matrix and the world position. */
@@ -422,8 +402,6 @@ public:
 
     float unk220;
     u8 unk224[0xC];
-
-    /** Origin in world space. */
     LibVector4 position;
 };
 
@@ -431,7 +409,6 @@ public:
 class LibClass172FC0 : public LibClass172AB0
 {
 public:
-    /** @brief Destroy the transform. */
     virtual ~LibClass172FC0();
 
     /** @brief Update the matrix and move the local point and axis into world space. */
@@ -461,17 +438,9 @@ public:
 
     float unk220;
     u8 unk224[0xC];
-
-    /** Local point. */
     LibVector4 local_point;
-
-    /** Local axis. */
     LibVector4 local_axis;
-
-    /** Local point in world space. */
     LibVector4 point;
-
-    /** Local axis in world space. */
     LibVector4 axis;
 };
 
@@ -522,19 +491,11 @@ public:
     virtual void complete_dma(u32 channel);
 
     u8 unk94[4];
-
-    /** Packet the object sends; its data comes before its vptr at 0x18. */
     LibPacketBuffer* packet;
-
-    /** Quadwords of the packet to send. */
     u32 packet_quadwords;
-
     float unka0;
     u32 unka4;
-
-    /** Packed RGB color. */
     u32 color;
-
     u8 unkac;
     u8 unkad;
     u8 unkae;
@@ -586,19 +547,11 @@ public:
     virtual void complete_dma(u32 channel);
 
     u8 unk94[4];
-
-    /** Packet the object sends; its data comes before its vptr at 0x18. */
     LibPacketBuffer* packet;
-
-    /** Quadwords of the packet to send. */
     u32 packet_quadwords;
-
     float unka0;
     u32 unka4;
-
-    /** Packed RGB color. */
     u32 color;
-
     u8 unkac;
     u8 unkad;
     u8 unkae;
@@ -650,19 +603,10 @@ public:
     virtual void complete_dma(u32 channel);
 
     u8 unk94[4];
-
-    /** Packet the object owns; its data comes before its vptr at 0x18. */
     LibPacketBuffer* packet;
-
-    /** Quadwords to send. */
     u32 packet_quadwords;
-
-    /** Address of the data to send. */
     u32 packet_address;
-
     u8 unka4[4];
-
-    /** TEX0 value the packet was last built for. */
     u64 tex0;
 };
 
@@ -710,21 +654,14 @@ public:
      */
     virtual void complete_dma(u32 channel);
 
-    /** VRAM allocator slot of the image area. */
     s16 vram_slot;
-
     u8 unk96;
     u8 unk97;
     u8 unk98;
     u8 unk99;
     u8 unk9a;
-
-    /** Image width, as a power of two. */
     u8 width_log2;
-
-    /** Image height, as a power of two. */
     u8 height_log2;
-
     u8 unk9d;
     u8 unk9e;
     u8 unk9f;
@@ -736,16 +673,9 @@ public:
     float unkdc[8];
     float unkfc[8];
     float unk11c;
-
-    /** Quadwords of the packet to send. */
     u32 packet_quadwords;
-
-    /** Word address of the image area in VRAM. */
     u32 vram_address;
-
     u8 unk128[4];
-
-    /** Packet the object sends; its data comes before its vptr at 0x18. */
     LibPacketBuffer* packet;
 };
 
@@ -788,8 +718,6 @@ public:
     u8 unk1c;
     u8 unk1d[0x40F];
     s32 unk42c;
-
-    /** Image capture the object created; null once released. */
     LibImageCapture* capture;
 };
 
@@ -797,7 +725,6 @@ public:
 class LibClass1728C0 : public LibListSentinel
 {
 public:
-    /** @brief Destroy the builder and its links. */
     virtual ~LibClass1728C0()
     {
     }
@@ -864,7 +791,6 @@ public:
 class LibClass172900 : public LibClass1728C0
 {
 public:
-    /** @brief Destroy the builder. */
     virtual ~LibClass172900();
 
     /**
@@ -895,7 +821,6 @@ public:
 class LibClass172920 : public LibClass1728C0
 {
 public:
-    /** @brief Destroy the builder. */
     virtual ~LibClass172920();
 
     /**
@@ -923,7 +848,6 @@ public:
 class LibClass172940 : public LibClass1728C0
 {
 public:
-    /** @brief Destroy the builder. */
     virtual ~LibClass172940();
 
     /**
@@ -997,23 +921,13 @@ public:
     /** @brief Allocate a packet big enough for every builder in the list, plus 20 quadwords. */
     void allocate_packet();
 
-    /** Packet the builders write into; its data comes before its vptr at 0x18. */
     LibPacketBuffer* packet;
-
     float unk22c;
     u32 unk230;
-
-    /** Quadwords to send. */
     u32 packet_quadwords;
-
-    /** Address of the data to send. */
     u32 packet_address;
-
     u8 unk23c;
-
-    /** Nonzero when the transform owns unk240 and the builders in its list. */
     u8 unk23d;
-
     u8 unk23e;
     u8 unk23f;
     LibListObject* unk240;
@@ -1023,7 +937,6 @@ public:
 class LibClass173080 : public LibUpdateList, public LibListObject
 {
 public:
-    /** @brief Destroy the list. */
     virtual ~LibClass173080();
 
     /** @brief Update every node in the list, in order. */

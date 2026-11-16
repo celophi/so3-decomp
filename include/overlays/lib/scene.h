@@ -81,31 +81,21 @@ public:
     /** @brief Virtual slot 0x30. */
     virtual void* func_0046C180(void* unk1, void* unk2, void* record);
 
-    /** Decoded scene resource the entries come from. */
     u8* data;
-
     LibManagedEntry* entries;
     u32 unk1c;
     LibEntryTableHeader* header;
     u8 unk24[0x10];
     void* unk34[LIB_ENTRY_MANAGER_SLOT_COUNT];
-
-    /** Names looked up in the linked manager by entries with a negative link. */
     char (*link_names)[LIB_ENTRY_NAME_COMPARE_LENGTH];
-
     void* unk78;
     LibEntryManager* linked;
     LibListReceiver unk80;
     s32 cached_entry_index;
     u8 unk98[4];
-
-    /** The data belongs to someone else, so the scene doesn't free it. */
     u8 data_borrowed;
-
     u8 unk9D;
     u8 unk9E;
-
-    /** Nonzero skips the matching unk34 slot. */
     u8 unk9f[LIB_ENTRY_MANAGER_SLOT_COUNT];
 };
 

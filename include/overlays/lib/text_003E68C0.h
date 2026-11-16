@@ -30,40 +30,110 @@ class LibPositionTransform;
 class LibOrientedTransform;
 struct LibVector4;
 
-/** @brief Store state value 8 in the transform's byte at offset 0x60. @param object Transform owner. */
+/**
+ * @brief Store state value 8 in the transform's byte at offset 0x60.
+ * @param object Transform owner.
+ */
 extern "C" void func_003F4500(LibTransformOwner* object);
-/** @brief Store state value 7 in the transform's byte at offset 0x60. @param object Transform owner. */
+
+/**
+ * @brief Store state value 7 in the transform's byte at offset 0x60.
+ * @param object Transform owner.
+ */
 extern "C" void func_003F4560(LibTransformOwner* object);
-/** @brief Return the fixed value 14. @param object Receiver or first argument; unused. @return Always 14. */
+
+/**
+ * @brief Return the fixed value 14.
+ * @param object Receiver or first argument; unused.
+ * @return Always 14.
+ */
 extern "C" s32 func_003F4550(void* object);
-/** @brief Return the fixed value 9. @param object Unused receiver. @return Always 9. */
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Unused receiver.
+ * @return Always 9.
+ */
 extern "C" s32 func_003EF900(void* object);
-/** @brief Return the fixed value 9. @param object Unused receiver. @return Always 9. */
+
+/**
+ * @brief Return the fixed value 9.
+ * @param object Unused receiver.
+ * @return Always 9.
+ */
 extern "C" s32 func_003F4370(void* object);
-/** @brief Store state value 9 in the transform's byte at offset 0x60. @param object Transform owner. */
+
+/**
+ * @brief Store state value 9 in the transform's byte at offset 0x60.
+ * @param object Transform owner.
+ */
 extern "C" void func_003EF910(LibTransformOwner* object);
-/** @brief Finish the transform receiver's packet. @param object Transform owner. */
+
+/**
+ * @brief Finish the transform receiver's packet.
+ * @param object Transform owner.
+ */
 extern "C" void func_003EF070(LibTransformOwner* object);
 
-/** @brief Store a word at receiver offset 0x14. @param object Receiver. @param value Word value. */
+/**
+ * @brief Store a word at receiver offset 0x14.
+ * @param object Receiver.
+ * @param value Word value.
+ */
 extern "C" void func_003F3E60(void* object, u32 value);
-/** @brief Read the word at receiver offset 0x3C78. @param object Receiver. @return Stored word. */
+
+/**
+ * @brief Read the word at receiver offset 0x3C78.
+ * @param object Receiver.
+ * @return Stored word.
+ */
 extern "C" u32 func_003F3E70(const void* object);
-/** @brief Store a word at receiver offset 0x4. @param object Receiver. @param value Word value. */
+
+/**
+ * @brief Store a word at receiver offset 0x4.
+ * @param object Receiver.
+ * @param value Word value.
+ */
 extern "C" void func_003F3E80(void* object, u32 value);
-/** @brief Store a word at receiver offset 0x8C. @param object Receiver. @param value Word value. */
+
+/**
+ * @brief Store a word at receiver offset 0x8C.
+ * @param object Receiver.
+ * @param value Word value.
+ */
 extern "C" void func_003F3E90(void* object, u32 value);
-/** @brief Return the receiver address at offset 0x3C60. @param object Receiver. @return Address of the field. */
+
+/**
+ * @brief Return the receiver address at offset 0x3C60.
+ * @param object Receiver.
+ * @return Address of the field.
+ */
 extern "C" void* func_003F3EF0(void* object);
-/** @brief Store a word at receiver offset 0x3C7C. @param object Receiver. @param value Word value. */
+
+/**
+ * @brief Store a word at receiver offset 0x3C7C.
+ * @param object Receiver.
+ * @param value Word value.
+ */
 extern "C" void func_003F3F00(void* object, u32 value);
-/** @brief Copy the byte at offset 0xB4 to offset 0x60. @param object Receiver to update. */
+
+/**
+ * @brief Copy the byte at offset 0xB4 to offset 0x60.
+ * @param object Receiver to update.
+ */
 extern "C" void func_003EEDE0(void* object);
+
 /** Build and return a pointer to the four-word stack value. */
 extern "C" void* func_003EEDF0(void);
+
 /** Build and return a pointer to the four-word stack value. */
 extern "C" void* func_003F4570(void);
-/** @brief Clear the receiver's first two words and return the receiver. @param object Receiver. @return The receiver. */
+
+/**
+ * @brief Clear the receiver's first two words and return the receiver.
+ * @param object Receiver.
+ * @return The receiver.
+ */
 extern "C" void* func_003F42A0(void* object);
 
 /** Four aligned floating-point vector components. */
@@ -135,21 +205,11 @@ struct LibClass3F5B80Entry
 /** Encoded copies of three values, at a random place in the owner's storage. */
 struct LibProtectedRecord
 {
-    /** The checked word XORed with LIB_PROTECTED_CHECK_KEY. */
     u32 check;
-
-    /** Random key of the large value. */
     u32 large_key;
-
-    /** Small value plus its bias, XORed with LIB_PROTECTED_SMALL_KEY. */
     u32 small_value;
-
-    /** Large value plus its bias, XORed with large_key. */
     u32 large_value;
-
     u8 unk10[4];
-
-    /** The checked word XORed with LIB_PROTECTED_WORD_KEY. */
     u32 word;
 };
 
@@ -205,10 +265,7 @@ public:
     /** @brief Move the record to a new random place in the storage and store zero in all three values. */
     void reset();
 
-    /** Storage the record sits in. */
     u8* storage;
-
-    /** Record offset XORed with LIB_PROTECTED_OFFSET_KEY. */
     u32 key;
 };
 
@@ -247,15 +304,39 @@ public:
     /** @brief Pick a new aligned buffer and reset it as the constructor does. */
     void func_003F5AC0();
 
-    /** @brief Store a byte in one of three backing-buffer slots. @param index Slot index. @param value Byte value. */
+    /**
+     * @brief Store a byte in one of three backing-buffer slots.
+     * @param index Slot index.
+     * @param value Byte value.
+     */
     void func_003F4A10(s32 index, u8 value);
-    /** @brief Store a byte in one of three backing-buffer slots. @param index Slot index. @param value Byte value. */
+
+    /**
+     * @brief Store a byte in one of three backing-buffer slots.
+     * @param index Slot index.
+     * @param value Byte value.
+     */
     void func_003F4A50(s32 index, u8 value);
-    /** @brief Store a byte in one of three backing-buffer slots. @param index Slot index. @param value Byte value. */
+
+    /**
+     * @brief Store a byte in one of three backing-buffer slots.
+     * @param index Slot index.
+     * @param value Byte value.
+     */
     void func_003F4A90(s32 index, u8 value);
-    /** @brief Read an entry's state byte when the index is in range. @param index Entry index. @return The state byte, or zero when the index is invalid. */
+
+    /**
+     * @brief Read an entry's state byte when the index is in range.
+     * @param index Entry index.
+     * @return The state byte, or zero when the index is invalid.
+     */
     u8 func_003F4AD0(s32 index);
-    /** @brief Read an entry's first word when the index is in range. @param index Entry index. @return The word, or zero when the index is invalid. */
+
+    /**
+     * @brief Read an entry's first word when the index is in range.
+     * @param index Entry index.
+     * @return The word, or zero when the index is invalid.
+     */
     u32 func_003F4B10(s32 index);
 
     /**
@@ -264,9 +345,19 @@ public:
      * @return The entry's signed halfword, or -1 for an invalid index.
      */
     s32 func_003F4B50(s32 index);
-    /** @brief Store a halfword value in the backing buffer, mapping -1 to 0x37. @param value Value to store. */
+
+    /**
+     * @brief Store a halfword value in the backing buffer, mapping -1 to 0x37.
+     * @param value Value to store.
+     */
     void func_003F4B90(s32 value);
-    /** @brief Store two values in an entry when the index is in range. @param index Entry index. @param value Word value. @param state Byte value. */
+
+    /**
+     * @brief Store two values in an entry when the index is in range.
+     * @param index Entry index.
+     * @param value Word value.
+     * @param state Byte value.
+     */
     void func_003F4BC0(s32 index, u32 value, u8 state);
 
     u8 unk00[0x790];
@@ -296,7 +387,6 @@ public:
 class LibLink
 {
 public:
-    /** @brief Destroy the intrusive-link root. */
     virtual ~LibLink()
     {
     }
@@ -309,15 +399,20 @@ public:
     LibListSentinel() : previous(0), next(0)
     {
     }
-    /** @brief Destroy the list sentinel and its virtual root. */
+
     virtual ~LibListSentinel()
     {
     }
+
     LibListSentinel* previous;
     LibListSentinel* next;
 };
 class LibUpdateList;
-/** @brief Detach an object from its owner. @param object Intrusive receiver. */
+
+/**
+ * @brief Detach an object from its owner.
+ * @param object Intrusive receiver.
+ */
 extern "C" void lib_object_detach_owner(void* object);
 
 /** Values of LibListObject::object_kind. */
@@ -338,13 +433,17 @@ public:
     LibListObject() : is_listed(0), object_kind(0), owner(0)
     {
     }
+
     /** @brief Detach from the owner, then destroy the intrusive links. */
     virtual ~LibListObject()
     {
         lib_object_detach_owner(this);
     }
 
-    /** @brief Report the list kind used when registration requests the default. @return Three in the base implementation. */
+    /**
+     * @brief Report the list kind used when registration requests the default.
+     * @return Three in the base implementation.
+     */
     virtual s32 get_default_list_kind();
 
     /** @brief Delete the object through its virtual destructor; null is ignored. */
@@ -355,12 +454,10 @@ public:
 
     /** @brief Virtual slot 4; the base implementation does nothing. */
     virtual void render();
+
     s16 list_kind;
     u8 is_listed;
-
-    /** Type tag (LIB_OBJECT_KIND_*); zero by default. */
     u8 object_kind;
-
     LibUpdateList* owner;
 };
 
@@ -371,7 +468,6 @@ public:
     /** @brief Start at the origin. */
     LibPositionTransform();
 
-    /** @brief Destroy the transform. */
     virtual ~LibPositionTransform()
     {
     }
@@ -406,7 +502,6 @@ public:
     /** @brief Initialize the transform. */
     LibOrientedTransform();
 
-    /** @brief Destroy the transform. */
     virtual ~LibOrientedTransform()
     {
     }
@@ -492,14 +587,9 @@ public:
      */
     virtual void copy_scale(const LibVector4* value);
 
-    /** Rotation as a quaternion; Euler angles are converted on the way in. */
     LibVector4 orientation;
-
     LibVector4 scale;
-
-    /** Nonzero when the transformation matrices need rebuilding. */
     u8 transform_dirty;
-
     u8 unk51;
 };
 #endif
@@ -512,7 +602,9 @@ extern "C" void func_003F2550(LibTransformOwner* object);
 
 #ifdef __cplusplus
 extern "C" s32 func_003EF090(void* object);
+
 extern "C" s32 func_003F2570(void* object);
+
 extern "C" void func_003EFAF0(N50Owner94_003E68C0* object);
 #endif
 

@@ -59,9 +59,17 @@ class FieldClass153570 : public FieldClass154D20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass153570();
-    /** @brief Copy the source channel. @param other Source channel. */
+
+    /**
+     * @brief Copy the source channel.
+     * @param other Source channel.
+     */
     virtual void func_0020BD00(FieldClass154D20* other);
-    /** @brief Store the channel context. @param context Context pointer. */
+
+    /**
+     * @brief Store the channel context.
+     * @param context Context pointer.
+     */
     virtual void func_0020BCF0(void* context);
 
     /**

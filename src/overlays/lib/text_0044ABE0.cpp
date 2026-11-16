@@ -33,7 +33,10 @@ public:
     /** @brief Destroy the captures, then the list object. */
     virtual ~LibClass1745F0();
 
-    /** @brief Return the fixed list kind 14. @return Always 14. */
+    /**
+     * @brief Return the fixed list kind 14.
+     * @return Always 14.
+     */
     virtual s32 get_default_list_kind();
 
     /** @brief Destroy the captures, then queue the object for release. */
@@ -63,20 +66,14 @@ public:
     }
 
     u8 unk14[0xC];
-
-    /** Screen offset of each capture. */
     FieldVec4A positions[LIB_CLASS_1745F0_CAPTURE_COUNT];
-
     s32 capture_count;
     LibCameraContext* display;
     void* unk78;
     u8 unk7c[8];
     float unk84;
     u8 unk88;
-
-    /** Set when the captures were just recreated; the next update skips its drawing. */
     u8 recreated;
-
     u8 unk8a[6];
     u32 strips[LIB_CLASS_1745F0_CAPTURE_COUNT][LIB_CLASS_1745F0_STRIP_WORDS];
     LibImageCapture* captures[LIB_CLASS_1745F0_CAPTURE_COUNT];
@@ -118,15 +115,10 @@ public:
     LibStorageBlock0C storage;
     u8 unk4c[4];
     LibQuadCorner corners[4];
-
-    /** Packed vertex color; zero hides the quad. */
     u32 color;
-
     float scale_x;
     float scale_y;
     float speed;
-
-    /** Animation step: 0 grows in, 1 settles, 2 done. */
     s32 state;
 };
 
@@ -235,10 +227,7 @@ public:
     u8 unk9c;
     u8 unk9d;
     u8 unk9e[2];
-
-    /** Quadwords of the packet's pending data. */
     u32 qwc;
-
     u8 unka4[4];
     u32 unka8;
     s16 unkac;
@@ -256,7 +245,9 @@ public:
 };
 
 extern "C" u8 D_00174D30[];
+
 extern "C" void func_004A8F10(void* object);
+
 /** Partial indexed-resource fields at CC and D0. */
 typedef struct LibIndexedResourceState
 {
@@ -264,12 +255,18 @@ typedef struct LibIndexedResourceState
     s32 current;
     s32 selected;
 } LibIndexedResourceState;
+
 extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 index);
+
 extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 first, s32 second, s32 third, s32 fourth, float x, float y);
+
 extern "C" void func_00465A90(void* owner, LibCallbackTransform* object);
+
 extern "C" ResidentDmaQueue* g_vif1_dma_queue;
 extern "C" ResidentDmaQueue* D_001B6604;
+
 extern "C" void func_00454E90(LibDrawBuffer* buffer);
+
 extern "C" void func_004D5A50(LibDrawBuffer* buffer, u32* commands);
 
 /**
@@ -333,13 +330,16 @@ void LibCallbackTransform::set_codes_and_z(s32 code, u32 first, float z, u32 sec
         first = 9;
         second = 0xFFFFFE - code * 16;
     }
+
     unka0 = code;
     unka8 = first;
     unka4 = second;
+
     if (code >= 13 && code < 21)
     {
         third = 255 - (code - 13);
     }
+
     unka9 = third;
     float x = translation.x;
     float y = translation.y;
@@ -370,6 +370,7 @@ extern "C" void func_0044B1C0(LibCallbackTransform* object)
         {
             func_00465A90(object->unk94, object);
         }
+
         object->LibTransformOwner::destroy();
         object->unkaf = 1;
     }
@@ -484,6 +485,7 @@ extern "C" bool lib_scissor_init_reset(ItemCreationClass1746A0* object, s32 code
     object->unk50 = 1;
     object->needs_redraw = 1;
     bool success;
+
     if (!lib_allocate_drawing_storage(&object->unk40, 6))
     {
         success = false;
@@ -493,6 +495,7 @@ extern "C" bool lib_scissor_init_reset(ItemCreationClass1746A0* object, s32 code
         object->unk39 = 1;
         success = true;
     }
+
     return success;
 }
 
@@ -514,6 +517,7 @@ extern "C" bool lib_scissor_init_rectangle(ItemCreationClass1746A0* object, floa
     object->unk50 = 0;
     object->needs_redraw = 1;
     bool success;
+
     if (!lib_allocate_drawing_storage(&object->unk40, 6))
     {
         success = false;
@@ -523,6 +527,7 @@ extern "C" bool lib_scissor_init_rectangle(ItemCreationClass1746A0* object, floa
         object->unk39 = 1;
         success = true;
     }
+
     return success;
 }
 
@@ -650,20 +655,29 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF50);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF60);
 
-/** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */
+/**
+ * @brief Set the receiver's byte at offset 0x60 to 8.
+ * @param object Receiver to update.
+ */
 void func_0044C050(LibObjectByte60* object)
 {
     object->unk60 = 8;
 }
 
-/** @brief Perform no work. @param object Unused receiver. */
+/**
+ * @brief Perform no work.
+ * @param object Unused receiver.
+ */
 void func_0044C060(void* object)
 {
 }
 
 extern "C" u8 D_00508240[];
 
-/** @brief Return the address of D_00508240. @return The data symbol's address. */
+/**
+ * @brief Return the address of D_00508240.
+ * @return The data symbol's address.
+ */
 const void* func_0044C070(void)
 {
     return D_00508240;
@@ -688,7 +702,10 @@ void LibClass174840::submit_dma(u32 channel)
     *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
 }
 
-/** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
+/**
+ * @brief Forward the receiver to the base transform update.
+ * @param object Transform receiver.
+ */
 void func_0044C0F0(void* object)
 {
     lib_finish_packet(static_cast<LibTransformOwner*>(object));
@@ -707,7 +724,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044CE10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044CF30);
 
-/** @brief Set the receiver's byte at offset 0x60 to 8. @param object Receiver to update. */
+/**
+ * @brief Set the receiver's byte at offset 0x60 to 8.
+ * @param object Receiver to update.
+ */
 extern "C" void func_0044D070(LibObjectByte60* object)
 {
     object->unk60 = 8;
@@ -715,13 +735,19 @@ extern "C" void func_0044D070(LibObjectByte60* object)
 
 extern "C" u8 D_00508230[];
 
-/** @brief Return the address of D_00508230. @return The data symbol's address. */
+/**
+ * @brief Return the address of D_00508230.
+ * @return The data symbol's address.
+ */
 extern "C" const void* func_0044D080(void)
 {
     return D_00508230;
 }
 
-/** @brief Clear the intrusive owner and invoke the base transform release. @param object Transform owner to detach. */
+/**
+ * @brief Clear the intrusive owner and invoke the base transform release.
+ * @param object Transform owner to detach.
+ */
 extern "C" void func_0044D090(LibTransformOwner* object)
 {
     object->owner = 0;
@@ -746,7 +772,10 @@ typedef struct LibDisplayReadyView
     u8 ready;
 } LibDisplayReadyView;
 
-/** @brief Update the transform and mark the current display ready. @param object Transform receiver. */
+/**
+ * @brief Update the transform and mark the current display ready.
+ * @param object Transform receiver.
+ */
 extern "C" void func_0044D0D0(void* object)
 {
     static_cast<LibTransform*>(object)->LibTransform::update();
@@ -757,7 +786,10 @@ extern "C" void func_0044D0D0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D100);
 
-/** @brief Forward the receiver to the base transform update. @param object Transform receiver. */
+/**
+ * @brief Forward the receiver to the base transform update.
+ * @param object Transform receiver.
+ */
 extern "C" void func_0044D150(void* object)
 {
     lib_finish_packet(static_cast<LibTransformOwner*>(object));
@@ -821,7 +853,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451B90);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451C00);
 
-/** @brief Return the fixed value 35. @param object Unused receiver. @return Always 35. */
+/**
+ * @brief Return the fixed value 35.
+ * @param object Unused receiver.
+ * @return Always 35.
+ */
 extern "C" s32 func_00451E20(void* object)
 {
     return 35;
@@ -1012,6 +1048,7 @@ s32 lib_draw_buffer_add_texture(LibDrawBuffer* buffer, const LibImageResource* r
     }
 
     index = buffer->texture_count;
+
     if (index >= LIB_DRAW_BUFFER_TEXTURE_COUNT)
     {
         return -1;
@@ -1403,6 +1440,7 @@ extern "C" void lib_draw_buffer_end(LibDrawBuffer* buffer, s32 mode, float dista
         u32* words = reinterpret_cast<u32*>(reinterpret_cast<u32>(buffer->command_cursor) | UNCACHED_SEGMENT);
 
         *words++ = buffer->block_count;
+
         for (s32 i = 0; i < buffer->block_count; i++)
         {
             *words++ = buffer->block_sizes[i];
@@ -1476,29 +1514,37 @@ bool LibDrawBuffer::allocate_storage(s32 buffer_count, s32 word_capacity, s32 bl
     ::operator delete(command_buffers[1]);
     command_buffers[0] = 0;
     command_buffers[1] = 0;
+
     for (s32 i = 0; i < buffer_count; i++)
     {
         command_buffers[i] = new (0) u32[word_capacity + 32];
+
         if (command_buffers[i] == 0)
         {
             return false;
         }
     }
+
     ::operator delete(block_sizes);
     block_sizes = new (0) u32[block_capacity];
+
     if (block_sizes == 0)
     {
         return false;
     }
+
     if (staging_blocks > block_capacity)
     {
         staging_blocks = block_capacity;
     }
+
     block_packets = new (0) u8[(staging_blocks + 2) * 48];
+
     if (block_packets == 0)
     {
         return false;
     }
+
     FlushCache(0);
     return true;
 }
@@ -1805,7 +1851,9 @@ void lib_free_system_data(void)
 #define LIB_RESOURCE_RECORD_COUNT 8
 
 extern "C" void func_0040B760(void);
+
 extern "C" void func_00458700(LibResourceRecordC4* output, LibResourceRecord114* input, s32 mode);
+
 extern "C" void func_004588E0(LibSystemSettings* settings);
 
 // TODO: Like the saved-data functions before it, this only matches at optimization level 0.

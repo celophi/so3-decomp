@@ -7,10 +7,7 @@
 typedef struct LibCharacterRecord
 {
     s16 character_id;
-
-    /** Selects the clamping rules used by the stat setters. */
     s16 stat_limit_type;
-
     s16 encoded_level;
     s16 encoded_base_level;
     u32 encoded_flags;
@@ -22,10 +19,7 @@ typedef struct LibCharacterRecord
     u32 encoded_max_mp;
     u32 encoded_mp;
     float unk28;
-
-    /** Fury is stored at sixteen times its displayed amount. */
     float scaled_max_fury;
-
     float scaled_fury;
     s32 encoded_base_attack;
     s32 encoded_effective_attack;
@@ -39,10 +33,7 @@ typedef struct LibCharacterRecord
     s32 encoded_base_hit;
     s32 encoded_effective_hit;
     s32 encoded_hit;
-
-    /** Validated through the HIT checksum. */
     s32 encoded_base_intelligence;
-
     s32 encoded_effective_intelligence;
     s32 encoded_intelligence;
     s16 encoded_base_knockback_power;
@@ -95,10 +86,7 @@ typedef struct LibCharacterEquipment
     u8 encoded_tactical_skill_states[7];
     s16 encoded_symbology_mastery[32];
     s16 encoded_battle_skill_mastery[42];
-
-    /** Damage responses in earth, water, fire, wind order. */
     u8 elemental_damage_responses[4];
-
     u8 attack_element_mask;
     u8 character_resource_variant;
     u32 luck_checksum;

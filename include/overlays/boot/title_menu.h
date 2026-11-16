@@ -88,41 +88,18 @@ class BootTitleMenu : public LibListObject
 
         LibScene* scene;
         s32 step;
-
-        /** The scene's camera node, made the current display. */
         void* camera;
-
-        /** Arrow beside the selected item. */
         class LibSelectionCursor* cursor;
-
         u8* scene_data;
-
-        /** Selected item: 0 New Game, 1 Continue, 2 Battle Collection, 3 Install. */
         u8 selected;
-
         u8 unk29;
-
-        /** Nonzero while the selected item's color brightens again. */
         u8 pulse_up;
-
-        /** Nonzero when a memory card holds a save to continue. */
         u8 continue_ready;
-
-        /** Lets the fourth item start the BB Unit installer; boot only ever clears it. */
         u8 install_ready;
-
-        /** Nonzero when a memory card holds Battle Collection data. */
         u8 collection_ready;
-
         u8 unk2e[2];
-
-        /** Resource 10; Lib (0x40B3A0) sets up the game's resident records from it before it is freed. */
         u8* game_data;
-
-        /** Item to select first, or -1 to choose from the memory cards. */
         s32 initial_item;
-
-        /** Seconds on the menu without a choice; the opening movie plays again after 45. */
         float idle_time;
 };
 
@@ -180,23 +157,12 @@ class BootImage : public LibListObject
 
         class LibDrawBuffer* draw_buffer;
         LibModel* model;
-
-        /** Texture width in texels. */
         s32 texture_width;
-
-        /** Texture height in texels. */
         s32 texture_height;
-
         s32 palette_width;
         s32 palette_height;
-
-        /** Flag passed when the draw buffer is closed (Lib then writes 0x60 in its header); boot only ever clears it. */
         u8 end_mode;
-
-        /** Nonzero to center the quad on the model's origin; otherwise its top-left corner sits there. */
         u8 centered;
-
-        /** Nonzero once a palette has been uploaded. */
         u8 has_palette;
 };
 
@@ -204,10 +170,7 @@ class BootImage : public LibListObject
 struct BootFadeStripPacket
 {
     u64 transfer_dma;
-
-    /** Upper half of the DMA tag; left unwritten, as the tag doesn't transfer it. */
     u64 transfer_dma_high;
-
     GsGifTag transfer_tag;
     u64 bitbltbuf;
     u64 bitbltbuf_register;
@@ -218,10 +181,7 @@ struct BootFadeStripPacket
     u64 trxdir;
     u64 trxdir_register;
     u64 image_tag;
-
-    /** REGS half of the IMAGE-mode GIF tag; unused, so left unwritten. */
     u64 image_tag_registers;
-
     u64 image_dma;
     u64 image_dma_high;
     u64 draw_dma;

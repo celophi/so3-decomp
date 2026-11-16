@@ -19,7 +19,7 @@ class LibLookAtTransform : public LibTransform
 public:
     /** @brief Initialize the transform without a look-at target or roll. */
     LibLookAtTransform();
-    /** @brief Destroy the look-at transform and its transform base. */
+
     virtual ~LibLookAtTransform();
 
     /**
@@ -31,10 +31,7 @@ public:
     /** @brief Update the matrix to face the target when one is attached. */
     virtual void update_transform_matrix();
 
-    /** Transform whose position supplies the viewing direction, or null. */
     LibTransform* look_at_target;
-
-    /** Rotation about the viewing direction, passed to the sine/cosine helper. */
     float roll_angle;
 };
 /** Size of the area a display draws to: a base size scaled, then rounded up to GS page-friendly sizes. */
@@ -88,31 +85,18 @@ struct LibDisplayRegisters
 /** One screen the display can show: its output registers, draw buffers and settings. */
 struct LibDisplayScreen
 {
-    /** Display setup for the read circuit this screen is shown on. */
     GsDisplayEnvironment display_environment;
-
     u8 unk28[8];
     LibDisplayBuffer buffers[2];
     u8 enabled;
     u8 unkA51;
-
-    /** Interlaced field (0 or 1) the screen is shown in. */
     u8 field;
-
     u8 unkA53;
-
-    /** Show the screen on read circuit 1. */
     u8 circuit1;
-
-    /** Show the screen on read circuit 2. */
     u8 circuit2;
-
     u8 unkA56;
     u8 unkA57;
-
-    /** Pixel format of the screen's frame and draw buffers. */
     s16 pixel_format;
-
     s16 width;
     s16 height;
     s16 view_x;
@@ -187,6 +171,7 @@ private:
         s32 fields;
 
         fields = 1;
+
         if (resident_get_system()->progressive)
         {
             fields = 2;
@@ -299,96 +284,45 @@ public:
     u32 wait_for_field(s32 frame);
 
     GsDisplayEnvironment display_environments[LIB_DISPLAY_BUFFER_COUNT];
-
-    /** Each display environment's DISPFB and DISPLAY values, for showing that buffer on read circuit 1. */
     LibDisplayRegisters circuit1_registers[LIB_DISPLAY_BUFFER_COUNT];
-
-    /** The display environments with both circuits blended at a fixed alpha that alternates each field. */
     GsDisplayEnvironment blend_environments[LIB_DISPLAY_BUFFER_COUNT];
-
-    /** Circuit-1 registers for the blended environments, with the picture moved to line 49. */
     LibDisplayRegisters blend_registers[LIB_DISPLAY_BUFFER_COUNT];
-
     LibDisplayBuffer buffers[LIB_DISPLAY_BUFFER_COUNT];
     LibDrawEnvironment environments[2];
     LibDisplayScreen screens[LIB_DISPLAY_SCREEN_COUNT];
     LibDisplayArea display_area;
     s16 unk3C70;
-
-    /** Depth test method the draw environments are set up with (sceGsSetDefDrawEnv's ztest). */
     s16 depth_test;
-
-    /** Depth buffer pixel format. */
     s16 depth_format;
-
-    /** The draw area isn't drawn at 1:1. */
     u8 scaled;
-
     u8 unk3C77;
-
-    /** First VRAM page (8 KB) after the display's buffers; textures go from here. */
     u32 vram_free_page;
-
-    /** First VRAM page of the display's buffers: the depth buffer, then the frame buffers. */
     u32 vram_base_page;
-
-    /** VRAM pages the depth buffer takes. */
     u32 depth_buffer_pages;
-
-    /** Queue the display's packets go to, set each frame. */
     LibPacketQueue* packet_queue;
-
     u8* unk3C88[2];
     u32 unk3C90[2];
-
-    /** Built packets waiting to be sent once, or null. */
     u8* ready_packets[2];
-
-    /** Quadword counts of ready_packets. */
     u32 ready_sizes[2];
-
     u8* unk3CA8[2];
     u8 unk3CB0;
-
-    /** Which of ready_packets to send. */
     u8 ready_index;
-
     u8 unk3CB2[2];
-
-    /** Two sets of the display's packets, 0x530 bytes each: one per field, one per screen, then the rest. */
     u8* packets[LIB_DISPLAY_PACKET_SET_COUNT][LIB_DISPLAY_PACKET_COUNT];
-
-    /** Quadword counts of packets. */
     u32 packet_sizes[LIB_DISPLAY_PACKET_SET_COUNT][LIB_DISPLAY_PACKET_COUNT];
-
-    /** Which set of packets is sent. */
     s32 packet_set;
-
-    /** Packet lists, two sets of one per field (index set * 2 + field): the buffer, null when there are none. */
     u8* list_buffers[LIB_DISPLAY_PACKET_LIST_COUNT];
-
-    /** Each list's packet addresses. */
     u8** list_packets[LIB_DISPLAY_PACKET_LIST_COUNT];
-
-    /** Each list's packet quadword counts. */
     u32* list_sizes[LIB_DISPLAY_PACKET_LIST_COUNT];
-
-    /** Per set, one flag per list entry: draw it with environments[0] instead of the screen's own. */
     u8* unk3E08[LIB_DISPLAY_PACKET_SET_COUNT];
-
     s32 unk3E10;
     s32 unk3E14;
     s32 unk3E18;
     u8 unk3E1C[4];
     u8* unk3E20;
     u8* unk3E24;
-
-    /** Set of packet lists the next send uses. */
     s32 send_list_set;
-
-    /** Entries in each list of send_list_set. */
     s32 send_list_count;
-
     u8 unk3E30;
     u8 unk3E31[3];
     u8* unk3E34;
@@ -399,16 +333,9 @@ public:
     u8 unk3E49[3];
     u32 unk3E4C;
     u32 unk3E50;
-
-    /** Display environment shown in each field. */
     u32 shown_buffers[2];
-
-    /** Frame buffers the display cycles through. */
     s32 frame_buffer_count;
-
-    /** Blend alpha for blend_environments in the even field; the odd field adds 0x80. */
     u32 blend_field_alpha;
-
     u8 unk3E64;
     u8 unk3E65;
     u8 unk3E66;
@@ -417,21 +344,11 @@ public:
     u8 unk3E69;
     u8 unk3E6A;
     u8 unk3E6B;
-
-    /** Enable alpha blending in the display drawing commands. */
     u8 blend_enabled;
-
-    /** Which of the two alternating draw buffers is in use. */
     u8 current_buffer;
-
     u8 unk3E6E[2];
-
-    /** Alpha multiplied by 128 when building display drawing commands. */
     float blend_alpha;
-
-    /** Packed RGBA the draw buffers are cleared to. */
     u32 clear_color;
-
     s16 unk3E78;
     s16 unk3E7A;
     u8 unk3E7C;
@@ -543,13 +460,8 @@ public:
     u32 start_color;
     u32 end_color;
     u32 color;
-
-    /** Frames so far. */
     float elapsed;
-
-    /** Frames the fade lasts. */
     float duration;
-
     LibScreenRect rect;
     s32 depth;
     LibPacketBuffer* packet;
@@ -573,39 +485,19 @@ public:
      */
     void load_font();
 
-    /** Left margin, in GS primitive coordinates (pixels times 16). */
     s16 left;
-
-    /** Cursor position, in GS primitive coordinates. */
     s16 cursor_y;
-
     s16 cursor_x;
-
-    /** Character cell size in pixels for the display's scale; the height counts field lines. */
     s16 cell_width;
-
     s16 cell_height;
     u8 unk0a[2];
-
-    /** Depth the text draws at. */
     u32 depth;
-
-    /** Text colour (RGBA). */
     u32 color;
-
-    /** Shadow colour (RGBA). */
     u32 shadow_color;
-
     u8 unk18;
-
-    /** Nonzero when the font image belongs to someone else. */
     u8 shared_font;
     u8 unk1a[2];
-
-    /** Decoded font image; resource 11 unless another one was attached. */
     u8* font_image;
-
-    /** Packet the text is drawn with, 0x2000 quadwords. */
     LibPacketBuffer* packet;
 
     /** @brief Destroy the printer. */
@@ -623,60 +515,111 @@ extern "C" void lib_begin_frame_packet(void);
 class LibCamera : public LibLookAtTransform, public DmaSubmission
 {
 public:
-    /** @brief Initialize the camera from the resident context. @param context Resident context. */
+    /**
+     * @brief Initialize the camera from the resident context.
+     * @param context Resident context.
+     */
     LibCamera(void* context);
+
     /** @brief Release camera resources and its transform base. */
     virtual ~LibCamera();
+
     /** @brief Clear the manager camera reference, then detach and queue the transform. */
     virtual void destroy();
-    /** @brief Initialize viewport bounds and default projection settings. @param context Resident viewport context. */
+
+    /**
+     * @brief Initialize viewport bounds and default projection settings.
+     * @param context Resident viewport context.
+     */
     void initialize_projection(const LibCameraContext* context);
-    /** @brief Build the local perspective volume for visibility tests. @param volume Destination volume. */
+
+    /**
+     * @brief Build the local perspective volume for visibility tests.
+     * @param volume Destination volume.
+     */
     void build_projection_volume(LibProjectionVolume* volume) const;
+
     /** @brief Upload the camera's clip geometry into VU0 data memory. */
     void upload_clip_geometry() const;
+
     /** @brief Update the transform and extract its rotation components. */
     virtual void update_transform_matrix();
+
     /** @brief Update camera state and its attached-transform distance. */
     virtual void update();
+
     /** @brief Rebuild the view and projection matrices and upload the projection to VU0. */
     void update_projection();
-    /** @brief Submit the camera's DMA chain. @param channel DMA channel number. */
+
+    /**
+     * @brief Submit the camera's DMA chain.
+     * @param channel DMA channel number.
+     */
     virtual void submit_dma(u32 channel);
-    /** @brief Complete the camera transfer. @param channel DMA channel number. */
+
+    /**
+     * @brief Complete the camera transfer.
+     * @param channel DMA channel number.
+     */
     virtual void complete_dma(u32 channel);
-    /** @brief Queue the camera for VIF1 DMA. @return 1 on success, 0 when the queue is full. */
+
+    /**
+     * @brief Queue the camera for VIF1 DMA.
+     * @return 1 on success, 0 when the queue is full.
+     */
     s32 enqueue_submission();
+
     /** @brief Store unk530 in the packet at unk558 and queue the packet at unk860 for VIF1 DMA. */
     void func_004E1E70();
+
     /** @brief Write the camera's matrices into its uncached packet. */
     void func_004E2120();
-    /** @brief Copy view and projection state from another camera. @param source Camera source. */
+
+    /**
+     * @brief Copy view and projection state from another camera.
+     * @param source Camera source.
+     */
     virtual void copy_camera(const LibCamera* source);
-    /** @brief Copy the camera's view and fog settings. @param source Camera to copy. */
+
+    /**
+     * @brief Copy the camera's view and fog settings.
+     * @param source Camera to copy.
+     */
     void copy_view_and_fog(const LibCamera* source);
+
     /**
      * @brief Read the configured far and near fog factors.
      * @param far_factor Receives the far fog factor.
      * @param near_factor Receives the near fog factor.
      */
     void get_fog_factors(float* far_factor, float* near_factor) const;
+
     /**
      * @brief Set the perspective fog mapping coefficients directly.
      * @param offset Constant fog coefficient.
      * @param reciprocal_scale Reciprocal-distance fog coefficient.
      */
     void set_fog_coefficients(float offset, float reciprocal_scale);
+
     /**
      * @brief Read the perspective fog mapping coefficients.
      * @param offset Receives the constant fog coefficient.
      * @param reciprocal_scale Receives the reciprocal-distance fog coefficient.
      */
     void get_fog_coefficients(float* offset, float* reciprocal_scale) const;
-    /** @brief Set the near fog-distance fraction and recompute fog coefficients. @param fraction Fraction of the configured distance range. */
+
+    /**
+     * @brief Set the near fog-distance fraction and recompute fog coefficients.
+     * @param fraction Fraction of the configured distance range.
+     */
     void set_near_fog_fraction(float fraction);
-    /** @brief Set the far fog-distance fraction and recompute fog coefficients. @param fraction Fraction of the configured distance range. */
+
+    /**
+     * @brief Set the far fog-distance fraction and recompute fog coefficients.
+     * @param fraction Fraction of the configured distance range.
+     */
     void set_far_fog_fraction(float fraction);
+
     /**
      * @brief Set the fog color, factors and distance range, then recompute the perspective coefficients.
      * @param color Packed RGB fog color.
@@ -686,13 +629,18 @@ public:
      * @param far_distance Far fog distance.
      */
     void set_fog(u32 color, float far_factor, float near_factor, float near_distance, float far_distance);
+
     /**
      * @brief Calculate the scaled screen-plane distance from the horizontal field of view.
      * @return Perspective projection distance.
      */
     float compute_projection_distance() const;
 private:
-    /** @brief Recompute the perspective fog mapping. @param far_factor Far fog factor. @param near_factor Near fog factor. */
+    /**
+     * @brief Recompute the perspective fog mapping.
+     * @param far_factor Far fog factor.
+     * @param near_factor Near fog factor.
+     */
     void update_fog_coefficients(float far_factor, float near_factor)
     {
         float distance_span = far_fog_distance - near_fog_distance;
@@ -707,10 +655,7 @@ public:
     float unk244;
     u32 unk248;
     float unk24c;
-
-    /** Scale on the view's width; 0.75 for widescreen. */
     float width_scale;
-
     float unk254;
     u32 unk258;
     float horizontal_fov;
@@ -720,10 +665,7 @@ public:
     float unk26c;
     float unk270;
     float projection_distance;
-
-    /** Height of a screen pixel over its width: the display's aspect ratio scaled to its pixel size. */
     float pixel_aspect;
-
     u32 unk27c;
     float unk280;
     float unk284;
@@ -731,33 +673,19 @@ public:
     FieldVec4B screen_min;
     FieldVec4B screen_max;
     u8 unk2b0[0x10];
-
-    /** Inverse of the camera transform. */
     LibMatrix44Value view_matrix;
-
-    /** Perspective projection built from the camera's projection settings. */
     LibMatrix44Value projection_matrix;
-
     LibMatrix44Value unk340;
     LibMatrix44Value unk380;
     u8 unk3c0[4];
-
-    /** Depth microprogram 0 gives a point on the view axis at the projection distance. */
     float centre_depth;
-
     s32 unk3c8;
     s32 unk3cc;
-
-    /** LIB_CAMERA_MODE_* value. */
     u8 mode;
-
     u8 unk3d1;
     u8 unk3d2;
     u8 unk3d3;
-
-    /** Transform the camera sits at in LIB_CAMERA_MODE_FACE_CURRENT_CAMERA. */
     LibTransform* anchor;
-
     u8 unk3d8[8];
     float unk3e0;
     float unk3e4;
@@ -798,6 +726,7 @@ extern "C" {
 #endif
 
 void func_004E59A0(void* object);
+
 /**
  * @brief Perform no work.
  * @param object Receiver or first argument; unused.
@@ -887,12 +816,19 @@ s32 func_004E6460(void* object, float key);
 void func_004E1020(void* object);
 
 void* func_004E4590(void* object);
+
 void* func_004E4650(void* object);
+
 void* func_004E4710(void* object);
+
 void* func_004E47D0(void* object);
+
 void* func_004E4890(void* object);
+
 void* func_004E4950(void* object);
+
 void* func_004E4A10(void* object);
+
 void* func_004E4AD0(void* object);
 
 

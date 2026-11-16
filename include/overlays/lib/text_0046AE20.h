@@ -24,6 +24,7 @@ void func_0047A010(void* object, void* cell, void* row, s32 index, void* extra4,
 
 /** Return the mapped entry at the indexed 0x120-byte record's offset 0xF0. */
 void* func_0047A860(const void* object, s32 index);
+
 /** Clear four state bytes before updating the row through the owner. */
 void func_0047A040(void* object, u8* state, void* row);
 
@@ -197,8 +198,13 @@ void* lib_find_named_entry(const LibEntryManager* manager, const char* name);
  */
 void* lib_find_transform_entry(LibEntryManager* manager, const char* name);
 
-/** @brief Copy one aligned 16-byte value. @param output Destination value. @param input Source value. */
+/**
+ * @brief Copy one aligned 16-byte value.
+ * @param output Destination value.
+ * @param input Source value.
+ */
 void func_00479090(void* output, const void* input);
+
 /**
  * @brief Set the inherited transform dirty flag.
  * @param object Transform receiver.
@@ -301,22 +307,31 @@ float func_0047ADC0(void* object);
 
 /** Return the word at receiver offset 0x8. */
 u32 func_00478F70(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_00478F80(const void* object);
+
 /** Return the word at receiver offset 0xB8. */
 u32 func_00479FE0(const void* object);
+
 /** Return the word at receiver offset 0xBC. */
 u32 func_0047A000(const void* object);
+
 /** Return the word at receiver offset 0xB0. */
 u32 func_0047A080(const void* object);
+
 /** Return the word at receiver offset 0xB4. */
 u32 func_0047A0A0(const void* object);
+
 /** Return the word at receiver offset 0xB0. */
 u32 func_0047A0C0(const void* object);
+
 /** Return the word at receiver offset 0xB4. */
 u32 func_0047A0E0(const void* object);
+
 /** Return the word at receiver offset 0x48. */
 u32 func_0047A700(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0047A740(const void* object);
 
@@ -427,6 +442,7 @@ s32 func_0047A110(void* object);
 s32 func_0047A120(void* object);
 
 void func_00479FB0(void* object);
+
 void func_0047A840(void* object);
 
 /** Return the first pointer argument unchanged. */
@@ -446,7 +462,10 @@ void func_0047A810(void* object, const void* source);
 /** Store a byte at 0x59C and set bit 0 of the byte at 0x59D. */
 void func_00479160(void* object, u8 value);
 
-/** @brief Increment the byte at receiver offset 0x790. @param object Receiver containing the counter byte. */
+/**
+ * @brief Increment the byte at receiver offset 0x790.
+ * @param object Receiver containing the counter byte.
+ */
 void func_00479180(void* object);
 
 #ifdef __cplusplus

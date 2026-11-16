@@ -28,13 +28,18 @@ public:
     /** @brief Queue the script object for release. */
     virtual void func_001DD7B0();
 
-    /** @brief Destroy the script state and its inherited node. */
     virtual ~FieldClass150DC0();
 
-    /** @brief Return the context's fixed state value. @return Always one. */
+    /**
+     * @brief Return the context's fixed state value.
+     * @return Always one.
+     */
     virtual s32 func_00201520();
 
-    /** @brief Return the current context scale. @return Context scale. */
+    /**
+     * @brief Return the current context scale.
+     * @return Context scale.
+     */
     virtual float func_00201530();
 
     float number;
@@ -78,10 +83,7 @@ public:
     FieldClass154CC0* context4c;
     FieldClass154E90* context54;
     void* context58;
-
-    /** Slot owner retained for reuse by the active field context. */
     FieldObjectSlotOwner* object_slots;
-
     ResidentContextObject64* context64;
     u32 unk8a0;
     void* context24;

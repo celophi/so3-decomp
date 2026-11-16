@@ -2,6 +2,7 @@
 #include "overlays/3454-00/text_0027E060.h"
 
 s32 func_00291A40(void* object);
+
 void func_002A0720(void* object, s32 state);
 
 
@@ -97,16 +98,19 @@ void func_00286910(Obj27E060* object, u8 first_code, u8 second_code)
     {
         object->unk2E18 = 0;
     }
+
     if (second_code >= 5 && first_code == 0)
     {
         object->unk2E1A = 0;
         object->unk2E20 = 0;
         object->unk2E1C = 0;
     }
+
     if (first_code == 5 || first_code == 10 || first_code == 12 || first_code == 13)
     {
         object->unk2DD4 = 0.0f;
     }
+
     if (first_code == 6 || first_code == 7)
     {
         object->unk2E1A = 0;
@@ -119,16 +123,19 @@ void func_002869C0(Obj27E060* object, u32 unused, s32 enabled)
     if (enabled)
     {
         s32 index = object->unk561;
+
         if (index >= 0 && index < 36)
         {
             float previous = object->unk2D40[index];
             float value = object->unk2DD4;
+
             if (!(previous <= value) || previous == 0.0f)
             {
                 object->unk2D40[index] = value;
             }
         }
     }
+
     object->unk2E20 = 0;
     object->unk2E1A = 0;
     object->unk2E1C = 0;
@@ -159,15 +166,18 @@ void func_0028BDB0(Obj27E060* object, u8 first_code, u8 second_code)
     {
         object->unk2F10 = 0;
     }
+
     if (second_code >= 5 && first_code == 0)
     {
         object->unk2F12 = 0;
         object->unk2F16 = 0;
     }
+
     if (first_code == 5 || first_code == 10 || first_code == 12 || first_code == 13)
     {
         object->unk2EDC = 0.0f;
     }
+
     if (first_code == 6 || first_code == 7)
     {
         object->unk2F12 = 0;
@@ -179,16 +189,19 @@ void func_0028BE50(Obj27E060* object, u32 unused, s32 enabled)
     if (enabled)
     {
         s32 index = object->unk561;
+
         if (index >= 0 && index < 36)
         {
             float previous = object->unk2E48[index];
             float value = object->unk2EDC;
+
             if (!(previous <= value) || previous == 0.0f)
             {
                 object->unk2E48[index] = value;
             }
         }
     }
+
     object->unk2F16 = 0;
     object->unk2F12 = 0;
     object->unk2F5C = 0;

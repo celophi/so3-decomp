@@ -114,6 +114,7 @@ void func_003C6DB0(void* object);
  * @param value Word stored at record offset +0x14.
  */
 void func_003C36B0(void* object, s32 index, u32 value);
+
 /**
  * @brief Store a word in the indexed record and mark it present.
  * @param object Owner of the indexed record table.
@@ -121,6 +122,7 @@ void func_003C36B0(void* object, s32 index, u32 value);
  * @param value Word stored at record offset +0x10.
  */
 void func_003C36E0(void* object, s32 index, u32 value);
+
 /**
  * @brief Store a word in the indexed record and mark it present.
  * @param object Owner of the indexed record table.
@@ -128,6 +130,7 @@ void func_003C36E0(void* object, s32 index, u32 value);
  * @param value Word stored at record offset +0x0C.
  */
 void func_003C3710(void* object, s32 index, u32 value);
+
 /**
  * @brief Store a word in the indexed record and mark it present.
  * @param object Owner of the indexed record table.
@@ -135,6 +138,7 @@ void func_003C3710(void* object, s32 index, u32 value);
  * @param value Word stored at record offset +0x08.
  */
 void func_003C3740(void* object, s32 index, u32 value);
+
 /**
  * @brief Store two floats in the indexed record and mark them present.
  * @param object Owner of the indexed record table.
@@ -143,6 +147,7 @@ void func_003C3740(void* object, s32 index, u32 value);
  * @param second Second value stored at record offset +0x04.
  */
 void func_003C3770(void* object, s32 index, float first, float second);
+
 /**
  * @brief Mark the indexed record's additional value present.
  * @param object Owner of the indexed record table.
@@ -155,11 +160,13 @@ void func_003C37A0(void* object, s32 index);
  * @param object Receiver whose byte at +0x38C is updated.
  */
 void func_003C4680(void* object);
+
 /**
  * @brief Set the update bit in the receiver and run its update routine.
  * @param object Receiver whose byte at +0x1CC is updated.
  */
 void func_003C5010(void* object);
+
 /**
  * @brief Set the readiness byte when it has not yet been initialized.
  * @param object Receiver whose byte at +0x36C is updated.

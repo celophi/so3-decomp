@@ -24,6 +24,7 @@ struct ShopSaleItemWindow : public FieldClass15AD40
     LibObject172440* factors[8];
     ItemCreationClass172870* factor_separator;
     LibPanel* panel;
+
     /** @brief Initialize the sale item window. */
     ShopSaleItemWindow()
     {
@@ -32,25 +33,57 @@ struct ShopSaleItemWindow : public FieldClass15AD40
             item_names[i] = 0;
             sale_prices[i] = 0;
         }
+
         FieldClass15AD40();
     }
-    /** @brief Destroy the Field list window. */
+
     virtual ~ShopSaleItemWindow();
+
     /** @brief Show the selected item instance and its factors. */
     virtual void func_slot5c();
-    /** @brief Open confirmation for selling the selected instance. @return Action result. */
+
+    /**
+     * @brief Open confirmation for selling the selected instance.
+     * @return Action result.
+     */
     virtual u8 func_slotb0();
-    /** @brief Return to the sell list. @return Transition result. */
+
+    /**
+     * @brief Return to the sell list.
+     * @return Transition result.
+     */
     virtual u8 func_slotb4();
-    /** @brief Open confirmation for selling all instances. @return Action result. */
+
+    /**
+     * @brief Open confirmation for selling all instances.
+     * @return Action result.
+     */
     virtual u8 func_slotbc();
-    /** @brief Refresh the visible record displays. @param start First record index. */
+
+    /**
+     * @brief Refresh the visible record displays.
+     * @param start First record index.
+     */
     virtual void refresh_rows(s32 start);
-    /** @brief Position the visible record displays. @param start Base vertical coordinate. */
+
+    /**
+     * @brief Position the visible record displays.
+     * @param start Base vertical coordinate.
+     */
     virtual void set_scroll_position(float start);
-    /** @brief Create the list displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the list displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slot104(u32 associated);
-    /** @brief Set row and selection visibility. @param visible Row display flag. @param selected Selection display flag. */
+
+    /**
+     * @brief Set row and selection visibility.
+     * @param visible Row display flag.
+     * @param selected Selection display flag.
+     */
     virtual void func_slot10c(u32 visible, u32 selected);
 };
 
@@ -65,33 +98,74 @@ struct ShopSellListWindow : public FieldClass15AD40
             item_names[i] = 0;
             item_counts[i] = 0;
         }
+
         FieldClass15AD40();
     }
+
     LibObject172410* item_names[6];
     LibObject174F20* item_counts[6];
     LibPanel* panel;
     u16 item_codes[750];
-    /** @brief Destroy the Field list window. */
+
     virtual ~ShopSellListWindow();
+
     /** @brief Update the current catalog selection and its highlight. */
     virtual void func_slot5c();
-    /** @brief Open the selected item's instances. @return Action result. */
+
+    /**
+     * @brief Open the selected item's instances.
+     * @return Action result.
+     */
     virtual u8 func_slotb0();
-    /** @brief Return to the action window. @return Transition result. */
+
+    /**
+     * @brief Return to the action window.
+     * @return Transition result.
+     */
     virtual u8 func_slotb4();
-    /** @brief Toggle the description and base-parameter views. @return Always one. */
+
+    /**
+     * @brief Toggle the description and base-parameter views.
+     * @return Always one.
+     */
     virtual u8 func_slotbc();
-    /** @brief Select the previous item category. @return Always one. */
+
+    /**
+     * @brief Select the previous item category.
+     * @return Always one.
+     */
     virtual s32 func_slotc8();
-    /** @brief Select the next item category. @return Always one. */
+
+    /**
+     * @brief Select the next item category.
+     * @return Always one.
+     */
     virtual s32 func_slotcc();
-    /** @brief Refresh the visible records. @param start First record index. */
+
+    /**
+     * @brief Refresh the visible records.
+     * @param start First record index.
+     */
     virtual void refresh_rows(s32 start);
-    /** @brief Position the visible records. @param start Base vertical coordinate. */
+
+    /**
+     * @brief Position the visible records.
+     * @param start Base vertical coordinate.
+     */
     virtual void set_scroll_position(float start);
-    /** @brief Create the list displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the list displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slot104(u32 associated);
-    /** @brief Set row and selection visibility. @param visible Row display flag. @param selected Selection display flag. */
+
+    /**
+     * @brief Set row and selection visibility.
+     * @param visible Row display flag.
+     * @param selected Selection display flag.
+     */
     virtual void func_slot10c(u32 visible, u32 selected);
 };
 /** Shop inventory with prices and purchase quantities. */
@@ -105,35 +179,81 @@ struct ShopBuyListWindow : public FieldClass15AD40
     LibObject174F20* buy_limit_displays[6];
     LibPanel* panel;
     s32 error_sound_timer;
+
     /** @brief Initialize the buy list window. */
     ShopBuyListWindow();
-    /** @brief Destroy the Field list window. */
+
     virtual ~ShopBuyListWindow();
+
     /** @brief Update the selected item, row highlight and error sound timer. */
     virtual void func_slot5c();
+
     /** @brief Decrease the selected purchase quantity and refresh its row. */
     virtual void func_slot70();
+
     /** @brief Increase the selected purchase quantity and refresh its row. */
     virtual void func_slot74();
-    /** @brief Open purchase confirmation. @return Action result. */
+
+    /**
+     * @brief Open purchase confirmation.
+     * @return Action result.
+     */
     virtual u8 func_slotb0();
-    /** @brief Clear purchase quantities and return to the action window. @return Always two. */
+
+    /**
+     * @brief Clear purchase quantities and return to the action window.
+     * @return Always two.
+     */
     virtual u8 func_slotb4();
-    /** @brief Open details for the selected item. @return Always one. */
+
+    /**
+     * @brief Open details for the selected item.
+     * @return Always one.
+     */
     virtual u8 func_slotb8();
-    /** @brief Toggle the description and base-parameter views. @return Always one. */
+
+    /**
+     * @brief Toggle the description and base-parameter views.
+     * @return Always one.
+     */
     virtual u8 func_slotbc();
-    /** @brief Select the previous item category. @return Always one. */
+
+    /**
+     * @brief Select the previous item category.
+     * @return Always one.
+     */
     virtual s32 func_slotc8();
-    /** @brief Select the next item category. @return Always one. */
+
+    /**
+     * @brief Select the next item category.
+     * @return Always one.
+     */
     virtual s32 func_slotcc();
-    /** @brief Refresh the visible records. @param start First record index. */
+
+    /**
+     * @brief Refresh the visible records.
+     * @param start First record index.
+     */
     virtual void refresh_rows(s32 start);
-    /** @brief Position the visible records. @param start Base vertical coordinate. */
+
+    /**
+     * @brief Position the visible records.
+     * @param start Base vertical coordinate.
+     */
     virtual void set_scroll_position(float start);
-    /** @brief Create the list displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the list displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slot104(u32 associated);
-    /** @brief Set row and selection visibility. @param visible Row display flag. @param selected Selection display flag. */
+
+    /**
+     * @brief Set row and selection visibility.
+     * @param visible Row display flag.
+     * @param selected Selection display flag.
+     */
     virtual void func_slot10c(u32 visible, u32 selected);
 };
 
@@ -142,16 +262,29 @@ struct ShopItemDetailWindow : public FieldClass15AE70
 {
     /** @brief Destroy the Field window base. */
     virtual ~ShopItemDetailWindow();
+
     /** @brief Refresh the detail container and base window. */
     virtual void func_slot0c();
+
     /** @brief Close the detail window after its item model finishes closing. */
     virtual void func_slot5c();
-    /** @brief Request cancellation of the attached status window when present. @return Always two. */
+
+    /**
+     * @brief Request cancellation of the attached status window when present.
+     * @return Always two.
+     */
     virtual u8 func_slotb4();
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     /** @brief Initialize the item detail window. */
     ShopItemDetailWindow();
+
     LibTextWidget* category_label;
     LibObject172410* item_name;
     ItemCreationClass172870* factor_separator;
@@ -171,12 +304,19 @@ struct ShopFolWindow : public FieldClass15AE70
     ShopFolWindow() : current_fol(0), transaction_total(0), remaining_fol(0)
     {
     }
-    /** @brief Destroy the Field window base. */
+
     virtual ~ShopFolWindow();
+
     /** @brief Update current fol, transaction total and remaining fol. */
     virtual void func_slot5c();
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     LibObject174F20* current_fol;
     LibObject174F20* transaction_total;
     LibObject174F20* remaining_fol;
@@ -189,20 +329,37 @@ struct ShopActionWindow : public FieldClass15AE70
     ShopActionWindow() : choice(0)
     {
     }
-    /** @brief Destroy the Field window base. */
+
     virtual ~ShopActionWindow();
+
     /** @brief Highlight the selected action and show the item category. */
     virtual void func_slot5c();
+
     /** @brief Move the choice grid in direction 3 unless the window state byte is set. */
     virtual void func_slot70();
+
     /** @brief Move the choice grid in direction 2 unless the window state byte is set. */
     virtual void func_slot74();
-    /** @brief Enter the selected buy or sell mode. @return Zero while locked, otherwise one. */
+
+    /**
+     * @brief Enter the selected buy or sell mode.
+     * @return Zero while locked, otherwise one.
+     */
     virtual u8 func_slotb0();
-    /** @brief Request the shop window transition. @return Zero while locked, otherwise two. */
+
+    /**
+     * @brief Request the shop window transition.
+     * @return Zero while locked, otherwise two.
+     */
     virtual u8 func_slotb4();
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldObject23CEA0* choice;
     LibTextWidget* category_label;
     LibTextWidget* buy_label;
@@ -223,14 +380,17 @@ struct ShopDescriptionWindow : public FieldClass15AE70
     LibObject174F20* parameter_values[5];
     u32 description_key;
     u8 show_parameters;
+
     /** @brief Clear the description pointers and toggle state. */
     ShopDescriptionWindow() : description(0), help_text(0), description_key(0), show_parameters(0)
     {
     }
-    /** @brief Destroy the Field window base. */
+
     virtual ~ShopDescriptionWindow();
+
     /** @brief Show the selected category's five catalog values, or its description text when the value view is off. */
     virtual void func_slot5c();
+
     /**
      * @brief Create the description displays and five paired value rows.
      * @param associated Full resource source word.
@@ -247,15 +407,22 @@ struct ShopEquipmentPreviewWindow : public FieldClass15AE70
     LibTextWidget* comparison_labels[8];
     s32 pulse_level;
     s32 pulse_step;
+
     /** @brief Clear the window display pointer. */
     ShopEquipmentPreviewWindow() : unka8(0)
     {
     }
-    /** @brief Destroy the Field window base. */
+
     virtual ~ShopEquipmentPreviewWindow();
+
     /** @brief Preview the selected item's equipment compatibility and parameter changes. */
     virtual void func_slot5c();
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
 };
 
@@ -275,14 +442,25 @@ struct ShopHelpWindow : public FieldClass15AE70
         help_clip_left = 0;
         help_clip_width = 0;
     }
-    /** @brief Destroy the Field window base. */
+
     virtual ~ShopHelpWindow();
+
     /** @brief Update and scroll the selected action's help text. */
     virtual void func_slot5c();
-    /** @brief Set the window text. @param text_key Help message index before the resource offset. */
+
+    /**
+     * @brief Set the window text.
+     * @param text_key Help message index before the resource offset.
+     */
     virtual void func_slot60(s32 text_key);
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     LibTextWidget* help_text;
     s32 help_text_width;
     s16 scroll_timer;
@@ -298,9 +476,13 @@ struct ShopHelpWindow : public FieldClass15AE70
 /** Background assembled from three resource images. */
 struct ShopBackgroundWindow : public FieldClass15AE70
 {
-    /** @brief Destroy the Field window base. */
     virtual ~ShopBackgroundWindow();
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
 };
 
@@ -314,18 +496,34 @@ struct ShopSellAllConfirmWindow : public FieldClass15AE70
         yes_label = 0;
         no_label = 0;
     }
-    /** @brief Destroy the Field window base. */
+
     virtual ~ShopSellAllConfirmWindow();
+
     /** @brief Update the choice with action code three. */
     virtual void func_slot70();
+
     /** @brief Update the choice with action code two. */
     virtual void func_slot74();
-    /** @brief Run the selected action. @return Action result. */
+
+    /**
+     * @brief Run the selected action.
+     * @return Action result.
+     */
     virtual u8 func_slotb0();
-    /** @brief Return to the associated window. @return Transition result. */
+
+    /**
+     * @brief Return to the associated window.
+     * @return Transition result.
+     */
     virtual u8 func_slotb4();
-    /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the choice display.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldObject23CEA0* choice;
     LibTextWidget* yes_label;
     LibTextWidget* no_label;
@@ -341,20 +539,37 @@ struct ShopBuyConfirmWindow : public FieldClass15AE70
         yes_label = 0;
         no_label = 0;
     }
-    /** @brief Destroy the Field window base. */
+
     virtual ~ShopBuyConfirmWindow();
+
     /** @brief Refresh the choice focus flag. */
     virtual void func_slot5c();
+
     /** @brief Update the choice with action code three. */
     virtual void func_slot70();
+
     /** @brief Update the choice with action code two. */
     virtual void func_slot74();
-    /** @brief Run the selected action. @return Action result. */
+
+    /**
+     * @brief Run the selected action.
+     * @return Action result.
+     */
     virtual u8 func_slotb0();
-    /** @brief Return to the associated window. @return Transition result. */
+
+    /**
+     * @brief Return to the associated window.
+     * @return Transition result.
+     */
     virtual u8 func_slotb4();
-    /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the choice display.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldObject23CEA0* choice;
     LibTextWidget* yes_label;
     LibTextWidget* no_label;
@@ -370,18 +585,34 @@ struct ShopSellConfirmWindow : public FieldClass15AE70
         yes_label = 0;
         no_label = 0;
     }
-    /** @brief Destroy the Field window base. */
+
     virtual ~ShopSellConfirmWindow();
+
     /** @brief Update the choice with action code three. */
     virtual void func_slot70();
+
     /** @brief Update the choice with action code two. */
     virtual void func_slot74();
-    /** @brief Run the selected action. @return Action result. */
+
+    /**
+     * @brief Run the selected action.
+     * @return Action result.
+     */
     virtual u8 func_slotb0();
-    /** @brief Return to the associated window. @return Transition result. */
+
+    /**
+     * @brief Return to the associated window.
+     * @return Transition result.
+     */
     virtual u8 func_slotb4();
-    /** @brief Create the choice display. @param associated Full resource source word. @return Creation result. */
+
+    /**
+     * @brief Create the choice display.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
+
     FieldObject23CEA0* choice;
     LibTextWidget* yes_label;
     LibTextWidget* no_label;
@@ -400,63 +631,93 @@ struct ShopState : FieldClass153E30
 {
     /** @brief Initialize the shop controller and its record selection. */
     ShopState();
-    /** @brief Destroy the record selection and Field controller base. */
+
     virtual ~ShopState();
+
     /**
      * @brief Report this object's default list kind.
      * @return The class's default list kind.
      */
     virtual s32 get_default_list_kind();
+
     /** @brief Queue the shop receiver for resident processing. */
     virtual void func_001DD7B0();
+
     /** @brief Default shop receiver handler. */
     virtual void update();
+
     /** @brief Default shop receiver handler. */
     virtual void func_001DD410();
-    /** @brief Initialize the selected records. @return Nonzero when selection links are present. */
+
+    /**
+     * @brief Initialize the selected records.
+     * @return Nonzero when selection links are present.
+     */
     virtual u8 func_00264110();
+
     /** @brief Store the active window at offset 0x20. */
     virtual void func_00263C70(void* value);
+
     /** @brief Return the active window at offset 0x20. */
     virtual void* func_00261150();
+
     /** @brief Store the help window at offset 0x24. */
     virtual void func_00263C80(void* value);
+
     /** @brief Return the help window at offset 0x24. */
     virtual void* func_00263C90();
+
     /** @brief Store the byte at offset 0x28. */
     virtual void func_00263CA0(s8 value);
+
     /** @brief Return the signed byte at offset 0x28. */
     virtual s8 func_00263CB0();
+
     /** @brief Return the item-name resource slot. */
     virtual u32 get_resource_slot();
+
     /** @brief Return the shop window initialization flag. */
     virtual u8 windows_ready();
+
     /** @brief Register the completed resource buffer and initialize the shop. */
     virtual s32 on_resource_loaded(void* buffer);
+
     /** @brief Create and attach the shop windows. */
     virtual s32 init_windows();
+
     /** @brief Release shop resources and clear the discount flags. */
     virtual void func_slot5c();
+
     /** @brief Default shop receiver hook; returns zero. */
     virtual s32 func_slot60();
+
     /** @brief Default shop receiver hook; returns zero. */
     virtual s32 func_slot64();
+
     /** @brief Default shop receiver hook. */
     virtual void func_slot68();
+
     /** @brief Return the shop record selection. */
     virtual FieldRecordSelection* selected_records();
+
     /** @brief Default shop receiver hook. */
     virtual void func_slot70();
+
     /** @brief Default shop receiver hook. */
     virtual void func_slot74();
+
     /** @brief Default shop receiver hook. */
     virtual void func_slot78();
+
     /** @brief Default shop receiver hook; returns zero. */
     virtual s32 func_slot7c();
+
     /** @brief Default shop receiver hook; returns zero. */
     virtual s32 func_slot80();
+
     /** @brief Default shop receiver hook; returns zero. */
     virtual s32 func_slot84();
+
     s32 resource_slot;
     u8 windows_initialized;
     u8 unk39[3];

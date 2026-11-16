@@ -12,21 +12,26 @@
 class FieldClass154E90 : public FieldListObject, public FieldClass1502A0
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object)
     {
         func_004DB570(object);
     }
 
-    /** @brief Initialize the inherited node and list. */
     FieldClass154E90()
     {
     }
 
-    /** @brief Destroy both list bases. */
     virtual ~FieldClass154E90();
 
     /**

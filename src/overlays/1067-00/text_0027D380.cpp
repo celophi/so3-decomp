@@ -26,11 +26,13 @@ void FieldClass155810::func_001DD7B0()
     {
         FieldCountedObject4D5* found = reinterpret_cast<FieldCountedObject4D5*>(
             func_001DEE30((FieldFlaggedListObject*)D_001B6430->context->unk04, unk270, 0x10000));
+
         if (found != 0 && found->unk4d5 > 0)
         {
             found->unk4d5--;
         }
     }
+
     delete this;
 }
 
@@ -42,6 +44,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027D380", func_0027D7
 void FieldClass155B40::update()
 {
     FieldClass154EF0::update();
+
     if (unk20_2)
     {
         FieldVec4A position = unk30;

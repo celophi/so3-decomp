@@ -24,16 +24,22 @@ struct FieldClass150C10;
 class FieldClass159010 : public FieldClass1502A0
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object)
     {
         func_004DB570(object);
     }
 
-    /** @brief Construct the inherited list. */
     FieldClass159010()
     {
     }
@@ -58,7 +64,6 @@ class FieldClass158170;
 typedef struct FieldSequenceTail
 {
     s32 unk00;
-    /* Last key minus first key. */
     float span;
     s16 unk08;
     s16 unk0a;
@@ -124,11 +129,7 @@ public:
     virtual void update();
 
     u8 unk14[4];
-
-    /** Owned objects; null marks a vacant slot. */
     LibListObject* objects[SLOT_COUNT];
-
-    /** Nonzero entries request release of their occupied slots on update. */
     u8 pending_removal[SLOT_COUNT];
 };
 
@@ -142,13 +143,8 @@ struct FieldTimedQuad
     }
 
     FieldVector4 vertices[4];
-
-    /** Remaining hold time; negative values advance the alpha fade. */
     float hold_remaining;
-
-    /** Alpha retained during the hold, then reduced by the elapsed fade time. */
     u8 base_alpha;
-
     u8 side : 1;
     u8 unk45_1_7 : 7;
 };
@@ -233,8 +229,10 @@ public:
 
     /** @brief Construct the object with its state cleared. */
     FieldClass159950();
+
     /** @brief Clear the halfwords at offsets 0x10 and 0x12 and the words at 0x14 and 0x18. */
     void func_002B7DA0();
+
     /** @brief Default handler that performs no work. */
     virtual void func_002BAE60();
 };
@@ -251,8 +249,10 @@ public:
 
     /** @brief Construct the object with its state cleared. */
     FieldClass159940();
+
     /** @brief Clear the halfwords at offsets 0x10 and 0x12 and the words at 0x14 and 0x18. */
     void func_002B7E00();
+
     /** @brief Default handler that performs no work. */
     virtual void func_002BAE70();
 };
@@ -269,8 +269,10 @@ public:
 
     /** @brief Construct the object with its state cleared. */
     FieldClass159930();
+
     /** @brief Clear the halfwords at offsets 4 and 6 and the words at 8 and 0xC. */
     void func_002B7E60();
+
     /** @brief Default handler that performs no work. */
     virtual void func_002BAE80();
 };
@@ -292,11 +294,11 @@ class FieldClass159970
 public:
     u8 unk00[0x4C];
 
-    /** @brief Construct the object. */
     FieldClass159970();
 
     // Slots in vtable order; only their positions are known.
     virtual void func_00239460();
+
     virtual void func_slot0c() = 0;
 };
 
@@ -317,7 +319,6 @@ public:
     {
     }
 
-    /** @brief Destroy the shutdown sequence. */
     virtual ~FieldShutdownSequence();
 
     /**
@@ -329,7 +330,6 @@ public:
     /** @brief Run the next stage, then request exit and remove the node after stage three. */
     virtual void update();
 
-    /** Next shutdown stage, starting at zero. */
     s8 stage;
 };
 
@@ -363,8 +363,6 @@ public:
     virtual void update();
 
     u8 unk14[4];
-
-    /** Alpha retained by the field blend setter. */
     float alpha;
 };
 #endif
@@ -376,36 +374,43 @@ class FieldClass1595D0 : public FieldClass14FF50
 public:
     /** @brief Clear the pooled flag and reset the sequence. */
     FieldClass1595D0();
+
     /**
      * @brief Release the track storage.
      */
     virtual ~FieldClass1595D0();
+
     /**
      * @brief Allocate storage for the requested keyframe count.
      * @param count Requested keyframe count.
      */
     virtual void func_002B9320(s32 count);
+
     /**
      * @brief Bind an external keyframe array.
      * @param count Keyframe count.
      * @param entries External keyframe storage.
      */
     virtual void func_002B8CE0(s32 count, void* entries);
+
     /**
      * @brief Set the lower mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002B8D30(s32 mode);
+
     /**
      * @brief Set the upper mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002B8D90(s32 mode);
+
     /**
      * @brief Return the stored word at offset 0x40.
      * @return Stored word.
      */
     virtual s32 func_002B8DF0() const;
+
     /**
      * @brief Append a vector keyframe.
      * @param value Keyframe value.
@@ -415,10 +420,12 @@ public:
      * @return Append status.
      */
     virtual s32 func_002BB970(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /**
      * @brief Run the default track hook.
      */
     virtual void func_001DF220();
+
     /**
      * @brief Replace an indexed vector keyframe.
      * @param index Keyframe index.
@@ -429,6 +436,7 @@ public:
      * @return Replacement status.
      */
     virtual s32 func_002BB9A0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Insert an indexed vector keyframe.
      * @param index Keyframe index.
@@ -439,6 +447,7 @@ public:
      * @return Insertion status.
      */
     virtual s32 func_002BB9D0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Read an indexed vector keyframe.
      * @param index Keyframe index.
@@ -449,6 +458,7 @@ public:
      * @return Nonzero when the keyframe is available.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
     /**
      * @brief Add a vector keyframe through the track implementation.
      * @param value Keyframe value.
@@ -457,76 +467,141 @@ public:
      * @param key Sort key.
      */
     virtual void func_002BBA00(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /**
      * @brief Run the default update hook.
      */
     virtual void func_001DF300();
+
     /**
      * @brief Test whether the track contains the supplied key.
      * @param key Key to find.
      * @return Nonzero when the key exists.
      */
     virtual s32 func_002B8E60(float key) const;
+
     /**
      * @brief Return the difference between the endpoint vectors.
      * @param output Receives the vector difference.
      */
     virtual void func_002B7CA0(FieldVec4B* output) const = 0;
+
     /**
      * @brief Wrap a key into the stored key range.
      * @param key Key to wrap.
      * @return Wrapped key.
      */
     virtual float func_002B8FE0(float key) const;
+
     /**
      * @brief Return the cached vector.
      * @param output Receives the cached vector.
      */
     virtual void func_002B7C80(FieldVec4B* output) const = 0;
+
     /**
      * @brief Return the span between the first and last keys.
      * @return Key span, or zero when fewer than two keys are stored.
      */
     virtual float func_002B8ED0() const;
+
     /**
      * @brief Evaluate the vector track at a key.
      * @param key Evaluation key.
      * @param output Receives the evaluated vector.
      */
     virtual void func_002B8F90(float key, FieldVec4B* output) const;
+
     /**
      * @brief Return the stored keyframe count.
      * @return Keyframe count.
      */
     virtual s16 func_002B8E00() const;
+
     /**
      * @brief Return a pooled track or delete an ordinary track.
      */
     virtual void func_001DF230();
+
     // Slots 0x5C-0x64 in vtable order; only their positions are known.
     virtual void* func_002B9080();
+
     /** @brief Reset the sequence fields and set both modes to one. */
     virtual void func_002B8C50();
+
     virtual s16 func_002B8E10();
-    /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle a vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B8E20(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B8E30(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B8E40(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /** @brief Handle a vector set with a key; the base implementation ignores it. */
     virtual void func_002B8E50(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Return a zero vector. @return Zero vector. */
+
+    /**
+     * @brief Return a zero vector.
+     * @return Zero vector.
+     */
     virtual FieldVec4A func_002B8EB0() const;
-    /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+
+    /**
+     * @brief Return the value of the keyframe with the supplied key.
+     * @param key Key to find.
+     * @return Keyframe value, or zero when the key is absent.
+     */
     virtual FieldVec4A func_002B8F20(float key) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated vector. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
     virtual FieldVec4A func_slot80(float key) const = 0;
-    /** @brief Append a keyframe. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @param key Sort key. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Append a keyframe.
+     * @param value Keyframe value.
+     * @param first First auxiliary vector.
+     * @param second Second auxiliary vector.
+     * @param key Sort key.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B7810(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key) = 0;
-    /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Replace an indexed keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first First auxiliary vector.
+     * @param second Second auxiliary vector.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B7960(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second) = 0;
-    /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Insert a keyframe at an index.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first First auxiliary vector.
+     * @param second Second auxiliary vector.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9F50(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second) = 0;
 
     void* unk04;
@@ -544,16 +619,42 @@ public:
 class FieldClass159090 : public FieldClass1595D0
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~FieldClass159090()
     {
     }
-    /** @brief Append a keyframe, using zero vectors for missing auxiliary vectors. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. @return Append status. */
+
+    /**
+     * @brief Append a keyframe, using zero vectors for missing auxiliary vectors.
+     * @param value Keyframe value.
+     * @param first Optional first auxiliary vector.
+     * @param second Optional second auxiliary vector.
+     * @param key Sort key.
+     * @return Append status.
+     */
     virtual s32 func_002BB970(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Replace an indexed keyframe, using zero vectors for missing auxiliary vectors. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Replacement status. */
+
+    /**
+     * @brief Replace an indexed keyframe, using zero vectors for missing auxiliary vectors.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first Optional first auxiliary vector.
+     * @param second Optional second auxiliary vector.
+     * @return Replacement status.
+     */
     virtual s32 func_002BB9A0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
-    /** @brief Insert an indexed keyframe, using zero vectors for missing auxiliary vectors. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @return Insertion status. */
+
+    /**
+     * @brief Insert an indexed keyframe, using zero vectors for missing auxiliary vectors.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first Optional first auxiliary vector.
+     * @param second Optional second auxiliary vector.
+     * @return Insertion status.
+     */
     virtual s32 func_002BB9D0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Read an indexed keyframe.
      * @param index Keyframe index.
@@ -564,24 +665,73 @@ public:
      * @return One when the index is within the capacity, otherwise zero.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
-    /** @brief Store a single keyframe, using zero vectors for missing auxiliary vectors. @param value Keyframe value. @param first Optional first auxiliary vector. @param second Optional second auxiliary vector. @param key Sort key. */
+
+    /**
+     * @brief Store a single keyframe, using zero vectors for missing auxiliary vectors.
+     * @param value Keyframe value.
+     * @param first Optional first auxiliary vector.
+     * @param second Optional second auxiliary vector.
+     * @param key Sort key.
+     */
     virtual void func_002BBA00(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /** @brief Reset to a single zero keyframe at key zero. */
     virtual void func_001DF300();
+
     /** @brief Clear the cached vector at offset 0xB0 and reset the sequence. */
     virtual void func_002B8C50();
-    /** @brief Append a keyframe. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @param key Sort key. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Append a keyframe.
+     * @param value Keyframe value.
+     * @param first First auxiliary vector.
+     * @param second Second auxiliary vector.
+     * @param key Sort key.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B7810(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Replace an indexed keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first First auxiliary vector.
+     * @param second Second auxiliary vector.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B7960(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
-    /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @param first First auxiliary vector. @param second Second auxiliary vector. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Insert a keyframe at an index.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @param first First auxiliary vector.
+     * @param second Second auxiliary vector.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9F50(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
-    /** @brief Return the difference between the endpoint vectors. @param output Receives the difference. */
+
+    /**
+     * @brief Return the difference between the endpoint vectors.
+     * @param output Receives the difference.
+     */
     virtual void func_002B7CA0(FieldVec4B* output) const;
-    /** @brief Return the cached vector at offset 0xC0. @param output Receives the vector. */
+
+    /**
+     * @brief Return the cached vector at offset 0xC0.
+     * @param output Receives the vector.
+     */
     virtual void func_002B7C80(FieldVec4B* output) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated vector. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
     virtual FieldVec4A func_slot80(float key) const;
+
     /**
      * @brief Store a single keyframe in the cached vectors.
      * @param value Keyframe value.
@@ -590,6 +740,7 @@ public:
      * @param key Key, stored in the value's fourth component.
      */
     virtual void func_002B9EC0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /** @brief Return the track to its pool. */
     virtual void func_slot94() = 0;
 
@@ -604,10 +755,12 @@ class FieldClass159130 : public FieldClass159090
 public:
     /** @brief Construct the track. */
     FieldClass159130();
-    /** @brief Destroy the track. */
+
     virtual ~FieldClass159130();
+
     /** @brief Return a pooled track to its pool, or delete an ordinary track. */
     virtual void func_001DF230();
+
     /** @brief Release the keyframe storage and free this track's pool slot. */
     virtual void func_slot94();
 };
@@ -621,36 +774,43 @@ class FieldClass159780 : public FieldClass14FF50
 public:
     /** @brief Clear the pooled flag and reset the sequence. */
     FieldClass159780();
+
     /**
      * @brief Release the track storage.
      */
     virtual ~FieldClass159780();
+
     /**
      * @brief Allocate storage for the requested keyframe count.
      * @param count Requested keyframe count.
      */
     virtual void func_002B9910(s32 count);
+
     /**
      * @brief Bind an external keyframe array.
      * @param count Keyframe count.
      * @param entries External keyframe storage.
      */
     virtual void func_002B8450(s32 count, void* entries);
+
     /**
      * @brief Set the lower mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002B84A0(s32 mode);
+
     /**
      * @brief Set the upper mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002B8500(s32 mode);
+
     /**
      * @brief Return the stored word at offset 0x20.
      * @return Stored word.
      */
     virtual s32 func_002B8560() const;
+
     /**
      * @brief Append a vector keyframe.
      * @param value Keyframe value.
@@ -658,10 +818,12 @@ public:
      * @return Append status.
      */
     virtual s32 func_002B98D0(const FieldVec4A* value, float key);
+
     /**
      * @brief Run the default track hook.
      */
     virtual void func_001DF220();
+
     /**
      * @brief Replace an indexed vector keyframe.
      * @param index Keyframe index.
@@ -670,6 +832,7 @@ public:
      * @return Replacement status.
      */
     virtual s32 func_002B9890(s32 index, float key, const FieldVec4A* value);
+
     /**
      * @brief Insert an indexed vector keyframe.
      * @param index Keyframe index.
@@ -678,6 +841,7 @@ public:
      * @return Insertion status.
      */
     virtual s32 func_002B9850(s32 index, float key, const FieldVec4A* value);
+
     /**
      * @brief Read an indexed vector keyframe.
      * @param index Keyframe index.
@@ -688,77 +852,118 @@ public:
      * @return Nonzero when the keyframe is available.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
     /**
      * @brief Add a vector keyframe through the track implementation.
      * @param value Keyframe value.
      * @param key Sort key.
      */
     virtual void func_002B9810(const FieldVec4A* value, float key);
+
     /**
      * @brief Run the default update hook.
      */
     virtual void func_001DF300();
+
     /**
      * @brief Test whether the track contains the supplied key.
      * @param key Key to find.
      * @return Nonzero when the key exists.
      */
     virtual s32 func_002B8590(float key) const;
+
     /**
      * @brief Return the difference between the endpoint vectors.
      * @param output Receives the vector difference.
      */
     virtual void func_002B73D0(FieldVec4B* output) const = 0;
+
     /**
      * @brief Wrap a key into the stored key range.
      * @param key Key to wrap.
      * @return Wrapped key.
      */
     virtual float func_002B8700(float key) const;
+
     /**
      * @brief Return the cached vector.
      * @param output Receives the cached vector.
      */
     virtual void func_002B7440(FieldVec4B* output) const = 0;
+
     /**
      * @brief Return the span between the first and last keys.
      * @return Key span, or zero when fewer than two keys are stored.
      */
     virtual float func_002B8600() const;
+
     /**
      * @brief Evaluate the vector track at a key.
      * @param key Evaluation key.
      * @param output Receives the evaluated vector.
      */
     virtual void func_002B86B0(float key, FieldVec4B* output) const;
+
     /**
      * @brief Return the stored keyframe count.
      * @return Keyframe count.
      */
     virtual s16 func_002B8570() const;
+
     /**
      * @brief Return a pooled track or delete an ordinary track.
      */
     virtual void func_001DF230();
+
     // Slots 0x5C-0x64 in vtable order; only their positions are known.
     virtual void* func_002B8790();
+
     /** @brief Reset the sequence fields and set both modes to one. */
     virtual void func_002B83C0();
+
     virtual s16 func_002B8580();
-    /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle a vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B9900(const FieldVec4A* value, float key);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B98C0(s32 index, float key, const FieldVec4A* value);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B9880(s32 index, float key, const FieldVec4A* value);
+
     /** @brief Handle a vector set with a key; the base implementation ignores it. */
     virtual void func_002B9840(const FieldVec4A* value, float key);
-    /** @brief Return a zero vector. @return Zero vector. */
+
+    /**
+     * @brief Return a zero vector.
+     * @return Zero vector.
+     */
     virtual FieldVec4A func_002B85E0() const;
-    /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+
+    /**
+     * @brief Return the value of the keyframe with the supplied key.
+     * @param key Key to find.
+     * @return Keyframe value, or zero when the key is absent.
+     */
     virtual FieldVec4A func_002B8650(float key) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated vector. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
     virtual FieldVec4A func_slot80(float key) const = 0;
+
     /** @brief Return the track to its pool. */
     virtual void func_slot84() = 0;
 
@@ -775,10 +980,10 @@ public:
 class FieldClass159270 : public FieldClass159780
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~FieldClass159270()
     {
     }
+
     /**
      * @brief Read an indexed keyframe.
      * @param index Keyframe index.
@@ -789,13 +994,38 @@ public:
      * @return One when the index is within the capacity, otherwise zero.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
-    /** @brief Append a keyframe. @param value Keyframe value. @param key Sort key. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Append a keyframe.
+     * @param value Keyframe value.
+     * @param key Sort key.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9900(const FieldVec4A* value, float key);
-    /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Replace an indexed keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B98C0(s32 index, float key, const FieldVec4A* value);
-    /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Insert a keyframe at an index.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9880(s32 index, float key, const FieldVec4A* value);
-    /** @brief Store a single keyframe in the cached vector. @param value Keyframe value. @param key Sort key. */
+
+    /**
+     * @brief Store a single keyframe in the cached vector.
+     * @param value Keyframe value.
+     * @param key Sort key.
+     */
     virtual void func_002B9840(const FieldVec4A* value, float key);
 };
 
@@ -803,22 +1033,33 @@ public:
 class FieldClass159300 : public FieldClass159270
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~FieldClass159300()
     {
     }
+
     /** @brief Reset to a single zero keyframe at key zero, then set the lower mode to one. */
     virtual void func_001DF300();
+
     /**
      * @brief Return the difference between the endpoint vectors.
      * @param output Receives the difference; unchanged when there are no entries.
      */
     virtual void func_002B73D0(FieldVec4B* output) const;
+
     /** @brief Clear the cached vector at offset 0x90 and reset the sequence. */
     virtual void func_002B83C0();
-    /** @brief Return the cached vector at offset 0xA0. @param output Receives the vector. */
+
+    /**
+     * @brief Return the cached vector at offset 0xA0.
+     * @param output Receives the vector.
+     */
     virtual void func_002B7440(FieldVec4B* output) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated vector. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
     virtual FieldVec4A func_slot80(float key) const;
 
     u8 unk40[0x50];
@@ -832,10 +1073,12 @@ class FieldClass159390 : public FieldClass159300
 public:
     /** @brief Construct the track. */
     FieldClass159390();
-    /** @brief Destroy the track. */
+
     virtual ~FieldClass159390();
+
     /** @brief Return a pooled track to its pool, or delete an ordinary track. */
     virtual void func_001DF230();
+
     /** @brief Release the keyframe storage and free this track's pool slot. */
     virtual void func_slot84();
 };
@@ -849,36 +1092,43 @@ class FieldClass159810 : public FieldClass14FF50
 public:
     /** @brief Clear the pooled flag and reset the sequence. */
     FieldClass159810();
+
     /**
      * @brief Release the track storage.
      */
     virtual ~FieldClass159810();
+
     /**
      * @brief Allocate storage for the requested keyframe count.
      * @param count Requested keyframe count.
      */
     virtual void func_002B9D20(s32 count);
+
     /**
      * @brief Bind an external keyframe array.
      * @param count Keyframe count.
      * @param entries External keyframe storage.
      */
     virtual void func_002B9CD0(s32 count, void* entries);
+
     /**
      * @brief Set the lower mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002B7FB0(s32 mode);
+
     /**
      * @brief Set the upper mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002B8010(s32 mode);
+
     /**
      * @brief Return the stored word at offset 0x30.
      * @return Stored word.
      */
     virtual s32 func_002B8070() const;
+
     /**
      * @brief Append a vector keyframe.
      * @param value Keyframe value.
@@ -886,10 +1136,12 @@ public:
      * @return Append status.
      */
     virtual s32 func_002B9C90(const FieldVec4A* value, float key);
+
     /**
      * @brief Run the default track hook.
      */
     virtual void func_001DF220();
+
     /**
      * @brief Replace an indexed vector keyframe.
      * @param index Keyframe index.
@@ -898,6 +1150,7 @@ public:
      * @return Replacement status.
      */
     virtual s32 func_002B9C50(s32 index, float key, const FieldVec4A* value);
+
     /**
      * @brief Insert an indexed vector keyframe.
      * @param index Keyframe index.
@@ -906,6 +1159,7 @@ public:
      * @return Insertion status.
      */
     virtual s32 func_002B9C10(s32 index, float key, const FieldVec4A* value);
+
     /**
      * @brief Read an indexed vector keyframe.
      * @param index Keyframe index.
@@ -916,76 +1170,117 @@ public:
      * @return Nonzero when the keyframe is available.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
     /**
      * @brief Add a vector keyframe through the track implementation.
      * @param value Keyframe value.
      * @param key Sort key.
      */
     virtual void func_002B9BD0(const FieldVec4A* value, float key);
+
     /**
      * @brief Run the default update hook.
      */
     virtual void func_001DF300();
+
     /**
      * @brief Test whether the track contains the supplied key.
      * @param key Key to find.
      * @return Nonzero when the key exists.
      */
     virtual s32 func_002B9B80(float key) const;
+
     /**
      * @brief Return the difference between the endpoint vectors.
      * @param output Receives the vector difference.
      */
     virtual void func_slot40(FieldVec4B* output) const = 0;
+
     /**
      * @brief Wrap a key into the stored key range.
      * @param key Key to wrap.
      * @return Wrapped key.
      */
     virtual float func_002B9A40(float key) const;
+
     /**
      * @brief Return the cached vector.
      * @param output Receives the cached vector.
      */
     virtual void func_slot48(FieldVec4B* output) const = 0;
+
     /**
      * @brief Return the span between the first and last keys.
      * @return Key span, or zero when fewer than two keys are stored.
      */
     virtual float func_002B9B30() const;
+
     /**
      * @brief Evaluate the vector track at a key.
      * @param key Evaluation key.
      * @param output Receives the evaluated vector.
      */
     virtual void func_002B80B0(float key, FieldVec4B* output) const;
+
     /**
      * @brief Return the stored keyframe count.
      * @return Keyframe count.
      */
     virtual s16 func_002B8080() const;
+
     /**
      * @brief Return a pooled track or delete an ordinary track.
      */
     virtual void func_001DF230();
+
     // Slots 0x5C-0x64 in vtable order; only their positions are known.
     virtual void* func_002B8100();
+
     virtual void func_001E94F0();
+
     virtual s16 func_001E9380();
-    /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle a vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B9CC0(const FieldVec4A* value, float key);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B9C80(s32 index, float key, const FieldVec4A* value);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B9C40(s32 index, float key, const FieldVec4A* value);
+
     /** @brief Handle a vector set with a key; the base implementation ignores it. */
     virtual void func_002B9C00(const FieldVec4A* value, float key);
-    /** @brief Return a zero vector. @return Zero vector. */
+
+    /**
+     * @brief Return a zero vector.
+     * @return Zero vector.
+     */
     virtual FieldVec4A func_002B8090() const;
-    /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+
+    /**
+     * @brief Return the value of the keyframe with the supplied key.
+     * @param key Key to find.
+     * @return Keyframe value, or zero when the key is absent.
+     */
     virtual FieldVec4A func_002B9AD0(float key) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated vector. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
     virtual FieldVec4A func_slot80(float key) const = 0;
+
     // Pure virtual slot 0x84; only its position is known.
     virtual void func_slot84() = 0;
 
@@ -1004,10 +1299,10 @@ public:
 class FieldClass1591E0 : public FieldClass159810
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~FieldClass1591E0()
     {
     }
+
     /**
      * @brief Read an indexed keyframe.
      * @param index Keyframe index.
@@ -1018,13 +1313,38 @@ public:
      * @return One when the index is within the capacity, otherwise zero.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
-    /** @brief Append a keyframe. @param value Keyframe value. @param key Sort key. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Append a keyframe.
+     * @param value Keyframe value.
+     * @param key Sort key.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9CC0(const FieldVec4A* value, float key);
-    /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Replace an indexed keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9C80(s32 index, float key, const FieldVec4A* value);
-    /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Insert a keyframe at an index.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9C40(s32 index, float key, const FieldVec4A* value);
-    /** @brief Store a single keyframe in the cached entry. @param value Keyframe value. @param key Sort key. */
+
+    /**
+     * @brief Store a single keyframe in the cached entry.
+     * @param value Keyframe value.
+     * @param key Sort key.
+     */
     virtual void func_002B9C00(const FieldVec4A* value, float key);
 };
 
@@ -1037,36 +1357,43 @@ class FieldClass1598A0 : public FieldClass14FF50
 public:
     /** @brief Clear the pooled flag and reset the sequence. */
     FieldClass1598A0();
+
     /**
      * @brief Release the track storage.
      */
     virtual ~FieldClass1598A0();
+
     /**
      * @brief Allocate storage for the requested keyframe count.
      * @param count Requested keyframe count.
      */
     virtual void func_002BAF20(s32 count);
+
     /**
      * @brief Bind an external keyframe array.
      * @param count Keyframe count.
      * @param entries External keyframe storage.
      */
     virtual void func_002BAFD0(s32 count, void* entries);
+
     /**
      * @brief Set the lower mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002BAD00(s32 mode);
+
     /**
      * @brief Set the upper mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002BB020(s32 mode);
+
     /**
      * @brief Return the stored word at offset 0x40.
      * @return Stored word.
      */
     virtual s32 func_002BB080() const;
+
     /**
      * @brief Append a vector keyframe.
      * @param value Keyframe value.
@@ -1076,10 +1403,12 @@ public:
      * @return Append status.
      */
     virtual s32 func_002BB0C0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /**
      * @brief Run the default track hook.
      */
     virtual void func_001DF220();
+
     /**
      * @brief Replace an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1090,6 +1419,7 @@ public:
      * @return Replacement status.
      */
     virtual s32 func_002BB100(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Insert an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1100,6 +1430,7 @@ public:
      * @return Insertion status.
      */
     virtual s32 func_002BB140(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Read an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1110,6 +1441,7 @@ public:
      * @return Nonzero when the keyframe is available.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
     /**
      * @brief Add a vector keyframe through the track implementation.
      * @param value Keyframe value.
@@ -1118,70 +1450,110 @@ public:
      * @param key Sort key.
      */
     virtual void func_002BB180(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /**
      * @brief Run the default update hook.
      */
     virtual void func_001DF300();
+
     /**
      * @brief Test whether the track contains the supplied key.
      * @param key Key to find.
      * @return Nonzero when the key exists.
      */
     virtual s32 func_002BB1B0(float key) const;
+
     /**
      * @brief Return the difference between the endpoint vectors.
      * @param output Receives the vector difference.
      */
     virtual void func_slot40(FieldVec4B* output) const = 0;
+
     /**
      * @brief Wrap a key into the stored key range.
      * @param key Key to wrap.
      * @return Wrapped key.
      */
     virtual float func_002BB330(float key) const;
+
     /**
      * @brief Return the cached vector.
      * @param output Receives the cached vector.
      */
     virtual void func_slot48(FieldVec4B* output) const = 0;
+
     /**
      * @brief Return the span between the first and last keys.
      * @return Key span, or zero when fewer than two keys are stored.
      */
     virtual float func_002BB220() const;
+
     /**
      * @brief Evaluate the vector track at a key.
      * @param key Evaluation key.
      * @param output Receives the evaluated vector.
      */
     virtual void func_002BB2E0(float key, FieldVec4B* output) const;
+
     /**
      * @brief Return the stored keyframe count.
      * @return Keyframe count.
      */
     virtual s16 func_002BB090() const;
+
     /**
      * @brief Return a pooled track or delete an ordinary track.
      */
     virtual void func_001DF230();
+
     // Slots 0x5C-0x64 in vtable order; only their positions are known.
     virtual void* func_002BB3D0();
+
     virtual void func_002BAE90();
+
     virtual s16 func_002BB0A0();
-    /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle a vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BB0B0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BB0F0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BB130(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /** @brief Handle a vector set with a key; the base implementation ignores it. */
     virtual void func_002BB170(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Return a zero vector. @return Zero vector. */
+
+    /**
+     * @brief Return a zero vector.
+     * @return Zero vector.
+     */
     virtual FieldVec4A func_002BB200() const;
-    /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+
+    /**
+     * @brief Return the value of the keyframe with the supplied key.
+     * @param key Key to find.
+     * @return Keyframe value, or zero when the key is absent.
+     */
     virtual FieldVec4A func_002BB270(float key) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated vector. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
     virtual FieldVec4A func_slot80(float key) const = 0;
+
     // Pure virtual slot 0x84; only its position is known.
     virtual void func_slot84() = 0;
 
@@ -1199,36 +1571,43 @@ class FieldClass159540 : public FieldClass14FF50
 public:
     /** @brief Clear the pooled flag and reset the sequence. */
     FieldClass159540();
+
     /**
      * @brief Release the track storage.
      */
     virtual ~FieldClass159540();
+
     /**
      * @brief Allocate storage for the requested keyframe count.
      * @param count Requested keyframe count.
      */
     virtual void func_002BBAC0(s32 count);
+
     /**
      * @brief Bind an external keyframe array.
      * @param count Keyframe count.
      * @param entries External keyframe storage.
      */
     virtual void func_002BBB60(s32 count, void* entries);
+
     /**
      * @brief Set the lower mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002BAC40(s32 mode);
+
     /**
      * @brief Set the upper mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002BBBC0(s32 mode);
+
     /**
      * @brief Return the stored word at offset 0x10.
      * @return Stored word.
      */
     virtual s32 func_002BBC20() const;
+
     /**
      * @brief Append a vector keyframe.
      * @param value Keyframe value.
@@ -1238,10 +1617,12 @@ public:
      * @return Append status.
      */
     virtual s32 func_002BBC60(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /**
      * @brief Run the default track hook.
      */
     virtual void func_001DF220();
+
     /**
      * @brief Replace an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1252,6 +1633,7 @@ public:
      * @return Replacement status.
      */
     virtual s32 func_002BBCA0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Insert an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1262,6 +1644,7 @@ public:
      * @return Insertion status.
      */
     virtual s32 func_002BBCE0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Read an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1272,6 +1655,7 @@ public:
      * @return Nonzero when the keyframe is available.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
     /**
      * @brief Add a vector keyframe through the track implementation.
      * @param value Keyframe value.
@@ -1280,70 +1664,110 @@ public:
      * @param key Sort key.
      */
     virtual void func_002BBD20(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /**
      * @brief Run the default update hook.
      */
     virtual void func_001DF300();
+
     /**
      * @brief Test whether the track contains the supplied key.
      * @param key Key to find.
      * @return Nonzero when the key exists.
      */
     virtual s32 func_002BBD50(float key) const;
+
     /**
      * @brief Return the difference between the endpoint vectors.
      * @param output Receives the vector difference.
      */
     virtual void func_slot40(FieldVec4B* output) const = 0;
+
     /**
      * @brief Wrap a key into the stored key range.
      * @param key Key to wrap.
      * @return Wrapped key.
      */
     virtual float func_002BBF70(float key) const;
+
     /**
      * @brief Return the cached vector.
      * @param output Receives the cached vector.
      */
     virtual void func_slot48(FieldVec4B* output) const = 0;
+
     /**
      * @brief Return the span between the first and last keys.
      * @return Key span, or zero when fewer than two keys are stored.
      */
     virtual float func_002BBDD0() const;
+
     /**
      * @brief Evaluate the vector track at a key.
      * @param key Evaluation key.
      * @param output Receives the evaluated vector.
      */
     virtual void func_002BBF20(float key, FieldVec4B* output) const;
+
     /**
      * @brief Return the stored keyframe count.
      * @return Keyframe count.
      */
     virtual s16 func_002BBC30() const;
+
     /**
      * @brief Return a pooled track or delete an ordinary track.
      */
     virtual void func_001DF230();
+
     // Slots 0x5C-0x64 in vtable order; only their positions are known.
     virtual void* func_002BC010();
+
     virtual void func_002BBA30();
+
     virtual s16 func_002BBC40();
-    /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle a vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BBC50(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BBC90(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BBCD0(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /** @brief Handle a vector set with a key; the base implementation ignores it. */
     virtual void func_002BBD10(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Return a zero vector. @return Zero vector. */
+
+    /**
+     * @brief Return a zero vector.
+     * @return Zero vector.
+     */
     virtual FieldVec4A func_002BBDB0() const;
-    /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+
+    /**
+     * @brief Return the value of the keyframe with the supplied key.
+     * @param key Key to find.
+     * @return Keyframe value, or zero when the key is absent.
+     */
     virtual FieldVec4A func_002BBE30(float key) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated vector. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
     virtual FieldVec4A func_slot80(float key) const = 0;
+
     // Pure virtual slot 0x84; only its position is known.
     virtual void func_slot84() = 0;
 
@@ -1361,36 +1785,43 @@ class FieldClass159660 : public FieldClass14FF50
 public:
     /** @brief Clear the pooled flag and reset the sequence. */
     FieldClass159660();
+
     /**
      * @brief Release the track storage.
      */
     virtual ~FieldClass159660();
+
     /**
      * @brief Allocate storage for the requested keyframe count.
      * @param count Requested keyframe count.
      */
     virtual void func_002BB6B0(s32 count);
+
     /**
      * @brief Bind an external keyframe array.
      * @param count Keyframe count.
      * @param entries External keyframe storage.
      */
     virtual void func_002BC1B0(s32 count, void* entries);
+
     /**
      * @brief Set the lower mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002BACA0(s32 mode);
+
     /**
      * @brief Set the upper mode nibble.
      * @param mode Mode value.
      */
     virtual void func_002BB760(s32 mode);
+
     /**
      * @brief Return the stored word at offset 0x30.
      * @return Stored word.
      */
     virtual s32 func_002BB7C0() const;
+
     /**
      * @brief Append a vector keyframe.
      * @param value Keyframe value.
@@ -1400,10 +1831,12 @@ public:
      * @return Append status.
      */
     virtual s32 func_002BB800(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /**
      * @brief Run the default track hook.
      */
     virtual void func_001DF220();
+
     /**
      * @brief Replace an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1414,6 +1847,7 @@ public:
      * @return Replacement status.
      */
     virtual s32 func_002BB840(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Insert an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1424,6 +1858,7 @@ public:
      * @return Insertion status.
      */
     virtual s32 func_002BB880(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /**
      * @brief Read an indexed vector keyframe.
      * @param index Keyframe index.
@@ -1434,6 +1869,7 @@ public:
      * @return Nonzero when the keyframe is available.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, FieldVec4B* value, FieldVec4B* first, FieldVec4B* second) const;
+
     /**
      * @brief Add a vector keyframe through the track implementation.
      * @param value Keyframe value.
@@ -1442,70 +1878,110 @@ public:
      * @param key Sort key.
      */
     virtual void func_002BB8C0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+
     /**
      * @brief Run the default update hook.
      */
     virtual void func_001DF300();
+
     /**
      * @brief Test whether the track contains the supplied key.
      * @param key Key to find.
      * @return Nonzero when the key exists.
      */
     virtual s32 func_002BC160(float key) const;
+
     /**
      * @brief Return the difference between the endpoint vectors.
      * @param output Receives the vector difference.
      */
     virtual void func_slot40(FieldVec4B* output) const = 0;
+
     /**
      * @brief Wrap a key into the stored key range.
      * @param key Key to wrap.
      * @return Wrapped key.
      */
     virtual float func_002BC020(float key) const;
+
     /**
      * @brief Return the cached vector.
      * @param output Receives the cached vector.
      */
     virtual void func_slot48(FieldVec4B* output) const = 0;
+
     /**
      * @brief Return the span between the first and last keys.
      * @return Key span, or zero when fewer than two keys are stored.
      */
     virtual float func_002BC110() const;
+
     /**
      * @brief Evaluate the vector track at a key.
      * @param key Evaluation key.
      * @param output Receives the evaluated vector.
      */
     virtual void func_002BB910(float key, FieldVec4B* output) const;
+
     /**
      * @brief Return the stored keyframe count.
      * @return Keyframe count.
      */
     virtual s16 func_002BB7D0() const;
+
     /**
      * @brief Return a pooled track or delete an ordinary track.
      */
     virtual void func_001DF230();
+
     // Slots 0x5C-0x64 in vtable order; only their positions are known.
     virtual void* func_002BB960();
+
     virtual void func_002BB620();
+
     virtual s16 func_002BB7E0();
-    /** @brief Handle a vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle a vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BB7F0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BB830(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
-    /** @brief Handle an indexed vector set with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed vector set with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002BB870(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+
     /** @brief Handle a vector set with a key; the base implementation ignores it. */
     virtual void func_002BB8B0(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
-    /** @brief Return a zero vector. @return Zero vector. */
+
+    /**
+     * @brief Return a zero vector.
+     * @return Zero vector.
+     */
     virtual FieldVec4A func_002BB8F0() const;
-    /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+
+    /**
+     * @brief Return the value of the keyframe with the supplied key.
+     * @param key Key to find.
+     * @return Keyframe value, or zero when the key is absent.
+     */
     virtual FieldVec4A func_002BC0B0(float key) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated vector. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
     virtual FieldVec4A func_slot80(float key) const = 0;
+
     // Pure virtual slot 0x84; only its position is known.
     virtual void func_slot84() = 0;
 
@@ -1524,67 +2000,188 @@ class FieldClass1596F0 : public FieldClass14FF50
 public:
     /** @brief Clear the pooled flag and reset the sequence. */
     FieldClass1596F0();
+
     /** @brief Release the track storage. */
     virtual ~FieldClass1596F0();
-    /** @brief Allocate storage for the requested keyframe count. @param count Requested keyframe count. */
+
+    /**
+     * @brief Allocate storage for the requested keyframe count.
+     * @param count Requested keyframe count.
+     */
     virtual void func_002B88F0(s32 count);
-    /** @brief Bind an external keyframe array. @param count Keyframe count. @param entries External keyframe storage. */
+
+    /**
+     * @brief Bind an external keyframe array.
+     * @param count Keyframe count.
+     * @param entries External keyframe storage.
+     */
     virtual void func_002B9750(s32 count, void* entries);
-    /** @brief Set the lower mode nibble. @param mode Mode value. */
+
+    /**
+     * @brief Set the lower mode nibble.
+     * @param mode Mode value.
+     */
     virtual void func_002B8990(s32 mode);
-    /** @brief Set the upper mode nibble. @param mode Mode value. */
+
+    /**
+     * @brief Set the upper mode nibble.
+     * @param mode Mode value.
+     */
     virtual void func_002B89F0(s32 mode);
-    /** @brief Return the stored word at offset 0x10. @return Stored word. */
+
+    /**
+     * @brief Return the stored word at offset 0x10.
+     * @return Stored word.
+     */
     virtual s32 func_002B8A50() const;
-    /** @brief Append a keyframe. @param value Keyframe value. @param key Sort key. @return Append status. */
+
+    /**
+     * @brief Append a keyframe.
+     * @param value Keyframe value.
+     * @param key Sort key.
+     * @return Append status.
+     */
     virtual s32 func_002B9710(const float* value, float key);
+
     /** @brief Run the default track hook. */
     virtual void func_001DF220();
-    /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Replacement status. */
+
+    /**
+     * @brief Replace an indexed keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @return Replacement status.
+     */
     virtual s32 func_002B96D0(s32 index, float key, const float* value);
-    /** @brief Insert an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Insertion status. */
+
+    /**
+     * @brief Insert an indexed keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @return Insertion status.
+     */
     virtual s32 func_002B9690(s32 index, float key, const float* value);
-    /** @brief Read an indexed keyframe. @param index Keyframe index. @param key Receives the sort key. @param value Receives the value. @param first Receives the first auxiliary value. @param second Receives the second auxiliary value. @return Nonzero when the keyframe is available. */
+
+    /**
+     * @brief Read an indexed keyframe.
+     * @param index Keyframe index.
+     * @param key Receives the sort key.
+     * @param value Receives the value.
+     * @param first Receives the first auxiliary value.
+     * @param second Receives the second auxiliary value.
+     * @return Nonzero when the keyframe is available.
+     */
     virtual s32 func_001DF2E0(s32 index, float* key, float* value, float* first, float* second) const;
-    /** @brief Add a keyframe through the track implementation. @param value Keyframe value. @param key Sort key. */
+
+    /**
+     * @brief Add a keyframe through the track implementation.
+     * @param value Keyframe value.
+     * @param key Sort key.
+     */
     virtual void func_002B9650(const float* value, float key);
+
     /** @brief Run the default update hook. */
     virtual void func_001DF300();
-    /** @brief Test whether the track contains the supplied key. @param key Key to find. @return Nonzero when the key exists. */
+
+    /**
+     * @brief Test whether the track contains the supplied key.
+     * @param key Key to find.
+     * @return Nonzero when the key exists.
+     */
     virtual s32 func_002B9600(float key) const;
-    /** @brief Return the difference between the endpoint values. @param output Receives the difference. */
+
+    /**
+     * @brief Return the difference between the endpoint values.
+     * @param output Receives the difference.
+     */
     virtual void func_002B7480(float* output) const = 0;
-    /** @brief Wrap a key into the stored key range. @param key Key to wrap. @return Wrapped key. */
+
+    /**
+     * @brief Wrap a key into the stored key range.
+     * @param key Key to wrap.
+     * @return Wrapped key.
+     */
     virtual float func_002B94C0(float key) const;
-    /** @brief Return the cached value. @param output Receives the cached value. */
+
+    /**
+     * @brief Return the cached value.
+     * @param output Receives the cached value.
+     */
     virtual void func_002B74B0(float* output) const = 0;
-    /** @brief Return the span between the first and last keys. @return Key span, or zero when fewer than two keys are stored. */
+
+    /**
+     * @brief Return the span between the first and last keys.
+     * @return Key span, or zero when fewer than two keys are stored.
+     */
     virtual float func_002B95B0() const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @param output Receives the evaluated value. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @param output Receives the evaluated value.
+     */
     virtual void func_002B8A90(float key, float* output) const;
-    /** @brief Return the stored keyframe count. @return Keyframe count. */
+
+    /**
+     * @brief Return the stored keyframe count.
+     * @return Keyframe count.
+     */
     virtual s16 func_002B8A60() const;
+
     /** @brief Return a pooled track or delete an ordinary track. */
     virtual void func_001DF230();
+
     // Slots 0x5C-0x64 in vtable order; only their positions are known.
     virtual void* func_002B8AC0();
+
     /** @brief Reset the sequence fields and set both modes to one. */
     virtual void func_002B8860();
+
     virtual s16 func_002B8A70();
-    /** @brief Handle a keyframe with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle a keyframe with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B9740(const float* value, float key);
-    /** @brief Handle an indexed keyframe with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed keyframe with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B9700(s32 index, float key, const float* value);
-    /** @brief Handle an indexed keyframe with a key; the base implementation ignores it. @return Handler result. */
+
+    /**
+     * @brief Handle an indexed keyframe with a key; the base implementation ignores it.
+     * @return Handler result.
+     */
     virtual s32 func_002B96C0(s32 index, float key, const float* value);
+
     /** @brief Handle a keyframe with a key; the base implementation ignores it. */
     virtual void func_002B9680(const float* value, float key);
-    /** @brief Return zero. @return Zero. */
+
+    /**
+     * @brief Return zero.
+     * @return Zero.
+     */
     virtual float func_002B8A80() const;
-    /** @brief Return the value of the keyframe with the supplied key. @param key Key to find. @return Keyframe value, or zero when the key is absent. */
+
+    /**
+     * @brief Return the value of the keyframe with the supplied key.
+     * @param key Key to find.
+     * @return Keyframe value, or zero when the key is absent.
+     */
     virtual float func_002B9550(float key) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated value. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated value.
+     */
     virtual float func_slot80(float key) const = 0;
+
     // Pure virtual slot 0x84; only its position is known.
     virtual void func_slot84() = 0;
 
@@ -1601,10 +2198,10 @@ public:
 class FieldClass159420 : public FieldClass1596F0
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~FieldClass159420()
     {
     }
+
     /**
      * @brief Read an indexed keyframe.
      * @param index Keyframe index.
@@ -1615,13 +2212,38 @@ public:
      * @return One when the index is within the capacity, otherwise zero.
      */
     virtual s32 func_001DF2E0(s32 index, float* key, float* value, float* first, float* second) const;
-    /** @brief Append a keyframe. @param value Keyframe value. @param key Sort key. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Append a keyframe.
+     * @param value Keyframe value.
+     * @param key Sort key.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9740(const float* value, float key);
-    /** @brief Replace an indexed keyframe. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Replace an indexed keyframe.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B9700(s32 index, float key, const float* value);
-    /** @brief Insert a keyframe at an index. @param index Keyframe index. @param key Sort key. @param value Keyframe value. @return Nonzero when the keyframe was stored. */
+
+    /**
+     * @brief Insert a keyframe at an index.
+     * @param index Keyframe index.
+     * @param key Sort key.
+     * @param value Keyframe value.
+     * @return Nonzero when the keyframe was stored.
+     */
     virtual s32 func_002B96C0(s32 index, float key, const float* value);
-    /** @brief Store a single keyframe in the cached key and value. @param value Keyframe value. @param key Sort key. */
+
+    /**
+     * @brief Store a single keyframe in the cached key and value.
+     * @param value Keyframe value.
+     * @param key Sort key.
+     */
     virtual void func_002B9680(const float* value, float key);
 };
 
@@ -1629,19 +2251,33 @@ public:
 class FieldClass1594B0 : public FieldClass159420
 {
 public:
-    /** @brief Destroy the track. */
     virtual ~FieldClass1594B0()
     {
     }
+
     /** @brief Reset to a single zero keyframe at key zero, then set the lower mode to one. */
     virtual void func_001DF300();
+
     /** @brief Clear the word at offset 0x48 and reset the sequence. */
     virtual void func_002B8860();
-    /** @brief Return the difference between the endpoint values. @param output Receives the difference. */
+
+    /**
+     * @brief Return the difference between the endpoint values.
+     * @param output Receives the difference.
+     */
     virtual void func_002B7480(float* output) const;
-    /** @brief Return the cached value. @param output Receives the cached value. */
+
+    /**
+     * @brief Return the cached value.
+     * @param output Receives the cached value.
+     */
     virtual void func_002B74B0(float* output) const;
-    /** @brief Evaluate the track at a key. @param key Evaluation key. @return Evaluated value. */
+
+    /**
+     * @brief Evaluate the track at a key.
+     * @param key Evaluation key.
+     * @return Evaluated value.
+     */
     virtual float func_slot80(float key) const;
 
     u8 unk24[0x24];
@@ -1654,8 +2290,9 @@ class FieldClass177F70 : public FieldClass1594B0
 public:
     /** @brief Construct the track. */
     FieldClass177F70();
-    /** @brief Destroy the track. */
+
     virtual ~FieldClass177F70();
+
     // Slots implemented by Lib functions; only their positions are known.
     virtual void func_slot84();
 };
@@ -1666,12 +2303,16 @@ class FieldClass177EE0 : public FieldClass1591E0
 public:
     /** @brief Construct the track. */
     FieldClass177EE0();
-    /** @brief Destroy the track. */
+
     virtual ~FieldClass177EE0();
+
     // Slots implemented by Lib functions; only their positions are known.
     virtual void func_slot40(FieldVec4B* output) const;
+
     virtual void func_slot48(FieldVec4B* output) const;
+
     virtual FieldVec4A func_slot80(float key) const;
+
     virtual void func_slot84();
 
     u8 unk50[0x70];
@@ -1681,14 +2322,17 @@ public:
 class FieldClass174440 : public FieldClass1598A0
 {
 public:
-    /** @brief Construct the track. */
     FieldClass174440();
-    /** @brief Destroy the track. */
+
     virtual ~FieldClass174440();
+
     // Slots implemented by Lib functions; only their positions are known.
     virtual void func_slot40(FieldVec4B* output) const;
+
     virtual void func_slot48(FieldVec4B* output) const;
+
     virtual FieldVec4A func_slot80(float key) const;
+
     virtual void func_slot84();
 
     u8 unk54[0x3C];
@@ -1698,14 +2342,17 @@ public:
 class FieldClass1730F0 : public FieldClass159540
 {
 public:
-    /** @brief Construct the track. */
     FieldClass1730F0();
-    /** @brief Destroy the track. */
+
     virtual ~FieldClass1730F0();
+
     // Slots implemented by Lib functions; only their positions are known.
     virtual void func_slot40(FieldVec4B* output) const;
+
     virtual void func_slot48(FieldVec4B* output) const;
+
     virtual FieldVec4A func_slot80(float key) const;
+
     virtual void func_slot84();
 
     u8 unk24[8];
@@ -1715,14 +2362,17 @@ public:
 class FieldClass177BE0 : public FieldClass159660
 {
 public:
-    /** @brief Construct the track. */
     FieldClass177BE0();
-    /** @brief Destroy the track. */
+
     virtual ~FieldClass177BE0();
+
     // Slots implemented by Lib functions; only their positions are known.
     virtual void func_slot40(FieldVec4B* output) const;
+
     virtual void func_slot48(FieldVec4B* output) const;
+
     virtual FieldVec4A func_slot80(float key) const;
+
     virtual void func_slot84();
 
     u8 unk44[0x3C];
@@ -1826,18 +2476,36 @@ class FieldClass1599E0 : public LibCallbackTransform
 public:
     /** @brief Initialize the transform receiver and clear its three added words. */
     FieldClass1599E0();
+
     /** @brief Destroy the transform and notification bases. */
     virtual ~FieldClass1599E0();
-    /** @brief Report the transform kind. @return Fourteen. */
+
+    /**
+     * @brief Report the transform kind.
+     * @return Fourteen.
+     */
     virtual s32 get_default_list_kind();
+
     /** @brief Queue the receiver for release. */
     virtual void destroy();
+
     /** @brief Leave the default update state unchanged. */
     virtual void render();
-    /** @brief Run the default transform update hook. @param first First state value. @param second Second state value. @param third Third state value. */
+
+    /**
+     * @brief Run the default transform update hook.
+     * @param first First state value.
+     * @param second Second state value.
+     * @param third Third state value.
+     */
     virtual void func_0044B100(u32 first, u32 second, u32 third);
-    /** @brief Run the default DMA completion hook. @param value Notification value. */
+
+    /**
+     * @brief Run the default DMA completion hook.
+     * @param value Notification value.
+     */
     virtual void on_packet_complete(u32 value);
+
     u32 unkb0;
     u32 unkb4;
     u32 unkb8;
@@ -1863,13 +2531,21 @@ public:
     /** @brief Start with no packet, a 96.0 width and a 5.0 height. */
     FieldClass159A70();
 
-    /** @brief Allocate the packet storage. @param size Packet size in quadwords. */
+    /**
+     * @brief Allocate the packet storage.
+     * @param size Packet size in quadwords.
+     */
     void func_002BC370(s32 size);
 
     /** @brief Release the packet. */
     virtual ~FieldClass159A70();
 
-    /** @brief Default packet draw hook. @param first Draw flag. @param depth Drawing depth. @param value Additional drawing value. */
+    /**
+     * @brief Default packet draw hook.
+     * @param first Draw flag.
+     * @param depth Drawing depth.
+     * @param value Additional drawing value.
+     */
     virtual void func_002BC4F0(u32 first, u32 depth, float value);
 };
 #endif

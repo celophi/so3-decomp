@@ -96,6 +96,7 @@ u8 func_002979E0(const BattleObjectB84* object)
     {
         return 1;
     }
+
     return object->unk540_6;
 }
 
@@ -105,6 +106,7 @@ u8 func_00297A20(const BattleObjectB84* object)
     {
         return 1;
     }
+
     return object->unk540_5;
 }
 

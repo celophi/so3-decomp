@@ -41,15 +41,10 @@ struct LibMovieState
     s32 unk80B0;
     s32 unk80B4;
     u8 unk80B8[8];
-
-    /** Frame being shown. */
     s32 current_frame;
-
     float unk80C4;
     float unk80C8;
     u8 unk80CC[0xC];
-
-    /** Nonzero to shape the picture for a 16:9 television: the decoder narrows it by about 0.89 and stretches it by about 1.15. */
     u8 widescreen;
 };
 
@@ -71,8 +66,6 @@ public:
     ~LibMovieDecoder();
 
     u8 unk00[0xCE580];
-
-    /** Buffer the stream state points at. */
     u8 unkCE580[0x40];
 };
 
@@ -131,7 +124,6 @@ public:
         func_00115000(this, LIB_MOVIE_THREAD_PRIORITY, LIB_MOVIE_THREAD_STACK_SIZE);
     }
 
-    /** @brief Destroy the thread. */
     virtual ~LibMovieThread();
 
     /** @brief Run the decoder. */
@@ -207,41 +199,25 @@ public:
 
     u8 unk94[0x2C];
     LibMovieDecoder decoder;
-
-    /** Streaming buffer, with room to align it to 64 bytes. */
     u8 stream_buffer[LIB_MOVIE_STREAM_BUFFER_SIZE + 0x40];
-
     u8 unk15E6C0[0x40];
     LibMovieState* state;
     u8 unk15E704[4];
-
-    /** Set once playback stops. */
     s32 stopped;
-
     u8 unk15E70C[0x18];
     LibMovieThread* unk15E724;
     u8 unk15E728[0x18];
     LibMovieStream stream;
     LibMovieThread* thread;
-
-    /** What the archive points at while it streams the movie (when the movie loops). */
     LibMovieLoopListener loop_listener;
-
-    /** Resource being played. */
     s32 movie;
-
     s32 unk15E784;
     u8 unk15E788[4];
-
-    /** Frame size. */
     s16 width;
     s16 height;
 
     s32 unk15E790;
-
-    /** Nonzero while the movie plays. */
     u8 is_playing;
-
     u8 unk15E795;
     u8 unk15E796;
     u8 unk15E797;

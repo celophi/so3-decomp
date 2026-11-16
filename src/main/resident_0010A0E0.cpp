@@ -57,10 +57,7 @@ struct ThreadParam
 typedef struct DmaControlLow
 {
     u8 dma_enable : 1;
-
-    /** Release the bus between transfers (cycle stealing). */
     u8 release : 1;
-
     u8 memory_fifo_drain : 2;
     u8 stall_source : 2;
     u8 stall_drain : 2;
@@ -107,31 +104,52 @@ extern "C" {
 extern ResidentThreadScheduler D_001CFA00;
 
 void func_00114A00(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread);
+
 void func_00114870(s32 alarm_id, u16 time, void* common);
+
 s32 iReleaseAlarm(s32 alarm_id);
+
 s32 iChangeThreadPriority(s32 thread_id, s32 priority);
 
 /** The global pointer value threads start with. */
 extern u8 _gp;
 
 s32 CreateThread(ThreadParam* param);
+
 s32 TerminateThread(s32 thread_id);
+
 s32 iTerminateThread(s32 thread_id);
+
 s32 sceGsSyncPath(s32 mode, u16 timeout);
+
 bool func_00114BD0(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread);
+
 void ExitThread(void);
+
 s32 DeleteThread(s32 thread_id);
+
 void ExitDeleteThread(void);
+
 void func_4DA730(struct ResidentSoundEmitter* emitter, float* position);
+
 u32 func_0010E4B0(ResidentSound* sound, const float* position, s32 arg2, s32 arg3);
+
 s32 AddIntcHandler(s32 cause, s32 (*handler)(s32 cause), s32 next);
+
 s32 RemoveIntcHandler(s32 cause, s32 handler_id);
+
 s32 EnableIntc(s32 cause);
+
 s32 DisableIntc(s32 cause);
+
 s32 AddDmacHandler(s32 channel, s32 (*handler)(s32 channel), s32 next);
+
 s32 RemoveDmacHandler(s32 channel, s32 handler_id);
+
 s32 EnableDmac(s32 channel);
+
 s32 DisableDmac(s32 channel);
+
 s32 func_00113EF0(s32 channel);
 
 /** Each DMA channel's queue, by channel number. */
@@ -139,16 +157,27 @@ extern ResidentDmaQueue* D_001CF9C0[];
 
 void func_00115310(ResidentArchiveWorker* worker, ResidentHddIconHeader* header, u8* first, s32 first_size, u8* second,
                    s32 second_size, u8* third, s32 third_size, u8* fourth, s32 fourth_size);
+
 s32 DIntr(void);
+
 s32 EIntr(void);
+
 s32 sceDbcInit(void);
+
 s32 sceCdDiskReady(s32 mode);
+
 void* sceCdPOffCallback(void (*callback)(void*), void* argument);
+
 void resident_archive_on_power_off(void* argument);
+
 s32 sceDevctl(const char* name, s32 command, void* argument, u32 argument_size, void* buffer, u32 buffer_size);
+
 s32 sceCdPowerOff(s32* result);
+
 s32 sceCdStatus(void);
+
 s32 sceCdReadClock(ResidentClock* clock);
+
 u32 sceCdGetReadPos(void);
 
 /** "pfs:", the hard disk file system device. */
@@ -156,8 +185,11 @@ extern const char D_0014D908[];
 
 /** "dev9x:", the expansion bay device. */
 extern const char D_0014D970[];
+
 void func_0011B550(s32 reason);
+
 void func_0011B5C0(s32 alarm_id, u16 time, void* common);
+
 s32 ReleaseAlarm(s32 alarm_id);
 
 /** Nonzero to read data with spindle control 0 instead of 1. */
@@ -172,28 +204,48 @@ extern u32* D_0014AA34[];
 /** Three words in the VU1 stream programs that the constructor patches, and the address each one gets. */
 extern u32* const D_00144180[3];
 extern const u32 D_00144190[3];
+
 s32 sceRead(s32 fd, void* buffer, s32 size);
+
 s64 sceLseek64(s32 fd, s64 offset, s32 whence);
+
 s32 func_00118C70(ResidentClass14FC10* thread);
 
 /** "PS2ICON3D", the magic of the hard disk icon header. */
 extern const char D_0014D8C8[];
+
 s32 scePad2Init(s32 mode);
+
 s32 scePad2CreateSocket(scePad2SocketParam* param, void* buffer);
+
 s32 scePad2GetState(s32 socket);
+
 s32 scePad2Read(s32 socket, u8* data);
+
 s32 scePad2GetButtonProfile(s32 socket, u8* profile);
+
 s32 sceVibGetProfile(s32 socket, u8* profile);
+
 s32 sceVibSetActParam(s32 socket, s32 profile_size, u8* profile, s32 data_size, u8* data);
+
 s32 AddIntcHandler(s32 cause, s32 (*handler)(s32), s32 next);
+
 s32 EnableIntc(s32 cause);
+
 s32 resident_input_vblank_handler(s32 cause);
+
 void func_4DD520(ResidentDisplay* display, s32 field);
+
 s32 func_4D44D0(ResidentSoundRenderer* renderer, s32 arg1);
+
 void func_4DCDA0(ResidentDisplay* display, s32 value);
+
 void func_00103510(ResidentResourceQueue* queue);
+
 void resident_pad_update_vibration(ResidentInputSystem* input, s32 slot);
+
 void func_0011E9E0(ResidentInputSystem* input, s32 slot, s32 full);
+
 extern u32 D_001B641C;
 
 /** The archive's disc thread. */
@@ -201,20 +253,35 @@ extern ResidentClass14FC10* D_001B6414;
 
 /** "Storage Status", the name the read flag is registered under. */
 extern const char D_0014D978[];
+
 bool func_00118880(ResidentArchiveWorker* worker, s32 command, s32 argument);
+
 bool func_00114E00(ResidentThread* thread);
+
 s32 iWakeupThread(s32 thread_id);
+
 s32 StartThread(s32 thread_id, void* argument);
+
 s32 SleepThread(void);
+
 s32 func_00135320(double left, double right);
+
 void func_0010BC10(void* packet, void* data);
+
 void func_0010BC50(void* packet, void* data);
+
 void func_0010BC90(void* packet, void* data);
+
 void func_0010BCD0(void* packet, void* data);
+
 void func_0010C6D0(s32 alarm_id, u16 time, void* common);
+
 s32 func_0010A7A0(ResidentStreamThread* stream);
+
 void func_0010AA30(ResidentStreamThread* stream);
+
 void func_0010B600(ResidentStreamThread* stream, s32 value);
+
 typedef struct ResidentSpeakerAngles
 {
     float angles[4];
@@ -1584,7 +1651,10 @@ char* func_0010D710(char* buffer, s32 value, s32 width, char pad)
     return buffer;
 }
 
-/** @brief Get the resident system. @return g_system. */
+/**
+ * @brief Get the resident system.
+ * @return g_system.
+ */
 ResidentSystem* resident_get_system(void)
 {
     return &g_system;
@@ -1992,14 +2062,8 @@ void func_0010E130(ResidentSound* sound, s32 key)
 struct SoundVoiceLevels
 {
     s32 unk00;
-
-    /** Number of entries in both tables. */
     s32 count;
-
-    /** Offset of the u16 table of frames, from the start of this header. */
     s32 frames_offset;
-
-    /** Offset of the u8 table of levels, from the start of this header. */
     s32 levels_offset;
 };
 
@@ -2421,24 +2485,31 @@ static inline s32 find_available_request_slot(ResidentSound* receiver)
 {
     s32 i;
     s32 slot;
+
     for (i = 0; i < 60; i++)
     {
         slot = receiver->cursor;
+
         if (receiver->slots[slot].active == 0)
         {
             receiver->cursor = slot + 1;
+
             if (slot + 1 >= 60)
             {
                 receiver->cursor = 0;
             }
+
             return slot;
         }
+
         receiver->cursor = slot + 1;
+
         if (slot + 1 >= 60)
         {
             receiver->cursor = 0;
         }
     }
+
     return -1;
 }
 
@@ -2805,7 +2876,11 @@ void func_00110CE0(ResidentSound* sound, s32 voice)
     }
 }
 
-/** @brief Count the voices in the voice table. @param sound Sound system. @return Voice count, or zero while there is no table or it is still being read. */
+/**
+ * @brief Count the voices in the voice table.
+ * @param sound Sound system.
+ * @return Voice count, or zero while there is no table or it is still being read.
+ */
 static inline s32 sound_voice_count(ResidentSound* sound)
 {
     if (sound->voice_file_key == 0)
@@ -2915,7 +2990,11 @@ static inline s32 sound_voice_block(ResidentSound* sound, s32 voice, u32* block_
     return table->entries[voice].block;
 }
 
-/** @brief Check whether a voice file is set. @param sound Sound system. @return True when there is one. */
+/**
+ * @brief Check whether a voice file is set.
+ * @param sound Sound system.
+ * @return True when there is one.
+ */
 static inline bool sound_has_voice_file(const ResidentSound* sound)
 {
     return sound->voice_file_key != 0;
@@ -4134,6 +4213,7 @@ void resident_heap_release(void* memory)
     ResidentHeapBlock* block = (ResidentHeapBlock*)((u8*)memory - 0x20);
     ResidentHeapBlock* previous_free = block->owner->free_anchor;
     ResidentHeapBlock* next_free;
+
     if (!block->physical_next->allocated)
     {
         previous_free = block->physical_next->free_previous;
@@ -4148,10 +4228,12 @@ void resident_heap_release(void* memory)
         if (block->physical_previous->allocated)
         {
             next_free = previous_free->free_next;
+
             while ((u32)next_free < (u32)block && next_free != previous_free)
             {
                 next_free = next_free->free_next;
             }
+
             previous_free = next_free->free_previous;
         }
         else
@@ -4159,6 +4241,7 @@ void resident_heap_release(void* memory)
             previous_free = block->physical_previous->free_previous;
         }
     }
+
     if (!block->physical_previous->allocated)
     {
         next_free = block->physical_previous->free_next;
@@ -4166,6 +4249,7 @@ void resident_heap_release(void* memory)
         block->size += block->physical_previous->size;
         block->physical_previous = block->physical_previous->physical_previous;
     }
+
     block->free_previous = previous_free;
     block->free_next = next_free;
     next_free->free_previous = block;
@@ -4245,19 +4329,23 @@ void* resident_heap_allocate(void* receiver, s32 size)
     s32 rounded;
     s32 alignment;
     ResidentHeapBlock* anchor;
+
     if (heap->alternate)
     {
         return func_001135B0(heap, size);
     }
+
     alignment = heap->alignment;
     anchor = heap->free_anchor;
     rounded = -alignment & (size + 0x1F + alignment);
+
     for (block = anchor->free_next; block != anchor; block = block->free_next)
     {
         if (block->size >= rounded)
         {
             ResidentHeapBlock* rest = (ResidentHeapBlock*)((u8*)block + rounded);
             s32 remaining = block->size - rounded;
+
             if (remaining > alignment + 0x20)
             {
                 rest->size = remaining;
@@ -4277,6 +4365,7 @@ void* resident_heap_allocate(void* receiver, s32 size)
                 block->free_previous->free_next = block->free_next;
                 block->free_next->free_previous = block->free_previous;
             }
+
             block->tag = RESIDENT_HEAP_BLOCK_TAG;
             block->marker = RESIDENT_HEAP_BLOCK_MARKER;
             block->owner = heap;
@@ -4284,15 +4373,18 @@ void* resident_heap_allocate(void* receiver, s32 size)
             return block + 1;
         }
     }
+
     if (heap->use_fallbacks)
     {
         s32 count = heap->fallback_count;
         s32 i;
+
         for (i = 0; i < count; i++)
         {
             if (heap->fallbacks[i])
             {
                 void* memory = resident_heap_allocate(heap->fallbacks[i], size);
+
                 if (memory)
                 {
                     return memory;
@@ -4300,6 +4392,7 @@ void* resident_heap_allocate(void* receiver, s32 size)
             }
         }
     }
+
     return 0;
 }
 
@@ -5139,7 +5232,10 @@ ResidentArchiveWorker::ResidentArchiveWorker()
     command_semaphore.create(1, 1);
 }
 
-/** @brief Wake a thread. @param data Thread to wake. */
+/**
+ * @brief Wake a thread.
+ * @param data Thread to wake.
+ */
 void ResidentArchiveWorkerListener::notify(void* data)
 {
     func_00114E00((ResidentThread*)data);
@@ -5805,6 +5901,7 @@ void ResidentClass14FC10::run()
                     }
 
                     timeout_ticks = 0;
+
                     if ((timeout_alarm = resident_system_set_alarm(resident_get_system(), 0x106, func_0011B5C0, this)) != -1)
                     {
                         unk60 = 5;

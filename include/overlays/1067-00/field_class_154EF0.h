@@ -15,10 +15,16 @@ struct LibObject1751A0
 {
     /** @brief Destroy the linked Lib object. */
     virtual ~LibObject1751A0();
-    /** @brief Report the fixed object kind. @return Always 7. */
+
+    /**
+     * @brief Report the fixed object kind.
+     * @return Always 7.
+     */
     virtual s32 func_00468360();
+
     /** @brief Release the linked Lib object. */
     virtual void func_00434FA0();
+
     u8 unk04[0x66];
     u16 unk6A;
     u8 unk6c[0x9E4];
@@ -34,34 +40,59 @@ class FieldClass154EF0 : public FieldListObject
 public:
     /** @brief Call slot 0x28, then destroy the object. */
     virtual ~FieldClass154EF0();
+
     /**
      * @brief Report this object's default list kind.
      * @return The class's default list kind.
      */
     virtual s32 get_default_list_kind();
+
     /** @brief Detach, release owned objects and queue this object once. */
     virtual void func_001DD7B0();
+
     /** @brief Update the object for the current frame. */
     virtual void update();
+
     // Unnamed virtual handlers retain their slot offsets in the names.
-    /** @brief Do nothing with the linked object. @param target Linked object; unused. */
+    /**
+     * @brief Do nothing with the linked object.
+     * @param target Linked object; unused.
+     */
     virtual void func_slot1c(LibObject1751A0* target);
+
     /** @brief Do nothing. */
     virtual void func_slot20();
-    /** @brief Report the fixed value. @return Always 300. */
+
+    /**
+     * @brief Report the fixed value.
+     * @return Always 300.
+     */
     virtual s32 func_slot24();
+
     /** @brief Release the linked object and any unborrowed grid. */
     virtual void func_slot28();
+
     /** @brief Clear bit 2 and copy bit 1 to bit 0. */
     virtual void func_slot2c();
+
     /** @brief Create the grid for this object. */
     virtual void func_slot30() = 0;
-    /** @brief Create and attach the linked Lib object. @return The linked object. */
+
+    /**
+     * @brief Create and attach the linked Lib object.
+     * @return The linked object.
+     */
     virtual LibObject1751A0* func_slot34();
+
     /** @brief Clear every word of the grid bit set. */
     virtual void func_slot38();
-    /** @brief Set or clear bit 0 of the linked object flags. @param enabled Nonzero to set the flag. */
+
+    /**
+     * @brief Set or clear bit 0 of the linked object flags.
+     * @param enabled Nonzero to set the flag.
+     */
     virtual void func_slot3c(s32 enabled);
+
     u8 unk14[4];
     LibObject1751A0* unk18;
     FieldClass154D50* unk1c;
@@ -78,7 +109,6 @@ public:
 class FieldClass154E20 : public FieldClass154EF0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass154E20()
     {
     }

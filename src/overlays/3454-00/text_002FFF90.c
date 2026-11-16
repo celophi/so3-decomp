@@ -2,8 +2,11 @@
 #include "overlays/3454-00/text_002FFF90.h"
 
 extern void func_002919A0(void* object);
+
 extern void func_002A1390(void* object);
+
 extern u32 func_473940(u32 value, const void* data);
+
 extern const u8 D_3E3A60[];
 
 typedef struct N57Owner2FECtext_002FFF90
@@ -57,6 +60,7 @@ void func_00302FB0(void* object, u32 value)
 {
     ConditionalByteUpdate2FE0text_002FFF90* receiver = object;
     receiver->updateFlag = 1;
+
     if (value == receiver->comparison)
     {
         receiver->matchFlag = 1;

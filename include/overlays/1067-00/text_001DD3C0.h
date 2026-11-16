@@ -33,7 +33,6 @@ typedef struct FieldFlaggedListObject
 class FieldClass150050
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass150050()
     {
     }
@@ -50,7 +49,6 @@ public:
         unk08 = 0;
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass150060()
     {
     }
@@ -105,15 +103,9 @@ public:
     /** @brief Default handler that performs no work. */
     virtual void func_001DD410();
 
-    /** Kind used by the owning intrusive list. */
     s16 list_kind;
-
-    /** Registration flag set on insertion and cleared on removal. */
     u8 is_listed;
-
     u8 unk0f;
-
-    /** List subobject that registered this node, or null after detachment. */
     LibUpdateList* owner;
 };
 
@@ -146,7 +138,6 @@ public:
 class FieldResourceLoaderList : public FieldListObject, public LibUpdateList
 {
 public:
-    /** @brief Initialize the inherited field node and object list. */
     FieldResourceLoaderList()
     {
     }
@@ -166,10 +157,12 @@ public:
      */
     virtual void update_nodes();
 
-    /** @brief Destroy the Lib list owner and detach the inherited field node. */
     virtual ~FieldResourceLoaderList();
 
-    /** @brief Prepend a node using its default list kind. @param node Node to register. */
+    /**
+     * @brief Prepend a node using its default list kind.
+     * @param node Node to register.
+     */
     void insert(void* node)
     {
         LibUpdateList& list = *this;
@@ -263,7 +256,6 @@ public:
         request_state = 0;
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldResourceLoadTask()
     {
     }
@@ -301,15 +293,7 @@ public:
      */
     virtual u8 get_load_kind();
 
-    /** @brief Load category used when coordinating other registered loaders. */
     u8 load_kind;
-
-    /**
-     * @brief Current loading, cancellation or removal state.
-     *
-     * Common states are 0 for idle, 1 for reading and 5 for completion.
-     * Decoder subclasses also use this byte for their processing stages.
-     */
     u8 request_state;
 };
 
@@ -552,7 +536,6 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed);
 class FieldClass150E10 : public FieldListObject, public LibUpdateList
 {
 public:
-    /** @brief Initialize the inherited field node and object list. */
     FieldClass150E10()
     {
     }

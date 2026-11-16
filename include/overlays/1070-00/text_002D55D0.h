@@ -713,12 +713,14 @@ FieldPointerAt4C* func_002D6550(FieldPointerAt4C* object);
  * @return The receiver.
  */
 FieldPointerAt1C* func_002D65D0(FieldPointerAt1C* object);
+
 /**
  * @brief Set the receiver pointer at offset 0x1C, reset its state fields, and return it.
  * @param object Receiver to initialize.
  * @return The receiver.
  */
 FieldPointerAt1C* func_002D65F0(FieldPointerAt1C* object);
+
 /**
  * @brief Set the receiver pointer at offset 0x1C, reset its state fields, and return it.
  * @param object Receiver to initialize.

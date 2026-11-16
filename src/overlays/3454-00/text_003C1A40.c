@@ -224,6 +224,7 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_003C1A40", func_003C9D
 void func_003C9E60(void* object)
 {
     u8* bytes = (u8*)object;
+
     if (bytes[0x36C] == 0)
     {
         bytes[0x36C] = 1;
@@ -603,6 +604,7 @@ void func_003CFE60(void* object, s32 enabled)
     TwoWordClearArgStateOwnertext_003C1A40* receiver = object;
     receiver->unk48 = 0;
     receiver->unk4C = 0;
+
     if (enabled)
     {
         receiver->unk50 = 1;
@@ -628,6 +630,7 @@ void func_003D0580(void* object, s32 enabled)
     TwoWordClearArgStateOwnertext_003C1A40* receiver = object;
     receiver->unk48 = 0;
     receiver->unk4C = 0;
+
     if (enabled)
     {
         receiver->unk50 = 1;
@@ -653,6 +656,7 @@ void func_003D0CA0(void* object, s32 enabled)
     TwoWordClearArgStateOwnertext_003C1A40* receiver = object;
     receiver->unk48 = 0;
     receiver->unk4C = 0;
+
     if (enabled)
     {
         receiver->unk50 = 1;
@@ -678,6 +682,7 @@ void func_003D1380(void* object, s32 enabled)
     TwoWordClearArgStateOwnertext_003C1A40* receiver = object;
     receiver->unk48 = 0;
     receiver->unk4C = 0;
+
     if (enabled)
     {
         receiver->unk50 = 1;

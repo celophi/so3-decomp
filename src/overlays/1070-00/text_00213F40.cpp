@@ -7,13 +7,20 @@ extern "C" void* __vt__16FieldClass16AB70;
 extern "C" u8 D_16CF78[];
 extern "C" u8 D_16D0B0[];
 extern "C" u8 D_16D0A0[];
+
 extern "C" void func_43AC40(void* object);
+
 extern "C" void func_459DB0(void* object);
+
 extern "C" void func_459960(void* object);
+
 extern "C" void func_4781A0(void* object);
+
 extern "C" void func_0027D300(void* object, u32 value, u8 old_flags);
+
 extern "C" void* D_001B6620;
 extern "C" u8 D_17B8A0[];
+
 extern "C" void func_121E80(void* owner, void* object);
 
 /** Partial callback interface with a virtual method at offset 0x54. */
@@ -21,24 +28,43 @@ class FieldCallbackDispatch54
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void callback();
 };
 
@@ -47,7 +73,9 @@ class FieldCallbackDispatch10
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void callback();
 };
 
@@ -56,16 +84,27 @@ class FieldCallbackOutputs34
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void callback(float value, u32* first, u32* second, u32* third);
 };
 
@@ -108,10 +147,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002140
 s32 func_002140E0(const FieldCheckedState00* object)
 {
     s32 check = object->unk10c ^ (object->unk0a ^ (object->unk06 + object->unk08));
+
     if (object->unkec != check)
     {
         return 0;
     }
+
     return object->unk0a ^ 0x7E93;
 }
 
@@ -128,10 +169,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002141
 s32 func_00214200(const FieldCheckedState00* object)
 {
     s32 check = object->unk10c ^ (object->unk04 ^ (object->unk00 + object->unk02));
+
     if (object->unke8 != check)
     {
         return 0;
     }
+
     return object->unk04 ^ 0x7E93;
 }
 
@@ -142,10 +185,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002142
 s32 func_00214320(const FieldCheckedState7C* object)
 {
     s32 check = object->unka8 ^ (object->unk80 ^ (object->unk7c + object->unk7e));
+
     if (object->unkac != check)
     {
         return 0;
     }
+
     return object->unk80 ^ 0x7E93;
 }
 
@@ -156,10 +201,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002143
 s32 func_00214490(const FieldCheckedState7C* object)
 {
     u32 check = object->unka8 ^ (object->unk60 ^ (object->unk58 + object->unk5c));
+
     if (object->unka0 != check)
     {
         return 0;
     }
+
     return object->unk6c ^ 0x7DE3F7E3;
 }
 
@@ -170,10 +217,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002145
 s32 func_00214650(const FieldCheckedState7C* object)
 {
     u32 check = object->unka8 ^ (object->unk60 ^ (object->unk58 + object->unk5c));
+
     if (object->unka0 != check)
     {
         return 0;
     }
+
     return object->unk60 ^ 0x7DE3F7E3;
 }
 
@@ -184,10 +233,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002147
 s32 func_002148D0(const FieldCheckedState7C* object)
 {
     u32 check = object->unka8 ^ (object->unk54 ^ (object->unk4c + object->unk50));
+
     if (object->unk9c != check)
     {
         return 0;
     }
+
     return object->unk50 ^ 0x7DE3F7E3;
 }
 
@@ -198,10 +249,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002149
 s32 func_00214AA0(const FieldCheckedState7C* object)
 {
     u32 check = object->unka8 ^ (object->unk48 ^ (object->unk40 + object->unk44));
+
     if (object->unk98 != check)
     {
         return 0;
     }
+
     return object->unk48 ^ 0x7DE3F7E3;
 }
 
@@ -212,10 +265,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_00214B
 s32 func_00214C70(const FieldCheckedState7C* object)
 {
     u32 check = object->unka8 ^ (object->unk3c ^ (object->unk34 + object->unk38));
+
     if (object->unk94 != check)
     {
         return 0;
     }
+
     return object->unk3c ^ 0x7DE3F7E3;
 }
 
@@ -441,18 +496,22 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_002178
 s32 func_002179B0(const FieldKeyList18* object, s32 key)
 {
     const FieldKeyNode6E* node = &object->sentinel;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->sentinel == node)
         {
             break;
         }
+
         if (node->key6e == (u16)key)
         {
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -648,10 +707,12 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_00213F40", func_0021AE
 s32 func_0021AF10(const void* receiver)
 {
     const FieldFloatWordState78* object = (const FieldFloatWordState78*)receiver;
+
     if (object->unk78 > 0.0f)
     {
         return 1;
     }
+
     return object->unk0c != 0;
 }
 
@@ -783,6 +844,7 @@ extern "C" void func_0021EEE0(void* object)
 void func_0021EF10(FieldValueOwner34* object, s32 value)
 {
     FieldValueState100* target = object->unk34;
+
     if (target != 0)
     {
         target->unk100 = value;
@@ -1041,6 +1103,7 @@ struct FieldIndexedFloatState
 extern "C" void func_00223C90(const FieldIndexedFloatState* object, float* result)
 {
     const FieldFloatRecord4* records = object->records;
+
     if (records != 0)
     {
         *result = records[object->index - 1].value04 - records[0].value04;

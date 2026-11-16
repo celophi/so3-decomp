@@ -341,6 +341,7 @@ static inline s32 field_has_flag_22d110(FieldFlagTarget22D110* target, u32 mask)
     {
         return 1;
     }
+
     return 0;
 }
 
@@ -367,6 +368,7 @@ void func_0022B740(FieldObject22B740* object, u8 first, u8 second, float x, floa
     object->unk1D = second;
     object->first = x;
     object->second = y;
+
     if (y == 0.0f)
     {
         object->unk1E = object->unk1D;
@@ -463,25 +465,30 @@ s32 func_0022BC90(FieldCallback22BC90* object)
 {
     FieldNode22BC90* node = object->handle->target->node;
     FieldChild22BC90* child;
+
     if (node != 0)
     {
         node->value = object->value;
         child = node->child;
+
         if (child != 0 && node->value < *child->limit)
         {
             child->value = node->value;
         }
     }
+
     return 1;
 }
 
 s32 func_0022BCE0(FieldCallback22BCE0* object)
 {
     FieldNode22BC90* node = object->handle->target->node;
+
     if (node != 0)
     {
         func_0028F710(node, object->first, object->second, object->third, object->fourth, object->fifth);
     }
+
     return 1;
 }
 
@@ -539,6 +546,7 @@ s32 func_0022C7D0(FieldCallback22C7D0* object)
     FieldHandle22C7D0* handle = object->handle;
     void* state = handle->state;
     FieldFlaggedListObject* node;
+
     if (object->key < 0)
     {
         node = 0;
@@ -548,11 +556,13 @@ s32 func_0022C7D0(FieldCallback22C7D0* object)
         node = func_001DEE30((FieldFlaggedListObject*)D_001B6430->context->unk04,
                               object->key, (u32)-1);
     }
+
     if (!func_00278D90(state, node, object->data))
     {
         handle->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -585,6 +595,7 @@ extern "C" void func_0022C920(FieldObject22C920* object, u32 value)
     {
         func_00249FE0(object);
     }
+
     object->active = value;
 }
 
@@ -594,10 +605,12 @@ s32 func_0022C9E0(FieldCallback22C9E0* object)
 {
     FieldTarget22C9E0* target = object->handle->target;
     s32 value = object->value;
+
     if (value == -1)
     {
         value = target->current;
     }
+
     target->selected = value;
     return 1;
 }
@@ -607,16 +620,20 @@ s32 func_0022CA10(FieldCallback22CA10* object)
     void* node = object->handle->target->node;
     u32 packed;
     s32 index;
+
     if (node == 0)
     {
         return 1;
     }
+
     packed = object->packed;
     index = packed & 0xFFFF;
+
     if (index == 0xFFFF)
     {
         index = -1;
     }
+
     func_0028F5B0(node, index, (packed >> 16) & 0xFF, packed >> 24, object->x, object->y, object->z);
     return 1;
 }
@@ -626,11 +643,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022CA
 s32 func_0022CF90(FieldFlagCallback22D110* object)
 {
     FieldFlagHandle22D110* handle = object->handle;
+
     if (field_has_flag_22d110(handle->target, 0x400))
     {
         handle->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -639,11 +658,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022CF
 s32 func_0022D110(FieldFlagCallback22D110* object)
 {
     FieldFlagHandle22D110* handle = object->handle;
+
     if (field_has_flag_22d110(handle->target, 0x100))
     {
         handle->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -666,6 +687,7 @@ s32 func_0022D1C0(FieldCallback22D180* object)
         object->handle->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -693,11 +715,13 @@ s32 func_0022D680(FieldCallback22D680* object)
 {
     FieldHandle22D680* handle = object->handle;
     FieldChild22D680* child = handle->target->child;
+
     if (child != 0)
     {
         child->value = object->value;
         return 1;
     }
+
     handle->value = 1.0f;
     return 0;
 }

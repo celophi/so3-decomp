@@ -15,13 +15,16 @@ extern "C" {
  * @return -1.
  */
 s32 func_00121860(const char* name, void* value, s32 kind);
+
 /** @brief Do nothing. */
 void func_00121870(void);
+
 /**
  * @brief Do nothing.
  * @param object Unused receiver.
  */
 void func_00121880(void* object);
+
 /**
  * @brief Hook Lib calls after it installs a display, and boot before it restarts Lib; empty in the retail build.
  * @param display Display being installed.

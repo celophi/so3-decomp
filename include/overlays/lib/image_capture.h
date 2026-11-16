@@ -16,7 +16,6 @@ public:
     /** @brief Construct the capture. */
     LibImageCapture();
 
-    /** @brief Destroy the capture. */
     virtual ~LibImageCapture();
 
     /** @brief Queue the capture's DMA, or hand it to the packet queue when unk65 is set. */
@@ -47,28 +46,15 @@ public:
      */
     virtual void complete_dma(u32 channel);
 
-    /** Draw bucket the capture uses (9). */
     u8 default_draw_bucket;
-
-    /** Which of the two store packets is the newest. */
     u8 current;
-
-    /** Which store packet is being stored. */
     u8 storing;
-
-    /** Per packet: set once its copy has arrived. */
     u8 stored[2];
-
-    /** A copy is waiting to be sent. */
     u8 pending;
-
     u8 unk9a[0x46];
     GsStoreImage packets[2];
     u8 unk1c0[0x40];
-
-    /** Per packet: where its copy goes. */
     void* destinations[2];
-
     u8 unk208[8];
 };
 
@@ -76,21 +62,11 @@ public:
 struct LibImageStoreThread
 {
     u8 unk00[0x10];
-
-    /** Store packet to run, as an uncached address. */
     GsStoreImage* packet;
-
-    /** Where the pixels go. */
     void* destination;
-
     LibImageCapture* capture;
-
-    /** Signalled when the store packet's transfer is over. */
     s32 semaphore;
-
     u8 unk20[4];
-
-    /** Set when the thread couldn't be woken. */
     u8 wake_failed;
 };
 

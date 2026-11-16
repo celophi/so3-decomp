@@ -11,12 +11,13 @@ extern "C" void func_4D7EB0(void* object);
 class FieldClass16AB60
 {
 public:
-    /** Initialize the secondary dispatch interface. */
     FieldClass16AB60()
     {
     }
+
     /** Invoke the default callback handler. */
     virtual void func_slot08();
+
     /** Handle a callback value. */
     virtual void func_slot0c(void* value);
 };
@@ -32,11 +33,10 @@ public:
 class FieldClass16AB70
 {
 public:
-    /** Initialize the primary polymorphic receiver. */
     FieldClass16AB70()
     {
     }
-    /** Destroy the primary receiver. */
+
     virtual ~FieldClass16AB70()
     {
     }
@@ -50,10 +50,11 @@ public:
     FieldClass16AB80() : unk04(0), unk08(0)
     {
     }
-    /** Destroy the primary receiver. */
+
     virtual ~FieldClass16AB80()
     {
     }
+
     u32 unk04;
     u32 unk08;
 };
@@ -66,19 +67,25 @@ public:
     FieldClass16AB90() : unk0e(0), unk0f(0), unk10(0)
     {
     }
+
     /** Destroy the primary receiver. */
     virtual ~FieldClass16AB90()
     {
         func_4D7EB0(this);
     }
+
     /** Return the receiver's type value. */
     virtual s32 func_slot0c();
+
     /** Release the receiver through its virtual destruction interface. */
     virtual void func_slot10();
+
     /** Update the receiver. */
     virtual void func_slot14();
+
     /** Invoke the default receiver handler. */
     virtual void func_slot18();
+
     u8 unk0c[2];
     u8 unk0e;
     u8 unk0f;

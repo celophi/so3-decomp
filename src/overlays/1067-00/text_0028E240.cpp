@@ -23,6 +23,7 @@ extern "C" s32 func_0028E240(FieldRecordSelection* selection, s8 value)
 {
     s32 index;
     s32 result = -1;
+
     for (index = 0; index < 8; index++)
     {
         if (selection->records[(s16)index].unk00 == value)
@@ -31,6 +32,7 @@ extern "C" s32 func_0028E240(FieldRecordSelection* selection, s8 value)
             break;
         }
     }
+
     return result;
 }
 
@@ -107,21 +109,25 @@ extern "C" s32 func_0028E3D0(FieldRecordSelection* selection)
     s32 index;
     selection->records = D_001B643C->records;
     selection->unk04 = D_001B643C->unk08;
+
     if (selection->records == 0 || selection->unk04 == 0)
     {
         return 0;
     }
+
     for (index = 0; index < 8; index++)
     {
         FieldRecord* record = &selection->records[index];
         s32 value = record->unk00;
         s16 state = record->unk02;
+
         if (state == 0 && value != 0)
         {
             selection->count++;
             selection->slots[index] = value;
         }
     }
+
     selection->current = D_001B643C->context->unk62;
     return 1;
 }

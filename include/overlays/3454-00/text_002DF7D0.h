@@ -10,6 +10,7 @@ void func_002EE150(u8* object, void* context);
 
 /** Call the nested update helper and set two receiver state bytes. */
 void func_002E1590(void* object);
+
 /** Initialize the object and store the resolved field value at offset 0x510. */
 void func_002E15D0(void* receiver);
 

@@ -158,6 +158,7 @@ void func_00311020(BattleObject2F26* object, u8 current, u8 previous)
         state->first = 1;
         state->second = 1;
     }
+
     func_00292930(object, current, previous);
 }
 

@@ -41,6 +41,7 @@ static inline void check_main_code()
             ResidentSystem* system = resident_get_system();
 
             *system->status = RESIDENT_STATUS_TAMPERED;
+
             for (;;)
             {
             }

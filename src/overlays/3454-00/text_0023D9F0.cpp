@@ -4,8 +4,11 @@
 
 extern "C" {
 s32 func_00243E90(void* object, void* entry, s32 type, s32 flags);
+
 void func_4486A0(void* object);
+
 void func_448250(void* object);
+
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0023D9F0);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0023D9F0", func_0023DAE0);

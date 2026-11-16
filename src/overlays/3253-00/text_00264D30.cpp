@@ -2,8 +2,11 @@
 #include "overlays/3253-00/text_00264D30.h"
 
 extern "C" u8 D_15A5B0[];
+
 extern "C" void func_00269FB0(void* object);
+
 extern "C" void func_4D9140(void* object);
+
 extern "C" u8 D_157590[];
 
 struct N59Receiver78_00264D30
@@ -57,8 +60,11 @@ struct BattleByteFlagState210
 };
 
 extern "C" void func_0026C550(void* object);
+
 extern "C" void func_44CC40(void);
+
 extern "C" void func_4EAB40(void* object);
+
 extern "C" void func_4EABF0(void* object);
 
 
@@ -161,6 +167,7 @@ s32 func_00267960(void* object)
 void* func_00267970(void* object)
 {
     BattleOptionalField67970* state = (BattleOptionalField67970*)object;
+
     if (state->present != 0)
     {
         return (u8*)object + 0x620;

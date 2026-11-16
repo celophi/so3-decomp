@@ -60,7 +60,10 @@ class FieldClass15B800 : public FieldListObject, public FieldClass1DD400
 public:
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
 
     FieldClass15B800();

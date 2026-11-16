@@ -33,7 +33,6 @@ public:
         unk01 = 0;
     }
 
-    /** @brief Destroy the resource base. */
     virtual ~LibRenderResource()
     {
     }
@@ -85,25 +84,13 @@ public:
      */
     virtual void* find_child_data(s32 index);
 
-    /** Backing allocation or borrowed resource block. */
     void* data;
-
     u8 unk0c[8];
-
-    /** Payload a model draws instead of the resource's own, or null. */
     void* payload_override;
-
-    /** Intrusive sentinel for the channels supplying child entries. */
     LibListSentinel* children;
-
-    /** Nonzero when data is borrowed and must not be freed. */
     u8 external_data;
-
     u8 unk1d;
-
-    /** Nonzero while registered with the resource manager. */
     u8 registered;
-
     u8 unk1f;
 };
 
@@ -126,8 +113,6 @@ struct LibImageHeader
     s32 id;
     u32 image_offset;
     u8 unk10[4];
-
-    /** Offset of the palette block from the header. */
     u32 palette_offset;
 };
 
@@ -135,10 +120,7 @@ struct LibImageHeader
 struct LibImageInfo
 {
     u8 unk00[8];
-
-    /** Offset of the pixel block from the image header. */
     u32 pixel_offset;
-
     u16 texture_code;
     u8 width_log2;
     u8 height_log2;
@@ -221,9 +203,7 @@ static inline u8* lib_resource_active_payload(LibResourceBuffer* buffer)
 /** Packet at the start of each draw buffer's commands, written through the uncached segment. */
 struct LibDrawSetupPacket
 {
-    /** Size of this packet. */
     u32 size;
-
     u32 unk04;
     u8 unk08[4];
     u32 unk0c;
@@ -231,13 +211,8 @@ struct LibDrawSetupPacket
     u32 unk14;
     float unk18;
     u8 unk1c[0x18];
-
-    /** Batches the commands hold. */
     u32 batch_count;
-
-    /** Bytes of commands after the packet's start. */
     u32 command_size;
-
     u8 unk3C;
     u8 unk3D;
     u8 unk3e;
@@ -292,10 +267,7 @@ struct LibDrawBlockHeader
 struct LibDrawBatchInfo
 {
     u32 vif_code;
-
-    /** Bytes of the batch in the commands. */
     s16 size;
-
     s16 unk4c_address;
     s16 primitive_count;
     s16 primitive_address;
@@ -330,19 +302,11 @@ struct LibDrawChainBlock
 struct LibDrawState
 {
     u32 vif_codes[4];
-
-    /** A+D tag for the four register writes that follow. */
     GsGifTag register_tag;
-
-    /** Low word of ALPHA_1. */
     u32 alpha;
-
     u32 unk24;
     u32 alpha_address;
-
-    /** Nonzero when alpha blending is on. */
     u32 blend;
-
     u64 tex0;
 
     union
@@ -351,7 +315,6 @@ struct LibDrawState
         u32 tex0_address_words[2];
     };
 
-    /** A second copy of TEX0_1 and its address. */
     u64 unk40;
     u64 unk48;
 
@@ -359,13 +322,8 @@ struct LibDrawState
     float unk54;
     float unk58;
     u8 unk5c[4];
-
-    /** Tag for the batch's primitives. */
     GsGifTag primitive_tag;
-
-    /** Tag for the batch's primitives drawn as triangle fans. */
     GsGifTag fan_tag;
-
     u32 unk80;
     u8 unk84[4];
     u32 texture_index;
@@ -414,15 +372,9 @@ struct LibDrawWordBlock
 /** Settings applied to a draw buffer before its next primitives. */
 struct LibDrawSettings
 {
-    /** GS PRIM bits: 0xC is a Gouraud-shaded triangle strip; 0x5C adds texture mapping and alpha blending. */
     u16 prim;
-
-    /** Blend mode: an index into the ALPHA_1 table, 0 for no blending. */
     u8 blend_mode;
-
-    /** Which of the draw buffer's textures to draw with; the palette quad uses 1. */
     u8 texture_index;
-
     u8 unk04;
     u8 unk05;
     u8 unk06;
@@ -430,10 +382,7 @@ struct LibDrawSettings
     float unk08;
     float unk0C;
     float unk10;
-
-    /** Positive values replace the blend with ALPHA 0x42. */
     float unk14;
-
     u8 unk18;
     u8 unk19;
     u8 unk1A;
@@ -467,48 +416,23 @@ public:
 
     u32* command_buffers[2];
     u32* command_begin;
-
-    /** Next free word of the command buffer. */
     u32* command_cursor;
-
-    /** This batch's DMA chain head in the scratchpad. */
     LibDrawChainBlock* chain_block;
-
-    /** Draw state the batch's microprogram reads. */
     LibDrawStateBlock* state_block;
-
     LibDrawPrimitiveBlock* primitive_block;
-
-    /** Next byte of the per-primitive vertex counts. */
     u8* primitive_sizes;
-
     LibDrawVectorBlock* position_block;
-
-    /** Next free slot of the vertex position stream. */
     FieldVec4A* positions;
-
-    /** Block of the vertex normal stream. */
     LibDrawVectorBlock* normal_block;
-
-    /** Next free slot of the vertex normal stream. */
     FieldVec4A* normals;
-
     LibDrawWordBlock* texcoord_block;
-
-    /** Next free slot of the packed texture coordinate stream: u in the low half, v in the high half, 4.12 fixed point. */
     u32* texcoords;
-
     LibDrawWordBlock* color_block;
-
-    /** Next free slot of the vertex color stream. */
     u32* colors;
     u32* block_sizes;
     u8* block_packets;
     LibDrawSetupPacket* setup_packet;
-
-    /** Batches copied into the command buffer since it was started. */
     u32 batch_count;
-
     s32 word_capacity;
     s32 block_capacity;
     s32 block_count;
@@ -523,10 +447,7 @@ public:
     u8 command_buffer_count;
     u8 scratchpad_index;
     u8 unkc7[4];
-
-    /** Set once settings are applied; the next batch carries the draw state. */
     u8 state_pending;
-
     u8 unkcc;
     u8 unkcd;
     u8 unkce;

@@ -20,12 +20,19 @@ extern u8 D_0014A830[];
 extern u8 D_0014A834[];
 extern u8 D_0014A9E0[];
 extern u8 D_0014A9E4[];
+
 s32 DIntr(void);
+
 s32 EIntr(void);
+
 s32 SleepThread(void);
+
 void func_0010B510(ResidentStreamThread* thread, s32 command);
+
 void* func_0010B810(void* memory, ResidentSoundStream* stream);
+
 bool func_00114E00(ResidentThread* thread);
+
 s32 func_4DC4F0(void* queue, u32 operation, u32 flags, void* packet, u32 value, void* completion);
 }
 
@@ -471,6 +478,7 @@ extern "C" void func_00102D50(ResidentResourceQueue* queue)
             queue->status = 1;
             queue->requests[index].state = 1;
         }
+
         break;
 
     case 2:
@@ -479,6 +487,7 @@ extern "C" void func_00102D50(ResidentResourceQueue* queue)
             queue->status = 1;
             queue->requests[index].state = 1;
         }
+
         break;
 
     case 3:
@@ -489,6 +498,7 @@ extern "C" void func_00102D50(ResidentResourceQueue* queue)
             queue->status = 1;
             queue->requests[index].state = 1;
         }
+
         break;
 
     case 4:
@@ -501,6 +511,7 @@ extern "C" void func_00102D50(ResidentResourceQueue* queue)
             archive_begin_object_request(queue->archive);
             queue->archive->disc_thread.unk70 = 0;
         }
+
         break;
     }
 
@@ -556,6 +567,7 @@ extern "C" bool func_001031C0(ResidentResourceQueue* queue)
                 queue->status = 0;
                 notify_completion(queue);
             }
+
             break;
 
         case 3:
@@ -564,6 +576,7 @@ extern "C" bool func_001031C0(ResidentResourceQueue* queue)
                 queue->status = 0;
                 notify_completion(queue);
             }
+
             break;
 
         case 4:
@@ -572,6 +585,7 @@ extern "C" bool func_001031C0(ResidentResourceQueue* queue)
                 queue->status = 0;
                 notify_completion(queue);
             }
+
             break;
         }
 
@@ -599,7 +613,10 @@ void func_001034E0(ResidentResourceQueueListener* listener, ResidentClass14FA40*
     context->func_00104770();
 }
 
-/** @brief Lower the priority of every queued request that is still positive. @param queue Resident resource queue. */
+/**
+ * @brief Lower the priority of every queued request that is still positive.
+ * @param queue Resident resource queue.
+ */
 extern "C" void func_00103510(ResidentResourceQueue* queue)
 {
     s32 index = 0;
@@ -973,7 +990,10 @@ extern "C" bool resident_queue_resource_request(ResidentResourceQueue* queue, s3
     return true;
 }
 
-/** @brief Cancel the active read, then empty the request table and its queued list. @param queue Resident resource queue. */
+/**
+ * @brief Cancel the active read, then empty the request table and its queued list.
+ * @param queue Resident resource queue.
+ */
 extern "C" void func_001041C0(ResidentResourceQueue* queue)
 {
     cancel_active_read(queue);
@@ -1012,7 +1032,10 @@ extern "C" s32 func_00104370(ResidentResourceQueue* queue, s32 capacity)
     return 1;
 }
 
-/** @brief Register the queue's listener with the archive again. @param queue Resident resource queue. */
+/**
+ * @brief Register the queue's listener with the archive again.
+ * @param queue Resident resource queue.
+ */
 extern "C" void func_001043F0(ResidentResourceQueue* queue)
 {
     func_0011D320(queue->archive, &queue->listener, queue);
@@ -1635,6 +1658,7 @@ extern "C" void func_001070B0(ResidentSoundStream* stream, s32 command)
                 func_0010BE80(&D_001CC590, 1, (void*)stream->sequence_read->cursor, (void*)stream->sequence_address,
                               STREAM_BLOCK_SIZE);
             }
+
             break;
 
         case 2:
@@ -2445,6 +2469,7 @@ extern "C" s32 func_0010A000(ResidentStreamThread* thread, s32 which)
                 thread->first_state = 2;
                 return 1;
             }
+
             break;
 
         case 2:
@@ -2453,6 +2478,7 @@ extern "C" s32 func_0010A000(ResidentStreamThread* thread, s32 which)
                 thread->second_state = 2;
                 return 1;
             }
+
             break;
     }
 

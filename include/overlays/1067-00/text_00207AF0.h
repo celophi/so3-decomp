@@ -92,10 +92,21 @@ s32 func_0020D060(FieldShapeListOwner20* object, void* query);
  */
 void func_0020D4C0(struct FieldClass151640* object, struct FieldShapeOwner18* shape);
 
-/** @brief Copy the shape entry name and look up its transform. @param entry Entry to update. @param name Seventeen name bytes. @return Located transform, or null. */
+/**
+ * @brief Copy the shape entry name and look up its transform.
+ * @param entry Entry to update.
+ * @param name Seventeen name bytes.
+ * @return Located transform, or null.
+ */
 struct LibTransformOwner* func_0020CA10(struct FieldClass151620* entry, const char* name);
 
-/** @brief Append attachments for descriptors with animation channels. @param object Attachment list owner. @param manager Animation manager. @param shape First descriptor in the terminated array. @return Last attachment created, or null. */
+/**
+ * @brief Append attachments for descriptors with animation channels.
+ * @param object Attachment list owner.
+ * @param manager Animation manager.
+ * @param shape First descriptor in the terminated array.
+ * @return Last attachment created, or null.
+ */
 struct FieldClass151570* func_0020D5E0(struct FieldClass151640* object, struct LibAnimation* manager, struct FieldShapeOwner18* shape);
 
 /**
@@ -199,10 +210,20 @@ void func_00209BB0(FieldMotion2* object, float target, float duration);
  */
 void func_00209C20(FieldMotion3* object, float target, float duration);
 
-/** @brief Set an angular target and its change rate. @param object Motion receiver. @param target Target angle. @param duration Transition duration. */
+/**
+ * @brief Set an angular target and its change rate.
+ * @param object Motion receiver.
+ * @param target Target angle.
+ * @param duration Transition duration.
+ */
 void func_00209CF0(FieldMotionAngle* object, float target, float duration);
 
-/** @brief Begin a rotation transition using the receiver's vectors and matrices. @param object Rotation state. @param angle Target angle. @param duration Transition duration. */
+/**
+ * @brief Begin a rotation transition using the receiver's vectors and matrices.
+ * @param object Rotation state.
+ * @param angle Target angle.
+ * @param duration Transition duration.
+ */
 void func_0020A600(FieldMotionRotation210* object, float angle, float duration);
 
 /**
@@ -306,17 +327,26 @@ struct FieldMotionRotation210
 class FieldClass1513C0 : public FieldClass150440
 {
 public:
-    /** @brief Set the command kind and operands. @param duration Duration. @param target Motion target. */
+    /**
+     * @brief Set the command kind and operands.
+     * @param duration Duration.
+     * @param target Motion target.
+     */
     FieldClass1513C0(float duration, float target)
     {
         unk18 = 0x3004D;
         unk1c = duration;
         unk20 = target;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass1513C0();
-    /** @brief Begin the queued motion. @return Always one. */
+
+    /**
+     * @brief Begin the queued motion.
+     * @return Always one.
+     */
     virtual s32 func_00207F30();
+
     float unk1c;
     float unk20;
 };
@@ -325,17 +355,26 @@ public:
 class FieldClass1513A0 : public FieldClass150440
 {
 public:
-    /** @brief Set the command kind and operands. @param duration Duration. @param target Motion target. */
+    /**
+     * @brief Set the command kind and operands.
+     * @param duration Duration.
+     * @param target Motion target.
+     */
     FieldClass1513A0(float duration, float target)
     {
         unk18 = 0x3004E;
         unk1c = duration;
         unk20 = target;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass1513A0();
-    /** @brief Begin the queued motion. @return Always one. */
+
+    /**
+     * @brief Begin the queued motion.
+     * @return Always one.
+     */
     virtual s32 func_00207EF0();
+
     float unk1c;
     float unk20;
 };
@@ -344,17 +383,26 @@ public:
 class FieldClass151380 : public FieldClass150440
 {
 public:
-    /** @brief Set the command kind and operands. @param duration Duration. @param target Motion target. */
+    /**
+     * @brief Set the command kind and operands.
+     * @param duration Duration.
+     * @param target Motion target.
+     */
     FieldClass151380(float duration, float target)
     {
         unk18 = 0x3004F;
         unk1c = duration;
         unk20 = target;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass151380();
-    /** @brief Begin the queued motion. @return Always one. */
+
+    /**
+     * @brief Begin the queued motion.
+     * @return Always one.
+     */
     virtual s32 func_00207E90();
+
     float unk1c;
     float unk20;
 };
@@ -363,17 +411,26 @@ public:
 class FieldClass151360 : public FieldClass150440
 {
 public:
-    /** @brief Set the command kind and operands. @param duration Duration. @param target Motion target. */
+    /**
+     * @brief Set the command kind and operands.
+     * @param duration Duration.
+     * @param target Motion target.
+     */
     FieldClass151360(float duration, float target)
     {
         unk18 = 0x30050;
         unk1c = duration;
         unk20 = target;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass151360();
-    /** @brief Begin the queued motion. @return Always one. */
+
+    /**
+     * @brief Begin the queued motion.
+     * @return Always one.
+     */
     virtual s32 func_00207E50();
+
     float unk1c;
     float unk20;
 };
@@ -382,8 +439,8 @@ public:
 class FieldClass151490 : public FieldClass152FA0
 {
 public:
-    /** @brief Destroy the command list. */
     virtual ~FieldClass151490();
+
     void* unk7c;
 };
 
@@ -391,16 +448,24 @@ public:
 class FieldClass1513E0 : public FieldClass150440
 {
 public:
-    /** @brief Set the command kind and duration. @param duration Timer value. */
+    /**
+     * @brief Set the command kind and duration.
+     * @param duration Timer value.
+     */
     FieldClass1513E0(u32 duration)
     {
         unk18 = 0x30076;
         unk1c = duration;
     }
-    /** @brief Destroy the command and its inherited node. */
+
     virtual ~FieldClass1513E0();
-    /** @brief Wait for readiness, then set the list timer. @return One when ready, otherwise zero. */
+
+    /**
+     * @brief Wait for readiness, then set the list timer.
+     * @return One when ready, otherwise zero.
+     */
     virtual s32 func_00207F70();
+
     u32 unk1c;
 };
 
@@ -413,9 +478,13 @@ public:
     {
         unk18 = 0x30078;
     }
-    /** @brief Destroy the command and its inherited node. */
+
     virtual ~FieldClass151400();
-    /** @brief Wait for readiness and invoke the owner motion callback. @return One when ready, otherwise zero. */
+
+    /**
+     * @brief Wait for readiness and invoke the owner motion callback.
+     * @return One when ready, otherwise zero.
+     */
     virtual s32 func_00207FE0();
 };
 
@@ -423,17 +492,26 @@ public:
 class FieldClass151440 : public FieldClass150440
 {
 public:
-    /** @brief Set the command kind, flags, and vector. @param flags Command flags. @param value Vector to copy. */
+    /**
+     * @brief Set the command kind, flags, and vector.
+     * @param flags Command flags.
+     * @param value Vector to copy.
+     */
     FieldClass151440(u8 flags, const FieldVec4A& value)
     {
         unk18 = 0x30049;
         unk30 = flags;
         unk20 = value;
     }
-    /** @brief Destroy the command and its inherited node. */
+
     virtual ~FieldClass151440();
-    /** @brief Apply the retained vector when resident state is ready. @return One. */
+
+    /**
+     * @brief Apply the retained vector when resident state is ready.
+     * @return One.
+     */
     virtual s32 func_00208230();
+
     FieldVec4A unk20;
     u8 unk30;
 };
@@ -447,9 +525,13 @@ public:
     {
         unk18 = 0x30052;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass151340();
-    /** @brief Wait for the owner's motion state. @return Zero while active, otherwise one. */
+
+    /**
+     * @brief Wait for the owner's motion state.
+     * @return Zero while active, otherwise one.
+     */
     virtual s32 func_00207DF0();
 };
 
@@ -457,17 +539,26 @@ public:
 class FieldClass151320 : public FieldClass150440
 {
 public:
-    /** @brief Initialize the command kind and operands. @param duration Duration. @param magnitude Movement magnitude. */
+    /**
+     * @brief Initialize the command kind and operands.
+     * @param duration Duration.
+     * @param magnitude Movement magnitude.
+     */
     FieldClass151320(float duration, float magnitude)
     {
         unk18 = 0x3007E;
         unk1c = duration;
         unk20 = magnitude;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass151320();
-    /** @brief Apply a queued planar movement at the current angle. @return One. */
+
+    /**
+     * @brief Apply a queued planar movement at the current angle.
+     * @return One.
+     */
     virtual s32 func_00207D40();
+
     float unk1c;
     float unk20;
 };
@@ -485,12 +576,19 @@ public:
     u8 unk81_0 : 1;
     u8 unk81_1_7 : 7;
     u8 unk82[2];
+
     virtual ~FieldClass151460();
+
     virtual void func_00208E60();
+
     virtual void func_00209160(void* source, u32 flags);
+
     virtual void func_00208AB0();
+
     virtual void func_00208C30();
+
     virtual bool func_00208C80() const;
+
     virtual void func_00207EE0(float target, float duration);
 };
 
@@ -504,10 +602,15 @@ public:
         unk18 = 0x3004C;
         unk24 = 0;
     }
-    /** @brief Destroy the command node and its inherited record buffer. */
+
     virtual ~FieldClass151420();
-    /** @brief Apply the retained records and second buffer. @return One when complete. */
+
+    /**
+     * @brief Apply the retained records and second buffer.
+     * @return One when complete.
+     */
     virtual s32 func_0022D6C0();
+
     void* unk24;
     float unk28;
     float unk2c;
@@ -518,17 +621,26 @@ public:
 class FieldClass151300 : public FieldClass150440
 {
 public:
-    /** @brief Initialize the command kind and operands. @param duration Duration. @param target Target value. */
+    /**
+     * @brief Initialize the command kind and operands.
+     * @param duration Duration.
+     * @param target Target value.
+     */
     FieldClass151300(float duration, float target)
     {
         unk18 = 0x3007F;
         unk1c = duration;
         unk20 = target;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass151300();
-    /** @brief Set or apply the target and complete the command. @return One. */
+
+    /**
+     * @brief Set or apply the target and complete the command.
+     * @return One.
+     */
     virtual s32 func_00207D00();
+
     float unk1c;
     float unk20;
 };
@@ -545,10 +657,15 @@ public:
         unk18 = 0x3009C;
         unk28 = 0;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass1512C0();
-    /** @brief Apply the queued curve command. @return One when complete. */
+
+    /**
+     * @brief Apply the queued curve command.
+     * @return One when complete.
+     */
     virtual s32 func_00207B90();
+
     s32 unk1c;
     float unk20;
     float unk24;
@@ -559,17 +676,26 @@ public:
 class FieldClass1512E0 : public FieldClass150440
 {
 public:
-    /** @brief Set the command kind and float operands. @param first First operand. @param second Second operand. */
+    /**
+     * @brief Set the command kind and float operands.
+     * @param first First operand.
+     * @param second Second operand.
+     */
     FieldClass1512E0(float first, float second)
     {
         unk18 = 0x300C1;
         unk1c = first;
         unk20 = second;
     }
-    /** @brief Destroy the command node. */
+
     virtual ~FieldClass1512E0();
-    /** @brief Apply the queued float command. @return One when complete. */
+
+    /**
+     * @brief Apply the queued float command.
+     * @return One when complete.
+     */
     virtual s32 func_00207CC0();
+
     float unk1c;
     float unk20;
 };
@@ -596,10 +722,13 @@ public:
         unk70.set_identity();
         unk20 = 0;
     }
+
     /** @brief Detach the optional owner, then destroy the inherited node. */
     virtual ~FieldClass151570();
+
     /** @brief Detach this node and enqueue it for deferred removal. */
     virtual void func_001DD7B0();
+
     /** @brief Update both matrices from the attached transform. */
     virtual void update();
 
@@ -616,12 +745,22 @@ public:
 class FieldClass151620 : public FieldListObject
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Required storage. @return Allocated storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Required storage.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Detach the optional attachment and destroy the inherited list node. */
     virtual ~FieldClass151620();
+
     u8 unk14[0xC];
     FieldShapeOwner18 shape;
     u8 unk40[0x20];
@@ -725,13 +864,15 @@ public:
 class FieldClass154D20 : public FieldClass1515D0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass154D20();
 
     /** @brief Virtual handler slot 1. */
     virtual void func_0020BDA0();
 
-    /** @brief Copy the source channel. @param other Source channel. */
+    /**
+     * @brief Copy the source channel.
+     * @param other Source channel.
+     */
     virtual void func_0020BD00(FieldClass154D20* other);
 
     /**
@@ -740,7 +881,10 @@ public:
      */
     virtual FieldClass1515D0* func_001DDCD0();
 
-    /** @brief Bind the channel context. @param context Context pointer. */
+    /**
+     * @brief Bind the channel context.
+     * @param context Context pointer.
+     */
     virtual void func_0020BCF0(void* context);
 };
 
@@ -750,12 +894,19 @@ class FieldClass151640 : public FieldClass154D20, public FieldClass1502A0
 public:
     /** @brief Destroy all shape lists and the inherited resource storage. */
     virtual ~FieldClass151640();
+
     /** @brief Update the list at offset 0x88. */
     virtual void func_0020BDA0();
-    /** @brief Return this shape resource. @return The inherited resource receiver. */
+
+    /**
+     * @brief Return this shape resource.
+     * @return The inherited resource receiver.
+     */
     virtual FieldClass1515D0* func_001DDCD0();
+
     /** @brief Delete all nodes in the inherited list. */
     virtual void func_001DD730();
+
     FieldClass1502A0 unk88;
     FieldClass1502A0 unk100;
     FieldClass1502A0 unk178;
@@ -774,23 +925,46 @@ class FieldClass151510 : public FieldClass150F90
 public:
     /** @brief Clear the optional channel and set the default scalar values. */
     FieldClass151510();
+
     /** @brief Delete the optional channel and destroy the inherited actor. */
     virtual ~FieldClass151510();
+
     /** @brief Update the actor. */
     virtual void update();
+
     /** @brief Update the actor state. */
     virtual void func_00204210();
-    /** @brief Load the actor resource selected by its key. @param key Resource key, or -1. @return One on success, zero otherwise. */
+
+    /**
+     * @brief Load the actor resource selected by its key.
+     * @param key Resource key, or -1.
+     * @return One on success, zero otherwise.
+     */
     virtual s32 func_00204A10(s32 key);
+
     /** @brief Reset the attached channel. */
     virtual void func_00204E40();
-    /** @brief Test or update the actor using another object. @param other Other object. @return Status result. */
+
+    /**
+     * @brief Test or update the actor using another object.
+     * @param other Other object.
+     * @return Status result.
+     */
     virtual s32 func_00204480(void* other);
+
     /** @brief Run the actor handler. */
     virtual void func_0020BE50();
-    /** @brief Allocate the optional channel. @return Always one. */
+
+    /**
+     * @brief Allocate the optional channel.
+     * @return Always one.
+     */
     virtual s32 func_0020BF00();
-    /** @brief Store the resource and its 128-byte aligned payload pointer. @param resource Resource address. */
+
+    /**
+     * @brief Store the resource and its 128-byte aligned payload pointer.
+     * @param resource Resource address.
+     */
     virtual void func_0020BF50(void* resource);
 
     /**
@@ -803,6 +977,7 @@ public:
         {
             return true;
         }
+
         return false;
     }
 
@@ -817,6 +992,7 @@ public:
         {
             return true;
         }
+
         return false;
     }
 

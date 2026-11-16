@@ -32,19 +32,26 @@ struct RequestQueue;
 
 /** Debug allocator taking the caller's source line and file name. */
 void* operator new(u32 size, s32 line, const char* file);
+
 /** The string "FldSsfHandler.cpp". */
 extern "C" const char D_335730[];
+
 extern "C" void* func_49EB30(void* object, u8 kind);
+
 /** Debug array allocator taking the caller's source line and file name. */
 void* operator new[](u32 size, s32 line, const char* file);
+
 /** The string "progparticles.h". */
 extern "C" const char D_3358F0[];
 /** The string "progparticles.h". */
 extern "C" const char D_3358E0[];
+
 extern "C" void* func_4997C0(void* object, FieldParticleDesc296870* desc);
 
 extern "C" void* func_100CA0(void* heap);
+
 extern "C" void func_452C90(void* object, s32 count, FieldScaleEntry296670* entries);
+
 extern "C" RequestQueue* g_update_list;
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" const char D_335660[];
@@ -53,12 +60,19 @@ extern "C" const char D_3356F0[];
 extern "C" const char D_3356D0[];
 extern "C" const char D_335690[];
 extern "C" const char D_3356B0[];
+
 extern "C" void func_13DAA0(s32 value);
+
 extern "C" FieldRequestGuard6610* D_001B6610;
+
 extern "C" s32 func_102D90(RequestQueue* queue);
+
 extern "C" void func_103FD0(void* queue, s32 handle, u32 address, u32 flags, u32 byte_count, u32 argument);
+
 extern "C" void func_104320(RequestQueue*, s32, u32, u32, s32, FieldRequestObserver294DA0*, u32, s32, u64);
+
 extern "C" u32 func_103AF0(RequestQueue*, s32, u32, u32, u32, s32);
+
 extern "C" void func_139128(const char*, ...);
 
 extern "C" void func_4EA000(FieldQuad128* vector);
@@ -66,19 +80,30 @@ extern "C" void func_4EA000(FieldQuad128* vector);
 extern "C" float D_001B66B4;
 extern "C" u8 D_001B64CC;
 extern "C" float D_001B66BC;
+
 extern "C" u8 func_43E360(void* object, void* context);
+
 extern "C" void func_428520(void* object);
+
 extern "C" void func_426AD0(void* object);
+
 extern "C" void func_424F20(void* object);
+
 extern "C" void func_425100(void* object);
+
 extern "C" void* D_001B6554;
 extern "C" u8 D_001B6560;
+
 extern "C" void func_460160();
+
 extern "C" s32 func_45FF30(u32 value, s32 size);
+
 extern "C" s32 func_460280(s32 size, u32 value);
 
 extern "C" void* func_10E3B0();
+
 extern "C" void* func_101570(void* value);
+
 extern "C" FieldByteState07* func_101720(void* value, s32 index);
 
 extern "C" void func_115C20(s32 arg0, const char* file, s32 arg2, s32 arg3, s32 arg4, s32 arg5,
@@ -90,16 +115,19 @@ extern "C" char D_3357D0[];
 void func_00294DA0(FieldRequestState294DA0* object)
 {
     FieldEntry1C* entry = &object->unk1c[object->unk32];
+
     if (entry->rounded_unk04())
     {
         func_104320(g_update_list, entry->unk0c, entry->rounded_unk04(), 0x80000000,
                     object->unk28, static_cast<FieldRequestObserver294DA0*>(object), entry->byte_count(), 0, 1);
         entry->unk10 = func_103AF0(g_update_list, entry->unk0c, entry->rounded_unk04(), 0x80000000, entry->byte_count(), 0);
         func_139128(D_335660, entry->unk0c, entry->rounded_unk04(), entry->rounded_unk04() + entry->byte_count(), entry->byte_count());
+
         if (object->unk2c != -1)
         {
             func_002BAF30(D_001B64B0->context->unke4, object->unk2c);
         }
+
         object->unk2c = func_002BAFB0(D_001B64B0->context->unke4, D_335680, &object->unk15, 1);
         object->unk15 = 1;
     }
@@ -110,16 +138,19 @@ void func_00294FE0(FieldFlagState34* object)
     if ((*(const u8*)&object->unk34 & 1) != 0)
     {
         object->unk34.bits.bit0 = 0;
+
         if (object->unk15 == 1)
         {
             while (object->unk32 < object->unk31)
             {
                 object->unk32++;
+
                 if (!object->unk1c[object->unk32].unk16_0)
                 {
                     break;
                 }
             }
+
             if (object->unk32 >= object->unk31)
             {
                 object->unk15 = 5;
@@ -140,6 +171,7 @@ static inline void release_buffer(void* buffer)
         func_100CB0((u8*)buffer - 0x10);
     }
 }
+
 FieldClass16C970::~FieldClass16C970()
 {
     if (unk1c)
@@ -148,6 +180,7 @@ FieldClass16C970::~FieldClass16C970()
         release_buffer(unk1c);
         unk1c = 0;
     }
+
     if (unk2c != -1)
     {
         func_002BAF30(D_001B64B0->context->unke4, unk2c);
@@ -164,6 +197,7 @@ void FieldClass16C970::func_slot1c(s32 flag)
             func_13DAA0(0);
             FieldEntry1C* record = &unk1c[unk32];
             s32 size = func_002069A0(this, record->unk00 + 0x80, 1);
+
             if (size)
             {
                 record->unk04 = size;
@@ -171,6 +205,7 @@ void FieldClass16C970::func_slot1c(s32 flag)
                 func_slot3c();
             }
         }
+
         break;
     case 1:
         if (flag == 1)
@@ -182,6 +217,7 @@ void FieldClass16C970::func_slot1c(s32 flag)
                 u32 size = record->rounded_unk04();
                 func_103FD0(g_update_list, record->unk0c, size, 0x80000000, word, 0);
             }
+
             unk15 = 9;
         }
         else
@@ -189,79 +225,95 @@ void FieldClass16C970::func_slot1c(s32 flag)
             FieldEntry1C* record = &unk1c[unk32];
             u32 word = record->unk00;
             u32 size = record->rounded_unk04();
+
             if (!func_103AF0(g_update_list, record->unk0c, size, 0x80000000, word, 0))
             {
                 func_slot0c(0);
             }
         }
+
         break;
     case 9:
         if (!flag)
         {
             func_slot3c();
         }
+
         break;
     case 10:
     {
         bool done = true;
         FieldEntry1C* records = unk1c;
+
         for (s32 i = 0; i < unk31; i++)
         {
             FieldEntry1C* record = &records[i];
             u32 word = record->unk00;
             u32 size = record->rounded_unk04();
             record->unk10 = func_103AF0(g_update_list, record->unk0c, size, 0x80000000, word, 0);
+
             if (record->unk10)
             {
                 done = false;
             }
         }
+
         if (D_001B6610->unkf17b || func_102D90(g_update_list))
         {
             done = false;
         }
+
         if (done)
         {
             for (s32 i = 0; i < unk24; i++, records++)
             {
                 func_0021A970(records);
             }
+
             unk32 = 0;
             unk15 = 0;
             func_139128(D_335690);
         }
+
         break;
     }
     case 7:
     {
         bool done = true;
         FieldEntry1C* record = unk1c;
+
         for (s32 i = 0; i < unk31; i++, record++)
         {
             u32 word = record->unk00;
             u32 size = record->rounded_unk04();
             record->unk10 = func_103AF0(g_update_list, record->unk0c, size, 0x80000000, word, 0);
+
             if (record->unk10)
             {
                 done = false;
             }
         }
+
         if (D_001B6610->unkf17b || func_102D90(g_update_list))
         {
             done = false;
         }
+
         if (done)
         {
             if (unk10)
             {
                 func_4D7EB0(this);
             }
+
             func_slot10();
             func_139128(D_3356B0);
         }
+
         break;
     }
     }
+
     func_slot40();
 }
 
@@ -269,6 +321,7 @@ s32 FieldClass16C970::func_slot20()
 {
     s32 result = 0;
     FieldEntry1C* entries = unk1c;
+
     switch (unk15)
     {
     case 1:
@@ -276,12 +329,14 @@ s32 FieldClass16C970::func_slot20()
         for (s32 i = 0; i < unk31; i++)
         {
             FieldEntry1C* entry = &entries[i];
+
             if (!entry->unk08_0)
             {
                 func_103FD0(g_update_list, entry->unk0c, entry->rounded_unk04(),
                     0x80000000, entry->byte_count(), 0);
             }
         }
+
         unk15 = 10;
         break;
     }
@@ -302,15 +357,18 @@ s32 FieldClass16C970::func_slot20()
                 break;
             }
         }
+
         for (s32 i = 0; i < unk24; i++)
         {
             func_0021A970(&entries[i]);
         }
+
         unk15 = 0;
         unk32 = 0;
         break;
     }
     }
+
     if (result != 1)
     {
         for (s32 i = 0; i < unk31; i++)
@@ -322,10 +380,12 @@ s32 FieldClass16C970::func_slot20()
             }
         }
     }
+
     if (result == 1)
     {
         func_139128(D_3356D0);
     }
+
     return result;
 }
 
@@ -337,11 +397,14 @@ s32 FieldClass16C970::func_slot24()
         {
             func_4D7EB0(this);
         }
+
         func_slot10();
         func_139128(D_3356F0);
         return 1;
     }
+
     FieldEntry1C* entry = unk1c;
+
     for (s32 i = 0; i < unk31; i++, entry++)
     {
         if (!entry->unk08_0)
@@ -350,6 +413,7 @@ s32 FieldClass16C970::func_slot24()
                 0x80000000, entry->byte_count(), 0);
         }
     }
+
     unk15 = 7;
     return 0;
 }
@@ -372,9 +436,11 @@ void func_00295A80(FieldFlagState34* object)
 s32 func_00295AA0(FieldRetryState295AA0* object, u32 value, s32 mode)
 {
     FieldReceiver21AB20* receiver = static_cast<FieldReceiver21AB20*>(object->unk10);
+
     for (s32 attempt = 0; attempt < 8; attempt++)
     {
         s32 result;
+
         if (mode)
         {
             func_460160();
@@ -384,15 +450,18 @@ s32 func_00295AA0(FieldRetryState295AA0* object, u32 value, s32 mode)
         {
             result = func_460280(0x80, value);
         }
+
         if (result)
         {
             return result;
         }
+
         if (receiver->unk0c == 1 || !func_0021AB20(receiver, object))
         {
             break;
         }
     }
+
     return 0;
 }
 
@@ -460,6 +529,7 @@ void FieldClass172140::func_slot14()
     if (unk38_0 && !unk38_1)
     {
         unk30 += D_001B66B4;
+
         if (!(unk30 < unk2c))
         {
             unk34 = unk20;
@@ -500,27 +570,33 @@ static inline bool update_delay(float& delay)
     {
         return false;
     }
+
     if (delay > 0.0f)
     {
         delay -= D_001B66B4;
+
         if (delay > 0.0f)
         {
             return false;
         }
+
         delay = 0.0f;
     }
+
     return true;
 }
 
 void func_00296580(FieldDelayState50* object)
 {
     float previous = object->delay;
+
     if (update_delay(object->delay))
     {
         if (previous > 0.0f)
         {
             func_428520(object);
         }
+
         func_426AD0(object);
     }
 }
@@ -529,10 +605,12 @@ u8 func_00296620(void* object, void* context)
 {
     float previous = D_001B66BC;
     u8 result;
+
     if (D_001B64CC)
     {
         D_001B66BC = 1.0f / 60.0f;
     }
+
     result = func_43E360(object, context);
     D_001B66BC = previous;
     return result;
@@ -549,6 +627,7 @@ static inline void add_particle(FieldClass1736B0* object, u8 value, const FieldV
 void* func_00296870(void* object, FieldParticleDesc296870* desc)
 {
     void* result = 0;
+
     switch (desc->unk1e)
     {
         case 0:
@@ -558,19 +637,24 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                 case 5:
                 case 6:
                     result = new (53, D_335730) FieldClass173230;
+
                     if (!result)
                     {
                         return 0;
                     }
+
                     break;
                 case 4:
                     result = new (62, D_335730) FieldClass172FC0;
+
                     if (!result)
                     {
                         return 0;
                     }
+
                     break;
             }
+
             break;
         case 1:
             switch (desc->unk1d)
@@ -582,10 +666,12 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                 {
                     FieldClass172C80* particle = new (78, D_335730) FieldClass172C80;
                     result = particle;
+
                     if (!result)
                     {
                         return 0;
                     }
+
                     switch (desc->unk68)
                     {
                         case 0:
@@ -624,9 +710,11 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                             break;
                         }
                     }
+
                     break;
                 }
             }
+
             break;
         case 2:
             switch (desc->unk1d)
@@ -638,10 +726,12 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                 {
                     FieldClass172940* particle = new (111, D_335730) FieldClass172940;
                     result = particle;
+
                     if (!result)
                     {
                         return 0;
                     }
+
                     switch (desc->unk68)
                     {
                         case 0:
@@ -683,9 +773,11 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                             break;
                         }
                     }
+
                     break;
                 }
             }
+
             break;
         case 3:
             switch (desc->unk1d)
@@ -697,10 +789,12 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                 {
                     FieldClass172600* particle = new (147, D_335730) FieldClass172600;
                     result = particle;
+
                     if (!result)
                     {
                         return 0;
                     }
+
                     switch (desc->unk68)
                     {
                         case 0:
@@ -742,9 +836,11 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                             break;
                         }
                     }
+
                     break;
                 }
             }
+
             break;
         case 4:
             switch (desc->unk1d)
@@ -756,10 +852,12 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                 {
                     FieldClass172390* particle = new (183, D_335730) FieldClass172390;
                     result = particle;
+
                     if (!result)
                     {
                         return 0;
                     }
+
                     switch (desc->unk68)
                     {
                         case 0:
@@ -801,9 +899,11 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                             break;
                         }
                     }
+
                     break;
                 }
             }
+
             break;
         case 5:
             switch (desc->unk1d)
@@ -815,19 +915,23 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                 {
                     FieldClass1722C0* particle = new (219, D_335730) FieldClass1722C0;
                     result = particle;
+
                     if (!result)
                     {
                         return 0;
                     }
+
                     {
                         float value = desc->unk98;
                         particle->unk4c = 1;
                         particle->unk30 = value;
                     }
+
                     if (desc->unk76)
                     {
                         particle->unkc8 = 1;
                     }
+
                     const FieldParticleRecord14* record = (const FieldParticleRecord14*)((const u8*)desc + desc->unk244);
                     s32 count = desc->unk240;
                     particle->unkc9 = 0;
@@ -835,20 +939,25 @@ void* func_00296870(void* object, FieldParticleDesc296870* desc)
                     particle->unkb4 = new (102, D_3358E0) FieldVector1FAD90[count];
                     particle->unkc0 = count;
                     particle->unkc4 = 0;
+
                     for (s32 i = 0; i < count; i++)
                     {
                         add_particle(particle, record->unk00, FieldVector1FAD90(record->unk04, record->unk08, record->unk0c, record->unk10));
                         record++;
                     }
+
                     break;
                 }
             }
+
             break;
     }
+
     if (result)
     {
         return result;
     }
+
     return func_4997C0(object, desc);
 }
 
@@ -873,6 +982,7 @@ void* func_00297A30(void* object, u8 kind)
         case 0x2F:
             return new (35, D_335730) FieldClass179180;
     }
+
     return func_49EB30(object, kind);
 }
 
@@ -1078,11 +1188,14 @@ void func_00298B70(FieldClass1736B0* object, u8 value, const unsigned __int128* 
         func_115C20(0xC8, D_3357D0, 0x47, object->unkc0, 0, 0, 0);
         return;
     }
+
     object->unkb0[object->unkc4] = value;
+
     if (data)
     {
         object->unkb4[object->unkc4].raw = *data;
     }
+
     object->unkc4++;
 }
 
@@ -1155,6 +1268,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
     s32 mask_index = index / 64;
     s32 processed = 0;
     u64 mask = masks[mask_index++];
+
     switch (object->policy)
     {
         case 0:
@@ -1162,6 +1276,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -1170,15 +1285,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1201,6 +1320,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1223,6 +1343,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -1231,15 +1352,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1262,6 +1387,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1284,6 +1410,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -1292,15 +1419,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1318,6 +1449,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1338,6 +1470,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -1346,15 +1479,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1373,6 +1510,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1394,6 +1532,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -1408,15 +1547,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1439,6 +1582,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1458,6 +1602,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -1466,15 +1611,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1497,6 +1646,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1516,6 +1666,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -1524,15 +1675,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1550,6 +1705,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1567,6 +1723,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -1575,15 +1732,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1602,6 +1763,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1620,10 +1782,12 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 1:
@@ -1631,6 +1795,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -1639,15 +1804,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1669,6 +1838,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1690,6 +1860,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -1698,15 +1869,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1728,6 +1903,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1749,6 +1925,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -1757,15 +1934,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1782,6 +1963,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1801,6 +1983,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -1809,15 +1992,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1835,6 +2022,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1855,6 +2043,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -1869,15 +2058,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1899,6 +2092,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1917,6 +2111,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -1925,15 +2120,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -1955,6 +2154,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -1973,6 +2173,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -1981,15 +2182,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2006,6 +2211,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -2022,6 +2228,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -2030,15 +2237,19 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2056,6 +2267,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -2073,10 +2285,12 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 2:
@@ -2084,6 +2298,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -2092,12 +2307,15 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -2108,6 +2326,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2128,6 +2347,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -2147,6 +2367,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -2155,12 +2376,15 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -2171,6 +2395,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2191,6 +2416,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -2210,6 +2436,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -2218,12 +2445,15 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -2234,6 +2464,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2249,6 +2480,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -2266,6 +2498,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -2274,12 +2507,15 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -2290,6 +2526,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2306,6 +2543,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -2324,6 +2562,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -2338,12 +2577,15 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -2354,6 +2596,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2374,6 +2617,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -2390,6 +2634,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -2398,12 +2643,15 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             FieldHistorySource170* source = &object->source[index - 1];
@@ -2414,6 +2662,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2434,6 +2683,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -2450,6 +2700,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -2458,12 +2709,15 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -2474,6 +2728,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2489,6 +2744,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -2503,6 +2759,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -2511,12 +2768,15 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -2527,6 +2787,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2543,6 +2804,7 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -2558,10 +2820,12 @@ void func_00298CC0(FieldHistoryReceiver298CC0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
     }
@@ -2681,6 +2945,7 @@ void func_0029B9B0(FieldState29B860* object, const u8* data, u32 value)
 {
     object->unka0 = data;
     object->unka4 = value;
+
     if (*object->unka0 == 1)
     {
         object->unk57 = 1;
@@ -2695,6 +2960,7 @@ void func_0029B9F0(FieldState29B860* object, s32 value)
 {
     object->unka0 = 0;
     object->unka4 = 0;
+
     if (value != 0)
     {
         object->unk57 = 1;
@@ -2733,6 +2999,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
     s32 mask_index = index / 64;
     s32 processed = 0;
     u64 mask = masks[mask_index++];
+
     switch (object->policy)
     {
         case 0:
@@ -2740,6 +3007,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -2748,15 +3016,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2779,6 +3051,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -2801,6 +3074,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -2809,15 +3083,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2840,6 +3118,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -2862,6 +3141,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -2870,15 +3150,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2896,6 +3180,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -2916,6 +3201,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -2924,15 +3210,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -2951,6 +3241,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -2972,6 +3263,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -2986,15 +3278,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3017,6 +3313,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3036,6 +3333,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -3044,15 +3342,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3075,6 +3377,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3094,6 +3397,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -3102,15 +3406,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3128,6 +3436,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3145,6 +3454,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -3153,15 +3463,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3180,6 +3494,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3198,10 +3513,12 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 1:
@@ -3209,6 +3526,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -3217,15 +3535,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3247,6 +3569,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3268,6 +3591,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -3276,15 +3600,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3306,6 +3634,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3327,6 +3656,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -3335,15 +3665,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3360,6 +3694,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3379,6 +3714,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -3387,15 +3723,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3413,6 +3753,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3433,6 +3774,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -3447,15 +3789,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3477,6 +3823,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3495,6 +3842,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -3503,15 +3851,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3533,6 +3885,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3551,6 +3904,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -3559,15 +3913,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3584,6 +3942,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3600,6 +3959,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -3608,15 +3968,19 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3634,6 +3998,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3651,10 +4016,12 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 2:
@@ -3662,6 +4029,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -3670,12 +4038,15 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -3686,6 +4057,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3706,6 +4078,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -3725,6 +4098,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -3733,12 +4107,15 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -3749,6 +4126,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3769,6 +4147,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -3788,6 +4167,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -3796,12 +4176,15 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -3812,6 +4195,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3827,6 +4211,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -3844,6 +4229,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -3852,12 +4238,15 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -3868,6 +4257,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3884,6 +4274,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -3902,6 +4293,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -3916,12 +4308,15 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -3932,6 +4327,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -3952,6 +4348,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -3968,6 +4365,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -3976,12 +4374,15 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             FieldHistorySource120* source = &object->source[index - 1];
@@ -3992,6 +4393,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4012,6 +4414,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -4028,6 +4431,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -4036,12 +4440,15 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -4052,6 +4459,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4067,6 +4475,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -4081,6 +4490,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -4089,12 +4499,15 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -4105,6 +4518,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4121,6 +4535,7 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -4136,10 +4551,12 @@ void func_0029BA70(FieldHistoryReceiver29BA70* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
     }
@@ -4268,6 +4685,7 @@ void func_0029EBE0(FieldState29EA90* object, const u8* data, u32 value)
 {
     object->unka0 = data;
     object->unka4 = value;
+
     if (*object->unka0 == 1)
     {
         object->unk57 = 1;
@@ -4282,6 +4700,7 @@ void func_0029EC20(FieldState29EA90* object, s32 value)
 {
     object->unka0 = 0;
     object->unka4 = 0;
+
     if (value != 0)
     {
         object->unk57 = 1;
@@ -4338,6 +4757,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
     s32 mask_index = index / 64;
     s32 processed = 0;
     u64 mask = masks[mask_index++];
+
     switch (object->policy)
     {
         case 0:
@@ -4345,6 +4765,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -4353,15 +4774,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4384,6 +4809,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4406,6 +4832,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -4414,15 +4841,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4445,6 +4876,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4467,6 +4899,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -4475,15 +4908,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4501,6 +4938,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4521,6 +4959,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -4529,15 +4968,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4556,6 +4999,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4577,6 +5021,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -4591,15 +5036,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4622,6 +5071,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4641,6 +5091,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -4649,15 +5100,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4680,6 +5135,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4699,6 +5155,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -4707,15 +5164,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4733,6 +5194,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4750,6 +5212,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -4758,15 +5221,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4785,6 +5252,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4803,10 +5271,12 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 1:
@@ -4814,6 +5284,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -4822,15 +5293,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4852,6 +5327,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4873,6 +5349,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -4881,15 +5358,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4911,6 +5392,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4932,6 +5414,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -4940,15 +5423,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -4965,6 +5452,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -4984,6 +5472,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -4992,15 +5481,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5018,6 +5511,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -5038,6 +5532,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -5052,15 +5547,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5082,6 +5581,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -5100,6 +5600,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -5108,15 +5609,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5138,6 +5643,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -5156,6 +5662,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -5164,15 +5671,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5189,6 +5700,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -5205,6 +5717,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -5213,15 +5726,19 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5239,6 +5756,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -5256,10 +5774,12 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 2:
@@ -5267,6 +5787,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -5275,12 +5796,15 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -5291,6 +5815,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5311,6 +5836,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -5330,6 +5856,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -5338,12 +5865,15 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -5354,6 +5884,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5374,6 +5905,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -5393,6 +5925,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -5401,12 +5934,15 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -5417,6 +5953,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5432,6 +5969,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -5449,6 +5987,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -5457,12 +5996,15 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -5473,6 +6015,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5489,6 +6032,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -5507,6 +6051,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -5521,12 +6066,15 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -5537,6 +6085,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5557,6 +6106,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -5573,6 +6123,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -5581,12 +6132,15 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             FieldHistorySourceB0* source = &object->source[index - 1];
@@ -5597,6 +6151,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5617,6 +6172,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -5633,6 +6189,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -5641,12 +6198,15 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -5657,6 +6217,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5672,6 +6233,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -5686,6 +6248,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -5694,12 +6257,15 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -5710,6 +6276,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5726,6 +6293,7 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -5741,10 +6309,12 @@ void func_0029ECE0(FieldHistoryReceiver29ECE0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
     }
@@ -5873,6 +6443,7 @@ void func_002A1EF0(FieldState2A1DA0* object, const u8* data, u32 value)
 {
     object->unka0 = data;
     object->unka4 = value;
+
     if (*object->unka0 == 1)
     {
         object->unk57 = 1;
@@ -5887,6 +6458,7 @@ void func_002A1F30(FieldState2A1DA0* object, s32 value)
 {
     object->unka0 = 0;
     object->unka4 = 0;
+
     if (value != 0)
     {
         object->unk57 = 1;
@@ -5943,6 +6515,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
     s32 mask_index = index / 64;
     s32 processed = 0;
     u64 mask = masks[mask_index++];
+
     switch (object->policy)
     {
         case 0:
@@ -5950,6 +6523,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -5958,15 +6532,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -5989,6 +6567,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6011,6 +6590,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -6019,15 +6599,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6050,6 +6634,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6072,6 +6657,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -6080,15 +6666,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6106,6 +6696,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6126,6 +6717,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -6134,15 +6726,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6161,6 +6757,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6182,6 +6779,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -6196,15 +6794,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6227,6 +6829,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6246,6 +6849,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -6254,15 +6858,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6285,6 +6893,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6304,6 +6913,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -6312,15 +6922,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6338,6 +6952,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6355,6 +6970,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -6363,15 +6979,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6390,6 +7010,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6408,10 +7029,12 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 1:
@@ -6419,6 +7042,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -6427,15 +7051,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6457,6 +7085,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6478,6 +7107,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -6486,15 +7116,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6516,6 +7150,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6537,6 +7172,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -6545,15 +7181,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6570,6 +7210,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6589,6 +7230,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -6597,15 +7239,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6623,6 +7269,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6643,6 +7290,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -6657,15 +7305,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6687,6 +7339,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6705,6 +7358,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -6713,15 +7367,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6743,6 +7401,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6761,6 +7420,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -6769,15 +7429,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6794,6 +7458,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6810,6 +7475,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -6818,15 +7484,19 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6844,6 +7514,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -6861,10 +7532,12 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
         case 2:
@@ -6872,6 +7545,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
             if (stamp)
             {
                 u32 stamp_value = object->unk28.bits;
+
                 switch (object->mode)
                 {
                 case 3:
@@ -6880,12 +7554,15 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -6896,6 +7573,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6916,6 +7594,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -6935,6 +7614,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -6943,12 +7623,15 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -6959,6 +7642,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -6979,6 +7663,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -6998,6 +7683,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -7006,12 +7692,15 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -7022,6 +7711,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -7037,6 +7727,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -7054,6 +7745,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -7062,12 +7754,15 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -7078,6 +7773,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -7094,6 +7790,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -7112,6 +7809,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
@@ -7126,12 +7824,15 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -7142,6 +7843,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -7162,6 +7864,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -7178,6 +7881,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 2:
@@ -7186,12 +7890,15 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             FieldHistorySource90* source = &object->source[index - 1];
@@ -7202,6 +7909,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -7222,6 +7930,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -7238,6 +7947,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 1:
@@ -7246,12 +7956,15 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -7262,6 +7975,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -7277,6 +7991,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -7291,6 +8006,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 case 0:
@@ -7299,12 +8015,15 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                     {
                         u64 selected = mask & bit;
                         bit <<= 1;
+
                         if (!bit)
                         {
                             bit = 1;
                             mask = masks[mask_index++];
                         }
+
                         index++;
+
                         if (selected)
                         {
                             s32 history_index = index * (samples - 1) - 1;
@@ -7315,6 +8034,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             position.value[0] *= object->scale;
                             position.value[1] *= object->scale;
                             position.value[2] *= object->scale;
+
                             for (s32 sample = samples - 1; sample >= 2; sample--)
                             {
                                 FieldHistoryOutput30* out = &output[sample];
@@ -7331,6 +8051,7 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                                 ee_prefetch(previous - 1);
                                 vu0_extend_bounds_vf1();
                             }
+
                             FieldHistoryOutput30* out = &output[1];
                             FieldHistoryRecord40* current = &object->history[history_index];
                             FieldQuad128* current_attributes = &current->attributes;
@@ -7346,10 +8067,12 @@ void func_002A1FF0(FieldHistoryReceiver2A1FF0* object, s32 capacity, FieldHistor
                             output += samples;
                         }
                     }
+
                     break;
                 }
                 }
             }
+
             break;
         }
     }

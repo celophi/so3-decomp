@@ -114,10 +114,12 @@ typedef struct GridOwner00481B90
 static inline GridFrameMotion* grid_cell_motion_00481B90(GridCell00481B90* cell)
 {
     GridFrameMotion* motion = (GridFrameMotion*)cell;
+
     if (cell != 0)
     {
         motion = &cell->motion;
     }
+
     return motion;
 }
 
@@ -156,10 +158,12 @@ typedef struct GridOwner00488110
 static inline GridFrameMotion* grid_cell_motion_00488110(GridCell00488110* cell)
 {
     GridFrameMotion* motion = (GridFrameMotion*)cell;
+
     if (cell != 0)
     {
         motion = &cell->motion;
     }
+
     return motion;
 }
 

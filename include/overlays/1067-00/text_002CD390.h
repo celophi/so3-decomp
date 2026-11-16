@@ -54,7 +54,6 @@ typedef struct FieldListNode
     struct FieldListNode* next;
 #ifdef __cplusplus
 
-    /** @brief Release the link without destroying its payload. */
     ~FieldListNode()
     {
     }
@@ -75,6 +74,7 @@ class FieldClass153EC0 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass153EC0();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass153EC0();
 };
@@ -85,6 +85,7 @@ class FieldClass154BA0 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass154BA0();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass154BA0();
 };
@@ -95,8 +96,10 @@ class FieldClass15AF68 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AF68();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF68();
+
     /**
      * @brief Add a node holding `value` to the end of the list.
      * @param value Pointer stored in the node. The caller owns it.
@@ -110,8 +113,10 @@ class FieldClass15AF78 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AF78();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF78();
+
     /**
      * @brief Add a node holding `value` to the end of the list.
      * @param value Pointer stored in the node. The caller owns it.
@@ -125,13 +130,16 @@ class FieldClass15AF88 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AF88();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF88();
+
     /**
      * @brief Add a node holding `value` to the end of the list.
      * @param value Pointer stored in the node. The caller owns it.
      */
     void append(void* value);
+
     /**
      * @brief Return the node at `index`. Index zero is the first node after the sentinel.
      * @param index Zero-based index among the value nodes.
@@ -146,6 +154,7 @@ class FieldClass15AF98 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AF98();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AF98();
 };
@@ -156,6 +165,7 @@ class FieldClass15AFA8 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFA8();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFA8();
 };
@@ -166,6 +176,7 @@ class FieldClass15AFB8 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFB8();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFB8();
 };
@@ -176,6 +187,7 @@ class FieldClass15AFC8 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFC8();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFC8();
 };
@@ -186,6 +198,7 @@ class FieldClass15AFD8 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFD8();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFD8();
 };
@@ -196,8 +209,10 @@ class FieldClass15AFE8 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFE8();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFE8();
+
     /**
      * @brief Add a node holding `value` to the end of the list.
      * @param value Pointer stored in the node. The caller owns it.
@@ -211,6 +226,7 @@ class FieldClass15AFF8 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15AFF8();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15AFF8();
 };
@@ -221,6 +237,7 @@ class FieldClass15B008 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15B008();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15B008();
 };
@@ -231,6 +248,7 @@ class FieldClass15B9F8 : public FieldCountedList
 public:
     /** @brief Allocate the head node and initialize the empty list. */
     FieldClass15B9F8();
+
     /** @brief Release the list nodes and head node storage. */
     virtual ~FieldClass15B9F8();
 };
@@ -244,12 +262,14 @@ class FieldClass15AE70 : public FieldClass150050
 public:
     /** Construct the window base and its members (out of line in Field). */
     FieldClass15AE70();
-    /** Destroy the window base. */
+
     virtual ~FieldClass15AE70();
+
     // Placeholder virtuals in their vtable order (byte offset in the name); only
     // their positions are known.
     /** @brief Release the grid displays and container, then queue the window for removal. */
     virtual void func_slot0c();
+
     /**
      * @brief Create the nested display at the supplied coordinates.
      * @param associated Full resource source word.
@@ -259,6 +279,7 @@ public:
      * @return One when the nested display is present and the source word is nonzero, or zero otherwise.
      */
     virtual s32 func_slot10(u32 associated, float x, float y, s32 code);
+
     /**
      * @brief Create the nested container with the supplied modes and coordinates.
      * @param associated Full resource source word.
@@ -271,92 +292,197 @@ public:
      * @return One when the container is present and the source word is nonzero, or zero otherwise.
      */
     virtual s32 func_slot14(u32 associated, s32 first, s32 second, s32 third, float x, float y, float z);
+
     /**
      * @brief Set display flags on the selected window lists.
      * @param flag Flag word forwarded to grids; its low byte updates other displays.
      * @param list_mask List groups selected by bits 0 through 6.
      */
     virtual void func_slot18(u32 flag, u32 list_mask);
-    /** @brief Store the byte state and halfword flags. @param code Byte state code. @param flags Halfword state flags. */
+
+    /**
+     * @brief Store the byte state and halfword flags.
+     * @param code Byte state code.
+     * @param flags Halfword state flags.
+     */
     virtual void set_state(u8 code, u16 flags);
-    /** @brief Set the nested display byte flag. @param flag Flag value. */
+
+    /**
+     * @brief Set the nested display byte flag.
+     * @param flag Flag value.
+     */
     virtual void func_slot20(u32 flag);
-    /** @brief Store the window control byte. @param value Control value. */
+
+    /**
+     * @brief Store the window control byte.
+     * @param value Control value.
+     */
     virtual void func_slot24(u8 value);
-    /** @brief Read the window control byte. @return Control value. */
+
+    /**
+     * @brief Read the window control byte.
+     * @return Control value.
+     */
     virtual u8 func_slot28();
-    /** @brief Store the byte state code. @param value State code. */
+
+    /**
+     * @brief Store the byte state code.
+     * @param value State code.
+     */
     virtual void func_slot2c(u8 value);
-    /** @brief Read the byte state code. @return State code. */
+
+    /**
+     * @brief Read the byte state code.
+     * @return State code.
+     */
     virtual u8 func_slot30();
-    /** @brief Store the halfword state flags. @param value State flags. */
+
+    /**
+     * @brief Store the halfword state flags.
+     * @param value State flags.
+     */
     virtual void func_slot34(u16 value);
-    /** @brief Read the halfword state flags. @return State flags. */
+
+    /**
+     * @brief Read the halfword state flags.
+     * @return State flags.
+     */
     virtual u16 func_slot38();
+
     /**
      * @brief Return the final window in the associated-window chain.
      * @return Last window, including this window when it has no association.
      */
     virtual void* func_slot3c();
-    /** @brief Store the associated window pointer. @param associated Pointer to store. */
+
+    /**
+     * @brief Store the associated window pointer.
+     * @param associated Pointer to store.
+     */
     virtual void func_slot40(void* associated)
     {
         unk98 = associated;
     }
-    /** @brief Return the associated window pointer. @return Stored pointer. */
+
+    /**
+     * @brief Return the associated window pointer.
+     * @return Stored pointer.
+     */
     virtual void* func_slot44()
     {
         return unk98;
     }
-    /** @brief Store the alternate window pointer. @param associated Pointer to store. */
+
+    /**
+     * @brief Store the alternate window pointer.
+     * @param associated Pointer to store.
+     */
     virtual void func_slot48(void* associated);
-    /** @brief Return the alternate associated window. @return Stored pointer. */
+
+    /**
+     * @brief Return the alternate associated window.
+     * @return Stored pointer.
+     */
     virtual void* func_slot4c();
-    /** @brief Store the opaque source word. @param value Word to store. */
+
+    /**
+     * @brief Store the opaque source word.
+     * @param value Word to store.
+     */
     virtual void func_slot50(u32 value);
-    /** @brief Return the stored resource source word. @return Stored word. */
+
+    /**
+     * @brief Return the stored resource source word.
+     * @return Stored word.
+     */
     virtual u32 func_slot54();
-    /** @brief Return the nested display container. @return Stored container. */
+
+    /**
+     * @brief Return the nested display container.
+     * @return Stored container.
+     */
     virtual LibContainer* func_slot58();
+
     virtual void func_slot5c();
-    /** @brief Set the window message by signed text key. @param text_key Message key or relative index. */
+
+    /**
+     * @brief Set the window message by signed text key.
+     * @param text_key Message key or relative index.
+     */
     virtual void func_slot60(s32 text_key);
+
     virtual void func_slot64();
+
     virtual void func_slot68();
+
     virtual void func_slot6c();
+
     virtual void func_slot70();
+
     virtual void func_slot74();
+
     virtual void func_slot78();
+
     virtual void func_slot7c();
+
     virtual void func_slot80();
+
     virtual void func_slot84();
+
     virtual void func_slot88();
+
     virtual void func_slot8c();
+
     virtual void func_slot90();
+
     virtual void func_slot94();
+
     virtual void func_slot98();
+
     virtual void func_slot9c();
+
     virtual void func_slota0();
+
     virtual void func_slota4();
+
     virtual void func_slota8();
+
     virtual void func_slotac();
+
     virtual u8 func_slotb0();
+
     virtual u8 func_slotb4();
+
     virtual u8 func_slotb8();
+
     virtual u8 func_slotbc();
+
     virtual s32 func_slotc0();
+
     virtual s32 func_slotc4();
+
     virtual s32 func_slotc8();
+
     virtual s32 func_slotcc();
+
     virtual s32 func_slotd0();
+
     virtual s32 func_slotd4();
+
     virtual s32 func_slotd8();
+
     virtual s32 func_slotdc();
+
     virtual void func_slote0();
+
     virtual void func_slote4();
+
     virtual u8 func_slote8();
+
     virtual void func_slotec(u8 value);
+
     virtual void func_slotf0();
+
     u32 unk04;
     u8 unk08;
     u8 unk09;
@@ -387,10 +513,18 @@ class FieldClass153170;
 class FieldClass15AE60 : public FieldStateCE420
 {
 public:
-    /** @brief Refresh the visible record rows. @param start First record index. */
+    /**
+     * @brief Refresh the visible record rows.
+     * @param start First record index.
+     */
     virtual void refresh_rows(s32 start);
-    /** @brief Position the row displays. @param start Base vertical coordinate. */
+
+    /**
+     * @brief Position the row displays.
+     * @param start Base vertical coordinate.
+     */
     virtual void set_scroll_position(float start);
+
     /**
      * @brief Configure the list extent, selected cell, and scroll indicator.
      * @param count Number of records; stored as a halfword.
@@ -398,6 +532,7 @@ public:
      * @param selected Relative selection index; stored as a byte.
      */
     void configure_selection(s32 count, s32 start, s32 selected);
+
     FieldClass153170* selection_marker;
     LibWidget* unk48[15];
     u8 unk84;
@@ -414,26 +549,38 @@ class FieldClass15AD40 : public FieldClass15AE70, public FieldClass15AE60
 public:
     /** @brief Initialize list state and all fifteen display slots. */
     FieldClass15AD40();
-    /** @brief Release the window base and its display lists. */
+
     virtual ~FieldClass15AD40();
+
     /** @brief Process list selection input and refresh pending rows. */
     virtual void func_slot5c();
+
     /**
      * @brief Update the list marker target, color, and visibility.
      * @param target Display to mark, or null to hide the marker.
      * @param color Packed marker color.
      */
     void set_selection_marker(LibDrawWidget* target, u32 color);
+
     virtual s32 func_slot104(u32 associated);
-    /** @brief Refresh the list for a category. @param category Category byte supplied by the associated state. */
+
+    /**
+     * @brief Refresh the list for a category.
+     * @param category Category byte supplied by the associated state.
+     */
     virtual void func_slot108(u8 category);
+
     /**
      * @brief Set the paired display flags and update auxiliary displays.
      * @param value Low byte stored in each paired display flag.
      * @param alternate Auxiliary flag value; its full value selects the height.
      */
     virtual void func_slot10c(u32 value, u32 alternate);
-    /** @brief Set the list flag. @param value Flag value to store. */
+
+    /**
+     * @brief Set the list flag.
+     * @param value Flag value to store.
+     */
     virtual void func_slot110(u8 value);
 };
 
@@ -450,7 +597,10 @@ extern "C" {
  */
 s32 func_002CD390(FieldStateCD390* object);
 
-/** @brief Perform no action. @param object Receiver; unused. */
+/**
+ * @brief Perform no action.
+ * @param object Receiver; unused.
+ */
 void func_002CD780(void* object);
 
 /**
@@ -481,7 +631,10 @@ void func_002CD7B0(void* object);
  */
 void func_002CE420(FieldStateCE420* object, u8 first, u32 second, u16 third, u16 fourth);
 
-/** @brief Update the Field list parameters while the list isn't the focused window. @param object List state. */
+/**
+ * @brief Update the Field list parameters while the list isn't the focused window.
+ * @param object List state.
+ */
 void func_002CDFB0(FieldStateCE420* object);
 
 /**

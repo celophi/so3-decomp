@@ -1,0 +1,4 @@
+// Out-of-line copies of inline functions whose kept copy is outside cmc.
+// LibClass1723F0's implicit destructor is only needed for the cleanup paths of
+// LibClass172320's constructor; the game keeps the Lib copy at 0x412930.
+__dt__14LibClass1723F0Fv

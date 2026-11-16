@@ -2,6 +2,7 @@
 #include "overlays/3454-00/text_0022D9B0.h"
 
 extern void func_4C4960(void* object);
+
 extern u8 D_1746A0[];
 
 typedef struct HalfwordSetterOwnertext_0022D9B0
@@ -109,6 +110,7 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_0022D9B0", func_00233A
 void func_00233AB0(void* object)
 {
     u8* bytes = (u8*)object;
+
     if (bytes[0x14] == 0)
     {
         bytes[0x16] = 1;

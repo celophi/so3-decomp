@@ -13,7 +13,9 @@ void* func_002634F0(void* object);
 
 /** Forward the receiver to its one-call target. */
 void func_00268A70(void* object);
+
 void func_00268FF0(void* object);
+
 void func_0026D6F0(void* object);
 
 /** Return whether the receiver's word at offset 0x704 is nonzero. */

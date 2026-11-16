@@ -3,12 +3,18 @@
 #include "overlays/1070-00/text_00284BF0.h"
 
 extern "C" void func_43ACC0(void* object);
+
 extern "C" void func_002E63F0(void* first, void* second, s32 value);
+
 extern "C" void func_001F8420(void* object, s32 value);
+
 extern "C" void __dl__FPv(void* object);
+
 extern "C" void* D_001B6620;
 extern "C" FieldContextRef* D_001B64B0;
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" void func_001FEC40(FieldFloatTransitions70* object, float target, float duration);
 
 /** Partial callback interface with a method at offset 0x1C. */
@@ -16,10 +22,15 @@ class FieldCallbackDispatch1C
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void callback(u32 first, u32 second);
 };
 
@@ -327,14 +338,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FA6
 FieldIndexedListNode* func_001FA7A0(const FieldIndexedList* list, s32 index)
 {
     FieldIndexedListNode* node = list->head->next;
+
     for (s32 i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
@@ -343,14 +357,17 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_001F2BB0", func_001FA7
 FieldIndexedListNode* func_001FA8A0(const FieldIndexedList* list, s32 index)
 {
     FieldIndexedListNode* node = list->head->next;
+
     for (s32 i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
@@ -594,6 +611,7 @@ void func_001FE6D0(FieldFloatTransitions70* object, float target, float duration
     object->unke0 = object->owner->unk544;
     object->unke4 = target;
     object->unke8 = duration;
+
     if (duration > 0.0f)
     {
         object->unkec = (object->unke4 - object->unke0) / object->unke8;
@@ -602,6 +620,7 @@ void func_001FE6D0(FieldFloatTransitions70* object, float target, float duration
     {
         object->unkec = object->unke4 - object->unke0;
     }
+
     object->unk70 |= 0x200;
 }
 
@@ -629,11 +648,14 @@ void func_001FEB00(FieldFloatTransitions70* object, float target, float duration
     {
         target = object->unk108;
     }
+
     object->unk114 = target - object->unkf8;
+
     if (duration)
     {
         object->unk114 /= duration;
     }
+
     object->unk118 = target;
     object->unk110 = duration;
     object->unk70 |= 0x8;
@@ -645,11 +667,14 @@ void func_001FEB70(FieldFloatTransitions70* object, float target, float duration
     {
         target = object->unk104;
     }
+
     object->unk78 = target - object->unkf4;
+
     if (duration)
     {
         object->unk78 /= duration;
     }
+
     object->unk7c = target;
     object->unk74 = duration;
     object->unk70 |= 0x4;

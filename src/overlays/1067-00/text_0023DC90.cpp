@@ -166,6 +166,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_002497
 void func_00249880(FieldObject24B6B0* object, const void* value)
 {
     FieldContextDC49880* context = (FieldContextDC49880*)D_001B6430->context->unk08->current_object;
+
     if (object->target != 0 && context != 0 && context->active != 0)
     {
         func_00249760(object, object->target, value);
@@ -205,6 +206,7 @@ void func_0024A410(FieldObject24A410* object)
     func_0023DDD0(object);
     object->flag0 = 0;
     object->state = 0;
+
     if (object->owned != 0)
     {
         lib_object_detach_owner(object->owned);
@@ -259,6 +261,7 @@ void func_0024B6B0(FieldObject24B6B0* object, s32 value)
     {
         object->value = value;
     }
+
     if (object->target != 0)
     {
         func_0024B4D0(object, object->target);
@@ -296,6 +299,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_0024C2
 void func_0024C300(FieldObject24C300* object)
 {
     u8 flags = object->flag0 | object->flag1;
+
     if (flags == 0)
     {
         func_00246960(object);
@@ -305,6 +309,7 @@ void func_0024C300(FieldObject24C300* object)
 void func_0024C340(FieldObject24C300* object)
 {
     u8 flags = object->flag0 | object->flag1;
+
     if (flags == 0)
     {
         func_002468A0(object);

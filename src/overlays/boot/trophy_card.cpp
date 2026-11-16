@@ -19,6 +19,7 @@
 #include "overlays/lib/text_004AB8B0.h"
 
 static inline void copy_transfer_name(BootBattleTrophyCard* trophy_card, const char* base, const char* suffix);
+
 static inline s32 prepare_transfer_request(BootBattleTrophyCard* trophy_card);
 
 /**
@@ -773,6 +774,7 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
     s32 value;
 
     *result = 0;
+
     if (card_mode == 1)
     {
         value = slot_free_space[slot];
@@ -808,6 +810,7 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
                 }
 
                 *result = BOOT_CARD_STATUS_SAVE_PRESENT;
+
                 if (0 <= value && value < BOOT_CARD_TROPHY_SPACE_MINIMUM)
                 {
                     *result = BOOT_CARD_STATUS_SAVE_PRESENT_NO_TROPHY_SPACE;
@@ -821,6 +824,7 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
                 }
 
                 *result = save_probe_status[slot];
+
                 if (0 <= value && value < BOOT_CARD_BOTH_SPACE_MINIMUM)
                 {
                     *result = BOOT_CARD_STATUS_EITHER_FILE_ONLY;
@@ -854,6 +858,7 @@ void BootBattleTrophyCard::classify_card_event(u16 event, u8* result)
                 }
 
                 *result = save_probe_status[slot];
+
                 if (0 <= value && value < BOOT_CARD_SAVE_SPACE_MINIMUM)
                 {
                     *result = BOOT_CARD_STATUS_TROPHY_PRESENT_NO_SAVE_SPACE;

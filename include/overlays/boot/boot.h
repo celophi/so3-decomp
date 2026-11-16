@@ -241,7 +241,6 @@ struct BootTrophyCardFile
     u8 trophy_key[4];
     u8 header[BOOT_TROPHY_FILE_FLAGS_OFFSET - 4];
     u8 trophy_flags[BOOT_TRANSFER_FLAG_BYTES];
-    /** Saved checksum seed and checksum, stored without word alignment. */
     u8 checksum_words[8];
     u8 records[BOOT_TROPHY_RECORD_BYTES];
 };

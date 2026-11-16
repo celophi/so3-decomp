@@ -126,9 +126,7 @@ typedef struct LibCodeTable
 /** Four-byte factor record of the D_504AA0 table, indexed by factor ID minus one. */
 typedef struct LibRecord504AA0
 {
-    /** Price a factor adds to an item. */
     u32 price : 20;
-
     u32 unk14 : 5;
     u32 unk19 : 7;
 } LibRecord504AA0;
@@ -161,22 +159,14 @@ struct LibClass1721B0
     s16 unk22;
     s16 unk24;
     u8 unk26[0x5A];
-
-    /** icon.sys contents. */
     u8* icon_sys;
-
-    /** Card files the request points at. */
     LibCardFileBuffer files[2];
-
     u8 unka4[0x230];
     LibCardFileRequest request;
     u8 unk2e4[0x4B4];
     u8* unk798;
     u8* unk79c;
-
-    /** Directory name shared by both card files. */
     char directory[0xD8];
-
     u16 unk878;
     u16 unk87a;
     s32 result;
@@ -1555,6 +1545,7 @@ extern "C" s16 lib_allocation_get_identifier(const ItemCreationAllocationRecord*
 {
     u32 suppress;
     s32 id;
+
     if (record->invalid())
     {
         suppress = 0;
@@ -1563,6 +1554,7 @@ extern "C" s16 lib_allocation_get_identifier(const ItemCreationAllocationRecord*
     {
         suppress = record->factors_234.bits.suppress_allocation_id;
     }
+
     if (suppress)
     {
         id = 0;
@@ -1571,6 +1563,7 @@ extern "C" s16 lib_allocation_get_identifier(const ItemCreationAllocationRecord*
     {
         id = (s16)(((u32)record - (u32)D_001B64F8) / sizeof(ItemCreationAllocationRecord) + 1);
     }
+
     return id;
 }
 
@@ -1876,15 +1869,18 @@ extern "C" void* func_00411DD0(void* object, s32 count)
     s32 traversed;
     node = *(void**)(*(u8**)object + 4);
     traversed = 0;
+
     while (traversed < count)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = *(void**)((u8*)node + 4);
         traversed += 1;
     }
+
     return node;
 }
 
@@ -2048,10 +2044,12 @@ s32 lib_item_code_init_rectangle(LibObject172410* object, float x, float y, floa
     object->set_rectangle(x, y, width, height);
     resources = (LibRuntimeCodeResources*)g_field_runtime;
     state->source = &resources->slots[resources->item_slot];
+
     if (!object->allocate_storage(0, 64, 0, 0))
     {
         return 0;
     }
+
     state->code = code;
     state->variation = variation;
     state->initialized = 1;
@@ -2089,10 +2087,12 @@ s32 lib_detail_code_init_rectangle(LibObject172440* object, u16 code, u8 variati
     object->set_rectangle(x, y, width, height);
     resources = (LibRuntimeCodeResources*)g_field_runtime;
     state->source = &resources->slots[resources->factor_slot];
+
     if (!object->allocate_storage(0, 128, 0, 0))
     {
         return 0;
     }
+
     state->code = code;
     state->variation = variation;
     state->initialized = 1;

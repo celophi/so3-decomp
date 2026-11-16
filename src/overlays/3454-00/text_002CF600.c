@@ -2,12 +2,19 @@
 #include "overlays/3454-00/text_002CF600.h"
 
 extern void func_002DF130(void* object, void* context);
+
 extern void func_00278EF0(void);
+
 extern void func_00278F30(void);
+
 extern void func_002D6DB0(void* object);
+
 extern void func_003B41F0(void* object);
+
 extern void func_002AE3F0(void* object);
+
 extern u32 func_473390(u32 value, const void* data);
+
 extern const u8 D_3E0B60[];
 
 typedef struct N57Owner600text_002CF600
@@ -20,6 +27,7 @@ typedef struct N57Owner600text_002CF600
 
 
 extern s32 func_003B31B0(void* object, s32 arg2, s32 arg3);
+
 extern void func_002919A0(void* object);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002CF600", func_002CF600);

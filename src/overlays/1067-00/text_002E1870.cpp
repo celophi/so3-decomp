@@ -127,10 +127,12 @@ extern "C" s32 lib_character_set_hit(LibCharacterRecord* record, s32 hit)
 s32 func_002E80A0(const FieldCheckedWordsState1870* object)
 {
     u32 check = object->unkA8 ^ (object->unk60 ^ (object->unk58 + object->unk5C));
+
     if (object->unkA0 != check)
     {
         return 0;
     }
+
     return object->unk60 ^ 0x7DE3F7E3;
 }
 
@@ -173,10 +175,12 @@ extern "C" s32 lib_character_set_defense(LibCharacterRecord* record, s32 defense
 s32 func_002E8270(const FieldCheckedWordsState1870* object)
 {
     u32 check = object->unkA8 ^ (object->unk48 ^ (object->unk40 + object->unk44));
+
     if (object->unk98 != check)
     {
         return 0;
     }
+
     return object->unk48 ^ 0x7DE3F7E3;
 }
 
@@ -219,10 +223,12 @@ extern "C" s32 lib_character_set_intelligence(LibCharacterRecord* record, s32 in
 s32 func_002E8440(const FieldCheckedWordsState1870* object)
 {
     u32 check = object->unkA8 ^ (object->unk60 ^ (object->unk58 + object->unk5C));
+
     if (object->unkA0 != check)
     {
         return 0;
     }
+
     return object->unk6C ^ 0x7DE3F7E3;
 }
 
@@ -265,10 +271,12 @@ extern "C" s32 lib_character_set_attack(LibCharacterRecord* record, s32 attack)
 s32 func_002E8600(const FieldCheckedWordsState1870* object)
 {
     u32 check = object->unkA8 ^ (object->unk3C ^ (object->unk34 + object->unk38));
+
     if (object->unk94 != check)
     {
         return 0;
     }
+
     return object->unk3C ^ 0x7DE3F7E3;
 }
 
@@ -461,20 +469,25 @@ u16 func_002ECFE0(const FieldOuter14* object)
 {
     FieldAttached148* attached;
     u16 flags;
+
     if (!object->inner->active20)
     {
         return 0;
     }
+
     attached = object->inner->attached;
     flags = 0;
+
     if (attached->value48 == 2)
     {
         flags |= 1;
     }
+
     if (attached->value148 == 2)
     {
         flags |= 2;
     }
+
     return flags;
 }
 
@@ -511,6 +524,7 @@ s32 func_002EE9C0(FieldObject2EDFD0* object, void* value)
     {
         return 0;
     }
+
     object->unk1254 = value;
     return 1;
 }
@@ -563,6 +577,7 @@ void func_002EF010(FieldObject2EDFD0* object, s16 value)
     {
         object->unk105A = 50;
     }
+
     object->unk105A = value;
 }
 
@@ -572,6 +587,7 @@ s32 func_002EF030(FieldObject2EDFD0* object, s16 index)
     {
         return 0;
     }
+
     object->unk1058 = index;
     return 1;
 }

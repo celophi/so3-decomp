@@ -151,15 +151,12 @@ static inline void gs_clear_gif_tag(GsGifTag* tag)
 /** FRAME_1/FRAME_2: the frame buffer a drawing context writes to. */
 typedef struct GsFrame
 {
-    /** Base address in 2048-word pages. */
     u64 base_pointer : 9;
     u64 : 7;
-    /** Width in 64-pixel units. */
     u64 buffer_width : 6;
     u64 : 2;
     u64 pixel_format : 6;
     u64 : 2;
-    /** Bits that drawing doesn't write. */
     u64 draw_mask : 32;
 } GsFrame;
 
@@ -193,12 +190,10 @@ typedef struct GsTest
 /** ZBUF_1/ZBUF_2: the depth buffer a drawing context uses. */
 typedef struct GsZbuf
 {
-    /** Base address in 2048-word pages. */
     u64 base_pointer : 9;
     u64 : 15;
     u64 pixel_format : 4;
     u64 : 4;
-    /** Depth values aren't written. */
     u64 mask : 1;
     u64 : 31;
 } GsZbuf;
@@ -235,11 +230,8 @@ typedef struct GsPmode
     u32 circuit1 : 1;
     u32 circuit2 : 1;
     u32 crt_mode : 3;
-    /** Blend with alpha below instead of circuit 1's pixel alpha. */
     u32 fixed_alpha : 1;
-    /** Output circuit 2's alpha instead of circuit 1's. */
     u32 alpha_output : 1;
-    /** Blend circuit 1 with the background colour instead of circuit 2. */
     u32 blend_background : 1;
     u32 alpha : 8;
     u32 : 16;
@@ -259,9 +251,7 @@ typedef struct GsSmode2
 /** DISPFB1/DISPFB2: the frame buffer a read circuit shows. */
 typedef struct GsDisplayFrame
 {
-    /** Base address in 2048-word pages. */
     u32 base_pointer : 9;
-    /** Width in 64-pixel units. */
     u32 buffer_width : 6;
     u32 pixel_format : 5;
     u32 : 12;

@@ -24,8 +24,6 @@ struct RowFillOwner
     u8 unk40[0xD];
     u8 unk4d;
     u8 unk4e[2];
-
-    /** Linked secondary emitter, or null. */
     LibClass173990* secondary_emitter;
 };
 

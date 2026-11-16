@@ -31,10 +31,11 @@ struct FieldObject2BD050
 class FieldClass153E00 : public FieldListObject
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass153E00();
+
     /** @brief Delete the attached object at offset 0x4C. */
     virtual void func_slot1c();
+
     FieldResourceRequestHandler* request_handler;
     struct FieldMenuManager* menu_manager;
     u8 menu;

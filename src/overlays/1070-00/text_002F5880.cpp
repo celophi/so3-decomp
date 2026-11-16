@@ -95,6 +95,7 @@ void func_00305830(FieldClampState* object, u16 value)
     s32 span = 7;
     s32 offset = value - 7;
     s32 limit = object->unk40c;
+
     if (offset < 0)
     {
         span += offset;
@@ -105,6 +106,7 @@ void func_00305830(FieldClampState* object, u16 value)
         span += offset - limit;
         offset = limit;
     }
+
     object->unk410 = offset;
     object->unk41e = span;
     object->unk4c4 = 1;

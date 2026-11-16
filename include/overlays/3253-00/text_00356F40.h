@@ -46,16 +46,24 @@ void func_00363D40(void* object);
 
 /** Call the selected helper when the float at receiver offset 0x6B0 is zero. */
 void func_00364B50(void* object);
+
 void func_00364B90(void* object);
+
 void func_003653C0(void* object);
+
 void func_00365A30(void* object);
+
 void func_00365A70(void* object);
+
 void func_00366B30(void* object);
 
 /** Return zero unless the float at 0x6B0 is zero, then return the helper result. */
 s32 func_00364BD0(void* object);
+
 s32 func_00365450(void* object);
+
 s32 func_00365AB0(void* object);
+
 s32 func_00366BD0(void* object);
 
 #ifdef __cplusplus

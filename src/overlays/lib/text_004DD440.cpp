@@ -150,9 +150,14 @@ typedef struct WordClearOwnertext_004DD440
 extern "C" u8 D_0050CD80[];
 
 static inline void lib_get_transform_translation(FieldVec4B& result, const LibTransform& object);
+
 static inline float lib_vector_length(const FieldVec4B& vector);
 
-/** @brief Read the matrix translation into a position vector. @param result Destination vector. @param object Transform source. */
+/**
+ * @brief Read the matrix translation into a position vector.
+ * @param result Destination vector.
+ * @param object Transform source.
+ */
 static inline void lib_get_transform_translation(FieldVec4B& result, const LibTransform& object)
 {
     result.x = object.transform.m[0][3];
@@ -161,7 +166,11 @@ static inline void lib_get_transform_translation(FieldVec4B& result, const LibTr
     result.w = 1.0f;
 }
 
-/** @brief Compute the xyz vector length. @param vector Vector to measure. @return Vector length. */
+/**
+ * @brief Compute the xyz vector length.
+ * @param vector Vector to measure.
+ * @return Vector length.
+ */
 static inline float lib_vector_length(const FieldVec4B& vector)
 {
     FieldVec4A result;
@@ -574,6 +583,7 @@ void LibCameraContext::configure_buffers(s16 pixel_format, s16 width, s16 height
                     buffers[0].environment.context1.depth_buffer.base_pointer;
                 screens[i].buffers[1].environment.context1.frame.base_pointer = screens[i].buffers[1].environment.context2.frame.base_pointer =
                     vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, height);
+
                 if (screens[i].unkA56)
                 {
                     vram_free_page += lib_buffer_pages(screens[i].pixel_format, screens[i].width, screens[i].height);
@@ -842,10 +852,12 @@ void func_004E1040(N50Owner114_004DD440* object)
 {
     object->active = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0x108;
     }
+
     resident_packet_submit(object->owner, adjusted);
 }
 
@@ -873,14 +885,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1460);
 void LibCamera::destroy()
 {
     LibDisplayManager* manager = static_cast<LibDisplayManager*>(owner);
+
     if (manager != 0 && manager->current_display == this)
     {
         manager->current_display = 0;
     }
+
     LibTransformOwner::destroy();
 }
 
-/** @brief Initialize viewport bounds and default projection settings. @param context Resident viewport context. */
+/**
+ * @brief Initialize viewport bounds and default projection settings.
+ * @param context Resident viewport context.
+ */
 void LibCamera::initialize_projection(const LibCameraContext* context)
 {
     horizontal_fov = 0.7853982f;
@@ -912,7 +929,10 @@ void LibCamera::upload_clip_geometry() const
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1670);
 
-/** @brief Build the local perspective volume for visibility tests. @param volume Destination volume. */
+/**
+ * @brief Build the local perspective volume for visibility tests.
+ * @param volume Destination volume.
+ */
 void LibCamera::build_projection_volume(LibProjectionVolume* volume) const
 {
     FieldVec4A transverse_axis;
@@ -966,10 +986,12 @@ void LibCamera::update()
     unk63 = 0;
     LibTransform::update();
     transform_dirty = 1;
+
     if (static_cast<LibDisplayManager*>(owner)->current_display == this)
     {
         update_projection();
     }
+
     if (look_at_target != 0 && unk3d3 != 0)
     {
         FieldVec4B attached_position;
@@ -1003,14 +1025,20 @@ void LibCamera::get_fog_coefficients(float* offset, float* reciprocal_scale) con
     *reciprocal_scale = fog_reciprocal_scale;
 }
 
-/** @brief Set the near fog-distance fraction and recompute fog coefficients. @param fraction Fraction of the configured distance range. */
+/**
+ * @brief Set the near fog-distance fraction and recompute fog coefficients.
+ * @param fraction Fraction of the configured distance range.
+ */
 void LibCamera::set_near_fog_fraction(float fraction)
 {
     near_fog_fraction = fraction;
     update_fog_coefficients(far_fog_factor, near_fog_factor);
 }
 
-/** @brief Set the far fog-distance fraction and recompute fog coefficients. @param fraction Fraction of the configured distance range. */
+/**
+ * @brief Set the far fog-distance fraction and recompute fog coefficients.
+ * @param fraction Fraction of the configured distance range.
+ */
 void LibCamera::set_far_fog_fraction(float fraction)
 {
     far_fog_fraction = fraction;
@@ -1037,7 +1065,10 @@ void LibCamera::set_fog(u32 color, float far_factor, float near_factor, float ne
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1E70__9LibCameraFv);
 
-/** @brief Copy camera settings, the attached transform and inherited transform state. @param source Camera to copy. */
+/**
+ * @brief Copy camera settings, the attached transform and inherited transform state.
+ * @param source Camera to copy.
+ */
 void LibCamera::copy_camera(const LibCamera* source)
 {
     copy_view_and_fog(source);
@@ -1045,7 +1076,10 @@ void LibCamera::copy_camera(const LibCamera* source)
     LibTransform::copy_offset_transform_state(source);
 }
 
-/** @brief Copy the camera's view and fog settings. @param source Camera to copy. */
+/**
+ * @brief Copy the camera's view and fog settings.
+ * @param source Camera to copy.
+ */
 void LibCamera::copy_view_and_fog(const LibCamera* source)
 {
     unk3c8 = source->unk3c8;
@@ -1084,7 +1118,10 @@ void LibCamera::copy_view_and_fog(const LibCamera* source)
     fog_enabled = source->fog_enabled;
 }
 
-/** @brief Submit the camera's DMA chain. @param channel DMA channel number. */
+/**
+ * @brief Submit the camera's DMA chain.
+ * @param channel DMA channel number.
+ */
 void LibCamera::submit_dma(u32 channel)
 {
     DmaChannel* dma = sceDmaGetChan(channel);
@@ -1092,12 +1129,18 @@ void LibCamera::submit_dma(u32 channel)
     sceDmaSend(dma, &dma_chain);
 }
 
-/** @brief Complete the camera transfer. @param channel DMA channel number; unused. */
+/**
+ * @brief Complete the camera transfer.
+ * @param channel DMA channel number; unused.
+ */
 void LibCamera::complete_dma(u32 channel)
 {
 }
 
-/** @brief Queue the camera for VIF1 DMA. @return 1 on success, 0 when the queue is full. */
+/**
+ * @brief Queue the camera for VIF1 DMA.
+ * @return 1 on success, 0 when the queue is full.
+ */
 s32 LibCamera::enqueue_submission()
 {
     return func_00114100(g_vif1_dma_queue, this);
@@ -1415,7 +1458,6 @@ class LibClass1791E0 : public LibListObject
         /** @brief Flip the parity flag. */
         virtual void update();
 
-        /** Flips between 0 and 1 on every update. */
         u32 parity;
 };
 

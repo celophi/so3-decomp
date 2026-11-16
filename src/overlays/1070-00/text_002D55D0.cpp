@@ -14,25 +14,45 @@ class FieldCallbackDispatch58
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void callback(u32 first, u32 second);
 };
 
@@ -41,34 +61,63 @@ class FieldCallbackDispatch70
 {
 public:
     virtual void slot8();
+
     virtual void slotc();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void slot58();
+
     virtual void slot5c();
+
     virtual void slot60();
+
     virtual void slot64();
+
     virtual void slot68();
+
     virtual void slot6c();
+
     virtual void slot70();
+
     virtual void slot74();
+
     virtual void slot78();
+
     virtual float slot7c();
 };
 
@@ -79,6 +128,7 @@ extern "C" u8 D_175280[];
 extern "C" u8 D_175270[];
 extern "C" float D_001B66B4;
 extern "C" void* D_001B6620;
+
 extern "C" void func_121E80(void* owner, void* object);
 
 
@@ -408,6 +458,7 @@ s32 func_002D6ED0(void* object, float key)
     FloatKeyScanOwner_text_002D55D0_10* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_10*>(object);
     s16 count = receiver->count28;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key0c)
@@ -415,6 +466,7 @@ s32 func_002D6ED0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -432,6 +484,7 @@ float func_002D6F40(const FieldFloatValueSequence28* object)
     {
         return 0.0f;
     }
+
     s32 lastIndex = object->count - 1;
     const FieldFloatValueEntryC16* last = object->entries + lastIndex;
     return last->value - object->entries[0].value;
@@ -588,6 +641,7 @@ s32 func_002D7AD0(void* object, float key)
     FloatKeyScanOwner_text_002D55D0_30* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_30*>(object);
     s16 count = receiver->count48;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key0c)
@@ -595,6 +649,7 @@ s32 func_002D7AD0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -612,6 +667,7 @@ float func_002D7B40(const FieldFloatValueSequence48* object)
     {
         return 0.0f;
     }
+
     s32 lastIndex = object->count - 1;
     const FieldFloatValueEntry48* last = object->entries + lastIndex;
     return last->value - object->entries[0].value;
@@ -663,6 +719,7 @@ float func_002D8290(const FieldFloatValueSequence18* object)
     {
         return 0.0f;
     }
+
     s32 lastIndex = object->count - 1;
     const FieldFloatValueEntry8* last = object->entries + lastIndex;
     return last->value - object->entries[0].value;
@@ -675,6 +732,7 @@ s32 func_002D82E0(void* object, float key)
     FloatKeyScanOwner_text_002D55D0_08* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_08*>(object);
     s16 count = receiver->count18;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -682,6 +740,7 @@ s32 func_002D82E0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -826,6 +885,7 @@ float func_002D8830(const FieldFloatValueSequence38* object)
     {
         return 0.0f;
     }
+
     s32 lastIndex = object->count - 1;
     const FieldFloatValueEntry32* last = object->entries + lastIndex;
     return last->value - object->entries[0].value;
@@ -838,6 +898,7 @@ s32 func_002D8880(void* object, float key)
     FloatKeyScanOwner_text_002D55D0_20* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_20*>(object);
     s16 count = receiver->count38;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -845,6 +906,7 @@ s32 func_002D8880(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1084,6 +1146,7 @@ s32 func_002D9EF0(void* object, float key)
     FloatKeyScanOwner_text_002D55D0_30* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_30*>(object);
     s16 count = receiver->count48;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1091,6 +1154,7 @@ s32 func_002D9EF0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1108,6 +1172,7 @@ float func_002D9F60(const FieldFloatFirstSequence48* object)
     {
         return 0.0f;
     }
+
     s32 lastIndex = object->count - 1;
     const FieldFloatFirstEntry48* last = object->entries + lastIndex;
     return last->value - object->entries[0].value;
@@ -1351,6 +1416,7 @@ float func_002DAB40(const FieldSignedValueSequence18* object)
     {
         return 0.0f;
     }
+
     s32 lastIndex = object->count - 1;
     const FieldSignedValueEntry8* last = object->entries + lastIndex;
     return (float)last->value - (float)object->entries[0].value;
@@ -1377,6 +1443,7 @@ float func_002DAE80(const FieldFloatValueSequence38* object)
     {
         return 0.0f;
     }
+
     s32 lastIndex = object->count - 1;
     const FieldFloatValueEntry32* last = object->entries + lastIndex;
     return last->value - object->entries[0].value;
@@ -1389,6 +1456,7 @@ s32 func_002DAED0(void* object, float key)
     FloatKeyScanOwner_text_002D55D0_20* receiver = static_cast<FloatKeyScanOwner_text_002D55D0_20*>(object);
     s16 count = receiver->count38;
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (key == receiver->entries[index].key00)
@@ -1396,6 +1464,7 @@ s32 func_002DAED0(void* object, float key)
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1463,6 +1532,7 @@ void func_002DB9D0(FieldPointerValueState2C* object, const u8* source, u32 value
 {
     object->unk2c = source;
     object->unk30 = value;
+
     if (*object->unk2c == 1)
     {
         object->unk34 = 1;
@@ -1837,6 +1907,7 @@ void func_002E3950(FieldPointerValueState2C* object, const u8* source, u32 value
 {
     object->unk2c = source;
     object->unk30 = value;
+
     if (*object->unk2c == 1)
     {
         object->unk34 = 1;
@@ -2066,6 +2137,7 @@ s32 func_002E5260(FieldConditionalFloat14* object)
         object->unk14 = 1.0f;
         return 0;
     }
+
     return 1;
 }
 

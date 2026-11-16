@@ -63,10 +63,7 @@ class BootFft
          */
         inline void make_bit_reverse(s32 n, s32* table);
 
-        /** Size the tables were built for. */
         s32 size;
-
-        // unk04 to unk2c hold sizes and tables for transforms the music player never runs; boot only clears and frees them.
         s32 unk04;
         s32* bit_reverse;
         float* sine_table;
@@ -126,22 +123,11 @@ class BootNeedleMeter : public LibTransformOwner, public LibDmaCallbacks
 
         LibPacketBuffer* packet;
         u8 unk98[0x898];
-
-        /** Left and right needle positions, 0 to 96. */
         float needles[2];
-
-        /** Left and right levels the needles move towards. */
         float levels[2];
-
-        /** Peak needle position. */
         float peak;
-
-        /** Seconds left before the peak needle starts to fall. */
         float peak_hold;
-
-        /** Pivot of the needles on screen. */
         s32 x;
-
         s32 y;
 };
 
@@ -229,84 +215,36 @@ class BootMusicPlayer : public LibListObject
         /** @brief Create the screen images once both image buffers are loaded. */
         void create_images();
 
-        /** Resource 0x2C. */
         u8* resource_data;
-
         u8* image_buffers[2];
         BootImage* images[20];
         s32 step;
         u8 images_loaded;
-
-        /** Selected menu row. */
         u8 selection;
-
-        /** Nonzero while the selected row's image brightens again. */
         u8 brightening;
-
-        /** BootMusicPlayMode value selected in the menu. */
         u8 play_mode;
-
-        /** Cleared when the screen is created; nothing in boot reads it. */
         u8 unk78;
-
-        /** Index of the current track in the track table. */
         u8 track;
-
-        /** Shuffled track indices. */
         u8 shuffle_order[BOOT_MUSIC_TRACK_COUNT];
-
-        /** Next entry of shuffle_order to play. */
         u8 shuffle_position;
-
-        /** Nonzero while a track is streaming. */
         u8 playing;
-
-        /** Track whose start request failed, retried every frame. */
         s32 pending_track;
-
-        /** Samples analysed so far. */
         float samples_analysed;
-
-        /** Samples played so far. */
         float samples_played;
-
-        /** Seconds before the next track starts. */
         float next_track_delay;
-
         u8 unke4[0xC];
-
-        /** Left and right stream buffers. */
         u8 stream_buffers[2][BOOT_MUSIC_STREAM_BUFFER_SIZE];
-
-        /** Spectrum of each channel. */
         BootSpectrum spectra[2];
-
-        /** Hann window over one block of samples. */
         float window[BOOT_MUSIC_FFT_SIZE];
-
         LibContainer* container;
-        /** Released with the other widgets, but boot never creates it, so it stays null. */
         LibListObject* unk4050f4;
         LibSelectionCursor* cursor;
-
-        /** Track number. */
         LibStringLabel* number_text;
-
-        /** Track name. */
         LibTextWidget* name_text;
-
-        /** Play mode. */
         LibTextWidget* mode_text;
-
-        /** Row labels. */
         LibTextWidget* labels[5];
-
-        /** One meter per frequency band. */
         BootNeedleMeter* meters[5];
-
         BootFft* fft;
-
-        /** Formatted track number. */
         char number[12];
 };
 

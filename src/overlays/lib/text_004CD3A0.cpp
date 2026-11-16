@@ -127,6 +127,7 @@ struct LibRenderDataRecord
 };
 
 extern "C" void func_004D6C20(LibUpdateList* list, void** items, u32* offsets);
+
 extern "C" LibRenderDataRecord* func_00448910(u32 first_key, u32 second_key);
 
 struct LibFieldPointer634
@@ -139,13 +140,23 @@ struct LibFieldPointer634
 
 extern "C" ResidentDmaQueue* D_001B660C;
 
-/** @brief View an aligned matrix row as a vector. @param matrix Source matrix. @param index Row index. @return Read-only row vector. */
+/**
+ * @brief View an aligned matrix row as a vector.
+ * @param matrix Source matrix.
+ * @param index Row index.
+ * @return Read-only row vector.
+ */
 static inline const FieldVec4A& matrix_row_vector(const LibMatrix44Value& matrix, s32 index)
 {
     return *(const FieldVec4A*)matrix.m[index];
 }
 
-/** @brief View an aligned matrix row as a writable vector. @param matrix Destination matrix. @param index Row index. @return Writable row vector. */
+/**
+ * @brief View an aligned matrix row as a writable vector.
+ * @param matrix Destination matrix.
+ * @param index Row index.
+ * @return Writable row vector.
+ */
 static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 index)
 {
     return *(FieldVec4A*)matrix.m[index];
@@ -167,6 +178,7 @@ extern "C" void lib_quaternion_slerp_async(FieldVec4B* output, const FieldVec4B*
     float full_weight = 1.0f;
     bool negative;
     float angle;
+
     if (!(dot < 0.0f))
     {
         negative = false;
@@ -177,11 +189,13 @@ extern "C" void lib_quaternion_slerp_async(FieldVec4B* output, const FieldVec4B*
         negative = true;
         angle = func_004CD010(-dot);
     }
+
     if (angle < linear_threshold)
     {
         FieldVec4A weights;
         weights.y = fraction;
         weights.x = full_weight - fraction;
+
         if (negative)
         {
             vu0_quaternion_linear_negative(first, second, &weights);
@@ -201,6 +215,7 @@ extern "C" void lib_quaternion_slerp_async(FieldVec4B* output, const FieldVec4B*
         func_004CD2C0(angle * (full_weight - fraction), angle * fraction, angle);
         vu0_quaternion_spherical_positive_wait(first, second);
     }
+
     vu0_quaternion_norm_begin();
     ee_prefetch(output);
     vu0_quaternion_norm_finish(output);
@@ -250,6 +265,7 @@ extern "C" void lib_quaternion_slerp(FieldVec4B* output, const FieldVec4B* first
     float dot = ((first->x * second->x + first->y * second->y) + first->z * second->z) + first->w * second->w;
     bool negative;
     float angle;
+
     if (!(dot < 0.0f))
     {
         negative = false;
@@ -260,11 +276,13 @@ extern "C" void lib_quaternion_slerp(FieldVec4B* output, const FieldVec4B* first
         negative = true;
         angle = func_004CD010(-dot);
     }
+
     if (angle < 0.01f)
     {
         FieldVec4A weights;
         weights.y = fraction;
         weights.x = 1.0f - fraction;
+
         if (negative)
         {
             vu0_quaternion_linear_negative(first, second, &weights);
@@ -286,6 +304,7 @@ extern "C" void lib_quaternion_slerp(FieldVec4B* output, const FieldVec4B* first
         func_004CA090(&sines, angle * (1.0f - fraction), angle * fraction, angle);
         vu0_quaternion_spherical_positive(first, second);
     }
+
     vu0_quaternion_norm_begin();
     vu0_quaternion_norm_finish(output);
 }
@@ -452,6 +471,7 @@ extern "C" void lib_direction_angles_xy(LibVector4* value, const LibVector4* tar
     delta.z = target->z - value->z;
     float x_squared = delta.x * delta.x;
     float y_squared = delta.y * delta.y;
+
     if (x_squared == 0.0f && y_squared == 0.0f)
     {
         if (delta.z < 0.0f)
@@ -462,6 +482,7 @@ extern "C" void lib_direction_angles_xy(LibVector4* value, const LibVector4* tar
         {
             value->x = -HALF_PI;
         }
+
         value->z = 0.0f;
     }
     else
@@ -471,6 +492,7 @@ extern "C" void lib_direction_angles_xy(LibVector4* value, const LibVector4* tar
         value->x = func_00142148(-delta.z, horizontal_distance);
         value->z = func_00142148(delta.x, delta.y);
     }
+
     value->y = y_angle;
     value->w = 1.0f;
 }
@@ -489,6 +511,7 @@ extern "C" void lib_direction_angles_xz(LibVector4* value, const LibVector4* tar
     FieldVec4A delta(dx, dy, dz, 0.0f);
     float x_squared = delta.x * delta.x;
     float z_squared = delta.z * delta.z;
+
     if (x_squared == 0.0f && z_squared == 0.0f)
     {
         if (delta.y < 0.0f)
@@ -499,6 +522,7 @@ extern "C" void lib_direction_angles_xz(LibVector4* value, const LibVector4* tar
         {
             value->x = -HALF_PI;
         }
+
         value->y = 0.0f;
     }
     else
@@ -508,11 +532,16 @@ extern "C" void lib_direction_angles_xz(LibVector4* value, const LibVector4* tar
         value->x = func_00142148(-delta.y, horizontal_distance);
         value->y = func_00142148(delta.x, delta.z);
     }
+
     value->z = z_angle;
     value->w = 1.0f;
 }
 
-/** @brief Invert an orthonormal rotation and its row-vector translation. @param input Source matrix. @param output Destination matrix, distinct from input. */
+/**
+ * @brief Invert an orthonormal rotation and its row-vector translation.
+ * @param input Source matrix.
+ * @param output Destination matrix, distinct from input.
+ */
 extern "C" void func_004CEF20(const LibMatrix44Value* input, LibMatrix44Value* output)
 {
     ((unsigned __int128*)output)[0] = 0;
@@ -525,6 +554,7 @@ extern "C" void func_004CEF20(const LibMatrix44Value* input, LibMatrix44Value* o
     output->m[3][3] = 1.0f;
     s32 row;
     s32 column;
+
     for (row = 0; row < 3; row++)
     {
         for (column = 0; column < 3; column++)
@@ -534,12 +564,17 @@ extern "C" void func_004CEF20(const LibMatrix44Value* input, LibMatrix44Value* o
             output_row[column] = input_row[row];
         }
     }
+
     vu0_inverse_translation(output, input);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEFD0);
 
-/** @brief Invert an orthonormal rotation and its translation column. @param input Source transformation matrix. @return Inverse transformation matrix. */
+/**
+ * @brief Invert an orthonormal rotation and its translation column.
+ * @param input Source transformation matrix.
+ * @return Inverse transformation matrix.
+ */
 extern "C" LibMatrix44Value func_004CF0B0(const LibMatrix44Value& input)
 {
     LibMatrix44Value result;
@@ -552,6 +587,7 @@ extern "C" LibMatrix44Value func_004CF0B0(const LibMatrix44Value& input)
     result.m[1][1] = 1.0f;
     result.m[2][2] = 1.0f;
     result.m[3][3] = 1.0f;
+
     for (s32 row = 0; row < 3; row++)
     {
         for (s32 column = 0; column < 3; column++)
@@ -561,6 +597,7 @@ extern "C" LibMatrix44Value func_004CF0B0(const LibMatrix44Value& input)
             output_row[column] = input_row[row];
         }
     }
+
     translation.x = input.m[0][3];
     translation.y = input.m[1][3];
     translation.z = input.m[2][3];
@@ -571,7 +608,11 @@ extern "C" LibMatrix44Value func_004CF0B0(const LibMatrix44Value& input)
     return result;
 }
 
-/** @brief Invert a nonsingular matrix. @param input Source matrix. @param output Destination matrix, which may alias input. */
+/**
+ * @brief Invert a nonsingular matrix.
+ * @param input Source matrix.
+ * @param output Destination matrix, which may alias input.
+ */
 extern "C" void func_004CF1C0(const LibMatrix44Value* input, LibMatrix44Value* output)
 {
     s32 permutation[4];
@@ -598,33 +639,41 @@ extern "C" void func_004CF1C0(const LibMatrix44Value* input, LibMatrix44Value* o
     vu0_inverse_scale_row3();
     vu0_inverse_store_row2(&scaled);
     s32 index;
+
     for (s32 column = 0; column < 4; column++)
     {
         float pivot_weight = -1.0f;
+
         for (s32 row = column; row < 4; row++)
         {
             const float* scaled_column = scaled.m[column];
             float candidate = scaled_column[permutation[row]];
+
             if (!(candidate <= pivot_weight))
             {
                 pivot_weight = candidate;
                 index = row;
             }
         }
+
         s32 pivot_row = permutation[index];
+
         if (index != column)
         {
             permutation[index] = permutation[column];
             permutation[column] = pivot_row;
         }
+
         s32 row;
         float* work_column = work.m[column];
         pivot_weight = 1.0f / work_column[pivot_row];
+
         for (row = column + 1; row < 4; row++)
         {
             s32 next_row = permutation[row];
             work_column[next_row] *= pivot_weight;
             float factor = work_column[next_row];
+
             for (index = column + 1; index < 4; index++)
             {
                 float* work_row = work.m[index];
@@ -632,30 +681,36 @@ extern "C" void func_004CF1C0(const LibMatrix44Value* input, LibMatrix44Value* o
             }
         }
     }
+
     for (s32 row = 0; row < 4; row++)
     {
         for (s32 column = 0; column < 4; column++)
         {
             s32 pivot_row = permutation[column];
             float value = (float)(pivot_row == row);
+
             for (s32 inner = 0; inner < column; inner++)
             {
                 const float* work_row = work.m[inner];
                 const float* output_row = output->m[row];
                 value -= work_row[pivot_row] * output_row[inner];
             }
+
             output->m[row][column] = value;
         }
+
         for (s32 column = 3; column >= 0; column--)
         {
             float value = output->m[row][column];
             s32 pivot_row = permutation[column];
+
             for (s32 inner = column + 1; inner < 4; inner++)
             {
                 const float* work_row = work.m[inner];
                 const float* output_row = output->m[row];
                 value -= work_row[pivot_row] * output_row[inner];
             }
+
             const float* work_row = work.m[column];
             float* output_row = output->m[row];
             output_row[column] = value / work_row[pivot_row];
@@ -669,7 +724,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", lib_normalize_v
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF640);
 
-/** @brief Multiply a matrix by a column vector. @param matrix Source matrix. @param value Source vector. @return Transformed vector. */
+/**
+ * @brief Multiply a matrix by a column vector.
+ * @param matrix Source matrix.
+ * @param value Source vector.
+ * @return Transformed vector.
+ */
 extern "C" FieldVec4A func_004CF6C0(const LibMatrix44Value& matrix, const FieldVec4A& value)
 {
     FieldVec4A result;
@@ -682,7 +742,12 @@ extern "C" FieldVec4A func_004CF6C0(const LibMatrix44Value& matrix, const FieldV
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF7C0);
 
-/** @brief Multiply a row vector by a matrix. @param value Source vector. @param matrix Source matrix. @return Transformed vector. */
+/**
+ * @brief Multiply a row vector by a matrix.
+ * @param value Source vector.
+ * @param matrix Source matrix.
+ * @return Transformed vector.
+ */
 extern "C" FieldVec4A func_004CF830(const FieldVec4A& value, const LibMatrix44Value& matrix)
 {
     FieldVec4A result;
@@ -792,7 +857,11 @@ extern "C" void func_004CFD80(LibMatrix44Value* output, float x_scale, float y_s
     output->m[3][2] = 1.0f;
 }
 
-/** @brief Set the upper 3x3 rotation from three angles. @param output Matrix whose rotation is updated. @param angles Three rotation angles in radians. */
+/**
+ * @brief Set the upper 3x3 rotation from three angles.
+ * @param output Matrix whose rotation is updated.
+ * @param angles Three rotation angles in radians.
+ */
 extern "C" void func_004CFDE0(LibMatrix44Value* output, const float* angles)
 {
     float cosine_x = cosf_guess(angles[0]);
@@ -814,7 +883,11 @@ extern "C" void func_004CFDE0(LibMatrix44Value* output, const float* angles)
     output->m[2][2] = cosine_y * cosine_x;
 }
 
-/** @brief Set the upper 3x3 rotation about the Y axis. @param output Matrix whose rotation is updated. @param angle Rotation angle in radians. */
+/**
+ * @brief Set the upper 3x3 rotation about the Y axis.
+ * @param output Matrix whose rotation is updated.
+ * @param angle Rotation angle in radians.
+ */
 extern "C" void func_004CFEE0(LibMatrix44Value* output, float angle)
 {
     float cosine = cosf_guess(angle);
@@ -843,7 +916,10 @@ void LibMatrix44Value::set_identity()
     m[3][3] = 1.0f;
 }
 
-/** @brief Clear all sixteen matrix components. @param matrix Matrix to clear. */
+/**
+ * @brief Clear all sixteen matrix components.
+ * @param matrix Matrix to clear.
+ */
 extern "C" void func_004CFF80(LibMatrix44Value* matrix)
 {
     ((unsigned __int128*)matrix)[0] = 0;
@@ -852,7 +928,10 @@ extern "C" void func_004CFF80(LibMatrix44Value* matrix)
     ((unsigned __int128*)matrix)[3] = 0;
 }
 
-/** @brief Copy the source transform through its virtual setters, then copy its manager and flags. @param source Transform source. */
+/**
+ * @brief Copy the source transform through its virtual setters, then copy its manager and flags.
+ * @param source Transform source.
+ */
 void LibTransformOwner::copy_transform_state(const LibTransformOwner* source)
 {
     set_translation_vector(&source->translation);
@@ -967,10 +1046,12 @@ extern "C" void func_004D04A0(LibTransformOwner* object)
 s32 func_004D04C0(void* object)
 {
     DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+
     if (object != 0)
     {
         submission = (DmaSubmission*)((u8*)submission + 0x90);
     }
+
     return func_00114100(g_vif1_dma_queue, submission);
 }
 
@@ -993,10 +1074,12 @@ extern "C" void func_004D0720(LibTransformOwner* object)
 s32 func_004D0740(void* object)
 {
     DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+
     if (object != 0)
     {
         submission = (DmaSubmission*)((u8*)submission + 0x90);
     }
+
     return func_00114100(g_vif1_dma_queue, submission);
 }
 
@@ -1088,14 +1171,20 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5650);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D56B0);
 
-/** @brief Clear the intrusive owner and invoke the base removal hook. @param object Transform owner to detach. */
+/**
+ * @brief Clear the intrusive owner and invoke the base removal hook.
+ * @param object Transform owner to detach.
+ */
 extern "C" void func_004D5740(LibTransformOwner* object)
 {
     object->owner = 0;
     object->LibTransformOwner::destroy();
 }
 
-/** @brief Clear the intrusive owner and invoke the base removal hook. @param object Transform owner to detach. */
+/**
+ * @brief Clear the intrusive owner and invoke the base removal hook.
+ * @param object Transform owner to detach.
+ */
 extern "C" void func_004D5760(LibTransformOwner* object)
 {
     object->owner = 0;
@@ -1193,7 +1282,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5BB0);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5C10);
 
 extern "C" void func_004486A0(LibResourceBuffer* resource);
+
 extern "C" void func_004D0260(void* owner, LibResourceBuffer* resource);
+
 extern "C" void* D_001B6640;
 
 /** @brief Unregister the resource from the resource manager if it is registered. */
@@ -1365,10 +1456,12 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6510);
 extern "C" void lib_object_detach_owner(void* object)
 {
     LibListObject* node = static_cast<LibListObject*>(object);
+
     if (node->owner)
     {
         node->owner->remove_node(object);
     }
+
     node->owner = 0;
 }
 
@@ -1383,6 +1476,7 @@ extern "C" void lib_object_set_list_kind(LibListObject* node, s32 kind)
     {
         lib_list_change_node_kind_counts(node->owner, node, kind);
     }
+
     node->list_kind = kind;
 }
 
@@ -1397,6 +1491,7 @@ extern "C" s32 lib_list_release_node_buffer(LibUpdateList* owner)
     {
         return 0;
     }
+
     delete[] owner->owned_node_buffer;
     owner->owned_node_buffer = 0;
     owner->node_buffer_capacity = 0;
@@ -1435,26 +1530,33 @@ extern "C" void lib_list_collect_nodes_by_kind(LibUpdateList* list, void** items
 {
     u32 offsets[LibUpdateList::NODE_KIND_COUNT];
     u32 count = 0;
+
     for (s32 kind = 0; kind < LibUpdateList::NODE_KIND_COUNT; ++kind)
     {
         offsets[kind] = count;
         count += list->node_counts_by_kind[kind];
     }
+
     if (list->next_list)
     {
         lib_list_add_chain_kind_offsets(list->next_list, offsets);
     }
+
     LibListSentinel* link = &list->sentinel;
+
     for (;;)
     {
         link = link->next;
+
         if (&list->sentinel == link)
         {
             break;
         }
+
         LibListObject* node = reinterpret_cast<LibListObject*>(link);
         items[offsets[node->list_kind]++] = node;
     }
+
     if (list->next_list)
     {
         func_004D6C20(list->next_list, items, offsets);
@@ -1491,11 +1593,13 @@ extern "C" void* func_004D6DE0(void* object)
 extern "C" inline void lib_list_add_chain_kind_offsets(LibUpdateList* list, u32* offsets)
 {
     u32 count = 0;
+
     for (s32 kind = 0; kind < LibUpdateList::NODE_KIND_COUNT; ++kind)
     {
         offsets[kind] += count;
         count += list->node_counts_by_kind[kind];
     }
+
     if (list->next_list)
     {
         lib_list_add_chain_kind_offsets(list->next_list, offsets);
@@ -1513,10 +1617,12 @@ void LibUpdateList::remove_node(void* object)
     node->is_listed = 0;
     node->owner = 0;
     void** buffer = active_node_buffer;
+
     if (buffer)
     {
         s32 count = active_node_count;
         s32 i = active_node_index + 1;
+
         for (; i < count; ++i)
         {
             if (buffer[i] == object)
@@ -1530,6 +1636,7 @@ void LibUpdateList::remove_node(void* object)
         s32 count = active_buffer_owner->active_node_count;
         void** owner_buffer = active_buffer_owner->active_node_buffer;
         s32 i = active_buffer_owner->active_node_index + 1;
+
         for (; i < count; ++i)
         {
             if (owner_buffer[i] == object)
@@ -1538,6 +1645,7 @@ void LibUpdateList::remove_node(void* object)
             }
         }
     }
+
     LibListReceiver::unlink(object);
 }
 
@@ -1568,6 +1676,7 @@ LibUpdateList::LibUpdateList()
     {
         node_counts_by_kind[i] = 0;
     }
+
     active_node_buffer = 0;
     next_list = 0;
     active_node_count = 0;
@@ -1776,6 +1885,7 @@ void LibImageSequenceChannel::update()
                     {
                         remaining = duration - remaining - 1;
                     }
+
                     break;
                 case IMAGE_SEQUENCE_CLAMP:
                     if (cycle > 0)
@@ -1787,6 +1897,7 @@ void LibImageSequenceChannel::update()
                     {
                         remaining = 0;
                     }
+
                     break;
             }
         }
@@ -2050,17 +2161,20 @@ LibTextureScrollChannel::~LibTextureScrollChannel()
 extern "C" s32 lib_compare_bounded_strings(const char* first, const char* second, s32 count)
 {
     s32 index;
+
     for (index = 0; index < count; index++)
     {
         if (first[index] != second[index])
         {
             return 1;
         }
+
         if (first[index] == 0)
         {
             return 0;
         }
     }
+
     return 0;
 }
 
@@ -2484,7 +2598,10 @@ extern "C" void func_004D99B0(LibBusyObject* object)
     }
 }
 
-/** @brief Clear the object's busy flag. @param object Object to release. */
+/**
+ * @brief Clear the object's busy flag.
+ * @param object Object to release.
+ */
 extern "C" void func_004D99E0(LibBusyObject* object)
 {
     object->busy = 0;
@@ -2492,7 +2609,12 @@ extern "C" void func_004D99E0(LibBusyObject* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D99F0);
 
-/** @brief Queue the object for DMA after marking it busy and storing its channel. @param object Transfer object implementing the DMA callbacks. @param channel DMA channel selector stored at offset 0x51. @return Queue insertion result. */
+/**
+ * @brief Queue the object for DMA after marking it busy and storing its channel.
+ * @param object Transfer object implementing the DMA callbacks.
+ * @param channel DMA channel selector stored at offset 0x51.
+ * @return Queue insertion result.
+ */
 extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel)
 {
     object->busy = 1;
@@ -2501,7 +2623,11 @@ extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel)
     return func_00114100(D_001B660C, reinterpret_cast<DmaSubmission*>(object));
 }
 
-/** @brief Queue the object again when its DMA channel changes. @param object Transfer object implementing the DMA callbacks. @param channel Requested DMA channel. */
+/**
+ * @brief Queue the object again when its DMA channel changes.
+ * @param object Transfer object implementing the DMA callbacks.
+ * @param channel Requested DMA channel.
+ */
 extern "C" void func_004D9AB0(LibBusyObject* object, u8 channel)
 {
     if (object->channel == channel)
@@ -2584,6 +2710,7 @@ void LibTransform::update()
     if (draw_flags & (LIB_DRAW_FACE_CAMERA_X | LIB_DRAW_FACE_CAMERA_Y | LIB_DRAW_FACE_CAMERA_Z))
     {
         LibCamera* camera;
+
         if (display_manager != 0)
         {
             camera = static_cast<LibCamera*>(display_manager->current_display);
@@ -2592,27 +2719,33 @@ void LibTransform::update()
         {
             camera = static_cast<LibCamera*>(g_display_manager->current_display);
         }
+
         if (camera != 0)
         {
             if (camera->matrix_ready == 0)
             {
                 camera->update_transform_matrix();
             }
+
             LibVector4 angles;
             const float* camera_angles = camera->rotation_angles;
             func_004CDA40(&angles, &orientation);
+
             if (draw_flags & LIB_DRAW_FACE_CAMERA_X)
             {
                 angles.x = -camera_angles[0];
             }
+
             if (draw_flags & LIB_DRAW_FACE_CAMERA_Y)
             {
                 angles.y = camera_angles[1];
             }
+
             if (draw_flags & LIB_DRAW_FACE_CAMERA_Z)
             {
                 angles.z = -camera_angles[2];
             }
+
             angles.y += 3.1415927f;
             set_rotation_vector(&angles);
             matrix_ready = 0;
@@ -2632,6 +2765,7 @@ void LibTransform::copy_offset_transform_state(const LibTransform* source)
     {
         draw_flags |= 0x20;
     }
+
     func_004DA050(this, source->unk200);
     func_00479090(&offset_translation, source->get_offset_translation());
     lib_rebuild_offset_transform(this);
@@ -2647,7 +2781,11 @@ void LibTransform::copy_offset_transform_state(const LibTransform* source)
     LibTransformOwner::copy_transform_state(source);
 }
 
-/** @brief Copy a complete local vector. @param output Destination vector. @param input Source vector. */
+/**
+ * @brief Copy a complete local vector.
+ * @param output Destination vector.
+ * @param input Source vector.
+ */
 extern "C" void func_004DA040(LibVector4* output, const LibVector4* input)
 {
     copy_vector(output, input);
@@ -2662,7 +2800,10 @@ extern "C" u16 func_004DA2B0(const LibTransform* object)
     return object->unk20c;
 }
 
-/** @brief Mark each transform in the parent chain dirty. @param object First transform, or null. */
+/**
+ * @brief Mark each transform in the parent chain dirty.
+ * @param object First transform, or null.
+ */
 extern "C" void lib_invalidate_transform_chain(LibTransform* object)
 {
     for (; object != 0; object = object->parent_transform)
@@ -2793,7 +2934,11 @@ extern "C" void lib_solve_ik_chain(LibTransform* end, const LibVector4* target, 
     }
 }
 
-/** @brief Extract the transform's translation column. @param object Transform owner. @return Translation coordinates with homogeneous component one. */
+/**
+ * @brief Extract the transform's translation column.
+ * @param object Transform owner.
+ * @return Translation coordinates with homogeneous component one.
+ */
 extern "C" FieldVec4B func_004DA6F0(const LibTransform* object)
 {
     FieldVec4B result;

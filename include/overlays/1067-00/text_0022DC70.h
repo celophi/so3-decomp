@@ -14,8 +14,13 @@ class FieldClass152FA0 : public FieldClass1502A0
 public:
     /** @brief Destroy the command list. */
     virtual ~FieldClass152FA0();
-    /** @brief Test the timer and remaining node count. @return One when the timer is active or nodes remain. */
+
+    /**
+     * @brief Test the timer and remaining node count.
+     * @return One when the timer is active or nodes remain.
+     */
     virtual s32 func_00239880();
+
     float unk78;
 };
 
@@ -52,7 +57,12 @@ s32 field_resource_loader_list_kind(const FieldResourceLoaderList* owner);
 void field_request_loader_removal(FieldResourceLoaderList* list, s16 load_kind);
 #endif
 
-/** @brief Record a newly overlapping shape. @param actor Field receiver. @param shape Shape to record. @return One for a new entry, otherwise zero. */
+/**
+ * @brief Record a newly overlapping shape.
+ * @param actor Field receiver.
+ * @param shape Shape to record.
+ * @return One for a new entry, otherwise zero.
+ */
 s32 func_00237420(struct FieldClass151510* actor, struct FieldClass1505B0* shape);
 
 /**
@@ -334,10 +344,7 @@ public:
     u8 unk08_1_7 : 7;
     u8 unk09[3];
     s32 file_key;
-
-    /** Last matching resident request address, or zero when none was found. */
     u32 request_address;
-
     u8 slot_index;
     u8 kind;
     u8 unk16_0 : 1;

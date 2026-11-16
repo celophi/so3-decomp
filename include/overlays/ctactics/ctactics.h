@@ -30,7 +30,11 @@ typedef struct TacticsPresetPosition
         x = 0.0f;
     }
 
-    /** @brief Initialize a coordinate pair. @param px Horizontal value. @param py Vertical value. */
+    /**
+     * @brief Initialize a coordinate pair.
+     * @param px Horizontal value.
+     * @param py Vertical value.
+     */
     TacticsPresetPosition(float px, float py)
     {
         x = px;
@@ -53,16 +57,25 @@ public:
     /** @brief Release the owned record selection and destroy the State base. */
     virtual ~TacticsController();
 
-    /** @brief Report this object's default list kind. @return Four. */
+    /**
+     * @brief Report this object's default list kind.
+     * @return Four.
+     */
     virtual s32 get_default_list_kind();
 
     /** @brief Submit the State to the resident object queue. */
     virtual void func_001DD7B0();
 
-    /** @brief Return the loaded resource slot. @return Resource slot. */
+    /**
+     * @brief Return the loaded resource slot.
+     * @return Resource slot.
+     */
     virtual u32 get_resource_slot();
 
-    /** @brief Report whether window setup finished. @return Setup flag. */
+    /**
+     * @brief Report whether window setup finished.
+     * @return Setup flag.
+     */
     virtual u8 windows_ready();
 
     /**
@@ -98,7 +111,6 @@ public:
 class TacticsResourceWindow : public FieldClass15AE70
 {
 public:
-    /** @brief Destroy the resource window. */
     virtual ~TacticsResourceWindow();
 
     /**
@@ -126,7 +138,6 @@ public:
         clip_width = 0.0f;
     }
 
-    /** @brief Destroy the scrolling window. */
     virtual ~TacticsHelpWindow();
 
     /** @brief Hold the text position, then scroll and wrap it after the timer expires. */
@@ -166,7 +177,6 @@ public:
         selected = -1;
     }
 
-    /** @brief Destroy the child window's base. */
     virtual ~TacticsExitConfirmWindow();
 
     /** @brief Compare the State's active window with this window; neither outcome has further work. */
@@ -233,7 +243,6 @@ public:
         candidate_indices_by_slot[2] = 0;
     }
 
-    /** @brief Destroy the leader window's base. */
     virtual ~TacticsLeaderWindow();
 
     /** @brief Move to the preceding grid entry and update the name highlight. */
@@ -281,7 +290,6 @@ public:
     /** @brief Clear the displays and restore the resident grid selection. */
     TacticsFormationWindow();
 
-    /** @brief Destroy the formation window base. */
     virtual ~TacticsFormationWindow();
 
     /** @brief Restore the grid and resource widget movement flags. */
@@ -348,7 +356,6 @@ public:
         preset_position.y = 0.0f;
     }
 
-    /** @brief Destroy the coordinate-selection window. */
     virtual ~TacticsChangeWindow();
 
     /** @brief Restore the selector movement or visibility state. */
@@ -409,7 +416,6 @@ public:
     /** @brief Initialize the grid window's pointers and control fields. */
     TacticsStrategyWindow();
 
-    /** @brief Destroy the grid window. */
     virtual ~TacticsStrategyWindow();
 
     /** @brief Refresh the associated text when the active grid selection changes. */

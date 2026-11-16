@@ -6,13 +6,16 @@
 #ifdef __cplusplus
 extern "C" {
 void* func_0047F130(void* receiver);
+
 void* func_0047EA30(void* receiver);
 #endif
 
 /** Return the mapped entry at the indexed 0x90-byte record's offset 0x60. */
 void* func_0047C6D0(const void* object, s32 index);
+
 /** Return the mapped entry after the indexed 0x60-byte record. */
 void* func_0047CE70(const void* object, s32 index);
+
 /** Return the mapped entry at the indexed 0x60-byte record's offset 0x30. */
 void* func_0047D610(const void* object, s32 index);
 
@@ -401,78 +404,115 @@ float func_0047DBF0(void* object);
 
 /** Return the word at receiver offset 0x48. */
 u32 func_0047AE60(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0047AEA0(const void* object);
+
 /** Return the word at receiver offset 0x48. */
 u32 func_0047B600(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0047B640(const void* object);
+
 /** Return the word at receiver offset 0x48. */
 u32 func_0047BDA0(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0047BDE0(const void* object);
+
 /** Return the word at receiver offset 0x48. */
 u32 func_0047C530(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0047C570(const void* object);
+
 /** Return the word at receiver offset 0x48. */
 u32 func_0047CCD0(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0047CD10(const void* object);
+
 /** Return the word at receiver offset 0x48. */
 u32 func_0047D470(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0047D4B0(const void* object);
+
 /** Return the word at receiver offset 0x48. */
 u32 func_0047DC10(const void* object);
+
 /** Return the word at receiver offset 0x50. */
 u32 func_0047DC50(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0047DDA0(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0047DDB0(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0047DDC0(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0047DE90(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0047DEA0(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0047DEB0(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0047DF80(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0047DF90(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0047DFA0(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0047E070(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0047E080(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0047E090(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0047E150(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0047E160(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0047E170(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0047E240(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0047E250(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0047E260(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0047E330(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0047E340(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0047E350(const void* object);
+
 /** Return the word at receiver offset 0x1C. */
 u32 func_0047E420(const void* object);
+
 /** Return the word at receiver offset 0xC. */
 u32 func_0047E430(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0047E440(const void* object);
 
@@ -786,24 +826,43 @@ s32 func_0047DD30(void* object);
 s32 func_0047DD50(void* object);
 
 void func_0047AF70(void* object);
+
 void func_0047AF90(void* object);
+
 void func_0047AFE0(void* object);
+
 void func_0047B710(void* object);
+
 void func_0047B730(void* object);
+
 void func_0047B780(void* object);
+
 void func_0047BEB0(void* object);
+
 void func_0047BED0(void* object);
+
 void func_0047BF20(void* object);
+
 void func_0047C640(void* object);
+
 void func_0047C660(void* object);
+
 void func_0047C6B0(void* object);
+
 void func_0047CDE0(void* object);
+
 void func_0047CE00(void* object);
+
 void func_0047CE50(void* object);
+
 void func_0047D580(void* object);
+
 void func_0047D5A0(void* object);
+
 void func_0047D5F0(void* object);
+
 void func_0047DD20(void* object);
+
 void func_0047DD40(void* object);
 
 #ifdef __cplusplus

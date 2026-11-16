@@ -10,6 +10,7 @@
 #include "overlays/lib/text_004CD3A0.h"
 
 extern "C" void func_4D9F40(FieldWordAt210*, const FieldWordAt210*);
+
 extern "C" u8 D_001B6518;
 
 
@@ -30,7 +31,9 @@ struct FieldScriptCursorU32 { u8 pad[0x548]; u32* current; };
 struct FieldContext68 { u8 pad[0x68]; void* target; };
 struct FieldContext08E0 { u8 pad[0xE0]; FieldOwner24E860* target; };
 struct FieldContext08Flags { u8 pad[0xF3]; u8 valueF3; u8 valueF4; };
+
 extern "C" void func_002D4AA0(void* target, u32 value);
+
 struct FieldFloatA4 { u8 pad[0xA4]; float value; };
 struct FieldPair57C { u8 pad[0x57C]; FieldFloatA4* first; FieldFloatA4* second; };
 struct FieldFloat1F8 { u8 pad[0x1F8]; float value; };
@@ -64,9 +67,13 @@ struct FieldRecords {
     u8 byte2E;
     u8 byte2F;
 };
+
 extern "C" void* func_0020F520(void*);
+
 extern "C" void func_00232090(FieldObject232090*, s8);
+
 extern "C" void func_00232450(void*);
+
 extern "C" void func_00232520(void*, s32);
 
 struct FieldLateFlag30
@@ -77,6 +84,7 @@ struct FieldLateFlag30
 };
 
 extern "C" void func_00222840(void*, void*);
+
 extern "C" void func_00238530(void*, void*);
 
 struct FieldLatePointer40
@@ -107,6 +115,7 @@ struct FieldLateLarge
 };
 
 extern "C" void func_00217AD0(FieldLateLarge*);
+
 extern "C" void func_001FEDF0(FieldLateLarge*);
 
 struct FieldLateRecord20
@@ -149,7 +158,9 @@ class FieldLateVirtual
 {
 public:
     virtual void unk00();
+
     virtual void unk04();
+
     virtual void unk08();
 };
 
@@ -175,8 +186,11 @@ class FieldLateIndexedObject
 {
 public:
     virtual void unk00();
+
     virtual void unk04();
+
     virtual void unk08();
+
     u8 pad04[0x68];
     u16 kind;
     u8 unk6E[0x1D6];
@@ -195,7 +209,9 @@ struct FieldLateCommandStream
 
 extern "C" FieldLateIndexedObject* D_507E50[];
 extern "C" FieldLateIndexedObject* D_507CD0[];
+
 extern "C" void func_4289B0(FieldLateIndexedObject*);
+
 extern "C" void func_428C80(FieldLateIndexedObject*);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001F9B70);
@@ -234,12 +250,15 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
     u32* arg = stream->args;
     stream->args = arg + 1;
     u32 key = *arg;
+
     if (key & 0x80000000)
     {
         key &= 0x7FFFFFFF;
+
         for (s32 i = 0; i < 64; i++)
         {
             FieldLateIndexedObject* entry = D_507E50[i];
+
             if (entry)
             {
                 switch (entry->kind)
@@ -251,6 +270,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
                         lib_object_detach_owner(entry);
                         entry->unk08();
                     }
+
                     break;
                 case 0x4042:
                     if (key == entry->key254)
@@ -259,6 +279,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
                         lib_object_detach_owner(entry);
                         entry->unk08();
                     }
+
                     break;
                 }
             }
@@ -269,6 +290,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
         for (s32 i = 0; i < 64; i++)
         {
             FieldLateIndexedObject* entry = D_507CD0[i];
+
             if (entry && entry->kind == 0x4040 && key == entry->key274)
             {
                 func_428C80(entry);
@@ -277,6 +299,7 @@ extern "C" s32 func_001FA2D0(FieldLateCommandStream* stream)
             }
         }
     }
+
     return 1;
 }
 
@@ -451,7 +474,10 @@ public:
      */
     virtual const LibVector4* get_offset_scale() const;
 
-    /** @brief Return the object transformation matrix. @return Transformation matrix. */
+    /**
+     * @brief Return the object transformation matrix.
+     * @return Transformation matrix.
+     */
     virtual const LibMatrix44Value* get_transform_matrix();
 };
 
@@ -477,14 +503,17 @@ extern "C" s32 func_001FB8C0(FieldScriptCursorS32* cursor)
     cursor->current = arg + 1;
     s32 first = *arg;
     s32 second = *cursor->current;
+
     if (first >= 0)
     {
         ((FieldContext08Flags*)D_001B6430->context->unk08)->valueF3 = first;
     }
+
     if (second >= 0)
     {
         ((FieldContext08Flags*)D_001B6430->context->unk08)->valueF4 = second;
     }
+
     return 1;
 }
 
@@ -496,6 +525,7 @@ extern "C" s32 func_001FB9D0(FieldFlagScriptCursor* cursor)
     {
         return 1;
     }
+
     func_00258C90(D_001B6430->context->unk08, *cursor->current, 0, 0);
     return 1;
 }
@@ -604,10 +634,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", __ct__28Fie
 extern "C" s32 func_001FCBD0(FieldScriptCursorU32* cursor)
 {
     FieldOwner24E860* target = ((FieldContext08E0*)D_001B6430->context->unk08)->target;
+
     if (target == 0)
     {
         return 1;
     }
+
     func_0024E860(target, *cursor->current);
     return 1;
 }
@@ -619,6 +651,7 @@ extern "C" s32 func_001FCC20(FieldScriptCursorF14* cursor)
         cursor->value = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
@@ -646,11 +679,13 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FD1
 extern "C" s32 func_001FD340(void* object)
 {
     FieldLateVirtual* target = func_00217A90(object, 5);
+
     if (target)
     {
         lib_object_detach_owner(target);
         target->unk08();
     }
+
     return 1;
 }
 
@@ -664,16 +699,19 @@ extern "C" s32 func_001FD390(FieldLateFloatArgs* object, u32 count)
     u32* second = object->args;
     object->args = second + 1;
     float y = (float)*second;
+
     if (count > 2)
     {
         u32* third = object->args;
         object->args = third + 1;
         z = (float)*third;
+
         if (count > 3)
         {
             w = *(float*)object->args;
         }
     }
+
     func_0020F050(object, count, x, y, z, w);
     return 1;
 }
@@ -703,6 +741,7 @@ extern "C" void func_001FD780(FieldLateDeleting* object)
 {
     func_002D47A0(object);
     lib_object_detach_owner(object);
+
     if (object)
     {
         object->unk00(1);

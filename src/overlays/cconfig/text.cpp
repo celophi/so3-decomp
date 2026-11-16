@@ -105,7 +105,11 @@ struct ConfigRuntime
 /** Configuration preview window, its resource widgets, and saved display flag. */
 struct ConfigPreviewWindow : public FieldClass15AE70
 {
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
 
     /** @brief Destroy the window base. */
@@ -132,7 +136,11 @@ struct ConfigPreviewSection
 /** Partial configuration text window with its message state and bounds. */
 struct ConfigMessageWindow : public FieldClass15AE70
 {
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
 
     /** @brief Destroy the window base. */
@@ -173,7 +181,11 @@ struct ConfigMessageWindow : public FieldClass15AE70
 /** Partial configuration window containing its panel widget. */
 struct ConfigFrameWindow : public FieldClass15AE70
 {
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
 
     /** @brief Destroy the window base. */
@@ -190,7 +202,10 @@ struct ConfigFrameWindow : public FieldClass15AE70
 /** Partial configuration selector window with a signed grid selection. */
 struct ConfigGridWindow : public FieldClass15AE70
 {
-    /** @brief Update the row highlights. @param selected Selected row index. */
+    /**
+     * @brief Update the row highlights.
+     * @param selected Selected row index.
+     */
     virtual void func_slotf4(s16 selected);
 
     /** @brief Destroy the window base. */
@@ -211,7 +226,11 @@ struct ConfigGridWindow : public FieldClass15AE70
 /** Partial binding selector with its grid, four codes, and associated entries. */
 struct ConfigBindingWindow : public FieldClass15AE70
 {
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
 
     /** @brief Destroy the window base. */
@@ -283,10 +302,7 @@ struct ConfigColorWindow : public FieldClass15AE70
     u8 saved_red;
     u8 saved_green;
     u8 saved_blue;
-
-    /** Corner being edited, or -1 before one is chosen. */
     s16 corner;
-
     LibWidgetColors4C5590* colors;
     FieldObject23CEA0* selection;
     LibPanel* preview;
@@ -296,7 +312,11 @@ struct ConfigColorWindow : public FieldClass15AE70
 /** Window-color corner selector: a two-by-two grid whose entries open the color editor. */
 struct ConfigCornerWindow : public FieldClass15AE70
 {
-    /** @brief Create the window displays. @param associated Full resource source word. @return Creation result. */
+    /**
+     * @brief Create the window displays.
+     * @param associated Full resource source word.
+     * @return Creation result.
+     */
     virtual s32 func_slotf4(u32 associated);
 
     /** @brief Destroy the window base. */
@@ -422,13 +442,16 @@ extern "C" void func_2642D0(void* object);
 static inline u8 config_extra(ConfigSettings* settings)
 {
     u8* data = &settings->extra;
+
     if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data,
         reinterpret_cast<u8*>(&settings->extra_checksum) - data))
     {
         return 0;
     }
+
     return settings->extra;
 }
+
 /**
  * @brief Read the mode when its protected bytes pass the checksum.
  * @param settings Configuration settings.
@@ -441,8 +464,10 @@ static inline u8 config_mode(ConfigSettings* settings)
     {
         return 0;
     }
+
     return settings->mode;
 }
+
 /**
  * @brief Read the enabled flag when its protected bytes pass the checksum.
  * @param settings Configuration settings.
@@ -455,6 +480,7 @@ static inline u8 config_enabled(ConfigSettings* settings)
     {
         return 0;
     }
+
     return settings->enabled;
 }
 
@@ -477,6 +503,7 @@ static inline u8 config_flag(ConfigSettings* settings)
 static inline void config_set_mode(ConfigSettings* settings, u8 mode)
 {
     s32 length = reinterpret_cast<u8*>(&settings->checksum) - &settings->unk26;
+
     if (settings->checksum == lib_compute_checksum(settings->key, &settings->unk26, length))
     {
         settings->mode = mode;
@@ -512,6 +539,7 @@ static inline void initialize_preview_resource(ItemCreationOptionResourceDisplay
 {
     func_002D6440(display, x, y, record);
 }
+
 /** @brief Set an option icon's packed color and mark it active. */
 static inline void set_option_color(ConfigIcon* object, u32 color)
 {
@@ -536,6 +564,7 @@ static inline void set_preview_origin(ItemCreationOptionResourceDisplay* display
     display->unk50.unk24 = y;
     display->needs_redraw = 1;
 }
+
 /**
  * @brief Set the widget rectangle position and mark its state dirty.
  * @param display Widget to update.
@@ -548,6 +577,7 @@ static inline void set_widget_position(LibWidget* display, float x, float y)
     display->unk18.unk04 = y;
     display->needs_redraw = 1;
 }
+
 /** @brief Set the preview drawing scale and mark its state dirty. */
 static inline void set_preview_scale(ItemCreationOptionResourceDisplay* display, float x, float y)
 {
@@ -649,6 +679,7 @@ static inline u8 config_pair_mode(ConfigSettings* settings)
     u32 value = settings->unk24;
     return value;
 }
+
 /**
  * @brief Resolve the message key for option row four.
  * @param settings Configuration settings.
@@ -660,6 +691,7 @@ static inline s32 config_pair_key(ConfigSettings* settings)
     {
         return 0x1fae;
     }
+
     return 0x1faf;
 }
 
@@ -995,11 +1027,13 @@ void func_003486E0(void* object, s16 selected)
 {
     s32 index = 0;
     ConfigIconNode* node = ((ConfigIconOwner*)object)->list->next;
+
     if (node != 0)
     {
         do
         {
             ConfigIcon* icon = node->icon;
+
             if (index == selected)
             {
                 icon->color = 0x288080;
@@ -1010,6 +1044,7 @@ void func_003486E0(void* object, s16 selected)
                 icon->color = 0x808080;
                 icon->active = 1;
             }
+
             node = node->next;
             index++;
         } while (node != 0);
@@ -1061,6 +1096,7 @@ s32 func_003488D0(ConfigGridWindow* object)
 {
     u8 handled = 0;
     object->selected = object->grid->unk114;
+
     if (object->selected == 0)
     {
         object->set_state(0xFF, 0x80);
@@ -1069,6 +1105,7 @@ s32 func_003488D0(ConfigGridWindow* object)
     {
         handled = object->func_slotb4();
     }
+
     return handled == 0 ? 1 : 2;
 }
 
@@ -1133,14 +1170,17 @@ void func_00348D20(ConfigColorWindow* object)
         ConfigCornerWindow* corners = static_cast<ConfigCornerWindow*>(object->func_slot44());
         s16 corner = object->corner;
         u32 color = object->preview_colors.values[0];
+
         if (corner >= 0 && corner < 4)
         {
             LibWidgetColors4C5590 colors;
             s32 i;
             LibWidgetColors4C5590* window_colors = &D_001B643C->settings->window_colors;
+
             for (i = 0; i < 4; i++)
             {
                 colors.values[i] = 0;
+
                 if (i == corner)
                 {
                     colors.values[i] = color;
@@ -1150,6 +1190,7 @@ void func_00348D20(ConfigColorWindow* object)
                     colors.values[i] = window_colors->values[i];
                 }
             }
+
             lib_panel_set_colors(corners->frame, &colors);
         }
     }
@@ -1161,38 +1202,48 @@ void func_00348E60(ConfigColorWindow* object, s16 index, s32 delta)
     {
     case 0:
         object->red += delta;
+
         if (object->red < 0)
         {
             object->red = 0;
         }
+
         if (object->red > 255)
         {
             object->red = 255;
         }
+
         break;
     case 1:
         object->green += delta;
+
         if (object->green < 0)
         {
             object->green = 0;
         }
+
         if (object->green > 255)
         {
             object->green = 255;
         }
+
         break;
     case 2:
         object->blue += delta;
+
         if (object->blue < 0)
         {
             object->blue = 0;
         }
+
         if (object->blue > 255)
         {
             object->blue = 255;
         }
+
         break;
     }
+
     object->preview_colors.values[0] = pack_color(object->red, object->green, object->blue);
     object->preview_colors.values[1] = pack_color(object->red, object->green, object->blue);
     object->preview_colors.values[2] = pack_color(object->red, object->green, object->blue);
@@ -1261,6 +1312,7 @@ u8 func_00349230(ConfigColorWindow* object)
 {
     LibWidgetColors4C5590 colors;
     u32 color = 0x80000000 | object->red | (object->green << 8) | (object->blue << 16);
+
     for (s32 i = 0; i < 4; i++)
     {
         if (i == object->corner)
@@ -1272,6 +1324,7 @@ u8 func_00349230(ConfigColorWindow* object)
             colors.values[i] = object->colors->values[i];
         }
     }
+
     ConfigSettings* settings = D_001B643C->settings;
     settings->window_colors.values[0] = colors.values[0];
     settings->window_colors.values[1] = colors.values[1];
@@ -1414,11 +1467,14 @@ u8 func_003499F0(ConfigCornerWindow* object)
 {
     object->selected = object->grid->unk114;
     ConfigColorWindow* color = new (0) ConfigColorWindow;
+
     if (color == 0)
     {
         return 0;
     }
+
     color->corner = object->selected;
+
     switch (object->selected)
     {
     case 0:
@@ -1434,6 +1490,7 @@ u8 func_003499F0(ConfigCornerWindow* object)
         color->func_slotf4(object->func_slot54(), object->x + object->width, object->y + object->height - 96.0f);
         break;
     }
+
     color->func_slot40(object);
     D_001B643C->unk10->unk14->add_child(color);
     D_001B643C->unk10->unk14->func_00263C70(color);
@@ -1525,6 +1582,7 @@ void func_0034A0E0(ConfigBindingWindow* object)
     if (D_001B643C->unk10->unk14->func_00261150() == object)
     {
         u16 mask = D_001B6430->context->input->mask;
+
         if (mask & 0x2000)
         {
             func_0034A270(object, 0x2000);
@@ -1541,6 +1599,7 @@ void func_0034A0E0(ConfigBindingWindow* object)
         {
             func_0034A270(object, 0x8000);
         }
+
         if (object->dirty == 1)
         {
             for (s32 i = 0; i < 4; i++)
@@ -1551,6 +1610,7 @@ void func_0034A0E0(ConfigBindingWindow* object)
                 entry->unk18.unk04 = y;
                 entry->needs_redraw = 1;
             }
+
             object->dirty = 0;
         }
     }
@@ -1698,6 +1758,7 @@ s32 func_0034A4B0(ConfigBindingWindow* object, u32 associated)
                     lib_text_init_resource_rectangle(text, associated, 0x7F1, 0, 96.0f, 16.0f + object->spacing * row, 0.0f, 0.0f);
                     break;
                 }
+
                 break;
             case 2:
                 lib_text_init_resource_rectangle(text, associated, row + 0x1FC8, 0, 136.0f, 16.0f + object->spacing * row, 0.0f, 0.0f);
@@ -1764,34 +1825,43 @@ void func_0034AD30(ConfigOptions* object)
     {
         return;
     }
+
     if (object->unk288 == 1)
     {
         for (ConfigNode* node = object->list0_first.head->next; node != 0; node = node->next)
         {
             LibWidget* widget = static_cast<LibWidget*>(node->value);
+
             if (widget != 0)
             {
                 set_widget_position(widget,widget->unk18.unk00,widget->unk18.unk04 + object->unk29c);
             }
         }
+
         for (ConfigNode* node = object->list0_second.head->next; node != 0; node = node->next)
         {
             LibWidget* widget = static_cast<LibWidget*>(node->value);
+
             if (widget != 0)
             {
                 set_widget_position(widget,widget->unk18.unk00,widget->unk18.unk04 + object->unk29c);
             }
         }
+
         ItemCreationOptionResourceDisplay* display = object->unkf4;
+
         if (display != 0)
         {
             set_widget_position(display,display->unk18.unk00,display->unk18.unk04 + object->unk29c);
         }
+
         object->unk298 += 1.0f;
+
         if (!(object->unk298 < 4.0f))
         {
             object->unk288 = 0;
         }
+
         if (!(object->unk29c < 0.0f))
         {
             object->unk294 -= object->unk290 / 4.0f;
@@ -1800,6 +1870,7 @@ void func_0034AD30(ConfigOptions* object)
         {
             object->unk294 += object->unk290 / 4.0f;
         }
+
         LibListIndicator* indicator = object->unk28c;
         indicator->position = object->unk294;
         indicator->needs_redraw = 1;
@@ -1883,18 +1954,23 @@ void func_0034AEC0(ConfigOptions* object, u16 direction, s32 amount)
 void func_0034B180(ConfigOptions* object, u16 selected)
 {
     s32 index;
+
     for (index = 0; index <= object->last_index; index++)
     {
         ConfigNode* node = func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list), index);
+
         if (node == 0)
         {
             break;
         }
+
         ConfigIcon* display = static_cast<ConfigIcon*>(node->value);
+
         if (display == 0)
         {
             break;
         }
+
         if (object->unk101 == 0 && index == 12)
         {
             set_option_color(display, 0x505050);
@@ -1985,12 +2061,14 @@ void ConfigOptions::func_slot68()
 void func_0034B430(ConfigOptions* object, u16 row)
 {
     s32 key = func_00350270(object, row);
+
     switch (row)
     {
     case 0:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list1_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list1_second), 1)->value);
+
         if (key == 0x1fa4)
         {
             first->visible = 1;
@@ -2001,6 +2079,7 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 1:
@@ -2009,6 +2088,7 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), 1)->value);
         LibClass172600* third = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), 2)->value);
         LibClass172600* fourth = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list2_second), 3)->value);
+
         if (key == 0x1fa6)
         {
             first->visible = 1;
@@ -2037,12 +2117,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             third->visible = 0;
             fourth->visible = 1;
         }
+
         break;
     }
     case 2:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list3_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list3_second), 1)->value);
+
         if (key == 0x1faa)
         {
             first->visible = 1;
@@ -2053,12 +2135,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 3:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list4_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list4_second), 1)->value);
+
         if (key == 0x1fac)
         {
             first->visible = 1;
@@ -2069,12 +2153,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 5:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list6_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list6_second), 1)->value);
+
         if (key == 0x1fb0)
         {
             first->visible = 1;
@@ -2085,12 +2171,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 6:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list7_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list7_second), 1)->value);
+
         if (key == 0x1fb2)
         {
             first->visible = 1;
@@ -2101,12 +2189,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 7:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list8_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list8_second), 1)->value);
+
         if (key == 0x1fb4)
         {
             first->visible = 1;
@@ -2117,6 +2207,7 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 8:
@@ -2125,12 +2216,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), 1)->value);
         LibClass172600* third = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), 2)->value);
         LibClass172600* fourth = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list9_second), 3)->value);
+
         if (key == 0x1fb6)
         {
             first->visible = 1;
             second->visible = 0;
             third->visible = 0;
             fourth->visible = 0;
+
             if (object->unkf4 != 0)
             {
                 set_resource_level(object->unkf4, 48.0f);
@@ -2142,6 +2235,7 @@ void func_0034B430(ConfigOptions* object, u16 row)
             second->visible = 1;
             third->visible = 0;
             fourth->visible = 0;
+
             if (object->unkf4 != 0)
             {
                 set_resource_level(object->unkf4, 48.0f);
@@ -2153,6 +2247,7 @@ void func_0034B430(ConfigOptions* object, u16 row)
             second->visible = 0;
             third->visible = 1;
             fourth->visible = 0;
+
             if (object->unkf4 != 0)
             {
                 set_resource_level(object->unkf4, 48.0f);
@@ -2164,17 +2259,20 @@ void func_0034B430(ConfigOptions* object, u16 row)
             second->visible = 0;
             third->visible = 0;
             fourth->visible = 1;
+
             if (object->unkf4 != 0)
             {
                 set_resource_level(object->unkf4, 128.0f);
             }
         }
+
         break;
     }
     case 9:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list10_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list10_second), 1)->value);
+
         if (key == 0x1fbb)
         {
             first->visible = 1;
@@ -2185,12 +2283,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 10:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list11_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list11_second), 1)->value);
+
         if (key == 0x1fbd)
         {
             first->visible = 1;
@@ -2201,12 +2301,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 11:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list12_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list12_second), 1)->value);
+
         if (key == 0x1fbf)
         {
             first->visible = 1;
@@ -2217,12 +2319,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 12:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list13_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list13_second), 1)->value);
+
         if (key == 0)
         {
             first->visible = 0;
@@ -2238,12 +2342,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 13:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list14_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list14_second), 1)->value);
+
         if (key == 0x1fc5)
         {
             first->visible = 1;
@@ -2254,12 +2360,14 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     case 4:
     {
         LibClass172600* first = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list5_second), 0)->value);
         LibClass172600* second = static_cast<LibClass172600*>(func_003528E0(reinterpret_cast<ConfigListOwner*>(&object->list5_second), 1)->value);
+
         if (key == 0x1fae)
         {
             first->visible = 1;
@@ -2270,6 +2378,7 @@ void func_0034B430(ConfigOptions* object, u16 row)
             first->visible = 0;
             second->visible = 1;
         }
+
         break;
     }
     }
@@ -2282,6 +2391,7 @@ void func_0034BA10(ConfigOptions* object, u16 input)
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = config_pair_key(settings);
     bool selected = false;
+
     if (input == 0x80)
     {
         if (key == 0x1fae)
@@ -2293,6 +2403,7 @@ void func_0034BA10(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (key == 0x1faf)
@@ -2304,6 +2415,7 @@ void func_0034BA10(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         settings->unk24 = 1;
@@ -2323,6 +2435,7 @@ void func_0034BB60(ConfigOptions* object, u16 input)
     LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 0)->value);
     LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list14_first), 1)->value);
     s32 key;
+
     if (config_extra(D_001B643C->settings) == 0)
     {
         key = 0;
@@ -2331,6 +2444,7 @@ void func_0034BB60(ConfigOptions* object, u16 input)
     {
         key = config_mode(D_001B643C->settings) == 1 ? 0x1fc5 : 0x1fc6;
     }
+
     if (key == 0x1fc5)
     {
         config_set_mode(D_001B643C->settings, 0);
@@ -2349,6 +2463,7 @@ void func_0034BD70(ConfigOptions* object, u16 input)
 {
     s32 key;
     ConfigSettings* settings = D_001B643C->settings;
+
     if (config_flag(settings) == 0 || config_enabled(settings) == 0)
     {
         object->unk101 = 0;
@@ -2359,8 +2474,10 @@ void func_0034BD70(ConfigOptions* object, u16 input)
         object->unk101 = 1;
         key = D_001B643C->settings->unk18d ? 0x1fc1 : 0x1fc2;
     }
+
     LibTextWidget* first = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list13_first), 0)->value);
     LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list13_first), 1)->value);
+
     if (key == 0)
     {
         first->set_tint(0x505050);
@@ -2369,6 +2486,7 @@ void func_0034BD70(ConfigOptions* object, u16 input)
     else
     {
         bool selected = false;
+
         if (input == 0x80)
         {
             if (key == 0x1fc1)
@@ -2380,6 +2498,7 @@ void func_0034BD70(ConfigOptions* object, u16 input)
                 selected = false;
             }
         }
+
         if (input == 0x20)
         {
             if (key == 0x1fc2)
@@ -2391,6 +2510,7 @@ void func_0034BD70(ConfigOptions* object, u16 input)
                 selected = true;
             }
         }
+
         if (selected)
         {
             D_001B643C->settings->unk18d = 0;
@@ -2480,6 +2600,7 @@ void func_0034C140(ConfigOptions* object, u16 input)
     bool selected;
     LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list11_first), 1)->value);
     selected = false;
+
     if (input == 0x80)
     {
         if (object->unkf8 == 0x1fbd)
@@ -2491,6 +2612,7 @@ void func_0034C140(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (object->unkf8 == 0x1fbe)
@@ -2502,6 +2624,7 @@ void func_0034C140(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         object->unkf8 = 0x1fbe;
@@ -2522,6 +2645,7 @@ void func_0034C260(ConfigOptions* object, u16 input)
     bool selected;
     LibTextWidget* second = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list10_first), 1)->value);
     selected = false;
+
     if (input == 0x80)
     {
         if (object->unkfc == 0x1fbb)
@@ -2533,6 +2657,7 @@ void func_0034C260(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (object->unkfc == 0x1fbc)
@@ -2544,6 +2669,7 @@ void func_0034C260(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         object->unkfc = 0x1fbc;
@@ -2566,6 +2692,7 @@ void func_0034C380(ConfigOptions* object, u16 input)
     LibTextWidget* fourth = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&object->list9_first), 3)->value);
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = 0;
+
     switch (settings->unk18e)
     {
     case 0:
@@ -2581,7 +2708,9 @@ void func_0034C380(ConfigOptions* object, u16 input)
         key = 0x1fb9;
         break;
     }
+
     s32 selected = -1;
+
     if (input == 0x80)
     {
         switch (key)
@@ -2626,10 +2755,12 @@ void func_0034C380(ConfigOptions* object, u16 input)
             break;
         }
     }
+
     first->set_tint(0x505050);
     second->set_tint(0x505050);
     third->set_tint(0x505050);
     fourth->set_tint(0x505050);
+
     switch (selected)
     {
     case 0:
@@ -2645,6 +2776,7 @@ void func_0034C380(ConfigOptions* object, u16 input)
         fourth->set_tint(0x808080);
         break;
     }
+
     func_004587C0(settings);
 }
 
@@ -2655,6 +2787,7 @@ void func_0034C600(ConfigOptions* object, u16 input)
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = settings->unk24_bit5 ? 0x1fb4 : 0x1fb5;
     bool selected = false;
+
     if (input == 0x80)
     {
         if (key == 0x1fb4)
@@ -2666,6 +2799,7 @@ void func_0034C600(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (key == 0x1fb5)
@@ -2677,6 +2811,7 @@ void func_0034C600(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         settings->unk24_bit5 = 0;
@@ -2703,6 +2838,7 @@ void func_0034C7C0(ConfigOptions* object, u16 input)
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = settings->unk25_bit1 ? 0x1fb3 : 0x1fb2;
     bool selected = false;
+
     if (input == 0x80)
     {
         if (key == 0x1fb2)
@@ -2714,6 +2850,7 @@ void func_0034C7C0(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (key == 0x1fb3)
@@ -2725,6 +2862,7 @@ void func_0034C7C0(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         settings->unk25_bit1 = 1;
@@ -2746,6 +2884,7 @@ void func_0034C900(ConfigOptions* object, u16 input)
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = settings->unk24_bit4 ? 0x1fb0 : 0x1fb1;
     bool selected = false;
+
     if (input == 0x80)
     {
         if (key == 0x1fb1)
@@ -2757,6 +2896,7 @@ void func_0034C900(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (key == 0x1fb0)
@@ -2768,6 +2908,7 @@ void func_0034C900(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         settings->unk24_bit4 = 1;
@@ -2789,6 +2930,7 @@ void func_0034CA40(ConfigOptions* object, u16 input)
     ConfigSettings* settings = D_001B643C->settings;
     bool selected;
     s32 key = -1;
+
     switch (settings->unk24_low)
     {
     case 0:
@@ -2798,7 +2940,9 @@ void func_0034CA40(ConfigOptions* object, u16 input)
         key = 0x1fad;
         break;
     }
+
     selected = false;
+
     if (input == 0x80)
     {
         if (key == 0x1fad)
@@ -2810,6 +2954,7 @@ void func_0034CA40(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (key == 0x1fac)
@@ -2821,6 +2966,7 @@ void func_0034CA40(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         settings->unk24_low = 0;
@@ -2842,6 +2988,7 @@ void func_0034CBB0(ConfigOptions* object, u16 input)
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = config_bit6(settings) == 0 ? 0x1faa : 0x1fab;
     bool selected = false;
+
     if (input == 0x80)
     {
         if (key == 0x1fab)
@@ -2853,6 +3000,7 @@ void func_0034CBB0(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (key == 0x1faa)
@@ -2864,6 +3012,7 @@ void func_0034CBB0(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         settings->unk24_bit6 = 0;
@@ -2892,6 +3041,7 @@ void func_0034CD00(ConfigOptions* object, u16 input)
     LibTextWidget* fourth = static_cast<LibTextWidget*>(fourth_node->value);
     ConfigSettings* settings = D_001B643C->settings;
     key = -1;
+
     switch (config_four_mode(settings))
     {
     case 0:
@@ -2907,7 +3057,9 @@ void func_0034CD00(ConfigOptions* object, u16 input)
         key = 0x1fa9;
         break;
     }
+
     selected = -1;
+
     switch (input)
     {
     case 0x80:
@@ -2930,6 +3082,7 @@ void func_0034CD00(ConfigOptions* object, u16 input)
             selected = 2;
             break;
         }
+
         break;
     case 0x20:
         switch (key)
@@ -2951,12 +3104,15 @@ void func_0034CD00(ConfigOptions* object, u16 input)
             selected = 0;
             break;
         }
+
         break;
     }
+
     first->set_tint(0x505050);
     second->set_tint(0x505050);
     third->set_tint(0x505050);
     fourth->set_tint(0x505050);
+
     switch (selected)
     {
     case 0:
@@ -2981,6 +3137,7 @@ void func_0034D040(ConfigOptions* object, u16 input)
     ConfigSettings* settings = D_001B643C->settings;
     s32 key = settings->unk24_bit7 ? 0x1fa4 : 0x1fa5;
     bool selected = false;
+
     if (input == 0x80)
     {
         if (key == 0x1fa5)
@@ -2992,6 +3149,7 @@ void func_0034D040(ConfigOptions* object, u16 input)
             selected = false;
         }
     }
+
     if (input == 0x20)
     {
         if (key == 0x1fa4)
@@ -3003,6 +3161,7 @@ void func_0034D040(ConfigOptions* object, u16 input)
             selected = true;
         }
     }
+
     if (selected)
     {
         settings->unk24_bit7 = 1;
@@ -3064,12 +3223,16 @@ void func_0034D180(ConfigOptions* object, u32 index, u16 bits)
         func_0034BA10(object, bits);
         break;
     }
+
     func_0034B430(object, index);
+
     if (object->unkb2 != index)
     {
         object->unkb2 = index;
     }
+
     s32 key = func_00350270(object, object->selected);
+
     if (key != object->unkb8)
     {
         static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(key);
@@ -3082,6 +3245,7 @@ void ConfigOptions::func_slotac()
     if (!func_slot28() && unk288 == 0)
     {
         s32 selected = this->selected;
+
         if (selected == 12 && unk101 == 0)
         {
             resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
@@ -3099,6 +3263,7 @@ void ConfigOptions::func_slota8()
     if (!func_slot28() && unk288 == 0)
     {
         s32 selected = this->selected;
+
         if (selected == 12 && unk101 == 0)
         {
             resident_sound_play(g_sound, 3, 0, 0, 127, 64, 0);
@@ -3117,6 +3282,7 @@ void ConfigOptions::func_slot64()
     widget->alpha = 128.0f;
     widget->needs_redraw = 1;
     s32 key = func_00350270(this, selected);
+
     if (key != unkb8)
     {
         static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(key);
@@ -3206,13 +3372,16 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[13];
     s32 key = func_00350270(object, 13);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3220,6 +3389,7 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2037, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fc5)
             {
                 text->set_tint(0x808080);
@@ -3230,6 +3400,7 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3237,6 +3408,7 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2038, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fc6)
             {
                 text->set_tint(0x808080);
@@ -3247,9 +3419,11 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list14_first), text);
@@ -3257,6 +3431,7 @@ s32 func_0034D8B0(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3266,13 +3441,16 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[12];
     s32 key = func_00350270(object, 12);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3280,6 +3458,7 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2033, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fc1)
             {
                 text->set_tint(0x808080);
@@ -3290,6 +3469,7 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3297,6 +3477,7 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2034, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fc2)
             {
                 text->set_tint(0x808080);
@@ -3307,9 +3488,11 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list13_first), text);
@@ -3317,6 +3500,7 @@ s32 func_0034DB50(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3326,13 +3510,16 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[11];
     s32 key = func_00350270(object, 11);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3340,6 +3527,7 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2031, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fbf)
             {
                 text->set_tint(0x808080);
@@ -3350,6 +3538,7 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3357,6 +3546,7 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2032, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fc0)
             {
                 text->set_tint(0x808080);
@@ -3367,9 +3557,11 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list12_first), text);
@@ -3377,6 +3569,7 @@ s32 func_0034DDF0(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3386,13 +3579,16 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[10];
     s32 key = func_00350270(object, 10);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3400,6 +3596,7 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202f, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fbd)
             {
                 text->set_tint(0x808080);
@@ -3410,6 +3607,7 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3417,6 +3615,7 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2030, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fbe)
             {
                 text->set_tint(0x808080);
@@ -3427,9 +3626,11 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list11_first), text);
@@ -3437,6 +3638,7 @@ s32 func_0034E090(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3446,13 +3648,16 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[9];
     s32 key = func_00350270(object, 9);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3460,6 +3665,7 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202d, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fbb)
             {
                 text->set_tint(0x808080);
@@ -3470,6 +3676,7 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3477,6 +3684,7 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202e, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fbc)
             {
                 text->set_tint(0x808080);
@@ -3487,9 +3695,11 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list10_first), text);
@@ -3497,6 +3707,7 @@ s32 func_0034E330(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3507,15 +3718,18 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[8];
     s32 key = func_00350270(object, 8);
+
     for (s32 i = 0; i < 4; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
         text->unk88 = -1.0f;
         text->needs_redraw = 1;
+
         switch (i)
         {
         case 0:
@@ -3523,6 +3737,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2029, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1FB6)
             {
                 text->set_tint(0x808080);
@@ -3533,6 +3748,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3540,6 +3756,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202A, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1FB7)
             {
                 text->set_tint(0x808080);
@@ -3550,6 +3767,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 2:
@@ -3558,6 +3776,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
             object->unka4 += object->unk10c;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x202C, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1FB9)
             {
                 text->set_tint(0x808080);
@@ -3568,6 +3787,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 3:
@@ -3582,6 +3802,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
             object->unkf4->unkd0 = 0;
             initialize_preview_resource(object->unkf4, record, x, object->unka4);
             lib_container_attach_widget(object->unk10, object->unkf4);
+
             if (key == 0x1FB8)
             {
                 text->set_tint(0x808080);
@@ -3594,11 +3815,13 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
                 marker->visible = 0;
                 set_resource_level(object->unkf4, 48.0f);
             }
+
             object->unkf4->unk3d = 0;
             text->visible = 1;
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list9_first), text);
@@ -3606,6 +3829,7 @@ s32 func_0034E5D0(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3619,13 +3843,16 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[7];
     s32 key = func_00350270(object, 7);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3633,6 +3860,7 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2027, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fb4)
             {
                 text->set_tint(0x808080);
@@ -3643,6 +3871,7 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3650,6 +3879,7 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2028, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fb5)
             {
                 text->set_tint(0x808080);
@@ -3660,9 +3890,11 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list8_first), text);
@@ -3670,6 +3902,7 @@ s32 func_0034EB40(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3679,13 +3912,16 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[6];
     s32 key = func_00350270(object, 6);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3693,6 +3929,7 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2025, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 32.0f);
+
             if (key == 0x1FB2)
             {
                 text->set_tint(0x808080);
@@ -3705,6 +3942,7 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3712,6 +3950,7 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
             float x = 264.0f + object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2026, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 32.0f);
+
             if (key == 0x1FB3)
             {
                 text->set_tint(0x808080);
@@ -3722,9 +3961,11 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list7_first), text);
@@ -3732,6 +3973,7 @@ s32 func_0034EDE0(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3741,13 +3983,16 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[5];
     s32 key = func_00350270(object, 5);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3755,6 +4000,7 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2023, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fb0)
             {
                 text->set_tint(0x808080);
@@ -3765,6 +4011,7 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3772,6 +4019,7 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2024, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fb1)
             {
                 text->set_tint(0x808080);
@@ -3782,9 +4030,11 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list6_first), text);
@@ -3792,6 +4042,7 @@ s32 func_0034F0A0(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3801,13 +4052,16 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[3];
     s32 key = func_00350270(object, 3);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3815,6 +4069,7 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201f, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fac)
             {
                 text->set_tint(0x808080);
@@ -3825,6 +4080,7 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3832,6 +4088,7 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2020, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fad)
             {
                 text->set_tint(0x808080);
@@ -3842,9 +4099,11 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list4_first), text);
@@ -3852,6 +4111,7 @@ s32 func_0034F340(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3861,13 +4121,16 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[2];
     s32 key = func_00350270(object, 2);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3875,6 +4138,7 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201d, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1faa)
             {
                 text->set_tint(0x808080);
@@ -3885,6 +4149,7 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3892,6 +4157,7 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201e, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fab)
             {
                 text->set_tint(0x808080);
@@ -3902,9 +4168,11 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list3_first), text);
@@ -3912,6 +4180,7 @@ s32 func_0034F5E0(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -3921,13 +4190,16 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[1];
     s32 key = func_00350270(object, 1);
+
     for (s32 i = 0; i < 4; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -3935,6 +4207,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2019, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1FA6)
             {
                 text->set_tint(0x808080);
@@ -3945,6 +4218,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -3952,6 +4226,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201A, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1FA7)
             {
                 text->set_tint(0x808080);
@@ -3962,6 +4237,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 2:
@@ -3970,6 +4246,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
             object->unka4 += object->unk10c;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201B, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1FA8)
             {
                 text->set_tint(0x808080);
@@ -3980,6 +4257,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 3:
@@ -3987,6 +4265,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x201C, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1FA9)
             {
                 text->set_tint(0x808080);
@@ -3997,9 +4276,11 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list2_first), text);
@@ -4007,6 +4288,7 @@ s32 func_0034F880(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -4016,13 +4298,16 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[0];
     s32 key = func_00350270(object, 0);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -4030,6 +4315,7 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2017, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fa4)
             {
                 text->set_tint(0x808080);
@@ -4040,6 +4326,7 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -4047,6 +4334,7 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2018, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fa5)
             {
                 text->set_tint(0x808080);
@@ -4057,9 +4345,11 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list1_first), text);
@@ -4067,6 +4357,7 @@ s32 func_0034FC70(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -4076,13 +4367,16 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
     {
         return 0;
     }
+
     object->unka4 = 0.0f;
     object->unka4 = object->positions[4];
     s32 key = func_00350270(object, 4);
+
     for (s32 i = 0; i < 2; i++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
         LibClass172600* marker = new (0) LibClass172600;
+
         switch (i)
         {
         case 0:
@@ -4090,6 +4384,7 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
             float x = object->unk104;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2021, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1fae)
             {
                 text->set_tint(0x808080);
@@ -4100,6 +4395,7 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         case 1:
@@ -4107,6 +4403,7 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
             float x = object->unk104 + object->unk108;
             text->init_resource_rectangle(x, object->unka4, 0.0f, 0.0f, static_cast<s32>(associated), 0x2022, 0);
             func_0041AD10(marker, x, object->unka4, lib_text_measure_bounds(text)->width, 24.0f);
+
             if (key == 0x1faf)
             {
                 text->set_tint(0x808080);
@@ -4117,9 +4414,11 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
                 text->set_tint(0x505050);
                 marker->visible = 0;
             }
+
             break;
         }
         }
+
         lib_container_attach_widget(object->unk10, text);
         lib_container_attach_widget(object->unk10, marker);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list5_first), text);
@@ -4127,6 +4426,7 @@ s32 func_0034FF10(ConfigOptions* object, u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&object->list0_first), text);
         func_003527D0(reinterpret_cast<ConfigListOwner*>(&object->list0_second), marker);
     }
+
     return 1;
 }
 
@@ -4262,6 +4562,7 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, frame);
     last_index = 13;
     s32 extra_key;
+
     if (config_extra(D_001B643C->settings) == 0)
     {
         extra_key = 0;
@@ -4270,6 +4571,7 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     {
         extra_key = config_mode(D_001B643C->settings) == 1 ? 0x1FC5 : 0x1FC6;
     }
+
     if (extra_key == 0)
     {
         unk100 = 0;
@@ -4278,6 +4580,7 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     {
         unk100 = 1;
     }
+
     if (extra_key == 0)
     {
         unkb6 = last_index - 1;
@@ -4286,12 +4589,15 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     {
         unkb6 = last_index;
     }
+
     unk10c = 28.0f;
     s32 position = 0;
     float spacing = 22.0f;
+
     for (s32 i = 0; i < 8; i++, position++)
     {
         LibTextWidget* text = new (0) LibTextWidget;
+
         switch (i)
         {
         case 0:
@@ -4304,6 +4610,7 @@ s32 ConfigOptions::func_slotf4(u32 associated)
             positions[position] = 22.0f + positions[i - 1] + spacing;
             break;
         }
+
         text->init_resource_rectangle(24.0f, positions[position], 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2008, 1);
         text->set_tint(0x806080);
         text->unk88 = -1.0f;
@@ -4312,13 +4619,16 @@ s32 ConfigOptions::func_slotf4(u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list0_first), text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list), text);
     }
+
     for (s32 i = 0; i < 6; i++, position++)
     {
         if (i == 5 && unk100 == 0)
         {
             break;
         }
+
         LibTextWidget* text = new (0) LibTextWidget;
+
         switch (i)
         {
         case 0:
@@ -4334,7 +4644,9 @@ s32 ConfigOptions::func_slotf4(u32 associated)
             positions[position] = 22.0f + (positions[position - 1] + unk10c);
             break;
         }
+
         float y = positions[position];
+
         if (i == 5)
         {
             text->init_resource_rectangle(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), 0x2016, 1);
@@ -4343,6 +4655,7 @@ s32 ConfigOptions::func_slotf4(u32 associated)
         {
             text->init_resource_rectangle(24.0f, y, 0.0f, 0.0f, static_cast<s32>(associated), i + 0x2010, 1);
         }
+
         text->set_tint(0x806080);
         text->unk88 = -1.0f;
         text->needs_redraw = 1;
@@ -4350,8 +4663,10 @@ s32 ConfigOptions::func_slotf4(u32 associated)
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list0_first), text);
         func_00352AF0(reinterpret_cast<ConfigListOwner*>(&list), text);
     }
+
     s32 enabled_key;
     ConfigSettings* settings = D_001B643C->settings;
+
     if (config_flag(settings) == 0 || config_enabled(settings) == 0)
     {
         unk101 = 0;
@@ -4362,11 +4677,13 @@ s32 ConfigOptions::func_slotf4(u32 associated)
         unk101 = 1;
         enabled_key = D_001B643C->settings->unk18d != 0 ? 0x1FC1 : 0x1FC2;
     }
+
     if (enabled_key == 0)
     {
         LibTextWidget* text = static_cast<LibTextWidget*>(func_00352C00(reinterpret_cast<ConfigListOwner*>(&list), 11)->value);
         text->set_tint(0x505050);
     }
+
     func_0034FC70(this, associated);
     func_0034F880(this, associated);
     func_0034F5E0(this, associated);
@@ -4380,10 +4697,12 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     func_0034E090(this, associated);
     func_0034DDF0(this, associated);
     func_0034DB50(this, associated);
+
     if (unk100 != 0)
     {
         func_0034D8B0(this, associated);
     }
+
     lib_scissor_init_reset(cover, 1);
     lib_container_attach_widget(unk10, cover);
     unk110 = 24.0f;
@@ -4392,15 +4711,18 @@ s32 ConfigOptions::func_slotf4(u32 associated)
     lib_container_attach_widget(unk10, scroll);
     func_0034B180(this, 0);
     s32 key = func_00350270(this, selected);
+
     if (key != unkb8)
     {
         static_cast<FieldClass15AE70*>(D_001B643C->unk10->unk14->func_00263C90())->func_slot60(key);
         unkb8 = key;
     }
+
     if (controller != 0)
     {
         func_00351FD0(controller);
     }
+
     return 1;
 }
 
@@ -4417,10 +4739,12 @@ ConfigOptions::ConfigOptions()
     last_index = 0;
     unkb6 = 0;
     s32 index;
+
     for (index = 0; index < 14; index++)
     {
         positions[index] = 0;
     }
+
     unkf4 = 0;
     unkf8 = -1;
     unkfc = -1;
@@ -4463,6 +4787,7 @@ void func_00351610(ConfigMessageWindow* object, s32 key)
         object->initial_pause_frames = 0;
         lib_text_set_resource(object->text, object->source, key, 1);
         object->extent = lib_text_measure_bounds(object->text)->width;
+
         if (key == 0x1FB8 || key == 0x1FBA)
         {
             object->key = key;
@@ -4608,22 +4933,27 @@ ConfigPreviewWindow::~ConfigPreviewWindow()
 void func_00351FD0(ConfigController* object)
 {
     ConfigPreviewWindow* window = object->preview_window;
+
     if (window != 0)
     {
         s32 flag = 0;
         FieldRuntimeSections* sections = func_101290(resident_get_system());
+
         if (sections != 0)
         {
             ConfigPreviewSection* values = static_cast<ConfigPreviewSection*>(func_101440(sections, 1));
+
             if (values != 0)
             {
                 flag = values->flag;
             }
         }
+
         if (window->display != 0)
         {
             set_preview_origin(window->display, 128.0f, 128.0f);
             set_widget_position(window->display, 320.0f, 240.0f);
+
             if (flag != 0)
             {
                 set_preview_scale(window->display, 1.05f, 1.4f);
@@ -4646,6 +4976,7 @@ void func_003520C0(ConfigControlReceiver* object)
     {
         lib_release_resource_slot(g_field_runtime, object->resource);
     }
+
     lib_object_detach_owner(object);
     object->func_001DD7B0();
 }
@@ -4686,16 +5017,19 @@ s32 func_00352330(ConfigControlReceiver* object, void* buffer)
     {
         return 0;
     }
+
     ConfigAlignedResource* aligned = aligned_config_resource(buffer);
     s32 size = aligned->size + 0x80;
     void* saved_heap = resident_get_allocation_heap();
     void* heap = D_001B6430->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
+
     if (memory != 0)
     {
         resident_heap_release(memory);
         resident_exchange_allocation_heap(heap);
     }
+
     object->resource = lib_load_resource_slot(g_field_runtime, aligned);
     resident_exchange_allocation_heap(saved_heap);
     return object->init_windows();
@@ -4822,16 +5156,19 @@ void func_003525F0(void* object)
 void func_00352600(ConfigListOwner* list, void* value)
 {
     ConfigNode* node = new (0) ConfigNode;
+
     if (node != 0)
     {
         ConfigNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -4841,24 +5178,29 @@ ConfigNode* func_00352690(ConfigListOwner* owner, s32 index)
 {
     ConfigNode* node = owner->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
 ConfigList182210::ConfigList182210()
 {
     head = new (0) ConfigNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -4866,6 +5208,7 @@ ConfigList182210::ConfigList182210()
 ConfigList182210::~ConfigList182210()
 {
     func_00352860(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -4876,16 +5219,19 @@ ConfigList182210::~ConfigList182210()
 void func_003527D0(ConfigListOwner* list, void* value)
 {
     ConfigNode* node = new (0) ConfigNode;
+
     if (node != 0)
     {
         ConfigNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -4894,16 +5240,19 @@ void func_003527D0(ConfigListOwner* list, void* value)
 void func_00352860(ConfigList182210* object)
 {
     ConfigNode* node = object->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         ConfigNode* next = node->next;
         delete node;
         node = next;
     }
+
     object->head->next = 0;
     object->count = 0;
 }
@@ -4912,30 +5261,36 @@ ConfigNode* func_003528E0(ConfigListOwner* owner, s32 index)
 {
     ConfigNode* node = owner->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
 void func_00352920(ConfigListOwner* list, void* value)
 {
     ConfigNode* node = new (0) ConfigNode;
+
     if (node != 0)
     {
         ConfigNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -4945,24 +5300,29 @@ ConfigNode* func_003529B0(ConfigListOwner* owner, s32 index)
 {
     ConfigNode* node = owner->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
 ConfigList182200::ConfigList182200()
 {
     head = new (0) ConfigNode;
+
     if (head == 0)
     {
         throw;
     }
+
     head->next = 0;
     count = 0;
 }
@@ -4970,6 +5330,7 @@ ConfigList182200::ConfigList182200()
 ConfigList182200::~ConfigList182200()
 {
     func_00352B80(this);
+
     if (head != 0)
     {
         ::operator delete(head);
@@ -4980,16 +5341,19 @@ ConfigList182200::~ConfigList182200()
 void func_00352AF0(ConfigListOwner* list, void* value)
 {
     ConfigNode* node = new (0) ConfigNode;
+
     if (node != 0)
     {
         ConfigNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -4998,16 +5362,19 @@ void func_00352AF0(ConfigListOwner* list, void* value)
 void func_00352B80(ConfigList182200* object)
 {
     ConfigNode* node = object->head->next;
+
     if (node == 0)
     {
         return;
     }
+
     while (node != 0)
     {
         ConfigNode* next = node->next;
         delete node;
         node = next;
     }
+
     object->head->next = 0;
     object->count = 0;
 }
@@ -5016,30 +5383,36 @@ ConfigNode* func_00352C00(ConfigListOwner* owner, s32 index)
 {
     ConfigNode* node = owner->head->next;
     s32 i;
+
     for (i = 0; i < index; i++)
     {
         if (node == 0)
         {
             return 0;
         }
+
         node = node->next;
     }
+
     return node;
 }
 
 void func_00352C40(ConfigListOwner* list, void* value)
 {
     ConfigNode* node = new (0) ConfigNode;
+
     if (node != 0)
     {
         ConfigNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }
@@ -5048,16 +5421,19 @@ void func_00352C40(ConfigListOwner* list, void* value)
 void func_00352CD0(ConfigListOwner* list, void* value)
 {
     ConfigNode* node = new (0) ConfigNode;
+
     if (node != 0)
     {
         ConfigNode* tail;
         node->value = value;
         node->next = 0;
         tail = list->head;
+
         while (tail->next != 0)
         {
             tail = tail->next;
         }
+
         tail->next = node;
         list->count++;
     }

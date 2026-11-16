@@ -5,7 +5,6 @@
 
 #ifdef __cplusplus
 
-/** @brief Install the interface's vtable. */
 inline LibDmaCallbacks::LibDmaCallbacks()
 {
 }

@@ -45,18 +45,10 @@ extern const struct BootCaption g_opening_captions[];
 /** One timed caption of the opening movie; the list ends with a frame of -1. */
 struct BootCaption
 {
-    /** Movie frame the caption is centred on. */
     s16 frame;
-
-    /** Screen corner, or zero for the centre. */
     s16 anchor;
-
-    /** Nonzero for a message, zero for a picture from the third resource block. */
     s16 is_text;
-
-    /** Picture x, or the message key. */
     s16 x;
-
     s16 y;
     s16 width;
     s16 height;

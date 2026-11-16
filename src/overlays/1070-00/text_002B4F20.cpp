@@ -13,12 +13,19 @@ extern "C" u8 D_335C88[];
 extern "C" u8 D_335C90[];
 extern "C" FieldContextRef* D_001B64B0;
 extern "C" void* D_001B6620;
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" void func_43AC90(void* object);
+
 extern "C" void func_002B5200(void* object, u16 value);
+
 extern "C" void func_4F4740(void* object, u32 value, u32 flags);
+
 extern "C" void* g_quaternion_curve_track_pool;
+
 extern "C" void func_139C10(void* context, const void* table, ...);
+
 extern "C" void func_002BB300(void* context, u32 first, u32 second, void* object);
 
 /** Partial callback interface with a method at offset 0x58. */
@@ -26,25 +33,45 @@ class FieldCallbackDispatch58
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void slot10();
+
     virtual void slot14();
+
     virtual void slot18();
+
     virtual void slot1c();
+
     virtual void slot20();
+
     virtual void slot24();
+
     virtual void slot28();
+
     virtual void slot2c();
+
     virtual void slot30();
+
     virtual void slot34();
+
     virtual void slot38();
+
     virtual void slot3c();
+
     virtual void slot40();
+
     virtual void slot44();
+
     virtual void slot48();
+
     virtual void slot4c();
+
     virtual void slot50();
+
     virtual void slot54();
+
     virtual void callback(u32 first, u32 second);
 };
 
@@ -269,6 +296,7 @@ void func_002B8040(FieldPointerValueState2C* object, const u8* source, u32 value
 {
     object->unk2c = source;
     object->unk30 = value;
+
     if (*object->unk2c == 1)
     {
         object->unk34 = 1;

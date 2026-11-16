@@ -4,18 +4,28 @@
 #include "overlays/1070-00/text_001E2B40.h"
 
 extern "C" void func_494D80(void* object);
+
 extern "C" u8 D_179D40[];
 extern "C" void* D_001B6620;
+
 extern "C" void func_121E80(void* owner, void* object);
+
 extern "C" FieldContextRef* D_001B64B0;
+
 extern "C" void func_001E30E0(void* object, float value, s32 first, s32 second);
 
 extern "C" u8 D_329170[];
+
 extern "C" void func_001FDB60(void);
+
 extern "C" void func_001FD9E0(void* object);
+
 extern "C" void func_462CF0(void);
+
 extern "C" void func_001EEA50(void* object);
+
 extern "C" void func_4EABF0(void);
+
 extern "C" void func_4D7EB0(void* object);
 
 /** Partial callback interface with a method at offset 0x10. */
@@ -23,7 +33,9 @@ class FieldCallbackDispatch10Local
 {
 public:
     virtual void slot08();
+
     virtual void slot0c();
+
     virtual void callback();
 };
 
@@ -136,6 +148,7 @@ INCLUDE_ASM("build/overlays/1070-00/asm/nonmatchings/text_002E55F0", func_002E63
 void func_002E63D0(FieldByteTargetOwner10* object, u8 value)
 {
     FieldByteTargetCB* target = object->unk10;
+
     if (target != 0)
     {
         target->unkCB = value;
@@ -251,6 +264,7 @@ extern "C" s32 func_002E9550(void* object, u8 value, s32 flags)
 {
     u8* state = (u8*)object;
     state[0x18] = value;
+
     if (flags != 0)
     {
         *(u16*)(state + 0x1A) = flags;
@@ -259,7 +273,9 @@ extern "C" s32 func_002E9550(void* object, u8 value, s32 flags)
     {
         *(u16*)(state + 0x1A) = 0;
     }
+
     u16 low_flags = (u16)flags;
+
     if ((low_flags & 8) != 0)
     {
         state[0x88] = 0;
@@ -268,6 +284,7 @@ extern "C" s32 func_002E9550(void* object, u8 value, s32 flags)
     {
         state[0x88] = 1;
     }
+
     return 1;
 }
 
@@ -381,37 +398,46 @@ FieldResourceRecord* func_002EBB20(const FieldBufferSlots* object, s32 index)
     {
         return 0;
     }
+
     if (object->unk114 == 0)
     {
         return 0;
     }
+
     FieldResourceRecord* record = (FieldResourceRecord*)(((u32)object->unk114 + 127) & ~0x7F);
+
     for (s32 position = 0; ; position++)
     {
         if (position == index)
         {
             return record;
         }
+
         record = record->next_offset == 0 ? 0 : (FieldResourceRecord*)((u8*)record + record->next_offset);
+
         if (record == 0)
         {
             break;
         }
     }
+
     return 0;
 }
 
 u8 func_002EBBA0(FieldBufferSlots* object, void* allocation, s32 size)
 {
     object->unk118 = size;
+
     if (object->unk118 <= 0)
     {
         return 0;
     }
+
     if (object->unk114 != 0)
     {
         return 0;
     }
+
     object->unk114 = allocation;
     return 1;
 }
@@ -422,6 +448,7 @@ void* func_002EBBE0(const FieldBufferSlots* object, u8 index)
     {
         return 0;
     }
+
     return (void*)(((u32)object->unk14[index] + 127) & ~0x7F);
 }
 
@@ -433,18 +460,22 @@ u8 func_002EBCA0(FieldBufferSlots* object, void* allocation, u8 index)
     {
         return 0;
     }
+
     if (index < 0)
     {
         return 0;
     }
+
     if (index >= 64)
     {
         return 0;
     }
+
     if (object->unk14[index] != 0)
     {
         return 0;
     }
+
     object->unk14[index] = allocation;
     return 1;
 }
@@ -630,6 +661,7 @@ s32 func_002EFA70(const FieldResourceSlots* object, s32 index, FieldResourceStat
     {
         return 0;
     }
+
     u64 first = object->unk10a8[index].unk00;
     u64 second = object->unk10a8[index].unk08;
     output->unk04 = (first >> 14) & 0x3F;
@@ -652,6 +684,7 @@ s32 func_002EFAF0(FieldResourceSlots* object, void* resource, void* target)
             return index;
         }
     }
+
     return -1;
 }
 

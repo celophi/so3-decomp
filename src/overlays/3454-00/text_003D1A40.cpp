@@ -3,7 +3,9 @@
 
 extern "C" {
 void func_4D00B0(void* object);
+
 void resident_packet_submit(void* owner, void* object);
+
 typedef struct ConstantByteSetterOwnertext_003D1A40
 {
     u8 unk00[0x60];
@@ -1225,10 +1227,12 @@ void func_003DB550(N50Owner98_003D1A40* object)
 {
     object->active = 1;
     void* adjusted = object;
+
     if (object != 0)
     {
         adjusted = (u8*)adjusted + 0x90;
     }
+
     resident_packet_submit(object->owner, adjusted);
 }
 

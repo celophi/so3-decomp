@@ -35,10 +35,19 @@ typedef struct FieldObject220150
 class FieldClass15B890 : public FieldClass15B950
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Clear the scalar track and record array and set the default scale. */
     FieldClass15B890()
     {
@@ -73,10 +82,22 @@ extern "C" {
  * @param object Field context object.
  */
 void func_00226340(void* object);
-/** @brief Set two bounds and optionally select a named entry. @param object Context receiver. @param name Optional entry name. @param first First bound. @param second Second bound. */
+
+/**
+ * @brief Set two bounds and optionally select a named entry.
+ * @param object Context receiver.
+ * @param name Optional entry name.
+ * @param first First bound.
+ * @param second Second bound.
+ */
 void func_00225150(void* object, const char* name, float first, float second);
 
-/** @brief Create or update the attached range object. @param object Context receiver. @param value Range selection. @param duration Transition duration. */
+/**
+ * @brief Create or update the attached range object.
+ * @param object Context receiver.
+ * @param value Range selection.
+ * @param duration Transition duration.
+ */
 void func_00225550(void* object, u32 value, float duration);
 
 #endif
@@ -92,10 +113,19 @@ void func_00225550(void* object, u32 value, float duration);
  */
 FieldVector2624* func_00221430(FieldVector2624* vector, float first, float second, float third, float fourth);
 
-/** @brief Return the receiver's heading. @param object Field receiver. @return Heading in radians. */
+/**
+ * @brief Return the receiver's heading.
+ * @param object Field receiver.
+ * @return Heading in radians.
+ */
 float func_002273B0(struct FieldClass151510* object);
 
-/** @brief Apply a vector with the supplied scale. @param object Field receiver. @param vector Vector to apply. @param scale Application scale. */
+/**
+ * @brief Apply a vector with the supplied scale.
+ * @param object Field receiver.
+ * @param vector Vector to apply.
+ * @param scale Application scale.
+ */
 void func_00227740(struct FieldClass151510* object, const struct FieldVec4B* vector, float scale);
 
 /**
@@ -268,7 +298,10 @@ public:
      */
     virtual void func_00205710(const FieldVec4A* value);
 
-    /** @brief Return the default result for slot 19. @return Always zero. */
+    /**
+     * @brief Return the default result for slot 19.
+     * @return Always zero.
+     */
     virtual s32 func_00203990();
 
     /** @brief Virtual handler slot 20. */
@@ -289,7 +322,11 @@ public:
     /** @brief Virtual handler slot 25. */
     virtual void func_001FED00();
 
-    /** @brief Default scalar-setting handler. @param setting Setting to ignore. @param value Scalar to ignore. */
+    /**
+     * @brief Default scalar-setting handler.
+     * @param setting Setting to ignore.
+     * @param value Scalar to ignore.
+     */
     virtual void func_002039B0(u8 setting, float value);
 
     /** @brief Virtual handler slot 27. */
@@ -324,7 +361,6 @@ public:
 class FieldClass152E50 : public FieldClass152FA0
 {
 public:
-    /** @brief Destroy the command list. */
     virtual ~FieldClass152E50();
 
     FieldClass152430* unk7c;
@@ -334,16 +370,31 @@ public:
 class FieldClass1535B0 : public FieldClass152430
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Storage or null.
+     */
     static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Initialize the inherited actor and named-object state. */
     FieldClass1535B0();
-    /** @brief Destroy the named-object state and inherited actor. */
+
     virtual ~FieldClass1535B0();
-    /** @brief Bind a named resident object and copy its transform. @param name Object name. @return One when found, zero otherwise. */
+
+    /**
+     * @brief Bind a named resident object and copy its transform.
+     * @param name Object name.
+     * @return One when found, zero otherwise.
+     */
     s32 func_0024D1C0(const char* name);
+
     u8 unk2f0[0x44];
     u8 unk334_0_1 : 2;
     u8 unk334_2 : 1;
@@ -354,10 +405,19 @@ public:
 class FieldClass155580 : public FieldClass1535B0
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Storage or null.
+     */
     static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Set the actor category and clear its transition state. */
     FieldClass155580()
     {
@@ -371,8 +431,9 @@ public:
         unk350_0 = 0;
         unk350_1 = 0;
     }
-    /** @brief Destroy the inherited named actor. */
+
     virtual ~FieldClass155580();
+
     float unk340;
     float unk344;
     float unk348;
@@ -393,12 +454,10 @@ public:
 class FieldInputState : public FieldListObject
 {
 public:
-    /** @brief Initialize the inherited input node. */
     FieldInputState()
     {
     }
 
-    /** @brief Destroy the inherited input node. */
     virtual ~FieldInputState();
 
     /**
@@ -412,7 +471,10 @@ public:
     /** @brief Update this registered object. */
     virtual void update();
 
-    /** @brief Clear transient button masks. @param unused Unused reset argument. */
+    /**
+     * @brief Clear transient button masks.
+     * @param unused Unused reset argument.
+     */
     void clear(s32 unused);
 
     u32 button_masks[8];
@@ -425,13 +487,17 @@ class FieldClass152410 : public FieldListObject
 public:
     static void* operator new(u32 size);
 
-    /** @brief Release storage through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release storage through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
 
     FieldClass152410();
 
     /** @brief Destroy the object. */
     virtual ~FieldClass152410();
+
     /** @brief Detach and delete the child, then detach this object and queue it for release. */
     virtual void func_001DD7B0();
 
@@ -446,10 +512,19 @@ public:
 class FieldClass1570D0 : public FieldClass152430
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Allocated storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Allocated storage or null.
+     */
     static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Set the actor flags and create its scalar track. */
     FieldClass1570D0()
     {
@@ -459,13 +534,15 @@ public:
         unk2f0 = 0;
         unk2e0 = 1;
     }
-    /** @brief Destroy the actor and its inherited state. */
+
     virtual ~FieldClass1570D0();
+
     /**
      * @brief Report the stored moving flag.
      * @return Flag at offset 0x2F0.
      */
     virtual bool func_002039C0() const;
+
     bool unk2f0;
 };
 
@@ -480,8 +557,12 @@ class FieldClass1502E0;
 class FieldClass150EB0 : public FieldClass152430
 {
 public:
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Destroy the object. */
     virtual ~FieldClass150EB0();
 
@@ -527,12 +608,22 @@ public:
 class FieldClass152F00 : public FieldClass150EB0
 {
 public:
-    /** @brief Allocate through the Lib heap. @param size Allocation size. @return Storage or null. */
+    /**
+     * @brief Allocate through the Lib heap.
+     * @param size Allocation size.
+     * @return Storage or null.
+     */
     static void* operator new(u32 size);
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Initialize the inherited actor and its resource state. */
     FieldClass152F00();
+
     /** @brief Destroy the object. */
     virtual ~FieldClass152F00();
 
@@ -567,8 +658,12 @@ public:
 class FieldClass153330 : public FieldClass152430
 {
 public:
-    /** @brief Release through the Lib heap. @param object Storage to release. */
+    /**
+     * @brief Release through the Lib heap.
+     * @param object Storage to release.
+     */
     static void operator delete(void* object);
+
     /** @brief Destroy the object. */
     virtual ~FieldClass153330();
 
@@ -659,7 +754,6 @@ public:
 
     FieldClass152350();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass152350();
 
     u8 unk5d0[0x68];

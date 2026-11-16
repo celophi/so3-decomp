@@ -12,6 +12,7 @@ extern "C" {
  * @param lock Allocator lock context.
  */
 void __malloc_lock_guess(void* lock);
+
 /**
  * @brief Accept the allocator unlock request without unlocking.
  * @param lock Allocator lock context.

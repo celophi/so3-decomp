@@ -221,6 +221,7 @@ void func_0026FF70(FieldRoot26FF70* root)
     func_0045B210(object, root->unkB0);
     func_45B110(object, root->unk7C);
     context = root->unkD8;
+
     if (context->unk8c != 0)
     {
         func_0020DDD0(object, context);
@@ -272,6 +273,7 @@ void FieldClass154C10::func_001DD7B0()
         unkd8->func_001DD7B0();
         unkd8 = 0;
     }
+
     FieldClass150F90::func_001DD7B0();
     func_00226340(D_001B6430->context->unk14);
 }
@@ -320,10 +322,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_002716
 s32 FieldContextResourceLoader::poll_request_release()
 {
     s32 result = FieldSceneResourceLoader::poll_request_release();
+
     if (result == 1)
     {
         start_delay = 10;
     }
+
     return result;
 }
 

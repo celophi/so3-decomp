@@ -729,6 +729,7 @@ void BootNewGameSettings::get_cursor_position(float* x, float* y)
     LibSystemSettings* settings = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     *x = 58.0f;
+
     switch (page)
     {
     case BOOT_SETTINGS_SOUND:

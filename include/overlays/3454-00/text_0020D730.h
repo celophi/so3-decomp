@@ -10,20 +10,25 @@ void func_002117B0(u8* object, float x, float y, float z);
 
 /** Install the record's pointer at offset 0x1C, reset it, and return it. */
 void* func_00216A70(void* object);
+
 /** Install the record's pointer at offset 0x1C, reset it, and return it. */
 void* func_00216AD0(void* object);
+
 /** Install the record's pointer at offset 0x10, reset it, and return it. */
 void* func_00216B30(void* object);
 
 /** Initialize the receiver and install its primary vtable. */
 void* func_00214320(void* object);
+
 /** Initialize the receiver and install its primary vtable. */
 void* func_00214820(void* object);
+
 /** Initialize the receiver and install its primary vtable. */
 void* func_00214D40(void* object);
 
 /** Mark the transform as changed and copy a four-float value into it. */
 void func_00211750(void* object, const float* input);
+
 /** Mark the transform as changed and copy a four-float value into it. */
 void func_00211780(void* object, const float* input);
 
@@ -441,34 +446,49 @@ s32 func_0021D170(void* object);
 
 /** Return the word at receiver offset 0x30. */
 u32 func_00216ED0(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_00216F70(const void* object);
+
 /** Return the word at receiver offset 0x20. */
 u32 func_00217420(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_00217650(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_00217910(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_00217980(const void* object);
+
 /** Return the word at receiver offset 0x40. */
 u32 func_00217F10(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_002181A0(const void* object);
+
 /** Return the word at receiver offset 0x18. */
 u32 func_00218460(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_00218510(const void* object);
+
 /** Return the word at receiver offset 0x10. */
 u32 func_0021AE20(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_0021B210(const void* object);
+
 /** Return the word at receiver offset 0x40. */
 u32 func_0021B410(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_0021B760(const void* object);
+
 /** Return the word at receiver offset 0x30. */
 u32 func_0021BB50(const void* object);
+
 /** Return the word at receiver offset 0x4. */
 u32 func_0021BCF0(const void* object);
 
@@ -578,10 +598,13 @@ void* func_00218910(void* value);
 
 /** Return the first pointer argument unchanged. */
 void* func_00218F00(void* value);
+
 /** Return the first pointer argument unchanged. */
 void* func_00219310(void* value);
+
 /** Return the first pointer argument unchanged. */
 void* func_0021C2A0(void* value);
+
 /** Return the first pointer argument unchanged. */
 void* func_0021C2B0(void* value);
 
@@ -639,8 +662,11 @@ float func_002174C0(void* object);
 
 /** Return the key span between the first and last entries. */
 float func_00218700(void* object);
+
 float func_00218AF0(void* object);
+
 float func_00219070(void* object);
+
 float func_0021C1B0(void* object);
 
 /** Set the receiver flag and store three float components beginning at 0x40. */
@@ -692,8 +718,10 @@ void func_0021BAF0(void* object, u8 mode);
 
 /** Clear the vector at offset 0x90 and update the associated state. */
 void func_00215170(void* object);
+
 /** Clear the vector at offset 0xB0 and update the associated state. */
 void func_00215AA0(void* object);
+
 s32 func_00217F80(void* object, float key);
 
 /** Find a key in the receiver's fixed-size entry array. */

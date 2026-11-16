@@ -14,29 +14,17 @@ struct LibMeshHeader
     u8 unk00[4];
     u32 unk04;
     u32 unk08;
-
-    /** Bounding sphere centre. */
     float sphere_center[3];
-
-    /** Bounding sphere radius. */
     float sphere_radius;
-
-    /** Corners of the mesh's bounding box. */
     float box_min[3];
     float box_max[3];
-
-    /** Parts the packets hold. */
     s32 part_count;
-
     u32 unk38;
     u8 unk3c;
     u8 unk3d[3];
     s32 unk40;
     u8 unk44[0xC];
-
-    /** Bits the model sets in the resident flag word while it's alive. */
     u32 resident_mask;
-
     u16 unk54;
 };
 
@@ -124,26 +112,14 @@ public:
     LibVector4 base_color_factor;
     LibVector4 color_modulation;
     LibVector4 combined_color_factor;
-
-    /** Light groups in the low byte and the bits of the spotlights that reach the model above them. */
     u32 light_mask;
-
-    /** Model this one was cloned from, or null. */
     LibColorModel* original;
-
-    /** Next clone of the same original. */
     LibColorModel* next_clone;
-
     u8 unk59c;
     u8 unk59d_0 : 1;
     u8 unk59d_1 : 1;
-
-    /** Set while the model draws with fog. */
     u8 fog_enabled : 1;
-
-    /** Set when the color state must be rebuilt. */
     u8 color_dirty : 1;
-
     u8 unk59d_4_7 : 4;
     u8 unk59e[2];
 };
@@ -202,10 +178,7 @@ public:
     }
 
     u8 unk14[0x40];
-
-    /** Model the payloads are drawn by. */
     class LibModel* model;
-
     u8 unk58[4];
     void* unk5c;
     void* unk60;
@@ -213,18 +186,10 @@ public:
     void* unk68;
     void* unk6c;
     void* unk70;
-
-    /** Buffer each packet set's payload is built in. */
     void* payload_buffers[LIB_MODEL_PACKET_SET_COUNT];
-
-    /** Payload handed to the model for each packet set. */
     void* payloads[LIB_MODEL_PACKET_SET_COUNT];
-
     u8 unk84[6];
-
-    /** Packet set last selected. */
     u8 payload_set;
-
     u8 unk8b[2];
     u8 unk8d_0 : 1;
     u8 unk8d_1_7 : 7;
@@ -238,10 +203,7 @@ public:
     u32 bit_count;
     u32 word_count;
     u32* words;
-
-    /** Nonzero when words is borrowed and must not be freed. */
     u8 words_are_borrowed;
-
     u8 unk0d[3];
 
     /** @brief Start with no words. */
@@ -292,16 +254,11 @@ public:
      */
     void attach(class LibModel* model, LibUpdateList* links);
 
-    /** Nonzero when data is borrowed and must not be freed. */
     u8 data_is_borrowed;
-
     u8 listed;
     u8 unk0e;
     u8 unk0f;
-
-    /** List the entry is in, or null. */
     LibClass177A20* list;
-
     void* data;
     u8 unk18;
     u8 unk19;
@@ -384,18 +341,11 @@ public:
      */
     virtual LibListReceiver* get_render_channels();
 
-    /** Nonzero when destroy unregisters the resource. */
     u8 owns_resource;
-
     u8 unk5a1;
     u8 unk5a2[2];
-
-    /** Child objects, such as the face's morph targets. */
     LibClass177A20 children;
-
-    /** Resource the model draws: a mesh, or a draw buffer. */
     LibResourceBuffer* resource;
-
     u32 unk638;
     u8 unk63c[4];
 };
@@ -404,20 +354,14 @@ public:
 struct LibTextureUpload
 {
     u32 unk00[3];
-
-    /** VIF UNPACK code for the block. */
     u32 unpack;
-
     u64 gif_tag;
     u64 gif_registers;
     GsRegisterValue bitbltbuf;
     GsRegisterValue trxpos;
     GsRegisterValue trxreg;
     GsRegisterValue trxdir;
-
-    /** VIF MSCALF code that starts the upload microprogram. */
     u32 mscal;
-
     u8 unk64[0x1C];
 };
 
@@ -426,10 +370,7 @@ struct LibModelPartSetting
 {
     u32 first_value;
     u32 second_value;
-
-    /** Bit 0 applies first_value, bit 1 second_value. */
     u8 flags;
-
     u8 unk09[3];
 };
 
@@ -641,28 +582,19 @@ public:
     u64 chain[5][2];
     LibModelPacketChain packet_chains[LIB_MODEL_PACKET_SET_COUNT];
     void* base_packet;
-
-    /** The model's draw packet. */
     void* packet;
-
-    /** Packets built for a payload override, one per packet set. */
     void* override_packets[LIB_MODEL_PACKET_SET_COUNT];
-
     u32 unk710;
     void* before_packet;
     void* after_packet;
     LibTextureUpload* texture_uploads;
     void* unk720;
-    /** Part table: the part records after a 0x40-byte header. */
     void* parts;
     u8 unk728[0x20];
     u8 unk748[0x20];
     void* unk768;
     void* unk76c;
-
-    /** Settings apply_part_settings writes into the part records, unk774 of them; freed afterwards. */
     LibModelPartSetting* unk770;
-
     s32 unk774;
     s32 unk778;
     u32 unk77c;
@@ -675,45 +607,30 @@ public:
     u8 unk791;
     u8 draw_bucket_choice;
     u8 unk793;
-
-    /** Which packet set Lib builds and draws. */
     u8 packet_set;
-
     u8 unk795;
     u8 unk796;
     u8 unk797_0 : 1;
     u8 unk797_1 : 1;
     u8 unk797_2 : 1;
-
-    /** Set while a payload override is selected. */
     u8 uses_payload_override : 1;
-
     u8 unk797_4 : 1;
     u8 unk797_5 : 1;
     u8 unk797_6 : 1;
     u8 unk797_7 : 1;
     u8 unk798_0 : 1;
-
-    /** Set when get_box_cull_center may give a centre. */
     u8 box_cull_enabled : 1;
-
     u8 unk798_2 : 1;
     u8 unk798_3_7 : 5;
     u8 unk799[3];
-
-    /** The model's render channels. */
     LibListReceiver render_channels;
-
     LibVector4 bounding_sphere;
     float unk7c0;
     float unk7c4;
     u32 unk7c8[6];
     u32 unk7e0;
     u8 unk7e4[0x34];
-
-    /** Model this one was built from. */
     LibModel* source;
-
     u8 unk81c[4];
 };
 

@@ -40,12 +40,10 @@ typedef struct FieldObject157F00
 class FieldClass158A68 : public FieldClass154E70
 {
 public:
-    /** @brief Construct the object. */
     FieldClass158A68()
     {
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass158A68()
     {
     }
@@ -70,12 +68,10 @@ public:
 class FieldClass158A48 : public FieldClass158A68
 {
 public:
-    /** @brief Construct the object. */
     FieldClass158A48()
     {
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass158A48()
     {
     }
@@ -85,12 +81,10 @@ public:
 class FieldClass158A28 : public FieldClass158A48
 {
 public:
-    /** @brief Construct the object. */
     FieldClass158A28()
     {
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass158A28()
     {
     }
@@ -100,12 +94,10 @@ public:
 class FieldClass158A08 : public FieldClass158A28
 {
 public:
-    /** @brief Construct the object. */
     FieldClass158A08()
     {
     }
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass158A08()
     {
     }
@@ -122,10 +114,8 @@ public:
 class FieldClass158A58 : public FieldClass158A68
 {
 public:
-    /** @brief Construct the object. */
     FieldClass158A58();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass158A58();
 
     FieldVector4 unk40;
@@ -137,10 +127,8 @@ public:
 class FieldClass158A38 : public FieldClass158A48
 {
 public:
-    /** @brief Construct the object. */
     FieldClass158A38();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass158A38();
 
     u8 unk40[0x70];
@@ -150,10 +138,8 @@ public:
 class FieldClass158A18 : public FieldClass158A28
 {
 public:
-    /** @brief Construct the object. */
     FieldClass158A18();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass158A18();
 
     u8 unk40[0xB0];
@@ -164,10 +150,8 @@ public:
 class FieldClass1589F8 : public FieldClass158A08, public FieldGridFrameMotion
 {
 public:
-    /** @brief Construct the object. */
     FieldClass1589F8();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass1589F8();
 };
 
@@ -175,10 +159,8 @@ public:
 class FieldClass158A78 : public FieldClass154E70
 {
 public:
-    /** @brief Construct the object. */
     FieldClass158A78();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass158A78();
 
     /**
@@ -219,7 +201,6 @@ public:
 class FieldClass158860 : public FieldClass158DD0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass158860()
     {
     }
@@ -423,7 +404,6 @@ public:
 class FieldClass157AF0 : public FieldClass158D00
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157AF0()
     {
     }
@@ -530,7 +510,6 @@ public:
 class FieldClass157E30 : public FieldClass158C30
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157E30()
     {
     }
@@ -652,7 +631,6 @@ public:
 class FieldClass158170 : public FieldClass158B60
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass158170()
     {
     }
@@ -774,7 +752,6 @@ public:
 class FieldClass158720 : public FieldClass158A90
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass158720()
     {
     }
@@ -825,7 +802,6 @@ public:
 class FieldClass1577B0 : public FieldClass157E30
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1577B0()
     {
     }
@@ -835,7 +811,6 @@ public:
 class FieldClass157A20 : public FieldClass157AF0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157A20()
     {
     }
@@ -845,7 +820,6 @@ public:
 class FieldClass157D60 : public FieldClass157E30
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157D60()
     {
     }
@@ -855,7 +829,6 @@ public:
 class FieldClass1580A0 : public FieldClass158170
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1580A0()
     {
     }
@@ -865,7 +838,6 @@ public:
 class FieldClass1583E0 : public FieldClass158720
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1583E0()
     {
     }
@@ -875,7 +847,6 @@ public:
 class FieldClass158650 : public FieldClass158720
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass158650()
     {
     }
@@ -885,7 +856,6 @@ public:
 class FieldClass1576E0 : public FieldClass1577B0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1576E0()
     {
     }
@@ -895,7 +865,6 @@ public:
 class FieldClass157950 : public FieldClass157A20
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157950()
     {
     }
@@ -905,7 +874,6 @@ public:
 class FieldClass157C90 : public FieldClass157D60
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157C90()
     {
     }
@@ -915,7 +883,6 @@ public:
 class FieldClass157FD0 : public FieldClass1580A0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157FD0()
     {
     }
@@ -925,7 +892,6 @@ public:
 class FieldClass158310 : public FieldClass1583E0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass158310()
     {
     }
@@ -935,7 +901,6 @@ public:
 class FieldClass158580 : public FieldClass158650
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass158580()
     {
     }
@@ -945,7 +910,6 @@ public:
 class FieldClass157610 : public FieldClass1576E0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157610();
 };
 
@@ -953,7 +917,6 @@ public:
 class FieldClass157880 : public FieldClass157950
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157880();
 };
 
@@ -964,7 +927,6 @@ public:
 class FieldClass173F80 : public FieldClass158930
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass173F80()
     {
     }
@@ -974,7 +936,6 @@ public:
 class FieldClass157540 : public FieldClass173F80
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157540();
 };
 
@@ -982,7 +943,6 @@ public:
 class FieldClass157BC0 : public FieldClass157C90
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157BC0();
 };
 
@@ -990,7 +950,6 @@ public:
 class FieldClass157F00 : public FieldClass157FD0
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass157F00();
 };
 
@@ -998,7 +957,6 @@ public:
 class FieldClass158240 : public FieldClass158310
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass158240();
 };
 
@@ -1006,7 +964,6 @@ public:
 class FieldClass1584B0 : public FieldClass158580
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass1584B0();
 };
 

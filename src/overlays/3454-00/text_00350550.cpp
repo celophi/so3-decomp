@@ -3,6 +3,7 @@
 
 extern "C" {
 void func_0027F800(void* object);
+
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00350550", func_00350550);
 
 INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_00350550", func_00350590);

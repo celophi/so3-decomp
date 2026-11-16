@@ -21,7 +21,9 @@ struct FieldObject11CValues
 };
 
 extern "C" void func_4D9250(void* target, u32 first, u32 second);
+
 extern "C" void func_4D00B0(void* object);
+
 extern "C" void func_44B240(void* object, const void* matrix, void* context);
 
 
@@ -92,15 +94,18 @@ extern "C" void func_0024E7C0(FieldOwner24E860* owner)
 {
     owner->child = 0;
     owner->unk134 = 0;
+
     if (owner->unk12c != 0)
     {
         owner->unk12c->destroy();
         owner->unk12c = 0;
     }
+
     if (owner->unk120c >= 0)
     {
         lib_release_resource_slot(g_field_runtime, owner->unk120c);
     }
+
     owner->unk120c = -1;
     owner->unk1218 = 5;
 }
@@ -114,6 +119,7 @@ void func_0024E860(FieldOwner24E860* owner, u32 value)
         owner->child->func_001DD7B0();
         owner->child = 0;
     }
+
     owner->unk1210 = value;
 }
 

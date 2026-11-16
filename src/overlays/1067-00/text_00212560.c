@@ -1053,15 +1053,19 @@ FieldScriptRecord217590* func_00217590(FieldScriptObject151D40* object, s32 key)
 
     data = object->unk544;
     offset = data->unk08;
+
     if (offset == 0)
     {
         return 0;
     }
+
     record = (FieldScriptRecord217590*)((u8*)data + offset);
+
     if (key == -1)
     {
         return record;
     }
+
     if (record->unk00 != -1)
     {
         do
@@ -1070,9 +1074,11 @@ FieldScriptRecord217590* func_00217590(FieldScriptObject151D40* object, s32 key)
             {
                 return record;
             }
+
             record++;
         } while (record->unk00 != -1);
     }
+
     return 0;
 }
 
@@ -1084,11 +1090,14 @@ u32 func_00217920(FieldScriptObject151D40* object, s32 key)
 {
     FieldRuntimeValues* values;
     s32 index;
+
     if (key == 0xFFFF)
     {
         return object->unk424;
     }
+
     values = func_101440(func_101290(resident_get_system()), 4);
+
     switch (key & 0xF000)
     {
     case 0:
@@ -1115,14 +1124,17 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00212560", func_00217A
 void func_00217CE0(FieldObject217CE0* object, u8 value)
 {
     s32 i;
+
     for (i = 0; i < 16; i++)
     {
         FieldAttached217CE0* attached = object->slots[i];
+
         if (attached != 0)
         {
             attached->flag = value;
         }
     }
+
     if (object->special != 0)
     {
         object->special->flag = value;

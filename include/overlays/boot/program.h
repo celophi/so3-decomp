@@ -41,7 +41,6 @@ class BootUnitErrorPopup : public LibListObject
             enabled = 1;
         }
 
-        /** @brief Destroy the object. */
         virtual ~BootUnitErrorPopup();
 
         /** @brief Release the owned objects, then queue this object for deletion. */
@@ -56,15 +55,11 @@ class BootUnitErrorPopup : public LibListObject
          */
         virtual void set_enabled(u8 value);
 
-        /** Program whose message bank the popup uses. */
         class BootProgram* program;
-
         u8 enabled;
         u8 unk19[3];
         LibContainer* container;
         LibTextWidget* text;
-
-        /** Frame behind the text. */
         LibPanel* panel;
 };
 
@@ -72,11 +67,7 @@ class BootUnitErrorPopup : public LibListObject
 struct BootProgramImage
 {
     u8 elf_header[0x34];
-
-    /** First program header's segment type. */
     u32 segment_type;
-
-    /** File offset of the first segment, the executable's code. */
     u32 code_offset;
 };
 
@@ -87,7 +78,6 @@ class BootInput : public LibListObject
         /** @brief Clear the card states and start querying the cards. */
         BootInput();
 
-        /** @brief Destroy the object. */
         virtual ~BootInput();
 
         /** @brief Sample the first pad, then keep the latest nonzero state of each memory card slot. */
@@ -104,37 +94,16 @@ class BootInput : public LibListObject
 
         u8 card_query_enabled;
         u8 unk15;
-
-        /** Buttons held down. */
         u16 held;
-
-        /** Buttons pressed this frame. */
         u16 pressed;
-
-        /** Buttons held at any point since the pad state was last cleared. */
         u16 held_any;
-
-        /** Buttons pressed this frame or auto-repeating. */
         u16 repeated;
-
         u8 unk1E[2];
-
-        /** Last nonzero state of card slot 1, as BootStartupChecks compares them. */
         u32 slot1_state;
-
-        /** Last nonzero state of card slot 2. */
         u32 slot2_state;
-
-        /** Last nonzero raw status byte of card slot 1 (get_slot_state kind 2). */
         u32 slot1_raw_state;
-
-        /** Last nonzero raw status byte of card slot 2. */
         u32 slot2_raw_state;
-
-        /** Nonzero while the card in slot 1 is ready. */
         s32 slot1_ready;
-
-        /** Nonzero while the card in slot 2 is ready. */
         s32 slot2_ready;
 };
 
@@ -170,18 +139,10 @@ class BootOpeningMovie : public LibListObject
         /** @brief Play the opening movie with its timed captions until it ends or the player skips it. */
         virtual void update();
 
-        /** Step: start, captions, wait for the end, stop, hand over. */
         s32 step;
-
-        /** Caption being shown. */
         s32 caption;
-
-        /** Caption phase: zero none, one fading in, two shown, three fading out. */
         s32 caption_phase;
-
-        /** Nonzero once the caption image exists. */
         u8 caption_image_loaded;
-
         u8 unk21[3];
         ResidentHeap* movie_heap;
         LibMoviePlayer* player;
@@ -215,18 +176,13 @@ class BootResourceLoader : public LibListObject
             block = BOOT_COMMON_UI_MESSAGES;
         }
 
-        /** @brief Destroy the object. */
         virtual ~BootResourceLoader();
 
         /** @brief Decode the next of the program's three resource blocks, then destroy this object after the last. */
         virtual void update();
 
         class BootProgram* program;
-
-        /** Loaded resource whose blocks are decoded. */
         u8* data;
-
-        /** Next block to decode. */
         s32 block;
 };
 
@@ -321,44 +277,20 @@ class BootProgram : public BootResidentProgram
         LibCameraContext* display;
         LibCamera* projection;
         BootInput* input;
-
-        /** Resource 0x26's first block, holding the message bank. */
         u8* message_block;
-
-        /** Boot's message bank. */
         s32 messages;
-
-        /** Resource 0x26's second block, holding the caption bank. */
         u8* caption_block;
-
-        /** The opening movie's caption bank. */
         s32 captions;
-
-        /** Resource 0x26's third block, holding the images. */
         u8* image_block;
-
         BootBattleTrophyCard* trophy_card;
         BootUnitErrorPopup* error_popup;
-        /** Cleared on construction and when run starts; nothing in boot reads it. */
         s32 unk2C;
-
-        /** Program to run next, set when the boot program should end; passed on to the resident runtime. */
         u8* next_program;
-
-        /** Widescreen setting kept across the display reset, or 0xFF when there were no saved settings. */
         u8 saved_widescreen;
-
         u8 unk35[3];
-
-        /** Frame counter. */
         s32 frame;
-
-        /** Nonzero when damaged game data on the PlayStation BB Unit was deleted. */
         u8 unit_data_deleted;
-
         u8 unk3D[3];
-
-        /** Resource 3: the program image, holding a copy of the main executable's code. */
         BootProgramImage* image;
 };
 

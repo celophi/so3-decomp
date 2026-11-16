@@ -32,19 +32,31 @@ extern u8 D_001B65D0;
 extern struct LibPacketQueue* g_packet_queue;
 
 void lib_quaternion_from_euler(ResidentVector4* orientation, const ResidentVector4* rotation);
+
 void func_4486A0(void* object);
+
 void func_4D0260(void* list, void* object);
+
 void func_4D02E0(void* list, void* object);
+
 s32 func_4DC4F0(struct LibPacketQueue* queue, u32 operation, u32 flags, u32 address, u32 value, void* completion);
+
 bool func_4D7D40(ResidentImageSequenceChannel* channel, ResidentRenderDataRecord* record, bool use_inline);
+
 void lib_matrix_look_at(ResidentMatrix* output, const ResidentVector4* position, const ResidentVector4* direction, float roll);
+
 void func_4CFB20(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
                  float y_offset);
+
 void func_4CFC50(ResidentMatrix* output, const ResidentMatrix* input, float scale, float width, float height, float x_offset,
                  float y_offset);
+
 void func_4D9E70(ResidentClass14FD30Base* object);
+
 void func_4CCCF0(const ResidentMatrix* source, ResidentVector4* output);
+
 void lib_matrix_to_quaternion(ResidentVector4* output, const ResidentMatrix* input);
+
 float func_4E28D0(ResidentClass14FD30Base* camera);
 }
 
@@ -526,6 +538,7 @@ u8* resident_packet_align_cursor(ResidentPacket* packet, u8* cursor)
     {
         cursor = (u8*)(((u32)cursor + 0xF) & 0xFFFFFFF0);
     }
+
     packet->unk08 = cursor;
     return packet->unk08;
 }
@@ -593,6 +606,7 @@ void func_0011F940(ResidentClass14FC90* set)
 void func_0011F9B0(void* object)
 {
     ByteTransitionViewOwnerresident_0011EE70* receiver = (ByteTransitionViewOwnerresident_0011EE70*)object;
+
     if (receiver->unk25 != 0)
     {
         receiver->unk25 = 0;
@@ -1105,14 +1119,17 @@ ResidentClass14FC90::ResidentClass14FC90() : buffer(0)
 s32 func_00120560(void* object, s32 value)
 {
     WordGetterOwnerresident_0011EE70* receiver = (WordGetterOwnerresident_0011EE70*)object;
+
     if (value < 0)
     {
         value = 0;
     }
+
     if (value > 999999999)
     {
         value = 999999999;
     }
+
     receiver->unk14 = value;
     return value;
 }
@@ -1127,14 +1144,17 @@ u32 func_001205A0(const void* object)
 s32 func_001205B0(void* object, s32 value)
 {
     WordGetterOwnerresident_0011EE70* receiver = (WordGetterOwnerresident_0011EE70*)object;
+
     if (value < 0)
     {
         value = 0;
     }
+
     if (value > 100)
     {
         value = 100;
     }
+
     receiver->unk10 = value;
     return value;
 }
@@ -1155,14 +1175,17 @@ u32 func_001205E0(const void* object)
 s32 func_001205F0(void* object, s32 value)
 {
     WordGetterOwnerresident_0011EE70* receiver = (WordGetterOwnerresident_0011EE70*)object;
+
     if (value < 0)
     {
         value = 0;
     }
+
     if (value > 99999999)
     {
         value = 99999999;
     }
+
     receiver->unk0c = value;
     return value;
 }
@@ -1177,14 +1200,17 @@ u32 func_00120630(const void* object)
 s32 func_00120640(void* object, s32 value)
 {
     WordGetterOwnerresident_0011EE70* receiver = (WordGetterOwnerresident_0011EE70*)object;
+
     if (value < 0)
     {
         value = 0;
     }
+
     if (value > 255)
     {
         value = 255;
     }
+
     receiver->unk08 = value;
     return value;
 }
@@ -1199,14 +1225,17 @@ u32 func_00120670(const void* object)
 s32 func_00120680(void* object, s32 value)
 {
     WordGetterOwnerresident_0011EE70* receiver = (WordGetterOwnerresident_0011EE70*)object;
+
     if (value < 0)
     {
         value = 0;
     }
+
     if (value > 999)
     {
         value = 999;
     }
+
     receiver->unk04 = value;
     return value;
 }
@@ -1221,14 +1250,17 @@ u32 func_001206B0(const void* object)
 s32 func_001206C0(void* object, s32 value)
 {
     WordGetterOwnerresident_0011EE70* receiver = (WordGetterOwnerresident_0011EE70*)object;
+
     if (value < 0)
     {
         value = 0;
     }
+
     if (value > 9999)
     {
         value = 9999;
     }
+
     receiver->unk00 = value;
     return value;
 }

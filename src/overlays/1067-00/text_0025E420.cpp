@@ -33,12 +33,14 @@ struct SmallConditionalInput04
 s32 func_0025E840(void* object, const void* value, float* zero_output, float* small_output)
 {
     const struct SmallConditionalInput04* state = (const struct SmallConditionalInput04*)value;
+
     if (!(state->unk04 <= 0.0f))
     {
         *zero_output = 0.0f;
         *small_output = 0.05f;
         return 1;
     }
+
     return 0;
 }
 
@@ -131,9 +133,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0025E420", func_002604
 extern "C" void* func_002605B0(FieldListObject* loader, u32 size, s32 mode)
 {
     FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(loader->owner);
+
     for (s32 attempt = 0; attempt < 8; attempt++)
     {
         void* result;
+
         if (mode)
         {
             func_00433AA0();
@@ -143,15 +147,18 @@ extern "C" void* func_002605B0(FieldListObject* loader, u32 size, s32 mode)
         {
             result = memalign(128, size);
         }
+
         if (result)
         {
             return result;
         }
+
         if (manager->node_count == 1 || !field_reclaim_loader_buffers(manager, loader))
         {
             break;
         }
     }
+
     return 0;
 }
 
@@ -165,9 +172,11 @@ extern "C" void* func_002605B0(FieldListObject* loader, u32 size, s32 mode)
 extern "C" void* func_00260690(FieldListObject* loader, u32 size, s32 mode)
 {
     FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(loader->owner);
+
     for (s32 attempt = 0; attempt < 8; attempt++)
     {
         void* result;
+
         if (mode)
         {
             func_00433AA0();
@@ -177,15 +186,18 @@ extern "C" void* func_00260690(FieldListObject* loader, u32 size, s32 mode)
         {
             result = memalign(128, size);
         }
+
         if (result)
         {
             return result;
         }
+
         if (manager->node_count == 1 || !field_reclaim_loader_buffers(manager, loader))
         {
             break;
         }
     }
+
     return 0;
 }
 

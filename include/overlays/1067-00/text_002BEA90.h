@@ -44,10 +44,8 @@ typedef struct FieldProgressState FieldProgressState;
 class FieldClass159E40 : public FieldClass154E70
 {
 public:
-    /** @brief Construct the object. */
     FieldClass159E40();
 
-    /** @brief Destroy the object. */
     virtual ~FieldClass159E40();
 
     u8 unk04[0x8C];
@@ -74,7 +72,6 @@ public:
 class FieldClass159C30 : public FieldClass159E50
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass159C30()
     {
     }
@@ -84,7 +81,6 @@ public:
 class FieldClass159D00 : public FieldClass159C30
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass159D00()
     {
     }
@@ -94,7 +90,6 @@ public:
 class FieldClass159B60 : public FieldClass159D00
 {
 public:
-    /** @brief Destroy the object. */
     virtual ~FieldClass159B60();
 };
 #endif

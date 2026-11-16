@@ -5,10 +5,15 @@
 #include "overlays/lib/text_004CD3A0.h"
 
 typedef unsigned __int128 FieldLocalQword;
+
 extern "C" s32 func_0022A160(void*);
+
 extern "C" void func_00208C30(void*);
+
 extern "C" void func_00209160(void*, void*, u32);
+
 extern "C" void func_001FF5A0(void*, u32, u32);
+
 extern "C" void func_001FF7F0(FieldFlaggedPointerA0*, u32);
 
 union FieldLocalVector4
@@ -16,8 +21,11 @@ union FieldLocalVector4
     u32 words[4];
     FieldLocalQword packed;
 };
+
 extern "C" void func_00228DD0(FieldTransform*);
+
 extern "C" bool func_00227280(FieldState3BA*);
+
 extern "C" float g_frame_ticks;
 
 struct FieldSlot { u8 pad[0x20]; FieldLocalQword unk20; };
@@ -41,10 +49,15 @@ struct FieldStateAD { u8 pad[0xA0]; void* unka0; u8 pad_a4[9]; u8 unkad_0 : 1; u
 struct FieldState820 { u8 pad[0x820]; void* unk820; };
 struct FieldState634 { u8 pad[0x5A0]; u8 unk5a0; u8 pad5a1[0x93]; void* unk634; };
 struct FieldState2C { u8 pad[0x1C]; u32 unk1c; u32 unk20; float unk24; u8 pad28[4]; u8 unk2c_0 : 1; u8 unk2c_rest : 7; };
+
 extern "C" int func_00206280(void*);
+
 extern "C" void func_4C9010(FieldOuter870*, void*, void*);
+
 extern "C" void func_4A5E60(FieldState820*, void*, void*);
+
 extern "C" void func_4D5C90(void*);
+
 extern "C" void func_448250(FieldState634*);
 
 struct FieldState544 { u8 pad[0x544]; float source; };
@@ -88,12 +101,16 @@ class FieldCallbackObject : FieldCallbackBase
 {
 public:
     virtual void action(s32);
+
     virtual void finish();
 };
+
 extern "C" void func_00205260(FieldCallbackState*);
+
 extern "C" void func_00204E40(FieldCallbackState*);
 
 extern "C" void* func_00204A10(void*);
+
 extern "C" void func_45B0E0(void*, void*, bool);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00200710);
@@ -120,13 +137,19 @@ s32 FieldClass150DC0::get_default_list_kind()
     return 1;
 }
 
-/** @brief Return the fixed script state value. @return One. */
+/**
+ * @brief Return the fixed script state value.
+ * @return One.
+ */
 s32 FieldClass150DC0::func_00201520()
 {
     return 1;
 }
 
-/** @brief Read the field frame increment. @return Current frame increment. */
+/**
+ * @brief Read the field frame increment.
+ * @return Current frame increment.
+ */
 float FieldClass150DC0::func_00201530()
 {
     return g_frame_ticks;
@@ -151,15 +174,19 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_002016
 void func_002016F0(FieldResourceList14* object, s32 first, s32 second)
 {
     FieldResourceListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
         u8 enabled = entry->unk49_1;
+
         if (enabled && (enabled ? entry->unk49_3 : 1) &&
             (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
               first == (u16)entry->unk20) ||
@@ -173,15 +200,19 @@ void func_002016F0(FieldResourceList14* object, s32 first, s32 second)
 void func_002017B0(FieldResourceList14* object, s32 first, s32 second)
 {
     FieldResourceListNode* node = &object->unk14;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->unk14 == node)
         {
             break;
         }
+
         FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
         u8 enabled = entry->unk49_1;
+
         if (enabled && (enabled ? entry->unk49_3 : 1) &&
             (((entry->unk1c == 0x43484152 || entry->unk1c == 0x41545243) &&
               first == (u16)entry->unk20) ||
@@ -204,19 +235,24 @@ u32 func_00201E20(FieldResourceList14* object, u32 kind, u32 key)
 {
     FieldResourceListNode* node = &object->unk14;
     FieldResourceListNode* sentinel = node;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || sentinel == node)
         {
             break;
         }
+
         FieldResourceListEntry* entry = (FieldResourceListEntry*)node;
+
         if (kind == entry->unk1c && key == entry->unk20)
         {
             return entry->unk49_1 ? entry->unk18 : entry->unk14;
         }
     }
+
     return 0;
 }
 
@@ -228,19 +264,25 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201F
 void FieldClass150E10::update()
 {
     ResidentContext* context = D_001B6430->context;
+
     if (!context->unk08)
     {
         return;
     }
+
     if (context->unkde_1 || (context->unk08->unk60 & 1))
     {
         return;
     }
+
     LibUpdateList& list = *this;
     list.update_nodes();
 }
 
-/** @brief Detach the object and add it to the resident release queue. @param object Object to release. */
+/**
+ * @brief Detach the object and add it to the resident release queue.
+ * @param object Object to release.
+ */
 extern "C" void func_002020F0(void* object)
 {
     lib_object_detach_owner(object);

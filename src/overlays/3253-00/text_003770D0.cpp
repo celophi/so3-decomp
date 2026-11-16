@@ -2,8 +2,11 @@
 #include "overlays/3253-00/text_003770D0.h"
 
 extern "C" void func_003AD020(void* object);
+
 extern "C" u32 func_4A0FC0(u32 value, const void* data);
+
 extern "C" void func_003AF250(void* object);
+
 extern "C" const u8 D_3E8618[];
 
 typedef struct ConstantByteSetterOwnertext_003770D0
@@ -137,6 +140,7 @@ INCLUDE_ASM("build/overlays/3253-00/asm/nonmatchings/text_003770D0", func_0037F6
 void func_0037F820(void* object)
 {
     func_003AD020(object);
+
     if (((u8*)object)[0x391] != 0) {
         ((u8*)object)[0xEB] = 0;
     }

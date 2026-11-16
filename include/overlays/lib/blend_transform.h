@@ -15,7 +15,6 @@ public:
         unk211 = 0;
     }
 
-    /** @brief Destroy the blend transform and its transform base. */
     virtual ~LibBlendTransform()
     {
     }

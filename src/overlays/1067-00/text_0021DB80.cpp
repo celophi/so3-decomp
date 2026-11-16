@@ -45,10 +45,12 @@ s32 func_0021DE20(FieldScriptObject151D40* object, u32 count)
 s32 func_0021DE40(FieldScriptObject151D40* object, u32 count)
 {
     FieldScriptWord18* state = (FieldScriptWord18*)object;
+
     if (state->unk424 != 0) {
         state->unk18 = *state->current;
         return 0;
     }
+
     return 1;
 }
 
@@ -100,10 +102,12 @@ s32 func_0021DFF0(FieldScriptObject151D40* object, u32 count)
     FieldScriptWord18* state = (FieldScriptWord18*)object;
     u32 command = *state->current;
     u32 value = func_00217920(object, (command & 0xFFFF) + 0x5000);
+
     if (command & 0x40000)
     {
         value = (u8)!value;
     }
+
     switch (command & 0x30000)
     {
     case 0:
@@ -116,6 +120,7 @@ s32 func_0021DFF0(FieldScriptObject151D40* object, u32 count)
         state->unk424 |= value;
         break;
     }
+
     return 1;
 }
 
@@ -127,11 +132,13 @@ s32 func_0021E160(FieldScriptObject151D40* object, u32 count)
     const u32* operand = state->current++;
     u32 mask = *operand;
     u32 enabled = (*state->current & 1) != 0;
+
     if (enabled) {
         D_001B6430->context->unkd0 |= mask;
     } else {
         D_001B6430->context->unkd0 &= ~mask;
     }
+
     return 1;
 }
 

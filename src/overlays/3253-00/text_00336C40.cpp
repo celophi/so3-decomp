@@ -112,6 +112,7 @@ void func_0033DD80(BattleObject2F26* object, u8 current, u8 previous)
         state->first = 1;
         state->second = 1;
     }
+
     func_00292930(object, current, previous);
 }
 
@@ -218,6 +219,7 @@ void func_00342200(BattleObject2F26* object, u8 current, u8 previous)
         state->first = 1;
         state->second = 1;
     }
+
     func_00292930(object, current, previous);
 }
 

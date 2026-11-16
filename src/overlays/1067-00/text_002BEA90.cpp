@@ -156,8 +156,11 @@ struct FieldCollection50
     u8 pad[0x14];
     FieldEntry50* entries;
 };
+
 extern "C" void func_113EA0();
+
 extern "C" void func_4C74E0(FieldState100* state);
+
 extern "C" void func_462320(FieldState100* state, s32, s32);
 
 struct FieldWord28
@@ -284,6 +287,7 @@ class FieldClass159DD0 : public FieldClass154E20
 public:
     /** @brief Destroy the object. */
     virtual ~FieldClass159DD0();
+
     /** @brief Create the grid for this object. */
     virtual void func_slot30();
 };
@@ -323,6 +327,7 @@ extern "C" void func_002BF3F0(FieldInputBlock* self, const u8* data, s32 count)
 {
     self->data = data;
     self->count = count;
+
     if (*self->data == 1)
     {
         self->unk34 = 1;
@@ -540,15 +545,19 @@ extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
     object->unk20 = 0;
     delete[] object->unk18;
     object->unk18 = new (0) FieldClass159E40[rows + 2];
+
     if (object->unk18 == 0)
     {
         return;
     }
+
     delete object->unk1C;
+
     if (D_001B6684 != 0)
     {
         void* heap = resident_exchange_allocation_heap(D_001B6684);
         object->unk1C = new (0) FieldBitset154E80(rows);
+
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
@@ -556,6 +565,7 @@ extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         if (object->unk1C->unk08 == 0)
         {
             delete[] object->unk18;
@@ -565,17 +575,20 @@ extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
             resident_exchange_allocation_heap(heap);
             return;
         }
+
         resident_exchange_allocation_heap(heap);
     }
     else
     {
         object->unk1C = new (0) FieldBitset154E80(rows);
+
         if (object->unk1C == 0)
         {
             delete[] object->unk18;
             object->unk18 = 0;
             return;
         }
+
         if (object->unk1C->unk08 == 0)
         {
             delete[] object->unk18;
@@ -585,10 +598,12 @@ extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
             return;
         }
     }
+
     if (columns > 1)
     {
         delete[] object->unk24;
         object->unk24 = new (0) FieldClass154E60[rows * (columns - 1) + 2];
+
         if (object->unk24 == 0)
         {
             delete[] object->unk18;
@@ -603,14 +618,17 @@ extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
         delete[] object->unk24;
         object->unk24 = 0;
     }
+
     if (object->unk18 != 0)
     {
         object->unk14 = (u8*)(object->unk18 + 1);
     }
+
     if (object->unk24 != 0)
     {
         object->unk20 = (u8*)(object->unk24 + 1);
     }
+
     object->unk0C = rows;
     object->unk10 = columns;
     object->unk1C->clear();
@@ -643,11 +661,13 @@ extern "C" void func_002BFF40(FieldProgressState* self)
     if (self->mode == 1)
     {
         self->progress += 128.0f * g_field_runtime->rate;
+
         if (self->progress >= 128.0f)
         {
             self->progress = 128.0f;
             self->mode = 0;
         }
+
         self->changed = 1;
     }
 }
@@ -663,6 +683,7 @@ extern "C" void func_002C0390(FieldState100* state)
         state->unk3b = 0;
         return;
     }
+
     if (state->unk3b == 0)
     {
         func_113EA0();
@@ -678,6 +699,7 @@ class FieldClass159FE0 : public LibWidget
 public:
     /** @brief Release the widget storage and destroy its base. */
     virtual ~FieldClass159FE0();
+
     LibStorageBlock0C unk40;
 };
 

@@ -41,10 +41,15 @@ struct FieldContextVector371
 static const char D_31A840[] = "Camera%02d";
 
 typedef unsigned __int128 FieldLocalQword;
+
 extern "C" s32 func_0022A160(void*);
+
 extern "C" void func_00208C30(void*);
+
 extern "C" void func_00209160(void*, void*, u32);
+
 extern "C" void func_001FF5A0(void*, u32, u32);
+
 extern "C" void func_001FF7F0(FieldFlaggedPointerA0*, u32);
 
 union FieldLocalVector4
@@ -52,7 +57,9 @@ union FieldLocalVector4
     u32 words[4];
     FieldLocalQword packed;
 };
+
 extern "C" void func_00228DD0(FieldTransform*);
+
 extern "C" bool func_00227280(FieldState3BA*);
 
 struct FieldSlot { u8 pad[0x20]; FieldLocalQword unk20; };
@@ -76,10 +83,15 @@ struct FieldStateAD { u8 pad[0xA0]; void* unka0; u8 pad_a4[9]; u8 unkad_0 : 1; u
 struct FieldState820 { u8 pad[0x820]; void* unk820; };
 struct FieldState634 { u8 pad[0x5A0]; u8 unk5a0; u8 pad5a1[0x93]; void* unk634; };
 struct FieldState2C { u8 pad[0x1C]; u32 unk1c; u32 unk20; float unk24; u8 pad28[4]; u8 unk2c_0 : 1; u8 unk2c_rest : 7; };
+
 extern "C" int func_00206280(void*);
+
 extern "C" void func_4C9010(FieldOuter870*, void*, void*);
+
 extern "C" void func_4A5E60(FieldState820*, void*, void*);
+
 extern "C" void func_4D5C90(void*);
+
 extern "C" void func_448250(FieldState634*);
 
 struct FieldState544 { u8 pad[0x544]; float source; };
@@ -151,6 +163,7 @@ struct FieldContextRotation
 
 
 extern "C" void* func_00204A10(void*);
+
 extern "C" void func_45B0E0(void*, void*, bool);
 
 /** @brief Destroy the command and detach its inherited node. */
@@ -158,7 +171,10 @@ FieldClass1512C0::~FieldClass1512C0()
 {
 }
 
-/** @brief Build the borrowed curve and begin its float transition. @return Always one. */
+/**
+ * @brief Build the borrowed curve and begin its float transition.
+ * @return Always one.
+ */
 s32 FieldClass1512C0::func_00207B90()
 {
     FieldContextMotion* object = (FieldContextMotion*)D_001B6430->context->unk14;
@@ -173,18 +189,23 @@ s32 FieldClass1512C0::func_00207B90()
     motion->unk14.unk04 = new (0) FieldVec4B[count];
     func_00272950(&motion->unk14, 0.0f, 0.0f);
     pair = unk28;
+
     for (index = 0; index < unk1c; index++)
     {
         func_00272950(&motion->unk14, pair->unk00, pair->unk04);
         pair++;
     }
+
     func_00272950(&motion->unk14, 1.0f, 1.0f);
     func_002723E0(&motion->unk14);
     func_002934E0(motion, channel->unkb0, unk20, unk24);
     return 1;
 }
 
-/** @brief Set the motion target and duration, then complete the command. @return One. */
+/**
+ * @brief Set the motion target and duration, then complete the command.
+ * @return One.
+ */
 s32 FieldClass1512E0::func_00207CC0()
 {
     FieldContextMotion* state = (FieldContextMotion*)D_001B6430->context->unk14;
@@ -192,7 +213,10 @@ s32 FieldClass1512E0::func_00207CC0()
     return 1;
 }
 
-/** @brief Set or apply the motion target and complete the command. @return One. */
+/**
+ * @brief Set or apply the motion target and complete the command.
+ * @return One.
+ */
 s32 FieldClass151300::func_00207D00()
 {
     FieldContextMotion4* state = (FieldContextMotion4*)D_001B6430->context->unk14;
@@ -200,7 +224,10 @@ s32 FieldClass151300::func_00207D00()
     return 1;
 }
 
-/** @brief Apply a queued planar movement at the current angle. @return Always one. */
+/**
+ * @brief Apply a queued planar movement at the current angle.
+ * @return Always one.
+ */
 s32 FieldClass151320::func_00207D40()
 {
     FieldContextMotion2* object = (FieldContextMotion2*)D_001B6430->context->unk14;
@@ -214,7 +241,10 @@ s32 FieldClass151320::func_00207D40()
     return 1;
 }
 
-/** @brief Wait for the command list's owning motion. @return Zero while active, otherwise one. */
+/**
+ * @brief Wait for the command list's owning motion.
+ * @return Zero while active, otherwise one.
+ */
 s32 FieldClass151340::func_00207DF0()
 {
     if (reinterpret_cast<FieldCommandOwner80*>(owner)->unk7c->func_00208C80())
@@ -222,10 +252,14 @@ s32 FieldClass151340::func_00207DF0()
         reinterpret_cast<FieldCommandOwner80*>(owner)->unk78 = 1.0f;
         return 0;
     }
+
     return 1;
 }
 
-/** @brief Begin the queued scalar motion and clear the context state. @return Always one. */
+/**
+ * @brief Begin the queued scalar motion and clear the context state.
+ * @return Always one.
+ */
 s32 FieldClass151360::func_00207E50()
 {
     FieldContextMotion2* object = (FieldContextMotion2*)D_001B6430->context->unk14;
@@ -234,7 +268,10 @@ s32 FieldClass151360::func_00207E50()
     return 1;
 }
 
-/** @brief Begin motion through the command list's owner. @return Always one. */
+/**
+ * @brief Begin motion through the command list's owner.
+ * @return Always one.
+ */
 s32 FieldClass151380::func_00207E90()
 {
     reinterpret_cast<FieldCommandOwner80*>(owner)->unk7c->func_00207EE0(unk20, unk1c);
@@ -246,7 +283,10 @@ extern "C" void func_00207EE0(void* object)
 {
 }
 
-/** @brief Begin the queued angular motion. @return Always one. */
+/**
+ * @brief Begin the queued angular motion.
+ * @return Always one.
+ */
 s32 FieldClass1513A0::func_00207EF0()
 {
     FieldContextAngle* object = (FieldContextAngle*)D_001B6430->context->unk14;
@@ -254,7 +294,10 @@ s32 FieldClass1513A0::func_00207EF0()
     return 1;
 }
 
-/** @brief Begin a queued rotation and clear the context state. @return Always one. */
+/**
+ * @brief Begin a queued rotation and clear the context state.
+ * @return Always one.
+ */
 s32 FieldClass1513C0::func_00207F30()
 {
     FieldContextRotation* object = (FieldContextRotation*)D_001B6430->context->unk14;
@@ -263,45 +306,59 @@ s32 FieldClass1513C0::func_00207F30()
     return 1;
 }
 
-/** @brief Wait for readiness, then apply the owner timer. @return One when ready, otherwise zero. */
+/**
+ * @brief Wait for readiness, then apply the owner timer.
+ * @return One when ready, otherwise zero.
+ */
 s32 FieldClass1513E0::func_00207F70()
 {
     if (!D_001B6430->context->unk38->unk4c8_0)
     {
         return 0;
     }
+
     static_cast<FieldClass151490*>(owner)->unk78 = (float)unk1c;
     return 1;
 }
 
-/** @brief Wait for readiness, then invoke the owner motion callback. @return One when ready, otherwise zero. */
+/**
+ * @brief Wait for readiness, then invoke the owner motion callback.
+ * @return One when ready, otherwise zero.
+ */
 s32 FieldClass151400::func_00207FE0()
 {
     if (!D_001B6430->context->unk38->unk4c8_0)
     {
         return 0;
     }
+
     static_cast<FieldClass151460*>(static_cast<FieldClass151490*>(owner)->unk7c)->func_00208C30();
     return 1;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0022D6C0__16FieldClass151420Fv);
 
-/** @brief Apply the retained motion vector when resident state is ready. @return Always one. */
+/**
+ * @brief Apply the retained motion vector when resident state is ready.
+ * @return Always one.
+ */
 s32 FieldClass151440::func_00208230()
 {
     if (!D_001B6430->context->unk38->unk4c8_0)
     {
         return 1;
     }
+
     FieldContextVector371* context = (FieldContextVector371*)D_001B6430->context->unk14;
     context->unk36e = 1;
     FieldMotionVector81* motion = static_cast<FieldMotionVector81*>(static_cast<FieldClass151490*>(owner)->unk7c);
     motion->unk30 = unk20;
+
     if (motion->unk80 == 1)
     {
         motion->unk70 &= ~0x10;
     }
+
     if (!(unk30 & 1))
     {
         motion->unk10 = unk20;
@@ -432,6 +489,7 @@ extern "C" void func_00209780(FieldMotionF0* object, float target, float duratio
     object->start = object->source->source;
     object->target = target;
     object->duration = duration;
+
     if (duration > 0.0f)
     {
         object->step = (object->target - object->start) / object->duration;
@@ -440,6 +498,7 @@ extern "C" void func_00209780(FieldMotionF0* object, float target, float duratio
     {
         object->step = object->target - object->start;
     }
+
     object->flags |= 0x200;
 }
 
@@ -465,6 +524,7 @@ extern "C" void func_002098C0(FieldMotionRange* object, float target, float dura
     {
         object->target = target;
     }
+
     if (duration == 0.0f)
     {
         object->start = object->target;
@@ -496,12 +556,15 @@ extern "C" void func_00209BB0(FieldMotion2* object, float target, float duration
     {
         target = object->fallback;
     }
+
     object->change = target - object->current;
     float zero = 0.0f;
+
     if (duration != zero)
     {
         object->change /= duration;
     }
+
     object->target = target;
     object->duration = duration;
     object->flags |= 8;
@@ -513,12 +576,15 @@ extern "C" void func_00209C20(FieldMotion3* object, float target, float duration
     {
         target = object->fallback;
     }
+
     object->change = target - object->current;
     float zero = 0.0f;
+
     if (duration != zero)
     {
         object->change /= duration;
     }
+
     object->target = target;
     object->duration = duration;
     object->flags |= 4;
@@ -527,6 +593,7 @@ extern "C" void func_00209C20(FieldMotion3* object, float target, float duration
 extern "C" void func_00209C90(FieldMotionC8* object, float target, float duration)
 {
     float zero = 0.0f;
+
     if (duration != zero)
     {
         object->duration = duration;
@@ -587,25 +654,35 @@ s32 FieldClass151510::func_00204480(void* other)
     {
         return 0;
     }
+
     FieldClass154D20* channel = ((FieldClass151510*)other)->unkA8;
+
     if (channel)
     {
         if (!func_0020BF00())
         {
             return 0;
         }
+
         unkA8->func_0020BD00(channel);
         unkA8->func_0020BCF0(unk80);
     }
+
     return 1;
 }
 
-/** @brief Default context handler. @param context Unused context pointer. */
+/**
+ * @brief Default context handler.
+ * @param context Unused context pointer.
+ */
 void FieldClass154D20::func_0020BCF0(void* context)
 {
 }
 
-/** @brief Default copy handler. @param other Unused source channel. */
+/**
+ * @brief Default copy handler.
+ * @param other Unused source channel.
+ */
 void FieldClass154D20::func_0020BD00(FieldClass154D20* other)
 {
 }
@@ -616,6 +693,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_002042
 void FieldClass151510::update()
 {
     FieldClass150F90::update();
+
     if (unkA8)
     {
         unkA8->func_0020BDA0();
@@ -626,7 +704,11 @@ void FieldClass154D20::func_0020BDA0()
 {
 }
 
-/** @brief Load the selected actor resource. @param key Resource key, or -1. @return One on success, zero otherwise. */
+/**
+ * @brief Load the selected actor resource.
+ * @param key Resource key, or -1.
+ * @return One on success, zero otherwise.
+ */
 s32 FieldClass151510::func_00204A10(s32 key)
 {
     return FieldClass150F90::func_00204A10(key) != 0;
@@ -651,7 +733,10 @@ void FieldClass151510::func_00204E40()
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BE50__16FieldClass151510Fv);
 
-/** @brief Store the channel context. @param context Context pointer. */
+/**
+ * @brief Store the channel context.
+ * @param context Context pointer.
+ */
 void FieldClass153570::func_0020BCF0(void* context)
 {
     unkC4 = context;
@@ -659,7 +744,10 @@ void FieldClass153570::func_0020BCF0(void* context)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020BF00__16FieldClass151510Fv);
 
-/** @brief Store the resource pointer and its aligned payload address. @param resource Resource address. */
+/**
+ * @brief Store the resource pointer and its aligned payload address.
+ * @param resource Resource address.
+ */
 void FieldClass151510::func_0020BF50(void* resource)
 {
     unkAC = resource;
@@ -705,26 +793,34 @@ extern "C" s32 func_0020C230(FieldClass1515B0* node, FieldShapeOwner18* other)
 {
     FieldShapeRecord20* records = node->unk14->unk0c;
     FieldShapeRecord20* record = &records[node->unk1c];
+
     for (;;)
     {
         record->unk0c.unk00_4 = 0;
+
         if (record->unk0c.unk00_5)
         {
             break;
         }
+
         ++record;
     }
+
     s32 result = func_0045EBD0(node->unk18, other) & 0xFF;
     record = &records[node->unk1c];
+
     for (;;)
     {
         record->unk0c.unk00_4 = 1;
+
         if (record->unk0c.unk00_5)
         {
             break;
         }
+
         ++record;
     }
+
     return result;
 }
 
@@ -764,18 +860,22 @@ FieldClass151620::~FieldClass151620()
 extern "C" s32 func_0020CB20(FieldCbOwner* object, u16 kind)
 {
     FieldCbLink* node = &object->sentinel;
+
     for (;;)
     {
         node = node->next;
+
         if (&object->sentinel == node)
         {
             break;
         }
+
         if (((FieldCbEntry*)node)->kind == kind)
         {
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -793,13 +893,16 @@ extern "C" FieldClass1515B0* func_0020CB70(FieldClass151640* object,
     LibListNode* node = (LibListNode*)&object->unk1f0;
     D_001B656C = ((FieldShapeData10*)object->FieldClass1515D0::unk00)->unk0c;
     D_001B6570 = data->unk0c;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || (LibListNode*)&object->unk1f0 == node)
         {
             break;
         }
+
         if (func_0020C230((FieldClass1515B0*)node, other))
         {
             FieldVec4A transformed;
@@ -810,6 +913,7 @@ extern "C" FieldClass1515B0* func_0020CB70(FieldClass151640* object,
             return (FieldClass1515B0*)node;
         }
     }
+
     return 0;
 }
 
@@ -822,52 +926,67 @@ extern "C" FieldClass1515B0* func_0020CB70(FieldClass151640* object,
 extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
 {
     FieldClass150F90* root = D_001B6430->context->unk08->current_object;
+
     if (!root)
     {
         return 0;
     }
+
     if (!root->unk7c)
     {
         return 0;
     }
+
     FieldClass1515D0* first = object->func_001DDCD0();
     FieldClass1515D0* second = object->func_001DDCD0();
     func_0045F580(first, second);
     LibListNode* node = (LibListNode*)&object->unk178;
+
     for (;;)
     {
         node = node->next;
+
         if (!node || (LibListNode*)&object->unk178 == node)
         {
             break;
         }
+
         FieldClass1515B0* shape = (FieldClass1515B0*)node;
         FieldShapeRecord20* records = shape->unk14->unk0c;
         s32 index = shape->unk18->unk0e;
+
         for (;;)
         {
             FieldShapeRecord20& record = records[index];
             record.unk0c.unk00_4 = 0;
+
             if (record.unk0c.unk00_5)
             {
                 break;
             }
+
             ++index;
         }
+
         u8 found = func_0045BFB0(shape->unk18, query);
         FieldShapeRecord20* restore_records = shape->unk14->unk0c;
         s32 restore_index = shape->unk18->unk0e;
+
         for (;;)
         {
             FieldShapeRecord20& record = restore_records[restore_index];
             record.unk0c.unk00_4 = 1;
+
             if (record.unk0c.unk00_5)
             {
                 break;
             }
+
             ++restore_index;
         }
+
         void* result;
+
         if (!found)
         {
             result = 0;
@@ -878,15 +997,20 @@ extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
             sprintf_guess(name, D_31A840, (u8)(shape->unk18->unk0b - 0x3f));
             result = lib_find_camera_entry(static_cast<LibEntryManager*>(D_001B6430->context->unk08->current_object->unk7c), name);
         }
+
         if (result)
         {
             return result;
         }
     }
+
     return 0;
 }
 
-/** @brief Return this shape resource. @return The inherited resource receiver. */
+/**
+ * @brief Return this shape resource.
+ * @return The inherited resource receiver.
+ */
 FieldClass1515D0* FieldClass151640::func_001DDCD0()
 {
     return this;
@@ -907,15 +1031,19 @@ extern "C" u8 func_0020CE40(FieldClass151640* object, FieldClass1515D0* other,
     LibListNode* node = (LibListNode*)&object->unk88;
     FieldClass1515D0 storage;
     bool prepared = false;
+
     for (;;)
     {
         node = node->next;
+
         if (node == 0 || (LibListNode*)&object->unk88 == node)
         {
             break;
         }
+
         FieldClass151570* attachment = (FieldClass151570*)node;
         FieldClass151620* entry = attachment->unk20;
+
         if (entry)
         {
             if (!prepared)
@@ -924,6 +1052,7 @@ extern "C" u8 func_0020CE40(FieldClass151640* object, FieldClass1515D0* other,
                 func_0045B210(&storage, &resource);
                 prepared = true;
             }
+
             resource.data.prefix.unk0c = &entry->record;
             D_001B656C = ((FieldShapeData10*)storage.unk00)->unk0c;
         }
@@ -931,15 +1060,19 @@ extern "C" u8 func_0020CE40(FieldClass151640* object, FieldClass1515D0* other,
         {
             D_001B656C = ((FieldShapeData10*)object->func_001DDCD0()->unk00)->unk0c;
         }
+
         u8 passed = func_0045EBD0(attachment->unk1c,
             (FieldShapeOwner18*)((FieldShapeData30*)other->unk00 + 1));
+
         if (!passed)
         {
             continue;
         }
+
         func_00433730(&attachment->unk70, point, point);
         return 1;
     }
+
     return 0;
 }
 
@@ -958,23 +1091,29 @@ extern "C" s32 func_0020D060(FieldShapeListOwner20* object, void* query)
         FieldClass1515D0 storage;
         func_0045B210(&storage, &resource);
         FieldClass151620* node = (FieldClass151620*)&object->unk10;
+
         for (;;)
         {
             node = static_cast<FieldClass151620*>(node->unk08);
+
             if (node == 0 || (FieldClass151620*)&object->unk10 == node)
             {
                 break;
             }
+
             resource.data.prefix.unk0c = &node->record;
             D_001B656C = ((FieldShapeData10*)storage.unk00)->unk0c;
             u8 result = func_0045CBE0(&node->shape, query);
+
             if (!result)
             {
                 continue;
             }
+
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -990,12 +1129,16 @@ extern "C" s32 func_0020D1A0(FieldClass154D20* object, FieldVec4B* query)
     {
         return 0;
     }
+
     u8 initial_result = func_0045BD20(object->func_001DDCD0(), query, &query[1]);
+
     if (initial_result)
     {
         return 1;
     }
+
     FieldShapeListOwner20* list = (FieldShapeListOwner20*)object;
+
     if (list->count)
     {
         FieldShapeAttributeResource resource;
@@ -1003,23 +1146,29 @@ extern "C" s32 func_0020D1A0(FieldClass154D20* object, FieldVec4B* query)
         FieldClass1515D0 storage;
         func_0045B210(&storage, &resource);
         FieldClass151620* node = (FieldClass151620*)&list->unk10;
+
         for (;;)
         {
             node = static_cast<FieldClass151620*>(node->unk08);
+
             if (node == 0 || (FieldClass151620*)&list->unk10 == node)
             {
                 break;
             }
+
             resource.data.prefix.unk0c = &node->record;
             func_0045F580(&storage, &storage);
             u8 result = func_0045B920(&node->shape, query, &query[1]);
+
             if (!result)
             {
                 continue;
             }
+
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1035,12 +1184,16 @@ extern "C" s32 func_0020D330(FieldClass154D20* object, FieldClass1515D0* other)
     {
         return 0;
     }
+
     u8 initial_result = func_0045F5A0(object->func_001DDCD0(), other);
+
     if (initial_result)
     {
         return 1;
     }
+
     FieldShapeListOwner20* list = (FieldShapeListOwner20*)object;
+
     if (list->count)
     {
         FieldShapeAttributeResource resource;
@@ -1048,23 +1201,29 @@ extern "C" s32 func_0020D330(FieldClass154D20* object, FieldClass1515D0* other)
         FieldClass1515D0 storage;
         func_0045B210(&storage, &resource);
         FieldClass151620* node = (FieldClass151620*)&list->unk10;
+
         for (;;)
         {
             node = static_cast<FieldClass151620*>(node->unk08);
+
             if (node == 0 || (FieldClass151620*)&list->unk10 == node)
             {
                 break;
             }
+
             resource.data.prefix.unk0c = &node->record;
             func_0045F580(&storage, other);
             u8 result = func_0045EBD0(&node->shape, (FieldShapeData30*)other->unk00 + 1);
+
             if (!result)
             {
                 continue;
             }
+
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -1082,13 +1241,18 @@ extern "C" void func_0020D4C0(FieldClass151640* object, FieldShapeOwner18* shape
     object->unk88.append_node(node, -1);
 }
 
-/** @brief Test the descriptor array's terminal flag. @param shape Descriptor to test. @return Whether the array ends here. */
+/**
+ * @brief Test the descriptor array's terminal flag.
+ * @param shape Descriptor to test.
+ * @return Whether the array ends here.
+ */
 static inline bool field_owner_is_last(const FieldShapeOwner18* shape)
 {
     if (shape->unk0a & 0x20)
     {
         return true;
     }
+
     return false;
 }
 
@@ -1105,25 +1269,32 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibAnimatio
     {
         return 0;
     }
+
     FieldClass151570* node = 0;
+
     for (;; shape++)
     {
         LibTransformOwner* transform = shape->unk04;
+
         if (shape->unk0e != -1 && transform)
         {
             bool found;
+
             do
             {
                 found = true;
+
                 if (lib_animation_find_channel(manager, transform, 0, 0) ||
                     lib_animation_find_channel(manager, transform, 1, 0) ||
                     lib_animation_find_channel(manager, transform, 2, 0))
                 {
                     break;
                 }
+
                 transform = ((FieldTransformParentLink20C*)transform)->unk208;
                 found = false;
             } while (transform);
+
             if (found)
             {
                 node = new (0) FieldClass151570;
@@ -1134,15 +1305,18 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibAnimatio
                 object->unk88.append_node(node, -1);
             }
         }
+
         if (shape->unk00)
         {
             func_0020D5E0(object, manager, shape->unk00);
         }
+
         if (field_owner_is_last(shape))
         {
             break;
         }
     }
+
     return node;
 }
 
@@ -1154,31 +1328,39 @@ extern "C" FieldClass151570* func_0020D5E0(FieldClass151640* object, LibAnimatio
 extern "C" void func_0020D810(FieldClass151640* object, FieldShapeOwner18* shape)
 {
     FieldShapeRecord20* records = ((FieldShapeData10*)object->FieldClass1515D0::unk00)->unk0c;
+
     for (;; shape++)
     {
         s32 index = shape->unk0e;
+
         if (shape->unk0b == 1 && shape->unk04 && index != -1)
         {
             FieldClass1515E0* node = new (0) FieldClass1515E0;
+
             if (node == 0)
             {
                 break;
             }
+
             node->func_0020DBC0(shape, (FieldShapeData10*)object->FieldClass1515D0::unk00, index);
             object->unk1f0.append_node(node, -1);
+
             for (;; index++)
             {
                 records[index].unk0c.unk00_4 = 1;
+
                 if (records[index].unk0c.unk00_5)
                 {
                     break;
                 }
             }
         }
+
         if (shape->unk00)
         {
             func_0020D810(object, shape->unk00);
         }
+
         if (field_owner_is_last(shape))
         {
             break;

@@ -11,7 +11,9 @@
 class LibClass1722E0 : public LibPanel
 {
 public:
-    /** @brief Destroy the panel. */
+    /** @brief Initialize the panel. */
+    LibClass1722E0();
+
     virtual ~LibClass1722E0();
 };
 
@@ -76,8 +78,73 @@ public:
 class LibClass172320 : public LibContainer, public LibClass1723F0
 {
 public:
-    /** @brief Destroy the aggregate and the container. */
+    LibClass172320();
+
     virtual ~LibClass172320();
+};
+
+/** Container owning up to 32 interface rows, with MAIN vtable at 0x1721F0. */
+class LibClass1721F0 : public LibClass172320
+{
+public:
+    /** @brief Initialize the container and set its transform type. */
+    LibClass1721F0();
+
+    virtual ~LibClass1721F0();
+
+    /**
+     * @brief Run the container state hook.
+     * @param first First update flag.
+     * @param second Second update flag.
+     * @param third Third update flag.
+     */
+    virtual void func_00412C40(u32 first, u32 second, u32 third);
+
+    /**
+     * @brief Create the row for an index.
+     * @param index Row index.
+     * @return The new row.
+     */
+    virtual void* create_row(s32 index) = 0;
+
+    /**
+     * @brief Called when the selected index changes.
+     * @param index Selected index.
+     */
+    virtual void notify_index(s32 index);
+
+    /** @brief Called when the selection is cancelled. */
+    virtual void notify_cancel();
+
+    /**
+     * @brief Update the aggregate index.
+     * @param index Requested index.
+     */
+    virtual void func_00412C10(s32 index);
+
+    /**
+     * @brief Update the aggregate float setting.
+     * @param value Requested setting.
+     */
+    virtual void func_00412C20(float value);
+
+    /**
+     * @brief Read the aggregate float setting.
+     * @return Current setting.
+     */
+    virtual float func_00412C30();
+
+    void* rows[32];
+    float unk490;
+    float unk494;
+    float unk498;
+    float unk49c;
+    s32 unk4a0;
+    s32 unk4a4;
+    u8 unk4a8;
+    u8 unk4a9;
+    u8 unk4aa;
+    u8 unk4ab[5];
 };
 
 #endif

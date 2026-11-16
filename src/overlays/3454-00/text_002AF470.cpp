@@ -2,7 +2,9 @@
 #include "overlays/3454-00/text_002AF470.h"
 
 extern "C" void func_002B3100(void* object, void* context);
+
 extern "C" void func_003776F0(void* first, void* second, void* third, void* fourth, u32 flags);
+
 struct ObjectPointer04
 {
     u32 unk00;
@@ -10,9 +12,13 @@ struct ObjectPointer04
 };
 
 extern "C" u32 func_473390(u32 value, const void* data);
+
 extern "C" u32 func_473940(u32 value, const void* data);
+
 extern "C" void func_002A1390(void* object);
+
 extern "C" void func_002919A0(void* object);
+
 extern "C" const u8 D_3E0878[];
 extern "C" const u8 D_3E06A8[];
 extern "C" const u8 D_3E07B8[];
@@ -226,12 +232,14 @@ struct SmallConditionalInput04
 extern "C" s32 func_002B0AF0(void* object, const void* value, float* zero_output, float* small_output)
 {
     const SmallConditionalInput04* state = (const SmallConditionalInput04*)value;
+
     if (!(state->unk04 <= 0.0f))
     {
         *zero_output = 0.0f;
         *small_output = 0.05f;
         return 1;
     }
+
     return 0;
 }
 
@@ -264,9 +272,11 @@ INCLUDE_ASM("build/overlays/3454-00/asm/nonmatchings/text_002AF470", func_002B0E
 void func_002B0EF0(u8* receiver, void* value1, void* value2, void* value3)
 {
     u8* adjusted = receiver;
+
     if (adjusted != 0) {
         adjusted = adjusted + 0x290;
     }
+
     func_003776F0(receiver + 0x460, adjusted, value1, value2, 1);
 }
 

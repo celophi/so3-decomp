@@ -114,17 +114,25 @@ class FieldClass153130 : public ItemCreationClass175030
 public:
     /** @brief Initialize the Field selection widget. */
     FieldClass153130();
+
     /** @brief Destroy the Field selection widget. */
     virtual ~FieldClass153130();
+
     /**
      * @brief Set the selection index and refresh its displayed position.
      * @param count Unsigned selection index.
      */
     void func_0023B280(u16 count);
+
     /** @brief Reset the selection index and refresh its displayed position. */
     void func_0023B310();
-    /** @brief Read the current selection index. @return Current zero-based index. */
+
+    /**
+     * @brief Read the current selection index.
+     * @return Current zero-based index.
+     */
     u16 func_0023B3A0();
+
     /**
      * @brief Move the selector in the requested direction.
      * @param direction Zero or three moves backward; one or two moves forward.
@@ -147,6 +155,7 @@ public:
      */
     s32 func_0023B530(u8 first, u8 second, u8 third, u16 value, u8 flag,
                      float x, float y, float z, float extent);
+
     u8 unk7c;
     u8 unk7d;
     float unk80;
@@ -164,20 +173,24 @@ struct FieldObject23CEA0 : public LibSelectionCursor
 {
     /** @brief Initialize the grid and its field transform bases. */
     FieldObject23CEA0();
+
     /** @brief Destroy the grid and its transform bases. */
     virtual ~FieldObject23CEA0();
+
     /**
      * @brief Store the grid dimensions.
      * @param width Column count.
      * @param height Row count.
      */
     void func_0023CE80(u8 width, u8 height);
+
     /**
      * @brief Store the grid spacing.
      * @param x Horizontal spacing.
      * @param y Vertical spacing.
      */
     void func_0023CE60(float x, float y);
+
     /**
      * @brief Position a grid entry.
      * @param value Entry index.
@@ -186,12 +199,14 @@ struct FieldObject23CEA0 : public LibSelectionCursor
      * @return Always one.
      */
     s32 func_0023CF50(s16 value, float x, float y);
+
     /**
      * @brief Dispatch a direction to the grid selection handler.
      * @param direction Signed direction code.
      * @return Selection handler result.
      */
     virtual s16 process_direction(s16 direction);
+
     u8 width;
     u8 unkF1;
     u8 unkF2;
@@ -376,6 +391,7 @@ s32 func_0023BAB0(FieldObject23BAB0* object, float x, float y, float z);
  * @param object Receiver to update.
  */
 void func_0023CB30(FieldObject23CB30* object);
+
 /**
  * @brief Reset the grid selection and update its displayed position.
  * @param object Grid to reset.
@@ -491,7 +507,6 @@ void func_0023D2A0(void* object);
 class FieldClass153270 : public FieldListObject
 {
     public:
-        /** @brief Destroy the object. */
         virtual ~FieldClass153270();
 
         u32 unk14;
