@@ -20,7 +20,6 @@ typedef struct ResidentPacket
     u8 unk15;
 } ResidentPacket;
 
-/** Bytes at the start of a packet's storage that its write cursor starts after. */
 #define RESIDENT_PACKET_HEADER_SIZE 0x40
 
 /**
@@ -43,10 +42,7 @@ public:
 };
 #endif
 
-/** Sound bank slots a ResidentClass14FC90 manages. */
 #define RESIDENT_SOUND_BANK_SLOT_COUNT 3
-
-/** Registered bank data lists per slot. */
 #define RESIDENT_SOUND_BANK_LIST_COUNT 16
 
 /** One queued bank load: which slot it fills and the file holding the picked variant. */

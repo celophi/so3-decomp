@@ -33,19 +33,10 @@
 /** GIF tag FLG value for REGLIST mode: each loop holds one 64-bit value per listed register. */
 #define GIF_TAG_REGLIST ((u64)1 << 58)
 
-/** GIF register descriptor that discards its value. */
 #define GIF_REGISTER_NOP 0xF
-
-/** Quadwords reserved for each gauge; only eighteen of them get written. */
 #define SKILL_GAUGE_RESERVED_QUADWORDS 26
-
-/** PRIM value of every gauge strip: a Gouraud-shaded, alpha-blended triangle strip in the second drawing context. */
 #define SKILL_GAUGE_PRIM 0x24C
-
-/** Colour of the shadow strip under a gauge. */
 #define SKILL_GAUGE_SHADOW_COLOR 0x70101010
-
-/** Colour of the unfilled part of a gauge. */
 #define SKILL_GAUGE_EMPTY_COLOR 0x800838C0
 
 /** Message keys in the skill menu bank (resource 89). */

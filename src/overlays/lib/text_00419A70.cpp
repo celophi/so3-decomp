@@ -271,7 +271,6 @@ enum
     LIB_MPEG_CALLBACK_BACKGROUND = 4
 };
 
-/** Type ID of the movie player. */
 #define LIB_TYPE_ID_MOVIE_PLAYER 0xC00
 
 extern "C"

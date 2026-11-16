@@ -1107,7 +1107,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2120__
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E22B0);
 
-/** Field of view the camera uses while it faces the current camera (90 degrees). */
 #define LIB_FACE_CAMERA_FOV 1.5707964f
 
 /** @brief Rebuild the view and projection matrices and upload the projection to VU0. */

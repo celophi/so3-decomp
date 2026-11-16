@@ -30,34 +30,16 @@
 #include "overlays/lib/transform_vu0.h"
 
 #define TEXTURE_TRANSFER_GIF_TAG 0x1000000000008004ULL
-
-/** Request tag ('MlPs') whose misses are only loaded when an address is wanted. */
 #define LIB_TEXTURE_TAG_MLPS 0x4D6C5073
-
-/** Highest and lowest priority a cached texture's user can reach. */
 #define LIB_TEXTURE_PRIORITY_MAX 10
 #define LIB_TEXTURE_PRIORITY_MIN -10
-
-/** Lowest priority at which a hit still moves a user's texture to the front. */
 #define LIB_TEXTURE_PRIORITY_KEEP -5
-
-/** VRAM slot the screen text font is uploaded to. */
 #define LIB_SCREEN_TEXT_FONT_SLOT 31
-
-/** Archive key of the screen text font image. */
 #define LIB_SCREEN_TEXT_FONT_KEY 11
-
-/** Resource queue tag and priority the font is read with. */
 #define LIB_SCREEN_TEXT_FONT_TAG 2
 #define LIB_SCREEN_TEXT_FONT_PRIORITY 0x34BC0
-
-/** Character cell size in screen pixels, before the display's area scale. */
 #define LIB_SCREEN_TEXT_CELL_SIZE 16.01f
-
-/** TEX0 size and colour bits of the font: 256x256 (TW = TH = 8) with alpha (TCC). */
 #define LIB_SCREEN_TEXT_FONT_TEX0 0x620000000ULL
-
-/** PRIM for the text: textured, alpha-blended sprites with UV coordinates, in context 2. */
 #define LIB_SCREEN_TEXT_PRIM 0x356
 
 /** Packet that sets up the GS for drawing screen text: TEX0_2, ALPHA_2, PRIM and RGBAQ in A+D form. */
@@ -75,7 +57,6 @@ struct LibScreenTextPacket
     u64 rgbaq_address;
 };
 
-/** Registers Lib's frame packet resets at the start of each frame. */
 #define LIB_FRAME_PACKET_REGISTER_COUNT 11
 
 /** Packet that resets the context-2 drawing state Lib relies on. */
@@ -2083,7 +2064,6 @@ extern "C" s32 lib_compare_bounded_strings(const char* first, const char* second
     return 0;
 }
 
-/** Side of the square 32-bit image lib_clear_vram uploads each pass. */
 #define LIB_VRAM_CLEAR_SIZE 256
 
 /** @brief Fill all of VRAM with zeros, one 256x256 32-bit upload at a time. */
@@ -2419,16 +2399,9 @@ void LibTextureCache::reset()
     stamp = 0;
 }
 
-/** Fewest CLUTs a texture cache holds. */
 #define LIB_TEXTURE_CACHE_MIN_CLUTS 8
-
-/** Alignment of the texture area in VRAM, in bytes. */
 #define LIB_TEXTURE_CACHE_TEXTURE_ALIGNMENT 0x800
-
-/** Bytes of VRAM one CLUT takes. */
 #define LIB_TEXTURE_CACHE_CLUT_BYTES 0x100
-
-/** VRAM slot argument that asks the allocator for a new slot. */
 #define LIB_VRAM_NEW_SLOT -1
 
 /** "Too many clut size.\n" */
@@ -2698,10 +2671,7 @@ extern "C" void lib_invalidate_transform_chain(LibTransform* object)
     }
 }
 
-/** Joints are left alone once the end and the target directions are this close. */
 #define LIB_IK_ALIGNED_COSINE 0.99999988f
-
-/** Iterations stop once the end moves less than this along every axis. */
 #define LIB_IK_SETTLED_DISTANCE 1.0f
 
 /**
@@ -2836,7 +2806,6 @@ extern "C" FieldVec4B func_004DA6F0(const LibTransform* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA730);
 
-/** LibTransform::unk20c bits that skip the microprogram at 0x830. */
 #define LIB_TRANSFORM_FLAGS_01C0 0x1C0
 
 /** @brief Update the cached transformation matrices. */

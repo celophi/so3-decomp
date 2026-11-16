@@ -25,3 +25,8 @@ rom:0x21A50 reloc:MIPS_HI16 symbol:__vt__19ResidentClass14FD30 addend:0x84
 rom:0x21A58 reloc:MIPS_LO16 symbol:__vt__19ResidentClass14FD30 addend:0x84
 rom:0x21B30 reloc:MIPS_HI16 symbol:__vt__19ResidentClass14FD30 addend:0x84
 rom:0x21B40 reloc:MIPS_LO16 symbol:__vt__19ResidentClass14FD30 addend:0x84
+// ResidentStreamThread's constructor and destructor store the thread base's vtable, which sits inside the class's own.
+rom:0xBE00 reloc:MIPS_HI16 symbol:__vt__20ResidentStreamThread addend:0x10
+rom:0xBE08 reloc:MIPS_LO16 symbol:__vt__20ResidentStreamThread addend:0x10
+rom:0xBED8 reloc:MIPS_HI16 symbol:__vt__20ResidentStreamThread addend:0x10
+rom:0xBEE0 reloc:MIPS_LO16 symbol:__vt__20ResidentStreamThread addend:0x10

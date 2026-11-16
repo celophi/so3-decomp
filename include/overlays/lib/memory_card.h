@@ -5,13 +5,8 @@
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_004CD3A0.h"
 
-/** Memory card slots a card object serves. */
 #define LIB_MEMORY_CARD_SLOT_COUNT 2
-
-/** LibMemoryCardSlot::state_flags bit set once the slot is opened. */
 #define LIB_MEMORY_CARD_SLOT_OPEN 0x2
-
-/** LibMemoryCardSlot::card_state once the card in the slot is ready. */
 #define LIB_MEMORY_CARD_STATE_READY 2
 
 /** Operation codes written to a slot's status (or busy byte when it's already running one). */
@@ -24,10 +19,7 @@ enum LibMemoryCardOperation
     LIB_MEMORY_CARD_OP_C0 = 0xC0
 };
 
-/** Bits of a slot status that give its group. */
 #define LIB_MEMORY_CARD_STATUS_GROUP_MASK 0xF8
-
-/** Status group of an operation that finished with a result to read. */
 #define LIB_MEMORY_CARD_STATUS_DONE 0x10
 
 /** Partial 0x100-byte record the memory card object keeps per slot. */

@@ -78,7 +78,6 @@ static inline const FieldVec4A* track_vector(const FieldVec4A* vector, FieldVec4
     return vector;
 }
 
-/** Blend mode a fading model draws with. */
 #define LIB_BLEND_MODE_FADE 2
 
 

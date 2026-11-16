@@ -7,12 +7,9 @@
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 
-/** Chunk tags of the sound files, as they read in memory. */
 #define SOUND_TAG_SEQ 0x20514553
 #define SOUND_TAG_SEQW 0x57514553
 #define SOUND_TAG_WAV 0x20564157
-
-/** Sequence uploads are sent in 4 KiB blocks. */
 #define STREAM_BLOCK_SIZE 0x1000
 
 extern "C" {

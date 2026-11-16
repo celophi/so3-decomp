@@ -52,7 +52,6 @@ extern ResidentReleaseQueues* g_resident_release_queues;
 
 extern ResidentSound* g_sound;
 
-/** Dark blue every boot menu screen draws its text in. */
 #define BOOT_TEXT_COLOR 0x34130F
 
 /** Menu sound effects boot plays through resident_sound_play. */
@@ -133,7 +132,6 @@ enum BootMusic
     BOOT_MUSIC_FLY_BY_CONTACT = 0x48
 };
 
-/** Frames boot's screens take to fade the music out when they close. */
 #define BOOT_MUSIC_FADE_FRAMES 30
 
 /** Message keys in boot's English message bank (resource 38, block 0). */

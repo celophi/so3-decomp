@@ -122,19 +122,12 @@ struct LibClass3F5B80Entry
     s16 unk06;
 };
 
-/** XOR applied to LibProtectedValues::key to get the record's offset in the storage. */
 #define LIB_PROTECTED_OFFSET_KEY 0x4E92
-
-/** Keys of the checked word and of its check copy. */
 #define LIB_PROTECTED_WORD_KEY 0x72EF77
 #define LIB_PROTECTED_CHECK_KEY 0x6319F6
-
-/** Key and bias of the small value, and its largest value. */
 #define LIB_PROTECTED_SMALL_KEY 0x1233E3
 #define LIB_PROTECTED_SMALL_BIAS 9176
 #define LIB_PROTECTED_SMALL_MAX 999
-
-/** Base of the large value's random key, its bias and its largest value. */
 #define LIB_PROTECTED_LARGE_KEY_BASE 0x12652C
 #define LIB_PROTECTED_LARGE_BIAS 689
 #define LIB_PROTECTED_LARGE_MAX 6400

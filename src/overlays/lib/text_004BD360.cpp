@@ -2593,8 +2593,6 @@ enum
 #define LIB_SHARED_FONT_REQUEST_PRIORITY 0x34BC0
 #define LIB_SHARED_FONT_REQUEST_READ 1
 #define LIB_SHARED_FONT_ALIGNMENT 0x80
-
-/** Tag of the chunk that ends a shared font chunk list. */
 #define LIB_FONT_CHUNK_END 'END'
 
 /** VRAM block addresses of the font palettes and of the glyph pages. */
@@ -2608,7 +2606,6 @@ enum
     LIB_FONT_CHUNK1_IMAGE_BLOCK = 0x400
 };
 
-/** Packet operation that uploads a LibImageUpload. */
 #define LIB_PACKET_LOAD_IMAGE 1
 
 /**

@@ -32,16 +32,9 @@ typedef struct ResidentReleaseQueues
 
 struct ResidentInputSystem;
 
-/** Pads the input system reads. */
 #define RESIDENT_PAD_COUNT 2
-
-/** Analog axes of a pad: right stick x and y, then left stick x and y. */
 #define RESIDENT_PAD_AXIS_COUNT 4
-
-/** Pressure-sensitive buttons of a pad. */
 #define RESIDENT_PAD_PRESSURE_COUNT 12
-
-/** Resources in the archive's table of contents. */
 #define RESIDENT_RESOURCE_COUNT 0x1800
 
 /** Values of g_system's status byte. */
@@ -74,7 +67,6 @@ typedef struct ResidentClock
     u8 year;
 } ResidentClock;
 
-/** Tag at the head of the resource table once it is decrypted. */
 #define RESIDENT_ARCHIVE_TABLE_TAG 0x34829314
 
 /**
@@ -674,6 +666,9 @@ struct ResidentSound
     s32 unk143c;
 
 #ifdef __cplusplus
+    /** @brief Start silent at half volume, with no music or voices, and install the sound interrupt handler. */
+    ResidentSound();
+
     /** @brief Remove the sound interrupt handler and free the sound buffers. */
     virtual ~ResidentSound();
 #endif
@@ -752,10 +747,7 @@ class ResidentDmaQueue
 typedef struct ResidentDmaQueue ResidentDmaQueue;
 #endif
 
-/** Tag of an allocated heap block. */
 #define RESIDENT_HEAP_BLOCK_TAG 0x4D655279
-
-/** Marker of an allocated heap block. */
 #define RESIDENT_HEAP_BLOCK_MARKER 0x4058
 
 #ifdef __cplusplus
@@ -923,11 +915,22 @@ struct ResidentHddIconHeader
     u8 unk30[0x1D0];
 };
 
+/** Listener the hard disk worker registers; a notification wakes the thread it is given. Vtable D_0014FBE0. */
+class ResidentArchiveWorkerListener : public ResidentListener
+{
+    public:
+        /** @brief Wake a thread. @param data Thread to wake. */
+        virtual void notify(void* data);
+};
+
 /** Thread that runs the hard disk worker's commands; vtable D_0014FBC0. */
 class ResidentArchiveWorker : public ResidentThread
 {
     public:
-        u8 unk10[0xC];
+        u8 unk10;
+        u8 unk11[3];
+        s32 unk14;
+        s32 unk18;
 
         /** Set once the unit is present and initialized. */
         u8 unit_ready;
@@ -937,7 +940,9 @@ class ResidentArchiveWorker : public ResidentThread
         /** Command being run, or zero while the worker is idle. */
         s32 command;
 
-        u8 unk24[0x10];
+        s32 unk24;
+        s32 unk28;
+        u8 unk2c[8];
 
         /** Held while a command is started or cancelled. */
         ResidentSemaphore command_semaphore;
@@ -947,18 +952,33 @@ class ResidentArchiveWorker : public ResidentThread
         /** Argument of the command. */
         s32 argument;
 
-        u8 unk48[4];
+        s32 unk48;
 
         /** Set to ask the running command to stop. */
         u8 cancel_requested;
 
-        u8 unk4d[0xF];
+        u8 unk4d;
+        u8 unk4e;
+        u8 unk4f;
+        s32 unk50;
+        u8 unk54;
+        u8 unk55;
+        u8 unk56[2];
+        ResidentArchiveWorkerListener listener;
 
         /** Icon header written in front of the system files. */
         struct ResidentHddIconHeader* icon_header;
 
         /** The four system files the header describes. */
         u8* system_files[4];
+
+        /** BB Navigator files written next to the installed archive. */
+        u8* navigator_files[3];
+
+        s32 navigator_file_sizes[3];
+
+        /** @brief Create the worker's thread and semaphores, idle and with no files. */
+        ResidentArchiveWorker();
 
         /** @brief Destroy the worker and its semaphores. */
         virtual ~ResidentArchiveWorker();
@@ -1150,13 +1170,14 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         ResidentSemaphore semaphore;
         s32 unk110;
 
-        /** @brief Handle a SIF command forwarded to the thread. @param data Command data. */
-        virtual void notify(void* data);
-
         /** @brief Free the buffers and stop the thread. */
         virtual ~ResidentStreamThread();
 
+        /** @brief Run the streaming passes on every wakeup, then wake the waiting thread, if any. */
         virtual void run();
+
+        /** @brief Handle a SIF command forwarded to the thread. @param data Command data. */
+        virtual void notify(void* data);
 };
 
 /** VIF1 DMA transfer of the stream thread, with two sample rings it reads back; vtable D_0014FAC0. */
@@ -1293,6 +1314,8 @@ public:
     virtual void run();
 };
 
+extern "C" s32 func_00115000(ResidentThread* thread, s32 priority, s32 stack_size);
+
 /** The input system's pad polling thread, at g_system + 0x1784; vtable D_0014FC60. */
 class ResidentClass14FC60 : public ResidentThread
 {
@@ -1304,6 +1327,13 @@ class ResidentClass14FC60 : public ResidentThread
         u8 polling;
 
         u8 unk15[3];
+
+        /** @brief Create the kernel thread, not polling yet. */
+        ResidentClass14FC60()
+        {
+            func_00115000(this, 0x26, 0x4000);
+            polling = 0;
+        }
 
         /** @brief Destroy the thread. */
         virtual ~ResidentClass14FC60()
@@ -1453,6 +1483,9 @@ struct ResidentInputSystem
     ResidentDisplay* display;
 
     u8 unk328[0x18];
+
+    /** @brief Create the polling thread and the semaphore, with no pad hook. */
+    ResidentInputSystem();
 };
 
 /**
@@ -2056,13 +2089,8 @@ s32 func_0011CA60(ResidentArchive* archive, void* buffer, s32 key, s32 size);
  */
 s32 resident_enqueue_object(ResidentReleaseQueues* queue, void* object);
 
-/** Volume for a sound effect at full level. */
 #define RESIDENT_SOUND_VOLUME_FULL 127
-
-/** Pan for a sound effect centred between the speakers. */
 #define RESIDENT_SOUND_PAN_CENTRE 64
-
-/** Volume scale that leaves the music at its set volume. */
 #define RESIDENT_SOUND_VOLUME_SCALE_FULL 0x7FFF
 
 /**
@@ -2277,9 +2305,6 @@ s32 func_00114DD0(const void* object);
 s32 func_00114E80(void);
 /** Return whether the resident thread starts successfully. */
 s32 func_00114EB0(void* object);
-
-/** Call func_00114E00 with the second argument. */
-void func_00118B80(void* object, void* value);
 
 /** @brief Do nothing. @param object Unused. */
 void func_0011C6B0(void* object);
@@ -2703,11 +2728,6 @@ s32 func_0010A530(ResidentStreamThread* stream, const void* data, s32 size);
  */
 s32 func_0010A650(ResidentStreamThread* stream, const u32* words, s32 size);
 
-/**
- * @brief Body of the streaming thread: on every wakeup run both streaming passes, then wake the waiting thread, if any.
- * @param stream Streaming thread.
- */
-void func_0010B4C0(ResidentStreamThread* stream);
 
 /**
  * @brief Handle a notification from the IOP side of the stream.

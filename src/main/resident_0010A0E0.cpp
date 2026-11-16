@@ -15,37 +15,18 @@
 #include "main/resident_00101260.h"
 #include "ee.h"
 
-/** EE interrupt controller cause for the end of vertical blank. */
 #define INTC_VBLANK_END 3
-
-/** Priority resident threads are created with and return to after a time slice. */
 #define RESIDENT_THREAD_PRIORITY 50
-
-/** Priority a time-sliced thread runs at during its slice. */
 #define RESIDENT_THREAD_SLICE_PRIORITY 44
-
-/** Size of a disc block, the unit voice positions are given in. */
 #define SOUND_BLOCK_SIZE 2048
-
-/** Resource request tag of a voice read. */
 #define SOUND_VOICE_READ_TAG 7
-
-/** Resource request tag of the voice table read. */
 #define SOUND_VOICE_TABLE_READ_TAG 8
-
-/** Resource request priority of a voice read. */
+#define PFS_DEVCTL_CLOSE_ALL 0x5003
+#define DEV9_DEVCTL_POWER_OFF 0x4402
 #define SOUND_VOICE_READ_PRIORITY 216000
-
-/** Resource request tag of a music read. */
 #define SOUND_MUSIC_READ_TAG 4
-
-/** Key queued for music streamed from a resource rather than the music table. */
 #define SOUND_RESOURCE_MUSIC_KEY 30000
-
-/** Space the installed archive needs ahead of its resources. */
 #define RESIDENT_INSTALL_HEADER_SIZE 0x2000
-
-/** Unit the install's space is reserved in. */
 #define RESIDENT_INSTALL_ALIGNMENT 0x40000
 
 /** Kernel thread creation parameters (libkernl ThreadParam). */
@@ -68,7 +49,6 @@ struct ThreadParam
 /** GS CSR; bit 13 is the field being displayed. */
 #define GS_CSR (*(volatile u64*)0x12001000)
 
-/** DMA channel 9, scratchpad RAM writes. */
 #define DMA_CHANNEL_TO_SPR 9
 
 /** Low byte of the DMAC control register D_CTRL. */
@@ -86,25 +66,17 @@ typedef struct DmaControlLow
 
 #define D_CTRL_BITS (*(volatile DmaControlLow*)0x1000E000)
 
-/** Position of the table of contents, in 2048-byte blocks. */
 #define RESIDENT_ARCHIVE_TOC_POSITION 0x400
 
 /** Words in the table of contents: a position, size and install flag per resource. */
 #define RESIDENT_ARCHIVE_TOC_WORDS (RESIDENT_RESOURCE_COUNT * 3)
 
-/** Seed of the key stream the table of contents is encrypted with. */
 #define RESIDENT_ARCHIVE_TOC_KEY 0x13578642
-
-/** Pad direction buttons, in the held bits. */
 #define SCE_PADLup 0x10
 #define SCE_PADLright 0x20
 #define SCE_PADLdown 0x40
 #define SCE_PADLleft 0x80
-
-/** INTC cause of the vblank start interrupt. */
 #define INTC_VBLANK_S 2
-
-/** scePad2CreateSocket option that opens one specific port. */
 #define SCE_PAD2_SPECIFIC_PORT 2
 
 /** Socket parameters for scePad2CreateSocket. */
@@ -170,7 +142,15 @@ s32 EIntr(void);
 s32 sceDbcInit(void);
 s32 sceCdDiskReady(s32 mode);
 void* sceCdPOffCallback(void (*callback)(void*), void* argument);
-void D_00118C50(void* argument);
+void resident_archive_on_power_off(void* argument);
+s32 sceDevctl(const char* name, s32 command, void* argument, u32 argument_size, void* buffer, u32 buffer_size);
+s32 sceCdPowerOff(s32* result);
+
+/** "pfs:", the hard disk file system device. */
+extern const char D_0014D908[];
+
+/** "dev9x:", the expansion bay device. */
+extern const char D_0014D970[];
 void D_0011B550(s32 reason);
 
 /** "PS2ICON3D", the magic of the hard disk icon header. */
@@ -555,23 +535,20 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010A7A0)
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010AA30);
 
-/**
- * @brief Body of the streaming thread: on every wakeup run both streaming passes, then wake the waiting thread, if any.
- * @param stream Streaming thread.
- */
-void func_0010B4C0(ResidentStreamThread* stream)
+/** @brief Body of the streaming thread: on every wakeup run both streaming passes, then wake the waiting thread, if any. */
+void ResidentStreamThread::run()
 {
     for (;;)
     {
         do
         {
             func_00114E80();
-            func_0010AA30(stream);
-            func_0010A7A0(stream);
-        } while (!stream->waiting_thread);
+            func_0010AA30(this);
+            func_0010A7A0(this);
+        } while (!waiting_thread);
 
-        WakeupThread(stream->waiting_thread);
-        stream->waiting_thread = 0;
+        WakeupThread(waiting_thread);
+        waiting_thread = 0;
     }
 }
 
@@ -682,13 +659,14 @@ void func_0010B730(void* object)
     receiver->unk80 = receiver->unk84;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010B760);
+/** @brief Free the buffers and stop the thread. */
+ResidentStreamThread::~ResidentStreamThread()
+{
+    delete allocation;
+    delete dma;
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010B810);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010BBF0);
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010BC00);
 
 /**
  * @brief SIF command 4 handler: pass 4 to the SIF command receiver.
@@ -1796,11 +1774,37 @@ static inline void release_slot_target(ResidentSound* sound, ResidentRequestSlot
 
     if (i == 60)
     {
-        slot->target->has_sound = 0;
+        ResidentSoundEmitter* target = slot->target;
+        target->has_sound = 0;
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010ED90);
+/**
+ * @brief Request callback: free each listed request slot whose reply word is zero, then clear unk348.
+ * @param reply Reply from the IOP, one word per entry of sound->unk2F8.
+ * @param sound Sound system.
+ */
+void func_0010ED90(const u32* reply, ResidentSound* sound)
+{
+    for (s32 i = 0; i < 15; i++)
+    {
+        ResidentRequestSlot* slot = sound->unk2F8[i];
+
+        if (slot == 0)
+        {
+            break;
+        }
+
+        if (reply[i] == 0)
+        {
+            slot->active = 0;
+            slot->started = 0;
+            release_slot_target(D_001B6410, slot);
+        }
+    }
+
+    sound->unk348 = 0;
+}
 
 void func_0010EE50(void* object)
 {
@@ -2193,11 +2197,361 @@ void func_00110CE0(ResidentSound* sound, s32 voice)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00110D80);
+/** @brief Count the voices in the voice table. @param sound Sound system. @return Voice count, or zero while there is no table or it is still being read. */
+static inline s32 sound_voice_count(ResidentSound* sound)
+{
+    if (sound->voice_file_key == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00110FB0);
+    if (resident_find_resource_request(sound->resource_queue, 0, 0, SOUND_VOICE_TABLE_READ_TAG, -1, 0))
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00111420);
+    return sound->voice_table->count;
+}
+
+/**
+ * @brief Read a voice into one of the read-ahead buffers.
+ * @param sound Sound system.
+ * @param voice Index of the voice in the voice table.
+ * @return Zero once the read is queued, or -1 when the voice can't be read now.
+ */
+s32 func_00110D80(ResidentSound* sound, s32 voice)
+{
+    if (resident_find_resource_request(sound->resource_queue, 0, 0, SOUND_VOICE_TABLE_READ_TAG, -1, 0))
+    {
+        return -1;
+    }
+
+    if (sound_voice_count(sound) <= voice)
+    {
+        return -1;
+    }
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        if (sound->voice_buffers[i] == 0)
+        {
+            u32 block_count = 0;
+            s32 block;
+            u8** buffer;
+            u32 size;
+            s32 count = sound_voice_count(sound);
+
+            if (count == 0)
+            {
+                block = -1;
+            }
+            else if (voice >= count)
+            {
+                block = -1;
+            }
+            else
+            {
+                ResidentVoiceTable* table = sound->voice_table;
+                block_count = table->entries[voice].block_count;
+                block = table->entries[voice].block;
+            }
+
+            if (block == -1)
+            {
+                return -1;
+            }
+
+            size = block_count * SOUND_BLOCK_SIZE;
+            u8** buffers = sound->voice_buffers;
+            buffer = &buffers[i];
+            *buffer = (u8*)memalign(64, size);
+
+            if (*buffer == 0)
+            {
+                return -1;
+            }
+
+            sound->voice_indices[i] = voice;
+            func_00103AE0(sound->resource_queue, sound->voice_file_key, *buffer, block, size, SOUND_VOICE_READ_TAG,
+                          SOUND_VOICE_READ_PRIORITY, 0);
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
+/**
+ * @brief Look up where a voice's data is in the voice file.
+ * @param sound Sound system.
+ * @param voice Index of the voice in the voice table.
+ * @param block_count Receives the data's size in blocks; left alone when the voice isn't in the table.
+ * @return First block of the data, or -1 when the voice isn't in the table.
+ */
+static inline s32 sound_voice_block(ResidentSound* sound, s32 voice, u32* block_count)
+{
+    s32 count = sound_voice_count(sound);
+
+    if (count == 0)
+    {
+        return -1;
+    }
+
+    if (voice >= count)
+    {
+        return -1;
+    }
+
+    ResidentVoiceTable* table = sound->voice_table;
+    *block_count = table->entries[voice].block_count;
+    return table->entries[voice].block;
+}
+
+/** @brief Check whether a voice file is set. @param sound Sound system. @return True when there is one. */
+static inline bool sound_has_voice_file(const ResidentSound* sound)
+{
+    return sound->voice_file_key != 0;
+}
+
+/**
+ * @brief Play a voice from an object in a free slot, reading it unless it was read ahead of time.
+ * @param sound Sound system.
+ * @param voice Index of the voice in the voice table.
+ * @param emitter Object the voice comes from.
+ * @param value Stored in the slot; its use is unknown.
+ * @param volume Volume, 0x7F for full; stored and packed into the upper byte.
+ * @param low Value packed into the lower 16 bits.
+ * @return Slot identifier, one when effects are disabled, or -1 when the voice can't be played.
+ */
+s32 func_00110FB0(ResidentSound* sound, s32 voice, ResidentSoundEmitter* emitter, s32 value, s32 volume, s32 low)
+{
+    if (sound->effects_disabled)
+    {
+        return 1;
+    }
+
+    if (sound->state == 9)
+    {
+        return -1;
+    }
+
+    if (!sound_has_voice_file(sound))
+    {
+        return -1;
+    }
+
+    if (sound_voice_count(sound) <= voice)
+    {
+        return -1;
+    }
+
+    if (resident_find_resource_request(sound->resource_queue, 0, 0, SOUND_VOICE_TABLE_READ_TAG, -1, 0))
+    {
+        return -1;
+    }
+
+    s32 slot = find_available_request_slot(sound);
+
+    if (slot == -1)
+    {
+        return -1;
+    }
+
+    u32 block_count = 0;
+    s32 block = sound_voice_block(sound, voice, &block_count);
+
+    if (block == -1)
+    {
+        return -1;
+    }
+
+    s32 i;
+
+    do
+    {
+        for (i = 0; i < 60; i++)
+        {
+            if (sound->slots[i].active && sound->slots[i].identifier == sound->next_identifier)
+            {
+                sound->next_identifier = (sound->next_identifier + 1) & 0x7FFFFFFF;
+                break;
+            }
+        }
+    } while (i != 60);
+
+    bool preloaded = false;
+
+    for (s32 j = 0; j < 8; j++)
+    {
+        if (sound->voice_buffers[j] && sound->voice_indices[j] == voice)
+        {
+            sound->slots[slot].buffer = sound->voice_buffers[j];
+            preloaded = true;
+            sound->voice_buffers[j] = 0;
+            break;
+        }
+    }
+
+    if (!preloaded)
+    {
+        sound->slots[slot].buffer = (u8*)memalign(64, block_count * SOUND_BLOCK_SIZE);
+
+        if (sound->slots[slot].buffer == 0)
+        {
+            return -1;
+        }
+    }
+
+    float position[4];
+    func_4DA730(emitter, position);
+    emitter->has_sound = 1;
+    u32 placement = func_0010E4B0(sound, position, 0, 0);
+    sound->slots[slot].unk28 = 0;
+    sound->slots[slot].active = 1;
+    sound->slots[slot].started = 0;
+    sound->slots[slot].stop_requested = 0;
+    sound->slots[slot].unk03 = 1;
+    sound->slots[slot].owns_buffer = 1;
+    s32* identifier = &sound->slots[slot].identifier;
+    *identifier = sound->next_identifier;
+    sound->slots[slot].target = emitter;
+    sound->slots[slot].unk30 = 0;
+    sound->slots[slot].selector = 0;
+    sound->slots[slot].value = 0;
+    sound->slots[slot].volume = volume;
+    sound->slots[slot].unk1c = 0;
+    sound->slots[slot].unk2c = value;
+    sound->slots[slot].unk34 = (u32)volume << 24 | ((u32)low & 0xFFFF);
+    sound->slots[slot].unk38 = placement;
+    sound->slots[slot].unk06[0] = sound->unk451;
+
+    if (!preloaded)
+    {
+        func_00103AE0(sound->resource_queue, sound->voice_file_key, sound->slots[slot].buffer, block,
+                      block_count * SOUND_BLOCK_SIZE, SOUND_VOICE_READ_TAG, SOUND_VOICE_READ_PRIORITY, 0);
+    }
+
+    sound->next_identifier = (sound->next_identifier + 1) & 0x7FFFFFFF;
+    return *identifier;
+}
+
+/**
+ * @brief Play a voice in a free slot, reading it unless it was read ahead of time.
+ * @param sound Sound system.
+ * @param voice Index of the voice in the voice table.
+ * @param value Stored in the slot; its use is unknown.
+ * @param volume Volume, 0x7F for full; stored and packed into the upper byte.
+ * @param pan Pan, 0x40 for centre; packed into the next byte.
+ * @param low Value packed into the lower 16 bits.
+ * @return Slot identifier, one when effects are disabled, or -1 when the voice can't be played.
+ */
+s32 func_00111420(ResidentSound* sound, s32 voice, s32 value, s32 volume, s32 pan, s32 low)
+{
+    if (sound->effects_disabled)
+    {
+        return 1;
+    }
+
+    if (sound->state == 9)
+    {
+        return -1;
+    }
+
+    if (!sound_has_voice_file(sound))
+    {
+        return -1;
+    }
+
+    if (sound_voice_count(sound) <= voice)
+    {
+        return -1;
+    }
+
+    if (resident_find_resource_request(sound->resource_queue, 0, 0, SOUND_VOICE_TABLE_READ_TAG, -1, 0))
+    {
+        return -1;
+    }
+
+    s32 slot = find_available_request_slot(sound);
+
+    if (slot == -1)
+    {
+        return -1;
+    }
+
+    u32 block_count = 0;
+    s32 block = sound_voice_block(sound, voice, &block_count);
+
+    if (block == -1)
+    {
+        return -1;
+    }
+
+    s32 i;
+
+    do
+    {
+        for (i = 0; i < 60; i++)
+        {
+            if (sound->slots[i].active && sound->slots[i].identifier == sound->next_identifier)
+            {
+                sound->next_identifier = (sound->next_identifier + 1) & 0x7FFFFFFF;
+                break;
+            }
+        }
+    } while (i != 60);
+
+    bool preloaded = false;
+
+    for (s32 j = 0; j < 8; j++)
+    {
+        if (sound->voice_buffers[j] && sound->voice_indices[j] == voice)
+        {
+            sound->slots[slot].buffer = sound->voice_buffers[j];
+            preloaded = true;
+            sound->voice_buffers[j] = 0;
+            break;
+        }
+    }
+
+    if (!preloaded)
+    {
+        sound->slots[slot].buffer = (u8*)memalign(64, block_count * SOUND_BLOCK_SIZE);
+
+        if (sound->slots[slot].buffer == 0)
+        {
+            return -1;
+        }
+    }
+
+    sound->slots[slot].unk28 = 0;
+    sound->slots[slot].active = 1;
+    sound->slots[slot].started = 0;
+    sound->slots[slot].stop_requested = 0;
+    sound->slots[slot].unk03 = 1;
+    sound->slots[slot].owns_buffer = 1;
+    s32* identifier = &sound->slots[slot].identifier;
+    *identifier = sound->next_identifier;
+    sound->slots[slot].target = 0;
+    sound->slots[slot].unk30 = 0;
+    sound->slots[slot].selector = 0;
+    sound->slots[slot].value = 0;
+    sound->slots[slot].volume = volume;
+    sound->slots[slot].unk1c = 0;
+    sound->slots[slot].unk2c = value;
+    sound->slots[slot].unk34 = ((u32)low & 0xFFFF) | ((u32)volume << 24 | (u32)pan << 16);
+    sound->slots[slot].unk38 = 0;
+    sound->slots[slot].unk06[0] = 0;
+
+    if (!preloaded)
+    {
+        func_00103AE0(sound->resource_queue, sound->voice_file_key, sound->slots[slot].buffer, block,
+                      block_count * SOUND_BLOCK_SIZE, SOUND_VOICE_READ_TAG, SOUND_VOICE_READ_PRIORITY, 0);
+    }
+
+    sound->next_identifier = (sound->next_identifier + 1) & 0x7FFFFFFF;
+    return *identifier;
+}
 
 /**
  * @brief Play sound data already in memory from an object, in a free slot.
@@ -2630,7 +2984,64 @@ ResidentSound::~ResidentSound()
     delete[] (u8*)voice_table;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00112FE0);
+/** @brief Start silent at half volume, with no music or voices, and install the sound interrupt handler. */
+ResidentSound::ResidentSound()
+{
+    D_001B6410 = this;
+    music_entries = 0;
+    music_entry_count = 0;
+    stream = 0;
+    unk114 = 0;
+    music_count = 0;
+    unk34 = 0;
+    unk38 = -1;
+    unk352 = 0;
+    state = 0;
+    unk111 = 0;
+    voice_table = (ResidentVoiceTable*)new (0) u8[0x800];
+    voice_file_key = 0;
+    unk33c = 0;
+    volume = 0x4000;
+    scaled_volume = volume;
+    reverb_preset = 0xFF;
+    unk356 = 0;
+    unk143c = 0;
+    unk334 = 0;
+    unk348 = 0;
+    unk4d4 = 0;
+    unk452 = 0;
+    unk34c = 1.0f;
+    unk0c = 0;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        voice_buffers[i] = 0;
+        voice_indices[i] = 0;
+    }
+
+    unk13ac[0] = 1.0f;
+    unk13ac[1] = 126.0f;
+    unk13ac[2] = 100.0f;
+    unk13ac[3] = 2500.0f;
+    unk400 = 0;
+    cursor = 0;
+    next_identifier = 0;
+    listener = 0;
+    unk351 = 0;
+    memset_guess(slots, 0, sizeof(slots));
+
+    ResidentSpeakerAngles angles = D_00144260;
+    speaker_angles[0] = angles.angles[0];
+    speaker_angles[1] = angles.angles[1];
+    speaker_angles[2] = angles.angles[2];
+    speaker_angles[3] = angles.angles[3];
+    output_mode = 0;
+    interrupt_handler = AddIntcHandler(INTC_VBLANK_END, func_00112E70, 0);
+    EnableIntc(INTC_VBLANK_END);
+    FlushCache(0);
+    music_disabled = 0;
+    effects_disabled = 0;
+}
 
 void func_00113180(void* object)
 {
@@ -4124,14 +4535,79 @@ bool func_00118880(ResidentArchiveWorker* worker, s32 command, s32 argument)
     return true;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118A70);
-
-void func_00118B80(void* object, void* value)
+/** @brief Create the worker's thread and semaphores, idle and with no files. */
+ResidentArchiveWorker::ResidentArchiveWorker()
 {
-    func_00114E00((ResidentThread*)value);
+    unk10 = 0;
+    unk14 = 3;
+    unk18 = 0;
+    unit_ready = 0;
+    func_00115000(this, 0x25, 0x4000);
+    unk24 = 0;
+    command = 0;
+    argument = 0;
+    unk48 = 0;
+    cancel_requested = 0;
+    unk4d = 0;
+    unk4e = 0;
+    unk28 = 0;
+    unk50 = -1;
+    unk54 = 0;
+    icon_header = 0;
+    unk4f = 0;
+    navigator_files[0] = 0;
+    navigator_files[1] = 0;
+    navigator_files[2] = 0;
+    unk55 = 2;
+    unk3c.create(1, 1);
+    command_semaphore.create(1, 1);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118BA0);
+/** @brief Wake a thread. @param data Thread to wake. */
+void ResidentArchiveWorkerListener::notify(void* data)
+{
+    func_00114E00((ResidentThread*)data);
+}
+
+/**
+ * @brief Body of the power-off thread: each time it is woken, wait for the hard disk worker, close the hard disk's
+ * files, switch the expansion bay off and power the console off.
+ * @param thread Power-off thread.
+ */
+extern "C" void func_00118BA0(ResidentClass14FBF0* thread)
+{
+    for (;;)
+    {
+        s32 result;
+
+        func_00114E80();
+
+        // TODO: Only matches with the double negation; my guess is a small inline test was here.
+        if (!!thread->worker)
+        {
+            WaitSema(thread->worker->unk3c.id);
+        }
+
+        sceDevctl(D_0014D908, PFS_DEVCTL_CLOSE_ALL, 0, 0, 0, 0);
+
+        while (sceDevctl(D_0014D970, DEV9_DEVCTL_POWER_OFF, 0, 0, 0, 0) < 0)
+        {
+        }
+
+        while (!sceCdPowerOff(&result) || result != 0)
+        {
+        }
+    }
+}
+
+/**
+ * @brief Disc power-off callback: wake the power-off thread.
+ * @param argument Power-off thread.
+ */
+void resident_archive_on_power_off(void* argument)
+{
+    func_00114DD0(argument);
+}
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118C70);
 
@@ -4553,7 +5029,7 @@ void func_0011D950(ResidentArchive* archive)
 {
     if (archive->unk12184)
     {
-        sceCdPOffCallback(D_00118C50, archive->unkD8);
+        sceCdPOffCallback(resident_archive_on_power_off, archive->unkD8);
         archive->disk_worker()->start();
     }
 }
@@ -4621,8 +5097,6 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DC00)
 ResidentClass14FBF0::~ResidentClass14FBF0()
 {
 }
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__19ResidentClass14FC60Fv);
 
 /**
  * @brief Wait for a GS path to finish, holding the input system's semaphore.
@@ -5318,7 +5792,13 @@ void func_0011EA80(ResidentInputSystem* input)
     input->poll_thread.start();
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011EC30);
+/** @brief Create the polling thread and the semaphore, with no pad hook. */
+ResidentInputSystem::ResidentInputSystem()
+{
+    semaphore.create(1, 1);
+    hook = 0;
+    vblank_total = 0;
+}
 
 /**
  * @brief Release pending allocations, then destroy pending objects and flush the cache.

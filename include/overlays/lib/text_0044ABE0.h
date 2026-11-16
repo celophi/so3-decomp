@@ -14,13 +14,8 @@ typedef struct LibObjectByte60
     u8 unk60;
 } LibObjectByte60;
 
-/** Number of Battle Trophies and of flags in the saved collection. */
 #define LIB_TROPHY_COUNT 300
-
-/** Size of one saved trophy record, picture included. */
 #define LIB_TROPHY_RECORD_SIZE 0xF10
-
-/** Linear congruential step the saved-data checksums use: value * multiplier + increment. */
 #define LIB_CHECKSUM_MULTIPLIER 0x19660D
 #define LIB_CHECKSUM_INCREMENT 0x3C6EF35F
 
@@ -71,7 +66,6 @@ struct LibTrophyFlags
     u32 checksum;
 };
 
-/** Marker byte of an encoded LibSealedRecord. */
 #define LIB_RECORD_SEALED 0x69
 
 /** Masks and sizes used when sealing the saved record. */

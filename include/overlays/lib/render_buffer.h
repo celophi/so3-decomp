@@ -116,7 +116,6 @@ struct LibResourceChunkHeader
     u32 next_offset;
 };
 
-/** Magic of a FIS image chunk ("FIS"). */
 #define LIB_IMAGE_CHUNK_MAGIC 0x00534946
 
 /** Header of a FIS image; the image block sits image_offset bytes after it. */
@@ -253,22 +252,13 @@ struct LibDrawSetupPacket
     u8 unk57[9];
 };
 
-/** Bytes in a quadword. */
 #define LIB_DRAW_QWORD_SIZE 16
-
-/** VU memory the batch description and the draw state take, in quadwords. */
 #define LIB_DRAW_INFO_VU_QWORDS 7
 #define LIB_DRAW_STATE_VU_QWORDS 14
-
-/** LibDrawBatchInfo flags. */
 #define LIB_DRAW_BATCH_HAS_STATE 0x1
 #define LIB_DRAW_BATCH_FLAG_04 0x4
 #define LIB_DRAW_BATCH_FLAG_08 0x8
-
-/** ALPHA_1 value used instead of the blend mode's when the settings' unk14 is positive. */
 #define LIB_DRAW_ALPHA_SUBTRACT 0x42
-
-/** Registers the draw state writes in A+D form, and their GIF tag register list. */
 #define LIB_DRAW_REGISTER_WRITES 4
 #define LIB_DRAW_AD_REGISTERS 0xEEEEEEEE
 
@@ -276,19 +266,13 @@ struct LibDrawSetupPacket
 #define LIB_DRAW_VERTEX_REGISTERS (GIF_REGISTER_ST | (GIF_REGISTER_RGBAQ << 4) | (GIF_REGISTER_XYZF2 << 8))
 #define LIB_DRAW_PRIMITIVE_TAG (GIF_TAG_NREG(3) | GIF_TAG_PRE | GIF_TAG_EOP)
 
-/** Bytes each texture adds to the end of the commands. */
 #define LIB_DRAW_TEXTURE_PACKET_SIZE 48
 
 /** ALPHA_1 value for each blend mode. */
 extern "C" const u64 D_4ED320[];
 
-/** Vertices one scratchpad batch holds. */
 #define LIB_DRAW_BATCH_VERTEX_COUNT 40
-
-/** Primitives one scratchpad batch holds. */
 #define LIB_DRAW_BATCH_PRIMITIVE_COUNT 32
-
-/** Bytes between the two scratchpad batches the draw buffer alternates between. */
 #define LIB_DRAW_BATCH_STRIDE 0xC00
 
 /** Start of each scratchpad block: the DMA tag that copies it out, then the VIF codes that unpack it. */
@@ -457,10 +441,7 @@ struct LibDrawSettings
     u8 unk1C;
 };
 
-/** Words at the start of each command buffer before the setup packet. */
 #define LIB_DRAW_COMMAND_HEADER_WORDS 16
-
-/** Textures one draw buffer can use at once. */
 #define LIB_DRAW_BUFFER_TEXTURE_COUNT 8
 
 class LibDrawBuffer : public LibResourceBuffer

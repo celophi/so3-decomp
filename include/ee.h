@@ -7,22 +7,14 @@
  * EE instruction helpers the game wrote inline.
  */
 
-/** Address bit that maps EE main memory uncached. */
 #define UNCACHED_SEGMENT 0x20000000
-
-/** Address bits that map EE main memory uncached and accelerated. */
 #define EE_UNCACHED_ACCELERATED 0x30000000
-
-/** Start of the EE's 16 KB scratchpad RAM. */
 #define EE_SCRATCHPAD 0x70000000
-
-/** DMA tag IDs and a tag word: quadword count, ID and address. */
 #define DMA_TAG_ID_CNT 0x10000000
 #define DMA_TAG_ID_CALL 0x50000000
 #define DMA_TAG_ID_END 0x70000000
 #define DMA_TAG(qwc, id, address) ((u64)(qwc) | (id) | ((u64)(u32)(address) << 32))
 
-/** Dn_CHCR bits. */
 #define DMA_CHCR_DIR_FROM_MEMORY 0x1
 #define DMA_CHCR_MODE_CHAIN 0x4
 #define DMA_CHCR_TAG_TRANSFER 0x40
@@ -40,7 +32,6 @@
 #define D1_QWC ((volatile u32*)0x10009020)
 #define D1_TADR ((volatile u32*)0x10009030)
 
-/** D_STAT: channel 1 or channel 8 has finished. */
 #define D_STAT_CIS1 0x2
 #define D_STAT_CIS8 0x100
 
@@ -53,7 +44,6 @@
 /** VIF MSCALF: wait for the GIF and the running microprogram, then start the one at address (in doublewords). */
 #define VIF_MSCALF(address) (0x15000000 | (address))
 
-/** VIF FLUSH: wait for the microprogram and the GIF transfer to end. */
 #define VIF_FLUSH 0x11000000
 #define VIF_UNPACK(format, num, address) (((num) << 16) | ((format) << 24) | (address))
 #define VIF_UNPACK_S_8 0x62
@@ -156,7 +146,6 @@ static inline void ee_exit_handler(void)
     asm __volatile__("sync\nei");
 }
 
-/** COP0 Status bit set while interrupts are enabled (EIE). */
 #define EE_STATUS_EIE 0x10000
 
 /**

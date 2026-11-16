@@ -9,19 +9,13 @@
  * register address). Field positions are from the GS User's Manual.
  */
 
-/** Words in one VRAM block, the unit texture and transfer addresses use. */
 #define GS_VRAM_BLOCK_WORDS 64
-
-/** Words in one VRAM page, the unit frame buffer addresses use. */
 #define GS_VRAM_PAGE_WORDS 2048
 
 /** Bytes in one VRAM page. */
 #define GS_VRAM_PAGE_BYTES (GS_VRAM_PAGE_WORDS * 4)
 
-/** Pixels in one unit of a buffer width (FBW, TBW, DBW). */
 #define GS_BUFFER_WIDTH_PIXELS 64
-
-/** Words of VRAM (4 MB). */
 #define GS_VRAM_WORDS 0x100000
 
 /** GS pixel formats. */
@@ -43,7 +37,6 @@ enum
     GS_DEPTH_TEST_GEQUAL = 2
 };
 
-/** Centre of the GS primitive coordinate space, in whole pixels. */
 #define GS_COORDINATE_CENTRE 0x800
 
 /** Registers a GIF tag's register list can name. */
@@ -83,13 +76,8 @@ enum
     GS_REGISTER_TRXDIR = 0x53
 };
 
-/** Largest 24-bit depth; with the GEQUAL depth test Lib sets, nothing draws in front of it. */
 #define GS_DEPTH_NEAREST 0xFFFFFF
-
-/** Vertex colour that leaves a modulated texture unchanged: 0x80 is 1.0 in every channel, alpha included. */
 #define GS_RGBA_NEUTRAL 0x80808080
-
-/** ALPHA value for the usual (Cs - Cd) * As + Cd blend. */
 #define GS_ALPHA_NORMAL 0x44
 
 /** One GS register write in A+D form: the value, then the register address. */
@@ -99,11 +87,8 @@ typedef struct GsRegisterValue
     u64 address;
 } GsRegisterValue;
 
-/** BITBLTBUF destination buffer width (DBW), in 64-pixel units. */
 #define GS_BITBLTBUF_DBW_SHIFT 48
 #define GS_BITBLTBUF_DBW_MASK 0x3F
-
-/** TRXREG transfer width (RRW) and height (RRH). */
 #define GS_TRXREG_RRH_SHIFT 32
 #define GS_TRXREG_SIZE_MASK 0xFFF
 
@@ -122,17 +107,10 @@ typedef struct GsRegisterValue
 #define GS_TEX0_CSA(entry) ((u64)(entry) << 56)
 #define GS_TEX0_CLD(control) ((u64)(control) << 61)
 
-/** PRIM primitive type field and the triangle fan type. */
 #define GS_PRIM_TYPE_MASK 0x7
 #define GS_PRIM_TRIANGLE_FAN 5
-
-/** PRIM register FGE bit: fog the primitive. */
 #define GS_PRIM_FGE 0x20
-
-/** PRIM register ABE bit: alpha blend the primitive. */
 #define GS_PRIM_ABE 0x40
-
-/** GIF tag EOP bit: this is the transfer's last tag. */
 #define GIF_TAG_EOP 0x8000
 
 /** GIF tag NREG field: how many registers each loop writes. */
@@ -305,7 +283,6 @@ typedef struct GsDisplay
     u32 : 9;
 } GsDisplay;
 
-/** DISPLAY's DY field (picture top, in lines) on the 64-bit register value. */
 #define GS_DISPLAY_Y_SHIFT 12
 #define GS_DISPLAY_Y_MASK (0x7FF << GS_DISPLAY_Y_SHIFT)
 

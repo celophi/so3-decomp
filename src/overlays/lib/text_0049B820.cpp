@@ -22,7 +22,6 @@
 /** ABE as it sits in the upper word of a GIF tag's first doubleword. */
 #define GIF_TAG_HIGH_PRIM_ABE ((u32)(GIF_TAG_PRIM(GS_PRIM_ABE) >> 32))
 
-/** Byte size of each part record in the model's part table. */
 #define LIB_MODEL_PART_SIZE 0xF0
 
 /** Partial part record in the model's part table: the upper tag words of its GIF tags, written uncached. */
@@ -71,11 +70,9 @@ static inline LibModelPart* lib_model_uncached_part(void* parts, s32 index)
         reinterpret_cast<u32>(static_cast<u8*>(parts) + index * LIB_MODEL_PART_SIZE) | EE_UNCACHED_ACCELERATED);
 }
 
-/** List kind of models that need the late update pass. */
 #define LIB_LIST_KIND_LATE_MODEL 9
 
 
-/** Scales within this of one count as unscaled. */
 #define LIB_MODEL_UNSCALED_MIN 0.999f
 #define LIB_MODEL_UNSCALED_MAX 1.001f
 
@@ -87,24 +84,13 @@ struct LibCullBox
     LibVector4 half_extents;
 };
 
-/** Bytes in front of the DMA data in each of a model's packets. */
 #define LIB_MODEL_PACKET_HEADER_SIZE 0x40
-
-/** Fixed quadwords of a model packet, and the quadwords each part adds. */
 #define LIB_MODEL_PACKET_FIXED_QWORDS 19
 #define LIB_MODEL_PART_QWORDS 5
-
-/** Fixed quadwords of the base packet, and the quadwords each part-table item adds. */
 #define LIB_MODEL_BASE_FIXED_QWORDS 32
 #define LIB_MODEL_BASE_QWORDS_PER_ITEM 10
-
-/** Quadwords a before or after packet adds to its own size. */
 #define LIB_MODEL_EXTRA_BLOCK_QWORDS 9
-
-/** Header quadwords of the part table. */
 #define LIB_MODEL_TABLE_HEADER_QWORDS 8
-
-/** Bytes a payload buffer gets on top of the model's payload size. */
 #define LIB_PAYLOAD_BUFFER_EXTRA 0x80
 
 /** Heap model packets come from when set; otherwise they're malloc'd. */

@@ -369,7 +369,6 @@ void func_004619E0(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619F0);
 
-/** Message window states that wait to be advanced. */
 #define LIB_MESSAGE_WINDOW_STATE_WAIT 4
 #define LIB_MESSAGE_WINDOW_STATE_WAIT_END 6
 
@@ -388,14 +387,9 @@ s32 LibMessageWindow::func_00461B60()
     return 1;
 }
 
-/** Message window states that wait to be advanced. */
 #define LIB_MESSAGE_WINDOW_STATE_WAIT 4
 #define LIB_MESSAGE_WINDOW_STATE_WAIT_END 6
-
-/** Message window state that loads the text. */
 #define LIB_MESSAGE_WINDOW_STATE_LOAD 2
-
-/** Mode bits kept when new text is loaded. */
 #define LIB_MESSAGE_WINDOW_KEPT_MODE 0x50000
 
 /**
@@ -503,7 +497,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462FC0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463500);
 
-/** LibDrawWidget::vertical_align value that centres the text. */
 #define LIB_ALIGN_CENTER 1
 
 /**
@@ -553,7 +546,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004642E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464340);
 
-/** Character code of anything in a formatted number that isn't a digit. */
 #define LIB_NUMBER_CODE_OTHER 11
 
 /** "%d". */
@@ -598,10 +590,7 @@ s32 LibDrawWidget::format_number_codes(u16* codes, s32 value)
     return count;
 }
 
-/** Record kind of a number laid out as one record. */
 #define LIB_DRAW_RECORD_NUMBER 0x401C
-
-/** Width of one digit of a number record. */
 #define LIB_NUMBER_DIGIT_WIDTH 9.0f
 
 /**
@@ -641,7 +630,6 @@ void LibDrawWidget::end_run(void* value, s32 count)
     run_head->unk14.end = next_record;
 }
 
-/** Record kind of a run's head record. */
 #define LIB_DRAW_RECORD_RUN 0x4010
 
 /** @brief Start a run of records at the pen position. */
@@ -656,7 +644,6 @@ void LibDrawWidget::begin_run()
     record_count++;
 }
 
-/** First character code past the shared font slot; higher codes index the widget's own slot. */
 #define LIB_SHARED_GLYPH_COUNT 300
 
 /**
@@ -725,7 +712,6 @@ void LibDrawWidget::add_glyph(s32 code)
     record_count++;
 }
 
-/** Starting smallest glyph height, above any real glyph. */
 #define LIB_LAYOUT_HEIGHT_MAX 9999.0f
 
 /**
@@ -752,7 +738,6 @@ void LibDrawWidget::begin_layout(LibDrawRecord* records, float y)
     }
 }
 
-/** Number of colours in the text palette. */
 #define LIB_TEXT_PALETTE_SIZE 11
 
 /** Text palette colours. */
@@ -773,7 +758,6 @@ u32 LibDrawWidget::get_palette_color(u8 index)
     return D_4ED200[index];
 }
 
-/** Size used for a display rectangle dimension given as zero. */
 #define LIB_DRAW_WIDGET_DEFAULT_EXTENT 1024.0f
 
 /**
@@ -869,7 +853,6 @@ void LibDrawWidget::reset_drawing_state()
     vertical_align = 0;
 }
 
-/** Lowest address of drawing storage the widget owns; smaller values aren't heap allocations. */
 #define LIB_DRAW_WIDGET_HEAP_ADDRESS_MIN 0x10000
 
 /** @brief Free the drawing storage, then destroy the widget. */

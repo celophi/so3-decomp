@@ -9,7 +9,6 @@
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_004BD360.h"
 
-/** Valuables the item menu tracks, one event flag each. */
 #define ITEM_VALUABLE_COUNT 68
 
 struct ItemCharacterStats;

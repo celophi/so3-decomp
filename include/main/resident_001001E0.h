@@ -94,6 +94,19 @@ public:
     }
 
     /**
+     * @brief Create the kernel semaphore.
+     * @param initial Starting count.
+     * @param maximum Largest count.
+     */
+    void create(s32 initial, s32 maximum)
+    {
+        SemaParam param;
+        param.initCount = initial;
+        param.maxCount = maximum;
+        id = CreateSema(&param);
+    }
+
+    /**
      * @brief Wait on the semaphore.
      * @return True on success.
      */
