@@ -1,9 +1,9 @@
-#ifndef SO3_OVERLAYS_CITEMCREATION_TEXT_00358440_H
-#define SO3_OVERLAYS_CITEMCREATION_TEXT_00358440_H
+#ifndef SO3_OVERLAYS_CITEMCREATION_ITEM_CREATION_WINDOWS_H
+#define SO3_OVERLAYS_CITEMCREATION_ITEM_CREATION_WINDOWS_H
 
 #include "types.h"
 #include "overlays/1067-00/text_002CD390.h"
-#include "overlays/citemcreation/text_003684D0.h"
+#include "overlays/citemcreation/item_creation_state.h"
 #ifdef __cplusplus
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/1067-00/text_002D5260.h"

@@ -9,12 +9,20 @@
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013C948.h"
+#include "sdk/main/libc_0013C6D0.h"
 #include "sdk/main/libcdvd_00130000.h"
 #include "main/func_0011EE00.h"
 #include "main/resident_data.h"
 #include "main/resident_00101260.h"
 #include "main/resident_00121860.h"
+#include "main/microcode_loader.h"
+#include "main/stream_output.h"
+#include "main/resident_0011EE70.h"
+#include "sdk/main/libm_guess_0013F3E0.h"
+#include "overlays/lib/emission_vu0.h"
 #include "ee.h"
+#include "angle.h"
+#include "vu0.h"
 
 #define INTC_VBLANK_END 3
 #define RESIDENT_THREAD_PRIORITY 50
@@ -25,6 +33,10 @@
 #define SOUND_VOICE_TABLE_READ_TAG 8
 #define PFS_DEVCTL_CLOSE_ALL 0x5003
 #define DEV9_DEVCTL_POWER_OFF 0x4402
+#define HDD_DEVCTL_TOTAL_SECTORS 0x4802
+#define HDD_DEVCTL_STATUS 0x4807
+#define HDD_DEVCTL_IDLE_NOW 0x480B
+#define HDD_IOCTL_ADD_SUB_PARTITION 0x6801
 #define SOUND_VOICE_READ_PRIORITY 216000
 #define SOUND_MUSIC_READ_TAG 4
 #define SOUND_RESOURCE_MUSIC_KEY 30000
@@ -134,6 +146,20 @@ void func_4DA730(struct ResidentSoundEmitter* emitter, float* position);
 
 u32 func_0010E4B0(ResidentSound* sound, const float* position, s32 arg2, s32 arg3);
 
+void func_4D9E70(ResidentClass14FD30Base* transform);
+
+void func_4CF5E0(float* value);
+
+void func_4CC1A0(float* output, float angle);
+
+/** For each pair of neighbouring speakers, the two ends of the range a sound's angle between them maps onto. */
+struct SpeakerPairs
+{
+    float value[4][2];
+} __attribute__((aligned(16)));
+
+extern const SpeakerPairs D_00144240;
+
 s32 AddIntcHandler(s32 cause, s32 (*handler)(s32 cause), s32 next);
 
 s32 RemoveIntcHandler(s32 cause, s32 handler_id);
@@ -183,6 +209,83 @@ u32 sceCdGetReadPos(void);
 /** "pfs:", the hard disk file system device. */
 extern const char D_0014D908[];
 
+/** File status as the hard disk's directory reads return it; only the fields the worker uses are named. */
+struct SceIoStat
+{
+    u32 mode;
+    u32 attributes;
+    u32 size;
+    u8 unk0c[0x34];
+};
+
+/** Directory entry from sceDread. */
+struct SceIoDirent
+{
+    SceIoStat stat;
+    char name[256];
+    void* unk140;
+};
+
+/** Eight characters the worker passes when it adds a sub-partition. */
+struct HddZoneName
+{
+    char text[8];
+};
+
+s32 sceOpen(const char* name, s32 flags, ...);
+
+s32 sceClose(s32 fd);
+
+s32 sceLseek(s32 fd, s32 offset, s32 whence);
+
+s32 sceWrite(s32 fd, const void* buffer, s32 size);
+
+s32 sceIoctl2(s32 fd, s32 request, void* argument, u32 argument_size, void* buffer, u32 buffer_size);
+
+s32 sceRemove(const char* name);
+
+s32 sceMkdir(const char* name, s32 mode);
+
+s32 sceFormat(const char* device, const char* block_device, void* argument, s32 argument_size);
+
+s32 sceDopen(const char* name);
+
+s32 sceDread(s32 fd, SceIoDirent* entry);
+
+s32 sceDclose(s32 fd);
+
+s32 sceMount(const char* device, const char* block_device, s32 flags, void* argument, s32 argument_size);
+
+s32 sceUmount(const char* device);
+
+u32 strlen(const char* string);
+
+/** "hdd0:", the hard disk. */
+extern const char D_0014D8D8[];
+
+/** "hdd0:PP.SLUS-20488", the start of the game's partition name. */
+extern const char D_0014D8E0[];
+
+/** ",128M,PFS", the size and file system given when the partition is created or removed. */
+extern const char D_0014D8F8[];
+
+/** "pfs0:", the mounted partition. */
+extern const char D_0014D910[];
+
+/** "pfs0:/res" */
+extern const char D_0014D918[];
+
+/** "pfs0:sotet.bin", the installed resource file. */
+extern const char D_0014D928[];
+
+/** Names stored with every character xored with 0xF3: the partition name's ending and the three navigator files. */
+extern const char D_00144270[];
+extern const char D_00144280[];
+extern const char D_001442A0[];
+extern const char D_001442B0[];
+
+extern HddZoneName D_001B6008;
+
 /** "dev9x:", the expansion bay device. */
 extern const char D_0014D970[];
 
@@ -204,6 +307,21 @@ extern u32* D_0014AA34[];
 /** Three words in the VU1 stream programs that the constructor patches, and the address each one gets. */
 extern u32* const D_00144180[3];
 extern const u32 D_00144190[3];
+
+/** One reverb preset: four values sent to the stream, then the four speaker levels kept in unk13ac. */
+struct ResidentReverbPreset
+{
+    s16 unk00;
+    s16 unk02;
+    s16 unk04;
+    s16 unk06;
+    s16 unk08;
+    s16 unk0a;
+    s16 unk0c;
+    s16 unk0e;
+};
+
+extern const ResidentReverbPreset D_001441A0[];
 
 s32 sceRead(s32 fd, void* buffer, s32 size);
 
@@ -278,7 +396,7 @@ void func_0010C6D0(s32 alarm_id, u16 time, void* common);
 
 s32 func_0010A7A0(ResidentStreamThread* stream);
 
-void func_0010AA30(ResidentStreamThread* stream);
+s32 func_0010AA30(ResidentStreamThread* stream);
 
 void func_0010B600(ResidentStreamThread* stream, s32 value);
 
@@ -690,7 +808,295 @@ s32 func_0010A7A0(ResidentStreamThread* stream)
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010AA30);
+/**
+ * @brief Read one word of the status block the IOP keeps for the stream.
+ * @param stream Stream thread.
+ * @param offset Offset of the word.
+ * @return The word.
+ */
+static inline u32 stream_status(ResidentStreamThread* stream, s32 offset)
+{
+    return *(u32*)((u32)(stream->unk24 + offset) | UNCACHED_SEGMENT);
+}
+
+/**
+ * @brief Hand the filled output half to the input side and start its VIF1 transfer.
+ * @param stream Stream thread.
+ */
+static inline void start_output(ResidentStreamThread* stream)
+{
+    stream->unk54[stream->input_half] = stream->output_pending[stream->output_half];
+    stream->unk5C[stream->input_half] = (void*)stream->unk34[stream->output_half];
+    stream->unkB9 = 1;
+    stream->log_cursor = stream->unkCC;
+    start_output_dma(stream);
+}
+
+/**
+ * @brief Run the first streaming pass.
+ *
+ * Applies a pending stop, sends the next header block, then reads the IOP's status block: it feeds the stream from
+ * memory or from the disc, starts the output transfer when a half is ready, and tells the IOP what it did with
+ * request 9.
+ *
+ * @param stream Stream thread.
+ * @return Zero, or minus one when no request slot is free.
+ */
+s32 func_0010AA30(ResidentStreamThread* stream)
+{
+    (void)stream->semaphore.wait();
+
+    if (stream->first_state == 2 && stream->unk28 != 0 && stream->unkB4[0] == 0
+        && stream_status(stream, 0x20) == 0 && stream->unkB8 == 0)
+    {
+        stream->first_state = 3;
+
+        switch (stream->unk110)
+        {
+            case 1:
+                stream->unk110 = 0;
+                break;
+
+            case 2:
+                if (stream->unk94 == 0)
+                {
+                    func_00102AE0(resident_system_get_resource_queue(resident_get_system()));
+                }
+
+                stream->unkB4[1] = 0;
+                stream->unk110 = 3;
+                break;
+
+            default:
+                if (stream->unk94 == 0 && stream->unkB4[1] != 0)
+                {
+                    func_00102AE0(resident_system_get_resource_queue(resident_get_system()));
+                    resident_cancel_resource_requests(resident_system_get_resource_queue(resident_get_system()), 0, 0,
+                                                      0, 0xFFFFFFFF, 4);
+                    stream->unkB4[1] = 0;
+                }
+
+                stream->unk110 = 3;
+                break;
+        }
+    }
+
+    if (stream->dma != 0 && stream->dma->phase != 0)
+    {
+        (void)stream->semaphore.signal();
+        return 0;
+    }
+
+    if (stream->unk28 != 0 && stream_status(stream, 0x24) == 0)
+    {
+        func_0010B600(stream, 0);
+    }
+
+    if (stream->input_ready[stream->unk4A] != 0 && stream->unkB8 == 0 && stream->unkBD == 0
+        && stream->first_state > 0 && stream->first_state < 3)
+    {
+        stream->unkBB = 0;
+        // TODO: Only matches with the size in a local; my guess is the original named it.
+        s32 size = 0x1040;
+        u32* header = (u32*)((u32)stream->unk4C | UNCACHED_SEGMENT);
+        header[0] = 1;
+        header[1] = 0;
+        header[2] = stream->unkCC[stream->unkBB];
+        header[3] = --stream->unk54[stream->unk4A];
+        stream->unkB8 = 1;
+        func_0010BFA0(&D_001CC590, 0, stream->unk4C, stream->unk5C[stream->unk4A], size);
+    }
+
+    if (stream->unk28 != 0)
+    {
+        stream->unkB4[2] = 0;
+        stream->unk28 = 0;
+        stream->mid_side = stream_status(stream, 0x28);
+        stream->loop_count = stream_status(stream, 0x2C);
+        stream->unkC4 = stream_status(stream, 0x30) != 0;
+
+        if (stream->first_state == 4)
+        {
+            stream->first_state = 0;
+        }
+
+        if (stream->first_state > 0 && stream->first_state < 3)
+        {
+            u32 destination;
+            s32 value;
+
+            if (stream->unk94 != 0)
+            {
+                s32 available = stream_status(stream, 0xC);
+
+                if (stream->unkB4[0] != 0)
+                {
+                    u32 current = stream_status(stream, 0x8);
+
+                    if (current != stream->unk98 || available == 0)
+                    {
+                        stream->unkB4[1] = 0;
+                        stream->unkB4[0] = 0;
+
+                        if (stream->unk96 != 0)
+                        {
+                            stream->unk96--;
+
+                            if (stream->unk96 == 0)
+                            {
+                                stream->unk94 = 0;
+                                stream->unk96 = 1;
+                            }
+                        }
+                    }
+                }
+                else if (stream->unkB4[1] == 0)
+                {
+                    value = stream_status(stream, 0x4);
+
+                    if (value >= 0)
+                    {
+                        destination = stream_status(stream, 0x8);
+
+                        if (stream->unk95 == 0)
+                        {
+                            s32 offset = stream->unkA0;
+
+                            func_0010BFA0(&D_001CC590, 3, (u8*)stream->unk9C + offset, (void*)destination, 0x4E000);
+                            stream->unkA0 += 0x4E000;
+
+                            if (stream->unkA8 != 0)
+                            {
+                                if (stream->unkA0 == stream->unkA8)
+                                {
+                                    stream->unkA0 = stream->unkA4;
+                                }
+                            }
+
+                            stream->unk98 = destination;
+                            stream->unkB4[1] = 1;
+                            stream->unkB4[0] = 1;
+                        }
+                        else
+                        {
+                            value = stream->unk80 - stream->unk7C;
+                            value &= ~0x3F;
+
+                            if (available < value)
+                            {
+                                value = available;
+                            }
+
+                            func_0010BFA0(&D_001CC590, 3, stream->unk7C, (void*)destination, value);
+                            stream->unk7C += value;
+
+                            if (value != 0)
+                            {
+                                stream->unk98 = destination;
+                                stream->unk110 = 2;
+                                stream->unkB4[1] = 1;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (stream->unkB4[0] != 0)
+            {
+                if (stream_status(stream, 0x10) == 0)
+                {
+                    func_00102AE0(resident_system_get_resource_queue(resident_get_system()));
+                    stream->unkB4[1] = 0;
+                    stream->unkB4[0] = 0;
+                }
+            }
+            else if (stream->unkB4[1] == 0)
+            {
+                value = stream_status(stream, 0x4);
+
+                if (value >= 0)
+                {
+                    if (func_001037E0(resident_system_get_resource_queue(resident_get_system()), value, stream, 3, 0))
+                    {
+                        stream->unkB4[1] = 1;
+                    }
+                }
+            }
+
+            if (stream->output_pending[stream->output_half] != 0 && stream->input_ready[stream->input_half] == 0
+                && stream->unkB9 == 0)
+            {
+                start_output(stream);
+            }
+        }
+
+        if (stream->first_state > 0 && stream->first_state < 3)
+        {
+            if (stream_status(stream, 0x14) == 1)
+            {
+                func_00107B60(stream->stream, 0, 0, 0, 1, 0, 0);
+                stream->first_state = 2;
+            }
+        }
+    }
+
+    if (stream->first_state != 0 && stream->unkB4[2] == 0)
+    {
+        ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+        u32* arguments = D_001CC590.get_request_arguments();
+
+        if (!arguments)
+        {
+            (void)stream->semaphore.signal();
+            return -1;
+        }
+
+        arguments[0] = (u32)stream->unk20;
+
+        if (stream->output_pending[stream->unk1B] == 0)
+        {
+            arguments[1] = 1;
+        }
+        else
+        {
+            arguments[1] = 0;
+        }
+
+        arguments[2] = stream->unk110;
+
+        if (stream->unk110 != 0)
+        {
+            arguments[2] = stream->unk110;
+        }
+
+        switch (stream->unk110)
+        {
+            case 1:
+                if (stream->unk94 == 0 || stream->unk96 != 0)
+                {
+                    arguments[5] = stream->unk90;
+                }
+
+                break;
+
+            case 2:
+                stream->unkB4[0] = 1;
+                break;
+
+            case 3:
+                stream->first_state = 4;
+                break;
+        }
+
+        if (func_0010C200(&D_001CC590, 9, 0, 0, 0, 0))
+        {
+            stream->unkB4[2] = 1;
+            stream->unk110 = 0;
+        }
+    }
+
+    (void)stream->semaphore.signal();
+    return 0;
+}
 
 /** @brief Body of the streaming thread: on every wakeup run both streaming passes, then wake the waiting thread, if any. */
 void ResidentStreamThread::run()
@@ -1772,20 +2178,12 @@ void resident_sound_set_volume_scale(ResidentSound* sound, s32 scale)
 }
 
 /**
- * @brief Stop a queued music track and remove it from the queue.
+ * @brief Remove a music track from the queue.
  * @param sound Sound system.
  * @param index Queue position of the track.
- * @param mode Stop mode.
  */
-static inline void sound_remove_music_track(ResidentSound* sound, s32 index, s32 mode)
+static inline void sound_drop_music_track(ResidentSound* sound, s32 index)
 {
-    if (sound->music_count == 0)
-    {
-        return;
-    }
-
-    func_00107B60(sound->stream, 0, func_0010EE50, 0, sound->music_handles[index], mode, 0);
-
     if (index == sound->unk38)
     {
         sound->unk38 = -1;
@@ -1805,6 +2203,23 @@ static inline void sound_remove_music_track(ResidentSound* sound, s32 index, s32
 
     sound->music_count--;
     sound->unk34--;
+}
+
+/**
+ * @brief Stop a queued music track and remove it from the queue.
+ * @param sound Sound system.
+ * @param index Queue position of the track.
+ * @param mode Stop mode.
+ */
+static inline void sound_remove_music_track(ResidentSound* sound, s32 index, s32 mode)
+{
+    if (sound->music_count == 0)
+    {
+        return;
+    }
+
+    func_00107B60(sound->stream, 0, func_0010EE50, 0, sound->music_handles[index], mode, 0);
+    sound_drop_music_track(sound, index);
 }
 
 // TODO: This only matches at optimization level 4; the rest of the file is at 3.
@@ -2197,7 +2612,175 @@ u32 resident_sound_get_voice_level(ResidentSound* sound, s32 identifier, float t
 
 #pragma pop
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E4B0);
+/**
+ * @brief Get the squared length of a vector's xyz part.
+ * @param vector 16-byte aligned vector.
+ * @return Squared length.
+ */
+static inline float vector_length_squared(const float* vector)
+{
+    float squared[4] __attribute__((aligned(16)));
+
+    vu0_length_squared_xyz(vector, squared);
+    return squared[0];
+}
+
+/**
+ * @brief Place a positional sound for the listener.
+ *
+ * Moves the position into the listener's space, works out the volume from the distance and the reverb preset's
+ * levels (kept in unk451), then pans the sound between the two speakers its angle falls between.
+ *
+ * @param sound Sound system.
+ * @param position World position of the sound.
+ * @param arg2 Unused.
+ * @param arg3 Unused.
+ * @return The two speaker levels packed as two 16-bit halves, or zero without a listener or position.
+ */
+u32 func_0010E4B0(ResidentSound* sound, const float* position, s32 arg2, s32 arg3)
+{
+    ResidentClass14FD30Base* listener = (ResidentClass14FD30Base*)sound->listener;
+
+    if (listener == 0)
+    {
+        return 0;
+    }
+
+    if (position == 0)
+    {
+        return 0;
+    }
+
+    if (!listener->matrix_ready)
+    {
+        listener->update_transform_matrix();
+        ResidentClass14FD30Base* transform = (ResidentClass14FD30Base*)sound->listener;
+        transform->unk20e_0 = 1;
+        transform->unk20e_1 = 0;
+        ee_transpose_matrix(&transform->transposed_transform, &transform->transform);
+        func_4D9E70((ResidentClass14FD30Base*)sound->listener);
+    }
+    else if (!listener->unk20e_0)
+    {
+        ResidentClass14FD30Base* transform = (ResidentClass14FD30Base*)sound->listener;
+        transform->unk20e_0 = 1;
+        transform->unk20e_1 = 0;
+        ee_transpose_matrix(&transform->transposed_transform, &transform->transform);
+        func_4D9E70((ResidentClass14FD30Base*)sound->listener);
+    }
+    else if (!listener->unk20e_2)
+    {
+        func_4D9E70(listener);
+    }
+
+    float local[4] __attribute__((aligned(16)));
+
+    ResidentClass14FD30Base* current = (ResidentClass14FD30Base*)sound->listener;
+    vu0_transform_emission_point(&current->inverse_transform, position, local);
+    local[2] -= sound->unk1394;
+    float distance_squared = vector_length_squared(local);
+    distance_squared = ee_max(distance_squared, 1.0f);
+    float distance = sqrtf(distance_squared);
+    float volume;
+
+    if (distance < sound->unk13ac[2])
+    {
+        volume = sound->unk13ac[0];
+    }
+    else if (distance > sound->unk13ac[3])
+    {
+        volume = sound->unk13ac[1];
+    }
+    else
+    {
+        volume = sound->unk13ac[0]
+                 + (sound->unk13ac[1] - sound->unk13ac[0])
+                       * ((distance - sound->unk13ac[2]) / (sound->unk13ac[3] - sound->unk13ac[2]));
+        volume = ee_min(volume, 126.0f);
+        volume = ee_max(volume, 1.0f);
+    }
+
+    float gain = (127.0f * sound->range_squared) / distance_squared;
+    gain = ee_min(gain, 127.0f);
+    gain *= 129.0f * sound->unk34c;
+
+    func_4CF5E0(local);
+    float height = local[1];
+    local[1] = 0.0f;
+    func_4CF5E0(local);
+    height = ee_abs(height);
+    func_4CF5E0(local);
+
+    float angle = func_00142148(local[2], local[0]);
+
+    if (angle < 0.0f)
+    {
+        angle += TWO_PI;
+    }
+
+    float offset;
+    float span;
+    s32 i;
+
+    for (i = 0; i < 4; i++)
+    {
+        s32 next = (i + 1) & 3;
+        float start = sound->speaker_angles[i];
+        float end = sound->speaker_angles[next];
+
+        if (start > end)
+        {
+            if (angle >= start)
+            {
+                offset = angle - start;
+                span = (TWO_PI - start) + end;
+                break;
+            }
+
+            if (angle < end)
+            {
+                span = (TWO_PI - start) + end;
+                offset = (TWO_PI + angle) - start;
+                break;
+            }
+        }
+        else if (angle >= start && angle < end)
+        {
+            span = end - start;
+            offset = angle - start;
+            break;
+        }
+    }
+
+    SpeakerPairs pairs = D_00144240;
+
+    offset = pairs.value[i][0] + offset * (pairs.value[i][1] - pairs.value[i][0]) / span;
+    func_4CC1A0(local, offset);
+
+    float x;
+    float y;
+
+    if (local[2] < 0.0f && local[3] < 0.707f)
+    {
+        x = -local[2];
+        y = -local[3];
+    }
+    else
+    {
+        x = local[2];
+        y = local[3];
+    }
+
+    x *= gain;
+    y *= gain;
+    x = ee_min(x, 16383.0f);
+    x = ee_max(x, -16383.0f);
+    y = ee_min(y, 16383.0f);
+    y = ee_max(y, -16383.0f);
+
+    sound->unk451 = ((u32)volume & 0xFF) | 0x80;
+    return ((((s32)x) | 0x8000) & 0xFFFF) | ((((s32)y) | 0x8000) << 16);
+}
 
 /**
  * @brief Set the object positional sounds are heard from.
@@ -2577,7 +3160,523 @@ s32 resident_sound_stop_music(ResidentSound* sound, s32 fade_frames, s32 key)
 
 #pragma pop
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010F250);
+/**
+ * @brief Start uploading a sound file's sequence, keeping the stream's reply in unk378.
+ * @param sound Sound system.
+ * @param file Sound file; kept at unk360.
+ * @param size Size of the file; kept at unk35c.
+ * @return Zero while the sound system is busy, otherwise one.
+ */
+static inline s32 sound_start_sequence(ResidentSound* sound, const void* file, u32 size)
+{
+    if (sound->state != RESIDENT_SOUND_IDLE)
+    {
+        return 0;
+    }
+
+    sound->unk360 = file;
+    sound->unk35c = size;
+    sound->state = 1;
+    func_00106160(sound->stream, file, 0, 0, &sound->unk378, 0, 0);
+    return 1;
+}
+
+/**
+ * @brief Free a slot's sound data when the slot owns it.
+ * @param slot Sound slot.
+ */
+static inline void sound_free_slot_buffer(ResidentRequestSlot* slot)
+{
+    if (slot->owns_buffer)
+    {
+        operator delete(slot->buffer);
+        slot->buffer = 0;
+        slot->owns_buffer = 0;
+    }
+}
+
+/**
+ * @brief Update the sound system; main calls it until sound->state is zero.
+ *
+ * Runs the stream's queues and the current loading step. Unless a step is still waiting, it then retires music
+ * tracks that have stopped, asks the stream which started slots are still playing, sends the placement of every
+ * positional sound in batches of eight, reads the music position, and moves each slot's bank load along.
+ *
+ * @param sound Sound system.
+ * @param mode Nonzero to count frame time on the started slots.
+ * @return One.
+ */
+s32 func_0010F250(ResidentSound* sound, s32 mode)
+{
+    func_0010BD10(&D_001CC590);
+    func_00107020(sound->stream);
+    func_001065B0(sound->stream);
+
+    switch (sound->state)
+    {
+        case 1:
+            if (func_001060C0(sound->stream, sound->unk360))
+            {
+                break;
+            }
+
+            sound->state = RESIDENT_SOUND_IDLE;
+            func_00108220(sound->stream, 0, (void (*)(void*, ResidentRequestSlot*))func_0010EF50, 0, sound->unk378, 0,
+                          sound->unk3c, sound->unk378, 0x7F400000);
+
+            if (sound->unk400)
+            {
+                delete[] sound->unk400;
+                sound->unk400 = 0;
+            }
+
+            break;
+
+        case 2:
+            if (resident_find_resource_request(sound->resource_queue, 0, 0, 4, 0xFFFFFFFF, 0))
+            {
+                break;
+            }
+
+            sound->state = RESIDENT_SOUND_IDLE;
+            sound_start_sequence(sound, sound->unk400, sound->unk404);
+            break;
+
+        case 3:
+        {
+            const ResidentMusicEntry* entry = &sound->music_entries[sound->unk40 - 1];
+
+            if (sound->unk4d4 == 0)
+            {
+                s32 volume = sound->unk3c;
+
+                if (func_0010A450(sound->stream->thread, 0, func_0010EF80, 0,
+                                  func_0011C6C0(sound->archive, entry->resource), volume, 0))
+                {
+                    sound->state = RESIDENT_SOUND_IDLE;
+                }
+            }
+            else
+            {
+                s32 volume = sound->unk3c;
+
+                if (func_0010A0E0(sound->stream->thread, 0, func_0010EF80, 0, (u32*)sound->unk4d4,
+                                  func_0011C6C0(sound->archive, entry->resource), volume))
+                {
+                    sound->state = RESIDENT_SOUND_IDLE;
+                }
+            }
+
+            break;
+        }
+
+        case RESIDENT_SOUND_UPLOADING:
+            if (func_001060C0(sound->stream, sound->unk360))
+            {
+                break;
+            }
+
+            sound->state = RESIDENT_SOUND_IDLE;
+            break;
+
+        case RESIDENT_SOUND_LOADING:
+            if (resident_find_resource_request(sound->resource_queue, 0, 0, 5, 0xFFFFFFFF, 0))
+            {
+                break;
+            }
+
+            FlushCache(0);
+            sound->state = 6;
+            func_00106160(sound->stream, sound->unk400, sound->unk454[0], 0, 0, 0, 0);
+            break;
+
+        case 6:
+            if (func_001060C0(sound->stream, sound->unk400))
+            {
+                break;
+            }
+
+            sound->state = RESIDENT_SOUND_IDLE;
+
+            if (sound->unk400)
+            {
+                delete[] sound->unk400;
+                sound->unk400 = 0;
+            }
+
+            break;
+
+        case 7:
+        {
+            const ResidentMusicEntry* entry = &sound->music_entries[sound->unk40 - 1];
+            s32 volume = sound->unk3c;
+
+            if (func_0010A450(sound->stream->thread, 0, func_0010EF80, 0,
+                              func_0011C6C0(sound->archive, entry->resource), volume, 1))
+            {
+                sound->state = RESIDENT_SOUND_IDLE;
+            }
+
+            break;
+        }
+
+        case 8:
+        {
+            s32 volume = sound->unk3c;
+
+            if (func_0010A310(sound->stream->thread, 0, func_0010EF80, 0, (u32*)sound->unk368, volume))
+            {
+                sound->state = RESIDENT_SOUND_IDLE;
+            }
+
+            break;
+        }
+
+        case RESIDENT_SOUND_CHANGING_REVERB:
+            switch (sound->reverb_step)
+            {
+                case 0:
+                {
+                    s32 i;
+
+                    for (i = 0; i < 60; i++)
+                    {
+                        if (sound->slots[i].active)
+                        {
+                            break;
+                        }
+                    }
+
+                    if (i == 60)
+                    {
+                        if (func_00105BF0(sound->stream, D_001441A0[sound->reverb_preset].unk00,
+                                          D_001441A0[sound->reverb_preset].unk02, D_001441A0[sound->reverb_preset].unk04,
+                                          D_001441A0[sound->reverb_preset].unk06))
+                        {
+                            sound->unk13ac[0] = D_001441A0[sound->reverb_preset].unk08;
+                            sound->unk13ac[1] = D_001441A0[sound->reverb_preset].unk0a;
+                            sound->unk13ac[2] = D_001441A0[sound->reverb_preset].unk0c;
+                            sound->unk13ac[3] = D_001441A0[sound->reverb_preset].unk0e;
+                            sound->reverb_step = 1;
+                        }
+                    }
+
+                    break;
+                }
+
+                case 1:
+                    sound->unk358 = func_00105AE0(sound->stream, &sound->unk378, 0, 0);
+
+                    if (sound->unk358)
+                    {
+                        sound->reverb_step = 2;
+                    }
+
+                    break;
+
+                case 2:
+                    if (!func_00107230(sound->stream, sound->unk358))
+                    {
+                        if (sound->unk378 == 1)
+                        {
+                            sound->state = RESIDENT_SOUND_IDLE;
+                        }
+                        else
+                        {
+                            sound->reverb_step = 0;
+                        }
+                    }
+
+                    break;
+            }
+
+        case RESIDENT_SOUND_IDLE:
+        default:
+        {
+            if (sound->music_count != 0 && sound->music_count == sound->unk34)
+            {
+                if (sound->unk111)
+                {
+                    bool busy = false;
+
+                    for (s32 i = 0; i < sound->music_count; i++)
+                    {
+                        if (sound->unk38 != i && func_00107230(sound->stream, sound->unk104[i]))
+                        {
+                            busy = true;
+                            break;
+                        }
+                    }
+
+                    if (!busy)
+                    {
+                        sound->unk111 = 0;
+
+                        for (s32 i = 0; i < sound->music_count; i++)
+                        {
+                            if (sound->unk38 != i && sound->music_status[i][0] == 0)
+                            {
+                                sound_drop_music_track(sound, i);
+                                break;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    for (s32 i = 0; i < sound->music_count; i++)
+                    {
+                        if (sound->unk38 == i)
+                        {
+                            if (!func_00107B10(sound->stream, (u32)sound->music_status[i], 0, 0, sound->music_handles[i]))
+                            {
+                                sound_drop_music_track(sound, i);
+                                i--;
+                            }
+                        }
+                        else
+                        {
+                            sound->unk111 = 1;
+
+                            if ((sound->unk104[i] = func_00107B10(sound->stream, (u32)sound->music_status[i], 0, 0,
+                                                                  sound->music_handles[i])) == 0)
+                            {
+                                sound->unk111 = 0;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!sound->unk348)
+            {
+                s32 cursor = sound->unk334;
+                s32 count = 0;
+
+                for (s32 i = 0; i < 15; i++)
+                {
+                    sound->unk2F8[i] = 0;
+                }
+
+                for (s32 i = 0; i < 60; i++)
+                {
+                    ResidentRequestSlot* slot = &sound->slots[cursor];
+
+                    if (++cursor >= 60)
+                    {
+                        cursor = 0;
+                    }
+
+                    if (slot->active && slot->started)
+                    {
+                        sound->unk208[count] = slot->handle;
+                        sound->unk2F8[count] = slot;
+
+                        if (++count >= 15)
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                if (count != 0)
+                {
+                    sound->unk348 = 1;
+
+                    if (!func_00107730(sound->stream, 0, func_0010ED90, sound, sound->unk208, count))
+                    {
+                        sound->unk348 = 0;
+                    }
+                }
+            }
+
+            u32 placements[8];
+            u32 handles[8];
+            s32 batch = 0;
+
+            for (s32 i = 0; i < 60; i++)
+            {
+                if (sound->slots[i].active && sound->slots[i].started && sound->slots[i].target != 0)
+                {
+                    float position[4];
+                    ResidentSoundEmitter* target = sound->slots[i].target;
+
+                    position[0] = target->unk90[0][3];
+                    position[1] = target->unk90[1][3];
+                    position[2] = target->unk90[2][3];
+                    position[3] = 1.0f;
+
+                    if (sound->slots[i].unk1c)
+                    {
+                        placements[batch] = 0;
+                        sound->slots[i].unk38 = 0;
+                    }
+                    else
+                    {
+                        sound->slots[i].unk38 = placements[batch] = func_0010E4B0(sound, position, sound->slots[i].unk38, 1);
+                    }
+
+                    handles[batch] = sound->slots[i].handle | (sound->unk451 << 24);
+
+                    if (++batch >= 8)
+                    {
+                        {
+                            ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+                            u32* arguments = D_001CC590.get_request_arguments();
+
+                            if (arguments)
+                            {
+                                for (s32 j = 0; j < 8; j++)
+                                {
+                                    *arguments++ = handles[j];
+                                    *arguments++ = placements[j];
+                                }
+
+                                func_0010C200(&D_001CC590, 0x16, 0, 0, 0, 0);
+                            }
+
+                            batch = 0;
+                        }
+
+                    }
+                }
+            }
+
+            if (batch > 0)
+            {
+                ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
+                u32* arguments = D_001CC590.get_request_arguments();
+
+                if (arguments)
+                {
+                    for (s32 j = 0; j < batch; j++)
+                    {
+                        *arguments++ = handles[j];
+                        *arguments++ = placements[j];
+                    }
+
+                    for (; batch < 8; batch++)
+                    {
+                        *arguments++ = 0;
+                        *arguments++ = 0;
+                    }
+
+                    func_0010C200(&D_001CC590, 0x16, 0, 0, 0, 0);
+                }
+            }
+
+            if (sound->music_count != 0 && sound->unk38 >= 0)
+            {
+                if (sound->unk356)
+                {
+                    if (!func_00107230(sound->stream, sound->unk374))
+                    {
+                        sound->unk356 = 0;
+                        sound->unk3bc = sound->unk3c0[0];
+                    }
+                }
+                else
+                {
+                    sound->unk374 = func_00105DD0(sound->stream, sound->unk3c0, 0, 0);
+
+                    if (sound->unk374)
+                    {
+                        sound->unk356 = 1;
+                    }
+                }
+            }
+
+            for (s32 i = 0; i < 60; i++)
+            {
+                if (!sound->slots[i].active)
+                {
+                    continue;
+                }
+
+                if (sound->slots[i].started && mode != 0)
+                {
+                    sound->slots[i].unk30_float += g_frame_ticks;
+                }
+
+                switch (sound->slots[i].unk03)
+                {
+                    case 1:
+                        if (resident_find_resource_request(sound->resource_queue, 0, (u32)sound->slots[i].buffer, 0, 0xFFFFFFFF, 0))
+                        {
+                            break;
+                        }
+
+                        if (sound->slots[i].stop_requested)
+                        {
+                            sound->slots[i].active = 0;
+                            sound->slots[i].started = 0;
+                            sound->slots[i].unk03 = 0;
+                            DIntr();
+                            release_slot_target(sound, &sound->slots[i]);
+                            EIntr();
+                            sound_free_slot_buffer(&sound->slots[i]);
+                        }
+                        else
+                        {
+                            FlushCache(0);
+
+                            if (func_00106780(sound->stream, sound->slots[i].buffer, 0, 0, sound->slots[i].unk2c, sound->slots[i].unk34, sound->slots[i].unk38,
+                                              sound->slots[i].unk06[0]) == 1)
+                            {
+                                sound->slots[i].unk03 = 2;
+                            }
+                        }
+
+                        break;
+
+                    case 2:
+                    {
+                        s32 status = func_001066D0(sound->stream, sound->slots[i].buffer);
+
+                        if (status < 0)
+                        {
+                            sound->slots[i].unk03 = 3;
+                            sound->slots[i].unk28 = (u32)func_00106640(sound->stream, (u32)func_0010EE60, (u32)&sound->slots[i]);
+                        }
+
+                        if (status == 0)
+                        {
+                            sound->slots[i].stop_requested = 1;
+                        }
+
+                        if (status != 0)
+                        {
+                            break;
+                        }
+                    }
+
+                    case 3:
+                        if (func_001066D0(sound->stream, sound->slots[i].buffer))
+                        {
+                            break;
+                        }
+
+                        if (sound->slots[i].stop_requested)
+                        {
+                            sound->slots[i].active = 0;
+                            sound->slots[i].started = 0;
+                            DIntr();
+                            release_slot_target(sound, &sound->slots[i]);
+                            EIntr();
+                        }
+
+                        sound->slots[i].unk03 = 0;
+                        sound_free_slot_buffer(&sound->slots[i]);
+                        break;
+                }
+            }
+
+            return 1;
+        }
+    }
+
+    return 1;
+}
 
 /**
  * @brief Send voice command 4 to a started sound.
@@ -5174,7 +6273,1013 @@ s32 resident_archive_get_install_words(const ResidentArchive* archive)
     return total;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001158E0);
+/**
+ * @brief Decode one of the xored names and append it to a path.
+ * @param path Path to extend.
+ * @param encoded Name with every character xored with 0xF3.
+ */
+static inline void append_decoded_name(char* path, const char* encoded)
+{
+    char name[256];
+    char* out = name;
+
+    while (*encoded != 0)
+    {
+        *out = *encoded ^ 0xF3;
+        encoded++;
+        out++;
+    }
+
+    *out = 0;
+    strcat(path, name);
+}
+
+/**
+ * @brief Stop the archive's streaming read.
+ * @param archive Resource archive.
+ */
+static inline void archive_stop_read(ResidentArchive* archive)
+{
+    (void)archive->disc_thread.semaphore.wait();
+    u8 stopping = archive->disc_thread.unk68;
+    (void)archive->disc_thread.semaphore.signal();
+
+    if (!stopping && archive->read_busy)
+    {
+        (void)archive->disc_thread.semaphore.wait();
+        archive->disc_thread.unk68 = 1;
+
+        if (archive->disc_thread.unk5e)
+        {
+            (void)archive->disc_thread.unk30.signal();
+        }
+
+        (void)archive->disc_thread.semaphore.signal();
+    }
+}
+
+/**
+ * @brief Body of the hard disk worker's thread.
+ *
+ * It first checks the drive, looks for the game's partition and works out the free space. Then it sleeps until a
+ * command arrives: create or remove the partition, mount or unmount it, copy the install from the disc, open,
+ * close, verify or delete the installed file, or idle the drive. Each command leaves its result in command_result
+ * and wakes the thread that asked for it.
+ */
+void ResidentArchiveWorker::run()
+{
+    char path[256];
+
+    (void)unk3c.wait();
+    unk14 = sceDevctl(D_0014D8D8, HDD_DEVCTL_STATUS, 0, 0, 0, 0);
+    (void)unk3c.signal();
+    unit_state = unk14;
+
+    if (unk14 == 0)
+    {
+        strcpy_guess(path, D_0014D8E0);
+        append_decoded_name(path, D_00144270);
+        append_decoded_name(path, D_00144270);
+        (void)unk3c.wait();
+        s32 fd = sceOpen(path, 1);
+        (void)unk3c.signal();
+
+        if (fd < 0)
+        {
+            unk10 = 0;
+        }
+        else
+        {
+            (void)unk3c.wait();
+            sceClose(fd);
+            (void)unk3c.signal();
+            unk10 = 1;
+        }
+
+        (void)unk3c.wait();
+        s32 space = sceDevctl(D_0014D8D8, HDD_DEVCTL_TOTAL_SECTORS, 0, 0, 0, 0);
+        (void)unk3c.signal();
+        s32 free;
+
+        if (space > 0)
+        {
+            free = space;
+        }
+        else
+        {
+            free = 0;
+        }
+
+        if (free != 0)
+        {
+            (void)unk3c.wait();
+            fd = sceDopen(D_0014D8D8);
+            (void)unk3c.signal();
+
+            if (fd >= 0)
+            {
+                SceIoDirent entry;
+
+                for (;;)
+                {
+                    (void)unk3c.wait();
+                    s32 result = sceDread(fd, &entry);
+                    (void)unk3c.signal();
+
+                    if (result <= 0)
+                    {
+                        break;
+                    }
+
+                    if (entry.stat.mode != 0)
+                    {
+                        free -= entry.stat.size;
+                    }
+                }
+
+                (void)unk3c.wait();
+                sceDclose(fd);
+                (void)unk3c.signal();
+            }
+            else
+            {
+                free = 0;
+            }
+        }
+
+        free_space = free;
+        unit_ready = 1;
+    }
+
+    for (;;)
+    {
+        func_00114E80();
+
+        switch (command)
+        {
+            case 1:
+            {
+                strcpy_guess(path, D_0014D8E0);
+                append_decoded_name(path, D_00144270);
+                append_decoded_name(path, D_00144270);
+                strcat(path, D_0014D8F8);
+                (void)unk3c.wait();
+                s32 fd = sceOpen(path, 0x203);
+                (void)unk3c.signal();
+
+                if (fd < 0)
+                {
+                    if (fd == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 1;
+                    break;
+                }
+
+                if (icon_header == 0)
+                {
+                    command_result = 1;
+                    (void)unk3c.wait();
+                    sceClose(fd);
+                    (void)unk3c.signal();
+                    break;
+                }
+
+                (void)unk3c.wait();
+                s32 result = sceWrite(fd, icon_header, 0x200);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    if (result == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 1;
+                    (void)unk3c.wait();
+                    sceClose(fd);
+                    (void)unk3c.signal();
+                    break;
+                }
+
+                for (s32 i = 0; i < 4; i++)
+                {
+                    s32 offset = icon_header->files[i].offset;
+                    s32 length = (icon_header->files[i].size + 0x1FF) & ~0x1FF;
+
+                    (void)unk3c.wait();
+                    result = sceLseek(fd, offset, 0);
+                    (void)unk3c.signal();
+
+                    if (result < 0)
+                    {
+                        if (result == -5)
+                        {
+                            unk54 = 1;
+                        }
+
+                        command_result = 1;
+                        (void)unk3c.wait();
+                        sceClose(fd);
+                        (void)unk3c.signal();
+                        break;
+                    }
+
+                    (void)unk3c.wait();
+                    result = sceWrite(fd, system_files[i], length);
+                    (void)unk3c.signal();
+
+                    if (result < 0)
+                    {
+                        if (result == -5)
+                        {
+                            unk54 = 1;
+                        }
+
+                        command_result = 1;
+                        (void)unk3c.wait();
+                        sceClose(fd);
+                        (void)unk3c.signal();
+                        break;
+                    }
+                }
+
+                const ResidentArchive* owner = archive;
+                u32 total = 0;
+
+                for (s32 i = 0; i < 0x1800; i++)
+                {
+                    if (owner->install_flags[i] != 0)
+                    {
+                        total += owner->resource_entries[i];
+                    }
+                }
+
+                u32 size = total * 4 + RESIDENT_INSTALL_HEADER_SIZE;
+
+                size = (size + RESIDENT_INSTALL_ALIGNMENT - 1) & ~(RESIDENT_INSTALL_ALIGNMENT - 1);
+                s32 zones = (size + RESIDENT_INSTALL_ALIGNMENT - 1) >> 18;
+
+                for (s32 i = 0; i < zones - 1; i++)
+                {
+                    HddZoneName name = D_001B6008;
+
+                    (void)unk3c.wait();
+                    s32 added = sceIoctl2(fd, HDD_IOCTL_ADD_SUB_PARTITION, &name, strlen(name.text) + 1, 0, 0);
+                    (void)unk3c.signal();
+
+                    if (added < 0)
+                    {
+                        if (added == -5)
+                        {
+                            unk54 = 1;
+                        }
+
+                        command_result = 1;
+                        (void)unk3c.wait();
+                        sceClose(fd);
+                        (void)unk3c.signal();
+                        break;
+                    }
+                }
+
+                (void)unk3c.wait();
+                sceClose(fd);
+                (void)unk3c.signal();
+
+                s32 zone_size = 0x2000;
+
+                strcpy_guess(path, D_0014D8E0);
+                append_decoded_name(path, D_00144270);
+                (void)unk3c.wait();
+                result = sceFormat(D_0014D908, path, &zone_size, 4);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    if (result == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 2;
+                    break;
+                }
+
+                unk10 = 1;
+                unk4d = 0;
+                command_result = 0;
+                break;
+            }
+
+            case 2:
+            {
+                strcpy_guess(path, D_0014D8E0);
+                append_decoded_name(path, D_00144270);
+                append_decoded_name(path, D_00144270);
+                strcat(path, D_0014D8F8);
+                (void)unk3c.wait();
+                s32 result = sceRemove(path);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    if (result == -5)
+                    {
+                        unk54 = 1;
+                        command_result = 4;
+                        break;
+                    }
+                }
+                else
+                {
+                    (void)unk3c.wait();
+                    s32 space = sceDevctl(D_0014D8D8, HDD_DEVCTL_TOTAL_SECTORS, 0, 0, 0, 0);
+                    (void)unk3c.signal();
+                    s32 free;
+
+                    if (space > 0)
+                    {
+                        free = space;
+                    }
+                    else
+                    {
+                        free = 0;
+                        command_result = 4;
+                    }
+
+                    if (free != 0)
+                    {
+                        (void)unk3c.wait();
+                        s32 directory = sceDopen(D_0014D8D8);
+                        (void)unk3c.signal();
+
+                        if (directory >= 0)
+                        {
+                            SceIoDirent entry;
+                            s32 read;
+
+                            for (;;)
+                            {
+                                (void)unk3c.wait();
+                                read = sceDread(directory, &entry);
+                                (void)unk3c.signal();
+
+                                if (read <= 0)
+                                {
+                                    break;
+                                }
+
+                                if (entry.stat.mode != 0)
+                                {
+                                    free -= entry.stat.size;
+                                }
+                            }
+
+                            if (read < 0)
+                            {
+                                command_result = 4;
+
+                                if (read == -5)
+                                {
+                                    unk54 = 1;
+                                }
+                            }
+
+                            (void)unk3c.wait();
+                            sceDclose(directory);
+                            (void)unk3c.signal();
+                        }
+                        else
+                        {
+                            free = 0;
+                            command_result = 4;
+                        }
+                    }
+
+                    free_space = free;
+                }
+
+                command_result = 0;
+                unk10 = 0;
+                unk4d = 0;
+                break;
+            }
+
+            case 3:
+            {
+                strcpy_guess(path, D_0014D8E0);
+                append_decoded_name(path, D_00144270);
+                append_decoded_name(path, D_00144270);
+                (void)unk3c.wait();
+                s32 result = sceMount(D_0014D910, path, 0, 0, 0);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    command_result = 5;
+                    break;
+                }
+
+                unk4e = 1;
+                command_result = 0;
+                break;
+            }
+
+            case 4:
+                if (unk4e)
+                {
+                    (void)unk3c.wait();
+                    s32 result = sceUmount(D_0014D910);
+                    (void)unk3c.signal();
+
+                    if (result < 0)
+                    {
+                        if (result == -5)
+                        {
+                            unk54 = 1;
+                        }
+
+                        command_result = 6;
+                        break;
+                    }
+
+                    unk4e = 0;
+                }
+
+                command_result = 0;
+                break;
+
+            case 5:
+            {
+                command_result = 0;
+
+                if (!unk4e)
+                {
+                    command_result = 7;
+                    break;
+                }
+
+                if (copy_buffer == 0)
+                {
+                    command_result = 7;
+                    break;
+                }
+
+                s32 words = 0;
+
+                for (s32 i = 0; i < 0x1800; i++)
+                {
+                    if (archive->install_flags[i] != 0)
+                    {
+                        words += archive->resource_entries[i];
+                    }
+                }
+
+                unk28 = words * 4;
+                copy_remaining = words * 4;
+
+                if (navigator_files[0] == 0 || navigator_files[1] == 0 || navigator_files[2] == 0)
+                {
+                    command_result = 7;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                sceMkdir(D_0014D918, 0x1ED);
+                (void)unk3c.signal();
+
+                strcpy_guess(path, D_0014D910);
+                append_decoded_name(path, D_00144280);
+                (void)unk3c.wait();
+                s32 fd = sceOpen(path, 0x602, 0x1ED);
+                (void)unk3c.signal();
+
+                if (fd < 0)
+                {
+                    if (fd == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 7;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                s32 result = sceWrite(fd, navigator_files[0], navigator_file_sizes[0]);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    command_result = 7;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                sceClose(fd);
+                (void)unk3c.signal();
+
+                strcpy_guess(path, D_0014D910);
+                append_decoded_name(path, D_001442A0);
+                (void)unk3c.wait();
+                fd = sceOpen(path, 0x602, 0x1ED);
+                (void)unk3c.signal();
+
+                if (fd < 0)
+                {
+                    if (fd == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 7;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                result = sceWrite(fd, navigator_files[1], navigator_file_sizes[1]);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    command_result = 7;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                sceClose(fd);
+                (void)unk3c.signal();
+
+                strcpy_guess(path, D_0014D910);
+                append_decoded_name(path, D_001442B0);
+                (void)unk3c.wait();
+                fd = sceOpen(path, 0x602, 0x1ED);
+                (void)unk3c.signal();
+
+                if (fd < 0)
+                {
+                    if (fd == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 7;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                result = sceWrite(fd, navigator_files[2], navigator_file_sizes[2]);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    command_result = 7;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                sceClose(fd);
+                (void)unk3c.signal();
+
+                (void)unk3c.wait();
+                fd = sceOpen(D_0014D928, 0x602, 0x1ED);
+                (void)unk3c.signal();
+
+                if (fd < 0)
+                {
+                    if (fd == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 7;
+                    break;
+                }
+
+                s32 pending[2];
+                s32 unit;
+                ResidentArchive* owner = archive;
+
+                {
+                    ResidentSemaphoreLock lock(&owner->disc_thread.semaphore);
+                }
+
+                (void)owner->disc_thread.semaphore.wait();
+                owner->disc_thread.listener = &listener;
+                owner->disc_thread.listener_context = this;
+                (void)owner->disc_thread.semaphore.signal();
+
+                s32 write_half = 0;
+                s32 read_half = 0;
+
+                pending[0] = 0;
+                pending[1] = 0;
+
+                for (unit = 0; unit < 0x1800; unit++)
+                {
+                    if (archive->install_flags[unit] == 0)
+                    {
+                        continue;
+                    }
+
+                    if (cancel_requested)
+                    {
+                        (void)unk3c.wait();
+                        sceClose(fd);
+                        sceRemove(D_0014D928);
+                        (void)unk3c.signal();
+                        command_result = 8;
+                        break;
+                    }
+
+                    s32 size = (archive->resource_entries[unit] & 0x00FFFFFF) << 11;
+                    s32 sector = 0;
+
+                    while (size != 0)
+                    {
+                        if (copy_paused)
+                        {
+                            func_0010D8F0(func_00101270(resident_get_system()), this);
+                            func_00114E80();
+                            continue;
+                        }
+
+                        s32 chunk = size > 0x100000 ? 0x100000 : size;
+
+                        func_0011D080(archive, unit);
+                        func_0011CB00(archive, sector, unit);
+                        func_0011CC00(archive, copy_buffer + (read_half << 20), chunk);
+
+                        if (pending[write_half] != 0)
+                        {
+                            (void)unk3c.wait();
+                            s32 written = sceWrite(fd, copy_buffer + (write_half << 20), pending[write_half]);
+                            (void)unk3c.signal();
+                            pending[write_half] = 0;
+
+                            if (written < 0)
+                            {
+                                command_result = 7;
+                                break;
+                            }
+
+                            write_half ^= 1;
+                        }
+
+                        func_00114E80();
+                        size -= chunk;
+                        pending[read_half] = chunk;
+                        read_half ^= 1;
+                        sector += chunk / 0x800;
+                        copy_remaining -= chunk / 0x200;
+
+                        if (cancel_requested)
+                        {
+                            archive_stop_read(archive);
+                            (void)unk3c.wait();
+                            sceClose(fd);
+                            sceRemove(D_0014D928);
+                            (void)unk3c.signal();
+                            command_result = 8;
+                            break;
+                        }
+                    }
+
+                    if (command_result == 8)
+                    {
+                        break;
+                    }
+
+                    if (command_result == 7)
+                    {
+                        archive_stop_read(archive);
+                        (void)unk3c.wait();
+                        sceClose(fd);
+                        result = sceRemove(D_0014D928);
+                        (void)unk3c.signal();
+
+                        if (result == -5)
+                        {
+                            unk54 = 1;
+                        }
+
+                        break;
+                    }
+                }
+
+                if (pending[write_half] != 0)
+                {
+                    (void)unk3c.wait();
+                    result = sceWrite(fd, copy_buffer + (write_half << 20), pending[write_half]);
+                    (void)unk3c.signal();
+
+                    if (result < 0)
+                    {
+                        command_result = 7;
+                    }
+
+                    pending[write_half] = 0;
+                }
+
+                if (unit == 0x1800)
+                {
+                    s32 marker = 1;
+
+                    (void)unk3c.wait();
+                    sceWrite(fd, &marker, 4);
+                    (void)unk3c.signal();
+                }
+
+                func_001043F0(resident_system_get_resource_queue(resident_get_system()));
+
+                if (command_result != 0)
+                {
+                    break;
+                }
+
+                unk4d = 1;
+                (void)unk3c.wait();
+                sceClose(fd);
+                (void)unk3c.signal();
+                break;
+            }
+
+            case 6:
+            {
+                if (unk50 >= 0)
+                {
+                    command_result = 0;
+                    break;
+                }
+
+                strcpy_guess(path, D_0014D8E0);
+                append_decoded_name(path, D_00144270);
+                append_decoded_name(path, D_00144270);
+                strcat(path, D_0014D8F8);
+                (void)unk3c.wait();
+                s32 result = sceMount(D_0014D910, path, 0, 0, 0);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    command_result = 9;
+                    break;
+                }
+
+                unk4e = 1;
+                (void)unk3c.wait();
+                unk50 = sceOpen(D_0014D928, 1, 0x1FF);
+                (void)unk3c.signal();
+
+                if (unk50 < 0)
+                {
+                    (void)unk3c.wait();
+                    sceUmount(D_0014D910);
+                    (void)unk3c.signal();
+                    unk4e = 0;
+
+                    if (unk50 == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 9;
+                    break;
+                }
+
+                command_result = 0;
+                break;
+            }
+
+            case 7:
+            {
+                s32 result;
+
+                if (unk50 >= 0)
+                {
+                    (void)unk3c.wait();
+                    result = sceClose(unk50);
+                    (void)unk3c.signal();
+
+                    if (result < 0)
+                    {
+                        command_result = 0xA;
+                        break;
+                    }
+                }
+
+                unk50 = -1;
+
+                if (unk4e)
+                {
+                    (void)unk3c.wait();
+                    result = sceUmount(D_0014D910);
+                    (void)unk3c.signal();
+
+                    if (result < 0)
+                    {
+                        if (result == -5)
+                        {
+                            unk54 = 1;
+                        }
+
+                        command_result = 0xA;
+                        break;
+                    }
+
+                    unk4e = 0;
+                }
+
+                (void)unk3c.wait();
+                result = sceDevctl(D_0014D8D8, HDD_DEVCTL_IDLE_NOW, 0, 0, 0, 0);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    if (result == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 0xA;
+                    break;
+                }
+
+                command_result = 0;
+                break;
+            }
+
+            case 8:
+            {
+                if (!unk4e)
+                {
+                    command_result = 0xB;
+                    break;
+                }
+
+                if (unk50 < 0)
+                {
+                    command_result = 0xB;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                s64 end = sceLseek64(unk50, 0, 2);
+                (void)unk3c.signal();
+
+                if (end < 0)
+                {
+                    if (end == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 0xB;
+                    break;
+                }
+
+                (void)unk3c.wait();
+                s64 position = sceLseek64(unk50, -4, 2);
+                (void)unk3c.signal();
+
+                if (position < 0)
+                {
+                    if (position == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 0xB;
+                    break;
+                }
+
+                s32 marker;
+
+                (void)unk3c.wait();
+                s32 result = sceRead(unk50, &marker, 4);
+                (void)unk3c.signal();
+
+                if ((u32)result < sizeof(marker))
+                {
+                    if (result == -5)
+                    {
+                        unk54 = 1;
+                    }
+
+                    command_result = 0xB;
+                    break;
+                }
+
+                s32 i;
+                u64 total = 0;
+
+                for (i = 0; i < 0x1800; i++)
+                {
+                    if (archive->install_flags[i] != 0)
+                    {
+                        total += (archive->resource_entries[i] & 0x00FFFFFF) << 11;
+                    }
+                }
+
+                if (total + 4 == end && marker == 1)
+                {
+                    command_result = 0;
+                    unk4d = 1;
+                    break;
+                }
+
+                command_result = 0xC;
+                break;
+            }
+
+            case 9:
+            {
+                s32 result;
+
+                if (unk50 >= 0)
+                {
+                    (void)unk3c.wait();
+                    result = sceClose(unk50);
+                    (void)unk3c.signal();
+
+                    if (result < 0)
+                    {
+                        command_result = 0xD;
+                        break;
+                    }
+                }
+
+                unk50 = -1;
+                unk4d = 0;
+                (void)unk3c.wait();
+                result = sceRemove(D_0014D928);
+                (void)unk3c.signal();
+
+                if (result == -5)
+                {
+                    unk54 = 1;
+                    command_result = 0xD;
+                    break;
+                }
+
+                if (unk4e)
+                {
+                    (void)unk3c.wait();
+                    result = sceUmount(D_0014D910);
+                    (void)unk3c.signal();
+
+                    if (result < 0)
+                    {
+                        if (result == -5)
+                        {
+                            unk54 = 1;
+                        }
+
+                        command_result = 0xD;
+                        break;
+                    }
+
+                    unk4e = 0;
+                }
+
+                command_result = 0;
+                break;
+            }
+
+            case 10:
+            {
+                (void)unk3c.wait();
+                s32 result = sceDevctl(D_0014D8D8, HDD_DEVCTL_IDLE_NOW, 0, 0, 0, 0);
+                (void)unk3c.signal();
+
+                if (result < 0)
+                {
+                    command_result = 0xE;
+                    break;
+                }
+
+                command_result = 0;
+                break;
+            }
+        }
+
+        if (command != 0)
+        {
+            command = 0;
+            cancel_requested = 0;
+
+            if (argument != 0)
+            {
+                func_00114E00((ResidentThread*)argument);
+                argument = 0;
+            }
+        }
+    }
+}
 
 /**
  * @brief Start a command on the hard disk worker and wake it.
@@ -6527,22 +8632,7 @@ u32 resident_get_resource_size(const ResidentArchive* archive, s32 key)
  */
 void func_0011C8E0(ResidentArchive* archive)
 {
-    (void)archive->disc_thread.semaphore.wait();
-    u8 stopping = archive->disc_thread.unk68;
-    (void)archive->disc_thread.semaphore.signal();
-
-    if (!stopping && archive->read_busy)
-    {
-        (void)archive->disc_thread.semaphore.wait();
-        archive->disc_thread.unk68 = 1;
-
-        if (archive->disc_thread.unk5e)
-        {
-            (void)archive->disc_thread.unk30.signal();
-        }
-
-        (void)archive->disc_thread.semaphore.signal();
-    }
+    archive_stop_read(archive);
 }
 
 /**

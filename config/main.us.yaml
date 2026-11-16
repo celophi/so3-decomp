@@ -88,6 +88,54 @@ segments:
       - [0x3FA60, c, sdk/main/libm_guess_0013F3E0]
       - [0x42F48, c, sdk/main/libvib_001428C8]
       - [0x430C0, c, sdk/main/mslgcc_00142A40]
-  - [0x44200, bin, resident_data]
+      # The resident data starts here. A jump table gets a .rodata entry once the
+      # function that uses it is compiled; everything else stays as raw pieces.
+      - [0x44200, databin, data]
+      - start: 0x4DD00
+        type: .rodata
+        name: main/resident_00101550
+        linker_section: .rodata.0014D680
+        rodata_anchors:
+          - {function: resident_decode_lz_words, offset: 0x0, size: 0x40}
+          - {function: resident_decode_lz_runs, offset: 0x40, size: 0x3c}
+          - {function: resident_decode_lz_bytes, offset: 0x80, size: 0x40}
+        linker_section_order: .rodata
+      - [0x4DDC0, rodatabin, rodata_0014D740]
+      - start: 0x4DDF0
+        type: .rodata
+        name: main/resident_00101550
+        linker_section: .rodata.0014D770
+        rodata_anchors:
+          - {function: func_00104790, offset: 0x0, size: 0x40}
+          - {function: func_00104C90, offset: 0x40, size: 0x3c}
+          - {function: func_00105210, offset: 0x80, size: 0x40}
+        linker_section_order: .rodata
+      - [0x4DEB0, rodatabin, rodata_0014D830]
+      - start: 0x4DEC0
+        type: .rodata
+        name: main/resident_00101550
+        linker_section: .rodata.0014D840
+        rodata_anchors:
+          - {function: func_00106240, offset: 0x0, size: 0x24}
+          - {function: func_00106A50, offset: 0x30, size: 0x2c}
+        linker_section_order: .rodata
+      - [0x4DF1C, pad, rodata_pad_0014D89C]
+      - start: 0x4DF20
+        type: .rodata
+        name: main/resident_0010A0E0
+        linker_section: .rodata.0014D8A0
+        rodata_anchors:
+          - {function: func_0010F250, offset: 0x0, size: 0x28}
+        linker_section_order: .rodata
+      - [0x4DF48, rodatabin, rodata_0014D8C8]
+      - start: 0x4DFC0
+        type: .rodata
+        name: main/resident_0010A0E0
+        linker_section: .rodata.0014D940
+        rodata_anchors:
+          - {function: run__21ResidentArchiveWorkerFv, offset: 0x0, size: 0x2c}
+        linker_section_order: .rodata
+      - [0x4DFEC, pad, rodata_pad_0014D96C]
+      - [0x4DFF0, rodatabin, rodata_0014D970]
   - [0xB6A80, bin, elf_metadata]
   - [0xB73B0]

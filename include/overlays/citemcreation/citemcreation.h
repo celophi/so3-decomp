@@ -2,10 +2,10 @@
 #define SO3_OVERLAYS_CITEMCREATION_CITEMCREATION_H
 
 #include "types.h"
-#include "overlays/citemcreation/text_003684D0.h"
+#include "overlays/citemcreation/item_creation_state.h"
 
 #ifdef __cplusplus
-#include "overlays/citemcreation/text_00358440.h"
+#include "overlays/citemcreation/item_creation_windows.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_00419A70.h"
