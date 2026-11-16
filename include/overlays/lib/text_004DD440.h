@@ -797,10 +797,6 @@ extern "C" void func_004E1670(LibCamera* camera);
 extern "C" {
 #endif
 
-/** Resident VIF1 DMA queue initialized by the Lib runtime. */
-extern ResidentDmaQueue* g_vif1_dma_queue;
-
-
 void func_004E59A0(void* object);
 /**
  * @brief Perform no work.

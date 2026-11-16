@@ -747,6 +747,17 @@ class ResidentDmaQueue
 typedef struct ResidentDmaQueue ResidentDmaQueue;
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Resident VIF1 DMA queue initialized by the Lib runtime. */
+extern ResidentDmaQueue* g_vif1_dma_queue;
+
+#ifdef __cplusplus
+}
+#endif
+
 #define RESIDENT_HEAP_BLOCK_TAG 0x4D655279
 #define RESIDENT_HEAP_BLOCK_MARKER 0x4058
 
@@ -1030,8 +1041,11 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         /** Which of the two output buffers unk20 points into. */
         u8 unk1B;
 
+        // TODO: output_cursor and input_cursor are volatile because the DMA completion (func_00109D50) moves them from
+        // interrupt context; it reads input_cursor before output_cursor, and nothing else I tried keeps that order.
+
         /** Next block of the output buffer. */
-        u8* output_cursor;
+        u8* volatile output_cursor;
 
         u8* unk20;
         u8* unk24;
@@ -1063,7 +1077,7 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         u8* volatile unk4C;
 
         /** Next block of the input buffer. */
-        u8* input_cursor;
+        u8* volatile input_cursor;
 
         /** Per send block: chunks left to send. */
         s32 unk54[2];

@@ -4,6 +4,7 @@
 #include "main/resident_001001E0.h"
 #include "main/resident_00101260.h"
 #include "main/resident_00121860.h"
+#include "main/microcode_loader.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 
@@ -15,7 +16,10 @@
 extern "C" {
 extern void* g_packet_queue;
 extern u8 D_00148400[];
+extern u8 D_0014A830[];
+extern u8 D_0014A834[];
 extern u8 D_0014A9E0[];
+extern u8 D_0014A9E4[];
 s32 DIntr(void);
 s32 EIntr(void);
 s32 SleepThread(void);
@@ -2127,7 +2131,80 @@ extern "C" void func_00109CB0(ResidentStreamThread* thread)
     (void)thread->semaphore.signal();
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109D50);
+/**
+ * @brief Start the VIF1 transfer of the next output block: log its first byte, put the unpack code at the start of
+ * both halves, point the two DMA chains at them and queue the transfer.
+ * @param thread Stream thread.
+ */
+static inline void start_output_dma(ResidentStreamThread* thread)
+{
+    thread->dma->phase = 1;
+    *thread->log_cursor++ = *(u8*)((u32)thread->output_cursor | UNCACHED_SEGMENT);
+    *(u32*)((u32)thread->output_cursor | UNCACHED_SEGMENT) = 0x6DE80100;
+    *(u32*)((u32)(thread->output_cursor + 0x800) | UNCACHED_SEGMENT) = 0x6DE80100;
+    *(u16*)((u32)D_0014A830 | UNCACHED_SEGMENT) = 0x74;
+    *(u32*)((u32)D_0014A834 | UNCACHED_SEGMENT) = (u32)thread->output_cursor;
+    *(u16*)((u32)D_0014A9E0 | UNCACHED_SEGMENT) = 0x74;
+    *(u32*)((u32)D_0014A9E4 | UNCACHED_SEGMENT) = (u32)(thread->output_cursor + 0x800);
+    thread->dma->output = (u32)thread->input_cursor | UNCACHED_SEGMENT;
+
+    LibMicrocodeLoader* loader = g_microcode_loader;
+    loader->unk06 = 1;
+    loader->current_program = LIB_VU1_PROGRAM_NONE;
+
+    if (!g_vif1_dma_queue->push(thread->dma))
+    {
+        g_microcode_loader->unk06 = 0;
+    }
+}
+
+/**
+ * @brief Account for one finished 4 KiB block and queue the next VIF1 transfer, or swap buffers once both are full.
+ * @param thread Stream thread.
+ */
+extern "C" void func_00109D50(ResidentStreamThread* thread)
+{
+    u8* input_cursor = thread->input_cursor;
+
+    thread->output_cursor += 0x1000;
+    thread->input_cursor = input_cursor + 0x1000;
+    thread->output_pending[thread->output_half]--;
+
+    if (thread->output_pending[thread->output_half] != 0)
+    {
+        start_output_dma(thread);
+    }
+    else
+    {
+        thread->input_ready[thread->input_half] = 1;
+
+        if (thread->output_half == 0)
+        {
+            thread->output_half = 1;
+            thread->output_cursor = thread->output_buffers[1] + 0x80;
+        }
+        else
+        {
+            thread->output_half = 0;
+            thread->output_cursor = thread->output_buffers[0] + 0x80;
+        }
+
+        if (thread->input_half == 0)
+        {
+            thread->input_half = 1;
+            thread->input_cursor = thread->input_buffers[1] + 0x80;
+        }
+        else
+        {
+            thread->input_half = 0;
+            thread->input_cursor = thread->input_buffers[0] + 0x80;
+        }
+
+        thread->unkB9 = 0;
+        thread->dma->phase = 0;
+        g_microcode_loader->unk06 = 0;
+    }
+}
 
 /**
  * @brief Take samples out of one of the stream thread's sample rings and convert them to floats.
