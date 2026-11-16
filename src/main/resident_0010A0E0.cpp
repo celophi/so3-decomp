@@ -2143,7 +2143,60 @@ extern "C" void func_001105E0(ResidentSound* sound, ResidentSoundEmitter* target
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001106B0);
+/**
+ * @brief Stop every sound, or mark each one to stop once the stream has started it.
+ * @param sound Sound system.
+ * @param mode Stop mode passed to the stream.
+ * @return Always true.
+ */
+bool func_001106B0(ResidentSound* sound, s32 mode)
+{
+    if (sound->effects_disabled)
+    {
+        return true;
+    }
+
+    ResidentInterruptLock lock;
+
+    for (s32 i = 0; i < 60; i++)
+    {
+        if (sound->slots[i].active)
+        {
+            if (sound->slots[i].unk03)
+            {
+                sound->slots[i].stop_requested = 1;
+                sound->slots[i].stop_mode = mode;
+            }
+            else if (!sound->slots[i].started)
+            {
+                sound->slots[i].stop_requested = 1;
+                sound->slots[i].stop_mode = mode;
+            }
+            else
+            {
+                // TODO: The target reads the handle here and never uses it; the call below reads it again.
+                u32 handle = sound->slots[i].handle;
+                sound->slots[i].active = 0;
+                sound->slots[i].started = 0;
+
+                release_slot_target(sound, &sound->slots[i]);
+
+                if (sound->slots[i].owns_buffer)
+                {
+                    delete sound->slots[i].buffer;
+                    sound->slots[i].buffer = 0;
+                    sound->slots[i].owns_buffer = 0;
+                }
+
+                lock.unlock();
+                func_00107B60(sound->stream, 0, func_0010EE50, 0, sound->slots[i].handle, mode, 0);
+                lock.relock();
+            }
+        }
+    }
+
+    return true;
+}
 
 /**
  * @brief Stop a sound, or mark it to stop once the stream has started it.

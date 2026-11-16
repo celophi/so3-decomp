@@ -298,8 +298,12 @@ typedef struct ResidentRequestSlot
     u16 value;
     u8 unk0a[2];
 
-    /** Voice handle from the stream. */
-    u32 handle;
+    /**
+     * Voice handle from the stream.
+     * TODO: volatile is my guess, like target; func_001106B0 reads it into a local it never uses, and only a volatile
+     * read keeps that load.
+     */
+    volatile u32 handle;
 
     s32 identifier;
 
@@ -2355,8 +2359,13 @@ extern "C" {
  */
 void func_00110C60(ResidentSound* sound);
 
-/** Reconfigure the resident request receiver. */
-s32 func_001106B0(ResidentSound* request, s32 value);
+/**
+ * @brief Stop every sound, or mark each one to stop once the stream has started it.
+ * @param sound Sound system.
+ * @param mode Stop mode passed to the stream.
+ * @return Always true.
+ */
+bool func_001106B0(ResidentSound* sound, s32 mode);
 
 /** Synchronize the GS path while holding the receiver's semaphore. */
 s32 resident_sync_gs_path(void* object, s32 first, u16 second);
