@@ -24,7 +24,7 @@
 #include "overlays/cskill/text.h"
 #include "overlays/citem/citem.h"
 #include "overlays/cconfig/config_controller.h"
-#include "overlays/cmc/text.h"
+#include "overlays/cmc/cmc.h"
 #include "overlays/ctactics/ctactics.h"
 #include "overlays/cshop/cshop.h"
 #include "overlays/citemcreation/text_003684D0.h"
@@ -1178,7 +1178,7 @@ extern "C" s32 field_launch_menu(FieldMenuManager* manager, u8 menu)
         }
         case FIELD_MENU_7:
         {
-            CmcClass18AF20* controller = new (0) CmcClass18AF20;
+            CardMenuController* controller = new (0) CardMenuController;
             g_update_list->append_node(static_cast<FieldClass153E30*>(controller), LibUpdateList::DEFAULT_NODE_KIND);
             manager->state = controller;
             controller->func_00263CA0(manager->argument);

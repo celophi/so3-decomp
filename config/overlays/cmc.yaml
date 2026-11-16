@@ -53,7 +53,10 @@ segments:
     vram: 0x3483c0
     subsegments:
       - [0x40, pad, text_start]
-      - [0x80, cpp, text]
+      - [0x80, cpp, progress_bar]
+      - [0x12F0, cpp, trophy_windows]
+      - [0x37D0, cpp, card_menu]
+      - [0x115E0, cpp, memory_card]
       - [0x12F50, pad, text_end]
   - [0x12f80, bin, data]
   - [0x13080]

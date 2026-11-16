@@ -117,7 +117,9 @@ public:
     u8 unk1244;
     u8 unk1245[8];
     u8 unk124d;
-    u8 unk124e[0x32];
+    u8 unk124e[2];
+    s32 unk1250;
+    u8 unk1254[0x2C];
 };
 #endif
 

@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_CMC_TEXT_H
-#define SO3_OVERLAYS_CMC_TEXT_H
+#ifndef SO3_OVERLAYS_CMC_CMC_H
+#define SO3_OVERLAYS_CMC_CMC_H
 
 #include "types.h"
 
@@ -18,29 +18,29 @@
 #include "overlays/1067-00/text_001E1590.h"
 #include "main/resident_data.h"
 
-class CmcClass18AFB0;
+class CardTask;
 class CmcClass189C20;
-class CmcClass189610;
-class CmcClass189510;
-class CmcClass189410;
-class CmcClass189310;
-class CmcClass189210;
-class CmcClass189110;
-class CmcClass18AC20;
-class CmcClass189710;
-class CmcClass189010;
-class CmcClass188F10;
-class CmcClass188D80;
+class TrophyCheckingWindow;
+class TrophyLoadedWindow;
+class TrophyLoadFailedWindow;
+class TrophyNoDataConfirmWindow;
+class TrophyCorruptWindow;
+class TrophySlotSelectWindow;
+class CardSlotSelectWindow;
+class TrophyNoCardWindow;
+class TrophySkipConfirmWindow;
+class TrophyNoDataWindow;
+class CardProgressBar;
 class LibDrawBuffer;
 class LibModel;
-class CmcClass18AD20;
+class CardMessageWindow;
 
-/** Partial callback controller prefix, with MAIN vtable at 0x18AF20. */
-class CmcClass18AF20 : public FieldClass153E30
+/** Partial controller of the memory card menu: creates and drives every card window, with MAIN vtable at 0x18AF20. */
+class CardMenuController : public FieldClass153E30
 {
 public:
     /** @brief Initialize the callback controller and its retained object pointers. */
-    CmcClass18AF20();
+    CardMenuController();
 
     /** @brief Show the window for the pending request and set the alternate window's text for it. */
     void dispatch_window_request();
@@ -78,7 +78,7 @@ public:
     virtual u8 func_00264110();
 
     /** @brief Destroy the callback controller. */
-    virtual ~CmcClass18AF20();
+    virtual ~CardMenuController();
 
     /** @brief Add this object to the resident queue. */
     virtual void func_001DD7B0();
@@ -99,38 +99,68 @@ public:
     /** @brief Release the retained resource slot, detach the controller, and queue it. */
     virtual void func_slot5c();
 
+    /**
+     * @brief Report the controller's default list kind.
+     * @return Always 4.
+     */
+    virtual s32 get_default_list_kind();
+
+    /**
+     * @brief Return the menu resource slot.
+     * @return Resource slot.
+     */
+    virtual u32 get_resource_slot();
+
+    /**
+     * @brief Report whether the windows are ready.
+     * @return Ready flag.
+     */
+    virtual u8 windows_ready();
+
+    /**
+     * @brief Return the linked memory card handler.
+     * @return Handler pointer as a word.
+     */
+    virtual s32 func_slot60();
+
+    /**
+     * @brief Return the Field save-data object.
+     * @return Object pointer as a word.
+     */
+    virtual s32 func_slot64();
+
     s32 resource_slot;
-    CmcClass18AFB0* linked_object;
+    CardTask* linked_object;
     FieldClass15B9C0* unk3c;
     u8 unk40;
     u8 unk41[3];
     CmcClass189C20* unk44;
     u16 unk48;
     u8 unk4a[2];
-    CmcClass18AD20* unk4c;
+    CardMessageWindow* unk4c;
     u8 unk50;
     u8 unk51;
     u16 unk52;
     u32 unk54;
-    CmcClass189610* unk58;
-    CmcClass189510* unk5c;
-    CmcClass189410* unk60;
-    CmcClass189310* unk64;
-    CmcClass189210* unk68;
-    CmcClass189110* unk6c;
-    CmcClass189710* unk70;
-    CmcClass189010* unk74;
-    CmcClass188F10* unk78;
-    CmcClass18AC20* unk7c;
+    TrophyCheckingWindow* unk58;
+    TrophyLoadedWindow* unk5c;
+    TrophyLoadFailedWindow* unk60;
+    TrophyNoDataConfirmWindow* unk64;
+    TrophyCorruptWindow* unk68;
+    TrophySlotSelectWindow* unk6c;
+    TrophyNoCardWindow* unk70;
+    TrophySkipConfirmWindow* unk74;
+    TrophyNoDataWindow* unk78;
+    CardSlotSelectWindow* unk7c;
     u8 unk80;
 };
 
-/** Partial window storage prefix, with MAIN vtable at 0x18AD20. */
-class CmcClass18AD20 : public FieldClass15AE70
+/** Partial title and help window of the card menu ("Memory Card", Save / Load / Import Data, message 0x2328 on), with MAIN vtable at 0x18AD20. */
+class CardMessageWindow : public FieldClass15AE70
 {
 public:
     /** @brief Initialize the window, retained widgets, and animation state. */
-    CmcClass18AD20();
+    CardMessageWindow();
 
     /**
      * @brief Set the window message.
@@ -138,7 +168,7 @@ public:
      */
     virtual void func_slot60(s32 text_key);
 
-    virtual ~CmcClass18AD20();
+    virtual ~CardMessageWindow();
 
     /** @brief Update widget state and advance the text rectangle animation. */
     virtual void func_slot5c();
@@ -170,21 +200,21 @@ public:
     u8 unkD5;
 };
 
-/** Partial 0xB0-byte window with a panel and one resource text, with MAIN vtable at 0x188F10. */
-class CmcClass188F10 : public FieldClass15AE70
+/** Partial 0xB0-byte window saying there's no Battle Trophies data on the card (message 0x234A), with MAIN vtable at 0x188F10. */
+class TrophyNoDataWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass188F10(CmcClass18AF20* controller) : unka8(0)
+    TrophyNoDataWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         unkac = 0;
     }
 
-    virtual ~CmcClass188F10();
+    virtual ~TrophyNoDataWindow();
 
     /**
      * @brief Request controller action 0x79 and hide the nested display.
@@ -199,19 +229,19 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     LibTextWidget* unkac;
 };
 
-/** Partial 0xC0-byte yes/no dialog, with MAIN vtable at 0x189010. */
-class CmcClass189010 : public FieldClass15AE70
+/** Partial 0xC0-byte yes/no dialog asking whether to go on without loading Battle Trophies data (message 0x2349), with MAIN vtable at 0x189010. */
+class TrophySkipConfirmWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass189010(CmcClass18AF20* controller) : unka8(0)
+    TrophySkipConfirmWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         unkac = 0;
@@ -221,7 +251,7 @@ public:
         marker = 0;
     }
 
-    virtual ~CmcClass189010();
+    virtual ~TrophySkipConfirmWindow();
 
     /**
      * @brief Request controller action 0x79, hide the nested display, and select the second choice.
@@ -248,7 +278,7 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     LibTextWidget* unkac;
     LibTextWidget* unkb0;
     LibTextWidget* unkb4;
@@ -256,15 +286,15 @@ public:
     FieldClass153170* marker;
 };
 
-/** Partial 0xC0-byte yes/no dialog with a two-line question, with MAIN vtable at 0x189310. */
-class CmcClass189310 : public FieldClass15AE70
+/** Partial 0xC0-byte yes/no dialog for a card with no Battle Trophies data, asking whether to start anyway (message 0x2345), with MAIN vtable at 0x189310. */
+class TrophyNoDataConfirmWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass189310(CmcClass18AF20* controller) : unka8(0)
+    TrophyNoDataConfirmWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         selector = 0;
@@ -274,7 +304,7 @@ public:
         marker = 0;
     }
 
-    virtual ~CmcClass189310();
+    virtual ~TrophyNoDataConfirmWindow();
 
     /**
      * @brief Request controller action 0x79 and hide the nested display once the selector stops.
@@ -301,7 +331,7 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     LibTextWidget* unkac;
     LibTextWidget* unkb0;
     LibTextWidget* unkb4;
@@ -309,15 +339,15 @@ public:
     FieldClass153170* marker;
 };
 
-/** Partial window prefix containing its selection widget, with MAIN vtable at 0x189110. */
-class CmcClass189110 : public FieldClass15AE70
+/** Partial window choosing the MEMORY CARD slot to load Battle Trophies data from, with MAIN vtable at 0x189110. */
+class TrophySlotSelectWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass189110(CmcClass18AF20* controller) : unka8(0)
+    TrophySlotSelectWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         linked = 0;
@@ -339,7 +369,7 @@ public:
      */
     virtual u8 func_slotb4();
 
-    virtual ~CmcClass189110();
+    virtual ~TrophySlotSelectWindow();
 
     /** @brief Move the child selector backward. */
     virtual void func_slot68();
@@ -357,29 +387,29 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
-    CmcClass18AFB0* linked;
+    CardMenuController* unka8;
+    CardTask* linked;
     FieldClass153130* selector;
     LibTextWidget* first_text;
     LibTextWidget* second_text;
     FieldClass153170* marker;
 };
 
-/** Partial 0xB0-byte window with a panel and one resource text, with MAIN vtable at 0x189210. */
-class CmcClass189210 : public FieldClass15AE70
+/** Partial 0xB0-byte window saying the Battle Trophies data is corrupted (message 0x2348), with MAIN vtable at 0x189210. */
+class TrophyCorruptWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass189210(CmcClass18AF20* controller) : unka8(0)
+    TrophyCorruptWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         unkac = 0;
     }
 
-    virtual ~CmcClass189210();
+    virtual ~TrophyCorruptWindow();
 
     /**
      * @brief Request controller action 0x79 and hide the nested display.
@@ -394,25 +424,25 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     LibTextWidget* unkac;
 };
 
-/** Partial 0xB0-byte window with a panel and one resource text, with MAIN vtable at 0x189410. */
-class CmcClass189410 : public FieldClass15AE70
+/** Partial 0xB0-byte window saying the Battle Trophies data failed to load (message 0x2344), with MAIN vtable at 0x189410. */
+class TrophyLoadFailedWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass189410(CmcClass18AF20* controller) : unka8(0)
+    TrophyLoadFailedWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         unkac = 0;
     }
 
-    virtual ~CmcClass189410();
+    virtual ~TrophyLoadFailedWindow();
 
     /**
      * @brief Request controller action 0x79 and hide the nested display.
@@ -427,25 +457,25 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     LibTextWidget* unkac;
 };
 
-/** Partial 0xB0-byte window with a panel and one resource text, with MAIN vtable at 0x189510. */
-class CmcClass189510 : public FieldClass15AE70
+/** Partial 0xB0-byte window saying the Battle Trophies data loaded (message 0x2343), with MAIN vtable at 0x189510. */
+class TrophyLoadedWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass189510(CmcClass18AF20* controller) : unka8(0)
+    TrophyLoadedWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         unkac = 0;
     }
 
-    virtual ~CmcClass189510();
+    virtual ~TrophyLoadedWindow();
 
     /**
      * @brief Set bit 6 of the checked record's byte 0x25, lock the window, and run the controller's closing step.
@@ -460,19 +490,19 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     LibTextWidget* unkac;
 };
 
-/** Partial 0xB0-byte message window with a panel and one resource text, with MAIN vtable at 0x189710. */
-class CmcClass189710 : public FieldClass15AE70
+/** Partial 0xB0-byte window saying the chosen slot has no memory card, in the Battle Trophies flow (message 0x519), with MAIN vtable at 0x189710. */
+class TrophyNoCardWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass189710(CmcClass18AF20* controller) : unka8(0)
+    TrophyNoCardWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         // TODO: the game stores the controller twice here
@@ -480,7 +510,7 @@ public:
         unkac = 0;
     }
 
-    virtual ~CmcClass189710();
+    virtual ~TrophyNoCardWindow();
 
     /**
      * @brief Request controller action 0x79 and hide the nested display.
@@ -501,26 +531,26 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     LibTextWidget* unkac;
 };
 
-/** Partial 0xB4-byte result window for the controller's linked object, with MAIN vtable at 0x189610. */
-class CmcClass189610 : public FieldClass15AE70
+/** Partial 0xB4-byte window shown while the Battle Trophies data is checked (message 0x2342), with MAIN vtable at 0x189610. */
+class TrophyCheckingWindow : public FieldClass15AE70
 {
 public:
     /**
      * @brief Create the window for a controller.
      * @param controller Controller the window reports to.
      */
-    CmcClass189610(CmcClass18AF20* controller) : unka8(0)
+    TrophyCheckingWindow(CardMenuController* controller) : unka8(0)
     {
         unka8 = controller;
         unkb0 = 0;
         unkac = 0;
     }
 
-    virtual ~CmcClass189610();
+    virtual ~TrophyCheckingWindow();
 
     /** @brief Once this is the focused window and the linked object has finished, hide the window and request the follow-up window its result codes select. */
     virtual void func_slot5c();
@@ -532,8 +562,8 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
-    CmcClass18AFB0* unkac;
+    CardMenuController* unka8;
+    CardTask* unkac;
     LibTextWidget* unkb0;
 };
 
@@ -557,15 +587,15 @@ public:
     ItemCreationOptionResourceDisplay* unkb4;
 };
 
-/** Partial 0xAC-byte memory card result window, with MAIN vtable at 0x18A720. */
-class CmcClass18A720 : public FieldClass15AE70
+/** Partial 0xAC-byte window shown while a memory card is formatted (message 0x515), with MAIN vtable at 0x18A720. */
+class CardFormattingWindow : public FieldClass15AE70
 {
 public:
-    CmcClass18A720() : unka8(0), unkac(0)
+    CardFormattingWindow() : unka8(0), unkac(0)
     {
     }
 
-    virtual ~CmcClass18A720();
+    virtual ~CardFormattingWindow();
 
     /** @brief Once this is the focused window, act on the memory card handler's result. */
     virtual void func_slot5c();
@@ -580,20 +610,20 @@ public:
     /** @brief Open the save window for the selected slot and restart the card handler. */
     void func_00353B60();
 
-    CmcClass18AFB0* unka8;
+    CardTask* unka8;
     s32 unkac;
 };
 
-/** Partial 0xE0-byte card slot window with a choice grid, with MAIN vtable at 0x189B20. */
-class CmcClass189B20 : public FieldClass15AE70
+/** Partial 0xE0-byte save or load verification dialog ("Create new data?", "Overwrite?", "Load data?" with Yes / No), with MAIN vtable at 0x189B20. */
+class CardVerifyWindow : public FieldClass15AE70
 {
 public:
-    CmcClass189B20()
+    CardVerifyWindow()
     {
         func_0034F310();
     }
 
-    virtual ~CmcClass189B20();
+    virtual ~CardVerifyWindow();
 
     /** @brief Once this is the focused window, recolour the choices for the grid's cursor and finish when the card handler is done. */
     virtual void func_slot5c();
@@ -644,7 +674,7 @@ public:
     /** @brief Clear the window's state and set its default mode, card kind and colours. */
     void func_0034F310();
 
-    CmcClass18AFB0* unka8;
+    CardTask* unka8;
     FieldObject23CEA0* grid;
     u8 mode;
     u8 unkb1;
@@ -662,11 +692,11 @@ public:
     u8 unkdc;
 };
 
-/** Partial 0xC4-byte two-choice memory card window, with MAIN vtable at 0x18A920. */
-class CmcClass18A920 : public FieldClass15AE70
+/** Partial 0xC4-byte yes/no dialog offering to format an unformatted memory card (message 0x50D), with MAIN vtable at 0x18A920. */
+class CardFormatPromptWindow : public FieldClass15AE70
 {
 public:
-    CmcClass18A920()
+    CardFormatPromptWindow()
     {
         unka8 = 0;
         grid = 0;
@@ -677,7 +707,7 @@ public:
         locked = 0;
     }
 
-    virtual ~CmcClass18A920();
+    virtual ~CardFormatPromptWindow();
 
     /** @brief Once this is the focused window, lock it when the card handler finished, otherwise recolour the choices for the grid's cursor. */
     virtual void func_slot5c();
@@ -710,7 +740,7 @@ public:
     /** @brief Close the slot list and its window, dim the top window's choices and open the follow-up window. */
     void func_003545C0();
 
-    CmcClass18AFB0* unka8;
+    CardTask* unka8;
     FieldObject23CEA0* grid;
     LibTextWidget* first_text;
     LibTextWidget* second_text;
@@ -739,17 +769,17 @@ struct CmcRowRecord
     u8 unk7d;
 };
 
-/** Partial 0x5E0-byte memory card slot list, with MAIN vtable at 0x189810. */
-class CmcClass189810 : public LibClass1721F0
+/** Partial 0x5E0-byte list of the save files on a memory card, with MAIN vtable at 0x189810. */
+class CardFileList : public LibClass1721F0
 {
 public:
     /**
      * @brief Create the slot list for a memory card handler.
      * @param card Memory card handler the list shows.
      */
-    CmcClass189810(CmcClass18AFB0* card);
+    CardFileList(CardTask* card);
 
-    virtual ~CmcClass189810();
+    virtual ~CardFileList();
 
     /**
      * @brief While a selection runs, finish it with the chosen index or a cancel, otherwise apply a pending index.
@@ -871,8 +901,8 @@ public:
     }
 
     u32 resource_source;
-    CmcClass18AF20* controller;
-    CmcClass18AFB0* card;
+    CardMenuController* controller;
+    CardTask* card;
     CmcRowRecord* found;
     u16 unk4c0;
     u8 unk4c2;
@@ -885,11 +915,11 @@ public:
     u8 unk5d7[9];
 };
 
-/** Partial 0xC4-byte memory card save window, with MAIN vtable at 0x18A520. */
-class CmcClass18A520 : public FieldClass15AE70
+/** Partial 0xC4-byte window shown while saving, with a progress bar (message 0x531), with MAIN vtable at 0x18A520. */
+class CardSavingWindow : public FieldClass15AE70
 {
 public:
-    CmcClass18A520()
+    CardSavingWindow()
     {
         unka8 = 0;
         unkb0 = 0;
@@ -900,7 +930,7 @@ public:
         unkc0 = 0;
     }
 
-    virtual ~CmcClass18A520();
+    virtual ~CardSavingWindow();
 
     /** @brief Once this is the focused window, follow the memory card handler's progress. */
     virtual void func_slot5c();
@@ -915,9 +945,9 @@ public:
     /** @brief Open the save confirmation window under the controller's slot window, close the parent's slot list and this window. */
     void func_00352D40();
 
-    CmcClass18AFB0* unka8;
+    CardTask* unka8;
     LibPanel* unkac;
-    CmcClass188D80* unkb0;
+    CardProgressBar* unkb0;
     float unkb4;
     u8 unkb8;
     u8 unkb9[3];
@@ -925,11 +955,11 @@ public:
     u8 unkc0;
 };
 
-/** Partial memory card progress window, with MAIN vtable at 0x189D20. */
-class CmcClass189D20 : public FieldClass15AE70
+/** Partial window listing the card's save files to save over, with MAIN vtable at 0x189D20. */
+class CardSaveListWindow : public FieldClass15AE70
 {
 public:
-    CmcClass189D20()
+    CardSaveListWindow()
     {
         unka8 = 0;
         unkac = 0;
@@ -943,7 +973,7 @@ public:
         unkc2 = 0;
     }
 
-    virtual ~CmcClass189D20();
+    virtual ~CardSaveListWindow();
 
     /** @brief Once this is the focused window, follow the memory card handler's progress. */
     virtual void func_slot5c();
@@ -958,9 +988,9 @@ public:
     /** @brief Close the slot list and this window and open the result window for the selected card slot. */
     void func_0034F830();
 
-    CmcClass18AF20* unka8;
-    CmcClass18AFB0* unkac;
-    CmcClass189810* list;
+    CardMenuController* unka8;
+    CardTask* unkac;
+    CardFileList* list;
     u16 unkb4;
     u8 unkb6;
     u8 unkb7;
@@ -971,11 +1001,11 @@ public:
     u8 unkc2;
 };
 
-/** Partial memory card progress window, with MAIN vtable at 0x189E20. */
-class CmcClass189E20 : public FieldClass15AE70
+/** Partial window listing the card's save files to load, with MAIN vtable at 0x189E20. */
+class CardLoadListWindow : public FieldClass15AE70
 {
 public:
-    CmcClass189E20()
+    CardLoadListWindow()
     {
         unka8 = 0;
         unkac = 0;
@@ -989,7 +1019,7 @@ public:
         unkc2 = 0;
     }
 
-    virtual ~CmcClass189E20();
+    virtual ~CardLoadListWindow();
 
     /** @brief Once this is the focused window, follow the memory card handler's progress. */
     virtual void func_slot5c();
@@ -1004,9 +1034,9 @@ public:
     /** @brief Close the slot list and this window and open the result window for the selected card slot. */
     void func_00350260();
 
-    CmcClass18AF20* unka8;
-    CmcClass18AFB0* unkac;
-    CmcClass189810* list;
+    CardMenuController* unka8;
+    CardTask* unkac;
+    CardFileList* list;
     u16 unkb4;
     u8 unkb6;
     u8 unkb7;
@@ -1017,14 +1047,14 @@ public:
     u8 unkc2;
 };
 
-/** Partial memory card progress window, with MAIN vtable at 0x18A420. */
-class CmcClass18A420 : public FieldClass15AE70
+/** Partial window shown while loading (message 0x532), with MAIN vtable at 0x18A420. */
+class CardLoadingWindow : public FieldClass15AE70
 {
 public:
     /** @brief Start with no card handler and the runtime's controller. */
-    CmcClass18A420();
+    CardLoadingWindow();
 
-    virtual ~CmcClass18A420();
+    virtual ~CardLoadingWindow();
 
     /** @brief Once this is the focused window, follow the memory card handler's progress. */
     virtual void func_slot5c();
@@ -1072,19 +1102,19 @@ public:
         }
     }
 
-    CmcClass18AFB0* unka8;
-    CmcClass18AF20* unkac;
+    CardTask* unka8;
+    CardMenuController* unkac;
 };
 
 /** 0x2C-byte progress bar drawn into its own model, with MAIN vtable at 0x188D80. */
-class CmcClass188D80 : public LibListObject
+class CardProgressBar : public LibListObject
 {
 public:
-    CmcClass188D80() : draw_buffer(0), model(0)
+    CardProgressBar() : draw_buffer(0), model(0)
     {
     }
 
-    virtual ~CmcClass188D80();
+    virtual ~CardProgressBar();
 
     /** @brief Detach from the owner, detach and destroy the model, then delete the bar. */
     virtual void destroy();
@@ -1113,14 +1143,14 @@ public:
     s32 mode;
 };
 
-/** Partial memory card handler the controller hands to its result windows, with MAIN vtable at 0x18AFB0. */
-class CmcClass18AFB0 : public LibListObject
+/** Partial memory card task: runs the card checks, loads and saves for the menu, with MAIN vtable at 0x18AFB0. */
+class CardTask : public LibListObject
 {
 public:
-    virtual ~CmcClass18AFB0();
+    virtual ~CardTask();
 
     /** @brief Initialize the handler with nothing selected. */
-    CmcClass18AFB0();
+    CardTask();
 
     /**
      * @brief Return the handler's list kind.
@@ -1165,6 +1195,18 @@ public:
      * @param skip Nonzero to skip recording the entry.
      */
     void func_00359970(s32 skip);
+
+    /**
+     * @brief Read the card object's byte at offset 0x28.
+     * @return Stored byte.
+     */
+    u8 func_00359C10();
+
+    /**
+     * @brief Read the Field save object's word at offset 0x1250, clamped to zero.
+     * @return The word, or zero when it isn't positive.
+     */
+    s32 func_00359C20();
 
     /**
      * @brief Run one step of loading the selected card slot into the Field object.
@@ -1270,15 +1312,15 @@ public:
     u8 unk6a[2];
 };
 
-/** Partial eight-byte root, with MAIN vtable D_188DA0. */
-class CmcClass188DA0
+/** Partial eight-byte base of a save file list row, with MAIN vtable at 0x188DA0. */
+class CardListRow
 {
 public:
-    CmcClass188DA0()
+    CardListRow()
     {
     }
 
-    virtual ~CmcClass188DA0()
+    virtual ~CardListRow()
     {
     }
 
@@ -1287,7 +1329,7 @@ public:
      * @param unused Unused owner argument.
      * @param value Byte flag value.
      */
-    virtual void func_003591A0(void* unused, u8 value) = 0;
+    virtual void func_0034D880(void* unused, u8 value) = 0;
 
     /**
      * @brief Refresh the row widgets.
@@ -1308,31 +1350,28 @@ public:
      * @brief Return zero as a floating-point value.
      * @return Zero.
      */
-    virtual float func_00358F80()
-    {
-        return 0.0f;
-    }
+    virtual float func_00358F80();
 
     u8 unk04;
     u8 unk05;
     u8 pad06[2];
 };
 
-/** D10-byte owner of a panel, text widgets, and five numeric widgets. */
-class CmcClass189900 : public CmcClass188DA0
+/** 0xD10-byte save file list row: a panel, text widgets and five numeric widgets for the play time. */
+class CardFileRow : public CardListRow
 {
 public:
     /** @brief Initialize the embedded widgets and root state. */
-    CmcClass189900();
+    CardFileRow();
 
-    virtual ~CmcClass189900();
+    virtual ~CardFileRow();
 
     /**
      * @brief Set the row widget byte flags.
      * @param unused Unused owner argument.
      * @param value Byte flag value.
      */
-    virtual void func_003591A0(void* unused, u8 value);
+    virtual void func_0034D880(void* unused, u8 value);
 
     /**
      * @brief Refresh the row widgets.
@@ -1359,15 +1398,15 @@ public:
     LibTextWidget fourth_text;
 };
 
-/** Partial 0xB0-byte window interface, with MAIN vtable at 0x189920. */
-class CmcClass189920 : public FieldClass15AE70
+/** Partial 0xB0-byte window saying MEMORY CARD slot 1 or 2 is empty (messages 0x535 and 0x536), with MAIN vtable at 0x189920. */
+class CardSlotEmptyWindow : public FieldClass15AE70
 {
 public:
-    CmcClass189920() : unka8(-1), unkac(0)
+    CardSlotEmptyWindow() : unka8(-1), unkac(0)
     {
     }
 
-    virtual ~CmcClass189920();
+    virtual ~CardSlotEmptyWindow();
 
     /**
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
@@ -1393,11 +1432,11 @@ public:
     LibTextWidget* unkac;
 };
 
-/** Partial 0xA8-byte window interface, with MAIN vtable at 0x189A20. */
-class CmcClass189A20 : public FieldClass15AE70
+/** Partial 0xA8-byte memory card error window (message 0x50F), with MAIN vtable at 0x189A20. */
+class CardErrorWindow : public FieldClass15AE70
 {
 public:
-    virtual ~CmcClass189A20();
+    virtual ~CardErrorWindow();
 
     /**
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
@@ -1420,11 +1459,11 @@ public:
 
 };
 
-/** Partial 0xA8-byte window interface, with MAIN vtable at 0x189F20. */
-class CmcClass189F20 : public FieldClass15AE70
+/** Partial 0xA8-byte window saying the card has no Star Ocean data (message 0x527), with MAIN vtable at 0x189F20. */
+class CardNoDataWindow : public FieldClass15AE70
 {
 public:
-    virtual ~CmcClass189F20();
+    virtual ~CardNoDataWindow();
 
     /**
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
@@ -1447,11 +1486,11 @@ public:
 
 };
 
-/** Partial 0xA8-byte window interface, with MAIN vtable at 0x18A020. */
-class CmcClass18A020 : public FieldClass15AE70
+/** Partial 0xA8-byte "Load failed" window (message 0x511), with MAIN vtable at 0x18A020. */
+class CardLoadFailedWindow : public FieldClass15AE70
 {
 public:
-    virtual ~CmcClass18A020();
+    virtual ~CardLoadFailedWindow();
 
     /**
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
@@ -1474,12 +1513,12 @@ public:
 
 };
 
-/** Partial 0xB0-byte window interface, with MAIN vtable at 0x18A120. */
-class CmcClass18A120 : public FieldClass15AE70
+/** Partial 0xB0-byte "Load Successful" window (message 0x2341), with MAIN vtable at 0x18A120. */
+class CardLoadedWindow : public FieldClass15AE70
 {
 public:
     /** @brief Clear the window and play the confirmation sound. */
-    CmcClass18A120()
+    CardLoadedWindow()
     {
         unkac = 0;
         unka8 = 0;
@@ -1492,7 +1531,7 @@ public:
      */
     virtual u8 func_slotb0();
 
-    virtual ~CmcClass18A120();
+    virtual ~CardLoadedWindow();
 
     /**
      * @brief Run the window action and return status one.
@@ -1507,15 +1546,15 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     void* unkac;
 };
 
-/** Partial 0xA8-byte window interface, with MAIN vtable at 0x18A220. */
-class CmcClass18A220 : public FieldClass15AE70
+/** Partial 0xA8-byte "Save failed" window (message 0x510), with MAIN vtable at 0x18A220. */
+class CardSaveFailedWindow : public FieldClass15AE70
 {
 public:
-    virtual ~CmcClass18A220();
+    virtual ~CardSaveFailedWindow();
 
     /**
      * @brief Restore the parent window, queue this window, and set the alternate window text key.
@@ -1538,12 +1577,12 @@ public:
 
 };
 
-/** Partial 0xB0-byte window interface, with MAIN vtable at 0x18A320. */
-class CmcClass18A320 : public FieldClass15AE70
+/** Partial 0xB0-byte "Save Successful" window (message 0x517), with MAIN vtable at 0x18A320. */
+class CardSavedWindow : public FieldClass15AE70
 {
 public:
     /** @brief Clear the window and play the confirmation sound. */
-    CmcClass18A320()
+    CardSavedWindow()
     {
         unka8 = 0;
         unkac = 0;
@@ -1556,7 +1595,7 @@ public:
      */
     virtual u8 func_slotb0();
 
-    virtual ~CmcClass18A320();
+    virtual ~CardSavedWindow();
 
     /**
      * @brief Run the window action when its guard byte is clear.
@@ -1577,16 +1616,16 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
     u8 unkac;
     u8 unkad[3];
 };
 
-/** Partial 0xA8-byte window interface, with MAIN vtable at 0x18A620. */
-class CmcClass18A620 : public FieldClass15AE70
+/** Partial 0xA8-byte "Format failed" window (message 0x523), with MAIN vtable at 0x18A620. */
+class CardFormatFailedWindow : public FieldClass15AE70
 {
 public:
-    CmcClass18A620()
+    CardFormatFailedWindow()
     {
     }
 
@@ -1596,7 +1635,7 @@ public:
      */
     virtual u8 func_slotb0();
 
-    virtual ~CmcClass18A620();
+    virtual ~CardFormatFailedWindow();
 
     /**
      * @brief Run the window action and return status one.
@@ -1615,11 +1654,11 @@ public:
     virtual s32 func_slotf4(u32 associated);
 };
 
-/** Partial 0xB0-byte window interface, with MAIN vtable at 0x18A820. */
-class CmcClass18A820 : public FieldClass15AE70
+/** Partial 0xB0-byte window saying the card lacks free space (message 0x50E), with MAIN vtable at 0x18A820. */
+class CardNoSpaceWindow : public FieldClass15AE70
 {
 public:
-    CmcClass18A820()
+    CardNoSpaceWindow()
     {
         unka8 = 0;
         text_key = 0;
@@ -1631,7 +1670,7 @@ public:
      */
     virtual u8 func_slotb0();
 
-    virtual ~CmcClass18A820();
+    virtual ~CardNoSpaceWindow();
 
     /**
      * @brief Run the window action and return status one.
@@ -1639,6 +1678,8 @@ public:
      */
     virtual u8 func_slotb4();
 
+    /** @brief Perform no work. */
+    virtual void func_slot5c();
 
     /**
      * @brief Take the card handler, then create the frame, its panel and its resource text.
@@ -1647,7 +1688,7 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AFB0* unka8;
+    CardTask* unka8;
     s32 text_key;
 };
 
@@ -1687,11 +1728,11 @@ public:
     LibTextWidget* unkc8;
 };
 
-/** Partial 0xB4-byte window interface, with MAIN vtable at 0x18AA20. */
-class CmcClass18AA20 : public FieldClass15AE70
+/** Partial 0xB4-byte window shown while a memory card is checked (message 0x51A), with MAIN vtable at 0x18AA20. */
+class CardCheckingWindow : public FieldClass15AE70
 {
 public:
-    CmcClass18AA20()
+    CardCheckingWindow()
     {
         unka8 = 0;
         unkac = -1;
@@ -1701,7 +1742,7 @@ public:
     /** @brief Once this is the focused window, act on the memory card handler's result and open the window that follows it. */
     virtual void func_slot5c();
 
-    virtual ~CmcClass18AA20();
+    virtual ~CardCheckingWindow();
 
     /**
      * @brief Set display flags on selected lists.
@@ -1731,16 +1772,16 @@ public:
      */
     void func_00355240(s32 count, u8 flag);
 
-    CmcClass18AFB0* unka8;
+    CardTask* unka8;
     s32 unkac;
     u8 unkb0;
 };
 
-/** Partial 0xAC-byte window interface, with MAIN vtable at 0x18AB20. */
-class CmcClass18AB20 : public FieldClass15AE70
+/** Partial 0xAC-byte window saying the chosen slot has no memory card (message 0x519), with MAIN vtable at 0x18AB20. */
+class CardNoCardWindow : public FieldClass15AE70
 {
 public:
-    CmcClass18AB20() : unka8(0)
+    CardNoCardWindow() : unka8(0)
     {
     }
 
@@ -1754,7 +1795,7 @@ public:
      */
     virtual u8 func_slotb0();
 
-    virtual ~CmcClass18AB20();
+    virtual ~CardNoCardWindow();
 
     /**
      * @brief Restore the parent window, dim its two choices, close this window and set the alternate text.
@@ -1776,14 +1817,14 @@ public:
      */
     virtual s32 func_slotf4(u32 associated);
 
-    CmcClass18AF20* unka8;
+    CardMenuController* unka8;
 };
 
-/** Partial 0xC0-byte window interface, with MAIN vtable at 0x18AC20. */
-class CmcClass18AC20 : public FieldClass15AE70
+/** Partial 0xC0-byte window choosing MEMORY CARD slot 1 or 2, with MAIN vtable at 0x18AC20. */
+class CardSlotSelectWindow : public FieldClass15AE70
 {
 public:
-    CmcClass18AC20()
+    CardSlotSelectWindow()
     {
         unka8 = 0;
         grid = 0;
@@ -1798,7 +1839,7 @@ public:
     /** @brief While this is the focused window, colour both card slots by readiness, move the marker, and close the menu once confirmed. */
     virtual void func_slot5c();
 
-    virtual ~CmcClass18AC20();
+    virtual ~CardSlotSelectWindow();
 
     /**
      * @brief Set list flags and the target display byte flag when the low flag byte is one.
@@ -1844,7 +1885,7 @@ public:
      */
     void func_003568C0(s16 slot);
 
-    CmcClass18AFB0* unka8;
+    CardTask* unka8;
     FieldObject23CEA0* grid;
     LibTextWidget* unkb0;
     LibTextWidget* unkb4;
@@ -1853,24 +1894,51 @@ public:
     u8 unkbb;
     FieldClass153170* marker;
 };
+
+/** Active window receiver directory reached through the Field runtime. */
+struct FieldWindowCallbacks
+{
+    u8 unk00[0x14];
+    FieldClass153E30* unk14;
+    u8 unk18[2];
+    u16 unk1a;
+};
+
+/** Partial menu state the card windows signal when they close. */
+struct CmcMenuState
+{
+    /**
+     * @brief Check whether the menu is closing.
+     * @return True when the closing flag is set.
+     */
+    bool is_closing()
+    {
+        return unk2d != 0;
+    }
+
+    u8 unk00[0x2D];
+    u8 unk2d;
+    u8 unk2e[0x6D];
+    u8 unk9b;
+    u8 unk9c;
+    u8 unk9d;
+    u8 unk9e;
+};
+
+/** Field runtime prefix containing the active window directory. */
+struct FieldWindowRuntime
+{
+    ResidentCheckedRecord* unk00;
+    u8 unk04[8];
+    CmcMenuState* unk0c;
+    FieldWindowCallbacks* unk10;
+    u8 unk14[0xC];
+    FieldBufferSlots* slots;
+};
+
 #endif
 
 typedef struct CmcDrawParameters CmcDrawParameters;
-typedef struct Overlay0072Object00349670 Overlay0072Object00349670;
-typedef struct Overlay0072Object00349AB0 Overlay0072Object00349AB0;
-typedef struct Overlay0072Object0034A1D0 Overlay0072Object0034A1D0;
-typedef struct Overlay0072Object0034A690 Overlay0072Object0034A690;
-typedef struct Overlay0072Object0034BB10 Overlay0072Object0034BB10;
-typedef struct Overlay0072Object00359210 Overlay0072Object00359210;
-typedef struct Overlay0072Object003594A0 Overlay0072Object003594A0;
-typedef struct Overlay0072Object00359600 Overlay0072Object00359600;
-typedef struct Overlay0072Object00359C10 Overlay0072Object00359C10;
-typedef struct Overlay0072Object00353710 Overlay0072Object00353710;
-typedef struct Overlay0072Object00358FE0 Overlay0072Object00358FE0;
-typedef struct Overlay0072Object003494F0 Overlay0072Object003494F0;
-typedef struct Overlay0072Object00358FC0 Overlay0072Object00358FC0;
-typedef struct Overlay0072Object00359000 Overlay0072Object00359000;
-typedef struct Overlay0072Object003590E0 Overlay0072Object003590E0;
 
 #ifdef __cplusplus
 extern "C" {
@@ -1881,636 +1949,6 @@ extern "C" {
  * @param parameters Drawing parameters to initialize.
  */
 void cmc_initialize_drawing_parameters(CmcDrawParameters* parameters);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_0034BB00(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003540E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003585A0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359140(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359180(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359190(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003591B0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003591C0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003591E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359200(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359290(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003592A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003592B0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003592C0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003592D0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003592E0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003592F0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359300(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359310(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359320(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359330(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359340(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359350(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359360(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359370(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359380(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359390(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003593A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003593B0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003593C0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003593D0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003593E0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003593F0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359400(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359410(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359420(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359430(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359440(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359450(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359460(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359470(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359480(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359490(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003594C0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003594D0(void* object);
-
-/**
- * @brief Return the fixed value 4.
- * @param object Receiver or first argument; unused.
- * @return Always 4.
- */
-s32 func_00359630(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359670(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_00359680(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_00359690(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003596A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_003596B0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003596C0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003596D0(void* object);
-
-/**
- * @brief Return the fixed value 0.
- * @param object Receiver or first argument; unused.
- * @return Always 0.
- */
-s32 func_003596E0(void* object);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s32 func_00349670(Overlay0072Object00349670* object);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_00349AB0(Overlay0072Object00349AB0* object, u8 value);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-u8 func_0034A1D0(Overlay0072Object0034A1D0* object);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s32 func_0034A1E0(Overlay0072Object0034A1D0* object);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s32 func_0034A690(Overlay0072Object0034A690* object);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s32 func_0034BB10(Overlay0072Object0034BB10* object);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_0034BB20(Overlay0072Object0034BB10* object, s32 value);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_0034CF80(LibCallbackTransform* object, u16 value);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_00359210(Overlay0072Object00359210* object, u8 value);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-u8 func_00359220(Overlay0072Object00359210* object);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_00359230(Overlay0072Object00359210* object, u16 value);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-u16 func_00359240(Overlay0072Object00359210* object);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_00359250(Overlay0072Object00359210* object, s32 value);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s32 func_00359260(Overlay0072Object00359210* object);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_00359270(Overlay0072Object00359210* object, s32 value);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s32 func_00359280(Overlay0072Object00359210* object);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-u8 func_003594A0(Overlay0072Object003594A0* object);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_003594B0(Overlay0072Object003594A0* object, u8 value);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s32 func_00359600(Overlay0072Object00359600* object);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-u8 func_00359610(Overlay0072Object00359600* object);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s32 func_00359620(Overlay0072Object00359600* object);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_00359640(Overlay0072Object00359600* object, s32 value);
-
-/**
- * @brief Set a field on this object.
- * @param object Object to update.
- * @param value New field value.
- */
-void func_00359650(Overlay0072Object00359600* object, u8 value);
-
-/**
- * @brief Return a field from this object.
- * @param object Object to read.
- * @return The field value.
- */
-s8 func_00359660(Overlay0072Object00359600* object);
-
-/**
- * @brief Return zero as a floating-point value.
- * @param object Receiver or first argument; unused.
- * @return Zero.
- */
-float func_003591D0(void* object);
-
-/**
- * @brief Copy one byte field into another.
- * @param object Object to update.
- */
-void func_003591F0(Overlay0072Object00359210* object);
-
-/**
- * @brief Read a byte from the referenced object.
- * @param object Object holding the reference.
- * @return The referenced byte.
- */
-u8 func_00359C10(Overlay0072Object00359C10* object);
-
-/**
- * @brief Test whether a floating-point value is negative.
- * @param value Value to test.
- * @return 1 if negative, otherwise 0.
- */
-s32 func_00359150(float value);
-
-/**
- * @brief Store three floating-point values and mark them active.
- * @param object Object to update.
- * @param x First value.
- * @param y Second value.
- * @param z Third value.
- */
-void func_00359120(Overlay0072Object00359210* object, float x, float y, float z);
-
-/**
- * @brief Store four floating-point values and mark them active.
- * @param object Object to update.
- * @param x First value.
- * @param y Second value.
- * @param z Third value.
- * @param w Fourth value.
- */
-void func_00358FE0(Overlay0072Object00358FE0* object, float x, float y, float z, float w);
-
-/**
- * @brief Store three floating-point values and a fixed fourth component.
- * @param object Object to update.
- * @param x First value.
- * @param y Second value.
- * @param z Third value.
- */
-void func_00353710(Overlay0072Object00353710* object, float x, float y, float z);
-
-/**
- * @brief Return the address of g_default_bounding_sphere.
- * @param object Receiver or first argument; unused.
- * @return Address of g_default_bounding_sphere.
- */
-u8* func_00359170(void* object);
-
-/**
- * @brief Return a positive field value or zero.
- * @param object Object holding the referenced field.
- * @return Field value if positive, otherwise zero.
- */
-s32 func_00359C20(Overlay0072Object00359C10* object);
-
-/**
- * @brief Copy a 128-bit value into this object and mark it active.
- * @param object Object to update.
- * @param value Value to copy.
- */
-void func_003494F0(Overlay0072Object003494F0* object, const unsigned __int128* value);
-
-/**
- * @brief Copy a 128-bit value into this object and mark it active.
- * @param object Object to update.
- * @param value Value to copy.
- */
-void func_00358FC0(Overlay0072Object00358FC0* object, const unsigned __int128* value);
-
-/**
- * @brief Copy a 128-bit value into this object and mark it active.
- * @param object Object to update.
- * @param value Value to copy.
- */
-void func_00359000(Overlay0072Object00359000* object, const unsigned __int128* value);
-
-/**
- * @brief Copy a 128-bit value into this object and mark it active.
- * @param object Object to update.
- * @param value Value to copy.
- */
-void func_00359020(Overlay0072Object00359000* object, const unsigned __int128* value);
-
-/**
- * @brief Copy a 128-bit value into this object and mark it active.
- * @param object Object to update.
- * @param value Value to copy.
- */
-void func_003590E0(Overlay0072Object003590E0* object, const unsigned __int128* value);
-
-/**
- * @brief Copy a 128-bit value into this object and mark it active.
- * @param object Object to update.
- * @param value Value to copy.
- */
-void func_00359100(Overlay0072Object003590E0* object, const unsigned __int128* value);
-
-/**
- * @brief Set the same value in several byte fields.
- * @param object Object to update.
- * @param unused Second argument; unused.
- * @param value Value for each field.
- */
-void func_0034D880(u8* object, void* unused, u8 value);
 
 #ifdef __cplusplus
 }
