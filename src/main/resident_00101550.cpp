@@ -311,7 +311,7 @@ extern "C" void func_00102AE0(ResidentResourceQueue* queue)
     ResidentArchive* archive = queue->archive;
 
     archive->unk12186 = 0;
-    archive->unkc9 = 0;
+    archive->disc_thread.unkAC.unk1d = 0;
 
     if (queue->unk2c)
     {
@@ -364,7 +364,148 @@ extern "C" s32 resident_poll_resource_queue(ResidentResourceQueue* queue)
     return queue->requests[0].next == 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00102D50);
+/**
+ * @brief Claim the archive for a kind-4 request, with interrupts off.
+ * @param archive Resource archive.
+ * @return True when unkAC.unk1c is set and nothing was claimed.
+ */
+static inline bool archive_claim_unk1d(ResidentArchive* archive)
+{
+    ResidentInterruptLock lock;
+
+    if (archive->disc_thread.unkAC.unk1c)
+    {
+        return true;
+    }
+
+    archive->disc_thread.unkAC.unk1d = 1;
+    return false;
+}
+
+/**
+ * @brief Mark the archive as busy with a kind-4 request.
+ * @param archive Resource archive.
+ */
+static inline void archive_begin_object_request(ResidentArchive* archive)
+{
+    archive->unk12186 = 1;
+    archive->disc_thread.unkAC.unk1d = 1;
+}
+
+/**
+ * @brief Start the request at the head of the queued list when the archive is idle.
+ *
+ * With unk2c set and a kind-4 request queued, that request is moved to the head and only it is considered: it starts
+ * once nothing else is active and the archive is not reading.
+ *
+ * @param queue Resident resource queue.
+ */
+extern "C" void func_00102D50(ResidentResourceQueue* queue)
+{
+    if (queue->unk2c && func_00102B30(queue))
+    {
+        s32 index = queue->requests[0].next;
+
+        if (index == 0)
+        {
+            return;
+        }
+
+        if (!queue->status && !queue->unk2e)
+        {
+            func_0011BC80(queue->archive);
+
+            ResidentArchive* archive = queue->archive;
+
+            (void)archive->disc_thread.semaphore.wait();
+            u8 unk69 = archive->disc_thread.unk69;
+            (void)archive->disc_thread.semaphore.signal();
+
+            if (!unk69)
+            {
+                queue->unk30 = 1;
+                queue->requests[index].context->notify(&queue->requests[index]);
+                queue->status = 1;
+                queue->requests[index].state = 1;
+                queue->archive->disc_thread.unk70 = 0;
+                queue->active_request = index;
+            }
+        }
+
+        return;
+    }
+
+    if (queue->archive->read_busy)
+    {
+        return;
+    }
+
+    if (queue->status)
+    {
+        return;
+    }
+
+    if (queue->unk2e)
+    {
+        return;
+    }
+
+    s32 index = queue->requests[0].next;
+
+    if (index == 0)
+    {
+        return;
+    }
+
+    switch (queue->requests[index].request_kind)
+    {
+    case 0:
+        queue->status = 1;
+        queue->requests[index].state = 1;
+        break;
+
+    case 1:
+        if (func_0011D080(queue->archive, queue->requests[index].file_key))
+        {
+            func_0011D060(queue->archive, queue->requests[index].buffer, queue->requests[index].byte_count);
+            queue->status = 1;
+            queue->requests[index].state = 1;
+        }
+        break;
+
+    case 2:
+        if (func_0011CB00(queue->archive, queue->requests[index].file_offset, queue->requests[index].file_key))
+        {
+            queue->status = 1;
+            queue->requests[index].state = 1;
+        }
+        break;
+
+    case 3:
+        if (func_0011C6E0(queue->archive) &&
+            func_0011CB00(queue->archive, queue->requests[index].file_offset, queue->requests[index].file_key))
+        {
+            func_0011D060(queue->archive, queue->requests[index].buffer, queue->requests[index].byte_count);
+            queue->status = 1;
+            queue->requests[index].state = 1;
+        }
+        break;
+
+    case 4:
+        if (!archive_claim_unk1d(queue->archive))
+        {
+            queue->unk30 = 1;
+            queue->status = 1;
+            queue->requests[index].state = 1;
+            queue->requests[index].context->notify(&queue->requests[index]);
+            archive_begin_object_request(queue->archive);
+            queue->archive->disc_thread.unk70 = 0;
+        }
+        break;
+    }
+
+    queue->active_request = index;
+}
 
 /**
  * @brief Notify the active request's completion callback, if it has one.
@@ -486,7 +627,7 @@ void ResidentResourceQueue::func_00104770()
 
     if (unk30)
     {
-        archive->unk70++;
+        archive->disc_thread.unk70++;
     }
 
     do

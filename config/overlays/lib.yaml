@@ -70,7 +70,7 @@ segments:
       - [0x74490, cpp, text_0045AD10]
       - [0x845A0, cpp, text_0046AE20]
       - [0x937C0, cpp, text_0047A040]
-      - [0x937F0, c, text_0047A070]
+      - [0x937F0, cpp, text_0047A070]
       - [0x945A0, cpp, text_0047AE20]
       - [0xA4A78, pad, text_0047AE20_end_align]
       - [0xA4A80, cpp, text_0048B300]

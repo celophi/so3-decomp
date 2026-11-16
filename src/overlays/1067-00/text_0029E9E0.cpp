@@ -6,6 +6,10 @@
 #include "overlays/lib/emission_vu0.h"
 #include "overlays/lib/grid_frame_vu0.h"
 #include "ee.h"
+#include "vu0.h"
+#include "overlays/lib/particle_history.h"
+#include "overlays/lib/grid_frame.h"
+#include "overlays/lib/text_004CD3A0.h"
 
 static inline void field_clear_grid_cell_bit(FieldBitset154E80* object, u32 index);
 
@@ -462,7 +466,1434 @@ void func_0029F170(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_0029F180);
+/**
+ * @brief Write the history samples of each selected group into consecutive output records.
+ * @param object Receiver owning the selection mask, sources and history.
+ * @param capacity Output-record budget.
+ * @param output First output record.
+ * @param stamp Nonzero to stamp each group's control word with the receiver's value at offset 0x28.
+ */
+extern "C" void func_0029F180(HistoryReceiver90* object, s32 capacity, HistoryOutput* output, u32 stamp)
+{
+    s32 samples = object->samples;
+    s32 index = object->index;
+    s32 limit = object->limit;
+    const u64* masks = object->mask->unk08;
+    u64 bit = (u64)1 << (index & 63);
+    s32 mask_index = index / 64;
+    s32 processed = 0;
+    u64 mask = masks[mask_index++];
+    switch (object->policy)
+    {
+        case 0:
+        {
+            if (stamp)
+            {
+                u32 stamp_value = object->unk28.bits;
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            else
+            {
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            break;
+        }
+        case 1:
+        {
+            if (stamp)
+            {
+                u32 stamp_value = object->unk28.bits;
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            else
+            {
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            break;
+        }
+        case 2:
+        {
+            if (stamp)
+            {
+                u32 stamp_value = object->unk28.bits;
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            else
+            {
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            HistorySource90* source = &object->source[index - 1];
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource90* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            break;
+        }
+    }
+}
 
 bool func_002A1C50(FieldObject157F00* object)
 {
@@ -912,7 +2343,1434 @@ void func_002A23E0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A23F0);
+/**
+ * @brief Write the history samples of each selected group into consecutive output records.
+ * @param object Receiver owning the selection mask, sources and history.
+ * @param capacity Output-record budget.
+ * @param output First output record.
+ * @param stamp Nonzero to stamp each group's control word with the receiver's value at offset 0x28.
+ */
+extern "C" void func_002A23F0(HistoryReceiver60* object, s32 capacity, HistoryOutput* output, u32 stamp)
+{
+    s32 samples = object->samples;
+    s32 index = object->index;
+    s32 limit = object->limit;
+    const u64* masks = object->mask->unk08;
+    u64 bit = (u64)1 << (index & 63);
+    s32 mask_index = index / 64;
+    s32 processed = 0;
+    u64 mask = masks[mask_index++];
+    switch (object->policy)
+    {
+        case 0:
+        {
+            if (stamp)
+            {
+                u32 stamp_value = object->unk28.bits;
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            else
+            {
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                current_position->raw = *(const unsigned __int128*)previous->position.data();
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            current_position->raw = *(const unsigned __int128*)source->position.data();
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            break;
+        }
+        case 1:
+        {
+            if (stamp)
+            {
+                u32 stamp_value = object->unk28.bits;
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            else
+            {
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_position = &current->position;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = *current_position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad* current_position = &current->position;
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = *current_position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            break;
+        }
+        case 2:
+        {
+            if (stamp)
+            {
+                u32 stamp_value = object->unk28.bits;
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            out->control.word[0] = stamp_value;
+                            current_control->word[0] = stamp_value;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            output->control.word[0] = stamp_value;
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            else
+            {
+                switch (object->mode)
+                {
+                case 3:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->value[3] = previous->attributes.data()[3];
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->value[3] = source->attributes.data()[3];
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 2:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            HistorySource60* source = &object->source[index - 1];
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                float value = out->attributes.value[3];
+                                value -= object->decrement * sample;
+                                value = ee_max(value, 0.0f);
+                                out->attributes.value[3] = value;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            out->attributes.value[3] = ee_max(out->attributes.value[3] - object->decrement, 0.0f);
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 1:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                case 0:
+                {
+                    while (processed < capacity && index < limit)
+                    {
+                        u64 selected = mask & bit;
+                        bit <<= 1;
+                        if (!bit)
+                        {
+                            bit = 1;
+                            mask = masks[mask_index++];
+                        }
+                        index++;
+                        if (selected)
+                        {
+                            s32 history_index = index * (samples - 1) - 1;
+                            HistorySource60* source = &object->source[index - 1];
+                            HistoryQuad position;
+                            position = source->position;
+                            lib_normalize_vector3(position.value);
+                            position.value[0] *= object->scale;
+                            position.value[1] *= object->scale;
+                            position.value[2] *= object->scale;
+                            for (s32 sample = samples - 1; sample >= 2; sample--)
+                            {
+                                HistoryOutput* out = &output[sample];
+                                HistoryRecord* current = &object->history[history_index--];
+                                HistoryRecord* previous = current - 1;
+                                HistoryQuad* current_attributes = &current->attributes;
+                                out->position = position;
+                                vu0_load_vf1(&out->position);
+                                current_attributes->raw = *(const unsigned __int128*)previous->attributes.data();
+                                out->attributes = *current_attributes;
+                                HistoryQuad* current_control = &current->control;
+                                current_control->raw = *(const unsigned __int128*)previous->control.data();
+                                out->control = *current_control;
+                                ee_prefetch(previous - 1);
+                                vu0_extend_bounds_vf1();
+                            }
+                            HistoryOutput* out = &output[1];
+                            HistoryRecord* current = &object->history[history_index];
+                            HistoryQuad* current_attributes = &current->attributes;
+                            out->position = position;
+                            vu0_load_vf1(&out->position);
+                            current_attributes->raw = *(const unsigned __int128*)source->attributes.data();
+                            out->attributes = *current_attributes;
+                            HistoryQuad* current_control = &current->control;
+                            out->control = *current_control;
+                            ee_prefetch(source - 1);
+                            vu0_extend_bounds_vf1();
+                            processed += samples;
+                            output += samples;
+                        }
+                    }
+                    break;
+                }
+                }
+            }
+            break;
+        }
+    }
+}
 
 /**
  * @brief Report the default enabled callback state.
@@ -2370,7 +5228,260 @@ void func_002A8000(FieldClass158720* object, const FieldClass158720* other)
     object->unkA4 = other->unkA4;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A80D0);
+/**
+ * @brief Advance active cells' frame vectors and playback state into an output batch.
+ * @param object Grid owning the cells and frame resource.
+ * @param capacity Output-entry budget, counted in steps of the grid column count.
+ * @param output Output records, with each cell written at the start of its row.
+ * @param preserve_row_vector Nonzero to retain the saved xyz components in the first row element.
+ */
+extern "C" void func_002A80D0(GridOwner00481B90* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
+{
+    s32 columns = object->unk10;
+    s32 index = object->unk2C;
+    s32 cells = object->unk0C;
+    u64* words = object->unk1C->unk08;
+    u64 mask = (u64)1 << (index & 63);
+    s32 word_index = index / 64;
+    u64 active_word = words[word_index++];
+
+    if (object->skip_frame_playback != 0)
+    {
+        s32 consumed = 0;
+        vu0_set_grid_frame_delta(g_frame_seconds);
+
+        if (columns == 1)
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridFrameMotion* state;
+
+                mask <<= 1;
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                state = grid_cell_motion_00481B90(&object->unk14[index]);
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+        else
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridFrameMotion* state;
+                GridFrameVector* previous;
+
+                mask <<= 1;
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                state = grid_cell_motion_00481B90(&object->unk14[index]);
+                previous = &object->unk20[index * (columns - 1)].unk30;
+                if (preserve_row_vector == 0)
+                {
+                    previous->packed = state->value.packed;
+                }
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                previous->components.frame_index = 0;
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+    }
+    else
+    {
+        s32 consumed = 0;
+        s32 frame_count = object->frame_header->frame_count;
+        s32 loop_mode = object->frame_header->loop_mode;
+        s32 boundary_limit = (s32)object->unk30;
+        float frame_seconds = 1.0f / 60.0f;
+        vu0_set_grid_frame_delta(g_frame_seconds);
+
+        if (columns == 1)
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridFrameMotion* state;
+                GridFrameState* frame;
+                s32 frame_index;
+
+                mask <<= 1;
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                state = grid_cell_motion_00481B90(&object->unk14[index]);
+                frame = &state->frame;
+                if (object->unk4C == 4 && boundary_limit < frame->boundary_count)
+                {
+                    grid_clear_cell_bit(object->unk1C, index);
+                    index++;
+                    continue;
+                }
+
+                frame->remaining_time -= g_frame_seconds;
+                frame_index = frame->frame_index;
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                while (frame->remaining_time <= 0.0f)
+                {
+                    frame_index += frame->reverse != 0 ? -1 : 1;
+                    if (frame_index >= frame_count)
+                    {
+                        switch (loop_mode)
+                        {
+                            case 0:
+                                frame_index = 0;
+                                break;
+                            case 1:
+                                frame->reverse = 1;
+                                frame_index--;
+                                break;
+                            case 2:
+                                frame_index--;
+                                break;
+                        }
+                        frame->boundary_count++;
+                    }
+                    else if (frame_index < 0)
+                    {
+                        frame->reverse = 0;
+                        frame_index = 0;
+                        frame->boundary_count++;
+                    }
+                    frame->frame_index = frame_index;
+                    frame->remaining_time += frame_seconds * object->frame_records[frame_index].duration_frames;
+                }
+
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                output->frame_vector.components.frame_index = frame_index;
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+        else
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridFrameMotion* state;
+                GridFrameState* frame;
+                GridFrameVector* previous;
+                s32 frame_index;
+
+                mask <<= 1;
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                state = grid_cell_motion_00481B90(&object->unk14[index]);
+                frame = &state->frame;
+                if (object->unk4C == 4 && boundary_limit < frame->boundary_count)
+                {
+                    grid_clear_cell_bit(object->unk1C, index);
+                    index++;
+                    continue;
+                }
+
+                frame->remaining_time -= g_frame_seconds;
+                frame_index = frame->frame_index;
+                previous = &object->unk20[index * (columns - 1)].unk30;
+                if (preserve_row_vector == 0)
+                {
+                    previous->packed = state->value.packed;
+                }
+                previous->components.frame_index = frame_index;
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                while (frame->remaining_time <= 0.0f)
+                {
+                    frame_index += frame->reverse != 0 ? -1 : 1;
+                    if (frame_index >= frame_count)
+                    {
+                        switch (loop_mode)
+                        {
+                            case 0:
+                                frame_index = 0;
+                                break;
+                            case 1:
+                                frame->reverse = 1;
+                                frame_index--;
+                                break;
+                            case 2:
+                                frame_index--;
+                                break;
+                        }
+                        frame->boundary_count++;
+                    }
+                    else if (frame_index < 0)
+                    {
+                        frame->reverse = 0;
+                        frame_index = 0;
+                        frame->boundary_count++;
+                    }
+                    frame->frame_index = frame_index;
+                    frame->remaining_time += frame_seconds * object->frame_records[frame_index].duration_frames;
+                }
+
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                output->frame_vector.components.frame_index = frame_index;
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+    }
+}
 
 /**
  * @brief Copy another grid's size and settings, reallocating this grid to match.
@@ -2399,7 +5510,260 @@ void func_002A87F0(FieldClass158170* object, const FieldClass158170* other)
     object->unkA4 = other->unkA4;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0029E9E0", func_002A88C0);
+/**
+ * @brief Advance active cells' frame vectors and playback state into an output batch.
+ * @param object Grid owning the cells and frame resource.
+ * @param capacity Output-entry budget, counted in steps of the grid column count.
+ * @param output Output records, with each cell written at the start of its row.
+ * @param preserve_row_vector Nonzero to retain the saved xyz components in the first row element.
+ */
+extern "C" void func_002A88C0(GridOwner00488110* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
+{
+    s32 columns = object->unk10;
+    s32 index = object->unk2C;
+    s32 cells = object->unk0C;
+    u64* words = object->unk1C->unk08;
+    u64 mask = (u64)1 << (index & 63);
+    s32 word_index = index / 64;
+    u64 active_word = words[word_index++];
+
+    if (object->skip_frame_playback != 0)
+    {
+        s32 consumed = 0;
+        vu0_set_grid_frame_delta(g_frame_seconds);
+
+        if (columns == 1)
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridFrameMotion* state;
+
+                mask <<= 1;
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                state = grid_cell_motion_00488110(&object->unk14[index]);
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+        else
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridFrameMotion* state;
+                GridFrameVector* previous;
+
+                mask <<= 1;
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                state = grid_cell_motion_00488110(&object->unk14[index]);
+                previous = &object->unk20[index * (columns - 1)].unk30;
+                if (preserve_row_vector == 0)
+                {
+                    previous->packed = state->value.packed;
+                }
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                previous->components.frame_index = 0;
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+    }
+    else
+    {
+        s32 consumed = 0;
+        s32 frame_count = object->frame_header->frame_count;
+        s32 loop_mode = object->frame_header->loop_mode;
+        s32 boundary_limit = (s32)object->unk30;
+        float frame_seconds = 1.0f / 60.0f;
+        vu0_set_grid_frame_delta(g_frame_seconds);
+
+        if (columns == 1)
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridFrameMotion* state;
+                GridFrameState* frame;
+                s32 frame_index;
+
+                mask <<= 1;
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                state = grid_cell_motion_00488110(&object->unk14[index]);
+                frame = &state->frame;
+                if (object->unk4C == 4 && boundary_limit < frame->boundary_count)
+                {
+                    grid_clear_cell_bit(object->unk1C, index);
+                    index++;
+                    continue;
+                }
+
+                frame->remaining_time -= g_frame_seconds;
+                frame_index = frame->frame_index;
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                while (frame->remaining_time <= 0.0f)
+                {
+                    frame_index += frame->reverse != 0 ? -1 : 1;
+                    if (frame_index >= frame_count)
+                    {
+                        switch (loop_mode)
+                        {
+                            case 0:
+                                frame_index = 0;
+                                break;
+                            case 1:
+                                frame->reverse = 1;
+                                frame_index--;
+                                break;
+                            case 2:
+                                frame_index--;
+                                break;
+                        }
+                        frame->boundary_count++;
+                    }
+                    else if (frame_index < 0)
+                    {
+                        frame->reverse = 0;
+                        frame_index = 0;
+                        frame->boundary_count++;
+                    }
+                    frame->frame_index = frame_index;
+                    frame->remaining_time += frame_seconds * object->frame_records[frame_index].duration_frames;
+                }
+
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                output->frame_vector.components.frame_index = frame_index;
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+        else
+        {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridFrameMotion* state;
+                GridFrameState* frame;
+                GridFrameVector* previous;
+                s32 frame_index;
+
+                mask <<= 1;
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                state = grid_cell_motion_00488110(&object->unk14[index]);
+                frame = &state->frame;
+                if (object->unk4C == 4 && boundary_limit < frame->boundary_count)
+                {
+                    grid_clear_cell_bit(object->unk1C, index);
+                    index++;
+                    continue;
+                }
+
+                frame->remaining_time -= g_frame_seconds;
+                frame_index = frame->frame_index;
+                previous = &object->unk20[index * (columns - 1)].unk30;
+                if (preserve_row_vector == 0)
+                {
+                    previous->packed = state->value.packed;
+                }
+                previous->components.frame_index = frame_index;
+                vu0_load_grid_frame_vectors(&state->value, &state->rate);
+                while (frame->remaining_time <= 0.0f)
+                {
+                    frame_index += frame->reverse != 0 ? -1 : 1;
+                    if (frame_index >= frame_count)
+                    {
+                        switch (loop_mode)
+                        {
+                            case 0:
+                                frame_index = 0;
+                                break;
+                            case 1:
+                                frame->reverse = 1;
+                                frame_index--;
+                                break;
+                            case 2:
+                                frame_index--;
+                                break;
+                        }
+                        frame->boundary_count++;
+                    }
+                    else if (frame_index < 0)
+                    {
+                        frame->reverse = 0;
+                        frame_index = 0;
+                        frame->boundary_count++;
+                    }
+                    frame->frame_index = frame_index;
+                    frame->remaining_time += frame_seconds * object->frame_records[frame_index].duration_frames;
+                }
+
+                index++;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                output->frame_vector.components.frame_index = frame_index;
+                vu0_store_grid_frame_vector(&state->value);
+                output += columns;
+            }
+        }
+    }
+}
 
 /**
  * @brief Copy another grid's size and settings, reallocating this grid to match.

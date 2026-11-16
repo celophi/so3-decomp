@@ -902,6 +902,9 @@ s32 func_0045DA90(void* object, s32 arg0, s32 arg1, s32 arg2, float value);
 /** Current shape record selected by a shape test. */
 extern struct FieldShapeRecord20* D_001B656C;
 
+/** Shape record of the other descriptor in a two-descriptor test. */
+extern struct FieldShapeRecord20* D_001B6570;
+
 s32 func_0045D140(void* shape, s32 arg0, s32 arg1, float value);
 s32 func_0045D5C0(void* shape, s32 arg0, s32 arg1, s32 arg2, float value);
 

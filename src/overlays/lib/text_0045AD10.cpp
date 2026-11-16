@@ -149,11 +149,27 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045EBD0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F2B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F580);
+/**
+ * @brief Publish the two bound shape record arrays for subsequent predicates.
+ * @param first First shape resource storage.
+ * @param second Second shape resource storage.
+ */
+void func_0045F580(void* first, void* second)
+{
+    D_001B656C = (struct FieldShapeRecord20*)*(void**)(*(u8**)first + 0xC);
+    D_001B6570 = (struct FieldShapeRecord20*)*(void**)(*(u8**)second + 0xC);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F5A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F5E0);
+/** Matrix func_0045F5E0 resets. */
+extern "C" LibMatrix44Value D_0050CAF0;
+
+/** @brief Reset D_0050CAF0 to the identity matrix. */
+extern "C" void func_0045F5E0()
+{
+    D_0050CAF0.set_identity();
+}
 
 void func_0045F600(void* object)
 {

@@ -5,6 +5,7 @@ extern "C" void func_0026CB60(void* object, s32 value);
 
 extern "C" void func_00266820(void* object, s32 value);
 #include "overlays/1067-00/text_002636B0.h"
+#include "overlays/1067-00/field_duration.h"
 #include "overlays/1067-00/text_0026E460.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_001E1590.h"
@@ -55,7 +56,32 @@ void func_002636F0(u32* word, u32 value)
     *word = value;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_00263700);
+/**
+ * @brief Split seconds into hours, minutes, and seconds, capped at 999:59:59.
+ * @param value Unsigned duration in seconds; zero clears every field.
+ */
+void FieldDuration::set_seconds(u32 value)
+{
+    if (value == 0)
+    {
+        unk00 = hours = minutes = seconds = 0;
+    }
+    else
+    {
+        seconds = value % 60;
+        minutes = (value / 60) % 60;
+        if (value >= 3600000)
+        {
+            hours = 999;
+            minutes = 59;
+            seconds = 59;
+        }
+        else
+        {
+            hours = value / 3600;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002636B0", func_002637C0);
 

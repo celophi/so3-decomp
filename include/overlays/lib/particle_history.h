@@ -198,4 +198,139 @@ void func_004952D0(LibHistoryReceiver4952D0* object, s32 capacity, LibHistoryOut
 }
 #endif
 
+#ifdef __cplusplus
+/** Aligned vector with floating-point and raw-word views. */
+union HistoryQuad
+{
+    unsigned __int128 raw;
+    float value[4];
+    u32 word[4];
+
+    /**
+     * @brief Get the vector's four floating-point components.
+     * @return The first component.
+     */
+    float* data()
+    {
+        return value;
+    }
+
+    /**
+     * @brief Get the vector's four floating-point components.
+     * @return The first component.
+     */
+    const float* data() const
+    {
+        return value;
+    }
+
+    /**
+     * @brief Copy a vector as one 128-bit value.
+     * @param other Vector to copy.
+     * @return This vector.
+     */
+    HistoryQuad& operator=(const HistoryQuad& other)
+    {
+        raw = other.raw;
+        return *this;
+    }
+};
+
+/** History record with position, attributes, and control words. */
+struct HistoryRecord
+{
+    HistoryQuad unk00;
+    HistoryQuad position;
+    HistoryQuad attributes;
+    HistoryQuad control;
+};
+
+/** Three-vector output record. */
+typedef struct HistoryOutput
+{
+    HistoryQuad position;
+    HistoryQuad attributes;
+    HistoryQuad control;
+} HistoryOutput;
+
+typedef struct HistoryMask
+{
+    u8 unk00[8];
+    const u64* unk08;
+} HistoryMask;
+
+
+/** Source record of size 0x60 with position and attribute vectors. */
+typedef struct HistorySource60
+{
+    HistoryQuad unk00;
+    HistoryQuad position;
+    HistoryQuad attributes;
+    u8 unk30[0x30];
+} HistorySource60;
+
+/** Observed receiver prefix for selected-group history output. */
+typedef struct HistoryReceiver60
+{
+    u8 unk00[0xC];
+    s32 limit;
+    s32 samples;
+    HistorySource60* source;
+    u32 unk18;
+    HistoryMask* mask;
+    HistoryRecord* history;
+    u32 unk24;
+    union
+    {
+        float value;
+        u32 bits;
+    } unk28;
+    s32 index;
+    float unk30;
+    float decrement;
+    u8 unk38[0xC];
+    float scale;
+    u8 unk48[5];
+    u8 mode;
+    u8 unk4e[8];
+    u8 policy;
+} HistoryReceiver60;
+
+/** Source record of size 0x90 with position and attribute vectors. */
+typedef struct HistorySource90
+{
+    HistoryQuad unk00;
+    HistoryQuad position;
+    HistoryQuad attributes;
+    u8 unk30[0x60];
+} HistorySource90;
+
+/** Observed receiver prefix for selected-group history output. */
+typedef struct HistoryReceiver90
+{
+    u8 unk00[0xC];
+    s32 limit;
+    s32 samples;
+    HistorySource90* source;
+    u32 unk18;
+    HistoryMask* mask;
+    HistoryRecord* history;
+    u32 unk24;
+    union
+    {
+        float value;
+        u32 bits;
+    } unk28;
+    s32 index;
+    float unk30;
+    float decrement;
+    u8 unk38[0xC];
+    float scale;
+    u8 unk48[5];
+    u8 mode;
+    u8 unk4e[8];
+    u8 policy;
+} HistoryReceiver90;
+#endif
+
 #endif

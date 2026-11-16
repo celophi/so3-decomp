@@ -37,8 +37,8 @@ extern "C" void func_0020DA30(FieldClass151640* object, FieldShapeOwner18* shape
             object->unk178.append_node(node, -1);
             for (;; index++)
             {
-                records[index].unk0c_4 = 1;
-                if (records[index].unk0c_5)
+                records[index].unk0c.unk00_4 = 1;
+                if (records[index].unk0c.unk00_5)
                 {
                     break;
                 }
@@ -68,7 +68,65 @@ void FieldClass1515B0::func_0020DBC0(FieldShapeOwner18* shape, FieldShapeData10*
     unk1c = index;
 }
 
-INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0020DA30", func_0020DBD0);
+/**
+ * @brief Create a node for every record of each kind 0x80/0x81 descriptor's range that no node in the second list
+ * covers yet, marking those records, then recurse into child descriptors.
+ * @param object Receiver supplying shape data and the destination list.
+ * @param shape First descriptor in the terminated descriptor array.
+ */
+extern "C" void func_0020DBD0(FieldClass151640* object, FieldShapeOwner18* shape)
+{
+    FieldShapeRecord20* records = ((FieldShapeData10*)object->FieldClass1515D0::unk00)->unk0c;
+    for (;; shape++)
+    {
+        s32 index = shape->unk0e;
+        if ((shape->unk0b == 0x80 || shape->unk0b == 0x81) && shape->unk04 && index != -1)
+        {
+            for (;; index++)
+            {
+                u8 missing = 1;
+                FieldClass1515B0* node = (FieldClass1515B0*)&object->unk100;
+                FieldShapeRecordInfo* info = &records[index].unk0c;
+
+                for (;;)
+                {
+                    node = (FieldClass1515B0*)node->unk08;
+                    if (!node || (FieldClass1515B0*)&object->unk100 == node)
+                    {
+                        break;
+                    }
+
+                    if (info->unk02 == node->unk14->unk0c[node->unk1c].unk0c.unk02)
+                    {
+                        missing = 0;
+                        break;
+                    }
+                }
+
+                if (missing)
+                {
+                    FieldClass151600* created = new (0) FieldClass151600;
+                    created->func_0020DBC0(shape, (FieldShapeData10*)object->FieldClass1515D0::unk00, index);
+                    object->unk100.append_node(created, -1);
+                    info->unk00_4 = 1;
+                }
+
+                if (info->unk00_5)
+                {
+                    break;
+                }
+            }
+        }
+        if (shape->unk00)
+        {
+            func_0020DBD0(object, shape->unk00);
+        }
+        if (field_owner_is_last(shape))
+        {
+            break;
+        }
+    }
+}
 
 /**
  * @brief Create each kind of shape node and optional animation attachments.

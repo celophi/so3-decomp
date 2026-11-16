@@ -3,6 +3,8 @@
 #include "clamp.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/particle_history.h"
+#include "overlays/lib/row_fill.h"
+#include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/particle_grid.h"
 #include "overlays/lib/grid_frame_vu0.h"
 #include "overlays/lib/text_004CD3A0.h"
@@ -1744,7 +1746,140 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004447B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004447E0);
+/**
+ * @brief Position a row using optional linear and angular steps.
+ * @param object Grid settings whose count (minus one) gives the row length.
+ * @param cell Cell supplying the initial position and secondary vector.
+ * @param row First element of the row.
+ * @param index Nonzero to initialize each stepped element's first auxiliary value.
+ * @param position_step Displacement subtracted per element, or null to copy the cell position.
+ * @param angle_pair Initial two angles in radians, or null for linear stepping only.
+ * @param axis_radii Initial per-axis radii used with the two angles.
+ * @param angle_step Change subtracted from the two angles per element.
+ * @param radius_step Change subtracted from the three radii per element.
+ */
+extern "C" void func_004447E0(RowFillOwner* object, RowFillCell* cell, RowFillElement* row, s32 index, const RowFillVector* position_step, const RowFillVector* angle_pair,
+                         const RowFillVector* axis_radii,
+                         const RowFillVector* angle_step, const RowFillVector* radius_step)
+{
+    if (object->secondary_emitter != 0)
+    {
+        cell->unk3c = object->unk3c;
+    }
+
+    bool copy_secondary_vector = false;
+
+    if (object->unk4d != 1 && object->unk4d != 3)
+    {
+        copy_secondary_vector = true;
+    }
+
+    if (position_step != 0)
+    {
+        if (angle_pair != 0)
+        {
+            const RowFillCell* source_cell = cell;
+            RowFillVector position;
+            RowFillVector radii;
+            RowFillVector angles;
+            LibVector4 second_trig;
+            LibVector4 first_trig;
+            s32 count = object->unk10 - 1;
+            angles.packed = angle_pair->packed;
+            radii.packed = axis_radii->packed;
+            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
+            float previous_y = radii.floats[1] * first_trig.w;
+            float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
+            position.packed = source_cell->position().packed;
+            position.floats[3] = 1.0f;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                angles.floats[0] -= angle_step->floats[0];
+                angles.floats[1] -= angle_step->floats[1];
+                radii.floats[0] -= radius_step->floats[0];
+                radii.floats[1] -= radius_step->floats[1];
+                radii.floats[2] -= radius_step->floats[2];
+                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
+                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                float x = first_trig.z * (radii.floats[0] * second_trig.z);
+                position.floats[0] += x - previous_x;
+                previous_x = x;
+                float y = radii.floats[1] * first_trig.w;
+                position.floats[1] += y - previous_y;
+                previous_y = y;
+                float z = first_trig.z * (radii.floats[2] * second_trig.w);
+                position.floats[2] += z - previous_z;
+                previous_z = z;
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = source_cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+        else
+        {
+            s32 count = object->unk10 - 1;
+            RowFillVector position;
+            position.packed = cell->position().packed;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                position.floats[0] -= position_step->floats[0];
+                position.floats[1] -= position_step->floats[1];
+                position.floats[2] -= position_step->floats[2];
+                row->unk10.packed = position.packed;
+
+                if (copy_secondary_vector)
+                {
+                    row->unk20 = cell->unk20;
+                }
+
+                row->unk30.packed = 0;
+
+                if (index != 0)
+                {
+                    row->unk30.floats[0] = object->unk28;
+                }
+
+                row++;
+            }
+        }
+    }
+    else
+    {
+        s32 count = object->unk10 - 1;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            row->unk10 = cell->position();
+
+            if (copy_secondary_vector)
+            {
+                row->unk20 = cell->unk20;
+            }
+
+            row->unk30.packed = 0;
+            row++;
+        }
+    }
+}
 
 /**
  * @brief Fill a row of secondary elements from a cell, or from an explicit vector.

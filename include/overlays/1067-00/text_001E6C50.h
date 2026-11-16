@@ -466,16 +466,23 @@ public:
  * 32-byte shape record. The first 16 bytes are read as a FieldVec4B of half
  * extents, so the flag byte at offset 0xC overlaps its fourth component.
  */
+/** Flags and identifier of a FieldShapeRecord20, at its offset 0xC. */
+struct FieldShapeRecordInfo
+{
+    u8 unk00_0_3 : 4;
+    u8 unk00_4 : 1;
+    u8 unk00_5 : 1;
+    u8 unk00_6_7 : 2;
+    u8 unk01;
+    u16 unk02;
+};
+
 struct FieldShapeRecord20
 {
     float unk00;
     float unk04;
     float unk08;
-    u8 unk0c_0_3 : 4;
-    u8 unk0c_4 : 1;
-    u8 unk0c_5 : 1;
-    u8 unk0c_6_7 : 2;
-    u8 unk0d[3];
+    FieldShapeRecordInfo unk0c;
     FieldVec4A unk10;
 };
 

@@ -6,6 +6,9 @@
 #include "main/resident_001001E0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/emission.h"
+#include "overlays/lib/row_fill.h"
+#include "overlays/lib/particle_history.h"
+#include "overlays/lib/grid_frame.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/grid_frame_vu0.h"
@@ -318,58 +321,6 @@ extern "C" void* func_0047B000(const void* object, s32 index)
     }
     return result;
 }
-
-/** One 16-byte value also accessed as four floats. */
-typedef union RowFillVector
-{
-    float floats[4];
-    unsigned __int128 packed;
-} RowFillVector;
-
-/** Partial view of a grid's emission settings used when filling secondary rows. */
-struct RowFillOwner
-{
-    u8 unk00[0x10];
-    s32 unk10;
-    u8 unk14[0x14];
-    float unk28;
-    u8 unk2c[0x10];
-    float unk3c;
-    u8 unk40[0xD];
-    u8 unk4d;
-    u8 unk4e[2];
-
-    /** Linked secondary emitter, or null. */
-    LibClass173990* secondary_emitter;
-};
-
-/** Partial view of a grid cell: its position and secondary vector. */
-struct RowFillCell
-{
-    /**
-     * @brief Get the cell position.
-     * @return The position vector.
-     */
-    const RowFillVector& position() const
-    {
-        return unk10;
-    }
-
-    u8 unk00[0x10];
-    RowFillVector unk10;
-    RowFillVector unk20;
-    u8 unk30[0xC];
-    float unk3c;
-};
-
-/** Partial view of a 64-byte secondary row element. */
-struct RowFillElement
-{
-    u8 unk00[0x10];
-    RowFillVector unk10;
-    RowFillVector unk20;
-    RowFillVector unk30;
-};
 
 /**
  * @brief Position a row using optional linear and angular steps.
@@ -3532,7 +3483,16 @@ s32 func_0047E460(void* receiver)
     return object->unk14 != 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0047AE20", func_0047E470);
+/** @brief Start with no storage. */
+LibClass173E70::LibClass173E70()
+{
+    unk04 = 0;
+    unk14 = 0;
+    unk18 = 0;
+    unk1c = 0;
+    unk20 = 0;
+    unk24 = 0;
+}
 
 /**
  * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
@@ -4355,124 +4315,6 @@ void func_00481AC0(LibGridEmitter* object, const LibGridEmitter* other)
     object->frame_records = other->frame_records;
 }
 
-/** A vector whose fourth word can hold a frame index. */
-typedef union GridFrameVector
-{
-    unsigned __int128 packed;
-    float floats[4];
-
-    struct
-    {
-        float xyz[3];
-        s32 frame_index;
-    } components;
-} GridFrameVector;
-
-/** Per-cell frame playback state. */
-typedef struct GridFrameState
-{
-    s32 reverse;
-    s32 frame_index;
-    float remaining_time;
-    s32 boundary_count;
-} GridFrameState;
-
-/** An animated vector, its rate, and the cell's frame playback state. */
-typedef struct GridFrameMotion
-{
-    GridFrameVector value;
-    GridFrameVector rate;
-    GridFrameState frame;
-} GridFrameMotion;
-
-typedef struct GridRowElement
-{
-    u8 unk00[0x30];
-    GridFrameVector unk30;
-} GridRowElement;
-
-/** Output record containing an updated vector and an optional frame index. */
-typedef struct GridOutputRecord
-{
-    u8 unk00[0x20];
-    GridFrameVector frame_vector;
-} GridOutputRecord;
-
-typedef struct GridBitset
-{
-    u8 unk00[0x8];
-    u64* unk08;
-} GridBitset;
-
-typedef struct GridFrameHeader
-{
-    u8 frame_count;
-    u8 unk01[2];
-    u8 loop_mode;
-} GridFrameHeader;
-
-/** A 0x50-byte frame record with its duration measured in frames. */
-typedef struct GridFrameRecord
-{
-    u8 unk00[0xC];
-    float duration_frames;
-    u8 unk10[0x40];
-} GridFrameRecord;
-
-/**
- * @brief Clear an active cell bit.
- * @param object Bit set owning the storage.
- * @param index Unsigned cell index.
- */
-static inline void grid_clear_cell_bit(GridBitset* object, u32 index)
-{
-    u32 word_index = index >> 6;
-    u64 keep_mask = ~((u64)1 << (index & 63));
-    object->unk08[word_index] &= keep_mask;
-}
-
-typedef struct GridCell00481B90
-{
-    u8 unk00[0x30];
-    GridFrameMotion motion;
-} GridCell00481B90;
-
-typedef struct GridOwner00481B90
-{
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    GridCell00481B90* unk14;
-    u8 unk18[4];
-    GridBitset* unk1C;
-    GridRowElement* unk20;
-    u8 unk24[8];
-    s32 unk2C;
-    float unk30;
-    u8 unk34[0x18];
-    u8 unk4C;
-    u8 unk4d[0xA];
-    u8 skip_frame_playback;
-    u8 unk58[0x48];
-    GridFrameHeader* frame_header;
-    GridFrameRecord* frame_records;
-} GridOwner00481B90;
-
-/**
- * @brief Get a 0x60-byte cell's motion state at offset 0x30.
- * @param cell Cell to read.
- * @return The motion state, or null when the cell address is null.
- */
-static inline GridFrameMotion* grid_cell_motion_00481B90(GridCell00481B90* cell)
-{
-    GridFrameMotion* motion = (GridFrameMotion*)cell;
-    if (cell != 0)
-    {
-        motion = &cell->motion;
-    }
-    return motion;
-}
-
 /**
  * @brief Advance active cells' frame vectors and playback state into an output batch.
  * @param object Grid owning the cells and frame resource.
@@ -4728,102 +4570,6 @@ extern "C" void func_00481B90(GridOwner00481B90* object, s32 capacity, GridOutpu
     }
 }
 
-/** Aligned vector with floating-point and raw-word views. */
-union HistoryQuad
-{
-    unsigned __int128 raw;
-    float value[4];
-    u32 word[4];
-
-    /**
-     * @brief Get the vector's four floating-point components.
-     * @return The first component.
-     */
-    float* data()
-    {
-        return value;
-    }
-
-    /**
-     * @brief Get the vector's four floating-point components.
-     * @return The first component.
-     */
-    const float* data() const
-    {
-        return value;
-    }
-
-    /**
-     * @brief Copy a vector as one 128-bit value.
-     * @param other Vector to copy.
-     * @return This vector.
-     */
-    HistoryQuad& operator=(const HistoryQuad& other)
-    {
-        raw = other.raw;
-        return *this;
-    }
-};
-
-/** History record with position, attributes, and control words. */
-struct HistoryRecord
-{
-    HistoryQuad unk00;
-    HistoryQuad position;
-    HistoryQuad attributes;
-    HistoryQuad control;
-};
-
-/** Three-vector output record. */
-typedef struct HistoryOutput
-{
-    HistoryQuad position;
-    HistoryQuad attributes;
-    HistoryQuad control;
-} HistoryOutput;
-
-typedef struct HistoryMask
-{
-    u8 unk00[8];
-    const u64* unk08;
-} HistoryMask;
-
-
-/** Source record of size 0x60 with position and attribute vectors. */
-typedef struct HistorySource60
-{
-    HistoryQuad unk00;
-    HistoryQuad position;
-    HistoryQuad attributes;
-    u8 unk30[0x30];
-} HistorySource60;
-
-/** Observed receiver prefix for selected-group history output. */
-typedef struct HistoryReceiver60
-{
-    u8 unk00[0xC];
-    s32 limit;
-    s32 samples;
-    HistorySource60* source;
-    u32 unk18;
-    HistoryMask* mask;
-    HistoryRecord* history;
-    u32 unk24;
-    union
-    {
-        float value;
-        u32 bits;
-    } unk28;
-    s32 index;
-    float unk30;
-    float decrement;
-    u8 unk38[0xC];
-    float scale;
-    u8 unk48[5];
-    u8 mode;
-    u8 unk4e[8];
-    u8 policy;
-} HistoryReceiver60;
 
 /**
  * @brief Write the history samples of each selected group into consecutive output records.
@@ -8037,48 +7783,6 @@ void func_00488040(LibGridEmitter* object, const LibGridEmitter* other)
     object->frame_records = other->frame_records;
 }
 
-typedef struct GridCell00488110
-{
-    u8 unk00[0x60];
-    GridFrameMotion motion;
-} GridCell00488110;
-
-typedef struct GridOwner00488110
-{
-    u8 unk00[0xC];
-    s32 unk0C;
-    s32 unk10;
-    GridCell00488110* unk14;
-    u8 unk18[4];
-    GridBitset* unk1C;
-    GridRowElement* unk20;
-    u8 unk24[8];
-    s32 unk2C;
-    float unk30;
-    u8 unk34[0x18];
-    u8 unk4C;
-    u8 unk4d[0xA];
-    u8 skip_frame_playback;
-    u8 unk58[0x48];
-    GridFrameHeader* frame_header;
-    GridFrameRecord* frame_records;
-} GridOwner00488110;
-
-/**
- * @brief Get a 0x90-byte cell's motion state at offset 0x60.
- * @param cell Cell to read.
- * @return The motion state, or null when the cell address is null.
- */
-static inline GridFrameMotion* grid_cell_motion_00488110(GridCell00488110* cell)
-{
-    GridFrameMotion* motion = (GridFrameMotion*)cell;
-    if (cell != 0)
-    {
-        motion = &cell->motion;
-    }
-    return motion;
-}
-
 /**
  * @brief Advance active cells' frame vectors and playback state into an output batch.
  * @param object Grid owning the cells and frame resource.
@@ -8334,41 +8038,6 @@ extern "C" void func_00488110(GridOwner00488110* object, s32 capacity, GridOutpu
     }
 }
 
-/** Source record of size 0x90 with position and attribute vectors. */
-typedef struct HistorySource90
-{
-    HistoryQuad unk00;
-    HistoryQuad position;
-    HistoryQuad attributes;
-    u8 unk30[0x60];
-} HistorySource90;
-
-/** Observed receiver prefix for selected-group history output. */
-typedef struct HistoryReceiver90
-{
-    u8 unk00[0xC];
-    s32 limit;
-    s32 samples;
-    HistorySource90* source;
-    u32 unk18;
-    HistoryMask* mask;
-    HistoryRecord* history;
-    u32 unk24;
-    union
-    {
-        float value;
-        u32 bits;
-    } unk28;
-    s32 index;
-    float unk30;
-    float decrement;
-    u8 unk38[0xC];
-    float scale;
-    u8 unk48[5];
-    u8 mode;
-    u8 unk4e[8];
-    u8 policy;
-} HistoryReceiver90;
 
 /**
  * @brief Write the history samples of each selected group into consecutive output records.

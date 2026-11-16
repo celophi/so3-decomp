@@ -322,27 +322,6 @@ extern "C" void func_00232520(void*, s32);
 extern "C" void func_002099B0(u8* object);
 extern "C" void func_002097F0(u8* object, float first, float second);
 
-struct FieldLateNodePrefix
-{
-    u8 unk00[0x18];
-};
-
-struct FieldLateNode20 : FieldLateNodePrefix
-{
-    virtual void unk00();
-    virtual void unk04();
-    virtual void unk08();
-    u8 unk1C[4];
-};
-
-struct FieldLateNodes
-{
-    u8 unk00[0x1C];
-    FieldLateNode20* nodes;
-    u8 unk20[4];
-    s32 count;
-};
-
 struct FieldLateFlag30
 {
     char unused[0x30];

@@ -138,6 +138,31 @@ typedef struct ClearFlagSlot270Ownertext_0043A920 { u8 pad00[0x270]; unsigned __
 typedef struct ClearFlagSlot250Ownertext_0043A920 { u8 pad00[0x250]; unsigned __int128 value250; u8 pad260[0x222]; u8 flag482; } ClearFlagSlot250Ownertext_0043A920;
 typedef struct ClearFlagSlot230Ownertext_0043A920 { u8 pad00[0x230]; unsigned __int128 value230; u8 pad240[0x241]; u8 flag481; } ClearFlagSlot230Ownertext_0043A920;
 
+typedef struct FlagFloat230Fivetext_0043A920
+{
+    u8 pad00[0x230];
+    float first230;
+    float fourth234;
+    float third238;
+    u8 pad23C[4];
+    float second240;
+    float fifth244;
+    u8 pad248[0x239];
+    u8 flag481;
+} FlagFloat230Fivetext_0043A920;
+
+typedef struct Word42CFlag49Ctext_0043A920
+{
+    u8 pad00[0x42C];
+    s32 value42C;
+    u8 pad430[0x6C];
+    u8 bit0 : 1;
+    u8 bit1 : 1;
+    u8 bit2 : 1;
+    u8 bit3 : 1;
+    u8 bit4 : 1;
+} Word42CFlag49Ctext_0043A920;
+
 typedef struct TwoQuadwordFlag3A0Ownertext_0043A920 { u8 pad00[0x3A0]; unsigned __int128 values[2]; u8 pad3C0[0xCF]; u8 flag48F; } TwoQuadwordFlag3A0Ownertext_0043A920;
 
 typedef struct TwoQuadwordFlag380Ownertext_0043A920 { u8 pad00[0x380]; unsigned __int128 values[2]; u8 pad3A0[0xEE]; u8 flag48E; } TwoQuadwordFlag380Ownertext_0043A920;
@@ -521,7 +546,16 @@ void func_0043ACF0(void* object, const unsigned __int128* value)
     receiver->value250 = *value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043A920", func_0043AD00);
+void func_0043AD00(void* object, float first, float second, float third, float fourth, float fifth)
+{
+    FlagFloat230Fivetext_0043A920* receiver = object;
+    receiver->flag481 = 7;
+    receiver->first230 = first;
+    receiver->fourth234 = fourth;
+    receiver->third238 = third;
+    receiver->second240 = second;
+    receiver->fifth244 = fifth;
+}
 
 void func_0043AD20(void* object, const unsigned __int128* value)
 {
@@ -577,7 +611,12 @@ void func_0043ADE0(void* object, const unsigned __int128* value)
     receiver->value230 = *value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043A920", func_0043ADF0);
+void func_0043ADF0(void* object, s32 value)
+{
+    Word42CFlag49Ctext_0043A920* receiver = object;
+    receiver->value42C = value;
+    receiver->bit4 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043A920", func_0043AE20);
 

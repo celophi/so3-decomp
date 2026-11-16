@@ -54,6 +54,20 @@ s32 SignalSema(s32 sema_id);
 s32 iSignalSema(s32 sema_id);
 
 /**
+ * @brief Take a semaphore without waiting.
+ * @param sema_id Semaphore ID.
+ * @return The semaphore ID, or a negative value when it isn't available.
+ */
+s32 PollSema(s32 sema_id);
+
+/**
+ * @brief Take a semaphore without waiting, from interrupt context.
+ * @param sema_id Semaphore ID.
+ * @return The semaphore ID, or a negative value when it isn't available.
+ */
+s32 iPollSema(s32 sema_id);
+
+/**
  * @brief Delete a semaphore.
  * @param sema_id Semaphore ID to delete.
  * @return The deleted semaphore's ID, or a negative value on failure.

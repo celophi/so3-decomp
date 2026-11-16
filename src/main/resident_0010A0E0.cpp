@@ -13,11 +13,13 @@
 #include "main/func_0011EE00.h"
 #include "main/resident_data.h"
 #include "main/resident_00101260.h"
+#include "main/resident_00121860.h"
 #include "ee.h"
 
 #define INTC_VBLANK_END 3
 #define RESIDENT_THREAD_PRIORITY 50
 #define RESIDENT_THREAD_SLICE_PRIORITY 44
+#define SCECdFuncRead 1
 #define SOUND_BLOCK_SIZE 2048
 #define SOUND_VOICE_READ_TAG 7
 #define SOUND_VOICE_TABLE_READ_TAG 8
@@ -145,13 +147,34 @@ void* sceCdPOffCallback(void (*callback)(void*), void* argument);
 void resident_archive_on_power_off(void* argument);
 s32 sceDevctl(const char* name, s32 command, void* argument, u32 argument_size, void* buffer, u32 buffer_size);
 s32 sceCdPowerOff(s32* result);
+s32 sceCdStatus(void);
+s32 sceCdReadClock(ResidentClock* clock);
+u32 sceCdGetReadPos(void);
 
 /** "pfs:", the hard disk file system device. */
 extern const char D_0014D908[];
 
 /** "dev9x:", the expansion bay device. */
 extern const char D_0014D970[];
-void D_0011B550(s32 reason);
+void func_0011B550(s32 reason);
+void func_0011B5C0(s32 alarm_id, u16 time, void* common);
+s32 ReleaseAlarm(s32 alarm_id);
+
+/** Nonzero to read data with spindle control 0 instead of 1. */
+extern u8 D_001B6418;
+
+/** Size and address fields of the DMA tags that send the thread's two 0x1000-byte tables, in the two stream chains. */
+extern u16 D_0014A880[];
+extern u32* D_0014A884[];
+extern u16 D_0014AA30[];
+extern u32* D_0014AA34[];
+
+/** Three words in the VU1 stream programs that the constructor patches, and the address each one gets. */
+extern u32* const D_00144180[3];
+extern const u32 D_00144190[3];
+s32 sceRead(s32 fd, void* buffer, s32 size);
+s64 sceLseek64(s32 fd, s64 offset, s32 whence);
+s32 func_00118C70(ResidentClass14FC10* thread);
 
 /** "PS2ICON3D", the magic of the hard disk icon header. */
 extern const char D_0014D8C8[];
@@ -172,6 +195,12 @@ void func_00103510(ResidentResourceQueue* queue);
 void resident_pad_update_vibration(ResidentInputSystem* input, s32 slot);
 void func_0011E9E0(ResidentInputSystem* input, s32 slot, s32 full);
 extern u32 D_001B641C;
+
+/** The archive's disc thread. */
+extern ResidentClass14FC10* D_001B6414;
+
+/** "Storage Status", the name the read flag is registered under. */
+extern const char D_0014D978[];
 bool func_00118880(ResidentArchiveWorker* worker, s32 command, s32 argument);
 bool func_00114E00(ResidentThread* thread);
 s32 iWakeupThread(s32 thread_id);
@@ -727,7 +756,80 @@ ResidentStreamThread::~ResidentStreamThread()
     delete dma;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010B810);
+/**
+ * @brief Allocate the buffers, clear the streaming state, patch the VU1 programs and create the DMA transfer.
+ * @param stream Sound stream that owns the thread.
+ */
+ResidentStreamThread::ResidentStreamThread(ResidentSoundStream* stream)
+{
+    allocation = new (0) u8[0x122C0];
+    u32 base = ((u32)allocation + 0x7F) & ~0x7F;
+
+    output_buffers[0] = (u8*)base;
+    output_buffers[1] = (u8*)(base + 0x3080);
+    unk44 = (u8*)(base + 0x6100);
+    reset_receive_blocks(this);
+    input_buffers[0] = (u8*)(base + 0x6100);
+    input_buffers[1] = (u8*)(base + 0x9180);
+    unk6C = (u8*)(base + 0xC200);
+    reset_send_blocks(this);
+    func_00115000(&static_cast<ResidentThread&>(*this), 0x2B, 0x4000);
+
+    unkF0 = (u32*)((u8*)(base + 0xC200));
+    unkF4 = (u32*)((u8*)(base + 0xD200));
+    unk70 = (u8*)(base + 0xE200);
+    unk74 = 0;
+    unk84 = (u8*)((u32)((u8*)(base + 0xE240)) | UNCACHED_SEGMENT);
+    unk88 = (u8*)((u32)((u8*)(base + 0x10240)) | UNCACHED_SEGMENT);
+    unk8C = (u8*)((u32)((u8*)(base + 0x12240)) | UNCACHED_SEGMENT);
+    reset_ring(this);
+    first_state = 0;
+    second_state = 0;
+    unk110 = 0;
+    unkB4[0] = 0;
+    unkB4[1] = 0;
+    unkB4[2] = 0;
+    unkB7 = 0;
+    unkB8 = 0;
+    unkB9 = 0;
+    mid_side = -1;
+    unkBD = 0;
+    unkBE = 0;
+    loop_count = 0;
+    unkBA = 0;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        ((u32*)unkCC)[i] = 0;
+    }
+
+    for (s32 i = 0; i < 0x400; i++)
+    {
+        unkF0[i] = 0;
+        unkF4[i] = 0;
+    }
+
+    D_0014A880[0] = 0x100;
+    D_0014A884[0] = unkF0;
+    D_0014AA30[0] = 0x100;
+    D_0014AA34[0] = unkF4;
+
+    u32 i = 0;
+
+    do
+    {
+        *D_00144180[i] = (D_00144190[i] >> 3) | 0x14000000;
+        i++;
+    } while (i < 3);
+
+    FlushCache(0);
+    this->stream = stream;
+    dma = new (0) ResidentStreamDma(this);
+    dma->phase = 0;
+    semaphore.create(1, 1);
+    waiting_thread = 0;
+    unk104 = 0;
+}
 
 /**
  * @brief SIF command 4 handler: pass 4 to the SIF command receiver.
@@ -1152,7 +1254,60 @@ void func_0010C420(ResidentSif* sif)
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010C550);
+/**
+ * @brief Send the request in the slot after the last reply to the IOP and wait for the reply.
+ * @param sif SIF link.
+ * @return Zero when no request is waiting, one after the call, or the RPC's negative error.
+ */
+static inline s32 sif_call_next(ResidentSif* sif)
+{
+    s32 index = sif->reply_index + 1;
+
+    if (index == 32)
+    {
+        index = 0;
+    }
+
+    if (index == sif->unk1C)
+    {
+        return 0;
+    }
+
+    u32 function = sif->replies[index].unk00;
+    u8* send = sif->buffer + index * 64;
+    s32 result = sceSifCallRpc(&sif->rpc_client, function, 0, send, 64, sif->reply_data, 64, 0, 0);
+
+    return result < 0 ? result : 1;
+}
+
+/**
+ * @brief Thread body: sleep until a request is queued, then call the IOP for each waiting request and deliver its
+ * reply.
+ */
+void ResidentSif::run()
+{
+    for (;;)
+    {
+        unk2DC[0] = 0;
+        WaitSema(unk32C.id);
+        unk2DC[0] = 1;
+
+        for (;;)
+        {
+            s32 result = sif_call_next(&D_001CC590);
+
+            if (result == 0)
+            {
+                break;
+            }
+
+            if (result == 1)
+            {
+                func_0010C420(&D_001CC590);
+            }
+        }
+    }
+}
 
 /**
  * @brief Wait a moment, then try to bind the SIF link's RPC client to server 0x1234.
@@ -1833,9 +1988,150 @@ void func_0010E130(ResidentSound* sound, s32 key)
     sound->voice_file_key = key;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E200);
+/** Lip sync data of one voice: a mouth level for each span of frames. */
+struct SoundVoiceLevels
+{
+    s32 unk00;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_get_voice_level);
+    /** Number of entries in both tables. */
+    s32 count;
+
+    /** Offset of the u16 table of frames, from the start of this header. */
+    s32 frames_offset;
+
+    /** Offset of the u8 table of levels, from the start of this header. */
+    s32 levels_offset;
+};
+
+/**
+ * @brief Report whether a sound still holds its slot.
+ * @param sound Sound system.
+ * @param identifier Slot identifier.
+ * @return True while the sound's slot is in use.
+ */
+static inline bool sound_is_active(ResidentSound* sound, s32 identifier)
+{
+    for (s32 i = 0; i < 60; i++)
+    {
+        if (sound->slots[i].active && sound->slots[i].identifier == identifier)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief Get the voice data of a request slot, asking the stream for it the first time.
+ * @param sound Sound system.
+ * @param identifier Slot identifier.
+ * @return The voice data, or zero when there is none.
+ */
+u32 func_0010E200(ResidentSound* sound, s32 identifier)
+{
+    if (sound->effects_disabled)
+    {
+        return 0;
+    }
+
+    if (!sound_is_active(sound, identifier))
+    {
+        return 0;
+    }
+
+    for (s32 i = 0; i < 60; i++)
+    {
+        if (sound->slots[i].active && sound->slots[i].identifier == identifier)
+        {
+            u32 data = sound->slots[i].unk28;
+
+            if (data == 0)
+            {
+                if (sound->slots[i].value != 0)
+                {
+                    data = (u32)func_00105FB0(sound->stream, sound->slots[i].value, sound->slots[i].selector);
+                    sound->slots[i].unk28 = data;
+                }
+
+                if (data == 0)
+                {
+                    return 0;
+                }
+            }
+
+            return data;
+        }
+    }
+
+    return 0;
+}
+
+// TODO: This only matches at optimization level 4; the rest of the file is at 3.
+#pragma push
+#pragma optimization_level 4
+
+/**
+ * @brief Read a playing voice's level at a time.
+ * @param sound Sound system.
+ * @param identifier Identifier resident_sound_play returned.
+ * @param time Time to sample.
+ * @return Voice level.
+ */
+u32 resident_sound_get_voice_level(ResidentSound* sound, s32 identifier, float time)
+{
+    if (sound->effects_disabled)
+    {
+        return 0;
+    }
+
+    if (!sound_is_active(sound, identifier))
+    {
+        return 0;
+    }
+
+    for (s32 i = 0; i < 60; i++)
+    {
+        if (sound->slots[i].active && sound->slots[i].identifier == identifier)
+        {
+            SoundVoiceLevels* data = (SoundVoiceLevels*)sound->slots[i].unk28;
+
+            if (data == 0)
+            {
+                if (sound->slots[i].value != 0)
+                {
+                    data = (SoundVoiceLevels*)func_00105FB0(sound->stream, sound->slots[i].value,
+                                                            sound->slots[i].selector);
+                    sound->slots[i].unk28 = (u32)data;
+                }
+
+                if (data == 0)
+                {
+                    return 0;
+                }
+            }
+
+            s32 frame = (s32)(3.0f + (sound->slots[i].unk30_float + time));
+            u16* frames = (u16*)((u8*)data + data->frames_offset);
+            s32 count = data->count;
+            u8* levels = (u8*)data + data->levels_offset;
+
+            for (s32 j = 1; j < count; j++)
+            {
+                if (frames[j] >= frame)
+                {
+                    return levels[j - 1];
+                }
+            }
+
+            return 0;
+        }
+    }
+
+    return 0;
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0010E4B0);
 
@@ -3005,9 +3301,162 @@ s32 func_00111A90(ResidentSound* sound, u8* buffer, s32 value, s32 volume, s32 p
     return sound->slots[slot].identifier;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", resident_sound_play_voice);
+// TODO: These two only match at optimization level 4; the rest of the file is at 3.
+#pragma push
+#pragma optimization_level 4
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00111EF0);
+/**
+ * @brief Play a voice resource from an object in a free slot, reading the resource for it.
+ * @param sound Sound system.
+ * @param resource Resource key of the voice.
+ * @param emitter Object the voice comes from.
+ * @param value Stored in the slot; its use is unknown.
+ * @param volume Volume, 0x7F for full; stored and packed into the upper byte.
+ * @param low Value packed into the lower 16 bits.
+ * @return Slot identifier, one when effects are disabled, or -1 when the voice can't be played.
+ */
+s32 resident_sound_play_voice(ResidentSound* sound, s32 resource, ResidentSoundEmitter* emitter, s32 value, s32 volume,
+                              s32 low)
+{
+    if (sound->effects_disabled)
+    {
+        return 1;
+    }
+
+    if (sound->state == RESIDENT_SOUND_CHANGING_REVERB)
+    {
+        return -1;
+    }
+
+    s32 slot = find_available_request_slot(sound);
+
+    if (slot == -1)
+    {
+        return -1;
+    }
+
+    s32 i;
+
+    do
+    {
+        for (i = 0; i < 60; i++)
+        {
+            if (sound->slots[i].active && sound->slots[i].identifier == sound->next_identifier)
+            {
+                sound->next_identifier = (sound->next_identifier + 1) & 0x7FFFFFFF;
+                break;
+            }
+        }
+    } while (i != 60);
+
+    sound->slots[slot].buffer = (u8*)memalign(64, resident_get_resource_size(sound->archive, resource));
+
+    if (sound->slots[slot].buffer == 0)
+    {
+        return -1;
+    }
+
+    float position[4];
+    func_4DA730(emitter, position);
+    emitter->has_sound = 1;
+    u32 placement = func_0010E4B0(sound, position, 0, 0);
+    sound->slots[slot].unk28 = 0;
+    sound->slots[slot].active = 1;
+    sound->slots[slot].started = 0;
+    sound->slots[slot].stop_requested = 0;
+    sound->slots[slot].unk03 = 1;
+    sound->slots[slot].owns_buffer = 1;
+    sound->slots[slot].identifier = sound->next_identifier;
+    sound->slots[slot].target = emitter;
+    sound->slots[slot].unk30 = 0;
+    sound->slots[slot].selector = 0;
+    sound->slots[slot].value = 0;
+    sound->slots[slot].volume = volume;
+    sound->slots[slot].unk1c = 0;
+    sound->slots[slot].unk2c = value;
+    sound->slots[slot].unk34 = (u32)volume << 24 | ((u32)low & 0xFFFF);
+    sound->slots[slot].unk38 = placement;
+    sound->slots[slot].unk06[0] = sound->unk451;
+    resident_queue_resource_request(sound->resource_queue, resource, sound->slots[slot].buffer, SOUND_VOICE_READ_TAG,
+                                    SOUND_VOICE_READ_PRIORITY, 0, 0, 0, 1);
+    sound->next_identifier = (sound->next_identifier + 1) & 0x7FFFFFFF;
+    return sound->slots[slot].identifier;
+}
+
+/**
+ * @brief Play a voice resource in a free slot, reading the resource for it.
+ * @param sound Sound system.
+ * @param resource Resource key of the voice.
+ * @param value Stored in the slot; its use is unknown.
+ * @param volume Volume, 0x7F for full; stored and packed into the upper byte.
+ * @param pan Pan, 0x40 for centre; packed into the next byte.
+ * @param low Value packed into the lower 16 bits.
+ * @return Slot identifier, one when effects are disabled, or -1 when the voice can't be played.
+ */
+s32 func_00111EF0(ResidentSound* sound, s32 resource, s32 value, s32 volume, s32 pan, s32 low)
+{
+    if (sound->effects_disabled)
+    {
+        return 1;
+    }
+
+    if (sound->state == RESIDENT_SOUND_CHANGING_REVERB)
+    {
+        return -1;
+    }
+
+    s32 slot = find_available_request_slot(sound);
+
+    if (slot == -1)
+    {
+        return -1;
+    }
+
+    s32 i;
+
+    do
+    {
+        for (i = 0; i < 60; i++)
+        {
+            if (sound->slots[i].active && sound->slots[i].identifier == sound->next_identifier)
+            {
+                sound->next_identifier = (sound->next_identifier + 1) & 0x7FFFFFFF;
+                break;
+            }
+        }
+    } while (i != 60);
+
+    sound->slots[slot].buffer = (u8*)memalign(64, resident_get_resource_size(sound->archive, resource));
+
+    if (sound->slots[slot].buffer == 0)
+    {
+        return -1;
+    }
+
+    sound->slots[slot].unk28 = 0;
+    sound->slots[slot].active = 1;
+    sound->slots[slot].started = 0;
+    sound->slots[slot].stop_requested = 0;
+    sound->slots[slot].unk03 = 1;
+    sound->slots[slot].owns_buffer = 1;
+    sound->slots[slot].identifier = sound->next_identifier;
+    sound->slots[slot].target = 0;
+    sound->slots[slot].unk30 = 0;
+    sound->slots[slot].selector = 0;
+    sound->slots[slot].value = 0;
+    sound->slots[slot].volume = volume;
+    sound->slots[slot].unk1c = 0;
+    sound->slots[slot].unk2c = value;
+    sound->slots[slot].unk34 = ((u32)low & 0xFFFF) | ((u32)volume << 24 | (u32)pan << 16);
+    sound->slots[slot].unk38 = 0;
+    sound->slots[slot].unk06[0] = 0;
+    resident_queue_resource_request(sound->resource_queue, resource, sound->slots[slot].buffer, SOUND_VOICE_READ_TAG,
+                                    SOUND_VOICE_READ_PRIORITY, 0, 0, 0, 1);
+    sound->next_identifier = (sound->next_identifier + 1) & 0x7FFFFFFF;
+    return sound->slots[slot].identifier;
+}
+
+#pragma pop
 
 /**
  * @brief Play a sound effect from an object in a free slot.
@@ -3936,8 +4385,12 @@ void func_00113A10(ResidentHeap* heap)
     heap->fallback_count = 0;
 }
 
+// TODO: Only way I found to inline this below and keep the standalone copy; file-wide breaks other functions.
+#pragma push
+#pragma auto_inline on
+
 /** @brief Construct an empty heap with no memory, 16-byte alignment and child heaps enabled. */
-inline ResidentHeap::ResidentHeap()
+ResidentHeap::ResidentHeap()
 {
     alternate = 0;
     free_anchor = 0;
@@ -3952,6 +4405,8 @@ inline ResidentHeap::ResidentHeap()
     fallback_count = 0;
     use_fallbacks = 1;
 }
+
+#pragma pop
 
 /**
  * @brief Give a heap a memory range to allocate from.
@@ -4067,8 +4522,6 @@ ResidentHeap::~ResidentHeap()
 
     fallback_count = 0;
 }
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00113E40);
 
 void func_00113EA0(void* object)
 {
@@ -4242,473 +4695,8 @@ s32 func_00114420(double left, double right)
     return func_00135320(left, right) == 0;
 }
 
-void func_00114450(void* object)
-{
-}
-
-/**
- * @brief Start a thread's kernel thread, passing the thread as its argument.
- * @param thread Thread to start.
- * @return True on success.
- */
-static inline bool thread_start(ResidentThread* thread)
-{
-    if (StartThread(thread->thread_id, thread) < 0)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Stop a thread: exit when it is the calling thread, otherwise terminate it, from interrupt context when
- * interrupts are disabled.
- * @param thread Thread to stop.
- * @return True on success.
- */
-static inline bool thread_stop(ResidentThread* thread)
-{
-    if (ee_get_status() & EE_STATUS_EIE)
-    {
-        if (thread->thread_id == GetThreadId())
-        {
-            ExitThread();
-            return true;
-        }
-
-        if (TerminateThread(thread->thread_id) < 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    if (iTerminateThread(thread->thread_id) < 0)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Start a time-sliced thread and add it to the scheduler, stopping it again when the scheduler is full.
- * @param thread Thread to start.
- * @return One on success, otherwise zero.
- */
-extern "C" s32 func_00114460(ResidentTimeSlicedThread* thread)
-{
-    if (thread_start(thread))
-    {
-        if (func_00114BD0(&D_001CFA00, thread))
-        {
-            return 1;
-        }
-
-        (void)thread_stop(thread);
-        return 0;
-    }
-
-    return 0;
-}
-
-/**
- * @brief Set a time-sliced thread's slice and create it at the normal resident priority.
- * @param thread Thread.
- * @param time_slice Horizontal syncs per slice.
- * @param stack_size Stack size in bytes.
- * @return Nonzero when the thread was created.
- */
-s32 func_00114560(ResidentTimeSlicedThread* thread, s16 time_slice, s32 stack_size)
-{
-    thread->time_slice = time_slice;
-    return func_00115000(thread, RESIDENT_THREAD_PRIORITY, stack_size);
-}
-
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00114580);
-
-/**
- * @brief Start a thread, or stop it (exiting when it is the calling thread).
- * @param object Thread.
- * @param run Nonzero to start it; stored in the sound system's unk351.
- */
-void func_00114650(void* object, u8 run)
-{
-    ResidentThread* thread = (ResidentThread*)object;
-
-    func_00101270(&g_system)->unk351 = run;
-
-    if (run)
-    {
-        thread->start();
-        return;
-    }
-
-    (void)thread_stop(thread);
-}
-
-/**
- * @brief Stop handing out time slices, returning the running thread to the normal priority.
- * @param scheduler Scheduler.
- */
-void func_00114720(ResidentThreadScheduler* scheduler)
-{
-    if (scheduler->active)
-    {
-        if (scheduler->current)
-        {
-            if (scheduler->alarm_id >= 0)
-            {
-                iReleaseAlarm(scheduler->alarm_id);
-                scheduler->alarm_id = -1;
-            }
-
-            iChangeThreadPriority(scheduler->current->thread_id, RESIDENT_THREAD_PRIORITY);
-            scheduler->current = 0;
-        }
-
-        scheduler->active = 0;
-    }
-}
-
-static inline bool scheduler_slot_empty(ResidentThreadScheduler* scheduler, s32 index)
-{
-    if (scheduler->threads[index])
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief End the running time slice and give the next thread its slice, from interrupt context.
- * @param scheduler Scheduler.
- */
-void func_00114790(ResidentThreadScheduler* scheduler)
-{
-    scheduler->alarm_id = -1;
-
-    if (scheduler->current)
-    {
-        iChangeThreadPriority(scheduler->current->thread_id, RESIDENT_THREAD_PRIORITY);
-        scheduler->current = 0;
-    }
-
-    do
-    {
-        if (!scheduler_slot_empty(scheduler, scheduler->next))
-        {
-            scheduler->current = scheduler->threads[scheduler->next];
-            iChangeThreadPriority(scheduler->current->thread_id, RESIDENT_THREAD_SLICE_PRIORITY);
-            scheduler->next++;
-            scheduler->alarm_id = resident_system_iset_alarm(&g_system, scheduler->current->time_slice,
-                                                             func_00114870, scheduler);
-            return;
-        }
-
-        scheduler->next++;
-    } while (scheduler->next < 8);
-
-    scheduler->active = 0;
-}
-
-/**
- * @brief Alarm handler that ends the running time slice while the scheduler is active.
- * @param alarm_id Alarm.
- * @param time Time the alarm fired.
- * @param common Scheduler.
- */
-void func_00114870(s32 alarm_id, u16 time, void* common)
-{
-    ResidentThreadScheduler* scheduler = (ResidentThreadScheduler*)common;
-
-    if (scheduler->active)
-    {
-        func_00114790(scheduler);
-    }
-
-    ee_exit_handler();
-}
-
-/**
- * @brief Sleep until another thread wakes this one.
- * @return True on success.
- */
-static inline bool thread_sleep(void)
-{
-    if (SleepThread() < 0)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Body of the scheduler's thread: on every wakeup while no round is running, copy the added threads into the
- * round and, when there are any, start handing out slices.
- * @param scheduler Scheduler.
- */
-void func_001148B0(ResidentThreadScheduler* scheduler)
-{
-    for (;;)
-    {
-        do
-        {
-            (void)thread_sleep();
-        } while (scheduler->active);
-
-        (void)scheduler->semaphore.wait();
-        bool any = false;
-
-        for (s32 i = 0; i < 8; i++)
-        {
-            if ((scheduler->threads[i] = scheduler->registered[i]) != 0 && !any)
-            {
-                any = true;
-            }
-        }
-
-        (void)scheduler->semaphore.signal();
-
-        if (scheduler->active || !any)
-        {
-            continue;
-        }
-
-        DIntr();
-        scheduler->active = 1;
-        scheduler->next = 0;
-        scheduler->current = 0;
-        scheduler->alarm_id = resident_system_set_alarm(&g_system, scheduler->unk64 + 2, func_00114870, scheduler);
-        EIntr();
-    }
-}
-
-/**
- * @brief Set a thread's priority, with the interrupt-context call when interrupts are disabled.
- * @param thread Thread.
- * @param priority New priority.
- * @return True on success.
- */
-static inline bool thread_change_priority(ResidentThread* thread, s32 priority)
-{
-    u32 status = ee_get_status();
-
-    thread->priority = priority;
-
-    if (status & EE_STATUS_EIE)
-    {
-        if (ChangeThreadPriority(thread->thread_id, priority) < 0)
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    if (iChangeThreadPriority(thread->thread_id, priority) < 0)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Remove a time-sliced thread from the scheduler, returning it to the normal priority if its slice is running.
- * @param scheduler Scheduler.
- * @param thread Thread to remove.
- */
-void func_00114A00(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread)
-{
-    ResidentSemaphoreLock lock(&scheduler->semaphore);
-    ResidentInterruptLock interrupts;
-
-    for (s32 i = 0; i < 8; i++)
-    {
-        if (scheduler->registered[i] == thread)
-        {
-            scheduler->registered[i] = 0;
-            scheduler->threads[i] = 0;
-
-            if (scheduler->current == thread)
-            {
-                (void)thread_change_priority(scheduler->current, RESIDENT_THREAD_PRIORITY);
-                scheduler->current = 0;
-            }
-        }
-    }
-}
-
-/**
- * @brief Add a time-sliced thread to the scheduler's first free entry.
- * @param scheduler Scheduler.
- * @param thread Thread to add.
- * @return True when it was added, false when all eight entries are taken.
- */
-bool func_00114BD0(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread)
-{
-    ResidentSemaphoreLock lock(&scheduler->semaphore);
-    ResidentInterruptLock interrupts;
-
-    for (s32 i = 0; i < 8; i++)
-    {
-        if (scheduler->registered[i] == 0)
-        {
-            scheduler->registered[i] = thread;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/** Return whether waking the resident thread succeeds. */
-s32 func_00114DD0(const void* object)
-{
-    const ResidentThreadHandle114DD0* receiver = (const ResidentThreadHandle114DD0*)object;
-    return iWakeupThread(receiver->unk08) >= 0;
-}
-
-/**
- * @brief Wake a sleeping thread.
- * @param thread_id Thread ID.
- * @return True on success.
- */
-static inline bool thread_wakeup(s32 thread_id)
-{
-    if (WakeupThread(thread_id) < 0)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Wake a sleeping thread from interrupt context.
- * @param thread_id Thread ID.
- * @return True on success.
- */
-static inline bool thread_iwakeup(s32 thread_id)
-{
-    if (iWakeupThread(thread_id) < 0)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-/**
- * @brief Wake a thread, with the interrupt-context call when interrupts are disabled.
- * @param thread Thread to wake.
- * @return True on success.
- */
-bool func_00114E00(ResidentThread* thread)
-{
-    if (ee_get_status() & EE_STATUS_EIE)
-    {
-        return thread_wakeup(thread->thread_id);
-    }
-
-    return thread_iwakeup(thread->thread_id);
-}
-
-/** Return whether the resident thread sleep request succeeds. */
-s32 func_00114E80(void)
-{
-    return SleepThread() >= 0;
-}
-
-/** Return whether the resident thread starts successfully. */
-s32 func_00114EB0(void* object)
-{
-    ResidentThreadStartContext14EB0* receiver = (ResidentThreadStartContext14EB0*)object;
-    return StartThread(receiver->unk08, object) >= 0;
-}
-
-// TODO: This only matches at optimization level 0. It homes its argument and leaves its delay slots empty, so I
-// think the original turned the optimizer off here, maybe to keep the thread entry easy to step through.
-#pragma push
-#pragma optimization_level 0
-
-/**
- * @brief Entry point of every resident thread: run the thread's body, then delete the thread.
- * @param argument The thread.
- */
-void func_00114EE0(void* argument)
-{
-    ResidentThread* thread = (ResidentThread*)argument;
-    thread->run();
-    delete thread;
-}
-
-#pragma pop
-
-/** @brief Stop and delete the kernel thread. */
-ResidentThread::~ResidentThread()
-{
-    s32 id = thread_id;
-
-    if (id >= 0)
-    {
-        if (id == GetThreadId())
-        {
-            delete stack;
-            ExitDeleteThread();
-        }
-        else
-        {
-            TerminateThread(id);
-            DeleteThread(thread_id);
-            delete stack;
-        }
-    }
-}
-
-/**
- * @brief Create the kernel thread with a new stack; it runs the thread's body once started.
- * @param thread Thread.
- * @param priority Thread priority.
- * @param stack_size Stack size in bytes.
- * @return Nonzero when the thread was created, zero when it already exists or creation failed.
- */
-s32 func_00115000(ResidentThread* thread, s32 priority, s32 stack_size)
-{
-    if (thread->thread_id >= 0)
-    {
-        return 0;
-    }
-
-    thread->stack = new (0) u8[stack_size];
-
-    if (thread->stack == 0)
-    {
-        return 0;
-    }
-
-    FlushCache(0);
-    ThreadParam param;
-    param.entry = func_00114EE0;
-    param.stack = thread->stack;
-    param.stackSize = stack_size;
-    param.gpReg = &_gp;
-    param.initPriority = priority;
-    thread->priority = priority;
-    thread->thread_id = CreateThread(&param);
-    return thread->thread_id >= 0;
-}
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_001150C0);
-
 /** @brief Destroy the worker and its semaphores. */
-ResidentArchiveWorker::~ResidentArchiveWorker()
+inline ResidentArchiveWorker::~ResidentArchiveWorker()
 {
 }
 
@@ -4746,12 +4734,12 @@ s32 resident_archive_has_resource(const ResidentArchive* archive, s32 index)
 void resident_archive_set_navigator_files(ResidentArchive* archive, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
                                           s32 third_size)
 {
-    archive->navigator_files[0] = first;
-    archive->navigator_file_sizes[0] = first_size;
-    archive->navigator_files[1] = second;
-    archive->navigator_file_sizes[1] = second_size;
-    archive->navigator_files[2] = third;
-    archive->navigator_file_sizes[2] = third_size;
+    archive->worker.navigator_files[0] = first;
+    archive->worker.navigator_file_sizes[0] = first_size;
+    archive->worker.navigator_files[1] = second;
+    archive->worker.navigator_file_sizes[1] = second_size;
+    archive->worker.navigator_files[2] = third;
+    archive->worker.navigator_file_sizes[2] = third_size;
 }
 
 /**
@@ -4770,7 +4758,7 @@ void resident_archive_set_navigator_files(ResidentArchive* archive, u8* first, s
 void resident_archive_set_system_files(ResidentArchive* archive, u8* header, u8* first, s32 first_size, u8* second, s32 second_size, u8* third,
                                        s32 third_size, u8* fourth, s32 fourth_size)
 {
-    func_00115310(archive->disk_worker(), (ResidentHddIconHeader*)header, first, first_size, second, second_size, third,
+    func_00115310(&archive->worker, (ResidentHddIconHeader*)header, first, first_size, second, second_size, third,
                   third_size, fourth, fourth_size);
 }
 
@@ -4817,8 +4805,8 @@ void func_00115310(ResidentArchiveWorker* worker, ResidentHddIconHeader* header,
  */
 void resident_archive_clear_unit_error(ResidentArchive* archive)
 {
-    archive->unk140 = 0;
-    archive->unk6c = 0;
+    archive->worker.unk54 = 0;
+    archive->disc_thread.unk6c = 0;
 }
 
 /**
@@ -4828,7 +4816,7 @@ void resident_archive_clear_unit_error(ResidentArchive* archive)
  */
 static inline bool archive_unit_error_pending(const ResidentArchive* const& archive)
 {
-    return archive->unk140 || archive->unk6c;
+    return archive->worker.unk54 || archive->disc_thread.unk6c;
 }
 
 /**
@@ -4859,7 +4847,7 @@ static inline s32 archive_unit_unk139(const ResidentArchive* archive)
         return 0;
     }
 
-    return archive->unk139;
+    return archive->worker.unk4d;
 }
 
 /**
@@ -4874,7 +4862,7 @@ static inline s32 archive_unit_unkfc(const ResidentArchive* archive)
         return 0;
     }
 
-    return archive->unkfc;
+    return archive->worker.unk10;
 }
 
 /**
@@ -4889,7 +4877,7 @@ static inline s32 archive_unit_ready(const ResidentArchive* archive)
         return 0;
     }
 
-    return archive->unit_ready;
+    return archive->worker.unit_ready;
 }
 
 /**
@@ -4933,7 +4921,7 @@ bool resident_archive_query_unit(ResidentArchive* archive, s32 first, s32 second
             }
 
             archive->unk12185 = 1;
-            return func_00118880(archive->disk_worker(), 6, 0);
+            return func_00118880(&archive->worker, 6, 0);
         }
 
         return 1;
@@ -4942,7 +4930,7 @@ bool resident_archive_query_unit(ResidentArchive* archive, s32 first, s32 second
     if (archive->unk12185)
     {
         archive->unk12185 = 0;
-        return func_00118880(archive->disk_worker(), 7, 0);
+        return func_00118880(&archive->worker, 7, 0);
     }
 
     return 1;
@@ -4957,7 +4945,7 @@ bool resident_archive_query_unit(ResidentArchive* archive, s32 first, s32 second
  */
 s32 resident_archive_get_command_result(const ResidentArchive* archive)
 {
-    return archive->command_result;
+    return archive->worker.command_result;
 }
 
 /**
@@ -4967,7 +4955,7 @@ s32 resident_archive_get_command_result(const ResidentArchive* archive)
  */
 s32 resident_archive_is_busy(const ResidentArchive* archive)
 {
-    return archive->busy;
+    return archive->worker.command;
 }
 
 /**
@@ -4977,7 +4965,7 @@ s32 resident_archive_is_busy(const ResidentArchive* archive)
  */
 s32 resident_archive_get_copy_remaining(const ResidentArchive* archive)
 {
-    return archive->copy_remaining;
+    return archive->worker.copy_remaining;
 }
 
 /**
@@ -4992,7 +4980,7 @@ s32 resident_archive_is_unit_ready(const ResidentArchive* archive)
         return 0;
     }
 
-    return archive->unit_ready;
+    return archive->worker.unit_ready;
 }
 
 /**
@@ -5002,7 +4990,7 @@ s32 resident_archive_is_unit_ready(const ResidentArchive* archive)
  */
 void resident_archive_set_copy_buffer(ResidentArchive* archive, u8* buffer)
 {
-    archive->copy_buffer = buffer;
+    archive->worker.copy_buffer = buffer;
 }
 
 /**
@@ -5011,14 +4999,14 @@ void resident_archive_set_copy_buffer(ResidentArchive* archive, u8* buffer)
  */
 static inline void archive_request_cancel(ResidentArchive* archive)
 {
-    ResidentSemaphoreLock lock(&archive->command_semaphore);
+    ResidentSemaphoreLock lock(&archive->worker.command_semaphore);
 
-    if (archive->busy == 0)
+    if (archive->worker.command == 0)
     {
         return;
     }
 
-    archive->cancel_requested = 1;
+    archive->worker.cancel_requested = 1;
 }
 
 /**
@@ -5038,7 +5026,7 @@ void resident_archive_cancel_command(ResidentArchive* archive)
  */
 void resident_archive_start_command(ResidentArchive* archive, s32 command, s32 argument)
 {
-    func_00118880(archive->disk_worker(), command, argument);
+    func_00118880(&archive->worker, command, argument);
 }
 
 /**
@@ -5048,7 +5036,7 @@ void resident_archive_start_command(ResidentArchive* archive, s32 command, s32 a
  */
 u32 resident_archive_get_free_space(const ResidentArchive* archive)
 {
-    return archive->free_space;
+    return archive->worker.free_space;
 }
 
 /**
@@ -5128,13 +5116,13 @@ ResidentArchiveWorker::ResidentArchiveWorker()
 {
     unk10 = 0;
     unk14 = 3;
-    unk18 = 0;
+    free_space = 0;
     unit_ready = 0;
     func_00115000(this, 0x25, 0x4000);
-    unk24 = 0;
+    command_result = 0;
     command = 0;
     argument = 0;
-    unk48 = 0;
+    copy_buffer = 0;
     cancel_requested = 0;
     unk4d = 0;
     unk4e = 0;
@@ -5142,11 +5130,11 @@ ResidentArchiveWorker::ResidentArchiveWorker()
     unk50 = -1;
     unk54 = 0;
     icon_header = 0;
-    unk4f = 0;
+    copy_paused = 0;
     navigator_files[0] = 0;
     navigator_files[1] = 0;
     navigator_files[2] = 0;
-    unk55 = 2;
+    unit_state = 2;
     unk3c.create(1, 1);
     command_semaphore.create(1, 1);
 }
@@ -5197,9 +5185,868 @@ void resident_archive_on_power_off(void* argument)
     func_00114DD0(argument);
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00118C70);
+/**
+ * @brief Disc thread: seek to the selected resource and read it, at most 512 KiB at a time.
+ * @param thread Disc thread.
+ * @return One when the read finished or was stopped, zero after a read error.
+ */
+s32 func_00118C70(ResidentClass14FC10* thread)
+{
+    thread->unk70 = 0;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_00119650);
+    (void)thread->semaphore.wait();
+    thread->unk69 = 1;
+    (void)thread->semaphore.signal();
+
+    // TODO: Nothing reads this result (or limit_locked below), but the target keeps it and a (void) call doesn't.
+    bool locked = thread->semaphore.wait();
+    s32 offset = thread->unk98;
+    (void)thread->semaphore.signal();
+
+    // TODO: Only the first lock goes through this local; the target reads the owner before the position and again
+    // for every later use.
+    ResidentArchive* owner = thread->owner;
+    s64 position = ((s64)thread->unk58 << 11) + offset;
+    (void)owner->worker.unk3c.wait();
+    sceLseek64(thread->owner->worker.unk50, position, 0);
+    (void)thread->owner->worker.unk3c.signal();
+
+    s32 saved_size = thread->unk80;
+    u32 saved_cursor = thread->unk84;
+
+    while (thread->unk80 > 0)
+    {
+        s32 chunk;
+
+        if (thread->unk80 > 0x80000)
+        {
+            chunk = 0x80000;
+        }
+        else
+        {
+            chunk = thread->unk80;
+        }
+
+        (void)thread->semaphore.wait();
+        u8 stopping = thread->unk68;
+        (void)thread->semaphore.signal();
+
+        if (stopping)
+        {
+            (void)thread->semaphore.wait();
+            thread->unk68 = 0;
+            (void)thread->semaphore.signal();
+            break;
+        }
+
+        (void)thread->semaphore.wait();
+        u8 streaming = thread->unk5e;
+        (void)thread->semaphore.signal();
+
+        if (streaming)
+        {
+            (void)thread->semaphore.wait();
+            u8 paused = thread->unk6a;
+            (void)thread->semaphore.signal();
+
+            if (paused)
+            {
+                (void)thread->semaphore.wait();
+                thread->unk69 = 0;
+                (void)thread->semaphore.signal();
+                (void)thread->unk28.wait();
+                (void)thread->semaphore.wait();
+                thread->unk69 = 1;
+                (void)thread->semaphore.signal();
+                continue;
+            }
+
+            if (thread->unk84 + chunk >= thread->owner->unk12194 + thread->owner->unk121a0)
+            {
+                chunk = thread->owner->unk12194 + thread->owner->unk121a0 - thread->unk84;
+            }
+
+            bool limit_locked = thread->semaphore.wait();
+            u32 limit = thread->unk8c;
+            (void)thread->semaphore.signal();
+
+            limit -= 0x4000;
+
+            if (limit <= thread->owner->unk12194)
+            {
+                limit += thread->owner->unk121a0;
+            }
+
+            if (thread->unk84 <= limit && thread->unk84 + chunk >= limit)
+            {
+                chunk = limit - thread->unk84;
+            }
+
+            if (chunk == 0)
+            {
+                thread->unk60 = 3;
+                (void)thread->unk30.wait();
+                continue;
+            }
+        }
+
+        chunk &= ~0x7FF;
+        thread->unk60 = 4;
+        (void)thread->owner->worker.unk3c.wait();
+        s32 read = sceRead(thread->owner->worker.unk50, (void*)thread->unk84, chunk);
+        (void)thread->owner->worker.unk3c.signal();
+
+        if (read == -5)
+        {
+            thread->unk6c = 1;
+            thread->unk80 = saved_size;
+            thread->unk84 = saved_cursor;
+            thread->owner->unk12185 = 0;
+            func_00118880(&thread->owner->worker, 7, 0);
+            return 0;
+        }
+
+        if (read == -5)
+        {
+            thread->unk6c = 1;
+            thread->unk80 = saved_size;
+            thread->unk84 = saved_cursor;
+            thread->owner->unk12185 = 0;
+            func_00118880(&thread->owner->worker, 9, 0);
+            return 0;
+        }
+
+        thread->unk84 += read;
+        thread->unk80 -= read;
+
+        (void)thread->semaphore.wait();
+        u8 ring = thread->unk5e;
+        (void)thread->semaphore.signal();
+
+        if (ring)
+        {
+            (void)thread->semaphore.wait();
+            thread->unk88 += read;
+
+            if (thread->unk88 < 0)
+            {
+                thread->unk88 = 0;
+            }
+
+            (void)thread->semaphore.signal();
+
+            u32 cursor = thread->unk84;
+
+            if (cursor >= thread->owner->unk12194 + thread->owner->unk121a0)
+            {
+                cursor -= thread->owner->unk121a0;
+                thread->unk84 = cursor;
+            }
+        }
+
+        if (thread->unk80 <= 0)
+        {
+            break;
+        }
+    }
+
+    thread->unk60 = 9;
+    thread->owner->read_busy = 0;
+
+    (void)thread->semaphore.wait();
+    ResidentListener* listener = thread->listener;
+    void* context = thread->listener_context;
+    (void)thread->semaphore.signal();
+
+    if (listener)
+    {
+        listener->notify(context);
+    }
+
+    thread->unk50 = 0;
+
+    (void)thread->semaphore.wait();
+    thread->unk69 = 0;
+    (void)thread->semaphore.signal();
+    return 1;
+}
+
+/**
+ * @brief Sleep until the sound interrupt wakes the thread.
+ * @param thread Calling thread.
+ */
+static inline void sleep_until_sound_interrupt(ResidentThread* thread)
+{
+    func_0010D8F0(func_00101270(resident_get_system()), thread);
+    func_00114E80();
+}
+
+/**
+ * @brief Read the disc thread's stop request under its semaphore.
+ * @param thread Disc thread.
+ * @return Nonzero when the current read was asked to stop.
+ */
+static inline u8 disc_stop_requested(ResidentClass14FC10* thread)
+{
+    (void)thread->semaphore.wait();
+    u8 requested = thread->unk68;
+    (void)thread->semaphore.signal();
+    return requested;
+}
+
+/**
+ * @brief Body of the disc thread: sleep until a read is requested, then read the selected resource from the hard
+ * disk or, sector by sector, from the disc, retrying after errors and timeouts, and notify the listener at the end.
+ */
+void ResidentClass14FC10::run()
+{
+    for (;;)
+    {
+        switch (unk50)
+        {
+        case 0:
+            unk70 = 0;
+            unk60 = 0;
+            (void)semaphore.wait();
+
+            if (unk5d)
+            {
+                unk50 = 2;
+                unk94 = unk90;
+                unk5d = 0;
+            }
+            else if (unk5c)
+            {
+                unk50 = 1;
+                unk5c = 0;
+            }
+
+            if (unk50 == 0)
+            {
+                func_0010D8F0(func_00101270(resident_get_system()), this);
+                (void)semaphore.signal();
+
+                (void)semaphore.wait();
+                unk6b = 0;
+                (void)semaphore.signal();
+
+                func_00114E80();
+
+                (void)semaphore.wait();
+                unk6b = 1;
+                (void)semaphore.signal();
+            }
+            else
+            {
+                (void)semaphore.signal();
+                (void)unk48.wait();
+                (void)unk48.signal();
+            }
+
+            break;
+
+        case 1:
+        {
+            if (unk61 && owner->worker.unk50 >= 0)
+            {
+                if (func_00118C70(this))
+                {
+                    break;
+                }
+            }
+
+            (void)semaphore.wait();
+            u8 streaming = unk5e;
+            (void)semaphore.signal();
+
+            if (streaming)
+            {
+                (void)semaphore.wait();
+                unk69 = 1;
+                (void)semaphore.signal();
+
+                unk70 = 0;
+                bool checked = false;
+
+                for (;;)
+                {
+                    (void)semaphore.wait();
+                    u8 stopping = unk68;
+                    (void)semaphore.signal();
+
+                    if (stopping)
+                    {
+                        break;
+                    }
+
+                    if (unk80 <= 0)
+                    {
+                        break;
+                    }
+
+                    if (checked)
+                    {
+                        unk60 = 1;
+                        (void)unk48.wait();
+                        s32 status = sceCdStatus();
+                        (void)unk48.signal();
+
+                        if (status == -1)
+                        {
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                            continue;
+                        }
+
+                        switch (status)
+                        {
+                        case 1:
+                            unk60 = 2;
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        checked = true;
+                    }
+
+                    if (unk6a)
+                    {
+                        (void)unk48.signal();
+                        sceCdSync(0);
+                        (void)unk48.wait();
+
+                        (void)semaphore.wait();
+                        unk69 = 0;
+                        (void)semaphore.signal();
+
+                        sleep_until_sound_interrupt(this);
+
+                        (void)semaphore.wait();
+                        unk69 = 1;
+                        (void)semaphore.signal();
+                        continue;
+                    }
+
+                    s32 chunk;
+
+                    if (unk80 > 0x80000)
+                    {
+                        chunk = 0x80000;
+                    }
+                    else
+                    {
+                        chunk = unk80;
+                    }
+
+                    if (unk84 + chunk >= owner->unk12194 + owner->unk121a0)
+                    {
+                        chunk = owner->unk12194 + owner->unk121a0 - unk84;
+                    }
+
+                    // TODO: Nothing reads this result, but the target keeps it and a (void) call doesn't.
+                    bool limit_locked = semaphore.wait();
+                    u32 limit = unk8c;
+                    (void)semaphore.signal();
+
+                    limit -= 0x4000;
+
+                    if (limit <= owner->unk12194)
+                    {
+                        limit += owner->unk121a0;
+                    }
+
+                    if (unk84 <= limit && unk84 + chunk >= limit)
+                    {
+                        chunk = limit - unk84;
+                    }
+
+                    chunk &= ~0x7FF;
+
+                    if (chunk == 0)
+                    {
+                        unk60 = 3;
+                        (void)unk30.wait();
+                        checked = false;
+                        continue;
+                    }
+
+                    sceCdRMode mode;
+                    mode.trycount = 0;
+                    mode.spindlctrl = 0;
+                    mode.datapattern = 0;
+                    unk60 = 4;
+
+                    s32 size;
+                    s32 result;
+
+                    for (;;)
+                    {
+                        while (timeout_semaphore.poll())
+                        {
+                        }
+
+                        (void)unk48.wait();
+                        timed_out = 0;
+
+                        if (unk80 - chunk < 0)
+                        {
+                            result = sceCdRead(unk54, (u32)unk80 >> 11, (void*)unk84, &mode);
+                            size = unk80;
+                        }
+                        else
+                        {
+                            result = sceCdRead(unk54, (u32)chunk >> 11, (void*)unk84, &mode);
+                            size = chunk;
+                        }
+
+                        (void)unk48.signal();
+
+                        if (!result)
+                        {
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                            continue;
+                        }
+
+                        timeout_ticks = 0;
+                        timeout_alarm = resident_system_set_alarm(resident_get_system(), 0x106, func_0011B5C0, this);
+                        unk60 = 5;
+                        (void)timeout_semaphore.wait();
+
+                        if (!timed_out)
+                        {
+                            break;
+                        }
+
+                        for (;;)
+                        {
+                            unk60 = 0xB;
+                            (void)unk48.wait();
+
+                            if (sceCdBreak())
+                            {
+                                (void)unk48.signal();
+                                break;
+                            }
+
+                            (void)unk48.signal();
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                        }
+
+                        (void)unk48.wait();
+                        sceCdSync(0);
+                        (void)unk48.signal();
+                    }
+
+                    DIntr();
+
+                    if (timeout_alarm >= 0)
+                    {
+                        ReleaseAlarm(timeout_alarm);
+                    }
+
+                    EIntr();
+
+                    (void)semaphore.wait();
+                    u8 cancelled = unk68;
+                    (void)semaphore.signal();
+
+                    if (cancelled)
+                    {
+                        for (;;)
+                        {
+                            unk60 = 0xA;
+                            (void)unk48.wait();
+
+                            if (sceCdBreak())
+                            {
+                                (void)unk48.signal();
+                                break;
+                            }
+
+                            (void)unk48.signal();
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                        }
+
+                        (void)unk48.wait();
+                        sceCdSync(0);
+                        (void)unk48.signal();
+                    }
+
+                    for (;;)
+                    {
+                        unk60 = 6;
+                        (void)unk48.wait();
+                        result = sceCdGetError();
+                        (void)unk48.signal();
+
+                        if (result != -1)
+                        {
+                            break;
+                        }
+
+                        sleep_until_sound_interrupt(this);
+                        unk70++;
+                    }
+
+                    if (result != 0 && (result != 1 || !disc_stop_requested(this)))
+                    {
+                        unk60 = 7;
+                        sleep_until_sound_interrupt(this);
+                        unk70++;
+                        continue;
+                    }
+
+                    ResidentReadListener* reader = (ResidentReadListener*)unk64;
+
+                    if (reader)
+                    {
+                        reader->handle(unk84, size, owner->unk12194, owner->unk121a0);
+                    }
+
+                    unk84 += size;
+                    unk80 -= size;
+                    unk54 += size / 2048;
+
+                    (void)semaphore.wait();
+                    unk88 += size;
+
+                    if (unk88 < 0)
+                    {
+                        unk88 = 0;
+                    }
+
+                    (void)semaphore.signal();
+
+                    u32 cursor = unk84;
+
+                    if (cursor >= owner->unk12194 + owner->unk121a0)
+                    {
+                        cursor -= owner->unk121a0;
+                        unk84 = cursor;
+                    }
+
+                    checked = false;
+                }
+            }
+            else
+            {
+                unk70 = 0;
+                bool checked = false;
+
+                (void)semaphore.wait();
+                unk69 = 1;
+                (void)semaphore.signal();
+
+                for (;;)
+                {
+                    (void)semaphore.wait();
+                    u8 stopping = unk68;
+                    (void)semaphore.signal();
+
+                    if (stopping)
+                    {
+                        break;
+                    }
+
+                    if (checked)
+                    {
+                        unk60 = 1;
+                        (void)unk48.wait();
+                        s32 status = sceCdStatus();
+                        (void)unk48.signal();
+
+                        if (status == -1)
+                        {
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                            continue;
+                        }
+
+                        switch (status)
+                        {
+                        case 1:
+                            unk60 = 2;
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        checked = true;
+                    }
+
+                    sceCdRMode mode;
+                    mode.trycount = 0;
+                    mode.spindlctrl = D_001B6418 ? 0 : 1;
+                    mode.datapattern = 0;
+                    unk60 = 4;
+
+                    while (timeout_semaphore.poll())
+                    {
+                    }
+
+                    (void)unk48.wait();
+                    timed_out = 0;
+                    s32 started = sceCdRead(unk54, (u32)unk80 >> 11, (void*)unk84, &mode);
+                    (void)unk48.signal();
+
+                    if (!started)
+                    {
+                        sleep_until_sound_interrupt(this);
+                        unk70++;
+                        continue;
+                    }
+
+                    timeout_ticks = 0;
+                    if ((timeout_alarm = resident_system_set_alarm(resident_get_system(), 0x106, func_0011B5C0, this)) != -1)
+                    {
+                        unk60 = 5;
+                        (void)timeout_semaphore.wait();
+                    }
+
+                    if (timed_out)
+                    {
+                        for (;;)
+                        {
+                            unk60 = 0xB;
+                            (void)unk48.wait();
+
+                            if (sceCdBreak())
+                            {
+                                (void)unk48.signal();
+                                break;
+                            }
+
+                            (void)unk48.signal();
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                        }
+
+                        (void)unk48.wait();
+                        sceCdSync(0);
+                        (void)unk48.signal();
+                        continue;
+                    }
+
+                    DIntr();
+
+                    if (timeout_alarm >= 0)
+                    {
+                        ReleaseAlarm(timeout_alarm);
+                    }
+
+                    EIntr();
+
+                    (void)semaphore.wait();
+                    u8 cancelled = unk68;
+                    (void)semaphore.signal();
+
+                    if (cancelled)
+                    {
+                        for (;;)
+                        {
+                            unk60 = 0xA;
+                            (void)unk48.wait();
+
+                            if (sceCdBreak())
+                            {
+                                (void)unk48.signal();
+                                break;
+                            }
+
+                            (void)unk48.signal();
+                            sleep_until_sound_interrupt(this);
+                            unk70++;
+                        }
+
+                        (void)unk48.wait();
+                        sceCdSync(0);
+                        (void)unk48.signal();
+                        break;
+                    }
+
+                    s32 error;
+
+                    for (;;)
+                    {
+                        unk60 = 6;
+                        (void)unk48.wait();
+                        error = sceCdGetError();
+                        (void)unk48.signal();
+
+                        if (error != -1)
+                        {
+                            break;
+                        }
+
+                        sleep_until_sound_interrupt(this);
+                        unk70++;
+                    }
+
+                    if (error == 0)
+                    {
+                        break;
+                    }
+
+                    if (error == 1)
+                    {
+                        (void)semaphore.wait();
+                        u8 stopped = unk68;
+                        (void)semaphore.signal();
+
+                        if (stopped)
+                        {
+                            break;
+                        }
+                    }
+
+                    unk60 = 7;
+                    sleep_until_sound_interrupt(this);
+                    unk70++;
+                }
+            }
+
+            (void)unk48.wait();
+            sceCdSync(0);
+            (void)unk48.signal();
+
+            unk60 = 9;
+            owner->read_busy = 0;
+
+            (void)semaphore.wait();
+            unk69 = 0;
+            (void)semaphore.signal();
+
+            unk50 = 0;
+
+            (void)semaphore.wait();
+            ResidentListener* finished = listener;
+            void* context = listener_context;
+            (void)semaphore.signal();
+
+            if (finished)
+            {
+                finished->notify(context);
+            }
+
+            break;
+        }
+
+        case 2:
+            unk50 = 0;
+            break;
+        }
+    }
+}
+
+/**
+ * @brief Body of the status thread: while the disc library is up, poll the drive status and the clock, then the read
+ * position thirty times, sleeping until the sound interrupt between polls.
+ */
+void ResidentClass14FC40::run()
+{
+    for (;;)
+    {
+        if (!owner->unk5f)
+        {
+            sleep_until_sound_interrupt(this);
+            continue;
+        }
+
+        if (owner->unk50 != 1)
+        {
+            unk1c = 1;
+            (void)owner->unk48.wait();
+
+            if (sceCdStatus() == 1)
+            {
+                unk20 |= 1;
+            }
+            else
+            {
+                unk20 &= ~1;
+            }
+
+            (void)owner->unk48.signal();
+            unk1c = 0;
+        }
+
+        DIntr();
+
+        if (unk1d)
+        {
+            EIntr();
+            sleep_until_sound_interrupt(this);
+            continue;
+        }
+
+        unk1c = 1;
+        EIntr();
+        (void)owner->unk48.wait();
+        ResidentClock reported;
+        unk14 = sceCdReadClock(&reported);
+        (void)owner->unk48.signal();
+        unk1c = 0;
+
+        if (unk14)
+        {
+            clock.status = reported.status;
+            clock.second = reported.second;
+            clock.minute = reported.minute;
+            clock.hour = reported.hour;
+            clock.pad = reported.pad;
+            clock.day = reported.day;
+            clock.month = reported.month;
+            clock.year = reported.year;
+        }
+
+        s32 polls = 30;
+
+        for (s32 i = 0; i < polls; i++)
+        {
+            if (owner->unk50 == 1)
+            {
+                DIntr();
+
+                if (unk1d)
+                {
+                    EIntr();
+                    sleep_until_sound_interrupt(this);
+                    continue;
+                }
+
+                unk1c = 1;
+                EIntr();
+                (void)owner->unk48.wait();
+                unk18 = sceCdGetReadPos();
+                (void)owner->unk48.signal();
+                unk1c = 0;
+            }
+
+            sleep_until_sound_interrupt(this);
+        }
+    }
+}
+
+/**
+ * @brief Disc library callback: wake the disc thread when a read finishes.
+ * @param reason Disc function that finished.
+ */
+void func_0011B550(s32 reason)
+{
+    if (reason == SCECdFuncRead)
+    {
+        ResidentClass14FC10* thread = D_001B6414;
+        (void)thread->timeout_semaphore.signal();
+    }
+}
 
 /**
  * @brief Disc command timeout alarm: count a tick, and signal the timeout semaphore once the count runs out or the
@@ -5212,30 +6059,75 @@ extern "C" void func_0011B5C0(s32 alarm_id, u16 time, void* common)
 {
     ResidentArchive* archive = (ResidentArchive*)common;
 
-    archive->timeout_ticks++;
-    archive->unk70++;
-    archive->timeout_alarm = -1;
+    archive->disc_thread.timeout_ticks++;
+    archive->disc_thread.unk70++;
+    archive->disc_thread.timeout_alarm = -1;
 
-    if (archive->timeout_ticks >= 0x708)
+    if (archive->disc_thread.timeout_ticks >= 0x708)
     {
-        archive->timed_out = 1;
-        (void)archive->timeout_semaphore.isignal();
+        archive->disc_thread.timed_out = 1;
+        (void)archive->disc_thread.timeout_semaphore.isignal();
     }
-    else if (archive->unk68)
+    else if (archive->disc_thread.unk68)
     {
-        (void)archive->timeout_semaphore.isignal();
+        (void)archive->disc_thread.timeout_semaphore.isignal();
     }
     else
     {
-        archive->timeout_alarm = resident_system_iset_alarm(resident_get_system(), 0x106, func_0011B5C0, archive);
+        archive->disc_thread.timeout_alarm = resident_system_iset_alarm(resident_get_system(), 0x106, func_0011B5C0, archive);
     }
 
     ee_exit_handler();
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011B6A0);
+/** @brief Destroy the thread. */
+inline ResidentClass14FC40::~ResidentClass14FC40()
+{
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011B870);
+/** @brief Destroy the thread. */
+inline ResidentClass14FBF0::~ResidentClass14FBF0()
+{
+}
+
+/** @brief Destroy the thread and its semaphores. */
+ResidentClass14FC10::~ResidentClass14FC10()
+{
+}
+
+/** @brief Create the semaphores and start the status thread. */
+ResidentClass14FC10::ResidentClass14FC10()
+{
+    func_00115000(this, 0x25, 0x4000);
+    unk64 = 0;
+    unk50 = 0;
+    unk6b = 0;
+    unk10.create(0, 1);
+    unk20.create(0, 1);
+    unk28.create(0, 0);
+    unk30.create(0, 0);
+    semaphore.create(1, 1);
+    timeout_semaphore.create(0, 1);
+    unk48.create(1, 1);
+    owner = 0;
+    unk68 = 0;
+    unk5d = 0;
+    unk7c = -1;
+    unk61 = 0;
+    unk62 = 0;
+    timeout_ticks = 0;
+    timed_out = 0;
+    unk5e = 0;
+    unk6a = 0;
+    listener = 0;
+    unk5f = 0;
+    unk6c = 0;
+    unk54 = 0;
+    unk60 = 0;
+    D_001B6414 = this;
+    unkAC.owner = this;
+    unkAC.start();
+}
 
 /**
  * @brief Read the archive's unk5E flag under its semaphore.
@@ -5244,9 +6136,9 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011B870)
  */
 static inline u8 archive_read_unk5e(ResidentArchive* archive)
 {
-    (void)archive->semaphore.wait();
-    u8 value = archive->unk5e;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    u8 value = archive->disc_thread.unk5e;
+    (void)archive->disc_thread.semaphore.signal();
     return value;
 }
 
@@ -5271,19 +6163,19 @@ void func_0011BA90(ResidentArchive* archive)
         return;
     }
 
-    (void)archive->semaphore.wait();
-    u8 pending = archive->unk6a;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    u8 pending = archive->disc_thread.unk6a;
+    (void)archive->disc_thread.semaphore.signal();
 
     if (!pending)
     {
         return;
     }
 
-    (void)archive->semaphore.wait();
-    archive->unk6a = 0;
-    (void)archive->semaphore.signal();
-    (void)archive->unk28.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk6a = 0;
+    (void)archive->disc_thread.semaphore.signal();
+    (void)archive->disc_thread.unk28.signal();
 }
 
 /**
@@ -5297,18 +6189,18 @@ void func_0011BC80(ResidentArchive* archive)
         return;
     }
 
-    (void)archive->semaphore.wait();
-    u8 pending = archive->unk6a;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    u8 pending = archive->disc_thread.unk6a;
+    (void)archive->disc_thread.semaphore.signal();
 
     if (pending)
     {
         return;
     }
 
-    (void)archive->semaphore.wait();
-    archive->unk6a = 1;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk6a = 1;
+    (void)archive->disc_thread.semaphore.signal();
 }
 
 /**
@@ -5319,25 +6211,25 @@ void func_0011BC80(ResidentArchive* archive)
  */
 void func_0011BE20(ResidentArchive* archive, s32 count)
 {
-    (void)archive->semaphore.wait();
-    archive->unk8c += count;
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk8c += count;
 
-    if (archive->unk8c >= archive->owner->unk12194 + archive->owner->unk121a0)
+    if (archive->disc_thread.unk8c >= archive->disc_thread.owner->unk12194 + archive->disc_thread.owner->unk121a0)
     {
-        archive->unk8c -= archive->owner->unk121a0;
+        archive->disc_thread.unk8c -= archive->disc_thread.owner->unk121a0;
     }
 
-    (void)archive->semaphore.signal();
-    (void)archive->semaphore.wait();
-    archive->unk88 -= count;
+    (void)archive->disc_thread.semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk88 -= count;
 
-    if (archive->unk88 < 0)
+    if (archive->disc_thread.unk88 < 0)
     {
-        archive->unk88 = 0;
+        archive->disc_thread.unk88 = 0;
     }
 
-    (void)archive->semaphore.signal();
-    (void)archive->unk30.signal();
+    (void)archive->disc_thread.semaphore.signal();
+    (void)archive->disc_thread.unk30.signal();
 }
 
 /**
@@ -5348,9 +6240,9 @@ void func_0011BE20(ResidentArchive* archive, s32 count)
  */
 s32 func_0011BFD0(ResidentArchive* archive, u32* position)
 {
-    (void)archive->semaphore.wait();
-    u32 current = archive->unk8c;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    u32 current = archive->disc_thread.unk8c;
+    (void)archive->disc_thread.semaphore.signal();
 
     *position = current + 1;
 
@@ -5359,9 +6251,9 @@ s32 func_0011BFD0(ResidentArchive* archive, u32* position)
         *position -= archive->unk121a0;
     }
 
-    (void)archive->semaphore.wait();
-    s32 result = archive->unk88;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    s32 result = archive->disc_thread.unk88;
+    (void)archive->disc_thread.semaphore.signal();
     return result;
 }
 
@@ -5387,66 +6279,66 @@ s32 func_0011C120(ResidentArchive* archive, void* buffer, u32 ring_size, s32 siz
         return 0;
     }
 
-    (void)archive->semaphore.wait();
-    u8 busy = archive->unk5c;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    u8 busy = archive->disc_thread.unk5c;
+    (void)archive->disc_thread.semaphore.signal();
 
     if (busy)
     {
         return 0;
     }
 
-    (void)archive->semaphore.wait();
-    archive->unk68 = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk68 = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->semaphore.wait();
-    archive->unk69 = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk69 = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->semaphore.wait();
-    archive->unk5e = 1;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk5e = 1;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->semaphore.wait();
-    archive->unk6a = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk6a = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->unk28.signal();
+    (void)archive->disc_thread.unk28.signal();
     archive->unk12194 = (u32)buffer;
     archive->unk121a0 = ring_size;
     u32 end = (u32)buffer + archive->unk121a0 - 1;
 
-    (void)archive->semaphore.wait();
-    archive->unk8c = end;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk8c = end;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->semaphore.wait();
-    archive->unk88 = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk88 = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
     if (archive->unk12181)
     {
         if (size)
         {
-            archive->unk80 = size;
+            archive->disc_thread.unk80 = size;
         }
 
-        archive->unk84 = buffer;
+        archive->disc_thread.unk84 = (u32)buffer;
         archive->read_busy = 1;
-        archive->unkc4 = 0;
+        archive->disc_thread.unkAC.unk18 = 0;
 
-        (void)archive->semaphore.wait();
+        (void)archive->disc_thread.semaphore.wait();
 
-        if (archive->unk5c)
+        if (archive->disc_thread.unk5c)
         {
-            (void)archive->semaphore.signal();
+            (void)archive->disc_thread.semaphore.signal();
         }
         else
         {
-            archive->unk5c = 1;
-            (void)archive->semaphore.signal();
-            (void)archive->unk10.signal();
+            archive->disc_thread.unk5c = 1;
+            (void)archive->disc_thread.semaphore.signal();
+            (void)archive->disc_thread.unk10.signal();
         }
     }
     else
@@ -5479,9 +6371,9 @@ u32 func_0011C6C0(const ResidentArchive* archive, s32 key)
  */
 extern "C" bool func_0011C6E0(ResidentArchive* archive)
 {
-    (void)archive->semaphore.wait();
-    bool active = archive->unk5c || archive->unk5d || archive->unk6b;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    bool active = archive->disc_thread.unk5c || archive->disc_thread.unk5d || archive->disc_thread.unk6b;
+    (void)archive->disc_thread.semaphore.signal();
     return !active;
 }
 
@@ -5515,7 +6407,7 @@ extern "C" s32 func_0011C7D0(ResidentArchive* archive)
 
     if (ready)
     {
-        return archive->unk70;
+        return archive->disc_thread.unk70;
     }
 
     return 0;
@@ -5538,21 +6430,21 @@ u32 resident_get_resource_size(const ResidentArchive* archive, s32 key)
  */
 void func_0011C8E0(ResidentArchive* archive)
 {
-    (void)archive->semaphore.wait();
-    u8 stopping = archive->unk68;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    u8 stopping = archive->disc_thread.unk68;
+    (void)archive->disc_thread.semaphore.signal();
 
     if (!stopping && archive->read_busy)
     {
-        (void)archive->semaphore.wait();
-        archive->unk68 = 1;
+        (void)archive->disc_thread.semaphore.wait();
+        archive->disc_thread.unk68 = 1;
 
-        if (archive->unk5e)
+        if (archive->disc_thread.unk5e)
         {
-            (void)archive->unk30.signal();
+            (void)archive->disc_thread.unk30.signal();
         }
 
-        (void)archive->semaphore.signal();
+        (void)archive->disc_thread.semaphore.signal();
     }
 }
 
@@ -5594,16 +6486,16 @@ u8 func_0011CB00(ResidentArchive* archive, s32 size, s32 key)
         return 0;
     }
 
-    (void)archive->semaphore.wait();
-    archive->unk68 = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk68 = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
     u8 selected = func_0011D080(archive, key);
 
     if (archive->unk12181 && selected && size)
     {
-        archive->unk54 += size;
-        archive->unk58 += size;
+        archive->disc_thread.unk54 += size;
+        archive->disc_thread.unk58 += size;
     }
 
     return selected;
@@ -5624,55 +6516,55 @@ s32 func_0011CC00(ResidentArchive* archive, void* buffer, s32 size)
         return 0;
     }
 
-    (void)archive->semaphore.wait();
-    u8 busy = archive->unk5c;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    u8 busy = archive->disc_thread.unk5c;
+    (void)archive->disc_thread.semaphore.signal();
 
     if (busy)
     {
         return 0;
     }
 
-    (void)archive->semaphore.wait();
-    archive->unk68 = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk68 = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->semaphore.wait();
-    archive->unk69 = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk69 = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->semaphore.wait();
-    archive->unk5e = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk5e = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->semaphore.wait();
-    archive->unk6a = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk6a = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
-    (void)archive->unk28.signal();
-    archive->unk70 = 0;
+    (void)archive->disc_thread.unk28.signal();
+    archive->disc_thread.unk70 = 0;
 
     if (archive->unk12181)
     {
         if (size)
         {
-            archive->unk80 = size;
+            archive->disc_thread.unk80 = size;
         }
 
-        archive->unk84 = buffer;
+        archive->disc_thread.unk84 = (u32)buffer;
         archive->read_busy = 1;
 
-        (void)archive->semaphore.wait();
+        (void)archive->disc_thread.semaphore.wait();
 
-        if (archive->unk5c)
+        if (archive->disc_thread.unk5c)
         {
-            (void)archive->semaphore.signal();
+            (void)archive->disc_thread.semaphore.signal();
         }
         else
         {
-            archive->unk5c = 1;
-            (void)archive->semaphore.signal();
-            (void)archive->unk10.signal();
+            archive->disc_thread.unk5c = 1;
+            (void)archive->disc_thread.semaphore.signal();
+            (void)archive->disc_thread.unk10.signal();
         }
     }
     else
@@ -5708,32 +6600,32 @@ s32 func_0011D080(ResidentArchive* archive, s32 key)
         return 0;
     }
 
-    (void)archive->semaphore.wait();
-    archive->unk98 = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk98 = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
-    archive->unk54 = archive->resource_positions[key] & 0x00FFFFFF;
+    archive->disc_thread.unk54 = archive->resource_positions[key] & 0x00FFFFFF;
     archive->unk12181 = 1;
 
-    (void)archive->semaphore.wait();
-    archive->unk68 = 0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.unk68 = 0;
+    (void)archive->disc_thread.semaphore.signal();
 
     if (archive->unk12185 && archive->install_flags[key] && key)
     {
-        (void)archive->semaphore.wait();
-        archive->unk61 = 1;
-        (void)archive->semaphore.signal();
-        archive->unk58 = archive->install_flags[key] - 1;
+        (void)archive->disc_thread.semaphore.wait();
+        archive->disc_thread.unk61 = 1;
+        (void)archive->disc_thread.semaphore.signal();
+        archive->disc_thread.unk58 = archive->install_flags[key] - 1;
     }
     else
     {
-        (void)archive->semaphore.wait();
-        archive->unk61 = 0;
-        (void)archive->semaphore.signal();
+        (void)archive->disc_thread.semaphore.wait();
+        archive->disc_thread.unk61 = 0;
+        (void)archive->disc_thread.semaphore.signal();
     }
 
-    archive->unk80 = (archive->resource_entries[key] & 0x00FFFFFF) << 11;
+    archive->disc_thread.unk80 = (archive->resource_entries[key] & 0x00FFFFFF) << 11;
     return 1;
 }
 
@@ -5749,14 +6641,14 @@ ResidentListener* func_0011D320(ResidentArchive* archive, ResidentListener* list
     ResidentListener* previous;
 
     {
-        ResidentSemaphoreLock lock(&archive->semaphore);
-        previous = archive->listener;
+        ResidentSemaphoreLock lock(&archive->disc_thread.semaphore);
+        previous = archive->disc_thread.listener;
     }
 
-    (void)archive->semaphore.wait();
-    archive->listener = listener;
-    archive->listener_context = context;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    archive->disc_thread.listener = listener;
+    archive->disc_thread.listener_context = context;
+    (void)archive->disc_thread.semaphore.signal();
     return previous;
 }
 
@@ -5810,7 +6702,10 @@ s32 func_0011D470(ResidentArchive* archive)
     return 1;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", __dt__15ResidentArchiveFv);
+/** @brief Destroy the archive and its threads. */
+ResidentArchive::~ResidentArchive()
+{
+}
 
 /**
  * @brief Install the disc power-off callback and start the hard disk worker, when the archive uses the hard disk.
@@ -5820,8 +6715,8 @@ void func_0011D950(ResidentArchive* archive)
 {
     if (archive->unk12184)
     {
-        sceCdPOffCallback(resident_archive_on_power_off, archive->unkD8);
-        archive->disk_worker()->start();
+        sceCdPOffCallback(resident_archive_on_power_off, &archive->unkD8);
+        archive->worker.start();
     }
 }
 
@@ -5835,17 +6730,17 @@ s32 resident_archive_get_clock(ResidentArchive* archive, ResidentClock* clock)
 {
     s32 result;
 
-    (void)archive->semaphore.wait();
-    clock->status = archive->clock.status;
-    clock->second = archive->clock.second;
-    clock->minute = archive->clock.minute;
-    clock->hour = archive->clock.hour;
-    clock->pad = archive->clock.pad;
-    clock->day = archive->clock.day;
-    clock->month = archive->clock.month;
-    clock->year = archive->clock.year;
-    result = archive->unkc0;
-    (void)archive->semaphore.signal();
+    (void)archive->disc_thread.semaphore.wait();
+    clock->status = archive->disc_thread.unkAC.clock.status;
+    clock->second = archive->disc_thread.unkAC.clock.second;
+    clock->minute = archive->disc_thread.unkAC.clock.minute;
+    clock->hour = archive->disc_thread.unkAC.clock.hour;
+    clock->pad = archive->disc_thread.unkAC.clock.pad;
+    clock->day = archive->disc_thread.unkAC.clock.day;
+    clock->month = archive->disc_thread.unkAC.clock.month;
+    clock->year = archive->disc_thread.unkAC.clock.year;
+    result = archive->disc_thread.unkAC.unk14;
+    (void)archive->disc_thread.semaphore.signal();
     return result;
 }
 
@@ -5860,33 +6755,42 @@ void func_0011DA80(ResidentArchive* archive)
     sceCdInitEeCB(0x24, stack, 0x1000);
     archive->cd_callback_stack = stack;
     sceCdMmode(2);
-    sceCdCallback(D_0011B550);
-    archive->unk5f = 1;
-    (void)archive->semaphore.wait();
+    sceCdCallback(func_0011B550);
+    archive->disc_thread.unk5f = 1;
+    (void)archive->disc_thread.semaphore.wait();
 
     // The clock is copied out under the semaphore but never used.
     ResidentClock clock;
-    clock.status = archive->clock.status;
-    clock.second = archive->clock.second;
-    clock.minute = archive->clock.minute;
-    clock.hour = archive->clock.hour;
-    clock.pad = archive->clock.pad;
-    clock.day = archive->clock.day;
-    clock.month = archive->clock.month;
-    clock.year = archive->clock.year;
-    (void)archive->semaphore.signal();
+    clock.status = archive->disc_thread.unkAC.clock.status;
+    clock.second = archive->disc_thread.unkAC.clock.second;
+    clock.minute = archive->disc_thread.unkAC.clock.minute;
+    clock.hour = archive->disc_thread.unkAC.clock.hour;
+    clock.pad = archive->disc_thread.unkAC.clock.pad;
+    clock.day = archive->disc_thread.unkAC.clock.day;
+    clock.month = archive->disc_thread.unkAC.clock.month;
+    clock.year = archive->disc_thread.unkAC.clock.year;
+    (void)archive->disc_thread.semaphore.signal();
 }
 
-/** @brief Destroy the thread. */
-ResidentClass14FC40::~ResidentClass14FC40()
+/** @brief Construct the archive's threads and start them. */
+ResidentArchive::ResidentArchive()
 {
-}
-
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_0010A0E0", func_0011DC00);
-
-/** @brief Destroy the thread. */
-ResidentClass14FBF0::~ResidentClass14FBF0()
-{
+    read_busy = 0;
+    unk12180 = 0;
+    table_tag = 0;
+    unk12181 = 0;
+    disc_thread.owner = this;
+    disc_thread.start();
+    unkD8.worker = &worker;
+    unkD8.start();
+    worker.archive = this;
+    unk12184 = 0;
+    main_thread_id = GetThreadId();
+    unk12198 = 0;
+    unk121a8 = 0;
+    unk12185 = 0;
+    unk12186 = 0;
+    func_00121860(D_0014D978, (u8*)&read_busy, 1);
 }
 
 /**
@@ -6662,5 +7566,479 @@ s32 resident_enqueue_object(ResidentReleaseQueues* queue, void* object)
     }
 
     return 1;
+}
+
+// TODO: The thread classes look like their own file; they come last here so nothing above sees the inline
+// ~ResidentThread.
+/** @brief Stop and delete the kernel thread. */
+inline ResidentThread::~ResidentThread()
+{
+    s32 id = thread_id;
+
+    if (id >= 0)
+    {
+        if (id == GetThreadId())
+        {
+            delete stack;
+            ExitDeleteThread();
+        }
+        else
+        {
+            TerminateThread(id);
+            DeleteThread(thread_id);
+            delete stack;
+        }
+    }
+}
+
+void func_00114450(void* object)
+{
+}
+
+/**
+ * @brief Start a thread's kernel thread, passing the thread as its argument.
+ * @param thread Thread to start.
+ * @return True on success.
+ */
+static inline bool thread_start(ResidentThread* thread)
+{
+    if (StartThread(thread->thread_id, thread) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Stop a thread: exit when it is the calling thread, otherwise terminate it, from interrupt context when
+ * interrupts are disabled.
+ * @param thread Thread to stop.
+ * @return True on success.
+ */
+static inline bool thread_stop(ResidentThread* thread)
+{
+    if (ee_get_status() & EE_STATUS_EIE)
+    {
+        if (thread->thread_id == GetThreadId())
+        {
+            ExitThread();
+            return true;
+        }
+
+        if (TerminateThread(thread->thread_id) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    if (iTerminateThread(thread->thread_id) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Start a time-sliced thread and add it to the scheduler, stopping it again when the scheduler is full.
+ * @param thread Thread to start.
+ * @return One on success, otherwise zero.
+ */
+extern "C" s32 func_00114460(ResidentTimeSlicedThread* thread)
+{
+    if (thread_start(thread))
+    {
+        if (func_00114BD0(&D_001CFA00, thread))
+        {
+            return 1;
+        }
+
+        (void)thread_stop(thread);
+        return 0;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Set a time-sliced thread's slice and create it at the normal resident priority.
+ * @param thread Thread.
+ * @param time_slice Horizontal syncs per slice.
+ * @param stack_size Stack size in bytes.
+ * @return Nonzero when the thread was created.
+ */
+s32 func_00114560(ResidentTimeSlicedThread* thread, s16 time_slice, s32 stack_size)
+{
+    thread->time_slice = time_slice;
+    return func_00115000(thread, RESIDENT_THREAD_PRIORITY, stack_size);
+}
+
+
+/** @brief Remove the thread from the scheduler and destroy it. */
+ResidentTimeSlicedThread::~ResidentTimeSlicedThread()
+{
+    func_00114A00(&D_001CFA00, this);
+}
+
+/**
+ * @brief Start a thread, or stop it (exiting when it is the calling thread).
+ * @param object Thread.
+ * @param run Nonzero to start it; stored in the sound system's unk351.
+ */
+void func_00114650(void* object, u8 run)
+{
+    ResidentThread* thread = (ResidentThread*)object;
+
+    func_00101270(&g_system)->unk351 = run;
+
+    if (run)
+    {
+        thread->start();
+        return;
+    }
+
+    (void)thread_stop(thread);
+}
+
+/**
+ * @brief Stop handing out time slices, returning the running thread to the normal priority.
+ * @param scheduler Scheduler.
+ */
+void func_00114720(ResidentThreadScheduler* scheduler)
+{
+    if (scheduler->active)
+    {
+        if (scheduler->current)
+        {
+            if (scheduler->alarm_id >= 0)
+            {
+                iReleaseAlarm(scheduler->alarm_id);
+                scheduler->alarm_id = -1;
+            }
+
+            iChangeThreadPriority(scheduler->current->thread_id, RESIDENT_THREAD_PRIORITY);
+            scheduler->current = 0;
+        }
+
+        scheduler->active = 0;
+    }
+}
+
+static inline bool scheduler_slot_empty(ResidentThreadScheduler* scheduler, s32 index)
+{
+    if (scheduler->threads[index])
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief End the running time slice and give the next thread its slice, from interrupt context.
+ * @param scheduler Scheduler.
+ */
+void func_00114790(ResidentThreadScheduler* scheduler)
+{
+    scheduler->alarm_id = -1;
+
+    if (scheduler->current)
+    {
+        iChangeThreadPriority(scheduler->current->thread_id, RESIDENT_THREAD_PRIORITY);
+        scheduler->current = 0;
+    }
+
+    do
+    {
+        if (!scheduler_slot_empty(scheduler, scheduler->next))
+        {
+            scheduler->current = scheduler->threads[scheduler->next];
+            iChangeThreadPriority(scheduler->current->thread_id, RESIDENT_THREAD_SLICE_PRIORITY);
+            scheduler->next++;
+            scheduler->alarm_id = resident_system_iset_alarm(&g_system, scheduler->current->time_slice,
+                                                             func_00114870, scheduler);
+            return;
+        }
+
+        scheduler->next++;
+    } while (scheduler->next < 8);
+
+    scheduler->active = 0;
+}
+
+/**
+ * @brief Alarm handler that ends the running time slice while the scheduler is active.
+ * @param alarm_id Alarm.
+ * @param time Time the alarm fired.
+ * @param common Scheduler.
+ */
+void func_00114870(s32 alarm_id, u16 time, void* common)
+{
+    ResidentThreadScheduler* scheduler = (ResidentThreadScheduler*)common;
+
+    if (scheduler->active)
+    {
+        func_00114790(scheduler);
+    }
+
+    ee_exit_handler();
+}
+
+/**
+ * @brief Sleep until another thread wakes this one.
+ * @return True on success.
+ */
+static inline bool thread_sleep(void)
+{
+    if (SleepThread() < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Body of the scheduler's thread: on every wakeup while no round is running, copy the added threads into the
+ * round and, when there are any, start handing out slices.
+ * @param scheduler Scheduler.
+ */
+void func_001148B0(ResidentThreadScheduler* scheduler)
+{
+    for (;;)
+    {
+        do
+        {
+            (void)thread_sleep();
+        } while (scheduler->active);
+
+        (void)scheduler->semaphore.wait();
+        bool any = false;
+
+        for (s32 i = 0; i < 8; i++)
+        {
+            if ((scheduler->threads[i] = scheduler->registered[i]) != 0 && !any)
+            {
+                any = true;
+            }
+        }
+
+        (void)scheduler->semaphore.signal();
+
+        if (scheduler->active || !any)
+        {
+            continue;
+        }
+
+        DIntr();
+        scheduler->active = 1;
+        scheduler->next = 0;
+        scheduler->current = 0;
+        scheduler->alarm_id = resident_system_set_alarm(&g_system, scheduler->unk64 + 2, func_00114870, scheduler);
+        EIntr();
+    }
+}
+
+/**
+ * @brief Set a thread's priority, with the interrupt-context call when interrupts are disabled.
+ * @param thread Thread.
+ * @param priority New priority.
+ * @return True on success.
+ */
+static inline bool thread_change_priority(ResidentThread* thread, s32 priority)
+{
+    u32 status = ee_get_status();
+
+    thread->priority = priority;
+
+    if (status & EE_STATUS_EIE)
+    {
+        if (ChangeThreadPriority(thread->thread_id, priority) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    if (iChangeThreadPriority(thread->thread_id, priority) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Remove a time-sliced thread from the scheduler, returning it to the normal priority if its slice is running.
+ * @param scheduler Scheduler.
+ * @param thread Thread to remove.
+ */
+void func_00114A00(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread)
+{
+    ResidentSemaphoreLock lock(&scheduler->semaphore);
+    ResidentInterruptLock interrupts;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        if (scheduler->registered[i] == thread)
+        {
+            scheduler->registered[i] = 0;
+            scheduler->threads[i] = 0;
+
+            if (scheduler->current == thread)
+            {
+                (void)thread_change_priority(scheduler->current, RESIDENT_THREAD_PRIORITY);
+                scheduler->current = 0;
+            }
+        }
+    }
+}
+
+/**
+ * @brief Add a time-sliced thread to the scheduler's first free entry.
+ * @param scheduler Scheduler.
+ * @param thread Thread to add.
+ * @return True when it was added, false when all eight entries are taken.
+ */
+bool func_00114BD0(ResidentThreadScheduler* scheduler, ResidentTimeSlicedThread* thread)
+{
+    ResidentSemaphoreLock lock(&scheduler->semaphore);
+    ResidentInterruptLock interrupts;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        if (scheduler->registered[i] == 0)
+        {
+            scheduler->registered[i] = thread;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/** Return whether waking the resident thread succeeds. */
+s32 func_00114DD0(const void* object)
+{
+    const ResidentThreadHandle114DD0* receiver = (const ResidentThreadHandle114DD0*)object;
+    return iWakeupThread(receiver->unk08) >= 0;
+}
+
+/**
+ * @brief Wake a sleeping thread.
+ * @param thread_id Thread ID.
+ * @return True on success.
+ */
+static inline bool thread_wakeup(s32 thread_id)
+{
+    if (WakeupThread(thread_id) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Wake a sleeping thread from interrupt context.
+ * @param thread_id Thread ID.
+ * @return True on success.
+ */
+static inline bool thread_iwakeup(s32 thread_id)
+{
+    if (iWakeupThread(thread_id) < 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Wake a thread, with the interrupt-context call when interrupts are disabled.
+ * @param thread Thread to wake.
+ * @return True on success.
+ */
+bool func_00114E00(ResidentThread* thread)
+{
+    if (ee_get_status() & EE_STATUS_EIE)
+    {
+        return thread_wakeup(thread->thread_id);
+    }
+
+    return thread_iwakeup(thread->thread_id);
+}
+
+/** Return whether the resident thread sleep request succeeds. */
+s32 func_00114E80(void)
+{
+    return SleepThread() >= 0;
+}
+
+/** Return whether the resident thread starts successfully. */
+s32 func_00114EB0(void* object)
+{
+    ResidentThreadStartContext14EB0* receiver = (ResidentThreadStartContext14EB0*)object;
+    return StartThread(receiver->unk08, object) >= 0;
+}
+
+// TODO: This only matches at optimization level 0. It homes its argument and leaves its delay slots empty, so I
+// think the original turned the optimizer off here, maybe to keep the thread entry easy to step through.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Entry point of every resident thread: run the thread's body, then delete the thread.
+ * @param argument The thread.
+ */
+void func_00114EE0(void* argument)
+{
+    ResidentThread* thread = (ResidentThread*)argument;
+    thread->run();
+    delete thread;
+}
+
+#pragma pop
+
+/**
+ * @brief Create the kernel thread with a new stack; it runs the thread's body once started.
+ * @param thread Thread.
+ * @param priority Thread priority.
+ * @param stack_size Stack size in bytes.
+ * @return Nonzero when the thread was created, zero when it already exists or creation failed.
+ */
+s32 func_00115000(ResidentThread* thread, s32 priority, s32 stack_size)
+{
+    if (thread->thread_id >= 0)
+    {
+        return 0;
+    }
+
+    thread->stack = new (0) u8[stack_size];
+
+    if (thread->stack == 0)
+    {
+        return 0;
+    }
+
+    FlushCache(0);
+    ThreadParam param;
+    param.entry = func_00114EE0;
+    param.stack = thread->stack;
+    param.stackSize = stack_size;
+    param.gpReg = &_gp;
+    param.initPriority = priority;
+    thread->priority = priority;
+    thread->thread_id = CreateThread(&param);
+    return thread->thread_id >= 0;
+}
+
+/** @brief Destroy the scheduler and its semaphore. */
+ResidentThreadScheduler::~ResidentThreadScheduler()
+{
 }
 }

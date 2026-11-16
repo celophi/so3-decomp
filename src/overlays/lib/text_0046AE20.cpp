@@ -163,15 +163,6 @@ typedef struct LibFloat4
     float w;
 } __attribute__((aligned(16))) LibFloat4;
 
-/** Partial grid with vtable D_173E70 in main data. */
-class LibClass173E70 : public LibClass173A40
-{
-public:
-    /** @brief Destroy the grid. */
-    virtual ~LibClass173E70();
-
-};
-
 /** Partial grid with vtable D_175DE0 in main data. */
 class LibClass175DE0 : public LibClass1774E0
 {

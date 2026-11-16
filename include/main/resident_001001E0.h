@@ -121,6 +121,48 @@ public:
     }
 
     /**
+     * @brief Take the semaphore without waiting.
+     * @return True when the semaphore was taken.
+     */
+    bool poll_in_thread()
+    {
+        if (PollSema(id) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @brief Take the semaphore without waiting, from interrupt context.
+     * @return True when the semaphore was taken.
+     */
+    bool ipoll()
+    {
+        if (iPollSema(id) < 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @brief Take the semaphore without waiting, with the interrupt-context call when interrupts are disabled.
+     * @return True when the semaphore was taken.
+     */
+    bool poll()
+    {
+        if (ee_get_status() & EE_STATUS_EIE)
+        {
+            return poll_in_thread();
+        }
+
+        return ipoll();
+    }
+
+    /**
      * @brief Signal the semaphore from interrupt context.
      * @return True on success.
      */

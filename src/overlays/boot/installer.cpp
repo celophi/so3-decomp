@@ -749,7 +749,7 @@ void BootInstaller::update()
                 install_buffer = (u8*)memalign(0x40, 0x200000);
                 FlushCache(0);
                 resident_archive_set_copy_buffer(g_resource_archive, install_buffer);
-                g_resource_archive->copy_paused = 0;
+                g_resource_archive->worker.copy_paused = 0;
                 resident_archive_start_command(g_resource_archive, 5, 0);
                 install_total = resident_archive_get_install_words(g_resource_archive) * 4;
                 step++;
@@ -791,7 +791,7 @@ void BootInstaller::update()
                 lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_ABORT_CONFIRM, 0);
                 resident_sound_play(g_sound, BOOT_SOUND_CANCEL, 0, 0, RESIDENT_SOUND_VOLUME_FULL, RESIDENT_SOUND_PAN_CENTRE, 0);
                 queue_fade();
-                g_resource_archive->copy_paused = 1;
+                g_resource_archive->worker.copy_paused = 1;
                 selection = 1;
                 x = menu_cursor_x(selection);
                 cursor = new (0) LibSelectionCursor;
@@ -938,7 +938,7 @@ void BootInstaller::update()
         tip_text->visible = 1;
         tip_image->model->draw_flags &= ~LIB_DRAW_HIDDEN;
         lib_text_set_resource(message_text, g_boot_program.messages, BOOT_MSG_INSTALLING, 0);
-        g_resource_archive->copy_paused = 0;
+        g_resource_archive->worker.copy_paused = 0;
         step = BOOT_INSTALL_COPY_PROGRESS;
         break;
     case BOOT_INSTALL_ABORT_COPY:
@@ -956,7 +956,7 @@ void BootInstaller::update()
         }
 
         queue_fade();
-        g_resource_archive->copy_paused = 0;
+        g_resource_archive->worker.copy_paused = 0;
         resident_archive_cancel_command(g_resource_archive);
         step++;
         wait_frames = 0;
@@ -973,8 +973,8 @@ void BootInstaller::update()
         if (wait_frames >= BOOT_INSTALL_ABORT_TIMEOUT_FRAMES)
         {
             ResidentArchive* archive = g_resource_archive;
-            archive->unit_ready = 0;
-            archive->unit_state = 3;
+            archive->worker.unit_ready = 0;
+            archive->worker.unit_state = 3;
             step = BOOT_INSTALL_RETURN_FROM_ABORT;
         }
 

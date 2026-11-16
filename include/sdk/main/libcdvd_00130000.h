@@ -29,6 +29,34 @@ void* sceCdInitEeCB(s32 priority, void* stack, s32 stack_size);
  */
 void* sceCdCallback(void (*callback)(s32 reason));
 
+/** How sceCdRead reads: retry count, spindle control and data pattern. */
+typedef struct sceCdRMode
+{
+    u8 trycount;
+    u8 spindlctrl;
+    u8 datapattern;
+    u8 pad;
+} sceCdRMode;
+
+/**
+ * @brief Start reading sectors from the disc.
+ * @param lsn First sector.
+ * @param sectors Number of sectors.
+ * @param buffer Destination.
+ * @param mode Read mode.
+ * @return Nonzero when the read was started.
+ */
+s32 sceCdRead(u32 lsn, u32 sectors, void* buffer, sceCdRMode* mode);
+
+/** @brief Wait for the current disc command. @param mode 0 to block until it finishes. @return Zero when finished. */
+s32 sceCdSync(s32 mode);
+
+/** @brief Abort the current disc command. @return Nonzero when the abort was issued. */
+s32 sceCdBreak(void);
+
+/** @brief Get the last disc command's error. @return The error code, zero for none, or -1 when it can't be read. */
+s32 sceCdGetError(void);
+
 #ifdef __cplusplus
 }
 #endif
