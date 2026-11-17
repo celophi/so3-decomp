@@ -265,10 +265,8 @@ class Module:
 
     def compile_inputs(self, source, headers, compiler_files):
         """Everything a C/C++ object depends on besides the source itself."""
-        # compile.py reads the module's symbol lists to put sections in the original order.
-        lists = [str(path) for path in module_lists(self.name)]
-        if not self.is_main:
-            lists.append(str(self.config_path))
+        # compile.py reads the module's symbol lists and config to put sections in the original order.
+        lists = [*(str(path) for path in module_lists(self.name)), str(self.config_path)]
         return [self.macros, *(str(path) for path in asm_inputs(source)), *headers, *compiler_files,
                 *COMPILE_INPUTS, *lists]
 

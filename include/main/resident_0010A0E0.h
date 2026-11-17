@@ -74,7 +74,9 @@ typedef struct ResidentArchive ResidentArchive;
 /** Object a positional sound comes from; only its flag for an attached sound is known. */
 typedef struct ResidentSoundEmitter
 {
-    u8 unk000[0x20E];
+    u8 unk000[0x90];
+    float unk90[3][4];
+    u8 unkc0[0x14E];
     u8 unk20e_0_3 : 4;
     u8 has_sound : 1;
     u8 unk20e_5_7 : 3;
@@ -113,17 +115,19 @@ typedef struct ResidentRequestSlot
      * TODO: volatile is my guess; the reply callbacks reread it after every use, and nothing else I tried does that.
      */
     struct ResidentSoundEmitter* volatile target;
-    u8* buffer;
+
+    // TODO: volatile is my guess for buffer, unk2c, unk34 and unk38 too; the update only loads them in order with it
+    u8* volatile buffer;
     u32 unk28;
-    u32 unk2c;
+    volatile u32 unk2c;
     union
     {
         u32 unk30;
         float unk30_float;
     };
 
-    u32 unk34;
-    u32 unk38;
+    volatile u32 unk34;
+    volatile u32 unk38;
 } ResidentRequestSlot;
 
 #ifdef __cplusplus
@@ -287,12 +291,15 @@ struct ResidentSound
     s32 unk38;
     s32 unk3c;
     s32 unk40;
-    u8 unk44[0xCC];
+    u32 music_status[3][16];
+    s32 unk104[3];
     u8 state;
     u8 unk111;
     u8 unk112[2];
     u32 unk114;
-    u8 unk118[0x1E0];
+    u8 unk118[0xF0];
+    u32 unk208[15];
+    u8 unk244[0xB4];
     struct ResidentRequestSlot* unk2F8[15];
     u32 unk334;
     u32 unk338;
@@ -309,16 +316,21 @@ struct ResidentSound
     u8 reverb_preset;
     u8 reverb_step;
     u8 unk356;
-    u8 unk357[9];
+    u8 unk357;
+    s32 unk358;
+    u32 unk35c;
     const void* unk360;
     u8 unk364[4];
     const void* unk368;
     u8 unk36c[4];
     u8 music_disabled;
     u8 effects_disabled;
-    u8 unk372[0x4A];
+    u8 unk372[2];
+    s32 unk374;
+    s32 unk378;
+    u8 unk37c[0x40];
     s32 unk3bc;
-    u8 unk3c0[0x40];
+    u32 unk3c0[16];
     u8* unk400;
     u32 unk404;
     ResidentVoiceTable* voice_table;
@@ -582,7 +594,9 @@ class ResidentArchiveWorker : public ResidentThread
         u8 unit_ready;
         u8 unk1d[3];
         s32 command;
-        s32 command_result;
+
+        // TODO: volatile is my guess; run reads it again for its second test after the copy loop, and only this does that
+        volatile s32 command_result;
         s32 unk28;
         s32 copy_remaining;
         struct ResidentArchive* archive;
@@ -789,7 +803,8 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
     public:
         u8* allocation;
         u8 unk18[2];
-        u8 output_half;
+        // TODO: volatile is my guess; the SIF handler and the DMA completion write it, and func_0010AA30 rereads it
+        volatile u8 output_half;
         u8 unk1B;
 
         // TODO: output_cursor and input_cursor are volatile because the DMA completion (func_00109D50) moves them from
@@ -797,19 +812,23 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
 
         u8* volatile output_cursor;
         u8* unk20;
-        u8* unk24;
+        // TODO: volatile is my guess; the SIF handler and the DMA completion write it, and func_0010AA30 rereads it
+        u8* volatile unk24;
         s32 unk28;
-        s32 output_pending[2];
-        u32 unk34[2];
+        // TODO: volatile is my guess; the SIF handler and the DMA completion write it, and func_0010AA30 rereads it
+        volatile s32 output_pending[2];
+        volatile u32 unk34[2];
         u8* output_buffers[2];
         u8* unk44;
-        u8 input_ready[2];
+        // TODO: volatile is my guess; the SIF handler and the DMA completion write it, and func_0010AA30 rereads it
+        volatile u8 input_ready[2];
 
         // TODO: unk4A and unk4C are volatile because the send path (func_0010B600) also runs from the SIF interrupt;
         // the target rereads both after every use, and nothing else I tried does that.
 
         volatile u8 unk4A;
-        u8 input_half;
+        // TODO: volatile is my guess; the SIF handler and the DMA completion write it, and func_0010AA30 rereads it
+        volatile u8 input_half;
         u8* volatile unk4C;
         u8* volatile input_cursor;
         s32 unk54[2];
@@ -834,12 +853,13 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         s32 unk90;
         u8 unk94;
         u8 unk95;
-        u8 unk96;
+        // TODO: volatile is my guess for unk96, unkA8 and unk110 too; func_0010AA30 rereads each after testing it
+        volatile s8 unk96;
         s32 unk98;
         void* unk9C;
         s32 unkA0;
         u32 unkA4;
-        u32 unkA8;
+        volatile u32 unkA8;
         volatile s32 first_state;
         volatile s32 second_state;
         u8 unkB4[3];
@@ -852,7 +872,8 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         u8 unkBD;
         u8 unkBE;
         s32 loop_count;
-        u8 unkC4[4];
+        u8 unkC4;
+        u8 unkC5[3];
         u8* log_cursor;
         u8 unkCC[0x20];
 
@@ -869,7 +890,7 @@ class ResidentStreamThread : public ResidentListener, public ResidentThread
         ResidentStreamDma* dma;
         u8 unk104;
         ResidentSemaphore semaphore;
-        s32 unk110;
+        volatile s32 unk110;
 
         /**
          * @brief Allocate the buffers, clear the streaming state, patch the VU1 programs and create the DMA transfer.
@@ -1470,9 +1491,10 @@ s32 func_0010EAD0(ResidentSound* sound, s32 key);
 /**
  * @brief Update the sound system; main calls it until sound->state is zero.
  * @param sound Sound system.
- * @param mode Mode.
+ * @param mode Nonzero to count frame time on the started slots.
+ * @return One.
  */
-void func_0010F250(ResidentSound* sound, s32 mode);
+s32 func_0010F250(ResidentSound* sound, s32 mode);
 
 /**
  * @brief Allocate a block from a resident heap.

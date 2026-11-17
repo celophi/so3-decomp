@@ -27,7 +27,7 @@
 #include "overlays/cmc/cmc.h"
 #include "overlays/ctactics/ctactics.h"
 #include "overlays/cshop/cshop.h"
-#include "overlays/citemcreation/text_003684D0.h"
+#include "overlays/citemcreation/item_creation_state.h"
 
 // This overlay only has an untyped view of the Lib entry tables these take.
 

@@ -5,13 +5,19 @@
 #include "main/resident_00101260.h"
 #include "main/resident_00121860.h"
 #include "main/microcode_loader.h"
+#include "main/lz_copy.h"
+#include "main/stream_output.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 
 #define SOUND_TAG_SEQ 0x20514553
 #define SOUND_TAG_SEQW 0x57514553
 #define SOUND_TAG_WAV 0x20564157
+#define SOUND_TAG_LIP 0x2050494C
+#define SOUND_TAG_LIPT 0x5450494C
+#define SOUND_TAG_VSC 0x20435356
 #define STREAM_BLOCK_SIZE 0x1000
+#define STREAM_CHANNEL_SIZE 0x10000
 
 extern "C" {
 extern void* g_packet_queue;
@@ -26,6 +32,8 @@ s32 DIntr(void);
 s32 EIntr(void);
 
 s32 SleepThread(void);
+
+s32 sceGsSyncPath(s32 mode, u16 timeout);
 
 void func_0010B510(ResidentStreamThread* thread, s32 command);
 
@@ -101,7 +109,126 @@ extern "C" ResidentRegisteredObject* func_00101560(ResidentRegisteredObject* obj
  * @param destination Output word buffer.
  * @return One when a token with zero distance ends the stream.
  */
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decode_lz_words);
+extern "C" s32 resident_decode_lz_words(ResidentDecodeObject* decoder, const u16* source, u16* destination)
+{
+    s32 flags = 0;
+    s32 bits = 1;
+
+    for (;;)
+    {
+        if (--bits == 0)
+        {
+            flags = *source++;
+            bits = 16;
+        }
+        else
+        {
+            flags >>= 1;
+        }
+
+        if (flags & 1)
+        {
+            *destination++ = *source++;
+        }
+        else
+        {
+            u16 token = *source;
+            s32 distance = token & 0xFFF;
+            s32 length;
+
+            if (distance == 0)
+            {
+                break;
+            }
+
+            length = token >> 12;
+
+            if (distance > 17)
+            {
+
+                switch (length)
+                {
+                    case 0:
+                        lz_copy_halfwords_2(destination, destination - distance);
+                        destination += 2;
+                        break;
+                    case 1:
+                        lz_copy_halfwords_3(destination, destination - distance);
+                        destination += 3;
+                        break;
+                    case 2:
+                        lz_copy_halfwords_4(destination, destination - distance);
+                        destination += 4;
+                        break;
+                    case 3:
+                        lz_copy_halfwords_5(destination, destination - distance);
+                        destination += 5;
+                        break;
+                    case 4:
+                        lz_copy_halfwords_6(destination, destination - distance);
+                        destination += 6;
+                        break;
+                    case 5:
+                        lz_copy_halfwords_7(destination, destination - distance);
+                        destination += 7;
+                        break;
+                    case 6:
+                        lz_copy_halfwords_8(destination, destination - distance);
+                        destination += 8;
+                        break;
+                    case 7:
+                        lz_copy_halfwords_9(destination, destination - distance);
+                        destination += 9;
+                        break;
+                    case 8:
+                        lz_copy_halfwords_10(destination, destination - distance);
+                        destination += 10;
+                        break;
+                    case 9:
+                        lz_copy_halfwords_11(destination, destination - distance);
+                        destination += 11;
+                        break;
+                    case 10:
+                        lz_copy_halfwords_12(destination, destination - distance);
+                        destination += 12;
+                        break;
+                    case 11:
+                        lz_copy_halfwords_13(destination, destination - distance);
+                        destination += 13;
+                        break;
+                    case 12:
+                        lz_copy_halfwords_14(destination, destination - distance);
+                        destination += 14;
+                        break;
+                    case 13:
+                        lz_copy_halfwords_15(destination, destination - distance);
+                        destination += 15;
+                        break;
+                    case 14:
+                        lz_copy_halfwords_16(destination, destination - distance);
+                        destination += 16;
+                        break;
+                    case 15:
+                        lz_copy_halfwords_17(destination, destination - distance);
+                        destination += 17;
+                        break;
+                }
+            }
+            else
+            {
+                for (s32 i = 0; i < length + 2; i++)
+                {
+                    *destination = *(destination - distance);
+                    destination++;
+                }
+            }
+
+            source++;
+        }
+    }
+
+    return 1;
+}
 
 /**
  * @brief Decode an LZ payload with byte literals, back references, and runs of repeated bytes.
@@ -111,7 +238,179 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decod
  * @param decoded_size Output byte count at which decoding stops.
  * @return One after decoding.
  */
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decode_lz_runs);
+extern "C" s32 resident_decode_lz_runs(ResidentDecodeObject* decoder, const u8* source, u8* destination, u32 decoded_size)
+{
+    s32 flags = 0;
+    s32 bits = 1;
+    u8* end = destination + decoded_size;
+
+    while (destination < end)
+    {
+        if (--bits == 0)
+        {
+            flags = *source++;
+            bits = 8;
+        }
+        else
+        {
+            flags >>= 1;
+        }
+
+        if (flags & 1)
+        {
+            *destination++ = *source++;
+        }
+        else
+        {
+            u8 high = source[1];
+            u8 low = source[0];
+            s32 distance = low | ((high & 0xF) << 8);
+            s32 length = (high & 0xF0) >> 4;
+
+            if (length < 15)
+            {
+                if (distance > 17)
+                {
+
+                    switch (length)
+                    {
+                        case 0:
+                            lz_copy_bytes_3(destination, destination - distance);
+                            destination += 3;
+                            break;
+                        case 1:
+                            lz_copy_bytes_4(destination, destination - distance);
+                            destination += 4;
+                            break;
+                        case 2:
+                            lz_copy_bytes_5(destination, destination - distance);
+                            destination += 5;
+                            break;
+                        case 3:
+                            lz_copy_bytes_6(destination, destination - distance);
+                            destination += 6;
+                            break;
+                        case 4:
+                            lz_copy_bytes_7(destination, destination - distance);
+                            destination += 7;
+                            break;
+                        case 5:
+                            lz_copy_bytes_8(destination, destination - distance);
+                            destination += 8;
+                            break;
+                        case 6:
+                            lz_copy_bytes_9(destination, destination - distance);
+                            destination += 9;
+                            break;
+                        case 7:
+                            lz_copy_bytes_10(destination, destination - distance);
+                            destination += 10;
+                            break;
+                        case 8:
+                            lz_copy_bytes_11(destination, destination - distance);
+                            destination += 11;
+                            break;
+                        case 9:
+                            lz_copy_bytes_12(destination, destination - distance);
+                            destination += 12;
+                            break;
+                        case 10:
+                            lz_copy_bytes_13(destination, destination - distance);
+                            destination += 13;
+                            break;
+                        case 11:
+                            lz_copy_bytes_14(destination, destination - distance);
+                            destination += 14;
+                            break;
+                        case 12:
+                            lz_copy_bytes_15(destination, destination - distance);
+                            destination += 15;
+                            break;
+                        case 13:
+                            lz_copy_bytes_16(destination, destination - distance);
+                            destination += 16;
+                            break;
+                        case 14:
+                            lz_copy_bytes_17(destination, destination - distance);
+                            destination += 17;
+                            break;
+                    }
+                }
+                else
+                {
+                    for (s32 i = 0; i < length + 3; i++)
+                    {
+                        *destination = *(destination - distance);
+                        destination++;
+                    }
+                }
+            }
+            else
+            {
+                u32 fill;
+                s32 i;
+
+                if (distance < 256)
+                {
+                    fill = source[2];
+                    distance += 19;
+                    source++;
+                }
+                else
+                {
+                    fill = distance & 0xFF;
+                    distance = (distance >> 8) + 3;
+                }
+
+                fill |= fill << 8;
+
+                if ((u32)destination & 1)
+                {
+                    *destination++ = fill;
+
+                    if (distance & 1)
+                    {
+                        for (s32 j = 1; j < distance; j += 2)
+                        {
+                            *reinterpret_cast<u16*>(destination) = fill;
+                            destination += 2;
+                        }
+                    }
+                    else
+                    {
+                        for (i = 1; i < distance - 1; i += 2)
+                        {
+                            *reinterpret_cast<u16*>(destination) = fill;
+                            destination += 2;
+                        }
+
+                        if (i < distance)
+                        {
+                            *destination++ = fill;
+                        }
+                    }
+                }
+                else
+                {
+                    for (i = 0; i < distance - 1; i += 2)
+                    {
+                        *reinterpret_cast<u16*>(destination) = fill;
+                        destination += 2;
+                    }
+
+                    if (i < distance)
+                    {
+                        *destination++ = fill;
+                    }
+                }
+            }
+
+            source += 2;
+        }
+    }
+
+    return 1;
+}
 
 /**
  * @brief Decode an LZ payload with byte literals and back references.
@@ -120,7 +419,127 @@ INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decod
  * @param destination Output byte buffer.
  * @return One when a token with zero distance ends the stream.
  */
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", resident_decode_lz_bytes);
+extern "C" s32 resident_decode_lz_bytes(ResidentDecodeObject* decoder, const u8* source, u8* destination)
+{
+    s32 flags = 0;
+    s32 bits = 1;
+
+    for (;;)
+    {
+        if (--bits == 0)
+        {
+            flags = *source++;
+            bits = 8;
+        }
+        else
+        {
+            flags >>= 1;
+        }
+
+        if (flags & 1)
+        {
+            *destination++ = *source++;
+        }
+        else
+        {
+            u8 high = source[1];
+            u8 low = source[0];
+            s32 distance = low | ((high & 0xF) << 8);
+            s32 length;
+
+            if (distance == 0)
+            {
+                break;
+            }
+
+            length = high >> 4;
+
+            if (distance > 18)
+            {
+
+                switch (length)
+                {
+                    case 0:
+                        lz_copy_bytes_3(destination, destination - distance);
+                        destination += 3;
+                        break;
+                    case 1:
+                        lz_copy_bytes_4(destination, destination - distance);
+                        destination += 4;
+                        break;
+                    case 2:
+                        lz_copy_bytes_5(destination, destination - distance);
+                        destination += 5;
+                        break;
+                    case 3:
+                        lz_copy_bytes_6(destination, destination - distance);
+                        destination += 6;
+                        break;
+                    case 4:
+                        lz_copy_bytes_7(destination, destination - distance);
+                        destination += 7;
+                        break;
+                    case 5:
+                        lz_copy_bytes_8(destination, destination - distance);
+                        destination += 8;
+                        break;
+                    case 6:
+                        lz_copy_bytes_9(destination, destination - distance);
+                        destination += 9;
+                        break;
+                    case 7:
+                        lz_copy_bytes_10(destination, destination - distance);
+                        destination += 10;
+                        break;
+                    case 8:
+                        lz_copy_bytes_11(destination, destination - distance);
+                        destination += 11;
+                        break;
+                    case 9:
+                        lz_copy_bytes_12(destination, destination - distance);
+                        destination += 12;
+                        break;
+                    case 10:
+                        lz_copy_bytes_13(destination, destination - distance);
+                        destination += 13;
+                        break;
+                    case 11:
+                        lz_copy_bytes_14(destination, destination - distance);
+                        destination += 14;
+                        break;
+                    case 12:
+                        lz_copy_bytes_15(destination, destination - distance);
+                        destination += 15;
+                        break;
+                    case 13:
+                        lz_copy_bytes_16(destination, destination - distance);
+                        destination += 16;
+                        break;
+                    case 14:
+                        lz_copy_bytes_17(destination, destination - distance);
+                        destination += 17;
+                        break;
+                    case 15:
+                        lz_copy_bytes_18(destination, destination - distance);
+                        destination += 18;
+                        break;
+                }
+            }
+            else
+            {
+                for (s32 i = 0; i < length + 3; i++)
+                {
+                    *destination = *(destination - distance);
+                    destination++;
+                }
+            }
+
+            source += 2;
+        }
+    }
+
+    return 1;
+}
 
 /**
  * @brief Decrypt the selected SLE block in place and retag it as SLZ.
@@ -1093,11 +1512,520 @@ void ResidentClass14FA40::func_00104780()
 {
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104790);
+/**
+ * @brief Decode the next part of an LZ word stream.
+ * @param decoder Resident decoder; unused.
+ * @param stream Stream state: the cursors and the flag bits carried between calls.
+ * @param limit Number of output bytes to decode before returning.
+ * @return Nonzero once the stream has ended.
+ */
+extern "C" s32 func_00104790(ResidentDecodeObject* decoder, ResidentDecodeStream* stream, s32 limit)
+{
+    u16* start;
+    u16* destination;
+    const u16* source;
+    s32 bits;
+    s32 flags;
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00104C90);
+    if (stream->unk19 != 0)
+    {
+        return 1;
+    }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00105210);
+    start = reinterpret_cast<u16*>(stream->destination);
+    source = reinterpret_cast<const u16*>(stream->source);
+    bits = stream->flag_count;
+    flags = stream->flags;
+    destination = start;
+
+    for (;;)
+    {
+        if (reinterpret_cast<u8*>(destination) - reinterpret_cast<u8*>(start) >= limit)
+        {
+            break;
+        }
+
+        if (--bits == 0)
+        {
+            flags = *source++;
+            bits = 16;
+        }
+        else
+        {
+            flags >>= 1;
+        }
+
+        if (flags & 1)
+        {
+            *destination++ = *source++;
+        }
+        else
+        {
+            u16 token = *source;
+            s32 distance = token & 0xFFF;
+            s32 length;
+
+            if (distance == 0)
+            {
+                stream->unk19 = 1;
+                break;
+            }
+
+            length = token >> 12;
+            source++;
+
+            if (distance > 17)
+            {
+                switch (length)
+                {
+                    case 0:
+                        lz_copy_halfwords_2(destination, destination - distance);
+                        destination += 2;
+                        break;
+                    case 1:
+                        lz_copy_halfwords_3(destination, destination - distance);
+                        destination += 3;
+                        break;
+                    case 2:
+                        lz_copy_halfwords_4(destination, destination - distance);
+                        destination += 4;
+                        break;
+                    case 3:
+                        lz_copy_halfwords_5(destination, destination - distance);
+                        destination += 5;
+                        break;
+                    case 4:
+                        lz_copy_halfwords_6(destination, destination - distance);
+                        destination += 6;
+                        break;
+                    case 5:
+                        lz_copy_halfwords_7(destination, destination - distance);
+                        destination += 7;
+                        break;
+                    case 6:
+                        lz_copy_halfwords_8(destination, destination - distance);
+                        destination += 8;
+                        break;
+                    case 7:
+                        lz_copy_halfwords_9(destination, destination - distance);
+                        destination += 9;
+                        break;
+                    case 8:
+                        lz_copy_halfwords_10(destination, destination - distance);
+                        destination += 10;
+                        break;
+                    case 9:
+                        lz_copy_halfwords_11(destination, destination - distance);
+                        destination += 11;
+                        break;
+                    case 10:
+                        lz_copy_halfwords_12(destination, destination - distance);
+                        destination += 12;
+                        break;
+                    case 11:
+                        lz_copy_halfwords_13(destination, destination - distance);
+                        destination += 13;
+                        break;
+                    case 12:
+                        lz_copy_halfwords_14(destination, destination - distance);
+                        destination += 14;
+                        break;
+                    case 13:
+                        lz_copy_halfwords_15(destination, destination - distance);
+                        destination += 15;
+                        break;
+                    case 14:
+                        lz_copy_halfwords_16(destination, destination - distance);
+                        destination += 16;
+                        break;
+                    case 15:
+                        lz_copy_halfwords_17(destination, destination - distance);
+                        destination += 17;
+                        break;
+                }
+            }
+            else
+            {
+                for (s32 i = 0; i < length + 2; i++)
+                {
+                    *destination = *(destination - distance);
+                    destination++;
+                }
+            }
+        }
+    }
+
+    stream->destination = reinterpret_cast<u8*>(destination);
+    stream->source = reinterpret_cast<u8*>(const_cast<u16*>(source));
+    stream->flag_count = bits;
+    stream->flags = flags;
+    return stream->unk19;
+}
+
+/**
+ * @brief Decode the next part of an LZ stream with runs.
+ * @param decoder Resident decoder; unused.
+ * @param stream Stream state: the cursors and the flag bits carried between calls.
+ * @param limit Number of output bytes to decode before returning.
+ * @return One once the output is full, otherwise zero.
+ */
+extern "C" s32 func_00104C90(ResidentDecodeObject* decoder, ResidentDecodeStream* stream, s32 limit)
+{
+    u8* start;
+    u8* destination;
+    u8* source;
+    u8* end;
+    s32 bits;
+    s32 flags;
+    s32 distance;
+    s32 value;
+
+    if (stream->unk19 != 0)
+    {
+        return 1;
+    }
+
+    start = stream->destination;
+    source = stream->source;
+    end = stream->destination_end;
+    bits = stream->flag_count;
+    flags = stream->flags;
+    destination = start;
+
+    while (destination < end)
+    {
+        if (destination - start >= limit)
+        {
+            break;
+        }
+
+        if (--bits == 0)
+        {
+            flags = *source++;
+            bits = 8;
+        }
+        else
+        {
+            flags >>= 1;
+        }
+
+        if (flags & 1)
+        {
+            *destination++ = *source++;
+        }
+        else
+        {
+            u8 high = source[1];
+            u8 low = source[0];
+
+            distance = low | ((high & 0xF) << 8);
+            value = (high & 0xF0) >> 4;
+
+            if (value < 15)
+            {
+                if (distance > 17)
+                {
+                    switch (value)
+                    {
+                        case 0:
+                            lz_copy_bytes_3(destination, destination - distance);
+                            destination += 3;
+                            break;
+                        case 1:
+                            lz_copy_bytes_4(destination, destination - distance);
+                            destination += 4;
+                            break;
+                        case 2:
+                            lz_copy_bytes_5(destination, destination - distance);
+                            destination += 5;
+                            break;
+                        case 3:
+                            lz_copy_bytes_6(destination, destination - distance);
+                            destination += 6;
+                            break;
+                        case 4:
+                            lz_copy_bytes_7(destination, destination - distance);
+                            destination += 7;
+                            break;
+                        case 5:
+                            lz_copy_bytes_8(destination, destination - distance);
+                            destination += 8;
+                            break;
+                        case 6:
+                            lz_copy_bytes_9(destination, destination - distance);
+                            destination += 9;
+                            break;
+                        case 7:
+                            lz_copy_bytes_10(destination, destination - distance);
+                            destination += 10;
+                            break;
+                        case 8:
+                            lz_copy_bytes_11(destination, destination - distance);
+                            destination += 11;
+                            break;
+                        case 9:
+                            lz_copy_bytes_12(destination, destination - distance);
+                            destination += 12;
+                            break;
+                        case 10:
+                            lz_copy_bytes_13(destination, destination - distance);
+                            destination += 13;
+                            break;
+                        case 11:
+                            lz_copy_bytes_14(destination, destination - distance);
+                            destination += 14;
+                            break;
+                        case 12:
+                            lz_copy_bytes_15(destination, destination - distance);
+                            destination += 15;
+                            break;
+                        case 13:
+                            lz_copy_bytes_16(destination, destination - distance);
+                            destination += 16;
+                            break;
+                        case 14:
+                            lz_copy_bytes_17(destination, destination - distance);
+                            destination += 17;
+                            break;
+                    }
+                }
+                else
+                {
+                    for (s32 i = 0; i < value + 3; i++)
+                    {
+                        *destination = *(destination - distance);
+                        destination++;
+                    }
+                }
+            }
+            else
+            {
+                s32 i;
+
+                if (distance < 256)
+                {
+                    value = source[2];
+                    distance += 19;
+                    source++;
+                }
+                else
+                {
+                    value = distance & 0xFF;
+                    distance = (distance >> 8) + 3;
+                }
+
+                value |= value << 8;
+
+                if ((u32)destination & 1)
+                {
+                    *destination++ = value;
+
+                    if (distance & 1)
+                    {
+                        for (s32 j = 1; j < distance; j += 2)
+                        {
+                            *reinterpret_cast<u16*>(destination) = value;
+                            destination += 2;
+                        }
+                    }
+                    else
+                    {
+                        for (i = 1; i < distance - 1; i += 2)
+                        {
+                            *reinterpret_cast<u16*>(destination) = value;
+                            destination += 2;
+                        }
+
+                        if (i < distance)
+                        {
+                            *destination++ = value;
+                        }
+                    }
+                }
+                else
+                {
+                    for (i = 0; i < distance - 1; i += 2)
+                    {
+                        *reinterpret_cast<u16*>(destination) = value;
+                        destination += 2;
+                    }
+
+                    if (i < distance)
+                    {
+                        *destination++ = value;
+                    }
+                }
+            }
+
+            source += 2;
+        }
+    }
+
+    stream->destination = destination;
+    stream->source = source;
+    stream->flag_count = bits;
+    stream->flags = flags;
+
+    if (destination >= stream->destination_end)
+    {
+        stream->unk19 = 1;
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Decode the next part of an LZ byte stream.
+ * @param decoder Resident decoder; unused.
+ * @param stream Stream state: the cursors and the flag bits carried between calls.
+ * @param limit Number of output bytes to decode before returning.
+ * @return Nonzero once the stream has ended.
+ */
+extern "C" s32 func_00105210(ResidentDecodeObject* decoder, ResidentDecodeStream* stream, s32 limit)
+{
+    u8* start;
+    u8* destination;
+    u8* source;
+    s32 bits;
+    s32 flags;
+
+    if (stream->unk19 != 0)
+    {
+        return 1;
+    }
+
+    start = stream->destination;
+    source = stream->source;
+    bits = stream->flag_count;
+    flags = stream->flags;
+    destination = start;
+
+    for (;;)
+    {
+        if (destination - start >= limit)
+        {
+            break;
+        }
+
+        if (--bits == 0)
+        {
+            flags = *source++;
+            bits = 8;
+        }
+        else
+        {
+            flags >>= 1;
+        }
+
+        if (flags & 1)
+        {
+            *destination++ = *source++;
+        }
+        else
+        {
+            u8 high = source[1];
+            u8 low = source[0];
+            s32 distance = low | ((high & 0xF) << 8);
+            s32 length;
+
+            if (distance == 0)
+            {
+                stream->unk19 = 1;
+                break;
+            }
+
+            length = (high & 0xF0) >> 4;
+            source += 2;
+
+            if (distance > 18)
+            {
+
+                switch (length)
+                {
+                    case 0:
+                        lz_copy_bytes_3(destination, destination - distance);
+                        destination += 3;
+                        break;
+                    case 1:
+                        lz_copy_bytes_4(destination, destination - distance);
+                        destination += 4;
+                        break;
+                    case 2:
+                        lz_copy_bytes_5(destination, destination - distance);
+                        destination += 5;
+                        break;
+                    case 3:
+                        lz_copy_bytes_6(destination, destination - distance);
+                        destination += 6;
+                        break;
+                    case 4:
+                        lz_copy_bytes_7(destination, destination - distance);
+                        destination += 7;
+                        break;
+                    case 5:
+                        lz_copy_bytes_8(destination, destination - distance);
+                        destination += 8;
+                        break;
+                    case 6:
+                        lz_copy_bytes_9(destination, destination - distance);
+                        destination += 9;
+                        break;
+                    case 7:
+                        lz_copy_bytes_10(destination, destination - distance);
+                        destination += 10;
+                        break;
+                    case 8:
+                        lz_copy_bytes_11(destination, destination - distance);
+                        destination += 11;
+                        break;
+                    case 9:
+                        lz_copy_bytes_12(destination, destination - distance);
+                        destination += 12;
+                        break;
+                    case 10:
+                        lz_copy_bytes_13(destination, destination - distance);
+                        destination += 13;
+                        break;
+                    case 11:
+                        lz_copy_bytes_14(destination, destination - distance);
+                        destination += 14;
+                        break;
+                    case 12:
+                        lz_copy_bytes_15(destination, destination - distance);
+                        destination += 15;
+                        break;
+                    case 13:
+                        lz_copy_bytes_16(destination, destination - distance);
+                        destination += 16;
+                        break;
+                    case 14:
+                        lz_copy_bytes_17(destination, destination - distance);
+                        destination += 17;
+                        break;
+                    case 15:
+                        lz_copy_bytes_18(destination, destination - distance);
+                        destination += 18;
+                        break;
+                }
+            }
+            else
+            {
+                for (s32 i = 0; i < length + 3; i++)
+                {
+                    *destination = *(destination - distance);
+                    destination++;
+                }
+            }
+        }
+    }
+
+    stream->destination = destination;
+    stream->source = source;
+    stream->flag_count = bits;
+    stream->flags = flags;
+    return stream->unk19;
+}
 
 /**
  * @brief Decode the next part of a block started by func_00105770.
@@ -1298,7 +2226,85 @@ extern "C" u32 func_00105F90(ResidentSoundStream* stream, const SoundFileHeader*
     return 0;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00105FB0);
+/** A LIPT chunk: one VSC chunk key for each lip table entry. */
+struct SoundLipTable
+{
+    SoundChunk header;
+    u32 keys[1];
+};
+
+/**
+ * @brief Get the data that follows a chunk's header.
+ * @param chunk Sound file chunk.
+ * @return The chunk's data.
+ */
+static inline void* sound_chunk_data(const SoundChunk* chunk)
+{
+    return (u8*)chunk + sizeof(SoundChunk);
+}
+
+/**
+ * @brief Get the chunk after this one.
+ * @param chunk Sound file chunk.
+ * @return The next chunk.
+ */
+static inline SoundChunk* sound_chunk_next(const SoundChunk* chunk)
+{
+    return (SoundChunk*)((u8*)chunk + chunk->size);
+}
+
+/**
+ * @brief Find the VSC chunk of a lip table entry.
+ * @param stream Sound stream.
+ * @param entry Lip table entry.
+ * @param slot Slot holding the lip table; the slot after it is searched too.
+ * @return Data of the VSC chunk, or null when the entry or the chunk is missing.
+ */
+extern "C" void* func_00105FB0(ResidentSoundStream* stream, s32 entry, s32 slot)
+{
+    SoundChunk* chunk;
+    u32 key = 0;
+    u32 tag;
+    // TODO: Only matches with the slot index scaled by hand like this; my guess is the original did its own math.
+    s32 offset = slot * 4;
+    SoundChunk* first = *(SoundChunk**)((u8*)&stream->slots[0] + offset);
+    u32 next_tag;
+    SoundChunk* next;
+
+    for (chunk = first, tag = chunk->tag; tag != 0; chunk = sound_chunk_next(chunk), tag = chunk->tag)
+    {
+        if (tag == SOUND_TAG_LIPT)
+        {
+            key = ((SoundLipTable*)chunk)->keys[entry];
+            break;
+        }
+    }
+
+    if (key == 0)
+    {
+        return 0;
+    }
+
+    for (chunk = first, tag = chunk->tag; tag != 0; chunk = sound_chunk_next(chunk), tag = chunk->tag)
+    {
+        if (tag == SOUND_TAG_VSC && key == chunk->key)
+        {
+            return sound_chunk_data(chunk);
+        }
+    }
+
+    next = *(SoundChunk**)((u8*)&stream->slots[1] + offset);
+
+    for (next_tag = next->tag; next_tag != 0; next = sound_chunk_next(next), next_tag = next->tag)
+    {
+        if (next_tag == SOUND_TAG_VSC && key == next->key)
+        {
+            return sound_chunk_data(next);
+        }
+    }
+
+    return 0;
+}
 
 /**
  * @brief Report whether a sound file has an upload in the sequence queue.
@@ -1346,7 +2352,7 @@ extern "C" s32 func_001060C0(ResidentSoundStream* stream, const void* file)
  * @param arg6 Stored with the request.
  * @return One when queued, zero when the queue is full, or minus one when the file has no WAV chunk.
  */
-extern "C" s32 func_00106160(ResidentSoundStream* stream, const void* file, s32 arg2, s32 slot, s32* result, u32 arg5,
+extern "C" s32 func_00106160(ResidentSoundStream* stream, const void* file, u32 arg2, s32 slot, s32* result, u32 arg5,
                              u32 arg6)
 {
     ResidentSequenceRequest* next = stream->sequence_write + 1;
@@ -1398,7 +2404,175 @@ extern "C" s32 func_00106160(ResidentSoundStream* stream, const void* file, s32 
     return 1;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00106240);
+/**
+ * @brief Get the data loaded into one of the stream's slots.
+ * @param stream Sound stream.
+ * @param slot Slot.
+ * @return The slot's data, or null.
+ */
+static inline void* stream_slot(ResidentSoundStream* stream, u8 slot)
+{
+    return stream->slots[slot];
+}
+
+/**
+ * @brief Find the end of a list of chunks: the chunk with a zero tag.
+ * @param chunk First chunk.
+ * @return The terminating chunk.
+ */
+static inline SoundChunk* chunk_list_end(SoundChunk* chunk)
+{
+    while (chunk->tag != 0)
+    {
+        chunk = (SoundChunk*)((u8*)chunk + chunk->size);
+    }
+
+    return chunk;
+}
+
+/**
+ * @brief Move the sequence upload to its next step once the IOP has replied to its request.
+ * @param stream Sound stream.
+ */
+static inline void sequence_step_when_replied(ResidentSoundStream* stream)
+{
+    if (!func_0010C0E0(&D_001CC590, stream->sequence_request))
+    {
+        stream->sequence_state++;
+    }
+}
+
+/**
+ * @brief Run one step of the sequence upload at the front of the sequence queue.
+ *
+ * The steps: ask the IOP for room, copy the file's LIP chunk into its slot, wait for the reply, send the file in
+ * 4 KiB blocks (the SIF handler sends the rest), finish the upload, wait for that reply, then report the result and
+ * move to the next request.
+ *
+ * @param stream Sound stream.
+ * @return Zero, minus one when an IOP request can't be made, or minus two when the IOP reports an error.
+ */
+extern "C" s32 func_00106240(ResidentSoundStream* stream)
+{
+    switch (stream->sequence_state)
+    {
+    case 1:
+        stream->sequence_request = func_00108800(stream, (s32)&stream->sequence_status, 0, 0, stream->sequence_address,
+                                                 stream->sequence_read->unk0C, stream->sequence_read->unk14,
+                                                 stream->sequence_read->unk18);
+
+        if (!stream->sequence_request)
+        {
+            return -1;
+        }
+
+        stream->sequence_state++;
+        break;
+
+    case 2:
+    {
+        const SoundFileHeader* file;
+        const SoundChunk* wave;
+        const SoundChunk* chunk;
+        ResidentSequenceRequest* request = stream->sequence_read;
+        u8* slot = &request->slot;
+        u32 index = *slot;
+
+        if (index != 0 && stream_slot(stream, index) != 0)
+        {
+            file = (const SoundFileHeader*)request->cursor;
+
+            if (file->has_lip)
+            {
+                wave = (const SoundChunk*)((const u8*)file + file->size);
+                chunk = (const SoundChunk*)((const u8*)wave + wave->size);
+
+                if (chunk->tag == SOUND_TAG_LIP)
+                {
+                    u32 size = chunk->key;
+                    const u32* source = (const u32*)(chunk + 1);
+                    u32* destination = request->unk14 == 0 ? (u32*)stream_slot(stream, index)
+                                                           : (u32*)chunk_list_end((SoundChunk*)stream_slot(stream, index));
+
+                    for (u32 i = 0; i < size / 4; i++)
+                    {
+                        *destination++ = *source++;
+                    }
+
+                    *destination = 0;
+                }
+                else
+                {
+                    *slot = 0;
+                }
+            }
+            else
+            {
+                *slot = 0;
+            }
+        }
+
+        stream->sequence_state++;
+        sequence_step_when_replied(stream);
+        break;
+    }
+
+    case 3:
+        sequence_step_when_replied(stream);
+        break;
+
+    case 4:
+        stream->sequence_state++;
+        func_0010BFA0(&D_001CC590, 1, (void*)stream->sequence_read->cursor, (void*)stream->sequence_address,
+                      STREAM_BLOCK_SIZE);
+        break;
+
+    case 6:
+        stream->sequence_request = func_00108640(stream, (s32)&stream->sequence_status, 0, 0);
+
+        if (!stream->sequence_request)
+        {
+            return -1;
+        }
+
+        stream->sequence_state++;
+        break;
+
+    case 7:
+        sequence_step_when_replied(stream);
+        break;
+
+    case 8:
+        if (stream->sequence_status < 0)
+        {
+            return -2;
+        }
+
+        if (stream->sequence_read->unk0C < 4)
+        {
+            if (stream->sequence_read->result)
+            {
+                *stream->sequence_read->result = stream->sequence_status;
+            }
+        }
+        else if (stream->sequence_read->result)
+        {
+            *stream->sequence_read->result = stream->sequence_read->unk0C;
+        }
+
+        stream->sequence_state = 0;
+        stream->sequence_read++;
+
+        if (stream->sequence_read == stream->sequence_queue_end)
+        {
+            stream->sequence_read = stream->sequence_queue;
+        }
+
+        break;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Run the sequence uploads until one has to wait.
@@ -1589,9 +2763,412 @@ extern "C" s32 func_00106780(ResidentSoundStream* stream, const void* file, s32*
     return 1;
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_001068C0);
+/**
+ * @brief Check whether a file is still waiting in the sequence queue.
+ * @param stream Sound stream.
+ * @param file File to look for.
+ * @return True when a queued sequence upload uses the file.
+ */
+static inline bool stream_is_sequence_queued(ResidentSoundStream* stream, const void* file)
+{
+    DIntr();
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00106A50);
+    ResidentSequenceRequest* request = stream->sequence_read;
+
+    for (;;)
+    {
+        if (request == stream->sequence_write)
+        {
+            break;
+        }
+
+        if (request->file == file)
+        {
+            EIntr();
+            return true;
+        }
+
+        if (++request >= stream->sequence_queue_end)
+        {
+            request = stream->sequence_queue;
+        }
+    }
+
+    EIntr();
+    return false;
+}
+
+/**
+ * @brief Find the loaded bank channel that was filled the longest ago.
+ * @param stream Sound stream.
+ * @return The channel, or minus one when no channel holds a bank.
+ */
+static inline s32 stream_find_oldest_channel(ResidentSoundStream* stream)
+{
+    s32 oldest = 0;
+    u32 oldest_age = 0xFFFFFFFF;
+
+    for (s32 index = 0; index < 4; index++)
+    {
+        if (stream->channels[index].size > 0 && stream->channels[index].age < oldest_age)
+        {
+            oldest_age = stream->channels[index].age;
+            oldest = index;
+        }
+    }
+
+    if (oldest_age == 0xFFFFFFFF)
+    {
+        return -1;
+    }
+
+    return oldest;
+}
+
+/**
+ * @brief Pick the channel the bank at the front of the bank queue goes into.
+ *
+ * A bank that's already loaded keeps its channel. Otherwise it's the first run of free channels the wave data fits
+ * in, and when there's none, the channel that was filled the longest ago.
+ *
+ * @param stream Sound stream.
+ * @return The channel, or minus one when the bank can't be placed.
+ */
+extern "C" s32 func_001068C0(ResidentSoundStream* stream)
+{
+    s32 index = 0;
+    s32 size;
+
+    if (stream->bank_read->bank_id != 0)
+    {
+        for (index = 0; index < 4; index++)
+        {
+            size = stream->channels[index].size;
+
+            if (size > 0 && (u32)stream->bank_read->bank_id == stream->channels[index].bank_id)
+            {
+                if (stream->bank_read->priority <= stream->channels[index].priority)
+                {
+                    return index;
+                }
+
+                return -1;
+            }
+        }
+    }
+
+    size = stream->bank_read->wave_size;
+
+    if (size >= 4 * STREAM_CHANNEL_SIZE)
+    {
+        return -1;
+    }
+
+    for (index = 0; index != 4; index++)
+    {
+        s32 remaining = size;
+        s32 next = index;
+        s32 fits = 1;
+
+        while (remaining > 0)
+        {
+            if (next == 4)
+            {
+                fits = 0;
+                break;
+            }
+
+            if (stream->channels[next].size != 0)
+            {
+                fits = 0;
+                break;
+            }
+
+            remaining -= STREAM_CHANNEL_SIZE;
+            next++;
+        }
+
+        if (fits)
+        {
+            return index;
+        }
+    }
+
+    return stream_find_oldest_channel(stream);
+}
+
+/**
+ * @brief Run one step of the bank load at the front of the bank queue.
+ *
+ * The steps: ask the IOP which channels are in use, free the oldest bank when there's no room, upload the bank's
+ * sequence, send the wave data, then record the channels the bank took and move to the next request.
+ *
+ * @param stream Sound stream.
+ * @return Zero, or minus one when an IOP request can't be made.
+ */
+extern "C" s32 func_00106A50(ResidentSoundStream* stream)
+{
+    s32 index;
+    ResidentBankRequest* request;
+    s32 count;
+    s32 remaining;
+    s32 position;
+
+    switch (stream->bank_state)
+    {
+        case 1:
+        {
+            u32 sizes[16];
+
+            sizes[0] = stream->channels[0].size;
+            sizes[1] = stream->channels[1].size;
+            sizes[2] = stream->channels[2].size;
+            sizes[3] = stream->channels[3].size;
+            stream->bank_request = func_00107730(stream, (s32)stream->bank_status, 0, 0, sizes, 4);
+
+            if (stream->bank_request == 0)
+            {
+                return -1;
+            }
+
+            stream->bank_state++;
+            break;
+        }
+
+        case 2:
+        {
+            if (func_0010C0E0(&D_001CC590, stream->bank_request))
+            {
+                break;
+            }
+
+            s32 used = 0;
+
+            for (index = 0; index < 4; index++)
+            {
+                if (stream->bank_status[index] == 0)
+                {
+                    if (stream->channels[index].size >= 0)
+                    {
+                        stream->channels[index].size = 0;
+                    }
+                    else if (index == 0)
+                    {
+                        stream->channels[index].size = 0;
+                    }
+                    else if (stream->channels[index - 1].size == 0)
+                    {
+                        stream->channels[index].size = 0;
+                    }
+                }
+
+                if (stream->channels[index].size != 0)
+                {
+                    used++;
+                }
+            }
+
+            if (used == 0)
+            {
+                stream->next_age = 0;
+            }
+
+            s32 channel = func_001068C0(stream);
+
+            if (channel < 0)
+            {
+                stream->bank_state = 10;
+                break;
+            }
+
+            if (stream->channels[channel].size != 0)
+            {
+                stream->bank_channel = channel;
+                stream->bank_state++;
+            }
+            else
+            {
+                stream->bank_first_channel = channel;
+                stream->bank_state = 5;
+            }
+
+            break;
+        }
+
+        case 3:
+            stream->bank_request = func_00107B60(stream, (u32)stream->bank_status, 0, 0,
+                                                 stream->channels[stream->bank_channel].size, 0, 0);
+
+            if (stream->bank_request == 0)
+            {
+                return -1;
+            }
+
+            stream->bank_state++;
+            break;
+
+        case 4:
+        {
+            if (func_0010C0E0(&D_001CC590, stream->bank_request))
+            {
+                break;
+            }
+
+            stream->channels[stream->bank_channel].size = 0;
+
+            for (index = stream->bank_channel + 1; index < 4; index++)
+            {
+                if (stream->channels[index].size >= 0)
+                {
+                    break;
+                }
+
+                stream->channels[index].size = 0;
+            }
+
+            stream->bank_first_channel = stream->bank_channel;
+            stream->bank_state++;
+            break;
+        }
+
+        case 5:
+        {
+            count = 0;
+            remaining = stream->bank_read->wave_size;
+            position = stream->bank_first_channel;
+
+            if (remaining > 0)
+            {
+                do
+                {
+                    if (position == 4)
+                    {
+                        count = 0;
+                        break;
+                    }
+
+                    if (stream->channels[position].size != 0)
+                    {
+                        count = 0;
+                        break;
+                    }
+
+                    remaining -= STREAM_CHANNEL_SIZE;
+                    position++;
+                    count++;
+                } while (remaining > 0);
+            }
+
+            stream->bank_channel_count = count;
+
+            if (stream->bank_channel_count == 0)
+            {
+                s32 oldest = stream_find_oldest_channel(stream);
+
+                if (oldest < 0)
+                {
+                    stream->bank_state = 10;
+                    break;
+                }
+
+                stream->bank_channel = oldest;
+                stream->bank_state = 3;
+                break;
+            }
+
+            stream->bank_address = stream->channels[stream->bank_first_channel].address;
+            stream->bank_slot = stream->channels[stream->bank_first_channel].slot;
+
+            if (func_00106160(stream, stream->bank_read->file, stream->bank_address, stream->bank_slot, 0, 0, 0) <= 0)
+            {
+                stream->bank_state = 10;
+                break;
+            }
+
+            stream->bank_state++;
+            break;
+        }
+
+        case 6:
+        {
+            request = stream->bank_read;
+
+            if (!stream_is_sequence_queued(stream, request->file))
+            {
+                request->waiting = 1;
+                stream->bank_state++;
+            }
+
+            break;
+        }
+
+        case 8:
+        {
+            if (func_0010C0E0(&D_001CC590, stream->bank_request))
+            {
+                break;
+            }
+
+            request = stream->bank_read;
+
+            if (stream->bank_status[0] > 0)
+            {
+                ResidentStreamChannel* channel = &stream->channels[stream->bank_first_channel];
+
+                channel->size = stream->bank_status[0];
+                channel->bank_id = request->bank_id;
+                channel->priority = request->priority;
+                channel->age = stream->next_age++;
+
+                remaining = stream->bank_channel_count - 1;
+
+                for (position = stream->bank_first_channel + 1; remaining != 0; position++, remaining--)
+                {
+                    if (position >= 4)
+                    {
+                        break;
+                    }
+
+                    stream->channels[position].size = -1;
+                }
+            }
+
+            if (request->result != 0)
+            {
+                *request->result = stream->bank_status[0];
+            }
+
+            request++;
+
+            if (request == stream->bank_queue_end)
+            {
+                request = stream->bank_queue;
+            }
+
+            stream->bank_read = request;
+            stream->bank_state = 0;
+            break;
+        }
+
+        case 10:
+            if (stream->bank_read->result != 0)
+            {
+                *stream->bank_read->result = 0;
+            }
+
+            stream->bank_read++;
+
+            if (stream->bank_read == stream->bank_queue_end)
+            {
+                stream->bank_read = stream->bank_queue;
+            }
+
+            stream->bank_state = 0;
+            break;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Run the bank loads until one has to wait.
@@ -1787,7 +3364,8 @@ extern "C" u32 func_00107530(ResidentSoundStream* stream, u32 arg1, u32 arg2, u3
  * @brief Send sound stream command 0x14 with a count and that many words.
  * @return Request handle, or zero when no reply slot is free.
  */
-extern "C" u32 func_00107730(ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, const u32* values, s32 count)
+extern "C" u32 func_00107730(ResidentSoundStream* stream, s32 arg1, void* callback, void* argument, const u32* values,
+                             s32 count)
 {
     ResidentSemaphoreLock lock(D_001CC590.get_request_semaphore());
     u32* arguments = D_001CC590.get_request_arguments();
@@ -1804,7 +3382,7 @@ extern "C" u32 func_00107730(ResidentSoundStream* stream, s32 arg1, s32 arg2, s3
         *arguments++ = *values++;
     }
 
-    return func_0010C200(&D_001CC590, 0x14, (void*)arg1, arg2, arg3, 0);
+    return func_0010C200(&D_001CC590, 0x14, (void*)arg1, (s32)callback, (s32)argument, 0);
 }
 
 /**
@@ -2246,9 +3824,239 @@ ResidentSoundStream::ResidentSoundStream()
     }
 }
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109510);
+/**
+ * @brief Get the address just past one of the stream DMA transfer's rings.
+ * @param dma Stream DMA transfer.
+ * @param ring Ring index, 0 or 1.
+ * @return End of the ring.
+ */
+static inline u32 ring_end(const ResidentStreamDma* dma, s32 ring)
+{
+    return dma->ring_start[ring] + dma->ring_size;
+}
 
-INCLUDE_ASM("build/main/asm/nonmatchings/main/resident_00101550", func_00109800);
+/**
+ * @brief Take samples out of one of the stream DMA transfer's rings and convert them to floats.
+ * @param dma Stream DMA transfer.
+ * @param ring Ring index, 0 or 1.
+ * @param count Number of samples to take; a multiple of four.
+ * @param output Receives the samples.
+ * @return One when the samples were taken, or zero when the ring doesn't hold that many yet.
+ */
+extern "C" s32 func_00109510(ResidentStreamDma* dma, s32 ring, s32 count, float* output)
+{
+    DIntr();
+
+    u32 read = dma->ring_read[ring];
+    u32 end = read + count * sizeof(s32);
+
+    // TODO: Only matches when the loop below reuses this variable for its count; my guess at the original.
+    s32 limit = ring_end(dma, ring);
+
+    if (end >= (u32)limit)
+    {
+        end -= dma->ring_size;
+
+        if (read <= dma->ring_write[ring])
+        {
+            EIntr();
+            return 0;
+        }
+    }
+    else if (dma->ring_write[ring] < end && read <= dma->ring_write[ring])
+    {
+        EIntr();
+        return 0;
+    }
+
+    s32 index = 0;
+    const s32* source = (const s32*)read;
+    limit = count / 4;
+
+    for (; index < limit; index++)
+    {
+        output[0] = source[0];
+        output[1] = source[1];
+        output[2] = source[2];
+        output[3] = source[3];
+        source += 4;
+        output += 4;
+    }
+
+    dma->ring_read[ring] = end;
+    EIntr();
+    return 1;
+}
+
+/**
+ * @brief Get the address just past a ring that starts at a given address.
+ * @param dma Stream DMA transfer.
+ * @param start Start of the ring.
+ * @return End of the ring.
+ */
+static inline u32 ring_end_from(const ResidentStreamDma* dma, u32 start)
+{
+    return start + dma->ring_size;
+}
+
+/**
+ * @brief Take one decoded channel out of VU1 memory once the stream's VIF1 transfer has run.
+ *
+ * Copies the channel's 4 KiB table back to the stream thread, packs the 4 KiB of samples that follow down to
+ * halfwords for the output buffer, and adds the unpacked samples to the channel's ring when there is room. After
+ * the first channel it queues the transfer for the second; after the second it hands over to the stream thread.
+ *
+ * @param dma Stream DMA transfer.
+ */
+extern "C" void func_00109800(ResidentStreamDma* dma)
+{
+    while (sceGsSyncPath(1, 0) & 0x1C)
+    {
+    }
+
+    s32 i;
+    const unsigned __int128* source;
+    unsigned __int128* output = (unsigned __int128*)dma->output;
+
+    switch (dma->phase)
+    {
+        case 1:
+        {
+            unsigned __int128* samples = (unsigned __int128*)((u32)dma->owner->unkF0 | UNCACHED_SEGMENT);
+
+            source = (const unsigned __int128*)0x1100E000;
+
+            for (i = 0; i < 0x40; i++)
+            {
+                *samples++ = *source++;
+                *samples++ = *source++;
+                *samples++ = *source++;
+                *samples++ = *source++;
+            }
+
+            const unsigned __int128* block = source;
+
+            for (i = 0; i < 0x40; i++)
+            {
+                unsigned __int128 low = *source++;
+                unsigned __int128 high = *source++;
+
+                *output++ = ee_pack_halfwords(high, low);
+                low = *source++;
+                high = *source++;
+                *output++ = ee_pack_halfwords(high, low);
+            }
+
+            dma->output = (u32)output;
+
+            if (dma->ring_start[0] != 0)
+            {
+                u32 end = dma->ring_write[0] + 0x1000;
+                bool fits = true;
+
+                if (end >= ring_end_from(dma, dma->ring_start[0]))
+                {
+                    end -= dma->ring_size;
+
+                    if (dma->ring_write[0] < dma->ring_read[0])
+                    {
+                        fits = false;
+                    }
+                }
+                else if (end >= dma->ring_read[0] && dma->ring_write[0] < dma->ring_read[0])
+                {
+                    fits = false;
+                }
+
+                if (fits)
+                {
+                    unsigned __int128* ring = (unsigned __int128*)dma->ring_write[0];
+
+                    for (i = 0; i < 0x40; i++)
+                    {
+                        *ring++ = *block++;
+                        *ring++ = *block++;
+                        *ring++ = *block++;
+                        *ring++ = *block++;
+                    }
+
+                    dma->ring_write[0] = end;
+                }
+            }
+
+            dma->phase = 2;
+            g_vif1_dma_queue->push(dma);
+            break;
+        }
+
+        case 2:
+        {
+            unsigned __int128* samples = (unsigned __int128*)((u32)dma->owner->unkF4 | UNCACHED_SEGMENT);
+
+            source = (const unsigned __int128*)0x1100E000;
+
+            for (i = 0; i < 0x40; i++)
+            {
+                *samples++ = *source++;
+                *samples++ = *source++;
+                *samples++ = *source++;
+                *samples++ = *source++;
+            }
+
+            const unsigned __int128* block = source;
+
+            for (i = 0; i < 0x40; i++)
+            {
+                unsigned __int128 low = *source++;
+                unsigned __int128 high = *source++;
+
+                *output++ = ee_pack_halfwords(high, low);
+                low = *source++;
+                high = *source++;
+                *output++ = ee_pack_halfwords(high, low);
+            }
+
+            if (dma->ring_start[1] != 0)
+            {
+                u32 end = dma->ring_write[1] + 0x1000;
+                bool fits = true;
+
+                if (end >= ring_end_from(dma, dma->ring_start[1]))
+                {
+                    end -= dma->ring_size;
+
+                    if (dma->ring_write[1] < dma->ring_read[1])
+                    {
+                        fits = false;
+                    }
+                }
+                else if (end >= dma->ring_read[1] && dma->ring_write[1] < dma->ring_read[1])
+                {
+                    fits = false;
+                }
+
+                if (fits)
+                {
+                    unsigned __int128* ring = (unsigned __int128*)dma->ring_write[1];
+
+                    for (i = 0; i < 0x40; i++)
+                    {
+                        *ring++ = *block++;
+                        *ring++ = *block++;
+                        *ring++ = *block++;
+                        *ring++ = *block++;
+                    }
+
+                    dma->ring_write[1] = end;
+                }
+            }
+
+            dma->output = (u32)output;
+            func_00109D50(dma->owner);
+            break;
+        }
+    }
+}
 
 /**
  * @brief Start the VIF1 DMA chain for the transfer's current phase.
@@ -2294,33 +4102,6 @@ extern "C" void func_00109CB0(ResidentStreamThread* thread)
     (void)thread->semaphore.wait();
     thread->stream->thread->unk110 = 2;
     (void)thread->semaphore.signal();
-}
-
-/**
- * @brief Start the VIF1 transfer of the next output block: log its first byte, put the unpack code at the start of
- * both halves, point the two DMA chains at them and queue the transfer.
- * @param thread Stream thread.
- */
-static inline void start_output_dma(ResidentStreamThread* thread)
-{
-    thread->dma->phase = 1;
-    *thread->log_cursor++ = *(u8*)((u32)thread->output_cursor | UNCACHED_SEGMENT);
-    *(u32*)((u32)thread->output_cursor | UNCACHED_SEGMENT) = 0x6DE80100;
-    *(u32*)((u32)(thread->output_cursor + 0x800) | UNCACHED_SEGMENT) = 0x6DE80100;
-    *(u16*)((u32)D_0014A830 | UNCACHED_SEGMENT) = 0x74;
-    *(u32*)((u32)D_0014A834 | UNCACHED_SEGMENT) = (u32)thread->output_cursor;
-    *(u16*)((u32)D_0014A9E0 | UNCACHED_SEGMENT) = 0x74;
-    *(u32*)((u32)D_0014A9E4 | UNCACHED_SEGMENT) = (u32)(thread->output_cursor + 0x800);
-    thread->dma->output = (u32)thread->input_cursor | UNCACHED_SEGMENT;
-
-    LibMicrocodeLoader* loader = g_microcode_loader;
-    loader->unk06 = 1;
-    loader->current_program = LIB_VU1_PROGRAM_NONE;
-
-    if (!g_vif1_dma_queue->push(thread->dma))
-    {
-        g_microcode_loader->unk06 = 0;
-    }
 }
 
 /**

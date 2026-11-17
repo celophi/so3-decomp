@@ -668,13 +668,14 @@ u32 func_00107250(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 ar
  * @brief Send sound stream command 0x14 with a count and that many words.
  * @param stream Sound stream; unused.
  * @param arg1 Reply buffer address, or zero.
- * @param arg2 Command argument.
- * @param arg3 Command argument.
+ * @param callback Called with the reply, or null.
+ * @param argument Passed to callback.
  * @param values Words to send.
  * @param count Number of words.
  * @return Request handle, or zero when no reply slot is free.
  */
-u32 func_00107730(struct ResidentSoundStream* stream, s32 arg1, s32 arg2, s32 arg3, const u32* values, s32 count);
+u32 func_00107730(struct ResidentSoundStream* stream, s32 arg1, void* callback, void* argument, const u32* values,
+                  s32 count);
 
 /**
  * @brief Send sound stream command 0x10 with a flag in the seventh word.
@@ -850,7 +851,7 @@ s32 func_001060C0(struct ResidentSoundStream* stream, const void* file);
  * @param arg6 Stored with the request.
  * @return One when queued, zero when the queue is full, or minus one when the file has no WAV chunk.
  */
-s32 func_00106160(struct ResidentSoundStream* stream, const void* file, s32 arg2, s32 slot, s32* result, u32 arg5,
+s32 func_00106160(struct ResidentSoundStream* stream, const void* file, u32 arg2, s32 slot, s32* result, u32 arg5,
                   u32 arg6);
 
 /**

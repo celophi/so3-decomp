@@ -238,10 +238,12 @@ def main():
     flags = [ASM_PROCESSOR_DEFINE, f'-I{args.source.parent}', '-Iinclude', *unit_options, '-lang', language]
 
     # A probe built with --unit only has some of the unit's functions, so it
-    # can't own the unit's separately placed jump tables.
-    overlay = overlay_config(unit)
+    # can't own the unit's separately placed jump tables. A source outside the
+    # module's source folder (a compiler probe) isn't in its config at all.
+    config = module_config(unit)
     whole_unit = Path(unit).resolve() == args.source.resolve()
-    rodata_groups = configured_rodata_groups(overlay, unit) if overlay and whole_unit else []
+    configured = Path(config['options']['src_path']) in Path(unit).parents
+    rodata_groups = configured_rodata_groups(config, unit) if configured and whole_unit else []
 
     # Only a C file with nothing but placeholders can skip the compiler.
     # Deferred units and C++ still need the compiler's section order and copies.

@@ -4,6 +4,27 @@
 #include "types.h"
 
 /**
+ * @brief Write the squared length of a vector's xyz part to out.x.
+ * @param v 16-byte aligned source vector.
+ * @param out 16-byte aligned destination.
+ * @see njScalor in Code Veronica X (https://github.com/AshfordFamily/recvx-decomp,
+ *      src/ps2/veronica/prog/ps2_NaMatrix.c), without its square root.
+ */
+static inline void vu0_length_squared_xyz(const void* v, void* out)
+{
+    asm __volatile__(
+        "lqc2      $vf24, 0(%0)\n"
+        "vmul.xyz  $vf24, $vf24, $vf24\n"
+        "vaddw.xyz $vf25, $vf0, $vf0w\n"
+        "vadday.x  $ACC, $vf24, $vf24y\n"
+        "vmaddz.x  $vf24, $vf25, $vf24z\n"
+        "sqc2      $vf24, 0(%1)\n"
+        :
+        : "r"(v), "r"(out)
+        : "memory");
+}
+
+/**
  * @brief Write the length of a vector's xyz part to out.x.
  *
  * The source operand has to come first to get the original register order.

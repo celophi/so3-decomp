@@ -70,6 +70,20 @@ static inline float ee_max(float left, float right)
 }
 
 /**
+ * @brief Return the absolute value of a floating-point operand with the EE scalar instruction.
+ * @param value Operand.
+ * @return Absolute value produced by the EE scalar instruction.
+ * @see abs.s in the EE Core Instruction Set Manual; SO3 keeps one whose result is never used (main 0x10E4B0).
+ */
+static inline float ee_abs(float value)
+{
+    // TODO: This is only asm because the compiler drops an unused abs; check whether the original was asm too.
+    float result;
+    asm __volatile__("abs.s %0, %1" : "=f"(result) : "f"(value));
+    return result;
+}
+
+/**
  * @brief Return the EE scalar minimum of two floating-point operands.
  * @param left First operand.
  * @param right Second operand.
@@ -160,6 +174,21 @@ static inline u32 ee_get_status(void)
     u32 status = 0;
     asm __volatile__("mfc0 %0, $12" : "=r"(status));
     return status;
+}
+
+/**
+ * @brief Pack the low halfword of each word of two quadwords into one quadword with the EE's PPACH instruction.
+ * @param high Quadword whose halfwords fill the upper half of the result.
+ * @param low Quadword whose halfwords fill the lower half of the result.
+ * @return The packed quadword.
+ * @see EE Core Instruction Set Manual (PPACH); SO3's stream copy at main 0x109800 is the one user.
+ */
+static inline unsigned __int128 ee_pack_halfwords(unsigned __int128 high, unsigned __int128 low)
+{
+    // TODO: This is asm because the compiler has no way to write PPACH; check whether the original was asm too.
+    unsigned __int128 result;
+    asm __volatile__("ppach %0, %1, %2" : "=r"(result) : "r"(high), "r"(low));
+    return result;
 }
 
 /**

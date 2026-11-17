@@ -30,3 +30,6 @@ rom:0xBE00 reloc:MIPS_HI16 symbol:__vt__20ResidentStreamThread addend:0x10
 rom:0xBE08 reloc:MIPS_LO16 symbol:__vt__20ResidentStreamThread addend:0x10
 rom:0xBED8 reloc:MIPS_HI16 symbol:__vt__20ResidentStreamThread addend:0x10
 rom:0xBEE0 reloc:MIPS_LO16 symbol:__vt__20ResidentStreamThread addend:0x10
+// The stream copy steps an uncached pointer by 16; that isn't the address 0x20000010.
+rom:0x9F04 reloc:MIPS_NONE symbol:0x10
+rom:0xA0CC reloc:MIPS_NONE symbol:0x10
