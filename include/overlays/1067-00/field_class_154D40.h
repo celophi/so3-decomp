@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "overlays/1067-00/text_001DD3C0.h"
-#include "main/resident_001001E0.h"
+#include "main/main.h"
 #include "overlays/1067-00/field_vector4.h"
 
 #ifdef __cplusplus

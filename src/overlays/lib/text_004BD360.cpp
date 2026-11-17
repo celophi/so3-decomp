@@ -10,18 +10,16 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_00429B00.h"
 #include "main/resident_data.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_00101260.h"
-#include "main/resident_00101550.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/text_004AB8B0.h"
-#include "main/resident_0010A0E0.h"
 #include "clamp.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/vector_inlines.h"
+#include "main/system.h"
+#include "main/utility.h"
 
 /**
  * @brief Subtract the first three components of one vector from another.
@@ -2782,7 +2780,7 @@ extern "C" s32 lib_load_shared_font(LibFontChunk* data_chunks, ResidentResourceH
         return 0;
     }
 
-    func_001014B0(resident_get_entry_table(resident_get_system()), font, LIB_ENTRY_SHARED_FONT);
+    resident_store_entry(resident_get_entry_table(resident_get_system()), font, LIB_ENTRY_SHARED_FONT);
     u8* archive_data = 0;
     LibFontChunk* chunks;
 
@@ -2821,7 +2819,7 @@ extern "C" s32 lib_load_shared_font(LibFontChunk* data_chunks, ResidentResourceH
         chunks = data_chunks;
     }
 
-    ResidentDecodeObject* decoder = func_001012B0(resident_get_system());
+    ResidentDecodeObject* decoder = resident_system_get_decoder(resident_get_system());
     void* block = memalign(LIB_SHARED_FONT_ALIGNMENT, source->decoded_size);
 
     if (!block)
@@ -3024,8 +3022,6 @@ typedef struct LibTextBoundsState
 
 extern "C" s32 func_004C7D40(LibTextWidget* object, u32 source, u32 key, u8 flag);
 
-extern "C" void* func_100B00(u32 size, s32 flags);
-
 extern "C" void func_004C74E0(LibTextWidget* object);
 
 /**
@@ -3045,7 +3041,7 @@ extern "C" LibTextExtent* lib_text_measure_bounds(LibTextWidget* object)
         }
     }
 
-    state->drawing = func_100B00(state->count * 32, 0);
+    state->drawing = ::operator new[](state->count * 32, 0);
 
     if (!state->drawing)
     {

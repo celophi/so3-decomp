@@ -1,7 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
-#include "main/resident_001001E0.h"
 #include "overlays/1067-00/text_002AE9E0.h"
 #include "overlays/1067-00/text_00202240.h"
 #include "overlays/1067-00/text_001F9B70.h"
@@ -15,7 +13,6 @@
 #include "overlays/lib/render_buffer.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 
-#include "main/resident_00101260.h"
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_00207AF0.h"
 #include "overlays/1067-00/text_002D8410.h"
@@ -36,7 +33,6 @@
 #include "overlays/1067-00/text_0026EE10.h"
 #include "overlays/1067-00/text_0027E520.h"
 #include "overlays/1067-00/text_002F9C90.h"
-#include "main/resident_0011EE70.h"
 #include "sdk/main/libc_guess_0013C948.h"
 
 #include "overlays/1067-00/text_00272360.h"
@@ -46,6 +42,7 @@
 #include "overlays/1067-00/text_00291B80.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 #include "ee.h"
+#include "main/sound_set.h"
 
 #define TIMER0_MODE (*(volatile u32*)0x10000010)
 
@@ -218,9 +215,9 @@ extern "C"
 
     extern ResidentHeap* D_001B6698;
 
-    extern LibListObject* D_001B6640;
+    extern LibListObject* g_image_registry;
 
-    extern u8 D_001CFA00[];
+    extern u8 g_scheduler[];
 
     extern u8 D_36FA80[];
 
@@ -1211,12 +1208,12 @@ s32 FieldShutdownSequence::get_default_list_kind()
 /** @brief Run the next stage, then request exit and remove the node after stage three. */
 void FieldShutdownSequence::update()
 {
-    field_run_shutdown_stage(D_001B6430->context, stage);
+    field_run_shutdown_stage(g_field_context_ref->context, stage);
     stage++;
 
     if (stage >= 4)
     {
-        D_001B6430->context->exit_requested = 1;
+        g_field_context_ref->context->exit_requested = 1;
         g_program_running = 0;
         lib_object_detach_owner(this);
         func_001DD7B0();
@@ -1344,7 +1341,7 @@ void field_adjust_time_step(ResidentContext* context, s32 overrun)
             object = context->unk08->current_object;
         }
 
-        if (!D_001B6430->context->unkde_1 && object != 0 && object->func_00204420())
+        if (!g_field_context_ref->context->unkde_1 && object != 0 && object->func_00204420())
         {
             if (context->unk08 != 0 && context->unk08->unkf5_5)
             {
@@ -1388,7 +1385,7 @@ void field_run_update_loop(ResidentContext* context)
 {
     TIMER0_MODE = 0x83;
 
-    for (; func_0011DF10(g_input_system, 0) == 0;)
+    for (; resident_input_wait_vblank(g_input_system, 0) == 0;)
     {
     }
 
@@ -1469,7 +1466,7 @@ void field_run_update_loop(ResidentContext* context)
                     break;
                 }
 
-                context->display_field = func_0011DF10(g_input_system, 0);
+                context->display_field = resident_input_wait_vblank(g_input_system, 0);
             }
 
             if (remaining < 0)
@@ -1522,7 +1519,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         func_004288C0(1);
         D_001B6518 = 0;
         D_001B65B0 = 0;
-        func_00110C60(g_sound);
+        resident_sound_free_read_ahead(g_sound);
         static_cast<FieldContextOwner20*>(context->unk20)->unk34_4 = 1;
 
         if (context->unk1c != 0)
@@ -1601,7 +1598,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
 
             if (context->unk24 != 0)
             {
-                static_cast<ResidentClass14FA40*>(context->unk24)->func_00104740();
+                static_cast<ResidentListObject*>(context->unk24)->destroy();
                 context->unk24 = 0;
             }
 
@@ -1670,13 +1667,13 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
         func_002B6680(g_quaternion_curve_track_pool);
         func_002B6BA0(g_quaternion_track_pool);
 
-        if (!D_001B6430->context->unkdd.unk4)
+        if (!g_field_context_ref->context->unkdd.unk4)
         {
             resident_input_attach_display(g_input_system, context->unk0c, 0);
         }
 
-        delete D_001B6430;
-        D_001B6430 = 0;
+        delete g_field_context_ref;
+        g_field_context_ref = 0;
         delete context->unk0c;
         context->unk0c = 0;
         delete g_screen_text;
@@ -1713,7 +1710,7 @@ extern "C" void field_run_shutdown_stage(ResidentContext* context, s32 stage)
             delete static_cast<ResidentHeap*>(context->unk6c);
             context->unk6c = 0;
             g_sound->unk0c = 0;
-            func_001106B0(g_sound, 0);
+            resident_sound_stop_all(g_sound, 0);
         }
 
         ResidentCheckedRecord* resource =
@@ -1776,7 +1773,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     context->unk6c = 0;
     context->unk0c = 0;
     context->unk38 = 0;
-    D_001B6430 = 0;
+    g_field_context_ref = 0;
     context->unk70 = 0;
     context->unk74 = 0;
     context->unk78 = 0;
@@ -1804,8 +1801,8 @@ extern "C" void field_initialize_context(ResidentContext* context)
     D_001B65A8 = 0;
     D_001B65A0 = 0;
     D_001B659C = 0;
-    delete static_cast<ResidentHeap*>(D_001B6684);
-    D_001B6684 = 0;
+    delete static_cast<ResidentHeap*>(g_field_allocation_heap);
+    g_field_allocation_heap = 0;
 
     if (g_texture_cache != reinterpret_cast<LibTextureCache*>(EE_SCRATCHPAD))
     {
@@ -1817,30 +1814,30 @@ extern "C" void field_initialize_context(ResidentContext* context)
     g_screen_text = 0;
     delete g_field_runtime;
     g_field_runtime = 0;
-    lib_object_detach_owner(D_001B6640);
+    lib_object_detach_owner(g_image_registry);
 
-    if (D_001B6640 != 0)
+    if (g_image_registry != 0)
     {
-        D_001B6640->destroy();
-        D_001B6640 = 0;
+        g_image_registry->destroy();
+        g_image_registry = 0;
     }
 
     func_00433AA0();
     resident_exchange_allocation_heap(0);
-    func_00114650(D_001CFA00, 1);
+    resident_thread_set_running(g_scheduler, 1);
     void* directory = resident_get_entry_table(resident_get_system());
     FieldClass150DB0* saved = reinterpret_cast<FieldClass150DB0*>(resident_find_entry(directory, 5));
     ResidentCheckedRecord* checked = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(directory, 1));
 
     if (saved == 0)
     {
-        func_0011DF80(g_input_system);
+        resident_input_reset_seconds(g_input_system);
         context->unk6c = ::new (0) ResidentHeap;
         resident_heap_create_memory(static_cast<ResidentHeap*>(context->unk6c), 0x40C00);
         void* previous_heap = resident_exchange_allocation_heap(context->unk6c);
         LibBufferOwner* buffers = ::new (0) LibBufferOwner;
         func_0040AFA0();
-        func_001014B0(directory, buffers, 7);
+        resident_store_entry(directory, buffers, 7);
         LibResourceRecordC4* output = reinterpret_cast<LibResourceRecordC4*>(resident_find_entry(directory, 2));
         LibResourceRecord114* input = reinterpret_cast<LibResourceRecord114*>(resident_find_entry(directory, 3));
         func_004076D0(&output[0], &input[0], 1);
@@ -1865,14 +1862,14 @@ extern "C" void field_initialize_context(ResidentContext* context)
     D_001B6698 = static_cast<ResidentHeap*>(context->unk6c);
     void* previous_heap = resident_exchange_allocation_heap(context->unk6c);
     LibClass178B10* temporary = ::new (0) LibClass178B10(768);
-    D_001B6640 = temporary;
+    g_image_registry = temporary;
     g_update_list->append_node(temporary, -1);
     resident_exchange_allocation_heap(previous_heap);
 
     if (saved == 0)
     {
         FieldRuntimeState* state = new FieldRuntimeState;
-        func_001014B0(directory, state, 4);
+        resident_store_entry(directory, state, 4);
     }
 
     D_001B65B0 = 1;
@@ -1887,7 +1884,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     if (unused_space > 0x800)
     {
         context->unk78 = ::new (0) ResidentHeap;
-        func_001138B0(context->unk78, reinterpret_cast<void*>(reinterpret_cast<u32>(D_36FA80) + 0x200), unused_space - 0x800);
+        resident_heap_set_range(context->unk78, reinterpret_cast<void*>(reinterpret_cast<u32>(D_36FA80) + 0x200), unused_space - 0x800);
     }
 
     func_002B41A0(g_float_track_pool, 900);
@@ -1925,7 +1922,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     if (saved == 0)
     {
         FieldLoaderState* state = new FieldLoaderState;
-        func_001014B0(directory, state, 6);
+        resident_store_entry(directory, state, 6);
     }
 
     FieldInputState* input = ::new (0) FieldInputState;
@@ -1940,7 +1937,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
         reference->unk04 = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
     }
 
-    D_001B6430 = reference;
+    g_field_context_ref = reference;
     context->unk2c = reinterpret_cast<FieldResourceList14*>(::new (0) FieldClass150E10);
     g_update_list->append_node(context->unk2c, -1);
     context->unk30 = ::new (0) FieldResourceLoaderList;
@@ -2064,7 +2061,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
     if (saved == 0)
     {
         previous_heap = resident_exchange_allocation_heap(context->unk6c);
-        context->unk24 = ::new (0) ResidentClass14FC90;
+        context->unk24 = ::new (0) ResidentSoundBankSet;
         resident_exchange_allocation_heap(previous_heap);
     }
     else
@@ -2073,11 +2070,11 @@ extern "C" void field_initialize_context(ResidentContext* context)
     }
 
     reinterpret_cast<FieldClass1516A0*>(context->unk38)->refresh_field_character_state();
-    s32 extra_budget = func_00120370(static_cast<ResidentClass14FC90*>(context->unk24));
+    s32 extra_budget = resident_sound_bank_set_get_pick_cost(static_cast<ResidentSoundBankSet*>(context->unk24));
 
     if (extra_budget > 0)
     {
-        func_001200C0(static_cast<ResidentClass14FC90*>(context->unk24), extra_budget + 300);
+        resident_sound_bank_set_pick_variants(static_cast<ResidentSoundBankSet*>(context->unk24), extra_budget + 300);
     }
 
     if (saved == 0)
@@ -2157,7 +2154,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
             break;
         }
         case 1:
-            func_00254230(D_001B6430->context->unk44, 7, 2, 0.0f);
+            func_00254230(g_field_context_ref->context->unk44, 7, 2, 0.0f);
             break;
         case 2:
             created = func_00258C90(context->unk08, 0, 1, 1);
@@ -2193,7 +2190,7 @@ extern "C" void field_initialize_context(ResidentContext* context)
             }
             else
             {
-                previous_heap = resident_exchange_allocation_heap(D_001B6430->context->unk6c);
+                previous_heap = resident_exchange_allocation_heap(g_field_context_ref->context->unk6c);
 
                 if (loader->requests != 0)
                 {

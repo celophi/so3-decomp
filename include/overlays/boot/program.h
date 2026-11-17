@@ -5,6 +5,7 @@
 #include "overlays/boot/title_menu.h"
 #include "overlays/boot/trophy_card.h"
 #include "angle.h"
+#include "main/heap.h"
 
 #define BOOT_ASPECT_STANDARD 1.3333334f
 #define BOOT_ASPECT_WIDE 1.7777778f

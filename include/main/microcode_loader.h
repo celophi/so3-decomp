@@ -2,7 +2,7 @@
 #define SO3_MAIN_MICROCODE_LOADER_H
 
 #include "types.h"
-#include "main/resident_0010A0E0.h"
+#include "main/dma_queue.h"
 
 #ifdef __cplusplus
 

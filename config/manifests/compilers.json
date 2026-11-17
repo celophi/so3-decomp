@@ -119,8 +119,32 @@
       "flags": ["-O4,p"]
     },
     {
-      "source": "src/main/resident_0011EE70.cpp",
+      "source": "src/main/sound.cpp",
       "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/main/packet.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/main/sound_set.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/main/stats.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/main/object_list.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/main/heap.cpp",
+      "flags": ["-inline", "auto,deferred"]
+    },
+    {
+      "source": "src/main/thread.cpp",
+      "flags": ["-inline", "deferred"]
     }
   ],
   "source": "tools/so3/build/probes/main.c",

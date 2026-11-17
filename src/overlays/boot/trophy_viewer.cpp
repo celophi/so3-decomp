@@ -11,7 +11,6 @@
 #include "overlays/lib/list_indicator_inlines.h"
 #include "overlays/boot/music_player.h"
 #include "overlays/boot/resident.h"
-#include "main/resident_001001E0.h"
 #include "sdk/main/libc_guess_0013CD50.h"
 
 /** Name given to every trophy texture. */

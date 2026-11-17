@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "overlays/cmc/cmc.h"
 #include "overlays/1067-00/field_runtime.h"
+#include "main/utility.h"
 
 extern "C" {
 extern FieldWindowRuntime* D_001B643C;
@@ -103,7 +104,7 @@ u8 TrophySkipConfirmWindow::func_slotb0()
         func_slot24(1);
         set_state(0xFF, 0x40);
         unka8->unk54 = 0;
-        ResidentCheckedRecord* record = static_cast<ResidentCheckedRecord*>(func_101440(func_101290(resident_get_system()), 1));
+        ResidentCheckedRecord* record = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
 
         if (record != 0)
         {
@@ -504,7 +505,7 @@ u8 TrophyNoDataConfirmWindow::func_slotb0()
         func_slot24(1);
         set_state(0xFF, 0x40);
         unka8->unk54 = 0;
-        ResidentCheckedRecord* record = static_cast<ResidentCheckedRecord*>(func_101440(func_101290(resident_get_system()), 1));
+        ResidentCheckedRecord* record = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
 
         if (record != 0)
         {
@@ -670,7 +671,7 @@ u8 TrophyLoadedWindow::func_slotb0()
     func_slot24(1);
     set_state(0xFF, 0x40);
     unka8->unk54 = 0;
-    ResidentCheckedRecord* record = static_cast<ResidentCheckedRecord*>(func_101440(func_101290(resident_get_system()), 1));
+    ResidentCheckedRecord* record = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
 
     if (record != 0)
     {

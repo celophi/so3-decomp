@@ -21,7 +21,6 @@
 #include "overlays/1067-00/text_00212560.h"
 #include "overlays/1067-00/text_00202240.h"
 #include "overlays/1067-00/text_0022B490.h"
-#include "main/resident_001001E0.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/text_00200710.h"
 #include "overlays/1067-00/text_0021DB80.h"
@@ -521,7 +520,7 @@ inline FieldHeapSceneResourceLoader::~FieldHeapSceneResourceLoader()
  */
 static inline bool field_actor_commands_pending()
 {
-    FieldClass150060* list = (FieldClass150060*)D_001B6430->context->unk04;
+    FieldClass150060* list = (FieldClass150060*)g_field_context_ref->context->unk04;
     FieldClass150060* node = list;
 
     for (;;)
@@ -589,8 +588,8 @@ FieldClass1504F0::FieldClass1504F0()
         unk34[i] = 0;
     }
 
-    D_001B6430->context->unk64->unk48 = this;
-    D_001B6430->context->unkde_3 = 1;
+    g_field_context_ref->context->unk64->unk48 = this;
+    g_field_context_ref->context->unkde_3 = 1;
     unk18 = new (0) LibContainer(24.0f, 368.0f, 0.0f);
 
     if (!unk18)
@@ -629,7 +628,7 @@ FieldClass1504F0::FieldClass1504F0()
         }
     }
 
-    void* data = func_00201EA0(D_001B6430->context->unk2c, 0x535953, 0, 0);
+    void* data = func_00201EA0(g_field_context_ref->context->unk2c, 0x535953, 0, 0);
 
     if (data)
     {
@@ -1007,7 +1006,7 @@ FieldClass150570::FieldClass150570(void* owner, FieldVec4A position, FieldVec4A 
     {
         mode = (mode & ~0xC) | 3;
         u32 packed;
-        func_0020EF90(D_001B6430->context->unk38, word34, &unka0.x, &unkb0, &packed);
+        func_0020EF90(g_field_context_ref->context->unk38, word34, &unka0.x, &unkb0, &packed);
         unk91 = packed;
         unkb4_0 = (packed & 0xFF000000) != 0;
     }
@@ -1131,7 +1130,7 @@ FieldClass150530::FieldClass150530(void* owner, FieldVec4A position, FieldVec4A 
     {
         mode = (mode & ~0xC) | 3;
         u32 packed;
-        func_0020EF90(D_001B6430->context->unk38, word34, &unk60.x, &unk70, &packed);
+        func_0020EF90(g_field_context_ref->context->unk38, word34, &unk60.x, &unk70, &packed);
         unk51 = packed;
         unk74_0 = (packed & 0xFF000000) != 0;
     }
@@ -1257,7 +1256,7 @@ extern "C" s32 func_001EF150(FieldClass150060* head, FieldClass151510* actor, u3
             packet = (shape->unk38 << 8) | 2;
         }
 
-        FieldClass151D40* context = reinterpret_cast<FieldClass151D40*>(D_001B6430->context->unk38);
+        FieldClass151D40* context = reinterpret_cast<FieldClass151D40*>(g_field_context_ref->context->unk38);
         context->func_0021DC60(shape->unk34, packet);
 
         if (moves)
@@ -1311,7 +1310,7 @@ extern "C" bool func_001EF4A0(LibUpdateList* list, FieldClass151510* actor, u8 k
         {
             FieldClass150570* rectangle = static_cast<FieldClass150570*>(receiver);
 
-            if ((rectangle->unk90 & 0xE) == 2 && D_001B6430->context->unk38->unk4c8_0)
+            if ((rectangle->unk90 & 0xE) == 2 && g_field_context_ref->context->unk38->unk4c8_0)
             {
                 continue;
             }
@@ -1322,7 +1321,7 @@ extern "C" bool func_001EF4A0(LibUpdateList* list, FieldClass151510* actor, u8 k
         {
             FieldClass150530* cylinder = static_cast<FieldClass150530*>(receiver);
 
-            if ((cylinder->unk50 & 0xE) == 2 && D_001B6430->context->unk38->unk4c8_0)
+            if ((cylinder->unk50 & 0xE) == 2 && g_field_context_ref->context->unk38->unk4c8_0)
             {
                 continue;
             }
@@ -1332,7 +1331,7 @@ extern "C" bool func_001EF4A0(LibUpdateList* list, FieldClass151510* actor, u8 k
 
         if (inside && func_00237420(actor, current))
         {
-            reinterpret_cast<FieldClass151D40*>(D_001B6430->context->unk38)->func_0021DC60(
+            reinterpret_cast<FieldClass151D40*>(g_field_context_ref->context->unk38)->func_0021DC60(
                 current->unk34,
                 (current->unk38 & 0xFF) == 2 ? (actor->unk70 << 16) | 0x201 : (current->unk38 << 8) | 1);
             result = true;
@@ -1353,7 +1352,7 @@ extern "C" s32 func_001EF6C0(FieldScriptCursorU32* cursor)
 {
     LibUpdateList* list;
     void* owner = (void*)*cursor->current;
-    list = (LibUpdateList*)D_001B6430->context->unk3c;
+    list = (LibUpdateList*)g_field_context_ref->context->unk3c;
     LibListNode* node;
     LibListNode* next = ((LibListNode*)list)->next;
 
@@ -1403,7 +1402,7 @@ extern "C" s32 func_001EFA20(FieldScriptCursorU32* cursor)
     u32 word38 = *cursor->current++;
     word34 = *cursor->current;
     FieldClass150570* shape = new FieldClass150570(owner, position, dimensions, flags, word38, word34);
-    LibUpdateList* list = (LibUpdateList*)D_001B6430->context->unk3c;
+    LibUpdateList* list = (LibUpdateList*)g_field_context_ref->context->unk3c;
     list->append_node(shape, -1);
     return 1;
 }
@@ -1435,7 +1434,7 @@ extern "C" s32 func_001EFC80(FieldScriptCursorU32* cursor)
     word38 = *cursor->current++;
     word34 = *cursor->current;
     FieldClass150550* shape = new FieldClass150550(owner, position, dimensions, word38, word34, mask, flags);
-    LibUpdateList* list = (LibUpdateList*)D_001B6430->context->unk3c;
+    LibUpdateList* list = (LibUpdateList*)g_field_context_ref->context->unk3c;
     list->append_node(shape, -1);
     return 1;
 }
@@ -1461,7 +1460,7 @@ extern "C" s32 func_001EFEC0(FieldScriptCursorU32* cursor)
     u32 word38 = *cursor->current++;
     word34 = *cursor->current;
     FieldClass150530* shape = new FieldClass150530(owner, position, dimensions, flags, word38, word34);
-    LibUpdateList* list = (LibUpdateList*)D_001B6430->context->unk3c;
+    LibUpdateList* list = (LibUpdateList*)g_field_context_ref->context->unk3c;
     list->append_node(shape, -1);
     return 1;
 }
@@ -1508,7 +1507,7 @@ extern "C" s32 func_001F02E0(FieldScriptCursorF32* cursor, u32 count)
         }
     }
 
-    func_00225150(D_001B6430->context->unk14, name, first, second);
+    func_00225150(g_field_context_ref->context->unk14, name, first, second);
     return 1;
 }
 
@@ -1542,7 +1541,7 @@ extern "C" s32 func_001F0360(FieldScriptCursorU32* cursor, u32 count)
     command->unk20 = first;
     command->unk24 = second;
     command->unk28 = pairs;
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1575,7 +1574,7 @@ extern "C" s32 func_001F04D0(FieldScriptCursorU32* cursor)
         return 1;
     }
 
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1595,7 +1594,7 @@ extern "C" s32 func_001F0620(FieldScriptCursorF32* cursor)
 {
     float first = *cursor->current++;
     float second = *cursor->current;
-    FieldContext14F0E40* context = (FieldContext14F0E40*)D_001B6430->context;
+    FieldContext14F0E40* context = (FieldContext14F0E40*)g_field_context_ref->context;
     func_002097F0(context->object + 0x30, first, second);
     return 1;
 }
@@ -1611,7 +1610,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F06
 extern "C" s32 func_001F06E0(FieldScriptCursorU32* cursor, u32 count)
 {
     float duration = 0.0f;
-    FieldRangeContext371* object = (FieldRangeContext371*)D_001B6430->context->unk14;
+    FieldRangeContext371* object = (FieldRangeContext371*)g_field_context_ref->context->unk14;
     FieldMotionRange* motion;
     u32 mode = *cursor->current++;
     motion = &object->motion;
@@ -1644,7 +1643,7 @@ extern "C" s32 func_001F06E0(FieldScriptCursorU32* cursor, u32 count)
             duration = *(float*)cursor->current++;
         }
 
-        FieldFlaggedListObject* found = func_001DEE30((FieldFlaggedListObject*)D_001B6430->context->unk04, key, 0xFFFFFFFF);
+        FieldFlaggedListObject* found = func_001DEE30((FieldFlaggedListObject*)g_field_context_ref->context->unk04, key, 0xFFFFFFFF);
 
         if (found)
         {
@@ -1713,7 +1712,7 @@ extern "C" s32 func_001F0A80(FieldScriptCursorU32* cursor, u32 count)
         steps = (s32)*cursor->current;
     }
 
-    FieldRangeContext371* object = (FieldRangeContext371*)D_001B6430->context->unk14;
+    FieldRangeContext371* object = (FieldRangeContext371*)g_field_context_ref->context->unk14;
 
     if ((float)steps == 0.0f)
     {
@@ -1748,7 +1747,7 @@ extern "C" s32 func_001F0A80(FieldScriptCursorU32* cursor, u32 count)
 
 s32 func_001F0B40(FieldScriptCursorU32* cursor)
 {
-    FieldContext14F0E40* context = (FieldContext14F0E40*)D_001B6430->context;
+    FieldContext14F0E40* context = (FieldContext14F0E40*)g_field_context_ref->context;
     FieldObjectBit240* object = (FieldObjectBit240*)context->object;
     object->unk240_2 = (*cursor->current & 1) != 0;
     return 1;
@@ -1761,7 +1760,7 @@ s32 func_001F0B40(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F0B80(FieldScriptCursorU32* cursor)
 {
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1791,7 +1790,7 @@ extern "C" s32 func_001F0C00(FieldScriptCursorU32* cursor)
 {
     float target = ((float*)cursor->current)[1];
     FieldClass151300* command = new FieldClass151300((float)*cursor->current, target);
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1816,7 +1815,7 @@ extern "C" s32 func_001F0D20(FieldScriptCursorU32* cursor)
 {
     float magnitude = ((float*)cursor->current)[1];
     FieldClass151320* command = new FieldClass151320((float)*cursor->current, magnitude);
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1834,7 +1833,7 @@ extern "C" s32 func_001F0D20(FieldScriptCursorU32* cursor)
 
 s32 func_001F0E40(void* unused)
 {
-    FieldContext14F0E40* context = (FieldContext14F0E40*)D_001B6430->context;
+    FieldContext14F0E40* context = (FieldContext14F0E40*)g_field_context_ref->context;
     u8* object = context->object;
     func_001FF400(object + 0x250);
     func_002099B0(object + 0x30);
@@ -1848,7 +1847,7 @@ s32 func_001F0E40(void* unused)
  */
 extern "C" s32 func_001F0E80(FieldScriptCursorU32* cursor)
 {
-    FieldContextName36E* object = (FieldContextName36E*)D_001B6430->context->unk14;
+    FieldContextName36E* object = (FieldContextName36E*)g_field_context_ref->context->unk14;
 
     if (strcmp(object->unk35d, D_31A7E0) == 0)
     {
@@ -1868,7 +1867,7 @@ extern "C" s32 func_001F0E80(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F0F00(FieldScriptCursorU32* cursor)
 {
-    FieldContextMotionChannels* context = (FieldContextMotionChannels*)D_001B6430->context->unk14;
+    FieldContextMotionChannels* context = (FieldContextMotionChannels*)g_field_context_ref->context->unk14;
     FieldClass151460* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1901,7 +1900,7 @@ void FieldClass15B900::func_002DDA70()
 extern "C" s32 func_001F0FC0(FieldScriptCursorU32* cursor)
 {
     FieldClass1513E0* command = new FieldClass1513E0(*cursor->current);
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1925,7 +1924,7 @@ extern "C" s32 func_001F0FC0(FieldScriptCursorU32* cursor)
 extern "C" s32 func_001F10B0(FieldScriptCursorU32* cursor)
 {
     FieldClass151340* command = new FieldClass151340;
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1951,7 +1950,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F11
 extern "C" s32 func_001F1410(FieldScriptCursorU32* cursor)
 {
     FieldClass151400* command = new FieldClass151400;
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -1976,7 +1975,7 @@ extern "C" s32 func_001F14F0(FieldScriptCursorU32* cursor)
 {
     float target = ((float*)cursor->current)[1];
     FieldClass151360* command = new FieldClass151360((float)*cursor->current, target);
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -2001,7 +2000,7 @@ extern "C" s32 func_001F1610(FieldScriptCursorU32* cursor)
 {
     float target = ((float*)cursor->current)[1];
     FieldClass151380* command = new FieldClass151380((float)*cursor->current, target);
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -2026,7 +2025,7 @@ extern "C" s32 func_001F1730(FieldScriptCursorU32* cursor)
 {
     float target = 6.2831854820251465f * ((float)(s32)cursor->current[1] / 360.0f);
     FieldClass1513A0* command = new FieldClass1513A0((float)*cursor->current, target);
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -2051,7 +2050,7 @@ extern "C" s32 func_001F1880(FieldScriptCursorU32* cursor)
 {
     float target = 6.2831854820251465f * ((float)(s32)cursor->current[1] / 360.0f);
     FieldClass1513C0* command = new FieldClass1513C0((float)*cursor->current, target);
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -2084,7 +2083,7 @@ extern "C" s32 func_001F1CD0(FieldScriptCursorU32* cursor)
     value.y = (float)*(s32*)cursor->current++;
     value.z = (float)*(s32*)cursor->current;
     FieldClass151440* command = new FieldClass151440(flags, value);
-    FieldContext14Commands* object = (FieldContext14Commands*)D_001B6430->context->unk14;
+    FieldContext14Commands* object = (FieldContext14Commands*)g_field_context_ref->context->unk14;
     FieldCommandList8* channel;
 
     if (((cursor->unk420 >> 16) & 0xFFFF) == 0)
@@ -2116,7 +2115,7 @@ extern "C" s32 func_001F1E10(FieldScriptCursorBytes* cursor, u32 count)
     }
 
     u32 flags = (value != 0) | 0x2;
-    func_00225790(D_001B6430->context->unk14, cursor->current, flags);
+    func_00225790(g_field_context_ref->context->unk14, cursor->current, flags);
     return 1;
 }
 
@@ -2177,7 +2176,7 @@ extern "C" s32 func_001F2070(FieldScriptCursorF32* cursor)
  */
 extern "C" s32 func_001F20B0(FieldScriptCursorU32* cursor)
 {
-    FieldClass150060* head = (FieldClass150060*)D_001B6430->context->unk04;
+    FieldClass150060* head = (FieldClass150060*)g_field_context_ref->context->unk04;
     FieldClass150060* current = head;
 
     while (true)
@@ -2232,7 +2231,7 @@ extern "C" s32 func_001F2140(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F2230(FieldScriptCursorU32* cursor)
 {
-    FieldClass150060* head = (FieldClass150060*)D_001B6430->context->unk04;
+    FieldClass150060* head = (FieldClass150060*)g_field_context_ref->context->unk04;
     FieldClass150060* current = head;
 
     while (true)
@@ -2284,7 +2283,7 @@ extern "C" s32 func_001F23E0(FieldScriptCursorF32* cursor)
 
 s32 func_001F2420(FieldScriptCursorU32* cursor)
 {
-    FieldContext18F2420* context = (FieldContext18F2420*)D_001B6430->context;
+    FieldContext18F2420* context = (FieldContext18F2420*)g_field_context_ref->context;
 
     if (context->target != 0)
     {
@@ -2347,7 +2346,7 @@ extern "C" s32 func_001F2650(FieldScriptCursorU32* cursor, u32 count)
     owner = (FieldActorCommandState*)func_0020F520(cursor);
     s32 enabled = (*cursor->current & 0x80000000) != 0;
     s32 index = 0;
-    list = (FieldFlaggedListObject*)D_001B6430->context->unk04;
+    list = (FieldFlaggedListObject*)g_field_context_ref->context->unk04;
 
     while (index < count)
     {
@@ -2376,7 +2375,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F27
  */
 extern "C" s32 func_001F2840(FieldScriptCursorU32* cursor, u32 count)
 {
-    FieldDeferredQueues* queues = (FieldDeferredQueues*)D_001B6430->context->unk40;
+    FieldDeferredQueues* queues = (FieldDeferredQueues*)g_field_context_ref->context->unk40;
 
     if (queues->has_pending())
     {
@@ -2385,7 +2384,7 @@ extern "C" s32 func_001F2840(FieldScriptCursorU32* cursor, u32 count)
     }
 
     u32 key = *cursor->current++;
-    FieldContextResourceManagers* context = (FieldContextResourceManagers*)D_001B6430->context;
+    FieldContextResourceManagers* context = (FieldContextResourceManagers*)g_field_context_ref->context;
     FieldResourceList14* resources = context->resources;
 
     if (count > 1)
@@ -2420,7 +2419,7 @@ extern "C" s32 func_001F2B00(FieldScriptCursorU32* cursor)
     s32 key = *cursor->current;
     FieldClass152220* loader = new FieldClass152220;
     func_0021F530(loader, key);
-    FieldResourceLoaderList* manager = (FieldResourceLoaderList*)D_001B6430->context->unk30;
+    FieldResourceLoaderList* manager = (FieldResourceLoaderList*)g_field_context_ref->context->unk30;
     LibUpdateList& list = *manager;
     list.append_node(loader, -1);
     return 1;
@@ -2472,7 +2471,7 @@ extern "C" void field_reset_scene_resource_requests(FieldRecords* state)
 extern "C" s32 func_001F2EB0(FieldScriptCursorU32* cursor, u32 count)
 {
     D_001B65B4 = *cursor->current;
-    D_001B6430->context->unkd4 = *cursor->current;
+    g_field_context_ref->context->unkd4 = *cursor->current;
     return 1;
 }
 
@@ -2686,7 +2685,7 @@ extern "C" s32 func_001F7470(FieldScriptCursorU32* cursor, s32 word_count)
     FieldClass152C70* command = new FieldClass152C70;
     u32* source = cursor->current;
     s32 byte_count = word_count * 4;
-    command->unk1c = resident_heap_allocate(D_001B6430->context->unk6c, byte_count);
+    command->unk1c = resident_heap_allocate(g_field_context_ref->context->unk6c, byte_count);
 
     if (command->unk1c != 0)
     {
@@ -2763,7 +2762,7 @@ void FieldClass150650::update()
 {
     if (field_actor_commands_pending())
     {
-        ((FieldScriptCursorU32*)D_001B6430->context->unk38)->unk14 = 1.0f;
+        ((FieldScriptCursorU32*)g_field_context_ref->context->unk38)->unk14 = 1.0f;
     }
     else
     {
@@ -2823,7 +2822,7 @@ extern "C" s32 func_001F7A90(FieldScriptCursorU32* cursor)
 s32 func_001F7B40(void* cursor)
 {
     void* object = func_0020F520(cursor);
-    func_001DEDF0(D_001B6430->context->unk04, object);
+    func_001DEDF0(g_field_context_ref->context->unk04, object);
     return 1;
 }
 
@@ -2903,7 +2902,7 @@ extern "C" s32 func_001F7EE0(FieldScriptCursorU32* cursor)
     position.x = (float)(s32)*cursor->current++;
     position.y = (float)(s32)*cursor->current++;
     position.z = (float)(s32)*cursor->current;
-    FieldRuntimePositions* section = (FieldRuntimePositions*)func_101440(func_101290(resident_get_system()), 6);
+    FieldRuntimePositions* section = (FieldRuntimePositions*)resident_find_entry(resident_get_entry_table(resident_get_system()), 6);
 
     if (section->mode == 1)
     {
@@ -2923,7 +2922,7 @@ extern "C" s32 func_001F7EE0(FieldScriptCursorU32* cursor)
     }
 
     actor->func_00205710(&position);
-    ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
+    ((LibUpdateList*)g_field_context_ref->context->unk04)->append_node(actor, -1);
     return 1;
 }
 
@@ -2934,7 +2933,7 @@ extern "C" s32 func_001F7EE0(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
 {
-    FieldResidentTimer90* state = (FieldResidentTimer90*)D_001B6430->context->unk08->current_object;
+    FieldResidentTimer90* state = (FieldResidentTimer90*)g_field_context_ref->context->unk08->current_object;
 
     if (state && state->unk90 <= 0.0f)
     {
@@ -2945,7 +2944,7 @@ extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
         FieldClass155580* actor = new FieldClass155580;
         actor->unk70 = key;
         actor->func_0024D1C0(name);
-        ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
+        ((LibUpdateList*)g_field_context_ref->context->unk04)->append_node(actor, -1);
         return 1;
     }
 
@@ -2960,7 +2959,7 @@ extern "C" s32 func_001F80E0(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F8230(FieldScriptCursorU32* cursor)
 {
-    FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
+    FieldClass150F90* focus = g_field_context_ref->context->unk08->current_object;
 
     if (!focus || !focus->func_00204420())
     {
@@ -2984,7 +2983,7 @@ extern "C" s32 func_001F8230(FieldScriptCursorU32* cursor)
             return 1;
         }
 
-        ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
+        ((LibUpdateList*)g_field_context_ref->context->unk04)->append_node(actor, -1);
     }
     else
     {
@@ -3002,7 +3001,7 @@ extern "C" s32 func_001F8230(FieldScriptCursorU32* cursor)
  */
 extern "C" s32 func_001F83A0(FieldScriptCursorU32* cursor, u32 count)
 {
-    FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
+    FieldClass150F90* focus = g_field_context_ref->context->unk08->current_object;
 
     if (focus && focus->unk90 <= 0.0f)
     {
@@ -3027,7 +3026,7 @@ extern "C" s32 func_001F83A0(FieldScriptCursorU32* cursor, u32 count)
             actor->unk334_2 = 1;
         }
 
-        ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
+        ((LibUpdateList*)g_field_context_ref->context->unk04)->append_node(actor, -1);
         return 1;
     }
 
@@ -3064,7 +3063,7 @@ extern "C" s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* act
     }
     else
     {
-        func_002019C0(D_001B6430->context->unk2c, key, key, 1);
+        func_002019C0(g_field_context_ref->context->unk2c, key, key, 1);
 
         if (flags & 0x20)
         {
@@ -3096,7 +3095,7 @@ extern "C" s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* act
         actor->unk8d_0 = 1;
     }
 
-    FieldRuntimePositions* section = (FieldRuntimePositions*)func_101440(func_101290(resident_get_system()), 6);
+    FieldRuntimePositions* section = (FieldRuntimePositions*)resident_find_entry(resident_get_entry_table(resident_get_system()), 6);
 
     if (section->mode == 1)
     {
@@ -3117,7 +3116,7 @@ extern "C" s32 func_001F84D0(FieldScriptCursorU32* cursor, FieldClass152F00* act
 
     actor->func_00205710(&position);
     func_00227610(actor, heading, 0.0f);
-    ((LibUpdateList*)D_001B6430->context->unk04)->append_node(actor, -1);
+    ((LibUpdateList*)g_field_context_ref->context->unk04)->append_node(actor, -1);
     return 1;
 }
 
@@ -3147,7 +3146,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001ED7E0", func_001F8A
  */
 extern "C" s32 func_001F8AE0(FieldScriptCursorU32* cursor, u32 count)
 {
-    FieldClass150F90* previous = (FieldClass150F90*)func_001DDF50((FieldFlaggedListObject*)D_001B6430->context->unk04, cursor->current[1]);
+    FieldClass150F90* previous = (FieldClass150F90*)func_001DDF50((FieldFlaggedListObject*)g_field_context_ref->context->unk04, cursor->current[1]);
 
     if (previous && !(previous->unk90 <= 0.0f))
     {

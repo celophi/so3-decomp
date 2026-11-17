@@ -2,7 +2,6 @@
 #include "include_asm.h"
 #include "overlays/lib/render_buffer.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
-#include "main/resident_00101260.h"
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "sdk/main/libdma_0012B2C8.h"
@@ -13,6 +12,8 @@
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/transform_owner_inlines.h"
+#include "main/system.h"
+#include "main/utility.h"
 
 class LibCameraContext;
 
@@ -697,7 +698,7 @@ void LibClass174840::submit_dma(u32 channel)
 {
     dma_pending = 1;
     *D1_QWC = qwc;
-    *D1_MADR = func_0011F760(packet);
+    *D1_MADR = resident_packet_get_address(packet);
     *D_STAT = D_STAT_CIS1;
     *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
 }
@@ -715,7 +716,7 @@ void func_0044C0F0(void* object)
 extern "C" s32 func_0044C110(LibCallbackTransform* object)
 {
     LibDmaCallbacks* submission = static_cast<LibDmaCallbacks*>(object);
-    return func_00114100(g_vif1_dma_queue, reinterpret_cast<DmaSubmission*>(submission));
+    return resident_dma_queue_push(g_vif1_dma_queue, reinterpret_cast<DmaSubmission*>(submission));
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C140);
@@ -1899,11 +1900,11 @@ void lib_allocate_system_data(void)
     {
         entry8 = reinterpret_cast<u8*>(new (0) u64);
         memset_guess(entry8, 0, sizeof(u64));
-        func_001014B0(table, entry8, LIB_ENTRY_08);
+        resident_store_entry(table, entry8, LIB_ENTRY_08);
     }
 
     u8* padding = new (0) u8[resident_random_below(16) * sizeof(u32) + 16];
-    func_001014B0(table, padding, LIB_ENTRY_PADDING);
+    resident_store_entry(table, padding, LIB_ENTRY_PADDING);
 
     for (j = 0; j < 4; j++)
     {
@@ -1927,9 +1928,9 @@ void lib_allocate_system_data(void)
         }
     }
 
-    func_001014B0(table, settings, LIB_ENTRY_SYSTEM_SETTINGS);
-    func_001014B0(table, outputs, LIB_ENTRY_RECORD_OUTPUTS);
-    func_001014B0(table, inputs, LIB_ENTRY_RECORD_INPUTS);
+    resident_store_entry(table, settings, LIB_ENTRY_SYSTEM_SETTINGS);
+    resident_store_entry(table, outputs, LIB_ENTRY_RECORD_OUTPUTS);
+    resident_store_entry(table, inputs, LIB_ENTRY_RECORD_INPUTS);
     func_00458700(&outputs[0], &inputs[0], 1);
     func_00458700(&outputs[1], &inputs[1], 0);
     func_00458700(&outputs[2], &inputs[2], 0);

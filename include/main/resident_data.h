@@ -1,9 +1,12 @@
 #ifndef SO3_MAIN_RESIDENT_DATA_H
 #define SO3_MAIN_RESIDENT_DATA_H
 
-#include "main/resident_001001E0.h"
-#include "main/resident_00101550.h"
-#include "main/resident_0010A0E0.h"
+#include "main/archive.h"
+#include "main/heap.h"
+#include "main/input.h"
+#include "main/program.h"
+#include "main/release_queue.h"
+#include "main/sound.h"
 #include "main/item_category.h"
 
 typedef struct FieldRuntime FieldRuntime;
@@ -121,7 +124,7 @@ typedef struct ResidentContextInput10
     u16 mask;
 } ResidentContextInput10;
 
-/** Partial field context reached through D_001B6430. */
+/** Partial field context reached through g_field_context_ref. */
 typedef struct ResidentContext
 {
     u8 unk00[4];
@@ -223,20 +226,20 @@ typedef struct ResidentContextRef
 extern "C" {
 #endif
 
-extern const ResidentDispatchTable D_159070;
+extern const ResidentDispatchTable g_field_program_vtable;
 extern ResidentArchive* g_resource_archive;
 extern ResidentResourceQueue* g_resource_queue;
 extern struct ResidentInputSystem* g_input_system;
 extern ResidentReleaseQueues* g_resident_release_queues;
 extern ResidentSound* g_sound;
-extern ResidentContextRef* D_001B6430;
+extern ResidentContextRef* g_field_context_ref;
 extern FieldRuntime* g_field_runtime;
-extern u8 D_001B6448;
-extern void* D_001B644C;
-extern void* D_001B6450;
-extern void* D_001B6458;
+extern u8 g_fixed_frame_step;
+extern void* g_field_class_1565a0;
+extern void* g_field_class_1563c0;
+extern void* g_field_class_155f30;
 extern void* g_renderer;
-extern void* D_001B6684;
+extern void* g_field_allocation_heap;
 extern float g_frame_ticks;
 extern float g_frame_seconds;
 

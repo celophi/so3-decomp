@@ -3,10 +3,7 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/text_004DD440.h"
-#include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
-#include "main/func_0011EE00.h"
-#include "main/resident_00101260.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/transform_owner_inlines.h"
 #include "ee.h"
@@ -97,7 +94,7 @@ extern "C" void* D_001B659C;
 extern "C" void* D_001B65A8;
 
 /** Resident hit-test flags; bit 0 is set when a hit-test node is removed. */
-extern "C" u8 D_001B65D0;
+extern "C" u8 g_hit_test_restart;
 
 /** VU1 microprogram that uploads a model's textures. */
 extern "C" u8 D_678[];
@@ -932,7 +929,7 @@ s32 func_004A4570(void* object)
         submission = (DmaSubmission*)((u8*)submission + 0x640);
     }
 
-    return func_00114100(g_vif1_dma_queue, submission);
+    return resident_dma_queue_push(g_vif1_dma_queue, submission);
 }
 
 /** @brief Write the pending part settings into the part records' GIF tags, then free them. */
@@ -1152,7 +1149,7 @@ void LibModel::update_render_channels()
 /** @brief Advance the model; while the resource's first state bit is set, count unk793 up to four and set unk795. */
 void LibModel::update()
 {
-    if (D_001B65D0 & 1)
+    if (g_hit_test_restart & 1)
     {
         unk780 = 0;
     }
@@ -1488,10 +1485,10 @@ void LibClass177940::update()
 {
     renderer->func_004D2C70();
     frame_start_time = TIMER0_COUNT;
-    func_0010F250(func_00101270(resident_get_system()), 1);
+    resident_sound_update(resident_system_get_sound(resident_get_system()), 1);
     renderer->func_004D44D0(0);
     resident_sync_gs_path(g_input_system, 0, 0);
-    func_0010ECF0(func_00101270(resident_get_system()));
+    resident_sound_wake_stream(resident_system_get_sound(resident_get_system()));
 }
 
 /** @brief Destroy the controller and its inherited transform state. */

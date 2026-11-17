@@ -7,8 +7,6 @@
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
 #include "overlays/lib/text_0045AD10.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_00101550.h"
 #include "vu0.h"
 
 extern LibVector4 g_default_bounding_sphere;

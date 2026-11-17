@@ -43,3 +43,5 @@ resident_packet_align_cursor = 0x0011F830; // type:func absolute:True
 resident_packet_reserve = 0x0011F860; // type:func absolute:True
 resident_packet_allocate = 0x0011F8A0; // type:func absolute:True
 g_default_bounding_sphere = 0x0050CD30; // absolute:True
+resident_operator_delete = 0x00100B40; // type:func absolute:True
+resident_operator_delete_array = 0x00100BE0; // type:func absolute:True

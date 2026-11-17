@@ -2,7 +2,7 @@
 #define SO3_OVERLAYS_1067_00_FIELD_PACKET_H
 
 #include "types.h"
-#include "main/resident_0011EE70.h"
+#include "main/packet.h"
 
 #ifdef __cplusplus
 /** GS packet buffer with vtable D_1525F0 in main data; its data comes before the vptr. */

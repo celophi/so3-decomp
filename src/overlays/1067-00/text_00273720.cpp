@@ -430,9 +430,9 @@ void func_00275E30(FieldClass1552E0* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)

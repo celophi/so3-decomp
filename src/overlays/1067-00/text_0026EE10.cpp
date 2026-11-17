@@ -1,7 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_001ED7E0_callbacks.h"
@@ -275,7 +274,7 @@ void FieldClass154C10::func_001DD7B0()
     }
 
     FieldClass150F90::func_001DD7B0();
-    func_00226340(D_001B6430->context->unk14);
+    func_00226340(g_field_context_ref->context->unk14);
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0026EE10", func_00271130);

@@ -1,6 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_0020E4B0.h"
 #include "overlays/1067-00/text_00200710.h"
@@ -20,7 +19,7 @@ float func_0020E4B0(void* object)
 
 s32 func_0020E4C0(void* object)
 {
-    return ((FieldContextE4C0*)D_001B6430->context)->value != 0;
+    return ((FieldContextE4C0*)g_field_context_ref->context)->value != 0;
 }
 
 s32 func_0020E4E0(void* object)

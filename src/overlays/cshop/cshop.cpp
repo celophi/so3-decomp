@@ -4,9 +4,6 @@
 #include "overlays/lib/movement_widget_inlines.h"
 #include "overlays/lib/list_indicator_inlines.h"
 #include "overlays/lib/marker_widget_inlines.h"
-#include "main/resident_0010A0E0.h"
-#include "main/resident_00101260.h"
-#include "main/resident_001001E0.h"
 #include "main/resident_data.h"
 #include "main/item_category.h"
 #include "overlays/1067-00/text_002F9C90.h"
@@ -18,6 +15,7 @@
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_002CEAF0.h"
+#include "main/system.h"
 
 #define SHOP_ITEM_NAME_WIDTH 323.99997f
 #define SHOP_ITEM_NAME_HEIGHT 21.599998f
@@ -3711,7 +3709,7 @@ s32 ShopState::on_resource_loaded(void* buffer)
     ShopAlignedResource* resource = aligned_shop_resource(buffer);
     s32 allocation_size = resource->byte_count + 0x80;
     void* previous_heap = resident_get_allocation_heap();
-    void* resource_heap = D_001B6430->context->unk70;
+    void* resource_heap = g_field_context_ref->context->unk70;
     void* heap_probe = resident_heap_allocate(resource_heap, allocation_size);
 
     if (heap_probe != 0)

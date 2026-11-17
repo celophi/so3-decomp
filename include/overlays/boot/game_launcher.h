@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_BOOT_GAME_LAUNCHER_H
 
 #include "overlays/boot/boot.h"
+#include "main/heap.h"
 
 /**
  * Starts the game, with vtable D_171CB0 in main data. On a new game with Dolby Pro Logic II output it first plays

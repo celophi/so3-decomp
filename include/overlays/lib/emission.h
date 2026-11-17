@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_LIB_EMISSION_H
 
 #include "overlays/lib/text_004CD3A0.h"
+#include "main/main.h"
 
 /** Secondary polymorphic base of the Lib grid emitter. */
 class LibClass173A28 : public LibLink
@@ -12,13 +13,13 @@ public:
     }
 
     /**
-     * @brief Free an object through the heap at D_001B6684 when one is set, otherwise through operator delete.
+     * @brief Free an object through the heap at g_field_allocation_heap when one is set, otherwise through operator delete.
      * @param object Object storage, or null.
      */
     static void operator delete(void* object);
 
     /**
-     * @brief Allocate an array from the heap at D_001B6684 when one is set, otherwise through operator new.
+     * @brief Allocate an array from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
      * @param size Size in bytes.
      * @param heap Heap selector passed on to operator new.
      * @return The allocation.
@@ -26,7 +27,7 @@ public:
     static void* operator new[](u32 size, s32 heap);
 
     /**
-     * @brief Free an array through the heap at D_001B6684 when one is set, otherwise through operator delete.
+     * @brief Free an array through the heap at g_field_allocation_heap when one is set, otherwise through operator delete.
      * @param object Array storage, or null.
      */
     static void operator delete[](void* object);

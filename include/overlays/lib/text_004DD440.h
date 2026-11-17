@@ -5,7 +5,9 @@
 #include "gs.h"
 
 typedef struct N50Owner114_004DD440 N50Owner114_004DD440;
-#include "main/resident_0010A0E0.h"
+#include "main/dma_queue.h"
+#include "main/system.h"
+#include "main/utility.h"
 #include "sdk/main/libdma_0012B2C8.h"
 
 #ifdef __cplusplus

@@ -90,9 +90,11 @@ s32 func_00397480(void* object);
 
 void func_4A8E30(void* object, s32 flags);
 
-void func_100B40(void* object);
+/** @brief Resident operator delete, under a C name. */
+void resident_operator_delete(void* object);
 
-void func_100BE0(void* allocation);
+/** @brief Resident operator delete[], under a C name. */
+void resident_operator_delete_array(void* allocation);
 
 extern u8 D_16BC50[];
 extern u8 D_15D380[];
@@ -244,14 +246,14 @@ void* func_00394B70(void* object, s16 count)
             receiver->vtable = D_16BB00;
 
             if (receiver->allocation != 0) {
-                func_100BE0((u8*)receiver->allocation - 0x10);
+                resident_operator_delete_array((u8*)receiver->allocation - 0x10);
             }
 
             receiver->allocation = 0;
         }
 
         if (count > 0) {
-            func_100B40(object);
+            resident_operator_delete(object);
         }
     }
 
@@ -282,7 +284,7 @@ void* func_00394CE0(void* object, s16 count)
         }
 
         if (count > 0) {
-            func_100B40(object);
+            resident_operator_delete(object);
         }
     }
 
@@ -310,7 +312,7 @@ void* func_00394D90(void* object, s16 count)
         }
 
         if (count > 0) {
-            func_100B40(object);
+            resident_operator_delete(object);
         }
     }
 
@@ -336,7 +338,7 @@ void* func_00394E00(void* object, s16 count)
         }
 
         if (count > 0) {
-            func_100B40(object);
+            resident_operator_delete(object);
         }
     }
 

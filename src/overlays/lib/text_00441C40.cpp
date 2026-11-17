@@ -12,7 +12,6 @@
 #include "ee.h"
 #include "overlays/lib/blend_transform.h"
 #include "overlays/lib/model.h"
-#include "main/resident_001001E0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/text_004DD440.h"
@@ -2370,9 +2369,9 @@ void LibClass174240::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)

@@ -3,7 +3,6 @@
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004DD440.h"
-#include "main/resident_0010A0E0.h"
 
 /** Bounding sphere objects without bounds report: centred on the origin, radius 1000000. */
 extern "C" LibVector4 g_default_bounding_sphere;
@@ -257,7 +256,7 @@ s32 func_003EF090(void* object)
         submission = (DmaSubmission*)((u8*)submission + 0x90);
     }
 
-    return func_00114100(g_vif1_dma_queue, submission);
+    return resident_dma_queue_push(g_vif1_dma_queue, submission);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF0C0);
@@ -402,7 +401,7 @@ s32 func_003F2570(void* object)
         submission = (DmaSubmission*)((u8*)submission + 0x90);
     }
 
-    return func_00114100(g_vif1_dma_queue, submission);
+    return resident_dma_queue_push(g_vif1_dma_queue, submission);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F25A0);

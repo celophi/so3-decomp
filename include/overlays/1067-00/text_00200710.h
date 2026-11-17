@@ -4,6 +4,7 @@
 #include "types.h"
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
+#include "main/heap.h"
 
 /** A word on the script stack, accessed as an integer or a float. */
 union FieldScriptStackWord

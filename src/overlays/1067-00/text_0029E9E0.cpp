@@ -5061,9 +5061,9 @@ void func_002A5A70(FieldClass158A90* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -5177,9 +5177,9 @@ void func_002A6170(FieldClass158B60* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -5293,9 +5293,9 @@ void func_002A6910(FieldClass158C30* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -5409,9 +5409,9 @@ void func_002A70D0(FieldClass158D00* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -5525,9 +5525,9 @@ void func_002A78C0(FieldClass158DD0* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)

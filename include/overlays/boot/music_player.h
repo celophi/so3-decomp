@@ -2,7 +2,6 @@
 #define SO3_OVERLAYS_BOOT_MUSIC_PLAYER_H
 
 #include "types.h"
-#include "main/resident_0011EE70.h"
 
 #ifdef __cplusplus
 #include "overlays/boot/title_menu.h"

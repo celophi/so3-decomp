@@ -1,7 +1,8 @@
-#ifndef SO3_MAIN_RESIDENT_00121860_H
-#define SO3_MAIN_RESIDENT_00121860_H
+#ifndef SO3_MAIN_DEBUG_H
+#define SO3_MAIN_DEBUG_H
 
 #include "types.h"
+#include "main/resource_queue.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,16 +15,10 @@ extern "C" {
  * @param kind Unknown; both callers pass one.
  * @return -1.
  */
-s32 func_00121860(const char* name, void* value, s32 kind);
+s32 resident_debug_register_value(const char* name, void* value, s32 kind);
 
 /** @brief Do nothing. */
-void func_00121870(void);
-
-/**
- * @brief Do nothing.
- * @param object Unused receiver.
- */
-void func_00121880(void* object);
+void resident_debug_initialize(void);
 
 /**
  * @brief Hook Lib calls after it installs a display, and boot before it restarts Lib; empty in the retail build.
@@ -33,6 +28,15 @@ void resident_display_set_hook(void* display);
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+/** Listener for the debug display (vtable D_0014FDE0); the retail build ignores every notification. */
+class ResidentDebugListener : public ResidentListener
+{
+    public:
+        virtual void notify(void* data);
+};
 #endif
 
 #endif

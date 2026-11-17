@@ -3,7 +3,6 @@
 #include "overlays/lib/text_0047AE20.h"
 #include "ee.h"
 #include "vu0.h"
-#include "main/resident_001001E0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/emission.h"
 #include "overlays/lib/row_fill.h"
@@ -3587,9 +3586,9 @@ void LibClass1771A0::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)
@@ -3705,9 +3704,9 @@ void LibClass177270::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)
@@ -3813,9 +3812,9 @@ void LibClass177340::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)
@@ -3931,9 +3930,9 @@ void LibClass177410::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)
@@ -4039,9 +4038,9 @@ void LibClass1774E0::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)
@@ -4157,9 +4156,9 @@ void LibClass1775B0::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)
@@ -4265,9 +4264,9 @@ void LibClass177680::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)
@@ -4383,9 +4382,9 @@ void LibClass177750::resize(s32 rows, s32 columns)
 
     delete unk1c;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         unk1c = new (0) LibGridBitset(rows);
 
         if (unk1c == 0)

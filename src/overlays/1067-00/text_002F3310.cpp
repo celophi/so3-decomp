@@ -1,7 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002F3310.h"
+#include "main/dma_queue.h"
 
-extern "C" void func_114100(void* queue, void* submission);
 
 extern "C" void* D_001B6610;
 
@@ -135,7 +135,7 @@ extern "C" void func_002F97E0(void* object)
         submission += 0x90;
     }
 
-    func_114100(D_001B6610, submission);
+    resident_dma_queue_push(reinterpret_cast<ResidentDmaQueue*>(D_001B6610), reinterpret_cast<DmaSubmission*>(submission));
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F3310", func_002F9810);

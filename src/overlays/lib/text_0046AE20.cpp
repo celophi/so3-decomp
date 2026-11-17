@@ -1,7 +1,5 @@
 #include "include_asm.h"
-#include "main/resident_00101550.h"
 #include "main/resident_data.h"
-#include "main/func_0011EE00.h"
 #include "sdk/main/libc_guess_0013CD50.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/scene.h"

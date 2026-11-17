@@ -1,19 +1,15 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_00101550.h"
 #include "sdk/main/libc_guess_00137290.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_002F9C90.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/item_allocation.h"
 #include "overlays/1067-00/text_002607B0.h"
-#include "main/resident_001001E0.h"
 #include "overlays/lib/text_004DD440.h"
-#include "main/resident_00101260.h"
+#include "main/dma_queue.h"
 
-extern "C" void func_114100(void* queue, void* submission);
 
 extern "C" void* D_001B6610;
 
@@ -66,7 +62,6 @@ extern "C" void* memset_guess(void* destination, s32 value, u32 size);
 
 extern "C" u8 func_40B360(u32 shop_id);
 
-extern "C" u32 func_11DF70(void* clock);
 
 extern "C" const u16* D_31A500[42];
 
@@ -247,7 +242,7 @@ s32 shop_increase_quantity(ShopTransaction* transaction, u32 code)
         }
     }
 
-    ResidentCheckedRecord* record = static_cast<ResidentCheckedRecord*>(func_101440(func_101290(resident_get_system()), 1));
+    ResidentCheckedRecord* record = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
     u16 checksum = record->checksum;
     const u8* end = reinterpret_cast<const u8*>(&record->checksum);
     u32 fol;
@@ -471,7 +466,7 @@ s32 shop_init_transaction(ShopTransaction* transaction, u8 shop_id, u8 discount_
     transaction->shop_index = shop_id - 1;
     transaction->dynamic_inventory_slot = func_40B360(shop_id);
     transaction->discount_percent = discount_percent < 100 ? discount_percent : 99;
-    transaction->play_time_seconds = func_11DF70(resident_system_get_input(resident_get_system()));
+    transaction->play_time_seconds = resident_input_get_seconds(resident_system_get_input(resident_get_system()));
     ShopItemList* all_items = &transaction->category_items[7];
     u16* output = all_items->item_codes;
     s32 count = 0;
@@ -879,7 +874,7 @@ extern "C" void func_002FED50(void* object)
         submission += 0x90;
     }
 
-    func_114100(D_001B6610, submission);
+    resident_dma_queue_push(reinterpret_cast<ResidentDmaQueue*>(D_001B6610), reinterpret_cast<DmaSubmission*>(submission));
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002F9C90", func_002FED80);

@@ -1,7 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
-#include "main/resident_001001E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_001DED80_callbacks.h"
 #include "overlays/1067-00/text_00202240_callbacks.h"
@@ -225,7 +223,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", __ct__16Fie
  */
 s32 FieldClass152E10::func_0022E350()
 {
-    func_001DEDF0(D_001B6430->context->unk04, static_cast<FieldClass152E50*>(owner)->unk7c);
+    func_001DEDF0(g_field_context_ref->context->unk04, static_cast<FieldClass152E50*>(owner)->unk7c);
     return 1;
 }
 
@@ -751,7 +749,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022DC70", func_002387
 
 FieldClass152F00::~FieldClass152F00()
 {
-    FieldResourceList14* resources = D_001B6430->context->unk2c;
+    FieldResourceList14* resources = g_field_context_ref->context->unk2c;
 
     if (unk5cd_4)
     {
@@ -936,7 +934,7 @@ extern "C" u8 field_reclaim_loader_buffers(FieldResourceLoaderList* owner, Field
  */
 void FieldResourceLoaderList::update_nodes()
 {
-    if (func_002B0BC0(reinterpret_cast<FieldFlagOwner2B0BC0*>(D_001B6430->context)))
+    if (func_002B0BC0(reinterpret_cast<FieldFlagOwner2B0BC0*>(g_field_context_ref->context)))
     {
         return;
     }
@@ -953,7 +951,7 @@ void FieldResourceLoaderList::update_nodes()
     if (!items)
     {
         // This resident hook currently does no work, but still receives the selected heap.
-        func_00113180(resident_get_allocation_heap());
+        resident_sound_do_nothing(resident_get_allocation_heap());
         return;
     }
 

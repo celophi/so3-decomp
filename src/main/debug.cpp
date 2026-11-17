@@ -1,6 +1,6 @@
 #include "include_asm.h"
-#include "main/resident_00121860.h"
-#include "main/resident_0011EE70.h"
+#include "main/debug.h"
+#include "main/packet.h"
 
 /**
  * @brief Register a named value with the debug display; this build's version does nothing and returns -1.
@@ -9,16 +9,20 @@
  * @param kind Unknown; both callers pass one.
  * @return -1.
  */
-s32 func_00121860(const char* name, void* value, s32 kind)
+s32 resident_debug_register_value(const char* name, void* value, s32 kind)
 {
     return -1;
 }
 
-void func_00121870(void)
+void resident_debug_initialize(void)
 {
 }
 
-void func_00121880(void* object)
+/**
+ * @brief Ignore a notification; the retail build's debug listener does nothing.
+ * @param data Ignored.
+ */
+void ResidentDebugListener::notify(void* data)
 {
 }
 

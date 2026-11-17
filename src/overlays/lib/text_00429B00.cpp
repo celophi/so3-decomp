@@ -14,14 +14,13 @@
 #include "sdk/main/libkernl_00121940.h"
 #include "ee.h"
 #include "overlays/lib/text_004DD440.h"
-#include "main/resident_0010A0E0.h"
 
 #include "sdk/main/libmc_0012BB10.h"
 #include "overlays/lib/text_004CD3A0.h"
-#include "main/resident_00101260.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_0013CD50.h"
+#include "main/sound_set.h"
 
 /**
  * LibModel of type 0x120 with three owned child objects and its own update list, with vtable D_173380 in main data.
@@ -435,7 +434,7 @@ static inline const LibMatrix44Value* get_transposed_transform(LibTransform* tra
 
 
 /** Sound bank set Lib plays its sounds through. */
-extern ResidentClass14FC90* D_001B6524;
+extern ResidentSoundBankSet* D_001B6524;
 
 /** Sound number tables for func_0042EB50, four numbers each; entries 1 to 10 are used. */
 extern s16* D_4ED0EC[];
@@ -1304,7 +1303,7 @@ s32 func_0042EB50(ResidentSoundEmitter* emitter, s32 table)
     }
 
     numbers = D_4ED0EC[table];
-    return func_0011F9E0(D_001B6524, numbers[resident_random_below(4)], emitter, 0, 0x7F, 0);
+    return resident_sound_bank_set_play_voice(D_001B6524, numbers[resident_random_below(4)], emitter, 0, 0x7F, 0);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EBE0);
@@ -1329,7 +1328,7 @@ s32 func_0042F210(ResidentSoundEmitter* emitter, u8* buffer, s32 owns_buffer)
         return 0;
     }
 
-    return func_0011FA80(D_001B6524, buffer, emitter, 0, 0x7F, 0, owns_buffer);
+    return resident_sound_bank_set_play_data(D_001B6524, buffer, emitter, 0, 0x7F, 0, owns_buffer);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F250);
@@ -1348,7 +1347,7 @@ s32 func_0042F3E0(ResidentSoundEmitter* emitter, u8* buffer, s32 owns_buffer)
         return 0;
     }
 
-    return func_0011FA80(D_001B6524, buffer, emitter, 0, 0x7F, 0, owns_buffer);
+    return resident_sound_bank_set_play_data(D_001B6524, buffer, emitter, 0, 0x7F, 0, owns_buffer);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F420);
@@ -1373,7 +1372,7 @@ s32 func_00430AA0(ResidentSoundEmitter* emitter, s32 slot)
         return 0;
     }
 
-    return func_0011FB40(D_001B6524, slot, 9, emitter, 0, 0x7F, 0);
+    return resident_sound_bank_set_play(D_001B6524, slot, 9, emitter, 0, 0x7F, 0);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00430B00);
@@ -1890,7 +1889,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432A80);
  */
 void LibImageCapture::complete_dma(u32 channel)
 {
-    func_001140F0(g_vif1_dma_queue);
+    resident_dma_queue_pause(g_vif1_dma_queue);
     iSignalSema(D_005081D0.semaphore);
 }
 
@@ -1907,7 +1906,7 @@ void LibImageCapture::submit_dma(u32 channel)
     D_005081D0.destination = destination;
     D_005081D0.capture = this;
 
-    if (!func_00114DD0(&D_005081D0))
+    if (!resident_thread_wakeup(&D_005081D0))
     {
         D_005081D0.wake_failed = 1;
     }
@@ -1921,7 +1920,7 @@ void LibImageCapture::submit_dma(u32 channel)
 void func_004332F0(LibImageCapture* capture)
 {
     func_004DC420(g_packet_queue, 0);
-    func_00114100(g_vif1_dma_queue, capture);
+    resident_dma_queue_push(g_vif1_dma_queue, capture);
 }
 
 /** @brief Queue the capture's DMA, or hand it to the packet queue when unk65 is set. */
@@ -1929,7 +1928,7 @@ void LibImageCapture::render()
 {
     if (!unk65)
     {
-        func_00114100(g_vif1_dma_queue, this);
+        resident_dma_queue_push(g_vif1_dma_queue, this);
     }
     else
     {
@@ -2162,7 +2161,7 @@ void func_00434FA0(void* object)
  */
 void LibClass173A28::operator delete[](void* object, s32 heap)
 {
-    if (D_001B6684)
+    if (g_field_allocation_heap)
     {
         if (object)
         {
@@ -2176,12 +2175,12 @@ void LibClass173A28::operator delete[](void* object, s32 heap)
 }
 
 /**
- * @brief Free an array through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @brief Free an array through the heap at g_field_allocation_heap when one is set, otherwise through operator delete.
  * @param object Array storage, or null.
  */
 void LibClass173A28::operator delete[](void* object)
 {
-    if (D_001B6684)
+    if (g_field_allocation_heap)
     {
         if (object)
         {
@@ -2195,12 +2194,12 @@ void LibClass173A28::operator delete[](void* object)
 }
 
 /**
- * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @brief Free memory through the heap at g_field_allocation_heap when one is set, otherwise through operator delete.
  * @param memory Allocation, or null.
  */
 void func_00435070(void* memory)
 {
-    if (D_001B6684)
+    if (g_field_allocation_heap)
     {
         if (memory)
         {
@@ -2214,12 +2213,12 @@ void func_00435070(void* memory)
 }
 
 /**
- * @brief Free an object through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @brief Free an object through the heap at g_field_allocation_heap when one is set, otherwise through operator delete.
  * @param object Object storage, or null.
  */
 void LibClass173A28::operator delete(void* object)
 {
-    if (D_001B6684)
+    if (g_field_allocation_heap)
     {
         if (object)
         {
@@ -2233,32 +2232,32 @@ void LibClass173A28::operator delete(void* object)
 }
 
 /**
- * @brief Allocate an array from the heap at D_001B6684 when one is set, otherwise through operator new.
+ * @brief Allocate an array from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
  * @param size Size in bytes.
  * @param heap Heap selector passed on to operator new.
  * @return The allocation.
  */
 void* LibClass173A28::operator new[](u32 size, s32 heap)
 {
-    if (D_001B6684)
+    if (g_field_allocation_heap)
     {
-        return resident_heap_allocate(D_001B6684, size);
+        return resident_heap_allocate(g_field_allocation_heap, size);
     }
 
     return ::operator new(size, heap);
 }
 
 /**
- * @brief Allocate from the heap at D_001B6684 when one is set, otherwise through operator new.
+ * @brief Allocate from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
  * @param size Size in bytes.
  * @param heap Heap selector passed on to operator new.
  * @return The allocation.
  */
 void* func_00435150(u32 size, s32 heap)
 {
-    if (D_001B6684)
+    if (g_field_allocation_heap)
     {
-        return resident_heap_allocate(D_001B6684, size);
+        return resident_heap_allocate(g_field_allocation_heap, size);
     }
 
     return ::operator new(size, heap);

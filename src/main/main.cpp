@@ -1,11 +1,5 @@
 #include "include_asm.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_00101260.h"
-#include "main/resident_0010A0E0.h"
-#include "main/resident_0011EE70.h"
-#include "main/resident_00121860.h"
 #include "main/resident_data.h"
-#include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libdma_0012B2C8.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libcdvd_00130000.h"
@@ -14,7 +8,11 @@
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/mslgcc_00142A40.h"
 #include "vu0.h"
-#include "ee.h"
+#include "main/debug.h"
+#include "main/sif.h"
+#include "main/sound_set.h"
+#include "main/system.h"
+#include "main/utility.h"
 
 /** Object that reports running out of memory in place of the default message; null by default. */
 class ResidentMemoryHook
@@ -25,7 +23,7 @@ public:
 
     /**
      * @brief Report running out of memory.
-     * @param data D_001CC510.
+     * @param data g_out_of_memory_data.
      */
     virtual void func_slot0c(void* data);
 };
@@ -75,34 +73,34 @@ extern "C" u8 _stack_size[];
 
 extern "C" {
 extern ResidentStartupState g_startup_state;
-extern u8 D_001CC510[];
-extern ResidentVector D_001CC530;
+extern u8 g_out_of_memory_data[];
+extern ResidentVector g_vu0_seed_vector;
 
 /** "Memory exhaused.\n" */
-extern const char D_0014D660[];
+extern const char g_out_of_memory_message[];
 
 /** "cdrom0:\\IOPRP271.IMG;1" */
-extern const char D_0014D640[];
+extern const char g_iop_image_path[];
 
 /** "iop reset error\n" */
-extern const char D_0014D620[];
+extern const char g_iop_reset_error_message[];
 
 /** "-o" */
-extern const char D_0014D600[];
+extern const char g_module_option_o[];
 
 /** "-m" */
-extern const char D_0014D610[];
+extern const char g_module_option_m[];
 
 /** DMA chain that uploads the VU0 microcode. */
-extern u8 D_00143B80[];
+extern u8 g_vu0_microcode_chain[];
 
 /** Every piece of music, by music number minus one. */
-extern const ResidentMusicEntry D_00143C00[];
+extern const ResidentMusicEntry g_music_table[];
 
 /** Setup table main sends to the sound stream. */
-extern const ResidentSoundSetupEntry D_00143D70[];
+extern const ResidentSoundSetupEntry g_sound_setup_table[];
 
-extern u8 D_00144130[];
+extern u8 g_default_sound_bank_variants[];
 }
 
 /**
@@ -144,9 +142,9 @@ int main(int argc, char** argv)
     sceCdInit(0);
     sceCdMmode(2);
 
-    while (!sceSifRebootIop(D_0014D640))
+    while (!sceSifRebootIop(g_iop_image_path))
     {
-        printf(D_0014D620);
+        printf(g_iop_reset_error_message);
     }
 
     while (!sceSifSyncIop())
@@ -158,19 +156,19 @@ int main(int argc, char** argv)
     sceFsReset();
     ChangeThreadPriority(GetThreadId(), RESIDENT_MAIN_THREAD_PRIORITY);
     archive = resident_get_archive(&g_system);
-    func_0011DA80(archive);
+    resident_archive_start_disc(archive);
     sceSifInitIopHeap();
-    func_0010D100((TIMER0_COUNT + 1) * 0x9534C85 + 0xCAD);
+    resident_seed_random((TIMER0_COUNT + 1) * 0x9534C85 + 0xCAD);
     g_startup_state.argc = argc;
     g_startup_state.argv = argv;
-    func_0011D470(resident_get_archive(&g_system));
-    decoder = func_001012B0(&g_system);
-    func_0010C700(&D_001CC590);
+    resident_archive_read_table(resident_get_archive(&g_system));
+    decoder = resident_system_get_decoder(&g_system);
+    resident_sif_start(&g_sif);
 
     modules = (ResidentResourceHeader*)memalign(0x40, 0x80000);
     FlushCache(0);
-    func_0011D080(archive, 1);
-    func_0011D060(archive, modules, 0);
+    resident_archive_select_resource(archive, 1);
+    resident_archive_start_read_unchecked(archive, modules, 0);
 
     while (archive->read_busy)
     {
@@ -179,8 +177,8 @@ int main(int argc, char** argv)
 
     programs = (ResidentResourceHeader*)memalign(0x40, 0x400000);
     FlushCache(0);
-    func_0011D080(archive, 2);
-    func_0011D060(archive, programs, 0);
+    resident_archive_select_resource(archive, 2);
+    resident_archive_start_read_unchecked(archive, programs, 0);
 
     for (i = 0; i < 12; i++)
     {
@@ -205,7 +203,7 @@ int main(int argc, char** argv)
             {
                 s32 result;
 
-                while (sceSifLoadStartModuleBuffer(iop, 11, D_0014D600, &result) < 0)
+                while (sceSifLoadStartModuleBuffer(iop, 11, g_module_option_o, &result) < 0)
                 {
                 }
 
@@ -221,7 +219,7 @@ int main(int argc, char** argv)
             {
                 s32 result;
 
-                while (sceSifLoadStartModuleBuffer(iop, 16, D_0014D610, &result) < 0)
+                while (sceSifLoadStartModuleBuffer(iop, 16, g_module_option_m, &result) < 0)
                 {
                 }
 
@@ -243,8 +241,8 @@ int main(int argc, char** argv)
     }
 
     free_guess(modules);
-    func_00121870();
-    func_0011D950(resident_get_archive(&g_system));
+    resident_debug_initialize();
+    resident_archive_start_hard_disk(resident_get_archive(&g_system));
     sceSifInitRpc(0);
     func_001430D0(resident_handle_out_of_memory);
     sceGsResetPath();
@@ -259,7 +257,7 @@ int main(int argc, char** argv)
         sceGsResetGraph(0, SCE_GS_INTERLACE, SCE_GS_NTSC, SCE_GS_FRAME);
     }
 
-    func_0011EA80(resident_system_get_input(&g_system));
+    resident_input_start(resident_system_get_input(&g_system));
     resident_system_save_stack(&g_system);
     resident_sync_gs_path(resident_system_get_input(&g_system), 0, 0);
 
@@ -276,30 +274,30 @@ int main(int argc, char** argv)
 
     delete blank;
 
-    while (func_0010C640(&D_001CC590) < 0)
+    while (resident_sif_bind(&g_sif) < 0)
     {
         resident_next_random_word();
     }
 
-    func_00112D80(func_00101270(&g_system));
-    func_0010EC00(func_00101270(&g_system), 8, D_00143D70);
-    func_00112D70(func_00101270(&g_system), 0x59, D_00143C00);
-    func_00120360(D_00144130);
+    resident_sound_start(resident_system_get_sound(&g_system));
+    resident_sound_send_setup(resident_system_get_sound(&g_system), 8, g_sound_setup_table);
+    resident_sound_set_music_table(resident_system_get_sound(&g_system), 0x59, g_music_table);
+    resident_sound_bank_set_install_variants(g_default_sound_bank_variants);
 
     while (archive->read_busy)
     {
         resident_next_random_word();
     }
 
-    func_0010EAD0(func_00101270(&g_system), 0x40A);
+    resident_sound_load_resource(resident_system_get_sound(&g_system), 0x40A);
 
     do
     {
         resident_next_random_word();
-        resident_system_get_resource_queue(&g_system)->func_00104770();
-        func_0011DF10(resident_system_get_input(&g_system), 0);
-        sound = func_00101270(&g_system);
-        func_0010F250(sound, 0);
+        resident_system_get_resource_queue(&g_system)->update();
+        resident_input_wait_vblank(resident_system_get_input(&g_system), 0);
+        sound = resident_system_get_sound(&g_system);
+        resident_sound_update(sound, 0);
     } while (sound->state);
 
     // TODO: The original calls resident_set_program_running through a register and reads the input system right
@@ -309,7 +307,7 @@ int main(int argc, char** argv)
 
     D_CTRL = D_CTRL_RELEASE_CYCLE_256 | D_CTRL_RELEASE_ENABLE | D_CTRL_DMA_ENABLE;
     D0_QWC = 0;
-    D0_TADR = (u32)D_00143B80;
+    D0_TADR = (u32)g_vu0_microcode_chain;
     *D_STAT = D_STAT_CHANNEL_0;
     D0_CHCR = D_CHCR_START | D_CHCR_TRANSFER_TAG | D_CHCR_CHAIN_MODE | D_CHCR_FROM_MEMORY;
 
@@ -320,9 +318,9 @@ int main(int argc, char** argv)
     *D_STAT = D_STAT_CHANNEL_0;
 
     v = &vector;
-    func_001058C0(func_00101270(&g_system)->stream, &v->words[0], &v->words[1], &v->words[2], &v->words[3]);
+    resident_stream_read_iop_vector(resident_system_get_sound(&g_system)->stream, &v->words[0], &v->words[1], &v->words[2], &v->words[3]);
     vu0_run_microprogram_vf1_vf3(&vector);
-    D_001CC530.qword = vector.qword;
+    g_vu0_seed_vector.qword = vector.qword;
 
     resident_archive_get_clock(archive, &clock);
     count = (u8)(clock.hour + (clock.second + clock.minute));
@@ -334,7 +332,7 @@ int main(int argc, char** argv)
 
     for (j = 0;; j++)
     {
-        ResidentResourceHeader* program = resident_find_resource_block(func_001012B0(&g_system), programs, j + 1);
+        ResidentResourceHeader* program = resident_find_resource_block(resident_system_get_decoder(&g_system), programs, j + 1);
 
         if (program == 0)
         {
@@ -363,20 +361,20 @@ void resident_handle_out_of_memory(void)
 {
     if (g_startup_state.hook != 0)
     {
-        g_startup_state.hook->func_slot0c(D_001CC510);
+        g_startup_state.hook->func_slot0c(g_out_of_memory_data);
     }
     else
     {
-        printf(D_0014D660);
+        printf(g_out_of_memory_message);
         exit(1);
     }
 }
 
 /**
- * @brief Do nothing.
- * @param object Ignored.
+ * @brief Ignore a notification; the base class does nothing.
+ * @param data Ignored.
  */
-void func_00100AB0(void* object)
+void ResidentListener::notify(void* data)
 {
 }
 
@@ -492,152 +490,4 @@ u32 resident_prime_heap(void)
 /** @brief Destroy every part of the system. */
 ResidentSystem::~ResidentSystem()
 {
-}
-
-/**
- * @brief Allocate the system's status byte at a random heap address and mark it clean.
- * @param system Resident system.
- */
-void resident_system_create_status(ResidentSystem* system)
-{
-    // This memory is never freed. It seems like this is a way to get a random heap address, 
-    // since the resident heap is randomized and the allocation size is random.
-    new (0) u8[(resident_rand() & 0x3FF) + 64];
-    
-    system->status = new (0) u8[16];
-    *system->status = RESIDENT_STATUS_CLEAN;
-}
-
-/**
- * @brief Set an alarm from interrupt context, doubling the time in progressive mode so it lasts as long as in
- * interlaced mode.
- * @param system Resident system.
- * @param time Horizontal syncs to wait in interlaced mode.
- * @param handler Handler to call from interrupt context.
- * @param common Argument passed to the handler.
- * @return Alarm ID, or a negative value on failure.
- */
-s32 resident_system_iset_alarm(ResidentSystem* system, u16 time, KernelAlarmHandler handler, void* common)
-{
-    if (system->progressive)
-    {
-        time *= 2;
-    }
-
-    return iSetAlarm(time, handler, common);
-}
-
-/**
- * @brief Set an alarm, doubling the time in progressive mode so it lasts as long as in interlaced mode.
- * @param system Resident system.
- * @param time Horizontal syncs to wait in interlaced mode.
- * @param handler Handler to call from interrupt context.
- * @param common Argument passed to the handler.
- * @return Alarm ID, or a negative value on failure.
- */
-s32 resident_system_set_alarm(ResidentSystem* system, u16 time, KernelAlarmHandler handler, void* common)
-{
-    if (system->progressive)
-    {
-        time *= 2;
-    }
-
-    return SetAlarm(time, handler, common);
-}
-
-/**
- * @brief Set progressive (525p) or interlaced output and reset the GS to match.
- * @param system Resident system.
- * @param progressive Nonzero for progressive output.
- */
-void resident_system_set_progressive(ResidentSystem* system, u8 progressive)
-{
-    system->progressive = progressive;
-
-    if (progressive)
-    {
-        sceGsResetGraph(0, SCE_GS_NOINTERLACE, SCE_GS_DTV480P, SCE_GS_FRAME);
-    }
-    else
-    {
-        sceGsResetGraph(0, SCE_GS_INTERLACE, SCE_GS_NTSC, SCE_GS_FRAME);
-    }
-}
-
-/**
- * @brief Save main's stack and frame pointers, so each program can start from main's stack depth.
- * TODO: Come back to this, and figure out if the compiler can express this somehow.
- * @param system Resident system.
- */
-void resident_system_save_stack(ResidentSystem* system)
-{
-    void** sp_slot = &system->saved_sp;
-    void** fp_slot = &system->saved_fp;
-
-    asm("sw $sp, 0(%0)" : : "r"(sp_slot));
-    asm("sw $fp, 0(%0)" : : "r"(fp_slot));
-}
-
-/**
- * @brief Decode an overlay into its slot and delete the loaded resource, then go back to main's stack depth and run
- * the new program, which never returns.
- * TODO: Same as resident_system_save_stack; the stack reset matches, but I want to dig into how the original did it.
- * @param system Resident system.
- * @param source Loaded, compressed overlay resource; switching deletes it.
- * @param slot Slot in the resident overlay table D_001B5FB0.
- */
-void resident_system_switch_program(ResidentSystem* system, ResidentResourceHeader* source, s32 slot)
-{
-    void* overlay = D_001B5FB0[slot];
-    u32 size;
-
-    if (overlay != 0)
-    {
-        resident_decode_resource_block(&system->decoder, source, overlay, 0);
-        size = source->decoded_size;
-        delete source;
-        FlushCache(0);
-        mwOverlayInit(overlay, size);
-        FlushCache(2);
-    }
-
-    void** sp_slot = &system->saved_sp;
-    void** fp_slot = &system->saved_fp;
-
-    asm("lw $sp, 0(%0)" : : "r"(sp_slot));
-    asm("lw $fp, 0(%0)" : : "r"(fp_slot));
-    g_current_program->run();
-}
-
-/**
- * @brief Clear a decoded overlay's BSS and run its static initializers.
- * @param system Resident system.
- * @param overlay Decoded overlay image.
- * @param slot The overlay's slot in the resident overlay table D_001B5FB0.
- * @param size Decoded size of the overlay image; its BSS follows it.
- */
-void resident_system_init_overlay(ResidentSystem* system, void* overlay, s32 slot, u32 size)
-{
-    mwOverlayInit(overlay, size);
-}
-
-/**
- * @brief Decode an overlay into its slot and run its static initializers.
- * @param system Resident system.
- * @param source Loaded, compressed overlay resource.
- * @param slot Slot in the resident overlay table D_001B5FB0.
- */
-void resident_system_load_overlay(ResidentSystem* system, ResidentResourceHeader* source, s32 slot)
-{
-    u32 size;
-    void* overlay = D_001B5FB0[slot];
-
-    if (overlay != 0)
-    {
-        resident_decode_resource_block(&system->decoder, source, overlay, 0);
-        size = source->decoded_size;
-        FlushCache(0);
-        mwOverlayInit(overlay, size);
-        FlushCache(2);
-    }
 }

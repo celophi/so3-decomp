@@ -4,7 +4,6 @@
 #include "overlays/1067-00/field_class_154EF0.h"
 #include "overlays/1067-00/text_00207AF0.h"
 #include "overlays/lib/text_0046AE20.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "main/resident_data.h"
 

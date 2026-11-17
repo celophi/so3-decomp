@@ -8,11 +8,6 @@
 #include "overlays/boot/trophy_card.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_0010A0E0.h"
-#include "main/resident_00101550.h"
-#include "main/resident_0011EE70.h"
-#include "main/resident_00121860.h"
 #include "sdk/main/libc_0013C6D0.h"
 #include "sdk/main/libc_0013CA60.h"
 #include "vu0.h"
@@ -22,6 +17,7 @@
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004AB8B0.h"
+#include "main/debug.h"
 
 extern LibScreenText* g_screen_text;
 extern BootResidentDisplay* g_display_callbacks;

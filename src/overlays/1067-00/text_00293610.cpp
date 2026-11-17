@@ -11,7 +11,7 @@
 #include "ee.h"
 
 extern "C" float g_frame_ticks;
-extern "C" u8 D_001B6448;
+extern "C" u8 g_fixed_frame_step;
 extern "C" float g_frame_seconds;
 
 extern "C" void func_428670(void* object);
@@ -78,7 +78,7 @@ u8 func_002937F0(FieldClass1587E8* object, void* context)
     float previous = g_frame_seconds;
     u8 result;
 
-    if (D_001B6448)
+    if (g_fixed_frame_step)
     {
         g_frame_seconds = 1.0f / 60.0f;
     }

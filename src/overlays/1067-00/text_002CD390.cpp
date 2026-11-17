@@ -2,8 +2,6 @@
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "main/resident_data.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_marker.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0045AD10.h"
@@ -191,7 +189,6 @@ struct FieldCollection50
     FieldEntry50* entries;
 };
 
-extern "C" void func_113EA0();
 
 extern "C" void func_4C74E0(FieldState100* state);
 

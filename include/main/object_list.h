@@ -1,372 +1,24 @@
-#ifndef SO3_MAIN_RESIDENT_0011EE70_H
-#define SO3_MAIN_RESIDENT_0011EE70_H
+#ifndef SO3_MAIN_OBJECT_LIST_H
+#define SO3_MAIN_OBJECT_LIST_H
 
 #include "types.h"
 #include "gs.h"
-#include "main/resident_0010A0E0.h"
-
-/**
- * Partial GS packet buffer: base, allocated storage, write cursor, capacity in 64-bit words, a
- * borrowed-storage flag at offset 0x14 and a flag byte at offset 0x15.
- */
-typedef struct ResidentPacket
-{
-    u8* unk00;
-    u8* unk04;
-    u8* unk08;
-    u8* unk0c;
-    s32 unk10;
-    u8 unk14;
-    u8 unk15;
-} ResidentPacket;
-
-#define RESIDENT_PACKET_HEADER_SIZE 0x40
-
-/**
- * @brief Empty a packet: move its write cursor and start back to just after the header.
- * @param packet Packet to empty.
- */
-static inline void resident_packet_rewind(ResidentPacket* packet)
-{
-    packet->unk08 = packet->unk00 + RESIDENT_PACKET_HEADER_SIZE;
-    packet->unk0c = packet->unk08;
-}
-
-#ifdef __cplusplus
-/** Main's GS packet buffer class (vtable D_0014FDF0); its data comes before the vptr. Boot and Field have their own. */
-class ResidentPacketBuffer : public ResidentPacket
-{
-public:
-    /** @brief Free the packet storage unless it is borrowed. */
-    virtual ~ResidentPacketBuffer();
-};
-#endif
-
-#define RESIDENT_SOUND_BANK_SLOT_COUNT 3
-#define RESIDENT_SOUND_BANK_LIST_COUNT 16
-
-/** One queued bank load: which slot it fills and the file holding the picked variant. */
-typedef struct ResidentSoundBankLoad
-{
-    u8 slot;
-    u8 variant;
-    u8 unk02[2];
-    s32 file_key;
-} ResidentSoundBankLoad;
-
-/** One part of registered sound bank data, which starts with a word holding its part count followed by the parts. */
-typedef struct ResidentSoundBankPart
-{
-    u16 sector;
-    u16 unk02;
-} ResidentSoundBankPart;
-
-/** The files holding each variant of one sound bank. */
-typedef struct ResidentSoundBankVariants
-{
-    s32 count;
-    const s32* file_keys;
-} ResidentSoundBankVariants;
-
-/** One GS register write in A+D (address plus data) form. */
-typedef struct ResidentGsRegisterWrite
-{
-    GsGifTag tag;
-    u64 data;
-    u64 address;
-} ResidentGsRegisterWrite;
-
-/** Packed GIF tag, PRIM, colour and two XYZ2 vertices drawing one line. */
-typedef struct ResidentLinePacket
-{
-    GsGifTag tag;
-    u64 prim;
-    u32 rgba;
-    u32 q;
-    u64 vertices[2];
-} ResidentLinePacket;
-
-/** Packed GIF tag, PRIM, colour and four XYZ2 vertices drawing one filled rectangle as a triangle strip. */
-typedef struct ResidentRectanglePacket
-{
-    GsGifTag tag;
-    u64 prim;
-    u32 rgba;
-    u32 q;
-    u64 vertices[4];
-} ResidentRectanglePacket;
-
-/** Display context holding the signed viewport size; the packet builders centre vertices on the GS drawing area. */
-typedef struct ResidentDisplayContext
-{
-    u8 unk00[0x3C6C];
-    s16 viewport_width;
-    s16 viewport_height;
-} ResidentDisplayContext;
+#include "ee.h"
+#include "sdk/main/libkernl_00121940.h"
+#include "main/object.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief Initialize both resident release rings as empty.
- * @param queues Release queues to initialize.
- * @return The initialized queues.
- */
-ResidentReleaseQueues* resident_initialize_release_queues(ResidentReleaseQueues* queues);
-
-/**
- * @brief Move the set state from byte 0x25 to byte 0x24 when set.
- * @param object Object containing the state bytes.
- */
-void func_0011F9B0(void* object);
-
-/**
- * @brief Append a GIF A+D write of one GS register when the packet has room.
- * @param packet Packet to append to.
- * @param address GS register address.
- * @param data Register value.
- */
-void func_0011EF00(ResidentPacket* packet, u64 address, u64 data);
-
-/**
- * @brief Append a GIF A+D write of the GS PRIM register when the packet has room.
- * @param packet Packet to append to.
- * @param data Register value.
- */
-void func_0011EF90(ResidentPacket* packet, u64 data);
-
-/**
- * @brief Append a GIF A+D write of the GS ALPHA_2 register when the packet has room.
- * @param packet Packet to append to.
- * @param data Register value.
- */
-void func_0011F140(ResidentPacket* packet, u64 data);
-
-/**
- * @brief End the packet's pending data with a GIF end tag and send it on DMA channel 2.
- * @param packet Packet buffer to submit.
- * @param notification Object notified when the transfer finishes, or null.
- */
-void resident_packet_submit(ResidentPacket* packet, void* notification);
-
-/**
- * @brief Advance the packet cursor to the next 16-byte boundary at or after a supplied cursor.
- * @param packet Packet to update.
- * @param cursor Requested cursor.
- * @return Rounded cursor.
- */
-u8* resident_packet_align_cursor(ResidentPacket* packet, u8* cursor);
-
-/**
- * @brief Get the current packet cursor when a requested range fits.
- * @param packet Packet to inspect.
- * @param quadwords Number of 16-byte words required.
- * @return Current cursor, or null when there is insufficient capacity.
- */
-u8* resident_packet_reserve(ResidentPacket* packet, s32 quadwords);
-
-/**
- * @brief Read the byte at offset 0x25 of an object.
- * @param object Object to read; the field context passes its object at offset 0x24.
- * @return The byte at offset 0x25.
- */
-u8 func_0011F9D0(void* object);
-
-/** Store a resident data pointer in the shared global. */
-void func_00120360(const void* value);
-
-/** Return the word at receiver offset 0x14. */
-u32 func_001205A0(const void* object);
-
-/** Return the word at receiver offset 0x10. */
-u32 func_001205E0(const void* object);
-
-/** Return the word at receiver offset 0xC. */
-u32 func_00120630(const void* object);
-
-/** Return the word at receiver offset 0x8. */
-u32 func_00120670(const void* object);
-
-/** Return the word at receiver offset 0x4. */
-u32 func_001206B0(const void* object);
-
-/** Return the word at receiver offset 0x0. */
-u32 func_001206F0(const void* object);
-
-/** Clamp the value to [0, 100], store it at offset 0x10, and return it. */
-s32 func_001205B0(void* object, s32 value);
-
-/** Clamp the value to [0, 255], store it at offset 0x8, and return it. */
-s32 func_00120640(void* object, s32 value);
-
-/** Clamp the value to [0, 999], store it at offset 0x4, and return it. */
-s32 func_00120680(void* object, s32 value);
-
-/** Clamp the value to [0, 9999], store it at offset 0, and return it. */
-s32 func_001206C0(void* object, s32 value);
-
-
 /** Store a byte at offset 0x2C4 and a word at offset 0x2B8. */
-void func_00120A50(void* object, u8 flag, u32 value);
+void resident_image_object_set_unk2b8(void* object, u8 flag, u32 value);
 
 /** Store a byte at offset 0x2C3 and a word at offset 0x2B4. */
-void func_00120A60(void* object, u8 flag, u32 value);
-
-/**
- * @brief Append an antialiased, flat-coloured line when the packet has room.
- * @param packet Packet to append to.
- * @param x0 First end's X, relative to the centre of the viewport.
- * @param y0 First end's Y, relative to the centre of the viewport.
- * @param x1 Second end's X, relative to the centre of the viewport.
- * @param y1 Second end's Y, relative to the centre of the viewport.
- * @param z Depth.
- * @param color RGBA colour.
- */
-void resident_packet_add_line(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, s32 z, u32 color);
-
-/**
- * @brief Append a flat-coloured rectangle, drawn as a triangle strip, when the packet has room.
- * @param packet Packet to append to.
- * @param x0 Left edge, relative to the centre of the viewport.
- * @param y0 Top edge, relative to the centre of the viewport.
- * @param x1 Right edge, relative to the centre of the viewport.
- * @param y1 Bottom edge, relative to the centre of the viewport.
- * @param z Depth.
- * @param color RGBA colour.
- */
-void func_0011F1D0(ResidentPacket* packet, s32 x0, s32 y0, s32 x1, s32 y1, s32 z, u32 color);
-
-/**
- * @brief Append a GIF A+D write of the GS TEX0_2 register when the packet has room.
- * @param packet Packet to append to.
- * @param data Register value.
- */
-void func_0011F020(ResidentPacket* packet, u64 data);
-
-/**
- * @brief Append a GIF A+D write of the GS ALPHA_1 register when the packet has room.
- * @param packet Packet to append to.
- * @param data Register value.
- */
-void func_0011F0B0(ResidentPacket* packet, u64 data);
-
-/**
- * @brief Queue the packet's pending data on the packet queue without an end tag.
- * @param packet Packet whose data is queued.
- * @param completion Object notified when the transfer finishes, or null.
- */
-void resident_packet_queue_pending(ResidentPacket* packet, void* completion);
-
-/**
- * @brief End the packet's pending data with a GIF end tag and send it straight to the GS on DMA channel 2.
- * @param packet Packet buffer to send.
- */
-void func_0011F580(ResidentPacket* packet);
-
-/**
- * @brief Write a GIF end tag and a VIF FLUSH + MSKPATH3 (unmask) pair after the pending data, without advancing the cursor.
- * @param packet Packet to terminate.
- * @return Quadwords from the pending data's start through the end, or zero when nothing is pending.
- */
-u32 func_0011F640(ResidentPacket* packet);
-
-/**
- * @brief Write a GIF end tag after the pending data without advancing the cursor.
- * @param packet Packet to terminate.
- * @return Quadwords from the pending data's start through the end tag, or zero when nothing is pending.
- */
-u32 func_0011F6E0(ResidentPacket* packet);
-
-/**
- * @brief Replace the packet storage with a new allocation for a number of quadwords.
- * @param packet Packet to allocate storage for.
- * @param quadwords Capacity in 16-byte words, not counting the 0x40-byte header the cursor starts after.
- */
-void resident_packet_allocate(ResidentPacket* packet, s32 quadwords);
-
-/**
- * @brief Play a voice resource, from an emitter when one is given.
- * @param object Sound bank set; unused.
- * @param resource Voice resource.
- * @param emitter Object the voice follows, or null.
- * @param value Value forwarded to the voice request.
- * @param volume Volume, 0x7F for full.
- * @param low Value forwarded to the voice request.
- * @return Slot identifier of the voice.
- */
-s32 func_0011F9E0(void* object, s32 resource, ResidentSoundEmitter* emitter, s32 value, s32 volume, s32 low);
-
-/**
- * @brief Play sound data the caller supplies, from an emitter when one is given.
- * @param object Sound bank set; unused.
- * @param buffer Sound data to play.
- * @param emitter Object the sound follows, or null.
- * @param value Value forwarded to the sound request.
- * @param volume Volume, 0x7F for full.
- * @param low Value forwarded to the sound request.
- * @param owns_buffer Nonzero to free the buffer when the sound ends.
- * @return Slot identifier of the sound.
- */
-s32 func_0011FA80(void* object, u8* buffer, ResidentSoundEmitter* emitter, s32 value, s32 volume, s32 low,
-                  s32 owns_buffer);
-
-/** Clamp the value to [0, 999999999], store it at offset 0x14, and return it. */
-s32 func_00120560(void* object, s32 value);
-
-/** Clamp the value to [0, 99999999], store it at offset 0xC, and return it. */
-s32 func_001205F0(void* object, s32 value);
-
-/**
- * @brief Get the hardware address of the packet's pending data.
- * @param packet Packet to inspect.
- * @return The start of the pending data with its upper four address bits cleared.
- */
-u32 func_0011F760(const void* packet);
+void resident_image_object_set_unk2b4(void* object, u8 flag, u32 value);
 
 #ifdef __cplusplus
-
 }
-#endif
-
-#ifdef __cplusplus
-#include "main/resident_00101550.h"
-
-/**
- * Resident object that loads a randomly picked variant of up to three sound banks and plays sounds from them. It reads
- * each picked bank file into a staging buffer and uploads it, or uploads data lists registered with it.
- */
-class ResidentClass14FC90 : public ResidentClass14FA40
-{
-public:
-    /** @brief Construct an empty set with no banks assigned and register it with the update list. */
-    ResidentClass14FC90();
-
-    /** @brief Detach the set and free its staging buffer. */
-    virtual ~ResidentClass14FC90();
-
-    /** @brief Advance the bank loads by one step each frame while loads are in progress. */
-    virtual void func_00104770();
-
-    s16 variants[RESIDENT_SOUND_BANK_SLOT_COUNT];
-    u8 banks[RESIDENT_SOUND_BANK_SLOT_COUNT];
-    u8 unk1d[3];
-    u8* buffer;
-    u8 unk24;
-    u8 loading;
-    u8 unk26[2];
-    ResidentSoundBankLoad loads[10];
-    u8 load_count;
-    u8 load_index;
-    u8 load_step;
-    u8 upload_lists;
-    u8 list_index;
-    u8 part_index;
-    u8 first_part;
-    u8 unk7f;
-    s32* lists[RESIDENT_SOUND_BANK_SLOT_COUNT][RESIDENT_SOUND_BANK_LIST_COUNT];
-    s32 list_sizes[RESIDENT_SOUND_BANK_SLOT_COUNT];
-};
 #endif
 
 #ifdef __cplusplus
@@ -411,21 +63,21 @@ public:
     ResidentVector4 rows[4];
 };
 
-/** Second base of ResidentClass14FD30 (vtable D_0014FD10), the part registered with the list at D_001B6640. */
-class ResidentClass14FD10
+/** Second base of ResidentImageObject (vtable D_0014FD10), the part registered with the list at g_image_registry. */
+class ResidentImageSource
 {
 public:
     u8 unk00;
     u8 unk01;
 
     /** @brief Clear the state bytes. */
-    ResidentClass14FD10()
+    ResidentImageSource()
     {
         unk00 = 0;
         unk01 = 0;
     }
 
-    virtual ~ResidentClass14FD10()
+    virtual ~ResidentImageSource()
     {
     }
 
@@ -433,35 +85,35 @@ public:
      * @brief Get the registered data.
      * @return The data, or null.
      */
-    virtual void* func_001217E0() = 0;
+    virtual void* get_record() = 0;
 
-    virtual s32 func_001217D0() = 0;
+    virtual s32 get_record_kind() = 0;
 
     /**
      * @brief Return zero.
      * @return Zero.
      */
-    virtual s32 func_00121570();
+    virtual s32 get_default_kind();
 };
 
 /**
- * Primary base of ResidentClass14FD30: the Lib transform that func_4DAD90 constructs and func_4DAC70 destroys. Its slots
+ * Primary base of ResidentImageObject: the Lib transform that func_4DAD90 constructs and func_4DAC70 destroys. Its slots
  * follow the resident list object's, and Lib implements the ones the resident objects call.
  */
-class ResidentClass14FD30Base : public ResidentClass14FA40
+class ResidentImageObjectBase : public ResidentListObject
 {
 public:
     /** @brief Construct an identity transform. */
-    ResidentClass14FD30Base();
+    ResidentImageObjectBase();
 
     /** @brief Destroy the transform. */
-    virtual ~ResidentClass14FD30Base();
+    virtual ~ResidentImageObjectBase();
 
     /** @brief Detach the object and queue it for release. */
-    virtual void func_00104740();
+    virtual void destroy();
 
     /** @brief Update the transform relative to its parent. */
-    virtual void func_00104770();
+    virtual void update();
 
     /**
      * @brief Set the position and a w component of one.
@@ -588,13 +240,13 @@ public:
      * @brief Copy the source's transformation state.
      * @param source Transform source.
      */
-    virtual void copy_transform_state(const ResidentClass14FD30Base* source);
+    virtual void copy_transform_state(const ResidentImageObjectBase* source);
 
     /**
      * @brief Make a copy of this object that stays linked to it.
      * @return The copy, or null.
      */
-    virtual ResidentClass14FD30Base* clone();
+    virtual ResidentImageObjectBase* clone();
 
     /** @brief Unlink a copy from its original and queue it for release. */
     virtual void release_clone();
@@ -621,7 +273,7 @@ public:
      * @brief Copy another transform's state and its offset vectors.
      * @param source Transform source.
      */
-    virtual void copy_offset_transform_state(const ResidentClass14FD30Base* source);
+    virtual void copy_offset_transform_state(const ResidentImageObjectBase* source);
 
     u8 unk14[0xC];
     ResidentVector4 translation;
@@ -645,7 +297,7 @@ public:
     ResidentVector4 offset_scale;
     float unk200;
     u8 unk204[4];
-    ResidentClass14FD30Base* parent_transform;
+    ResidentImageObjectBase* parent_transform;
     u16 unk20c;
     u8 unk20e_0 : 1;
     u8 unk20e_1 : 1;
@@ -654,7 +306,7 @@ public:
 };
 
 /** Transform followed by a box's half extents, which hit tests check points against in the transform's space. */
-class ResidentHitBox : public ResidentClass14FD30Base
+class ResidentHitBox : public ResidentImageObjectBase
 {
 public:
     ResidentVector4 half_extents;
@@ -708,22 +360,22 @@ typedef struct ResidentDisplayManager
 
 /**
  * Resident transform object (vtable D_0014FD30) that draws an image from its render data record. It registers its
- * second base with the list at D_001B6640, and can follow another transform's position and a camera's orientation.
+ * second base with the list at g_image_registry, and can follow another transform's position and a camera's orientation.
  */
-class ResidentClass14FD30 : public ResidentClass14FD30Base, public ResidentClass14FD10
+class ResidentImageObject : public ResidentImageObjectBase, public ResidentImageSource
 {
 public:
     /** @brief Construct an unregistered object with no channel and the image centred. */
-    ResidentClass14FD30();
+    ResidentImageObject();
 
     /** @brief Unregister the object and destroy its image channel. */
-    virtual ~ResidentClass14FD30();
+    virtual ~ResidentImageObject();
 
     /** @brief Unregister the object if it is registered, then detach it and queue it for release. */
-    virtual void func_00104740();
+    virtual void destroy();
 
     /** @brief Do nothing. */
-    virtual void func_00104780();
+    virtual void render();
 
     /**
      * @brief Set the position and a w component of one.
@@ -847,7 +499,7 @@ public:
      * @brief Don't copy this object.
      * @return Null.
      */
-    virtual ResidentClass14FD30Base* clone();
+    virtual ResidentImageObjectBase* clone();
 
     /** @brief Do nothing; this object has no copies. */
     virtual void release_clone();
@@ -874,19 +526,19 @@ public:
      * @brief Copy another object's settings, record and transform state, and rebuild the image channel when it has one.
      * @param source Object to copy.
      */
-    virtual void copy_state(const ResidentClass14FD30* source);
+    virtual void copy_state(const ResidentImageObject* source);
 
     /**
      * @brief Get the record while the object is registered.
      * @return The record, or null.
      */
-    virtual void* func_001217E0();
+    virtual void* get_record();
 
     /**
      * @brief Return zero.
      * @return Zero.
      */
-    virtual s32 func_001217D0();
+    virtual s32 get_record_kind();
 
     float unk218;
     float unk21c;
@@ -900,8 +552,8 @@ public:
     u8 unk268[8];
     ResidentMatrix unk270;
     ResidentImageSequenceChannel* channel;
-    ResidentClass14FD30Base* position_source;
-    ResidentClass14FD30Base* camera;
+    ResidentImageObjectBase* position_source;
+    ResidentImageObjectBase* camera;
     u8 faces_target;
     u8 unk2bd;
     u8 unk2be;
@@ -920,7 +572,7 @@ public:
 class ResidentObjectList
 {
 public:
-    ResidentClass14FA30 sentinel;
+    ResidentListSentinel sentinel;
     u32 node_count;
 
     virtual ~ResidentObjectList();
@@ -985,10 +637,10 @@ public:
      * @brief Set the next list in the chain.
      * @param attached List that follows this list.
      */
-    virtual void func_004295B0(void* attached);
+    virtual void set_next_list(void* attached);
 
     /** @brief Hook with no work in Lib's list. */
-    virtual void func_004295C0();
+    virtual void idle();
 
     u32 node_counts_by_kind[17];
     u32 unk58;
@@ -1001,11 +653,11 @@ public:
     ResidentObjectList* active_buffer_owner;
 };
 
-/** Resident object list (vtable D_0014FCB0) that is also a list object, and updates its ResidentClass14FD30 nodes. */
-class ResidentClass14FCB0 : public ResidentObjectList, public ResidentClass14FA40
+/** Resident object list (vtable D_0014FCB0) that is also a list object, and updates its ResidentImageObject nodes. */
+class ResidentUpdateList : public ResidentObjectList, public ResidentListObject
 {
 public:
-    virtual ~ResidentClass14FCB0();
+    virtual ~ResidentUpdateList();
 
     /**
      * @brief Remove a registered node, and make the next two hit tests start from the first node.
@@ -1017,27 +669,23 @@ public:
      * @brief Set the next list in the chain.
      * @param attached List that follows this list.
      */
-    virtual void func_004295B0(void* attached);
+    virtual void set_next_list(void* attached);
 
     /** @brief Do nothing. */
-    virtual void func_004295C0();
+    virtual void idle();
 
     /**
      * @brief Return the list's kind.
      * @return Nine.
      */
-    virtual s32 func_00104730();
+    virtual s32 get_default_list_kind();
 
     /** @brief Update every node: follow targets, advance the images and rebuild hit boxes. */
-    virtual void func_00104770();
+    virtual void update();
 
     u32 unk8c;
 };
-#endif
-
-#ifdef __cplusplus
-extern "C"
-{
+extern "C" {
     /**
      * @brief Find the first object from a start node whose hit box a sphere touches, turning it to face the sphere.
      * @param list Object list to walk.
@@ -1046,99 +694,35 @@ extern "C"
      * @param start Node to start from, or null for the first; the walk also starts from the first while unk8c is set.
      * @return The object hit, or null.
      */
-    ResidentClass14FD30* func_00120A70(ResidentClass14FCB0* list, u32 mask, const ResidentVector4* point,
-                                       ResidentClass14FD30* start);
+    ResidentImageObject* resident_update_list_hit_test(ResidentUpdateList* list, u32 mask, const ResidentVector4* point,
+                                       ResidentImageObject* start);
 
     /**
      * @brief Rebuild the hit box's matrices from its transform: the transpose, then the inverse from it.
      * @param object Object whose hit box is updated.
      */
-    void func_00120F20(ResidentClass14FD30* object);
+    void resident_image_object_rebuild_hit_box(ResidentImageObject* object);
 
     /**
      * @brief Turn the image animation on or off, rebuilding the image channel while the object is registered.
      * @param object Object to update.
      * @param animated Nonzero to animate the record through an image channel.
      */
-    void func_00120FE0(ResidentClass14FD30* object, u8 animated);
+    void resident_image_object_set_animated(ResidentImageObject* object, u8 animated);
 
     /**
      * @brief Update the transform, turning it to face a point when asked to, then build the image's projection matrix.
      * @param object Object to update.
      * @param target Point to face, or null for the plain transform.
      */
-    void func_001210B0(ResidentClass14FD30* object, const ResidentVector4* target);
+    void resident_image_object_update_transform(ResidentImageObject* object, const ResidentVector4* target);
 
     /**
      * @brief Point the record at a resource's data, register the object and rebuild its image channel.
      * @param object Object to update.
      * @param resource Resource whose data follows a 16-byte prefix.
      */
-    void func_001212A0(ResidentClass14FD30* object, u8* resource);
-
-    /**
-     * @brief Cancel the bank file reads and forget each slot's variant unless loads are in progress.
-     * @param set Sound bank set.
-     */
-    void func_0011F940(ResidentClass14FC90* set);
-
-    /**
-     * @brief Play a sound from a slot's bank, from an emitter when one is given.
-     * @param set Sound bank set.
-     * @param slot Bank slot.
-     * @param id Sound number within the bank.
-     * @param emitter Object the sound follows, or null.
-     * @param arg4 Value forwarded to the sound request.
-     * @param arg5 Value forwarded to the sound request.
-     * @param arg6 Value forwarded to the sound request.
-     * @return Slot identifier of the sound, or -1 when the slot has no bank loaded.
-     */
-    s32 func_0011FB40(ResidentClass14FC90* set, s32 slot, s32 id, ResidentSoundEmitter* emitter, s32 arg4, s32 arg5,
-                      s32 arg6);
-
-    /**
-     * @brief Start uploading the registered data lists unless loads are in progress.
-     * @param set Sound bank set.
-     */
-    void func_0011FFD0(ResidentClass14FC90* set);
-
-    /**
-     * @brief Register bank data in the first free entry of a list unless loads are in progress.
-     * @param set Sound bank set.
-     * @param list List to add to.
-     * @param data Bank data.
-     */
-    void func_00120000(ResidentClass14FC90* set, s32 list, s32* data);
-
-    /**
-     * @brief Clear every registered data list and its size unless loads are in progress.
-     * @param set Sound bank set.
-     */
-    void func_00120050(ResidentClass14FC90* set);
-
-    /**
-     * @brief Get the budget picking a variant for every assigned slot without one would cost.
-     * @param set Sound bank set.
-     * @return The pick cost times the number of such slots.
-     */
-    s32 func_00120370(ResidentClass14FC90* set);
-
-    /**
-     * @brief Pick variants for the slots and start loading them.
-     * @param set Sound bank set.
-     * @param budget Budget each pick spends from.
-     * @return One when loading started, or zero otherwise.
-     */
-    s32 func_001200C0(ResidentClass14FC90* set, s32 budget);
-
-    /**
-     * @brief Assign a bank to a slot unless loads are in progress, forgetting its variant when the bank changes.
-     * @param set Sound bank set.
-     * @param slot Slot to assign.
-     * @param bank One-based bank number, or zero for none.
-     * @return One when assigned, or zero while loads are in progress.
-     */
-    s32 func_001203C0(ResidentClass14FC90* set, s32 slot, s32 bank);
+    void resident_image_object_attach(ResidentImageObject* object, u8* resource);
 }
 #endif
 

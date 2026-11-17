@@ -16,7 +16,7 @@
 extern "C" {
 extern LibDisplayManager* D_001B6660;
 extern LibListObject* D_001B665C;
-extern LibListObject* D_001B6640;
+extern LibListObject* g_image_registry;
 extern LibScreenText* g_screen_text;
 extern void* D_001B6644;
 extern void* D_001B6638;
@@ -1143,7 +1143,7 @@ void LibCamera::complete_dma(u32 channel)
  */
 s32 LibCamera::enqueue_submission()
 {
-    return func_00114100(g_vif1_dma_queue, this);
+    return resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2120__9LibCameraFv);
@@ -1282,9 +1282,9 @@ void LibColorFade::build_packet(const void* matrix, void* context)
 
     resident_packet_rewind(packet);
     packet->unk15 = 1;
-    func_0011F140(packet, D_4ED330[0]);
+    resident_packet_set_alpha_2(packet, D_4ED330[0]);
     g_display->get_area_scale(&scale_x, &scale_y);
-    func_0011F1D0(packet, rect.x, rect.y, (s32)(rect.width * scale_x) + 1, (s32)(rect.height * scale_y) + 1, depth, color);
+    resident_packet_add_rectangle(packet, rect.x, rect.y, (s32)(rect.width * scale_x) + 1, (s32)(rect.height * scale_y) + 1, depth, color);
     unk63 = 1;
 }
 
@@ -1345,10 +1345,10 @@ extern "C" void lib_shutdown(void)
     lib_detach(*D_001B665C);
     D_001B665C->destroy();
     D_001B665C = 0;
-    lib_detach(*D_001B6640);
+    lib_detach(*g_image_registry);
     delete g_screen_text;
     ::operator delete(D_001B6644);
-    D_001B6640->destroy();
+    g_image_registry->destroy();
 
     if (D_001B6638 != (void*)EE_SCRATCHPAD)
     {
@@ -1368,7 +1368,7 @@ extern "C" void lib_shutdown(void)
     delete D_001B65FC;
     g_screen_text = 0;
     D_001B6644 = 0;
-    D_001B6640 = 0;
+    g_image_registry = 0;
     D_001B6638 = 0;
     g_texture_cache = 0;
     g_vif1_dma_queue = 0;
@@ -1382,7 +1382,7 @@ extern "C" void lib_shutdown(void)
     lib_detach(*D_001B664C);
     lib_detach(*D_001B6620);
     lib_detach(*D_001B6648);
-    g_update_list->func_004295B0(0);
+    g_update_list->set_next_list(0);
     lib_detach(*g_display_manager);
     lib_detach(*g_scene_display_manager);
     lib_detach(*g_light_list);

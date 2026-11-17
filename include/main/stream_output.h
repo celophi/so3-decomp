@@ -3,15 +3,15 @@
 
 #include "ee.h"
 #include "main/microcode_loader.h"
-#include "main/resident_0010A0E0.h"
+#include "main/stream_thread.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern u8 D_0014A830[];
-extern u8 D_0014A834[];
-extern u8 D_0014A9E0[];
-extern u8 D_0014A9E4[];
+extern u8 g_stream_output_tag_0[];
+extern u8 g_stream_output_tag_0_address[];
+extern u8 g_stream_output_tag_1[];
+extern u8 g_stream_output_tag_1_address[];
 #ifdef __cplusplus
 }
 
@@ -26,10 +26,10 @@ static inline void start_output_dma(ResidentStreamThread* thread)
     *thread->log_cursor++ = *(u8*)((u32)thread->output_cursor | UNCACHED_SEGMENT);
     *(u32*)((u32)thread->output_cursor | UNCACHED_SEGMENT) = 0x6DE80100;
     *(u32*)((u32)(thread->output_cursor + 0x800) | UNCACHED_SEGMENT) = 0x6DE80100;
-    *(u16*)((u32)D_0014A830 | UNCACHED_SEGMENT) = 0x74;
-    *(u32*)((u32)D_0014A834 | UNCACHED_SEGMENT) = (u32)thread->output_cursor;
-    *(u16*)((u32)D_0014A9E0 | UNCACHED_SEGMENT) = 0x74;
-    *(u32*)((u32)D_0014A9E4 | UNCACHED_SEGMENT) = (u32)(thread->output_cursor + 0x800);
+    *(u16*)((u32)g_stream_output_tag_0 | UNCACHED_SEGMENT) = 0x74;
+    *(u32*)((u32)g_stream_output_tag_0_address | UNCACHED_SEGMENT) = (u32)thread->output_cursor;
+    *(u16*)((u32)g_stream_output_tag_1 | UNCACHED_SEGMENT) = 0x74;
+    *(u32*)((u32)g_stream_output_tag_1_address | UNCACHED_SEGMENT) = (u32)(thread->output_cursor + 0x800);
     thread->dma->output = (u32)thread->input_cursor | UNCACHED_SEGMENT;
 
     LibMicrocodeLoader* loader = g_microcode_loader;

@@ -4,7 +4,9 @@
 #include "types.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_004CD3A0.h"
-#include "main/resident_0010A0E0.h"
+#include "main/dma_queue.h"
+#include "main/sound.h"
+#include "main/thread.h"
 
 #define LIB_MOVIE_THREAD_PRIORITY 44
 #define LIB_MOVIE_THREAD_STACK_SIZE 0x4000
@@ -121,7 +123,7 @@ public:
     /** @brief Create the kernel thread. */
     LibMovieThread() : unk10(0)
     {
-        func_00115000(this, LIB_MOVIE_THREAD_PRIORITY, LIB_MOVIE_THREAD_STACK_SIZE);
+        resident_thread_create(this, LIB_MOVIE_THREAD_PRIORITY, LIB_MOVIE_THREAD_STACK_SIZE);
     }
 
     virtual ~LibMovieThread();

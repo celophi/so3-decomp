@@ -1,13 +1,10 @@
 #include "include_asm.h"
 #include "overlays/lib/movie_player.h"
 #include "sdk/main/libkernl_00121940.h"
-#include "main/resident_00101260.h"
 #include "overlays/lib/transform_owner_inlines.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004DD440.h"
-#include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
-#include "main/resident_00101550.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "ee.h"
 #include "overlays/lib/image_capture.h"
@@ -181,8 +178,8 @@ static inline void movie_stop(LibMoviePlayer* player)
 {
     player->stopped = 1;
     player->is_playing = 0;
-    func_0011C8E0(g_resource_archive);
-    func_0011C6B0(g_resource_archive);
+    resident_archive_stop_ring_read(g_resource_archive);
+    resident_archive_do_nothing(g_resource_archive);
     g_resource_queue->unk2c = 0;
     func_00414490(&player->stream);
     player->stopped = 1;
@@ -222,8 +219,8 @@ s32 lib_movie_play(LibMoviePlayer* player, s32 movie, s32 loop)
     }
 
     g_resource_queue->unk2c = 1;
-    func_0011D080(g_resource_archive, movie);
-    func_0011C120(g_resource_archive, reinterpret_cast<void*>((reinterpret_cast<u32>(player->stream_buffer) + 63) & ~63),
+    resident_archive_select_resource(g_resource_archive, movie);
+    resident_archive_start_ring_read(g_resource_archive, reinterpret_cast<void*>((reinterpret_cast<u32>(player->stream_buffer) + 63) & ~63),
                   LIB_MOVIE_STREAM_BUFFER_SIZE, 0);
     player->stopped = 0;
     func_004159E0(&player->decoder);
@@ -316,7 +313,7 @@ LibMoviePlayer::LibMoviePlayer(s32 width, s32 height)
     func_00416200(&decoder, LIB_MPEG_CALLBACK_BACKGROUND, 0, func_00414AC0, &stream);
     func_00416200(&decoder, LIB_MPEG_CALLBACK_BACKGROUND, 1, func_004149B0, &stream);
     stream.buffer = decoder.unkCE580;
-    stream.sound = func_00101270(resident_get_system());
+    stream.sound = resident_system_get_sound(resident_get_system());
     stream.player = this;
     is_playing = 0;
     unk15E795 = 0;
@@ -362,7 +359,7 @@ void LibMoviePlayer::complete_dma(u32 channel)
 /** @brief Queue the player's frame packet for VIF1 DMA. */
 void LibMoviePlayer::render()
 {
-    func_00114100(g_vif1_dma_queue, this);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 /**
@@ -511,7 +508,7 @@ void LibClass172630::submit_dma(u32 channel)
 {
     dma_pending = 1;
     *D1_QWC = packet_quadwords;
-    *D1_MADR = func_0011F760(packet);
+    *D1_MADR = resident_packet_get_address(packet);
     *D_STAT = D_STAT_CIS1;
     *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
 }
@@ -528,7 +525,7 @@ void LibClass172630::complete_dma(u32 channel)
 /** @brief Queue the object's DMA submission on VIF1. */
 void LibClass172630::render()
 {
-    func_00114100(g_vif1_dma_queue, this);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041AE80);
@@ -563,7 +560,7 @@ void LibClass1726C0::submit_dma(u32 channel)
 {
     dma_pending = 1;
     *D1_QWC = packet_quadwords;
-    *D1_MADR = func_0011F760(packet);
+    *D1_MADR = resident_packet_get_address(packet);
     *D_STAT = D_STAT_CIS1;
     *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
 }
@@ -580,7 +577,7 @@ void LibClass1726C0::complete_dma(u32 channel)
 /** @brief Queue the object's DMA submission on VIF1. */
 void LibClass1726C0::render()
 {
-    func_00114100(g_vif1_dma_queue, this);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041D260);
@@ -632,7 +629,7 @@ void LibClass172750::complete_dma(u32 channel)
 /** @brief Queue the object's DMA submission on VIF1. */
 void LibClass172750::render()
 {
-    func_00114100(g_vif1_dma_queue, this);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E910);
@@ -746,7 +743,7 @@ void LibClass1727E0::submit_dma(u32 channel)
 {
     dma_pending = 1;
     *D1_QWC = packet_quadwords;
-    *D1_MADR = func_0011F760(packet);
+    *D1_MADR = resident_packet_get_address(packet);
     *D_STAT = D_STAT_CIS1;
     *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
 }
@@ -763,7 +760,7 @@ void LibClass1727E0::complete_dma(u32 channel)
 /** @brief Queue the object's DMA submission on VIF1. */
 void LibClass1727E0::render()
 {
-    func_00114100(g_vif1_dma_queue, this);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041F350);
@@ -977,7 +974,7 @@ void LibClass172960::complete_dma(u32 channel)
 /** @brief Queue the object's DMA submission on VIF1. */
 void LibClass172960::render()
 {
-    func_00114100(g_vif1_dma_queue, this);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004239C0);

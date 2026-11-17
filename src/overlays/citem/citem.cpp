@@ -1,7 +1,6 @@
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "overlays/citem/citem.h"
 #include "include_asm.h"
-#include "main/resident_001001E0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/ui_object.h"
 #include "overlays/lib/text_004BD360.h"
@@ -9,10 +8,7 @@
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/lib/text_0044ABE0.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_0028E240.h"
-#include "main/resident_00101260.h"
-#include "main/resident_0011EE70.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_002E1870.h"
@@ -1558,7 +1554,7 @@ void ItemHpMpGaugeDrawer::func_002BC4F0(u32 first, u32 depth, float value)
         packet->unk08 = packet->unk00 + 64;
         packet->unk0c = packet->unk08;
         packet->unk15 = 0;
-        func_0011F140(packet, D_004ED330[0]);
+        resident_packet_set_alpha_2(packet, D_004ED330[0]);
         build_packet();
     }
 }
@@ -4785,7 +4781,7 @@ s32 ItemController::on_resource_loaded(void* buffer)
     ItemAlignedResource* resource = aligned_resource(buffer);
     s32 allocation_size = resource->byte_count + 128;
     void* previous_heap = resident_get_allocation_heap();
-    void* resource_heap = D_001B6430->context->unk70;
+    void* resource_heap = g_field_context_ref->context->unk70;
     void* heap_probe = resident_heap_allocate(resource_heap, allocation_size);
 
     if (heap_probe != 0)

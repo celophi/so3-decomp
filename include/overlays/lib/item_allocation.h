@@ -2,7 +2,7 @@
 #define SO3_OVERLAYS_LIB_ITEM_ALLOCATION_H
 
 #include "types.h"
-#include "main/resident_0010A0E0.h"
+#include "main/utility.h"
 
 /** Packed sixteen-byte item allocation record. */
 struct ItemCreationAllocationRecord

@@ -4,6 +4,7 @@
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/lib/character_record.h"
+#include "main/utility.h"
 
 extern "C" {
 
@@ -559,8 +560,8 @@ void* func_002EEE30(void* object, s32 index)
     FieldRuntimeSections* sections;
     u8* base;
     system = resident_get_system();
-    sections = func_101290(system);
-    base = (u8*)func_101440(sections, 4);
+    sections = (FieldRuntimeSections*)resident_get_entry_table(system);
+    base = (u8*)resident_find_entry(sections, 4);
     return base + 0xC6B0 + (index - 1) * 24;
 }
 

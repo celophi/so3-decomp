@@ -2,8 +2,7 @@
 #define SO3_OVERLAYS_LIB_RENDER_BUFFER_H
 
 #include "types.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_00101550.h"
+#include "main/decode.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/vector.h"
 #include "gs.h"

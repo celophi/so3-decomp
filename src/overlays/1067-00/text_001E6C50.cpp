@@ -16,7 +16,7 @@
 
 extern "C" void* D_001B64F8;
 
-/* Lib.bin data, not owned by this overlay: GS register values passed to func_0011F140. */
+/* Lib.bin data, not owned by this overlay: GS register values passed to resident_packet_set_alpha_2. */
 extern "C" u64 D_4ED330[];
 
 /**
@@ -361,7 +361,7 @@ void FieldClass150280::func_001E76B0(float start, float end)
 {
     if (!unk66_3)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk70);
+        void* heap = resident_exchange_allocation_heap(g_field_context_ref->context->unk70);
 
         if (!lib_animation_bind_channels(unk14, unk1c->unk7c, 0))
         {
@@ -515,7 +515,7 @@ s32 FieldClass1502E0::func_001E82B0(s32 key)
         return 0;
     }
 
-    void* data = func_00201EA0(D_001B6430->context->unk2c, 'ANIM', key, 0);
+    void* data = func_00201EA0(g_field_context_ref->context->unk2c, 'ANIM', key, 0);
 
     if (!data)
     {
@@ -768,7 +768,7 @@ void FieldClass150330::func_001DD7B0()
 
 s32 func_001E95B0(s32 flag)
 {
-    if (!flag || D_001B6430->context->unkde_3)
+    if (!flag || g_field_context_ref->context->unkde_3)
     {
         if (!D_001B6428)
         {
@@ -784,7 +784,7 @@ s32 func_001E95B0(s32 flag)
     }
     else
     {
-        D_001B6430->context->unkde_3 = 0;
+        g_field_context_ref->context->unkde_3 = 0;
     }
 
     return 0;
@@ -1147,7 +1147,7 @@ void FieldClass1504C0::func_001EAA10(ResidentPacket* packet)
             break;
         }
 
-        if (!item->unk3c_0 || D_001B6430->context->unkdd.unk7)
+        if (!item->unk3c_0 || g_field_context_ref->context->unkdd.unk7)
         {
             continue;
         }
@@ -1178,11 +1178,11 @@ void FieldClass1504C0::func_001EAC90(ResidentPacket* packet)
     }
 
     packet->unk15 = 1;
-    func_0011F140(packet, D_4ED330[0]);
-    func_0011EF00(packet, 0x48, 0x3000D);
-    func_0011EF90(packet, 0x2C1);
+    resident_packet_set_alpha_2(packet, D_4ED330[0]);
+    resident_packet_add_register(packet, 0x48, 0x3000D);
+    resident_packet_set_prim(packet, 0x2C1);
     func_001EAA10(packet);
-    func_0011EF00(packet, 0x48, 0x5000D);
+    resident_packet_add_register(packet, 0x48, 0x5000D);
 }
 
 FieldClass1504C0::~FieldClass1504C0()
@@ -1339,7 +1339,7 @@ void FieldClass1504F0::func_001EB590()
 
     lib_object_detach_owner(this);
     func_001DD7B0();
-    FieldObject220150* state = (FieldObject220150*)D_001B6430->context->unk18;
+    FieldObject220150* state = (FieldObject220150*)g_field_context_ref->context->unk18;
     state->unk6D3_1 = 1;
 }
 
@@ -1426,7 +1426,7 @@ FieldClass1504F0::~FieldClass1504F0()
         target->unk590_3 = 0;
     }
 
-    D_001B6430->context->unk64->unk48 = 0;
+    g_field_context_ref->context->unk64->unk48 = 0;
 }
 
 /**
@@ -1437,8 +1437,8 @@ void FieldClass1504F0::func_001ED160()
     unk4d_6 = 0;
     unk4d_4 = 0;
     unk4d_5 = 0;
-    ResidentContextObject38* state = D_001B6430->context->unk38;
-    ResidentHudSection1B4* section = (ResidentHudSection1B4*)func_101440(func_101290(resident_get_system()), 4);
+    ResidentContextObject38* state = g_field_context_ref->context->unk38;
+    ResidentHudSection1B4* section = (ResidentHudSection1B4*)resident_find_entry(resident_get_entry_table(resident_get_system()), 4);
 
     if (func_00217600(state, 0x4E9))
     {
