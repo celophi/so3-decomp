@@ -84,7 +84,7 @@ def unit_range(config, unit):
         subs = segment['subsegments']
         for j, sub in enumerate(subs):
             start, kind, name = subsegment_parts(sub)
-            # Main names its units with their folder (main/resident_001001E0).
+            # Main names its units with their folder (main/system).
             if kind not in ('c', 'cpp') or Path(name).name != stem:
                 continue
             following = segment_start(subs[j + 1]) if j + 1 < len(subs) else segment_start(segments[i + 1])

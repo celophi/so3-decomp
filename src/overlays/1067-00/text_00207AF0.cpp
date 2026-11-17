@@ -177,7 +177,7 @@ FieldClass1512C0::~FieldClass1512C0()
  */
 s32 FieldClass1512C0::func_00207B90()
 {
-    FieldContextMotion* object = (FieldContextMotion*)D_001B6430->context->unk14;
+    FieldContextMotion* object = (FieldContextMotion*)g_field_context_ref->context->unk14;
     s32 count = unk1c + 2;
     FieldObject1573D0* motion = object->motion.unk90;
     FieldFloatPair8* pair;
@@ -208,7 +208,7 @@ s32 FieldClass1512C0::func_00207B90()
  */
 s32 FieldClass1512E0::func_00207CC0()
 {
-    FieldContextMotion* state = (FieldContextMotion*)D_001B6430->context->unk14;
+    FieldContextMotion* state = (FieldContextMotion*)g_field_context_ref->context->unk14;
     func_00209780(&state->motion, unk1c, unk20);
     return 1;
 }
@@ -219,7 +219,7 @@ s32 FieldClass1512E0::func_00207CC0()
  */
 s32 FieldClass151300::func_00207D00()
 {
-    FieldContextMotion4* state = (FieldContextMotion4*)D_001B6430->context->unk14;
+    FieldContextMotion4* state = (FieldContextMotion4*)g_field_context_ref->context->unk14;
     func_00209C90(&state->motion, unk20, unk1c);
     return 1;
 }
@@ -230,7 +230,7 @@ s32 FieldClass151300::func_00207D00()
  */
 s32 FieldClass151320::func_00207D40()
 {
-    FieldContextMotion2* object = (FieldContextMotion2*)D_001B6430->context->unk14;
+    FieldContextMotion2* object = (FieldContextMotion2*)g_field_context_ref->context->unk14;
     FieldMotion2* channel = &object->motion;
     float angle = func_00142148(channel->unkf4, channel->current);
     float first = unk20 * lib_cosine(angle);
@@ -262,7 +262,7 @@ s32 FieldClass151340::func_00207DF0()
  */
 s32 FieldClass151360::func_00207E50()
 {
-    FieldContextMotion2* object = (FieldContextMotion2*)D_001B6430->context->unk14;
+    FieldContextMotion2* object = (FieldContextMotion2*)g_field_context_ref->context->unk14;
     func_00209BB0(&object->motion, unk20, unk1c);
     object->unk36e = 0;
     return 1;
@@ -275,7 +275,7 @@ s32 FieldClass151360::func_00207E50()
 s32 FieldClass151380::func_00207E90()
 {
     reinterpret_cast<FieldCommandOwner80*>(owner)->unk7c->func_00207EE0(unk20, unk1c);
-    ((FieldContextMotion2*)D_001B6430->context->unk14)->unk36e = 0;
+    ((FieldContextMotion2*)g_field_context_ref->context->unk14)->unk36e = 0;
     return 1;
 }
 
@@ -289,7 +289,7 @@ extern "C" void func_00207EE0(void* object)
  */
 s32 FieldClass1513A0::func_00207EF0()
 {
-    FieldContextAngle* object = (FieldContextAngle*)D_001B6430->context->unk14;
+    FieldContextAngle* object = (FieldContextAngle*)g_field_context_ref->context->unk14;
     func_00209CF0(&object->motion, unk20, unk1c);
     return 1;
 }
@@ -300,7 +300,7 @@ s32 FieldClass1513A0::func_00207EF0()
  */
 s32 FieldClass1513C0::func_00207F30()
 {
-    FieldContextRotation* object = (FieldContextRotation*)D_001B6430->context->unk14;
+    FieldContextRotation* object = (FieldContextRotation*)g_field_context_ref->context->unk14;
     func_0020A600(&object->motion, unk20, unk1c);
     object->unk36e = 0;
     return 1;
@@ -312,7 +312,7 @@ s32 FieldClass1513C0::func_00207F30()
  */
 s32 FieldClass1513E0::func_00207F70()
 {
-    if (!D_001B6430->context->unk38->unk4c8_0)
+    if (!g_field_context_ref->context->unk38->unk4c8_0)
     {
         return 0;
     }
@@ -327,7 +327,7 @@ s32 FieldClass1513E0::func_00207F70()
  */
 s32 FieldClass151400::func_00207FE0()
 {
-    if (!D_001B6430->context->unk38->unk4c8_0)
+    if (!g_field_context_ref->context->unk38->unk4c8_0)
     {
         return 0;
     }
@@ -344,12 +344,12 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0022D6
  */
 s32 FieldClass151440::func_00208230()
 {
-    if (!D_001B6430->context->unk38->unk4c8_0)
+    if (!g_field_context_ref->context->unk38->unk4c8_0)
     {
         return 1;
     }
 
-    FieldContextVector371* context = (FieldContextVector371*)D_001B6430->context->unk14;
+    FieldContextVector371* context = (FieldContextVector371*)g_field_context_ref->context->unk14;
     context->unk36e = 1;
     FieldMotionVector81* motion = static_cast<FieldMotionVector81*>(static_cast<FieldClass151490*>(owner)->unk7c);
     motion->unk30 = unk20;
@@ -511,7 +511,7 @@ extern "C" void func_002098C0(FieldMotionRange* object, float target, float dura
         FieldVec4A measured;
         FieldVec4A delta;
         FieldVec4A length;
-        const FieldVec4A& center = static_cast<FieldState260*>(D_001B6430->context->unk14)->unk260;
+        const FieldVec4A& center = static_cast<FieldState260*>(g_field_context_ref->context->unk14)->unk260;
         delta = object->position;
         delta.x -= center.x;
         delta.y -= center.y;
@@ -841,7 +841,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00207AF0", func_0020DB
 extern "C" LibTransformOwner* func_0020CA10(FieldClass151620* entry, const char* name)
 {
     memcpy_guess(entry->unk84, name, sizeof(entry->unk84));
-    LibTransformOwner* transform = (LibTransformOwner*)lib_find_named_entry(static_cast<LibEntryManager*>(D_001B6430->context->unk08->current_object->unk7c), entry->unk84);
+    LibTransformOwner* transform = (LibTransformOwner*)lib_find_named_entry(static_cast<LibEntryManager*>(g_field_context_ref->context->unk08->current_object->unk7c), entry->unk84);
     entry->shape.unk04 = transform;
     return transform;
 }
@@ -925,7 +925,7 @@ extern "C" FieldClass1515B0* func_0020CB70(FieldClass151640* object,
  */
 extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
 {
-    FieldClass150F90* root = D_001B6430->context->unk08->current_object;
+    FieldClass150F90* root = g_field_context_ref->context->unk08->current_object;
 
     if (!root)
     {
@@ -995,7 +995,7 @@ extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
         {
             char name[32];
             sprintf_guess(name, D_31A840, (u8)(shape->unk18->unk0b - 0x3f));
-            result = lib_find_camera_entry(static_cast<LibEntryManager*>(D_001B6430->context->unk08->current_object->unk7c), name);
+            result = lib_find_camera_entry(static_cast<LibEntryManager*>(g_field_context_ref->context->unk08->current_object->unk7c), name);
         }
 
         if (result)

@@ -6,7 +6,7 @@
 #include "overlays/lib/blend_transform.h"
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/render_buffer.h"
-#include "main/resident_0010A0E0.h"
+#include "main/dma_queue.h"
 
 /** Partial header at the start of a mesh resource's payload. */
 struct LibMeshHeader

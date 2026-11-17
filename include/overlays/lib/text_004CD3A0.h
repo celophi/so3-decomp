@@ -9,6 +9,7 @@
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/render_channel.h"
 #include "overlays/lib/vector.h"
+#include "main/main.h"
 
 /** Partial object with a busy flag that something else clears; the rest is unknown. */
 typedef struct LibBusyObject
@@ -846,13 +847,13 @@ public:
      * @brief Set the next list in the chain.
      * @param attached List that follows this list.
      */
-    virtual void func_004295B0(void* attached)
+    virtual void set_next_list(void* attached)
     {
         next_list = static_cast<LibUpdateList*>(attached);
     }
 
     /** @brief Default handler that performs no work. */
-    virtual void func_004295C0()
+    virtual void idle()
     {
     }
 

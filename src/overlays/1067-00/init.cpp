@@ -7,6 +7,6 @@ void func_0032A880(void)
 
 void func_0032A890(void)
 {
-    func_00101560(&D_32B6B0.registered);
-    D_32B6B0.registered.dispatch = &D_159070;
+    resident_program_construct(&D_32B6B0.registered);
+    D_32B6B0.registered.dispatch = &g_field_program_vtable;
 }

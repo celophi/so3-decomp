@@ -14,7 +14,7 @@
 #include "overlays/1067-00/text_002F1B20.h"
 #include "overlays/lib/memory_card.h"
 #include "overlays/lib/widget_aggregate.h"
-#include "main/resident_00101550.h"
+#include "main/sound.h"
 #include "overlays/1067-00/text_001E1590.h"
 #include "main/resident_data.h"
 

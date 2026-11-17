@@ -4,7 +4,7 @@
 #include "types.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "overlays/lib/text_004CD3A0.h"
-#include "main/resident_0010A0E0.h"
+#include "main/dma_queue.h"
 
 /**
  * Partial 0x210-byte object that copies a rectangle of VRAM back to main memory, with vtable D_1735A0 in main data.

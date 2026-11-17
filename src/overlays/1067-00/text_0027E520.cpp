@@ -2,7 +2,6 @@
 #include "overlays/1067-00/field_class_154D40.h"
 #include "overlays/1067-00/field_class_154EF0.h"
 #include "overlays/1067-00/text_0027E520.h"
-#include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_00212560.h"
@@ -227,11 +226,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027E9
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027EB80);
 
-/** Partial FieldClass154E20 object with vtable D_155F30 in main data, tracked by D_001B6458. */
+/** Partial FieldClass154E20 object with vtable D_155F30 in main data, tracked by g_field_class_155f30. */
 class FieldClass155F30 : public FieldClass154E20
 {
 public:
-    /** @brief Clear D_001B6458 if it refers to this object, then destroy the object. */
+    /** @brief Clear g_field_class_155f30 if it refers to this object, then destroy the object. */
     virtual ~FieldClass155F30();
 
     /** @brief Create the grid for this object. */
@@ -256,9 +255,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027EC
 
 FieldClass155F30::~FieldClass155F30()
 {
-    if (D_001B6458 == this)
+    if (g_field_class_155f30 == this)
     {
-        D_001B6458 = 0;
+        g_field_class_155f30 = 0;
     }
 }
 
@@ -285,11 +284,11 @@ void func_0027F3D0(void* object)
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027F3E0);
 
-/** Partial FieldClass154E20 object with vtable D_1563C0 in main data, tracked by D_001B6450. */
+/** Partial FieldClass154E20 object with vtable D_1563C0 in main data, tracked by g_field_class_1563c0. */
 class FieldClass1563C0 : public FieldClass154E20
 {
 public:
-    /** @brief Clear D_001B6450 if it refers to this object, then destroy the object. */
+    /** @brief Clear g_field_class_1563c0 if it refers to this object, then destroy the object. */
     virtual ~FieldClass1563C0();
 
     /** @brief Create the grid for this object. */
@@ -314,9 +313,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027FA
 
 FieldClass1563C0::~FieldClass1563C0()
 {
-    if (D_001B6450 == this)
+    if (g_field_class_1563c0 == this)
     {
-        D_001B6450 = 0;
+        g_field_class_1563c0 = 0;
     }
 }
 
@@ -324,11 +323,11 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027FB
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_0027FF50);
 
-/** Partial FieldClass154E20 object with vtable D_1565A0 in main data, tracked by D_001B644C. */
+/** Partial FieldClass154E20 object with vtable D_1565A0 in main data, tracked by g_field_class_1565a0. */
 class FieldClass1565A0 : public FieldClass154E20
 {
 public:
-    /** @brief Clear D_001B644C if it refers to this object, then destroy the object. */
+    /** @brief Clear g_field_class_1565a0 if it refers to this object, then destroy the object. */
     virtual ~FieldClass1565A0();
 
     /** @brief Create the grid for this object. */
@@ -353,9 +352,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0027E520", func_002804
 
 FieldClass1565A0::~FieldClass1565A0()
 {
-    if (D_001B644C == this)
+    if (g_field_class_1565a0 == this)
     {
-        D_001B644C = 0;
+        g_field_class_1565a0 = 0;
     }
 }
 
@@ -1816,9 +1815,9 @@ void func_002839B0(FieldClass156640* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -1934,9 +1933,9 @@ void func_002840B0(FieldClass156710* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -2053,9 +2052,9 @@ void func_002847F0(FieldClass1567E0* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -2170,9 +2169,9 @@ void func_00284EE0(FieldClass1568B0* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -2288,9 +2287,9 @@ void func_002855F0(FieldClass156980* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -2406,9 +2405,9 @@ void func_00285D10(FieldClass156A50* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -2541,7 +2540,7 @@ s32 func_00286460(FieldScriptObject151D40* object)
 {
     const u32* cursor = object->unk548;
     object->unk548 = cursor + 1;
-    func_0027B3D0(D_001B6430->context->unk58, *cursor, *object->unk548);
+    func_0027B3D0(g_field_context_ref->context->unk58, *cursor, *object->unk548);
     return 1;
 }
 
@@ -2573,7 +2572,7 @@ s32 func_002864A0(FieldScriptObject151D40* object)
  */
 s32 func_00286530(FieldScriptObject151D40* object, u32 count)
 {
-    func_0027B390(D_001B6430->context->unk58, *object->unk548, 0);
+    func_0027B390(g_field_context_ref->context->unk58, *object->unk548, 0);
     return 1;
 }
 
@@ -2585,7 +2584,7 @@ s32 func_00286530(FieldScriptObject151D40* object, u32 count)
  */
 s32 func_00286570(FieldScriptObject151D40* object, u32 count)
 {
-    func_0027B740(D_001B6430->context->unk58);
+    func_0027B740(g_field_context_ref->context->unk58);
     return 1;
 }
 
@@ -2597,7 +2596,7 @@ s32 func_00286570(FieldScriptObject151D40* object, u32 count)
  */
 s32 func_002865A0(FieldScriptObject151D40* object, u32 count)
 {
-    if (func_0027B710(D_001B6430->context->unk58) == 0)
+    if (func_0027B710(g_field_context_ref->context->unk58) == 0)
     {
         object->unk14 = 1.0f;
         return 0;
@@ -2614,7 +2613,7 @@ s32 func_002865A0(FieldScriptObject151D40* object, u32 count)
  */
 s32 func_002865F0(FieldScriptObject151D40* object, u32 count)
 {
-    func_0027B7D0(D_001B6430->context->unk58, *object->unk548);
+    func_0027B7D0(g_field_context_ref->context->unk58, *object->unk548);
     return 1;
 }
 
@@ -2633,7 +2632,7 @@ s32 func_00286630(FieldScriptObject151D40* object, u32 count)
 {
     const u32* cursor = object->unk548;
     object->unk548 = cursor + 1;
-    func_0021F900(D_001B6430->context->unk34, *cursor, 3);
+    func_0021F900(g_field_context_ref->context->unk34, *cursor, 3);
     return 1;
 }
 
@@ -2678,7 +2677,7 @@ s32 func_002868B0(FieldScriptObject151D40* object)
     object->unk548 = cursor + 1;
     u32 second = *cursor;
     u32 third = *object->unk548;
-    func_0027C0D0(D_001B6430->context->unk58, id, first, mode, second, third);
+    func_0027C0D0(g_field_context_ref->context->unk58, id, first, mode, second, third);
     return 1;
 }
 
@@ -2691,7 +2690,7 @@ s32 func_00286920(FieldScriptObject151D40* object)
 {
     const u32* cursor = object->unk548;
     object->unk548 = cursor + 1;
-    func_0027C130(D_001B6430->context->unk58, *cursor, *object->unk548);
+    func_0027C130(g_field_context_ref->context->unk58, *cursor, *object->unk548);
     return 1;
 }
 
@@ -3094,9 +3093,9 @@ void func_00289770(FieldClass156E90* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)

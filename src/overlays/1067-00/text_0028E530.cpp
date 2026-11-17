@@ -96,7 +96,7 @@ s32 func_002910D0(void)
 
 s32 func_00291110(void* object)
 {
-    return ((FieldContext38*)D_001B6430->context)->state->unk5D4 != 0;
+    return ((FieldContext38*)g_field_context_ref->context)->state->unk5D4 != 0;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0028E530", func_00291130);

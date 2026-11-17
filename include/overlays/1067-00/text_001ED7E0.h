@@ -5,7 +5,8 @@
 #ifdef __cplusplus
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_001E6C50.h"
-#include "main/resident_0010A0E0.h"
+#include "main/heap.h"
+#include "main/main.h"
 
 class FieldSceneResourceRequest;
 

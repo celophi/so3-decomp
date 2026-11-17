@@ -8,6 +8,7 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_0044ABE0.h"
+#include "main/heap.h"
 
 struct FieldTable14
 {
@@ -157,7 +158,6 @@ struct FieldCollection50
     FieldEntry50* entries;
 };
 
-extern "C" void func_113EA0();
 
 extern "C" void func_4C74E0(FieldState100* state);
 
@@ -553,9 +553,9 @@ extern "C" void func_002BF760(FieldClass159E50* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -686,7 +686,7 @@ extern "C" void func_002C0390(FieldState100* state)
 
     if (state->unk3b == 0)
     {
-        func_113EA0();
+        resident_heap_do_nothing();
         func_4C74E0(state);
         func_462320(state, state->unk70, state->unkB8);
         state->unk3b = 1;

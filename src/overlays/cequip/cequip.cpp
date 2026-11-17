@@ -1,10 +1,7 @@
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/cequip/cequip.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_00101260.h"
 #include "overlays/1067-00/text_0028E240.h"
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/lib/text_004095C0.h"
@@ -15,6 +12,7 @@
 #include "overlays/lib/list_indicator_inlines.h"
 #include "overlays/1067-00/text_002CEAF0.h"
 #include "overlays/lib/item_allocation.h"
+#include "main/system.h"
 
 enum EquipMessageKey
 {
@@ -2876,7 +2874,7 @@ s32 EquipController::on_resource_loaded(void* buffer)
     EquipAlignedResource* aligned = aligned_resource(buffer);
     s32 size = aligned->unk40 + 0x80;
     void* saved_heap = resident_get_allocation_heap();
-    void* heap = D_001B6430->context->unk70;
+    void* heap = g_field_context_ref->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
 
     if (memory != 0)

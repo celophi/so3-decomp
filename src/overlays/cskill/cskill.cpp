@@ -3,8 +3,6 @@
 #include "clamp.h"
 #include "overlays/cskill/text.h"
 #include "main/resident_data.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_0028E240.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/1067-00/text_marker.h"
@@ -24,7 +22,6 @@
 #include "overlays/1067-00/text_002CEAF0.h"
 
 #include "overlays/1067-00/text_002AE9E0.h"
-#include "main/resident_0011EE70.h"
 
 #define SKILL_FLAG_ENCODING_MASK 0x7DE3F7E3
 #define SKILL_TACTICAL_CHECKSUM_SEED 0x8D3C43F9
@@ -9447,7 +9444,7 @@ s32 SkillController::on_resource_loaded(void* buffer)
     SkillAlignedResource* aligned = aligned_skill_resource(buffer);
     s32 size = aligned->size + 128;
     void* saved_heap = resident_get_allocation_heap();
-    void* heap = D_001B6430->context->unk70;
+    void* heap = g_field_context_ref->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
 
     if (memory != 0)
@@ -10562,7 +10559,7 @@ void SkillHpMpGaugeDrawer::func_002BC4F0(u32 first, u32 depth, float value)
         packet->unk08 = packet->unk00 + 64;
         packet->unk0c = packet->unk08;
         packet->unk15 = 0;
-        func_0011F140(packet, D_4ED330[0]);
+        resident_packet_set_alpha_2(packet, D_4ED330[0]);
         build_packet();
     }
 }

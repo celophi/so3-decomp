@@ -2,10 +2,10 @@
 #define SO3_OVERLAYS_BOOT_BOOT_H
 
 #include "types.h"
-#include "main/func_0011EE00.h"
-#include "main/resident_00101260.h"
-#include "main/resident_00101550.h"
-#include "main/resident_0010A0E0.h"
+#include "main/archive.h"
+#include "main/input.h"
+#include "main/release_queue.h"
+#include "main/sound.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_003E68C0.h"
@@ -18,7 +18,6 @@
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/text_0045AD10.h"
-#include "main/resident_001001E0.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/memory_card.h"
 #include "overlays/lib/movie_player.h"

@@ -311,7 +311,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FA8
 
 extern "C" s32 func_001FAB10(FieldScriptCursorU32* cursor)
 {
-    func_002D4AA0(((FieldContext68*)D_001B6430->context)->target, *cursor->current);
+    func_002D4AA0(((FieldContext68*)g_field_context_ref->context)->target, *cursor->current);
     return 1;
 }
 
@@ -506,12 +506,12 @@ extern "C" s32 func_001FB8C0(FieldScriptCursorS32* cursor)
 
     if (first >= 0)
     {
-        ((FieldContext08Flags*)D_001B6430->context->unk08)->valueF3 = first;
+        ((FieldContext08Flags*)g_field_context_ref->context->unk08)->valueF3 = first;
     }
 
     if (second >= 0)
     {
-        ((FieldContext08Flags*)D_001B6430->context->unk08)->valueF4 = second;
+        ((FieldContext08Flags*)g_field_context_ref->context->unk08)->valueF4 = second;
     }
 
     return 1;
@@ -526,7 +526,7 @@ extern "C" s32 func_001FB9D0(FieldFlagScriptCursor* cursor)
         return 1;
     }
 
-    func_00258C90(D_001B6430->context->unk08, *cursor->current, 0, 0);
+    func_00258C90(g_field_context_ref->context->unk08, *cursor->current, 0, 0);
     return 1;
 }
 
@@ -633,7 +633,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", __ct__28Fie
 
 extern "C" s32 func_001FCBD0(FieldScriptCursorU32* cursor)
 {
-    FieldOwner24E860* target = ((FieldContext08E0*)D_001B6430->context->unk08)->target;
+    FieldOwner24E860* target = ((FieldContext08E0*)g_field_context_ref->context->unk08)->target;
 
     if (target == 0)
     {
@@ -646,7 +646,7 @@ extern "C" s32 func_001FCBD0(FieldScriptCursorU32* cursor)
 
 extern "C" s32 func_001FCC20(FieldScriptCursorF14* cursor)
 {
-    if (field_context_test_entry_flag(D_001B6430->context->unk08->current_object, *cursor->current))
+    if (field_context_test_entry_flag(g_field_context_ref->context->unk08->current_object, *cursor->current))
     {
         cursor->value = 1.0f;
         return 0;
@@ -660,7 +660,7 @@ extern "C" s32 func_001FCC80(FieldScriptCursorU32* cursor)
     u32* arg = cursor->current;
     cursor->current = arg + 1;
     u32 key = *arg;
-    field_context_apply_entry_value(D_001B6430->context->unk08->current_object, key, *cursor->current);
+    field_context_apply_entry_value(g_field_context_ref->context->unk08->current_object, key, *cursor->current);
     return 1;
 }
 
@@ -668,7 +668,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001F9B70", func_001FCC
 
 extern "C" s32 func_001FCD20(FieldScriptCursorU16* cursor)
 {
-    func_0026FF10(D_001B6430->context->unk08->current_object, *cursor->current);
+    func_0026FF10(g_field_context_ref->context->unk08->current_object, *cursor->current);
     return 1;
 }
 

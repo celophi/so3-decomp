@@ -22,7 +22,7 @@ struct CmcResourceBuffer
  */
 static inline FieldClass1516A0* field_display()
 {
-    return reinterpret_cast<FieldClass1516A0*>(D_001B6430->context->unk38);
+    return reinterpret_cast<FieldClass1516A0*>(g_field_context_ref->context->unk38);
 }
 
 extern "C" {
@@ -4800,10 +4800,10 @@ void CardMenuController::func_003583B0()
     camera->unk9e8 = value;
     strcpy_guess(camera->name, g_cmc_field_camera_name);
     camera->unk9fd_0 = 1;
-    camera->unk9ca = static_cast<ResidentCheckedRecord*>(func_101440(func_101290(resident_get_system()), 1))->unk23;
+    camera->unk9ca = reinterpret_cast<ResidentCheckedRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->unk23;
     static_cast<LibUpdateList*>(g_renderer)->append_node(camera, -1);
     D_001B643C->unk0c->unk9b = 1;
-    LibProtectedValues* values = static_cast<LibProtectedValues*>(func_101440(func_101290(resident_get_system()), 7));
+    LibProtectedValues* values = reinterpret_cast<LibProtectedValues*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 7));
 
     if (values != 0)
     {
@@ -4920,7 +4920,7 @@ s32 CardMenuController::on_resource_loaded(void* buffer)
     resource = reinterpret_cast<CmcResourceBuffer*>((reinterpret_cast<u32>(resource) + 0x7F) & ~0x7F);
     s32 allocation_size = resource->byte_count + 0x80;
     void* previous_heap = resident_get_allocation_heap();
-    void* resource_heap = D_001B6430->context->unk70;
+    void* resource_heap = g_field_context_ref->context->unk70;
     void* allocation = resident_heap_allocate(resource_heap, allocation_size);
 
     if (allocation)

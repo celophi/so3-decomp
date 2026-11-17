@@ -7,6 +7,7 @@
 #include "overlays/1067-00/text_001FD860.h"
 #include "overlays/1067-00/field_list.h"
 #include "overlays/1067-00/text_0022DC70.h"
+#include "main/main.h"
 
 /** Partial object linked into a circular list, with flag and state words. */
 typedef struct FieldFlaggedListObject

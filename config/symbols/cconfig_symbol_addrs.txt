@@ -48,8 +48,6 @@ __ct__9LibWidgetFv = 0x004C4960; // absolute:True allow_duplicated:True type:fun
 
 __vt__8LibPanel = 0x00178630; // absolute:True allow_duplicated:True size:0x24
 resident_get_system = 0x0010D8E0; // type:func
-func_101290 = 0x00101290; // type:func
-func_101440 = 0x00101440; // type:func
 __vt__23ItemCreationClass175110 = 0x00175110; // size:0x24 absolute:True allow_duplicated:True
 __vt__33ItemCreationOptionResourceDisplay = 0x0015B240; // size:0x24
 lib_draw_state_init = 0x00453FF0; // type:func absolute:True
@@ -275,3 +273,6 @@ g_microcode_loader = 0x001B6600; // absolute:True
 resident_stream_is_mid_side = 0x00109FD0; // absolute:True
 g_program_running = 0x001B6420; // absolute:True
 resident_set_program_running = 0x00100A40; // absolute:True
+g_field_context_ref = 0x001B6430; // absolute:True
+resident_get_entry_table = 0x00101290; // type:func absolute:True
+resident_find_entry = 0x00101440; // type:func absolute:True

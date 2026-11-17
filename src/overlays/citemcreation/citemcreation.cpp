@@ -2,7 +2,6 @@
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/grid_marker.h"
 #include "overlays/1067-00/text_marker.h"
-#include "main/resident_0010A0E0.h"
 #include "main/resident_data.h"
 #include "include_asm.h"
 #include "clamp.h"
@@ -18,6 +17,7 @@
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_002764D0.h"
 #include "overlays/1067-00/text_002F9C90.h"
+#include "main/utility.h"
 
 /** Consecutive label keys: COOK, ALCH, CRFT, CMPD, SMTH, WRIT, ENG, SYTH. */
 enum ItemCreationMessageKey
@@ -3047,7 +3047,7 @@ u8 InventorTransferWindow::func_slotb4()
         item_creation_advance_inventor_transfer(selection_state, -1);
         state = selection_state;
         state->requested_window_group = 0;
-        func_0027CB50(D_001B6430->context->unk58, state->unk1f0, 0, 0);
+        func_0027CB50(g_field_context_ref->context->unk58, state->unk1f0, 0, 0);
         state = selection_state;
         state->func_00263C70(state->main_menu);
         break;
@@ -3574,7 +3574,7 @@ u8 AbortDevelopmentDialog::func_slotb0()
 
                 state = selection_state;
                 state->requested_window_group = 1;
-                func_0027CB50(D_001B6430->context->unk58, state->unk1f0, 0, 0);
+                func_0027CB50(g_field_context_ref->context->unk58, state->unk1f0, 0, 0);
 
                 if (selection_state->line_targets[0] != 0)
                 {
@@ -5282,7 +5282,7 @@ u8 DevelopmentCompleteDialog::func_slotb0()
         }
 
         state->requested_window_group = 1;
-        func_0027CB50(D_001B6430->context->unk58, state->unk1f0, 0, 0);
+        func_0027CB50(g_field_context_ref->context->unk58, state->unk1f0, 0, 0);
 
         if (state->line_targets[0] != 0)
         {
@@ -6701,7 +6701,7 @@ u8 StartInventingDialog::func_slotb0()
         selection_state->func_0036BF30(1, line_development_requests[1]);
         selection_state->func_0036BF30(2, line_development_requests[2]);
         selection_state->requested_window_group = 2;
-        func_0027CB50(D_001B6430->context->unk58, 0x42, 0, 0);
+        func_0027CB50(g_field_context_ref->context->unk58, 0x42, 0, 0);
     }
     else
     {
@@ -6979,7 +6979,6 @@ s32 InventionSuccessDialog::func_slotf4(u32 associated)
 }
 
 #include "sdk/main/libc_guess_0013A4C0.h"
-#include "main/resident_001001E0.h"
 #include "overlays/1067-00/text_0028E240.h"
 
 /** Partial controls containing the mode-list activation flag. */
@@ -7609,7 +7608,7 @@ void ItemCreationControlHelp::func_slot5c()
     if (this->unkd0 != 0)
     {
         LibObject174F20* display;
-        u32 value = checked_fol(D_001B6430->unk04);
+        u32 value = checked_fol(g_field_context_ref->unk04);
         display = this->unkd0;
         display->numeric_value = value;
         display->needs_redraw = 1;
@@ -7618,7 +7617,7 @@ void ItemCreationControlHelp::func_slot5c()
     if (this->unkd8 != 0)
     {
         LibObject174F20* display;
-        u32 value = checked_fol(D_001B6430->unk04);
+        u32 value = checked_fol(g_field_context_ref->unk04);
         display = this->unkd8;
         display->numeric_value = value;
         display->needs_redraw = 1;
@@ -7660,7 +7659,7 @@ s32 ItemCreationControlHelp::func_slotf4(u32 associated)
     unkcc->func_002D6440(5.0f, 126.0f, field_find_resource_record(D_001B643C->unk20, 25));
 
     {
-        u32 value = checked_fol(D_001B6430->unk04);
+        u32 value = checked_fol(g_field_context_ref->unk04);
         unkd0->init_numeric_resource_rectangle(32.0f, 126.0f, 126.0f, 24.0f, value, (s32)associated, 0);
         unkd0->set_tint(0x288080);
     }
@@ -7670,7 +7669,7 @@ s32 ItemCreationControlHelp::func_slotf4(u32 associated)
     unkd4->func_002D6440(5.0f, 140.0f, field_find_resource_record(D_001B643C->unk20, 25));
 
     {
-        u32 value = checked_fol(D_001B6430->unk04);
+        u32 value = checked_fol(g_field_context_ref->unk04);
         unkd8->init_numeric_resource_rectangle(32.0f, 140.0f, 126.0f, 24.0f, value, (s32)associated, 0);
         unkd8->set_tint(0x288080);
     }
@@ -11087,7 +11086,7 @@ u8 AssignedInventorGrid::func_slotb4()
         {
             ItemCreationSelectedDisplayState* state = unka8;
             state->requested_window_group = 0;
-            func_0027CB50(D_001B6430->context->unk58, state->unk1f0, 0, 0);
+            func_0027CB50(g_field_context_ref->context->unk58, state->unk1f0, 0, 0);
             state = unka8;
             state->swap_destination_grid = 0;
             state->swap_source_grid = 0;
@@ -12182,7 +12181,7 @@ u8 AvailableInventorGrid::func_slotb4()
         {
             ItemCreationSelectedDisplayState* state = unka8;
             state->requested_window_group = 0;
-            func_0027CB50(D_001B6430->context->unk58, state->unk1f0, 0, 0);
+            func_0027CB50(g_field_context_ref->context->unk58, state->unk1f0, 0, 0);
             state = unka8;
             state->swap_destination_grid = 0;
             state->swap_source_grid = 0;
@@ -13339,7 +13338,7 @@ void WorkshopExpansionWindow::func_slot5c()
     if (this->unke4 != 0)
     {
         LibObject174F20* display;
-        u32 value = checked_fol(D_001B6430->unk04);
+        u32 value = checked_fol(g_field_context_ref->unk04);
         display = this->unke4;
         display->numeric_value = value;
         display->needs_redraw = 1;
@@ -14065,7 +14064,7 @@ u8 ItemCreationMainMenu::func_slotb0()
     {
     case 0:
         state->requested_window_group = 1;
-        func_0027CB50(D_001B6430->context->unk58,
+        func_0027CB50(g_field_context_ref->context->unk58,
                      state->unk1f0, 0, 0);
         break;
     case 1:
@@ -14093,7 +14092,7 @@ u8 ItemCreationMainMenu::func_slotb0()
         }
 
         state->requested_window_group = 3;
-        func_0027CB50(D_001B6430->context->unk58,
+        func_0027CB50(g_field_context_ref->context->unk58,
                      state->unk1f0, 0, 0);
         break;
     case 3:
@@ -14389,7 +14388,7 @@ void ItemCreationSelection::func_slot10()
 void func_00369510(ItemCreationSelection* object)
 {
     s32 enabled;
-    FieldRuntimeValues* flags = static_cast<FieldRuntimeValues*>(func_101440(func_101290(resident_get_system()), 4));
+    FieldRuntimeValues* flags = reinterpret_cast<FieldRuntimeValues*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
 
     if (flags != 0)
     {
@@ -15617,7 +15616,7 @@ u8 item_creation_current_workshop_id(ItemCreationSelectedDisplayState* object)
 {
     u8 workshop_id;
 
-    switch (D_001B6430->context->unk08->unkb8)
+    switch (g_field_context_ref->context->unk08->unkb8)
     {
     case 31:
         workshop_id = 1;
@@ -15670,7 +15669,7 @@ u8 item_creation_current_workshop_id(ItemCreationSelectedDisplayState* object)
  */
 u32 item_creation_current_workshop_name_key(void* object)
 {
-    switch (D_001B6430->context->unk08->unkb8)
+    switch (g_field_context_ref->context->unk08->unkb8)
     {
     case 31:
         return 0x3521;
@@ -16435,7 +16434,7 @@ static inline FieldFloatState5C* window_float_state(FieldClass15BB90* object)
  */
 static inline ItemCreationAnimationOwner* animation_owner()
 {
-    return reinterpret_cast<ItemCreationAnimationOwner*>(D_001B6430->context->unk38);
+    return reinterpret_cast<ItemCreationAnimationOwner*>(g_field_context_ref->context->unk38);
 }
 
 /**
@@ -16517,7 +16516,7 @@ void ItemCreationSelectedDisplayState::update()
         resource_window->unk5b = 1;
         field_replace_model_camera(resource_window, reinterpret_cast<ItemCreationRuntime643CGeometry*>(D_001B643C)->unk1c);
         field_attach_model_display(resource_window);
-        ItemCreationRuntimeSection1* section = static_cast<ItemCreationRuntimeSection1*>(func_101440(func_101290(resident_get_system()), 1));
+        ItemCreationRuntimeSection1* section = reinterpret_cast<ItemCreationRuntimeSection1*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
 
         if (pending_resource_key > 487)
         {
@@ -17037,16 +17036,11 @@ struct ItemCreationBufferHeader
     s32 resource_size;
 };
 
-// Resident and Lib interfaces linked under this overlay's short names.
 extern "C"
 {
-    void* func_100C90(void);
-
     void* resident_heap_allocate(void* heap, s32 size);
 
     void resident_heap_release(void* memory);
-
-    void* func_100C80(void* heap);
 }
 
 /**
@@ -17072,18 +17066,18 @@ s32 ItemCreationSelectedDisplayState::on_resource_loaded(void* buffer)
     }
 
     s32 size = buffer_header(buffer)->resource_size + 0x80;
-    void* previous_heap = func_100C90();
-    void* heap = D_001B6430->context->unk70;
+    void* previous_heap = resident_get_allocation_heap();
+    void* heap = g_field_context_ref->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
 
     if (memory)
     {
         resident_heap_release(memory);
-        func_100C80(heap);
+        resident_exchange_allocation_heap(heap);
     }
 
     unk34 = lib_load_resource_slot(g_field_runtime, buffer_header(buffer));
-    func_100C80(previous_heap);
+    resident_exchange_allocation_heap(previous_heap);
     FieldRuntime* runtime = g_field_runtime;
     runtime->text_banks[0].resource_slot = unk34;
     runtime->text_banks[0].base_key = 0xC351;
@@ -17139,7 +17133,7 @@ static inline ItemCreationInventorRecord* saved_inventor_record(u8 index)
  */
 u8 ItemCreationSelectedDisplayState::func_00264110()
 {
-    unk40 = static_cast<FieldRuntimeValues*>(func_101440(func_101290(resident_get_system()), 4));
+    unk40 = reinterpret_cast<FieldRuntimeValues*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 4));
 
     if (!unk40)
     {
@@ -17170,7 +17164,7 @@ u8 ItemCreationSelectedDisplayState::func_00264110()
         line_count = workshop->line_count;
     }
 
-    unk1f0 = D_001B6430->context->unk58->unk1b4;
+    unk1f0 = g_field_context_ref->context->unk58->unk1b4;
     item_creation_restore_workshop_assignments(this);
     item_creation_restore_workshop_skill_flags(this);
     func_00369EB0(this);

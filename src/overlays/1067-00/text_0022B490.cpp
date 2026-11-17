@@ -516,14 +516,14 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0022B490", func_0022BE
 
 s32 func_0022BEC0(FieldCallback22BEC0* object)
 {
-    func_0027C0D0(D_001B6430->context->unk58, object->id, object->first, 0x40,
+    func_0027C0D0(g_field_context_ref->context->unk58, object->id, object->first, 0x40,
                   object->second, object->third);
     return 1;
 }
 
 s32 func_0022BF00(FieldCallback22BEC0* object)
 {
-    func_0027C130(D_001B6430->context->unk58, object->id, object->first);
+    func_0027C130(g_field_context_ref->context->unk58, object->id, object->first);
     return 1;
 }
 
@@ -553,7 +553,7 @@ s32 func_0022C7D0(FieldCallback22C7D0* object)
     }
     else
     {
-        node = func_001DEE30((FieldFlaggedListObject*)D_001B6430->context->unk04,
+        node = func_001DEE30((FieldFlaggedListObject*)g_field_context_ref->context->unk04,
                               object->key, (u32)-1);
     }
 
@@ -676,13 +676,13 @@ s32 func_0022D150(FieldCallback22D150* object)
 
 s32 func_0022D180(FieldCallback22D180* object)
 {
-    func_0026F8F0(D_001B6430->context->unk08->current_object, object->handle->target->selector, object->value);
+    func_0026F8F0(g_field_context_ref->context->unk08->current_object, object->handle->target->selector, object->value);
     return 1;
 }
 
 s32 func_0022D1C0(FieldCallback22D180* object)
 {
-    if (func_0026F870(D_001B6430->context->unk08->current_object, object->handle->target->selector))
+    if (func_0026F870(g_field_context_ref->context->unk08->current_object, object->handle->target->selector))
     {
         object->handle->value = 1.0f;
         return 0;
@@ -693,7 +693,7 @@ s32 func_0022D1C0(FieldCallback22D180* object)
 
 s32 func_0022D230(FieldCallback22D180* object)
 {
-    func_0026FA40(D_001B6430->context->unk08->current_object, object->handle->target->selector, object->value);
+    func_0026FA40(g_field_context_ref->context->unk08->current_object, object->handle->target->selector, object->value);
     return 1;
 }
 

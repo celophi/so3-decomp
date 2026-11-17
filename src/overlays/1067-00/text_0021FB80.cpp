@@ -1,6 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_0022DC70.h"
@@ -170,7 +169,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021FB80", func_002228
  */
 void func_002228E0(FieldObject228E0* object)
 {
-    FieldContextIndex228E0* context = (FieldContextIndex228E0*)D_001B6430->context->unk08;
+    FieldContextIndex228E0* context = (FieldContextIndex228E0*)g_field_context_ref->context->unk08;
     FieldResourceDescriptor* resource = &D_303CB0[context->index];
 
     if (resource->auxiliary_file_offset == 0)
@@ -195,7 +194,7 @@ s32 func_00222CC0(FieldObject22CC0* object)
         return 0;
     }
 
-    context = (FieldContext22CC0*)D_001B6430->context;
+    context = (FieldContext22CC0*)g_field_context_ref->context;
     value = context->unk10->value;
 
     if (value != 0)
@@ -414,7 +413,7 @@ extern "C" void func_002292F0(void* object)
 
 void func_00229310(void* object)
 {
-    FieldContext29310* context = (FieldContext29310*)D_001B6430->context;
+    FieldContext29310* context = (FieldContext29310*)g_field_context_ref->context;
     FieldOwner29310* owner = context->owner;
 
     if (object == owner->linked)
@@ -492,7 +491,7 @@ typedef struct FieldContext2AA90
  */
 extern "C" void func_0022AA90(FieldObject2AA90* object)
 {
-    void** links = ((FieldContext2AA90*)D_001B6430->context)->owner->linked;
+    void** links = ((FieldContext2AA90*)g_field_context_ref->context)->owner->linked;
     void** link = &links[object->index];
 
     if (object == *link)

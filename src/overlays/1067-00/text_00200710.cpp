@@ -1,7 +1,6 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_00200710.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 
 typedef unsigned __int128 FieldLocalQword;
@@ -263,7 +262,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00200710", func_00201F
 /** @brief Update the inherited node list while both context gates are clear. */
 void FieldClass150E10::update()
 {
-    ResidentContext* context = D_001B6430->context;
+    ResidentContext* context = g_field_context_ref->context;
 
     if (!context->unk08)
     {

@@ -3,6 +3,7 @@
 #include "sdk/main/libc_0013CA60.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/1067-00/field_runtime.h"
+#include "main/utility.h"
 
 /** Partial system record holding the last save's identifier. */
 struct CmcSystemRecord
@@ -581,7 +582,7 @@ void CardTask::update()
                 unk54 = copy->slot;
             }
 
-            CmcSystemRecord* system = static_cast<CmcSystemRecord*>(func_101440(func_101290(resident_get_system()), 1));
+            CmcSystemRecord* system = reinterpret_cast<CmcSystemRecord*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
 
             if (system->unk188 != 0 && copy->unk58 == system->unk188 && 0 < static_cast<u16>(copy->slot) && static_cast<u16>(copy->slot) < 0x2E)
             {

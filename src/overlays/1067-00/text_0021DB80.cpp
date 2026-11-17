@@ -1,6 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/text_00212560.h"
@@ -84,7 +83,7 @@ s32 func_0021DF30(FieldScriptObject151D40* object, u32 count)
 
 s32 func_0021DF60(FieldScriptObject151D40* object, u32 count)
 {
-    FieldRuntimeValues* values = (FieldRuntimeValues*)func_101440(func_101290(resident_get_system()), 4);
+    FieldRuntimeValues* values = (FieldRuntimeValues*)resident_find_entry(resident_get_entry_table(resident_get_system()), 4);
     memset_guess(values->flags_5000, 0, sizeof(values->flags_5000));
     return 1;
 }
@@ -134,9 +133,9 @@ s32 func_0021E160(FieldScriptObject151D40* object, u32 count)
     u32 enabled = (*state->current & 1) != 0;
 
     if (enabled) {
-        D_001B6430->context->unkd0 |= mask;
+        g_field_context_ref->context->unkd0 |= mask;
     } else {
-        D_001B6430->context->unkd0 &= ~mask;
+        g_field_context_ref->context->unkd0 &= ~mask;
     }
 
     return 1;
@@ -145,14 +144,14 @@ s32 func_0021E160(FieldScriptObject151D40* object, u32 count)
 s32 func_0021E1C0(FieldScriptObject151D40* object, u32 count)
 {
     FieldScriptWord18* state = (FieldScriptWord18*)object;
-    D_001B6430->context->unkb0 = *state->current;
+    g_field_context_ref->context->unkb0 = *state->current;
     return 1;
 }
 
 s32 func_0021E1E0(FieldScriptObject151D40* object, u32 count)
 {
     FieldScriptWord18* state = (FieldScriptWord18*)object;
-    D_001B6430->context->unka8 = *state->current;
+    g_field_context_ref->context->unka8 = *state->current;
     return 1;
 }
 
@@ -161,7 +160,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0021DB80", func_0021E2
 s32 func_0021E310(FieldScriptObject151D40* object, u32 count)
 {
     FieldScriptWord18* state = (FieldScriptWord18*)object;
-    D_001B6430->context->unkaa = *state->current;
+    g_field_context_ref->context->unkaa = *state->current;
     return 1;
 }
 

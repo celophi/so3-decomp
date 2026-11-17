@@ -30,7 +30,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_002547
 
 s32 func_00254BD0(void)
 {
-    return ((FieldContextDF*)D_001B6430->context)->bit1 ? 0 : 8;
+    return ((FieldContextDF*)g_field_context_ref->context)->bit1 ? 0 : 8;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002541F0", func_00254C00);

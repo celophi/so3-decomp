@@ -1,15 +1,12 @@
 #include "include_asm.h"
 #include "overlays/lib/text_00419A70.h"
-#include "main/func_0011EE00.h"
 #include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0044ABE0.h"
-#include "main/resident_001001E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_004DD440.h"
-#include "main/resident_0010A0E0.h"
 
 extern "C" void func_00461830(void* embedded, void* adjusted);
 
@@ -1467,7 +1464,7 @@ s32 func_0046A410(void* object)
         submission = (DmaSubmission*)((u8*)submission + 0x5a0);
     }
 
-    return func_00114100(g_vif1_dma_queue, submission);
+    return resident_dma_queue_push(g_vif1_dma_queue, submission);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046A440);

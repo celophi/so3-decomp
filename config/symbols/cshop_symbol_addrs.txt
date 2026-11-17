@@ -555,3 +555,4 @@ g_microcode_loader = 0x001B6600; // absolute:True
 resident_stream_is_mid_side = 0x00109FD0; // absolute:True
 g_program_running = 0x001B6420; // absolute:True
 resident_set_program_running = 0x00100A40; // absolute:True
+g_field_context_ref = 0x001B6430; // absolute:True

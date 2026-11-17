@@ -5,17 +5,14 @@
 #include "overlays/lib/widget_aggregate.h"
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
-#include "main/resident_00101260.h"
-#include "main/resident_00101550.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/item_allocation.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libkernl_00121940.h"
-#include "main/resident_001001E0.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "clamp.h"
 #include "overlays/lib/memory_card.h"
+#include "main/system.h"
 
 #define LIB_GAME_DATA_RESOURCE 10
 #define LIB_GAME_STATE_RECORD0C_FIXED_ID 29
@@ -644,7 +641,7 @@ u32 func_0040B250()
         table->order[i] = i == 0 ? LIB_VALUE_TABLE_COUNT : i;
     }
 
-    return func_001014B0(resident_get_entry_table(resident_get_system()), table, LIB_ENTRY_VALUE_TABLE);
+    return resident_store_entry(resident_get_entry_table(resident_get_system()), table, LIB_ENTRY_VALUE_TABLE);
 }
 
 /**
@@ -710,7 +707,7 @@ s32 lib_reset_game_state(u8* data)
 
         FlushCache(0);
 
-        if (!func_0011CA60(archive, buffer, LIB_GAME_DATA_RESOURCE, 0))
+        if (!resident_archive_read_resource(archive, buffer, LIB_GAME_DATA_RESOURCE, 0))
         {
             return 0;
         }
@@ -718,7 +715,7 @@ s32 lib_reset_game_state(u8* data)
         data = buffer;
     }
 
-    if (!resident_decode_resource_block(func_001012B0(resident_get_system()), reinterpret_cast<ResidentResourceHeader*>(data), D_001B64F0, 0))
+    if (!resident_decode_resource_block(resident_system_get_decoder(resident_get_system()), reinterpret_cast<ResidentResourceHeader*>(data), D_001B64F0, 0))
     {
         return 0;
     }

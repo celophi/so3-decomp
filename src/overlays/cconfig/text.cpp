@@ -2,8 +2,6 @@
 #include "include_asm.h"
 #include "overlays/cconfig/text.h"
 #include "main/resident_data.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_001E1590.h"
 #include "overlays/1067-00/text_0023B1D0.h"
@@ -1581,7 +1579,7 @@ void func_0034A0E0(ConfigBindingWindow* object)
 {
     if (D_001B643C->unk10->unk14->func_00261150() == object)
     {
-        u16 mask = D_001B6430->context->input->mask;
+        u16 mask = g_field_context_ref->context->input->mask;
 
         if (mask & 0x2000)
         {
@@ -2825,7 +2823,7 @@ void func_0034C600(ConfigOptions* object, u16 input)
         settings->unk24_bit5 = 1;
         resident_pad_set_vibration_enabled(g_input_system, 0, 1);
         resident_pad_set_vibration_enabled(g_input_system, 1, 1);
-        func_0020F110(D_001B6430->context->unk38, 1, 128, 10.0f, 5.0f);
+        func_0020F110(g_field_context_ref->context->unk38, 1, 128, 10.0f, 5.0f);
         first->set_tint(0x808080);
         second->set_tint(0x505050);
     }
@@ -4937,11 +4935,11 @@ void func_00351FD0(ConfigController* object)
     if (window != 0)
     {
         s32 flag = 0;
-        FieldRuntimeSections* sections = func_101290(resident_get_system());
+        FieldRuntimeSections* sections = (FieldRuntimeSections*)resident_get_entry_table(resident_get_system());
 
         if (sections != 0)
         {
-            ConfigPreviewSection* values = static_cast<ConfigPreviewSection*>(func_101440(sections, 1));
+            ConfigPreviewSection* values = reinterpret_cast<ConfigPreviewSection*>(resident_find_entry(sections, 1));
 
             if (values != 0)
             {
@@ -5021,7 +5019,7 @@ s32 func_00352330(ConfigControlReceiver* object, void* buffer)
     ConfigAlignedResource* aligned = aligned_config_resource(buffer);
     s32 size = aligned->size + 0x80;
     void* saved_heap = resident_get_allocation_heap();
-    void* heap = D_001B6430->context->unk70;
+    void* heap = g_field_context_ref->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
 
     if (memory != 0)

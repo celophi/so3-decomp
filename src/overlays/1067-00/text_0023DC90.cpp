@@ -165,7 +165,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_002497
 
 void func_00249880(FieldObject24B6B0* object, const void* value)
 {
-    FieldContextDC49880* context = (FieldContextDC49880*)D_001B6430->context->unk08->current_object;
+    FieldContextDC49880* context = (FieldContextDC49880*)g_field_context_ref->context->unk08->current_object;
 
     if (object->target != 0 && context != 0 && context->active != 0)
     {
@@ -189,9 +189,9 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_0023DC90", func_00249F
 
 void func_0024A030(void* object, void* value, float strength)
 {
-    if (D_001B6458 != 0)
+    if (g_field_class_155f30 != 0)
     {
-        func_0027EB80(D_001B6458, value, 1, strength);
+        func_0027EB80(g_field_class_155f30, value, 1, strength);
     }
 }
 

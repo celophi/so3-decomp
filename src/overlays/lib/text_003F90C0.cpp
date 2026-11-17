@@ -1,10 +1,10 @@
 #include "include_asm.h"
 #include "clamp.h"
 #include "ee.h"
-#include "main/resident_00101260.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/lib/character_record.h"
+#include "main/system.h"
+#include "main/utility.h"
 
 /** One 6-byte character table entry: four values and their checksum. */
 typedef struct LibCharacterTableEntry

@@ -1,6 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_001DD3C0.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/1067-00/text_marker.h"

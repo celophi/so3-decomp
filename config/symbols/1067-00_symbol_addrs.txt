@@ -1,5 +1,5 @@
 // Resident object registration helper.
-func_00101560 = 0x00101560; // type:func
+resident_program_construct = 0x00101560; // type:func
 
 // Lib Euler-angle quaternion builder.
 lib_quaternion_from_euler = 0x004CE4C0; // type:func absolute:True
@@ -170,8 +170,8 @@ __vt__16FieldClass1502A0 = 0x001502A0; // size:0x3C
 __vt__16FieldClass1502E0 = 0x001502E0; // size:0x3C
 __vt__16FieldClass150320 = 0x00150320; // size:0xC
 __dt__16FieldClass1502A0Fv = 0x001E8FF0; // type:func
-func_004295B0__13LibUpdateListFPv = 0x001DD420; // type:func
-func_004295C0__13LibUpdateListFv = 0x001DD430; // type:func
+set_next_list__13LibUpdateListFPv = 0x001DD420; // type:func
+idle__13LibUpdateListFv = 0x001DD430; // type:func
 func_001DD730__16FieldClass1502A0Fv = 0x001DD730; // type:func
 __ct__16FieldClass1502E0Fv = 0x001E8F50; // type:func
 __dt__16FieldClass1502E0Fv = 0x001E8E50; // type:func
@@ -216,10 +216,10 @@ __dt__16FieldClass1504C0Fv = 0x001EAD40; // type:func
 func_001EAC90__16FieldClass150490FP14ResidentPacket = 0x001EE250; // type:func
 func_001EAC90__16FieldClass1504C0FP14ResidentPacket = 0x001EAC90; // type:func
 func_001EAA10__16FieldClass1504C0FP14ResidentPacket = 0x001EAA10; // type:func
-// Resident GS packet helpers (include/main/resident_0011EE70.h).
-func_0011EF00 = 0x0011EF00; // type:func
-func_0011EF90 = 0x0011EF90; // type:func
-func_0011F140 = 0x0011F140; // type:func
+// Resident GS packet helpers (include/main/packet.h).
+resident_packet_add_register = 0x0011EF00; // type:func
+resident_packet_set_prim = 0x0011EF90; // type:func
+resident_packet_set_alpha_2 = 0x0011F140; // type:func
 // Lib.bin data read by FieldClass1504C0::func_001EAC90 (relocations in config/relocations).
 D_4ED330 = 0x004ED330; // size:0x8
 func_001DF360__16FieldClass1504C0Fv = 0x001EA9B0; // type:func absolute:True allow_duplicated:True
@@ -337,15 +337,11 @@ func_002797D0__16FieldClass155640FP14LibClass3F5B80 = 0x002797D0; // absolute:Tr
 reconcile_requests__28FieldBattleResourcePreloaderFP14LibClass3F5B80 = 0x002797D0; // type:func allow_duplicated:True
 func_003F4EB0__14LibClass3F5B80FiiiUc = 0x003F4EB0; // type:func
 func_003F5AC0__14LibClass3F5B80Fv = 0x003F5AC0; // type:func
-func_00102AA0 = 0x00102AA0; // type:func absolute:True allow_duplicated:True
 resident_update_resource_queue = 0x00102AA0; // type:func absolute:True allow_duplicated:True
-func_00103640 = 0x00103640; // type:func absolute:True allow_duplicated:True
 resident_find_resource_request = 0x00103640; // type:func absolute:True allow_duplicated:True
-func_00103B20 = 0x00103B20; // type:func absolute:True allow_duplicated:True
 resident_cancel_resource_requests = 0x00103B20; // type:func absolute:True allow_duplicated:True
-func_00103E70 = 0x00103E70; // type:func absolute:True allow_duplicated:True
 resident_queue_resource_request = 0x00103E70; // type:func absolute:True allow_duplicated:True
-func_0011F9D0 = 0x0011F9D0; // type:func
+resident_sound_bank_set_get_pending = 0x0011F9D0; // type:func
 func_003F4B50__14LibClass3F5B80Fi = 0x003F4B50; // type:func
 
 // Lib list helpers used by FieldClass14FE30::update_nodes.
@@ -489,8 +485,6 @@ func_00433880 = 0x00433880; // type:func allow_duplicated:true
 func_00433AA0 = 0x00433AA0; // type:func
 D_001B5FC0 = 0x001B5FC0;
 
-func_001025A0 = 0x001025A0; // type:func absolute:True allow_duplicated:True
-func_00102920 = 0x00102920; // type:func absolute:True allow_duplicated:True
 resident_system_init_overlay = 0x001011B0; // type:func absolute:True
 func_001E4E50__16FieldClass150120Fv = 0x001E4E50; // absolute:True allow_duplicated:True type:func
 deliver_completed_request__27FieldResourceRequestHandlerFv = 0x001E4E50; // type:func allow_duplicated:True
@@ -516,7 +510,6 @@ func_001E2E40__16FieldClass150120FP16FieldClass150150 = 0x001E2E40; // absolute:
 func_001E2E40__27FieldResourceRequestHandlerFP16FieldClass150150 = 0x001E2E40; // absolute:True allow_duplicated:True type:func
 func_001E2E40__16FieldClass150120FP19FieldResourceLoader = 0x001E2E40; // absolute:True allow_duplicated:True type:func
 func_001E2E40__27FieldResourceRequestHandlerFP19FieldResourceLoader = 0x001E2E40; // type:func allow_duplicated:True
-func_00102A40 = 0x00102A40; // type:func absolute:True allow_duplicated:True
 func_001E1830__16FieldClass150120FP16FieldClass150150 = 0x001E1830; // absolute:True allow_duplicated:True type:func
 func_001E1830__27FieldResourceRequestHandlerFP16FieldClass150150 = 0x001E1830; // absolute:True allow_duplicated:True type:func
 func_001E1830__16FieldClass150120FP19FieldResourceLoader = 0x001E1830; // absolute:True allow_duplicated:True type:func
@@ -753,8 +746,6 @@ func_0022D6C0__16FieldClass152C70Fv = 0x0022D6C0; // type:func
 __vt__16FieldClass151420 = 0x00151420; // size:0x20
 __dt__16FieldClass151420Fv = 0x00208940; // type:func
 func_0022D6C0__16FieldClass151420Fv = 0x00208040; // type:func
-func_00113710 = 0x00113710; // type:func absolute:True allow_duplicated:True
-func_001134C0 = 0x001134C0; // type:func absolute:True allow_duplicated:True
 
 __vt__16FieldClass150F50 = 0x00150F50;
 __vt__16FieldClass1513E0 = 0x001513E0; // size:0x20
@@ -2233,10 +2224,9 @@ field_adjust_time_step = 0x002B16A0; // type:func size:0x1D4
 
 __vt__16FieldClass150C10 = 0x00150C10; // size:0x18
 field_set_update_callback = 0x002B1600; // type:func size:0x50
-func_0011DF10 = 0x0011DF10; // type:func absolute:True
+resident_input_wait_vblank = 0x0011DF10; // type:func absolute:True
 resident_packet_submit = 0x0011F770; // type:func absolute:True allow_duplicated:True
 resident_packet_submit = 0x0011F770; // type:func absolute:True allow_duplicated:True
-func_0011ECD0 = 0x0011ECD0; // type:func absolute:True allow_duplicated:True
 resident_get_system = 0x0010D8E0; // type:func absolute:True
 resident_input_take_vblank_count = 0x0011DF00; // type:func absolute:True
 resident_system_switch_program = 0x001010D0; // type:func absolute:True
@@ -2245,16 +2235,14 @@ field_initialize_and_run = 0x002B1B90; // type:func size:0x2C
 func_001DF3D0__16FieldClass158FF0Fv = 0x002B0B20; // type:func absolute:True allow_duplicated:True
 func_001DF360__16FieldClass158FF0Fv = 0x002B0B30; // type:func absolute:True allow_duplicated:True
 field_run_shutdown_stage = 0x002B1BC0; // type:func size:0x900
-func_101290 = 0x00101290; // type:func absolute:True allow_duplicated:True
 resident_get_entry_table = 0x00101290; // type:func absolute:True allow_duplicated:True
-func_101440 = 0x00101440; // type:func absolute:True allow_duplicated:True
 resident_find_entry = 0x00101440; // type:func absolute:True allow_duplicated:True
 resident_system_get_input = 0x001012D0; // type:func absolute:True
 __dt__14LibBufferOwnerFv = 0x003F5FA0; // type:func size:0x60 absolute:True
 
 func_00428B90 = 0x00428B90; // type:func absolute:True
 func_004288C0 = 0x004288C0; // type:func absolute:True
-func_00110C60 = 0x00110C60; // type:func absolute:True
+resident_sound_free_read_ahead = 0x00110C60; // type:func absolute:True
 func_0040AF80 = 0x0040AF80; // type:func absolute:True
 lib_release_shared_font = 0x00433680; // type:func absolute:True
 func_003EF8A0 = 0x003EF8A0; // type:func absolute:True
@@ -2264,7 +2252,7 @@ lib_shutdown = 0x004E33B0; // type:func absolute:True
 resident_sync_gs_path = 0x0011DE00; // type:func absolute:True
 func_004DBEE0 = 0x004DBEE0; // type:func absolute:True
 resident_input_attach_display = 0x0011DEE0; // type:func absolute:True
-func_001106B0 = 0x001106B0; // type:func absolute:True
+resident_sound_stop_all = 0x001106B0; // type:func absolute:True
 
 resident_remove_entry = 0x00101480; // type:func absolute:True
 
@@ -2337,7 +2325,7 @@ __ct__16FieldClass153590Fv = 0x0024CF90; // type:func allow_duplicated:True
 __ct__16FieldClass156B50Fv = 0x002880A0; // type:func allow_duplicated:True
 __nw__16FieldClass158EA0FUi = 0x004DB5B0; // type:func absolute:True allow_duplicated:True
 __nw__20FieldObjectSlotOwnerFUi = 0x004DB5B0; // type:func absolute:True allow_duplicated:True
-__ct__19ResidentClass14FC90Fv = 0x001204B0; // type:func absolute:True allow_duplicated:True
+__ct__20ResidentSoundBankSetFv = 0x001204B0; // type:func absolute:True allow_duplicated:True
 __nw__16FieldClass15B800FUi = 0x004DB5B0; // type:func absolute:True allow_duplicated:True
 __ct__16FieldClass15B800Fv = 0x002D9FA0; // type:func allow_duplicated:True
 __nw__16FieldClass152350FUi = 0x004DB5B0; // type:func absolute:True allow_duplicated:True
@@ -2357,19 +2345,18 @@ __dl__20FieldObjectSlotOwnerFPv = 0x004DB570; // type:func absolute:True allow_d
 __dl__16FieldClass154E90FPv = 0x004DB570; // type:func absolute:True allow_duplicated:True
 __dl__16FieldClass159010FPv = 0x004DB570; // type:func absolute:True allow_duplicated:True
 
-func_00114650 = 0x00114650; // type:func absolute:True allow_duplicated:True
-func_0011DF80 = 0x0011DF80; // type:func absolute:True allow_duplicated:True
-func_00113930 = 0x00113930; // type:func absolute:True allow_duplicated:True
+resident_thread_set_running = 0x00114650; // type:func absolute:True allow_duplicated:True
+resident_input_reset_seconds = 0x0011DF80; // type:func absolute:True allow_duplicated:True
 resident_heap_create_memory = 0x00113930; // type:func absolute:True allow_duplicated:True
 func_0040AFA0 = 0x0040AFA0; // type:func absolute:True allow_duplicated:True
-func_001014B0 = 0x001014B0; // type:func absolute:True allow_duplicated:True
+resident_store_entry = 0x001014B0; // type:func absolute:True allow_duplicated:True
 func_004076D0 = 0x004076D0; // type:func absolute:True allow_duplicated:True
 func_0040B250 = 0x0040B250; // type:func absolute:True allow_duplicated:True
 strcpy_guess = 0x0013C948; // type:func absolute:True allow_duplicated:True
-func_001138B0 = 0x001138B0; // type:func absolute:True allow_duplicated:True
+resident_heap_set_range = 0x001138B0; // type:func absolute:True allow_duplicated:True
 func_0045F5E0 = 0x0045F5E0; // type:func absolute:True allow_duplicated:True
-func_00120370 = 0x00120370; // type:func absolute:True allow_duplicated:True
-func_001200C0 = 0x001200C0; // type:func absolute:True allow_duplicated:True
+resident_sound_bank_set_get_pick_cost = 0x00120370; // type:func absolute:True allow_duplicated:True
+resident_sound_bank_set_pick_variants = 0x001200C0; // type:func absolute:True allow_duplicated:True
 
 func_00224E50 = 0x00224E50; // type:func absolute:True allow_duplicated:True
 func_0025E5F0 = 0x0025E5F0; // type:func absolute:True allow_duplicated:True
@@ -2780,9 +2767,7 @@ func_002D3EB0 = 0x002D3EB0; // type:func absolute:True allow_duplicated:True
 field_get_builtin_resource_data = 0x002D3EB0; // type:func size:0xC allow_duplicated:True
 resident_drain_release_queues = 0x0011ECD0; // type:func absolute:True allow_duplicated:True
 
-func_0011EE00 = 0x0011EE00; // type:func absolute:True allow_duplicated:True
 
-func_11EE00 = 0x0011EE00; // type:func absolute:True allow_duplicated:True
 resident_queue_allocation_release = 0x0011EE00; // type:func absolute:True allow_duplicated:True
 
 func_001E0A50__16FieldClass152220Fi = 0x0021ED20; // absolute:True allow_duplicated:True type:func
@@ -2810,11 +2795,9 @@ __dt__16FieldClass1530D0Fv = 0x0023B0C0; // absolute:True allow_duplicated:True 
 
 field_resource_loader_list_kind = 0x0023B1A0; // allow_duplicated:True type:func absolute:True
 
-func_100C90 = 0x00100C90; // absolute:True allow_duplicated:True type:func
 resident_get_allocation_heap = 0x00100C90; // absolute:True allow_duplicated:True type:func
 
-func_113180 = 0x00113180; // absolute:True allow_duplicated:True type:func
-func_00113180 = 0x00113180; // absolute:True allow_duplicated:True type:func
+resident_sound_do_nothing = 0x00113180; // absolute:True allow_duplicated:True type:func
 
 func_0023B0C0 = 0x0023B0C0; // absolute:True allow_duplicated:True type:func
 
@@ -3175,3 +3158,10 @@ lib_character_get_mp = 0x002E8C60; // type:func size:0x98
 lib_character_set_hp = 0x002E8990; // type:func size:0x228
 lib_character_get_hp = 0x002E8E40; // type:func size:0x98
 set_seconds__13FieldDurationFUi = 0x00263700; // type:func size:0xB8
+g_image_registry = 0x001B6640; // absolute:True
+g_scheduler = 0x001CFA00; // absolute:True
+g_field_program_vtable = 0x00159070; // absolute:True
+resident_heap_do_nothing = 0x00113EA0; // type:func absolute:True
+resident_dma_queue_push = 0x00114100; // type:func absolute:True
+resident_input_get_seconds = 0x0011DF70; // type:func absolute:True
+resident_sound_iclear_target = 0x001105E0; // type:func absolute:True

@@ -174,7 +174,6 @@ struct FieldCollection50
 };
 
 // This overlay uses shorter aliases for these resident functions.
-extern "C" void func_113EA0();
 
 extern "C" void func_4C74E0(FieldState100* state);
 

@@ -3,7 +3,6 @@
 #include "overlays/1067-00/field_class_154EF0.h"
 #include "overlays/1067-00/text_002C04E0.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 
 /** Partial receiver with a float at offset 0x48. */
 struct FieldFloat48
@@ -162,7 +161,6 @@ struct FieldCollection50
     FieldEntry50* entries;
 };
 
-extern "C" void func_113EA0();
 
 extern "C" void func_4C74E0(FieldState100* state);
 
@@ -541,9 +539,9 @@ extern "C" void func_002C1870(FieldClass15A230* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -923,9 +921,9 @@ extern "C" void func_002C2D40(FieldClass15A5C0* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)
@@ -1476,9 +1474,9 @@ extern "C" void func_002CA4B0(FieldClass15AB70* object, s32 rows, s32 columns)
 
     delete object->unk1C;
 
-    if (D_001B6684 != 0)
+    if (g_field_allocation_heap != 0)
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6684);
+        void* heap = resident_exchange_allocation_heap(g_field_allocation_heap);
         object->unk1C = new (0) FieldBitset154E80(rows);
 
         if (object->unk1C == 0)

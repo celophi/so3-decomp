@@ -32,7 +32,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00292D20", func_00292E
 void func_00293350(FieldOwner18* object, u32 value)
 {
     object->value = value;
-    ((FieldContextDE*)D_001B6430->context)->unkde_7 = 1;
+    ((FieldContextDE*)g_field_context_ref->context)->unkde_7 = 1;
 }
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_00292D20", func_00293380);

@@ -107,13 +107,13 @@ void func_0042EB30(LibTextValueState* state, u32 value);
 void func_00432710(void* object, u32 value);
 
 /**
- * @brief Free memory through the heap at D_001B6684 when one is set, otherwise through operator delete.
+ * @brief Free memory through the heap at g_field_allocation_heap when one is set, otherwise through operator delete.
  * @param memory Allocation, or null.
  */
 void func_00435070(void* memory);
 
 /**
- * @brief Allocate from the heap at D_001B6684 when one is set, otherwise through operator new.
+ * @brief Allocate from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
  * @param size Size in bytes.
  * @param heap Heap selector passed on to operator new.
  * @return The allocation.

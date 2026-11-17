@@ -2,7 +2,8 @@
 #define SO3_OVERLAYS_LIB_TEXT_003E68C0_H
 
 #include "types.h"
-#include "main/resident_0011EE70.h"
+#include "main/object.h"
+#include "main/packet.h"
 
 #ifdef __cplusplus
 extern "C" void func_003EF030(u8* object);

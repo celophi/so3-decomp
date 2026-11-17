@@ -4,8 +4,8 @@
 #include "overlays/boot/music_player.h"
 #include "overlays/boot/init.h"
 #include "overlays/boot/resident.h"
-#include "main/resident_001001E0.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
+#include "main/stream_thread.h"
 
 /** Sound played for each track. */
 extern const s32 g_music_track_sounds[];

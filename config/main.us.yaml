@@ -51,19 +51,31 @@ segments:
     vram: 0x100000
     subsegments:
       - [0x680, asm, startup]
-      - [0x860, cpp, main/resident_001001E0]
-      - [0x18D0, c, main/func_00101250]
-      - [0x18E0, cpp, main/resident_00101260]
-      - [0x1B90, c, main/func_00101510]
-      - [0x1BD0, cpp, main/resident_00101550]
-      - [0xA700, c, main/func_0010A080]
-      - [0xA730, c, main/func_0010A0B0]
-      - [0xA760, cpp, main/resident_0010A0E0]
-      - [0x1F478, pad, resident_queue_end_align]
-      - [0x1F480, c, main/func_0011EE00]
-      - [0x1F4F0, cpp, main/resident_0011EE70]
-      - [0x21EE0, cpp, main/resident_00121860]
-      - [0x21F90, pad, resident_00121860_end_align]
+      - [0x860, cpp, main/main]
+      - [0x15E0, cpp, main/system]
+      - [0x1AC0, cpp, main/entry_table]
+      - [0x1BD0, cpp, main/program]
+      - [0x1C00, cpp, main/decode]
+      - [0x3110, cpp, main/resource_queue]
+      - [0x4E10, cpp, main/decode_stream]
+      - [0x5F40, cpp, main/sound_stream]
+      - [0x9B90, cpp, main/stream_thread]
+      - [0xC290, cpp, main/sif]
+      - [0xCF60, cpp, main/utility]
+      - [0xDF70, cpp, main/sound]
+      - [0x13810, cpp, main/heap]
+      - [0x14530, cpp, main/dma_queue]
+      - [0x14A60, cpp, main/double_compare]
+      - [0x14AD0, cpp, main/thread]
+      - [0x15830, cpp, main/archive]
+      - [0x1E420, cpp, main/input]
+      - [0x1F350, cpp, main/release_queue]
+      - [0x1F580, cpp, main/packet]
+      - [0x1FFC0, cpp, main/sound_set]
+      - [0x20BE0, cpp, main/stats]
+      - [0x20D80, cpp, main/object_list]
+      - [0x21EE0, cpp, main/debug]
+      - [0x21F90, pad, debug_end_align]
       - [0x21FC0, c, sdk/main/libkernl_00121940]
       - [0x2B948, c, sdk/main/libdma_0012B2C8]
       - [0x2C190, c, sdk/main/libmc_0012BB10]
@@ -93,7 +105,7 @@ segments:
       - [0x44200, databin, data]
       - start: 0x4DD00
         type: .rodata
-        name: main/resident_00101550
+        name: main/decode
         linker_section: .rodata.0014D680
         rodata_anchors:
           - {function: resident_decode_lz_words, offset: 0x0, size: 0x40}
@@ -103,34 +115,34 @@ segments:
       - [0x4DDC0, rodatabin, rodata_0014D740]
       - start: 0x4DDF0
         type: .rodata
-        name: main/resident_00101550
+        name: main/decode_stream
         linker_section: .rodata.0014D770
         rodata_anchors:
-          - {function: func_00104790, offset: 0x0, size: 0x40}
-          - {function: func_00104C90, offset: 0x40, size: 0x3c}
-          - {function: func_00105210, offset: 0x80, size: 0x40}
+          - {function: resident_decode_lz_words_step, offset: 0x0, size: 0x40}
+          - {function: resident_decode_lz_runs_step, offset: 0x40, size: 0x3c}
+          - {function: resident_decode_lz_bytes_step, offset: 0x80, size: 0x40}
         linker_section_order: .rodata
       - [0x4DEB0, rodatabin, rodata_0014D830]
       - start: 0x4DEC0
         type: .rodata
-        name: main/resident_00101550
+        name: main/sound_stream
         linker_section: .rodata.0014D840
         rodata_anchors:
-          - {function: func_00106240, offset: 0x0, size: 0x24}
-          - {function: func_00106A50, offset: 0x30, size: 0x2c}
+          - {function: resident_stream_step_sequence_upload, offset: 0x0, size: 0x24}
+          - {function: resident_stream_step_bank_load, offset: 0x30, size: 0x2c}
         linker_section_order: .rodata
       - [0x4DF1C, pad, rodata_pad_0014D89C]
       - start: 0x4DF20
         type: .rodata
-        name: main/resident_0010A0E0
+        name: main/sound
         linker_section: .rodata.0014D8A0
         rodata_anchors:
-          - {function: func_0010F250, offset: 0x0, size: 0x28}
+          - {function: resident_sound_update, offset: 0x0, size: 0x28}
         linker_section_order: .rodata
       - [0x4DF48, rodatabin, rodata_0014D8C8]
       - start: 0x4DFC0
         type: .rodata
-        name: main/resident_0010A0E0
+        name: main/archive
         linker_section: .rodata.0014D940
         rodata_anchors:
           - {function: run__21ResidentArchiveWorkerFv, offset: 0x0, size: 0x2c}

@@ -1,14 +1,13 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_001E1590.h"
 #include "main/resident_data.h"
-#include "main/resident_001001E0.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "overlays/lib/text_00429B00.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/1067-00/text_002D3BD0.h"
 #include "overlays/1067-00/field_runtime.h"
+#include "main/utility.h"
 
 struct FieldGlobal643CState
 {
@@ -51,7 +50,7 @@ void FieldResourceRequestHandler::func_001DD7B0()
  */
 FieldKeyedResourceLoader* field_start_keyed_resource_request(FieldResourceRequestHandler* handler, s32 file_key, u8 mode)
 {
-    field_request_loader_removal(static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30), 8);
+    field_request_loader_removal(static_cast<FieldResourceLoaderList*>(g_field_context_ref->context->unk30), 8);
     handler->notification_pending = 1;
     handler->file_key = file_key;
     handler->unk1c = 0;
@@ -75,7 +74,7 @@ FieldKeyedResourceLoader* field_start_keyed_resource_request(FieldResourceReques
     }
 
     handler->request_loader->completion_callback = static_cast<FieldClass1DD400*>(handler);
-    static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30)->append_node(handler->request_loader, -1);
+    static_cast<FieldResourceLoaderList*>(g_field_context_ref->context->unk30)->append_node(handler->request_loader, -1);
     return handler->request_loader;
 }
 
@@ -99,7 +98,7 @@ static inline bool null_node(const FieldClass150060* node)
  */
 void FieldResourceRequestHandler::update()
 {
-    FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30);
+    FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(g_field_context_ref->context->unk30);
     FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&static_cast<LibUpdateList&>(*manager));
     bool found = false;
 
@@ -1471,7 +1470,7 @@ void FieldKeyedResourceLoader::update_requests(s32 cancel_request)
 
                 if (state == 12 || state == 7)
                 {
-                    FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30);
+                    FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(g_field_context_ref->context->unk30);
                     FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&manager->sentinel);
                     u8 busy = 0;
 
@@ -1509,7 +1508,7 @@ void FieldKeyedResourceLoader::update_requests(s32 cancel_request)
             }
             else
             {
-                FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30);
+                FieldResourceLoaderList* manager = static_cast<FieldResourceLoaderList*>(g_field_context_ref->context->unk30);
                 FieldClass150060* node = reinterpret_cast<FieldClass150060*>(&manager->sentinel);
                 u8 busy = 0;
 
@@ -1671,7 +1670,7 @@ FieldKeyedResourceLoader::FieldKeyedResourceLoader(s32 key)
     }
     else
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk6c);
+        void* heap = resident_exchange_allocation_heap(g_field_context_ref->context->unk6c);
 
         if (requests)
         {

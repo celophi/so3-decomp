@@ -174,7 +174,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FDB
 s32 func_001FDC90(FieldScriptCursorU32* object)
 {
     bool low_bit = (*object->current & 1) != 0;
-    ((FieldContextBit4*)D_001B6430->context)->unkde_4 = !low_bit;
+    ((FieldContextBit4*)g_field_context_ref->context)->unkde_4 = !low_bit;
     return 1;
 }
 
@@ -184,7 +184,7 @@ s32 func_001FDCD0(FieldScriptCursorU32* object)
     u32* words = object->current;
     second = words[1];
     u32 first = words[0];
-    ResidentContextObject52* target = D_001B6430->context->unk44;
+    ResidentContextObject52* target = g_field_context_ref->context->unk44;
     target->unk40 = first;
     target->unk3c = second;
     return 1;
@@ -195,7 +195,7 @@ s32 func_001FDD00(FieldScriptCursorU32* object)
     u32 second;
     u32* words = object->current;
     second = words[1];
-    ResidentContextObject52* target = D_001B6430->context->unk44;
+    ResidentContextObject52* target = g_field_context_ref->context->unk44;
     u32 first = words[0];
     target->unk38 = first;
     target->unk34 = second;
@@ -214,7 +214,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_001FD860", func_001FE0
 
 s32 func_001FE230(FieldScriptCursorU32* object)
 {
-    ((FieldContextDE*)D_001B6430->context)->unkde_5 = *object->current != 0;
+    ((FieldContextDE*)g_field_context_ref->context)->unkde_5 = *object->current != 0;
     return 1;
 }
 

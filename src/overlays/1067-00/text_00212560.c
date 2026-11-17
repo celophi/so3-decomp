@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "overlays/1067-00/field_runtime.h"
 #include "overlays/1067-00/text_00212560.h"
+#include "main/utility.h"
 
 typedef struct FieldAttached217CE0
 {
@@ -1096,7 +1097,7 @@ u32 func_00217920(FieldScriptObject151D40* object, s32 key)
         return object->unk424;
     }
 
-    values = func_101440(func_101290(resident_get_system()), 4);
+    values = (FieldRuntimeValues*)resident_find_entry(resident_get_entry_table(resident_get_system()), 4);
 
     switch (key & 0xF000)
     {

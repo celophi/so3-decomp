@@ -2,7 +2,6 @@
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libdma_0012B2C8.h"
 #include "sdk/main/libgraph_0012EAC8.h"
-#include "main/resident_00101260.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/palette_blend_channel.h"
 #include "overlays/lib/text_004CD3A0.h"
@@ -17,7 +16,6 @@
 #include "ee.h"
 #include "clamp.h"
 #include "main/resident_data.h"
-#include "main/resident_001001E0.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "sdk/main/libm_guess_0013F3E0.h"
@@ -25,7 +23,6 @@
 #include "overlays/lib/render_buffer.h"
 #include "overlays/lib/render_channel.h"
 #include "overlays/lib/text_004DD440.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/transform_vu0.h"
 
@@ -1052,7 +1049,7 @@ s32 func_004D04C0(void* object)
         submission = (DmaSubmission*)((u8*)submission + 0x90);
     }
 
-    return func_00114100(g_vif1_dma_queue, submission);
+    return resident_dma_queue_push(g_vif1_dma_queue, submission);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D04F0);
@@ -1080,7 +1077,7 @@ s32 func_004D0740(void* object)
         submission = (DmaSubmission*)((u8*)submission + 0x90);
     }
 
-    return func_00114100(g_vif1_dma_queue, submission);
+    return resident_dma_queue_push(g_vif1_dma_queue, submission);
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0770);
@@ -1285,7 +1282,7 @@ extern "C" void func_004486A0(LibResourceBuffer* resource);
 
 extern "C" void func_004D0260(void* owner, LibResourceBuffer* resource);
 
-extern "C" void* D_001B6640;
+extern "C" void* g_image_registry;
 
 /** @brief Unregister the resource from the resource manager if it is registered. */
 void LibResourceBuffer::unregister()
@@ -1294,7 +1291,7 @@ void LibResourceBuffer::unregister()
     {
         registered = 0;
         func_004486A0(this);
-        func_004D0260(D_001B6640, this);
+        func_004D0260(g_image_registry, this);
     }
 }
 
@@ -1304,7 +1301,7 @@ LibResourceBuffer::~LibResourceBuffer()
     if (registered)
     {
         func_004486A0(this);
-        func_004D0260(D_001B6640, this);
+        func_004D0260(g_image_registry, this);
     }
 
     if (!external_data)
@@ -2620,7 +2617,7 @@ extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel)
     object->busy = 1;
     object->channel = channel;
     // The queue invokes the submission callbacks through the object's vtable.
-    return func_00114100(D_001B660C, reinterpret_cast<DmaSubmission*>(object));
+    return resident_dma_queue_push(D_001B660C, reinterpret_cast<DmaSubmission*>(object));
 }
 
 /**
@@ -2637,7 +2634,7 @@ extern "C" void func_004D9AB0(LibBusyObject* object, u8 channel)
 
     object->busy = 1;
     object->channel = channel;
-    func_00114100(D_001B660C, reinterpret_cast<DmaSubmission*>(object));
+    resident_dma_queue_push(D_001B660C, reinterpret_cast<DmaSubmission*>(object));
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9AF0);
@@ -2685,7 +2682,7 @@ void LibMicrocodeLoader::start_upload()
 {
     unk04 = 0;
     current_program = LIB_VU1_PROGRAM_NONE;
-    func_00114100(g_vif1_dma_queue, this);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 /** @brief Start with no program and an empty upload packet. */
@@ -3319,7 +3316,7 @@ u32 LibCameraContext::wait_for_field(s32 frame)
     }
 
     unk3E6B = 1;
-    field = func_0011DF10(input, 0) ^ 1;
+    field = resident_input_wait_vblank(input, 0) ^ 1;
 
     if (resident_get_system()->progressive)
     {

@@ -188,7 +188,7 @@ extern "C" void func_0020DE80(FieldClass151640* object)
         }
 
         memcpy_guess(node->unk84, node->unk84, 0x11);
-        node->shape.unk04 = (LibTransformOwner*)lib_find_named_entry(static_cast<LibEntryManager*>(D_001B6430->context->unk08->current_object->unk7c), node->unk84);
+        node->shape.unk04 = (LibTransformOwner*)lib_find_named_entry(static_cast<LibEntryManager*>(g_field_context_ref->context->unk08->current_object->unk7c), node->unk84);
     }
 }
 
@@ -287,7 +287,7 @@ extern "C" FieldClass151570* func_0020E0D0(FieldClass151640* object, FieldClass1
 {
     object->append_node(entry, -1);
     FieldClass151570* attachment = func_0020D5E0(object,
-        ((FieldRoot26FF70*)D_001B6430->context->unk08->current_object)->unkD8->unk8c, &entry->shape);
+        ((FieldRoot26FF70*)g_field_context_ref->context->unk08->current_object)->unkD8->unk8c, &entry->shape);
 
     if (attachment)
     {

@@ -1,6 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_00202240.h"
 #include "overlays/1067-00/text_002CEAF0.h"
@@ -11,7 +10,6 @@
 #include "overlays/1067-00/text_0020E4B0.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
-#include "main/resident_00101260.h"
 #include "overlays/1067-00/text_00200710.h"
 #include "overlays/1067-00/text_001E6C50.h"
 #include "overlays/lib/render_buffer.h"
@@ -171,7 +169,7 @@ struct FieldMenuPad
  */
 static inline FieldMenuPad* menu_pad()
 {
-    return reinterpret_cast<FieldMenuPad*>(D_001B6430->context->input);
+    return reinterpret_cast<FieldMenuPad*>(g_field_context_ref->context->input);
 }
 
 /**
@@ -180,7 +178,7 @@ static inline FieldMenuPad* menu_pad()
  */
 static inline u16* menu_buttons()
 {
-    return reinterpret_cast<u16*>(D_001B6430->unk04);
+    return reinterpret_cast<u16*>(g_field_context_ref->unk04);
 }
 
 extern "C" void func_00264580(FieldCountedList* list);
@@ -193,7 +191,7 @@ extern "C" s32 func_00264650(FieldCountedList* list, void** value);
  */
 static inline FieldClass1516A0* field_display()
 {
-    return reinterpret_cast<FieldClass1516A0*>(D_001B6430->context->unk38);
+    return reinterpret_cast<FieldClass1516A0*>(g_field_context_ref->context->unk38);
 }
 
 enum FieldMenuId
@@ -1570,7 +1568,7 @@ FieldMenuManager::FieldMenuManager()
 
 void FieldClass15B040::update_requests(s32 cancel_request)
 {
-    ResidentContext* context = D_001B6430->context;
+    ResidentContext* context = g_field_context_ref->context;
 
     if (context->unkdd.unk4 || context->unkdd.unk6)
     {
@@ -1663,7 +1661,7 @@ FieldClass15B040::~FieldClass15B040()
 {
     if (!unk34_0)
     {
-        D_001B6430->context->unk58->unk1c8 = 0;
+        g_field_context_ref->context->unk58->unk1c8 = 0;
     }
 }
 
@@ -1955,7 +1953,7 @@ s32 FieldClass15B0E0::func_002D1DE0(u32* first, u32* second, s32 level)
 
 void FieldClass15B0E0::func_002D1FD0()
 {
-    table = static_cast<u16*>(func_00201EA0(D_001B6430->context->unk2c, 'ITEM', 0, 0));
+    table = static_cast<u16*>(func_00201EA0(g_field_context_ref->context->unk2c, 'ITEM', 0, 0));
 }
 
 void FieldClass15B0E0::func_002D2020()
@@ -1994,7 +1992,7 @@ void FieldClass15B0E0::func_002D2210(s32 flag)
 
     unk55_0 = flag;
     unk38 = unk34;
-    unk34 = D_001B6430->context->unk08->unkb8;
+    unk34 = g_field_context_ref->context->unk08->unkb8;
     unk24 = 10.0f;
 }
 
@@ -2013,7 +2011,7 @@ s32 FieldClass15B0E0::func_002D22B0(const FieldVec4A* position)
     }
 
     child->func_00205710(position);
-    static_cast<LibUpdateList*>(D_001B6430->context->unk04)->append_node(child, LibUpdateList::DEFAULT_NODE_KIND);
+    static_cast<LibUpdateList*>(g_field_context_ref->context->unk04)->append_node(child, LibUpdateList::DEFAULT_NODE_KIND);
     FieldResidentEntry4* entry = resident_entry4();
     entry->flags = (entry->flags & ~1) | 1;
     entry->unk1c4++;

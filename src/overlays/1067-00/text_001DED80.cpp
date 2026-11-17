@@ -1,6 +1,5 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
-#include "main/resident_001001E0.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "overlays/lib/text_00429B00.h"
@@ -16,7 +15,7 @@
 
 bool FieldClass154C10::func_00204420()
 {
-    ResidentContext* context = D_001B6430->context;
+    ResidentContext* context = g_field_context_ref->context;
 
     if (!context->unk08->unkf5_5 || context->unkdd.unk7 || context->unkde_1)
     {
@@ -107,7 +106,7 @@ void func_001DEF00(FieldFlaggedListObject* list)
 void func_001DEF70(FieldClass150060* list, s32 preserve_focus)
 {
     FieldClass150060* node = list->unk08;
-    FieldClass151510* focus = static_cast<FieldClass151510*>(D_001B6430->context->unk18);
+    FieldClass151510* focus = static_cast<FieldClass151510*>(g_field_context_ref->context->unk18);
 
     for (;;)
     {

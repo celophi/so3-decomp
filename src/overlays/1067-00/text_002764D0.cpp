@@ -1,12 +1,12 @@
 #include "include_asm.h"
 #include "overlays/1067-00/text_002764D0.h"
-#include "main/resident_0011EE70.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/1067-00/text_002CABC0.h"
 #include "main/resident_data.h"
-#include "main/resident_0010A0E0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/1067-00/text_0021FB80.h"
+#include "main/sound_set.h"
+#include "main/sound.h"
 
 
 typedef struct FieldFlagState271B0
@@ -164,13 +164,12 @@ extern "C" void* memcpy_guess(void* destination, const void* source, u32 size);
 
 extern "C" void* memset_guess(void* destination, s32 value, u32 size);
 
-extern "C" void func_1105E0(ResidentSound* requests, void* target);
 
 INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002764D0);
 
 s32 func_00276BE0(FieldFlagState271B0* object)
 {
-    object->unk428 = D_001B6430->context->unkdc;
+    object->unk428 = g_field_context_ref->context->unkdc;
     return 1;
 }
 
@@ -180,7 +179,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_00276C
 
 s32 func_00276DF0(void* object)
 {
-    D_001B6430->context->unk44->unk52_0 = 1;
+    g_field_context_ref->context->unk44->unk52_0 = 1;
     return 1;
 }
 
@@ -213,7 +212,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002775
 
 s32 func_00277610(FieldFlagState271B0* object)
 {
-    D_001B6448 = (object->unk428 & 1) != 0;
+    g_fixed_frame_step = (object->unk428 & 1) != 0;
     return 1;
 }
 
@@ -343,7 +342,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002792
 
 FieldBattleResourcePreloader::~FieldBattleResourcePreloader()
 {
-    ResidentContext* context = D_001B6430->context;
+    ResidentContext* context = g_field_context_ref->context;
 
     if (this == context->unk1c)
     {
@@ -373,7 +372,7 @@ INCLUDE_ASM("build/overlays/1067-00/asm/nonmatchings/text_002764D0", func_002794
 static inline u8 settings_option_flags()
 {
     u32 bits = 0;
-    u32 options = D_001B6430->context->unkd0;
+    u32 options = g_field_context_ref->context->unkd0;
     bits |= (options & 0x2) != 0;
     bits |= (options & 0x4) ? 0x2 : 0;
     bits |= (options & 0x8) ? 0x4 : 0;
@@ -588,7 +587,7 @@ void FieldBattleResourcePreloader::set_resource_selection(s32 id, s32 area, u8 k
 
 void FieldBattleResourcePreloader::update_requests(s32 flag)
 {
-    ResidentContext* context = D_001B6430->context;
+    ResidentContext* context = g_field_context_ref->context;
     ResidentContextFlagsDD* flags = &context->unkdd;
 
     if (flags->unk4 && current_request > 0)
@@ -643,7 +642,7 @@ void FieldBattleResourcePreloader::update_requests(s32 flag)
             return;
         }
 
-        if (func_0011F9D0(D_001B6430->context->unk24))
+        if (resident_sound_bank_set_get_pending(g_field_context_ref->context->unk24))
         {
             return;
         }
@@ -846,7 +845,7 @@ void func_0027ABF0(FieldObject22E680* object)
 {
     if (object->unk50 != 0)
     {
-        func_1105E0(g_sound, object->unk50);
+        resident_sound_iclear_target(g_sound, reinterpret_cast<ResidentSoundEmitter*>(object->unk50));
         object->unk50 = 0;
     }
 

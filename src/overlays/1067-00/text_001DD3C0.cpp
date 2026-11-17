@@ -67,7 +67,7 @@ static inline bool is_list_head(const void* head, const void* node)
 /** @brief Report whether area equals the item's area word, or the context default when it is -1. */
 static inline bool same_area(s32 area, const FieldClass152FE0* item)
 {
-    s32 item_area = item->unk694 == -1 ? D_001B6430->context->unkaa : item->unk694;
+    s32 item_area = item->unk694 == -1 ? g_field_context_ref->context->unkaa : item->unk694;
     return item_area == area;
 }
 
@@ -535,7 +535,7 @@ FieldFlaggedListObject* func_001DDF50(FieldFlaggedListObject* list, s32 key)
  */
 void FieldClass14FE30::update_nodes()
 {
-    if (D_001B6430->context->unkdd.unk7)
+    if (g_field_context_ref->context->unkdd.unk7)
     {
         return;
     }
@@ -565,7 +565,7 @@ void FieldClass14FE30::update_nodes()
     }
 
     s32 count = active_node_count;
-    FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
+    FieldClass150F90* focus = g_field_context_ref->context->unk08->current_object;
 
     if (!focus || (focus && focus->unk90 <= 0.0f))
     {
@@ -679,7 +679,7 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
 
         if (!only_keyed || current->unk70)
         {
-            func_0024CE10(D_001B6430->context->unk40, current);
+            func_0024CE10(g_field_context_ref->context->unk40, current);
         }
     }
 }
@@ -695,21 +695,21 @@ void func_001DE470(FieldFlaggedListObject* list, s32 only_keyed)
  */
 void FieldClass14FE30::update()
 {
-    ResidentContext* ctx = D_001B6430->context;
+    ResidentContext* ctx = g_field_context_ref->context;
 
-    if (ctx->unkdd.unk4 || func_002B0BC0((FieldFlagOwner2B0BC0*)ctx) || D_001B6430->context->unkde_1
-        || D_001B6430->context->unkdd.unk5 || !D_001B6430->context->unk08->current_object)
+    if (ctx->unkdd.unk4 || func_002B0BC0((FieldFlagOwner2B0BC0*)ctx) || g_field_context_ref->context->unkde_1
+        || g_field_context_ref->context->unkdd.unk5 || !g_field_context_ref->context->unk08->current_object)
     {
         return;
     }
 
-    if (D_001B6430->context->unkdd.unk6)
+    if (g_field_context_ref->context->unkdd.unk6)
     {
         return;
     }
 
     update_nodes();
-    FieldClass150F90* focus = D_001B6430->context->unk08->current_object;
+    FieldClass150F90* focus = g_field_context_ref->context->unk08->current_object;
 
     if (!focus)
     {
@@ -721,17 +721,17 @@ void FieldClass14FE30::update()
         return;
     }
 
-    if (D_001B6430->context->unk38->unk4c8_0)
+    if (g_field_context_ref->context->unk38->unk4c8_0)
     {
         return;
     }
 
-    if (D_001B6430->context->unk08->unkf5_3)
+    if (g_field_context_ref->context->unk08->unkf5_3)
     {
         return;
     }
 
-    const FieldVec4A* center = &static_cast<FieldClass150F90*>(D_001B6430->context->unk18)->unk20;
+    const FieldVec4A* center = &static_cast<FieldClass150F90*>(g_field_context_ref->context->unk18)->unk20;
     FieldClass152FE0* nearest = 0;
     float best = 3.4028235e38f;
     FieldClass150060* node = reinterpret_cast<FieldClass150060*>(this);
@@ -768,13 +768,13 @@ void FieldClass14FE30::update()
         return;
     }
 
-    FieldBattleResourcePreloader* preloader = static_cast<FieldBattleResourcePreloader*>(D_001B6430->context->unk1c);
+    FieldBattleResourcePreloader* preloader = static_cast<FieldBattleResourcePreloader*>(g_field_context_ref->context->unk1c);
 
     if (!preloader)
     {
         preloader = new(0) FieldBattleResourcePreloader;
-        D_001B6430->context->unk1c = preloader;
-        static_cast<FieldResourceLoaderList*>(D_001B6430->context->unk30)->insert(preloader);
+        g_field_context_ref->context->unk1c = preloader;
+        static_cast<FieldResourceLoaderList*>(g_field_context_ref->context->unk30)->insert(preloader);
     }
 
     s32 current_id = preloader->unk7c8;
@@ -783,7 +783,7 @@ void FieldClass14FE30::update()
     {
         s32 id = nearest->unk690;
         u8 kind = nearest->unk69c;
-        preloader->set_resource_selection(id, (nearest->unk694 == -1 ? D_001B6430->context->unkaa : nearest->unk694), kind, -1, 1);
+        preloader->set_resource_selection(id, (nearest->unk694 == -1 ? g_field_context_ref->context->unkaa : nearest->unk694), kind, -1, 1);
     }
 }
 
@@ -800,7 +800,7 @@ void FieldResourcePreloader::allocate_requests(s32 count)
     }
     else
     {
-        void* heap = resident_exchange_allocation_heap(D_001B6430->context->unk6c);
+        void* heap = resident_exchange_allocation_heap(g_field_context_ref->context->unk6c);
 
         if (requests)
         {

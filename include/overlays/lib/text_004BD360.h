@@ -8,6 +8,7 @@
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/vector.h"
+#include "main/decode.h"
 
 typedef struct N54Owner84_004BD360 N54Owner84_004BD360;
 

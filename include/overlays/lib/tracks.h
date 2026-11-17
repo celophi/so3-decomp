@@ -2,7 +2,6 @@
 #define SO3_OVERLAYS_LIB_TRACKS_H
 
 #include "types.h"
-#include "main/resident_001001E0.h"
 #include "overlays/lib/vector.h"
 #include "clamp.h"
 #include "overlays/lib/text_004BD360.h"

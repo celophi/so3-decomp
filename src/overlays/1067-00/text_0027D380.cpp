@@ -25,7 +25,7 @@ void FieldClass155810::func_001DD7B0()
     if (unk14 != 0)
     {
         FieldCountedObject4D5* found = reinterpret_cast<FieldCountedObject4D5*>(
-            func_001DEE30((FieldFlaggedListObject*)D_001B6430->context->unk04, unk270, 0x10000));
+            func_001DEE30((FieldFlaggedListObject*)g_field_context_ref->context->unk04, unk270, 0x10000));
 
         if (found != 0 && found->unk4d5 > 0)
         {

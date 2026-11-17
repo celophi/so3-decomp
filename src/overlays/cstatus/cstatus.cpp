@@ -1,8 +1,5 @@
 #include "overlays/cstatus/text.h"
 #include "main/resident_data.h"
-#include "main/resident_001001E0.h"
-#include "main/resident_00101260.h"
-#include "main/resident_0010A0E0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_0013C948.h"
 
@@ -3519,16 +3516,16 @@ void StatusResourceState::update()
         break;
     case STATUS_TRANSITION_START:
     {
-        func_0020F230(D_001B6430->context->unk38, 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
+        func_0020F230(g_field_context_ref->context->unk38, 0, 0, 0x80000000, 0, 0, 0, 10.0f, 0.0f, 0.0f);
         StatusTransitionEffect* effect;
-        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->depth = D_001B6694;
+        (effect = reinterpret_cast<StatusTransitionOwner*>(g_field_context_ref->context->unk38)->effect)->depth = D_001B6694;
         effect->mode = 10;
         object->transition_phase = STATUS_TRANSITION_SWITCH_WINDOW;
         break;
     }
     case STATUS_TRANSITION_SWITCH_WINDOW:
     {
-        if ((u8)func_0022A160(reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect) != 0)
+        if ((u8)func_0022A160(reinterpret_cast<StatusTransitionOwner*>(g_field_context_ref->context->unk38)->effect) != 0)
         {
             return;
         }
@@ -3556,16 +3553,16 @@ void StatusResourceState::update()
         }
         }
 
-        func_0020F230(D_001B6430->context->unk38, 0, 0x80000000, 0, 0, 0, 0, 10.0f, 0.0f, 0.0f);
+        func_0020F230(g_field_context_ref->context->unk38, 0, 0x80000000, 0, 0, 0, 0, 10.0f, 0.0f, 0.0f);
         StatusTransitionEffect* effect;
-        (effect = reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect)->depth = D_001B6694;
+        (effect = reinterpret_cast<StatusTransitionOwner*>(g_field_context_ref->context->unk38)->effect)->depth = D_001B6694;
         effect->mode = 10;
         object->transition_phase = STATUS_TRANSITION_FINISH;
         g_display->set_output(true, false);
         break;
     }
     case STATUS_TRANSITION_FINISH:
-        if ((u8)func_0022A160(reinterpret_cast<StatusTransitionOwner*>(D_001B6430->context->unk38)->effect) == 0)
+        if ((u8)func_0022A160(reinterpret_cast<StatusTransitionOwner*>(g_field_context_ref->context->unk38)->effect) == 0)
         {
             object->transition_phase = STATUS_TRANSITION_IDLE;
             D_001B643C->callbacks->input_enabled = 1;
@@ -3632,7 +3629,7 @@ s32 StatusResourceState::on_resource_loaded(void* buffer)
     StatusAlignedResource* aligned = aligned_status_resource(buffer);
     s32 size = aligned->size + 0x80;
     void* saved_heap = resident_get_allocation_heap();
-    void* heap = D_001B6430->context->unk70;
+    void* heap = g_field_context_ref->context->unk70;
     void* memory = resident_heap_allocate(heap, size);
 
     if (memory != 0)

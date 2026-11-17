@@ -185,9 +185,7 @@ lib_list_indicator_init = 0x0041A930; // type:func size:0x68
 g_field_runtime = 0x001B657C; // size:0x4 absolute:True
 lib_indexed_resource_init = 0x004530E0; // type:func size:0x70
 lib_queue_display_object = 0x00465B20; // type:func size:0x70
-func_100B00 = 0x00100B00; // type:func absolute:True
 __nwa__FUii = 0x00100B00; // type:func absolute:True allow_duplicated:True
-func_100BE0 = 0x00100BE0; // type:func absolute:True
 lib_item_code_init_rectangle = 0x00413F70; // type:func size:0x98
 lib_detail_code_init_rectangle = 0x004143F0; // type:func size:0x98
 lib_draw_state_init = 0x00453FF0; // type:func size:0x64
@@ -604,16 +602,12 @@ __dt__14LibClass174CF0Fv = 0x00456140; // type:func allow_duplicated:True absolu
 
 __dt__14LibBufferOwnerFv = 0x003F5FA0; // type:func size:0x60
 
-func_001025A0 = 0x001025A0; // type:func absolute:True allow_duplicated:True
 resident_decode_resource_block = 0x001025A0; // type:func absolute:True allow_duplicated:True
 
-func_00102920 = 0x00102920; // type:func absolute:True allow_duplicated:True
 resident_allocate_decode_buffer = 0x00102920; // type:func absolute:True allow_duplicated:True
 
-func_0011EE00 = 0x0011EE00; // type:func absolute:True allow_duplicated:True
 resident_queue_allocation_release = 0x0011EE00; // type:func absolute:True allow_duplicated:True
 
-func_0011ED90 = 0x0011ED90; // type:func absolute:True allow_duplicated:True
 resident_enqueue_object = 0x0011ED90; // type:func absolute:True allow_duplicated:True
 
 func_004A91F0 = 0x004A91F0; // type:func absolute:True allow_duplicated:True
@@ -1193,8 +1187,8 @@ D_0015E797 = 0x0015E797; // ignore:True
 D_0015E798 = 0x0015E798; // ignore:True
 D_0015E7A0 = 0x0015E7A0; // ignore:True
 D_0015E7A4 = 0x0015E7A4; // ignore:True
-func_004295B0__13LibUpdateListFPv = 0x004295B0; // type:func size:0x8 allow_duplicated:True
-func_004295C0__13LibUpdateListFv = 0x004295C0; // type:func size:0x8 allow_duplicated:True
+set_next_list__13LibUpdateListFPv = 0x004295B0; // type:func size:0x8 allow_duplicated:True
+idle__13LibUpdateListFv = 0x004295C0; // type:func size:0x8 allow_duplicated:True
 g_default_bounding_sphere = 0x0050CD30; // size:0x10
 lib_quaternion_slerp = 0x004CD630; // type:func size:0x1D4
 lib_finish_packet = 0x004D00B0; // type:func size:0xA8
@@ -2240,3 +2234,27 @@ render__12LibContainerFv = 0x004C61F0; // type:func absolute:True allow_duplicat
 func_004C61F0 = 0x004C61F0; // type:func allow_duplicated:True
 func_0044B100__12LibContainerFUiUiUi = 0x004C6230; // type:func absolute:True allow_duplicated:True
 func_004C6230 = 0x004C6230; // type:func allow_duplicated:True
+resident_archive_do_nothing = 0x0011C6B0; // type:func absolute:True
+resident_archive_read_resource = 0x0011CA60; // type:func absolute:True
+resident_archive_select_resource = 0x0011D080; // type:func absolute:True
+resident_archive_start_ring_read = 0x0011C120; // type:func absolute:True
+resident_archive_stop_ring_read = 0x0011C8E0; // type:func absolute:True
+resident_dma_queue_pause = 0x001140F0; // type:func absolute:True
+resident_input_wait_vblank = 0x0011DF10; // type:func absolute:True
+resident_packet_add_rectangle = 0x0011F1D0; // type:func absolute:True
+resident_packet_get_address = 0x0011F760; // type:func absolute:True
+resident_packet_set_alpha_2 = 0x0011F140; // type:func absolute:True
+resident_sound_bank_set_play = 0x0011FB40; // type:func absolute:True
+resident_sound_bank_set_play_data = 0x0011FA80; // type:func absolute:True
+resident_sound_bank_set_play_voice = 0x0011F9E0; // type:func absolute:True
+resident_sound_update = 0x0010F250; // type:func absolute:True
+resident_sound_wake_stream = 0x0010ECF0; // type:func absolute:True
+resident_store_entry = 0x001014B0; // type:func absolute:True
+resident_system_get_decoder = 0x001012B0; // type:func absolute:True
+resident_system_get_sound = 0x00101270; // type:func absolute:True
+resident_thread_create = 0x00115000; // type:func absolute:True
+resident_thread_wakeup = 0x00114DD0; // type:func absolute:True
+g_hit_test_restart = 0x001B65D0; // absolute:True
+g_image_registry = 0x001B6640; // absolute:True
+resident_dma_queue_push = 0x00114100; // type:func absolute:True
+g_field_allocation_heap = 0x001B6684; // absolute:True
