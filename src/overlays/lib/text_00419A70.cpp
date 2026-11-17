@@ -79,11 +79,7 @@ typedef struct PackedModesOwner
     PackedModePair at22;
 } PackedModesOwner;
 
-extern "C" void func_00414490(void* object);
-
-extern "C" void func_00414BD0(void* object);
-
-extern "C" void func_004159E0(void* object);
+extern "C" s32 func_004159E0(LibMovieDecoder* decoder);
 
 extern "C" s32 func_00418540(LibMovieState* state);
 
@@ -176,13 +172,13 @@ inline void LibClass1728A0::release_capture()
  */
 static inline void movie_stop(LibMoviePlayer* player)
 {
-    player->stopped = 1;
+    player->decoder.stopped = 1;
     player->is_playing = 0;
     resident_archive_stop_ring_read(g_resource_archive);
     resident_archive_do_nothing(g_resource_archive);
     g_resource_queue->unk2c = 0;
-    func_00414490(&player->stream);
-    player->stopped = 1;
+    player->stream.stop_sound();
+    player->decoder.stopped = 1;
 }
 
 /**
@@ -204,7 +200,7 @@ s32 lib_movie_play(LibMoviePlayer* player, s32 movie, s32 loop)
         return 0;
     }
 
-    func_00414BD0(&player->stream);
+    player->stream.reset();
 
     if (loop)
     {
@@ -220,9 +216,9 @@ s32 lib_movie_play(LibMoviePlayer* player, s32 movie, s32 loop)
 
     g_resource_queue->unk2c = 1;
     resident_archive_select_resource(g_resource_archive, movie);
-    resident_archive_start_ring_read(g_resource_archive, reinterpret_cast<void*>((reinterpret_cast<u32>(player->stream_buffer) + 63) & ~63),
+    resident_archive_start_ring_read(g_resource_archive, reinterpret_cast<void*>((reinterpret_cast<u32>(player->decoder.input.data) + 63) & ~63),
                   LIB_MOVIE_STREAM_BUFFER_SIZE, 0);
-    player->stopped = 0;
+    player->decoder.stopped = 0;
     func_004159E0(&player->decoder);
     player->movie = movie;
     player->is_playing = 1;
@@ -308,11 +304,11 @@ LibMoviePlayer::LibMoviePlayer(s32 width, s32 height)
     this->width = width;
     this->height = height;
     func_004162F0(&decoder, width, height);
-    func_00419330(state, width, height);
+    func_00419330(decoder.state, width, height);
     func_00416200(&decoder, LIB_MPEG_CALLBACK_ERROR, 0, func_00414DB0, &decoder);
     func_00416200(&decoder, LIB_MPEG_CALLBACK_BACKGROUND, 0, func_00414AC0, &stream);
     func_00416200(&decoder, LIB_MPEG_CALLBACK_BACKGROUND, 1, func_004149B0, &stream);
-    stream.buffer = decoder.unkCE580;
+    stream.buffer = &decoder.input;
     stream.sound = resident_system_get_sound(resident_get_system());
     stream.player = this;
     is_playing = 0;
@@ -328,7 +324,7 @@ LibMoviePlayer::LibMoviePlayer(s32 width, s32 height)
     thread->set_sources(&decoder, &stream);
     thread->player = this;
     thread->start();
-    unk15E724 = thread;
+    decoder.thread = thread;
     FlushCache(0);
     unk15E797 = 0;
     g_movie_player = this;
@@ -352,7 +348,7 @@ void LibMoviePlayer::submit_dma(u32 channel)
  */
 void LibMoviePlayer::complete_dma(u32 channel)
 {
-    func_004184D0(state);
+    func_004184D0(decoder.state);
     lib_finish_packet(this);
 }
 
@@ -374,7 +370,7 @@ void LibMoviePlayer::build_packet(const void* matrix, void* context)
 
     if (unk15E795)
     {
-        unk15E7A4 = func_00418540(state);
+        unk15E7A4 = func_00418540(decoder.state);
         ee_sync();
 
         if (unk15E7A4)

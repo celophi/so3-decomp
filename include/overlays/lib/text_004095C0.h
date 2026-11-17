@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "main/item_category.h"
+#include "overlays/lib/semaphore.h"
 
 typedef struct FieldRecord FieldRecord;
 
@@ -414,6 +415,13 @@ s32 func_0040AF10(s32 id, s32 code);
 s32 func_0040B2F0(u16 id);
 
 /**
+ * @brief Look up one of the eleven codes at D_505620 by its one-based position.
+ * @param id One-based position, 1 to 11.
+ * @return The code, or zero for an invalid position.
+ */
+s32 func_0040B330(s32 id);
+
+/**
  * @brief Find a code's one-based position in the eleven codes at D_505620.
  * @param code Code to look for.
  * @return The last matching position, or zero when the code isn't listed.
@@ -513,14 +521,26 @@ u32 func_0040D760(ItemCreationAllocationRecord* record);
 /** Return the fixed integer value 4. */
 s32 func_0040E3A0(void* object);
 
-/** Return the fixed integer value 1. */
-s32 func_00415030(void* object);
+/**
+ * @brief libmpeg background callback; nothing to do.
+ * @param mpeg libmpeg decoder; unused.
+ * @param data Callback data; unused.
+ * @param user Decoder the callback was registered for; unused.
+ * @return Always 1.
+ */
+s32 func_00415030(void* mpeg, void* data, void* user);
 
 /** Return the fixed integer value 12. */
 s32 func_004194F0(void* object);
 
-/** Return the fixed value 0. */
-s32 func_004152B0(void* object);
+/**
+ * @brief libmpeg error callback; errors are ignored.
+ * @param mpeg libmpeg decoder; unused.
+ * @param data Callback data; unused.
+ * @param user Decoder the callback was registered for; unused.
+ * @return Always 0.
+ */
+s32 func_004152B0(void* mpeg, void* data, void* user);
 
 void func_00411E10(void* object);
 
@@ -562,6 +582,52 @@ extern "C"
      * @return One when it was stored, or zero when the table is full.
      */
     u32 func_0040B250();
+}
+#endif
+
+#ifdef __cplusplus
+/** Node of a linked list of values; the head node holds no value. */
+typedef struct LibValueNode
+{
+    void* value;
+    struct LibValueNode* next;
+
+    ~LibValueNode()
+    {
+    }
+} LibValueNode;
+
+/** Linked value list with its head node and value count. */
+typedef struct LibValueList
+{
+    LibValueNode* head;
+    s32 count;
+} LibValueList;
+
+/** Value list with vtable D_001721E0 in main data. */
+class LibClass1721E0 : public LibValueList
+{
+public:
+    /** @brief Allocate the head node and start empty. */
+    LibClass1721E0();
+
+    /** @brief Delete every node, then the head node. */
+    virtual ~LibClass1721E0();
+};
+
+extern "C" {
+/**
+ * @brief Append a value at the tail of a list.
+ * @param list List to extend.
+ * @param value Value to append.
+ */
+void func_00411CC0(LibValueList* list, void* value);
+
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
+void func_00411D50(LibValueList* list);
 }
 #endif
 

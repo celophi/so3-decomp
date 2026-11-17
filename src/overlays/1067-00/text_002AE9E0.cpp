@@ -44,8 +44,6 @@
 #include "ee.h"
 #include "main/sound_set.h"
 
-#define TIMER0_MODE (*(volatile u32*)0x10000010)
-
 /** Display interfaces retained by the field display/list manager. */
 struct FieldDisplaySlot
 {

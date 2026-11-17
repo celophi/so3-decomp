@@ -111,12 +111,12 @@ void BootGameLauncher::update()
             void* heap = resident_exchange_allocation_heap(movie_heap);
             player = new (0) LibMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
             resident_exchange_allocation_heap(heap);
-            player->state->set_scale(1.0f, 1.0f);
-            player->state->set_words(0x800, 0x800, 1);
+            player->decoder.state->set_scale(1.0f, 1.0f);
+            player->decoder.state->set_words(0x800, 0x800, 1);
 
             if (((LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1))->widescreen)
             {
-                player->state->widescreen = 1;
+                player->decoder.state->widescreen = 1;
             }
 
             lib_movie_play(player, BOOT_LAUNCH_MOVIE_ID, 1);

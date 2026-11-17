@@ -214,7 +214,7 @@ void BootOpeningMovie::update()
         break;
     case BOOT_MOVIE_CAPTIONS:
         fade = 0;
-        offset = player->state->current_frame - g_opening_captions[caption].frame;
+        offset = player->decoder.state->current_frame - g_opening_captions[caption].frame;
 
         if (g_opening_captions[caption].frame == -1)
         {
@@ -514,13 +514,13 @@ BootOpeningMovie::BootOpeningMovie()
     heap = resident_exchange_allocation_heap(movie_heap);
     player = new (0) LibMoviePlayer(BOOT_MOVIE_FRAME_WIDTH, BOOT_MOVIE_FRAME_HEIGHT);
     resident_exchange_allocation_heap(heap);
-    player->state->set_scale(1.0f, 1.0f);
-    player->state->set_words(0x800, 0x800, 1);
+    player->decoder.state->set_scale(1.0f, 1.0f);
+    player->decoder.state->set_words(0x800, 0x800, 1);
     resource = (LibSystemSettings*)resident_find_entry(resident_get_entry_table(resident_get_system()), 1);
 
     if (resource->widescreen != 0)
     {
-        player->state->widescreen = 1;
+        player->decoder.state->widescreen = 1;
         g_scene_camera->pixel_aspect = BOOT_PIXEL_ASPECT_WIDE(g_boot_program.display->display_area);
         g_scene_camera->horizontal_fov = BOOT_FOV_WIDE;
     }

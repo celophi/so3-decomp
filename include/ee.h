@@ -11,6 +11,8 @@
 #define EE_UNCACHED_ACCELERATED 0x30000000
 #define EE_SCRATCHPAD 0x70000000
 #define DMA_TAG_ID_CNT 0x10000000
+#define DMA_TAG_ID_NEXT 0x20000000
+#define DMA_TAG_ID_REF 0x30000000
 #define DMA_TAG_ID_CALL 0x50000000
 #define DMA_TAG_ID_END 0x70000000
 #define DMA_TAG(qwc, id, address) ((u64)(qwc) | (id) | ((u64)(u32)(address) << 32))
@@ -32,11 +34,38 @@
 #define D1_QWC ((volatile u32*)0x10009020)
 #define D1_TADR ((volatile u32*)0x10009030)
 
+/** DMA channel 3 (IPU to memory) registers. */
+#define D3_CHCR ((volatile u32*)0x1000B000)
+#define D3_MADR ((volatile u32*)0x1000B010)
+#define D3_QWC ((volatile u32*)0x1000B020)
+
+/** DMA channel 4 (memory to IPU) registers. */
+#define D4_CHCR ((volatile u32*)0x1000B400)
+#define D4_MADR ((volatile u32*)0x1000B410)
+#define D4_QWC ((volatile u32*)0x1000B420)
+#define D4_TADR ((volatile u32*)0x1000B430)
+
+/** DMA enable registers: reading D_ENABLER and writing D_ENABLEW with D_ENABLE_SUSPEND set holds every channel. */
+#define D_ENABLER ((volatile u32*)0x1000F520)
+#define D_ENABLEW ((volatile u32*)0x1000F590)
+#define D_ENABLE_SUSPEND 0x10000
+
+/** IPU control register; IPU_CTRL_IFC is the input FIFO's quadword count. */
+#define IPU_CTRL ((volatile u32*)0x10002010)
+#define IPU_CTRL_IFC 0xF0
+
+/** IPU bit pointer: the bit position in the current quadword, FIFO quadword count and FIFO position. */
+#define IPU_BP ((volatile u32*)0x10002020)
+
 #define D_STAT_CIS1 0x2
 #define D_STAT_CIS8 0x100
 
-/** EE timer 0 counter. */
+/** EE timer 0 counter and mode. */
 #define TIMER0_COUNT (*(volatile u32*)0x10000000)
+#define TIMER0_MODE (*(volatile u32*)0x10000010)
+
+#define TIMER_MODE_CLOCK_HBLANK 0x3
+#define TIMER_MODE_COUNT_ENABLE 0x80
 
 /** VIF codes: STCYCL, and UNPACK with its formats and flags. */
 #define VIF_STCYCL(cl, wl) (0x01000000 | ((wl) << 8) | (cl))

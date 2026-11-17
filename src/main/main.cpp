@@ -51,14 +51,11 @@ extern "C" u8 _end[];
 /** Size of the main thread's stack; the linker passes it as an address. */
 extern "C" u8 _stack_size[];
 
-#define TIMER0_MODE (*(volatile u32*)0x10000010)
 #define D0_CHCR (*(volatile u32*)0x10008000)
 #define D0_QWC (*(volatile u32*)0x10008020)
 #define D0_TADR (*(volatile u32*)0x10008030)
 #define D_CTRL (*(volatile u32*)0x1000E000)
 
-#define TIMER_MODE_CLOCK_HBLANK 0x3
-#define TIMER_MODE_COUNT_ENABLE 0x80
 #define D_CTRL_DMA_ENABLE 0x1
 #define D_CTRL_RELEASE_ENABLE 0x2
 #define D_CTRL_RELEASE_CYCLE_256 0x500

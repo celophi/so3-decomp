@@ -2733,7 +2733,9 @@ void LibVectorCurveTrackBase::set_single_key(const void* value, const void* in_t
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7250);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7770);
+LibClass179690::~LibClass179690()
+{
+}
 
 s32 func_004E7820(void* object)
 {
@@ -2869,8 +2871,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E95C0);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96A0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96D0);
 

@@ -11,11 +11,11 @@ public:
     /** @brief Initialize the region. */
     LibClipRegion();
 
-    /** @brief Destroy the region. */
+    /** @brief Delete the packet and destroy the region. */
     virtual ~LibClipRegion();
 
     LibCameraContext* display;
-    void* unk98;
+    LibPacketBuffer* packet;
     u8 unk9c[8];
     s32 left;
     s32 top;

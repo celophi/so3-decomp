@@ -6,6 +6,7 @@
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
 #include "overlays/lib/item_allocation.h"
+#include "overlays/lib/movie_player.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libkernl_00121940.h"
@@ -661,7 +662,22 @@ s32 func_0040B2F0(u16 id)
     return value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040B330);
+/**
+ * @brief Look up one of the eleven codes at D_505620 by its one-based position.
+ * @param id One-based position, 1 to 11.
+ * @return The code, or zero for an invalid position.
+ */
+s32 func_0040B330(s32 id)
+{
+    s32 code = 0;
+
+    if (id > 0 && id < 12)
+    {
+        code = D_505620[id - 1];
+    }
+
+    return code;
+}
 
 /**
  * @brief Find a code's one-based position in the eleven codes at D_505620.
@@ -1852,13 +1868,81 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411760);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411830);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411BC0);
+/** @brief Allocate the head node and start empty. */
+LibClass1721E0::LibClass1721E0()
+{
+    head = new (0) LibValueNode;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411C40);
+    if (head == 0)
+    {
+        throw;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411CC0);
+    head->next = 0;
+    count = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411D50);
+/** @brief Delete every node, then the head node. */
+LibClass1721E0::~LibClass1721E0()
+{
+    func_00411D50(this);
+
+    if (head != 0)
+    {
+        ::operator delete(head);
+        head = 0;
+    }
+}
+
+/**
+ * @brief Append a value at the tail of a list.
+ * @param list List to extend.
+ * @param value Value to append.
+ */
+extern "C" void func_00411CC0(LibValueList* list, void* value)
+{
+    LibValueNode* node = new (0) LibValueNode;
+
+    if (node != 0)
+    {
+        LibValueNode* tail;
+        node->value = value;
+        node->next = 0;
+        tail = list->head;
+
+        while (tail->next != 0)
+        {
+            tail = tail->next;
+        }
+
+        tail->next = node;
+        list->count++;
+    }
+}
+
+/**
+ * @brief Delete every node after the head node and reset the count.
+ * @param list List to clear.
+ */
+extern "C" void func_00411D50(LibValueList* list)
+{
+    LibValueNode* node = list->head->next;
+
+    if (node == 0)
+    {
+        return;
+    }
+
+    while (node != 0)
+    {
+        LibValueNode* next = node->next;
+        delete node;
+        node = next;
+    }
+
+    list->head->next = 0;
+    list->count = 0;
+}
 
 extern "C" void* func_00411DD0(void* object, s32 count)
 {
@@ -2004,7 +2088,15 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413750);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004138E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413BB0);
+/**
+ * @brief Point the aggregate's list indicator at its scroll position, as a percentage.
+ * @param aggregate Widget aggregate.
+ */
+extern "C" void func_00413BB0(LibClass1723F0* aggregate)
+{
+    aggregate->unk138.set_position(100.0f * (aggregate->unk2f0 + aggregate->unk304 * aggregate->unk2c4) /
+                                   (aggregate->unk2fc * aggregate->unk2c4));
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413C00);
 
@@ -2096,7 +2188,21 @@ s32 lib_detail_code_init_rectangle(LibObject172440* object, u16 code, u8 variati
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414490);
+/** @brief Stop the sound stream, or restore the volume, if the stream started either. */
+void LibMovieStream::stop_sound()
+{
+    if (kind != 0 && unk31 != 0)
+    {
+        if (kind == LIB_MOVIE_STREAM_KIND_1)
+        {
+            resident_sound_stop_stream(sound);
+        }
+        else
+        {
+            resident_sound_restore_volume(sound);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004144F0);
 
@@ -2104,107 +2210,902 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004149B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414AC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414BD0);
+// TODO: The constructor inlines reset, an ordinary function, so I think the unit was built with auto-inlining, as
+// text_00419A70 seems to be. This scoped pragma stands in for it until the flags are settled.
+#pragma push
+#pragma auto_inline on
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __dt__14LibMovieStreamFv);
+/** @brief Clear the stream's read state for a new movie. */
+void LibMovieStream::reset()
+{
+    position = 0;
+    fill = 0;
+    size = LIB_MOVIE_STREAM_DATA_SIZE;
+    total = 0;
+    unk20 = 0;
+    kind = 0;
+    unk28 = 0;
+    unk33 = 0;
+    unk31 = 0;
+    unk32 = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __ct__14LibMovieStreamFv);
+/** @brief Free the data buffer. */
+LibMovieStream::~LibMovieStream()
+{
+    delete data;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414CE0);
+/** @brief Allocate the stream's data buffer and clear its state. */
+LibMovieStream::LibMovieStream()
+{
+    unk08 = 0;
+    kind = 0;
+    unk24 = 0;
+    unk28 = 0;
+    data = new (0) u8[LIB_MOVIE_STREAM_DATA_SIZE];
+    reset();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414D30);
+#pragma pop
+
+/**
+ * @brief Take up to a size from the buffer's fill.
+ * @param buffer Stream buffer.
+ * @param size Bytes wanted.
+ * @return Bytes taken.
+ */
+extern "C" s32 func_00414CE0(LibMovieStreamBuffer* buffer, s32 size)
+{
+    s32 taken = buffer->fill < size ? buffer->fill : size;
+    buffer->fill -= taken;
+    return taken;
+}
+
+/**
+ * @brief Add up to a size to the buffer's fill and advance its position, wrapping at its size.
+ * @param buffer Stream buffer.
+ * @param size Bytes that arrived.
+ * @return Bytes added.
+ */
+extern "C" s32 func_00414D30(LibMovieStreamBuffer* buffer, s32 size)
+{
+    s32 space = buffer->size - buffer->fill;
+    s32 added = space < size ? space : size;
+    buffer->position = (buffer->position + added) % buffer->size;
+    buffer->fill += added;
+    return added;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414DB0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414FB0);
+/** libmpeg's timestamp callback data. */
+struct LibMpegTimeStampData
+{
+    s32 type;
+    u8 unk04[4];
+    s64 pts;
+    s64 dts;
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414FF0);
+extern "C" void func_004166F0(LibMovieRing* ring, LibMovieTimeStamp* stamp);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415010);
+/**
+ * @brief libmpeg callback that supplies the timestamps of the data the IPU is decoding.
+ * @param mpeg libmpeg decoder; unused.
+ * @param data Timestamp callback data that receives the timestamps.
+ * @param user Decoder the callback was registered for.
+ * @return Always 1.
+ */
+extern "C" s32 func_00414FB0(void* mpeg, void* data, void* user)
+{
+    LibMpegTimeStampData* timestamps = static_cast<LibMpegTimeStampData*>(data);
+    LibMovieTimeStamp stamp;
+    func_004166F0(static_cast<LibMovieDecoder*>(user), &stamp);
+    timestamps->pts = stamp.pts;
+    timestamps->dts = stamp.dts;
+    return 1;
+}
 
-s32 func_00415030(void* object)
+extern "C" void func_00416D60(LibMovieRing* ring);
+
+/**
+ * @brief libmpeg callback that restarts the IPU's DMA from the decoder's saved state.
+ * @param mpeg libmpeg decoder; unused.
+ * @param data Callback data; unused.
+ * @param user Decoder the callback was registered for.
+ * @return Always 1.
+ */
+extern "C" s32 func_00414FF0(void* mpeg, void* data, void* user)
+{
+    func_00416D60(static_cast<LibMovieDecoder*>(user));
+    return 1;
+}
+
+extern "C" void func_00417460(LibMovieRing* ring);
+
+/**
+ * @brief libmpeg callback that stops the IPU's DMA and saves its state in the decoder.
+ * @param mpeg libmpeg decoder; unused.
+ * @param data Callback data; unused.
+ * @param user Decoder the callback was registered for.
+ * @return Always 1.
+ */
+extern "C" s32 func_00415010(void* mpeg, void* data, void* user)
+{
+    func_00417460(static_cast<LibMovieDecoder*>(user));
+    return 1;
+}
+
+/**
+ * @brief libmpeg background callback; nothing to do.
+ * @param mpeg libmpeg decoder; unused.
+ * @param data Callback data; unused.
+ * @param user Decoder the callback was registered for; unused.
+ * @return Always 1.
+ */
+s32 func_00415030(void* mpeg, void* data, void* user)
 {
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415040);
+extern "C"
+{
+    /**
+     * @brief Abort the picture libmpeg is decoding.
+     * @param mpeg libmpeg decoder.
+     */
+    void sceMpegGetPictureAbort(void* mpeg);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004151F0);
+    /** @brief Feed the decoder from the stream thread's side. */
+    void func_00417740(LibMovieDecoder* decoder);
+}
 
-s32 func_004152B0(void* object)
+/**
+ * @brief libmpeg callback while it waits for data: abort on START when the decoder allows skipping, otherwise count
+ * the calls with nothing buffered, wake the feeding thread and feed the decoder.
+ * @param mpeg libmpeg decoder.
+ * @param data Callback data; unused.
+ * @param user Decoder the callback was registered for.
+ * @return Always 1.
+ */
+extern "C" s32 func_00415040(void* mpeg, void* data, void* user)
+{
+    LibMovieDecoder* decoder = static_cast<LibMovieDecoder*>(user);
+    s32 buffered;
+
+    if (decoder->unk15E644 != 0 && resident_pad_get_held(resident_system_get_input(resident_get_system()), 0) & 8)
+    {
+        sceMpegGetPictureAbort(mpeg);
+        return 1;
+    }
+
+    {
+        LibSemaphoreLock lock(&decoder->semaphore);
+        buffered = (decoder->unkC999C & ~0x7FF) + decoder->unkC9998 * 0x800;
+    }
+
+    if (buffered == 0)
+    {
+        decoder->unk15E64C++;
+    }
+    else
+    {
+        decoder->unk15E64C = 0;
+    }
+
+    resident_thread_wake(decoder->thread);
+    func_00417740(decoder);
+    return 1;
+}
+
+/**
+ * @brief libmpeg error callback; errors are ignored.
+ * @param mpeg libmpeg decoder; unused.
+ * @param data Callback data; unused.
+ * @param user Decoder the callback was registered for; unused.
+ * @return Always 0.
+ */
+s32 func_004152B0(void* mpeg, void* data, void* user)
 {
     return 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004152C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004159E0);
+extern "C" s32 sceMpegReset(void* mpeg);
+
+extern "C" void func_00418020(LibMovieRing* ring);
+
+extern "C" void func_00419110(LibMovieState* state);
+
+/**
+ * @brief Reset libmpeg, the ring, the decoder state and the stream buffer for a new movie.
+ * @param decoder Decoder to reset.
+ * @return Always 0.
+ */
+extern "C" s32 func_004159E0(LibMovieDecoder* decoder)
+{
+    sceMpegReset(decoder->mpeg);
+    decoder->unk15E658 = 0;
+    func_00418020(decoder);
+    func_00419110(decoder->state);
+    decoder->input.position = 0;
+    decoder->input.fill = 0;
+    decoder->unk15E64C = 0;
+    decoder->unk15E654 = 0;
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415A70);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415D30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415E70);
+extern "C" void func_00415A70(LibMovieDecoder* decoder);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415F20);
+/**
+ * @brief Restart decoding from the stream buffer, wait until a decoded frame has been taken, then mark the decoder
+ * stopped.
+ * @param decoder Decoder to restart.
+ */
+extern "C" void func_00415E70(LibMovieDecoder* decoder)
+{
+    func_00418020(decoder);
+    func_00419110(decoder->state);
+    decoder->input.position = 0;
+    decoder->input.fill = 0;
+    decoder->unk15E64C = 0;
+    func_00415A70(decoder);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004161C0);
+    s32 ready;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00416200);
+    do
+    {
+        ready = decoder->state->ready_count;
+    } while (ready >= LIB_MOVIE_FRAME_COUNT);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00416230);
+    decoder->stopped = 3;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004162F0);
+/** Four bytes of MPEG start code, copied as one value. */
+struct LibMpegCode
+{
+    u8 bytes[4];
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00416450);
+/** MPEG sequence end code (00 00 01 B7). */
+extern "C" LibMpegCode D_001B61A0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004164B0);
+extern "C" void func_00417D30(LibMovieRing* ring, s32 amount);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __ct__15LibMovieDecoderFv);
+extern "C" void func_00417E50(LibMovieRing* ring, u8** first, s32* first_size, u8** second, s32* second_size);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004165E0);
+// TODO: func_00415D30 is the out-of-line copy of this, which the stream callbacks call; LibMovieDecoder::end_stream
+// inlines it. This body gives the inlined copy, but its out-of-line copy doesn't keep first_size - head_size in a
+// register the way func_00415D30 does, so the two aren't one function yet.
+/**
+ * @brief Copy a header and a body into the two parts of a ring buffer's free space.
+ * @param first Start of the free space.
+ * @param first_size Size of the part before the end of the ring.
+ * @param second Start of the ring, for the part that wraps.
+ * @param second_size Size of the wrapped part.
+ * @param head Header bytes.
+ * @param head_size Header size.
+ * @param body Body bytes.
+ * @param body_size Body size.
+ * @return Bytes written, or 0 when they don't fit.
+ */
+static inline s32 lib_movie_ring_write(u8* first, s32 first_size, u8* second, s32 second_size, const u8* head,
+                                       s32 head_size, const u8* body, s32 body_size)
+{
+    if (first_size + second_size < head_size + body_size)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004166F0);
+    if (first_size <= head_size)
+    {
+        memcpy_guess(first, head, first_size);
+        memcpy_guess(second, head + first_size, head_size - first_size);
+        memcpy_guess(second + head_size - first_size, body, body_size);
+    }
+    else if (body_size >= first_size - head_size)
+    {
+        memcpy_guess(first, head, head_size);
+        memcpy_guess(first + head_size, body, first_size - head_size);
+        memcpy_guess(second, body + first_size - head_size, body_size - (first_size - head_size));
+    }
+    else
+    {
+        memcpy_guess(first, head, head_size);
+        memcpy_guess(first + head_size, body, body_size);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00416980);
+    return head_size + body_size;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00416BC0);
+/**
+ * @brief Round unkC999C up to a whole 0x800-byte sector while holding its semaphore.
+ * @param ring Ring to update.
+ */
+static inline void lib_movie_align_fill(LibMovieRing* ring)
+{
+    LibSemaphoreLock lock(&ring->semaphore);
+    ring->unkC999C = (ring->unkC999C + 0x7FF) / 0x800 * 0x800;
+}
+
+/**
+ * @brief Write an MPEG sequence end code into the ring buffer once, then round the fill up to a sector.
+ * @return 1 when the end code was written, 0 when it already was or there is no room.
+ */
+s32 LibMovieDecoder::end_stream()
+{
+    u8* first;
+    u8* second;
+    // TODO: The original probably initialised a local array; MWCC copies such an initialiser from small data the
+    // same way, but Lib's small data is in main, so this copies main's copy by name.
+    LibMpegCode end_code = D_001B61A0;
+    s32 first_size;
+    s32 second_size;
+
+    if (stopped == 2)
+    {
+        return 0;
+    }
+
+    func_00417E50(this, &first, &first_size, &second, &second_size);
+
+    if (first_size + second_size < 4)
+    {
+        return 0;
+    }
+
+    u8* first_uncached = (u8*)((u32)first | UNCACHED_SEGMENT);
+    u8* second_uncached = (u8*)((u32)second | UNCACHED_SEGMENT);
+    func_00417D30(this, lib_movie_ring_write(first_uncached, first_size, second_uncached, second_size, end_code.bytes, 4, 0, 0));
+    lib_movie_align_fill(this);
+
+    if (stopped == 0)
+    {
+        stopped = 2;
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Queue the timestamps of stream data that just arrived in the ring buffer.
+ * @param pts Presentation timestamp.
+ * @param dts Decoding timestamp.
+ * @param data Start of the data in the ring buffer.
+ * @param length Length of the data.
+ * @return 0 when the queue is full, otherwise 1.
+ */
+s32 LibMovieDecoder::add_timestamp(s64 pts, s64 dts, u8* data, s32 length)
+{
+    LibMovieTimeStamp stamp;
+    stamp.pts = pts;
+    stamp.dts = dts;
+    stamp.position = data - sectors[0];
+    stamp.length = length;
+    return LibMovieRing::push_timestamp(&stamp);
+}
+
+extern "C" s32 sceMpegAddStrCallback(void* mpeg, s32 type, s32 channel, s32 (*callback)(void*, void*, void*),
+                                     void* data);
+
+/**
+ * @brief Register a libmpeg stream callback on the decoder's libmpeg state.
+ * @param decoder Decoder to register on.
+ * @param type libmpeg stream type.
+ * @param channel Stream channel.
+ * @param callback Callback to run.
+ * @param data Value passed to the callback.
+ */
+extern "C" void func_00416200(LibMovieDecoder* decoder, s32 type, s32 channel, s32 (*callback)(void*, void*, void*),
+                              void* data)
+{
+    sceMpegAddStrCallback(decoder->mpeg, type, channel, callback, data);
+}
+
+extern "C" s32 sceMpegDelete(void* mpeg);
+
+/** @brief Delete libmpeg's state, its work area and the decoder state. */
+LibMovieDecoder::~LibMovieDecoder()
+{
+    sceMpegDelete(mpeg);
+    delete mpeg_work;
+    delete state;
+}
+
+/** libmpeg callback: the decoder, its callback data and the value it was registered with. */
+typedef s32 (*LibMpegCallback)(void* mpeg, void* data, void* user);
+
+/** libmpeg callback types. */
+enum
+{
+    LIB_MPEG_CB_ERROR = 0,
+    LIB_MPEG_CB_NODATA = 1,
+    LIB_MPEG_CB_STOP_DMA = 2,
+    LIB_MPEG_CB_RESTART_DMA = 3,
+    LIB_MPEG_CB_BACKGROUND = 4,
+    LIB_MPEG_CB_TIMESTAMP = 5
+};
+
+extern "C"
+{
+    s32 sceMpegCreate(void* mpeg, u8* work, s32 size);
+
+    LibMpegCallback sceMpegAddCallback(void* mpeg, s32 type, LibMpegCallback callback, void* user);
+}
+
+/**
+ * @brief Create libmpeg's state for a frame size, with a work area to match, and register the decoder's callbacks.
+ * @param decoder Decoder to set up.
+ * @param width Frame width in pixels.
+ * @param height Frame height in pixels.
+ */
+extern "C" void func_004162F0(LibMovieDecoder* decoder, s32 width, s32 height)
+{
+    s32 work_size = width * height * 9 / 2 + 0x176C;
+    decoder->width = width;
+    decoder->height = height;
+    decoder->mpeg_work = new (0) u8[work_size];
+    sceMpegCreate(decoder->mpeg, decoder->mpeg_work, work_size);
+    sceMpegAddCallback(decoder->mpeg, LIB_MPEG_CB_ERROR, func_004152B0, decoder);
+    sceMpegAddCallback(decoder->mpeg, LIB_MPEG_CB_NODATA, func_00415040, decoder);
+    sceMpegAddCallback(decoder->mpeg, LIB_MPEG_CB_STOP_DMA, func_00415010, decoder);
+    sceMpegAddCallback(decoder->mpeg, LIB_MPEG_CB_RESTART_DMA, func_00414FF0, decoder);
+    sceMpegAddCallback(decoder->mpeg, LIB_MPEG_CB_TIMESTAMP, func_00414FB0, decoder);
+    sceMpegAddCallback(decoder->mpeg, LIB_MPEG_CB_BACKGROUND, func_00415030, decoder);
+}
+
+/**
+ * @brief Replace the decoder's state, deleting the old one.
+ * @param decoder Decoder to update.
+ * @param state New state.
+ */
+extern "C" void func_00416450(LibMovieDecoder* decoder, LibMovieState* state)
+{
+    delete decoder->state;
+    decoder->state = state;
+}
+
+/**
+ * @brief Delete the decoder's state.
+ * @param decoder Decoder to update.
+ */
+extern "C" void func_004164B0(LibMovieDecoder* decoder)
+{
+    delete decoder->state;
+    decoder->state = 0;
+}
+
+/** @brief Initialize the decoder. */
+LibMovieDecoder::LibMovieDecoder()
+{
+    input.position = 0;
+    input.fill = 0;
+    input.size = LIB_MOVIE_STREAM_BUFFER_SIZE;
+    unk15E645 = 1;
+    TIMER0_MODE = TIMER_MODE_CLOCK_HBLANK | TIMER_MODE_COUNT_ENABLE;
+    unk15E658 = 0;
+    unk15E644 = 1;
+    stopped = 0;
+    state = new (0) LibMovieState;
+}
+
+/**
+ * @brief Round unkC999C up to a whole 0x800-byte sector while holding the semaphore.
+ * @return Always 0.
+ */
+s32 LibMovieRing::end_stream()
+{
+    LibSemaphoreLock lock(&semaphore);
+    unkC999C = (unkC999C + 0x7FF) / 0x800 * 0x800;
+    return 0;
+}
+
+/**
+ * @brief Find the timestamps of the data the IPU is decoding and mark them used, while holding the semaphore.
+ * @param ring Ring whose queue is searched.
+ * @param stamp Receives the timestamps, or -1 for both when no queued data covers the IPU's position.
+ */
+extern "C" void func_004166F0(LibMovieRing* ring, LibMovieTimeStamp* stamp)
+{
+    u32 madr = *D4_MADR;
+    u32 bp = *IPU_BP;
+    s32 bit = ring->saved_ipu_bp & 0x7F;
+    u32 address = madr - (((bp >> 16) & 3) + ((bp >> 8) & 0xF)) * 16;
+    s32 ring_bytes = ring->ring_sectors * 0x800;
+    s32 found = 0;
+    LibSemaphoreLock lock(&ring->semaphore);
+    u32 position = address + (bit >> 3);
+    stamp->pts = -1;
+    stamp->dts = -1;
+    s32 offset = (ring_bytes + position - (u32)ring->sectors) % ring_bytes;
+    s32 count = ring->timestamp_count;
+    s32 write = ring->timestamp_write;
+
+    for (s32 i = 0; i < count && !found; i++)
+    {
+        s32 index = (i + (ring->timestamp_capacity + (write - count))) % ring->timestamp_capacity;
+        s32 length = ring->timestamps[index].length;
+        s32 covered = (offset + ring_bytes - ring->timestamps[index].position) % ring_bytes < length;
+
+        if (covered)
+        {
+            stamp->pts = ring->timestamps[index].pts;
+            stamp->dts = ring->timestamps[index].dts;
+            ring->timestamps[index].pts = -1;
+            ring->timestamps[index].dts = -1;
+            found = 1;
+            ring->timestamp_count = ring->timestamp_count > 1 ? 1 : ring->timestamp_count;
+        }
+    }
+}
+
+extern "C" void func_00416BC0(LibMovieRing* ring, LibMovieTimeStamp* stamp);
+
+/**
+ * @brief Add timestamps to the queue while holding the semaphore.
+ * @param stamp Timestamps to add; the entry is skipped when both are negative.
+ * @return 0 when the queue is full, otherwise 1.
+ */
+s32 LibMovieRing::push_timestamp(LibMovieTimeStamp* stamp)
+{
+    s32 added = 0;
+    LibSemaphoreLock lock(&semaphore);
+
+    if (timestamp_count < timestamp_capacity)
+    {
+        func_00416BC0(this, stamp);
+
+        if (stamp->pts >= 0 || stamp->dts >= 0)
+        {
+            timestamps[timestamp_write].pts = stamp->pts;
+            timestamps[timestamp_write].dts = stamp->dts;
+            timestamps[timestamp_write].position = stamp->position;
+            timestamps[timestamp_write].length = stamp->length;
+            timestamp_count++;
+            timestamp_write = (timestamp_write + 1) % timestamp_capacity;
+        }
+
+        added = 1;
+    }
+
+    return added;
+}
+
+/**
+ * @brief Shorten the oldest queued timestamps whose data new stream data has overwritten in the ring buffer.
+ * @param ring Ring whose queue is trimmed.
+ * @param stamp Timestamps of the new data.
+ */
+extern "C" void func_00416BC0(LibMovieRing* ring, LibMovieTimeStamp* stamp)
+{
+    s32 index = (ring->timestamp_capacity + (ring->timestamp_write - ring->timestamp_count)) % ring->timestamp_capacity;
+    s32 ring_bytes = ring->ring_sectors * 0x800;
+    s32 more = 1;
+
+    if (ring->timestamp_count > 0)
+    {
+        do
+        {
+            LibMovieTimeStamp* entry = &ring->timestamps[index];
+
+            if (entry->length == 0 || stamp->length == 0)
+            {
+                break;
+            }
+
+            s32 overlaps = (entry->position + ring_bytes - stamp->position) % ring_bytes < stamp->length;
+
+            if (overlaps)
+            {
+                s32 overlap = stamp->position + stamp->length - entry->position;
+                overlap = overlap < entry->length ? overlap : entry->length;
+                entry->position = (entry->position + overlap) % ring_bytes;
+                entry->length -= overlap;
+
+                if (entry->length == 0)
+                {
+                    if (entry->pts >= 0)
+                    {
+                        entry->pts = -1;
+                        entry->dts = -1;
+                        entry->position = 0;
+                        entry->length = 0;
+                    }
+
+                    s32 remaining = ring->timestamp_count - 1;
+                    ring->timestamp_count = remaining > 0 ? remaining : 0;
+                }
+            }
+            else
+            {
+                more = 0;
+            }
+
+            index = (index + 1) % ring->timestamp_capacity;
+        } while (more);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00416D60);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004173F0);
+/**
+ * @brief Stop the IPU's DMA channels and save their registers and the IPU's state while holding the semaphore.
+ * Channel 3 is stopped once the IPU's input FIFO has drained.
+ * @param ring Ring that keeps the saved registers.
+ */
+extern "C" void func_00417460(LibMovieRing* ring)
+{
+    LibSemaphoreLock lock(&ring->semaphore);
+    ring->unkC99D0 = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00417460);
+    {
+        LibInterruptLock interrupts;
+        *D_ENABLEW = *D_ENABLER | D_ENABLE_SUSPEND;
+        *D4_CHCR = DMA_CHCR_DIR_FROM_MEMORY | DMA_CHCR_MODE_CHAIN;
+        *D_ENABLEW = *D_ENABLER & ~D_ENABLE_SUSPEND;
+    }
+
+    ring->saved_d4_madr = *D4_MADR;
+    ring->saved_d4_tadr = *D4_TADR;
+    ring->saved_d4_qwc = *D4_QWC;
+    ring->saved_d4_chcr = *D4_CHCR;
+
+    while (*IPU_CTRL & IPU_CTRL_IFC)
+    {
+    }
+
+    {
+        LibInterruptLock interrupts;
+        *D_ENABLEW = *D_ENABLER | D_ENABLE_SUSPEND;
+        *D3_CHCR = 0;
+        *D_ENABLEW = *D_ENABLER & ~D_ENABLE_SUSPEND;
+    }
+
+    ring->saved_d3_madr = *D3_MADR;
+    ring->saved_d3_qwc = *D3_QWC;
+    ring->saved_d3_chcr = *D3_CHCR;
+    ring->saved_ipu_bp = *IPU_BP;
+    ring->saved_ipu_ctrl = *IPU_CTRL;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00417740);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00417D30);
+/**
+ * @brief Add to unkC999C and unkC99D8 while holding its semaphore.
+ * @param ring Ring to update.
+ * @param amount Amount added to both.
+ */
+extern "C" void func_00417D30(LibMovieRing* ring, s32 amount)
+{
+    LibSemaphoreLock lock(&ring->semaphore);
+    ring->unkC999C += amount;
+    ring->unkC99D8 += amount;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00417E50);
+/**
+ * @brief Find the free space in the ring buffer while holding its semaphore.
+ * @param ring Ring to query.
+ * @param first Receives the start of the free space.
+ * @param first_size Receives the size of the part before the end of the ring.
+ * @param second Receives the ring's start when the free space wraps, or null.
+ * @param second_size Receives the size of the wrapped part, or 0.
+ */
+extern "C" void func_00417E50(LibMovieRing* ring, u8** first, s32* first_size, u8** second, s32* second_size)
+{
+    LibSemaphoreLock lock(&ring->semaphore);
+    s32 start = (ring->unkC9994 + ring->unkC9998) * 0x800;
+    s32 free = (ring->ring_sectors - 2 - ring->unkC9998) * 0x800;
+    s32 offset = (start + ring->unkC999C) % ring->ring_size;
+    s32 size = free - ring->unkC999C;
+    bool wraps = ring->ring_size - offset < size;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00418020);
+    if (!wraps)
+    {
+        *first = (u8*)ring->sectors + offset;
+        *first_size = size;
+        *second = 0;
+        *second_size = 0;
+    }
+    else
+    {
+        *first = (u8*)ring->sectors + offset;
+        *first_size = ring->ring_size - offset;
+        *second = ring->sectors[0];
+        *second_size = size - (ring->ring_size - offset);
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00418240);
+/**
+ * @brief Empty the ring and its timestamp queue, rebuild the DMA chain that feeds it to the IPU sector by sector, and
+ * point DMA channel 4 at the chain, stopped.
+ * @param ring Ring to reset.
+ */
+extern "C" void func_00418020(LibMovieRing* ring)
+{
+    ring->unkC9994 = 0;
+    ring->unkC9998 = 0;
+    ring->unkC999C = 0;
+    ring->unkC99D0 = 1;
+    ring->timestamp_count = 0;
+    ring->timestamp_write = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00418390);
+    for (s32 i = 0; i < ring->timestamp_capacity; i++)
+    {
+        ring->timestamps[i].pts = -1;
+        ring->timestamps[i].dts = -1;
+        ring->timestamps[i].position = 0;
+        ring->timestamps[i].length = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00418460);
+    for (s32 i = 0; i < ring->ring_sectors; i++)
+    {
+        *(u64*)((u32)ring->tags[i] | UNCACHED_SEGMENT) = DMA_TAG(LIB_MOVIE_SECTOR_SIZE / 16, DMA_TAG_ID_REF, (u8*)ring->sectors + i * LIB_MOVIE_SECTOR_SIZE);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004184D0);
+    *(u64*)((u32)ring->tags[ring->ring_sectors] | UNCACHED_SEGMENT) = DMA_TAG(0, DMA_TAG_ID_NEXT, ring->tags);
+    *D4_QWC = 0;
+    *D4_MADR = (u32)ring->sectors;
+    *D4_TADR = (u32)ring->tags;
+
+    {
+        LibInterruptLock interrupts;
+        *D_ENABLEW = *D_ENABLER | D_ENABLE_SUSPEND;
+        *D4_CHCR = DMA_CHCR_DIR_FROM_MEMORY | DMA_CHCR_MODE_CHAIN;
+        *D_ENABLEW = *D_ENABLER & ~D_ENABLE_SUSPEND;
+    }
+}
+
+/** @brief Stop DMA channel 4 and delete the semaphore. */
+LibMovieRing::~LibMovieRing()
+{
+    {
+        LibInterruptLock interrupts;
+        *D_ENABLEW = *D_ENABLER | D_ENABLE_SUSPEND;
+        *D4_CHCR = DMA_CHCR_DIR_FROM_MEMORY | DMA_CHCR_MODE_CHAIN;
+        *D_ENABLEW = *D_ENABLER & ~D_ENABLE_SUSPEND;
+    }
+
+    *D4_QWC = 0;
+    *D4_MADR = 0;
+    *D4_TADR = 0;
+}
+
+/** @brief Set up an empty ring, its DMA chain and its semaphore. */
+LibMovieRing::LibMovieRing()
+    : ring_sectors(LIB_MOVIE_RING_SECTORS), ring_size(LIB_MOVIE_RING_SECTORS * 0x800), unkC99D8(0),
+      timestamp_capacity(LIB_MOVIE_TIMESTAMP_CAPACITY)
+{
+    semaphore.create(1, 1);
+    func_00418020(this);
+}
+
+/**
+ * @brief Free the frames that have been shown.
+ * @param state Decoder state.
+ */
+extern "C" void func_004184D0(LibMovieState* state)
+{
+    for (s32 i = 0; i < LIB_MOVIE_FRAME_COUNT; i++)
+    {
+        if (state->frame_states[i] == LIB_MOVIE_FRAME_SHOWN)
+        {
+            state->frame_states[i] = LIB_MOVIE_FRAME_FREE;
+
+            if (state->ready_count > 0)
+            {
+                state->ready_count--;
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00418540);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004190C0);
+/**
+ * @brief Find the frame buffer to decode into next.
+ * @param state Decoder state.
+ * @return The current frame buffer, or null when every frame is waiting to be shown.
+ */
+extern "C" u8* func_004190C0(LibMovieState* state)
+{
+    bool full = state->ready_count == state->frame_count;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00419110);
+    if (full)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004191A0);
+    return state->frames[state->current];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00419290);
+/**
+ * @brief Free both frames and restart the frame count for a new movie.
+ * @param state Decoder state.
+ */
+extern "C" void func_00419110(LibMovieState* state)
+{
+    for (s32 i = 0; i < LIB_MOVIE_FRAME_COUNT; i++)
+    {
+        state->frame_states[i] = LIB_MOVIE_FRAME_FREE;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00419330);
+    state->unk80B8 = 2;
+    state->unk80BC = state->unk80B8;
+    state->ready_count = 0;
+    state->current = 0;
+    state->unk80A8 = 0;
+    state->current_frame = 0;
+    state->unk80D0 = state->unk80D4;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004193E0);
+/**
+ * @brief Mark the current frame decoded and move on to the other one, with interrupts disabled.
+ * @param state Decoder state.
+ */
+extern "C" void func_004191A0(LibMovieState* state)
+{
+    LibInterruptLock interrupts;
+    state->frame_states[state->current] = LIB_MOVIE_FRAME_READY;
+    state->ready_count++;
+    state->current = (state->current + 1) % LIB_MOVIE_FRAME_COUNT;
+}
+
+/** @brief Free the frame buffers. */
+LibMovieState::~LibMovieState()
+{
+    for (s32 i = 0; i < LIB_MOVIE_FRAME_COUNT; i++)
+    {
+        delete[] allocations[i];
+    }
+}
+
+/**
+ * @brief Allocate both frame buffers for a frame size, aligned to 64 bytes.
+ * @param state Decoder state.
+ * @param width Frame width in pixels.
+ * @param height Frame height in pixels.
+ */
+extern "C" void func_00419330(LibMovieState* state, s32 width, s32 height)
+{
+    for (s32 i = 0; i < LIB_MOVIE_FRAME_COUNT; i++)
+    {
+        state->allocations[i] = new (0) u8[width * height * 4 + 0x40];
+        state->frames[i] = (u8*)(((u32)state->allocations[i] + 0x3F) & ~0x3F);
+    }
+
+    state->width = width;
+    state->height = height;
+}
+
+/** @brief Start with no frame buffers, both frames free, and the default words and scale. */
+LibMovieState::LibMovieState()
+{
+    current = 0;
+    ready_count = 0;
+    frame_count = LIB_MOVIE_FRAME_COUNT;
+    unk80A8 = 0;
+
+    for (s32 i = 0; i < LIB_MOVIE_FRAME_COUNT; i++)
+    {
+        frame_states[i] = LIB_MOVIE_FRAME_FREE;
+        allocations[i] = 0;
+    }
+
+    set_words(0x800, 0x800, 1);
+    set_scale(1.0f, 1.0f);
+    widescreen = 0;
+    unk80B8 = 2;
+    unk80BC = unk80B8;
+    current_frame = 0;
+    unk80D4 = 8;
+    unk80CC = 0;
+}
 
 s32 func_004194F0(void* object)
 {

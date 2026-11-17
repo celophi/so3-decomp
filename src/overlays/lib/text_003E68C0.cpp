@@ -3,6 +3,7 @@
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004DD440.h"
+#include "overlays/lib/clip_region.h"
 
 /** Bounding sphere objects without bounds report: centred on the origin, radius 1000000. */
 extern "C" LibVector4 g_default_bounding_sphere;
@@ -261,7 +262,11 @@ s32 func_003EF090(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF0C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF200);
+/** @brief Delete the packet and destroy the region. */
+LibClipRegion::~LibClipRegion()
+{
+    delete packet;
+}
 
 /** @brief Free the packet storage unless it is borrowed. */
 LibPacketBuffer::~LibPacketBuffer()
@@ -468,7 +473,9 @@ extern "C" s32 func_003F4370(void* object)
     return 9;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4380);
+LibClass171FD0::~LibClass171FD0()
+{
+}
 
 /** @brief Default preparation hook; does nothing. */
 void LibDmaCallbacks::on_packet_complete(u32 value)

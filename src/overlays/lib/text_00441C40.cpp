@@ -17,6 +17,7 @@
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/vector.h"
+#include "overlays/lib/grid_emission.h"
 
 extern LibTrackPool<LibPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
 
@@ -1894,7 +1895,40 @@ void func_00441C40(LibHistoryReceiver441C40* object, s32 capacity, LibHistoryOut
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004447B0);
+/** Partial 0x140-byte head of a 0x170-byte element. */
+struct LibElementHead4447B0
+{
+    u8 unk00[0x140];
+};
+
+/** Partial second base of an element, at offset 0x140. */
+struct LibElementPart4447B0
+{
+    u8 unk00[0x30];
+};
+
+/** Partial 0x170-byte element whose second base starts at offset 0x140. */
+struct LibElement4447B0 : public LibElementHead4447B0, public LibElementPart4447B0
+{
+};
+
+/** Partial owner of an element array at offset 0x14. */
+struct LibOwner4447B0
+{
+    u8 unk00[0x14];
+    LibElement4447B0* unk14;
+};
+
+/**
+ * @brief Return an element's part at offset 0x140.
+ * @param object Owner of the elements.
+ * @param index Element index.
+ * @return The element's part, or null when the element pointer is null.
+ */
+extern "C" LibElementPart4447B0* func_004447B0(const LibOwner4447B0* object, s32 index)
+{
+    return &object->unk14[index];
+}
 
 /**
  * @brief Position a row using optional linear and angular steps.
@@ -2041,7 +2075,7 @@ extern "C" void func_004447E0(RowFillOwner* object, RowFillCell* cell, RowFillEl
  */
 void func_00444BF0(LibGridEmitter* object, LibGridElement40* cell, LibGridRow40* row, s32 index, const LibGridVector4* source)
 {
-    if (object->unk50 != 0)
+    if (object->secondary_emitter != 0)
     {
         cell->unk3C = object->unk3C;
     }
@@ -2460,7 +2494,46 @@ LibGridCell170::~LibGridCell170()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445840);
+/**
+ * @brief Copy another grid's size, emission settings and storage settings.
+ * @param source Grid to copy.
+ */
+void LibClass174120::copy_settings(const LibClass173A40* source)
+{
+    const LibClass174120* other = static_cast<const LibClass174120*>(source);
+
+    unk0c = other->unk0c;
+    unk10 = other->unk10;
+    resize(unk0c, unk10);
+    unk28 = other->unk28;
+    unk30 = other->unk30;
+    unk34 = other->unk34;
+    unk38 = other->unk38;
+    unk48 = other->unk48;
+    unk4c = other->unk4c;
+    unk4d = other->unk4d;
+    unk4e = other->unk4e;
+    unk4f = other->unk4f;
+    unk50 = other->unk50;
+    unk54 = other->unk54;
+    unk55 = other->unk55;
+    unk3c = other->unk3c;
+    unka0 = other->unka0;
+    unka4 = other->unka4;
+    unkb8 = other->unkb8;
+    unkbc = other->unkbc;
+    unkc0 = other->unkc0;
+    unkc4 = other->unkc4;
+    unkc8 = other->unkc8;
+    // TODO: As in LibClass177090::copy_settings, the copy marks its own storage borrowed by storing the same pointers
+    // back; I haven't found a helper form that loads unkb0 and unkb4 in this order.
+    u8* first = unkb0;
+    FieldVec4A* second = unkb4;
+    unkc9 = 1;
+    unkb0 = first;
+    unkb4 = second;
+    unkc4 = 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445950);
 
@@ -2494,14 +2567,14 @@ void func_00447090(LibGridEmitter* object, const LibGridEmitter* other)
     object->unk30 = other->unk30;
     object->unk34 = other->unk34;
     object->unk38 = other->unk38;
-    object->unk48 = other->unk48;
+    object->primary_emitter = other->primary_emitter;
     object->unk4C = other->unk4C;
     object->unk4D = other->unk4D;
-    object->unk4E = other->unk4E;
-    object->unk4F = other->unk4F;
-    object->unk50 = other->unk50;
-    object->unk54 = other->unk54;
-    object->unk55 = other->unk55;
+    object->primary_emission_flags = other->primary_emission_flags;
+    object->primary_emission_count = other->primary_emission_count;
+    object->secondary_emitter = other->secondary_emitter;
+    object->secondary_emission_flags = other->secondary_emission_flags;
+    object->secondary_emission_count = other->secondary_emission_count;
     object->unk3C = other->unk3C;
     object->frame_header = other->frame_header;
     object->frame_records = other->frame_records;
@@ -2527,9 +2600,33 @@ s32 func_004471A0(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004471B0);
+/**
+ * @brief Emit entries through the grid's primary linked emitter.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004471B0(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_primary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447330);
+/**
+ * @brief Emit entries through the grid's secondary linked emitter, if it has one.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set; its fourth component receives the grid's unk3C.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_00447330(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_secondary(grid, position, first_offset, second_offset, color_scale);
+}
 
 /**
  * @brief Clear an active cell bit.
@@ -2838,7 +2935,16 @@ LibClass174240::~LibClass174240()
     delete[] unk24;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447D80);
+/**
+ * @brief Copy another grid's size and resize this grid to match.
+ * @param source Grid to copy.
+ */
+void LibClass174240::copy_settings(const LibClass173A40* source)
+{
+    unk0c = source->unk0c;
+    unk10 = source->unk10;
+    resize(unk0c, unk10);
+}
 
 float func_00447DC0(void* object)
 {
@@ -3890,7 +3996,16 @@ void* func_0044A410(void)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_0044A440);
+/** Transform owner with vtable D_00174570 in main data; only its destructor is known. */
+class LibClass174570 : public LibTransformOwner
+{
+public:
+    virtual ~LibClass174570();
+};
+
+LibClass174570::~LibClass174570()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_0044A530);
 
