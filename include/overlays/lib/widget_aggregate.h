@@ -34,9 +34,11 @@ public:
     float unk2c8;
     float unk2cc;
     float unk2d0;
-    u8 unk2d4[0x24];
+    u8 unk2d4[0x1C];
+    float unk2f0;
+    u8 unk2f4[4];
     s32 unk2f8;
-    float unk2fc;
+    s32 unk2fc;
     s32 unk300;
     s32 unk304;
     s32 unk308;

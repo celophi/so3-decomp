@@ -439,6 +439,9 @@ extern ResidentSoundBankSet* D_001B6524;
 /** Sound number tables for func_0042EB50, four numbers each; entries 1 to 10 are used. */
 extern s16* D_4ED0EC[];
 
+/** Sound number tables for func_0042F0D0, four numbers each; entries 1 to 10 are used. */
+extern s16* D_4ECD0C[];
+
 extern "C" {
 
 void func_004486A0(void* object);
@@ -1310,7 +1313,24 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EBE0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EF30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F0D0);
+/**
+ * @brief Play one of four sounds from a second set of tables at random, following an emitter.
+ * @param emitter Object the sound follows.
+ * @param table Table index, 1 to 10.
+ * @return Slot identifier of the sound, or 0 for a bad index.
+ */
+s32 func_0042F0D0(ResidentSoundEmitter* emitter, s32 table)
+{
+    s16* numbers;
+
+    if (table <= 0 || table > 10)
+    {
+        return 0;
+    }
+
+    numbers = D_4ECD0C[table];
+    return resident_sound_bank_set_play_voice(D_001B6524, numbers[resident_random_below(4)], emitter, 0, 0x7F, 0);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F160);
 

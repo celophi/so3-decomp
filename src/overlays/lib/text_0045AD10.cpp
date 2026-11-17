@@ -1416,7 +1416,29 @@ s32 func_00468370(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468380);
+/** Partial receiver with an embedded buffer after the word at offset 0x618. */
+typedef struct LibEmbeddedBuffer468380
+{
+    u8 unk00[0x618];
+    u32 unk618;
+    u8 unk61C[4];
+    u8 unk620;
+} LibEmbeddedBuffer468380;
+
+/**
+ * @brief Get the embedded buffer while the word before it is set.
+ * @param object Receiver.
+ * @return The buffer at offset 0x620, or null.
+ */
+extern "C" u8* func_00468380(LibEmbeddedBuffer468380* object)
+{
+    if (object->unk618 != 0)
+    {
+        return &object->unk620;
+    }
+
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004683A0);
 

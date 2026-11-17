@@ -2,6 +2,7 @@
 #define SO3_OVERLAYS_LIB_TEXT_004CD3A0_H
 
 #include "types.h"
+#include "main/dma_queue.h"
 #include "gs.h"
 #include "ee.h"
 #include "main/microcode_loader.h"
@@ -1436,11 +1437,11 @@ void func_004D4010(void* manager, s32 count, void** entries);
 s32 lib_compare_bounded_strings(const char* first, const char* second, s32 count);
 
 /**
- * @brief Pass one list item to its virtual handler at vtable offset 0x14.
- * @param list List that owns the item.
- * @param item Item to process.
+ * @brief Update one node of an update list.
+ * @param list Update list that owns the node; unused.
+ * @param node Node to update.
  */
-void func_004D6700(void* list, void* item);
+void lib_update_list_update_node(void* list, void* node);
 
 
 
@@ -1705,6 +1706,49 @@ public:
     s32 count;
     u32 unk1c;
     u8 unk20[4];
+};
+#endif
+
+#ifdef __cplusplus
+/** List object with vtable D_178C90 in main data; only its destructor is known. */
+class LibClass178C90 : public LibListObject
+{
+public:
+    virtual ~LibClass178C90();
+};
+#endif
+
+#ifdef __cplusplus
+/** LibUpdateList subclass with vtable D_00178B30 in main data; only its destructor is known. */
+class LibClass178B30 : public LibUpdateList
+{
+public:
+    virtual ~LibClass178B30();
+};
+#endif
+
+#ifdef __cplusplus
+/** Update list that is also a list object (vtables D_00178F30 and D_00178F68 in main data); only its destructor is known. */
+class LibClass178F30 : public LibUpdateList, public LibListObject
+{
+public:
+    virtual ~LibClass178F30();
+};
+#endif
+
+#ifdef __cplusplus
+/** Transform owner that is also a DMA submission (vtables D_00178C00 and D_00178C74 in main data); only its destructor is known. */
+class LibClass178C00 : public LibTransformOwner, public DmaSubmission
+{
+public:
+    virtual ~LibClass178C00();
+};
+
+/** Transform owner that is also a DMA submission (vtables D_00178B70 and D_00178BE4 in main data); only its destructor is known. */
+class LibClass178B70 : public LibTransformOwner, public DmaSubmission
+{
+public:
+    virtual ~LibClass178B70();
 };
 #endif
 

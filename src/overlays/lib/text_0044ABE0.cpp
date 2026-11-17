@@ -14,6 +14,61 @@
 #include "overlays/lib/transform_owner_inlines.h"
 #include "main/system.h"
 #include "main/utility.h"
+#include "main/dma_queue.h"
+#include "overlays/lib/model.h"
+
+/** LibClass1779F0 subclass with vtable D_00174C90 in main data; only its destructors are known. */
+class LibClass174C90 : public LibClass1779F0
+{
+public:
+    virtual ~LibClass174C90()
+    {
+    }
+};
+
+/** LibClass174C90 subclass with vtable D_00174C70 in main data. */
+class LibClass174C70 : public LibClass174C90
+{
+public:
+    virtual ~LibClass174C70();
+};
+
+/** LibClass174C90 subclass with vtable D_00174CB0 in main data. */
+class LibClass174CB0 : public LibClass174C90
+{
+public:
+    virtual ~LibClass174CB0();
+};
+
+/** LibClass174C90 subclass with vtable D_00174D10 in main data. */
+class LibClass174D10 : public LibClass174C90
+{
+public:
+    virtual ~LibClass174D10();
+};
+
+/** LibClass1779F0 subclass with vtable D_00174D30 in main data; only its destructors are known. */
+class LibClass174D30 : public LibClass1779F0
+{
+public:
+    virtual ~LibClass174D30()
+    {
+    }
+};
+
+/** LibClass174D30 subclass with vtable D_00174D50 in main data. */
+class LibClass174D50 : public LibClass174D30
+{
+public:
+    virtual ~LibClass174D50();
+};
+
+/** Transform owner with vtable D_001747C0 in main data; only its destructor is known. */
+class LibClass1747C0 : public LibTransformOwner
+{
+public:
+    virtual ~LibClass1747C0();
+};
 
 class LibCameraContext;
 
@@ -654,7 +709,9 @@ s32 LibClass174790::init(u32 color, u32 mirrored, float x, float y, float width)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF60);
+LibClass1747C0::~LibClass1747C0()
+{
+}
 
 /**
  * @brief Set the receiver's byte at offset 0x60 to 8.
@@ -721,7 +778,11 @@ extern "C" s32 func_0044C110(LibCallbackTransform* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044C140);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044CE10);
+/** @brief Delete the packet and destroy the object. */
+LibClass174840::~LibClass174840()
+{
+    delete packet;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044CF30);
 
@@ -937,7 +998,9 @@ extern "C" void lib_draw_state_init(LibDrawState64* state)
     state->unk60 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454060);
+LibClass174C70::~LibClass174C70()
+{
+}
 
 extern "C" s32 func_004540D0(void)
 {
@@ -954,14 +1017,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004545C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454650);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004546D0);
-
 extern "C" s32 func_00454730(void)
 {
     return 10;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454740);
+LibClass174CB0::~LibClass174CB0()
+{
+}
 
 extern "C" s32 func_004547B0(void)
 {
@@ -1574,7 +1637,9 @@ LibDrawBuffer::LibDrawBuffer()
 }
 
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456190);
+LibClass174D10::~LibClass174D10()
+{
+}
 
 extern "C" s32 func_00456200(void)
 {
@@ -1599,14 +1664,14 @@ void* func_004568A0(void* receiver)
     return receiver;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004568E0);
-
 extern "C" s32 func_00456940(void)
 {
     return 6;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456950);
+LibClass174D50::~LibClass174D50()
+{
+}
 
 extern "C" s32 func_004569C0(void)
 {

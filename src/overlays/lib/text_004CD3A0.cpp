@@ -1156,15 +1156,30 @@ void LibRenderer::begin_frame()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4D00);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4EB0);
+LibClass178F30::~LibClass178F30()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4F60);
+// TODO: These two inline the whole base chain down to LibLink, which the unit's default depth stops short of, but
+// level=7 for the whole unit breaks lib_list_add_chain_kind_offsets. I don't know yet what the real setting was.
+#pragma push
+#pragma inline_depth(7)
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5060);
+LibClass178C00::~LibClass178C00()
+{
+}
+
+LibClass178B70::~LibClass178B70()
+{
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5160);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5650);
+LibClass178B30::~LibClass178B30()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D56B0);
 
@@ -1188,7 +1203,9 @@ extern "C" void func_004D5760(LibTransformOwner* object)
     object->LibTransformOwner::destroy();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5780);
+LibClass178C90::~LibClass178C90()
+{
+}
 
 extern "C" s32 func_004D5810(void* object)
 {
@@ -1510,7 +1527,15 @@ extern "C" void func_004D66F0(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6700);
+/**
+ * @brief Update one node of an update list.
+ * @param list Update list that owns the node; unused.
+ * @param node Node to update.
+ */
+void lib_update_list_update_node(void* list, void* node)
+{
+    static_cast<LibListObject*>(node)->update();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_nodes__13LibUpdateListFv);
 
@@ -3128,8 +3153,6 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB190);
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB3E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB3F0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB400);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB410);
 

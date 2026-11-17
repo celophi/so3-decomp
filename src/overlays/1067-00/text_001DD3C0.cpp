@@ -575,7 +575,7 @@ void FieldClass14FE30::update_nodes()
 
             if (object && object->is_listed && !object->test_unk70(0x80000000))
             {
-                func_004D6700(this, object);
+                lib_update_list_update_node(this, object);
             }
         }
 

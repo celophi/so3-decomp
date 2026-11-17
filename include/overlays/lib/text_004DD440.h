@@ -890,4 +890,16 @@ public:
 };
 #endif
 
+#ifdef __cplusplus
+/**
+ * Update list that is also a list object (vtables D_00179690 and D_001796C8 in main data), Lib's counterpart of
+ * main's ResidentUpdateList; only its destructor is known.
+ */
+class LibClass179690 : public LibUpdateList, public LibListObject
+{
+public:
+    virtual ~LibClass179690();
+};
+#endif
+
 #endif

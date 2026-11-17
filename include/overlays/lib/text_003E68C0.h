@@ -623,4 +623,13 @@ void func_003EF8A0(void);
 }
 #endif
 
+#ifdef __cplusplus
+/** List object with vtable D_171FD0 in main data; only its destructor is known. */
+class LibClass171FD0 : public LibListObject
+{
+public:
+    virtual ~LibClass171FD0();
+};
+#endif
+
 #endif

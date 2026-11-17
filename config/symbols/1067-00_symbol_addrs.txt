@@ -345,7 +345,7 @@ resident_sound_bank_set_get_pending = 0x0011F9D0; // type:func
 func_003F4B50__14LibClass3F5B80Fi = 0x003F4B50; // type:func
 
 // Lib list helpers used by FieldClass14FE30::update_nodes.
-func_004D6700 = 0x004D6700; // type:func
+lib_update_list_update_node = 0x004D6700; // type:func
 func_004D6AF0 = 0x004D6AF0; // type:func
 func_004D6730__16FieldClass14FE30Fv = 0x001DDFC0; // type:func absolute:True allow_duplicated:True
 update_nodes__16FieldClass14FE30Fv = 0x001DDFC0; // type:func allow_duplicated:True

@@ -643,6 +643,12 @@ class LibClass174120 : public LibClass174050
         /** @brief Free the storage unless it's borrowed, then destroy the grid. */
         virtual ~LibClass174120();
 
+        /**
+         * @brief Copy another grid's size, emission settings and storage settings.
+         * @param source Grid to copy.
+         */
+        virtual void copy_settings(const LibClass173A40* source);
+
         u8* unkb0;
         FieldVec4A* unkb4;
         void* unkb8;

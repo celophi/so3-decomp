@@ -12,6 +12,7 @@
 #include "vu0.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libc_guess_00137290.h"
+#include "overlays/lib/grid_emission.h"
 
 /** FGE as it sits in the upper word of a GIF tag's first doubleword. */
 #define GIF_TAG_HIGH_PRIM_FGE ((u32)(GIF_TAG_PRIM(GS_PRIM_FGE) >> 32))
@@ -424,9 +425,33 @@ extern "C" void* func_004A08C0(const void* object, s32 index)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A08F0);
+/**
+ * @brief Emit entries through the grid's primary linked emitter.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A08F0(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_primary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0A70);
+/**
+ * @brief Emit entries through the grid's secondary linked emitter, if it has one.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set; its fourth component receives the grid's unk3C.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A0A70(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_secondary(grid, position, first_offset, second_offset, color_scale);
+}
 
 void func_004A0C40(void* object)
 {
@@ -446,29 +471,173 @@ s32 func_004A0C70(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0C80);
+/**
+ * @brief Emit entries through the grid's primary linked emitter.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A0C80(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_primary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0E00);
+/**
+ * @brief Emit entries through the grid's secondary linked emitter, if it has one.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set; its fourth component receives the grid's unk3C.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A0E00(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_secondary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A0FD0);
+/**
+ * @brief Emit entries through the grid's primary linked emitter.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A0FD0(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_primary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A1150);
+/**
+ * @brief Emit entries through the grid's secondary linked emitter, if it has one.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set; its fourth component receives the grid's unk3C.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A1150(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_secondary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A1320);
+/**
+ * @brief Emit entries through the grid's primary linked emitter.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A1320(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_primary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A14A0);
+/**
+ * @brief Emit entries through the grid's secondary linked emitter, if it has one.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set; its fourth component receives the grid's unk3C.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A14A0(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_secondary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A1670);
+/**
+ * @brief Emit entries through the grid's primary linked emitter.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A1670(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_primary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A17F0);
+/**
+ * @brief Emit entries through the grid's secondary linked emitter, if it has one.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set; its fourth component receives the grid's unk3C.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A17F0(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_secondary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A19C0);
+/**
+ * @brief Emit entries through the grid's primary linked emitter.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A19C0(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_primary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A1B40);
+/**
+ * @brief Emit entries through the grid's secondary linked emitter, if it has one.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set; its fourth component receives the grid's unk3C.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A1B40(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_secondary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A1D10);
+/**
+ * @brief Emit entries through the grid's primary linked emitter.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A1D10(LibGridEmitter* grid, const LibVector4* position, const LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_primary(grid, position, first_offset, second_offset, color_scale);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A1E90);
+/**
+ * @brief Emit entries through the grid's secondary linked emitter, if it has one.
+ * @param grid Grid.
+ * @param position Position transformed when the position flag is set.
+ * @param first_offset First offset, transformed when its flag is set; its fourth component receives the grid's unk3C.
+ * @param second_offset Second offset, transformed when its flag is set.
+ * @param color_scale Color multiplier used when its flag is set.
+ */
+extern "C" void func_004A1E90(LibGridEmitter* grid, const LibVector4* position, LibVector4* first_offset,
+                              const LibVector4* second_offset, const LibVector4* color_scale)
+{
+    lib_grid_emit_secondary(grid, position, first_offset, second_offset, color_scale);
+}
 
 /** @brief Start with no storage. */
 LibClass174240::LibClass174240()
