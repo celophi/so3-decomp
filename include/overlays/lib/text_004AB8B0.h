@@ -80,18 +80,12 @@ s32 func_004B46E0(LibAnimation* object, LibAnimationTarget* target, float frame,
  */
 
 
-/** Return the fixed integer value 99. */
-s32 func_004ABAA0(void* object);
-
 /** Return the fixed value 0. */
 s32 func_004B3D60(void* object);
 
 /** Return the fixed value 0. */
 s32 func_004B3D70(void* object);
 
-void func_004ABAB0(void* object);
-
-void func_004ABD30(void* object);
 
 
 

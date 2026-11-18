@@ -755,7 +755,7 @@ public:
     u8 unk55c[4];
     float rotation_angles[3];
     u8 unk56c[0x2F4];
-    DmaSubmission* unk860;
+    LibClass179130* unk860;
     u8 unk864[0x1C];
 };
 

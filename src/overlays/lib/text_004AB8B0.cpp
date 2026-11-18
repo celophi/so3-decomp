@@ -71,34 +71,69 @@ LibClass1734B0::LibClass1734B0()
     unk0e = 0;
 }
 
-s32 func_004ABAA0(void* object)
+/**
+ * @brief Return the entry's type code.
+ * @return 99.
+ */
+s32 LibClass177A80::func_slot14()
 {
     return 99;
 }
 
-void func_004ABAB0(void* object)
+/**
+ * @brief Nothing to finish.
+ * @param channel DMA channel; unused.
+ */
+void LibClass177A80::complete_dma(u32 channel)
 {
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABAC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABD10);
+/**
+ * @brief Return the record at the cursor and move past it; each record starts with its size as a halfword.
+ * @param index Bit index; unused.
+ * @param size Receives the record's size.
+ * @return Record.
+ */
+u8* LibClass177A80::read_record(u32 index, u32* size)
+{
+    *size = *reinterpret_cast<u16*>(cursor);
+    u8* record = cursor;
+    cursor = record + *reinterpret_cast<u16*>(record);
+    return record;
+}
 
-void func_004ABD30(void* object)
+/**
+ * @brief Nothing to send.
+ * @param channel DMA channel; unused.
+ */
+void LibClass177A80::submit_dma(u32 channel)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABD40);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_slot1C__14LibClass177A80Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABFF0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", set_borrowed_data__14LibClass177A80FPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC260);
+/** @brief Free the matrix and index arrays. */
+LibClass177A80::~LibClass177A80()
+{
+    delete[] matrices;
+    delete[] second_matrices;
+    delete[] unk3c;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC320);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC390);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AC3A0);
+/** @brief Start with no arrays. */
+LibClass177A80::LibClass177A80()
+{
+    unk3c = 0;
+    matrices = 0;
+    second_matrices = 0;
+    unk50 = 0;
+    unk19 = 1;
+    unk0f = 1;
+}
 
 /** @brief Forget the stored samples. */
 void LibLinearFloatHistory::reset()

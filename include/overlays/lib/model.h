@@ -272,6 +272,8 @@ public:
      */
     virtual u8* read_record(u32 index, u32* size);
 
+    virtual s32 func_slot1C() = 0;
+
     /**
      * @brief Add the entry to a model's child list, binding the list to the model first.
      * @param model Model whose children list to join.
@@ -303,6 +305,72 @@ public:
      * @return Three.
      */
     virtual s32 func_slot14();
+};
+
+/** Header of the data a LibClass177A80 borrows: a matrix count and the offset of its records. */
+struct LibClass177A80Header
+{
+    u32 unk00;
+    s32 matrix_count;
+    u32 records_offset;
+    u8 has_second_set;
+    u8 unk0d[3];
+};
+
+/** LibClass1734B0 entry of type 99 with matrix arrays and a DMA interface, with vtables D_177A80 and D_177AA0 in main data. */
+class LibClass177A80 : public LibClass1734B0, public DmaSubmission
+{
+public:
+    /** @brief Start with no arrays. */
+    LibClass177A80();
+
+    /** @brief Free the matrix and index arrays. */
+    virtual ~LibClass177A80();
+
+    /**
+     * @brief Use borrowed data and build the matrix arrays from it.
+     * @param value Borrowed data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    virtual void func_slot10();
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 99.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Return the record at the cursor and move past it; each record starts with its size as a halfword.
+     * @param index Bit index; unused.
+     * @param size Receives the record's size.
+     * @return Record.
+     */
+    virtual u8* read_record(u32 index, u32* size);
+
+    virtual s32 func_slot1C();
+
+    /**
+     * @brief Nothing to send.
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Nothing to finish.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    LibClass177A80Header* header;
+    u8* unk38;
+    u32* unk3c;
+    LibMatrix44Value* matrices;
+    u8* records;
+    u8* cursor;
+    LibMatrix44Value* second_matrices;
+    u8 unk50;
 };
 
 /** LibClass1779F0 entry with vtable D_00174C90 in main data that the textured entries 174C70/174CB0/174D10 extend. */

@@ -144,11 +144,23 @@ public:
     virtual void complete_dma(u32 channel);
 };
 
-/** 16-byte element of LibClass173490's two arrays; its contents aren't known yet. */
+/** 16-byte element of LibClass173490's two arrays; its contents aren't known yet, it's copied as one 128-bit value. */
 struct LibClass173490Entry
 {
-    /** @brief Leave the element uninitialized. */
-    LibClass173490Entry();
+    LibClass173490Entry()
+    {
+    }
+
+    /**
+     * @brief Copy all 16 bytes.
+     * @param other Element to copy.
+     * @return This element.
+     */
+    LibClass173490Entry& operator=(const LibClass173490Entry& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
 
     u32 unk00[4];
 };
@@ -182,7 +194,10 @@ public:
     virtual u8* read_record(u32 index, u32* size);
 
     /** @brief Slot 0x1C, first after LibClass1779F0's; its purpose is unknown. */
-    virtual void func_slot1C();
+    virtual s32 func_slot1C();
+
+    /** @brief Clear both element arrays and the two flags. */
+    void clear_entries();
 
     u32* unk30;
     u32* unk34;
@@ -1233,17 +1248,66 @@ u8* LibClass173490::read_record(u32 index, u32* size)
     return record;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E710);
+/** @brief Clear both element arrays and the two flags. */
+void LibClass173490::clear_entries()
+{
+    if (!unk40)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E860);
+    s32 rows = unk30[1] + 2;
+    s32 columns = unk30[0] + 2;
+    LibClass173490Entry zero;
+    zero.unk00[0] = 0;
+    zero.unk00[1] = 0;
+    zero.unk00[2] = 0;
+    zero.unk00[3] = 0;
+    LibClass173490Entry* first = unk40;
+    LibClass173490Entry* second = unk44;
+
+    for (s32 y = 0; y < rows; y++)
+    {
+        for (s32 x = 0; x < columns; x++)
+        {
+            *first = zero;
+            *second = zero;
+            first++;
+            second++;
+        }
+    }
+
+    unk4c = 0;
+    unk4d = 0;
+}
 
 /**
- * @brief Return the input pointer unchanged.
- * @param object Pointer to return.
- * @return The input pointer.
+ * @brief Use borrowed grid data: find its header, row words and records, and allocate and clear both element arrays.
+ * @param value Borrowed data.
  */
-void* func_0042E9A0(void* object) {
-    return object;
+void LibClass173490::set_borrowed_data(void* value)
+{
+    data = value;
+    data_is_borrowed = 1;
+    unk30 = reinterpret_cast<u32*>(static_cast<u8*>(value) + 0x10);
+    u32* header = unk30;
+    s32 columns = header[0] + 2;
+    s32 rows = header[1] + 2;
+    unk48 = reinterpret_cast<u32*>(reinterpret_cast<u8*>(header) + 0x20);
+    s32 count = columns * rows + 1;
+    unk34 = unk48 + ((count + 2) & ~3);
+    unk44 = new (0) LibClass173490Entry[count];
+    unk40 = new (0) LibClass173490Entry[count];
+
+    if (!unk40 || !unk44)
+    {
+        delete[] unk40;
+        delete[] unk44;
+        unk40 = 0;
+        unk44 = 0;
+    }
+
+    clear_entries();
 }
 
 }

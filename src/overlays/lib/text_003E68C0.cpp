@@ -12,6 +12,8 @@
 #include "main/entry_table.h"
 #include "main/system.h"
 #include "main/utility.h"
+#include "main/input.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 
 /** Bounding sphere objects without bounds report: centred on the origin, radius 1000000. */
 extern "C" LibVector4 g_default_bounding_sphere;
@@ -907,7 +909,19 @@ void* func_003F4570(void)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F45F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F49E0);
+/**
+ * @brief Store the halfword at 0x66C, using 1000 for values outside 0 to 999.
+ * @param value Value to store.
+ */
+void LibClass3F5B80::func_003F49E0(s32 value)
+{
+    if (!(-1 < value && value < 1000))
+    {
+        value = 1000;
+    }
+
+    buffer->unk66C = value;
+}
 
 /**
  * @brief Store a byte in one of three backing-buffer slots.
@@ -1041,15 +1055,75 @@ void LibClass3F5B80::func_003F4BC0(s32 index, u32 value, u8 state)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4BF0);
+extern "C" const u8 D_004EC0D0[0x1A];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4DE0);
+/** @brief Put the 26 entries in the order of the table at D_004EC0D0. */
+void LibClass3F5B80::func_003F4BF0()
+{
+    LibClass3F5B80Entry sorted[0x1A];
+
+    LibClass3F5B80Entry* out = sorted;
+
+    for (s32 i = 0; i < 0x1A; i++, out++)
+    {
+        LibClass3F5B80Entry* entry = &buffer->entries[D_004EC0D0[i]];
+        out->unk00 = entry->unk00;
+        out->unk04 = entry->unk04;
+        out->unk06 = entry->unk06;
+    }
+
+    memcpy_guess(buffer, sorted, sizeof(sorted));
+}
+
+/** @brief Copy the buffer's three records into resident entries 2 and 3. */
+void LibClass3F5B80::func_003F4DE0()
+{
+    ResidentEntryTable* table = resident_get_entry_table(resident_get_system());
+    u8* first = reinterpret_cast<u8*>(resident_find_entry(table, 2));
+    u8* second = reinterpret_cast<u8*>(resident_find_entry(table, 3));
+
+    for (s32 i = 0; i < 3; i++)
+    {
+        memcpy_guess(first, buffer->unk0E0[i], 0xC4);
+        memcpy_guess(second, buffer->unk32C[i], 0x114);
+        first += 0xC4;
+        second += 0x114;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4EB0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5AC0);
+/**
+ * @brief Pick a new 16-byte aligned place for the buffer inside the object at random, clear it and set its defaults.
+ * @param object Object to reset.
+ */
+static inline void reset_buffer(LibClass3F5B80* object)
+{
+    object->buffer = reinterpret_cast<LibClass3F5B80Buffer*>(object->unk00 + ((TIMER0_COUNT + resident_next_random_word()) & 0xF) * 16);
+    memset_guess(object->buffer, 0, sizeof(LibClass3F5B80Buffer));
+    LibClass3F5B80Entry* entry = object->buffer->entries;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F5B80);
+    for (s32 i = 0; i < 0x1A; i++, entry++)
+    {
+        entry->unk06 = -1;
+    }
+
+    object->buffer->unk668 = 0x37;
+    object->buffer->unk66A = -1;
+    object->buffer->unk66C = 0x5A;
+}
+
+/** @brief Pick a new aligned buffer and reset it as the constructor does. */
+void LibClass3F5B80::func_003F5AC0()
+{
+    reset_buffer(this);
+}
+
+/** @brief Initialize the buffer and its entry table. */
+LibClass3F5B80::LibClass3F5B80()
+{
+    reset_buffer(this);
+}
 
 /**
  * @brief Read the checked word.

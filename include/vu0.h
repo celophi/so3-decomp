@@ -511,4 +511,20 @@ static inline void vu0_store_decoded_quaternion(void* out)
         : "memory");
 }
 
+/**
+ * @brief Seed VU0's random number register R from a word.
+ * @param seed Seed word, moved into vf31 first.
+ * @see VRINIT and VRGET in the EE Core Instruction Set Manual (VU0 macro mode); lib's VIF0 channel constructor
+ *      (0x4D9AF0).
+ */
+static inline void vu0_random_seed(u32 seed)
+{
+    asm __volatile__(
+        "qmtc2.ni  %0, $vf31\n"
+        "vrinit    $R, $vf31x\n"
+        "vrget.x   $vf31, $R\n"
+        :
+        : "r"(seed));
+}
+
 #endif

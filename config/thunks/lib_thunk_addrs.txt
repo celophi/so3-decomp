@@ -51,3 +51,11 @@
 @240@func_00412C20__14LibClass1721F0Ff = 0x00413000;
 @240@func_00412C10__14LibClass1721F0Fi = 0x00413010;
 @32@__dt__14LibClass174F70Fv = 0x00466E30;
+@48@complete_dma__14LibClass177A80FUi = 0x004AC390;
+@48@submit_dma__14LibClass177A80FUi = 0x004AC3A0;
+@544@complete_dma__9LibCameraFUi = 0x004E2EC0;
+@544@submit_dma__9LibCameraFUi = 0x004E2ED0;
+@144@complete_dma__14LibClass174840FUi = 0x0044D0B0;
+@144@submit_dma__14LibClass174840FUi = 0x0044D0C0;
+@32@__dt__14LibClass1746D0Fv = 0x0044BF50;
+@32@__dt__12LibContainerFv = 0x004C6700;

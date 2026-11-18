@@ -1215,7 +1215,17 @@ float LibCamera::compute_projection_distance() const
     return half_width / func_00141EC0(horizontal_fov / 2.0f);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2940);
+// TODO: The camera's destructor inlines its base's, which text_0046AE20 and other modules keep out of line, so the
+// base destructor is only inline in this unit.
+inline LibLookAtTransform::~LibLookAtTransform()
+{
+}
+
+/** @brief Delete the camera's VIF1 packet, then destroy the transform base. */
+LibCamera::~LibCamera()
+{
+    delete unk860;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E29E0);
 
@@ -1244,10 +1254,6 @@ LibClass179130::~LibClass179130()
 {
     delete packet;
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2EC0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2ED0);
 
 /** @brief Draw in bucket 10. */
 void LibColorFade::set_default_draw_bucket()

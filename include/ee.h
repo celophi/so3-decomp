@@ -37,6 +37,11 @@
 #define D9_QWC ((volatile u32*)0x1000D420)
 #define D9_SADR ((volatile u32*)0x1000D480)
 
+/** DMA channel 0 (VIF0) registers. */
+#define D0_CHCR ((volatile u32*)0x10008000)
+#define D0_QWC ((volatile u32*)0x10008020)
+#define D0_TADR ((volatile u32*)0x10008030)
+
 /** DMA channel 1 (VIF1) registers. */
 #define D1_CHCR ((volatile u32*)0x10009000)
 #define D1_MADR ((volatile u32*)0x10009010)
@@ -66,6 +71,7 @@
 /** IPU bit pointer: the bit position in the current quadword, FIFO quadword count and FIFO position. */
 #define IPU_BP ((volatile u32*)0x10002020)
 
+#define D_STAT_CIS0 0x1
 #define D_STAT_CIS1 0x2
 #define D_STAT_CIS8 0x100
 #define D_STAT_CIS9 0x200

@@ -431,19 +431,6 @@ public:
 class LibClass1746D0 : public LibContainer
 {
 public:
-#ifndef LIB_1746D0_DTOR_FIRST
-    /**
-     * @brief Run the show, wait and fade-out steps.
-     * @param first First update flag.
-     * @param second Second update flag.
-     * @param third Third update flag.
-     */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
-
-    /** @brief Destroy the text, the frame and the container. */
-    virtual ~LibClass1746D0();
-
-#else
     /** @brief Destroy the text, the frame and the container. */
     virtual ~LibClass1746D0();
 
@@ -455,7 +442,6 @@ public:
      */
     virtual void func_00412C40(u32 first, u32 second, u32 third);
 
-#endif
     /**
      * @brief Set up the frame and the text and attach them.
      * @param flags Bit 0 puts the frame at the right edge, bit 1 at the bottom.
@@ -484,13 +470,6 @@ class LibClass174840 : public LibTransformOwner, public DmaSubmission
 {
 public:
     /**
-     * @brief Build the packet for this frame.
-     * @param matrix Matrix supplied by the caller.
-     * @param context Opaque caller context.
-     */
-    virtual void build_packet(const void* matrix, void* context);
-
-    /**
      * @brief Set up the transform and allocate the packet.
      * @param unk94 Stored at unk94.
      */
@@ -498,6 +477,13 @@ public:
 
     /** @brief Delete the packet and destroy the transform owner. */
     virtual ~LibClass174840();
+
+    /**
+     * @brief Build the packet for this frame.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
 
     /** @brief Detach from the owner and release the transform. */
     virtual void destroy();
@@ -958,8 +944,6 @@ s32 LibClass174790::init(u32 color, u32 mirrored, float x, float y, float width)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF50);
-
 LibClass1747C0::~LibClass1747C0()
 {
 }
@@ -1064,10 +1048,6 @@ extern "C" void func_0044D090(LibTransformOwner* object)
     object->owner = 0;
     object->LibTransformOwner::destroy();
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0C0);
 
 /** @brief Update the transform and mark the renderer's first pass ready. */
 void LibClass1748D0::update()

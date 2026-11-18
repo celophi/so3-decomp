@@ -235,9 +235,13 @@ public:
 struct LibClass3F5B80Buffer
 {
     LibClass3F5B80Entry entries[0x1A];
-    u8 unk0D0[0x598];
+    u8 unk0D0[0x10];
+    u8 unk0E0[3][0xC4];
+    u8 unk32C[3][0x114];
     s16 unk668;
-    u8 unk66A[0x0B];
+    s16 unk66A;
+    s16 unk66C;
+    u8 unk66E[7];
     u8 unk675[3];
     u8 unk678[3];
     u8 unk67B[5];
@@ -265,6 +269,18 @@ public:
 
     /** @brief Pick a new aligned buffer and reset it as the constructor does. */
     void func_003F5AC0();
+
+    /**
+     * @brief Store the halfword at 0x66C, using 1000 for values outside 0 to 999.
+     * @param value Value to store.
+     */
+    void func_003F49E0(s32 value);
+
+    /** @brief Put the 26 entries in the order of the table at D_004EC0D0. */
+    void func_003F4BF0();
+
+    /** @brief Copy the buffer's three records into resident entries 2 and 3. */
+    void func_003F4DE0();
 
     /**
      * @brief Store a byte in one of three backing-buffer slots.

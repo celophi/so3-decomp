@@ -1652,7 +1652,29 @@ void LibModelBase::update()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5E10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5F50);
+/**
+ * @brief Return the size of a model's mesh payload: the size its header gives, or the chunk's payload size.
+ * @param model Model to measure.
+ * @return Size in bytes, or zero without a resource.
+ */
+extern "C" u32 func_004D5F50(LibModelBase* model)
+{
+    LibResourceBuffer* resource = model->resource;
+
+    if (!resource)
+    {
+        return 0;
+    }
+
+    u32 size = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(resource))->unk38;
+
+    if (size)
+    {
+        return size;
+    }
+
+    return func_004D5AF0(resource);
+}
 
 /**
  * @brief Swap the object's bits in the resident flag word for a mesh's, and note when the word changed.
@@ -3012,16 +3034,69 @@ extern "C" void func_004D99B0(LibBusyObject* object)
     }
 }
 
+/** Global VIF0 tag chains for the low channel numbers. */
+extern "C" u32 D_001B62A0[2];
+
 /**
- * @brief Clear the object's busy flag.
- * @param object Object to release.
+ * DMA submission that sends a VIF0 tag chain, picked by its channel byte from the global table or, from 0x80 up, from
+ * its own; the queue helpers above use it through LibBusyObject. Vtable D_178E70 in main data.
  */
-extern "C" void func_004D99E0(LibBusyObject* object)
+class LibVif0Channel : public DmaSubmission
 {
-    object->busy = 0;
+public:
+    /** @brief Start idle with no channel and seed VU0's random register. */
+    LibVif0Channel();
+
+    /**
+     * @brief Mark the transfer done.
+     * @param dma_channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 dma_channel);
+
+    /**
+     * @brief Start the channel's VIF0 tag chain.
+     * @param dma_channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 dma_channel);
+
+    u8 unk04[0x4C];
+    volatile u8 busy;
+    u8 channel;
+    u8 unk52[2];
+    u32 unk54;
+    u32 tags[1];
+};
+
+/**
+ * @brief Mark the transfer done.
+ * @param dma_channel DMA channel; unused.
+ */
+void LibVif0Channel::complete_dma(u32 dma_channel)
+{
+    busy = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D99F0);
+/**
+ * @brief Start the channel's VIF0 tag chain.
+ * @param dma_channel DMA channel; unused.
+ */
+void LibVif0Channel::submit_dma(u32 dma_channel)
+{
+    if (channel >= 0x80)
+    {
+        *D0_QWC = 0;
+        *D0_TADR = tags[channel - 0x80];
+        *D_STAT = D_STAT_CIS0;
+        *D0_CHCR = DMA_CHCR_START | DMA_CHCR_TAG_TRANSFER | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
+    }
+    else
+    {
+        *D0_QWC = 0;
+        *D0_TADR = D_001B62A0[channel];
+        *D_STAT = D_STAT_CIS0;
+        *D0_CHCR = DMA_CHCR_START | DMA_CHCR_TAG_TRANSFER | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
+    }
+}
 
 /**
  * @brief Queue the object for DMA after marking it busy and storing its channel.
@@ -3054,7 +3129,14 @@ extern "C" void func_004D9AB0(LibBusyObject* object, u8 channel)
     resident_dma_queue_push(D_001B660C, reinterpret_cast<DmaSubmission*>(object));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9AF0);
+/** @brief Start idle with no channel and seed VU0's random register. */
+LibVif0Channel::LibVif0Channel()
+{
+    channel = 0xFF;
+    busy = 0;
+    unk54 = 0;
+    vu0_random_seed(resident_next_random_word());
+}
 
 /**
  * @brief Nothing to do once the upload finishes.

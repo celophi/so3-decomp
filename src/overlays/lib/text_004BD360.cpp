@@ -3319,9 +3319,34 @@ extern "C" s32 lib_container_init(LibContainer* object, s32 code, float x, float
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C65E0);
+/** @brief Destroy the list receiver and its sentinel. */
+inline LibListReceiver::~LibListReceiver()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6700);
+// TODO: The container's destructor inlines LibCallbackTransform's, which text_0044ABE0 keeps out of line, so the base
+// destructor is only inline in this unit.
+inline LibCallbackTransform::~LibCallbackTransform()
+{
+}
+
+/** @brief Delete every attached widget, then release the drawing storage. */
+LibContainer::~LibContainer()
+{
+    for (;;)
+    {
+        LibWidget* child = reinterpret_cast<LibWidget*>(sentinel.next);
+
+        if (reinterpret_cast<LibWidget*>(this) == child)
+        {
+            break;
+        }
+
+        LibListReceiver::unlink(child);
+        child->container = 0;
+        delete child;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6710);
 
