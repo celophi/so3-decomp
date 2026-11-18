@@ -3296,7 +3296,26 @@ void LibQuaternionCurveTrackBase::set_before_mode(u32 mode)
     state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448E80);
+/**
+ * @brief Find the key at or before a time measured back from the last sampled key.
+ * @param offset Time before the last sampled key.
+ * @return Key, or null when the time comes before the first key.
+ */
+LibQuaternionCurveTrackKey* LibPooledQuaternionCurveTrack::find_key_before(float offset)
+{
+    s32 lower;
+    s32 upper;
+    float key = update_cycle_count(last_key - offset);
+    find_surrounding_keys(key, &lower, &upper);
+    LibQuaternionCurveTrackKey* entry = &key_array[lower];
+
+    if (entry->key > key)
+    {
+        return 0;
+    }
+
+    return entry;
+}
 
 /**
  * @brief Write the difference between the last and first key rotations, all four components.
@@ -3976,15 +3995,45 @@ void LibQuaternionCurveTrackBase::set_single_key(const void* value, const void* 
     on_set_single_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
 }
 
-/** Store 0x8 at receiver offset 0x60. */
-void func_0044A400(void* object)
+/** Transform owner with vtable D_00174570 in main data that sends its display manager's effect packet. */
+class LibClass174570 : public LibTransformOwner
 {
-    ConstantByteSetterOwnertext_0043A920* receiver = (ConstantByteSetterOwnertext_0043A920*)object;
-    receiver->unk60 = 0x8;
+public:
+    virtual ~LibClass174570();
+
+    /** @brief Send the effect display's ready packet and finish this object's packet. */
+    virtual void render();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return a bounding sphere at the origin with a huge radius, so the object is never culled.
+     * @return Bounding sphere; it lives on this function's stack.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Promote the effect display's pending packet to the ready one when the effect is on.
+     * @param matrix Unused.
+     * @param context Unused.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    LibDisplayManager* manager;
+};
+
+/** @brief Draw in bucket 8. */
+void LibClass174570::set_default_draw_bucket()
+{
+    draw_bucket = 8;
 }
 
-/** Build a four-word stack value and return its address. */
-void* func_0044A410(void)
+/**
+ * @brief Return a bounding sphere at the origin with a huge radius, so the object is never culled.
+ * @return Bounding sphere; it lives on this function's stack.
+ */
+const LibVector4* LibClass174570::get_bounding_sphere()
 {
     s32 stack[4];
     s32* result;
@@ -3993,23 +4042,42 @@ void* func_0044A410(void)
     stack[1] = 0;
     result = stack;
     stack[2] = 0;
-    return result;
+    return reinterpret_cast<const LibVector4*>(result);
 }
 
-/** Transform owner with vtable D_00174570 in main data; only its destructor is known. */
-class LibClass174570 : public LibTransformOwner
-{
-public:
-    virtual ~LibClass174570();
-};
 
 LibClass174570::~LibClass174570()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_0044A530);
+/**
+ * @brief Promote the effect display's pending packet to the ready one when the effect is on.
+ * @param matrix Unused.
+ * @param context Unused.
+ */
+void LibClass174570::build_packet(const void* matrix, void* context)
+{
+    if (manager->effect_enabled)
+    {
+        LibCameraContext* display = manager->effect_display;
+        display->ready_index = display->unk3CB0;
+        display->ready_packets[display->unk3CB0] = display->unk3CA8[display->unk3CB0];
+        display->unk3CA8[display->unk3CB0] = 0;
+        display->ready_sizes[display->unk3CB0] = display->unk3C90[display->unk3CB0];
+        unk63 = 1;
+    }
+    else
+    {
+        unk63 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_0044A5A0);
+/** @brief Send the effect display's ready packet and finish this object's packet. */
+void LibClass174570::render()
+{
+    manager->effect_display->send_ready_packet();
+    lib_finish_packet(this);
+}
 
 s32 func_0044A5E0(void* object)
 {

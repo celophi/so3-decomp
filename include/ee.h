@@ -10,6 +10,7 @@
 #define UNCACHED_SEGMENT 0x20000000
 #define EE_UNCACHED_ACCELERATED 0x30000000
 #define EE_SCRATCHPAD 0x70000000
+#define DMA_ADDRESS_SCRATCHPAD 0x80000000
 #define DMA_TAG_ID_CNT 0x10000000
 #define DMA_TAG_ID_NEXT 0x20000000
 #define DMA_TAG_ID_REF 0x30000000
@@ -22,11 +23,19 @@
 #define DMA_CHCR_TAG_TRANSFER 0x40
 #define DMA_CHCR_START 0x100
 
-/** DMA channel 8 (scratchpad to memory) registers, and the DMA status register. */
+/** DMA channel 8 (scratchpad to memory) registers, and the DMA status and priority registers. */
 #define D8_CHCR ((volatile u32*)0x1000D000)
+#define D8_MADR ((volatile u32*)0x1000D010)
 #define D8_QWC ((volatile u32*)0x1000D020)
 #define D8_SADR ((volatile u32*)0x1000D080)
 #define D_STAT ((volatile u32*)0x1000E010)
+#define D_PCR ((volatile u32*)0x1000E020)
+
+/** DMA channel 9 (memory to scratchpad) registers. */
+#define D9_CHCR ((volatile u32*)0x1000D400)
+#define D9_MADR ((volatile u32*)0x1000D410)
+#define D9_QWC ((volatile u32*)0x1000D420)
+#define D9_SADR ((volatile u32*)0x1000D480)
 
 /** DMA channel 1 (VIF1) registers. */
 #define D1_CHCR ((volatile u32*)0x10009000)
@@ -59,6 +68,9 @@
 
 #define D_STAT_CIS1 0x2
 #define D_STAT_CIS8 0x100
+#define D_STAT_CIS9 0x200
+#define D_PCR_CPC8 0x100
+#define D_PCR_CPC9 0x200
 
 /** EE timer 0 counter and mode. */
 #define TIMER0_COUNT (*(volatile u32*)0x10000000)
@@ -74,6 +86,7 @@
 #define VIF_MSCALF(address) (0x15000000 | (address))
 
 #define VIF_FLUSH 0x11000000
+#define VIF_DIRECTHL(quadwords) (0x51000000 | (quadwords))
 #define VIF_UNPACK(format, num, address) (((num) << 16) | ((format) << 24) | (address))
 #define VIF_UNPACK_S_8 0x62
 #define VIF_UNPACK_V4_32 0x6C

@@ -160,7 +160,7 @@ static inline void vu0_quaternion_norm_finish(FieldVec4B* output)
  * @brief Replace the first quaternion with its Hamilton product with the second.
  * @param first Aligned left-hand quaternion and destination.
  * @param second Aligned right-hand quaternion; may alias first.
- * @see lib_quaternion_multiply_assign and lib_solve_ik_chain; func_00426650 and func_00426C20 in Lib
+ * @see lib_quaternion_multiply_assign and lib_solve_ik_chain; func_00426650 and LibClass173050::update in Lib
  *      run the same sequence.
  */
 static inline void vu0_quaternion_multiply_assign(FieldVec4B* first, const FieldVec4B* second)

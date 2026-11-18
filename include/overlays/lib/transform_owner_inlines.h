@@ -6,6 +6,15 @@
 #ifdef __cplusplus
 
 /**
+ * @brief Read the draw flags (LIB_DRAW_*).
+ * @return Flags.
+ */
+inline u16 LibTransformOwner::get_draw_flags() const
+{
+    return draw_flags;
+}
+
+/**
  * @brief Set the draw flags (LIB_DRAW_*).
  * @param value New flags.
  */

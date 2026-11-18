@@ -1,6 +1,7 @@
 #include "include_asm.h"
 #include "main/stream_output.h"
 #include "main/interrupt_lock.h"
+#include "sdk/main/libkernl_00121940.h"
 
 #define DMA_CHANNEL_TO_SPR 9
 
@@ -17,10 +18,6 @@ typedef struct DmaControlLow
 #define D_CTRL_BITS (*(volatile DmaControlLow*)0x1000E000)
 
 extern "C" {
-
-s32 AddDmacHandler(s32 channel, s32 (*handler)(s32 channel), s32 next);
-
-s32 RemoveDmacHandler(s32 channel, s32 handler_id);
 
 /** Each DMA channel's queue, by channel number. */
 extern ResidentDmaQueue* g_dma_channel_queues[];

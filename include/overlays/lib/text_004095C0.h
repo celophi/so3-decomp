@@ -48,14 +48,16 @@ struct ItemCreationCategoryDefinition
         u16 sort_key_bits;
     };
 #endif
-    u8 unk14[3];
-    u8 unk17_low : 6;
-    u8 unlimited_stock : 1;
-    u8 unsellable : 1;
-    u8 unk18[3];
-    u8 unk1b_low : 6;
-    u8 synthesis_material : 1;
-    u8 unk1b_high : 1;
+    u32 factor1 : 10;
+    u32 factor2 : 10;
+    u32 factor3 : 10;
+    u32 unlimited_stock : 1;
+    u32 unsellable : 1;
+    u32 factor4 : 10;
+    u32 factor5 : 10;
+    u32 factor6 : 10;
+    u32 synthesis_material : 1;
+    u32 unk1b_high : 1;
     u32 final_factor : 10;
     u32 creation_difficulty : 7;
     u32 creation_skill_id : 3;
@@ -408,21 +410,21 @@ s32 func_0040AE00(s32 id, s32 code);
 s32 func_0040AF10(s32 id, s32 code);
 
 /**
- * @brief Read the five-bit unk14 field of a D_504AA0 factor record.
+ * @brief Read the five-bit unk14 field of a D_00504AA0 factor record.
  * @param id One-based record ID, below 0x2C0.
  * @return The field, or zero for an invalid ID.
  */
 s32 func_0040B2F0(u16 id);
 
 /**
- * @brief Look up one of the eleven codes at D_505620 by its one-based position.
+ * @brief Look up one of the eleven codes at D_00505620 by its one-based position.
  * @param id One-based position, 1 to 11.
  * @return The code, or zero for an invalid position.
  */
 s32 func_0040B330(s32 id);
 
 /**
- * @brief Find a code's one-based position in the eleven codes at D_505620.
+ * @brief Find a code's one-based position in the eleven codes at D_00505620.
  * @param code Code to look for.
  * @return The last matching position, or zero when the code isn't listed.
  */
@@ -477,13 +479,13 @@ s32 func_0040C300(LibGameState* state, u16 item_type, u8 inventor_id, s32 set_fl
 
 /**
  * @brief Pick 11 to 15 random LibGameStateRecord0C entries with unk08 and unk09 set and unk0a clear, give each a random
- * listed item type from its D_501EE0 row and list their IDs in unk11760.
+ * listed item type from its D_00501EE0 row and list their IDs in unk11760.
  * @param state Game state.
  */
 void func_0040BF50(LibGameState* state);
 
 /**
- * @brief Add a D_5055D0 payout for each ranked LibGameStateRecord0C with unk08 of at least 2 to the stored Fol.
+ * @brief Add a D_005055D0 payout for each ranked LibGameStateRecord0C with unk08 of at least 2 to the stored Fol.
  * @param state Game state.
  */
 void func_0040C4C0(LibGameState* state);
@@ -505,7 +507,7 @@ void func_0040D1E0(void* object, const ItemCreationAllocationRecord* record);
 void func_0040D260(void* object, const ItemCreationAllocationRecord* record);
 
 /**
- * @brief Add up the D_5055A0 values of an allocation's factors.
+ * @brief Add up the D_005055A0 values of an allocation's factors.
  * @param record Allocation record.
  * @return The total, at most 100; 100 when the factors add nothing and the allocation isn't equipped.
  */
@@ -517,6 +519,13 @@ s32 func_0040D680(const ItemCreationAllocationRecord* record);
  * @return The price, at most 99999999.
  */
 u32 func_0040D760(ItemCreationAllocationRecord* record);
+
+/**
+ * @brief Calculate an item type's catalog price: its base price plus the price of each of its factors.
+ * @param record Item type's category record.
+ * @return The price, at most 99999999.
+ */
+u32 func_00414130(const ItemCreationCategoryRecord* record);
 
 /** Return the fixed integer value 4. */
 s32 func_0040E3A0(void* object);
@@ -541,10 +550,6 @@ s32 func_004194F0(void* object);
  * @return Always 0.
  */
 s32 func_004152B0(void* mpeg, void* data, void* user);
-
-void func_00411E10(void* object);
-
-void func_00411E20(void* object);
 
 void func_00412C00(void* object);
 

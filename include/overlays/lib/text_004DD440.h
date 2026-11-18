@@ -4,7 +4,6 @@
 #include "types.h"
 #include "gs.h"
 
-typedef struct N50Owner114_004DD440 N50Owner114_004DD440;
 #include "main/dma_queue.h"
 #include "main/system.h"
 #include "main/utility.h"
@@ -131,6 +130,23 @@ public:
      */
     void build_clear(LibScreenClear* clear, s16 depth_method, s16 x, s16 y, s16 width, s16 height, u8 red, u8 green,
                      u8 blue, u8 alpha, u32 depth);
+
+    /**
+     * @brief Build a clear packet like build_clear, for the second drawing context (TEST_2, PRIM context bit).
+     * @param clear Packet to fill.
+     * @param depth_method Depth test restored after the clear; 0 leaves depth testing off.
+     * @param x Left edge in GS coordinates.
+     * @param y Top edge in GS coordinates.
+     * @param width Width in pixels.
+     * @param height Height in pixels.
+     * @param red Red component.
+     * @param green Green component.
+     * @param blue Blue component.
+     * @param alpha Alpha component.
+     * @param depth Depth the cleared pixels get.
+     */
+    void func_004DB600(LibScreenClear* clear, s16 depth_method, s16 x, s16 y, s16 width, s16 height, u8 red, u8 green,
+                       u8 blue, u8 alpha, u32 depth);
 
     /**
      * @brief Set the colour every draw buffer is cleared to.
@@ -302,7 +318,7 @@ public:
     u32 vram_base_page;
     u32 depth_buffer_pages;
     LibPacketQueue* packet_queue;
-    u8* unk3C88[2];
+    u8* effect_buffers[2];
     u32 unk3C90[2];
     u8* ready_packets[2];
     u32 ready_sizes[2];
@@ -328,9 +344,10 @@ public:
     u8 unk3E30;
     u8 unk3E31[3];
     u8* unk3E34;
-    u8 unk3E38[4];
+    u64* unk3E38;
     u32 unk3E3C;
-    u8 unk3E40[8];
+    s32 unk3E40;
+    u32 unk3E44;
     u8 unk3E48;
     u8 unk3E49[3];
     u32 unk3E4C;
@@ -353,8 +370,14 @@ public:
     u32 clear_color;
     s16 unk3E78;
     s16 unk3E7A;
-    u8 unk3E7C;
-    u8 unk3E7D[0x8F];
+    u8 effect_enabled;
+    u8 effect_first_flag;
+    u8 effect_second_flag;
+    u8 effect_level;
+    float effect_first_scale;
+    float effect_second_scale;
+    u32 effect_mask;
+    u8 unk3E8C[0x80];
 
     /** @brief Destroy the display. */
     virtual ~LibCameraContext();
@@ -406,7 +429,7 @@ extern "C" void func_004DCDE0(LibCameraContext* display, bool enabled, bool firs
 extern "C" void func_004DE500(LibCameraContext* display);
 
 /** GS ALPHA register values; the first is the usual (Cs - Cd) * As + Cd blend. */
-extern "C" u64 D_4ED330[];
+extern "C" u64 D_004ED330[];
 
 /** Rectangle of one colour that blends from a start colour to an end colour, then destroys itself (vtable D_179150). */
 class LibColorFade : public LibTransformOwner, public LibDmaCallbacks
@@ -510,6 +533,29 @@ public:
  * @brief Rebuild Lib's frame packet, which resets the context-2 drawing state, and send it.
  */
 extern "C" void lib_begin_frame_packet(void);
+
+/** A packet sent on VIF1 through the VIF1 DMA queue, with vtable D_179130 in main data. */
+class LibClass179130 : public DmaSubmission
+{
+public:
+    /**
+     * @brief Send the packet on VIF1 in normal mode.
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Do nothing when the transfer ends.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    /** @brief Delete the packet. */
+    virtual ~LibClass179130();
+
+    LibPacketBuffer* packet;
+    u32 qwc;
+};
 
 #define LIB_CAMERA_MODE_FACE_CURRENT_CAMERA 1
 
@@ -705,9 +751,12 @@ public:
     float near_fog_distance;
     float near_fog_factor;
     float far_fog_factor;
-    u8 unk558[8];
+    u8* unk558;
+    u8 unk55c[4];
     float rotation_angles[3];
-    u8 unk56c[0x314];
+    u8 unk56c[0x2F4];
+    DmaSubmission* unk860;
+    u8 unk864[0x1C];
 };
 
 /**
@@ -728,12 +777,6 @@ extern "C" {
 #endif
 
 void func_004E59A0(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_004E2E30(void* object);
 
 /**
  * @brief Return the fixed value 0.
@@ -762,17 +805,8 @@ s32 func_004E6440(void* object);
  */
 void func_004E6450(void* object);
 
-/**
- * @brief Return the fixed value 8.
- * @param object Receiver or first argument; unused.
- * @return Always 8.
- */
-s32 func_004E7820(void* object);
-
-
 /** Return the word at receiver offset 0x4. */
 u32 func_004E6680(const void* object);
-
 
 /** Return the signed halfword at receiver offset 0x48. */
 s16 func_004E6400(const void* object);
@@ -780,18 +814,8 @@ s16 func_004E6400(const void* object);
 /** Return the signed halfword at receiver offset 0x4A. */
 s16 func_004E6410(const void* object);
 
-
 /** Hide the equipment menu's factor tooltip by clearing its visible byte at 0xCB. */
 void lib_factor_tooltip_hide(void* object);
-
-/** Clear the word at receiver offset 0x114. */
-void func_004E13D0(void* object);
-
-/** Return the address of the global at 0x50CD80. */
-const void* func_004E0FB0(void);
-
-/** Set the active flag and forward the optional child pointer. */
-void func_004E1040(N50Owner114_004DD440* object);
 
 #ifdef __cplusplus
 /** Return the first pointer argument unchanged. */
@@ -803,19 +827,11 @@ void func_004E64B0(void* object);
 /** Set the low packed mode at its target field and record whether either mode equals four. */
 void func_004E6340(void* object, u8 mode);
 
-
 /** Set the high packed mode at its target field and record whether either mode equals four. */
 void func_004E63A0(void* object, u8 mode);
 
-
 /** Find a key in the receiver's fixed-size entry array. */
 s32 func_004E6460(void* object, float key);
-
-/**
- * @brief Clear the byte at offset 0x64 and run the cleanup helper.
- * @param object Object containing the byte.
- */
-void func_004E1020(void* object);
 
 void* func_004E4590(void* object);
 
@@ -832,7 +848,6 @@ void* func_004E4950(void* object);
 void* func_004E4A10(void* object);
 
 void* func_004E4AD0(void* object);
-
 
 }
 #endif
@@ -867,39 +882,46 @@ void lib_shutdown(void);
 class LibClass178FC0 : public LibClass172000, public LibUpdateList, public LibDmaCallbacks
 {
 public:
+    /** @brief Start with type ID 0x200 and no packet buffer. */
     LibClass178FC0();
 
+    /** @brief Delete the packet buffer. */
     virtual ~LibClass178FC0();
 
+    /** @brief Update the listed nodes. */
     virtual void update();
 
+    /** @brief Mark the packet in flight and submit the packet buffer, notifying this object when it's sent. */
     virtual void render();
 
+    /**
+     * @brief Return the shared bounding sphere every object of this class uses.
+     * @return Bounding sphere.
+     */
     virtual const LibVector4* get_bounding_sphere();
 
     virtual void build_packet(const void* matrix, void* context);
 
+    /**
+     * @brief Clear the packet-in-flight flag and finish the packet.
+     * @param value Notification value.
+     */
     virtual void on_packet_complete(u32 value);
 
+    /** @brief Forget the packet buffer without deleting it. */
     void func_004E13D0();
 
+    /**
+     * @brief Allocate the packet buffer.
+     * @param size Size in quadwords.
+     * @return One on success, zero when the allocation failed.
+     */
     s32 func_004E10B0(s32 size);
 
     u8 unk10c[8];
-    void* unk114;
+    LibPacketBuffer* unk114;
 };
 #endif
 
-#ifdef __cplusplus
-/**
- * Update list that is also a list object (vtables D_00179690 and D_001796C8 in main data), Lib's counterpart of
- * main's ResidentUpdateList; only its destructor is known.
- */
-class LibClass179690 : public LibUpdateList, public LibListObject
-{
-public:
-    virtual ~LibClass179690();
-};
-#endif
 
 #endif

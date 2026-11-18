@@ -39,14 +39,6 @@ typedef struct {
     u8 unk83C;
 } LibTextBufferState;
 
-typedef struct {
-    u8 unk00[0x0C];
-    u8 unk0C;
-    u8 unk0D[3];
-    u8 unk10[4];
-    u32 unk14;
-} LibTextValueState;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -95,30 +87,8 @@ void lib_update_color_factor(LibTextBufferState* object);
  */
 void* func_0042E9A0(void* object);
 
-/**
- * @brief Store a word at offset 0x14 and mark the state active at 0x0C.
- * @param state State to update.
- * @param value Word to store.
- */
-void func_0042EB30(LibTextValueState* state, u32 value);
-
-
 /** Store the word at receiver offset 0x24. */
 void func_00432710(void* object, u32 value);
-
-/**
- * @brief Free memory through the heap at g_field_allocation_heap when one is set, otherwise through operator delete.
- * @param memory Allocation, or null.
- */
-void func_00435070(void* memory);
-
-/**
- * @brief Allocate from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
- * @param size Size in bytes.
- * @param heap Heap selector passed on to operator new.
- * @return The allocation.
- */
-void* func_00435150(u32 size, s32 heap);
 
 /**
  * @brief Store unk428.
@@ -167,9 +137,6 @@ void func_004352B0(LibClass173990* emitter, u32 flag, float first, float second)
 /** Return the fixed integer value 6. */
 s32 func_00434F20(void* object);
 
-/** Return the fixed value 0. */
-s32 func_0042EB40(void* object);
-
 #ifdef __cplusplus
 }
 #endif
@@ -183,7 +150,7 @@ extern "C" {
 /** @brief Free the shared font (archive resources 8 and 9) and remove it from the entry table. */
 void lib_release_shared_font(void);
 
-/** @brief Upload the palette image at D_4EC600. */
+/** @brief Upload the palette image at D_004EC600. */
 void lib_upload_default_palette(void);
 
 #ifdef __cplusplus

@@ -11,6 +11,7 @@
 #include "main/resident_data.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/shape.h"
 
 /** Mask selection and angular interval used by shape evaluators. */
 typedef struct FieldCondition16
@@ -464,64 +465,6 @@ public:
     s32 unkb8;
     u8 unkbc_0 : 1;
     u8 unkbc_1_7 : 7;
-};
-
-/**
- * 32-byte shape record. The first 16 bytes are read as a FieldVec4B of half
- * extents, so the flag byte at offset 0xC overlaps its fourth component.
- */
-/** Flags and identifier of a FieldShapeRecord20, at its offset 0xC. */
-struct FieldShapeRecordInfo
-{
-    u8 unk00_0_3 : 4;
-    u8 unk00_4 : 1;
-    u8 unk00_5 : 1;
-    u8 unk00_6_7 : 2;
-    u8 unk01;
-    u16 unk02;
-};
-
-struct FieldShapeRecord20
-{
-    float unk00;
-    float unk04;
-    float unk08;
-    FieldShapeRecordInfo unk0c;
-    FieldVec4A unk10;
-};
-
-/** Partial owner of FieldClass150330 shapes: an object at offset 4, an index at 0xC and a vector at 0x10. */
-struct FieldShapeOwner18
-{
-    FieldShapeOwner18* unk00;
-    LibTransformOwner* unk04;
-    u8 unk08[2];
-    u8 unk0a;
-    u8 unk0b;
-    s16 unk0c;
-    s16 unk0e;
-    FieldVec4A unk10;
-};
-
-/** Opaque 16-byte state attached to a shape. */
-struct FieldShapeState10
-{
-    u8 unk00[0x10];
-};
-
-/** Twenty-byte entry containing a shape state at offset 4. */
-struct FieldShapeEntry14
-{
-    u32 unk00;
-    FieldShapeState10 unk04;
-};
-
-/** Partial shape data containing an entry array and a shape-record array. */
-struct FieldShapeData10
-{
-    u8 unk00[8];
-    FieldShapeEntry14* unk08;
-    FieldShapeRecord20* unk0c;
 };
 
 /** Two vertex indices of one line segment. */

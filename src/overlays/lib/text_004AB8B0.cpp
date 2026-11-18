@@ -2,6 +2,7 @@
 #include "overlays/lib/text_004AB8B0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/model.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/vector_vu0.h"
 
@@ -64,7 +65,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA40);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA60);
+/** @brief Start unattached, with no data. */
+LibClass1734B0::LibClass1734B0()
+{
+    unk0e = 0;
+}
 
 s32 func_004ABAA0(void* object)
 {
@@ -3130,6 +3135,11 @@ void LibFloatTrack::reset_keys()
     set_before_mode(LIB_TRACK_END_CYCLE);
 }
 
+// TODO: this one only matches at level 3 while the rest of the file is level 4. The registers of `upper` and
+// the key array swap at level 4, so my source shape is probably off somewhere.
+#pragma push
+#pragma optimization_level 3
+
 /**
  * @brief Evaluate the track at a key.
  * @param key Evaluation key.
@@ -3227,6 +3237,8 @@ float LibFloatTrack::sample(float key)
     last_value = result;
     return result;
 }
+
+#pragma pop
 
 /**
  * @brief Normalize a key across the cached span and store its signed period count.

@@ -64,18 +64,7 @@ s32 func_0020E4F0(void* object);
 
 #ifdef __cplusplus
 #include "overlays/1067-00/text_00212560.h"
-
-/** Character-name provider for field message and display code. */
-class FieldCharacterNames
-{
-public:
-    /**
-     * @brief Get a stored character name.
-     * @param index One-based character slot.
-     * @return Stored name.
-     */
-    virtual char* get_character_name(s32 index) = 0;
-};
+#include "overlays/lib/character_names.h"
 
 /** Target rectangle of a screen transition in screen pixels: x, y, width, height. */
 struct FieldTransitionRect

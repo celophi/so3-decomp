@@ -726,4 +726,155 @@ static inline s32 set_effective_agility_again(LibCharacterRecord* record, s32 ag
     return agility;
 }
 
+// TODO: These repeat the bodies of the exported setters in text_003F90C0, which the character reset
+// functions inline. Those exported setters only match written out in full, not as wrappers of these.
+
+/**
+ * @brief Store an equipped item after validating the equipment checksum.
+ * @param equipment Character equipment record.
+ * @param slot Slot index, from zero through the slot limit.
+ * @param item_id Item ID.
+ * @return item_id, or zero for an invalid checksum or slot.
+ */
+static inline s32 set_equipment_item_id(LibCharacterEquipment* equipment, s32 slot, s32 item_id)
+{
+    if (equipment->equipment_checksum
+        != (equipment->checksum_salt ^ ((equipment->encoded_equipment_ids[1] + equipment->encoded_equipment_ids[2]) ^ (equipment->encoded_equipment_ids[3] + equipment->encoded_equipment_ids[0]))))
+    {
+        return 0;
+    }
+
+    if (slot < 0)
+    {
+        return 0;
+    }
+
+    if (slot > (equipment->encoded_slot_limit ^ 0x7E93))
+    {
+        return 0;
+    }
+
+    equipment->encoded_equipment_ids[slot] = (s16)item_id ^ 0x7E93;
+    equipment->equipment_checksum =
+        equipment->checksum_salt ^ ((equipment->encoded_equipment_ids[1] + equipment->encoded_equipment_ids[2]) ^ (equipment->encoded_equipment_ids[3] + equipment->encoded_equipment_ids[0]));
+    return item_id;
+}
+
+/**
+ * @brief Store the slot limit, limited to one through four.
+ * @param equipment Character equipment record.
+ * @param limit Slot limit.
+ * @return Stored slot limit.
+ */
+static inline s32 set_equipment_slot_limit(LibCharacterEquipment* equipment, s32 limit)
+{
+    if (limit <= 0)
+    {
+        limit = 1;
+    }
+
+    if (limit > 4)
+    {
+        limit = 4;
+    }
+
+    equipment->encoded_slot_limit = limit ^ 0x7E93;
+    return equipment->encoded_slot_limit ^ 0x7E93;
+}
+
+/**
+ * @brief Store the base stamina, limited to zero through 9999.
+ * @param equipment Character equipment record.
+ * @param stamina Base stamina.
+ * @return Stored base stamina, or zero for an invalid checksum.
+ */
+static inline s32 set_equipment_base_stamina(LibCharacterEquipment* equipment, s32 stamina)
+{
+    if (equipment->stamina_checksum != (equipment->checksum_salt ^ (equipment->encoded_stamina ^ (equipment->encoded_base_stamina + equipment->encoded_effective_stamina))))
+    {
+        return 0;
+    }
+
+    stamina = limit_value(stamina, 0, 9999);
+    equipment->encoded_base_stamina = stamina ^ 0x7E93;
+    equipment->stamina_checksum = stamina_checksum(equipment);
+    return stamina;
+}
+
+/**
+ * @brief Store the base luck, limited to zero through 255.
+ * @param equipment Character equipment record.
+ * @param luck Base luck.
+ * @return Stored base luck, or zero for an invalid checksum.
+ */
+static inline s32 set_equipment_base_luck(LibCharacterEquipment* equipment, s32 luck)
+{
+    if (equipment->luck_checksum != (equipment->checksum_salt ^ (equipment->encoded_luck ^ (equipment->encoded_base_luck + equipment->encoded_effective_luck))))
+    {
+        return 0;
+    }
+
+    luck = limit_value(luck, 0, 255);
+    equipment->encoded_base_luck = luck ^ 0x7E93;
+    equipment->luck_checksum = luck_checksum(equipment);
+    return luck;
+}
+
+/**
+ * @brief Store the experience, limited to zero through 999999999.
+ * @param record Character record.
+ * @param experience Experience to store.
+ * @return Stored experience, or zero for an invalid checksum.
+ */
+static inline s32 set_character_experience(LibCharacterRecord* record, s32 experience)
+{
+    if (record->flags_experience_checksum != (record->checksum_salt ^ (record->encoded_experience ^ (record->encoded_flags + record->checksum_salt))))
+    {
+        return 0;
+    }
+
+    experience = limit_value(experience, 0, 999999999);
+    record->encoded_experience = experience ^ 0x7DE3F7E3;
+    record->flags_experience_checksum = flags_experience_checksum(record);
+    return experience;
+}
+
+/**
+ * @brief Store the base level, limited to zero through 255.
+ * @param record Character record.
+ * @param level Base level.
+ * @return Stored base level, or one for an invalid checksum.
+ */
+static inline s32 set_character_base_level(LibCharacterRecord* record, s32 level)
+{
+    if (record->level_checksum != (record->checksum_salt ^ (record->encoded_level ^ (record->encoded_base_level + record->checksum_salt))))
+    {
+        return 1;
+    }
+
+    level = limit_value(level, 0, 255);
+    record->encoded_base_level = level ^ 0x7E93;
+    record->level_checksum = level_checksum(record);
+    return level;
+}
+
+/**
+ * @brief Store the level, limited to zero through 255.
+ * @param record Character record.
+ * @param level Level to store.
+ * @return Stored level, or one for an invalid checksum.
+ */
+static inline s32 set_character_level(LibCharacterRecord* record, s32 level)
+{
+    if (record->level_checksum != (record->checksum_salt ^ (record->encoded_level ^ (record->encoded_base_level + record->checksum_salt))))
+    {
+        return 1;
+    }
+
+    level = limit_value(level, 0, 255);
+    record->encoded_level = level ^ 0x7E93;
+    record->level_checksum = level_checksum(record);
+    return level;
+}
+
 #endif

@@ -37,6 +37,16 @@ public:
         needs_redraw = 1;
     }
 
+    /**
+     * @brief Set the indicator's extent and mark it for redraw.
+     * @param value New extent, in percent of the track.
+     */
+    void set_extent(float value)
+    {
+        extent = value;
+        needs_redraw = 1;
+    }
+
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     float extent;
@@ -1008,12 +1018,6 @@ s32 func_0041AD10(ItemCreationClass172600* object, float x, float y, float width
  */
 void func_004214C0(void* object, void* first, void* second);
 
-/**
- * @brief Return the fixed value 5.
- * @param object Receiver or first argument; unused.
- * @return Always 5.
- */
-s32 func_004294F0(void* object);
 
 
 /**

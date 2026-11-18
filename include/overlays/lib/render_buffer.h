@@ -84,7 +84,8 @@ public:
     virtual void* find_child_data(s32 index);
 
     void* data;
-    u8 unk0c[8];
+    void* record_cursor;
+    void* unk10;
     void* payload_override;
     LibListSentinel* children;
     u8 external_data;
@@ -243,7 +244,7 @@ struct LibDrawSetupPacket
 #define LIB_DRAW_TEXTURE_PACKET_SIZE 48
 
 /** ALPHA_1 value for each blend mode. */
-extern "C" const u64 D_4ED320[];
+extern "C" const u64 D_004ED320[];
 
 #define LIB_DRAW_BATCH_VERTEX_COUNT 40
 #define LIB_DRAW_BATCH_PRIMITIVE_COUNT 32

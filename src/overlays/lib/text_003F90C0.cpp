@@ -3,6 +3,7 @@
 #include "ee.h"
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/lib/character_record.h"
+#include "overlays/lib/text_0044ABE0.h"
 #include "main/system.h"
 #include "main/utility.h"
 
@@ -31,7 +32,6 @@ extern LibCharacterTableEntry* D_001B64E8;
 /** Pairs of scaled byte values, ten rows of three. */
 extern u8 D_4EC260[10][3][2];
 
-extern "C" s32 func_00456F10(void* flags, s32 bit);
 
 extern "C" void func_00409A10(LibCharacterEquipment* equipment);
 
@@ -2096,7 +2096,23 @@ extern "C" s32 lib_character_set_level(LibCharacterRecord* record, s32 level)
     return level;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00407640);
+/**
+ * @brief Store the flags after validating the flags/experience checksum.
+ * @param record Character record.
+ * @param flags Flags to store.
+ * @return Stored flags, or five for an invalid checksum.
+ */
+extern "C" s32 func_00407640(LibCharacterRecord* record, s32 flags)
+{
+    if (record->flags_experience_checksum != (record->checksum_salt ^ (record->encoded_experience ^ (record->encoded_flags + record->checksum_salt))))
+    {
+        return 5;
+    }
+
+    record->encoded_flags = flags ^ 0x7DE3F7E3;
+    record->flags_experience_checksum = flags_experience_checksum(record);
+    return record->encoded_flags ^ 0x7DE3F7E3;
+}
 
 /**
  * @brief Store the stat limit type.
@@ -2183,41 +2199,41 @@ extern "C" void func_00408090(void)
     u8* settings = (u8*)resident_find_entry(table, 1);
     LibCharacterEquipment* equipment;
     s32 flags;
-    u8* event_flags;
+    LibFactorCounts* factor_counts;
     u8 mask;
     s32 i;
 
     resident_find_entry(table, 2);
     equipment = (LibCharacterEquipment*)resident_find_entry(table, 3);
-    event_flags = settings + 0xA8;
+    factor_counts = (LibFactorCounts*)(settings + 0xA8);
     flags = 0;
 
-    if (func_00456F10(event_flags, 0x1C6))
+    if (lib_factor_counted(factor_counts, 0x1C6))
     {
         flags |= 0x1;
     }
 
-    if (func_00456F10(event_flags, 0x1C7))
+    if (lib_factor_counted(factor_counts, 0x1C7))
     {
         flags |= 0x2;
     }
 
-    if (func_00456F10(event_flags, 0x1C8))
+    if (lib_factor_counted(factor_counts, 0x1C8))
     {
         flags |= 0x4;
     }
 
-    if (func_00456F10(event_flags, 0x1C9))
+    if (lib_factor_counted(factor_counts, 0x1C9))
     {
         flags |= 0x8;
     }
 
-    if (func_00456F10(event_flags, 0x1CA))
+    if (lib_factor_counted(factor_counts, 0x1CA))
     {
         flags |= 0x10;
     }
 
-    if (func_00456F10(event_flags, 0x1CB))
+    if (lib_factor_counted(factor_counts, 0x1CB))
     {
         flags |= 0x20;
     }
@@ -2279,9 +2295,84 @@ void func_00408600(s32 index, s32 component, float* first, float* second)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_004086D0);
+extern u16* D_001B64E4;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_004087A0);
+/**
+ * @brief Read a value from one of two checksummed ten-halfword records.
+ * @param object Unused.
+ * @param index Value index, 2 to 10.
+ * @param record Record number, 1 or 2.
+ * @return The value, or zero for a bad index, record or checksum.
+ */
+extern "C" s32 func_004086D0(void* object, s32 index, s32 record)
+{
+    if (index <= 1 || index > 10 || (record != 1 && record != 2))
+    {
+        return 0;
+    }
+
+    u16* entry = D_001B64E4;
+    entry += (record - 1) * 10;
+    u16 checksum = entry[0];
+    s32 value = entry[index - 1];
+    u32 sum = 0;
+
+    for (s32 i = 0; i < 9; i++)
+    {
+        sum += entry[i + 1];
+    }
+
+    u16 expected = sum * 6 + record * 0xB4F + 0x9708;
+
+    if (expected != checksum)
+    {
+        value = 0;
+    }
+
+    return value;
+}
+
+extern u8* D_001B64B4;
+
+// TODO: The target adds 0xE2 and 0x18 at run time for the bad-checksum result; only a local with propagation off
+// keeps the two apart.
+#pragma push
+#pragma opt_propagation off
+
+/**
+ * @brief Read a value from a checksummed ten-byte record.
+ * @param record Record number, from one.
+ * @param index Value index, 1 to 9.
+ * @return The value, -1 for a bad index, or 250 when the record's checksum is wrong.
+ */
+extern "C" s32 func_004087A0(s32 record, s32 index)
+{
+    if (index <= 0 || index >= 10)
+    {
+        return -1;
+    }
+
+    s32 base = (record - 1) * 10;
+    u32 sum = 0;
+
+    for (s32 i = base + 1; i < base + 10; i++)
+    {
+        sum += D_001B64B4[i];
+    }
+
+    u8 checksum = -(sum + record * 3);
+    u8* entry = D_001B64B4 + base;
+
+    if (checksum == entry[0])
+    {
+        return entry[index];
+    }
+
+    s32 bad = 226;
+    return bad + 24;
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00408850);
 

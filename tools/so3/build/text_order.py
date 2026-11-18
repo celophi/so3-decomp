@@ -379,12 +379,25 @@ def release_bookkeeping(data, indices):
     return bytes(out)
 
 
+def linker_name(name):
+    """The spelling of a symbol name MWLDPS2 can read in a command file.
+
+    Its command files only take letters, digits, dots and underscores in a
+    symbol name, so a template vtable like __vt__35LibTrackPool<19LibPooledFloatTrack>
+    can't be given an address there. Every other character becomes an
+    underscore, which keeps the length, so the name can be rewritten in place.
+    """
+    return ''.join(character if character.isalnum() or character in '._' else '_' for character in name)
+
+
 def undefine_symbols(data, indices, mapped=None):
     """Make public definitions in discarded sections resolve to their retained owners.
 
     Symbol indices and relocation records stay unchanged. Local section symbols
     remain local; they are used by metadata that is discarded with the section.
-    If mapped is supplied, only symbols with known resident addresses change.
+    If mapped is supplied, only symbols with known resident addresses change,
+    and those get linker_name's spelling, since the command file gives them
+    their addresses.
     """
     if not indices:
         return data
@@ -404,4 +417,8 @@ def undefine_symbols(data, indices, mapped=None):
                 # MWCC's multiply-defined binding is not a GNU weak symbol.
                 # Use a normal external reference, including for thunk copies.
                 struct.pack_into('<IIIBBH', out, offset, label, 0, 0, 0x10 | (info & 15), other, 0)
+                spelling = linker_name(symbol)
+                if mapped is not None and spelling != symbol:
+                    start = strings_header[4] + label
+                    out[start:start + len(spelling)] = spelling.encode()
     return bytes(out)

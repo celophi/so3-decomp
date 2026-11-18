@@ -65,7 +65,6 @@ static inline LibModelPart* lib_model_uncached_part(void* parts, s32 index)
         reinterpret_cast<u32>(static_cast<u8*>(parts) + index * LIB_MODEL_PART_SIZE) | EE_UNCACHED_ACCELERATED);
 }
 
-#define LIB_LIST_KIND_LATE_MODEL 9
 
 
 #define LIB_MODEL_UNSCALED_MIN 0.999f
@@ -93,9 +92,6 @@ extern "C" void* D_001B659C;
 
 /** Heap payload buffers come from when set; otherwise they're malloc'd. */
 extern "C" void* D_001B65A8;
-
-/** Resident hit-test flags; bit 0 is set when a hit-test node is removed. */
-extern "C" u8 g_hit_test_restart;
 
 /** VU1 microprogram that uploads a model's textures. */
 extern "C" u8 D_678[];
@@ -1009,7 +1005,7 @@ s32 LibModel::get_box_cull_center(void* output)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A42A0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", get_bounding_sphere__8LibModelFv);
 
 /** @brief Pick the draw bucket from the draw flags, blend mode and mesh. */
 void LibModel::set_default_draw_bucket()
@@ -1082,23 +1078,19 @@ void func_004A4510(void* receiver)
     *(volatile u32*)0x10009000 = 0x105;
 }
 
-/** Forward the receiver to lib_finish_packet. */
-void func_004A4550(void* object)
+/**
+ * @brief Finish the model's packet once its DMA is done.
+ * @param channel DMA channel; unused.
+ */
+void LibModel::complete_dma(u32 channel)
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    lib_finish_packet(this);
 }
 
-/** Queue the DMA submission embedded at offset 0x640 when present. */
-s32 func_004A4570(void* object)
+/** @brief Queue the model's DMA submission on the VIF1 queue. */
+void LibModel::render()
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x640);
-    }
-
-    return resident_dma_queue_push(g_vif1_dma_queue, submission);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
 /** @brief Write the pending part settings into the part records' GIF tags, then free them. */
@@ -1860,7 +1852,34 @@ s32 func_004A8FF0(void* object)
     return 11;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9000);
+// TODO: The target's list walk isn't rotated (it jumps to the test first); this only matches with loop
+// rotation off.
+#pragma push
+#pragma opt_rotateloops off
+
+/**
+ * @brief Test whether any entry in the list has type flag 0x40.
+ * @param list Entry list.
+ * @return 1 when one has.
+ */
+extern "C" s32 func_004A9000(LibClass177A20* list)
+{
+    LibListSentinel* node = list->sentinel.next;
+
+    while (&list->sentinel != node)
+    {
+        if (static_cast<LibClass1779F0*>(node)->func_slot14() & 0x40)
+        {
+            return 1;
+        }
+
+        node = node->next;
+    }
+
+    return 0;
+}
+
+#pragma pop
 
 /**
  * @brief Make the model draw one packet set's payload.
@@ -1880,7 +1899,33 @@ s32 LibClass177A20::select_payload_set(u8 set)
     return previous;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", has_listed_entry__14LibClass177A20Fv);
+// TODO: The target's list walk isn't rotated (it jumps to the test first); this only matches with loop
+// rotation off.
+#pragma push
+#pragma opt_rotateloops off
+
+/**
+ * @brief Test whether any entry in the list is listed.
+ * @return Nonzero when one is.
+ */
+u8 LibClass177A20::has_listed_entry()
+{
+    LibListSentinel* node = sentinel.next;
+
+    while (&sentinel != node)
+    {
+        if (static_cast<LibClass1779F0*>(node)->listed)
+        {
+            return 1;
+        }
+
+        node = node->next;
+    }
+
+    return 0;
+}
+
+#pragma pop
 
 /**
  * @brief Hand the list's payload to a model, in one packet set or both.
@@ -1944,7 +1989,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9600);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9770);
 
-s32 func_004AA410(void* object)
+/**
+ * @brief Test whether the model's draw packet has been built; the base has none.
+ * @return Zero.
+ */
+s32 LibModelBase::has_packet()
 {
     return 0;
 }
@@ -2009,4 +2058,4 @@ void LibClass177A20::release_model()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AB360);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AB700);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", __dt__14LibClass177A20Fv);

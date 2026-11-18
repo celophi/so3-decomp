@@ -1,3 +1,4 @@
+#include "angle.h"
 #include "ee.h"
 #include "gs.h"
 #include "include_asm.h"
@@ -8,6 +9,8 @@
 #include "overlays/lib/trig_vu0.h"
 #include "overlays/lib/vector_vu0.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/model.h"
+#include "overlays/lib/light_vu0.h"
 #include "overlays/lib/text_00429B00.h"
 #include "main/resident_data.h"
 #include "sdk/main/libgraph_0012EAC8.h"
@@ -83,7 +86,6 @@ static inline FieldVec4B vector_scaled(float scale, const FieldVec4B& vector)
     return value *= scale;
 }
 
-extern "C" u8 D_00174C90[];
 
 extern "C" void func_004A8F10(void* object);
 
@@ -179,13 +181,6 @@ static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 row)
     return *(FieldVec4A*)matrix.m[row];
 }
 
-/**
- * @brief Unlink a container child.
- * @param object Container.
- * @param child Widget to unlink.
- */
-extern "C" void func_004C6120(LibContainer* object, LibWidget* child);
-
 /** Partial text resource fields and the inherited redraw flag. */
 typedef struct LibTextResourceState
 {
@@ -221,7 +216,20 @@ const void* func_004BD370(const void* object)
     return (const u8*)object + 0x10;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD380);
+/**
+ * @brief Set an entry's unk18 byte; when it changes, flag the entry's list (unk8d_1).
+ * @param entry List entry.
+ * @param value New value.
+ */
+extern "C" void func_004BD380(LibClass1779F0* entry, u8 value)
+{
+    if (entry->unk18 != value && entry->list != 0)
+    {
+        entry->list->unk8d_1 = 1;
+    }
+
+    entry->unk18 = value;
+}
 
 /**
  * @brief Store a float in an indexed array slot.
@@ -265,7 +273,32 @@ extern "C" void* func_004BD3F0(void* destination, const void* source)
     return destination;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD420);
+/**
+ * @brief Return the parent transform's base matrix, updating it first if it isn't ready.
+ *
+ * When that update changed the parent, the transform is marked dirty too.
+ * @param transform Transform whose parent to read.
+ * @return The parent's base matrix, or null without a parent.
+ */
+extern "C" const LibMatrix44Value* func_004BD420(LibTransform* transform)
+{
+    if (transform->parent_transform == 0)
+    {
+        return 0;
+    }
+
+    if (!transform->parent_transform->matrix_ready)
+    {
+        transform->parent_transform->update_transform_matrix();
+
+        if (transform->parent_transform->unk51)
+        {
+            transform->transform_dirty = 1;
+        }
+    }
+
+    return &transform->parent_transform->base_transform;
+}
 
 /**
  * @brief Return how many key spans the last wrapped key was past the first key.
@@ -638,6 +671,11 @@ LibAnimation::LibAnimation()
     object_kind |= LIB_OBJECT_KIND_ANIMATION;
 }
 
+// TODO: this one only matches at level 3 while the rest of the file is level 4. I think the two key reads
+// in the extrapolation went through a helper I haven't worked out yet.
+#pragma push
+#pragma optimization_level 3
+
 /**
  * @brief Evaluate the track at a key, extrapolating past either end, and cache the value and its change per frame.
  * @param key Evaluation key.
@@ -767,7 +805,71 @@ FieldVec4A LibVectorCurveTrack::sample(float key)
     return *reinterpret_cast<FieldVec4A*>(&result);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0CA0);
+#pragma pop
+
+/**
+ * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the value and its change per frame.
+ * @param key Evaluation key.
+ * @return Evaluated vector; the last key's value at or past the last key.
+ */
+FieldVec4A LibVectorCurveTrack::sample_once(float key)
+{
+    FieldVec4B result;
+
+    if (!key_array)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.key_count == 1)
+    {
+        return *reinterpret_cast<FieldVec4A*>(&static_cast<LibVectorCurveTrackKey*>(key_array)[0].value);
+    }
+
+    if (!(key < key_at(state.key_count - 1)))
+    {
+        state.cycle_count = 1;
+        state.search_index = 0;
+        return *reinterpret_cast<FieldVec4A*>(&static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count - 1].value);
+    }
+
+    state.cycle_count = 0;
+
+    while (state.search_index > 0 && key < key_at(state.search_index))
+    {
+        state.search_index--;
+    }
+
+    if (state.search_index < 0)
+    {
+        state.search_index = 0;
+    }
+
+    while (state.search_index + 1 < state.key_count && !(key < key_at(state.search_index + 1)))
+    {
+        state.search_index++;
+    }
+
+    if (state.search_index >= state.key_count - 1)
+    {
+        state.search_index = state.key_count - 2;
+    }
+
+    if (state.segment_lower != state.search_index)
+    {
+        state.segment_lower = state.search_index;
+        LibVectorCurveTrackKey* first = static_cast<LibVectorCurveTrackKey*>(key_array) + state.search_index;
+        LibVectorCurveTrackKey* second = static_cast<LibVectorCurveTrackKey*>(key_array) + (state.search_index + 1);
+        curve_segment.set_endpoints(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                                    reinterpret_cast<const FieldVec4A*>(&first->out_tangent), reinterpret_cast<const FieldVec4A*>(&second->value),
+                                    reinterpret_cast<const FieldVec4A*>(&second->in_tangent));
+    }
+
+    result = curve_segment.interpolate(key);
+    value_rate = vector_scaled(g_inverse_frame_ticks, vector_difference(result, last_value));
+    last_value = result;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 /**
  * @brief Evaluate the track at a key and cache the value and its change per second.
@@ -1194,21 +1296,125 @@ u8 LibVectorTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1C20);
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatTrack* float_track_pool_allocate(LibTrackPool<LibPooledFloatTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1D30);
+    return pool->allocate();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1E50);
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledVectorTrack* vector_track_pool_allocate(LibTrackPool<LibPooledVectorTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1F60);
+    return pool->allocate();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2080);
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledSlerpQuaternionTrack* slerp_quaternion_track_pool_allocate(LibTrackPool<LibPooledSlerpQuaternionTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C21A0);
+    return pool->allocate();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C22B0);
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatCurveTrack* float_curve_track_pool_allocate(LibTrackPool<LibPooledFloatCurveTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C23C0);
+    return pool->allocate();
+}
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledVectorCurveTrack* vector_curve_track_pool_allocate(LibTrackPool<LibPooledVectorCurveTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
+
+    return pool->allocate();
+}
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatQuaternionTrack* float_quaternion_track_pool_allocate(LibTrackPool<LibPooledFloatQuaternionTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
+
+    return pool->allocate();
+}
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledQuaternionCurveTrack* quaternion_curve_track_pool_allocate(LibTrackPool<LibPooledQuaternionCurveTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
+
+    return pool->allocate();
+}
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledQuaternionTrack* quaternion_track_pool_allocate(LibTrackPool<LibPooledQuaternionTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
+
+    return pool->allocate();
+}
 
 /**
  * @brief Wrap a key by whole spans between the first and last keys.
@@ -1643,7 +1849,19 @@ void func_004C2CD0(LibAnimationTarget* object)
     lib_normalize_quaternion(&object->orientation_delta);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", __ct__18LibAnimationTargetFv);
+/** @brief Start with identity deltas and channels and no channel flags. */
+LibAnimationTarget::LibAnimationTarget()
+{
+    translation_delta = FieldVec4A(0.0f, 0.0f, 0.0f, 1.0f);
+    orientation_delta = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    scale_delta = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    channel_translation = FieldVec4A(0.0f, 0.0f, 0.0f, 1.0f);
+    channel_rotation = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    channel_scale = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    has_translation = 0;
+    has_orientation = 0;
+    has_scale = 0;
+}
 
 /** @brief Destroy the target. */
 LibAnimationTarget::~LibAnimationTarget()
@@ -1724,11 +1942,76 @@ void LibAnimationTarget::set_translation(float x, float y, float z)
     translation.w = 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3120);
+/**
+ * @brief Copy the rotation and keep the rotation from the previous one.
+ * @param value New rotation quaternion.
+ */
+void LibAnimationTarget::copy_orientation(const LibVector4* value)
+{
+    LibVector4* previous = &orientation;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3240);
+    if (has_orientation)
+    {
+        orientation_delta = quaternion_product(lib_quaternion_inverse(*reinterpret_cast<const FieldVec4B*>(previous)),
+                                               *reinterpret_cast<const FieldVec4B*>(value));
+    }
+    else
+    {
+        has_orientation = 1;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3360);
+    transform_dirty = 1;
+    copy_vector(&orientation, value);
+}
+
+/**
+ * @brief Copy the rotation and keep the rotation from the previous one.
+ * @param value New rotation quaternion.
+ */
+void LibAnimationTarget::set_orientation(const LibVector4* value)
+{
+    LibVector4* previous = &orientation;
+
+    if (has_orientation)
+    {
+        orientation_delta = quaternion_product(lib_quaternion_inverse(*reinterpret_cast<const FieldVec4B*>(previous)),
+                                               *reinterpret_cast<const FieldVec4B*>(value));
+    }
+    else
+    {
+        has_orientation = 1;
+    }
+
+    transform_dirty = 1;
+    copy_vector(&orientation, value);
+}
+
+/**
+ * @brief Set the rotation and keep the rotation from the previous one.
+ * @param x First quaternion component.
+ * @param y Second quaternion component.
+ * @param z Third quaternion component.
+ * @param w Fourth quaternion component.
+ */
+void LibAnimationTarget::set_orientation_components(float x, float y, float z, float w)
+{
+    LibVector4* previous = &orientation;
+
+    if (has_orientation)
+    {
+        orientation_delta = quaternion_product(lib_quaternion_inverse(*reinterpret_cast<const FieldVec4B*>(previous)), FieldVec4B(x, y, z, w));
+    }
+    else
+    {
+        has_orientation = 1;
+    }
+
+    transform_dirty = 1;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
+}
 
 /**
  * @brief Copy the scale and keep its change from the previous scale.
@@ -1805,7 +2088,12 @@ void LibAnimationTarget::set_scale(float x, float y, float z)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3590);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C39A0);
+/** @brief Construct the track with both trailing words cleared. */
+LibClass1783C0::LibClass1783C0()
+{
+    unk24 = 0;
+    unk28 = 0;
+}
 
 /** @brief Destroy the track. */
 LibClass1783C0::~LibClass1783C0()
@@ -2317,15 +2605,62 @@ u32 LibWordTrack::get_last_value()
     return key_array[state.key_count - 1].value;
 }
 
-extern "C" void func_004C4500(void* object)
+/**
+ * @brief Word tracks have no end delta; leave the output alone.
+ * @param output Unused.
+ */
+void LibWordTrack::get_end_delta(void* output) const
 {
 }
 
-extern "C" void func_004C4510(void* object)
+/**
+ * @brief Word tracks have no value rate; leave the output alone.
+ * @param output Unused.
+ */
+void LibWordTrack::get_value_rate(void* output) const
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4520);
+/**
+ * @brief Return the value of the key at or before a position, without interpolating.
+ * @param key Evaluation key.
+ * @return Key value, or zero when the track has no keys.
+ */
+u32 LibWordTrack::sample(float key)
+{
+    s32 lower;
+    s32 upper;
+
+    if (!state.key_count)
+    {
+        return 0;
+    }
+
+    if (state.search_index >= state.key_capacity)
+    {
+        state.search_index = 0;
+    }
+
+    if (state.key_count == 1)
+    {
+        return key_array[0].value;
+    }
+
+    float wrapped_key = update_cycle_count(key);
+
+    if (state.before_mode == LIB_TRACK_END_HOLD && state.cycle_count < 0)
+    {
+        return key_array[0].value;
+    }
+
+    if (state.after_mode == LIB_TRACK_END_HOLD && state.cycle_count > 0)
+    {
+        return key_array[state.key_count - 1].value;
+    }
+
+    find_surrounding_keys(wrapped_key, &lower, &upper);
+    return key_array[lower].value;
+}
 
 /**
  * @brief Find the keys around a position, starting from the cached search index.
@@ -2652,8 +2987,6 @@ enum
     LIB_FONT_CHUNK1_IMAGE_BLOCK = 0x400
 };
 
-#define LIB_PACKET_LOAD_IMAGE 1
-
 /**
  * @brief Upload a font resource's glyph pages to VRAM.
  * @param source Decoded font resource.
@@ -2711,13 +3044,6 @@ struct LibFontChunk
     u8 unk04[8];
     s32 next_offset;
     ResidentResourceHeader resource;
-};
-
-/** Image transfer packet and the pixels it sends. */
-struct LibImageUpload
-{
-    GsLoadImage packet;
-    const void* pixels;
 };
 
 /** The shared font stored in the resident entry table. */
@@ -2999,11 +3325,55 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6700);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6710);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C67C0);
+extern "C" void func_004C74E0(LibTextWidget* object);
+
+/**
+ * @brief Point the text widget at a keyed text of one of the runtime's resource slots and lay it out once.
+ * @param object Text widget.
+ * @param slot Resource slot index.
+ * @param key Key of the text in the slot's index.
+ */
+extern "C" void func_004C67C0(LibTextWidget* object, s32 slot, s32 key)
+{
+    object->resource_slot = &g_field_runtime->resource_slots[slot];
+    object->unk100 = func_00465340(g_field_runtime, slot, key);
+    object->unk70 = static_cast<u8*>(::operator new[](0x1000, 0));
+
+    if (object->unk70)
+    {
+        func_004C74E0(object);
+        delete[] object->unk70;
+    }
+
+    object->needs_redraw = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6840);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6910);
+/**
+ * @brief Set the text widget up for free text: no resource slot, a 1024 by 1024 area and storage for the records.
+ * @param object Text widget.
+ * @param capacity Record capacity.
+ * @return Nonzero once the storage is allocated.
+ */
+extern "C" s32 func_004C6910(LibTextWidget* object, s32 capacity)
+{
+    object->set_rectangle(0.0f, 0.0f, 0.0f, 0.0f);
+    object->unkfc = 0;
+    object->pending = 0;
+
+    if (!object->allocate_storage(0, capacity, 0, 0))
+    {
+        return 0;
+    }
+
+    object->unk18.unk0c = 1024.0f;
+    object->unk18.unk08 = 1024.0f;
+    object->resource_slot = 0;
+    object->unk100 = 0;
+    object->unk39 = 1;
+    return 1;
+}
 
 typedef struct LibTextBoundsState
 {
@@ -3021,8 +3391,6 @@ typedef struct LibTextBoundsState
 } LibTextBoundsState;
 
 extern "C" s32 func_004C7D40(LibTextWidget* object, u32 source, u32 key, u8 flag);
-
-extern "C" void func_004C74E0(LibTextWidget* object);
 
 /**
  * @brief Refresh the text layout and return its measured bounds.
@@ -3067,22 +3435,6 @@ extern "C" void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, 
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6E10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6F30);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7010);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C71E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7290);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C74E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C79C0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7D00);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7D40);
-
 /** One glyph's drawing state in a LibClass178780 batch. */
 struct LibGlyphDraw6C : public LibDrawState64
 {
@@ -3118,6 +3470,82 @@ public:
     s32 glyph_capacity;
     s32 glyph_count;
 };
+
+/**
+ * @brief Step the animation of every glyph that is animated and started before the widget's time.
+ * @param object Text widget.
+ * @return Whether a glyph was stepped.
+ */
+static inline bool step_glyphs(LibTextWidget* object)
+{
+    LibClass178780* batch = static_cast<LibClass178780*>(object->unkfc);
+    bool stepped = false;
+
+    if (batch != 0 && batch->glyph_count > 0)
+    {
+        LibGlyphDraw6C* glyph = batch->glyphs;
+
+        for (s32 i = 0; i < static_cast<LibClass178780*>(object->unkfc)->glyph_capacity; i++, glyph++)
+        {
+            if (glyph->unk60 && (u32)object->unk74 > glyph->unk64)
+            {
+                glyph->step();
+                stepped = true;
+            }
+        }
+    }
+
+    return stepped;
+}
+
+/** @brief Load the pending text resource, then step the glyph animations and redraw when one moved. */
+void LibTextWidget::func_00413D20()
+{
+    if (pending && !func_004C7D40(this, source, key, flag))
+    {
+        return;
+    }
+
+    if (step_glyphs(this))
+    {
+        needs_redraw = 1;
+    }
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7010__13LibTextWidgetFv);
+
+/**
+ * @brief Step the animation of every glyph that is animated and started before the widget's time.
+ * @param object Text widget.
+ * @return Whether a glyph was stepped.
+ */
+extern "C" bool func_004C71E0(LibTextWidget* object)
+{
+    return step_glyphs(object);
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7290);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C74E0);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C79C0);
+
+/**
+ * @brief Hand the widget's attached object to the resident release queue, then release its drawing storage.
+ * @param widget Widget to clear.
+ */
+extern "C" void func_004C7D00(LibTextWidget* widget)
+{
+    if (widget->unkfc != 0)
+    {
+        resident_enqueue_object(g_resident_release_queues, widget->unkfc);
+        widget->unkfc = 0;
+    }
+
+    widget->release_storage();
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7D40);
 
 /** @brief Initialize the drawing state and clear both trailing words. */
 LibGlyphDraw6C::LibGlyphDraw6C()
@@ -3174,62 +3602,395 @@ extern "C" s32 lib_text_init_resource_rectangle(LibTextWidget* object, s32 slot,
     return func_004C7D40(object, slot, key, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8040);
+/** @brief Delete the attached list object, then destroy the drawing widget. */
+LibTextWidget::~LibTextWidget()
+{
+    if (unkfc != 0)
+    {
+        delete unkfc;
+        unkfc = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C80E0);
+/**
+ * @brief Allocate drawing storage and glyph states for a glyph count.
+ * @param count Number of glyphs.
+ * @return One on success, or zero when an allocation fails.
+ */
+s32 LibClass178780::init(s32 count)
+{
+    glyph_capacity = count;
+    glyph_count = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C81B0);
+    if (count > 0)
+    {
+        if (!lib_allocate_drawing_storage(&storage, (u32)(count * 0x70 + 0x10) / 8))
+        {
+            return 0;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8280);
+        glyphs = new (0) LibGlyphDraw6C[count];
 
-s32 func_004C8360(void* object)
+        if (glyphs == 0)
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/** @brief Free the glyphs and the drawing storage. */
+LibClass178780::~LibClass178780()
+{
+    if (glyphs != 0)
+    {
+        delete[] glyphs;
+        glyphs = 0;
+    }
+}
+
+/** Model with three owned list objects, with vtables D_1788B0 and D_178964 in main data. */
+class LibClass1788B0 : public LibModel
+{
+public:
+    /** @brief Construct the model with its defaults. */
+    LibClass1788B0();
+
+    /** @brief Destroy the owned list objects, then the model. */
+    virtual ~LibClass1788B0()
+    {
+        for (s32 i = 0; i < 3; i++)
+        {
+            if (unk83c[i] != 0)
+            {
+                unk83c[i]->destroy();
+                unk83c[i] = 0;
+            }
+        }
+    }
+
+    /**
+     * @brief Report no box-culling centre.
+     * @param output Unused.
+     * @return Zero.
+     */
+    virtual s32 get_box_cull_center(void* output);
+
+    /** @brief Destroy the model's attachments, then the model. */
+    virtual void destroy();
+
+    /** @brief Draw the model. */
+    virtual void render();
+
+    virtual const LibVector4* get_bounding_sphere();
+
+    virtual void build_packet(const void* matrix, void* context);
+
+    virtual LibTransformOwner* clone();
+
+    /**
+     * @brief Return the before packet's size.
+     * @return Eleven.
+     */
+    virtual s32 get_before_packet_size();
+
+    /**
+     * @brief Return the after packet's size.
+     * @return One.
+     */
+    virtual s32 get_after_packet_size();
+
+    virtual s32 build_before_packet(s32 block, s32 address);
+
+    /**
+     * @brief Chain the model's after block in with a DMA reference, unless the model has a display manager or
+     *        D_001B65B0 is clear.
+     * @param block Block address (uncached).
+     * @param address Address of the model's draw packet.
+     * @return End of what was written.
+     */
+    virtual s32 build_after_packet(s32 block, s32 address);
+
+    /**
+     * @brief Build from another model of this class, sharing its owner.
+     * @param links Update list for the new model.
+     * @param source Model to copy.
+     * @return Nonzero on success.
+     */
+    virtual s32 func_004C8720(LibUpdateList* links, LibClass1788B0* source);
+
+    /**
+     * @brief Build from a model of the source class, sharing its owner.
+     * @param links Update list for the new model.
+     * @param source Model to copy.
+     * @return Nonzero on success.
+     */
+    virtual s32 func_004C8680(LibUpdateList* links, LibModel* source);
+
+    /**
+     * @brief Virtual slot 0x100.
+     * @param index Index.
+     * @param matrix Matrix.
+     * @param context Context.
+     * @param scale Scale.
+     */
+    virtual void func_004C8860(s32 index, void* matrix, void* context, float scale);
+
+    /**
+     * @brief Set the two values at 0x864.
+     * @param first Value at 0x864.
+     * @param second Value at 0x868.
+     */
+    void set_unk864(float first, float second)
+    {
+        unk864 = first;
+        unk868 = second;
+    }
+
+    u8 unk820;
+    u8 unk821;
+    u8 unk822;
+    u8 unk823;
+    u8 unk824;
+    u8 unk825;
+    u8 unk826;
+    u8 unk827;
+    float sphere_radius_scale;
+    float unk82c;
+    float unk830;
+    float unk834;
+    LibModel* unk838;
+    LibTransformOwner* unk83c[3];
+    u8 unk848[8];
+    FieldVec4B unk850;
+    float unk860;
+    float unk864;
+    float unk868;
+    u8 unk86c[4];
+};
+
+/** LibClass1788B0 with vtables D_1787A0 and D_178854 in main data; only its destructor is known. */
+class LibClass1787A0 : public LibClass1788B0
+{
+public:
+    /** @brief Destroy the model. */
+    virtual ~LibClass1787A0();
+
+    /** @brief Draw the model the way a plain LibModel does. */
+    virtual void render();
+
+    /**
+     * @brief Clear the packet-in-flight flag and mark the packet sent.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+};
+
+/** @brief Destroy the model. */
+LibClass1787A0::~LibClass1787A0()
+{
+}
+
+/**
+ * @brief Report no box-culling centre.
+ * @param output Unused.
+ * @return Zero.
+ */
+s32 LibClass1788B0::get_box_cull_center(void* output)
 {
     return 0;
 }
 
-s32 func_004C8370(void* object)
+/**
+ * @brief Return the before packet's size.
+ * @return Eleven.
+ */
+s32 LibClass1788B0::get_before_packet_size()
 {
     return 11;
 }
 
-s32 func_004C8380(void* object)
+/**
+ * @brief Return the after packet's size.
+ * @return One.
+ */
+s32 LibClass1788B0::get_after_packet_size()
 {
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8390);
+extern "C" u8 D_001B65B0;
+extern "C" s32 D_001B65B4;
+extern "C" u8 D_0050CBC0[];
+extern "C" u8 D_0050CC00[];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C83E0);
+extern "C" void func_004E22B0(LibListObject* camera, s32 step, void* first, void* second);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8440);
-
-s32 func_004C8510(void* object)
+/**
+ * @brief Step the manager's current camera with Lib's two camera work buffers when the step is enabled.
+ * @param manager Display manager whose camera to step.
+ */
+void func_004C8390(LibDisplayManager* manager)
 {
-    return func_004A4570(object);
+    if (D_001B65B0 && manager->current_display != 0)
+    {
+        func_004E22B0(manager->current_display, D_001B65B4, D_0050CBC0, D_0050CC00);
+    }
 }
 
-extern "C" void func_004C8530(void* object)
+/**
+ * @brief Chain the model's after block in with a DMA reference, unless the model has a display manager or D_001B65B0
+ *        is clear.
+ * @param block Block address (uncached).
+ * @param address Address of the model's draw packet.
+ * @return End of what was written.
+ */
+s32 LibClass1788B0::build_after_packet(s32 block, s32 address)
 {
-    LibStateBytes62View* state = (LibStateBytes62View*)object;
-    state->value64 = 0;
-    state->value62 = 1;
+    if (!D_001B65B0)
+    {
+        return block;
+    }
+
+    if (display_manager)
+    {
+        return block;
+    }
+
+    *(u64*)block = DMA_TAG(10, DMA_TAG_ID_REF, address + 0x780);
+    return block + 0x10;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8540);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", build_before_packet__14LibClass1788B0Fii);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C85D0);
+/** @brief Draw the model the way a plain LibModel does. */
+void LibClass1787A0::render()
+{
+    LibModel::render();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8680);
+/**
+ * @brief Clear the packet-in-flight flag and mark the packet sent.
+ * @param channel DMA channel; unused.
+ */
+void LibClass1787A0::complete_dma(u32 channel)
+{
+    dma_pending = 0;
+    unk62 = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8720);
+/** @brief Draw the attached objects whose packets are built, then the model, or finish at once when it's hidden. */
+void LibClass1788B0::render()
+{
+    for (s32 i = 2; i >= 0; i--)
+    {
+        LibTransformOwner* child = unk83c[i];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8810);
+        if (child && child->unk63)
+        {
+            child->render();
+        }
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8860);
+    if (unk826)
+    {
+        LibModel::complete_dma(0);
+    }
+    else
+    {
+        LibModel::render();
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8F80);
+/**
+ * @brief Make a copy of the model built from this one and linked to it.
+ * @return The copy, or null when it couldn't be built.
+ */
+LibTransformOwner* LibClass1788B0::clone()
+{
+    LibClass1788B0* copy = new (0) LibClass1788B0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9010);
+    if (copy == 0)
+    {
+        return 0;
+    }
+
+    if (!copy->func_004C8720(0, this))
+    {
+        return 0;
+    }
+
+    add_clone(copy);
+    lib_object_set_list_kind(this, LIB_LIST_KIND_LATE_MODEL);
+    return copy;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8680__14LibClass1788B0FP13LibUpdateListP8LibModel);
+
+/**
+ * @brief Build from another model of this class, sharing its owner.
+ * @param links Update list for the new model.
+ * @param source Model to copy.
+ * @return Nonzero on success.
+ */
+s32 LibClass1788B0::func_004C8720(LibUpdateList* links, LibClass1788B0* source)
+{
+    if (!LibModel::build_from(links, source))
+    {
+        return 0;
+    }
+
+    LibModel* owner = source->unk838;
+    unk838 = owner;
+    owner->unk790++;
+    unk820 = source->unk820;
+    unk59c = unk820 ? 2 : 0;
+    unk59d_0 = 1;
+    unk821 = source->unk821;
+    unk822 = source->unk822;
+    unk825 = source->unk825;
+    unk823 = source->unk823;
+    sphere_radius_scale = source->sphere_radius_scale;
+    unk850.set(source->unk850);
+    unk82c = source->unk82c;
+    unk830 = source->unk830;
+    unk860 = source->unk860;
+    set_unk864(source->unk864, source->unk868);
+    return 1;
+}
+
+/**
+ * @brief Return the model's bounding sphere with its radius scaled.
+ * @return Bounding sphere.
+ */
+const LibVector4* LibClass1788B0::get_bounding_sphere()
+{
+    LibVector4 sphere;
+    copy_vector(&sphere, LibModel::get_bounding_sphere());
+    sphere.w *= sphere_radius_scale;
+    copy_vector(&bounding_sphere, &sphere);
+    return &bounding_sphere;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8860__14LibClass1788B0FiPvPvf);
+
+/** @brief Destroy the three held objects, then destroy the model. */
+void LibClass1788B0::destroy()
+{
+    for (s32 i = 0; i < 3; i++)
+    {
+        if (unk83c[i] != 0)
+        {
+            unk83c[i]->destroy();
+            unk83c[i] = 0;
+        }
+    }
+
+    LibModel::destroy();
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", build_packet__14LibClass1788B0FPCvPv);
 
 extern "C" void func_004C94D0(void* object, const unsigned __int128* value)
 {
@@ -3237,15 +3998,79 @@ extern "C" void func_004C94D0(void* object, const unsigned __int128* value)
     copy_vector(&state->value850, (const LibVector4*)value);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C94E0);
+/** @brief Construct the model with its defaults. */
+LibClass1788B0::LibClass1788B0()
+{
+    type_id = 0x110;
+    unk826 = 0;
+    unk820 = 0;
+    unk823 = 0;
+    unk824 = 0;
+    unk838 = 0;
+    unk850 = FieldVec4A(0.0f, 1.0f, 0.0f, 1.0f);
+    unk821 = 0;
+    unk822 = 0;
+    unk82c = 100.0f;
+    unk830 = 50.0f;
+    unk834 = 1.0f;
+    unk825 = 4;
+    unk67 = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C95A0);
+    for (s32 i = 0; i < 3; i++)
+    {
+        unk83c[i] = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9650);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9660);
+/** LibClass1734B0 entry with vtable D_1789C0 in main data; only its constructor and destructor are known. */
+class LibClass1789C0 : public LibClass1734B0
+{
+public:
+    /** @brief Start as an unattached entry of kind 2 with unk54 set to three. */
+    LibClass1789C0();
 
-s32 func_004C96D0(void* object)
+    /** @brief Destroy the entry. */
+    virtual ~LibClass1789C0();
+
+    /**
+     * @brief Use a morph shape resource without owning it, and apply its weight.
+     * @param value Resource data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 67.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Note whether every bit is set, count the idle frames down and rewind the records.
+     * @return Zero on the step the countdown ends, otherwise one.
+     */
+    virtual s32 func_slot1C();
+
+    LibMorphShape* shape;
+    u8* records;
+    u8* cursor;
+    u8 unk3c[4];
+    float clamped_weight;
+    u8 unk44[0xC];
+    float weight;
+    s32 idle_frames;
+};
+
+/** @brief Destroy the entry. */
+LibClass1789C0::~LibClass1789C0()
+{
+}
+
+/**
+ * @brief Return the entry's type code.
+ * @return 67.
+ */
+s32 LibClass1789C0::func_slot14()
 {
     return 67;
 }
@@ -3308,27 +4133,113 @@ void lib_morph_target_set_weight(LibMorphTarget* target, float weight)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C97A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9840);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C98E0);
-
-void* func_004C9930(void* receiver)
+/**
+ * @brief Note whether every bit is set, count the idle frames down and rewind the records.
+ * @return Zero on the step the countdown ends, otherwise one.
+ */
+s32 LibClass1789C0::func_slot1C()
 {
-    func_004A8F10(receiver);
-    *(void**)receiver = D_00174C90;
-    ((u8*)receiver)[0xE] = 1;
-    return receiver;
+    if (shape->bit_count == shape->unk08)
+    {
+        unk19 = 1;
+    }
+    else
+    {
+        unk19 = 0;
+    }
+
+    if (idle_frames != 0 && --idle_frames == 0)
+    {
+        if (unk18 && list)
+        {
+            list->unk8d_1 = 1;
+        }
+
+        unk18 = 0;
+        return 0;
+    }
+
+    cursor = records;
+    return 1;
+}
+
+/**
+ * @brief Use a morph shape resource without owning it, and apply its weight.
+ * @param value Resource data.
+ */
+void LibClass1789C0::set_borrowed_data(void* value)
+{
+    data = value;
+    data_is_borrowed = 1;
+    shape = reinterpret_cast<LibMorphShape*>(static_cast<u8*>(value) + 0x10);
+    u32* words = shape->words;
+    u32 count = shape->bit_count;
+    bits.borrow_words(count, words);
+    records = reinterpret_cast<u8*>(shape) + shape->records_offset;
+    lib_morph_target_set_weight(reinterpret_cast<LibMorphTarget*>(this), shape->weight);
+}
+
+/** @brief Start as an unattached entry of kind 2 with unk54 set to three. */
+LibClass1789C0::LibClass1789C0()
+{
+    unk19 = 0;
+    unk0f = 2;
+    weight = 0.0f;
+    idle_frames = 3;
+}
+
+/** @brief Start unattached, with unk0e set. */
+LibClass174C90::LibClass174C90()
+{
+    unk0e = 1;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9970);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_spot_light_get_frame);
+/**
+ * @brief Read a spotlight's position, direction, and the cosine and sine of its cone angle.
+ * @param light Spotlight; its transform matrix is updated first if it isn't ready.
+ * @param frame Receives the position (w 1), the direction, and the cosine and sine in x and y.
+ */
+extern "C" void lib_spot_light_get_frame(LibLight* light, LibVector4* frame)
+{
+    LibVector4 value;
+
+    if (!light->matrix_ready)
+    {
+        light->update_transform_matrix();
+    }
+
+    value.x = light->world.m[0][3];
+    value.y = light->world.m[1][3];
+    value.z = light->world.m[2][3];
+    value.w = 1.0f;
+    copy_vector(&frame[0], &value);
+    value.x = light->world.m[0][1];
+    value.y = light->world.m[1][1];
+    value.z = light->world.m[2][1];
+    copy_vector(&frame[1], &value);
+    lib_compute_sine_cosine_pair_degree9(&value, DEGREES_TO_RADIANS * light->cone_angle);
+    frame[2].x = value.z;
+    frame[2].y = value.w;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9AC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9BA0);
+/**
+ * @brief Cache the spotlight's cone falloff terms from the cosines of its two half-angles.
+ * @param light Spotlight to update.
+ */
+extern "C" void func_004C9BA0(LibLight* light)
+{
+    float outer = lib_cosine_degree9((DEGREES_TO_RADIANS / 2) * light->cone_angle);
+    float inner = lib_cosine_degree9((DEGREES_TO_RADIANS / 2) * light->unk278);
+    outer *= outer;
+    inner *= inner;
+    float range = outer - inner;
+    light->unk26c = inner;
+    light->unk270 = 1.0f / range;
+}
 
 /** @brief Update the transform matrix if it isn't ready, then cache the position and direction from it. */
 void LibLight::update_frame()
@@ -3350,7 +4261,37 @@ void LibLight::update_frame()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9CA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9D80);
+/**
+ * @brief Return how strongly a spotlight lights a point: zero behind it, rising to one inside its inner cone.
+ * @param light Spotlight.
+ * @param point Point to light.
+ * @return Falloff from zero to one.
+ */
+extern "C" float func_004C9D80(LibLight* light, const LibVector4* point)
+{
+    LibVector4 offset;
+    LibVector4 axis;
+    offset.x = point->x - light->position.x;
+    offset.y = point->y - light->position.y;
+    offset.z = point->z - light->position.z;
+    vu0_load_vf20(&offset);
+    axis.x = light->direction.x;
+    vu0_light_start_normalize_vf20();
+    axis.y = light->direction.y;
+    axis.z = light->direction.z;
+    vu0_light_store_normalized_vf20(&offset);
+    float cosine = offset.x * axis.x + offset.y * axis.y + offset.z * axis.z;
+
+    if (cosine <= 0.0f)
+    {
+        return 0.0f;
+    }
+
+    float value = light->unk270 * (cosine * cosine - light->unk26c);
+    value = ee_max(value, 0.0f);
+    value = ee_min(value, 1.0f);
+    return value;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9E80);
 

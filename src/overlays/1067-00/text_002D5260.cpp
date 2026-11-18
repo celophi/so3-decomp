@@ -296,12 +296,12 @@ static inline void set_resource_record(ItemCreationClass175110* object, FieldRes
 
     if (descriptor != 0)
     {
-        object->unkb8 = descriptor->unk00;
-        object->unkba = descriptor->unk02;
-        object->unkbc = descriptor->unk04;
-        object->unkbd = descriptor->unk05;
-        object->unkbe = descriptor->unk06;
-        object->unkbf = descriptor->unk07;
+        object->unkb8.unk00 = descriptor->unk00;
+        object->unkb8.unk02 = descriptor->unk02;
+        object->unkb8.unk04 = descriptor->unk04;
+        object->unkb8.unk05 = descriptor->unk05;
+        object->unkb8.unk06 = descriptor->unk06;
+        object->unkb8.unk07 = descriptor->unk07;
     }
 
     object->unkc4 = 0;
@@ -384,12 +384,12 @@ s32 ItemCreationOptionResourceDisplay::func_002D6440(float x, float y, FieldReso
     unkc0 = 0;
     unk108 = record;
     unkb4 = record;
-    unkb8 = unk10c;
-    unkba = unk10e;
-    unkbc = unk110;
-    unkbd = unk111;
-    unkbe = unk112;
-    unkbf = unk113;
+    unkb8.unk00 = unk10c;
+    unkb8.unk02 = unk10e;
+    unkb8.unk04 = unk110;
+    unkb8.unk05 = unk111;
+    unkb8.unk06 = unk112;
+    unkb8.unk07 = unk113;
     unkc9 = 1;
     unk34 = 6;
     unk39 = 1;

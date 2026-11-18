@@ -17,8 +17,6 @@ typedef struct LibTextWidget LibTextWidget;
 
 struct ResidentResourceHeader;
 
-
-
 /** Partial widget receiver using the main table D_178630. */
 typedef struct LibPanel LibPanel;
 
@@ -32,7 +30,6 @@ typedef struct LibContainer LibContainer;
 
 #ifdef __cplusplus
 extern "C" {
-void* func_004C9930(void* receiver);
 #endif
 /**
  * @brief Store a float in an indexed array slot.
@@ -56,12 +53,6 @@ void func_004BD360(void* object, const unsigned __int128* value);
  * @return The destination vector.
  */
 void* func_004BD4C0(void* object, const unsigned __int128* value);
-
-/**
- * @brief Set the byte at +0x64 to zero and the byte at +0x62 to one.
- * @param object Receiver to update.
- */
-void func_004C8530(void* object);
 
 /**
  * @brief Copy a vector into the receiver's field at offset 0x850.
@@ -113,6 +104,13 @@ void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, u8 flag);
 void lib_container_attach_widget(LibContainer* object, LibWidget* child);
 
 /**
+ * @brief Unlink a widget from the container and clear its owner.
+ * @param object Container receiver.
+ * @param child Widget to detach.
+ */
+void func_004C6120(LibContainer* object, LibWidget* child);
+
+/**
  * @brief Detach the widget from its associated object.
  * @param object Widget receiver.
  */
@@ -146,14 +144,6 @@ s32 lib_panel_init_rectangle(LibPanel* object, s32 mode, float x, float y, float
  */
 void lib_panel_set_colors(LibPanel* object, const LibWidgetColors4C5590* colors);
 
-/** Return the fixed integer value 11. */
-s32 func_004C8370(void* object);
-
-/** Return the fixed integer value 1. */
-s32 func_004C8380(void* object);
-
-/** Return the fixed integer value 67. */
-s32 func_004C96D0(void* object);
 
 /** Return the fixed value 0. */
 s32 func_004C3AC0(void* object);
@@ -161,13 +151,9 @@ s32 func_004C3AC0(void* object);
 /** Return the fixed value 0. */
 s32 func_004C3AD0(void* object);
 
-/** Return the fixed value 0. */
-s32 func_004C8360(void* object);
-
 #ifdef __cplusplus
 }
 #endif
-
 
 /**
  * @brief Initialize the text widget rectangle and clear its allocation and pending flag.
@@ -260,9 +246,14 @@ public:
 struct LibMorphShape
 {
     s32 id;
-    u8 unk04[0x14];
+    u32 bit_count;
+    u32 unk08;
+    s32 records_offset;
+    u32 unk10;
+    float weight;
     float min_weight;
     float max_weight;
+    u32 words[1];
 };
 
 /** Morph target, one of a face model's children; object_kind is two for a morph target. */
@@ -299,8 +290,18 @@ public:
         type_id = 0x6FF0;
     }
 
-    /** @brief Destroy the cursor. */
     virtual ~LibSelectionCursor();
+
+    /** @brief Mark the DMA pending and queue the cursor's packet. */
+    virtual void render();
+
+    /**
+     * @brief Virtual slot 0x84.
+     * @param first First value.
+     * @param second Second value.
+     * @param third Third value.
+     */
+    virtual void func_0044B100(u32 first, u32 second, u32 third);
 
     /**
      * @brief Finish the cursor's drawing packet.
@@ -463,8 +464,17 @@ struct LibTextWidget : public LibDrawWidget
      */
     s32 init_resource_rectangle(float x, float y, float width, float height, s32 slot, u32 key, u8 flag);
 
+    /** @brief Finish drawing: lay out and draw the attached unkfc object's text. */
+    void func_004C7010();
+
     LibListObject* unkfc;
-    u8 unk100[0x14];
+    void* unk100;
+    u8 unk104[4];
+    u32 source;
+    u32 key;
+    u8 flag;
+    u8 pending;
+    u8 unk112[2];
 };
 
 /** 0x57C-byte multiline text widget with trailing scroll state. */
@@ -595,9 +605,25 @@ struct LibPanel : public LibWidget
     u8 unk4c[4];
     LibUiRect16 unk50;
     void* unk60;
-    u8 unk64[0x28];
+    u32 colors[4];
+    u8 unk74[0x10];
+    float unk84;
+    u8 transition_state;
+    u8 unk89;
+    u8 unk8a;
+    u8 unk8b;
     u8 unk8c;
     u8 unk8d[3];
+
+    /**
+     * @brief Test the panel's open/close transition state.
+     * @param state State to compare with; zero means no transition is running.
+     * @return One when the panel is in that state, otherwise zero.
+     */
+    u8 in_transition_state(s32 state) const
+    {
+        return transition_state == state;
+    }
 };
 
 /** How a track evaluates keys outside its first and last keyframes. */
@@ -1222,7 +1248,6 @@ public:
         resource_data = data;
     }
 
-
     u8 unk14[0x1C];
     void* resource_data;
     u8 unk34[4];
@@ -1424,7 +1449,6 @@ void lib_compute_sine_cosine_pair(LibVector4* output, float angle);
  * @param angle Angle in radians.
  */
 void lib_compute_sine_cosine_pair_degree9(LibVector4* output, float angle);
-
 
 /**
  * @brief Extract a quaternion after mapping each matrix row from (x, y, z) to (x, -z, y).
@@ -1689,9 +1713,6 @@ void lib_build_directional_shadow_matrix(LibMatrix44Value* output, const FieldVe
 void lib_build_projective_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* light, const FieldVec4A* plane);
 #endif
 
-
-
-
 /** Return the receiver address at byte offset 0x10. */
 const void* func_004BD370(const void* object);
 
@@ -1704,19 +1725,10 @@ const void* func_004BD4A0(const void* object);
 /** Return the receiver address at byte offset 0x20. */
 const void* func_004BD4B0(const void* object);
 
-/** Forward the receiver to func_004A4570 and return its queue result. */
-s32 func_004C8510(void* object);
-
-
 #ifdef __cplusplus
 void func_004C3AE0(void* object);
 
 void func_004C3AF0(void* object);
-
-void func_004C4500(void* object);
-
-void func_004C4510(void* object);
-
 
 /** Clear the vector at offset 0xB0 and update the associated state. */
 void func_004C2B30(void* object);
@@ -1742,7 +1754,6 @@ class LibMessageWindow;
 class LibMessageWindowText : public LibObject174D90
 {
 public:
-    /** @brief Destroy the text. */
     virtual ~LibMessageWindowText();
 
     /** @brief Flag the restart for the window. */

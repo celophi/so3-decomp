@@ -5,6 +5,7 @@
 #include "overlays/1067-00/text_0028E240.h"
 #include "overlays/1067-00/text_002D5260.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/tooltip_frame.h"
 #include "overlays/1067-00/text_002CD390.h"
 #include "overlays/1067-00/text_0023B1D0.h"
 #include "overlays/1067-00/text_001E1590.h"
@@ -49,51 +50,6 @@ class EquipItemTypeList
 
         /** @brief Release the value nodes and sentinel storage. */
         virtual ~EquipItemTypeList();
-};
-
-/** Contextual tooltip widget with its owned DMA storage and resident table. */
-class EquipTooltipFrame : public LibWidget
-{
-    public:
-        /** @brief Initialize the tooltip display and drawing storage. */
-        EquipTooltipFrame()
-        {
-            unk38 = 0x12;
-        }
-
-        virtual ~EquipTooltipFrame();
-
-        /** @brief Draw the tooltip rectangle and its stored resource. */
-        virtual void draw();
-
-        LibStorageBlock0C unk40;
-        u8 unk4c[4];
-};
-
-/** Resident tooltip container with one tooltip and eight owned text widgets. */
-class EquipFactorTooltip : public LibContainer
-{
-    public:
-        /** @brief Initialize the tooltip container and its embedded displays. */
-        EquipFactorTooltip()
-        {
-            type_id = 0x6FF8;
-        }
-
-        /** @brief Destroy the text array, tooltip, and container bases. */
-        virtual ~EquipFactorTooltip();
-
-        /**
-         * @brief Update the tooltip text animation.
-         * @param first First update flag.
-         * @param second Second update flag.
-         * @param third Third update flag.
-         */
-        virtual void func_00412C40(u32 first, u32 second, u32 third);
-
-        EquipTooltipFrame frame;
-        LibTextWidget factor_texts[8];
-        u8 unk9e0[0x30];
 };
 
 /** Help bar with the "Equipment" title and label and a scrolling help line. */

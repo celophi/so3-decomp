@@ -58,6 +58,13 @@ void sceDmaSend(DmaChannel* channel, void* chain);
 s32 sceDmaSync(DmaChannel* channel, s32 mode, s32 timeout);
 
 /**
+ * @brief Suspend a channel's transfer.
+ * @param channel Channel register block.
+ * @return The channel's previous CHCR value.
+ */
+u32 sceDmaPause(DmaChannel* channel);
+
+/**
  * @brief Start a normal-mode DMA transfer.
  * @param channel Channel register block.
  * @param address Data to send.
