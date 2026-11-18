@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_LIB_TEXT_004AB8B0_H
-#define SO3_OVERLAYS_LIB_TEXT_004AB8B0_H
+#ifndef SO3_OVERLAYS_LIB_TEXT_004ABA60_H
+#define SO3_OVERLAYS_LIB_TEXT_004ABA60_H
 
 #include "types.h"
 #include "overlays/lib/text_004BD360.h"

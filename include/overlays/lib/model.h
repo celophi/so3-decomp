@@ -108,7 +108,9 @@ public:
      */
     virtual void copy_color_state(const LibColorModel* source);
 
-    u8 unk220[0x340];
+    u8 unk220[0x20];
+    LibVector4 unk240[4];
+    u8 unk280[0x2E0];
     LibVector4 base_color_factor;
     LibVector4 color_modulation;
     LibVector4 combined_color_factor;
@@ -124,8 +126,51 @@ public:
     u8 unk59e[2];
 };
 
+/** Partial bit array whose words are owned or borrowed, with vtable D_177A10 in main data; its data comes before the vptr. */
+class LibResourceBitset
+{
+public:
+    u32 bit_count;
+    u32 word_count;
+    u32* words;
+    u8 words_are_borrowed;
+    u8 unk0d[3];
+
+    /** @brief Start with no words. */
+    LibResourceBitset() : words(0), words_are_borrowed(0)
+    {
+    }
+
+    /**
+     * @brief Use words the bitset doesn't own, releasing its own first.
+     * @param count Number of bits.
+     * @param source Borrowed words.
+     */
+    void borrow_words(u32 count, u32* source)
+    {
+        if (!words_are_borrowed)
+        {
+            delete[] words;
+        }
+
+        bit_count = count;
+        word_count = (count + 31) / 32;
+        words = source;
+        words_are_borrowed = 1;
+    }
+
+    /** @brief Release the word buffer when it is owned by this object. */
+    virtual ~LibResourceBitset()
+    {
+        if (!words_are_borrowed)
+        {
+            delete[] words;
+        }
+    }
+};
+
 /** Partial 0x90-byte list member of every LibModelBase, with vtable D_177A20 in main data. */
-class LibClass177A20 : public LibListReceiver
+class LibClass177A20 : public LibListReceiver, public LibListObject, public DmaSubmission
 {
 public:
     /** @brief Initialize the list. */
@@ -133,6 +178,30 @@ public:
 
     /** @brief Destroy the list. */
     virtual ~LibClass177A20();
+
+    /** @brief Queue the list for deferred destruction. */
+    virtual void destroy();
+
+    /**
+     * @brief Report the list kind used when registration requests the default.
+     * @return Eleven.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Advance the list's state; the owning list's update pass calls it. */
+    virtual void update();
+
+    /**
+     * @brief Start the queued DMA transfer; the list does nothing.
+     * @param channel DMA channel number.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Complete the queued DMA transfer; the list does nothing.
+     * @param channel DMA channel number.
+     */
+    virtual void complete_dma(u32 channel);
 
     /**
      * @brief Test whether any entry in the list is listed.
@@ -177,9 +246,10 @@ public:
         return payload_buffers[0] != 0 && payload_buffers[1] != 0;
     }
 
-    u8 unk14[0x40];
+    LibResourceBitset unk2c;
+    LibResourceBitset unk40;
     class LibModel* model;
-    u8 unk58[4];
+    void* unk58;
     void* unk5c;
     void* unk60;
     u8 unk64[4];
@@ -188,56 +258,19 @@ public:
     void* unk70;
     void* payload_buffers[LIB_MODEL_PACKET_SET_COUNT];
     void* payloads[LIB_MODEL_PACKET_SET_COUNT];
-    u8 unk84[6];
+    u16 unk84;
+    u8 unk86[2];
+    u8 unk88;
+    u8 unk89;
     u8 payload_set;
-    u8 unk8b[2];
+    u8 unk8b;
+    u8 unk8c;
     u8 unk8d_0 : 1;
     u8 unk8d_1 : 1;
-    u8 unk8d_2_7 : 6;
+    u8 unk8d_2 : 1;
+    u8 unk8d_3 : 1;
+    u8 unk8d_4_7 : 4;
     u8 unk8e[2];
-};
-
-/** Partial bit array whose words are owned or borrowed, with vtable D_177A10 in main data; its data comes before the vptr. */
-class LibResourceBitset
-{
-public:
-    u32 bit_count;
-    u32 word_count;
-    u32* words;
-    u8 words_are_borrowed;
-    u8 unk0d[3];
-
-    /** @brief Start with no words. */
-    LibResourceBitset() : words(0), words_are_borrowed(0)
-    {
-    }
-
-    /**
-     * @brief Use words the bitset doesn't own, releasing its own first.
-     * @param count Number of bits.
-     * @param source Borrowed words.
-     */
-    void borrow_words(u32 count, u32* source)
-    {
-        if (!words_are_borrowed)
-        {
-            delete[] words;
-        }
-
-        bit_count = count;
-        word_count = (count + 31) / 32;
-        words = source;
-        words_are_borrowed = 1;
-    }
-
-    /** @brief Release the word buffer when it is owned by this object. */
-    virtual ~LibResourceBitset()
-    {
-        if (!words_are_borrowed)
-        {
-            delete[] words;
-        }
-    }
 };
 
 /** Partial entry of a LibClass177A20 list, with vtable D_1779F0 in main data. */
@@ -484,6 +517,42 @@ public:
     u8 unk63c[4];
 };
 
+#define LIB_MODEL_PART_SIZE 0xF0
+
+/** Partial part record in the model's part table: the upper tag words of its GIF tags, written uncached. */
+struct LibModelPart
+{
+    u8 unk00[0x20];
+    u32 unk20;
+    u8 unk24[0x38];
+    u32 slot;
+    u8 unk60[4];
+    u32 first_tag_high;
+    u32 first_registers;
+    u8 unk6c[8];
+    u32 second_tag_high;
+    u8 unk78[0xC];
+    u32 unk84;
+    u8 unk88[8];
+    u32 unk90;
+    u8 unk94[8];
+    u32 unk9c;
+    u8 unka0[0x24];
+    u32 third_tag_high;
+    u8 unkc8[0xC];
+    u32 fourth_tag_high;
+    u8 unkd8[0x18];
+};
+
+/** Partial part record in a mesh resource; the model's copy of its part starts at 0x40. */
+struct LibMeshPartRecord
+{
+    u8 unk00[0x14];
+    u16 unk14;
+    u8 unk16[0x2A];
+    LibModelPart part;
+};
+
 /** Partial 0x80-byte texture upload block in a model's upload table. */
 struct LibTextureUpload
 {
@@ -498,6 +567,9 @@ struct LibTextureUpload
     u32 mscal;
     u8 unk64[0x1C];
 };
+
+/** VU1 microprogram that uploads a model's textures. */
+extern "C" u8 D_678[];
 
 /** Values a model writes into one of its part records. */
 struct LibModelPartSetting

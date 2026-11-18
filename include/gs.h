@@ -56,6 +56,7 @@ enum
 {
     GS_REGISTER_PRIM = 0x00,
     GS_REGISTER_RGBAQ = 0x01,
+    GS_REGISTER_XYZ2 = 0x05,
     GS_REGISTER_TEX0_1 = 0x06,
     GS_REGISTER_TEX0_2 = 0x07,
     GS_REGISTER_CLAMP_1 = 0x08,
@@ -65,10 +66,13 @@ enum
     GS_REGISTER_TEXCLUT = 0x1C,
     GS_REGISTER_TEXA = 0x3B,
     GS_REGISTER_TEXFLUSH = 0x3F,
+    GS_REGISTER_SCISSOR_1 = 0x40,
     GS_REGISTER_ALPHA_1 = 0x42,
     GS_REGISTER_ALPHA_2 = 0x43,
+    GS_REGISTER_TEST_1 = 0x47,
     GS_REGISTER_TEST_2 = 0x48,
     GS_REGISTER_PABE = 0x49,
+    GS_REGISTER_FBA_1 = 0x4A,
     GS_REGISTER_FBA_2 = 0x4B,
     GS_REGISTER_BITBLTBUF = 0x50,
     GS_REGISTER_TRXPOS = 0x51,
@@ -109,8 +113,13 @@ typedef struct GsRegisterValue
 
 #define GS_PRIM_TYPE_MASK 0x7
 #define GS_PRIM_TRIANGLE_FAN 5
+#define GS_PRIM_SPRITE 6
 #define GS_PRIM_FGE 0x20
 #define GS_PRIM_ABE 0x40
+
+/** FGE as it sits in the upper word of a GIF tag's first doubleword. */
+#define GIF_TAG_HIGH_PRIM_FGE ((u32)(GIF_TAG_PRIM(GS_PRIM_FGE) >> 32))
+
 #define GIF_TAG_EOP 0x8000
 
 /** GIF tag NREG field: how many registers each loop writes. */

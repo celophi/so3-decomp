@@ -5,6 +5,10 @@
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/text_0046AE20.h"
 
+#ifdef __cplusplus
+class LibAnimation;
+#endif
+
 class LibCameraContext;
 class LibCamera;
 class LibLightList;
@@ -86,7 +90,7 @@ public:
     u32 unk1c;
     LibEntryTableHeader* header;
     u8 unk24[0x10];
-    void* unk34[LIB_ENTRY_MANAGER_SLOT_COUNT];
+    LibAnimation* unk34[LIB_ENTRY_MANAGER_SLOT_COUNT];
     char (*link_names)[LIB_ENTRY_NAME_COMPARE_LENGTH];
     void* unk78;
     LibEntryManager* linked;

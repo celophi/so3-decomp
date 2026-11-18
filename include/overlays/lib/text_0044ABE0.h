@@ -3,6 +3,10 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+#include "main/main.h"
+#endif
+
 typedef struct LibImageAnimation LibDrawState64;
 typedef struct ItemCreationClass174C40 ItemCreationClass174C40;
 typedef struct LibCallbackTransform LibCallbackTransform;
@@ -25,7 +29,7 @@ typedef struct LibObjectByte60
 class LibBitArray
 {
 public:
-    u8 unk00[4];
+    s32 count;
     s32 size;
     u8* bytes;
     u8 borrowed;
@@ -43,6 +47,34 @@ public:
         if (!borrowed)
         {
             delete[] bytes;
+        }
+    }
+
+    /**
+     * @brief Replace the bytes with new ones for a bit count.
+     * @param bits Number of bits.
+     */
+    void resize(s32 bits)
+    {
+        if (!borrowed)
+        {
+            delete[] bytes;
+        }
+
+        count = bits;
+        size = (bits + 7) >> 3;
+        bytes = new (0) u8[size];
+        borrowed = 0;
+    }
+
+    /** @brief Clear every byte. */
+    void clear()
+    {
+        s32 total = size;
+
+        for (s32 i = 0; i < total; i++)
+        {
+            bytes[i] = 0;
         }
     }
 };

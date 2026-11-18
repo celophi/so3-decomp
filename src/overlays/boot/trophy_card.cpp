@@ -11,7 +11,7 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/vector_inlines.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 
 static inline void copy_transfer_name(BootBattleTrophyCard* trophy_card, const char* base, const char* suffix);
 
@@ -68,7 +68,7 @@ static inline s32 prepare_transfer_request(BootBattleTrophyCard* trophy_card)
         trophy_card->file_buffer.name = trophy_card->filename;
         trophy_card->file_buffer.data = trophy_card->transfer_buffer;
         trophy_card->file_buffer.size = BOOT_TRANSFER_BUFFER_SIZE;
-        trophy_card->file_buffer.unk0C = 0;
+        trophy_card->file_buffer.offset = 0;
         trophy_card->file_request.directory = trophy_card->filename;
         trophy_card->file_request.file_count = 1;
         trophy_card->file_request.unk08 = 0;

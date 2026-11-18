@@ -43,8 +43,6 @@ typedef struct {
 extern "C" {
 #endif
 
-void func_00434FA0(void* object);
-
 /**
  * @brief Multiply a vector by the 4x4 matrix whose rows are already loaded in vf1-vf4.
  *

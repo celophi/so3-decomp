@@ -1221,7 +1221,66 @@ LibClass178C00::LibClass178C00()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D08D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0A30);
+/** GS packet that draws eight sprite vertices with the depth test and scissor set around them. */
+struct LibSpritePacket
+{
+    u32 dma_tag[2];
+    u32 vif_flush;
+    u32 vif_direct;
+    u64 gif_tag;
+
+    union
+    {
+        u64 gif_registers;
+
+        struct
+        {
+            u64 register0 : 4;
+            u64 unused : 60;
+        } gif_register_fields;
+    };
+
+    GsRegisterValue test;
+    GsRegisterValue fba;
+    GsRegisterValue prim;
+    GsRegisterValue rgbaq;
+    GsRegisterValue xyz[8];
+    GsRegisterValue restore_test;
+    GsRegisterValue scissor;
+};
+
+/**
+ * @brief Set up a sprite packet's fixed words: its tags and the register each write goes to.
+ * @param packet Packet to set up.
+ * @return The packet.
+ */
+extern "C" LibSpritePacket* func_004D0A30(LibSpritePacket* packet)
+{
+    packet->dma_tag[0] = 0;
+    packet->dma_tag[1] = 0;
+    packet->vif_flush = 0x11000000;
+    packet->vif_direct = 0x5100000F;
+    packet->gif_tag = 14 | GIF_TAG_EOP | GIF_TAG_NREG(1);
+    packet->gif_registers = 0;
+    packet->gif_register_fields.register0 = GIF_REGISTER_AD;
+    packet->fba.data = 0;
+    packet->fba.address = GS_REGISTER_FBA_1;
+    packet->test.address = GS_REGISTER_TEST_1;
+    packet->prim.address = GS_REGISTER_PRIM;
+    packet->rgbaq.address = GS_REGISTER_RGBAQ;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        packet->xyz[i].address = GS_REGISTER_XYZ2;
+    }
+
+    packet->restore_test.address = GS_REGISTER_TEST_1;
+    packet->scissor.address = GS_REGISTER_SCISSOR_1;
+    packet->test.data = 0x30000;
+    packet->prim.data = GS_PRIM_SPRITE;
+    FlushCache(0);
+    return packet;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0B10);
 
@@ -1597,15 +1656,13 @@ extern "C" void func_004D5C10(LibResourceBuffer* resource)
     }
 }
 
-extern "C" void func_004486A0(LibResourceBuffer* resource);
-
 /** @brief Unregister the resource from the resource manager if it is registered. */
 void LibResourceBuffer::unregister()
 {
     if (registered)
     {
         registered = 0;
-        func_004486A0(this);
+        release_textures();
         func_004D0260(g_image_registry, this);
     }
 }
@@ -1615,7 +1672,7 @@ LibResourceBuffer::~LibResourceBuffer()
 {
     if (registered)
     {
-        func_004486A0(this);
+        release_textures();
         func_004D0260(g_image_registry, this);
     }
 
@@ -3198,7 +3255,16 @@ LibMicrocodeLoader::LibMicrocodeLoader()
     FlushCache(0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9CD0);
+/** @brief Destroy the printer: free the font image unless it is shared, and the packet. */
+LibScreenText::~LibScreenText()
+{
+    if (!shared_font)
+    {
+        delete font_image;
+    }
+
+    delete packet;
+}
 
 /** @brief Apply the enabled camera-facing rotation components. */
 void LibTransform::update()

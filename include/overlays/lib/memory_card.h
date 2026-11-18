@@ -4,6 +4,8 @@
 #include "types.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/semaphore.h"
+#include "main/thread.h"
 
 #define LIB_MEMORY_CARD_SLOT_COUNT 2
 #define LIB_MEMORY_CARD_SLOT_OPEN 0x2
@@ -35,7 +37,7 @@ struct LibMemoryCardSlot
     s32 free_space;
     s32 formatted;
     s32 result;
-    u8 unk58[4];
+    s32 fd;
     struct LibCardFileRequest* request;
     u8 unk60[0x14];
     u8* buffer;
@@ -43,6 +45,19 @@ struct LibMemoryCardSlot
     s32 unk7C;
     char name[0x40];
     u8 unkC0[0x40];
+};
+
+/** Thread with a semaphore, with vtable D_173580 in main data; it sits next to the memory card code. */
+class LibClass173580 : public ResidentThread
+{
+public:
+    virtual ~LibClass173580();
+
+    /** @brief Thread body. */
+    virtual void run();
+
+    u8 unk10[0xC];
+    LibSemaphore semaphore;
 };
 
 /** Partial 0x58-byte memory card object that runs the two transfer modes. */
@@ -89,12 +104,18 @@ enum LibCardSlotMask
 };
 
 /** One file of a memory card request: Lib opens `<directory>/<name>` and transfers size bytes at data. */
+/** Contents of a save's icon.sys file (Sony's sceMcIconSys). */
+struct LibIconSys
+{
+    u8 unk00[0x3C4];
+};
+
 struct LibCardFileBuffer
 {
     char* name;
     void* data;
     u32 size;
-    u32 unk0C;
+    s32 offset;
 };
 
 /** Memory card request for files in one directory; Lib keeps a pointer to it in the slot until it finishes. */

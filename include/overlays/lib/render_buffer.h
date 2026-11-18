@@ -35,6 +35,32 @@ public:
     virtual ~LibRenderResource()
     {
     }
+
+    /**
+     * @brief Return the resource's first data block.
+     * @return Data pointer, or null.
+     */
+    virtual void* get_data() = 0;
+
+    /**
+     * @brief Resolve a stored byte offset relative to the resource payload.
+     * @param offset Pointer to the stored byte offset.
+     * @return Resolved pointer, or null.
+     */
+    virtual void* resolve_offset(const u32* offset) = 0;
+
+    /**
+     * @brief Find an indexed entry across the resource's children; the base has none.
+     * @param index Entry index.
+     * @return Null.
+     */
+    virtual void* find_child_data(s32 index)
+    {
+        return 0;
+    }
+
+    /** @brief Let go of the textures of every image the resource holds. */
+    void release_textures();
 };
 
 /** Resource storage with borrowed-data and manager-registration state. */
@@ -93,6 +119,19 @@ public:
     u8 registered;
     u8 unk1f;
 };
+
+/**
+ * @brief Point a resource's record cursor at its first part record.
+ * @param resource Resource to rewind.
+ */
+extern "C" void func_004D5C10(LibResourceBuffer* resource);
+
+/**
+ * @brief Return the record at a resource's cursor and move the cursor to the next one.
+ * @param resource Resource to read.
+ * @return The record, or null at the end.
+ */
+extern "C" void* func_004D5AC0(LibResourceBuffer* resource);
 
 /** Header shared by the linked image and sequence chunks. */
 struct LibResourceChunkHeader

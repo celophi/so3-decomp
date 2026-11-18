@@ -7,7 +7,7 @@
 #include "overlays/1067-00/text_0022DC70.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_004BD360.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "overlays/1067-00/text_00200710.h"
 #include "overlays/1067-00/text_00212560.h"

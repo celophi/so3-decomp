@@ -59,3 +59,16 @@
 @144@submit_dma__14LibClass174840FUi = 0x0044D0C0;
 @32@__dt__14LibClass1746D0Fv = 0x0044BF50;
 @32@__dt__12LibContainerFv = 0x004C6700;
+@1440@complete_dma__15LibObject1751A0FUi = 0x0046B7D0;
+@1440@submit_dma__15LibObject1751A0FUi = 0x0046B7E0;
+@1444@resolve_offset__15LibObject1751A0FPCUi = 0x0046B7F0;
+@1444@get_data__15LibObject1751A0Fv = 0x0046B800;
+@1444@__dt__15LibObject1751A0Fv = 0x0046B810;
+@1452@__dt__15LibObject1751A0Fv = 0x0046B820;
+@20@update__14LibClass177A20Fv = 0x004ABA00;
+@20@destroy__14LibClass177A20Fv = 0x004ABA10;
+@20@get_default_list_kind__14LibClass177A20Fv = 0x004ABA20;
+@20@__dt__14LibClass177A20Fv = 0x004ABA30;
+@40@complete_dma__14LibClass177A20FUi = 0x004ABA40;
+@40@submit_dma__14LibClass177A20FUi = 0x004ABA50;
+@528@__dt__14LibClass173990Fv = 0x0043BCF0;

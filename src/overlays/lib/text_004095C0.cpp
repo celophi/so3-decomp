@@ -145,9 +145,23 @@ typedef struct LibFactorValue
 } LibFactorValue;
 
 /** Partial save data manager with vtable D_1721B0 in main data: a memory card, its card files and their request. */
-struct LibClass1721B0
+struct LibClass1721B0 : public LibListObject
 {
-    u8 unk00[0x14];
+    /** @brief Free the flag storage and the value list, then detach. */
+    virtual ~LibClass1721B0();
+
+    /**
+     * @brief Report the list kind.
+     * @return Four.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Free the buffers and the memory card object, then queue this object for release. */
+    virtual void destroy();
+
+    /** @brief Run the save. */
+    virtual void update();
+
     LibMemoryCard* card;
     s16 unk18;
     s16 unk1a;
@@ -156,32 +170,42 @@ struct LibClass1721B0
     s16 unk20;
     s16 unk22;
     s16 unk24;
-    u8 unk26[0x5A];
-    u8* icon_sys;
+    u8 unk26[6];
+    LibClass1721E0 values;
+    u16 id_count;
+    s16 ids[0x23];
+    LibIconSys* icon_sys;
     LibCardFileBuffer files[2];
     u8 unka4[0x230];
     LibCardFileRequest request;
     u8 unk2e4[0x4B4];
     u8* unk798;
     u8* unk79c;
-    char directory[0xD8];
+    char directory[0xC4];
+    LibBitArray flags;
     u16 unk878;
     u16 unk87a;
     s32 result;
     u8 unk880;
-    u8 unk881[0xB];
+    u8 unk881[3];
+    u8* unk884;
+    u8 unk888[4];
     u8 unk88c[0x40];
     u8 unk8cc;
     u8 unk8cd[3];
     u32 unk8d0;
     u8 unk8d4;
-    u8 unk8d5[7];
+    u8 unk8d5[3];
+    LibIconSys* unk8d8;
     u8 unk8dc[0x2E];
     u8 unk90a;
     u8 unk90b;
-    u8 unk90c[0x64];
+    u8 unk90c[4];
+    u8* unk910;
+    u8 unk914[0x5C];
     u8 unk970;
-    u8 unk971[0x13];
+    u8 unk971[0xF];
+    u8* unk980;
     u32 unk984;
     u32 unk988;
 };
@@ -1584,7 +1608,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D930);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040DD20);
 
-s32 func_0040E3A0(void* object)
+/**
+ * @brief Report the list kind.
+ * @return Four.
+ */
+s32 LibClass1721B0::get_default_list_kind()
 {
     return 4;
 }
@@ -1599,7 +1627,35 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040EC10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040EE30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040F020);
+/**
+ * @brief Append a value and its ID.
+ * @param object Receiver.
+ * @param value Value to append; null is refused.
+ * @param id ID, 0 to 299.
+ * @return One when both were added, otherwise zero.
+ */
+extern "C" s32 func_0040F020(LibClass1721B0* object, void* value, s32 id)
+{
+    if (id < 0)
+    {
+        return 0;
+    }
+
+    if (id >= 300)
+    {
+        return 0;
+    }
+
+    if (value == 0)
+    {
+        return 0;
+    }
+
+    func_00411CC0(&object->values, value);
+    object->ids[object->id_count] = id;
+    object->id_count++;
+    return 1;
+}
 
 /**
  * @brief Report which memory card slots are ready.
@@ -1755,7 +1811,7 @@ s32 func_0040F2E0(LibClass1721B0* object)
     object->files[0].name = object->directory;
     object->files[0].data = object->unk88c;
     object->files[0].size = 0x40;
-    object->files[0].unk0C = 0;
+    object->files[0].offset = 0;
 
     for (s32 i = 0; i < sizeof(object->unk8dc); i++)
     {
@@ -1765,7 +1821,7 @@ s32 func_0040F2E0(LibClass1721B0* object)
     object->files[1].name = object->directory;
     object->files[1].data = object->unk8dc;
     object->files[1].size = 0x2E;
-    object->files[1].unk0C = 0x4B4;
+    object->files[1].offset = 0x4B4;
     object->request.directory = object->directory;
     object->request.file_count = 2;
     object->request.unk08 = 0;
@@ -1805,11 +1861,11 @@ s32 func_0040F3E0(LibClass1721B0* object)
     object->files[0].name = D_004EC440;
     object->files[0].data = object->icon_sys;
     object->files[0].size = LIB_ICON_SYS_SIZE;
-    object->files[0].unk0C = 0;
+    object->files[0].offset = 0;
     object->files[1].name = object->directory;
     object->files[1].data = object->unk79c;
     object->files[1].size = LIB_SAVE_DATA_SIZE;
-    object->files[1].unk0C = 0;
+    object->files[1].offset = 0;
     object->request.directory = object->directory;
     object->request.file_count = 2;
     object->request.unk08 = 0;
@@ -1850,21 +1906,226 @@ void func_0040FB00(void* object, u8 value)
     receiver->unk90a = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040FB10);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", update__14LibClass1721B0Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __dt__14LibTrophyFlagsFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __dt__11LibBitArrayFv);
+/**
+ * @brief Advance the icon.sys write: start the transfer, then rewrite the icon file and transfer it, then wait for
+ *        it; a failure sets the step (unk1a) to -1.
+ * @param object Save data manager.
+ * @return The last card call's result, or -1 without a card.
+ */
+extern "C" s16 func_004110C0(LibClass1721B0* object)
+{
+    s16 result = -1;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004110C0);
+    if (object->card != 0)
+    {
+        switch (object->unk1a)
+        {
+        case 0:
+            result = lib_memory_card_start_transfer(object->card, object->unk1c, &object->request);
+
+            if (result == 0)
+            {
+                object->unk1a++;
+            }
+
+            break;
+        case 1:
+            result = lib_memory_card_get_result(object->card, object->unk1c, &object->result);
+
+            if (result != 0 && result == 1)
+            {
+                if (object->result >= 0)
+                {
+                    if (object->icon_sys)
+                    {
+                        memset_guess(object->icon_sys, 0, sizeof(LibIconSys));
+                    }
+
+                    func_004317B0(object->card, 2);
+                    object->files[0].name = D_004EC440;
+                    object->files[0].data = object->icon_sys;
+                    object->files[0].size = sizeof(LibIconSys);
+                    object->files[0].offset = 0;
+                    object->request.directory = object->directory;
+                    object->request.file_count = 1;
+                    object->request.unk08 = 0;
+                    object->request.files = object->files;
+                    result = lib_memory_card_start_transfer(object->card, object->unk1c, &object->request);
+
+                    if (result == 0)
+                    {
+                        object->unk1a++;
+                    }
+                }
+                else
+                {
+                    object->unk1a = -1;
+                }
+            }
+
+            break;
+        case 2:
+            result = lib_memory_card_get_result(object->card, object->unk1c, &object->result);
+
+            if (result != 0 && result == 1)
+            {
+                object->unk1a = -1;
+            }
+
+            break;
+        }
+
+    }
+
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411250);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411420);
+/** Lib's main update list. */
+extern "C" LibUpdateList* g_update_list;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411620);
+/**
+ * @brief Create the memory card object with both slots open, the icon buffers and the 300 save flags.
+ * @param object Save data manager.
+ * @param mode Stored at unk90b.
+ * @return One, or zero when an allocation failed.
+ */
+extern "C" s32 func_00411420(LibClass1721B0* object, u8 mode)
+{
+    object->card = new (0) LibMemoryCard;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411760);
+    if (object->card == 0)
+    {
+        return 0;
+    }
+
+    lib_memory_card_init(object->card, g_update_list);
+    lib_memory_card_open_slot(object->card, 0, 0, 0);
+    lib_memory_card_open_slot(object->card, 1, 1, 0);
+    object->unk18 = 0;
+    object->icon_sys = new (0) LibIconSys;
+
+    if (object->icon_sys == 0)
+    {
+        return 0;
+    }
+
+    if (object->icon_sys)
+    {
+        memset_guess(object->icon_sys, 0, sizeof(LibIconSys));
+    }
+
+    object->flags.resize(300);
+    object->flags.clear();
+    object->unk90b = mode;
+    object->unk8d8 = new (0) LibIconSys;
+
+    if (object->unk8d8 == 0)
+    {
+        return 0;
+    }
+
+    memset_guess(object->unk8d8, 0, sizeof(LibIconSys));
+    return 1;
+}
+
+/**
+ * @brief Free a block and clear the pointer to it, when there is one.
+ * @param block Pointer to the block.
+ */
+static inline void lib_delete_block(u8*& block)
+{
+    if (block)
+    {
+        delete block;
+        block = 0;
+    }
+}
+
+/**
+ * @brief Free an icon buffer and clear the pointer to it, when there is one.
+ * @param block Pointer to the buffer.
+ */
+static inline void lib_delete_block(LibIconSys*& block)
+{
+    if (block)
+    {
+        delete block;
+        block = 0;
+    }
+}
+
+/**
+ * @brief Free an array and clear the pointer to it, when there is one.
+ * @param block Pointer to the array.
+ */
+static inline void lib_delete_array(u8*& block)
+{
+    if (block)
+    {
+        delete[] block;
+        block = 0;
+    }
+}
+
+/** @brief Free the buffers and the memory card object, then queue this object for release. */
+void LibClass1721B0::destroy()
+{
+    func_00411D50(&values);
+
+    if (unk884)
+    {
+        lib_delete_block(unk884);
+    }
+
+    if (icon_sys)
+    {
+        lib_delete_block(icon_sys);
+    }
+
+    if (unk798)
+    {
+        lib_delete_array(unk798);
+    }
+
+    if (unk79c)
+    {
+        lib_delete_array(unk79c);
+    }
+
+    if (card)
+    {
+        lib_object_detach_owner(card);
+        card->destroy();
+    }
+
+    if (unk910)
+    {
+        lib_delete_array(unk910);
+    }
+
+    if (unk980)
+    {
+        lib_delete_array(unk980);
+    }
+
+    if (unk8d8)
+    {
+        lib_delete_block(unk8d8);
+    }
+
+    resident_enqueue_object(g_resident_release_queues, this);
+}
+
+/** @brief Free the flag storage and the value list, then detach. */
+LibClass1721B0::~LibClass1721B0()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411830);
 

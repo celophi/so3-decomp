@@ -527,9 +527,6 @@ u32 func_0040D760(ItemCreationAllocationRecord* record);
  */
 u32 func_00414130(const ItemCreationCategoryRecord* record);
 
-/** Return the fixed integer value 4. */
-s32 func_0040E3A0(void* object);
-
 /**
  * @brief libmpeg background callback; nothing to do.
  * @param mpeg libmpeg decoder; unused.

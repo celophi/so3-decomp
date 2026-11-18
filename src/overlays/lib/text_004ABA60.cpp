@@ -1,8 +1,9 @@
 #include "include_asm.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/vector_vu0.h"
 
@@ -49,22 +50,6 @@ enum
 
 extern "C" {
 
-typedef struct FourWordClearOwnertext_004AB8B0 { u32 words[4]; } FourWordClearOwnertext_004AB8B0;
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AB8B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA00);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA10);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA20);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA30);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA40);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA50);
-
 /** @brief Start unattached, with no data. */
 LibClass1734B0::LibClass1734B0()
 {
@@ -88,7 +73,7 @@ void LibClass177A80::complete_dma(u32 channel)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABAC0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004ABAC0);
 
 /**
  * @brief Return the record at the cursor and move past it; each record starts with its size as a halfword.
@@ -112,9 +97,9 @@ void LibClass177A80::submit_dma(u32 channel)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_slot1C__14LibClass177A80Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_slot1C__14LibClass177A80Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", set_borrowed_data__14LibClass177A80FPv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", set_borrowed_data__14LibClass177A80FPv);
 
 /** @brief Free the matrix and index arrays. */
 LibClass177A80::~LibClass177A80()
@@ -746,9 +731,9 @@ void LibPooledFloatQuaternionTrack::reset_state()
     LibFloatQuaternionTrackBase::reset_state();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", append_key__29LibPooledFloatQuaternionTrackFPCvPCvPCvf);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", append_key__29LibPooledFloatQuaternionTrackFPCvPCvPCvf);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", replace_key__29LibPooledFloatQuaternionTrackFifPCvPCvPCv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", replace_key__29LibPooledFloatQuaternionTrackFifPCvPCvPCv);
 
 /**
  * @brief Insert a keyframe, with zero for a missing extra value.
@@ -839,9 +824,9 @@ void LibFloatQuaternionTrackBase::set_before_mode(u32 mode)
     state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", get_end_delta__29LibPooledFloatQuaternionTrackCFPv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", get_end_delta__29LibPooledFloatQuaternionTrackCFPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", insert_entry__29LibPooledFloatQuaternionTrackFifPC10FieldVec4Aff);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", insert_entry__29LibPooledFloatQuaternionTrackFifPC10FieldVec4Aff);
 
 /**
  * @brief Read an indexed keyframe.
@@ -909,13 +894,13 @@ void LibPooledFloatQuaternionTrack::append_key_record(const void* record)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AD860);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004AD860);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ADC60);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004ADC60);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004AE5A0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004AE5A0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", sample__29LibPooledFloatQuaternionTrackCFf);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample__29LibPooledFloatQuaternionTrackCFf);
 
 /** One row of the quadratic fit's system: three coefficients and the right-hand side. */
 struct LibFitRow
@@ -952,7 +937,7 @@ LibMatrix34* func_004AEFF0(LibMatrix34* destination, const LibMatrix34* source)
     return destination;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", compute_tangents__23LibVectorCurveTrackBaseFv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", compute_tangents__23LibVectorCurveTrackBaseFv);
 
 /**
  * @brief Store the single keyframe and its tangents from plain floats.
@@ -2511,9 +2496,9 @@ LibPooledSlerpQuaternionTrack::~LibPooledSlerpQuaternionTrack()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", get_end_delta__29LibPooledSlerpQuaternionTrackCFPv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", get_end_delta__29LibPooledSlerpQuaternionTrackCFPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", sample__29LibPooledSlerpQuaternionTrackCFf);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample__29LibPooledSlerpQuaternionTrackCFf);
 
 /**
  * @brief Store the single keyframe from plain floats.
@@ -3413,7 +3398,7 @@ FieldVec4B LibSlerpQuaternionHistory::sample(float key)
     return sample_with_blend(key, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", sample__22LibLinearVectorHistoryFf);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample__22LibLinearVectorHistoryFf);
 
 /**
  * @brief Evaluate the history at a key, blending linearly between its two samples.
@@ -3583,7 +3568,28 @@ s32 func_004B3D70(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B3D80);
+/**
+ * @brief Clear the populated entries bound to a target, when the animation has entries.
+ * @param object Animation object.
+ * @param target Bound target to remove.
+ */
+extern "C" void func_004B3D80(LibAnimation* object, const void* target)
+{
+    if (object->entries)
+    {
+        s32 count = object->entry_count;
+
+        for (s32 index = 0; index < count; index++)
+        {
+            LibAnimationEntry14* entry = &object->entries[index];
+
+            if (entry->channel && entry->target == target)
+            {
+                entry->target = 0;
+            }
+        }
+    }
+}
 
 /**
  * @brief Read a target's translation, rotation and scale from its animation channels.
@@ -3712,7 +3718,7 @@ extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimati
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B43C0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004B43C0);
 
 /**
  * @brief Apply every eligible animation entry at a frame.
@@ -3781,9 +3787,9 @@ s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode)
     return status;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B46E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004B46E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004B4840);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004B4840);
 
 }
 

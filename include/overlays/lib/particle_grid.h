@@ -285,9 +285,19 @@ class LibGridBase
 
         virtual void func_slot18() = 0;
 
-        virtual void func_slot1c() = 0;
+        /**
+         * @brief Return a cell.
+         * @param index Cell index.
+         * @return The cell.
+         */
+        virtual LibClass174228* func_slot1c(s32 index) = 0;
 
-        virtual void func_slot20() = 0;
+        /**
+         * @brief Return a value for a cell that image models hand back with it.
+         * @param index Cell index.
+         * @return The value.
+         */
+        virtual s32 func_slot20(s32 index) = 0;
 
         virtual void func_slot24() = 0;
 
@@ -297,9 +307,17 @@ class LibGridBase
 
         virtual LibGridBitset* func_slot30() = 0;
 
-        virtual void func_slot34() = 0;
+        /**
+         * @brief Report a size the image models scale their packet buffers by.
+         * @return The size.
+         */
+        virtual s32 func_slot34() = 0;
 
-        virtual void func_slot38() = 0;
+        /**
+         * @brief Report a divisor the image models size their packet buffers with.
+         * @return The divisor.
+         */
+        virtual s32 func_slot38() = 0;
 
         virtual s32 func_slot3c();
 
@@ -311,9 +329,18 @@ class LibGridBase
 
         virtual void func_slot4c() = 0;
 
-        virtual void func_slot50() = 0;
+        /**
+         * @brief Take an image model's new image.
+         * @param image Image entry.
+         * @param pixels Data after the image entry's header.
+         */
+        virtual void func_slot50(void* image, void* pixels) = 0;
 
-        virtual void func_slot54() = 0;
+        /**
+         * @brief Called with one when an image model clears its image.
+         * @param value One.
+         */
+        virtual void func_slot54(s32 value) = 0;
 
         /**
          * @brief Reallocate the grid for a cell count and row width.
@@ -322,8 +349,74 @@ class LibGridBase
          */
         virtual void resize(s32 cells, s32 columns) = 0;
 
+        virtual void func_slot5c() = 0;
+
+        virtual void func_slot60() = 0;
+
+        virtual void func_slot64() = 0;
+
+        virtual void func_slot68() = 0;
+
+        virtual void func_slot6c() = 0;
+
+        virtual void func_slot70() = 0;
+
+        virtual void func_slot74() = 0;
+
+        virtual void func_slot78() = 0;
+
+        virtual void func_slot7c() = 0;
+
+        virtual void func_slot80() = 0;
+
+        virtual void func_slot84() = 0;
+
+        virtual void func_slot88() = 0;
+
+        virtual void func_slot8c() = 0;
+
+        virtual void func_slot90() = 0;
+
+        virtual void func_slot94() = 0;
+
+        virtual void func_slot98() = 0;
+
+        virtual void func_slot9c() = 0;
+
+        virtual void func_slota0() = 0;
+
+        virtual void func_slota4() = 0;
+
+        virtual void func_slota8() = 0;
+
+        virtual void func_slotac() = 0;
+
+        virtual void func_slotb0() = 0;
+
+        virtual void func_slotb4() = 0;
+
+        virtual void func_slotb8() = 0;
+
+        virtual void func_slotbc() = 0;
+
+        /**
+         * @brief Report whether the grid is ready for an image model to draw from.
+         * @return Nonzero when ready.
+         */
+        virtual s32 func_slotc0() = 0;
+
+        virtual void func_slotc4() = 0;
+
+        virtual void func_slotc8() = 0;
+
+        virtual void func_slotcc() = 0;
+
+        virtual void func_slotd0() = 0;
+
+        virtual void func_slotd4() = 0;
+
         u8 unk04;
-        s32 unk08;
+        s32 user_count;
         s32 cell_count;
         s32 columns;
 };

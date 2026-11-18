@@ -1,5 +1,6 @@
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "include_asm.h"
+#include "overlays/lib/text_0045AD10.h"
 #include "angle.h"
 #include "vu0.h"
 #include "clamp.h"
@@ -20,6 +21,7 @@
 #include "main/utility.h"
 #include "main/dma_queue.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/text_004DD440.h"
 
 /** LibShortBitTableHeader with a colour after the records offset; the words start at 0x10. */
 struct LibColorBitTableHeader
@@ -588,7 +590,11 @@ void LibClass1745F0::destroy()
     resident_enqueue_object(g_resident_release_queues, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AD80);
+/** @brief Destroy the captures, then the list object. */
+LibClass1745F0::~LibClass1745F0()
+{
+    release_captures();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AE70);
 
@@ -3310,9 +3316,55 @@ void lib_allocate_system_data(void)
 
 #pragma pop
 
-extern "C" s32 func_0045ABA0(void)
+/**
+ * @brief Report the list kind.
+ * @return Nine.
+ */
+s32 LibClass174D70::get_default_list_kind()
 {
     return 9;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045ABB0);
+/** @brief Copy the first display manager's camera transform (flag 0x1), fog (0x2) and view (0x4) to the others. */
+void LibClass174D70::update()
+{
+    LibCamera* source = static_cast<LibCamera*>(managers[0]->current_display);
+
+    if (source)
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            LibCamera* camera = static_cast<LibCamera*>(managers[i + 1]->current_display);
+
+            if (camera)
+            {
+                if (flags & 0x1)
+                {
+                    camera->set_translation_vector(&source->translation);
+                    camera->set_orientation(&source->orientation);
+                    camera->set_scale_vector(&source->scale);
+                }
+
+                if (flags & 0x2)
+                {
+                    float offset;
+                    float reciprocal_scale;
+
+                    camera->fog_color = source->fog_color;
+                    source->get_fog_coefficients(&offset, &reciprocal_scale);
+                    camera->set_fog_coefficients(offset, reciprocal_scale);
+                    camera->set_near_fog_fraction(source->near_fog_fraction);
+                    camera->set_far_fog_fraction(source->far_fog_fraction);
+                    camera->fog_enabled = source->fog_enabled;
+                }
+
+                if (flags & 0x4)
+                {
+                    camera->horizontal_fov = source->horizontal_fov;
+                    camera->pixel_aspect = source->pixel_aspect;
+                    camera->width_scale = source->width_scale;
+                }
+            }
+        }
+    }
+}

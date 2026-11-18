@@ -456,14 +456,69 @@ class LibClass173E70 : public LibClass173A40
         /** @brief Start with no storage. */
         LibClass173E70();
 
-        /** @brief Destroy the grid. */
+        /** @brief Release the cells, the bit set and the secondary elements. */
         virtual ~LibClass173E70();
 
+        /**
+         * @brief Report a selected cell.
+         * @return One.
+         */
+        virtual s32 func_slot3C();
+
+        /**
+         * @brief Copy another grid's size and resize this grid to match.
+         * @param source Grid to copy.
+         */
+        virtual void copy_settings(const LibClass173A40* source);
+
         void* unk14;
-        void* unk18;
-        void* unk1c;
+        LibClass173F48* unk18;
+        LibGridBitset* unk1c;
         void* unk20;
-        void* unk24;
+        LibClass173F38* unk24;
+};
+
+/** Partial grid with vtable D_173DA0 in main data. */
+class LibClass173DA0 : public LibClass173E70
+{
+    public:
+        virtual ~LibClass173DA0()
+        {
+        }
+
+        virtual void func_slot10();
+
+        virtual void func_slot14();
+
+        /**
+         * @brief Copy another grid's size and emission settings.
+         * @param source Grid to copy.
+         */
+        virtual void copy_settings(const LibClass173A40* source);
+
+        float unk28;
+        u32 unk2c;
+        float unk30;
+        float unk34;
+        float unk38;
+        float unk3c;
+        u8 unk40[4];
+        u32 unk44;
+        LibClass173990* unk48;
+        u8 unk4c;
+        u8 unk4d;
+        u8 unk4e;
+        u8 unk4f;
+        u32 unk50;
+        u8 unk54;
+        u8 unk55;
+        u8 unk56;
+        u8 unk57;
+        u8 unk58[8];
+        LibVector4 unk60[4];
+        u32 unka0;
+        u32 unka4;
+        u8 unka8[8];
 };
 
 /** Partial grid with vtable D_174240 in main data. */
@@ -719,9 +774,6 @@ float func_004A22B0(void* object);
 /** Return the fixed integer value 1. */
 s32 func_004A08B0(void* object);
 
-/** Return the fixed integer value 11. */
-s32 func_004A8FF0(void* object);
-
 /** Return the fixed value 0. */
 s32 func_004A0C50(void* object);
 
@@ -735,18 +787,8 @@ void func_004A0C40(void* object);
 
 void func_004A0C60(void* object);
 
-void func_004A9220(void* object);
-
-void func_004A9230(void* object);
-
 /** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
 void func_004A06B0(void* object, const void* source);
-
-/**
- * @brief Queue the object's receiver for deferred destruction.
- * @param object Object containing the receiver at offset 0x14, or null.
- */
-void lib_queue_object_release(void* object);
 
 #ifdef __cplusplus
 }

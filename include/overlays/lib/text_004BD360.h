@@ -469,7 +469,7 @@ struct LibTextWidget : public LibDrawWidget
 
     LibListObject* unkfc;
     void* unk100;
-    u8 unk104[4];
+    s32 glyph_count;
     u32 source;
     u32 key;
     u8 flag;
@@ -1599,6 +1599,13 @@ void lib_animation_clear_targets_by_kind(LibAnimation* object, u8 kind);
  * @param target Bound target to remove.
  */
 void lib_animation_clear_matching_target(LibAnimation* object, const void* target);
+
+/**
+ * @brief Clear the populated entries bound to a target, when the animation has entries.
+ * @param object Animation object.
+ * @param target Bound target to remove.
+ */
+void func_004B3D80(LibAnimation* object, const void* target);
 
 /**
  * @brief Replace the animation data with a decoded resource buffer.

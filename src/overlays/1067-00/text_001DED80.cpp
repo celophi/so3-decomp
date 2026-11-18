@@ -10,7 +10,7 @@
 #include "overlays/1067-00/text_002DBC50.h"
 #include "overlays/1067-00/text_0021FB80.h"
 #include "overlays/1067-00/text_0026EE10.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 
 
 bool FieldClass154C10::func_00204420()

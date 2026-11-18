@@ -56,13 +56,8 @@ public:
     static void operator delete[](void* object, s32 heap);
 };
 
-/** Partial object an emitter draws from; it is destroyed when its last emitter lets go. */
-class LibEmitterSource : public LibListObject
-{
-public:
-    u8 unk14[0xABC];
-    s32 user_count;
-};
+class LibObject1751A0;
+struct LibClass173490Entry;
 
 /** 0x4A0-byte emitter whose remaining resource and grid settings are unrecovered. */
 class LibClass173990 : public LibTransform, public LibClass173A28
@@ -110,8 +105,12 @@ public:
      */
     virtual void copy_state(const LibClass173990* other);
 
-    u8 unk214[0x1D0];
-    LibEmitterSource* source;
+    /** @brief Stop using the source image model, destroying it when this was its last user. */
+    void release_source();
+
+    u8 unk214[0x1CC];
+    LibClass173490Entry* entries;
+    LibObject1751A0* source;
     u8 unk3e8[0x1C];
     float unk404;
     float unk408;
@@ -120,14 +119,16 @@ public:
     float unk414;
     float unk418;
     float unk41c;
-    u8 unk420[8];
+    u8 unk420[4];
+    s32 entry_count;
     u32 unk428;
     u8 unk42c[0x65];
     u8 unk491;
     u8 unk492;
     u8 unk493;
     u8 unk494[7];
-    u8 unk49b_0_5 : 6;
+    u8 unk49b_0 : 1;
+    u8 unk49b_1_5 : 5;
     u8 unk49b_6 : 1;
     u8 unk49b_7 : 1;
     u8 unk49c_0 : 1;

@@ -428,6 +428,12 @@ public:
         lib_object_detach_owner(this);
     }
 
+    /** @brief Detach from the owner. */
+    void detach_owner()
+    {
+        lib_object_detach_owner(this);
+    }
+
     /**
      * @brief Report the list kind used when registration requests the default.
      * @return Three in the base implementation.

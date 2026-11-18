@@ -3175,7 +3175,7 @@ void* func_00448690(void* value)
     return value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004486A0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", release_textures__17LibRenderResourceFv);
 
 s32 func_00448900(void* object)
 {

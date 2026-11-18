@@ -20,6 +20,36 @@ typedef struct LibTextExtent LibTextExtent;
 typedef struct ItemCreationClass175030 LibClass175030;
 #endif
 #ifdef __cplusplus
+class LibDisplayManager;
+
+/** List object that copies its first display manager's camera state to the others, with vtable D_174D70 in main data. */
+class LibClass174D70 : public LibListObject
+{
+public:
+    /** @brief Start with no objects and flag 0x1 set. */
+    LibClass174D70();
+
+    /** @brief Free the buffer and detach. */
+    virtual ~LibClass174D70();
+
+    /**
+     * @brief Report the list kind.
+     * @return Nine.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Copy the first display manager's camera transform (flag 0x1), fog (0x2) and view (0x4) to the others. */
+    virtual void update();
+
+    u8 count;
+    u8 flags;
+    u8 unk16[2];
+    LibDisplayManager* managers[9];
+    u8* unk3c;
+};
+#endif
+
+#ifdef __cplusplus
 /** Managed three-word DMA storage, initialized by clearing its allocation. */
 class LibStorageBlock0C
 {
@@ -738,7 +768,6 @@ typedef struct LibShapeTestResult1C
 
 #ifdef __cplusplus
 extern "C" {
-void func_0046A3B0(void* receiver);
 #endif
 
 /**
@@ -1036,12 +1065,6 @@ s32 func_0045F5A0(void* object, void* other);
  */
 s32 func_0045EBD0(void* first, void* second);
 
-/** Return the fixed integer value 7. */
-s32 func_00468360(void* object);
-
-/** Return the fixed value 0. */
-s32 func_00468370(void* object);
-
 void func_0045F600(void* object);
 
 void func_0045F610(void* object);
@@ -1073,17 +1096,12 @@ void func_004619D0(void* object);
 void func_004619E0(void* object);
 
 
-/** Forward the receiver to lib_finish_packet. */
-void func_0046A3F0(void* object);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#ifdef __cplusplus
-extern "C" s32 func_0046A410(void* object);
-#endif
 
 #ifdef __cplusplus
 extern "C"

@@ -63,7 +63,7 @@ segments:
       - [0x22D40, cpp, text_004095C0]
       - [0x331F0, cpp, text_00419A70]
       - [0x43280, cpp, text_00429B00]
-      - [0x540A0, c, text_0043A920]
+      - [0x55480, cpp, text_0043BD00]
       - [0x5B390, cpp, text_00441C10]
       - [0x5B3C0, cpp, text_00441C40]
       - [0x64360, cpp, text_0044ABE0]
@@ -75,7 +75,7 @@ segments:
       - [0xA4A78, pad, text_0047AE20_end_align]
       - [0xA4A80, cpp, text_0048B300]
       - [0xB4FA0, cpp, text_0049B820]
-      - [0xC5030, cpp, text_004AB8B0]
+      - [0xC51E0, cpp, text_004ABA60]
       - [0xD6AE0, cpp, text_004BD360]
   - name: text_tail
     type: code
@@ -95,6 +95,14 @@ segments:
           - {function: func_00414130, offset: 0x0, size: 0x20}
         linker_section_order: .rodata
       - [0x11EED0, rodatabin, rodata_00505750]
+      - start: 0x11F0C0
+        type: .rodata
+        name: text_00429B00
+        linker_section: .rodata.00505940
+        rodata_anchors:
+          - {function: func_00431AB0, offset: 0x0, size: 0x1C}
+        linker_section_order: .rodata
+      - [0x11F0DC, rodatabin, rodata_0050595C]
       - start: 0x11F2B0
         type: .rodata
         name: text_0044ABE0
@@ -103,6 +111,14 @@ segments:
           - {function: func_00458700, offset: 0x0, size: 0x2C}
         linker_section_order: .rodata
       - [0x11F2DC, rodatabin, rodata_00505B5C]
+      - start: 0x11F4D0
+        type: .rodata
+        name: text_0045AD10
+        linker_section: .rodata.00505D50
+        rodata_anchors:
+          - {function: set_primitive__15LibObject1751A0FiUcif, offset: 0x0, size: 0x1C}
+        linker_section_order: .rodata
+      - [0x11F4EC, rodatabin, rodata_00505D6C]
       - start: 0x120A70
         type: .rodata
         name: text_004CD3A0

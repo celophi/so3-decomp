@@ -1,11 +1,15 @@
 #include "include_asm.h"
 #include "vu0.h"
+#include "clamp.h"
 #include "overlays/lib/blend_transform.h"
 #include "overlays/lib/model.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_00429B00.h"
+#include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/tracks.h"
 #include "overlays/lib/emission.h"
+#include "overlays/lib/text_0049B820.h"
+#include "overlays/lib/image_model.h"
 #include "overlays/lib/emission_vu0.h"
 #include "overlays/lib/light_vu0.h"
 #include "overlays/lib/memory_card.h"
@@ -21,6 +25,13 @@
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_0013CD50.h"
 #include "main/sound_set.h"
+#include "sdk/main/libc_guess_0013C948.h"
+#include "sdk/main/libc_0013C6D0.h"
+#include "overlays/lib/text_0044ABE0.h"
+#include "main/entry_table.h"
+#include "main/system.h"
+#include "main/utility.h"
+#include "main/resource_queue.h"
 
 /**
  * LibModel of type 0x120 with three owned child objects and its own update list, with vtable D_173380 in main data.
@@ -390,7 +401,8 @@ extern "C" u32 D_001B65B8;
  */
 static inline u32 lib_light_random()
 {
-    return D_001B65B8 = 1664525L * D_001B65B8 + 1013904223L;
+    D_001B65B8 = 1664525L * D_001B65B8 + 1013904223L;
+    return D_001B65B8;
 }
 
 /**
@@ -452,9 +464,19 @@ extern s16* D_004ECCDC[];
 /** Sound number tables for func_0042F0D0, four numbers each; entries 1 to 10 are used. */
 extern s16* D_004ECD0C[];
 
-extern "C" {
+/** Sound number tables for func_0042EBE0, two sets of six numbers; entries 1 to 10 are used. */
+extern s16* D_004ED0BC[];
 
-void func_004486A0(void* object);
+/** Sound number tables for func_0042EF30, three bands of ten numbers; entries 1 to 10 are used. */
+extern s16* D_004ECFBC[];
+
+/** Sound number tables for func_0042F420, four groups of three numbers; entries 1 to 10 are used. */
+extern s16 (*D_004ECB3C[])[3];
+
+/** Sound number tables for func_0042F250, three numbers for each of three levels; entries 1 to 10 are used. */
+extern s16* D_004ECCAC[];
+
+extern "C" {
 
 typedef struct WordSetterOwnertext_00429B00
 {
@@ -1121,7 +1143,7 @@ void LibClass173380::set_default_draw_bucket()
     draw_bucket = unk83c;
 }
 
-extern "C" void func_0042B000(LibClass173380* model);
+extern "C" void func_0042B000(LibModel* model);
 
 /** @brief Build LibModel's packets, then this model's own unless it was built from another one. */
 void LibClass173380::build_packets()
@@ -1134,15 +1156,81 @@ void LibClass173380::build_packets()
     }
 }
 
+/**
+ * @brief Return the part a mesh record draws with: its slot in the model's part table, or the record's own copy.
+ * @param model Model.
+ * @param record Mesh part record.
+ * @return The part.
+ */
+static inline LibModelPart* lib_model_record_part(LibModel* model, LibMeshPartRecord* record)
+{
+    LibModelPart* part = &record->part;
+
+    if (record->part.slot != 0)
+    {
+        part = &static_cast<LibModelPart*>(model->parts)[record->part.slot - 1];
+    }
+
+    return part;
+}
+
 extern "C" {
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042AEC0);
+/**
+ * @brief Make the model's flagged parts draw textured triangle strips with three registers, blended and fogged as
+ *        the model is.
+ * @param model Model.
+ */
+void func_0042AEC0(LibModel* model)
+{
+    func_004D5C10(model->resource);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource));
+    s32 count = mesh->part_count;
+    u32 primitive = (model->fog_enabled ? GS_PRIM_FGE : 0) | 0x4C;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042B000);
+    for (s32 i = 0; i < count; i++)
+    {
+        LibMeshPartRecord* record = static_cast<LibMeshPartRecord*>(func_004D5AC0(model->resource));
+
+        if (record->unk14 & 1)
+        {
+            LibModelPart* part = lib_model_record_part(model, record);
+            part->first_tag_high = (primitive << 15) | (u32)((GIF_TAG_NREG(3) | GIF_TAG_PRE) >> 32);
+            part->first_registers = 0x412;
+        }
+    }
+
+    FlushCache(0);
+}
+
+/**
+ * @brief Make the model's flagged parts draw textured triangle strips with four registers.
+ * @param model Model.
+ */
+void func_0042B000(LibModel* model)
+{
+    func_004D5C10(model->resource);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource));
+    s32 count = mesh->part_count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibMeshPartRecord* record = static_cast<LibMeshPartRecord*>(func_004D5AC0(model->resource));
+
+        if (record->unk14 & 1)
+        {
+            LibModelPart* part = lib_model_record_part(model, record);
+            part->first_tag_high = (u32)((GIF_TAG_NREG(4) | GIF_TAG_PRIM(0x14) | GIF_TAG_PRE) >> 32);
+            part->first_registers = 0x42EE;
+        }
+    }
+
+    FlushCache(0);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042B110);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042C450);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", render__14LibClass173380Fv);
 
 }
 
@@ -1386,9 +1474,147 @@ s32 func_0042EB50(ResidentSoundEmitter* emitter, s32 table)
     return resident_sound_bank_set_play_voice(D_001B6524, numbers[resident_random_below(4)], emitter, 0, 0x7F, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EBE0);
+/**
+ * @brief Play a voice line from one of two sets by level.
+ * @param emitter Object the sound follows.
+ * @param numbers Sound number table.
+ * @param first Index of the first number to pick from; one of it and the next is picked at random.
+ * @return Slot identifier of the sound.
+ */
+static inline s32 lib_play_level_voice(ResidentSoundEmitter* emitter, const s16* numbers, s32 first)
+{
+    return resident_sound_bank_set_play_voice(D_001B6524, numbers[first + resident_random_below(2)], emitter, 0, 0x7F, 0);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042EF30);
+/**
+ * @brief Sometimes play a voice line chosen by a value from the system settings grid: never below 10, more often and
+ *        at a higher level (one per 8 above 10, up to 4) as it grows; some entries use the second set.
+ * @param emitter Object the sound follows.
+ * @param table Table index and grid column, 1 to 10.
+ * @param entry Grid row, 1 to 10.
+ * @return Slot identifier of the sound, or 0 when nothing plays.
+ */
+s32 func_0042EBE0(ResidentSoundEmitter* emitter, s32 table, s32 entry)
+{
+    if (table <= 0 || table > 10)
+    {
+        return 0;
+    }
+
+    if (entry <= 0 || entry > 10)
+    {
+        return 0;
+    }
+
+    if (!resident_poll_resource_queue(g_resource_queue))
+    {
+        return 0;
+    }
+
+    LibSystemSettings* settings =
+        reinterpret_cast<LibSystemSettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
+    s32 value = func_00457980(settings, entry, table);
+
+    if (value < 10)
+    {
+        return 0;
+    }
+
+    if (resident_rand() > (u32)(value * 90))
+    {
+        return 0;
+    }
+
+    s32 level = (value - 10) / 8;
+
+    if (level > 4)
+    {
+        level = 4;
+    }
+
+    s16* numbers = D_004ED0BC[table];
+
+    switch (table)
+    {
+    case 1:
+        if (entry == 5)
+        {
+            return lib_play_level_voice(emitter, numbers, level + 6);
+        }
+
+        return lib_play_level_voice(emitter, numbers, level);
+    case 2:
+        if (entry != 1 && entry != 8 && entry != 7)
+        {
+            return lib_play_level_voice(emitter, numbers, level + 6);
+        }
+
+        return lib_play_level_voice(emitter, numbers, level);
+    case 4:
+        if (entry == 2 || entry == 3 || entry == 5 || entry == 8)
+        {
+            return lib_play_level_voice(emitter, numbers, level + 6);
+        }
+
+        return lib_play_level_voice(emitter, numbers, level);
+    default:
+        return lib_play_level_voice(emitter, numbers, level);
+    }
+}
+
+/**
+ * @brief Sometimes play a voice line chosen by a value from the system settings grid: never below 10, more often and
+ *        from a higher band as the value grows (bands from 30 and 45).
+ * @param emitter Object the sound follows.
+ * @param table Table index and grid column, 1 to 10.
+ * @param entry Number in the band and grid row, 1 to 10.
+ * @return Slot identifier of the sound, or 0 when nothing plays.
+ */
+s32 func_0042EF30(ResidentSoundEmitter* emitter, s32 table, s32 entry)
+{
+    if (table <= 0 || table > 10)
+    {
+        return 0;
+    }
+
+    if (entry <= 0 || entry > 10)
+    {
+        return 0;
+    }
+
+    if (!resident_poll_resource_queue(g_resource_queue))
+    {
+        return 0;
+    }
+
+    LibSystemSettings* settings =
+        reinterpret_cast<LibSystemSettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), 1));
+    s32 value = func_00457980(settings, entry, table);
+
+    if (value < 10)
+    {
+        return 0;
+    }
+
+    if (resident_rand() > (u32)(value * 80))
+    {
+        return 0;
+    }
+
+    s16* numbers = D_004ECFBC[table];
+
+    if (value < 30)
+    {
+        return resident_sound_bank_set_play_voice(D_001B6524, numbers[entry - 1], emitter, 0, 0x7F, 0);
+    }
+
+    if (value < 45)
+    {
+        return resident_sound_bank_set_play_voice(D_001B6524, numbers[entry + 9], emitter, 0, 0x7F, 0);
+    }
+
+    return resident_sound_bank_set_play_voice(D_001B6524, numbers[entry + 19], emitter, 0, 0x7F, 0);
+}
 
 /**
  * @brief Play one of four sounds from a second set of tables at random, following an emitter.
@@ -1451,7 +1677,99 @@ s32 func_0042F210(ResidentSoundEmitter* emitter, u8* buffer, s32 owns_buffer)
     return resident_sound_bank_set_play_data(D_001B6524, buffer, emitter, 0, 0x7F, 0, owns_buffer);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F250);
+/**
+ * @brief Test whether exactly one of the sound bank set's banks is loaded.
+ * @return Nonzero when exactly one is.
+ */
+static inline u8 lib_one_sound_bank_loaded()
+{
+    ResidentSoundBankSet* set = D_001B6524;
+    s32 loaded = 0;
+
+    for (s32 i = 0; i < RESIDENT_SOUND_BANK_SLOT_COUNT; i++)
+    {
+        if (set->banks[i])
+        {
+            loaded++;
+        }
+    }
+
+    if (loaded == 1)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Pick a sound number from a table by level: each of six conditions adds a half level, up to level two.
+ * @param table Table index, 1 to 10.
+ * @param amount Adds a half level from 7200 and another from 28800.
+ * @param value Adds a half level above limit, and another above four times limit.
+ * @param limit See value.
+ * @param count Adds a half level above zero and another from four.
+ * @return Sound number, or 0 for a bad index.
+ */
+extern "C" s32 func_0042F250(s32 table, s32 amount, s32 value, s32 limit, s32 count)
+{
+    if (table <= 0 || table > 10)
+    {
+        return 0;
+    }
+
+    s32 level = 0;
+
+    if (amount >= 7200)
+    {
+        level++;
+    }
+
+    if (amount >= 28800)
+    {
+        level++;
+    }
+
+    if (limit < value)
+    {
+        level++;
+    }
+
+    if (limit * 4 < value)
+    {
+        level++;
+    }
+
+    if (count > 0)
+    {
+        level++;
+    }
+
+    if (count > 3)
+    {
+        level++;
+    }
+
+    level = clamp_high(level >> 1, 2);
+    s16* numbers = D_004ECCAC[table];
+
+    if (table == 1 && level == 1)
+    {
+        if (lib_one_sound_bank_loaded())
+        {
+            s32 pick = resident_random_below(3);
+
+            if (pick == 0)
+            {
+                return 0x13CC;
+            }
+
+            return numbers[3 + pick];
+        }
+    }
+
+    return numbers[level * 3 + resident_random_below(3)];
+}
 
 /**
  * @brief Play sound data following an emitter, when the sound bank set is up.
@@ -1470,7 +1788,59 @@ s32 func_0042F3E0(ResidentSoundEmitter* emitter, u8* buffer, s32 owns_buffer)
     return resident_sound_bank_set_play_data(D_001B6524, buffer, emitter, 0, 0x7F, 0, owns_buffer);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F420);
+/**
+ * @brief Pick a sound number from a group: the first, or one of the other two at random.
+ * @param group Group of three sound numbers.
+ * @param random Nonzero to pick one of the other two at random.
+ * @return Sound number.
+ */
+static inline s32 lib_pick_sound_number(const s16* group, s32 random)
+{
+    if (random == 0)
+    {
+        return group[0];
+    }
+
+    const s16* alternatives = &group[1];
+
+    return alternatives[resident_random_below(2)];
+}
+
+/**
+ * @brief Pick a sound number from a table by comparing two values.
+ * @param table Table index, 1 to 10.
+ * @param first First value.
+ * @param second Second value.
+ * @param random Nonzero to pick one of a group's other two numbers at random.
+ * @param special Nonzero to use the fourth group regardless of the values.
+ * @return Sound number, or 0 for a bad index.
+ */
+extern "C" s32 func_0042F420(s32 table, s32 first, s32 second, s32 random, s32 special)
+{
+    if (table <= 0 || table > 10)
+    {
+        return 0;
+    }
+
+    s16 (*groups)[3] = D_004ECB3C[table];
+
+    if (special)
+    {
+        return lib_pick_sound_number(groups[3], random);
+    }
+
+    if (second + 10 < first)
+    {
+        return lib_pick_sound_number(groups[0], random);
+    }
+
+    if (first + 10 < second)
+    {
+        return lib_pick_sound_number(groups[2], random);
+    }
+
+    return lib_pick_sound_number(groups[1], random);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F550);
 
@@ -1495,13 +1865,128 @@ s32 func_00430AA0(ResidentSoundEmitter* emitter, s32 slot)
     return resident_sound_bank_set_play(D_001B6524, slot, 9, emitter, 0, 0x7F, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00430B00);
+/**
+ * @brief Play a sound slot for a drop from one value to another, picked by how far it fell against a maximum.
+ * @param emitter Object the sound follows.
+ * @param bank Bank argument passed on to the sound bank set.
+ * @param current Value after the drop.
+ * @param previous Value before the drop; a rise plays nothing.
+ * @param maximum Maximum the drop is measured against.
+ * @return Slot identifier of the sound, or 0 when nothing plays.
+ */
+s32 func_00430B00(ResidentSoundEmitter* emitter, s32 bank, s32 current, s32 previous, s32 maximum)
+{
+    if (D_001B6524 == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00430CA0);
+    if (D_001B6524->loading != 0)
+    {
+        return 0;
+    }
+
+    s32 drop = previous - current;
+
+    if (drop < 0)
+    {
+        return 0;
+    }
+
+    if ((previous >= maximum >> 2 && drop < maximum >> 2) || (previous >= maximum >> 3 && drop < maximum >> 3))
+    {
+        return resident_sound_bank_set_play(D_001B6524, bank, 8, emitter, 0, 0x7F, 0);
+    }
+
+    if (current > maximum >> 4)
+    {
+        if (resident_rand() < 20000)
+        {
+            return resident_sound_bank_set_play(D_001B6524, bank, 7, emitter, 0, 0x7F, 0);
+        }
+
+        return resident_sound_bank_set_play(D_001B6524, bank, 6, emitter, 0, 0x7F, 0);
+    }
+
+    if (resident_rand() < 10000)
+    {
+        return resident_sound_bank_set_play(D_001B6524, bank, 6, emitter, 0, 0x7F, 0);
+    }
+
+    return resident_sound_bank_set_play(D_001B6524, bank, 5, emitter, 0, 0x7F, 0);
+}
+
+/**
+ * @brief Play a sound slot by kind: kinds 0 and 1 pick one of two slots at random, any other kind slot 4.
+ * @param emitter Object the sound follows.
+ * @param bank Bank argument passed on to the sound bank set.
+ * @param kind Sound kind.
+ * @return Slot identifier of the sound, or 0 when nothing plays.
+ */
+s32 func_00430CA0(ResidentSoundEmitter* emitter, s32 bank, s32 kind)
+{
+    if (D_001B6524 == 0)
+    {
+        return 0;
+    }
+
+    if (D_001B6524->loading != 0)
+    {
+        return 0;
+    }
+
+    switch (kind)
+    {
+    case 0:
+        if (resident_rand() < 0x2000)
+        {
+            return resident_sound_bank_set_play(D_001B6524, bank, 1, emitter, 0, 0x7F, 0);
+        }
+
+        return resident_sound_bank_set_play(D_001B6524, bank, 0, emitter, 0, 0x7F, 0);
+    case 1:
+        if (resident_rand() < 0x2000)
+        {
+            return resident_sound_bank_set_play(D_001B6524, bank, 3, emitter, 0, 0x7F, 0);
+        }
+
+        return resident_sound_bank_set_play(D_001B6524, bank, 2, emitter, 0, 0x7F, 0);
+    default:
+        return resident_sound_bank_set_play(D_001B6524, bank, 4, emitter, 0, 0x7F, 0);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00430E00);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431020);
+/** Partial object with a rectangle in its local xz plane, given by its half extents. */
+typedef struct LibRectangle431020
+{
+    u8 unk00[0x210];
+    float half_width;
+    float half_depth;
+    u8 unk218[8];
+    LibVector4 corners[4];
+} LibRectangle431020;
+
+/**
+ * @brief Work out the four corners of the rectangle from its half extents, in the xz plane at y zero.
+ * @param object Rectangle; the corners' w is left alone.
+ */
+extern "C" void func_00431020(LibRectangle431020* object)
+{
+    object->corners[0].x = -object->half_width;
+    object->corners[0].y = 0.0f;
+    object->corners[0].z = -object->half_depth;
+    object->corners[1].x = object->half_width;
+    object->corners[1].y = 0.0f;
+    object->corners[1].z = -object->half_depth;
+    object->corners[2].x = object->half_width;
+    object->corners[2].y = 0.0f;
+    object->corners[2].z = object->half_depth;
+    object->corners[3].x = -object->half_width;
+    object->corners[3].y = 0.0f;
+    object->corners[3].z = object->half_depth;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431090);
 
@@ -1577,11 +2062,278 @@ s32 func_004317B0(LibMemoryCard* card, s32 value)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004317F0);
+/** Separator between a card directory and a file name. */
+extern "C" char D_00505930[];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431AB0);
+/**
+ * @brief Move a slot to its next step when its card command succeeded, or to status 0x10 when it failed.
+ * @param record Slot record.
+ */
+static inline void lib_card_step(LibMemoryCardSlot* record)
+{
+    if (record->result >= 0)
+    {
+        record->status++;
+    }
+    else
+    {
+        record->status = 0x10;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", update__13LibMemoryCardFv);
+/**
+ * @brief Advance a slot's file read: open, seek, read, close, then the next file of the request.
+ * @param card Memory card object; a pending result index (unk54) receives the read size.
+ * @param record Slot record to advance.
+ */
+extern "C" void func_004317F0(LibMemoryCard* card, LibMemoryCardSlot* record)
+{
+    LibCardFileBuffer* file = &record->request->files[record->unk44];
+    s32 config = record->config;
+    s32 slot = config & 0xF;
+
+    switch (record->status & 0xF)
+    {
+    case 0:
+        memset_guess(record->name, 0, sizeof(record->name));
+        strcpy_guess(record->name, record->request->directory);
+        strcat(record->name, D_00505930);
+        strcat(record->name, file->name);
+        record->result = sceMcOpen(config >> 4, slot, record->name, 1);
+        lib_card_step(record);
+        break;
+    case 1:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->result >= 0)
+            {
+                record->fd = record->result;
+                record->result = sceMcSeek(record->fd, file->offset, 0);
+            }
+
+            lib_card_step(record);
+        }
+
+        break;
+    case 2:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->result >= 0)
+            {
+                record->result = sceMcRead(record->fd, file->data, file->size);
+            }
+
+            lib_card_step(record);
+        }
+
+        break;
+    case 3:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->result >= 0)
+            {
+                if (card->unk54 > 0)
+                {
+                    card->unk2c[card->unk54] = record->result;
+                    card->unk54 = 0;
+                }
+
+                record->result = sceMcClose(record->fd);
+            }
+
+            lib_card_step(record);
+        }
+
+        break;
+    case 4:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->unk44 == record->request->file_count - 1)
+            {
+                record->status = 0x18;
+            }
+            else
+            {
+                record->unk44++;
+                record->status = 0x30;
+            }
+        }
+
+        break;
+    }
+}
+
+/**
+ * @brief Advance a slot's file write: enter (or make) the request's directory, then open, seek, write, close each
+ *        file; a file without data only has its size reserved by seeking.
+ * @param card Memory card object; unk24 is the open mode, unk28 is set when the request finishes.
+ * @param record Slot record to advance.
+ */
+extern "C" void func_00431AB0(LibMemoryCard* card, LibMemoryCardSlot* record)
+{
+    LibCardFileBuffer* file = &record->request->files[record->unk44];
+    s32 config = record->config;
+    s32 slot = config & 0xF;
+
+    switch (record->status & 0xF)
+    {
+    case 0:
+        if (sceMcChdir(config >> 4, slot, record->request->directory, 0) == 0)
+        {
+            record->status++;
+        }
+
+        break;
+    case 1:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->result >= 0)
+            {
+                record->result = sceMcChdir(config >> 4, slot, D_00505930, 0);
+            }
+            else if (record->result == -4)
+            {
+                record->result = sceMcMkdir(config >> 4, slot, record->request->directory);
+            }
+
+            lib_card_step(record);
+        }
+
+        break;
+    case 2:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->result >= 0)
+            {
+                memset_guess(record->name, 0, sizeof(record->name));
+                strcpy_guess(record->name, record->request->directory);
+                strcat(record->name, D_00505930);
+                strcat(record->name, file->name);
+                record->result = sceMcOpen(config >> 4, slot, record->name, card->unk24);
+            }
+
+            lib_card_step(record);
+        }
+
+        break;
+    case 3:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->result >= 0)
+            {
+                record->fd = record->result;
+                record->result = sceMcSeek(record->result, file->offset, 0);
+            }
+
+            lib_card_step(record);
+        }
+
+        break;
+    case 4:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->result >= 0)
+            {
+                if (file->data == 0)
+                {
+                    record->result = sceMcSeek(record->fd, file->size, 0);
+                }
+                else
+                {
+                    record->result = sceMcWrite(record->fd, file->data, file->size);
+                }
+            }
+
+            lib_card_step(record);
+        }
+
+        break;
+    case 5:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->result >= 0)
+            {
+                record->result = sceMcClose(record->fd);
+            }
+
+            lib_card_step(record);
+        }
+
+        break;
+    case 6:
+        if (sceMcSync(1, 0, &record->result))
+        {
+            if (record->unk44 == record->request->file_count - 1)
+            {
+                record->status = 0x18;
+                card->unk28 = 1;
+            }
+            else
+            {
+                record->unk44++;
+                record->status = 0x42;
+            }
+        }
+
+        break;
+    }
+}
+
+/**
+ * @brief Advance a slot's file read.
+ * @param card Memory card object.
+ * @param record Slot record to advance.
+ */
+extern "C" void func_004317F0(LibMemoryCard* card, LibMemoryCardSlot* record);
+
+/**
+ * @brief Advance a slot's card check.
+ * @param card Memory card object.
+ * @param record Slot record to advance.
+ */
+extern "C" void func_00432090(LibMemoryCard* card, LibMemoryCardSlot* record);
+
+/** @brief Advance the current slot's command; a card command that fails to start sets the slot's status to 0x18. */
+void LibMemoryCard::update()
+{
+    LibMemoryCardSlot* record = &slots[unk1e];
+    s32 slot = record->config & 0xF;
+
+    switch (record->status & ~0xF)
+    {
+    case 0x10:
+        func_00432090(this, record);
+        break;
+    case 0x20:
+        if (sceMcFormat(record->config >> 4, slot) == 0)
+        {
+            record->status = 0x18;
+        }
+
+        break;
+    case 0x30:
+        func_004317F0(this, record);
+        break;
+    case 0x40:
+        func_00431AB0(this, record);
+        break;
+    case 0x60:
+        if (sceMcGetDir(record->config >> 4, slot, record->name, record->unk7C, record->unk78,
+                        reinterpret_cast<void*>((reinterpret_cast<u32>(record->buffer) + 0x3F) & ~0x3F)) == 0)
+        {
+            record->status = 0x18;
+        }
+
+        break;
+    case 0xC0:
+        if (sceMcSetFileInfo(record->config >> 4, slot, record->name, record->buffer, record->unk78) == 0)
+        {
+            record->status = 0x18;
+        }
+
+        break;
+    }
+}
 
 /**
  * @brief Find a slot that can start a file operation: the card library is set up, the slot is open, its card is
@@ -1992,7 +2744,10 @@ LibMemoryCard::LibMemoryCard()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004329C0);
+/** @brief Delete the semaphore, then the thread. */
+LibClass173580::~LibClass173580()
+{
+}
 
 /** @brief Mark the packet being stored as done and finish the capture. */
 void LibImageCapture::on_store_complete()
@@ -2001,7 +2756,7 @@ void LibImageCapture::on_store_complete()
     lib_finish_packet(this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00432A80);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", run__14LibClass173580Fv);
 
 /**
  * @brief Let the store thread know the store packet's transfer is over.
@@ -2153,9 +2908,127 @@ void func_00433730(const void* matrix, const void* vector, void* result)
     vu0_dot_rows_vf15(result);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433790);
+/**
+ * @brief Free a C library allocation when there is one.
+ * @param block Allocation, or null.
+ */
+static inline void lib_free_block(void* block)
+{
+    if (block)
+    {
+        free_guess(block);
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433880);
+/**
+ * @brief Allocate the largest block the C library heap can give, leaving room for a reserve.
+ *
+ * Halves in on the largest allocation size first. Room is also left after the block below 0x1EFD001; when the block
+ * would end past that, it is allocated again 0x1400 bytes smaller.
+ * @param reserve Bytes to leave free, besides 0x20.
+ * @return The block, or null when the reserve doesn't fit.
+ */
+extern "C" void* func_00433790(s32 reserve)
+{
+    s32 step = 0x2000000;
+    s32 size = step;
+
+    do
+    {
+        void* block = malloc_guess(size);
+
+        if (block == 0)
+        {
+            step /= 2;
+            size -= step;
+        }
+        else
+        {
+            lib_free_block(block);
+            step /= 2;
+            size += step;
+        }
+    } while (step > 2);
+
+    size -= reserve + 0x20;
+
+    if (size < 0)
+    {
+        return 0;
+    }
+
+    void* block = malloc_guess(size);
+
+    if ((u32)(reserve + ((u32)block + size)) > 0x1EFD000)
+    {
+        lib_free_block(block);
+        block = malloc_guess(size - 0x1400);
+    }
+
+    return block;
+}
+
+/**
+ * @brief Allocate an aligned buffer: take as many aligned blocks as fit, keep the highest one and free the rest.
+ * @param size Requested buffer size in bytes.
+ * @param alignment Buffer alignment in bytes.
+ * @return The buffer, or null when allocation fails.
+ */
+void* func_00433880(u32 size, u32 alignment)
+{
+    void* blocks[0x400];
+
+    blocks[0] = func_00433790(size + alignment * 2);
+
+    if (blocks[0] == 0)
+    {
+        return 0;
+    }
+
+    s32 count = 1;
+    s32 i = count;
+
+    for (; count < 0x400; count++)
+    {
+        blocks[count] = memalign(alignment, size);
+
+        if (blocks[count] == 0)
+        {
+            break;
+        }
+    }
+
+    u32 highest = 0;
+    s32 best = -1;
+
+    for (; i < count; i++)
+    {
+        if (highest < (u32)blocks[i])
+        {
+            highest = (u32)blocks[i];
+            best = i;
+        }
+    }
+
+    void* result = 0;
+
+    if (best != -1)
+    {
+        result = blocks[best];
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        if (i != best)
+        {
+            lib_free_block(blocks[i]);
+        }
+    }
+
+    blocks[0] = malloc_guess(0x1400);
+    lib_free_block(blocks[0]);
+    return result;
+}
 
 /**
  * @brief Find, to within a few bytes, the largest block the heap can hand out below 0x1FE0000.
@@ -2195,7 +3068,54 @@ extern "C" s32 func_004339F0(void)
     return size;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433AA0);
+/**
+ * @brief Allocate blocks from the C library heap, halving the size whenever one fails, then free them all, the
+ *        highest one last.
+ */
+void func_00433AA0(void)
+{
+    void* blocks[0x100];
+    s32 count;
+    s32 size = 0x2000000;
+
+    for (count = 0; count < 0x100; count++)
+    {
+        blocks[count] = malloc_guess(size);
+
+        if (blocks[count] == 0)
+        {
+            size /= 2;
+
+            if (size < 4)
+            {
+                break;
+            }
+        }
+    }
+
+    s32 i;
+    u32 highest = 0;
+    s32 best;
+
+    for (i = 0; i < count; i++)
+    {
+        if (highest < (u32)blocks[i])
+        {
+            highest = (u32)blocks[i];
+            best = i;
+        }
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        if (i != best)
+        {
+            lib_free_block(blocks[i]);
+        }
+    }
+
+    lib_free_block(blocks[best]);
+}
 
 void* func_00433BE0(u32 alignment, u32 size) { return memalign(alignment, size); }
 
@@ -2258,7 +3178,18 @@ const LibVector4* LibClass1737E0::func_slot88(const LibVector4* point, const Lib
 
 extern "C" {
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00434330);
+/**
+ * @brief Pick a random point: unk260 plus unk230 plus a random fraction of axis, per component.
+ * @param light Light whose unk270 receives the point.
+ * @return The point (unk270).
+ */
+extern "C" LibVector4* func_00434330(LibClass173630* light)
+{
+    light->unk270.x = light->unk260.x + (light->unk230.x + light->axis.x * lib_light_random_fraction());
+    light->unk270.y = light->unk260.y + (light->unk230.y + light->axis.y * lib_light_random_fraction());
+    light->unk270.z = light->unk260.z + (light->unk230.z + light->axis.z * lib_light_random_fraction());
+    return &light->unk270;
+}
 
 }
 
@@ -2311,7 +3242,39 @@ void LibClass173900::func_slot84(const LibMatrix44Value* matrix, const LibMatrix
 
 extern "C" {
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004348E0);
+/** Partial pointer list of lights; its data comes before the vptr. */
+typedef struct LibLightPointerList
+{
+    s16 capacity;
+    s16 count;
+    LibClass1736C0** lights;
+} LibLightPointerList;
+
+/**
+ * @brief Add up the light vectors the list's switched-on lights give at a point.
+ * @param list Lights.
+ * @param point Point being lit.
+ * @param normal Normal at the point.
+ * @param result Receives the sum.
+ */
+void func_004348E0(LibLightPointerList* list, const LibVector4* point, const LibVector4* normal, LibVector4* result)
+{
+    clear_vector(result);
+    s32 count = list->count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass1736C0* light = list->lights[i];
+
+        if (light->kind)
+        {
+            const LibVector4* vector = light->func_slot88(point, normal);
+            result->x += vector->x;
+            result->y += vector->y;
+            result->z += vector->z;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004349D0);
 
@@ -2323,7 +3286,7 @@ s32 func_00434F20(void* object)
 /** @brief Let go of the source, destroying it when this was its last emitter, then destroy the emitter. */
 void LibClass173990::destroy()
 {
-    LibEmitterSource* held = source;
+    LibObject1751A0* held = source;
 
     if (held && held->user_count > 0 && --held->user_count == 0)
     {
@@ -2334,11 +3297,18 @@ void LibClass173990::destroy()
     LibTransformOwner::destroy();
 }
 
-void func_00434FA0(void* object)
+/** @brief Release the textures, then detach and queue the model. */
+void LibObject1751A0::destroy()
 {
-    func_004486A0((u8*)object + 0x5A4);
-    ((LibColorModel*)object)->LibColorModel::destroy();
+    release_textures();
+    LibColorModel::destroy();
 }
+
+// TODO: The emitter and grid destructors later in this file inline these operators while the next file calls
+// them, so I think this file was built with auto-inlining. Until the flags are settled, this scoped pragma stands in
+// for it here.
+#pragma push
+#pragma auto_inline on
 
 /**
  * @brief Free an array whose construction failed, the same way as operator delete[](void*).
@@ -2417,6 +3387,8 @@ void LibClass173A28::operator delete(void* object)
         ::operator delete(object);
     }
 }
+
+#pragma pop
 
 /**
  * @brief Allocate an array from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
@@ -2530,5 +3502,667 @@ void func_004352B0(LibClass173990* emitter, u32 flag, float first, float second)
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004352E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00435840);
+
+}
+
+extern "C" {
+
+typedef struct ByteClearOwnertext_0043A920
+{
+    u8 unk00[0x480];
+    u8 unk480;
+} ByteClearOwnertext_0043A920;
+
+/**
+ * @brief Report no selected cell.
+ * @return -1.
+ */
+s32 LibClass173A40::func_slot3C()
+{
+    return -1;
+}
+
+typedef struct QuadwordSetter230Ownertext_0043A920 { u8 unk00[0x230]; unsigned __int128 value230; u8 unk240[0x241]; u8 flag481; } QuadwordSetter230Ownertext_0043A920;
+typedef struct QuadwordSetter250Ownertext_0043A920 { u8 unk00[0x250]; unsigned __int128 value250; u8 unk260[0x222]; u8 flag482; } QuadwordSetter250Ownertext_0043A920;
+typedef struct QuadwordSetter2B0Ownertext_0043A920 { u8 unk00[0x2B0]; unsigned __int128 value2B0; u8 unk2C0[0x1C5]; u8 flag485; } QuadwordSetter2B0Ownertext_0043A920;
+
+typedef struct FlagFloat340Ownertext_0043A920 { u8 pad00[0x340]; float xy[2]; u8 pad348[0x8]; float zw[2]; u8 pad358[0x132]; u8 flag48A; } FlagFloat340Ownertext_0043A920;
+typedef struct FlagFloat300Ownertext_0043A920 { u8 pad00[0x300]; float xy[2]; u8 pad308[0x8]; float zw[2]; u8 pad318[0x170]; u8 flag488; } FlagFloat300Ownertext_0043A920;
+typedef struct FlagFloat2C0Ownertext_0043A920 { u8 pad00[0x2C0]; float xy[2]; u8 pad2C8[0x8]; float zw[2]; u8 pad2D8[0x1AE]; u8 flag486; } FlagFloat2C0Ownertext_0043A920;
+
+typedef struct FlagFloat230Receivertext_0043A920 { u8 pad00[0x230]; float x230; u8 pad234[4]; float z238; u8 pad23C[4]; float y240; u8 pad244[0x23D]; u8 flag481; } FlagFloat230Receivertext_0043A920;
+typedef struct FlagFloat220Receivertext_0043A920 { u8 pad00[0x220]; float x220; float y224; u8 pad228[0x1D0]; float z3F8; u8 pad3FC[0x84]; u8 flag480; } FlagFloat220Receivertext_0043A920;
+
+typedef struct ClearFlagQuadwordOwnertext_0043A920 { u8 pad00[0x3A0]; unsigned __int128 value3A0; u8 pad3B0[0xDF]; u8 flag48F; } ClearFlagQuadwordOwnertext_0043A920;
+
+typedef struct ClearFlagSlot380Ownertext_0043A920 { u8 pad00[0x380]; unsigned __int128 value380; u8 pad390[0xFE]; u8 flag48E; } ClearFlagSlot380Ownertext_0043A920;
+typedef struct ClearFlagSlot360Ownertext_0043A920 { u8 pad00[0x360]; unsigned __int128 value360; u8 pad370[0x11B]; u8 flag48B; } ClearFlagSlot360Ownertext_0043A920;
+typedef struct ClearFlagSlot320Ownertext_0043A920 { u8 pad00[0x320]; unsigned __int128 value320; u8 pad330[0x159]; u8 flag489; } ClearFlagSlot320Ownertext_0043A920;
+typedef struct ClearFlagSlot2E0Ownertext_0043A920 { u8 pad00[0x2E0]; unsigned __int128 value2E0; u8 pad2F0[0x197]; u8 flag487; } ClearFlagSlot2E0Ownertext_0043A920;
+typedef struct ClearFlagSlot2B0Ownertext_0043A920 { u8 pad00[0x2B0]; unsigned __int128 value2B0; u8 pad2C0[0x1C5]; u8 flag485; } ClearFlagSlot2B0Ownertext_0043A920;
+typedef struct ClearFlagSlot290Ownertext_0043A920 { u8 pad00[0x290]; unsigned __int128 value290; u8 pad2A0[0x1E4]; u8 flag484; } ClearFlagSlot290Ownertext_0043A920;
+typedef struct ClearFlagSlot270Ownertext_0043A920 { u8 pad00[0x270]; unsigned __int128 value270; u8 pad280[0x203]; u8 flag483; } ClearFlagSlot270Ownertext_0043A920;
+typedef struct ClearFlagSlot250Ownertext_0043A920 { u8 pad00[0x250]; unsigned __int128 value250; u8 pad260[0x222]; u8 flag482; } ClearFlagSlot250Ownertext_0043A920;
+typedef struct ClearFlagSlot230Ownertext_0043A920 { u8 pad00[0x230]; unsigned __int128 value230; u8 pad240[0x241]; u8 flag481; } ClearFlagSlot230Ownertext_0043A920;
+
+typedef struct FlagFloat230Fivetext_0043A920
+{
+    u8 pad00[0x230];
+    float first230;
+    float fourth234;
+    float third238;
+    u8 pad23C[4];
+    float second240;
+    float fifth244;
+    u8 pad248[0x239];
+    u8 flag481;
+} FlagFloat230Fivetext_0043A920;
+
+typedef struct Word42CFlag49Ctext_0043A920
+{
+    u8 pad00[0x42C];
+    s32 value42C;
+    u8 pad430[0x6C];
+    u8 bit0 : 1;
+    u8 bit1 : 1;
+    u8 bit2 : 1;
+    u8 bit3 : 1;
+    u8 bit4 : 1;
+} Word42CFlag49Ctext_0043A920;
+
+typedef struct TwoQuadwordFlag3A0Ownertext_0043A920 { u8 pad00[0x3A0]; unsigned __int128 values[2]; u8 pad3C0[0xCF]; u8 flag48F; } TwoQuadwordFlag3A0Ownertext_0043A920;
+
+typedef struct TwoQuadwordFlag380Ownertext_0043A920 { u8 pad00[0x380]; unsigned __int128 values[2]; u8 pad3A0[0xEE]; u8 flag48E; } TwoQuadwordFlag380Ownertext_0043A920;
+typedef struct TwoQuadwordFlag360Ownertext_0043A920 { u8 pad00[0x360]; unsigned __int128 values[2]; u8 pad380[0x10B]; u8 flag48B; } TwoQuadwordFlag360Ownertext_0043A920;
+typedef struct TwoQuadwordFlag320Ownertext_0043A920 { u8 pad00[0x320]; unsigned __int128 values[2]; u8 pad340[0x149]; u8 flag489; } TwoQuadwordFlag320Ownertext_0043A920;
+typedef struct TwoQuadwordFlag2E0Ownertext_0043A920 { u8 pad00[0x2E0]; unsigned __int128 values[2]; u8 pad300[0x187]; u8 flag487; } TwoQuadwordFlag2E0Ownertext_0043A920;
+typedef struct TwoQuadwordFlag290Ownertext_0043A920 { u8 pad00[0x290]; unsigned __int128 values[2]; u8 pad2B0[0x1D4]; u8 flag484; } TwoQuadwordFlag290Ownertext_0043A920;
+typedef struct TwoQuadwordFlag270Ownertext_0043A920 { u8 pad00[0x270]; unsigned __int128 values[2]; u8 pad290[0x1F3]; u8 flag483; } TwoQuadwordFlag270Ownertext_0043A920;
+typedef struct TwoQuadwordFlag250Ownertext_0043A920 { u8 pad00[0x250]; unsigned __int128 values[2]; u8 pad270[0x212]; u8 flag482; } TwoQuadwordFlag250Ownertext_0043A920;
+typedef struct TwoQuadwordFlag230Ownertext_0043A920 { u8 pad00[0x230]; unsigned __int128 values[2]; u8 pad250[0x231]; u8 flag481; } TwoQuadwordFlag230Ownertext_0043A920;
+
+void func_0043A930(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x498] = 1;
+    *(float*)(bytes + 0x3D8) = first;
+    *(float*)(bytes + 0x3D8) = second;
+}
+
+void func_0043A950(void* object, float value)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x498] = 0;
+    *(float*)(bytes + 0x3D8) = value;
+}
+
+void func_0043A960(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x497] = 1;
+    *(float*)(bytes + 0x3D0) = first;
+    *(float*)(bytes + 0x3D0) = second;
+}
+
+void func_0043A980(void* object, float value)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x497] = 0;
+    *(float*)(bytes + 0x3D0) = value;
+}
+
+void func_0043A990(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x490] = 2;
+    *(float*)(bytes + 0x43C) = first;
+    *(float*)(bytes + 0x440) = second;
+}
+
+typedef struct LibFloat43CByte490
+{
+    u8 unk00[0x43C];
+    float unk43C;
+    u8 unk440[0x50];
+    u8 unk490;
+} LibFloat43CByte490;
+
+/** Set the byte at receiver offset 0x490 and store the float at offset 0x43C. */
+void func_0043A9B0(void* object, float value)
+{
+    LibFloat43CByte490* receiver = (LibFloat43CByte490*)object;
+    receiver->unk490 = 1;
+    receiver->unk43C = value;
+}
+
+void func_0043A9C0(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag3A0Ownertext_0043A920* receiver = (TwoQuadwordFlag3A0Ownertext_0043A920*)object;
+    receiver->flag48F = 2;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043A9E0(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag3A0Ownertext_0043A920* receiver = (TwoQuadwordFlag3A0Ownertext_0043A920*)object;
+    receiver->flag48F = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043AA00(void* object, const unsigned __int128* value)
+{
+    ClearFlagQuadwordOwnertext_0043A920* receiver = (ClearFlagQuadwordOwnertext_0043A920*)object;
+    receiver->flag48F = 0;
+    receiver->value3A0 = *value;
+}
+
+void func_0043AA10(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag380Ownertext_0043A920* receiver = (TwoQuadwordFlag380Ownertext_0043A920*)object;
+    receiver->flag48E = 2;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043AA30(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag380Ownertext_0043A920* receiver = (TwoQuadwordFlag380Ownertext_0043A920*)object;
+    receiver->flag48E = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043AA50(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot380Ownertext_0043A920* receiver = (ClearFlagSlot380Ownertext_0043A920*)object;
+    receiver->flag48E = 0;
+    receiver->value380 = *value;
+}
+
+void func_0043AA60(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x48D] = 1;
+    *(float*)(bytes + 0x3C8) = first;
+    *(float*)(bytes + 0x3CC) = second;
+}
+
+void func_0043AA80(void* object, float value)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x48D] = 0;
+    *(float*)(bytes + 0x3C8) = value;
+}
+
+void func_0043AA90(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x48C] = 1;
+    *(float*)(bytes + 0x3C0) = first;
+    *(float*)(bytes + 0x3C4) = second;
+}
+
+void func_0043AAB0(void* object, float value)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x48C] = 0;
+    *(float*)(bytes + 0x3C0) = value;
+}
+
+void func_0043AAC0(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag360Ownertext_0043A920* receiver = (TwoQuadwordFlag360Ownertext_0043A920*)object;
+    receiver->flag48B = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043AAE0(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot360Ownertext_0043A920* receiver = (ClearFlagSlot360Ownertext_0043A920*)object;
+    receiver->flag48B = 0;
+    receiver->value360 = *value;
+}
+
+void func_0043AAF0(void* object, float x, float y, float z, float w)
+{
+    FlagFloat340Ownertext_0043A920* receiver = (FlagFloat340Ownertext_0043A920*)object;
+    receiver->flag48A = 1;
+    receiver->xy[0] = x;
+    receiver->xy[1] = y;
+    receiver->zw[0] = z;
+    receiver->zw[1] = w;
+}
+
+void func_0043AB10(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x48A] = 0;
+    *(float*)(bytes + 0x340) = first;
+    *(float*)(bytes + 0x344) = second;
+}
+
+void func_0043AB20(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag320Ownertext_0043A920* receiver = (TwoQuadwordFlag320Ownertext_0043A920*)object;
+    receiver->flag489 = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043AB40(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot320Ownertext_0043A920* receiver = (ClearFlagSlot320Ownertext_0043A920*)object;
+    receiver->flag489 = 0;
+    receiver->value320 = *value;
+}
+
+void func_0043AB50(void* object, float x, float y, float z, float w)
+{
+    FlagFloat300Ownertext_0043A920* receiver = (FlagFloat300Ownertext_0043A920*)object;
+    receiver->flag488 = 1;
+    receiver->xy[0] = x;
+    receiver->xy[1] = y;
+    receiver->zw[0] = z;
+    receiver->zw[1] = w;
+}
+
+void func_0043AB70(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x488] = 0;
+    *(float*)(bytes + 0x300) = first;
+    *(float*)(bytes + 0x304) = second;
+}
+
+void func_0043AB80(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag2E0Ownertext_0043A920* receiver = (TwoQuadwordFlag2E0Ownertext_0043A920*)object;
+    receiver->flag487 = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043ABA0(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot2E0Ownertext_0043A920* receiver = (ClearFlagSlot2E0Ownertext_0043A920*)object;
+    receiver->flag487 = 0;
+    receiver->value2E0 = *value;
+}
+
+void func_0043ABB0(void* object, float x, float y, float z, float w)
+{
+    FlagFloat2C0Ownertext_0043A920* receiver = (FlagFloat2C0Ownertext_0043A920*)object;
+    receiver->flag486 = 1;
+    receiver->xy[0] = x;
+    receiver->xy[1] = y;
+    receiver->zw[0] = z;
+    receiver->zw[1] = w;
+}
+
+void func_0043ABD0(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x486] = 0;
+    *(float*)(bytes + 0x2C0) = first;
+    *(float*)(bytes + 0x2C4) = second;
+}
+
+void func_0043ABE0(void* object, const unsigned __int128* value)
+{
+    QuadwordSetter2B0Ownertext_0043A920* receiver = (QuadwordSetter2B0Ownertext_0043A920*)object;
+    receiver->flag485 = 1;
+    receiver->value2B0 = *value;
+}
+
+void func_0043AC00(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot2B0Ownertext_0043A920* receiver = (ClearFlagSlot2B0Ownertext_0043A920*)object;
+    receiver->flag485 = 0;
+    receiver->value2B0 = *value;
+}
+
+void func_0043AC10(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag290Ownertext_0043A920* receiver = (TwoQuadwordFlag290Ownertext_0043A920*)object;
+    receiver->flag484 = 2;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043AC30(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag290Ownertext_0043A920* receiver = (TwoQuadwordFlag290Ownertext_0043A920*)object;
+    receiver->flag484 = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043AC50(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot290Ownertext_0043A920* receiver = (ClearFlagSlot290Ownertext_0043A920*)object;
+    receiver->flag484 = 0;
+    receiver->value290 = *value;
+}
+
+void func_0043AC60(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag270Ownertext_0043A920* receiver = (TwoQuadwordFlag270Ownertext_0043A920*)object;
+    receiver->flag483 = 2;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043AC80(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag270Ownertext_0043A920* receiver = (TwoQuadwordFlag270Ownertext_0043A920*)object;
+    receiver->flag483 = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043ACA0(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot270Ownertext_0043A920* receiver = (ClearFlagSlot270Ownertext_0043A920*)object;
+    receiver->flag483 = 0;
+    receiver->value270 = *value;
+}
+
+void func_0043ACB0(void* object, const unsigned __int128* value)
+{
+    QuadwordSetter250Ownertext_0043A920* receiver = (QuadwordSetter250Ownertext_0043A920*)object;
+    receiver->flag482 = 2;
+    receiver->value250 = *value;
+}
+
+void func_0043ACD0(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag250Ownertext_0043A920* receiver = (TwoQuadwordFlag250Ownertext_0043A920*)object;
+    receiver->flag482 = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043ACF0(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot250Ownertext_0043A920* receiver = (ClearFlagSlot250Ownertext_0043A920*)object;
+    receiver->flag482 = 0;
+    receiver->value250 = *value;
+}
+
+void func_0043AD00(void* object, float first, float second, float third, float fourth, float fifth)
+{
+    FlagFloat230Fivetext_0043A920* receiver = (FlagFloat230Fivetext_0043A920*)object;
+    receiver->flag481 = 7;
+    receiver->first230 = first;
+    receiver->fourth234 = fourth;
+    receiver->third238 = third;
+    receiver->second240 = second;
+    receiver->fifth244 = fifth;
+}
+
+void func_0043AD20(void* object, const unsigned __int128* value)
+{
+    QuadwordSetter230Ownertext_0043A920* receiver = (QuadwordSetter230Ownertext_0043A920*)object;
+    receiver->flag481 = 6;
+    receiver->value230 = *value;
+}
+
+void func_0043AD40(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x481] = 5;
+    *(float*)(bytes + 0x230) = first;
+    *(float*)(bytes + 0x240) = second;
+}
+
+void func_0043AD60(void* object, float x, float y, float z)
+{
+    FlagFloat230Receivertext_0043A920* receiver = (FlagFloat230Receivertext_0043A920*)object;
+    receiver->flag481 = 4;
+    receiver->x230 = x;
+    receiver->y240 = y;
+    receiver->z238 = z;
+}
+
+void func_0043AD80(void* object, float first, float second)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x481] = 3;
+    *(float*)(bytes + 0x230) = first;
+    *(float*)(bytes + 0x240) = second;
+}
+
+void func_0043ADA0(void* object, const unsigned __int128* value)
+{
+    QuadwordSetter230Ownertext_0043A920* receiver = (QuadwordSetter230Ownertext_0043A920*)object;
+    receiver->flag481 = 2;
+    receiver->value230 = *value;
+}
+
+void func_0043ADC0(void* object, const unsigned __int128* first, const unsigned __int128* second)
+{
+    TwoQuadwordFlag230Ownertext_0043A920* receiver = (TwoQuadwordFlag230Ownertext_0043A920*)object;
+    receiver->flag481 = 1;
+    receiver->values[0] = *first;
+    receiver->values[1] = *second;
+}
+
+void func_0043ADE0(void* object, const unsigned __int128* value)
+{
+    ClearFlagSlot230Ownertext_0043A920* receiver = (ClearFlagSlot230Ownertext_0043A920*)object;
+    receiver->flag481 = 0;
+    receiver->value230 = *value;
+}
+
+void func_0043ADF0(void* object, s32 value)
+{
+    Word42CFlag49Ctext_0043A920* receiver = (Word42CFlag49Ctext_0043A920*)object;
+    receiver->value42C = value;
+    receiver->bit4 = 0;
+}
+
+typedef struct EmitterSettings43AE20
+{
+    u8 pad00[0x220];
+    unsigned __int128 value220;
+    u8 pad230[0x1C8];
+    float value3F8;
+    u8 pad3FC[0x24];
+    float value420;
+    u8 pad424[8];
+    s32 value42C;
+    u8 pad430[0x50];
+    u8 value480;
+    u8 pad481[0x1B];
+    u8 bit0 : 1;
+    u8 bit1 : 1;
+    u8 bit2 : 1;
+    u8 bit3 : 1;
+    u8 bit4 : 1;
+} EmitterSettings43AE20;
+
+/**
+ * @brief Set the emitter's mode to 11 with a vector, two values, a word and flag bit 3; clear flag bit 4.
+ * @param object Emitter.
+ * @param value Vector stored at 0x220.
+ * @param word Word stored at 0x42C.
+ * @param flag Flag bit 3.
+ * @param first Value stored at 0x420.
+ * @param second Value stored at 0x3F8.
+ */
+void func_0043AE20(void* object, const unsigned __int128* value, s32 word, s32 flag, float first, float second)
+{
+    EmitterSettings43AE20* receiver = (EmitterSettings43AE20*)object;
+    receiver->value480 = 0xB;
+    receiver->value220 = *value;
+    receiver->value420 = first;
+    receiver->value3F8 = second;
+    receiver->bit3 = flag;
+    receiver->value42C = word;
+    receiver->bit4 = 0;
+}
+
+void func_0043AE80(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 10;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AEA0(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 9;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AEC0(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 8;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AEE0(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 7;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AF00(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 6;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AF20(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 5;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AF40(void* object, float x, float y, float z)
+{
+    FlagFloat220Receivertext_0043A920* receiver = (FlagFloat220Receivertext_0043A920*)object;
+    receiver->flag480 = 4;
+    receiver->x220 = x;
+    receiver->y224 = y;
+    receiver->z3F8 = z;
+}
+
+void func_0043AF60(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 3;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AF80(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 2;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AFA0(void* object, const unsigned __int128* vector, float amount)
+{
+    u8* bytes = (u8*)object;
+    bytes[0x480] = 1;
+    *(unsigned __int128*)(bytes + 0x220) = *vector;
+    *(float*)(bytes + 0x3F8) = amount;
+}
+
+void func_0043AFC0(void* object)
+{
+    ByteClearOwnertext_0043A920* receiver = (ByteClearOwnertext_0043A920*)object;
+    receiver->unk480 = 0;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0043AFD0);
+
+// TODO: The destructor inlines this too; see the operator delete note above.
+#pragma push
+#pragma auto_inline on
+
+/** @brief Stop using the source image model, destroying it when this was its last user. */
+void LibClass173990::release_source()
+{
+    LibObject1751A0* held = source;
+
+    if (held != 0 && held->user_count > 0)
+    {
+        if (--held->user_count == 0)
+        {
+            held->destroy();
+        }
+    }
+
+    source = 0;
+}
+
+#pragma pop
+
+typedef struct EmitterSource43B700
+{
+    u8 pad00[0xAD0];
+    s32 user_count;
+} EmitterSource43B700;
+
+typedef struct EmitterSourceOwner43B700
+{
+    u8 pad00[0x3E4];
+    EmitterSource43B700* source;
+    u8 pad3E8[0xC];
+    u32 value3F4;
+    u8 pad3F8[0xA1];
+    u8 bit0 : 1;
+} EmitterSourceOwner43B700;
+
+/**
+ * @brief Attach a source to the emitter, set flag bit 0 of 0x499, clear 0x3F4 and count the emitter as a user.
+ * @param object Emitter.
+ * @param source Image model to draw from.
+ */
+void func_0043B700(void* object, EmitterSource43B700* source)
+{
+    EmitterSourceOwner43B700* receiver = (EmitterSourceOwner43B700*)object;
+    receiver->bit0 = 1;
+    receiver->source = source;
+    receiver->value3F4 = 0;
+    source->user_count++;
+}
+
+/** @brief Release the emitter's source and entries. */
+LibClass173990::~LibClass173990()
+{
+    release_source();
+    delete[] entries;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0043B840);
+
+/** @brief Do nothing (shared by every grid). */
+void LibClass173A40::func_slot10()
+{
+}
+
+/** @brief Do nothing (shared by every grid). */
+void LibClass173A40::func_slot14()
+{
+}
 
 }

@@ -17,7 +17,7 @@
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libkernl_00121940.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 #include "clamp.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/vector_inlines.h"
@@ -2869,7 +2869,29 @@ extern "C" s32 lib_panel_init_transform(LibPanel* object, float z)
     return 1;
 }
 
+/** Arguments func_004C4B90 builds a panel's packet from. */
+struct LibPanelDrawArgs
+{
+    const LibVector4* position;
+    const LibUiRect16* rect;
+    u32 address;
+    u32* colors;
+    float alpha;
+    float unk84;
+    u8 unk8b;
+    u8 unk8a;
+};
+
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4B90);
+
+/**
+ * @brief Write a panel's drawing packet.
+ * @param panel Panel.
+ * @param packet Where the packet's contents start.
+ * @param args What to draw.
+ * @return The end of the packet.
+ */
+extern "C" u8* func_004C4B90(LibPanel* panel, u8* packet, const LibPanelDrawArgs* args);
 
 typedef struct LibPanelColorState
 {
@@ -2894,7 +2916,7 @@ extern "C" void lib_panel_set_colors(LibPanel* object, const LibWidgetColors4C55
     state->redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C55E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", draw__8LibPanelFv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C56E0);
 
@@ -3415,7 +3437,7 @@ typedef struct LibTextBoundsState
     u8 pending;
 } LibTextBoundsState;
 
-extern "C" s32 func_004C7D40(LibTextWidget* object, u32 source, u32 key, u8 flag);
+extern "C" s32 func_004C7D40(LibTextWidget* object, s32 source, u32 key, u8 flag);
 
 /**
  * @brief Refresh the text layout and return its measured bounds.
@@ -3559,7 +3581,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C79C0);
  * @brief Hand the widget's attached object to the resident release queue, then release its drawing storage.
  * @param widget Widget to clear.
  */
-extern "C" void func_004C7D00(LibTextWidget* widget)
+static inline void lib_text_release_glyphs(LibTextWidget* widget)
 {
     if (widget->unkfc != 0)
     {
@@ -3570,7 +3592,136 @@ extern "C" void func_004C7D00(LibTextWidget* widget)
     widget->release_storage();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7D40);
+/**
+ * @brief Hand the widget's attached object to the resident release queue, then release its drawing storage.
+ * @param widget Widget to clear.
+ */
+extern "C" void func_004C7D00(LibTextWidget* widget)
+{
+    lib_text_release_glyphs(widget);
+}
+
+/**
+ * @brief Allocate a glyph batch's drawing storage and glyph states for a glyph count.
+ * @param batch Glyph batch.
+ * @param count Number of glyphs.
+ * @return Whether both allocations succeeded.
+ */
+static inline bool lib_glyph_batch_init(LibClass178780* batch, s32 count)
+{
+    batch->glyph_capacity = count;
+    batch->glyph_count = 0;
+
+    if (count > 0)
+    {
+        if (!lib_allocate_drawing_storage(&batch->storage, (u32)(count * 0x70 + 0x10) / 8))
+        {
+            return 0;
+        }
+
+        batch->glyphs = new (0) LibGlyphDraw6C[count];
+
+        if (batch->glyphs == 0)
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Allocate drawing storage and glyph states for a glyph count.
+ * @param count Number of glyphs.
+ * @return One on success, or zero when an allocation fails.
+ */
+s32 LibClass178780::init(s32 count)
+{
+    glyph_capacity = count;
+    glyph_count = 0;
+
+    if (count > 0)
+    {
+        if (!lib_allocate_drawing_storage(&storage, (u32)(count * 0x70 + 0x10) / 8))
+        {
+            return 0;
+        }
+
+        glyphs = new (0) LibGlyphDraw6C[count];
+
+        if (glyphs == 0)
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Measure the widget's text.
+ * @param object Text widget.
+ */
+extern "C" void func_004C79C0(LibTextWidget* object);
+
+/**
+ * @brief Point the text widget at a keyed text of a resource slot: measure it, allocate its drawing storage and its
+ *        glyph states. Slot or key zero leaves the widget without text.
+ * @param object Text widget.
+ * @param slot Resource slot index.
+ * @param key Key of the text in the slot's index.
+ * @param flag Nonzero to reset the drawing state first.
+ * @return One, or zero when an allocation failed.
+ */
+extern "C" s32 func_004C7D40(LibTextWidget* object, s32 slot, u32 key, u8 flag)
+{
+    object->unk39 = 0;
+    lib_text_release_glyphs(object);
+
+    if (flag)
+    {
+        object->reset_drawing_state();
+    }
+
+    // TODO: The game sign-extends the slot before testing it, which a compare with a long zero gives; I don't know
+    // what the original compared against.
+    if (slot == 0L || key == 0)
+    {
+        object->unk100 = 0;
+    }
+    else
+    {
+        object->resource_slot = &g_field_runtime->resource_slots[slot];
+        object->unk100 = func_00465340(g_field_runtime, slot, key);
+        func_004C79C0(object);
+
+        if (!object->allocate_storage(object->unka4, object->unka8, object->unkac, object->unkb0))
+        {
+            return 0;
+        }
+
+        if (object->glyph_count > 0)
+        {
+            object->unkfc = new (0) LibClass178780;
+
+            if (object->unkfc == 0)
+            {
+                return 0;
+            }
+
+            s32 count = object->glyph_count;
+
+            if (!lib_glyph_batch_init(static_cast<LibClass178780*>(object->unkfc), count))
+            {
+                return 0;
+            }
+        }
+    }
+
+    object->pending = 0;
+    object->unk39 = 1;
+    return 1;
+}
 
 /** @brief Initialize the drawing state and clear both trailing words. */
 LibGlyphDraw6C::LibGlyphDraw6C()
@@ -3635,34 +3786,6 @@ LibTextWidget::~LibTextWidget()
         delete unkfc;
         unkfc = 0;
     }
-}
-
-/**
- * @brief Allocate drawing storage and glyph states for a glyph count.
- * @param count Number of glyphs.
- * @return One on success, or zero when an allocation fails.
- */
-s32 LibClass178780::init(s32 count)
-{
-    glyph_capacity = count;
-    glyph_count = 0;
-
-    if (count > 0)
-    {
-        if (!lib_allocate_drawing_storage(&storage, (u32)(count * 0x70 + 0x10) / 8))
-        {
-            return 0;
-        }
-
-        glyphs = new (0) LibGlyphDraw6C[count];
-
-        if (glyphs == 0)
-        {
-            return 0;
-        }
-    }
-
-    return 1;
 }
 
 /** @brief Free the glyphs and the drawing storage. */

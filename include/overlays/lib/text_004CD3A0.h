@@ -610,6 +610,14 @@ struct LibSceneLayerTable
     LibSceneLayer layers[1];
 };
 
+/** Partial oriented box Lib tests against the view. */
+struct LibCullBox
+{
+    LibVector4 center;
+    u8 unk10[0x30];
+    LibVector4 half_extents;
+};
+
 /** Partial 0x90-byte transform owner with vtable D_178A90 in main data. */
 class LibTransformOwner : public LibOrientedTransform
 {

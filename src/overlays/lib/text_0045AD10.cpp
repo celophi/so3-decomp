@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "vu0.h"
 #include "overlays/lib/text_00419A70.h"
 #include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
@@ -10,6 +11,7 @@
 #include "overlays/lib/character_names.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_0046AE20.h"
+#include "overlays/lib/image_model.h"
 #include "overlays/lib/widget_aggregate.h"
 #include "overlays/lib/text_004095C0.h"
 
@@ -53,9 +55,19 @@ typedef struct LibRuntimeListState
     s32 count;
 } LibRuntimeListState;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045AD10);
+/** @brief Free the buffer and detach. */
+LibClass174D70::~LibClass174D70()
+{
+    delete[] unk3c;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045ADB0);
+/** @brief Start with no objects and flag 0x1 set. */
+LibClass174D70::LibClass174D70()
+{
+    count = 0;
+    flags = 1;
+    unk3c = 0;
+}
 
 /**
  * @brief Return a shape's record at an offset from its first record.
@@ -2714,95 +2726,377 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004680B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468230);
 
-s32 func_00468360(void* object)
+/**
+ * @brief Report the model's list kind.
+ * @return Seven.
+ */
+s32 LibObject1751A0::get_default_list_kind()
 {
     return 7;
 }
 
-s32 func_00468370(void* object)
+/**
+ * @brief Resolve an offset; this model has none.
+ * @param offset Offset to resolve.
+ * @return Null.
+ */
+void* LibObject1751A0::resolve_offset(const u32* offset)
 {
     return 0;
 }
 
-/** Partial receiver with an embedded buffer after the word at offset 0x618. */
-typedef struct LibEmbeddedBuffer468380
-{
-    u8 unk00[0x618];
-    u32 unk618;
-    u8 unk61C[4];
-    u8 unk620;
-} LibEmbeddedBuffer468380;
-
 /**
- * @brief Get the embedded buffer while the word before it is set.
- * @param object Receiver.
- * @return The buffer at offset 0x620, or null.
+ * @brief Return the image record while an image is set.
+ * @return The record, or null.
  */
-extern "C" u8* func_00468380(LibEmbeddedBuffer468380* object)
+void* LibObject1751A0::get_data()
 {
-    if (object->unk618 != 0)
+    if (image != 0)
     {
-        return &object->unk620;
+        return &unk620;
     }
 
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004683A0);
+/** Next phase handed out by LibObject1751A0::set_phase_period. */
+extern "C" u8 D_001B6580;
+
+/**
+ * @brief Take the next phase of a shared counter that cycles through a period.
+ * @param period Period length; zero leaves the counter alone.
+ */
+void LibObject1751A0::set_phase_period(u8 period)
+{
+    phase_period = period;
+    phase = D_001B6580;
+
+    if (period)
+    {
+        D_001B6580 = (D_001B6580 + 1) % period;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004683E0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468590);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468900);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", claim_cell__15LibObject1751A0FPC10LibVector4PP14LibClass174228Pi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468AA0);
+/**
+ * @brief Make a copy of this model that stays linked to it.
+ * @return The copy, or null.
+ */
+LibTransformOwner* LibObject1751A0::clone()
+{
+    LibObject1751A0* copy = new (0) LibObject1751A0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468B70);
+    if (copy == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468DB0);
+    copy->copy_image_state(this);
+    add_clone(copy);
+    lib_object_set_list_kind(this, LIB_LIST_KIND_LATE_MODEL);
+    return copy;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468E50);
+/**
+ * @brief Copy another model's image state.
+ * @param model Model to copy.
+ */
+void LibObject1751A0::copy_image_state(LibObject1751A0* model)
+{
+    unkaa4 = model->unkaa4;
+    unkadf = model->unkadf;
+    unkabc = model->unkabc;
+    unkac0 = model->unkac0;
+    unkae0 = model->unkae0;
+    image = model->image;
+    unkae6 = model->unkae6;
+    unkac4 = model->unkac4;
+    copied = 1;
+    source = model;
+
+    if (image)
+    {
+        unk648 = model->unk648;
+        unk624 = model->unk624;
+        unk640 = 0;
+        unk620 = 0;
+        reset_texture_uploads();
+        setup = model->setup;
+    }
+
+    hold_reference(model->reference);
+    diagonal = model->diagonal;
+    unkade = model->unkade;
+    unkadd = model->unkadd;
+    kind = model->kind;
+    unkae2 = model->unkae2;
+    LibColorModel::copy_color_state(model);
+
+    if (unka90 == 0)
+    {
+        allocate_packets();
+    }
+
+    unk59d_0 = 1;
+}
+
+/**
+ * @brief Turn fogging on or off in the model's packet.
+ * @param enabled Nonzero for fog.
+ */
+void LibObject1751A0::set_fog_enabled(u8 enabled)
+{
+    if (packet != 0 && fog_enabled != enabled)
+    {
+        unk59d_0 = 1;
+        LibImagePacket* uncached = reinterpret_cast<LibImagePacket*>(reinterpret_cast<u32>(packet) | UNCACHED_SEGMENT);
+
+        if (enabled)
+        {
+            uncached->primitive_tag_words[1] |= GIF_TAG_HIGH_PRIM_FGE;
+        }
+        else
+        {
+            uncached->primitive_tag_words[1] &= ~GIF_TAG_HIGH_PRIM_FGE;
+        }
+
+        fog_enabled = enabled;
+    }
+}
+
+/**
+ * @brief Set the primitive the model draws, its blend mode and the packet values that go with them.
+ * @param primitive Primitive kind, 0 to 6.
+ * @param value Value stored in the packet and at unkade.
+ * @param blend Blend mode; nonzero also turns alpha blending on in the primitive.
+ * @param unk54 Value stored in the packet at 0x54.
+ */
+void LibObject1751A0::set_primitive(s32 primitive, u8 value, s32 blend, float unk54)
+{
+    kind = primitive;
+
+    if (unka90 == 0)
+    {
+        allocate_packets();
+    }
+
+    if (unka90 != 0 && packet != 0)
+    {
+        LibImagePacket* uncached = reinterpret_cast<LibImagePacket*>(reinterpret_cast<u32>(packet) | EE_UNCACHED_ACCELERATED);
+        uncached->unpack = VIF_UNPACK(VIF_UNPACK_V4_32, 0xE, 0x60);
+        uncached->unk54 = unk54;
+        uncached->unk24 = value;
+        unkade = value;
+
+        if (image)
+        {
+            for (s32 i = 0; i < image->flag_count; i++)
+            {
+                if (image->flags[i])
+                {
+                    unkae2 = 1;
+                    break;
+                }
+            }
+        }
+        else
+        {
+            unkae2 = blend;
+        }
+
+        uncached->alpha = D_004ED320[blend];
+        uncached->alpha_address = GS_REGISTER_ALPHA_1;
+
+        if (blend)
+        {
+            uncached->unk2c = 1;
+        }
+
+        uncached->gif_tag = 4 | GIF_TAG_EOP | GIF_TAG_NREG(1);
+        uncached->gif_registers = LIB_DRAW_AD_REGISTERS;
+
+        switch (primitive)
+        {
+        case 0:
+            uncached->primitive_tag = GIF_TAG_EOP | GIF_TAG_PRE | GIF_TAG_PRIM((u32)(blend ? GS_PRIM_ABE : 0)) | GIF_TAG_NREG(2);
+            uncached->primitive_registers = 0x41;
+            break;
+        case 1:
+            uncached->primitive_tag = GIF_TAG_EOP | GIF_TAG_PRE | GIF_TAG_PRIM((u32)(blend ? GS_PRIM_ABE : 0) | 0xA) | GIF_TAG_NREG(2);
+            uncached->primitive_registers = 0x41;
+            break;
+        case 2:
+            uncached->primitive_tag = GIF_TAG_EOP | GIF_TAG_PRE | GIF_TAG_PRIM((u32)(blend ? GS_PRIM_ABE : 0) | 0xC) | GIF_TAG_NREG(2);
+            uncached->primitive_registers = 0x41;
+            break;
+        case 3:
+            uncached->primitive_tag = GIF_TAG_EOP | GIF_TAG_PRE | GIF_TAG_PRIM(0x54) | GIF_TAG_NREG(3);
+            uncached->primitive_registers = 0x412;
+            break;
+        case 4:
+            uncached->primitive_tag = GIF_TAG_EOP | GIF_TAG_PRE | GIF_TAG_PRIM(0x5C) | GIF_TAG_NREG(3);
+            uncached->primitive_registers = 0x412;
+            break;
+        case 5:
+            uncached->primitive_tag = GIF_TAG_EOP | GIF_TAG_PRE | GIF_TAG_PRIM((u32)(blend ? GS_PRIM_ABE : 0) | 0x14) | GIF_TAG_NREG(3);
+            uncached->primitive_registers = 0x412;
+            break;
+        case 6:
+            uncached->primitive_tag = GIF_TAG_EOP | GIF_TAG_PRE | GIF_TAG_PRIM(0x54) | GIF_TAG_NREG(3);
+            uncached->primitive_registers = 0x412;
+            break;
+        }
+
+        if (fog_enabled)
+        {
+            uncached->primitive_tag_words[1] |= GIF_TAG_HIGH_PRIM_FGE;
+        }
+
+        unk59d_0 = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00469180);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00469970);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", update__15LibObject1751A0Fv);
 
-void func_0046A3B0(void* receiver)
+/**
+ * @brief Send the model's packet chain on VIF1.
+ * @param channel DMA channel; unused.
+ */
+void LibObject1751A0::submit_dma(u32 channel)
 {
-    u8* object = (u8*)receiver;
-    *(u8*)(object + 0x64) = 1;
-    *(volatile u32*)0x10009020 = 0;
-    *(volatile u32*)0x10009030 = *(u32*)(object + 0x610);
-    *(volatile u32*)0x1000E010 = 2;
-    *(volatile u32*)0x10009000 = 0x105;
+    dma_pending = 1;
+    *D1_QWC = 0;
+    *D1_TADR = chain_address;
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
 }
 
-/** Forward the receiver to lib_finish_packet. */
-void func_0046A3F0(void* object)
+/**
+ * @brief Finish the model's packet.
+ * @param channel DMA channel; unused.
+ */
+void LibObject1751A0::complete_dma(u32 channel)
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    lib_finish_packet(this);
 }
 
-/** Queue the DMA submission embedded at offset 0x5a0 when present. */
-s32 func_0046A410(void* object)
+/** @brief Queue the model's DMA submission. */
+void LibObject1751A0::render()
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
+}
 
-    if (object != 0)
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", build_packet__15LibObject1751A0FPCvPv);
+
+/**
+ * @brief Give the centre and half extent of the image's bounding box.
+ * @param output Receives the box (LibCullBox).
+ * @return Nonzero when the shared object is ready and the box was written.
+ */
+s32 LibObject1751A0::get_box_cull_center(void* output)
+{
+    LibVector4 extent;
+
+    if (!reference->unk04)
     {
-        submission = (DmaSubmission*)((u8*)submission + 0x5a0);
+        return 0;
     }
 
-    return resident_dma_queue_push(g_vif1_dma_queue, submission);
+    LibCullBox* box = static_cast<LibCullBox*>(output);
+    extent.x = 0.5f * (box_max.x - box_min.x);
+    extent.y = 0.5f * (box_max.y - box_min.y);
+    extent.z = 0.5f * (box_max.z - box_min.z);
+    extent.w = 1.0f;
+    copy_vector(&box->half_extents, &extent);
+    extent.x += box_min.x;
+    extent.y += box_min.y;
+    extent.z += box_min.z;
+    copy_vector(&box->center, &extent);
+    return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046A440);
+/**
+ * @brief Transform the bounding sphere's centre into world space; the radius stays.
+ * @return Bounding sphere in world space.
+ */
+const LibVector4* LibObject1751A0::get_bounding_sphere()
+{
+    LibVector4 center;
+    copy_vector(&center, &bounding_sphere);
+    center.w = 1.0f;
+    vu0_dot_matrix_rows(&transform, &center, &world_bounding_sphere);
+    world_bounding_sphere.w = bounding_sphere.w;
+    return &world_bounding_sphere;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046AAC0);
+/** @brief Pick the draw bucket from the blend and image state. */
+void LibObject1751A0::set_default_draw_bucket()
+{
+    draw_bucket = blend_mode ? 2 : 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046AB80);
+    if (draw_flags & 0x1000)
+    {
+        draw_bucket = 7;
+    }
+    else if (kind == 5)
+    {
+        draw_bucket = 8;
+    }
+    else if (unkae2)
+    {
+        switch (unkae0)
+        {
+        case 0:
+            draw_bucket = 1;
+            break;
+        case 1:
+            draw_bucket = 5;
+            break;
+        case 2:
+            draw_bucket = 2;
+            break;
+        case 3:
+            draw_bucket = 3;
+            break;
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046AC10);
+/** @brief Clear the image and reset the texture state. */
+void LibObject1751A0::clear_image()
+{
+    unk648 = 0;
+    image = 0;
+    unk624 = 0;
+    unk640 = 0;
+    reset_texture_uploads();
+    memset_guess(&setup, 0, sizeof(setup));
+    setup.unpack = VIF_UNPACK(VIF_UNPACK_V4_32, 9, 0x2E0);
+    setup.unk10 = 1;
+    setup.unk14 = 1;
+    setup.unk18 = 1;
+    setup.texture_tag = 2 | GIF_TAG_NREG(1);
+    setup.texture_registers = 0;
+    setup.texture_register_fields.register0 = GIF_REGISTER_AD;
+    setup.texture_address = GS_REGISTER_TEX0_1;
+    setup.texture_2_address = GS_REGISTER_TEX0_1;
+    setup.alpha_tag = 1 | GIF_TAG_NREG(1);
+    setup.alpha_registers = 0;
+    setup.alpha_register_fields.register0 = GIF_REGISTER_AD;
+    setup.alpha_address = GS_REGISTER_ALPHA_1;
+    FlushCache(0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0046ACC0);
+    if (reference)
+    {
+        reference->func_slot54(1);
+    }
+
+    unk620 = 0;
+}

@@ -3,24 +3,18 @@
 
 #include "types.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void func_00441BE0(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
 
 /** Return the mapped array entry after its 0x30-byte prefix, or null. */
 void* func_0043D240(const void* object, s32 index);
 
 /** Clear four state bytes before updating the row through the owner. */
-#ifdef __cplusplus
-extern "C" {
-#endif
 void func_00441C10(void* object, u8* state, void* row);
-#ifdef __cplusplus
-}
-#endif
 
-#ifdef __cplusplus
-extern "C" {
-void* func_0043DF70(void* receiver);
-#endif
 
 /**
  * @brief Process the supplied object with two additional values.
@@ -269,14 +263,9 @@ float func_00441520(void* object);
 /** Return the floating-point value 1.0f. */
 float func_00447DC0(void* object);
 
-/** Return the fixed integer value -1. */
-s32 func_0043A920(void* object);
 
 /** Return the fixed integer value 1. */
 s32 func_0043D230(void* object);
-
-/** Return the fixed integer value 1. */
-s32 func_0043D9F0(void* object);
 
 /** Return the fixed integer value 1. */
 s32 func_00441B90(void* object);
@@ -311,9 +300,7 @@ s32 func_00447C90(void* object);
 /** Return the fixed value 0. */
 s32 func_00448900(void* object);
 
-void func_0043BCD0(void* object);
 
-void func_0043BCE0(void* object);
 
 void func_0043D220(void* object);
 
@@ -349,7 +336,6 @@ void func_0043ADA0(void* object, const unsigned __int128* value);
 
 
 
-#ifdef __cplusplus
 /** Set the receiver flag and store four float values. */
 void func_0043AAF0(void* object, float x, float y, float z, float w);
 
@@ -400,18 +386,12 @@ void func_0043ADE0(void* object, const unsigned __int128* value);
 /** Set the receiver flag and copy two 128-bit values to offsets 0x3A0 and 0x3B0. */
 void func_0043A9C0(void* object, const unsigned __int128* first, const unsigned __int128* second);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 /**
  * @brief Set byte 0x490 and store a float at receiver offset 0x43C.
  * @param object Receiver to update.
  * @param value Float value to store.
  */
 void func_0043A9B0(void* object, float value);
-#ifdef __cplusplus
-}
-#endif
 
 /** Set the receiver flag and copy two 128-bit values to offsets 0x3A0 and 0x3B0. */
 void func_0043A9E0(void* object, const unsigned __int128* first, const unsigned __int128* second);
@@ -477,9 +457,7 @@ void* func_00444EE0(void* object, s32 row, s32 column);
 /** Return the table address at base + index * 48. */
 void* func_0043D980(void* object, s32 index);
 
-
-
-
+#ifdef __cplusplus
 }
 #endif
 

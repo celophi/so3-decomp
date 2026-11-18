@@ -14,44 +14,10 @@
 #include "sdk/main/libc_guess_00137290.h"
 #include "overlays/lib/grid_emission.h"
 
-/** FGE as it sits in the upper word of a GIF tag's first doubleword. */
-#define GIF_TAG_HIGH_PRIM_FGE ((u32)(GIF_TAG_PRIM(GS_PRIM_FGE) >> 32))
-
 /** ABE as it sits in the upper word of a GIF tag's first doubleword. */
 #define GIF_TAG_HIGH_PRIM_ABE ((u32)(GIF_TAG_PRIM(GS_PRIM_ABE) >> 32))
 
-#define LIB_MODEL_PART_SIZE 0xF0
 
-/** Partial part record in the model's part table: the upper tag words of its GIF tags, written uncached. */
-struct LibModelPart
-{
-    u8 unk00[0x20];
-    u32 unk20;
-    u8 unk24[0x40];
-    u32 first_tag_high;
-    u8 unk68[0xC];
-    u32 second_tag_high;
-    u8 unk78[0xC];
-    u32 unk84;
-    u8 unk88[8];
-    u32 unk90;
-    u8 unk94[8];
-    u32 unk9c;
-    u8 unka0[0x24];
-    u32 third_tag_high;
-    u8 unkc8[0xC];
-    u32 fourth_tag_high;
-    u8 unkd8[0x18];
-};
-
-/** Partial part record in a mesh resource; the model's copy of its part starts at 0x40. */
-struct LibMeshPartRecord
-{
-    u8 unk00[0x14];
-    u16 unk14;
-    u8 unk16[0x2A];
-    LibModelPart part;
-};
 
 /**
  * @brief Return a part record through the uncached accelerated segment.
@@ -70,14 +36,6 @@ static inline LibModelPart* lib_model_uncached_part(void* parts, s32 index)
 #define LIB_MODEL_UNSCALED_MIN 0.999f
 #define LIB_MODEL_UNSCALED_MAX 1.001f
 
-/** Partial oriented box Lib tests against the view. */
-struct LibCullBox
-{
-    LibVector4 center;
-    u8 unk10[0x30];
-    LibVector4 half_extents;
-};
-
 #define LIB_MODEL_PACKET_HEADER_SIZE 0x40
 #define LIB_MODEL_PACKET_FIXED_QWORDS 19
 #define LIB_MODEL_PART_QWORDS 5
@@ -93,8 +51,7 @@ extern "C" void* D_001B659C;
 /** Heap payload buffers come from when set; otherwise they're malloc'd. */
 extern "C" void* D_001B65A8;
 
-/** VU1 microprogram that uploads a model's textures. */
-extern "C" u8 D_678[];
+extern "C" u8 D_001B65A0;
 
 /**
  * @brief Fill the model's part table from its mesh.
@@ -109,19 +66,6 @@ extern "C" void func_004A7C20(LibModel* model);
  * @param links Display list the list is added to.
  */
 extern "C" void func_004AB360(LibClass177A20* list, LibModel* model, LibUpdateList* links);
-
-/**
- * @brief Point a resource's record cursor at its first part record.
- * @param resource Resource to rewind.
- */
-extern "C" void func_004D5C10(LibResourceBuffer* resource);
-
-/**
- * @brief Return the record at a resource's cursor and move the cursor to the next one.
- * @param resource Resource to read.
- * @return The record, or null at the end.
- */
-extern "C" void* func_004D5AC0(LibResourceBuffer* resource);
 
 /**
  * @brief Return the size of the payload a model draws.
@@ -716,7 +660,52 @@ float func_004A22B0(void* object)
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A22C0);
+/**
+ * @brief Set bit 0 of the model's object kind, unless its mesh has flag 0x1 or 0x2, it's a clone, or it follows
+ *        or faces the camera or has draw flag 0x20.
+ * @param model Model.
+ */
+extern "C" void func_004A22C0(LibModelBase* model)
+{
+    if (model->resource)
+    {
+        u16 flags = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource))->unk54;
+
+        if (flags & 0x1)
+        {
+            return;
+        }
+
+        if (flags & 0x2)
+        {
+            return;
+        }
+    }
+
+    if (model->original)
+    {
+        return;
+    }
+
+    u16 draw_flags = model->draw_flags;
+
+    if (draw_flags & LIB_DRAW_FLAG_0020)
+    {
+        return;
+    }
+
+    if (draw_flags & LIB_DRAW_FOLLOW_CAMERA)
+    {
+        return;
+    }
+
+    if (draw_flags & (LIB_DRAW_FACE_CAMERA_X | LIB_DRAW_FACE_CAMERA_Y | LIB_DRAW_FACE_CAMERA_Z))
+    {
+        return;
+    }
+
+    model->object_kind |= 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2370);
 
@@ -1847,7 +1836,11 @@ LibClass1779F0::LibClass1779F0()
     unk0f = 0;
 }
 
-s32 func_004A8FF0(void* object)
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Eleven.
+ */
+s32 LibClass177A20::get_default_list_kind()
 {
     return 11;
 }
@@ -1959,27 +1952,25 @@ s32 LibClass177A20::apply_payload(LibModel* model)
     return 1;
 }
 
+/** @brief Queue the list for deferred destruction. */
+void LibClass177A20::destroy()
+{
+    resident_enqueue_object(g_resident_release_queues, static_cast<LibListObject*>(this));
+}
+
 /**
- * @brief Queue the object's receiver for deferred destruction.
- * @param object Object containing the receiver at offset 0x14, or null.
+ * @brief Complete the queued DMA transfer; the list does nothing.
+ * @param channel DMA channel number.
  */
-extern "C" void lib_queue_object_release(void* object)
-{
-    u8* receiver = static_cast<u8*>(object);
-
-    if (object != 0)
-    {
-        receiver += 0x14;
-    }
-
-    resident_enqueue_object(g_resident_release_queues, receiver);
-}
-
-void func_004A9220(void* object)
+void LibClass177A20::complete_dma(u32 channel)
 {
 }
 
-void func_004A9230(void* object)
+/**
+ * @brief Start the queued DMA transfer; the list does nothing.
+ * @param channel DMA channel number.
+ */
+void LibClass177A20::submit_dma(u32 channel)
 {
 }
 
@@ -1987,7 +1978,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9240);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9600);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9770);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", update__14LibClass177A20Fv);
 
 /**
  * @brief Test whether the model's draw packet has been built; the base has none.
@@ -2040,7 +2031,7 @@ void LibClass177A20::release_model()
 {
     if (model != 0 && node_count == 0)
     {
-        lib_object_detach_owner(unk14);
+        detach_owner();
         model->clear_payload();
         model = 0;
         delete unk5c;
@@ -2058,4 +2049,52 @@ void LibClass177A20::release_model()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AB360);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", __dt__14LibClass177A20Fv);
+/** @brief Release the model and the payload buffers, then destroy the list. */
+LibClass177A20::~LibClass177A20()
+{
+    if (model != 0)
+    {
+        release_model();
+    }
+
+    resident_queue_allocation_release(g_resident_release_queues, payload_buffers[0]);
+    payload_buffers[0] = 0;
+    resident_queue_allocation_release(g_resident_release_queues, payload_buffers[1]);
+    payload_buffers[1] = 0;
+    delete unk70;
+    unk70 = 0;
+    delete unk5c;
+    unk5c = 0;
+    delete unk60;
+    unk60 = 0;
+    delete unk68;
+    unk68 = 0;
+    delete unk6c;
+    unk6c = 0;
+}
+
+/** @brief Initialize the list. */
+LibClass177A20::LibClass177A20()
+{
+    model = 0;
+    payload_buffers[0] = 0;
+    payload_buffers[1] = 0;
+    unk58 = 0;
+    unk5c = 0;
+    unk60 = 0;
+    unk68 = 0;
+    unk6c = 0;
+    unk70 = 0;
+    unk84 = 0;
+    unk8d_1 = 1;
+    unk8c = 0;
+    unk8d_0 = D_001B65A0;
+    unk89 = 0;
+    payload_set = 0;
+    unk88 = 0;
+    // TODO: The game masks one zero for both of these bits, as if they came from the same variable; I don't
+    // know what it was.
+    u8 off = 0;
+    unk8d_2 = off;
+    unk8d_3 = off;
+}
