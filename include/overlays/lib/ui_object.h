@@ -47,6 +47,28 @@ struct LibWidget : public LibListObject
         needs_redraw = 1;
     }
 
+    /**
+     * @brief Move the widget and mark it for redraw.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     */
+    void set_position(float x, float y)
+    {
+        unk18.unk00 = x;
+        unk18.unk04 = y;
+        needs_redraw = 1;
+    }
+
+    /**
+     * @brief Set the widget's width and mark it for redraw.
+     * @param width New width.
+     */
+    void set_width(float width)
+    {
+        unk18.unk08 = width;
+        needs_redraw = 1;
+    }
+
     LibContainer* container;
     LibUiRect16 unk18;
     float draw_alpha;

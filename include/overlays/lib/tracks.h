@@ -21,6 +21,39 @@ template <class T> class LibTrackPool
             slots.bits[index >> 6] &= ~((u64)1 << (index & 0x3F));
         }
 
+        /**
+         * @brief Take a free track, searching round from the slot handed out last.
+         * @return The track with its state reset, or null when every slot is used.
+         */
+        T* allocate()
+        {
+            s32 index = unk04;
+            s32 track_count = count;
+
+            if (index >= track_count)
+            {
+                index = 0;
+            }
+
+            for (s32 i = 0; i < track_count; i++)
+            {
+                if (!((slots.bits[(u32)index >> 6] >> (index & 0x3F)) & 1))
+                {
+                    unk04 = index;
+                    items[index].reset_state();
+                    slots.bits[(u32)index >> 6] |= 1LL << (index & 0x3F);
+                    return &items[index];
+                }
+
+                if (++index >= track_count)
+                {
+                    index = 0;
+                }
+            }
+
+            return 0;
+        }
+
         /** @brief Release every track in the pool and its storage. */
         void release()
         {
@@ -1278,6 +1311,16 @@ public:
      */
     u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
+    /**
+     * @brief Return one keyframe's key.
+     * @param index Keyframe index.
+     * @return The key, stored in the value's fourth component.
+     */
+    float key_at(s32 index)
+    {
+        return static_cast<LibVectorCurveTrackKey*>(key_array)[index].value.w;
+    }
+
     LibVectorCurveTrackKey* key_array;
     u8 unk08[8];
     LibVectorCurveTrackKey single_key;
@@ -1312,6 +1355,15 @@ public:
     virtual void reset_state();
 
     virtual FieldVec4A sample(float key);
+
+    /**
+     * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the value and its change per frame.
+     *
+     * At or past the last key it returns the last key's value and sets the cycle count to one.
+     * @param key Evaluation key.
+     * @return Evaluated vector.
+     */
+    FieldVec4A sample_once(float key);
 
     virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 

@@ -60,31 +60,79 @@
     },
     {
       "source": "src/overlays/lib/text_003E68C0.cpp",
-      "flags": ["-inline", "level=7"]
+      "flags": ["-O4,p", "-inline", "level=7"]
     },
     {
       "source": "src/overlays/lib/text_00429B00.cpp",
-      "flags": ["-inline", "level=7"]
+      "flags": ["-O4,p", "-inline", "level=7"]
     },
     {
       "source": "src/overlays/lib/text_00419A70.cpp",
-      "flags": ["-inline", "level=7"]
+      "flags": ["-O4,p", "-inline", "level=7"]
     },
     {
       "source": "src/overlays/lib/text_004DD440.cpp",
-      "flags": ["-inline", "level=7"]
+      "flags": ["-O4,p", "-inline", "level=7"]
     },
     {
       "source": "src/overlays/lib/text_004BD360.cpp",
-      "flags": ["-inline", "level=7"]
+      "flags": ["-O4,p", "-inline", "level=7"]
     },
     {
       "source": "src/overlays/lib/text_0047AE20.cpp",
-      "flags": ["-inline", "level=7"]
+      "flags": ["-O4,p", "-inline", "level=7"]
     },
     {
       "source": "src/overlays/lib/text_00441C40.cpp",
-      "flags": ["-inline", "level=7"]
+      "flags": ["-O4,p", "-inline", "level=7"]
+    },
+    {
+      "source": "src/overlays/lib/text_003F90C0.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_004095C0.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_00441C10.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_0044ABE0.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_0045AD10.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_0046AE20.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_0047A040.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_0047A070.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_0048B300.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_0049B820.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_004AB8B0.cpp",
+      "flags": ["-O4,p"]
+    },
+    {
+      "source": "src/overlays/lib/text_004CD3A0.cpp",
+      "flags": ["-O4,p"]
     },
     {
       "source": "src/overlays/boot/startup_checks.cpp",

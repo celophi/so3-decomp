@@ -3135,6 +3135,11 @@ void LibFloatTrack::reset_keys()
     set_before_mode(LIB_TRACK_END_CYCLE);
 }
 
+// TODO: this one only matches at level 3 while the rest of the file is level 4. The registers of `upper` and
+// the key array swap at level 4, so my source shape is probably off somewhere.
+#pragma push
+#pragma optimization_level 3
+
 /**
  * @brief Evaluate the track at a key.
  * @param key Evaluation key.
@@ -3232,6 +3237,8 @@ float LibFloatTrack::sample(float key)
     last_value = result;
     return result;
 }
+
+#pragma pop
 
 /**
  * @brief Normalize a key across the cached span and store its signed period count.

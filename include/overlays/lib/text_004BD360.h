@@ -104,6 +104,13 @@ void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, u8 flag);
 void lib_container_attach_widget(LibContainer* object, LibWidget* child);
 
 /**
+ * @brief Unlink a widget from the container and clear its owner.
+ * @param object Container receiver.
+ * @param child Widget to detach.
+ */
+void func_004C6120(LibContainer* object, LibWidget* child);
+
+/**
  * @brief Detach the widget from its associated object.
  * @param object Widget receiver.
  */
@@ -598,9 +605,25 @@ struct LibPanel : public LibWidget
     u8 unk4c[4];
     LibUiRect16 unk50;
     void* unk60;
-    u8 unk64[0x28];
+    u32 colors[4];
+    u8 unk74[0x10];
+    float unk84;
+    u8 transition_state;
+    u8 unk89;
+    u8 unk8a;
+    u8 unk8b;
     u8 unk8c;
     u8 unk8d[3];
+
+    /**
+     * @brief Test the panel's open/close transition state.
+     * @param state State to compare with; zero means no transition is running.
+     * @return One when the panel is in that state, otherwise zero.
+     */
+    u8 in_transition_state(s32 state) const
+    {
+        return transition_state == state;
+    }
 };
 
 /** How a track evaluates keys outside its first and last keyframes. */
@@ -1707,10 +1730,6 @@ void func_004C3AE0(void* object);
 
 void func_004C3AF0(void* object);
 
-void func_004C4500(void* object);
-
-void func_004C4510(void* object);
-
 /** Clear the vector at offset 0xB0 and update the associated state. */
 void func_004C2B30(void* object);
 
@@ -1735,7 +1754,6 @@ class LibMessageWindow;
 class LibMessageWindowText : public LibObject174D90
 {
 public:
-    /** @brief Destroy the text. */
     virtual ~LibMessageWindowText();
 
     /** @brief Flag the restart for the window. */

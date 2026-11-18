@@ -551,10 +551,6 @@ s32 func_004194F0(void* object);
  */
 s32 func_004152B0(void* mpeg, void* data, void* user);
 
-void func_00411E10(void* object);
-
-void func_00411E20(void* object);
-
 void func_00412C00(void* object);
 
 void func_00412C10(void* object);

@@ -779,13 +779,6 @@ struct FieldShapeListOwner20
     u32 count;
 };
 
-/** Fixed attribute payload header: Lib45B110 begins descriptor entries at0x30. */
-struct FieldShapeData30
-{
-    FieldShapeData10 prefix;
-    u8 unk10[0x20];
-};
-
 /** Attribute resource header followed by the shape data bound by the Lib loader. */
 struct FieldShapeAttributeResource
 {
@@ -828,36 +821,6 @@ public:
 
     /** @brief Release the owned vector array and component allocation. */
     void func_002DCD20();
-};
-
-/**
- * Partial 16-byte class with vtable D_1515D0 in main data. Its vtable pointer
- * follows its data at offset 0xC.
- */
-class FieldClass1515D0
-{
-public:
-    /** @brief Initialize empty owned resource storage. */
-    FieldClass1515D0()
-    {
-        unk08 = 0;
-        unk04 = 0;
-        unk00 = 0;
-    }
-
-    void* unk00;
-    void* unk04;
-    u8 unk08;
-    u8 unk09[3];
-
-    /** @brief Release the buffer when this object owns its storage. */
-    virtual ~FieldClass1515D0()
-    {
-        if (!unk08)
-        {
-            ::operator delete(unk04);
-        }
-    }
 };
 
 /** Partial FieldClass1515D0 with four more virtual slots, with vtable D_154D20 in main data. */

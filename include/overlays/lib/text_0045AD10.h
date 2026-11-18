@@ -3,9 +3,11 @@
 
 #include "types.h"
 #include "overlays/lib/ui_object.h"
+#include "overlays/lib/shape.h"
 
 
 struct FieldShapeRecord20;
+class LibScene;
 
 typedef struct LibDrawWidget LibDrawWidget;
 typedef struct LibObject174D90 LibObject174D90;
@@ -482,6 +484,19 @@ public:
 
     /** @brief Draw the moving widget. */
     virtual void draw();
+
+    /**
+     * @brief Put the widget at a position without moving there, and mark it for redraw.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     */
+    void snap_to(float x, float y)
+    {
+        position.x = x;
+        position.y = y;
+        arrived = 1;
+        needs_redraw = 1;
+    }
 };
 
 typedef ItemCreationClass175030 LibClass175030;
@@ -638,17 +653,26 @@ public:
      * @brief Initialize the runtime for a screen size.
      * @param width Screen width.
      * @param height Screen height.
-     * @param first First mode.
-     * @param second Second mode.
+     * @param reserved_width Width of an area kept out of the resource space, or zero.
+     * @param reserved_height Height of that area, or zero.
      * @param scale Scale factor.
      */
-    FieldRuntime(float width, float height, s32 first, s32 second, float scale);
+    FieldRuntime(float width, float height, u16 reserved_width, u16 reserved_height, float scale);
 
     /** @brief Release the runtime's retained objects and storage. */
     virtual ~FieldRuntime();
 
+    /**
+     * @brief Return the list kind the runtime is queued under.
+     * @return Three.
+     */
+    virtual s32 get_default_list_kind();
+
     /** @brief Hand the runtime to the release queues once, so it's deleted after the frame. */
     virtual void destroy();
+
+    /** @brief Update the runtime once per frame. */
+    virtual void update();
 
     LibManagedResourceSlot resource_slots[16];
     struct TextBank
@@ -665,9 +689,14 @@ public:
     float screen_offset_x;
     float screen_offset_y;
 
-    u8 unk544[0xC];
+    s32 unk544;
+    u32 unk548;
+    s32 resource_area_end;
     s32 unk550;
-    u8 unk554[4];
+    struct ButtonMap
+    {
+        u16 buttons[8];
+    }* button_map;
     void* display_chunks;
     void* display_first;
     void* display_last;
@@ -682,7 +711,7 @@ public:
         u16 unk02;
         u16 unk04;
     } inputs[2];
-    u8 unk5fc[2];
+    u16 unk5fc;
     u8 unk5fe;
     u8 unk5ff;
     u8 unk600;
@@ -848,12 +877,70 @@ void func_0045F580(void* first, void* second);
 s32 func_0045B920(void* shape, void* first, void* second);
 
 /**
- * @brief Bind shape storage to the supplied attribute resource.
+ * @brief Find a record of the shape with the given name in bound shape data.
  * @param storage Shape resource storage.
- * @param resource Attribute resource header and payload.
- * @return Status returned by the resource loader.
+ * @param name Shape name, compared over sixteen characters.
+ * @param offset Record offset from the shape's first record.
+ * @return The record, or null when the data is not bound, no shape has the name or the shape has no records.
  */
-s32 func_0045B210(void* storage, const void* resource);
+FieldShapeRecord20* func_0045AE10(FieldClass1515D0* storage, const char* name, s32 offset);
+
+/**
+ * @brief Set the flag of the record with the given identifier, searching a sibling run of shapes and their children.
+ * @param storage Shape resource storage.
+ * @param shape First shape of the sibling run.
+ * @param id Record identifier.
+ * @param flag New flag value.
+ */
+void func_0045AF10(FieldClass1515D0* storage, FieldShapeOwner18* shape, u16 id, s32 flag);
+
+/**
+ * @brief Set the flag of the record with the given identifier anywhere in the shape data.
+ * @param storage Shape resource storage.
+ * @param id Record identifier.
+ * @param flag New flag value.
+ */
+void func_0045B0E0(FieldClass1515D0* storage, s32 id, s32 flag);
+
+/**
+ * @brief Bind shape data: turn its offsets into pointers once and look up each shape's transform by name.
+ * @param storage Shape resource storage.
+ * @param manager Entry table searched for the shape names.
+ */
+void func_0045B110(FieldClass1515D0* storage, LibScene* manager);
+
+/**
+ * @brief Bind shape storage to a resource, freeing the previous one unless it was borrowed, and find its attribute
+ *        chunk.
+ * @param storage Shape resource storage.
+ * @param resource Resource chunks; the storage borrows them.
+ * @return One when an attribute chunk was found, otherwise zero.
+ */
+s32 func_0045B210(FieldClass1515D0* storage, void* resource);
+
+/**
+ * @brief Return one child of a shape.
+ * @param shape Shape descriptor.
+ * @param index Child index.
+ * @return The child, or null when the shape has fewer children.
+ */
+FieldShapeOwner18* func_0045B2B0(FieldShapeOwner18* shape, s32 index);
+
+/**
+ * @brief Count the children of a shape.
+ * @param shape Shape descriptor.
+ * @return Number of child shapes.
+ */
+s32 func_0045B320(FieldShapeOwner18* shape);
+
+/**
+ * @brief Look a key up in a resource slot's sorted index by halving steps.
+ * @param runtime Runtime that owns the slot table.
+ * @param slot_index Resource slot index.
+ * @param key Key to find.
+ * @return The key's data in the slot's second section, or the placeholder text when it isn't there.
+ */
+void* func_00465340(FieldRuntime* runtime, s32 slot_index, s32 key);
 
 /**
  * @brief Evaluate the shape descriptor against the supplied query.
@@ -949,9 +1036,6 @@ s32 func_0045F5A0(void* object, void* other);
  */
 s32 func_0045EBD0(void* first, void* second);
 
-/** Return the fixed integer value 3. */
-s32 func_00464E30(void* object);
-
 /** Return the fixed integer value 7. */
 s32 func_00468360(void* object);
 
@@ -987,8 +1071,6 @@ void func_004619C0(void* object);
 void func_004619D0(void* object);
 
 void func_004619E0(void* object);
-
-void func_004662A0(void* object);
 
 
 /** Forward the receiver to lib_finish_packet. */

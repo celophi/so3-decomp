@@ -1965,11 +1965,16 @@ extern "C" void* func_00411DD0(void* object, s32 count)
     return node;
 }
 
-void func_00411E10(void* object)
+/**
+ * @brief Called when the selected index changes; the base does nothing.
+ * @param index Selected index.
+ */
+void LibClass1721F0::notify_index(s32 index)
 {
 }
 
-void func_00411E20(void* object)
+/** @brief Called when the selection is cancelled; the base does nothing. */
+void LibClass1721F0::notify_cancel()
 {
 }
 
@@ -1979,26 +1984,359 @@ void LibCallbackTransform::set_default_draw_bucket()
     draw_bucket = unka8;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411E40);
+/**
+ * @brief Show or hide every row and the six aggregate widgets.
+ * @param list List to change.
+ * @param visible Nonzero to show them.
+ */
+static inline void aggregate_set_rows_visible(LibClass1721F0* list, u8 visible)
+{
+    for (s32 i = 0; i < list->unk4a0; i++)
+    {
+        static_cast<LibAggregateRow*>(list->rows[i])->set_visible(list, visible);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412110);
+    list->unk90.unk3d = visible;
+    list->unk20c.unk3d = visible;
+    list->unk260.unk3d = visible;
+    list->unke4.unk3d = visible;
+    list->unk138.unk3d = visible;
+    list->unk190.unk3d = visible;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412150);
+/**
+ * @brief Run the list's open, select and close states, after applying a pending index.
+ * @param first First update flag, unused here.
+ * @param second Second update flag, unused here.
+ * @param third Third update flag, unused here.
+ */
+void LibClass1721F0::func_00412C40(u32 first, u32 second, u32 third)
+{
+    if (unk318 != 0)
+    {
+        func_00412C10(unk304);
+        unk318 = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004121F0);
+    if (unk4a4 == 0)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004122C0);
+    switch (unk4a4)
+    {
+    case 1:
+        unk00.transition_state = 1;
+        unk4a4++;
+        break;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412360);
+    case 2:
+        if (unk00.in_transition_state(0))
+        {
+            unk317 = 1;
+            aggregate_set_rows_visible(this, 1);
+            func_004138E0(&static_cast<LibClass1723F0&>(*this), unk304, unk312, unk2f8);
+            unk4a4++;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004127E0);
+        break;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412930);
+    case 3:
+        if (func_004135D0(&static_cast<LibClass1723F0&>(*this)))
+        {
+            s32 result = func_00413460(&static_cast<LibClass1723F0&>(*this));
+
+            if (result > 0)
+            {
+                if (!unk4a8)
+                {
+                    resident_sound_play(g_sound, 1, 0, 0, 127, 64, 0);
+                }
+
+                notify_index(unk30c);
+            }
+            else if (result < 0)
+            {
+                if (!unk4a9)
+                {
+                    resident_sound_play(g_sound, 2, 0, 0, 127, 64, 0);
+                }
+
+                notify_cancel();
+            }
+
+            if (result != 0)
+            {
+                unk4a4 = 0;
+                return;
+            }
+
+            func_00413020();
+        }
+
+        func_00413750(&static_cast<LibClass1723F0&>(*this));
+        break;
+
+    case 4:
+        unk317 = 0;
+        aggregate_set_rows_visible(this, 0);
+        unk00.transition_state = 5;
+        unk4a4++;
+        break;
+
+    case 5:
+        if (unk00.in_transition_state(0))
+        {
+            unk4a4 = 0;
+            unkab = 0;
+        }
+
+        break;
+    }
+}
+
+/**
+ * @brief Read the float setting of the selected row.
+ * @return The row's setting.
+ */
+float LibClass1721F0::func_00412C30()
+{
+    return static_cast<LibAggregateRow*>(rows[unk312])->get_setting(this);
+}
+
+/**
+ * @brief Arrange the rows downwards from a height, one row spacing apart.
+ * @param value Height of the first row before the 16-unit margin.
+ */
+void LibClass1721F0::func_00412C20(float value)
+{
+    float y = 16.0f + value;
+
+    for (s32 i = 0; i < unk4a0; i++)
+    {
+        static_cast<LibAggregateRow*>(rows[i])->position_row(this, 32.0f, y);
+        y += unk2c4;
+    }
+}
+
+/**
+ * @brief Refresh the visible rows for a starting index and hide the rows past the last entry.
+ * @param index First entry index shown.
+ */
+void LibClass1721F0::func_00412C10(s32 index)
+{
+    for (s32 row_index = 0; row_index < unk4a0; index++, row_index++)
+    {
+        LibAggregateRow* row = static_cast<LibAggregateRow*>(rows[row_index]);
+
+        if (index < unk2f8)
+        {
+            row->set_visible(this, 1);
+            row->refresh_row(this, index);
+        }
+        else
+        {
+            row->set_visible(this, 0);
+        }
+    }
+}
+
+/**
+ * @brief Show or hide every row and the six aggregate widgets.
+ * @param visible Nonzero to show them.
+ */
+void LibClass1721F0::set_rows_visible(u8 visible)
+{
+    aggregate_set_rows_visible(this, visible);
+}
+
+/**
+ * @brief Set the list up: its frame, scissors, markers, indicator, cursor and rows.
+ * @param count Number of entries.
+ * @param flags Bit 0 opens the list with its transition, bits 1 and 2 show the two markers, bits 3 and 4 mute the
+ *              confirm and cancel sounds.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width List width.
+ * @param height List height.
+ * @param row_height Height of one row.
+ * @param timing Scroll timing passed to the aggregate.
+ * @return One on success, or zero when a widget or row couldn't be set up.
+ */
+s32 LibClass1721F0::init(s32 count, s32 flags, float x, float y, float width, float height, float row_height, float timing)
+{
+    lib_container_init(this, 5, x, y, 0, 0.0f, 0);
+    unk490 = x;
+    unk494 = y;
+    unk498 = width;
+    unk49c = height;
+    s32 visible_rows = (s32)(height - 32.0f) / row_height;
+    unk4a0 = visible_rows + 2;
+
+    if (unk4a0 <= 0 || unk4a0 > 32)
+    {
+        return 0;
+    }
+
+    if (!unk00.init_frame(width, height))
+    {
+        return 0;
+    }
+
+    lib_container_attach_widget(this, &unk00);
+
+    if (!lib_scissor_init_rectangle(&unk90, 32.0f, 16.0f, width - 66.0f, height - 32.0f))
+    {
+        return 0;
+    }
+
+    lib_container_attach_widget(this, &unk90);
+
+    if (!func_0041AD10(&unk20c, 32.0f, 16.0f, width - 66.0f, row_height))
+    {
+        return 0;
+    }
+
+    if (flags & 2)
+    {
+        lib_container_attach_widget(this, &unk20c);
+    }
+
+    if (!lib_marker_init_rectangle(&unk260, 32.0f, 40.0f, width - 66.0f, 2.25f))
+    {
+        return 0;
+    }
+
+    if (flags & 4)
+    {
+        lib_container_attach_widget(this, &unk260);
+    }
+
+    for (s32 index = 0; index < 32; index++)
+    {
+        rows[index] = 0;
+    }
+
+    for (s32 index = 0; index < unk4a0; index++)
+    {
+        void* row = create_row(index);
+
+        if (!row)
+        {
+            return 0;
+        }
+
+        rows[index] = row;
+    }
+
+    if (!lib_scissor_init_reset(&unke4, 1))
+    {
+        return 0;
+    }
+
+    lib_container_attach_widget(this, &unke4);
+
+    if (!lib_list_indicator_init(&unk138, width - 26.0f, 16.0f, height - 32.0f, 100.0f, 0.0f))
+    {
+        return 0;
+    }
+
+    lib_container_attach_widget(this, &unk138);
+
+    if (!lib_moving_widget_init_position(&unk190, 32.0f, 30.0f))
+    {
+        return 0;
+    }
+
+    lib_container_attach_widget(this, &unk190);
+    aggregate_set_rows_visible(this, 0);
+    func_00413C00(&static_cast<LibClass1723F0&>(*this), count, 1, visible_rows, width - 66.0f, row_height, timing);
+    unk4a8 = (flags & 8) != 0;
+    unk4a9 = (flags & 0x10) != 0;
+    unk4aa = (flags & 1) != 0;
+
+    if (unk4aa)
+    {
+        unk00.unk8c = 1;
+        unk00.transition_state = 0;
+        unk00.needs_redraw = 1;
+        unk4a4 = 2;
+    }
+    else
+    {
+        unkab = 0;
+        unk4a4 = 0;
+    }
+
+    return 1;
+}
 
 /** @brief Destroy the panel. */
-LibClass1722E0::~LibClass1722E0()
+inline LibClass1722E0::~LibClass1722E0()
 {
 }
+
+/** @brief Release the widget storage and destroy its base. */
+inline ItemCreationClass1746A0::~ItemCreationClass1746A0()
+{
+}
+
+/** @brief Destroy the indicator. */
+inline LibListIndicator::~LibListIndicator()
+{
+}
+
+/** @brief Release the widget storage and destroy its bases. */
+inline ItemCreationClass175030::~ItemCreationClass175030()
+{
+}
+
+/** @brief Release the widget storage and destroy its base. */
+inline ItemCreationClass172600::~ItemCreationClass172600()
+{
+}
+
+/** @brief Release the widget storage and destroy its base. */
+inline ItemCreationClass172870::~ItemCreationClass172870()
+{
+}
+
+// TODO: the list's destructor inlines LibClass172320's but calls LibClass1723F0's, and LibClass172320's own copy
+// inlines LibClass1723F0's but calls the widgets', so I've scoped the inline depth to one around these two.
+#pragma push
+#pragma inline_depth(1)
+
+/** @brief Destroy the aggregate and the container. */
+inline LibClass172320::~LibClass172320()
+{
+}
+
+/** @brief Detach the remaining widgets and delete the rows. */
+LibClass1721F0::~LibClass1721F0()
+{
+    for (;;)
+    {
+        LibListSentinel* node = sentinel.next;
+
+        if (&sentinel == node)
+        {
+            break;
+        }
+
+        func_004C6120(this, static_cast<LibWidget*>(node));
+    }
+
+    for (s32 i = 0; i < 32; i++)
+    {
+        if (rows[i])
+        {
+            delete static_cast<LibAggregateRow*>(rows[i]);
+            rows[i] = 0;
+        }
+    }
+}
+
+#pragma pop
 
 /** @brief Called once the position reaches the target; the base version does nothing. */
 void LibMovementState::on_arrived()
@@ -2040,53 +2378,395 @@ void LibContainer::func_00412C40(u32 first, u32 second, u32 third)
 {
 }
 
-/** @brief Destroy the aggregate and the container. */
-LibClass172320::~LibClass172320()
+/**
+ * @brief Put the two markers on the selected cell, and give a marker with no width of its own the selected row's.
+ * @param aggregate Widget aggregate.
+ */
+static inline void aggregate_place_markers(LibClass1723F0* aggregate)
 {
+    aggregate->unk20c.set_position(aggregate->unk2d4 + aggregate->unk2c0 * (float)(aggregate->unk312 % aggregate->unk310),
+                                   aggregate->unk2d8 + aggregate->unk2c4 * (float)(aggregate->unk312 / aggregate->unk310));
+
+    if (aggregate->unk2dc == 0.0f)
+    {
+        aggregate->unk20c.set_width(aggregate->func_00412C30());
+    }
+
+    aggregate->unk260.set_position(aggregate->unk2e0 + aggregate->unk2c0 * (float)(aggregate->unk312 % aggregate->unk310),
+                                   aggregate->unk2e4 + aggregate->unk2c4 * (float)(aggregate->unk312 / aggregate->unk310));
+
+    if (aggregate->unk2e8 == 0.0f)
+    {
+        aggregate->unk260.set_width(aggregate->func_00412C30());
+    }
 }
 
-/** @brief Release the widget storage and destroy its base. */
-ItemCreationClass1746A0::~ItemCreationClass1746A0()
+/**
+ * @brief Set the scroll indicator's position from the first row shown and the scroll offset.
+ * @param aggregate Widget aggregate.
+ */
+static inline void aggregate_update_indicator(LibClass1723F0* aggregate)
 {
+    aggregate->unk138.set_position(100.0f * (aggregate->unk2f0 + (float)aggregate->unk304 * aggregate->unk2c4) /
+                                   ((float)aggregate->unk2fc * aggregate->unk2c4));
 }
 
-/** @brief Destroy the indicator. */
-LibListIndicator::~LibListIndicator()
+/**
+ * @brief Apply pad input to the selection, scrolling and paging, and count down the page repeat delays.
+ * @return True when the selection or scroll position changed.
+ */
+bool LibClass1723F0::func_00413020()
 {
+    bool changed = false;
+    s32 selection = unk312;
+    s32 row_step = 0;
+    u16 buttons = g_field_runtime->inputs[unk315].unk04;
+    s32 page_step = 0;
+
+    if (buttons & 0x10)
+    {
+        if (selection < unk310)
+        {
+            row_step--;
+        }
+        else
+        {
+            selection -= unk310;
+        }
+    }
+    else if (buttons & 0x40)
+    {
+        if (selection >= unk310 * (unk311 - 1))
+        {
+            row_step++;
+        }
+        else
+        {
+            selection += unk310;
+        }
+    }
+    else if (buttons & 0x80)
+    {
+        if (unk310 > 1)
+        {
+            if (selection == 0)
+            {
+                selection = unk310 - 1;
+                row_step--;
+            }
+            else
+            {
+                selection--;
+            }
+        }
+    }
+    else if (buttons & 0x20)
+    {
+        if (unk310 > 1)
+        {
+            if (selection == unk310 * unk311 - 1)
+            {
+                row_step++;
+                selection = unk310 * (unk311 - 1);
+            }
+            else
+            {
+                selection++;
+            }
+        }
+    }
+    else if ((buttons & 0x400) && page_repeat_delay[0] <= 0.0f)
+    {
+        if (unk304 > 0)
+        {
+            page_step--;
+        }
+        else
+        {
+            selection %= unk310;
+        }
+
+        page_repeat_delay[0] = 4.0f;
+        page_repeat_delay[1] = 0.0f;
+    }
+    else if ((buttons & 0x800) && page_repeat_delay[1] <= 0.0f)
+    {
+        if (unk304 < unk300)
+        {
+            page_step++;
+        }
+        else
+        {
+            selection = selection % unk310 + unk310 * (unk311 - 1);
+        }
+
+        page_repeat_delay[0] = 0.0f;
+        page_repeat_delay[1] = 4.0f;
+    }
+
+    if (selection != unk312)
+    {
+        unk312 = selection;
+        float duration;
+
+        if (row_step != 0)
+        {
+            duration = unk2c8 / 60.0f;
+        }
+        else
+        {
+            duration = 0.05f;
+        }
+
+        unk190.set_move_target(unk2cc + unk2c0 * (selection % unk310), unk2d0 + unk2c4 * (selection / unk310), duration);
+        changed = true;
+    }
+
+    if ((row_step < 0 && unk304 > 0) || (row_step > 0 && unk304 < unk300))
+    {
+        unk313 = row_step;
+        unk314 = 1;
+        changed = true;
+        page_repeat_delay[1] = 0.0f;
+        page_repeat_delay[0] = 0.0f;
+    }
+
+    if (page_step != 0)
+    {
+        if (page_step < 0)
+        {
+            unk304 -= unk311;
+
+            if (unk304 < 0)
+            {
+                unk304 = 0;
+            }
+        }
+        else
+        {
+            unk304 += unk311;
+
+            if (unk304 > unk300)
+            {
+                unk304 = unk300;
+            }
+        }
+
+        func_00412C10(unk304);
+        aggregate_update_indicator(this);
+        changed = true;
+    }
+
+    if (changed)
+    {
+        resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
+    }
+
+    float rate = g_field_runtime->rate;
+
+    for (s32 i = 0; i < 2; i++)
+    {
+        float delay = page_repeat_delay[i];
+
+        if (delay > 0.0f)
+        {
+            delay -= rate;
+        }
+
+        page_repeat_delay[i] = delay;
+    }
+
+    return changed;
 }
 
-/** @brief Release the widget storage and destroy its bases. */
-ItemCreationClass175030::~ItemCreationClass175030()
+/**
+ * @brief Read the result of a running selection from the pad and record the chosen entry.
+ * @param aggregate Widget aggregate.
+ * @return Positive when an entry was chosen, negative when the selection was cancelled, otherwise zero.
+ */
+extern "C" s32 func_00413460(LibClass1723F0* aggregate)
 {
+    // TODO: a goto is the only way I've found to leave the loop from inside the switch without an extra test.
+    s32 result = 0;
+    aggregate->unk308 = aggregate->unk312 + aggregate->unk304 * aggregate->unk310 + 1;
+    u32 mask = aggregate->unk2f4;
+    u16 pressed = g_field_runtime->inputs[aggregate->unk315].unk02;
+
+    for (s32 i = 0; i < 4; i++, mask >>= 1)
+    {
+        if (mask & 1)
+        {
+            switch (i)
+            {
+            case 0:
+                if (pressed & g_field_runtime->button_map->buttons[1])
+                {
+                    result = -1;
+                    goto done;
+                }
+
+                break;
+
+            case 1:
+                if (pressed & g_field_runtime->button_map->buttons[0])
+                {
+                    result = 1;
+                    goto done;
+                }
+
+                break;
+
+            case 2:
+                if (pressed & g_field_runtime->button_map->buttons[2])
+                {
+                    result = 2;
+                    goto done;
+                }
+
+                break;
+
+            case 3:
+                if (pressed & g_field_runtime->button_map->buttons[3])
+                {
+                    result = 3;
+                    goto done;
+                }
+
+                break;
+            }
+        }
+    }
+
+done:
+    if (result < 0)
+    {
+        aggregate->unk30c = 0;
+        aggregate->unk316 = 0;
+    }
+    else if (result > 0)
+    {
+        if (aggregate->unk308 <= aggregate->unk2f8)
+        {
+            aggregate->unk30c = aggregate->unk308;
+            aggregate->unk316 = result;
+        }
+        else
+        {
+            result = 0;
+        }
+    }
+
+    return result;
 }
 
-/** @brief Release the widget storage and destroy its base. */
-ItemCreationClass172600::~ItemCreationClass172600()
+/**
+ * @brief Test whether the aggregate takes input this frame, and place the markers when it does.
+ * @param aggregate Widget aggregate.
+ * @return One when the cursor has arrived and no scroll is running, otherwise zero.
+ */
+extern "C" u8 func_004135D0(LibClass1723F0* aggregate)
 {
+    u8 ready = aggregate->unk190.arrived && aggregate->unk314 == 0;
+
+    if (ready)
+    {
+        aggregate_place_markers(aggregate);
+    }
+
+    return ready;
 }
 
-/** @brief Release the widget storage and destroy its base. */
-ItemCreationClass172870::~ItemCreationClass172870()
+/**
+ * @brief Run a pending row scroll and update the scroll indicator.
+ * @param aggregate Widget aggregate.
+ */
+extern "C" void func_00413750(LibClass1723F0* aggregate)
 {
+    if (aggregate->unk314 == 1)
+    {
+        aggregate->unk2f0 = 0.0f;
+        aggregate->unk314 = 2;
+
+        if (aggregate->unk313 < 0)
+        {
+            aggregate->func_00412C10(aggregate->unk304 - 1);
+            aggregate->unk2ec = -aggregate->unk2c4;
+        }
+    }
+
+    if (aggregate->unk314 == 2)
+    {
+        float per_frame = aggregate->unk2c4 / aggregate->unk2c8;
+        float step = per_frame * g_field_runtime->rate;
+
+        if (aggregate->unk313 < 0)
+        {
+            aggregate->unk2f0 -= step;
+            aggregate->unk2ec += step;
+
+            if (!(aggregate->unk2ec < 0.0f))
+            {
+                aggregate->unk2f0 = 0.0f;
+                aggregate->unk2ec = 0.0f;
+                aggregate->unk304--;
+                aggregate->unk314 = 0;
+            }
+        }
+        else
+        {
+            aggregate->unk2f0 += step;
+            aggregate->unk2ec -= step;
+
+            if (aggregate->unk2ec <= -aggregate->unk2c4)
+            {
+                aggregate->unk2f0 = 0.0f;
+                aggregate->unk2ec = 0.0f;
+                aggregate->unk304++;
+                aggregate->func_00412C10(aggregate->unk304);
+                aggregate->unk314 = 0;
+            }
+        }
+
+        aggregate->func_00412C20(aggregate->unk2ec);
+        aggregate_update_indicator(aggregate);
+    }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412FE0);
+/**
+ * @brief Start a selection: set the entry count and position, refresh the rows and place the cursor and markers.
+ * @param aggregate Widget aggregate.
+ * @param first First entry index shown.
+ * @param selected Selected row.
+ * @param count Number of entries.
+ */
+extern "C" void func_004138E0(LibClass1723F0* aggregate, s32 first, s32 selected, s32 count)
+{
+    aggregate->unk2f8 = count;
+    aggregate->unk2fc = (aggregate->unk2f8 + aggregate->unk310 - 1) / aggregate->unk310;
+    aggregate->unk300 = aggregate->unk2fc - aggregate->unk311;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00412FF0);
+    if (aggregate->unk300 < 0)
+    {
+        aggregate->unk300 = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413000);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413010);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413020);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413460);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004135D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413750);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004138E0);
+    aggregate->unk304 = first;
+    aggregate->unk312 = selected;
+    aggregate->unk308 = selected + first * aggregate->unk310 + 1;
+    aggregate->unk30c = -1;
+    aggregate->func_00412C10(aggregate->unk304);
+    aggregate->unk2f0 = 0.0f;
+    aggregate->unk2ec = 0.0f;
+    aggregate->unk314 = 0;
+    aggregate->func_00412C20(aggregate->unk2ec);
+    aggregate->unk190.snap_to(aggregate->unk2cc + aggregate->unk2c0 * (float)(aggregate->unk312 % aggregate->unk310),
+                              aggregate->unk2d0 + aggregate->unk2c4 * (float)(aggregate->unk312 / aggregate->unk310));
+    aggregate_place_markers(aggregate);
+    aggregate->unk138.set_extent(100.0f * (float)aggregate->unk311 / (float)aggregate->unk2fc);
+    aggregate_update_indicator(aggregate);
+    aggregate->page_repeat_delay[1] = 0.0f;
+    aggregate->page_repeat_delay[0] = 0.0f;
+}
 
 /**
  * @brief Point the aggregate's list indicator at its scroll position, as a percentage.
@@ -2094,8 +2774,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004138E0);
  */
 extern "C" void func_00413BB0(LibClass1723F0* aggregate)
 {
-    aggregate->unk138.set_position(100.0f * (aggregate->unk2f0 + aggregate->unk304 * aggregate->unk2c4) /
-                                   (aggregate->unk2fc * aggregate->unk2c4));
+    aggregate_update_indicator(aggregate);
 }
 
 /**
@@ -2332,9 +3011,106 @@ void LibMovieStream::stop_sound()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004144F0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004149B0);
+/** Stream data libmpeg hands to a stream callback: the payload sits in the demultiplexer's ring. */
+struct LibMpegStreamData
+{
+    s32 type;
+    u8* header;
+    u8* data;
+    s32 length;
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414AC0);
+extern "C" s32 func_00415D30(u8* first, s32 first_size, u8* second, s32 second_size, const u8* head, s32 head_size, const u8* body,
+                             s32 body_size);
+
+/**
+ * @brief Split a stream's free space into the part up to the end of its ring and the part that wraps.
+ * @param stream Stream to look at.
+ * @param first Receives the start of the free space.
+ * @param first_size Receives the size of the part before the end of the ring.
+ * @param second Receives the start of the ring when the free space wraps, otherwise null.
+ * @param second_size Receives the size of the wrapped part.
+ */
+static inline void movie_stream_free_space(LibMovieStream* stream, u8** first, s32* first_size, u8** second, s32* second_size)
+{
+    s32 free_size = stream->size - stream->fill;
+
+    if (stream->size - stream->position >= free_size)
+    {
+        *first = stream->data + stream->position;
+        *first_size = free_size;
+        *second = 0;
+        *second_size = 0;
+    }
+    else
+    {
+        *first = stream->data + stream->position;
+        *first_size = stream->size - stream->position;
+        *second = stream->data;
+        *second_size = free_size - (stream->size - stream->position);
+    }
+}
+
+/**
+ * @brief Copy a packet's payload, minus its four-byte header, out of the demultiplexer's ring into a stream's ring.
+ * @param stream Stream receiving the payload.
+ * @param packet Packet from libmpeg.
+ * @return One when the payload was copied, or zero when it didn't fit.
+ */
+static inline s32 movie_stream_write(LibMovieStream* stream, LibMpegStreamData* packet)
+{
+    LibMovieStreamBuffer* buffer = stream->buffer;
+    s32 size = buffer->size;
+    u8* head = packet->data + 4;
+    u8* end = buffer->data + size;
+
+    if (!(head < end))
+    {
+        head -= size;
+    }
+
+    s32 head_size = end - head;
+    u8* body = buffer->data;
+    s32 length = packet->length - 4;
+    head_size = head_size < length ? head_size : length;
+    s32 body_size = length - head_size;
+    u8* first;
+    s32 first_size;
+    u8* second;
+    s32 second_size;
+    movie_stream_free_space(stream, &first, &first_size, &second, &second_size);
+    s32 written = func_00415D30(first, first_size, second, second_size, head, head_size, body, body_size);
+    stream->position = (stream->position + written) % stream->size;
+    stream->fill += written;
+    stream->total += written;
+    return written > 0;
+}
+
+/**
+ * @brief Stream callback for the second kind of sound stream: mark the stream's kind and take the payload.
+ * @param mpeg libmpeg decoder; unused.
+ * @param packet Stream data.
+ * @param stream Stream the callback was registered for.
+ * @return One when the payload was copied, or zero when it didn't fit.
+ */
+extern "C" s32 func_004149B0(void* mpeg, LibMpegStreamData* packet, LibMovieStream* stream)
+{
+    stream->kind = 2;
+    return movie_stream_write(stream, packet);
+}
+
+/**
+ * @brief Stream callback for the first kind of sound stream: mark the stream's kind and take the payload.
+ * @param mpeg libmpeg decoder; unused.
+ * @param packet Stream data.
+ * @param stream Stream the callback was registered for.
+ * @return One when the payload was copied, or zero when it didn't fit.
+ */
+extern "C" s32 func_00414AC0(void* mpeg, LibMpegStreamData* packet, LibMovieStream* stream)
+{
+    stream->kind = 1;
+    return movie_stream_write(stream, packet);
+}
 
 // TODO: The constructor inlines reset, an ordinary function, so I think the unit was built with auto-inlining, as
 // text_00419A70 seems to be. This scoped pragma stands in for it until the flags are settled.
@@ -2565,7 +3341,46 @@ extern "C" s32 func_004159E0(LibMovieDecoder* decoder)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415A70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415D30);
+/**
+ * @brief Copy a header and a body into the two parts of a ring buffer's free space.
+ * @param first Start of the free space.
+ * @param first_size Size of the part before the end of the ring.
+ * @param second Start of the ring, for the part that wraps.
+ * @param second_size Size of the wrapped part.
+ * @param head Header bytes.
+ * @param head_size Header size.
+ * @param body Body bytes.
+ * @param body_size Body size.
+ * @return Bytes written, or 0 when they don't fit.
+ */
+extern "C" inline s32 func_00415D30(u8* first, s32 first_size, u8* second, s32 second_size, const u8* head, s32 head_size, const u8* body,
+                                    s32 body_size)
+{
+    if (first_size + second_size < head_size + body_size)
+    {
+        return 0;
+    }
+
+    if (head_size >= first_size)
+    {
+        memcpy_guess(first, head, first_size);
+        memcpy_guess(second, head + first_size, head_size - first_size);
+        memcpy_guess(second + head_size - first_size, body, body_size);
+    }
+    else if (body_size >= first_size - head_size)
+    {
+        memcpy_guess(first, head, head_size);
+        memcpy_guess(first + head_size, body, first_size - head_size);
+        memcpy_guess(second, body + first_size - head_size, body_size - (first_size - head_size));
+    }
+    else
+    {
+        memcpy_guess(first, head, head_size);
+        memcpy_guess(first + head_size, body, body_size);
+    }
+
+    return head_size + body_size;
+}
 
 extern "C" void func_00415A70(LibMovieDecoder* decoder);
 
@@ -2606,50 +3421,6 @@ extern "C" void func_00417D30(LibMovieRing* ring, s32 amount);
 
 extern "C" void func_00417E50(LibMovieRing* ring, u8** first, s32* first_size, u8** second, s32* second_size);
 
-// TODO: func_00415D30 is the out-of-line copy of this, which the stream callbacks call; LibMovieDecoder::end_stream
-// inlines it. This body gives the inlined copy, but its out-of-line copy doesn't keep first_size - head_size in a
-// register the way func_00415D30 does, so the two aren't one function yet.
-/**
- * @brief Copy a header and a body into the two parts of a ring buffer's free space.
- * @param first Start of the free space.
- * @param first_size Size of the part before the end of the ring.
- * @param second Start of the ring, for the part that wraps.
- * @param second_size Size of the wrapped part.
- * @param head Header bytes.
- * @param head_size Header size.
- * @param body Body bytes.
- * @param body_size Body size.
- * @return Bytes written, or 0 when they don't fit.
- */
-static inline s32 lib_movie_ring_write(u8* first, s32 first_size, u8* second, s32 second_size, const u8* head,
-                                       s32 head_size, const u8* body, s32 body_size)
-{
-    if (first_size + second_size < head_size + body_size)
-    {
-        return 0;
-    }
-
-    if (first_size <= head_size)
-    {
-        memcpy_guess(first, head, first_size);
-        memcpy_guess(second, head + first_size, head_size - first_size);
-        memcpy_guess(second + head_size - first_size, body, body_size);
-    }
-    else if (body_size >= first_size - head_size)
-    {
-        memcpy_guess(first, head, head_size);
-        memcpy_guess(first + head_size, body, first_size - head_size);
-        memcpy_guess(second, body + first_size - head_size, body_size - (first_size - head_size));
-    }
-    else
-    {
-        memcpy_guess(first, head, head_size);
-        memcpy_guess(first + head_size, body, body_size);
-    }
-
-    return head_size + body_size;
-}
-
 /**
  * @brief Round unkC999C up to a whole 0x800-byte sector while holding its semaphore.
  * @param ring Ring to update.
@@ -2688,7 +3459,7 @@ s32 LibMovieDecoder::end_stream()
 
     u8* first_uncached = (u8*)((u32)first | UNCACHED_SEGMENT);
     u8* second_uncached = (u8*)((u32)second | UNCACHED_SEGMENT);
-    func_00417D30(this, lib_movie_ring_write(first_uncached, first_size, second_uncached, second_size, end_code.bytes, 4, 0, 0));
+    func_00417D30(this, func_00415D30(first_uncached, first_size, second_uncached, second_size, end_code.bytes, 4, 0, 0));
     lib_movie_align_fill(this);
 
     if (stopped == 0)
@@ -3239,3 +4010,7 @@ s32 func_004194F0(void* object)
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00419500);
+
+// TODO: the compiler emits its out-of-line copies of inline destructors with whatever inline depth is set here at
+// the end of the file. The list aggregate's copies (LibClass172320, LibClass1723F0) only match at depth one.
+#pragma inline_depth(1)

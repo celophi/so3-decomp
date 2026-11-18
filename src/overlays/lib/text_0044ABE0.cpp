@@ -85,6 +85,8 @@ struct LibShortBitTableHeader
 class LibClass174C70 : public LibClass174C90
 {
 public:
+    LibClass174C70();
+
     virtual ~LibClass174C70();
 
     /**
@@ -116,6 +118,8 @@ public:
 class LibClass174CB0 : public LibClass174C90
 {
 public:
+    LibClass174CB0();
+
     virtual ~LibClass174CB0();
 
     /**
@@ -557,7 +561,8 @@ typedef struct LibIndexedResourceState
 
 extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 index);
 
-extern "C" s32 func_00467800(ItemCreationClass174C40* object, s32 resource, s32 first, s32 second, s32 third, s32 fourth, float x, float y);
+extern "C" s32 func_00467800(ItemCreationClass175110* object, s32 resource, void* source, const LibImageFormat* format, u32 first, u8 second, float x,
+                             float y);
 
 extern "C" void func_00465A90(void* owner, LibCallbackTransform* object);
 
@@ -1144,6 +1149,17 @@ public:
     virtual ~LibClass174970();
 
     virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Set the grid size and replace the packet buffer with one big enough for it.
+     * @param columns Number of columns.
+     * @param rows Number of rows.
+     */
+    void set_grid_size(s32 columns, s32 rows);
+
+    u8 unk260[0x20];
+    s32 columns;
+    s32 rows;
 };
 
 /** LibClass1748D0 that LibClass174AC0 and LibClass174B70 build on, with vtables D_174A10 and D_174A94 in main data. */
@@ -1256,7 +1272,18 @@ LibClass174970::~LibClass174970()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ED80);
+/**
+ * @brief Set the grid size and replace the packet buffer with one big enough for it.
+ * @param columns Number of columns.
+ * @param rows Number of rows.
+ */
+void LibClass174970::set_grid_size(s32 columns, s32 rows)
+{
+    this->columns = columns;
+    this->rows = rows;
+    delete packet;
+    packet = new (0) LibPacketBuffer(columns * rows * 6 + rows * 16 + 0x20);
+}
 
 /** @brief Start with type ID 0xA02 and no buffers. */
 LibClass174970::LibClass174970()
@@ -1624,7 +1651,20 @@ void LibClass174C70::set_borrowed_data(void* value)
     records = reinterpret_cast<u8*>(table) + table->records_offset;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454650);
+/** Rotation that turns (x, y, z) into (x, -z, y), rebuilt whenever a LibClass174C70 is constructed. */
+extern "C" LibMatrix44Value D_0050CA50;
+
+/** @brief Start as an entry of kind 3 and rebuild the axis-swap matrix at D_0050CA50. */
+LibClass174C70::LibClass174C70()
+{
+    unk19 = 0;
+    unk0f = 3;
+    D_0050CA50.set_identity();
+    D_0050CA50.m[1][1] = 0.0f;
+    D_0050CA50.m[2][2] = 0.0f;
+    D_0050CA50.m[1][2] = -1.0f;
+    D_0050CA50.m[2][1] = 1.0f;
+}
 
 /**
  * @brief Return the entry's type code.
@@ -1678,7 +1718,20 @@ void LibClass174CB0::set_borrowed_data(void* value)
     records = reinterpret_cast<u8*>(table) + table->records_offset;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454D40);
+/** Rotation that turns (x, y, z) into (x, -z, y), rebuilt whenever a LibClass174CB0 is constructed. */
+extern "C" LibMatrix44Value D_0050CA90;
+
+/** @brief Start as an entry of kind 4 and rebuild the axis-swap matrix at D_0050CA90. */
+LibClass174CB0::LibClass174CB0()
+{
+    unk19 = 0;
+    unk0f = 4;
+    D_0050CA90.set_identity();
+    D_0050CA90.m[1][1] = 0.0f;
+    D_0050CA90.m[2][2] = 0.0f;
+    D_0050CA90.m[1][2] = -1.0f;
+    D_0050CA90.m[2][1] = 1.0f;
+}
 
 /**
  * @brief Read the data referenced by the resource payload header.

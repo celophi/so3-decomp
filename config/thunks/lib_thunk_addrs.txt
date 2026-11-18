@@ -46,3 +46,8 @@
 @528@submit_dma__14LibClass1748D0FUi = 0x003F45D0;
 @144@on_packet_complete__18LibSelectionCursorFUi = 0x004675E0;
 @176@__dt__18LibSelectionCursorFv = 0x004675F0;
+@32@__dt__14LibClass1721F0Fv = 0x00412FE0;
+@240@func_00412C30__14LibClass1721F0Fv = 0x00412FF0;
+@240@func_00412C20__14LibClass1721F0Ff = 0x00413000;
+@240@func_00412C10__14LibClass1721F0Fi = 0x00413010;
+@32@__dt__14LibClass174F70Fv = 0x00466E30;

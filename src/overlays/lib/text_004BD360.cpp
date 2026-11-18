@@ -181,13 +181,6 @@ static inline FieldVec4A& matrix_row_vector(LibMatrix44Value& matrix, s32 row)
     return *(FieldVec4A*)matrix.m[row];
 }
 
-/**
- * @brief Unlink a container child.
- * @param object Container.
- * @param child Widget to unlink.
- */
-extern "C" void func_004C6120(LibContainer* object, LibWidget* child);
-
 /** Partial text resource fields and the inherited redraw flag. */
 typedef struct LibTextResourceState
 {
@@ -678,6 +671,11 @@ LibAnimation::LibAnimation()
     object_kind |= LIB_OBJECT_KIND_ANIMATION;
 }
 
+// TODO: this one only matches at level 3 while the rest of the file is level 4. I think the two key reads
+// in the extrapolation went through a helper I haven't worked out yet.
+#pragma push
+#pragma optimization_level 3
+
 /**
  * @brief Evaluate the track at a key, extrapolating past either end, and cache the value and its change per frame.
  * @param key Evaluation key.
@@ -807,7 +805,71 @@ FieldVec4A LibVectorCurveTrack::sample(float key)
     return *reinterpret_cast<FieldVec4A*>(&result);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C0CA0);
+#pragma pop
+
+/**
+ * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the value and its change per frame.
+ * @param key Evaluation key.
+ * @return Evaluated vector; the last key's value at or past the last key.
+ */
+FieldVec4A LibVectorCurveTrack::sample_once(float key)
+{
+    FieldVec4B result;
+
+    if (!key_array)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.key_count == 1)
+    {
+        return *reinterpret_cast<FieldVec4A*>(&static_cast<LibVectorCurveTrackKey*>(key_array)[0].value);
+    }
+
+    if (!(key < key_at(state.key_count - 1)))
+    {
+        state.cycle_count = 1;
+        state.search_index = 0;
+        return *reinterpret_cast<FieldVec4A*>(&static_cast<LibVectorCurveTrackKey*>(key_array)[state.key_count - 1].value);
+    }
+
+    state.cycle_count = 0;
+
+    while (state.search_index > 0 && key < key_at(state.search_index))
+    {
+        state.search_index--;
+    }
+
+    if (state.search_index < 0)
+    {
+        state.search_index = 0;
+    }
+
+    while (state.search_index + 1 < state.key_count && !(key < key_at(state.search_index + 1)))
+    {
+        state.search_index++;
+    }
+
+    if (state.search_index >= state.key_count - 1)
+    {
+        state.search_index = state.key_count - 2;
+    }
+
+    if (state.segment_lower != state.search_index)
+    {
+        state.segment_lower = state.search_index;
+        LibVectorCurveTrackKey* first = static_cast<LibVectorCurveTrackKey*>(key_array) + state.search_index;
+        LibVectorCurveTrackKey* second = static_cast<LibVectorCurveTrackKey*>(key_array) + (state.search_index + 1);
+        curve_segment.set_endpoints(first->value.w, second->value.w, reinterpret_cast<const FieldVec4A*>(&first->value),
+                                    reinterpret_cast<const FieldVec4A*>(&first->out_tangent), reinterpret_cast<const FieldVec4A*>(&second->value),
+                                    reinterpret_cast<const FieldVec4A*>(&second->in_tangent));
+    }
+
+    result = curve_segment.interpolate(key);
+    value_rate = vector_scaled(g_inverse_frame_ticks, vector_difference(result, last_value));
+    last_value = result;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 /**
  * @brief Evaluate the track at a key and cache the value and its change per second.
@@ -1234,21 +1296,125 @@ u8 LibVectorTrackBase::find_surrounding_keys(float key, s32* lower, s32* upper)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1C20);
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatTrack* float_track_pool_allocate(LibTrackPool<LibPooledFloatTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1D30);
+    return pool->allocate();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1E50);
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledVectorTrack* vector_track_pool_allocate(LibTrackPool<LibPooledVectorTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C1F60);
+    return pool->allocate();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C2080);
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledSlerpQuaternionTrack* slerp_quaternion_track_pool_allocate(LibTrackPool<LibPooledSlerpQuaternionTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C21A0);
+    return pool->allocate();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C22B0);
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatCurveTrack* float_curve_track_pool_allocate(LibTrackPool<LibPooledFloatCurveTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C23C0);
+    return pool->allocate();
+}
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledVectorCurveTrack* vector_curve_track_pool_allocate(LibTrackPool<LibPooledVectorCurveTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
+
+    return pool->allocate();
+}
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledFloatQuaternionTrack* float_quaternion_track_pool_allocate(LibTrackPool<LibPooledFloatQuaternionTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
+
+    return pool->allocate();
+}
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledQuaternionCurveTrack* quaternion_curve_track_pool_allocate(LibTrackPool<LibPooledQuaternionCurveTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
+
+    return pool->allocate();
+}
+
+/**
+ * @brief Take a free track from a pool.
+ * @param pool Pool to take from; may be null.
+ * @return The track with its state reset, or null when there is no pool or every slot is used.
+ */
+LibPooledQuaternionTrack* quaternion_track_pool_allocate(LibTrackPool<LibPooledQuaternionTrack>* pool)
+{
+    if (pool == 0)
+    {
+        return 0;
+    }
+
+    return pool->allocate();
+}
 
 /**
  * @brief Wrap a key by whole spans between the first and last keys.
@@ -1776,11 +1942,76 @@ void LibAnimationTarget::set_translation(float x, float y, float z)
     translation.w = 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3120);
+/**
+ * @brief Copy the rotation and keep the rotation from the previous one.
+ * @param value New rotation quaternion.
+ */
+void LibAnimationTarget::copy_orientation(const LibVector4* value)
+{
+    LibVector4* previous = &orientation;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3240);
+    if (has_orientation)
+    {
+        orientation_delta = quaternion_product(lib_quaternion_inverse(*reinterpret_cast<const FieldVec4B*>(previous)),
+                                               *reinterpret_cast<const FieldVec4B*>(value));
+    }
+    else
+    {
+        has_orientation = 1;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3360);
+    transform_dirty = 1;
+    copy_vector(&orientation, value);
+}
+
+/**
+ * @brief Copy the rotation and keep the rotation from the previous one.
+ * @param value New rotation quaternion.
+ */
+void LibAnimationTarget::set_orientation(const LibVector4* value)
+{
+    LibVector4* previous = &orientation;
+
+    if (has_orientation)
+    {
+        orientation_delta = quaternion_product(lib_quaternion_inverse(*reinterpret_cast<const FieldVec4B*>(previous)),
+                                               *reinterpret_cast<const FieldVec4B*>(value));
+    }
+    else
+    {
+        has_orientation = 1;
+    }
+
+    transform_dirty = 1;
+    copy_vector(&orientation, value);
+}
+
+/**
+ * @brief Set the rotation and keep the rotation from the previous one.
+ * @param x First quaternion component.
+ * @param y Second quaternion component.
+ * @param z Third quaternion component.
+ * @param w Fourth quaternion component.
+ */
+void LibAnimationTarget::set_orientation_components(float x, float y, float z, float w)
+{
+    LibVector4* previous = &orientation;
+
+    if (has_orientation)
+    {
+        orientation_delta = quaternion_product(lib_quaternion_inverse(*reinterpret_cast<const FieldVec4B*>(previous)), FieldVec4B(x, y, z, w));
+    }
+    else
+    {
+        has_orientation = 1;
+    }
+
+    transform_dirty = 1;
+    orientation.x = x;
+    orientation.y = y;
+    orientation.z = z;
+    orientation.w = w;
+}
 
 /**
  * @brief Copy the scale and keep its change from the previous scale.
@@ -2374,15 +2605,62 @@ u32 LibWordTrack::get_last_value()
     return key_array[state.key_count - 1].value;
 }
 
-extern "C" void func_004C4500(void* object)
+/**
+ * @brief Word tracks have no end delta; leave the output alone.
+ * @param output Unused.
+ */
+void LibWordTrack::get_end_delta(void* output) const
 {
 }
 
-extern "C" void func_004C4510(void* object)
+/**
+ * @brief Word tracks have no value rate; leave the output alone.
+ * @param output Unused.
+ */
+void LibWordTrack::get_value_rate(void* output) const
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4520);
+/**
+ * @brief Return the value of the key at or before a position, without interpolating.
+ * @param key Evaluation key.
+ * @return Key value, or zero when the track has no keys.
+ */
+u32 LibWordTrack::sample(float key)
+{
+    s32 lower;
+    s32 upper;
+
+    if (!state.key_count)
+    {
+        return 0;
+    }
+
+    if (state.search_index >= state.key_capacity)
+    {
+        state.search_index = 0;
+    }
+
+    if (state.key_count == 1)
+    {
+        return key_array[0].value;
+    }
+
+    float wrapped_key = update_cycle_count(key);
+
+    if (state.before_mode == LIB_TRACK_END_HOLD && state.cycle_count < 0)
+    {
+        return key_array[0].value;
+    }
+
+    if (state.after_mode == LIB_TRACK_END_HOLD && state.cycle_count > 0)
+    {
+        return key_array[state.key_count - 1].value;
+    }
+
+    find_surrounding_keys(wrapped_key, &lower, &upper);
+    return key_array[lower].value;
+}
 
 /**
  * @brief Find the keys around a position, starting from the cached search index.
@@ -3047,19 +3325,18 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6700);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6710);
 
-extern "C" void* func_00465340(FieldRuntime* runtime, s32 slot);
-
 extern "C" void func_004C74E0(LibTextWidget* object);
 
 /**
- * @brief Point the text widget at one of the runtime's resource slots and lay its text out once.
+ * @brief Point the text widget at a keyed text of one of the runtime's resource slots and lay it out once.
  * @param object Text widget.
  * @param slot Resource slot index.
+ * @param key Key of the text in the slot's index.
  */
-extern "C" void func_004C67C0(LibTextWidget* object, s32 slot)
+extern "C" void func_004C67C0(LibTextWidget* object, s32 slot, s32 key)
 {
     object->resource_slot = &g_field_runtime->resource_slots[slot];
-    object->unk100 = func_00465340(g_field_runtime, slot);
+    object->unk100 = func_00465340(g_field_runtime, slot, key);
     object->unk70 = static_cast<u8*>(::operator new[](0x1000, 0));
 
     if (object->unk70)

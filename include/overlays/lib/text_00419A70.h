@@ -37,6 +37,16 @@ public:
         needs_redraw = 1;
     }
 
+    /**
+     * @brief Set the indicator's extent and mark it for redraw.
+     * @param value New extent, in percent of the track.
+     */
+    void set_extent(float value)
+    {
+        extent = value;
+        needs_redraw = 1;
+    }
+
     LibStorageBlock0C unk40;
     u8 unk4c[4];
     float extent;
