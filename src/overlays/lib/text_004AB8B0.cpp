@@ -2,6 +2,7 @@
 #include "overlays/lib/text_004AB8B0.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/model.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/vector_vu0.h"
 
@@ -64,7 +65,11 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA40);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004AB8B0", func_004ABA60);
+/** @brief Start unattached, with no data. */
+LibClass1734B0::LibClass1734B0()
+{
+    unk0e = 0;
+}
 
 s32 func_004ABAA0(void* object)
 {

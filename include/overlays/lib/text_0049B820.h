@@ -728,8 +728,6 @@ s32 func_004A0C50(void* object);
 /** Return the fixed value 0. */
 s32 func_004A0C70(void* object);
 
-/** Return the fixed value 0. */
-s32 func_004AA410(void* object);
 
 void func_004A08A0(void* object);
 
@@ -744,17 +742,11 @@ void func_004A9230(void* object);
 /** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
 void func_004A06B0(void* object, const void* source);
 
-/** Queue the receiver's DMA submission object and return its queue result. */
-s32 func_004A4570(void* object);
-
 /**
  * @brief Queue the object's receiver for deferred destruction.
  * @param object Object containing the receiver at offset 0x14, or null.
  */
 void lib_queue_object_release(void* object);
-
-/** Forward the receiver to lib_finish_packet. */
-void func_004A4550(void* object);
 
 #ifdef __cplusplus
 }

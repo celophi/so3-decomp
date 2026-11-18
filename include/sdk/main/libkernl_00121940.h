@@ -21,6 +21,23 @@ void FlushCache(s32 mode);
 s32 DisableDmac(s32 channel);
 
 /**
+ * @brief Install a DMAC interrupt handler for one channel.
+ * @param channel DMA channel.
+ * @param handler Handler, called with the channel number.
+ * @param next Position in the channel's handler list.
+ * @return Handler ID.
+ */
+s32 AddDmacHandler(s32 channel, s32 (*handler)(s32 channel), s32 next);
+
+/**
+ * @brief Remove a DMAC interrupt handler.
+ * @param channel DMA channel.
+ * @param handler_id ID from AddDmacHandler.
+ * @return Result from the syscall.
+ */
+s32 RemoveDmacHandler(s32 channel, s32 handler_id);
+
+/**
  * @brief Let the DMAC raise interrupts for one channel.
  * @param channel DMA channel.
  * @return The channel's previous enable state.
@@ -52,6 +69,13 @@ s32 SignalSema(s32 sema_id);
  * @return Result from the syscall.
  */
 s32 iSignalSema(s32 sema_id);
+
+/**
+ * @brief Print formatted text to the debug console.
+ * @param format printf-style format.
+ * @return Number of characters printed.
+ */
+s32 scePrintf(const char* format, ...);
 
 /**
  * @brief Take a semaphore without waiting.

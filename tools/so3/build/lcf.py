@@ -28,7 +28,7 @@ from itertools import takewhile
 from pathlib import Path
 import re
 
-from tools.so3.build.text_order import SYMBOL_LINE
+from tools.so3.build.text_order import SYMBOL_LINE, linker_name
 from tools.so3.formats import require
 
 # In a symbol map, `absolute:True` in a line's comment marks a symbol that's
@@ -76,6 +76,8 @@ BOOKKEEPING_STARTS = ('HIDDEN(__romPos = ', '__romPos += SIZEOF(', '__romPos = A
                       'FILL(0x00000000)')
 # The right-hand sides splat uses for its section start and end symbols.
 BOOKKEEPING_VALUES = ('.', '__romPos')
+# A jump-table island's section, like .rodata.00505B30.
+ISLAND_SECTION = re.compile(r'\.rodata\.[0-9A-F]{8}')
 BOOKKEEPING_FUNCTIONS = ('ADDR(', 'ABSOLUTE(')
 
 
@@ -300,6 +302,25 @@ def parse_linker_script(text):
     return reader.sections, reader.gp
 
 
+def island_objects(sections):
+    """Point each jump-table island at its unit's C++ object.
+
+    Splat names an island's object after a sibling unit in the same segment and
+    falls back to `name.c.o` when there isn't one. Lib's islands sit in the data
+    at the end of text_tail but can belong to units in the text segment, so when
+    a `.c.o` is only ever placed for island sections (.rodata.ADDRESS) and the
+    script places a `.cpp.o` of the same name, I use that instead.
+    """
+    placements = [item for section in sections for item in section.contents if isinstance(item, Placement)]
+    placed = {item.path for item in placements}
+    for path in {item.path for item in placements if item.path.name.endswith('.c.o')}:
+        uses = [item for item in placements if item.path == path]
+        cpp = path.with_name(path.name[:-len('.c.o')] + '.cpp.o')
+        if cpp in placed and all(ISLAND_SECTION.fullmatch(item.section) for item in uses):
+            for item in uses:
+                item.path = cpp
+
+
 def symbol_definitions(paths):
     """Read the `name = 0x...;` lines of splat's undefined-symbol scripts."""
     lines = []
@@ -403,7 +424,7 @@ def absolute_symbols(paths):
 
 def absolute_definitions(paths):
     """The absolute symbols as `name = 0x...;` lines, sorted by name."""
-    return [f'{name} = 0x{address:X};' for name, address in sorted(absolute_symbols(paths).items())]
+    return [f'{linker_name(name)} = 0x{address:X};' for name, address in sorted(absolute_symbols(paths).items())]
 
 
 def main():
@@ -415,6 +436,7 @@ def main():
     parser.add_argument('--output', required=True, type=Path)
     args = parser.parse_args()
     sections, gp = parse_linker_script(args.linker_script.read_text())
+    island_objects(sections)
     symbols = symbol_definitions(args.symbols) + absolute_definitions(args.symbol_maps)
     content = command_file(sections, gp, symbols)
     args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -1312,7 +1312,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004264F0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00426650);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00426C20);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", update__14LibClass173050Fv);
 
 /** @brief Destroy the transform. */
 LibClass172FC0::~LibClass172FC0()
@@ -1557,11 +1557,61 @@ LibClass172F30::~LibClass172F30()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004293D0);
+/** Buffer owner whose data comes before its vptr, with vtable D_173070 in main data; only its destructor is known. */
+class LibClass173070
+{
+public:
+    u8 unk00[0xC];
+    u8* unk0c;
+    u8 unk10[0x80];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00429480);
+    /** @brief Release the buffer's allocation. */
+    virtual ~LibClass173070();
+};
 
-s32 func_004294F0(void* object)
+/** List object with an array of LibClass173070 and two buffers, with vtable D_173050 in main data; only its destructor is known. */
+class LibClass173050 : public LibListObject
+{
+public:
+    /** @brief Destroy the array and release both buffers. */
+    virtual ~LibClass173050();
+
+    /**
+     * @brief Return the list kind.
+     * @return Five.
+     */
+    virtual s32 get_default_list_kind();
+
+    virtual void update();
+
+    u8 unk14[0x10];
+    LibClass173070* unk24;
+    u8* unk28;
+    u8* unk2c;
+};
+
+/** @brief Destroy the array and release both buffers. */
+LibClass173050::~LibClass173050()
+{
+    delete[] unk24;
+    delete[] unk28;
+    delete[] unk2c;
+}
+
+/** @brief Release the buffer's allocation. */
+LibClass173070::~LibClass173070()
+{
+    if (unk0c)
+    {
+        ::operator delete[](unk0c - 0x10);
+    }
+}
+
+/**
+ * @brief Return the list kind.
+ * @return Five.
+ */
+s32 LibClass173050::get_default_list_kind()
 {
     return 5;
 }

@@ -109,6 +109,15 @@ public:
     }
 
     /**
+     * @brief Copy all four components without returning a copy.
+     * @param other Vector to copy.
+     */
+    void set(const FieldVec4B& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+    }
+
+    /**
      * @brief Copy all four components from a FieldVec4A.
      * @param other Vector to copy.
      * @return A copy of this vector.

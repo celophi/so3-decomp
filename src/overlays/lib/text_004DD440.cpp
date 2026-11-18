@@ -5,6 +5,8 @@
 #include "overlays/lib/light_vu0.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/tracks.h"
+#include "overlays/lib/tooltip_frame.h"
+#include "overlays/lib/dma_callbacks_inlines.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libkernl_00121940.h"
@@ -92,42 +94,6 @@ static inline FieldVec4A sequence_difference(const FieldVec4B& left, const Field
     value.z -= right.z;
     return value;
 }
-
-extern "C" u8 D_00179270[];
-extern "C" u8 D_00179260[];
-extern "C" u8 D_00179250[];
-extern "C" u8 D_00179240[];
-extern "C" u8 D_00179230[];
-extern "C" u8 D_00179220[];
-extern "C" u8 D_00179210[];
-extern "C" u8 D_00179200[];
-extern "C" u8 D_00173F58[];
-
-typedef struct FieldArgumentInitializerState
-{
-    u32 unk00;
-    u8 pad04[4];
-    u32 unk08;
-    u8 pad0c[8];
-    u32 unk14;
-    u8 unk18;
-    u8 pad19[3];
-    u32 unk1c;
-    u32 unk20;
-} FieldArgumentInitializerState;
-
-#define DEFINE_FIELD_ARGUMENT_INITIALIZER(name, first_global) \
-    void* name(void* object) \
-    { \
-        FieldArgumentInitializerState* state = (FieldArgumentInitializerState*)object; \
-        state->unk20 = (u32)first_global; \
-        state->unk1c = (u32)D_00173F58; \
-        state->unk14 = 0; \
-        state->unk18 = 0; \
-        state->unk08 = 0; \
-        state->unk00 = 0; \
-        return object; \
-    }
 
 typedef struct ByteClearOwnertext_004DD440
 {
@@ -806,9 +772,9 @@ LibCameraContext::LibCameraContext()
     packet_set = 0;
     unk3CB0 = 0;
     ready_index = 0;
-    unk3E7C = 0;
-    unk3C88[0] = 0;
-    unk3C88[1] = 0;
+    effect_enabled = 0;
+    effect_buffers[0] = 0;
+    effect_buffers[1] = 0;
     ready_packets[0] = 0;
     ready_packets[1] = 0;
     unk3CA8[0] = 0;
@@ -816,9 +782,13 @@ LibCameraContext::LibCameraContext()
     unk3E67 = 1;
 }
 
-const void* func_004E0FB0(void)
+/**
+ * @brief Return the shared bounding sphere every object of this class uses.
+ * @return Bounding sphere.
+ */
+const LibVector4* LibClass178FC0::get_bounding_sphere()
 {
-    return D_0050CD80;
+    return reinterpret_cast<const LibVector4*>(D_0050CD80);
 }
 
 /** @brief Initialize an identity orientation and unit scale, and mark the transform dirty. */
@@ -834,52 +804,68 @@ LibOrientedTransform::LibOrientedTransform()
     orientation.w = 1.0f;
 }
 
-extern "C" void func_004E1020(void* object)
+/**
+ * @brief Clear the packet-in-flight flag and finish the packet.
+ * @param value Notification value.
+ */
+void LibClass178FC0::on_packet_complete(u32 value)
 {
-    ((ByteClear64Ownertext_004DD440*)object)->unk64 = 0;
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    dma_pending = 0;
+    lib_finish_packet(this);
 }
 
-struct N50Owner114_004DD440
+/** @brief Mark the packet in flight and submit the packet buffer, notifying this object when it's sent. */
+void LibClass178FC0::render()
 {
-        u8 pad00[0x64];
-        u8 active;
-        u8 pad65[0xAF];
-        ResidentPacket* owner;
-};
+    dma_pending = 1;
+    resident_packet_submit(unk114, static_cast<LibDmaCallbacks*>(this));
+}
 
-void func_004E1040(N50Owner114_004DD440* object)
+/** @brief Update the listed nodes. */
+void LibClass178FC0::update()
 {
-    object->active = 1;
-    void* adjusted = object;
+    update_nodes();
+}
 
-    if (object != 0)
+/**
+ * @brief Allocate the packet buffer.
+ * @param size Size in quadwords.
+ * @return One on success, zero when the allocation failed.
+ */
+s32 LibClass178FC0::func_004E10B0(s32 size)
+{
+    unk114 = new (0) LibPacketBuffer(size);
+
+    if (unk114 == 0)
     {
-        adjusted = (u8*)adjusted + 0x108;
+        return 0;
     }
 
-    resident_packet_submit(object->owner, adjusted);
+    return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1080);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", build_packet__14LibClass178FC0FPCvPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E10B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1140);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1280);
-
-extern "C" void func_004E13D0(void* object)
+/** @brief Delete the packet buffer. */
+LibClass178FC0::~LibClass178FC0()
 {
-    WordClearOwnertext_004DD440* receiver = static_cast<WordClearOwnertext_004DD440*>(object);
-    receiver->unk114 = 0;
+    delete unk114;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E13E0);
+/** @brief Forget the packet buffer without deleting it. */
+void LibClass178FC0::func_004E13D0()
+{
+    unk114 = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1450);
+/** @brief Start with type ID 0x200 and no packet buffer. */
+LibClass178FC0::LibClass178FC0()
+{
+    type_id = 0x200;
+    unk114 = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1460);
+
 
 /** @brief Clear the manager camera reference, then detach and queue the transform. */
 void LibCamera::destroy()
@@ -1063,7 +1049,13 @@ void LibCamera::set_fog(u32 color, float far_factor, float near_factor, float ne
     update_fog_coefficients(far_factor, near_factor);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1E70__9LibCameraFv);
+/** @brief Store unk530 in the packet at unk558 and queue the packet at unk860 for VIF1 DMA. */
+void LibCamera::func_004E1E70()
+{
+    *reinterpret_cast<u64*>(unk558 + 0x90) = fog_color;
+    ee_sync();
+    resident_dma_queue_push(g_vif1_dma_queue, unk860);
+}
 
 /**
  * @brief Copy camera settings, the attached transform and inherited transform state.
@@ -1227,13 +1219,31 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2940);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E29E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2DE0);
+/**
+ * @brief Send the packet on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
+ */
+void LibClass179130::submit_dma(u32 channel)
+{
+    *D1_QWC = qwc;
+    *D1_MADR = resident_packet_get_address(packet);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
 
-void func_004E2E30(void* object)
+/**
+ * @brief Do nothing when the transfer ends.
+ * @param channel DMA channel; unused.
+ */
+void LibClass179130::complete_dma(u32 channel)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2E40);
+/** @brief Delete the packet. */
+LibClass179130::~LibClass179130()
+{
+    delete packet;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2EC0);
 
@@ -1282,7 +1292,7 @@ void LibColorFade::build_packet(const void* matrix, void* context)
 
     resident_packet_rewind(packet);
     packet->unk15 = 1;
-    resident_packet_set_alpha_2(packet, D_4ED330[0]);
+    resident_packet_set_alpha_2(packet, D_004ED330[0]);
     g_display->get_area_scale(&scale_x, &scale_y);
     resident_packet_add_rectangle(packet, rect.x, rect.y, (s32)(rect.width * scale_x) + 1, (s32)(rect.height * scale_y) + 1, depth, color);
     unk63 = 1;
@@ -1481,37 +1491,125 @@ void LibClass1791E0::update()
     parity ^= 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4500);
+void float_track_pool_release(LibTrackPool<LibPooledFloatTrack>* pool);
 
-DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E4590, D_00179270)
+void vector_track_pool_release(LibTrackPool<LibPooledVectorTrack>* pool);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E45C0);
+void slerp_quaternion_track_pool_release(LibTrackPool<LibPooledSlerpQuaternionTrack>* pool);
 
-DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E4650, D_00179260)
+void float_curve_track_pool_release(LibTrackPool<LibPooledFloatCurveTrack>* pool);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4680);
+void vector_curve_track_pool_release(LibTrackPool<LibPooledVectorCurveTrack>* pool);
 
-DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E4710, D_00179250)
+void float_quaternion_track_pool_release(LibTrackPool<LibPooledFloatQuaternionTrack>* pool);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4740);
+void quaternion_curve_track_pool_release(LibTrackPool<LibPooledQuaternionCurveTrack>* pool);
 
-DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E47D0, D_00179240)
+void quaternion_track_pool_release(LibTrackPool<LibPooledQuaternionTrack>* pool);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4800);
+/** @brief Release the pool's tracks and storage. */
+template <> LibTrackPool<LibPooledFloatTrack>::~LibTrackPool()
+{
+    float_track_pool_release(this);
+}
 
-DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E4890, D_00179230)
+/** @brief Start with no tracks and no slot bits. */
+template <> LibTrackPool<LibPooledFloatTrack>::LibTrackPool()
+{
+    items = 0;
+    count = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E48C0);
+/** @brief Release the pool's tracks and storage. */
+template <> LibTrackPool<LibPooledVectorTrack>::~LibTrackPool()
+{
+    vector_track_pool_release(this);
+}
 
-DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E4950, D_00179220)
+/** @brief Start with no tracks and no slot bits. */
+template <> LibTrackPool<LibPooledVectorTrack>::LibTrackPool()
+{
+    items = 0;
+    count = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4980);
+/** @brief Release the pool's tracks and storage. */
+template <> LibTrackPool<LibPooledSlerpQuaternionTrack>::~LibTrackPool()
+{
+    slerp_quaternion_track_pool_release(this);
+}
 
-DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E4A10, D_00179210)
+/** @brief Start with no tracks and no slot bits. */
+template <> LibTrackPool<LibPooledSlerpQuaternionTrack>::LibTrackPool()
+{
+    items = 0;
+    count = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E4A40);
+/** @brief Release the pool's tracks and storage. */
+template <> LibTrackPool<LibPooledFloatCurveTrack>::~LibTrackPool()
+{
+    float_curve_track_pool_release(this);
+}
 
-DEFINE_FIELD_ARGUMENT_INITIALIZER(func_004E4AD0, D_00179200)
+/** @brief Start with no tracks and no slot bits. */
+template <> LibTrackPool<LibPooledFloatCurveTrack>::LibTrackPool()
+{
+    items = 0;
+    count = 0;
+}
+
+/** @brief Release the pool's tracks and storage. */
+template <> LibTrackPool<LibPooledVectorCurveTrack>::~LibTrackPool()
+{
+    vector_curve_track_pool_release(this);
+}
+
+/** @brief Start with no tracks and no slot bits. */
+template <> LibTrackPool<LibPooledVectorCurveTrack>::LibTrackPool()
+{
+    items = 0;
+    count = 0;
+}
+
+/** @brief Release the pool's tracks and storage. */
+template <> LibTrackPool<LibPooledFloatQuaternionTrack>::~LibTrackPool()
+{
+    float_quaternion_track_pool_release(this);
+}
+
+/** @brief Start with no tracks and no slot bits. */
+template <> LibTrackPool<LibPooledFloatQuaternionTrack>::LibTrackPool()
+{
+    items = 0;
+    count = 0;
+}
+
+/** @brief Release the pool's tracks and storage. */
+template <> LibTrackPool<LibPooledQuaternionCurveTrack>::~LibTrackPool()
+{
+    quaternion_curve_track_pool_release(this);
+}
+
+/** @brief Start with no tracks and no slot bits. */
+template <> LibTrackPool<LibPooledQuaternionCurveTrack>::LibTrackPool()
+{
+    items = 0;
+    count = 0;
+}
+
+/** @brief Release the pool's tracks and storage. */
+template <> LibTrackPool<LibPooledQuaternionTrack>::~LibTrackPool()
+{
+    quaternion_track_pool_release(this);
+}
+
+/** @brief Start with no tracks and no slot bits. */
+template <> LibTrackPool<LibPooledQuaternionTrack>::LibTrackPool()
+{
+    items = 0;
+    count = 0;
+}
 
 /**
  * @brief Release every track in g_float_track_pool and its storage.
@@ -2733,11 +2831,15 @@ void LibVectorCurveTrackBase::set_single_key(const void* value, const void* in_t
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7250);
 
-LibClass179690::~LibClass179690()
+LibLightList::~LibLightList()
 {
 }
 
-s32 func_004E7820(void* object)
+/**
+ * @brief Return the list's kind.
+ * @return Eight.
+ */
+s32 LibLightList::get_default_list_kind()
 {
     return 8;
 }
@@ -2861,18 +2963,25 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7AA0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E8510);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9260);
+/** @brief Update the listed nodes. */
+void LibLightList::update()
+{
+    update_nodes();
+}
 
 // LibLightList's per-frame light update; the intensity test's abs.s is still coloured differently.
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9290);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E95C0);
+/** @brief Start with no lights, a (0, 0, 0, 1) ambient colour and white light scales. */
+LibLightList::LibLightList()
+{
+    unk310 = FieldVec4A(0.0f, 0.0f, 0.0f, 1.0f);
+    unk320 = FieldVec4A(1.0f, 1.0f, 1.0f, 1.0f);
+    unk330 = FieldVec4A(1.0f, 1.0f, 1.0f, 1.0f);
+    unk382 = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96A0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E96D0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __dt__18EquipFactorTooltipFv);
 
 extern "C" void lib_factor_tooltip_hide(void* object)
 {
@@ -2882,12 +2991,16 @@ extern "C" void lib_factor_tooltip_hide(void* object)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_factor_tooltip_show);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9940);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_00412C40__18EquipFactorTooltipFUiUiUi);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_factor_tooltip_init);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9CD0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", draw__17EquipTooltipFrameFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9F70);
+/** @brief Destroy the tooltip and its drawing storage. */
+EquipTooltipFrame::~EquipTooltipFrame()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9FE0);
+

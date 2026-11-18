@@ -9,7 +9,7 @@
  * @param matrix Aligned 4x4 matrix; the points' w is taken as one.
  * @param first Aligned first point.
  * @param second Aligned second point.
- * @see lib_solve_ik_chain; func_00426650 and func_00426C20 in Lib run the same sequence.
+ * @see lib_solve_ik_chain; func_00426650 and LibClass173050::update in Lib run the same sequence.
  */
 static inline void vu0_direction_pair_begin(const void* matrix, const void* first, const void* second)
 {
@@ -46,7 +46,7 @@ static inline void vu0_direction_pair_begin(const void* matrix, const void* firs
  *
  * Leaves the dot product of the unit directions in vf19.x and their cross
  * product in vf20.
- * @see lib_solve_ik_chain; func_00426650 and func_00426C20 in Lib run it with an extra vf30
+ * @see lib_solve_ik_chain; func_00426650 and LibClass173050::update in Lib run it with an extra vf30
  *      setup interleaved.
  */
 static inline void vu0_direction_pair_dot_cross()
@@ -74,7 +74,7 @@ static inline void vu0_direction_pair_dot_cross()
 /**
  * @brief Store the dot product left by vu0_direction_pair_dot_cross.
  * @param output Aligned vector receiving the dot product in x.
- * @see lib_solve_ik_chain; func_00426650 and func_00426C20 in Lib store vf19 the same way.
+ * @see lib_solve_ik_chain; func_00426650 and LibClass173050::update in Lib store vf19 the same way.
  */
 static inline void vu0_direction_pair_store_dot(void* output)
 {
@@ -90,7 +90,7 @@ static inline void vu0_direction_pair_store_dot(void* output)
  *
  * Needs the ones that vu0_direction_pair_begin leaves in vf31.
  * @param output Aligned vector receiving the unit axis in xyz.
- * @see lib_solve_ik_chain. func_00426650 and func_00426C20 in Lib scale the same vf20
+ * @see lib_solve_ik_chain. func_00426650 and LibClass173050::update in Lib scale the same vf20
  *      cross product into their rotation axis.
  */
 static inline void vu0_store_unit_cross(void* output)

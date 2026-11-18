@@ -121,7 +121,7 @@ typedef struct LibCodeTable
     u8 unk54[2];
 } LibCodeTable;
 
-/** Four-byte factor record of the D_504AA0 table, indexed by factor ID minus one. */
+/** Four-byte factor record of the D_00504AA0 table, indexed by factor ID minus one. */
 typedef struct LibRecord504AA0
 {
     u32 price : 20;
@@ -187,7 +187,7 @@ struct LibClass1721B0
 };
 
 /** The icon.sys file name. */
-extern "C" char D_4EC440[];
+extern "C" char D_004EC440[];
 
 /** Three codes checked by func_0040A9B0. */
 extern "C" u8 D_001B6198[3];
@@ -209,31 +209,31 @@ extern "C" LibCodeList* D_001B64CC;
 /** Code tables that func_0040AFA0 points into its loaded resource. */
 extern "C" LibCodeTable* D_001B64D0;
 
-extern "C" const LibRecord504AA0 D_504AA0[];
+extern "C" const LibRecord504AA0 D_00504AA0[];
 
 /** Starting values of LibValueTable::values, falling from 850 to 1. */
-extern "C" const u16 D_501D30[LIB_VALUE_TABLE_COUNT];
+extern "C" const u16 D_00501D30[LIB_VALUE_TABLE_COUNT];
 
 /** Item types func_0040BF50 picks from, one row per LibGameStateRecord0C ID minus one; zero entries are skipped. */
-extern "C" const u16 D_501EE0[][LIB_RECORD0C_ITEM_TYPE_COUNT];
+extern "C" const u16 D_00501EE0[][LIB_RECORD0C_ITEM_TYPE_COUNT];
 
 /** Fol paid by func_0040C4C0, indexed by a record's place plus an offset for how few records are ranked. */
-extern "C" const u16 D_5055D0[];
+extern "C" const u16 D_005055D0[];
 
 /** Factor values, ended by a zero factor. */
-extern "C" const LibFactorValue D_5055A0[];
+extern "C" const LibFactorValue D_005055A0[];
 
 /** LibGameStateTimer::bitset_mask for each catalog category. */
-extern "C" const u16 D_5055C0[];
+extern "C" const u16 D_005055C0[];
 
 /** Eleven codes; func_0040B360 maps a code to its one-based position here. */
-extern "C" const u8 D_505620[11];
+extern "C" const u8 D_00505620[11];
 
 /** Starting word of each LibGameStateRecord0C below LIB_GAME_STATE_RECORD0C_FIXED_ID; all zero in the shipped data. */
-extern "C" const u16 D_505630[];
+extern "C" const u16 D_00505630[];
 
 /** Starting values of the LibGameStateRecord34 entries. */
-extern "C" const LibGameStateInitial34 D_505670[];
+extern "C" const LibGameStateInitial34 D_00505670[];
 
 /**
  * @brief Return the resident game state.
@@ -387,8 +387,8 @@ static inline s32 collect_unequipped(const void* state, ItemCreationAllocationRe
  */
 static inline void lower_factor_counts(const ItemCreationAllocationRecord* record)
 {
-    u8* counts =
-        reinterpret_cast<LibSystemSettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), LIB_ENTRY_SYSTEM_SETTINGS))->unkA8;
+    LibFactorCounts* counts =
+        &reinterpret_cast<LibSystemSettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), LIB_ENTRY_SYSTEM_SETTINGS))->factor_counts;
 
     for (s32 i = 0; i < 8; i++)
     {
@@ -396,7 +396,7 @@ static inline void lower_factor_counts(const ItemCreationAllocationRecord* recor
 
         if (factor)
         {
-            func_00456F90(counts, factor);
+            lib_factor_count_lower(counts, (u16)factor);
         }
     }
 }
@@ -407,8 +407,8 @@ static inline void lower_factor_counts(const ItemCreationAllocationRecord* recor
  */
 static inline void raise_factor_counts(const ItemCreationAllocationRecord* record)
 {
-    u8* counts =
-        reinterpret_cast<LibSystemSettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), LIB_ENTRY_SYSTEM_SETTINGS))->unkA8;
+    LibFactorCounts* counts =
+        &reinterpret_cast<LibSystemSettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), LIB_ENTRY_SYSTEM_SETTINGS))->factor_counts;
 
     for (s32 i = 0; i < 8; i++)
     {
@@ -416,7 +416,7 @@ static inline void raise_factor_counts(const ItemCreationAllocationRecord* recor
 
         if (factor)
         {
-            func_00456FE0(counts, factor);
+            lib_factor_count_raise(counts, (u16)factor);
         }
     }
 }
@@ -638,7 +638,7 @@ u32 func_0040B250()
 
     for (s32 i = 0; i < LIB_VALUE_TABLE_COUNT; i++)
     {
-        table->values[i] = D_501D30[i];
+        table->values[i] = D_00501D30[i];
         table->order[i] = i == 0 ? LIB_VALUE_TABLE_COUNT : i;
     }
 
@@ -646,7 +646,7 @@ u32 func_0040B250()
 }
 
 /**
- * @brief Read the five-bit unk14 field of a D_504AA0 factor record.
+ * @brief Read the five-bit unk14 field of a D_00504AA0 factor record.
  * @param id One-based record ID, below 0x2C0.
  * @return The field, or zero for an invalid ID.
  */
@@ -656,14 +656,14 @@ s32 func_0040B2F0(u16 id)
 
     if (id > 0 && id < 0x2C0)
     {
-        value = D_504AA0[id - 1].unk14;
+        value = D_00504AA0[id - 1].unk14;
     }
 
     return value;
 }
 
 /**
- * @brief Look up one of the eleven codes at D_505620 by its one-based position.
+ * @brief Look up one of the eleven codes at D_00505620 by its one-based position.
  * @param id One-based position, 1 to 11.
  * @return The code, or zero for an invalid position.
  */
@@ -673,21 +673,21 @@ s32 func_0040B330(s32 id)
 
     if (id > 0 && id < 12)
     {
-        code = D_505620[id - 1];
+        code = D_00505620[id - 1];
     }
 
     return code;
 }
 
 /**
- * @brief Find a code's one-based position in the eleven codes at D_505620.
+ * @brief Find a code's one-based position in the eleven codes at D_00505620.
  * @param code Code to look for.
  * @return The last matching position, or zero when the code isn't listed.
  */
 s32 func_0040B360(s32 code)
 {
     s32 id = 0;
-    const u8* entry = D_505620;
+    const u8* entry = D_00505620;
 
     for (s32 i = 0; i < 11; i++)
     {
@@ -760,7 +760,7 @@ s32 lib_reset_game_state(u8* data)
         item_type++;
     }
 
-    const u16* value = D_505630;
+    const u16* value = D_00505630;
     LibGameStateRecord0C* record = state->unk10d88;
 
     for (s32 i = 0; i < LIB_GAME_STATE_RECORD0C_COUNT; i++)
@@ -781,7 +781,7 @@ s32 lib_reset_game_state(u8* data)
         record++;
     }
 
-    const LibGameStateInitial34* initial = D_505670;
+    const LibGameStateInitial34* initial = D_00505670;
     LibGameStateRecord34* entry = state->unk10f50;
 
     for (s32 i = 0; i < LIB_GAME_STATE_RECORD34_COUNT; i++)
@@ -974,7 +974,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040BB00);
 
 /**
  * @brief Pick 11 to 15 random LibGameStateRecord0C entries with unk08 and unk09 set and unk0a clear, give each a random
- * listed item type from its D_501EE0 row and list their IDs in unk11760.
+ * listed item type from its D_00501EE0 row and list their IDs in unk11760.
  * @param state Game state.
  */
 void func_0040BF50(LibGameState* state)
@@ -1015,7 +1015,7 @@ void func_0040BF50(LibGameState* state)
             u8* entry = &candidates[pick];
             u8 id = *entry;
             s32 index = id - 1;
-            const u16* source = D_501EE0[index];
+            const u16* source = D_00501EE0[index];
             s32 item_count = 0;
             u16* item = items;
 
@@ -1088,7 +1088,7 @@ void func_0040C180(LibGameState* state, u16 item_type)
         free_timer = newest_timer;
     }
 
-    start_timer(free_timer, item_type, D_5055C0[D_001B64F0[item_type - 1].category]);
+    start_timer(free_timer, item_type, D_005055C0[D_001B64F0[item_type - 1].category]);
 }
 
 /**
@@ -1150,7 +1150,7 @@ s32 func_0040C300(LibGameState* state, u16 item_type, u8 inventor_id, s32 set_fl
 }
 
 /**
- * @brief Add a D_5055D0 payout for each ranked LibGameStateRecord0C with unk08 of at least 2 to the stored Fol.
+ * @brief Add a D_005055D0 payout for each ranked LibGameStateRecord0C with unk08 of at least 2 to the stored Fol.
  * @param state Game state.
  */
 void func_0040C4C0(LibGameState* state)
@@ -1172,7 +1172,7 @@ void func_0040C4C0(LibGameState* state)
 
         if (record->unk08 >= 2)
         {
-            total += D_5055D0[offset + (record->unk07 - 1)];
+            total += D_005055D0[offset + (record->unk07 - 1)];
         }
     }
 
@@ -1477,7 +1477,7 @@ void func_0040D260(void* object, const ItemCreationAllocationRecord* record)
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", lib_allocation_initialize);
 
 /**
- * @brief Add up the D_5055A0 values of an allocation's factors.
+ * @brief Add up the D_005055A0 values of an allocation's factors.
  * @param record Allocation record.
  * @return The total, at most 100; 100 when the factors add nothing and the allocation isn't equipped.
  */
@@ -1488,7 +1488,7 @@ s32 func_0040D680(const ItemCreationAllocationRecord* record)
     for (s32 i = 0; i < 8; i++)
     {
         u16 factor = func_0040D930(record, i);
-        const LibFactorValue* entry = D_5055A0;
+        const LibFactorValue* entry = D_005055A0;
         u16 key = entry->factor;
 
         while (key > 0)
@@ -1537,7 +1537,7 @@ u32 func_0040D760(ItemCreationAllocationRecord* record)
 
         if (factor)
         {
-            price += D_504AA0[factor - 1].price;
+            price += D_00504AA0[factor - 1].price;
         }
     }
 
@@ -1802,7 +1802,7 @@ s32 func_0040F3E0(LibClass1721B0* object)
     }
 
     memset_guess(object->unk79c, 0, LIB_SAVE_DATA_SIZE);
-    object->files[0].name = D_4EC440;
+    object->files[0].name = D_004EC440;
     object->files[0].data = object->icon_sys;
     object->files[0].size = LIB_ICON_SYS_SIZE;
     object->files[0].unk0C = 0;
@@ -2098,7 +2098,49 @@ extern "C" void func_00413BB0(LibClass1723F0* aggregate)
                                    (aggregate->unk2fc * aggregate->unk2c4));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413C00);
+/**
+ * @brief Set the aggregate's list up for a number of entries and pages, and remember where its parts start.
+ * @param aggregate Widget aggregate.
+ * @param count Entry count.
+ * @param per_page Entries per page.
+ * @param visible Pages shown at once.
+ * @param x First value for unk2c0.
+ * @param y Second value for unk2c4.
+ * @param z Third value for unk2c8.
+ */
+extern "C" void func_00413C00(LibClass1723F0* aggregate, s32 count, s32 per_page, s32 visible, float x, float y, float z)
+{
+    aggregate->unk2f8 = count;
+    aggregate->unk310 = per_page;
+    aggregate->unk311 = visible;
+    aggregate->unk2c0 = x;
+    aggregate->unk2c4 = y;
+    aggregate->unk2c8 = z;
+    aggregate->unk2fc = (count + per_page - 1) / per_page;
+    aggregate->unk300 = aggregate->unk2fc - visible;
+
+    if (aggregate->unk300 < 0)
+    {
+        aggregate->unk300 = 0;
+    }
+
+    aggregate->unk304 = 0;
+    aggregate->unk312 = 0;
+    aggregate->unk30c = -1;
+    aggregate->unk308 = -1;
+    aggregate->unk2cc = aggregate->unk190.position.x;
+    aggregate->unk2d0 = aggregate->unk190.position.y;
+    aggregate->unk2d4 = aggregate->unk20c.unk18.unk00;
+    aggregate->unk2d8 = aggregate->unk20c.unk18.unk04;
+    aggregate->unk2dc = aggregate->unk20c.unk18.unk08;
+    aggregate->unk2e0 = aggregate->unk260.unk18.unk00;
+    aggregate->unk2e4 = aggregate->unk260.unk18.unk04;
+    aggregate->unk2e8 = aggregate->unk260.unk18.unk08;
+    aggregate->unk315 = 0;
+    aggregate->unk2f4 = 3;
+    aggregate->unk317 = 0;
+    aggregate->unk318 = 0;
+}
 
 /** @brief Destroy the widget. */
 LibObject172410::~LibObject172410()
@@ -2109,7 +2151,24 @@ void LibWidget::func_00413D20()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D30);
+// TODO: Declared here with a u8 variant: the definition in text_0045AD10 only matches with an s32 one, and this
+// caller only matches loading the ID before the variant.
+extern "C" void func_00463DD0(LibDrawWidget* widget, u16 id, u8 variant);
+
+/**
+ * @brief Lay the item code widget's text out off screen and measure it.
+ * @param object Item code widget to measure.
+ * @return Extent of the laid-out text.
+ */
+extern "C" LibTextExtent* func_00413D30(LibObject172410* object)
+{
+    LibDrawRecord records[0x40];
+    object->begin_layout(records, 0.0f);
+    func_00463DD0(object, object->unkfc, object->unkfe);
+    object->func_004637A0(records, object->record_count);
+    object->align_records_vertically(records, object->record_count);
+    return &object->extent;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D90);
 
@@ -2147,7 +2206,74 @@ s32 lib_item_code_init_rectangle(LibObject172410* object, float x, float y, floa
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414130);
+/**
+ * @brief Read one of an item definition's eight factor IDs.
+ * @param definition Item definition.
+ * @param index Factor slot, 0 through 7.
+ * @return Factor ID, or zero for an empty slot.
+ */
+static inline u16 definition_factor(const ItemCreationCategoryDefinition* definition, s32 index)
+{
+    u16 factor;
+
+    switch (index)
+    {
+    case 0:
+        factor = definition->initial_factor;
+        break;
+    case 1:
+        factor = definition->factor1;
+        break;
+    case 2:
+        factor = definition->factor2;
+        break;
+    case 3:
+        factor = definition->factor3;
+        break;
+    case 4:
+        factor = definition->factor4;
+        break;
+    case 5:
+        factor = definition->factor5;
+        break;
+    case 6:
+        factor = definition->factor6;
+        break;
+    case 7:
+        factor = definition->final_factor;
+        break;
+    }
+
+    return factor;
+}
+
+/**
+ * @brief Calculate an item type's catalog price: its base price plus the price of each of its factors.
+ * @param record Item type's category record.
+ * @return The price, at most 99999999.
+ */
+u32 func_00414130(const ItemCreationCategoryRecord* record)
+{
+    const ItemCreationCategoryDefinition* definition = &D_001B64F0[record->catalog_index];
+    u32 price = definition->base_price;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        u16 factor = definition_factor(definition, i);
+
+        if (factor)
+        {
+            price += D_00504AA0[factor - 1].price;
+        }
+    }
+
+    if (price > 99999999)
+    {
+        price = 99999999;
+    }
+
+    return price;
+}
 
 /** @brief Destroy the widget. */
 LibObject172440::~LibObject172440()

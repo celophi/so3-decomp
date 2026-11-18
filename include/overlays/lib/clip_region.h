@@ -14,9 +14,22 @@ public:
     /** @brief Delete the packet and destroy the region. */
     virtual ~LibClipRegion();
 
+    /**
+     * @brief Send the region's packet on DMA channel 1 (VIF1).
+     * @param value Notification value; unused.
+     */
+    virtual void on_packet_notify(u32 value);
+
+    /**
+     * @brief Finish the region's packet.
+     * @param value Notification value; unused.
+     */
+    virtual void on_packet_complete(u32 value);
+
     LibCameraContext* display;
     LibPacketBuffer* packet;
-    u8 unk9c[8];
+    u32 packet_quadwords;
+    u32 packet_address;
     s32 left;
     s32 top;
     s32 right;

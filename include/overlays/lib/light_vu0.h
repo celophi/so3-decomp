@@ -180,6 +180,49 @@ static inline void vu0_light_store_normalized_vf1(void* out)
 }
 
 /**
+ * @brief Load a vector into vf20 for vu0_light_start_normalize_vf20.
+ * @param vector 16-byte aligned vector.
+ * @see vu0_light_start_normalize_vf20.
+ */
+static inline void vu0_load_vf20(const void* vector)
+{
+    asm __volatile__("lqc2      $vf20, 0x0(%0)\n" : : "r"(vector) : "memory");
+}
+
+/**
+ * @brief Start normalising the xyz of vf20: square its length and begin the reciprocal square root in Q.
+ *
+ * The same steps as vu0_light_start_normalize_vf1 in other registers. Finish with
+ * vu0_light_store_normalized_vf20.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); Lib's spotlight falloff (0x4C9D80).
+ */
+static inline void vu0_light_start_normalize_vf20(void)
+{
+    asm __volatile__(
+        "vmul.xyz  $vf22, $vf20, $vf20\n"
+        "vaddw.x   $vf21, $vf0, $vf0w\n"
+        "vadday.x  $ACC, $vf22, $vf22y\n"
+        "vmaddz.x  $vf22, $vf21, $vf22z\n"
+        "vrsqrt    $Q, $vf0w, $vf22x\n");
+}
+
+/**
+ * @brief Wait for the reciprocal square root, scale vf20's xyz by it and store vf20.
+ * @param out 16-byte aligned destination.
+ * @see vu0_light_start_normalize_vf20.
+ */
+static inline void vu0_light_store_normalized_vf20(void* out)
+{
+    asm __volatile__(
+        "vwaitq\n"
+        "vmulq.xyz $vf20, $vf20, $Q\n"
+        "sqc2      $vf20, 0x0(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
+/**
  * @brief Load a spotlight's frame: position into vf20, direction into vf21, and cone cosine and sine into vf22.
  * @param frame 16-byte aligned frame from lib_spot_light_get_frame (three vectors).
  * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); LibLightList::assign_spot_lights (0x4E7830).

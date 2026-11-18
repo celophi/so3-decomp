@@ -11,6 +11,7 @@
 #include "overlays/lib/render_channel.h"
 #include "overlays/lib/vector.h"
 #include "main/main.h"
+#include "sdk/main/libgraph_0012EAC8.h"
 
 /** Partial object with a busy flag that something else clears; the rest is unknown. */
 typedef struct LibBusyObject
@@ -87,6 +88,12 @@ extern "C"
     void lib_normalize_vector3(float* value);
 
     /**
+     * @brief Normalize four floating-point components in place, leaving a zero vector unchanged.
+     * @param value Four components, such as a quaternion.
+     */
+    void func_004CF640(float* value);
+
+    /**
      * @brief Convert a quaternion by mapping each matrix row from (x, y, z) to (x, -z, y).
      * @param quaternion Source quaternion.
      * @return Quaternion extracted from the converted matrix.
@@ -129,6 +136,13 @@ extern "C"
      * @return Combined matrix.
      */
     LibMatrix44Value func_004CF7C0(const LibMatrix44Value& left, const LibMatrix44Value& right);
+
+    /**
+     * @brief Run a matrix through the VU0 microprogram at 0x2D0.
+     * @param input Source matrix (vf1-vf4).
+     * @return Result matrix.
+     */
+    LibMatrix44Value func_004CF580(const LibMatrix44Value& input);
 
     /**
      * @brief Multiply a row vector by a matrix.
@@ -679,6 +693,12 @@ public:
     virtual void release_clone();
 
     /**
+     * @brief Read the draw flags (LIB_DRAW_*).
+     * @return Flags.
+     */
+    inline u16 get_draw_flags() const;
+
+    /**
      * @brief Set the draw flags (LIB_DRAW_*).
      * @param value New flags.
      */
@@ -731,7 +751,12 @@ class LibLight : public LibTransformOwner
         LibVector4 direction;
         float cone_angle;
         float packed_intensity;
-        u8 unk268[0x20];
+        u8 unk268[4];
+        float unk26c;
+        float unk270;
+        u8 unk274[4];
+        float unk278;
+        u8 unk27c[0xC];
         u8 unk288;
         u8 unk289;
         u8 unk28a;
@@ -869,6 +894,65 @@ public:
     LibUpdateList* active_buffer_owner;
 };
 
+/** Ring of 256 0x80-byte packet slots that are written through the uncached accelerated segment. */
+class LibPacketRing
+{
+public:
+    /** @brief Flush the data cache and start writing at slot one. */
+    LibPacketRing();
+
+    u8 slots[256][0x80];
+    s32 next_slot;
+    u8 unk8004[0x7C];
+};
+
+class LibRenderResource;
+
+/** Fixed-capacity table of the registered render resources, with vtable D_178B10 in main data. */
+class LibImageRegistry : public LibListObject
+{
+public:
+    /**
+     * @brief Allocate an empty table.
+     * @param capacity Number of resources the table can hold.
+     */
+    LibImageRegistry(s32 capacity);
+
+    /** @brief Release the table, then detach from the owner. */
+    virtual ~LibImageRegistry();
+
+    /**
+     * @brief Report the list kind used when registration requests the default.
+     * @return Sixteen.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Clear each registered resource's second state byte. */
+    virtual void update();
+
+    LibRenderResource** entries;
+    s32 capacity;
+    s32 count;
+};
+
+extern "C"
+{
+    /**
+     * @brief Remove a resource from the registry, keeping the rest in order.
+     * @param registry Registry to search.
+     * @param resource Resource to remove; nothing happens when it isn't registered.
+     */
+    void func_004D0260(LibImageRegistry* registry, LibRenderResource* resource);
+
+    /**
+     * @brief Append a resource to the registry.
+     * @param registry Registry to fill.
+     * @param resource Resource to add.
+     * @return One, or zero when the registry is full.
+     */
+    s32 func_004D02E0(LibImageRegistry* registry, LibRenderResource* resource);
+}
+
 /**
  * @brief Allocate the owned node-pointer buffer and store its capacity.
  * @param owner List that owns the buffer.
@@ -969,8 +1053,19 @@ public:
 class LibLightList : public LibUpdateList, public LibListObject
 {
     public:
-        /** @brief Construct the list. */
+        /** @brief Start with no lights, a (0, 0, 0, 1) ambient colour and white light scales. */
         LibLightList();
+
+        virtual ~LibLightList();
+
+        /**
+         * @brief Return the list's kind.
+         * @return Eight.
+         */
+        virtual s32 get_default_list_kind();
+
+        /** @brief Update the listed nodes. */
+        virtual void update();
 
         /**
          * @brief Give each enabled spotlight its own bit (8 up to 31) in its mask, then set that bit on every model in the
@@ -985,9 +1080,9 @@ class LibLightList : public LibUpdateList, public LibListObject
         LibVector4 directions[4];
         float colors[4][4];
         u8 unk190[0x180];
-        LibVector4 unk310;
-        LibVector4 unk320;
-        LibVector4 unk330;
+        FieldVec4B unk310;
+        FieldVec4B unk320;
+        FieldVec4B unk330;
         LibVector4 unk340;
         u8 unk350[0x10];
         LibDisplayManager* manager;
@@ -1035,6 +1130,33 @@ struct LibRendererExtra
     LibCameraContext* display;
 };
 
+/** Resident hit-test flags; bit 0 is set when a hit-test node is removed. */
+extern "C" u8 g_hit_test_restart;
+
+/**
+ * @brief Run the renderer's per-frame packet passes.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D0F80(class LibRenderer* renderer);
+
+/**
+ * @brief Third of the renderer's light steps.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D3290(class LibRenderer* renderer);
+
+/**
+ * @brief Second of the renderer's light steps.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D3480(class LibRenderer* renderer);
+
+/**
+ * @brief First of the renderer's light steps.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D3780(class LibRenderer* renderer);
+
 /** Partial Lib renderer (g_renderer); it alternates between two packet buffers each frame. */
 class LibRenderer : public LibUpdateList
 {
@@ -1076,9 +1198,18 @@ public:
     /**
      * @brief Test or wait for the renderer's packets in flight.
      * @param poll Nonzero to only test; zero to wait until none is in flight.
-     * @return Nonzero while a packet is in flight (when polling).
+     * @return Whether a packet is in flight (when polling).
      */
-    s32 func_004D44D0(s32 poll);
+    bool func_004D44D0(s32 poll);
+
+    /** @brief Do nothing. */
+    virtual void func_slot38();
+
+    /** @brief Update the listed nodes, then make the next hit test start from the first node. */
+    virtual void func_slot3C();
+
+    /** @brief Run the light steps and hand the spot lights to the light list. */
+    void update_lights();
 
     u8* cursor;
     u8 unk7c[4];
@@ -1097,7 +1228,7 @@ public:
     u32 unk40b0;
     u8 unk40b4[0xC];
     s32 packet_start_time;
-    u8 unk40c4[4];
+    s32 unk40c4;
     u8 main_packet_busy;
     u8 bucket_packet_busy;
     u8 unk40ca;
@@ -1114,6 +1245,14 @@ public:
     LibRendererPass* unk4468;
     LibRendererExtra* extra;
 };
+
+inline void LibRenderer::update_lights()
+{
+    func_004D3780(this);
+    func_004D3480(this);
+    func_004D3290(this);
+    light_list->assign_spot_lights(this);
+}
 
 /** Reciprocal of g_frame_ticks, refreshed each frame. */
 extern float g_inverse_frame_ticks;
@@ -1467,6 +1606,13 @@ typedef struct LibVramAllocator
     u32 unk14;
 
 #ifdef __cplusplus
+    /**
+     * @brief Allocate the two tables, with the end address at 0x100000 words.
+     * @param first_capacity Entries in unk04.
+     * @param allocation_capacity Entries in allocations.
+     */
+    LibVramAllocator(s16 first_capacity, s16 allocation_capacity);
+
     /** @brief Free the allocation tables. */
     virtual ~LibVramAllocator();
 #endif
@@ -1483,6 +1629,13 @@ typedef struct LibVramAllocator
 u64 func_004DC800(LibVramAllocator* vram, s16 slot, s16 entry, s32 mode);
 
 /**
+ * @brief Measure how far the allocator's unk14 address is past its base address.
+ * @param vram VRAM allocator.
+ * @return Distance in words.
+ */
+u32 func_004DC7F0(LibVramAllocator* vram);
+
+/**
  * @brief Upload an image to a VRAM slot.
  * @param image Decoded image.
  * @param slot VRAM slot.
@@ -1491,7 +1644,7 @@ u64 func_004DC800(LibVramAllocator* vram, s16 slot, s16 entry, s32 mode);
 s32 func_004D8D20(u8* image, s32 slot);
 
 /** 16x16 CT32 image (256 colors) in Lib data. */
-extern const u32 D_4EC600[];
+extern const u32 D_004EC600[];
 
 /**
  * @brief Allocate VRAM for a 16x16 CT32 image and queue its upload.
@@ -1579,26 +1732,6 @@ void* func_004D99A0(void* object);
 void func_004D99B0(LibBusyObject* object);
 
 /**
- * @brief Return the fixed value 16.
- * @param object Receiver or first argument; unused.
- * @return Always 16.
- */
-s32 func_004D0160(void* object);
-
-/**
- * @brief Return the fixed value 10.
- * @param object Receiver or first argument; unused.
- * @return Always 10.
- */
-s32 func_004D5810(void* object);
-
-/**
- * @brief Perform no work.
- * @param object Receiver or first argument; unused.
- */
-void func_004D5820(void* object);
-
-/**
  * @brief Pass the pointer at offset 0x634 and the remaining arguments to a helper.
  * @param receiver Object containing the pointer.
  * @param arg1 First value passed to the helper.
@@ -1612,21 +1745,12 @@ void func_004D6230(void* receiver, u32 arg1, u32 arg2);
  */
 void func_004D66F0(void* object);
 
-/**
- * @brief Return the fixed value 8.
- * @param object Receiver or first argument; unused.
- * @return Always 8.
- */
-s32 func_004DAFD0(void* object);
-
 #ifdef __cplusplus
 }
 #endif
 
 #ifdef __cplusplus
-extern "C" s32 func_004D04C0(void* object);
 
-extern "C" s32 func_004D0740(void* object);
 #endif
 
 #ifdef __cplusplus
@@ -1639,8 +1763,46 @@ typedef struct LibPacketQueue LibPacketQueue;
 /** The game's packet queue. */
 extern LibPacketQueue* g_packet_queue;
 
-/** Wait for or finish the packet queue according to the flag. */
-void func_004DBEE0(LibPacketQueue* queue, s32 flag);
+/** The queue the DMA channel 2 interrupt handler serves; set by the newest queue's constructor. */
+extern LibPacketQueue* g_interrupt_packet_queue;
+
+/**
+ * @brief Finish the packet operation at the queue's head: release an image upload's buffers when asked and tell
+ * the operation's completion object.
+ * @param queue Packet queue.
+ */
+void func_004DBFB0(LibPacketQueue* queue);
+
+/**
+ * @brief DMA channel 2 interrupt handler: finish the current packet operation and start the next.
+ * @param channel DMA channel.
+ * @return One.
+ */
+s32 func_004DC140(s32 channel);
+
+/**
+ * @brief Sync the GS path once the packet queue is full; with a zero flag, wait for that.
+ * @param queue Packet queue.
+ * @param flag Nonzero checks once and syncs with that value; zero waits until the queue is full and syncs with zero.
+ * @return The sync result, or 0x8000 when the queue had room.
+ */
+s32 func_004DBEE0(LibPacketQueue* queue, s32 flag);
+
+/**
+ * @brief Start the next queued packet operation when the queue has work and is enabled.
+ * @param queue Packet queue.
+ * @param value Passed on by the DMA completion path; func_004DC420 passes zero.
+ */
+void func_004DC200(LibPacketQueue* queue, s32 value);
+
+/**
+ * @brief Test whether a live entry holds an operation for a packet.
+ * @param queue Packet queue.
+ * @param operation Operation number.
+ * @param packet Packet or object the operation is for.
+ * @return One when such an entry is queued.
+ */
+s32 func_004DC180(LibPacketQueue* queue, u16 operation, const void* packet);
 
 /**
  * @brief Let queued packets start, or hold them back.
@@ -1657,16 +1819,16 @@ void func_004DC420(LibPacketQueue* queue, s32 enable);
 s32 func_004DBD80(LibPacketQueue* queue);
 
 /**
- * @brief Queue a packet operation.
+ * @brief Queue a packet operation, and start the queue if it's idle.
  * @param queue Packet queue.
  * @param operation Operation number.
  * @param flags Operation flags.
  * @param packet Packet to send, or the object the operation is for.
  * @param value Operation value, such as a quadword count.
- * @param completion Called when the operation is done, or null.
- * @return Queue status.
+ * @param completion Object told when the operation finishes, or null.
+ * @return One when queued, zero when the queue is full.
  */
-s32 func_004DC4F0(LibPacketQueue* queue, u32 operation, u32 flags, const void* packet, u32 value, void* completion);
+u8 func_004DC4F0(LibPacketQueue* queue, u32 operation, u32 flags, const void* packet, u32 value, void* completion);
 
 #ifdef __cplusplus
 }
@@ -1674,18 +1836,56 @@ s32 func_004DC4F0(LibPacketQueue* queue, u32 operation, u32 flags, const void* p
 
 #ifdef __cplusplus
 
+#define LIB_PACKET_ENTRY_LIVE 0x8000
+
+#define LIB_PACKET_LOAD_IMAGE 1
+
+enum
+{
+    /** Release the queued LibImageUpload record once its operation finishes. */
+    LIB_PACKET_FREE_RECORD = 1,
+
+    /** Release the record's pixels once its operation finishes. */
+    LIB_PACKET_FREE_PIXELS = 2
+};
+
+/** A LIB_PACKET_LOAD_IMAGE operation's packet: the GS image transfer and the pixels it sends. */
+struct LibImageUpload
+{
+    GsLoadImage packet;
+    const void* pixels;
+};
+
+/** One queued packet operation, as func_004DC4F0 stores it. */
+struct LibPacketQueueEntry
+{
+    u16 operation;
+    u16 flags;
+    const void* packet;
+    u32 value;
+    LibDmaCallbacks* completion;
+};
+
 /** Partial Lib packet queue; its vtable D_00178F90 comes after its data. */
 struct LibPacketQueue
 {
     s32 unk00;
-    void* entries;
+    LibPacketQueueEntry* entries;
     s16 capacity;
-    s16 unk0A;
-    s16 unk0C;
+
+    // TODO: Volatile because the wait loop in func_004DBEE0 reloads both every pass; the DMA side moves them.
+    volatile s16 write_index;
+    volatile s16 read_index;
     u8 unk0E;
     u8 unk0F;
     u8 enabled;
     u8 unk11;
+
+    /**
+     * @brief Allocate the entries and install the DMA channel 2 interrupt handler.
+     * @param capacity Number of entries.
+     */
+    LibPacketQueue(s16 capacity);
 
     /** @brief Destroy the queue. */
     virtual ~LibPacketQueue();
@@ -1715,6 +1915,17 @@ class LibClass178C90 : public LibListObject
 {
 public:
     virtual ~LibClass178C90();
+
+    /**
+     * @brief Return the list kind.
+     * @return Ten.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Run the renderer's per-frame passes, then its light steps. */
+    virtual void update();
+
+    LibRenderer* renderer;
 };
 #endif
 
@@ -1732,7 +1943,25 @@ public:
 class LibClass178F30 : public LibUpdateList, public LibListObject
 {
 public:
+    /** @brief Start with nothing displayed and object kind bit 2 set. */
+    LibClass178F30();
+
     virtual ~LibClass178F30();
+
+    /**
+     * @brief Return the list kind.
+     * @return Eight.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Update the display list. */
+    virtual void update();
+
+    u8 unk8c[4];
+    u32 unk90;
+    u8 unk94;
+    u8 unk95;
+    u8 unk96[2];
 };
 #endif
 
@@ -1741,14 +1970,76 @@ public:
 class LibClass178C00 : public LibTransformOwner, public DmaSubmission
 {
 public:
+    /** @brief Set the object's type ID after the base constructors. */
+    LibClass178C00();
+
     virtual ~LibClass178C00();
+
+    /** @brief Forget the owning list, then destroy through the base. */
+    virtual void destroy();
+
+    /** @brief Queue this object's DMA submission on the VIF1 queue. */
+    virtual void render();
+
+    /**
+     * @brief Build this object's VIF1 packet.
+     * @param matrix View matrix.
+     * @param context Packet building context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Start the object's DMA chain on channel 1 (VIF1).
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Finish the object's packet.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    u8 unk94[0x4C];
+    u8 chain[0x10];
 };
 
 /** Transform owner that is also a DMA submission (vtables D_00178B70 and D_00178BE4 in main data); only its destructor is known. */
 class LibClass178B70 : public LibTransformOwner, public DmaSubmission
 {
 public:
+    /** @brief Set the object's type ID after the base constructors. */
+    LibClass178B70();
+
     virtual ~LibClass178B70();
+
+    /** @brief Forget the owning list, then destroy through the base. */
+    virtual void destroy();
+
+    /** @brief Queue this object's DMA submission on the VIF1 queue. */
+    virtual void render();
+
+    /**
+     * @brief Build this object's VIF1 packet.
+     * @param matrix View matrix.
+     * @param context Packet building context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Start the object's DMA chain on channel 1 (VIF1).
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Finish the object's packet.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    u8 unk94[0x4C];
+    u8 chain[0x10];
 };
 #endif
 

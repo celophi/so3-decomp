@@ -1,8 +1,15 @@
 #include "overlays/lib/texture_scroll_channel.h"
+#include "overlays/lib/transform_owner_inlines.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libc_guess_00137290.h"
+#include "main/heap.h"
+#include "main/dma_queue.h"
+#include "overlays/lib/semaphore.h"
 #include "sdk/main/libdma_0012B2C8.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libkernl_00121940.h"
+#include "main/stream_thread.h"
+#include "overlays/lib/image_capture.h"
 #include "overlays/lib/palette_blend_channel.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/vector_inlines.h"
@@ -362,7 +369,19 @@ void lib_quaternion_from_euler(FieldVec4B* output, const float* angles)
     normalize_quaternion(output);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CE930);
+/**
+ * @brief Build a quaternion's rotation matrix with the VU0 microprogram at 0x720.
+ * @param quaternion Source quaternion.
+ * @return Rotation matrix.
+ */
+LibMatrix44Value func_004CE930(const FieldVec4B& quaternion)
+{
+    LibMatrix44Value result;
+    vu0_start_microprogram_720_vf5(&quaternion);
+    vu0_wait_microprogram();
+    vu0_store_vf8_vf11(&result);
+    return result;
+}
 
 /**
  * @brief Build a matrix from quaternion products, retaining the quaternion's squared norm.
@@ -452,7 +471,17 @@ extern "C" FieldVec4B lib_quaternion_inverse(const FieldVec4B& quaternion)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEBA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CECD0);
+/**
+ * @brief Transpose a matrix.
+ * @param input Source matrix.
+ * @return Transposed matrix.
+ */
+LibMatrix44Value func_004CECD0(const LibMatrix44Value& input)
+{
+    LibMatrix44Value result;
+    ee_transpose_matrix(&result, &input);
+    return result;
+}
 
 /**
  * @brief Replace a position with direction angles toward a target, using the XY plane for heading.
@@ -715,7 +744,19 @@ extern "C" void func_004CF1C0(const LibMatrix44Value* input, LibMatrix44Value* o
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF580);
+/**
+ * @brief Run a matrix through the VU0 microprogram at 0x2D0.
+ * @param input Source matrix (vf1-vf4).
+ * @return Result matrix.
+ */
+LibMatrix44Value func_004CF580(const LibMatrix44Value& input)
+{
+    LibMatrix44Value result;
+    vu0_start_microprogram_2d0_vf1_vf4(&input);
+    vu0_wait_microprogram();
+    vu0_store_vf1_vf4(&result);
+    return result;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", lib_normalize_vector3);
 
@@ -737,7 +778,20 @@ extern "C" FieldVec4A func_004CF6C0(const LibMatrix44Value& matrix, const FieldV
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF7C0);
+/**
+ * @brief Combine two matrices with the VU0 microprogram at 0x250.
+ * @param left First matrix (vf1-vf4).
+ * @param right Second matrix (vf5-vf8).
+ * @return Combined matrix.
+ */
+LibMatrix44Value func_004CF7C0(const LibMatrix44Value& left, const LibMatrix44Value& right)
+{
+    LibMatrix44Value result;
+    vu0_start_microprogram_250_vf1_vf8(&left, &right);
+    vu0_wait_microprogram();
+    vu0_store_vf1_vf4(&result);
+    return result;
+}
 
 /**
  * @brief Multiply a row vector by a matrix.
@@ -1013,76 +1067,157 @@ extern "C" void lib_finish_packet(LibTransformOwner* object)
     }
 }
 
-extern "C" s32 func_004D0160(void* object)
+/**
+ * @brief Report the list kind used when registration requests the default.
+ * @return Sixteen.
+ */
+s32 LibImageRegistry::get_default_list_kind()
 {
     return 16;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0170);
+/** @brief Clear each registered resource's second state byte. */
+void LibImageRegistry::update()
+{
+    s32 total = count;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0260);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D02E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0330);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D03D0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0460);
+    for (s32 i = 0; i < total; i++)
+    {
+        entries[i]->unk01 = 0;
+    }
+}
 
 /**
- * @brief Finish the transform receiver's packet.
- * @param object Transform owner.
+ * @brief Remove a resource from the registry, keeping the rest in order.
+ * @param registry Registry to search.
+ * @param resource Resource to remove; nothing happens when it isn't registered.
  */
-extern "C" void func_004D04A0(LibTransformOwner* object)
+void func_004D0260(LibImageRegistry* registry, LibRenderResource* resource)
 {
-    lib_finish_packet(object);
-}
-
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_004D04C0(void* object)
-{
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-
-    if (object != 0)
+    for (s32 i = 0; i < registry->count; i++)
     {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
+        if (resource == registry->entries[i])
+        {
+            s32 last = registry->count - 1;
+
+            for (; i < last; i++)
+            {
+                registry->entries[i] = registry->entries[i + 1];
+            }
+
+            registry->count--;
+            return;
+        }
     }
-
-    return resident_dma_queue_push(g_vif1_dma_queue, submission);
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D04F0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0640);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D06E0);
 
 /**
- * @brief Finish the transform receiver's packet.
- * @param object Transform owner.
+ * @brief Append a resource to the registry.
+ * @param registry Registry to fill.
+ * @param resource Resource to add.
+ * @return One, or zero when the registry is full.
  */
-extern "C" void func_004D0720(LibTransformOwner* object)
+s32 func_004D02E0(LibImageRegistry* registry, LibRenderResource* resource)
 {
-    lib_finish_packet(object);
-}
-
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_004D0740(void* object)
-{
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-
-    if (object != 0)
+    if (registry->count >= registry->capacity)
     {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
+        return 0;
     }
 
-    return resident_dma_queue_push(g_vif1_dma_queue, submission);
+    registry->entries[registry->count++] = resource;
+    return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0770);
+/** @brief Release the table, then detach from the owner. */
+LibImageRegistry::~LibImageRegistry()
+{
+    delete[] entries;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0830);
+/**
+ * @brief Allocate an empty table.
+ * @param capacity Number of resources the table can hold.
+ */
+LibImageRegistry::LibImageRegistry(s32 capacity)
+{
+    entries = new (0) LibRenderResource*[capacity];
+    this->capacity = capacity;
+    count = 0;
+}
+
+/**
+ * @brief Start the object's DMA chain on channel 1 (VIF1).
+ * @param channel DMA channel; unused.
+ */
+void LibClass178B70::submit_dma(u32 channel)
+{
+    dma_pending = 1;
+    *D1_QWC = 0;
+    *D1_TADR = reinterpret_cast<u32>(chain);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
+}
+
+/**
+ * @brief Finish the object's packet.
+ * @param channel DMA channel; unused.
+ */
+void LibClass178B70::complete_dma(u32 channel)
+{
+    lib_finish_packet(this);
+}
+
+/** @brief Queue this object's DMA submission on the VIF1 queue. */
+void LibClass178B70::render()
+{
+    resident_dma_queue_push(g_vif1_dma_queue, this);
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", build_packet__14LibClass178B70FPCvPv);
+
+/** @brief Set the object's type ID after the base constructors. */
+LibClass178B70::LibClass178B70()
+{
+    unk65 = 0;
+    type_id = 0xB01;
+}
+
+/**
+ * @brief Start the object's DMA chain on channel 1 (VIF1).
+ * @param channel DMA channel; unused.
+ */
+void LibClass178C00::submit_dma(u32 channel)
+{
+    dma_pending = 1;
+    *D1_QWC = 0;
+    *D1_TADR = reinterpret_cast<u32>(chain);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
+}
+
+/**
+ * @brief Finish the object's packet.
+ * @param channel DMA channel; unused.
+ */
+void LibClass178C00::complete_dma(u32 channel)
+{
+    lib_finish_packet(this);
+}
+
+/** @brief Queue this object's DMA submission on the VIF1 queue. */
+void LibClass178C00::render()
+{
+    resident_dma_queue_push(g_vif1_dma_queue, this);
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", build_packet__14LibClass178C00FPCvPv);
+
+/** @brief Set the object's type ID after the base constructors. */
+LibClass178C00::LibClass178C00()
+{
+    unk65 = 0;
+    type_id = 0xB00;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D08D0);
 
@@ -1092,11 +1227,28 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0B10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0F80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D12A0);
+/** @brief Run the renderer's per-frame passes, then its light steps. */
+void LibClass178C90::update()
+{
+    func_004D0F80(renderer);
+    renderer->update_lights();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D12F0);
+/** @brief Update the listed nodes, then make the next hit test start from the first node. */
+void LibRenderer::func_slot3C()
+{
+    update_nodes();
+    g_hit_test_restart = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D1320);
+/**
+ * @brief Run the renderer's light steps and hand the spot lights to the light list.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D1320(LibRenderer* renderer)
+{
+    renderer->update_lights();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D1360);
 
@@ -1112,7 +1264,29 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D3780);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D44D0);
+/**
+ * @brief Test or wait for the renderer's packets in flight.
+ * @param poll Nonzero to only test; zero to wait until none is in flight.
+ * @return Whether a packet is in flight (when polling).
+ */
+bool LibRenderer::func_004D44D0(s32 poll)
+{
+    if (poll)
+    {
+        return main_packet_busy || bucket_packet_busy || unk40ca;
+    }
+
+    TIMER0_COUNT;
+
+    // TODO: The DMA handlers clear these flags; the wait only re-reads them through volatile accesses.
+    while (*(volatile u8*)&main_packet_busy || *(volatile u8*)&bucket_packet_busy || *(volatile u8*)&unk40ca)
+    {
+    }
+
+    unk40c4 = 0;
+    current_list = 0;
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4560__11LibRendererFv);
 
@@ -1181,48 +1355,46 @@ LibClass178B30::~LibClass178B30()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D56B0);
-
-/**
- * @brief Clear the intrusive owner and invoke the base removal hook.
- * @param object Transform owner to detach.
- */
-extern "C" void func_004D5740(LibTransformOwner* object)
+/** @brief Start with nothing displayed and object kind bit 2 set. */
+LibClass178F30::LibClass178F30()
 {
-    object->owner = 0;
-    object->LibTransformOwner::destroy();
+    unk94 = 0;
+    unk90 = 0;
+    unk95 = 0;
+    object_kind |= 4;
 }
 
-/**
- * @brief Clear the intrusive owner and invoke the base removal hook.
- * @param object Transform owner to detach.
- */
-extern "C" void func_004D5760(LibTransformOwner* object)
+/** @brief Forget the owning list, then destroy through the base. */
+void LibClass178B70::destroy()
 {
-    object->owner = 0;
-    object->LibTransformOwner::destroy();
+    owner = 0;
+    LibTransformOwner::destroy();
+}
+
+/** @brief Forget the owning list, then destroy through the base. */
+void LibClass178C00::destroy()
+{
+    owner = 0;
+    LibTransformOwner::destroy();
 }
 
 LibClass178C90::~LibClass178C90()
 {
 }
 
-extern "C" s32 func_004D5810(void* object)
+/**
+ * @brief Return the list kind.
+ * @return Ten.
+ */
+s32 LibClass178C90::get_default_list_kind()
 {
     return 10;
 }
 
-extern "C" void func_004D5820(void* object)
+/** @brief Do nothing. */
+void LibRenderer::func_slot38()
 {
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5830);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5840);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5850);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5860);
 
 /**
  * @brief Hand the camera's view-projection matrix to the VU0 microprogram at 0x1F0.
@@ -1234,7 +1406,11 @@ extern "C" void lib_load_camera_screen_matrix(const LibCamera* camera)
     vu0_start_microprogram_1f0_vf5_vf8(&matrix);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __ct__14LibClass172000Fv);
+/** @brief Initialize the transform subclass. */
+LibClass172000::LibClass172000()
+{
+    unk65 = 1;
+}
 
 /** @brief Start at the origin. */
 LibPositionTransform::LibPositionTransform()
@@ -1281,25 +1457,147 @@ void* LibResourceBuffer::find_child_data(s32 index)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5A50);
+extern "C" LibImageRegistry* g_image_registry;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5A90);
+/** Lib heap, or null to use the C library. */
+extern "C" ResidentHeap* D_001B6698;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5AC0);
+/** Header shared by a resource's part records: each one gives its own size. */
+struct LibResourceRecord
+{
+    u8 unk00[4];
+    s16 size;
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5AF0);
+/**
+ * @brief Borrow data for a resource and register it with the image registry.
+ * @param resource Resource to fill.
+ * @param data Data the resource doesn't own.
+ */
+extern "C" void func_004D5A50(LibResourceBuffer* resource, void* data)
+{
+    resource->data = data;
+    resource->external_data = 1;
+    func_004D02E0(g_image_registry, resource);
+    resource->registered = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5B50);
+/**
+ * @brief Return the record at a resource's second cursor and move that cursor to the next one.
+ * @param resource Resource to read.
+ * @return The record, or null at the end.
+ */
+extern "C" void* func_004D5A90(LibResourceBuffer* resource)
+{
+    LibResourceRecord* record = static_cast<LibResourceRecord*>(resource->unk10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5BB0);
+    if (record->size == 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5C10);
+    resource->unk10 = reinterpret_cast<u8*>(record) + record->size;
+    return record;
+}
+
+/**
+ * @brief Return the record at a resource's cursor and move the cursor to the next one.
+ * @param resource Resource to read.
+ * @return The record, or null at the end.
+ */
+extern "C" void* func_004D5AC0(LibResourceBuffer* resource)
+{
+    LibResourceRecord* record = static_cast<LibResourceRecord*>(resource->record_cursor);
+
+    if (record->size == 0)
+    {
+        return 0;
+    }
+
+    resource->record_cursor = reinterpret_cast<u8*>(record) + record->size;
+    return record;
+}
+
+/**
+ * @brief Return the payload size from a resource's chunk header.
+ * @param resource Resource to measure.
+ * @return Size in bytes, or zero without storage.
+ */
+extern "C" u32 func_004D5AF0(LibResourceBuffer* resource)
+{
+    LibResourceChunkHeader* chunk;
+
+    if (resource->external_data)
+    {
+        chunk = static_cast<LibResourceChunkHeader*>(resource->data);
+    }
+    else
+    {
+        chunk = resource->data != 0 ? reinterpret_cast<LibResourceChunkHeader*>(RESIDENT_ALIGN_RESOURCE(resource->data)) : 0;
+    }
+
+    if (chunk == 0)
+    {
+        return 0;
+    }
+
+    return chunk->payload_size;
+}
+
+/**
+ * @brief Return a resource's own payload, after the chunk header.
+ * @param resource Resource to read.
+ * @return Payload pointer, or null without storage.
+ */
+extern "C" u8* func_004D5B50(LibResourceBuffer* resource)
+{
+    if (resource->external_data)
+    {
+        return resource->data != 0 ? static_cast<u8*>(resource->data) + sizeof(LibResourceChunkHeader) : 0;
+    }
+
+    return resource->data != 0 ? reinterpret_cast<u8*>(RESIDENT_ALIGN_RESOURCE(resource->data)) + sizeof(LibResourceChunkHeader) : 0;
+}
+
+/**
+ * @brief Point a resource's second cursor at its first record, 0x70 bytes into its storage.
+ * @param resource Resource to rewind.
+ */
+extern "C" void func_004D5BB0(LibResourceBuffer* resource)
+{
+    if (resource->external_data)
+    {
+        resource->unk10 = resource->data != 0 ? static_cast<u8*>(resource->data) + 0x70 : 0;
+    }
+    else
+    {
+        resource->unk10 = resource->data != 0 ? reinterpret_cast<u8*>(RESIDENT_ALIGN_RESOURCE(resource->data)) + 0x70 : 0;
+    }
+}
+
+/**
+ * @brief Point a resource's record cursor at its first part record.
+ *
+ * The records start 0x60 bytes into the payload, taken from the override when one is set.
+ * @param resource Resource to rewind.
+ */
+extern "C" void func_004D5C10(LibResourceBuffer* resource)
+{
+    if (resource->payload_override != 0)
+    {
+        resource->record_cursor = static_cast<u8*>(resource->payload_override) + 0x60;
+    }
+    else if (resource->external_data)
+    {
+        resource->record_cursor = resource->data != 0 ? static_cast<u8*>(resource->data) + 0x70 : 0;
+    }
+    else
+    {
+        resource->record_cursor = resource->data != 0 ? reinterpret_cast<u8*>(RESIDENT_ALIGN_RESOURCE(resource->data)) + 0x70 : 0;
+    }
+}
 
 extern "C" void func_004486A0(LibResourceBuffer* resource);
-
-extern "C" void func_004D0260(void* owner, LibResourceBuffer* resource);
-
-extern "C" void* g_image_registry;
 
 /** @brief Unregister the resource from the resource manager if it is registered. */
 void LibResourceBuffer::unregister()
@@ -1420,7 +1718,24 @@ extern "C" void func_004D6230(void* receiver, u32 arg1, u32 arg2)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6250);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D62A0);
+/**
+ * @brief Borrow mesh data into the model's resource, give it the render channels and take its resident mask.
+ * @param data Mesh data.
+ * @return Always one.
+ */
+s32 LibModelBase::borrow_mesh(void* data)
+{
+    func_004D5A50(resource, data);
+    resource->children = &get_render_channels()->sentinel;
+    LibMeshHeader* header = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(resource));
+
+    if (header != 0)
+    {
+        lib_model_take_resident_mask(this, header);
+    }
+
+    return 1;
+}
 
 /**
  * @brief Draw a mesh resource the model doesn't own, and take its resident mask.
@@ -1461,7 +1776,19 @@ s32 LibModelBase::attach_draw_buffer(LibDrawBuffer* buffer)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6510);
+/** @brief Release the resource when owned, then destroy the model. */
+LibModelBase::~LibModelBase()
+{
+    if (resource)
+    {
+        if (owns_resource)
+        {
+            delete resource;
+        }
+
+        resource = 0;
+    }
+}
 
 /**
  * @brief Remove the object from its owner and clear the owner pointer.
@@ -1539,7 +1866,28 @@ void lib_update_list_update_node(void* list, void* node)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_nodes__13LibUpdateListFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D68F0);
+// TODO: The target unrolls the recursion eight calls deep, which only happens with auto inlining and an inline depth
+// of eight around it.
+#pragma push
+#pragma auto_inline on
+#pragma inline_depth(8)
+
+/**
+ * @brief Give a list and every list chained after it the same active buffer owner.
+ * @param list First list.
+ * @param owner Owner of the active node buffer.
+ */
+extern "C" void func_004D68F0(LibUpdateList* list, LibUpdateList* owner)
+{
+    list->active_buffer_owner = owner;
+
+    if (list->next_list)
+    {
+        func_004D68F0(list->next_list, owner);
+    }
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D69A0);
 
@@ -1689,7 +2037,16 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", prepend_node__1
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", append_node__13LibUpdateListFPvi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__13LibUpdateListFv);
+/** @brief Destroy the list receiver and its sentinel. */
+inline LibListReceiver::~LibListReceiver()
+{
+}
+
+/** @brief Release the owned node buffer and destroy the list base. */
+LibUpdateList::~LibUpdateList()
+{
+    delete[] owned_node_buffer;
+}
 
 /** @brief Initialize the inherited list, kind counts, and node-buffer state. */
 LibUpdateList::LibUpdateList()
@@ -2283,9 +2640,44 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8C20);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8D20);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9030);
+extern "C" ResidentDmaQueue* D_001B6604;
+extern "C" ResidentDmaQueue* D_001B6608;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D90B0);
+/**
+ * @brief Stop the channel 8 queue and start a 0x291-quadword transfer from the scratchpad.
+ * @param address Main memory address.
+ * @param scratchpad Scratchpad address.
+ */
+extern "C" void func_004D9030(void* address, u32 scratchpad)
+{
+    ResidentDmaQueue* queue = D_001B6604;
+    queue->current = 0;
+    DisableDmac(queue->channel);
+    *D8_MADR = (u32)address;
+    *D8_SADR = scratchpad;
+    *D8_QWC = 0x291;
+    *D_STAT = D_STAT_CIS8;
+    *D_PCR = D_PCR_CPC8;
+    *D8_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
+
+/**
+ * @brief Stop the channel 9 queue and start a 0x291-quadword transfer to the scratchpad.
+ * @param address Main memory address.
+ * @param scratchpad Scratchpad address.
+ */
+extern "C" void func_004D90B0(void* address, u32 scratchpad)
+{
+    ResidentDmaQueue* queue = D_001B6608;
+    queue->current = 0;
+    DisableDmac(queue->channel);
+    *D9_MADR = (u32)address;
+    *D9_SADR = scratchpad;
+    *D9_QWC = 0x291;
+    *D_STAT = D_STAT_CIS9;
+    *D_PCR = D_PCR_CPC9;
+    *D9_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
 
 /**
  * @brief Check whether no lookup has stamped a block since the stamps were cleared.
@@ -2775,7 +3167,30 @@ void LibTransform::update()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D9E70);
+/**
+ * @brief Mark the inverse as rebuilt and invert the transposed matrix, with the cheaper routine when the transform
+ *        has no scale.
+ * @param transform Transform whose inverse is rebuilt.
+ */
+void func_004D9E70(LibTransform* transform)
+{
+    LibVector4 error;
+
+    vu0_start_microprogram_7f0_rows(&transform->transform);
+    transform->unk20e_2 = 1;
+    vu0_wait_microprogram();
+    vu0_scale_error_vf6();
+    vu0_read_vf6(&error);
+
+    if (error.x < 1e-6f && error.y < 1e-6f && error.z < 1e-6f)
+    {
+        func_004CEF20(&transform->transposed_transform, &transform->inverse_transform);
+    }
+    else
+    {
+        func_004CF1C0(&transform->transposed_transform, &transform->inverse_transform);
+    }
+}
 
 /**
  * @brief Copy local transform state and its inherited state.
@@ -2813,14 +3228,73 @@ extern "C" void func_004DA040(LibVector4* output, const LibVector4* input)
     copy_vector(output, input);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA050);
+/**
+ * @brief Store the local scalar and update its threshold flag.
+ *
+ * With LIB_DRAW_FLAG_0020 set, LIB_DRAW_FLAG_0040 marks a scalar below one half; under a parent the scalar is
+ * first multiplied by the chain's combined factor (which already includes it).
+ * @param object Transform receiver.
+ * @param value Local scalar value.
+ */
+void func_004DA050(LibTransform* object, float value)
+{
+    object->unk200 = value;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA0F0);
+    if ((object->unk20c & 0x200) && object->parent_transform != 0)
+    {
+        value *= func_004DA0F0(object);
+    }
 
-extern "C" u16 func_004DA2B0(const LibTransform* object)
+    if (object->get_draw_flags() & LIB_DRAW_FLAG_0020)
+    {
+        if (value >= 0.5f)
+        {
+            object->draw_flags &= ~LIB_DRAW_FLAG_0040;
+        }
+        else
+        {
+            object->draw_flags |= LIB_DRAW_FLAG_0040;
+        }
+    }
+}
+
+// TODO: The target unrolls the recursion five calls deep and calls the flag getter out of line at the sixth, whose
+// copy then follows this function; that only happens with auto inlining and an inline depth of five.
+#pragma push
+#pragma auto_inline on
+#pragma inline_depth(5)
+
+/**
+ * @brief Return the transform's flags.
+ * @param object Transform.
+ * @return Flags.
+ */
+inline u16 func_004DA2B0(const LibTransform* object)
 {
     return object->unk20c;
 }
+
+/**
+ * @brief Multiply the transform's factor by its parents' while they have flag 0x200 set.
+ * @param transform Transform.
+ * @return Combined factor.
+ */
+extern "C" float func_004DA0F0(LibTransform* transform)
+{
+    if (func_004DA2B0(transform) & 0x200)
+    {
+        if (transform->parent_transform != 0)
+        {
+            return transform->unk200 * func_004DA0F0(transform->parent_transform);
+        }
+
+        return transform->unk200;
+    }
+
+    return transform->unk200;
+}
+
+#pragma pop
 
 /**
  * @brief Mark each transform in the parent chain dirty.
@@ -3052,13 +3526,55 @@ void LibTransform::update_transform_matrix()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", lib_rebuild_offset_transform);
+/**
+ * @brief Rebuild the offset matrix from the stored translation, quaternion and scale.
+ * @param object Transform whose offset matrix is updated.
+ */
+void lib_rebuild_offset_transform(LibTransform* object)
+{
+    LibMatrix44Value scale;
+    LibMatrix44Value rotation;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", __dt__12LibTransformFv);
+    func_004CFF80(&scale);
+    scale.m[0][0] = object->offset_scale.x;
+    scale.m[1][1] = object->offset_scale.y;
+    scale.m[2][2] = object->offset_scale.z;
+    scale.m[3][3] = 1.0f;
+    vu0_load_rotation_vf5(&object->offset_rotation);
+    vu0_load_translation_vf16(&object->offset_translation);
+    vu0_start_microprogram_728();
+    rotation.m[3][0] = 0.0f;
+    rotation.m[3][1] = 0.0f;
+    rotation.m[3][2] = 0.0f;
+    rotation.m[3][3] = 1.0f;
+    vu0_wait_microprogram();
+    vu0_store_rows_vf8_vf10(&rotation);
+    LibMatrix44Value* output = &object->offset_transform;
+    vu0_multiply_matrix(output, &rotation, &scale);
+}
+
+// TODO: Another destructor that inlines its whole base chain down to LibLink; see LibClass178C00's above.
+#pragma push
+#pragma inline_depth(7)
+
+/** @brief Stop the object being a sound target if it is one, then destroy the transform owner. */
+LibTransform::~LibTransform()
+{
+    if (unk20e_4)
+    {
+        resident_sound_clear_target(g_sound, reinterpret_cast<ResidentSoundEmitter*>(this));
+    }
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DAD90);
 
-extern "C" s32 func_004DAFD0(void* object)
+/**
+ * @brief Return the list kind.
+ * @return Eight.
+ */
+s32 LibClass178F30::get_default_list_kind()
 {
     return 8;
 }
@@ -3148,21 +3664,63 @@ void LibDisplayManager::prepare_camera()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB190);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB3E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB3F0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update__14LibClass178F30Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB410);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB530);
+/** @brief Flush the data cache and start writing at slot one. */
+LibPacketRing::LibPacketRing()
+{
+    FlushCache(0);
+    next_slot = 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB570);
+/**
+ * @brief Free memory from the Lib heap when one is installed, otherwise from the C library.
+ * @param memory Allocation, or null.
+ */
+extern "C" void func_004DB570(void* memory)
+{
+    if (memory != 0)
+    {
+        if (D_001B6698 != 0)
+        {
+            resident_heap_release(memory);
+        }
+        else
+        {
+            free_guess(memory);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB5B0);
+/**
+ * @brief Allocate memory from the Lib heap when one is installed, otherwise from the C library.
+ * @param size Size in bytes.
+ * @return Allocation, or null.
+ */
+extern "C" void* func_004DB5B0(u32 size)
+{
+    void* memory;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB600);
+    if (D_001B6698 != 0)
+    {
+        memory = resident_heap_allocate(D_001B6698, size);
+    }
+    else
+    {
+        memory = malloc_guess(size);
+    }
+
+    if (memory == 0)
+    {
+        return 0;
+    }
+
+    return memory;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB600__16LibCameraContextFP14LibScreenClearsssssUcUcUcUcUi);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", build_clear__16LibCameraContextFP14LibScreenClearsssssUcUcUcUcUi);
 
@@ -3188,31 +3746,431 @@ void LibCameraContext::get_area_scale(float* x, float* y)
     *y = ratio * (1.0f + system->progressive);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBC70);
+/**
+ * @brief Return the frame buffer page of the draw buffer the display is on.
+ * @param display Display to read.
+ * @return FRAME base pointer of the second drawing context of draw buffer 0 or 1.
+ */
+extern "C" u16 func_004DBC70(LibCameraContext* display)
+{
+    return display->current_buffer == 0 ? display->buffers[0].environment.context2.frame.base_pointer :
+                                          display->buffers[1].environment.context2.frame.base_pointer;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBCA0);
+/**
+ * @brief Read one register of the first drawing context of the draw buffer the display is on, as its raw word.
+ * @param display Display to read.
+ * @param index 0 FRAME, 1 ZBUF, 2 XYOFFSET, 3 SCISSOR, 4 TEST.
+ * @return The register, or zero for another index.
+ */
+extern "C" u64 func_004DBCA0(LibCameraContext* display, s32 index)
+{
+    if (display->current_buffer == 0)
+    {
+        switch (index)
+        {
+        case 0:
+            return *reinterpret_cast<const u64*>(&display->buffers[0].environment.context1.frame);
+        case 1:
+            return *reinterpret_cast<const u64*>(&display->buffers[0].environment.context1.depth_buffer);
+        case 2:
+            return display->buffers[0].environment.context1.offset;
+        case 3:
+            return *reinterpret_cast<const u64*>(&display->buffers[0].environment.context1.scissor);
+        case 4:
+            return *reinterpret_cast<const u64*>(&display->buffers[0].environment.context1.test);
+        }
+    }
+    else
+    {
+        switch (index)
+        {
+        case 0:
+            return *reinterpret_cast<const u64*>(&display->buffers[1].environment.context1.frame);
+        case 1:
+            return *reinterpret_cast<const u64*>(&display->buffers[1].environment.context1.depth_buffer);
+        case 2:
+            return display->buffers[1].environment.context1.offset;
+        case 3:
+            return *reinterpret_cast<const u64*>(&display->buffers[1].environment.context1.scissor);
+        case 4:
+            return *reinterpret_cast<const u64*>(&display->buffers[1].environment.context1.test);
+        }
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBD80);
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBEE0);
+/**
+ * @brief Test whether any slot after the write index, up to the read index, holds an operation other than 5.
+ * @param queue Packet queue.
+ * @return One when such an operation is found, otherwise zero.
+ */
+s32 func_004DBD80(LibPacketQueue* queue)
+{
+    LibInterruptLock interrupts;
+    s16 index = queue->write_index + 1;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DBFB0);
+    if (index >= queue->capacity)
+    {
+        index = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC140);
+    if (index == queue->read_index)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC180);
+    do
+    {
+        if (queue->entries[index].operation != 5)
+        {
+            return 1;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC200);
+        index++;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC420);
+        if (index >= queue->capacity)
+        {
+            index = 0;
+        }
+    } while (index != queue->read_index);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC4F0);
+    return 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC680);
+/**
+ * @brief Sync the GS path once the packet queue is full; with a zero flag, wait for that.
+ * @param queue Packet queue.
+ * @param flag Nonzero checks once and syncs with that value; zero waits until the queue is full and syncs with zero.
+ * @return The sync result, or 0x8000 when the queue had room.
+ */
+s32 func_004DBEE0(LibPacketQueue* queue, s32 flag)
+{
+    do
+    {
+        s16 next = queue->write_index + 1;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC750);
+        if (next >= queue->capacity)
+        {
+            next = 0;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC7F0);
+        if (next == queue->read_index)
+        {
+            if (flag)
+            {
+                return resident_sync_gs_path(resident_system_get_input(resident_get_system()), (u8)flag, 0);
+            }
+
+            return resident_sync_gs_path(resident_system_get_input(resident_get_system()), 0, 0);
+        }
+    } while (!flag);
+
+    return 0x8000;
+}
+
+/**
+ * @brief Finish the packet operation at the queue's head: release an image upload's buffers when asked and tell
+ * the operation's completion object.
+ * @param queue Packet queue.
+ */
+void func_004DBFB0(LibPacketQueue* queue)
+{
+    if (!queue->unk0E)
+    {
+        return;
+    }
+
+    s32 read_index = queue->read_index;
+
+    if (read_index >= queue->capacity)
+    {
+        read_index = 0;
+    }
+
+    s16 next = queue->write_index + 1;
+
+    if (next >= queue->capacity)
+    {
+        next = 0;
+    }
+
+    if (next == read_index)
+    {
+        queue->unk0E = 0;
+    }
+
+    s32 operation = queue->entries[queue->write_index].operation;
+    u16 flags = queue->entries[queue->write_index].flags;
+    queue->entries[queue->write_index].flags = 0;
+    const void* packet = queue->entries[queue->write_index].packet;
+    ResidentReleaseQueues* release = resident_system_get_release_queues(&g_system);
+
+    switch (operation)
+    {
+    case LIB_PACKET_LOAD_IMAGE:
+        if (flags & LIB_PACKET_FREE_PIXELS)
+        {
+            resident_queue_allocation_release(release, (void*)static_cast<const LibImageUpload*>(packet)->pixels);
+        }
+
+        if (flags & LIB_PACKET_FREE_RECORD)
+        {
+            resident_queue_allocation_release(release, (void*)packet);
+        }
+
+        break;
+    }
+
+    if (queue->entries[queue->write_index].completion)
+    {
+        queue->entries[queue->write_index].completion->on_packet_complete((u32)packet);
+    }
+
+    queue->unk11 = 0;
+}
+
+/**
+ * @brief DMA channel 2 interrupt handler: finish the current packet operation and start the next.
+ * @param channel DMA channel.
+ * @return One.
+ */
+s32 func_004DC140(s32 channel)
+{
+    if (channel == 2)
+    {
+        func_004DBFB0(g_interrupt_packet_queue);
+        func_004DC200(g_interrupt_packet_queue, 1);
+    }
+
+    ee_exit_handler();
+    return 1;
+}
+
+/**
+ * @brief Test whether a live entry holds an operation for a packet.
+ * @param queue Packet queue.
+ * @param operation Operation number.
+ * @param packet Packet or object the operation is for.
+ * @return One when such an entry is queued.
+ */
+s32 func_004DC180(LibPacketQueue* queue, u16 operation, const void* packet)
+{
+    for (s32 i = 0; i < queue->capacity; i++)
+    {
+        if ((queue->entries[i].flags & LIB_PACKET_ENTRY_LIVE) && queue->entries[i].operation == operation && queue->entries[i].packet == packet)
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+extern "C" const char lib_packet_queue_bad_operation_error[];
+extern "C" const char lib_packet_queue_bad_operation_detail[];
+
+/**
+ * @brief Start the next queued packet operation when the queue has work and is enabled.
+ * @param queue Packet queue.
+ * @param value Passed on by the DMA completion path; func_004DC420 passes zero.
+ */
+void func_004DC200(LibPacketQueue* queue, s32 value)
+{
+    if (!queue->unk0E)
+    {
+        return;
+    }
+
+    if (!queue->enabled)
+    {
+        return;
+    }
+
+    s16 next = queue->write_index + 1;
+    queue->write_index = next;
+
+    if (next >= queue->capacity)
+    {
+        queue->write_index = 0;
+    }
+
+    s32 operation = queue->entries[queue->write_index].operation;
+    const void* packet = queue->entries[queue->write_index].packet;
+
+    if ((u32)packet >= EE_SCRATCHPAD)
+    {
+        packet = (const void*)((u32)packet | DMA_ADDRESS_SCRATCHPAD);
+    }
+
+    u32 size = queue->entries[queue->write_index].value;
+    queue->unk11 = 1;
+
+    switch (operation)
+    {
+    case LIB_PACKET_LOAD_IMAGE:
+        sceGsExecLoadImage((GsLoadImage*)&static_cast<const LibImageUpload*>(packet)->packet, (void*)static_cast<const LibImageUpload*>(packet)->pixels);
+        break;
+
+    case 2:
+        sceDmaSendN(sceDmaGetChan(2), (void*)packet, size);
+        break;
+
+    case 3:
+    {
+        DmaChannel* channel = sceDmaGetChan(2);
+        channel->chcr.tag_transfer_enable = 0;
+        sceDmaSend(channel, (void*)packet);
+        break;
+    }
+
+    case 4:
+    {
+        DmaChannel* channel = sceDmaGetChan(2);
+
+        if (!size)
+        {
+            size = (*(const u64*)packet & 0x7FFF) + 1;
+        }
+
+        sceDmaSendN(channel, (void*)packet, size);
+        break;
+    }
+
+    case 5:
+        resident_stream_dma_take_channel((ResidentStreamDma*)packet);
+        func_004DBFB0(queue);
+        func_004DC200(queue, 1);
+        break;
+
+    case 6:
+        func_004332F0((LibImageCapture*)packet);
+        func_004DBFB0(queue);
+        break;
+
+    default:
+        scePrintf(lib_packet_queue_bad_operation_error, operation, queue->write_index, queue->entries[queue->write_index].operation);
+        scePrintf(lib_packet_queue_bad_operation_detail, packet, size, queue->read_index);
+        break;
+    }
+}
+
+/**
+ * @brief Let queued packets start, or hold them back.
+ *
+ * Enabling a queue that has work waiting and isn't sending kicks the next operation.
+ * @param queue Packet queue.
+ * @param enable Nonzero lets packets start.
+ */
+void func_004DC420(LibPacketQueue* queue, s32 enable)
+{
+    LibInterruptLock interrupts;
+
+    if (enable)
+    {
+        queue->enabled = 1;
+
+        if (queue->unk0E && !queue->unk11)
+        {
+            func_004DC200(queue, 0);
+        }
+    }
+    else
+    {
+        queue->enabled = 0;
+    }
+}
+
+/**
+ * @brief Queue a packet operation, and start the queue if it's idle.
+ * @param queue Packet queue.
+ * @param operation Operation number.
+ * @param flags Operation flags.
+ * @param packet Packet to send, or the object the operation is for.
+ * @param value Operation value, such as a quadword count.
+ * @param completion Object told when the operation finishes, or null.
+ * @return One when queued, zero when the queue is full.
+ */
+u8 func_004DC4F0(LibPacketQueue* queue, u32 operation, u32 flags, const void* packet, u32 value, void* completion)
+{
+    if (queue->write_index == queue->read_index)
+    {
+        return 0;
+    }
+
+    LibInterruptLock interrupts;
+    queue->entries[queue->read_index].operation = operation;
+    queue->entries[queue->read_index].flags = (u16)flags | LIB_PACKET_ENTRY_LIVE;
+    queue->entries[queue->read_index].packet = packet;
+    queue->entries[queue->read_index].value = value;
+    queue->entries[queue->read_index].completion = static_cast<LibDmaCallbacks*>(completion);
+    queue->read_index++;
+
+    if (queue->read_index >= queue->capacity)
+    {
+        queue->read_index = 0;
+    }
+
+    if (!queue->unk0E)
+    {
+        queue->unk0E = 1;
+        func_004DC200(queue, 0);
+    }
+
+    return 1;
+}
+
+/** @brief Remove the interrupt handler, stop the channel and finish the operation in flight. */
+LibPacketQueue::~LibPacketQueue()
+{
+    if (unk0F)
+    {
+        DisableDmac(2);
+    }
+
+    RemoveDmacHandler(2, unk00);
+    unk0E = 0;
+    DmaChannel* channel = sceDmaGetChan(2);
+    read_index = write_index + 1;
+
+    if (read_index >= capacity)
+    {
+        read_index = 0;
+    }
+
+    sceDmaPause(channel);
+    func_004DBFB0(this);
+    delete[] entries;
+}
+
+/**
+ * @brief Allocate the entries and install the DMA channel 2 interrupt handler.
+ * @param capacity Number of entries.
+ */
+LibPacketQueue::LibPacketQueue(s16 capacity)
+{
+    this->capacity = capacity;
+    entries = new (0) LibPacketQueueEntry[this->capacity];
+    enabled = 1;
+    write_index = this->capacity - 1;
+    read_index = 0;
+    unk0E = 0;
+    unk11 = 0;
+    g_interrupt_packet_queue = this;
+    unk00 = AddDmacHandler(2, func_004DC140, 0);
+    unk0F = EnableDmac(2) != 0;
+}
+
+/**
+ * @brief Measure how far the allocator's unk14 address is past its base address.
+ * @param vram VRAM allocator.
+ * @return Distance in words.
+ */
+u32 func_004DC7F0(LibVramAllocator* vram)
+{
+    return vram->unk14 - vram->base_address;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC800);
 
@@ -3247,13 +4205,94 @@ void lib_vram_reset(LibVramAllocator* vram, u32 page)
     vram->allocation_count = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCCA0);
+/** @brief Free the allocation tables. */
+LibVramAllocator::~LibVramAllocator()
+{
+    delete[] unk04;
+    delete[] allocations;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCD10);
+/**
+ * @brief Allocate the two tables, with the end address at 0x100000 words.
+ * @param first_capacity Entries in unk04.
+ * @param allocation_capacity Entries in allocations.
+ */
+LibVramAllocator::LibVramAllocator(s16 first_capacity, s16 allocation_capacity)
+{
+    unk04 = new (0) u32[first_capacity];
+    allocations = new (0) u32[allocation_capacity];
+    unk04_capacity = first_capacity;
+    this->allocation_capacity = allocation_capacity;
+    unk14 = 0x100000;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCDA0);
+/**
+ * @brief Store a new unk3E40 and rewrite the word the context's unk3E38 points at from its top half and unk3E44.
+ * @param display Camera context; nothing happens without a packet at unk3E34.
+ * @param value New unk3E40.
+ */
+extern "C" void func_004DCDA0(LibCameraContext* display, s32 value)
+{
+    if (display->unk3E34)
+    {
+        display->unk3E40 = value;
+        *display->unk3E38 = (u32)(display->unk3E44 | ((display->unk3E40 >> 16) << 24));
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCDE0);
+#define LIB_EFFECT_BUFFER_SIZE 0x5460
+#define LIB_EFFECT_LEVEL_MAX 6
+
+/**
+ * @brief Set up the display's effect with the scales its level picked.
+ *
+ * Level zero turns the effect off and levels above six are clamped. Turning it on the first time allocates the two
+ * effect buffers; if either allocation fails both are freed and the effect stays off.
+ * @param display Display.
+ * @param enabled Turn the effect on.
+ * @param first_flag Effect flag.
+ * @param second_flag Effect flag.
+ * @param level Effect level.
+ * @param mask Effect mask.
+ * @param first_scale First scale.
+ * @param second_scale Second scale.
+ */
+void func_004DCDE0(LibCameraContext* display, bool enabled, bool first_flag, bool second_flag, s32 level, u32 mask,
+                   float first_scale, float second_scale)
+{
+    if (level == 0)
+    {
+        enabled = false;
+    }
+
+    if (level > LIB_EFFECT_LEVEL_MAX)
+    {
+        level = LIB_EFFECT_LEVEL_MAX;
+    }
+
+    display->effect_enabled = enabled;
+    display->effect_first_flag = first_flag;
+    display->effect_second_flag = second_flag;
+    display->effect_level = level;
+    display->effect_first_scale = first_scale;
+    display->effect_second_scale = second_scale;
+    display->effect_mask = mask;
+
+    if (enabled && display->effect_buffers[0] == 0)
+    {
+        display->effect_buffers[0] = new (0) u8[LIB_EFFECT_BUFFER_SIZE];
+        display->effect_buffers[1] = new (0) u8[LIB_EFFECT_BUFFER_SIZE];
+
+        if (display->effect_buffers[0] == 0 || display->effect_buffers[1] == 0)
+        {
+            ::operator delete(display->effect_buffers[0]);
+            ::operator delete(display->effect_buffers[1]);
+            display->effect_buffers[0] = 0;
+            display->effect_buffers[1] = 0;
+            display->effect_enabled = 0;
+        }
+    }
+}
 
 /**
  * @brief Turn the display output on or off. Circuit 1 only comes on when the display allows it (0x3E64).
@@ -3400,4 +4439,28 @@ u32 LibCameraContext::wait_for_field(s32 frame)
     return field;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DD310);
+/**
+ * @brief Rebuild the clear packets of a screen's two draw buffers in a colour: the first at the screen's size, the
+ *        second at its view size, both centred, with the depth test of the second buffer's first context.
+ * @param display Display that owns the screen.
+ * @param index Screen index.
+ * @param red Red component.
+ * @param green Green component.
+ * @param blue Blue component.
+ * @param alpha Alpha component.
+ */
+extern "C" void func_004DD310(LibCameraContext* display, s32 index, u8 red, u8 green, u8 blue, u8 alpha)
+{
+    s16 width = display->screens[index].width;
+    s16 height = display->screens[index].height;
+    s32 depth_method = display->screens[index].buffers[1].environment.context1.test.depth_method;
+
+    display->func_004DB600(&display->screens[index].buffers[0].clear, depth_method,
+                           GS_COORDINATE_CENTRE - (width >> 1), GS_COORDINATE_CENTRE - (height >> 1), width, height,
+                           red, green, blue, alpha, 0);
+    width = display->screens[index].view_width;
+    height = display->screens[index].view_height;
+    display->func_004DB600(&display->screens[index].buffers[1].clear, depth_method,
+                           GS_COORDINATE_CENTRE - (width >> 1), GS_COORDINATE_CENTRE - (height >> 1), width, height,
+                           red, green, blue, alpha, 0);
+}

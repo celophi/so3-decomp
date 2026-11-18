@@ -43,6 +43,18 @@ static inline void vu0_start_microprogram_728(void)
 }
 
 /**
+ * @brief Store the rotation rows that the microprogram at 0x728 leaves in vf8-vf10.
+ * @param matrix Aligned matrix receiving its first three rows.
+ * @see vu0_load_scale_vf17.
+ */
+static inline void vu0_store_rows_vf8_vf10(void* matrix)
+{
+    asm __volatile__("sqc2 $vf8, 0x0(%0)\n"
+                     "sqc2 $vf9, 0x10(%0)\n"
+                     "sqc2 $vf10, 0x20(%0)" : : "r"(matrix) : "memory");
+}
+
+/**
  * @brief Load the first three rows of a matrix into vf1-vf3.
  * @param matrix Aligned matrix.
  * @see vu0_load_scale_vf17.

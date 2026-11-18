@@ -144,20 +144,6 @@ public:
     virtual void complete_dma(u32 channel);
 };
 
-/** LibClass1779F0 entry of type 3, with vtable D_1734B0 in main data. */
-class LibClass1734B0 : public LibClass1779F0
-{
-public:
-    /** @brief Start unattached, with no data. */
-    LibClass1734B0();
-
-    /**
-     * @brief Return the entry's type code.
-     * @return Three.
-     */
-    virtual s32 func_slot14();
-};
-
 /** 16-byte element of LibClass173490's two arrays; its contents aren't known yet. */
 struct LibClass173490Entry
 {
@@ -187,7 +173,13 @@ public:
      */
     virtual s32 func_slot14();
 
-    virtual s32 func_slot18();
+    /**
+     * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
+     * @param index Bit index; unused.
+     * @param size Size in halfwords; receives the size in bytes.
+     * @return Record.
+     */
+    virtual u8* read_record(u32 index, u32* size);
 
     /** @brief Slot 0x1C, first after LibClass1779F0's; its purpose is unknown. */
     virtual void func_slot1C();
@@ -437,10 +429,13 @@ static inline const LibMatrix44Value* get_transposed_transform(LibTransform* tra
 extern ResidentSoundBankSet* D_001B6524;
 
 /** Sound number tables for func_0042EB50, four numbers each; entries 1 to 10 are used. */
-extern s16* D_4ED0EC[];
+extern s16* D_004ED0EC[];
+
+/** Sound number tables for func_0042F160, two numbers each; entries 1 to 10 are used. */
+extern s16* D_004ECCDC[];
 
 /** Sound number tables for func_0042F0D0, four numbers each; entries 1 to 10 are used. */
-extern s16* D_4ECD0C[];
+extern s16* D_004ECD0C[];
 
 extern "C" {
 
@@ -1197,10 +1192,10 @@ LibClass173380::LibClass173380()
 
 extern "C" {
 
-/** @brief Upload the palette image at D_4EC600. */
+/** @brief Upload the palette image at D_004EC600. */
 void lib_upload_default_palette(void)
 {
-    func_004D8C20(D_4EC600, 30);
+    func_004D8C20(D_004EC600, 30);
 }
 
 }
@@ -1224,7 +1219,19 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042DFF0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E240);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E6E0);
+/**
+ * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
+ * @param index Bit index; unused.
+ * @param size Size in halfwords; receives the size in bytes.
+ * @return Record.
+ */
+u8* LibClass173490::read_record(u32 index, u32* size)
+{
+    *size = (*size * 2 + 15) & ~15;
+    u8* record = reinterpret_cast<u8*>(unk38);
+    unk38 += *size;
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E710);
 
@@ -1273,22 +1280,28 @@ s32 LibClass1734B0::func_slot14()
     return 3;
 }
 
-extern "C" {
-
 /**
- * @brief Store a word at offset 0x14 and mark the state active at 0x0C.
- * @param state State to update.
- * @param value Word to store.
+ * @brief Use data the entry doesn't own.
+ * @param value Borrowed data.
  */
-void func_0042EB30(LibTextValueState* state, u32 value) {
-    state->unk14 = value;
-    state->unk0C = 1;
+void LibClass1779F0::set_borrowed_data(void* value)
+{
+    data = value;
+    data_is_borrowed = 1;
 }
 
-s32 func_0042EB40(void* object)
+/**
+ * @brief Return the next record when the entry has one for a bit; the base entry has none.
+ * @param index Bit index.
+ * @param size Receives the record's size.
+ * @return Record, or null.
+ */
+u8* LibClass1779F0::read_record(u32 index, u32* size)
 {
     return 0;
 }
+
+extern "C" {
 
 /**
  * @brief Play one of four sounds from a table at random, following an emitter.
@@ -1305,7 +1318,7 @@ s32 func_0042EB50(ResidentSoundEmitter* emitter, s32 table)
         return 0;
     }
 
-    numbers = D_4ED0EC[table];
+    numbers = D_004ED0EC[table];
     return resident_sound_bank_set_play_voice(D_001B6524, numbers[resident_random_below(4)], emitter, 0, 0x7F, 0);
 }
 
@@ -1328,11 +1341,34 @@ s32 func_0042F0D0(ResidentSoundEmitter* emitter, s32 table)
         return 0;
     }
 
-    numbers = D_4ECD0C[table];
+    numbers = D_004ECD0C[table];
     return resident_sound_bank_set_play_voice(D_001B6524, numbers[resident_random_below(4)], emitter, 0, 0x7F, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F160);
+/**
+ * @brief Play one of two sounds from a table, the first most of the time, following an emitter.
+ * @param emitter Object the sound follows.
+ * @param table Table index, 1 to 10.
+ * @return Slot identifier of the sound, or 0 for a bad index.
+ */
+s32 func_0042F160(ResidentSoundEmitter* emitter, s32 table)
+{
+    s16* numbers;
+
+    if (table <= 0 || table > 10)
+    {
+        return 0;
+    }
+
+    numbers = D_004ECCDC[table];
+
+    if (resident_rand() < 24000)
+    {
+        return resident_sound_bank_set_play_voice(D_001B6524, numbers[0], emitter, 0, 0x7F, 0);
+    }
+
+    return resident_sound_bank_set_play_voice(D_001B6524, numbers[1], emitter, 0, 0x7F, 0);
+}
 
 /**
  * @brief Play sound data following an emitter, when the sound bank set is up.
@@ -2029,15 +2065,71 @@ void lib_release_shared_font(void)
     free_guess(font);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004336E0);
+/**
+ * @brief Multiply a vector by the 4x4 matrix whose rows are already loaded in vf1-vf4.
+ * @param vector 16-byte aligned source vector.
+ * @param result 16-byte aligned destination; may equal vector.
+ */
+void func_004336E0(const void* vector, void* result)
+{
+    vu0_load_vf15(vector);
+    vu0_dot_rows_vf15(result);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433730);
+/**
+ * @brief Load a 4x4 matrix into vf1-vf4, then multiply a vector by it as func_004336E0 does.
+ * @param matrix 16-byte aligned matrix of four rows.
+ * @param vector 16-byte aligned source vector.
+ * @param result 16-byte aligned destination.
+ */
+void func_00433730(const void* matrix, const void* vector, void* result)
+{
+    vu0_load_vf15(vector);
+    vu0_load_matrix(matrix);
+    vu0_dot_rows_vf15(result);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433790);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433880);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004339F0);
+/**
+ * @brief Find, to within a few bytes, the largest block the heap can hand out below 0x1FE0000.
+ * @return Block size.
+ */
+extern "C" s32 func_004339F0(void)
+{
+    s32 step = 0x1000000;
+    s32 size = step;
+
+    do
+    {
+        void* block = malloc_guess(size);
+
+        if (block == 0 || (u32)block >= 0x1FE0000)
+        {
+            if (block)
+            {
+                free_guess(block);
+            }
+
+            step /= 2;
+            size -= step;
+        }
+        else
+        {
+            if (block)
+            {
+                free_guess(block);
+            }
+
+            step /= 2;
+            size += step;
+        }
+    } while (step >= 3);
+
+    return size;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433AA0);
 
@@ -2164,7 +2256,19 @@ s32 func_00434F20(void* object)
     return 6;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00434F30);
+/** @brief Let go of the source, destroying it when this was its last emitter, then destroy the emitter. */
+void LibClass173990::destroy()
+{
+    LibEmitterSource* held = source;
+
+    if (held && held->user_count > 0 && --held->user_count == 0)
+    {
+        held->destroy();
+    }
+
+    source = 0;
+    LibTransformOwner::destroy();
+}
 
 void func_00434FA0(void* object)
 {
@@ -2172,8 +2276,6 @@ void func_00434FA0(void* object)
     ((LibColorModel*)object)->LibColorModel::destroy();
 }
 
-// TODO: func_00435070 and func_00435150 look like another class's operator delete and operator new; I haven't
-// found which class yet, so they stay plain functions for now.
 /**
  * @brief Free an array whose construction failed, the same way as operator delete[](void*).
  * @param object Array storage, or null.
@@ -2214,21 +2316,22 @@ void LibClass173A28::operator delete[](void* object)
 }
 
 /**
- * @brief Free memory through the heap at g_field_allocation_heap when one is set, otherwise through operator delete.
- * @param memory Allocation, or null.
+ * @brief Free an object whose construction failed, the same way as operator delete(void*).
+ * @param object Object storage, or null.
+ * @param heap Heap selector the object was allocated with.
  */
-void func_00435070(void* memory)
+void LibClass173A28::operator delete(void* object, s32 heap)
 {
     if (g_field_allocation_heap)
     {
-        if (memory)
+        if (object)
         {
-            resident_heap_release(memory);
+            resident_heap_release(object);
         }
     }
     else
     {
-        ::operator delete(memory);
+        ::operator delete(object);
     }
 }
 
@@ -2268,12 +2371,12 @@ void* LibClass173A28::operator new[](u32 size, s32 heap)
 }
 
 /**
- * @brief Allocate from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
+ * @brief Allocate an object from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
  * @param size Size in bytes.
  * @param heap Heap selector passed on to operator new.
  * @return The allocation.
  */
-void* func_00435150(u32 size, s32 heap)
+void* LibClass173A28::operator new(u32 size, s32 heap)
 {
     if (g_field_allocation_heap)
     {

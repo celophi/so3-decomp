@@ -19,6 +19,22 @@ public:
     static void operator delete(void* object);
 
     /**
+     * @brief Free an object whose construction failed, the same way as operator delete(void*).
+     * @param object Object storage, or null.
+     * @param heap Heap selector the object was allocated with.
+     */
+    static void operator delete(void* object, s32 heap);
+
+    /**
+     * @brief Allocate an object from the heap at g_field_allocation_heap when one is set, otherwise through operator
+     *        new.
+     * @param size Size in bytes.
+     * @param heap Heap selector passed on to operator new.
+     * @return The allocation.
+     */
+    static void* operator new(u32 size, s32 heap);
+
+    /**
      * @brief Allocate an array from the heap at g_field_allocation_heap when one is set, otherwise through operator new.
      * @param size Size in bytes.
      * @param heap Heap selector passed on to operator new.
@@ -38,6 +54,14 @@ public:
      * @param heap Heap selector the array was allocated with.
      */
     static void operator delete[](void* object, s32 heap);
+};
+
+/** Partial object an emitter draws from; it is destroyed when its last emitter lets go. */
+class LibEmitterSource : public LibListObject
+{
+public:
+    u8 unk14[0xABC];
+    s32 user_count;
 };
 
 /** 0x4A0-byte emitter whose remaining resource and grid settings are unrecovered. */
@@ -86,7 +110,9 @@ public:
      */
     virtual void copy_state(const LibClass173990* other);
 
-    u8 unk214[0x1F0];
+    u8 unk214[0x1D0];
+    LibEmitterSource* source;
+    u8 unk3e8[0x1C];
     float unk404;
     float unk408;
     float unk40c;

@@ -192,7 +192,8 @@ public:
     u8 payload_set;
     u8 unk8b[2];
     u8 unk8d_0 : 1;
-    u8 unk8d_1_7 : 7;
+    u8 unk8d_1 : 1;
+    u8 unk8d_2_7 : 6;
     u8 unk8e[2];
 };
 
@@ -209,6 +210,24 @@ public:
     /** @brief Start with no words. */
     LibResourceBitset() : words(0), words_are_borrowed(0)
     {
+    }
+
+    /**
+     * @brief Use words the bitset doesn't own, releasing its own first.
+     * @param count Number of bits.
+     * @param source Borrowed words.
+     */
+    void borrow_words(u32 count, u32* source)
+    {
+        if (!words_are_borrowed)
+        {
+            delete[] words;
+        }
+
+        bit_count = count;
+        word_count = (count + 31) / 32;
+        words = source;
+        words_are_borrowed = 1;
     }
 
     /** @brief Release the word buffer when it is owned by this object. */
@@ -245,7 +264,13 @@ public:
      */
     virtual s32 func_slot14();
 
-    virtual s32 func_slot18();
+    /**
+     * @brief Return the next record when the entry has one for a bit; the base entry has none.
+     * @param index Bit index.
+     * @param size Receives the record's size.
+     * @return Record, or null.
+     */
+    virtual u8* read_record(u32 index, u32* size);
 
     /**
      * @brief Add the entry to a model's child list, binding the list to the model first.
@@ -266,6 +291,40 @@ public:
     LibResourceBitset bits;
 };
 
+/** LibClass1779F0 entry of type 3, with vtable D_1734B0 in main data. */
+class LibClass1734B0 : public LibClass1779F0
+{
+public:
+    /** @brief Start unattached, with no data. */
+    LibClass1734B0();
+
+    /**
+     * @brief Return the entry's type code.
+     * @return Three.
+     */
+    virtual s32 func_slot14();
+};
+
+/** LibClass1779F0 entry with vtable D_00174C90 in main data that the textured entries 174C70/174CB0/174D10 extend. */
+class LibClass174C90 : public LibClass1779F0
+{
+public:
+    /** @brief Start unattached, with unk0e set. */
+    LibClass174C90();
+
+    virtual ~LibClass174C90()
+    {
+    }
+
+    /**
+     * @brief Return the entry's type code.
+     * @return Ten.
+     */
+    virtual s32 func_slot14();
+};
+
+#define LIB_LIST_KIND_LATE_MODEL 9
+
 /** Partial model base that draws a mesh resource, with vtable D_178D10 in main data. */
 class LibModelBase : public LibColorModel
 {
@@ -277,6 +336,13 @@ public:
 
     /** @brief Release the resource when owned, then destroy the model. */
     virtual ~LibModelBase();
+
+    /**
+     * @brief Borrow mesh data into the model's resource, give it the render channels and take its resident mask.
+     * @param data Mesh data.
+     * @return Always one.
+     */
+    s32 borrow_mesh(void* data);
 
     /** @brief Unregister the resource when owned, then destroy the model through its base. */
     virtual void destroy()
@@ -487,9 +553,10 @@ public:
     /**
      * @brief Fill the block before the draw packet.
      * @param block Block address (uncached).
+     * @param address Address of the model's draw packet.
      * @return End of what was written.
      */
-    virtual s32 build_before_packet(s32 block)
+    virtual s32 build_before_packet(s32 block, s32 address)
     {
         return block;
     }
@@ -497,9 +564,10 @@ public:
     /**
      * @brief Fill the block after the draw packet.
      * @param block Block address (uncached).
+     * @param address Address of the model's draw packet.
      * @return End of what was written.
      */
-    virtual s32 build_after_packet(s32 block)
+    virtual s32 build_after_packet(s32 block, s32 address)
     {
         return block;
     }

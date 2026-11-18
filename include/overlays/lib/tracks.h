@@ -5,6 +5,7 @@
 #include "overlays/lib/vector.h"
 #include "clamp.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/grid_bitset.h"
 
 /** Fixed pool of tracks with a bitmap of used slots; its data comes before the vptr. */
 template <class T> class LibTrackPool
@@ -17,7 +18,7 @@ template <class T> class LibTrackPool
         void free(T* track)
         {
             u32 index = ((u32)track - (u32)items) / ((u32)&items[1] - (u32)items);
-            used[index >> 6] &= ~((u64)1 << (index & 0x3F));
+            slots.bits[index >> 6] &= ~((u64)1 << (index & 0x3F));
         }
 
         /** @brief Release every track in the pool and its storage. */
@@ -33,26 +34,25 @@ template <class T> class LibTrackPool
 
             delete[] items;
 
-            if (!external)
+            if (!slots.borrowed)
             {
-                delete[] used;
-                used = 0;
+                delete[] slots.bits;
+                slots.bits = 0;
             }
 
             items = 0;
             count = 0;
         }
 
+        /** @brief Start with no tracks and no slot bits. */
+        LibTrackPool();
+
         s32 count;
         s32 unk04;
         T* items;
-        s32 capacity;
-        s32 words;
-        u64* used;
-        bool external;
-        u32 unk1c;
+        LibGridBitset slots;
 
-        /** @brief Free the pool. */
+        /** @brief Release the pool's tracks and storage. */
         virtual ~LibTrackPool();
 };
 
@@ -1116,6 +1116,13 @@ class LibPooledQuaternionCurveTrack : public LibQuaternionCurveTrackBase
          * @param key Sort key.
          */
         virtual void set_single_curve_key(const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused, float key);
+
+        /**
+         * @brief Find the key at or before a time measured back from the last sampled key.
+         * @param offset Time before the last sampled key.
+         * @return Key, or null when the time comes before the first key.
+         */
+        LibQuaternionCurveTrackKey* find_key_before(float offset);
 
         float last_key;
         u8 unk64[0xC];

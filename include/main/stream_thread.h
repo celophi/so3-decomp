@@ -70,6 +70,12 @@ s32 resident_stream_thread_set_first_state(void* object, const s32* value);
  */
 s32 resident_stream_dma_read_samples(struct ResidentStreamDma* dma, s32 ring, s32 count, float* output);
 
+/**
+ * @brief Take a finished channel transfer: copy its table back, pack its samples into the ring and queue the next.
+ * @param dma Stream DMA transfer.
+ */
+void resident_stream_dma_take_channel(struct ResidentStreamDma* dma);
+
 struct ResidentStreamDma;
 
 

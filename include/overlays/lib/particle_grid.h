@@ -5,6 +5,7 @@
 
 #ifdef __cplusplus
 #include "overlays/lib/emission.h"
+#include "overlays/lib/grid_bitset.h"
 #endif
 
 /** A vector whose fourth word can hold a frame index. */
@@ -85,58 +86,6 @@ typedef struct LibGridRow40
 } LibGridRow40;
 
 #ifdef __cplusplus
-/** Bit set of the grid's active cells, with vtable D_173F58 in main data after its data. */
-class LibGridBitset
-{
-public:
-    /**
-     * @brief Allocate word storage for a bit count.
-     * @param count Number of bits.
-     */
-    LibGridBitset(u32 count)
-    {
-        bits = 0;
-        borrowed = 0;
-        resize(count);
-    }
-
-    /**
-     * @brief Replace the word storage with room for a bit count.
-     * @param count Number of bits.
-     */
-    void resize(u32 count)
-    {
-        if (!borrowed)
-        {
-            delete[] bits;
-        }
-
-        this->count = count;
-        words = (count + 63) >> 6;
-        bits = new (0) u64[words];
-        borrowed = 0;
-    }
-
-    /** @brief Clear every word. */
-    void clear()
-    {
-        s32 total = words;
-
-        for (s32 i = 0; i < total; i++)
-        {
-            bits[i] = 0;
-        }
-    }
-
-    s32 count;
-    s32 words;
-    u64* bits;
-    bool borrowed;
-
-    /** @brief Free the words unless they're borrowed. */
-    virtual ~LibGridBitset();
-};
-
 /** Root of the grid element classes, with vtable D_173F48 in main data; its only virtual is the destructor. */
 class LibClass173F48 : public LibClass173A28
 {

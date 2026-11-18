@@ -1,5 +1,9 @@
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "include_asm.h"
+#include "angle.h"
+#include "vu0.h"
+#include "clamp.h"
+#include "overlays/lib/character_record.h"
 #include "overlays/lib/render_buffer.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/text_003F90C0.h"
@@ -10,20 +14,71 @@
 #include "overlays/lib/text_004BD360.h"
 #include "main/resident_data.h"
 #include "overlays/lib/image_capture.h"
-#include "overlays/lib/vector.h"
+#include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/transform_owner_inlines.h"
 #include "main/system.h"
 #include "main/utility.h"
 #include "main/dma_queue.h"
 #include "overlays/lib/model.h"
 
-/** LibClass1779F0 subclass with vtable D_00174C90 in main data; only its destructors are known. */
-class LibClass174C90 : public LibClass1779F0
+/** LibShortBitTableHeader with a colour after the records offset; the words start at 0x10. */
+struct LibColorBitTableHeader
 {
-public:
-    virtual ~LibClass174C90()
+    s16 bit_count;
+    s16 unk02;
+    s32 records_offset;
+    float color[4];
+    u32 unk18[2];
+    u32 words[1];
+};
+
+/** Record in a resource entry's record list; each starts with its size at 0x8. */
+struct LibEntryRecord
+{
+    u32 unk00[2];
+    s32 size;
+};
+
+/**
+ * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+ * @param entry Resource entry.
+ * @param cursor Entry's record cursor.
+ * @param index Bit index.
+ * @param size Receives the record's size.
+ * @return Record, or null.
+ */
+static inline u8* lib_entry_read_record(LibClass1779F0* entry, u8*& cursor, u32 index, u32* size)
+{
+    if (entry->unk19 || ((entry->bits.words[index / 32] >> (index % 32)) & 1))
     {
+        *size = reinterpret_cast<LibEntryRecord*>(cursor)->size;
+        u8* record = cursor;
+        cursor += reinterpret_cast<LibEntryRecord*>(cursor)->size;
+        return record;
     }
+
+    return 0;
+}
+
+/** Bit table at the start of a resource entry's data: one bit per record, then the records at records_offset. */
+struct LibBitTableHeader
+{
+    u32 bit_count;
+    s32 unk04;
+    s32 records_offset;
+    u32 unk0c;
+    u32 words[1];
+};
+
+/** LibBitTableHeader with a halfword bit count and the records offset in the second word. */
+struct LibShortBitTableHeader
+{
+    s16 bit_count;
+    s16 unk02;
+    s32 records_offset;
+    u32 unk08;
+    u32 unk0c;
+    u32 words[1];
 };
 
 /** LibClass174C90 subclass with vtable D_00174C70 in main data. */
@@ -31,6 +86,30 @@ class LibClass174C70 : public LibClass174C90
 {
 public:
     virtual ~LibClass174C70();
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 43.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Use a resource's bit table and the records after it, without owning them.
+     * @param value Resource data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    /**
+     * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+     * @param index Bit index.
+     * @param size Receives the record's size.
+     * @return Record, or null.
+     */
+    virtual u8* read_record(u32 index, u32* size);
+
+    LibBitTableHeader* table;
+    u8* records;
+    u8* cursor;
 };
 
 /** LibClass174C90 subclass with vtable D_00174CB0 in main data. */
@@ -38,36 +117,202 @@ class LibClass174CB0 : public LibClass174C90
 {
 public:
     virtual ~LibClass174CB0();
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 43.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Use a resource's bit table and the records after it, without owning them.
+     * @param value Resource data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    /**
+     * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+     * @param index Bit index.
+     * @param size Receives the record's size.
+     * @return Record, or null.
+     */
+    virtual u8* read_record(u32 index, u32* size);
+
+    LibShortBitTableHeader* table;
+    u8* records;
+    u8* cursor;
 };
 
 /** LibClass174C90 subclass with vtable D_00174D10 in main data. */
 class LibClass174D10 : public LibClass174C90
 {
 public:
+    /** @brief Start as an entry of kind 5 with blend mode 0. */
+    LibClass174D10();
+
     virtual ~LibClass174D10();
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 40.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Use a resource's bit table, records and two offsets without owning them.
+     * @param value Resource data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    /**
+     * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+     * @param index Bit index.
+     * @param size Receives the record's size.
+     * @return Record, or null.
+     */
+    virtual u8* read_record(u32 index, u32* size);
+
+    /**
+     * @brief Pick the blend mode: offsets other than zero mark the owning list the first time; zero offsets use
+     *        mode 2 once the list was marked.
+     */
+    void update_blend_mode()
+    {
+        if (offset_u != 0.0f || offset_v != 0.0f)
+        {
+            if (blend_mode == 0)
+            {
+                if (unk18 != 1 && list != 0)
+                {
+                    list->unk8d_1 = 1;
+                }
+
+                unk18 = 1;
+                blend_mode = 0;
+            }
+        }
+        else if (unk18)
+        {
+            blend_mode = 2;
+        }
+    }
+
+    /**
+     * @brief Set the first offset and refresh the blend mode.
+     * @param value Offset.
+     */
+    void set_offset_u(float value)
+    {
+        offset_u = value;
+        update_blend_mode();
+    }
+
+    /**
+     * @brief Set the second offset and refresh the blend mode.
+     * @param value Offset.
+     */
+    void set_offset_v(float value)
+    {
+        offset_v = value;
+        update_blend_mode();
+    }
+
+    LibColorBitTableHeader* table;
+    u8* records;
+    u8* cursor;
+    u8 unk3c[4];
+    float offset_u;
+    float offset_v;
+    u8 unk48[8];
+    s32 blend_mode;
 };
 
 /** LibClass1779F0 subclass with vtable D_00174D30 in main data; only its destructors are known. */
 class LibClass174D30 : public LibClass1779F0
 {
 public:
+    /** @brief Start unattached, with unk0e set to two. */
+    LibClass174D30();
+
     virtual ~LibClass174D30()
     {
     }
+
+    /**
+     * @brief Return the entry's type code.
+     * @return Six.
+     */
+    virtual s32 func_slot14();
 };
 
 /** LibClass174D30 subclass with vtable D_00174D50 in main data. */
 class LibClass174D50 : public LibClass174D30
 {
 public:
+    /** @brief Start as an entry of kind 6 with a white colour. */
+    LibClass174D50();
+
     virtual ~LibClass174D50();
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 36.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Use a resource's bit table, records and colour without owning them; a colour other than white
+     *        marks the owning list.
+     * @param value Resource data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    /**
+     * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+     * @param index Bit index.
+     * @param size Receives the record's size.
+     * @return Record, or null.
+     */
+    virtual u8* read_record(u32 index, u32* size);
+
+    /**
+     * @brief Note whether every bit is set, count the blend mode down and rewind the records.
+     * @return Zero on the step the countdown ends, otherwise one.
+     */
+    virtual s32 func_slot1C();
+
+    LibColorBitTableHeader* table;
+    u8* records;
+    u8* cursor;
+    u8 unk3c[4];
+    FieldVec4B color;
+    s32 blend_mode;
 };
 
-/** Transform owner with vtable D_001747C0 in main data; only its destructor is known. */
+/** Transform owner with vtable D_001747C0 in main data that expires the cached texture 1 when it's drawn. */
 class LibClass1747C0 : public LibTransformOwner
 {
 public:
     virtual ~LibClass1747C0();
+
+    /** @brief Do nothing. */
+    virtual void render();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return the shared bounding sphere every object of this class uses.
+     * @return Bounding sphere.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Expire every cached copy of texture 1.
+     * @param matrix Unused.
+     * @param context Unused.
+     */
+    virtual void build_packet(const void* matrix, void* context);
 };
 
 class LibCameraContext;
@@ -224,7 +469,6 @@ public:
 };
 
 /** Packed frame colors that LibClass1746D0::init picks from. */
-extern "C" u32 D_4ED130[];
 
 /** Hardware address register of DMA channel 1 (VIF1). Proposed for ee.h next to D1_QWC. */
 #define D1_MADR ((volatile u32*)0x10009010)
@@ -300,7 +544,6 @@ public:
     u32 unke4;
 };
 
-extern "C" u8 D_00174D30[];
 
 extern "C" void func_004A8F10(void* object);
 
@@ -587,7 +830,10 @@ extern "C" bool lib_scissor_init_rectangle(ItemCreationClass1746A0* object, floa
     return success;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B5E0);
+/** @brief Destroy the text, the frame and the container. */
+LibClass1746D0::~LibClass1746D0()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B6A0);
 
@@ -713,36 +959,34 @@ LibClass1747C0::~LibClass1747C0()
 {
 }
 
-/**
- * @brief Set the receiver's byte at offset 0x60 to 8.
- * @param object Receiver to update.
- */
-void func_0044C050(LibObjectByte60* object)
+/** @brief Draw in bucket 8. */
+void LibClass1747C0::set_default_draw_bucket()
 {
-    object->unk60 = 8;
+    draw_bucket = 8;
 }
 
-/**
- * @brief Perform no work.
- * @param object Unused receiver.
- */
-void func_0044C060(void* object)
+/** @brief Do nothing. */
+void LibClass1747C0::render()
 {
 }
 
 extern "C" u8 D_00508240[];
 
 /**
- * @brief Return the address of D_00508240.
- * @return The data symbol's address.
+ * @brief Return the shared bounding sphere every object of this class uses.
+ * @return Bounding sphere.
  */
-const void* func_0044C070(void)
+const LibVector4* LibClass1747C0::get_bounding_sphere()
 {
-    return D_00508240;
+    return reinterpret_cast<const LibVector4*>(D_00508240);
 }
 
-/** @brief Expire every cached copy of texture 1. */
-void func_0044C080(void)
+/**
+ * @brief Expire every cached copy of texture 1.
+ * @param matrix Unused.
+ * @param context Unused.
+ */
+void LibClass1747C0::build_packet(const void* matrix, void* context)
 {
     g_texture_cache->expire_texture(1);
 }
@@ -761,12 +1005,12 @@ void LibClass174840::submit_dma(u32 channel)
 }
 
 /**
- * @brief Forward the receiver to the base transform update.
- * @param object Transform receiver.
+ * @brief Finish the packet once its transfer is done.
+ * @param channel DMA channel; unused.
  */
-void func_0044C0F0(void* object)
+void LibClass174840::complete_dma(u32 channel)
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    lib_finish_packet(this);
 }
 
 /** @brief Queue the receiver's DMA callback interface. */
@@ -820,44 +1064,42 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0C0);
 
-/** Partial singleton view for the display pointer at +0x4458. */
-typedef struct LibDisplayManagerView
+/** @brief Update the transform and mark the renderer's first pass ready. */
+void LibClass1748D0::update()
 {
-    u8 unk00[0x4458];
-    void* current_display;
-} LibDisplayManagerView;
-
-/** Partial display view for the ready byte at +0x9C. */
-typedef struct LibDisplayReadyView
-{
-    u8 unk00[0x9C];
-    u8 ready;
-} LibDisplayReadyView;
-
-/**
- * @brief Update the transform and mark the current display ready.
- * @param object Transform receiver.
- */
-extern "C" void func_0044D0D0(void* object)
-{
-    static_cast<LibTransform*>(object)->LibTransform::update();
-    LibDisplayManagerView* manager = static_cast<LibDisplayManagerView*>(g_renderer);
-    LibDisplayReadyView* display = static_cast<LibDisplayReadyView*>(manager->current_display);
-    display->ready = 1;
+    LibTransform::update();
+    static_cast<LibRenderer*>(g_renderer)->unk4458->unk9c = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D100);
-
 /**
- * @brief Forward the receiver to the base transform update.
- * @param object Transform receiver.
+ * @brief Send the packet on VIF1 in normal mode.
+ * @param channel DMA channel; unused.
  */
-extern "C" void func_0044D150(void* object)
+void LibClass1748D0::submit_dma(u32 channel)
 {
-    lib_finish_packet(static_cast<LibTransformOwner*>(object));
+    dma_pending = 1;
+    *D1_QWC = qwc;
+    *D1_MADR = resident_packet_get_address(packet);
+    *D_STAT = D_STAT_CIS1;
+    *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D170);
+/**
+ * @brief Finish the packet.
+ * @param channel DMA channel; unused.
+ */
+void LibClass1748D0::complete_dma(u32 channel)
+{
+    lib_finish_packet(this);
+}
+
+/** @brief Close the packet with a DIRECTHL tag for its size and queue it on VIF1. */
+void LibClass1748D0::render()
+{
+    qwc = resident_packet_end_unmask_path3(packet);
+    *packet_tag = VIF_DIRECTHL(qwc - 2);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D1D0);
 
@@ -867,51 +1109,271 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D9C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044E080);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044E140);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__14LibClass1748D0FPCvPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044E430);
+/**
+ * @brief Place the bounding sphere at the transform's origin, with the cull radius.
+ * @return Bounding sphere.
+ */
+const LibVector4* LibClass1748D0::get_bounding_sphere()
+{
+    LibVector4 origin;
+    origin.w = 1.0f;
+    origin.x = 0.0f;
+    origin.y = 0.0f;
+    origin.z = 0.0f;
+    vu0_dot_matrix_rows(&transform, &origin, &bounding_sphere);
+    bounding_sphere.w = unk248;
+    return &bounding_sphere;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044E4D0);
+/** @brief Delete the packet buffer. */
+LibClass1748D0::~LibClass1748D0()
+{
+    delete packet;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044E560);
+/** LibClass1748D0 with its own packet builder, with vtables D_174970 and D_1749F4 in main data. */
+class LibClass174970 : public LibClass1748D0
+{
+public:
+    /** @brief Start with type ID 0xA02 and no buffers. */
+    LibClass174970();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044E5F0);
+    /** @brief Destroy the transform. */
+    virtual ~LibClass174970();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ED10);
+    virtual void build_packet(const void* matrix, void* context);
+};
+
+/** LibClass1748D0 that LibClass174AC0 and LibClass174B70 build on, with vtables D_174A10 and D_174A94 in main data. */
+class LibClass174A10 : public LibClass1748D0
+{
+public:
+    /** @brief Construct the transform. */
+    LibClass174A10()
+    {
+    }
+
+    /** @brief Destroy the transform. */
+    virtual ~LibClass174A10()
+    {
+    }
+};
+
+/** LibClass174A10 with a sample grid and two angle setters, with vtables D_174AC0 and D_174B44 in main data. */
+class LibClass174AC0 : public LibClass174A10
+{
+public:
+    /** @brief Start with type ID 0xA02 and no buffers. */
+    LibClass174AC0();
+
+    /** @brief Free the sample buffer. */
+    virtual ~LibClass174AC0();
+
+    virtual void build_packet(const void* matrix, void* context);
+
+    virtual void func_0044FDA0(s32 columns, s32 rows);
+
+    /**
+     * @brief Store three values: the first as degrees, the third as turns.
+     * @param values Three values.
+     */
+    virtual void func_00451AD0(const float* values);
+
+    /**
+     * @brief Store three values, the first and third as degrees.
+     * @param values Three values.
+     */
+    virtual void func_00451B20(const float* values);
+
+    s32 columns;
+    s32 rows;
+    float unk268;
+    float unk26c;
+    float unk270;
+    float unk274;
+    float unk278;
+    float unk27c;
+    void* samples;
+};
+
+/** LibClass174A10 with a sample grid and two setters, with vtables D_174B70 and D_174BF4 in main data. */
+class LibClass174B70 : public LibClass174A10
+{
+public:
+    /** @brief Start with type ID 0xA01 and no buffers. */
+    LibClass174B70();
+
+    /** @brief Free the sample buffer. */
+    virtual ~LibClass174B70();
+
+    virtual void build_packet(const void* matrix, void* context);
+
+    virtual void func_00451850(s32 columns, s32 rows);
+
+    /**
+     * @brief Store three values, the third as turns.
+     * @param values Three values.
+     */
+    virtual void func_00451A60(const float* values);
+
+    /**
+     * @brief Store three values, the first as degrees.
+     * @param values Three values.
+     */
+    virtual void func_00451AA0(const float* values);
+
+    s32 columns;
+    s32 rows;
+    float unk268;
+    float unk26c;
+    float unk270;
+    float unk274;
+    float unk278;
+    float unk27c;
+    void* samples;
+};
+
+/** @brief Start with no packet buffer, type ID 0xA00 and the class's draw bucket. */
+LibClass1748D0::LibClass1748D0()
+{
+    packet = 0;
+    unk65 = 0;
+    type_id = 0xA00;
+    unk248 = 1000.0f;
+    unk244 = 0;
+    unk245 = 1;
+    unk24c = 1.0f;
+    unk250 = 1.0f;
+    set_default_draw_bucket();
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__14LibClass174970FPCvPv);
+
+/** @brief Destroy the transform. */
+LibClass174970::~LibClass174970()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044ED80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044EE40);
+/** @brief Start with type ID 0xA02 and no buffers. */
+LibClass174970::LibClass174970()
+{
+    type_id = 0xA02;
+    packet = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044EE90);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__14LibClass174AC0FPCvPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044FC90);
+/** @brief Free the sample buffer. */
+LibClass174AC0::~LibClass174AC0()
+{
+    ::operator delete(samples);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044FD30);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044FDA0__14LibClass174AC0Fii);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044FDA0);
+/** @brief Start with type ID 0xA02 and no buffers. */
+LibClass174AC0::LibClass174AC0()
+{
+    type_id = 0xA02;
+    packet = 0;
+    samples = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044FF80);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__14LibClass174B70FPCvPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044FFF0);
+/** @brief Free the sample buffer. */
+LibClass174B70::~LibClass174B70()
+{
+    ::operator delete(samples);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004517B0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451850__14LibClass174B70Fii);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451850);
+/** @brief Start with type ID 0xA01 and no buffers. */
+LibClass174B70::LibClass174B70()
+{
+    type_id = 0xA01;
+    packet = 0;
+    samples = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004519F0);
+/**
+ * @brief Store three values, the third as turns.
+ * @param values Three values.
+ */
+void LibClass174B70::func_00451A60(const float* values)
+{
+    unk268 = values[0];
+    unk26c = values[1];
+    unk270 = 3.1415927f * (2.0f * values[2]);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451A60);
+/**
+ * @brief Store three values, the first as degrees.
+ * @param values Three values.
+ */
+void LibClass174B70::func_00451AA0(const float* values)
+{
+    unk274 = DEGREES_TO_RADIANS * values[0];
+    unk278 = values[1];
+    unk27c = values[2];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451AA0);
+/**
+ * @brief Store three values: the first as degrees, the third as turns.
+ * @param values Three values.
+ */
+void LibClass174AC0::func_00451AD0(const float* values)
+{
+    unk268 = DEGREES_TO_RADIANS * values[0];
+    unk26c = values[1];
+    unk270 = 3.1415927f * (2.0f * values[2]);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451AD0);
+/**
+ * @brief Store three values, the first and third as degrees.
+ * @param values Three values.
+ */
+void LibClass174AC0::func_00451B20(const float* values)
+{
+    unk274 = DEGREES_TO_RADIANS * values[0];
+    unk278 = values[1];
+    unk27c = DEGREES_TO_RADIANS * values[2];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451B20);
+/**
+ * @brief Pick 0x200020 for codes whose low four bits are below 14, else 0x200030.
+ * @param code Code.
+ * @return Selected value.
+ */
+extern "C" s32 func_00451B60(s32 code)
+{
+    return (code & 0xF) < 14 ? 0x200020 : 0x200030;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451B60);
+/**
+ * @brief Test whether a code is in 1-10, 14-231 or from 301 on, other than 121 and 202.
+ * @param code Code to test.
+ * @return 1 when it is.
+ */
+extern "C" s32 func_00451B90(s32 code)
+{
+    if (code == 121 || code == 202)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451B90);
+    if ((code > 0 && code <= 10) || (code >= 14 && code <= 231) || code > 300)
+    {
+        return 1;
+    }
+
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451C00);
 
@@ -945,9 +1407,30 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452F00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452FA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453000);
+// TODO: The resource widget's destructor inlines its base's, which other modules keep out of line, so the base
+// destructor is only inline in this unit.
+inline ItemCreationClass175110::~ItemCreationClass175110()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453080);
+ItemCreationClass174C40::~ItemCreationClass174C40()
+{
+}
+
+/** @brief Pick up a changed resource index, then refresh the drawing state like the base widget. */
+void ItemCreationClass174C40::func_00413D20()
+{
+    if (unkd0 != unkcc)
+    {
+        unkcc = unkd0;
+        unkc0 = func_00464EF0(g_field_runtime, unkcc) + 0x22;
+        unkc4 = 0;
+        unkc9 = 1;
+        needs_redraw = 1;
+    }
+
+    ItemCreationClass175110::func_00413D20();
+}
 
 /**
  * @brief Select the indexed resource and initialize its drawing position.
@@ -969,13 +1452,113 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453150);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004535B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453DD0);
+/**
+ * @brief Count the frame time down and move on when it runs out.
+ * @return -1 once the last frame ended, 2 after moving to the next frame, 1 after jumping back, 0 otherwise.
+ */
+s8 LibImageAnimation::step()
+{
+    state = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453EC0);
+    if (resource && active)
+    {
+        timer -= static_cast<FieldRuntime*>(g_field_runtime)->rate;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453F30);
+        if (timer <= 0.0f)
+        {
+            s32 current = index;
+            LibImageFrame* entry = &frame[current];
+            u8 kind = entry->kind;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453F70);
+            if (kind == 1)
+            {
+                state = -1;
+                active = 0;
+            }
+            else
+            {
+                if (kind == 0)
+                {
+                    index = current + 1;
+                    state = 2;
+                }
+                else
+                {
+                    index = current - (kind - 1);
+                    state = 1;
+                }
+
+                LibImageFrame* next = &frame[index];
+                timer = (u32)next->duration;
+            }
+        }
+    }
+
+    return state;
+}
+
+/**
+ * @brief Start playing from a frame.
+ * @param frame Frame index.
+ */
+void LibImageAnimation::start(s32 frame)
+{
+    if (resource)
+    {
+        LibImageFrameList* list = reinterpret_cast<LibImageFrameList*>(static_cast<u8*>(resource) + 0x10);
+        this->frame = list->frames;
+        frame_count = list->count;
+        index = frame;
+        timer = (u32)this->frame->duration;
+        state = 1;
+        active = 1;
+    }
+}
+
+/**
+ * @brief Use an image resource and, when given, its drawing format.
+ * @param resource Image resource.
+ * @param format Drawing format, or null to keep the current one.
+ */
+void LibImageAnimation::set_resource(void* resource, const LibImageFormat* format)
+{
+    this->resource = resource;
+
+    if (format)
+    {
+        this->format.unk00 = format->unk00;
+        this->format.unk02 = format->unk02;
+        this->format.unk04 = format->unk04;
+        this->format.unk05 = format->unk05;
+        this->format.unk06 = format->unk06;
+        this->format.unk07 = format->unk07;
+    }
+}
+
+/**
+ * @brief Use one of the field runtime's display chunks, with the default drawing format for its range.
+ * @param id Chunk index; below 34 and from 34 on use different defaults.
+ */
+void LibImageAnimation::set_display_chunk(s32 id)
+{
+    resource = func_004650B0(g_field_runtime, id);
+
+    if (id < 34)
+    {
+        format.unk00 = 0;
+        format.unk02 = 0x3FFC;
+    }
+    else
+    {
+        format.unk00 = 0x400;
+        format.unk02 = 0x3FF8;
+    }
+
+    format.unk04 = 4;
+    format.unk05 = 0x2C;
+    format.unk06 = 8;
+    format.unk07 = 8;
+}
 
 /**
  * @brief Initialize resource pointers, drawing scales, colors, and descriptor defaults.
@@ -983,9 +1566,9 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00453F70);
  */
 extern "C" void lib_draw_state_init(LibDrawState64* state)
 {
-    state->unk04 = 0;
+    state->resource = 0;
     state->unk00 = 0;
-    state->unk08 = 0;
+    state->frame = 0;
     state->unk18 = state->unk1c = 0.0f;
     state->unk20 = state->unk24 = 0.0f;
     state->unk28 = state->unk2c = 0.0f;
@@ -1002,22 +1585,52 @@ LibClass174C70::~LibClass174C70()
 {
 }
 
-extern "C" s32 func_004540D0(void)
+/**
+ * @brief Return the entry's type code.
+ * @return 43.
+ */
+s32 LibClass174C70::func_slot14()
 {
     return 0x2B;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004540E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454300);
+/**
+ * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+ * @param index Bit index.
+ * @param size Receives the record's size.
+ * @return Record, or null.
+ */
+u8* LibClass174C70::read_record(u32 index, u32* size)
+{
+    return lib_entry_read_record(this, cursor, index, size);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454360);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004545C0);
+/**
+ * @brief Use a resource's bit table and the records after it, without owning them.
+ * @param value Resource data.
+ */
+void LibClass174C70::set_borrowed_data(void* value)
+{
+    data = value;
+    data_is_borrowed = 1;
+    table = reinterpret_cast<LibBitTableHeader*>(static_cast<u8*>(value) + 0x10);
+    u32* words = table->words;
+    u32 count = table->bit_count;
+    bits.borrow_words(count, words);
+    records = reinterpret_cast<u8*>(table) + table->records_offset;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454650);
 
-extern "C" s32 func_00454730(void)
+/**
+ * @brief Return the entry's type code.
+ * @return Ten.
+ */
+s32 LibClass174C90::func_slot14()
 {
     return 10;
 }
@@ -1026,18 +1639,44 @@ LibClass174CB0::~LibClass174CB0()
 {
 }
 
-extern "C" s32 func_004547B0(void)
+/**
+ * @brief Return the entry's type code.
+ * @return 43.
+ */
+s32 LibClass174CB0::func_slot14()
 {
     return 0x2B;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004547C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004549F0);
+/**
+ * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+ * @param index Bit index.
+ * @param size Receives the record's size.
+ * @return Record, or null.
+ */
+u8* LibClass174CB0::read_record(u32 index, u32* size)
+{
+    return lib_entry_read_record(this, cursor, index, size);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454A50);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454CB0);
+/**
+ * @brief Use a resource's bit table and the records after it, without owning them.
+ * @param value Resource data.
+ */
+void LibClass174CB0::set_borrowed_data(void* value)
+{
+    data = value;
+    data_is_borrowed = 1;
+    table = reinterpret_cast<LibShortBitTableHeader*>(static_cast<u8*>(value) + 0x10);
+    u32* words = table->words;
+    s32 count = table->bit_count;
+    bits.borrow_words(count, words);
+    records = reinterpret_cast<u8*>(table) + table->records_offset;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454D40);
 
@@ -1211,7 +1850,7 @@ void lib_draw_buffer_apply_settings(LibDrawBuffer* buffer, LibDrawSettings* sett
         state->unk58 = settings->unk10;
     }
 
-    state->alpha = D_4ED320[settings->blend_mode];
+    state->alpha = D_004ED320[settings->blend_mode];
     state->unk94 = settings->unk14;
     state->alpha_address = GS_REGISTER_ALPHA_1;
     state->blend = 0;
@@ -1641,30 +2280,66 @@ LibClass174D10::~LibClass174D10()
 {
 }
 
-extern "C" s32 func_00456200(void)
+/**
+ * @brief Return the entry's type code.
+ * @return 40.
+ */
+s32 LibClass174D10::func_slot14()
 {
     return 40;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456210);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456300);
+/**
+ * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+ * @param index Bit index.
+ * @param size Receives the record's size.
+ * @return Record, or null.
+ */
+u8* LibClass174D10::read_record(u32 index, u32* size)
+{
+    return lib_entry_read_record(this, cursor, index, size);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456360);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456690);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456850);
-
-void* func_004568A0(void* receiver)
+/**
+ * @brief Use a resource's bit table, records and two offsets without owning them.
+ * @param value Resource data.
+ */
+void LibClass174D10::set_borrowed_data(void* value)
 {
-    func_004A8F10(receiver);
-    *(void**)receiver = D_00174D30;
-    ((u8*)receiver)[0xE] = 2;
-    return receiver;
+    data = value;
+    data_is_borrowed = 1;
+    table = reinterpret_cast<LibColorBitTableHeader*>(static_cast<u8*>(value) + 0x10);
+    u32* words = table->words;
+    s32 count = table->bit_count;
+    bits.borrow_words(count, words);
+    records = reinterpret_cast<u8*>(table) + table->records_offset;
+    set_offset_u(table->color[0]);
+    set_offset_v(table->color[1]);
 }
 
-extern "C" s32 func_00456940(void)
+/** @brief Start as an entry of kind 5 with blend mode 0. */
+LibClass174D10::LibClass174D10()
+{
+    unk19 = 0;
+    unk0f = 5;
+    blend_mode = 0;
+}
+
+/** @brief Start unattached, with unk0e set to two. */
+LibClass174D30::LibClass174D30()
+{
+    unk0e = 2;
+}
+
+/**
+ * @brief Return the entry's type code.
+ * @return Six.
+ */
+s32 LibClass174D30::func_slot14()
 {
     return 6;
 }
@@ -1673,38 +2348,285 @@ LibClass174D50::~LibClass174D50()
 {
 }
 
-extern "C" s32 func_004569C0(void)
+/**
+ * @brief Return the entry's type code.
+ * @return 36.
+ */
+s32 LibClass174D50::func_slot14()
 {
     return 36;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004569D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456A90);
+/**
+ * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
+ * @param index Bit index.
+ * @param size Receives the record's size.
+ * @return Record, or null.
+ */
+u8* LibClass174D50::read_record(u32 index, u32* size)
+{
+    return lib_entry_read_record(this, cursor, index, size);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456AF0);
+/**
+ * @brief Note whether every bit is set, count the blend mode down and rewind the records.
+ * @return Zero on the step the countdown ends, otherwise one.
+ */
+s32 LibClass174D50::func_slot1C()
+{
+    if (table->bit_count == table->unk02)
+    {
+        unk19 = 1;
+    }
+    else
+    {
+        unk19 = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456B90);
+    if (blend_mode != 0 && --blend_mode == 0)
+    {
+        if (unk18 && list)
+        {
+            list->unk8d_1 = 1;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456CF0);
+        unk18 = 0;
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456D60);
+    blend_mode = 0;
+    cursor = records;
+    return 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456DD0);
+/**
+ * @brief Use a resource's bit table, records and colour without owning them; a colour other than white marks the
+ *        owning list.
+ * @param value Resource data.
+ */
+void LibClass174D50::set_borrowed_data(void* value)
+{
+    data = value;
+    data_is_borrowed = 1;
+    table = reinterpret_cast<LibColorBitTableHeader*>(static_cast<u8*>(value) + 0x10);
+    u32* words = table->words;
+    s32 count = table->bit_count;
+    bits.borrow_words(count, words);
+    records = reinterpret_cast<u8*>(table) + table->records_offset;
+    FieldVec4A source(table->color[0], table->color[1], table->color[2], table->color[3]);
+    color = source;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456E60);
+    if (color.x != 1.0f || color.y != 1.0f || color.z != 1.0f || color.w != 1.0f)
+    {
+        if (unk18 != 1 && list != 0)
+        {
+            list->unk8d_1 = 1;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456F10);
+        unk18 = 1;
+        blend_mode = 0;
+    }
+    else
+    {
+        blend_mode = 2;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456F90);
+/** @brief Start as an entry of kind 6 with a white colour. */
+LibClass174D50::LibClass174D50()
+{
+    unk19 = 0;
+    unk0f = 6;
+    color = FieldVec4A(1.0f, 1.0f, 1.0f, 1.0f);
+    blend_mode = 0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456FE0);
+/**
+ * @brief Find the first DTT chunk in a chunk list.
+ * @param out Receives the chunk's data size and address.
+ * @param chunk First chunk.
+ * @return Whether a DTT chunk was found.
+ */
+bool func_00456D60(LibChunkData* out, LibResourceChunkHeader* chunk)
+{
+    for (;;)
+    {
+        if (chunk->magic == LIB_DTT_CHUNK_MAGIC)
+        {
+            break;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457030);
+        chunk = chunk->next_offset == 0 ? 0 : (LibResourceChunkHeader*)((u8*)chunk + chunk->next_offset);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004570C0);
+        if (!chunk)
+        {
+            return false;
+        }
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457190);
+    u32* block = (u32*)(chunk + 1);
+    out->size = *block;
+    out->data = block + 1;
+    return true;
+}
+
+/** Factor IDs whose counts LibFactorCounts keeps, padded with an unused ID. */
+extern "C" const u16 D_004ED1B0[LIB_COUNTED_FACTOR_COUNT];
+
+#define LIB_FACTOR_COUNTS_KEY 0x1C62
+#define LIB_FACTOR_TABLE_KEY 0x83A8
+
+// TODO: Like the other saved-data checksums here, these only match at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Add up a byte range for a factor count list's checksums, each byte plus three times its index.
+ * @param list Factor count list; unused.
+ * @param data Bytes to add up.
+ * @param size Byte count.
+ * @return Sum.
+ */
+u16 lib_factor_checksum(LibFactorCounts* list, const u8* data, s32 size)
+{
+    u16 sum = 0;
+    s32 i;
+
+    for (i = 0; i < size; i++)
+    {
+        sum += *data;
+        sum += (u16)(i * 3);
+        data++;
+    }
+
+    return sum;
+}
+
+/**
+ * @brief Check both of a factor count list's checksums.
+ * @param list Factor count list.
+ * @return Whether the counts and the factor table both match their checksums.
+ */
+bool lib_factor_counts_valid(LibFactorCounts* list)
+{
+    s32 checksum = list->checksum;
+
+    if (checksum != (lib_factor_checksum(list, (const u8*)list->counts, sizeof(list->counts)) ^ LIB_FACTOR_COUNTS_KEY))
+    {
+        return false;
+    }
+
+    checksum = list->table_checksum;
+
+    if (checksum != (lib_factor_checksum(list, (const u8*)D_004ED1B0, sizeof(D_004ED1B0)) ^ LIB_FACTOR_TABLE_KEY))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Check whether a factor has been counted, clearing the list first if its checksums are bad.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ * @return Whether the factor's count is positive.
+ */
+bool lib_factor_counted(LibFactorCounts* list, s32 factor)
+{
+    if (!lib_factor_counts_valid(list))
+    {
+        lib_factor_counts_reset(list);
+        return false;
+    }
+
+    if (lib_factor_count(list, factor) > 0)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * @brief Lower a factor's count by one.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ */
+void lib_factor_count_lower(LibFactorCounts* list, s32 factor)
+{
+    lib_factor_count_set(list, factor, lib_factor_count(list, factor) - 1);
+}
+
+/**
+ * @brief Raise a factor's count by one.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ */
+void lib_factor_count_raise(LibFactorCounts* list, s32 factor)
+{
+    lib_factor_count_set(list, factor, lib_factor_count(list, factor) + 1);
+}
+
+/**
+ * @brief Look up a factor's count.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ * @return Count, or zero for a factor that isn't counted.
+ */
+s32 lib_factor_count(LibFactorCounts* list, s32 factor)
+{
+    s32 i;
+
+    for (i = 0; i < LIB_COUNTED_FACTOR_COUNT; i++)
+    {
+        if (factor == D_004ED1B0[i])
+        {
+            return (s8)list->counts[i];
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Set a factor's count and refresh the counts' checksum.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ * @param count New count.
+ * @return Whether the factor is counted.
+ */
+bool lib_factor_count_set(LibFactorCounts* list, s32 factor, s32 count)
+{
+    s32 i;
+
+    for (i = 0; i < LIB_COUNTED_FACTOR_COUNT; i++)
+    {
+        if (factor == D_004ED1B0[i])
+        {
+            list->counts[i] = count;
+            list->checksum = lib_factor_checksum(list, (const u8*)list->counts, sizeof(list->counts)) ^ LIB_FACTOR_COUNTS_KEY;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief Clear every count and rewrite both checksums.
+ * @param list Factor count list.
+ */
+void lib_factor_counts_reset(LibFactorCounts* list)
+{
+    memset_guess(list->counts, 0, sizeof(list->counts));
+    list->checksum = lib_factor_checksum(list, (const u8*)list->counts, sizeof(list->counts)) ^ LIB_FACTOR_COUNTS_KEY;
+    list->table_checksum = lib_factor_checksum(list, (const u8*)D_004ED1B0, sizeof(D_004ED1B0)) ^ LIB_FACTOR_TABLE_KEY;
+}
+
+#pragma pop
 
 /** Keys of the trophy record encoding. */
 enum
@@ -1780,12 +2702,65 @@ bool lib_trophy_record_decode(void* record)
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457360);
-
-// TODO: This only matches at optimization level 0, and with an unused local cleared at the start; I don't know
-// what the local was for.
+// TODO: Like the decoder, this only matches at optimization level 0.
 #pragma push
 #pragma optimization_level 0
+
+/**
+ * @brief Store a trophy record's checksum in its first word, then encode the record in place.
+ * @param record Decoded record (LIB_TROPHY_RECORD_SIZE bytes).
+ */
+void lib_trophy_record_encode(void* record)
+{
+    u32* word;
+    u32 key;
+    u32 checksum;
+    s32 i;
+    s32 count;
+    s32 j;
+
+    word = (u32*)record;
+    word++;
+    count = LIB_TROPHY_RECORD_SIZE / sizeof(u32) - 1;
+    checksum = LIB_TROPHY_RECORD_CHECKSUM_SEED;
+
+    for (j = 0; j < count; j++)
+    {
+        checksum <<= 1;
+        checksum += *word++ ^ LIB_TROPHY_RECORD_CHECKSUM_MASK;
+    }
+
+    *(u32*)record = checksum;
+
+    word = (u32*)record;
+    count = LIB_TROPHY_RECORD_SIZE / sizeof(u32);
+    key = LIB_TROPHY_RECORD_KEY_SEED;
+
+    for (i = 0; i < count; i++)
+    {
+        *word ^= key;
+        word++;
+
+        if (i & 1)
+        {
+            key <<= 2;
+        }
+        else
+        {
+            key >>= 2;
+        }
+
+        key += LIB_TROPHY_RECORD_KEY_STEP;
+    }
+}
+
+#pragma pop
+
+// TODO: This only matches at optimization level 0, and with an unused local cleared at the start; I don't know
+// what the local was for. The grid functions below inline it, so auto inlining is on for it too.
+#pragma push
+#pragma optimization_level 0
+#pragma auto_inline on
 
 /**
  * @brief Compute the checksum the game stores with its saved records.
@@ -1811,7 +2786,6 @@ u16 lib_compute_checksum(u16 seed, const void* data, s32 size)
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_trophy_flags_update_checksum);
 
 // TODO: Like the checksum above, this only matches at optimization level 0.
 #pragma push
@@ -1828,6 +2802,35 @@ static inline bool lib_trophy_flag(LibTrophyFlags* flags, u32 index)
     u32 byte = index / 8;
     u32 bit = index & 7;
     return !!((flags->flags.bytes[byte] >> bit) & 1);
+}
+
+/**
+ * @brief Pick a new random checksum seed for the trophy flags and recompute their checksum.
+ * @param flags Trophy flags.
+ */
+void lib_trophy_flags_update_checksum(LibTrophyFlags* flags)
+{
+    flags->checksum_seed = resident_next_random_word();
+    u32 value = flags->checksum_seed;
+    u32 sum = 0;
+
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
+    {
+        u32 index = i;
+        s32 bit = lib_trophy_flag(flags, index);
+
+        if (value & 1)
+        {
+            bit ^= 1;
+        }
+
+        value = value * LIB_CHECKSUM_MULTIPLIER + LIB_CHECKSUM_INCREMENT;
+        sum += bit * value;
+        value = (u64)(value * value) + 0xD45666F2;
+    }
+
+    sum += flags->trophy_key ^ value;
+    flags->checksum = sum;
 }
 
 /**
@@ -1863,29 +2866,296 @@ void lib_trophy_flags_checksum(LibTrophyFlags* flags, const u32* seed, u32* chec
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004577A0);
+// TODO: This only matches at optimization level 1 with the peephole and tree transformations off, which keeps the
+// inlined checksum's O0 shape; I haven't found what the original build did instead.
+#pragma push
+#pragma optimization_level 1
+#pragma peephole off
+#pragma opt_treetransformation off
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457980);
+/**
+ * @brief Store an entry of the settings' 10 by 10 byte grid, limited to 0 through 70, when the settings checksum is
+ *        valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param row Row, 1 through 10.
+ * @param column Column, 1 through 10.
+ * @param value Value to store.
+ */
+void func_004577A0(LibSystemSettings* settings, s32 row, s32 column, s32 value)
+{
+    if (settings->checksum != lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00457B20);
+    if (column <= 0 || column > LIB_SETTINGS_GRID_SIZE)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00458110);
+    if (row <= 0 || row > LIB_SETTINGS_GRID_SIZE)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00458700);
+    value += 40597;
+    value = clamp(value, 40597, 40667);
+    value -= 40597;
+    settings->unk40[row - 1][column - 1] = value ^ LIB_RECORD_XOR_BYTE;
+    settings->key = resident_next_random_word();
+    settings->checksum = lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004587C0);
+#pragma pop
+
+// TODO: Like the checksums above, this only matches at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Read an entry of the settings' 10 by 10 byte grid.
+ * @param settings System settings.
+ * @param row Row, 1 through 10.
+ * @param column Column, 1 through 10.
+ * @return Entry, or zero when the checksum is invalid or the position is out of range.
+ */
+s32 func_00457980(LibSystemSettings* settings, s32 row, s32 column)
+{
+    if (settings->checksum != lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        return 0;
+    }
+
+    if (column <= 0 || column > LIB_SETTINGS_GRID_SIZE)
+    {
+        return 0;
+    }
+
+    if (row <= 0 || row > LIB_SETTINGS_GRID_SIZE)
+    {
+        return 0;
+    }
+
+    return settings->unk40[row - 1][column - 1] ^ LIB_RECORD_XOR_BYTE;
+}
+
+#pragma pop
+
+/** "Sophia". */
+extern const char D_00505B18[];
+
+/** "Fate". */
+extern const char D_00505B20[];
+
+// TODO: Like the saved-data functions around them, these only match at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Give Sophia's records their starting values: level 1, three equipment slots with the first three
+ *        emptied, base stamina 15, base luck 135 and Sophia's name.
+ * @param record Character record.
+ * @param equipment Character equipment record.
+ */
+extern "C" void func_00457B20(LibCharacterRecord* record, LibCharacterEquipment* equipment)
+{
+    set_character_base_level(record, 1);
+    set_character_level(record, 1);
+    set_character_experience(record, 0);
+    set_equipment_slot_limit(equipment, 3);
+    set_equipment_item_id(equipment, 0, 0);
+    set_equipment_item_id(equipment, 1, 0);
+    set_equipment_item_id(equipment, 2, 0);
+    set_equipment_base_stamina(equipment, 15);
+    set_equipment_base_luck(equipment, 135);
+
+    const char* source = D_00505B18;
+    char* destination = equipment->character_name;
+
+    while ((*destination++ = *source++))
+    {
+    }
+}
+
+/**
+ * @brief Give Fate's records their starting values: level 1, three equipment slots with the first three
+ *        emptied, base stamina 15, base luck 120 and Fate's name.
+ * @param record Character record.
+ * @param equipment Character equipment record.
+ */
+extern "C" void func_00458110(LibCharacterRecord* record, LibCharacterEquipment* equipment)
+{
+    set_character_base_level(record, 1);
+    set_character_level(record, 1);
+    set_character_experience(record, 0);
+    set_equipment_slot_limit(equipment, 3);
+    set_equipment_item_id(equipment, 0, 0);
+    set_equipment_item_id(equipment, 1, 0);
+    set_equipment_item_id(equipment, 2, 0);
+    set_equipment_base_stamina(equipment, 15);
+    set_equipment_base_luck(equipment, 120);
+
+    const char* source = D_00505B20;
+    char* destination = equipment->character_name;
+
+    while ((*destination++ = *source++))
+    {
+    }
+}
+
+#pragma pop
+
+// TODO: Like the saved-data functions around it, this only matches at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Clear a character's record pair, run the kind's setup and store the kind.
+ * @param output Output record.
+ * @param input Input record.
+ * @param kind Record kind; 1 and 2 have setups.
+ */
+extern "C" void func_00458700(LibResourceRecordC4* output, LibResourceRecord114* input, s32 kind)
+{
+    memset_guess(output, 0, sizeof(LibResourceRecordC4));
+    memset_guess(input, 0, sizeof(LibResourceRecord114));
+
+    switch (kind)
+    {
+    case 1:
+        func_00458110(reinterpret_cast<LibCharacterRecord*>(output), reinterpret_cast<LibCharacterEquipment*>(input));
+        break;
+    case 2:
+        func_00457B20(reinterpret_cast<LibCharacterRecord*>(output), reinterpret_cast<LibCharacterEquipment*>(input));
+        break;
+    case 0:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 10:
+        break;
+    }
+
+    output->kind = kind;
+    output->unk02 = 0;
+}
+
+#pragma pop
+
+// TODO: Like the saved-data functions around it, this only matches at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Apply the saved sound output mode, speaker angles and vibration setting.
+ * @param settings System settings.
+ */
+void func_004587C0(LibSystemSettings* settings)
+{
+    u8 output = settings->sound_output;
+
+    switch (output)
+    {
+    case 0:
+        resident_sound_set_output_mode(g_sound, 1);
+        break;
+    case 1:
+        resident_sound_set_output_mode(g_sound, 0);
+        break;
+    case 2:
+        resident_sound_set_output_mode(g_sound, 2);
+        break;
+    case 3:
+        resident_sound_set_output_mode(g_sound, 3);
+        break;
+    }
+
+    float* angles = settings->speaker_angles;
+    resident_sound_set_speaker_angles(g_sound, angles);
+    s32 vibration = (u8)settings->vibration;
+    resident_pad_set_vibration_enabled(g_input_system, 0, vibration);
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004588E0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004595C0);
+// TODO: This only matches with tree transformation, constant folding, lifetime splitting and loop rotation
+// off: the inlined checksum keeps unfolded loop bounds and one accumulator register. I haven't found the
+// build setting behind it.
+#pragma push
+#pragma opt_treetransformation off
+#pragma opt_foldconstants off
+#pragma opt_lifetimes off
+#pragma opt_rotateloops off
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00459990);
+/**
+ * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.
+ * @param record Record to seal; an already sealed record is left alone.
+ */
+extern "C" void lib_seal_record(LibSealedRecord* record)
+{
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00459CA0);
+    if (record->sealed == 0)
+    {
+        record->sealed = LIB_RECORD_SEALED;
+        record->unk00 ^= LIB_RECORD_XOR_BYTE;
+        record->unk02 ^= LIB_RECORD_XOR_HALFWORD;
+        record->unk04 ^= LIB_RECORD_XOR_WORD;
+        record->unk08 ^= LIB_RECORD_XOR_WORD;
+        record->unk0C ^= LIB_RECORD_XOR_WORD;
+        record->unk10 ^= LIB_RECORD_XOR_WORD;
+        record->unk14 ^= LIB_RECORD_XOR_WORD;
+        record->unk18 ^= LIB_RECORD_XOR_WORD;
+        record->unk1C ^= LIB_RECORD_XOR_WORD;
+        record->unk20 ^= LIB_RECORD_XOR_WORD;
+        record->unk24 ^= LIB_RECORD_XOR_WORD;
+        record->unk28 ^= LIB_RECORD_XOR_WORD;
+        record->unk2C ^= LIB_RECORD_XOR_WORD;
+        record->unk30 ^= LIB_RECORD_XOR_WORD;
+        record->unk34 ^= LIB_RECORD_XOR_WORD;
+        record->unk38 ^= LIB_RECORD_XOR_WORD;
+        record->unk3C ^= LIB_RECORD_XOR_WORD;
+        record->unk40 ^= LIB_RECORD_XOR_WORD;
+        record->unk44 ^= LIB_RECORD_XOR_WORD;
+        record->unk48 ^= LIB_RECORD_XOR_WORD;
+        record->unk4C ^= LIB_RECORD_XOR_WORD;
+        record->unk50 ^= LIB_RECORD_XOR_WORD;
+        record->unk54 ^= LIB_RECORD_XOR_WORD;
+        record->unk58 ^= LIB_RECORD_XOR_WORD;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00459FB0);
+        for (i = 0; i < LIB_RECORD_ENCODED_TAIL_SIZE; i++)
+        {
+            record->encoded_tail[i] ^= LIB_RECORD_XOR_BYTE;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045A2C0);
+        record->key = resident_next_random_word();
+        record->checksum = lib_compute_checksum(record->key * LIB_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
+    }
+    else if (record->sealed != LIB_RECORD_SEALED)
+    {
+        memset_guess(record, 0, sizeof(LibSealedRecord));
+    }
+}
+
+#pragma pop
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_options_set_color_unlock_level);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_options_set_fourth_dimension_unlocked);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_options_set_universe_unlocked);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_options_set_unk18);
+
+
+
+
 
 // TODO: Like the saved-data functions before it, this only matches at optimization level 0.
 #pragma push
@@ -1917,8 +3187,6 @@ void lib_free_system_data(void)
 #define LIB_RESOURCE_RECORD_COUNT 8
 
 extern "C" void func_0040B760(void);
-
-extern "C" void func_00458700(LibResourceRecordC4* output, LibResourceRecord114* input, s32 mode);
 
 extern "C" void func_004588E0(LibSystemSettings* settings);
 

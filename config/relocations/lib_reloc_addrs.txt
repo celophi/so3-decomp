@@ -101,3 +101,7 @@ rom:0x8AF48 reloc:MIPS_HI16 symbol:__vt__14LibClass175430 addend:0xB4
 rom:0x8AF50 reloc:MIPS_LO16 symbol:__vt__14LibClass175430 addend:0xB4
 rom:0x92D70 reloc:MIPS_HI16 symbol:__vt__14LibClass175430 addend:0xB4
 rom:0x92D78 reloc:MIPS_LO16 symbol:__vt__14LibClass175430 addend:0xB4
+// func_004DC200 sets the scratchpad bit of a DMA address (0x80000000) and reads LibImageUpload::pixels (+0x60);
+// neither is the address 0x80000060.
+rom:0xF5A08 reloc:MIPS_NONE symbol:0x8000
+rom:0xF5A50 reloc:MIPS_NONE symbol:0x60

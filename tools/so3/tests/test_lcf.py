@@ -10,7 +10,9 @@ import unittest
 from tools.so3.build.compiler_probe import COMPILER_EXE, COMPILERS, CONFIG, LINKER_EXE, working_candidate
 from tools.so3.build.driver import BINARY_ARCHITECTURE, BINARY_OBJECT_FORMAT, BINUTILS_PREFIX, MWLDPS2_FLAGS
 from tools.so3.build.flat_image import image
-from tools.so3.build.lcf import absolute_definitions, absolute_symbols, command_file, parse_linker_script, symbol_definitions
+from tools.so3.build.lcf import (
+    absolute_definitions, absolute_symbols, command_file, island_objects, parse_linker_script, symbol_definitions,
+)
 from tools.so3.formats import FormatError
 
 # Each line splat writes inside a section, and what it should become.
@@ -116,6 +118,24 @@ class FileStartTests(unittest.TestCase):
 
 
 class RefusalTests(unittest.TestCase):
+    def test_template_names_get_a_readable_spelling(self):
+        # MWLDPS2 can't read <> in a command file; text_order rewrites the object's reference the same way.
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'map.txt'
+            path.write_text('__vt__35LibTrackPool<19LibPooledFloatTrack> = 0x00179270; // absolute:True\n')
+            self.assertEqual(absolute_definitions([path]), ['__vt__35LibTrackPool_19LibPooledFloatTrack_ = 0x179270;'])
+
+    def test_islands_use_the_units_cpp_object(self):
+        # Splat only finds an island's unit in the same segment, so a unit from another one comes out as .c.o.
+        script = splat_script('unit.cpp.o(.text);', 'unit.c.o(.rodata.00505B30);', 'code.c.o(.text);',
+                              'code.c.o(.rodata.00505B60);')
+        sections, gp = parse_linker_script(script)
+        island_objects(sections)
+        body = [line.strip() for line in command_file(sections, gp, []).splitlines()]
+        self.assertIn('unit.cpp.o (.rodata.00505B30)', body)
+        # A real C unit keeps its own object.
+        self.assertIn('code.c.o (.rodata.00505B60)', body)
+
     def test_unknown_lines_stop_the_conversion(self):
         for line in ('KEEP(*(.init));', 'build/mod/a.o(.text) build/mod/b.o(.text);', 'INCLUDE other.ld'):
             with self.subTest(line), self.assertRaisesRegex(ValueError, 'no MWLDPS2 equivalent'):

@@ -84,7 +84,33 @@ segments:
     subsegments:
       - [0xE6B20, cpp, text_004CD3A0]
       - [0xF6BC0, cpp, text_004DD440]
-  - [0x103780, bin, data]
+      # The data starts here. A jump table gets a .rodata entry once the function that uses it is compiled;
+      # everything else stays as raw pieces.
+      - [0x103780, databin, data]
+      - start: 0x11EEB0
+        type: .rodata
+        name: text_004095C0
+        linker_section: .rodata.00505730
+        rodata_anchors:
+          - {function: func_00414130, offset: 0x0, size: 0x20}
+        linker_section_order: .rodata
+      - [0x11EED0, rodatabin, rodata_00505750]
+      - start: 0x11F2B0
+        type: .rodata
+        name: text_0044ABE0
+        linker_section: .rodata.00505B30
+        rodata_anchors:
+          - {function: func_00458700, offset: 0x0, size: 0x2C}
+        linker_section_order: .rodata
+      - [0x11F2DC, rodatabin, rodata_00505B5C]
+      - start: 0x120A70
+        type: .rodata
+        name: text_004CD3A0
+        linker_section: .rodata.005072F0
+        rodata_anchors:
+          - {function: func_004DC200, offset: 0x0, size: 0x1C}
+        linker_section_order: .rodata
+      - [0x120A8C, rodatabin, rodata_0050730C]
   - name: init
     type: code
     start: 0x120b00

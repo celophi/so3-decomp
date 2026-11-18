@@ -22,9 +22,6 @@ extern "C" {
 void* func_0043DF70(void* receiver);
 #endif
 
-/** Build and return a pointer to the four-word stack value. */
-void* func_0044A410(void);
-
 /**
  * @brief Process the supplied object with two additional values.
  * @param object Input object.
@@ -256,9 +253,6 @@ u8 func_00444D30(const void* object);
 u8 func_00444D60(const void* object);
 
 
-
-/** Store the byte constant at receiver offset 0x60. */
-void func_0044A400(void* object);
 
 /** Clear the byte at receiver offset 0x480. */
 void func_0043AFC0(void* object);

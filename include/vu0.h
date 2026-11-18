@@ -105,6 +105,85 @@ static inline void vu0_load_vf1(const void* vector)
 }
 
 /**
+ * @brief Load a vector into vf15 for vu0_dot_rows_vf15.
+ * @param vector 16-byte aligned vector.
+ * @see func_004336E0 and func_00433730 in Lib.
+ */
+static inline void vu0_load_vf15(const void* vector)
+{
+    asm __volatile__("lqc2 $vf15, 0x0(%0)" : : "r"(vector) : "memory");
+}
+
+/**
+ * @brief Dot each matrix row in vf1-vf4 with the vector in vf15 and store the four results.
+ *
+ * vf6 is set to (1, 1, 1) so the multiply-adds sum the products; the result
+ * is built in vf5.
+ * @param result 16-byte aligned destination.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf).
+ * @see func_004336E0 and func_00433730 in Lib; about 120 more copies in Lib and the field and battle modules.
+ */
+static inline void vu0_dot_rows_vf15(void* result)
+{
+    asm __volatile__("vaddw.xyz   $vf6, $vf0, $vf0w\n"
+                     "vmul.xyzw   $vf11, $vf1, $vf15\n"
+                     "vmul.xyzw   $vf12, $vf2, $vf15\n"
+                     "vmul.xyzw   $vf13, $vf3, $vf15\n"
+                     "vmul.xyzw   $vf14, $vf4, $vf15\n"
+                     "vadday.x    $ACC, $vf11, $vf11y\n"
+                     "vmaddaz.x   $ACC, $vf6, $vf11z\n"
+                     "vmaddw.x    $vf5, $vf6, $vf11w\n"
+                     "vaddax.y    $ACC, $vf12, $vf12x\n"
+                     "vmaddaz.y   $ACC, $vf6, $vf12z\n"
+                     "vmaddw.y    $vf5, $vf6, $vf12w\n"
+                     "vadday.z    $ACC, $vf13, $vf13y\n"
+                     "vmaddax.z   $ACC, $vf6, $vf13x\n"
+                     "vmaddw.z    $vf5, $vf6, $vf13w\n"
+                     "vadday.w    $ACC, $vf14, $vf14y\n"
+                     "vmaddaz.w   $ACC, $vf0, $vf14z\n"
+                     "vmaddx.w    $vf5, $vf0, $vf14x\n"
+                     "sqc2        $vf5, 0x0(%0)" : : "r"(result) : "memory");
+}
+
+/**
+ * @brief Dot each row of a matrix with a vector and store the four results.
+ *
+ * Like vu0_dot_rows_vf15, but the rows are loaded into vf11-vf14 and multiplied in place, and the ones go
+ * in vf31.
+ * @param matrix 16-byte aligned 4x4 matrix rows.
+ * @param vector 16-byte aligned vector.
+ * @param result 16-byte aligned destination.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf).
+ * @see LibClass1748D0::get_bounding_sphere in Lib; about 120 copies in Lib and the field and battle modules.
+ */
+static inline void vu0_dot_matrix_rows(const void* matrix, const void* vector, void* result)
+{
+    asm __volatile__("lqc2        $vf15, 0x0(%1)\n"
+                     "lqc2        $vf11, 0x0(%0)\n"
+                     "lqc2        $vf12, 0x10(%0)\n"
+                     "lqc2        $vf13, 0x20(%0)\n"
+                     "lqc2        $vf14, 0x30(%0)\n"
+                     "vaddw.xyz   $vf31, $vf0, $vf0w\n"
+                     "vmul.xyzw   $vf11, $vf11, $vf15\n"
+                     "vmul.xyzw   $vf12, $vf12, $vf15\n"
+                     "vmul.xyzw   $vf13, $vf13, $vf15\n"
+                     "vmul.xyzw   $vf14, $vf14, $vf15\n"
+                     "vadday.x    $ACC, $vf11, $vf11y\n"
+                     "vmaddaz.x   $ACC, $vf31, $vf11z\n"
+                     "vmaddw.x    $vf5, $vf31, $vf11w\n"
+                     "vaddax.y    $ACC, $vf12, $vf12x\n"
+                     "vmaddaz.y   $ACC, $vf31, $vf12z\n"
+                     "vmaddw.y    $vf5, $vf31, $vf12w\n"
+                     "vadday.z    $ACC, $vf13, $vf13y\n"
+                     "vmaddax.z   $ACC, $vf31, $vf13x\n"
+                     "vmaddw.z    $vf5, $vf31, $vf13w\n"
+                     "vadday.w    $ACC, $vf14, $vf14y\n"
+                     "vmaddaz.w   $ACC, $vf0, $vf14z\n"
+                     "vmaddx.w    $vf5, $vf0, $vf14x\n"
+                     "sqc2        $vf5, 0x0(%2)" : : "r"(matrix), "r"(vector), "r"(result) : "memory");
+}
+
+/**
  * @brief Grow the vf26 (min) and vf27 (max) bounds to include vf1.
  * @see Area 51 builds bounding boxes the same way (https://github.com/ProjectDreamland/area51,
  *      Support/CollisionMgr/PolyCache.cpp).
@@ -195,6 +274,92 @@ static inline void vu0_start_microprogram_1b0_vf5(const void* vector)
 }
 
 /**
+ * @brief Load two matrices into vf1-vf4 and vf5-vf8 and start the microprogram at 0x250.
+ *
+ * The program leaves the product of the two in vf1-vf4.
+ * @param left 16-byte aligned left factor.
+ * @param right 16-byte aligned right factor.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see func_004CF7C0 in Lib.
+ */
+static inline void vu0_start_microprogram_250_vf1_vf8(const void* left, const void* right)
+{
+    asm __volatile__("lqc2 $vf1, 0x0(%0)\n"
+                     "lqc2 $vf2, 0x10(%0)\n"
+                     "lqc2 $vf3, 0x20(%0)\n"
+                     "lqc2 $vf4, 0x30(%0)\n"
+                     "lqc2 $vf5, 0x0(%1)\n"
+                     "lqc2 $vf6, 0x10(%1)\n"
+                     "lqc2 $vf7, 0x20(%1)\n"
+                     "lqc2 $vf8, 0x30(%1)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0x250" : : "r"(left), "r"(right) : "memory");
+}
+
+/**
+ * @brief Load a matrix into vf1-vf4 and start the microprogram at 0x2D0.
+ *
+ * The program leaves its result matrix in vf1-vf4. I haven't worked out what
+ * it computes yet; about 50 places in Lib and the field modules run it.
+ * @param matrix 16-byte aligned matrix.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see func_004CF580 in Lib; func_0020A9D0 in 1067-00.
+ */
+static inline void vu0_start_microprogram_2d0_vf1_vf4(const void* matrix)
+{
+    asm __volatile__("lqc2 $vf1, 0x0(%0)\n"
+                     "lqc2 $vf2, 0x10(%0)\n"
+                     "lqc2 $vf3, 0x20(%0)\n"
+                     "lqc2 $vf4, 0x30(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0x2D0" : : "r"(matrix) : "memory");
+}
+
+/**
+ * @brief Load a quaternion into vf5 and start the microprogram at 0x720.
+ *
+ * The program leaves the quaternion's rotation matrix in vf8-vf11. Every site
+ * has this one nop.
+ * @param quaternion 16-byte aligned quaternion.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see func_004CE930 in Lib; func_0020A9D0 in 1067-00.
+ */
+static inline void vu0_start_microprogram_720_vf5(const void* quaternion)
+{
+    asm __volatile__("lqc2 $vf5, 0x0(%0)\n"
+                     "nop\n"
+                     "vcallms 0x720" : : "r"(quaternion) : "memory");
+}
+
+/**
+ * @brief Store vf1-vf4 as a matrix.
+ * @param matrix 16-byte aligned destination.
+ * @see vu0_start_microprogram_250_vf1_vf8 and vu0_start_microprogram_2d0_vf1_vf4.
+ */
+static inline void vu0_store_vf1_vf4(void* matrix)
+{
+    asm __volatile__("sqc2 $vf1, 0x0(%0)\n"
+                     "sqc2 $vf2, 0x10(%0)\n"
+                     "sqc2 $vf3, 0x20(%0)\n"
+                     "sqc2 $vf4, 0x30(%0)" : : "r"(matrix) : "memory");
+}
+
+/**
+ * @brief Store vf8-vf11 as a matrix.
+ * @param matrix 16-byte aligned destination.
+ * @see vu0_start_microprogram_720_vf5.
+ */
+static inline void vu0_store_vf8_vf11(void* matrix)
+{
+    asm __volatile__("sqc2 $vf8, 0x0(%0)\n"
+                     "sqc2 $vf9, 0x10(%0)\n"
+                     "sqc2 $vf10, 0x20(%0)\n"
+                     "sqc2 $vf11, 0x30(%0)" : : "r"(matrix) : "memory");
+}
+
+/**
  * @brief Load a matrix into vf5-vf8 and start the microprogram at 0x1F0.
  *
  * Lib loads the camera's view-projection matrix this way before it uses
@@ -202,7 +367,7 @@ static inline void vu0_start_microprogram_1b0_vf5(const void* vector)
  * program 0. Every site has the same two nops.
  * @param matrix 16-byte aligned matrix.
  * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
- * @see func_004D3780, func_004D4010, func_004DB190, func_0044A5F0, func_004D5870, func_004E1670 and
+ * @see func_004D3780, func_004D4010, LibClass178F30::update (0x4DB190), func_0044A5F0, func_004D5870, func_004E1670 and
  *      LibCamera::update_projection in Lib, func_0020E9B0, resolve_field_object_display_position and
  *      func_0028BD20 in 1067-00, and func_00230A20 and func_00288830 in 1070-00.
  */
@@ -264,6 +429,19 @@ static inline void vu0_start_microprogram_7f0_rows(const void* matrix)
                      "lqc2 $vf14, 0x20(%0)\n"
                      "nop\n"
                      "vcallms 0x7F0" : : "r"(matrix) : "memory");
+}
+
+/**
+ * @brief Turn the row scales the microprogram at 0x7F0 left in vf6 into their distance from one.
+ *
+ * Read the result with vu0_read_vf6.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf). Lib's func_004D9E70 uses it to tell an
+ *      unscaled transform from a scaled one.
+ */
+static inline void vu0_scale_error_vf6(void)
+{
+    asm __volatile__("vsubw.xyz  $vf6, $vf6, $vf0w\n"
+                     "vabs.xyz   $vf6, $vf6");
 }
 
 /**

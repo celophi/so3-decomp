@@ -227,7 +227,9 @@ s32 func_00404CA0(LibCharacterEquipment* equipment, s32 mask);
 #ifdef __cplusplus
 struct LibResourceRecordC4
 {
-    u8 data[0xC4];
+    s16 kind;
+    s16 unk02;
+    u8 data[0xC0];
 
 #ifdef __cplusplus
     /**

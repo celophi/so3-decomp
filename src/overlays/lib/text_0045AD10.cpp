@@ -6,6 +6,8 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
+#include "overlays/lib/render_buffer.h"
+#include "overlays/lib/character_names.h"
 #include "overlays/lib/text_004DD440.h"
 
 extern "C" void func_00461830(void* embedded, void* adjusted);
@@ -157,7 +159,22 @@ void func_0045F580(void* first, void* second)
     D_001B6570 = (struct FieldShapeRecord20*)*(void**)(*(u8**)second + 0xC);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F5A0);
+/**
+ * @brief Run func_0045EBD0 on the objects referenced by the first words of two objects.
+ *
+ * The word at offset 0xC of each referenced object is stored in a global first.
+ * @param object Object whose first word refers to the first tested object.
+ * @param other Object whose first word refers to the second tested object.
+ * @return The func_0045EBD0 result.
+ */
+s32 func_0045F5A0(void* object, void* other)
+{
+    u8* first = *(u8**)object;
+    u8* second = *(u8**)other + 0x30;
+    D_001B656C = (struct FieldShapeRecord20*)*(void**)(first + 0xC);
+    D_001B6570 = (struct FieldShapeRecord20*)*(void**)(*(u8**)other + 0xC);
+    return func_0045EBD0(first + 0x30, second);
+}
 
 /** Matrix func_0045F5E0 resets. */
 extern "C" LibMatrix44Value D_0050CAF0;
@@ -221,7 +238,21 @@ extern "C" void lib_multiline_text_set_resource(LibObject174D90* object, u32 sou
     state->redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F6B0);
+/** @brief Draw the laid-out records once, then finish the text widget's drawing. */
+void LibObject174D90::draw()
+{
+    if (!unk3b)
+    {
+        s32 count = (u32)(unk74 - unk70) / sizeof(LibDrawRecord);
+
+        if (count > 0)
+        {
+            draw_records(reinterpret_cast<LibDrawRecord*>(unk70), count);
+            func_004C7010();
+            unk3b = 1;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F710);
 
@@ -307,9 +338,25 @@ extern "C" s32 lib_multiline_text_init_resource_rectangle(LibObject174D90* objec
     return func_004614E0(object, slot, key, mode, 1);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004617B0);
+/** @brief Release the multiline allocation and destroy the text widget. */
+LibObject174D90::~LibObject174D90()
+{
+    if (unk70 != 0)
+    {
+        delete[] unk70;
+        unk70 = 0;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461830);
+/**
+ * @brief Queue an embedded packet's data for sending, with a DMA submission to call when it's done.
+ * @param embedded Packet embedded in its owner.
+ * @param adjusted Owner's DMA submission, or null.
+ */
+extern "C" void func_00461830(void* embedded, void* adjusted)
+{
+    func_004DC4F0(g_packet_queue, 3, 0, static_cast<ResidentPacket*>(embedded)->unk04, 0, adjusted);
+}
 
 /**
  * @brief Allocate aligned drawing storage for an empty block and flush the data cache.
@@ -502,17 +549,44 @@ void LibWidget::draw()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462320);
+/**
+ * @brief Draw laid-out records: runs and numbers by their own routines, glyphs by the glyph routine, other
+ *        control records not at all.
+ * @param records Records to draw.
+ * @param count Number of records.
+ */
+void LibDrawWidget::draw_records(LibDrawRecord* records, s32 count)
+{
+    func_00463500(records, count);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004623F0);
+    for (s32 i = 0; i < count; i++, records++)
+    {
+        if (records->code == LIB_DRAW_RECORD_RUN)
+        {
+            func_00462FC0(records);
+        }
+        else if (records->code == LIB_DRAW_RECORD_NUMBER)
+        {
+            func_00462C70(records);
+        }
+        else if (!(records->code & LIB_DRAW_RECORD_CONTROL))
+        {
+            func_004624E0(records);
+        }
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004624E0);
+    func_004623F0();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462C70);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004623F0__13LibDrawWidgetFv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462FC0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004624E0__13LibDrawWidgetFP13LibDrawRecord);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463500);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462C70__13LibDrawWidgetFP13LibDrawRecord);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462FC0__13LibDrawWidgetFP13LibDrawRecord);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463500__13LibDrawWidgetFP13LibDrawRecordi);
 
 #define LIB_ALIGN_CENTER 1
 
@@ -546,28 +620,125 @@ void LibDrawWidget::align_records_vertically(LibDrawRecord* records, s32 count)
     extent.width = extent.width - extent.unk00;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004637A0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004637A0__13LibDrawWidgetFP13LibDrawRecordi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463C00);
+extern "C" s32 func_00463C90(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
+
+extern "C" s32 func_00463E60(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
+
+/**
+ * @brief Lay out the text for a 16-bit ID glyph by glyph.
+ * @param widget Widget to lay out into.
+ * @param id ID passed to the code lookup.
+ * @param variant Second lookup argument.
+ */
+extern "C" void func_00463C00(LibDrawWidget* widget, u16 id, s32 variant)
+{
+    u16 codes[0x80];
+    s32 count = func_00463C90(widget, codes, id, variant);
+
+    if (count > 0)
+    {
+        u16* code = codes;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            widget->add_glyph(*code++);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463C90);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463DD0);
+/**
+ * @brief Lay out the text for a 16-bit ID glyph by glyph.
+ * @param widget Widget to lay out into.
+ * @param id ID passed to the code lookup.
+ * @param variant Second lookup argument.
+ */
+extern "C" void func_00463DD0(LibDrawWidget* widget, u16 id, s32 variant)
+{
+    u16 codes[0x80];
+    s32 count = func_00463E60(widget, codes, id, variant);
+
+    if (count > 0)
+    {
+        u16* code = codes;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            widget->add_glyph(*code++);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463E60);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463FC0);
+extern "C" s32 func_00464040(LibDrawWidget* widget, u16* codes, const char* text);
+
+/**
+ * @brief Lay out text glyph by glyph.
+ * @param text Text to lay out.
+ */
+void LibDrawWidget::add_text(const char* text)
+{
+    u16 codes[0x80];
+    s32 count = func_00464040(this, codes, text);
+
+    if (count > 0)
+    {
+        u16* code = codes;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            add_glyph(*code++);
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464040);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004642E0);
+/**
+ * @brief Text code callback: the name of party slot `index`.
+ * @param context Text layout context; unused.
+ * @param index One-based character slot, 1 through 10.
+ * @return Name, or null for an out-of-range slot or with no name provider.
+ */
+extern "C" char* func_004642E0(void* context, s32 index)
+{
+    if (index <= 0 || index > 10)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464340);
+    if (g_field_runtime->character_names == 0)
+    {
+        return 0;
+    }
+
+    return g_field_runtime->character_names->get_character_name(index);
+}
+
+/**
+ * @brief Lay out a number glyph by glyph.
+ * @param value Number to lay out.
+ */
+void LibDrawWidget::add_number(s32 value)
+{
+    u16 codes[0x80];
+    s32 count = format_number_codes(codes, value);
+    u16* code = codes;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        add_glyph(*code++);
+    }
+}
 
 #define LIB_NUMBER_CODE_OTHER 11
 
 /** "%d". */
-extern const char D_505CF8[];
+extern const char D_00505CF8[];
 
 /**
  * @brief Format a number as character codes: one plus the digit for digits, 11 for anything else.
@@ -580,7 +751,7 @@ s32 LibDrawWidget::format_number_codes(u16* codes, s32 value)
     char text[32];
     s32 count = 0;
 
-    sprintf_guess(text, D_505CF8, value);
+    sprintf_guess(text, D_00505CF8, value);
 
     for (char* cursor = text;; count++)
     {
@@ -610,7 +781,6 @@ s32 LibDrawWidget::format_number_codes(u16* codes, s32 value)
     return count;
 }
 
-#define LIB_DRAW_RECORD_NUMBER 0x401C
 #define LIB_NUMBER_DIGIT_WIDTH 9.0f
 
 /**
@@ -649,8 +819,6 @@ void LibDrawWidget::end_run(void* value, s32 count)
     run_head->bottom = run_head->top + line_height;
     run_head->unk14.end = next_record;
 }
-
-#define LIB_DRAW_RECORD_RUN 0x4010
 
 /** @brief Start a run of records at the pen position. */
 void LibDrawWidget::begin_run()
@@ -765,7 +933,7 @@ void LibDrawWidget::begin_layout(LibDrawRecord* records, float y)
 #define LIB_TEXT_PALETTE_SIZE 11
 
 /** Text palette colours. */
-extern u32 D_4ED200[LIB_TEXT_PALETTE_SIZE];
+extern u32 D_004ED200[LIB_TEXT_PALETTE_SIZE];
 
 /**
  * @brief Look up one of the eleven text palette colours.
@@ -779,7 +947,7 @@ u32 LibDrawWidget::get_palette_color(u8 index)
         index = LIB_TEXT_PALETTE_SIZE - 1;
     }
 
-    return D_4ED200[index];
+    return D_004ED200[index];
 }
 
 #define LIB_DRAW_WIDGET_DEFAULT_EXTENT 1024.0f
@@ -925,7 +1093,20 @@ LibObject174F20::~LibObject174F20()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464C20);
+/**
+ * @brief Lay the numeric widget's number out off screen and measure it.
+ * @param object Numeric widget to measure.
+ * @return Extent of the laid-out number.
+ */
+LibTextExtent* func_00464C20(LibObject174F20* object)
+{
+    LibDrawRecord records[0x40];
+    object->begin_layout(records, 0.0f);
+    object->add_number(object->numeric_value);
+    object->func_004637A0(records, object->record_count);
+    object->align_records_vertically(records, object->record_count);
+    return &object->extent;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464C80);
 
@@ -956,7 +1137,6 @@ typedef struct LibNumericResourceState
     u8 padf9[3];
     u32 value;
 } LibNumericResourceState;
-
 
 /**
  * @brief Initialize the numeric widget rectangle, resource slot, and displayed value.
@@ -993,11 +1173,59 @@ s32 func_00464E30(void* object)
     return 3;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464E40);
+/**
+ * @brief Copy both pads' held, pressed and repeated buttons into the runtime, or clear them while time is stopped.
+ * @param runtime Field runtime.
+ */
+extern "C" void func_00464E40(FieldRuntime* runtime)
+{
+    if (runtime->rate != 0.0f)
+    {
+        ResidentInputSystem* input = g_input_system;
+        FieldRuntime::Input* entry = runtime->inputs;
+
+        for (s32 slot = 0; slot < 2; slot++, entry++)
+        {
+            entry->unk00 = resident_pad_get_held(input, slot);
+            entry->unk02 = resident_pad_get_pressed(input, slot);
+            entry->unk04 = resident_pad_get_repeated(input, slot);
+        }
+    }
+    else
+    {
+        memset_guess(runtime->inputs, 0, sizeof(runtime->inputs));
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464EF0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004650B0);
+/**
+ * @brief Find one of the field runtime's display chunks.
+ * @param runtime Field runtime.
+ * @param index Chunk index.
+ * @return Chunk, or null when the list is shorter.
+ */
+extern "C" LibResourceChunkHeader* func_004650B0(FieldRuntime* runtime, s32 index)
+{
+    LibResourceChunkHeader* chunk = static_cast<LibResourceChunkHeader*>(runtime->display_chunks);
+
+    for (s32 i = 0;; i++)
+    {
+        if (i == index)
+        {
+            return chunk;
+        }
+
+        chunk = chunk->next_offset == 0 ? 0 : reinterpret_cast<LibResourceChunkHeader*>(reinterpret_cast<u8*>(chunk) + chunk->next_offset);
+
+        if (!chunk)
+        {
+            break;
+        }
+    }
+
+    return 0;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465100);
 
@@ -1031,7 +1259,47 @@ extern "C" void lib_release_resource_slot(void* manager, s32 index)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004654A0);
+extern "C" void func_00465610(void* manager, LibManagedResourceSlot* slot, void* data, void* allocation);
+
+/**
+ * @brief Find the first inactive resource slot.
+ * @param manager Owner of the sixteen resource slots.
+ * @return Slot, or null when all are active.
+ */
+static inline LibManagedResourceSlot* find_free_resource_slot(void* manager)
+{
+    LibManagedResourceSlot* slot = ((LibResourceSlotOwner*)manager)->slots;
+
+    for (s32 i = 0; i < 16; i++, slot++)
+    {
+        if (!slot->active)
+        {
+            return slot;
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Put resource data that's already in memory into a free resource slot.
+ * @param manager Owner of the sixteen resource slots.
+ * @param data Resource data.
+ * @return The slot's identifier, or zero when no slot is free.
+ */
+extern "C" u16 func_004654A0(void* manager, void* data)
+{
+    LibManagedResourceSlot* slot = find_free_resource_slot(manager);
+
+    if (!slot)
+    {
+        return 0;
+    }
+
+    func_00465610(manager, slot, data, 0);
+    FlushCache(0);
+    return slot->identifier;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465520);
 
@@ -1047,7 +1315,6 @@ struct LibResourceGap {
 extern "C" LibManagedResourceSlot* func_004659B0(FieldRuntime*, LibResourceGap*);
 
 extern "C" u8* func_00451C00(LibResourceHeader*, s32, s32);
-
 
 extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
 {
@@ -1157,7 +1424,52 @@ extern "C" s32 lib_load_resource_slot(FieldRuntime* runtime, void* data)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004659B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465A90);
+/**
+ * @brief Remove a transform receiver from the runtime display queue and detach it from its update list.
+ * @param runtime Runtime manager.
+ * @param object Transform receiver.
+ * @return One when it was queued, otherwise zero.
+ */
+extern "C" s32 func_00465A90(FieldRuntime* runtime, LibTransformOwner* object)
+{
+    LibRuntimeListState* list = (LibRuntimeListState*)runtime;
+    LibRuntimeListNode* node = (LibRuntimeListNode*)object;
+
+    if (!node->owner)
+    {
+        return 0;
+    }
+
+    node->owner = 0;
+    LibRuntimeListNode* previous = node->previous;
+    LibRuntimeListNode* next = node->next;
+
+    if (!previous)
+    {
+        list->first = next;
+    }
+    else
+    {
+        previous->next = next;
+    }
+
+    if (!next)
+    {
+        list->last = previous;
+    }
+    else
+    {
+        next->previous = previous;
+    }
+
+    if (object->owner)
+    {
+        lib_object_detach_owner(object);
+    }
+
+    list->count--;
+    return 1;
+}
 
 /**
  * @brief Append a transform receiver to the runtime display queue.
@@ -1199,7 +1511,15 @@ extern "C" s32 lib_queue_display_object(FieldRuntime* runtime, LibTransformOwner
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465B90);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465DC0);
+/** @brief Hand the runtime to the release queues once, so it's deleted after the frame. */
+void FieldRuntime::destroy()
+{
+    if (!release_queued)
+    {
+        resident_enqueue_object(g_resident_release_queues, this);
+        release_queued = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465E00);
 
@@ -1296,7 +1616,20 @@ extern "C" s32 lib_moving_widget_init_position(LibClass175030* object, float x, 
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004673C0);
+// TODO: The cursor's destructor inlines LibCallbackTransform's (which text_0044ABE0 keeps out of line) but not
+// LibClass172000's, so the base destructor is only inline in this unit and the inline depth is one here.
+inline LibCallbackTransform::~LibCallbackTransform()
+{
+}
+
+#pragma push
+#pragma inline_depth(1)
+
+LibSelectionCursor::~LibSelectionCursor()
+{
+}
+
+#pragma pop
 
 /**
  * @brief Finish the cursor's drawing packet.
@@ -1307,22 +1640,14 @@ void LibSelectionCursor::on_packet_complete(u32 value)
     lib_finish_packet(this);
 }
 
-struct N54Owner64_0045AD10 { u8 pad00[0x64]; u8 active; };
-
-void func_004674A0(N54Owner64_0045AD10* object)
+/** @brief Mark the DMA pending and queue the cursor's packet. */
+void LibSelectionCursor::render()
 {
-    object->active = 1;
-    void* adjusted = object;
-
-    if (object != 0)
-    {
-        adjusted = (u8*)adjusted + 0x90;
-    }
-
-    func_00461830((u8*)object + 0xB0, adjusted);
+    dma_pending = 1;
+    func_00461830(&this->LibMovementState::unk00, static_cast<LibDmaCallbacks*>(this));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004674E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0044B100__18LibSelectionCursorFUiUiUi);
 
 /**
  * @brief Reset the translation, set the drawing codes and depth, and place the cursor.
@@ -1343,18 +1668,66 @@ void LibSelectionCursor::init(s32 code, u32 first, u32 second, float x, float y,
     init_position(x, y);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004675E0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004675F0);
-
 /** @brief Release the widget storage and destroy its base. */
 ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467670);
+extern "C" void func_004535B0(LibImageAnimation* animation, u64** cursor, const LibVector4* origin, u32 depth, float scale, s32 flag);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467750);
+/** @brief Draw the animation's current frame into the widget's packet. */
+void ItemCreationClass175110::draw()
+{
+    if (unkc0 < 0 && !unkb4)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (unk3b)
+    {
+        return;
+    }
+
+    unk50.set_position(unk18.unk00, unk18.unk04);
+    unk50.unk50 = draw_alpha;
+    u64* start = reinterpret_cast<u64*>(unk40.dma_address);
+    u64* cursor = start;
+    packet_tag = start;
+    packet = start;
+    cursor += 2;
+    func_004535B0(&unk50, &cursor, &container->translation, container->unka4 + unk34, container->unkE0, 0);
+    *packet_tag = DMA_TAG((reinterpret_cast<u32>(cursor) - reinterpret_cast<u32>(packet_tag) - LIB_DRAW_QWORD_SIZE) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_END, 0);
+    unk3b = 1;
+}
+
+/** @brief Restart the animation when its resource changed, otherwise step it and redraw on a frame change. */
+void ItemCreationClass175110::func_00413D20()
+{
+    if (unkc0 < 0 && !unkb4)
+    {
+        return;
+    }
+
+    if (unkc9)
+    {
+        if (!unkb4)
+        {
+            unk50.set_display_chunk(unkc0);
+        }
+        else
+        {
+            unk50.set_resource(unkb4, &unkb8);
+        }
+
+        unk50.start(unkc4);
+        unkc9 = 0;
+    }
+    else if (!unkc8 && unk50.step())
+    {
+        needs_redraw = 1;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467800);
 
@@ -1363,9 +1736,31 @@ LibStringLabel::~LibStringLabel()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467950);
+/**
+ * @brief Lay the label's string out off screen and measure it.
+ * @param object Label to measure.
+ * @return Extent of the laid-out string.
+ */
+LibTextExtent* func_00467950(LibStringLabel* object)
+{
+    LibDrawRecord records[0x40];
+    object->begin_layout(records, 0.0f);
+    object->add_text(object->text);
+    object->func_004637A0(records, object->record_count);
+    object->align_records_vertically(records, object->record_count);
+    return &object->extent;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004679B0);
+/**
+ * @brief Count the character codes in the label's string.
+ * @param object Label to read.
+ * @return Number of codes.
+ */
+s32 func_004679B0(LibStringLabel* object)
+{
+    u16 codes[0x80];
+    return func_00464040(object, codes, object->text);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004679D0);
 

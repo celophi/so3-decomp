@@ -4,7 +4,6 @@
 #include "types.h"
 #include "overlays/lib/ui_object.h"
 
-typedef struct N54Owner64_0045AD10 N54Owner64_0045AD10;
 
 struct FieldShapeRecord20;
 
@@ -84,6 +83,10 @@ struct LibManagedResourceSlot
     u8 flag;
     u8 active;
 };
+
+#define LIB_DRAW_RECORD_CONTROL 0x4000
+#define LIB_DRAW_RECORD_RUN 0x4010
+#define LIB_DRAW_RECORD_NUMBER 0x401C
 
 /** One 0x20-byte record a drawing widget lays out: a glyph, or the head of a run of glyphs. */
 struct LibDrawRecord
@@ -644,6 +647,9 @@ public:
     /** @brief Release the runtime's retained objects and storage. */
     virtual ~FieldRuntime();
 
+    /** @brief Hand the runtime to the release queues once, so it's deleted after the frame. */
+    virtual void destroy();
+
     LibManagedResourceSlot resource_slots[16];
     struct TextBank
     {
@@ -661,7 +667,8 @@ public:
 
     u8 unk544[0xC];
     s32 unk550;
-    u8 unk554[8];
+    u8 unk554[4];
+    void* display_chunks;
     void* display_first;
     void* display_last;
     s32 display_count;
@@ -679,7 +686,8 @@ public:
     u8 unk5fe;
     u8 unk5ff;
     u8 unk600;
-    u8 unk601[3];
+    u8 release_queued;
+    u8 unk602[2];
 };
 #endif
 
@@ -703,6 +711,14 @@ typedef struct LibShapeTestResult1C
 extern "C" {
 void func_0046A3B0(void* receiver);
 #endif
+
+/**
+ * @brief Find one of the field runtime's display chunks.
+ * @param runtime Field runtime.
+ * @param index Chunk index.
+ * @return Chunk, or null when the list is shorter.
+ */
+struct LibResourceChunkHeader* func_004650B0(FieldRuntime* runtime, s32 index);
 
 /**
  * @brief Initialize the item code widget's rectangle and drawing storage.
@@ -782,6 +798,13 @@ s32 lib_multiline_text_init_resource_rectangle(LibObject174D90* object, float x,
  * @return One on successful setup, otherwise zero.
  */
 s32 lib_moving_widget_init_position(LibClass175030* object, float x, float y);
+
+/**
+ * @brief Lay the numeric widget's number out off screen and measure it.
+ * @param object Numeric widget to measure.
+ * @return Extent of the laid-out number.
+ */
+LibTextExtent* func_00464C20(LibObject174F20* object);
 
 /**
  * @brief Refresh the record widget and return its measured bounds.
@@ -971,8 +994,6 @@ void func_004662A0(void* object);
 /** Forward the receiver to lib_finish_packet. */
 void func_0046A3F0(void* object);
 
-/** Set the active byte and notify the embedded receiver. */
-void func_004674A0(N54Owner64_0045AD10* object);
 
 #ifdef __cplusplus
 }

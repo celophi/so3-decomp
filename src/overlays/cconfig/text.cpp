@@ -2775,7 +2775,7 @@ void func_0034C380(ConfigOptions* object, u16 input)
         break;
     }
 
-    func_004587C0(settings);
+    func_004587C0(reinterpret_cast<LibSystemSettings*>(settings));
 }
 
 void func_0034C600(ConfigOptions* object, u16 input)

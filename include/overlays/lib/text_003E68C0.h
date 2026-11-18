@@ -6,12 +6,6 @@
 #include "main/packet.h"
 
 #ifdef __cplusplus
-extern "C" void func_003EF030(u8* object);
-#endif
-
-typedef struct N50Owner94_003E68C0 N50Owner94_003E68C0;
-
-#ifdef __cplusplus
 /** Partial owner whose nonvirtual destructor releases its two buffers. */
 class LibBufferOwner
 {
@@ -32,12 +26,6 @@ class LibOrientedTransform;
 struct LibVector4;
 
 /**
- * @brief Store state value 8 in the transform's byte at offset 0x60.
- * @param object Transform owner.
- */
-extern "C" void func_003F4500(LibTransformOwner* object);
-
-/**
  * @brief Store state value 7 in the transform's byte at offset 0x60.
  * @param object Transform owner.
  */
@@ -49,32 +37,6 @@ extern "C" void func_003F4560(LibTransformOwner* object);
  * @return Always 14.
  */
 extern "C" s32 func_003F4550(void* object);
-
-/**
- * @brief Return the fixed value 9.
- * @param object Unused receiver.
- * @return Always 9.
- */
-extern "C" s32 func_003EF900(void* object);
-
-/**
- * @brief Return the fixed value 9.
- * @param object Unused receiver.
- * @return Always 9.
- */
-extern "C" s32 func_003F4370(void* object);
-
-/**
- * @brief Store state value 9 in the transform's byte at offset 0x60.
- * @param object Transform owner.
- */
-extern "C" void func_003EF910(LibTransformOwner* object);
-
-/**
- * @brief Finish the transform receiver's packet.
- * @param object Transform owner.
- */
-extern "C" void func_003EF070(LibTransformOwner* object);
 
 /**
  * @brief Store a word at receiver offset 0x14.
@@ -182,7 +144,6 @@ static inline void set_vector(LibVector4* vector, float x, float y, float z, flo
     vector->z = z;
     vector->w = w;
 }
-
 
 /** Partially known 8-byte buffer entry; the signed value is at offset 6. */
 struct LibClass3F5B80Entry
@@ -378,6 +339,16 @@ public:
         unk04 = 0;
         unk15 = 0;
         resident_packet_allocate(this, quadwords);
+    }
+
+    /** @brief Start with no storage; the owner points it at a buffer of its own. */
+    LibPacketBuffer()
+    {
+        unk14 = 0;
+        unk04 = 0;
+        unk00 = 0;
+        unk08 = 0;
+        unk15 = 0;
     }
 
     /** @brief Free the packet storage unless it is borrowed. */
@@ -596,17 +567,10 @@ public:
 #endif
 
 #ifdef __cplusplus
-/** Forward the receiver to lib_finish_packet. */
-extern "C" void func_003F2550(LibTransformOwner* object);
-#endif
-
-
-#ifdef __cplusplus
 extern "C" s32 func_003EF090(void* object);
 
 extern "C" s32 func_003F2570(void* object);
 
-extern "C" void func_003EFAF0(N50Owner94_003E68C0* object);
 #endif
 
 #ifdef __cplusplus
@@ -629,6 +593,17 @@ class LibClass171FD0 : public LibListObject
 {
 public:
     virtual ~LibClass171FD0();
+
+    /**
+     * @brief Return the list kind.
+     * @return Nine.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Destroy the held object, then leave the owner's list and delete this object. */
+    virtual void update();
+
+    LibListObject* held;
 };
 #endif
 

@@ -3,11 +3,12 @@
 
 #include "types.h"
 
-typedef struct LibDrawState64 LibDrawState64;
+typedef struct LibImageAnimation LibDrawState64;
 typedef struct ItemCreationClass174C40 ItemCreationClass174C40;
 typedef struct LibCallbackTransform LibCallbackTransform;
+struct LibResourceChunkHeader;
 
-/** Partial receiver whose byte at offset 0x60 is set by func_0044C050. */
+/** Partial receiver whose byte at offset 0x60 is set by func_0044D070. */
 typedef struct LibObjectByte60
 {
     u8 unk00[0x60];
@@ -131,6 +132,27 @@ enum LibDifficulty
     LIB_DIFFICULTY_FOURTH_DIMENSION
 };
 
+#define LIB_DTT_CHUNK_MAGIC 0x00545444
+
+/** Size and address of a DTT chunk's data. */
+struct LibChunkData
+{
+    u32 size;
+    void* data;
+};
+
+#define LIB_COUNTED_FACTOR_COUNT 40
+
+/** Saved counts of the factors in the counted factor table, with checksums over the counts and the table. */
+struct LibFactorCounts
+{
+    u16 checksum;
+    s8 counts[LIB_COUNTED_FACTOR_COUNT];
+    u16 table_checksum;
+};
+
+#define LIB_SETTINGS_GRID_SIZE 10
+
 /** Partial 0x1C8-byte system settings (resident entry 1), with option bits and two checksummed blocks. */
 struct LibSystemSettings
 {
@@ -160,10 +182,11 @@ struct LibSystemSettings
     u8 difficulty;
     u8 unk29[0xB];
     u32 encoded_fol;
-    u8 unk38[0x6C];
+    u8 unk38[8];
+    u8 unk40[LIB_SETTINGS_GRID_SIZE][LIB_SETTINGS_GRID_SIZE];
     u16 checksum;
     u16 key;
-    u8 unkA8[0x2C];
+    LibFactorCounts factor_counts;
     LibSealedRecord sealed_record;
     u8 unk188[4];
     u8 widescreen;
@@ -227,13 +250,13 @@ void lib_trophy_flags_update_checksum(LibTrophyFlags* flags);
  */
 bool lib_trophy_record_decode(void* record);
 
-void* func_004568A0(void* receiver);
-#endif
 /**
- * @brief Set the receiver's byte at offset 0x60 to 8.
- * @param object Receiver to update.
+ * @brief Store a trophy record's checksum in its first word, then encode the record in place.
+ * @param record Decoded record (LIB_TROPHY_RECORD_SIZE bytes).
  */
-void func_0044C050(LibObjectByte60* object);
+void lib_trophy_record_encode(void* record);
+
+#endif
 
 /**
  * @brief Set the receiver's byte at offset 0x60 to 8.
@@ -248,12 +271,6 @@ void func_0044D070(LibObjectByte60* object);
 const void* func_0044D080(void);
 
 /**
- * @brief Update the transform and mark the current display ready.
- * @param object Transform receiver.
- */
-void func_0044D0D0(void* object);
-
-/**
  * @brief Return the fixed value 35.
  * @param object Unused receiver.
  * @return Always 35.
@@ -261,73 +278,10 @@ void func_0044D0D0(void* object);
 s32 func_00451E20(void* object);
 
 /**
- * @brief Return the fixed value 43.
- * @return Always 43.
- */
-s32 func_004540D0(void);
-
-/**
- * @brief Return the fixed value 10.
- * @return Always 10.
- */
-s32 func_00454730(void);
-
-/**
- * @brief Return the fixed value 43.
- * @return Always 43.
- */
-s32 func_004547B0(void);
-
-/**
- * @brief Return the fixed value 40.
- * @return Always 40.
- */
-s32 func_00456200(void);
-
-/**
- * @brief Return the fixed value 6.
- * @return Always 6.
- */
-s32 func_00456940(void);
-
-/**
- * @brief Return the fixed value 36.
- * @return Always 36.
- */
-s32 func_004569C0(void);
-
-/**
  * @brief Return the fixed value 9.
  * @return Always 9.
  */
 s32 func_0045ABA0(void);
-
-/**
- * @brief Perform no work.
- * @param object Unused receiver.
- */
-void func_0044C060(void* object);
-
-/**
- * @brief Return the address of D_00508240.
- * @return The data symbol's address.
- */
-const void* func_0044C070(void);
-
-/** @brief Clear the selected state in the shared lib object. */
-void func_0044C080(void);
-
-/**
- * @brief Forward the receiver to the base transform update.
- * @param object Transform receiver.
- */
-void func_0044C0F0(void* object);
-
-/**
- * @brief Forward the receiver to the base transform update.
- * @param object Transform receiver.
- */
-void func_0044D150(void* object);
 
 /**
  * @brief Detach the transform once and mark it released.
@@ -342,10 +296,10 @@ void func_0044B1C0(LibCallbackTransform* object);
 void func_0044B210(LibCallbackTransform* object);
 
 /**
- * @brief Apply the saved input mode, slot configuration, and input flag.
- * @param settings Saved settings receiver.
+ * @brief Apply the saved sound output mode, speaker angles and vibration setting.
+ * @param settings System settings.
  */
-void func_004587C0(void* settings);
+void func_004587C0(LibSystemSettings* settings);
 
 /**
  * @brief Compute the seeded checksum over a byte range.
@@ -357,18 +311,92 @@ void func_004587C0(void* settings);
 u16 lib_compute_checksum(u16 seed, const void* data, s32 size);
 
 /**
- * @brief Lower a factor's count in a factor count list by one.
- * @param list Factor count list (LibSystemSettings::unkA8).
- * @param factor Factor ID.
+ * @brief Find the first DTT chunk in a chunk list.
+ * @param out Receives the chunk's data size and address.
+ * @param chunk First chunk.
+ * @return Whether a DTT chunk was found.
  */
-void func_00456F90(void* list, u16 factor);
+bool func_00456D60(LibChunkData* out, LibResourceChunkHeader* chunk);
 
 /**
- * @brief Raise a factor's count in a factor count list by one.
- * @param list Factor count list (LibSystemSettings::unkA8).
+ * @brief Store an entry of the settings' 10 by 10 byte grid, limited to 0 through 70, when the settings checksum is
+ *        valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param row Row, 1 through 10.
+ * @param column Column, 1 through 10.
+ * @param value Value to store.
+ */
+void func_004577A0(LibSystemSettings* settings, s32 row, s32 column, s32 value);
+
+/**
+ * @brief Read an entry of the settings' 10 by 10 byte grid.
+ * @param settings System settings.
+ * @param row Row, 1 through 10.
+ * @param column Column, 1 through 10.
+ * @return Entry, or zero when the checksum is invalid or the position is out of range.
+ */
+s32 func_00457980(LibSystemSettings* settings, s32 row, s32 column);
+
+/**
+ * @brief Add up a byte range for a factor count list's checksums, each byte plus three times its index.
+ * @param list Factor count list; unused.
+ * @param data Bytes to add up.
+ * @param size Byte count.
+ * @return Sum.
+ */
+u16 lib_factor_checksum(LibFactorCounts* list, const u8* data, s32 size);
+
+/**
+ * @brief Check both of a factor count list's checksums.
+ * @param list Factor count list.
+ * @return Whether the counts and the factor table both match their checksums.
+ */
+bool lib_factor_counts_valid(LibFactorCounts* list);
+
+/**
+ * @brief Check whether a factor has been counted, clearing the list first if its checksums are bad.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ * @return Whether the factor's count is positive.
+ */
+bool lib_factor_counted(LibFactorCounts* list, s32 factor);
+
+/**
+ * @brief Lower a factor's count by one.
+ * @param list Factor count list.
  * @param factor Factor ID.
  */
-void func_00456FE0(void* list, u16 factor);
+void lib_factor_count_lower(LibFactorCounts* list, s32 factor);
+
+/**
+ * @brief Raise a factor's count by one.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ */
+void lib_factor_count_raise(LibFactorCounts* list, s32 factor);
+
+/**
+ * @brief Look up a factor's count.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ * @return Count, or zero for a factor that isn't counted.
+ */
+s32 lib_factor_count(LibFactorCounts* list, s32 factor);
+
+/**
+ * @brief Set a factor's count and refresh the counts' checksum.
+ * @param list Factor count list.
+ * @param factor Factor ID.
+ * @param count New count.
+ * @return Whether the factor is counted.
+ */
+bool lib_factor_count_set(LibFactorCounts* list, s32 factor, s32 count);
+
+/**
+ * @brief Clear every count and rewrite both checksums.
+ * @param list Factor count list.
+ */
+void lib_factor_counts_reset(LibFactorCounts* list);
 
 /**
  * @brief Select the indexed resource and initialize its drawing position.
@@ -388,50 +416,6 @@ void lib_draw_state_init(LibDrawState64* state);
 #ifdef __cplusplus
 }
 #endif
-
-/** Drawing state containing resource pointers, scalar coordinates, and descriptor bytes. */
-struct LibDrawState64
-{
-    u32 unk00;
-    void* unk04;
-    void* unk08;
-    u32 unk0c;
-    u32 unk10;
-    u8 unk14[4];
-    float unk18;
-    float unk1c;
-    float unk20;
-    float unk24;
-    float unk28;
-    float unk2c;
-    float unk30;
-    float unk34;
-    float unk38;
-    float unk3c;
-    float unk40;
-    float unk44;
-    float unk48;
-    float unk4c;
-    float unk50;
-    u16 unk54;
-    u16 unk56;
-    u8 unk58;
-    u8 unk59;
-    u8 unk5a;
-    u8 unk5b;
-    u8 unk5c[2];
-    s8 unk5e;
-    u8 unk5f;
-    u8 unk60;
-    u8 unk61[3];
-#ifdef __cplusplus
-    /** @brief Initialize the drawing state. */
-    LibDrawState64()
-    {
-        lib_draw_state_init(this);
-    }
-#endif
-};
 
 #ifdef __cplusplus
 #include "overlays/lib/text_004BD360.h"
@@ -474,6 +458,158 @@ extern "C" void func_0044B190(LibVectorUpdateView* state, float x, float y);
  * @return Queue insertion result.
  */
 extern "C" s32 func_0044C110(LibCallbackTransform* object);
+
+/** One 16-byte entry of an image resource's animation frame list. */
+struct LibImageFrame
+{
+    u8 unk00[0xD];
+    u8 kind;
+    u16 duration;
+};
+
+/** Frame list header at 0x10 in an image resource: the frame count, then the frames. */
+struct LibImageFrameList
+{
+    u32 count;
+    LibImageFrame frames[1];
+};
+
+/** Drawing format an image animation passes on to its draws. */
+struct LibImageFormat
+{
+    u16 unk00;
+    u16 unk02;
+    u8 unk04;
+    u8 unk05;
+    u8 unk06;
+    u8 unk07;
+};
+
+/** Partial frame animation over an image resource's frame list. */
+struct LibImageAnimation
+{
+    /** @brief Initialize resource pointers, drawing scales, colours and format defaults. */
+    LibImageAnimation()
+    {
+        lib_draw_state_init(this);
+    }
+
+    /**
+     * @brief Start playing from a frame.
+     * @param frame Frame index.
+     */
+    void start(s32 frame);
+
+    /**
+     * @brief Count the frame time down and move on when it runs out.
+     * @return -1 once the last frame ended, 2 after moving to the next frame, 1 after jumping back, 0 otherwise.
+     */
+    s8 step();
+
+    /**
+     * @brief Use an image resource and, when given, its drawing format.
+     * @param resource Image resource.
+     * @param format Drawing format, or null to keep the current one.
+     */
+    void set_resource(void* resource, const LibImageFormat* format);
+
+    /**
+     * @brief Use one of the field runtime's display chunks, with the default drawing format for its range.
+     * @param id Chunk index; below 34 and from 34 on use different defaults.
+     */
+    void set_display_chunk(s32 id);
+
+    /**
+     * @brief Set the drawing position.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     */
+    void set_position(float x, float y)
+    {
+        unk18 = x;
+        unk1c = y;
+    }
+
+    u32 unk00;
+    void* resource;
+    LibImageFrame* frame;
+    u32 frame_count;
+    s32 index;
+    float timer;
+    float unk18;
+    float unk1c;
+    float unk20;
+    float unk24;
+    float unk28;
+    float unk2c;
+    float unk30;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float unk40;
+    float unk44;
+    float unk48;
+    float unk4c;
+    float unk50;
+    LibImageFormat format;
+    s8 state;
+    u8 active;
+    s8 unk5e;
+    u8 unk5f;
+    u8 unk60;
+    u8 unk61[3];
+};
+
+/**
+ * Transform that draws one VIF1 packet of its own, with vtables D_1748D0 and D_174954 in main data; LibClass172080
+ * and the other emitter-like classes derive from it.
+ */
+class LibClass1748D0 : public LibTransform, public DmaSubmission
+{
+public:
+    /** @brief Start with no packet buffer, type ID 0xA00 and the class's draw bucket. */
+    LibClass1748D0();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /** @brief Delete the packet buffer. */
+    virtual ~LibClass1748D0();
+
+    /** @brief Update the transform and mark the renderer's first pass ready. */
+    virtual void update();
+
+    /** @brief Close the packet with a DIRECTHL tag for its size and queue it on VIF1. */
+    virtual void render();
+
+    virtual const LibVector4* get_bounding_sphere();
+
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Send the packet on VIF1 in normal mode.
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Finish the packet.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    u8 unk214[0xC];
+    LibVector4 bounding_sphere;
+    LibPacketBuffer* packet;
+    u32* packet_tag;
+    u8 unk238[8];
+    u32 qwc;
+    u8 unk244;
+    u8 unk245;
+    float unk248;
+    float unk24c;
+    float unk250;
+};
 
 /** Partial Lib class with vtable D_174C20 in main data; its destructor is func_00452F00. */
 class LibClass174C20
@@ -535,14 +671,9 @@ public:
 
     LibStorageBlock0C unk40;
     u8 unk4c[4];
-    LibDrawState64 unk50;
+    LibImageAnimation unk50;
     void* unkb4;
-    u16 unkb8;
-    u16 unkba;
-    u8 unkbc;
-    u8 unkbd;
-    u8 unkbe;
-    u8 unkbf;
+    LibImageFormat unkb8;
     s32 unkc0;
     u32 unkc4;
     u8 unkc8;
@@ -558,7 +689,6 @@ public:
     {
     }
 
-    /** @brief Release the resource widget and destroy its base. */
     virtual ~ItemCreationClass174C40();
 
     /** @brief Refresh the indexed resource drawing state. */
