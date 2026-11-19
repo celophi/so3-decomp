@@ -7,6 +7,8 @@
 #define LIB_SHAPE_ATTRIBUTE_MAGIC 0x415452
 #define LIB_SHAPE_DATA_BOUND 0x80
 #define LIB_SHAPE_NAME_LENGTH 16
+#define LIB_SHAPE_KIND_BOX 0
+#define LIB_SHAPE_KIND_SPHERE 1
 
 #ifdef __cplusplus
 struct LibTransformOwner;

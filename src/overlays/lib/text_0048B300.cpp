@@ -9413,12 +9413,146 @@ extern "C" void func_004984C0(LibHistoryReceiver4984C0* object, s32 capacity, Li
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0048B300", func_0049AF90);
+/**
+ * @brief Test a history source's bit.
+ * @param mask Active-source mask.
+ * @param index Source index.
+ * @return The bit.
+ */
+static inline u64 history_source_active(const LibHistoryMask* mask, u32 index)
+{
+    u32 bit = index & 63;
+    return (mask->bits[index >> 6] >> bit) & 1;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0048B300", func_0049B060);
+/**
+ * @brief Copy the active 0x30-byte sources' position and attributes into an output batch, growing the vf26/vf27 bounds.
+ * @param object Receiver; its index moves past every source looked at.
+ * @param capacity Output budget, counted in steps of the receiver's sample count.
+ * @param output Output records, one per sample.
+ * @return Entries used.
+ */
+extern "C" s32 func_0049AF90(LibHistoryReceiver43EA10* object, s32 capacity, LibHistoryOutput30* output)
+{
+    s32 processed = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0048B300", func_0049B130);
+    while (processed < capacity && object->index < object->limit)
+    {
+        if (!history_source_active(object->mask, object->index))
+        {
+            object->index++;
+            continue;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0048B300", func_0049B200);
+        LibHistorySource30* source = &object->source[object->index];
+        output->position = source->position;
+        vu0_load_vf1(&output->position);
+        output->attributes.raw = *(const unsigned __int128*)source->attributes.data();
+        vu0_extend_bounds_vf1();
+        object->index++;
+        output += object->samples;
+        processed += object->samples;
+    }
+
+    return processed;
+}
+
+/**
+ * @brief Copy the active 0x60-byte sources' position and attributes into an output batch, growing the vf26/vf27 bounds.
+ * @param object Receiver; its index moves past every source looked at.
+ * @param capacity Output budget, counted in steps of the receiver's sample count.
+ * @param output Output records, one per sample.
+ * @return Entries used.
+ */
+extern "C" s32 func_0049B060(LibHistoryReceiver43EA10* object, s32 capacity, LibHistoryOutput30* output)
+{
+    s32 processed = 0;
+
+    while (processed < capacity && object->index < object->limit)
+    {
+        if (!history_source_active(object->mask, object->index))
+        {
+            object->index++;
+            continue;
+        }
+
+        LibHistorySource60* source = &((LibHistorySource60*)object->source)[object->index];
+        output->position = source->position;
+        vu0_load_vf1(&output->position);
+        output->attributes.raw = *(const unsigned __int128*)source->attributes.data();
+        vu0_extend_bounds_vf1();
+        object->index++;
+        output += object->samples;
+        processed += object->samples;
+    }
+
+    return processed;
+}
+
+/**
+ * @brief Copy the active 0x30-byte sources' position and attributes, with the receiver's unk28 as the control w, into an output batch.
+ * @param object Receiver; its index moves past every source looked at.
+ * @param capacity Output budget, counted in steps of the receiver's sample count.
+ * @param output Output records, one per sample.
+ * @return Entries used.
+ */
+extern "C" s32 func_0049B130(LibHistoryReceiver43EA10* object, s32 capacity, LibHistoryOutput30* output)
+{
+    s32 processed = 0;
+
+    while (processed < capacity && object->index < object->limit)
+    {
+        if (!history_source_active(object->mask, object->index))
+        {
+            object->index++;
+            continue;
+        }
+
+        LibHistorySource30* source = &object->source[object->index];
+        output->position = source->position;
+        vu0_load_vf1(&output->position);
+        output->attributes.raw = *(const unsigned __int128*)source->attributes.data();
+        vu0_extend_bounds_vf1();
+        output->control.value[3] = object->unk28.value;
+        output += object->samples;
+        object->index++;
+        processed += object->samples;
+    }
+
+    return processed;
+}
+
+/**
+ * @brief Copy the active 0x60-byte sources' position and attributes, with the receiver's unk28 as the control w, into an output batch.
+ * @param object Receiver; its index moves past every source looked at.
+ * @param capacity Output budget, counted in steps of the receiver's sample count.
+ * @param output Output records, one per sample.
+ * @return Entries used.
+ */
+extern "C" s32 func_0049B200(LibHistoryReceiver43EA10* object, s32 capacity, LibHistoryOutput30* output)
+{
+    s32 processed = 0;
+
+    while (processed < capacity && object->index < object->limit)
+    {
+        if (!history_source_active(object->mask, object->index))
+        {
+            object->index++;
+            continue;
+        }
+
+        LibHistorySource60* source = &((LibHistorySource60*)object->source)[object->index];
+        output->position = source->position;
+        vu0_load_vf1(&output->position);
+        output->attributes.raw = *(const unsigned __int128*)source->attributes.data();
+        vu0_extend_bounds_vf1();
+        output->control.value[3] = object->unk28.value;
+        output += object->samples;
+        object->index++;
+        processed += object->samples;
+    }
+
+    return processed;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0048B300", func_0049B2D0);

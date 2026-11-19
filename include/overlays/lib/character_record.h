@@ -944,4 +944,65 @@ static inline s32 set_character_level(LibCharacterRecord* record, s32 level)
     return level;
 }
 
+/**
+ * @brief Decode a tactical skill state after validating the state checksum.
+ * @param equipment Character equipment record.
+ * @param index State index.
+ * @return State, or zero for an invalid checksum.
+ */
+static inline s32 tactical_skill_state(const LibCharacterEquipment* equipment, s32 index)
+{
+    if (equipment->tactical_skill_states_checksum != tactical_skill_states_checksum(equipment->encoded_tactical_skill_states))
+    {
+        return 0;
+    }
+
+    return (s8)equipment->encoded_tactical_skill_states[index] ^ 0x77;
+}
+
+/**
+ * @brief Store a tactical skill state after validating the state checksum.
+ * @param equipment Character equipment record.
+ * @param index State index.
+ * @param state State to store.
+ */
+static inline void set_tactical_skill_state(LibCharacterEquipment* equipment, s32 index, s32 state)
+{
+    if (equipment->tactical_skill_states_checksum == tactical_skill_states_checksum(equipment->encoded_tactical_skill_states))
+    {
+        equipment->encoded_tactical_skill_states[index] = state ^ 0x77;
+        equipment->tactical_skill_states_checksum = tactical_skill_states_checksum(equipment->encoded_tactical_skill_states);
+    }
+}
+
+/**
+ * @brief Store a battle skill index, plus one, after validating the index checksum.
+ * @param equipment Character equipment record.
+ * @param index Entry index, from zero through five.
+ * @param skill Battle skill index, below 42.
+ */
+static inline void set_battle_skill_index(LibCharacterEquipment* equipment, s32 index, s32 skill)
+{
+    if (equipment->battle_skill_indices_checksum != battle_skill_indices_checksum(equipment->encoded_battle_skill_indices))
+    {
+        return;
+    }
+
+    if (index < 0 || (u32)index >= 6)
+    {
+        return;
+    }
+
+    skill += LIMIT_BIAS;
+
+    if (skill >= 42 + LIMIT_BIAS)
+    {
+        return;
+    }
+
+    skill -= LIMIT_BIAS;
+    equipment->encoded_battle_skill_indices[index] = (skill + 1) ^ 0x77;
+    equipment->battle_skill_indices_checksum = battle_skill_indices_checksum(equipment->encoded_battle_skill_indices);
+}
+
 #endif

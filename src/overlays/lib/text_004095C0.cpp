@@ -108,7 +108,10 @@ typedef struct LibRecord504AA0
 {
     u32 price : 20;
     u32 unk14 : 5;
-    u32 unk19 : 7;
+    u32 battle_usable : 1;
+    u32 unk1a : 2;
+    u32 dropped : 1;
+    u32 unk1d : 3;
 } LibRecord504AA0;
 
 /** 0xA0-byte table the game keeps in the resident entry table under LIB_ENTRY_VALUE_TABLE. */
@@ -245,7 +248,7 @@ struct LibClass1721B0 : public LibListObject
     s32 unk96c;
     u8 unk970;
     u8 unk971[3];
-    u32 unk974;
+    s32 unk974;
     u32 unk978;
     s32 unk97c;
     u8* unk980;
@@ -559,7 +562,58 @@ extern "C" s32 func_00409DA0(LibCharacterEquipment* equipment, s32 id, s32 code,
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004095C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00409A10);
+/**
+ * @brief Point the fifth tactical skill state at one of the anti-attack auras the mask allows.
+ *
+ * A state already naming an allowed aura is kept. Otherwise the lowest allowed
+ * aura is chosen, keeping the old state's sign, or the state is cleared when no
+ * aura is allowed.
+ * @param equipment Character equipment record.
+ */
+extern "C" void func_00409A10(LibCharacterEquipment* equipment)
+{
+    u32 mask = (u8)(equipment->encoded_anti_attack_aura_mask ^ 0x77);
+    s32 state = tactical_skill_state(equipment, 4);
+    bool negative;
+    s32 aura;
+
+    if (mask == 0)
+    {
+        if (state != 0)
+        {
+            set_tactical_skill_state(equipment, 4, 0);
+        }
+
+        return;
+    }
+
+    negative = false;
+
+    if (state <= -1)
+    {
+        state = -state;
+        negative = true;
+    }
+
+    if (state != 0 && (mask & (1 << (state - 1))))
+    {
+        return;
+    }
+
+    for (aura = 1;; aura++, mask >>= 1)
+    {
+        if (mask & 1)
+        {
+            if (negative)
+            {
+                aura = -aura;
+            }
+
+            set_tactical_skill_state(equipment, 4, aura);
+            return;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00409DA0);
 
@@ -608,7 +662,47 @@ void func_0040A520(FieldRecord* entry, s32 list_id, s32 code, s32 first, s32 sec
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040A5C0);
+/**
+ * @brief Learn a symbology; codes 0x90 and 0x91 first learn each of their three table codes the character has no mastery of.
+ * @param equipment Character equipment record.
+ * @param id One-based code list ID.
+ * @param code Symbology code.
+ * @param level Level before learning; the new level is one more, at least one.
+ */
+extern "C" void func_0040A5C0(LibCharacterEquipment* equipment, s32 id, s32 code, s32 level)
+{
+    u32 i;
+
+    level++;
+
+    if (level <= 0)
+    {
+        level = 1;
+    }
+
+    if (code == 0x90)
+    {
+        for (i = 0; i < 3; i++)
+        {
+            if (lib_equipment_symbology_mastery(equipment, func_0040AF10(id, D_001B6198[i])) == 0)
+            {
+                func_0040A9F0((FieldRecord*)equipment, id, D_001B6198[i], 0, level, 1);
+            }
+        }
+    }
+    else if (code == 0x91)
+    {
+        for (i = 0; i < 3; i++)
+        {
+            if (lib_equipment_symbology_mastery(equipment, func_0040AF10(id, D_001B619C[i])) == 0)
+            {
+                func_0040A9F0((FieldRecord*)equipment, id, D_001B619C[i], 0, level, 1);
+            }
+        }
+    }
+
+    func_0040A520((FieldRecord*)equipment, id, code, level, 1);
+}
 
 /**
  * @brief Check whether a code is one of the three codes at D_001B619C.
@@ -1768,7 +1862,128 @@ void func_0040D260(void* object, const ItemCreationAllocationRecord* record)
     raise_factor_counts(record);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", lib_allocation_initialize);
+/**
+ * @brief Calculate an allocation record's checksum from its six halfwords and stored shift.
+ * @param record Allocation record.
+ * @return Calculated checksum.
+ */
+static inline u16 allocation_halfword_checksum(ItemCreationAllocationRecord* record)
+{
+    return (0x83CF << record->checksum_shift)
+         ^ ((((const u16*)record)[4] + (record->definition_factors.halves[0] + ((const u16*)record)[2])) ^ (((const u16*)record)[1] + (((const u16*)record)[3] + ((const u16*)record)[5])));
+}
+
+/**
+ * @brief Store an allocation's catalog definition index after validating its checksum.
+ * @param record Allocation record.
+ * @param index Definition index.
+ */
+static inline void set_allocation_definition_index(ItemCreationAllocationRecord* record, u16 index)
+{
+    if (record->checksum == allocation_halfword_checksum(record))
+    {
+        record->definition_factors.bits.definition_index = index;
+        record->checksum = allocation_halfword_checksum(record);
+    }
+}
+
+/**
+ * @brief Copy eight factor codes.
+ * @param destination Destination codes.
+ * @param source Source codes.
+ */
+static inline void copy_factor_codes(u16* destination, const u16* source)
+{
+    for (s32 i = 0; i < 8; i++)
+    {
+        *destination++ = *source++;
+    }
+}
+
+/**
+ * @brief Look up a factor's D_00504AA0 record.
+ * @param factor One-based factor code.
+ * @return Factor record.
+ */
+static inline const LibRecord504AA0* factor_record(u16 factor)
+{
+    return &D_00504AA0[factor - 1];
+}
+
+extern "C" void func_0040DD20(ItemCreationAllocationRecord* record, u32 slot, s32 factor);
+
+/**
+ * @brief Set up an allocation record for an item.
+ * @param record Allocation record to configure.
+ * @param item_code One-based item code.
+ * @param modification_number Item type's factor-change count, or zero for an unmodified item.
+ * @param factors Eight factor codes, or null for catalog defaults.
+ * @param new_item Mark the item as new in inventory lists.
+ * @param suppress_allocation_id Suppress the resident allocation identifier when the record checksum is valid.
+ */
+void lib_allocation_initialize(ItemCreationAllocationRecord* record, u16 item_code, u8 modification_number, const u16* factors, bool new_item,
+                               bool suppress_allocation_id)
+{
+    u16 codes[8];
+    bool battle_usable;
+    s32 i;
+
+    set_allocation_definition_index(record, item_code - 1);
+
+    record->modification_number = modification_number;
+    record->equipped_owner = 0;
+    record->new_item = new_item;
+
+    if (record->checksum == allocation_halfword_checksum(record))
+    {
+        record->factors_234.bits.suppress_allocation_id = suppress_allocation_id;
+        record->checksum = allocation_halfword_checksum(record);
+    }
+
+    record->allocated = 1;
+
+    if (factors == 0)
+    {
+        const ItemCreationCategoryDefinition* definition = &D_001B64F0[item_code - 1];
+        codes[0] = definition->initial_factor;
+        codes[1] = definition->factor1;
+        codes[2] = definition->factor2;
+        codes[3] = definition->factor3;
+        codes[4] = definition->factor4;
+        codes[5] = definition->factor5;
+        codes[6] = definition->factor6;
+        codes[7] = definition->final_factor;
+    }
+    else
+    {
+        copy_factor_codes(codes, factors);
+    }
+
+    battle_usable = false;
+
+    for (i = 0; i < 8; i++)
+    {
+        s32 factor = codes[i];
+
+        if (factor != 0)
+        {
+            const LibRecord504AA0* entry = factor_record(factor);
+
+            if (entry->dropped)
+            {
+                factor = 0;
+            }
+            else if (entry->battle_usable)
+            {
+                battle_usable = true;
+            }
+        }
+
+        func_0040DD20(record, i, factor);
+    }
+
+    record->battle_usable = battle_usable;
+}
 
 /**
  * @brief Add up the D_005055A0 values of an allocation's factors.
@@ -1887,7 +2102,122 @@ s32 LibClass1721B0::get_default_list_kind()
     return 4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040E3B0);
+extern "C" const char D_004EC300[];
+
+/**
+ * @brief Read whether the settings' sealed record has its first byte set, when the record passes its checksum.
+ * @param settings System settings.
+ * @return Whether the decoded byte is set; zero when the checksum fails.
+ */
+static inline u8 lib_settings_sealed_flag(LibSystemSettings* settings)
+{
+    if (settings->sealed_record.checksum != lib_compute_checksum(settings->sealed_record.key * LIB_RECORD_CHECKSUM_KEY_FACTOR, &settings->sealed_record, (u8*)&settings->sealed_record.checksum - (u8*)&settings->sealed_record))
+    {
+        return 0;
+    }
+
+    return (settings->sealed_record.unk00 ^ LIB_RECORD_XOR_BYTE) != 0;
+}
+
+/**
+ * @brief Read the first byte of the settings' extra protected block when the block passes its checksum.
+ * @param settings System settings.
+ * @return The byte, or zero when the checksum fails.
+ */
+static inline u8 lib_settings_extra_flag(LibSystemSettings* settings)
+{
+    u8* data = &settings->extra_checksum_start;
+
+    if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
+    {
+        return 0;
+    }
+
+    return settings->extra_checksum_start;
+}
+
+/**
+ * @brief Check whether Universe difficulty is unlocked, trusting the flag only when its checksum passes.
+ * @param settings System settings.
+ * @return The unlock flag, or zero when the checksum fails.
+ */
+static inline u8 lib_settings_universe_unlocked(LibSystemSettings* settings)
+{
+    u8* data = &settings->extra_checksum_start;
+
+    if (settings->extra_checksum != lib_compute_checksum(settings->extra_key, data, (u8*)&settings->extra_checksum - data))
+    {
+        return 0;
+    }
+
+    return settings->universe_unlocked;
+}
+
+/**
+ * @brief Build the save data: clear its buffer, copy the options from the settings, and fill the header with the title
+ * and the CRCs of the options, icon.sys and the extra file (or the loaded ones when there's nothing to compute).
+ * @param object Save data manager.
+ * @return One, or zero without settings.
+ */
+extern "C" s32 func_0040E3B0(LibClass1721B0* object)
+{
+    if (!object->settings)
+    {
+        return 0;
+    }
+
+    if (!object->unk910)
+    {
+        object->unk910 = new (0) u8[object->unk96c];
+    }
+
+    memset_guess(object->unk910, 0, object->unk96c);
+    memset_guess(&object->options, 0, object->unk978);
+    object->options.widescreen = object->settings->widescreen;
+    object->options.sealed_flag = lib_settings_sealed_flag(object->settings);
+    object->options.extra_flag = lib_settings_extra_flag(object->settings);
+    object->options.universe_unlocked = lib_settings_universe_unlocked(object->settings);
+    object->options.unk18D = object->settings->unk18D;
+    object->options.sound_output = object->settings->sound_output;
+    object->options.speaker_angles[0] = object->settings->speaker_angles[0];
+    object->options.speaker_angles[1] = object->settings->speaker_angles[1];
+    object->options.speaker_angles[2] = object->settings->speaker_angles[2];
+    object->options.speaker_angles[3] = object->settings->speaker_angles[3];
+    memcpy_guess(object->unk910 + (u8)object->unk974, &object->options, object->unk978);
+    memset_guess(&object->header, 0, object->unk974);
+    strcpy_guess(object->header.title, D_004EC300);
+    object->header.extra_data_crc = lib_crc32(reinterpret_cast<u8*>(&object->options), object->unk978);
+
+    if (object->icon_sys && object->unk98c == 1)
+    {
+        object->header.icon_sys_crc = lib_crc32(reinterpret_cast<u8*>(object->icon_sys), sizeof(LibIconSys));
+    }
+    else if (object->unk970)
+    {
+        object->header.icon_sys_crc = object->unk984;
+    }
+    else
+    {
+        object->header.icon_sys_crc = 0;
+    }
+
+    if (object->unk7c)
+    {
+        object->header.unk980_crc = lib_crc32(object->unk7c, 0xB3B0);
+    }
+    else if (object->unk970)
+    {
+        object->header.unk980_crc = object->unk988;
+    }
+    else
+    {
+        object->header.unk980_crc = 0;
+    }
+
+    object->header.data_crc = lib_crc32(reinterpret_cast<u8*>(&object->header), object->unk974);
+    memcpy_guess(object->unk910, &object->header, object->unk974);
+    return 1;
+}
 
 /**
  * @brief Clear the icon.sys buffer, allocate and clear the 0xB3B0-byte buffer and the save data buffer when missing,

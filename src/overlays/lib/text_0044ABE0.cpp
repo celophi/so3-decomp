@@ -197,9 +197,10 @@ public:
     /**
      * @brief Note whether every bit is set; in mapping mode 2 scroll the offsets by the camera's reflection off the
      *        model, otherwise count the blend mode down. Rewind the records.
+     * @param root Model transform; unused.
      * @return Zero on the step the countdown ends, otherwise one.
      */
-    virtual s32 func_slot1C();
+    virtual s32 func_slot1C(LibTransform* root);
 
     /**
      * @brief Pick the blend mode: offsets other than zero mark the owning list the first time; zero offsets use
@@ -306,9 +307,10 @@ public:
 
     /**
      * @brief Note whether every bit is set, count the blend mode down and rewind the records.
+     * @param root Model transform; unused.
      * @return Zero on the step the countdown ends, otherwise one.
      */
-    virtual s32 func_slot1C();
+    virtual s32 func_slot1C(LibTransform* root);
 
     LibColorBitTableHeader* table;
     u8* records;
@@ -1158,7 +1160,7 @@ void LibClass1747C0::render()
 {
 }
 
-extern "C" u8 D_00508240[];
+extern "C" float D_00508230[];
 
 /**
  * @brief Return the shared bounding sphere every object of this class uses.
@@ -1166,7 +1168,7 @@ extern "C" u8 D_00508240[];
  */
 const LibVector4* LibClass1747C0::get_bounding_sphere()
 {
-    return reinterpret_cast<const LibVector4*>(D_00508240);
+    return reinterpret_cast<const LibVector4*>(&D_00508230[4]);
 }
 
 /**
@@ -1251,8 +1253,6 @@ extern "C" void func_0044D070(LibObjectByte60* object)
 {
     object->unk60 = 8;
 }
-
-extern "C" u8 D_00508230[];
 
 /**
  * @brief Return the address of D_00508230.
@@ -1844,7 +1844,7 @@ void LibClass174C20::func_slot10(LibEntryOutput* output, s32 index)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_slot1C__14LibClass174C20Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_slot1C__14LibClass174C20FP12LibTransform);
 
 /**
  * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
@@ -2860,9 +2860,10 @@ u8* LibClass174D10::read_record(u32 index, u32* size)
 /**
  * @brief Note whether every bit is set; in mapping mode 2 scroll the offsets by the camera's reflection off the
  *        model, otherwise count the blend mode down. Rewind the records.
+ * @param root Model transform; unused.
  * @return Zero on the step the countdown ends, otherwise one.
  */
-s32 LibClass174D10::func_slot1C()
+s32 LibClass174D10::func_slot1C(LibTransform* root)
 {
     if (table->bit_count == table->unk02)
     {
@@ -3011,9 +3012,10 @@ u8* LibClass174D50::read_record(u32 index, u32* size)
 
 /**
  * @brief Note whether every bit is set, count the blend mode down and rewind the records.
+ * @param root Model transform; unused.
  * @return Zero on the step the countdown ends, otherwise one.
  */
-s32 LibClass174D50::func_slot1C()
+s32 LibClass174D50::func_slot1C(LibTransform* root)
 {
     if (table->bit_count == table->unk02)
     {

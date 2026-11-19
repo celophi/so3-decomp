@@ -10,11 +10,16 @@
 #include "overlays/lib/image_capture.h"
 #include "vu0.h"
 #include "clamp.h"
+#include "angle.h"
+#include "main/utility.h"
 #include "overlays/lib/tracks.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/emission_vu0.h"
 #include "overlays/lib/shape_vu0.h"
+#include "overlays/lib/link_vu0.h"
 #include "overlays/lib/light_random.h"
+#include "overlays/lib/quaternion_vu0.h"
+#include "overlays/lib/direction_vu0.h"
 
 
 
@@ -395,7 +400,49 @@ LibMovieThread::~LibMovieThread()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A2F0);
+/**
+ * @brief Descramble streamed movie data in place, a 64-byte block at a time: each doubleword is XORed with a key
+ *        made from the system's SLE key, then lowered by 0x39 and a counter that cycles through 32 blocks.
+ * @param data Address of the data to descramble.
+ * @param size Size of the data in bytes.
+ * @param buffer Start of the ring buffer the data is in.
+ * @param buffer_size Size of the ring buffer in bytes; the data wraps to its start at the end.
+ */
+void LibMovieLoopListener::handle(u32 data, u32 size, u32 buffer, u32 buffer_size)
+{
+    unsigned __int128 seed = resident_get_system()->sle_key;
+    const u64* seed_words = reinterpret_cast<const u64*>(&seed);
+    u64 key0 = seed_words[0] ^ 0x432F96439F773428ULL;
+    u64 key1 = seed_words[1] ^ 0x7726FDC15439F654ULL;
+    u64 key2 = seed_words[0] ^ 0x35F437939FFF7CCDULL;
+    u64 key3 = seed_words[1] ^ 0x64327FCCDF7EF358ULL;
+    u64 key4 = seed_words[0] ^ 0x5432678932464312ULL;
+    u64 key5 = seed_words[1] ^ 0xCCDEFACD32432146ULL;
+    u64 key6 = seed_words[0] ^ 0x43299F7658321943ULL;
+    u64 key7 = seed_words[1] ^ 0x7739FD014DF73254ULL;
+    u64 counter = 0;
+
+    for (s32 left = size; left > 0; left -= 0x40, data += 0x40)
+    {
+        if (data >= buffer + buffer_size)
+        {
+            data -= buffer_size;
+        }
+
+        u64* words = reinterpret_cast<u64*>(data);
+        words[0] = (words[0] ^ key0) - 0x39 - counter;
+        words[1] = (words[1] ^ key1) - 0x39 - counter;
+        words[2] = (words[2] ^ key2) - 0x39 - counter;
+        words[3] = (words[3] ^ key3) - 0x39 - counter;
+        words[4] = (words[4] ^ key4) - 0x39 - counter;
+        words[5] = (words[5] ^ key5) - 0x39 - counter;
+        words[6] = (words[6] ^ key6) - 0x39 - counter;
+        words[7] = (words[7] ^ key7) - 0x39 - counter;
+        counter = (counter + 1) & 0x1F;
+    }
+
+    FlushCache(0);
+}
 
 void func_0041A530(void* object)
 {
@@ -850,7 +897,7 @@ void func_00420D20(ItemCreationClass172870* object, u32 color)
     state->redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00420F20);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", draw__23ItemCreationClass172870Fv);
 
 /**
  * @brief Allocate marker drawing storage and initialize its rectangle and colors.
@@ -1017,16 +1064,94 @@ LibClass1728A0::LibClass1728A0() : unk14(0), unk18(0)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421D80);
+/**
+ * @brief Lay out the builder's rays: random angles kept apart (the spacing halves after ten failed tries) and two
+ *        random lengths per segment, tracking the longest.
+ * @param builder Builder whose rays to allocate and fill.
+ */
+extern "C" void func_00421D80(LibClass1728E0* builder)
+{
+    builder->rays = new (0) LibLightRay[builder->unk1c];
+
+    s32 count = builder->unk1c;
+    float spacing = HALF_PI;
+
+    builder->max_length = 0.0f;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        float angle;
+        s32 tries;
+
+        for (;;)
+        {
+            for (tries = 0; tries < 10; tries++)
+            {
+                angle = PI * (2.0f * resident_random_fraction());
+
+                s32 j;
+
+                for (j = 0; j < i; j++)
+                {
+                    float delta = builder->rays[j].angle - angle;
+
+                    if (delta > PI)
+                    {
+                        delta -= TWO_PI;
+                    }
+
+                    if (ee_abs(delta) < spacing)
+                    {
+                        break;
+                    }
+                }
+
+                if (j == i)
+                {
+                    break;
+                }
+            }
+
+            if (tries < 10)
+            {
+                break;
+            }
+
+            spacing *= 0.5f;
+        }
+
+        builder->rays[i].angle = angle - 0.5f * (builder->unk3c * builder->unk20);
+
+        float first = builder->unk24 + (builder->unk28 - builder->unk24) * resident_random_fraction();
+        float second = builder->unk2c + (builder->unk30 - builder->unk2c) * resident_random_fraction();
+        s32 segments = builder->unk20;
+
+        for (s32 k = 0; k < segments; k++)
+        {
+            builder->rays[i].first[k] = first + builder->unk34 * resident_random_fraction();
+            builder->rays[i].second[k] = second + builder->unk38 * resident_random_fraction();
+
+            if (builder->rays[i].first[k] > builder->max_length)
+            {
+                builder->max_length = builder->rays[i].first[k];
+            }
+
+            if (builder->rays[i].second[k] > builder->max_length)
+            {
+                builder->max_length = builder->rays[i].second[k];
+            }
+        }
+    }
+}
 
 /** @brief Delete the buffer and destroy the builder. */
 LibClass1728E0::~LibClass1728E0()
 {
-    delete unk44;
+    delete rays;
 }
 
 /** @brief Construct the builder without a buffer. */
-LibClass1728E0::LibClass1728E0() : unk44(0)
+LibClass1728E0::LibClass1728E0() : rays(0)
 {
 }
 
@@ -1373,16 +1498,109 @@ void LibClass172F30::func_00425280()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425490);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425600);
-
 /** Partial particle a field acts on: the masks of the fields that skip it. */
 struct LibFieldTarget
 {
     u8 unk00[0x1C];
     u32 skip_mask;
 };
+
+/**
+ * @brief Push a particle away from the field's centre (round it in x/z when unk228 is negative) by a random amount
+ *        between unk220 and unk220 + unk224, falling off with distance past unk228, unless the particle's mask skips
+ *        this field.
+ * @param position Particle position.
+ * @param unk Unused.
+ * @param output Receives the push.
+ * @param source Particle.
+ */
+void LibClass172B40::func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source)
+{
+    u32 skip = static_cast<const LibFieldTarget*>(source)->skip_mask;
+
+    if (unk210 & skip)
+    {
+        *(unsigned __int128*)output = 0;
+        return;
+    }
+
+    float falloff = unk228;
+    bool swirl;
+
+    if (falloff < 0.0f)
+    {
+        swirl = true;
+        falloff = -falloff;
+    }
+    else
+    {
+        swirl = false;
+    }
+
+    vu0_field_load_points(position, &this->position);
+    vu0_set_vf12(falloff);
+
+    if (swirl)
+    {
+        vu0_field_swirl_start();
+        vu0_field_swirl_finish();
+    }
+    else
+    {
+        vu0_field_offset();
+    }
+
+    vu0_field_falloff();
+    vu0_set_vf13_x(unk220 + unk224 * lib_light_random_fraction());
+    vu0_field_store_push(output);
+}
+
+/**
+ * @brief Push a particle along the field's direction by a random amount between unk270 and unk270 + unk274,
+ *        falling off with its squared distance from the field (unk27c squared halves it), while it is within unk278
+ *        of the field's axis, unless the particle's mask skips this field.
+ * @param position Particle position.
+ * @param unk Unused.
+ * @param output Receives the push.
+ * @param source Particle.
+ */
+void LibClass172C60::func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source)
+{
+    u32 skip = static_cast<const LibFieldTarget*>(source)->skip_mask;
+
+    if (unk210 & skip)
+    {
+        *(unsigned __int128*)output = 0;
+        return;
+    }
+
+    LibVector4 local;
+    LibVector4 flat;
+    LibVector4 radial;
+    LibVector4 distance;
+
+    vu0_field_to_local(position, &inverse, &local);
+    copy_vector(&flat, &local);
+    flat.y = 0.0f;
+    vu0_field_length_squared(&flat, &radial);
+
+    float radial_squared = radial.x;
+
+    if (!(radial_squared <= unk278 * unk278))
+    {
+        *(unsigned __int128*)output = 0;
+        return;
+    }
+
+    vu0_field_length_squared(&local, &distance);
+    float distance_squared = distance.x;
+    float spread = unk27c * unk27c;
+    float falloff = spread / (spread + distance_squared);
+    float amount = falloff * (unk270 + unk274 * lib_light_random_fraction());
+    output->x = down.x * amount;
+    output->y = down.y * amount;
+    output->z = down.z * amount;
+}
 
 /**
  * @brief Push along the field's direction by a random amount between unk220 and unk220 + unk224, unless the
@@ -1519,23 +1737,470 @@ bool LibClass172EA0::func_00425870(const LibVector4* centre, LibVector4* output,
     return false;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425B40);
+/**
+ * @brief Pull a link's two nodes together along a direction, splitting the move by weight unless one end is fixed.
+ * @param node First node.
+ * @param link Link from the first node to the second.
+ * @param direction Aligned correction direction.
+ * @param weight Share of the move the second node takes.
+ * @param amount Length of the correction.
+ */
+extern "C" void func_00425B40(LibClass173070* node, LibClass173070Link* link, const LibVector4* direction, float weight,
+                              float amount)
+{
+    vu0_load_vf2(&D_00507F50);
+    vu0_shape_set_parameter(amount);
+    vu0_set_vf7(weight);
+    vu0_load_vf1(direction);
+    LibClass173070* target = link->target;
+    vu0_link_scale_vf3();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425C90);
+    if (node->fixed == 1 && target->fixed == 1)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425E10);
+    vu0_link_correction();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284E0__14LibClass172F30FP14LibClass172AB0P10LibVector4PfPf);
+    if (node->fixed == 0 && target->fixed == 0)
+    {
+        LibVector4* first = &node->position;
+        LibVector4* second = &target->position;
+        vu0_link_move_pair(first, second);
+        vu0_store_vf6(second);
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004260C0);
+    if (node->fixed == 1)
+    {
+        vu0_load_vf5(&target->position);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004261E0);
+        if (weight < 0.01f)
+        {
+            vu0_link_accumulate_vf5();
+            vu0_link_add_scaled_z();
+        }
+        else
+        {
+            vu0_link_start_reciprocal();
+            vu0_link_accumulate_vf5();
+            vu0_link_add_divided();
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00426370);
+        vu0_store_vf5(&target->position);
+    }
+    else
+    {
+        vu0_load_vf5(&node->position);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004264F0);
+        if (!(weight <= 0.99f))
+        {
+            vu0_link_accumulate_vf5();
+            vu0_link_add_scaled_z();
+        }
+        else
+        {
+            vu0_link_start_reciprocal();
+            vu0_link_accumulate_vf5();
+            vu0_link_add_divided();
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00426650);
+        vu0_store_vf5(&node->position);
+    }
+}
+
+/**
+ * @brief Find the squared distance from a point to a segment and the fraction along it of the closest point.
+ * @param segment Aligned segment: start, then axis.
+ * @param point Aligned point.
+ * @param fraction Receives the fraction along the axis.
+ * @return The squared distance.
+ */
+extern "C" float func_004CA180(const LibVector4* segment, const LibVector4* point, float* fraction);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284F0__14LibClass172F30FP14LibClass172AB0PC10LibVector4P10LibVector4PfPf);
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284F0__14LibClass172FC0FP14LibClass172AB0PC10LibVector4P10LibVector4PfPf);
+
+/**
+ * @brief Test this sphere against a capsule.
+ * @param other Capsule (a LibClass172FC0).
+ * @param direction Receives the unit direction from this sphere to the capsule's closest point.
+ * @param first Receives the fraction along the capsule's axis.
+ * @param second Receives the overlap depth.
+ * @return Nonzero when they touch.
+ */
+s32 LibClass172F30::func_004284E0(LibClass172AB0* other, LibVector4* direction, float* first, float* second)
+{
+    float fraction;
+    float distance_squared = func_004CA180(&static_cast<LibClass172FC0*>(other)->local_point, &position, &fraction);
+    float other_radius = static_cast<LibClass172FC0*>(other)->unk220;
+    float reach = unk220 + other_radius;
+
+    if (distance_squared <= reach * reach)
+    {
+        const LibVector4* segment = &static_cast<LibClass172FC0*>(other)->local_point;
+        const LibVector4* point = &position;
+        vu0_segment_point_offset(segment, fraction, point);
+        *first = fraction;
+        *second = reach - __sqrt(distance_squared, distance_squared);
+        vu0_store_unit_offset(direction);
+        return 1;
+    }
+
+    return 0;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284E0__14LibClass172FC0FP14LibClass172AB0P10LibVector4PfPf);
+
+/**
+ * @brief Pull two linked nodes towards the link's rest length, a stiffness times the step of the way, sharing the
+ *        move by the nodes' weights (all of it to the free one when the other is fixed).
+ * @param node First node.
+ * @param link Link between them.
+ * @param other Second node.
+ * @param step Time step.
+ */
+extern "C" void func_004261E0(LibClass173070* node, LibClass173070Link* link, LibClass173070* other, float step)
+{
+    LibVector4 length;
+
+    vu0_link_load_ends(&other->position, &node->position);
+
+    if (other->fixed == 1 && node->fixed == 1)
+    {
+        return;
+    }
+
+    vu0_link_span_vf20();
+    vu0_link_ones_vf31();
+    float weight = node->weight;
+    vu0_link_square_vf20();
+    float other_weight = other->weight;
+    vu0_link_sum_start_vf21();
+    vu0_link_sum_finish_vf21();
+
+    if (node->fixed == 1)
+    {
+        other_weight = 0.0f;
+        weight = 1.0f;
+    }
+    else if (other->fixed == 1)
+    {
+        weight = 0.0f;
+        other_weight = 1.0f;
+    }
+
+    vu0_link_sqrt_vf22();
+    bool weightless = weight == 0.0f && other_weight == 0.0f;
+    vu0_link_length_vf24();
+    vu0_store_vf24(&length);
+    vu0_link_reciprocal_vf24();
+    float current = length.x;
+    float stretch = (current - link->rest_length) * (link->stiffness * step);
+    vu0_link_wait_q();
+    vu0_link_unit_vf24();
+
+    if (weightless)
+    {
+        LibVector4* first = &node->position;
+        LibVector4* second = &other->position;
+        vu0_set_vf22(0.5f * stretch);
+        vu0_link_accumulate_vf10();
+        vu0_link_push_vf10_vf22();
+        vu0_link_accumulate_vf11();
+        vu0_link_pull_vf11_vf22();
+        vu0_store_vf10(first);
+        vu0_store_vf11(second);
+    }
+    else
+    {
+        LibVector4* first = &node->position;
+        LibVector4* second = &other->position;
+        float share = stretch / (weight + other_weight);
+        float second_share = other_weight * share;
+        float first_share = weight * share;
+        vu0_set_vf22(second_share);
+        vu0_set_vf23(first_share);
+        vu0_link_accumulate_vf10();
+        vu0_link_push_vf10_vf22();
+        vu0_link_accumulate_vf11();
+        vu0_link_pull_vf11_vf23();
+        vu0_store_vf10(first);
+        vu0_store_vf11(second);
+    }
+}
+
+/**
+ * @brief Pull two linked nodes all the way to the link's rest length, sharing the move by the nodes' weights (all of
+ *        it to the free one when the other is fixed).
+ * @param node First node.
+ * @param link Link between them.
+ * @param other Second node.
+ */
+extern "C" void func_00426370(LibClass173070* node, LibClass173070Link* link, LibClass173070* other)
+{
+    LibVector4 length;
+
+    vu0_link_load_ends(&other->position, &node->position);
+
+    if (other->fixed == 1 && node->fixed == 1)
+    {
+        return;
+    }
+
+    vu0_link_span_vf23();
+    float weight = node->weight;
+    vu0_link_square_vf23();
+    vu0_link_ones_vf25();
+    vu0_link_sum_start_vf24();
+    vu0_link_sum_finish_vf24();
+    float other_weight = other->weight;
+    vu0_link_sqrt_vf24();
+
+    if (node->fixed == 1)
+    {
+        other_weight = 0.0f;
+        weight = 1.0f;
+    }
+    else if (other->fixed == 1)
+    {
+        weight = 0.0f;
+        other_weight = 1.0f;
+    }
+
+    vu0_link_length_vf24();
+    vu0_store_vf24(&length);
+    vu0_link_reciprocal_vf24();
+    bool weightless = weight == 0.0f && other_weight == 0.0f;
+    float current = length.x;
+    float stretch = current - link->rest_length;
+    vu0_link_wait_q();
+    vu0_link_unit_vf23();
+
+    if (weightless)
+    {
+        LibVector4* first = &node->position;
+        LibVector4* second = &other->position;
+        vu0_set_vf13(0.5f * stretch);
+        vu0_link_accumulate_vf10();
+        vu0_link_push_vf10_vf13();
+        vu0_link_accumulate_vf11();
+        vu0_link_pull_vf11_vf13();
+        vu0_store_vf10(first);
+        vu0_store_vf11(second);
+    }
+    else
+    {
+        LibVector4* first = &node->position;
+        LibVector4* second = &other->position;
+        float share = stretch / (weight + other_weight);
+        float second_share = other_weight * share;
+        float first_share = weight * share;
+        vu0_set_vf13(second_share);
+        vu0_set_vf14(first_share);
+        vu0_link_accumulate_vf10();
+        vu0_link_push_vf10_vf13();
+        vu0_link_accumulate_vf11();
+        vu0_link_pull_vf11_vf14();
+        vu0_store_vf10(first);
+        vu0_store_vf11(second);
+    }
+}
+
+/**
+ * @brief Step a node: a fixed node follows its transform, a free one moves by its velocity plus gravity and a force
+ *        and minus damping, as its flags ask.
+ * @param node Node.
+ * @param force Aligned force for LIB_LINK_NODE_FORCE.
+ * @param step Time step.
+ */
+extern "C" void func_004264F0(LibClass173070* node, const LibVector4* force, float step)
+{
+    if (node->fixed == 1)
+    {
+        copy_vector(&node->previous_position, &node->position);
+        node->transform->set_orientation(&node->orientation);
+        LibTransform* transform = node->transform;
+        transform->transform_dirty = 1;
+        transform->matrix_ready = 0;
+        transform->unk51 = 0;
+        transform->update_transform_matrix();
+        node->position.x = transform->base_transform.m[0][3];
+        node->position.y = transform->base_transform.m[1][3];
+        node->position.z = transform->base_transform.m[2][3];
+        node->position.w = 1.0f;
+        transform->transform_dirty = 1;
+        transform->matrix_ready = 0;
+        transform->unk51 = 0;
+        return;
+    }
+
+    copy_vector(&node->previous_position, &node->position);
+    vu0_link_step_start(&node->position, step, &D_00507F50, &node->velocity);
+
+    if (node->flags & LIB_LINK_NODE_GRAVITY)
+    {
+        vu0_link_step_gravity();
+    }
+
+    if (node->flags & LIB_LINK_NODE_FORCE)
+    {
+        vu0_link_step_force(force);
+    }
+
+    if (node->flags & LIB_LINK_NODE_DAMPING)
+    {
+        vu0_link_step_damping(node->damping);
+    }
+
+    vu0_link_step_finish();
+    node->transform->set_orientation(&node->orientation);
+    vu0_store_vf16(&node->position);
+}
+
+/**
+ * @brief Turn each linked parent so its child's position points at the linked node, ease the nodes' orientations
+ *        toward their stored targets, move every free node's transform to its simulated position, then read the
+ *        positions back from the updated transforms.
+ * @param owner Link system.
+ * @param rate Rate the orientation easing is scaled by.
+ */
+extern "C" void func_00426650(LibClass173050* owner, float rate)
+{
+    LibVector4 position;
+    LibMatrix44Value inverse;
+    LibVector4 dot;
+    FieldVec4B rotation;
+    FieldVec4B eased;
+    FieldVec4B swung;
+
+    vu0_set_vf29(0.5f);
+    s32 count = owner->node_count;
+    LibClass173070* nodes = owner->unk24;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass173070* node = &nodes[i];
+        s32 links = node->link_count;
+
+        for (s32 j = 0; j < links; j++)
+        {
+            LibClass173070Link* link = &node->links[j];
+
+            if (link->blocked)
+            {
+                continue;
+            }
+
+            LibTransform* parent = node->transform;
+            LibTransform* child = link->target->transform;
+
+            if (parent != child->parent_transform)
+            {
+                continue;
+            }
+
+            if (node->flags & 0x20)
+            {
+                parent->set_orientation((const LibVector4*)&node->unk70[0]);
+            }
+
+            child->update_transform_matrix();
+            func_004CEFD0(lib_get_parent_matrix(child), &inverse);
+            position.x = matrix_row(&child->base_transform, 0)->w;
+            position.y = matrix_row(&child->base_transform, 1)->w;
+            position.z = matrix_row(&child->base_transform, 2)->w;
+            position.w = 1.0f;
+            ee_transpose_matrix(&inverse, &inverse);
+            vu0_direction_pair_begin(&inverse, &position, &link->target->position);
+            float limit = 0.99999988f;
+            vu0_direction_pair_dot_cross_half();
+            vu0_direction_pair_store_dot_half(&dot);
+
+            if (dot.x < limit)
+            {
+                vu0_direction_pair_start_half_angle();
+                vu0_direction_pair_store_rotation(&rotation);
+                vu0_quaternion_premultiply_assign(&rotation, (const FieldVec4B*)&parent->orientation);
+                parent->copy_orientation((const LibVector4*)&rotation);
+            }
+
+            if (node->flags & 0x4)
+            {
+                LibTransform* transform = node->transform;
+                float amount = node->unk10 * rate;
+                amount = ee_min(amount, 1.0f);
+                const FieldVec4B* from = (const FieldVec4B*)&transform->orientation;
+                lib_quaternion_slerp_async(&eased, from, (const FieldVec4B*)&node->unk70[0], amount);
+                transform->set_orientation((const LibVector4*)&eased);
+            }
+
+            if (!(owner->unk20 <= 1e-6f))
+            {
+                float amount = owner->unk20 * node->unk20;
+
+                if (!(amount <= 1e-6f))
+                {
+                    LibTransform* transform = node->transform;
+                    float fraction = amount * rate;
+                    fraction = ee_min(fraction, 1.0f);
+                    const FieldVec4B* from = (const FieldVec4B*)&transform->orientation;
+                    lib_quaternion_slerp_async(&swung, from, (const FieldVec4B*)&node->unk70[0x10], fraction);
+                    transform->set_orientation((const LibVector4*)&swung);
+                }
+            }
+
+            parent->transform_dirty = 1;
+            parent->matrix_ready = 0;
+            parent->unk51 = 0;
+            child->transform_dirty = 1;
+            child->matrix_ready = 0;
+            child->unk51 = 0;
+        }
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass173070* node = &nodes[i];
+
+        if (node->unk03 || node->fixed)
+        {
+            continue;
+        }
+
+        if (node->transform->parent_transform)
+        {
+            LibMatrix44Value world_inverse;
+            LibVector4 local;
+            func_004CEFD0(node->transform->parent_transform->get_transform_matrix(), &world_inverse);
+            vu0_dot_matrix_rows(&world_inverse, &node->position, &local);
+            node->transform->set_translation_vector(&local);
+        }
+        else
+        {
+            node->transform->set_translation_vector(&node->position);
+        }
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass173070* node = &nodes[i];
+        node->unk1c = 0;
+
+        if (node->fixed)
+        {
+            continue;
+        }
+
+        LibTransform* transform = node->transform;
+        transform->update_transform_matrix();
+        node->position.x = transform->base_transform.m[0][3];
+        node->position.y = transform->base_transform.m[1][3];
+        node->position.z = transform->base_transform.m[2][3];
+        node->position.w = 1.0f;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", update__14LibClass173050Fv);
 
@@ -1623,35 +2288,6 @@ void LibClass173080::update()
 
 #pragma pop
 
-class LibClass173070;
-
-/** 0x40-byte link from one LibClass173070 node to another. */
-struct LibClass173070Link
-{
-    u8 unk00[0x21];
-    u8 blocked;
-    u8 unk22[0x16];
-    LibClass173070* target;
-    u8 unk3c[4];
-};
-
-class LibClass173070
-{
-public:
-    u8 unk00[2];
-    u8 group;
-    u8 unk03;
-    LibTransform* transform;
-    u8 unk08[4];
-    LibClass173070Link* links;
-    u8 unk10[4];
-    s32 link_count;
-    u8 unk18[0x78];
-
-    /** @brief Release the buffer's allocation. */
-    virtual ~LibClass173070();
-};
-
 /**
  * @brief Give a group number to every node reachable over unblocked links whose target's transform hangs off the
  * node's own transform, stopping at a link between two nodes that are both grouped already.
@@ -1660,7 +2296,7 @@ public:
  * @param group Group number.
  * @return Whether any node was grouped.
  */
-extern "C" bool func_00428570(class LibClass173050* owner, LibClass173070* node, u8 group)
+extern "C" bool func_00428570(LibClass173050* owner, LibClass173070* node, s32 group)
 {
     bool grouped = false;
     s32 count = node->link_count;
@@ -1686,7 +2322,76 @@ extern "C" bool func_00428570(class LibClass173050* owner, LibClass173070* node,
     return grouped;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428670);
+/**
+ * @brief Set the links up from the nodes' current transforms: each node starts at its transform's position at rest
+ *        with its orientation copied, each link's rest length becomes the current distance, the nodes are grouped
+ *        along their links, and the group buffer is reallocated for the group count.
+ * @param owner Link system.
+ */
+extern "C" void func_00428670(LibClass173050* owner)
+{
+    s32 count = owner->node_count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass173070* node = &owner->unk24[i];
+        LibTransform* transform = node->transform;
+
+        if (!transform->matrix_ready)
+        {
+            transform->update_transform_matrix();
+        }
+
+        node->position.x = transform->base_transform.m[0][3];
+        node->position.y = transform->base_transform.m[1][3];
+        node->position.z = transform->base_transform.m[2][3];
+        node->position.w = 1.0f;
+        copy_vector(&node->previous_position, &node->position);
+        copy_vector(&node->orientation, &transform->orientation);
+        copy_vector((LibVector4*)&node->unk70[0], &transform->orientation);
+        copy_vector((LibVector4*)&node->unk70[0x10], &transform->orientation);
+        *(unsigned __int128*)&node->velocity = 0;
+        owner->unk24[i].group = 0xFF;
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass173070* node = &owner->unk24[i];
+        s32 links = node->link_count;
+
+        for (s32 j = 0; j < links; j++)
+        {
+            LibClass173070Link* link = &node->links[j];
+            LibVector4 distance;
+            vu0_link_distance(&node->position, &link->target->position, &distance);
+            link->rest_length = distance.x;
+        }
+    }
+
+    s32 groups = 0;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (func_00428570(owner, &owner->unk24[i], groups))
+        {
+            groups++;
+        }
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass173070* node = &owner->unk24[i];
+
+        if (node->group == 0xFF)
+        {
+            node->group = 0;
+        }
+    }
+
+    delete[] owner->unk2c;
+    owner->group_count = groups;
+    owner->unk2c = new (0) u8[owner->group_count];
+}
 
 /**
  * @brief Detach and destroy every object in the second retained set that was added with a tag, then trim the set.
@@ -1893,27 +2598,6 @@ LibClass172F30::~LibClass172F30()
 {
 }
 
-/** Buffer owner whose data comes before its vptr, with vtable D_173070 in main data; only its destructor is known. */
-/** List object with an array of LibClass173070 and two buffers, with vtable D_173050 in main data; only its destructor is known. */
-class LibClass173050 : public LibListObject
-{
-public:
-    /** @brief Destroy the array and release both buffers. */
-    virtual ~LibClass173050();
-
-    /**
-     * @brief Return the list kind.
-     * @return Five.
-     */
-    virtual s32 get_default_list_kind();
-
-    virtual void update();
-
-    u8 unk14[0x10];
-    LibClass173070* unk24;
-    u8* unk28;
-    u8* unk2c;
-};
 
 /** @brief Destroy the array and release both buffers. */
 LibClass173050::~LibClass173050()

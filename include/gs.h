@@ -125,6 +125,9 @@ typedef struct GsRegisterValue
 
 #define GIF_TAG_EOP 0x8000
 
+/** GIF tag FLG field set to REGLIST: the data is one doubleword per register in the register list. */
+#define GIF_TAG_FLG_REGLIST ((u64)1 << 58)
+
 /** GIF tag FLG field set to IMAGE: the data that follows is a transfer to local memory. */
 #define GIF_TAG_FLG_IMAGE ((u64)2 << 58)
 

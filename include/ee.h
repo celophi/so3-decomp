@@ -185,6 +185,16 @@ static inline void ee_prefetch(const void* address)
 }
 
 /**
+ * @brief Prefetch the cache line 0x40 bytes past an address (one pref with an offset).
+ * @param address Base address.
+ * @see ee_prefetch; Lib's morph loop at 0x4A9600 prefetches two 0x20-byte records ahead this way.
+ */
+static inline void ee_prefetch_ahead(const void* address)
+{
+    asm __volatile__("pref 0, 0x40(%0)" : : "r"(address));
+}
+
+/**
  * @brief Wait for every earlier load and store to finish (one sync).
  *
  * The game issues this between writing a packet's end tag and handing the

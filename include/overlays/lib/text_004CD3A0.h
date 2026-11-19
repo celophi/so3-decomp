@@ -220,6 +220,13 @@ extern "C"
     void func_004CEBA0(float* angles, const LibMatrix44Value* matrix);
 
     /**
+     * @brief Extract rotation angles from a quaternion, through its rotation matrix.
+     * @param angles Receives the angles about x, y and z.
+     * @param quaternion Source quaternion.
+     */
+    void func_004CD8C0(LibVector4* angles, const LibVector4* quaternion);
+
+    /**
      * @brief Extract rotation components from a quaternion.
      * @param angles Destination rotation vector.
      * @param quaternion Source quaternion.
@@ -347,8 +354,8 @@ struct LibTextureBlock
 /** One CLUT record of a texture cache. */
 struct LibTextureClut
 {
-    u32 unk00;
-    u8 unk04[4];
+    u32 id;
+    u32 tag;
     u64 tex0;
 };
 
@@ -373,6 +380,7 @@ struct LibTextureRequest
 };
 
 #define LIB_TEXTURE_TAG_MLPS 0x4D6C5073
+#define LIB_TEXTURE_TAG_LATF 0x4674404C
 #define LIB_TEXTURE_PRIORITY_MAX 10
 #define LIB_TEXTURE_PRIORITY_MIN -10
 #define LIB_TEXTURE_PRIORITY_KEEP -5
@@ -498,6 +506,16 @@ public:
     s32 func_004A6D20(const struct LibImageHeader* image, s32 slot, LibTextureUser* user);
 
     /**
+     * @brief Find an image's CLUT and record a hit for a slot; on a miss, claim the next free CLUT for it.
+     * @param image Image header whose name and ID identify the CLUT.
+     * @param slot Slot whose CLUT is recorded.
+     * @param want_address Nonzero to return the CLUT's VRAM address on a hit.
+     * @return The CLUT's VRAM word address (always on a miss), or 0 on a hit without want_address or when every
+     *         CLUT is in use.
+     */
+    u32 func_004A6EA0(const struct LibImageHeader* image, s32 slot, u8 want_address);
+
+    /**
      * @brief Move an entry to the front of the most-recently-used list.
      * @param index Entry to move; it must not already be at the front.
      */
@@ -520,7 +538,7 @@ public:
     u8 previous[LIB_TEXTURE_CACHE_ENTRY_COUNT];
     s32 texture_size;
     u32 unk220c;
-    u32 unk2210;
+    u32 next_clut;
     u8 unk2214[4];
     LibTextureClut cluts[LIB_TEXTURE_CACHE_MAX_CLUTS];
     u8 unk2618[8];
@@ -528,10 +546,10 @@ public:
 
 
     u32 texture_address;
-    u32 unk2664;
+    u32 clut_address;
     u8 unk2668[4];
     s32 clut_count;
-    u16 slot_entries[LIB_TEXTURE_CACHE_ENTRY_COUNT];
+    s16 slot_entries[LIB_TEXTURE_CACHE_ENTRY_COUNT];
     s16 clut_slot_entries[LIB_TEXTURE_CACHE_MAX_CLUTS];
     u8 stamp;
     u8 unk28f1[0x1F];
@@ -1477,7 +1495,7 @@ public:
     LibVector4 offset_rotation;
     LibVector4 offset_scale;
     float unk200;
-    u8 unk204[4];
+    float unk204;
     LibTransform* parent_transform;
     u16 unk20c;
     u8 unk20e_0 : 1;
@@ -1488,6 +1506,42 @@ public:
     u8 unk20e_5_7 : 3;
     u8 unk20f;
 };
+
+/**
+ * @brief Read the parent's combined matrix, updating the parent first if needed.
+ * @param object Transform whose parent is read.
+ * @return Parent's base transform, or null without a parent.
+ */
+static inline const LibMatrix44Value* lib_get_parent_matrix(LibTransform* object)
+{
+    if (object->parent_transform == 0)
+    {
+        return 0;
+    }
+
+    if (!object->parent_transform->matrix_ready)
+    {
+        object->parent_transform->update_transform_matrix();
+
+        if (object->parent_transform->unk51)
+        {
+            object->transform_dirty = 1;
+        }
+    }
+
+    return &object->parent_transform->base_transform;
+}
+
+/**
+ * @brief View one row of a matrix as a vector.
+ * @param matrix Matrix.
+ * @param row Row index.
+ * @return The row.
+ */
+static inline const LibVector4* matrix_row(const LibMatrix44Value* matrix, s32 row)
+{
+    return (const LibVector4*)matrix->m[row];
+}
 
 /**
  * @brief Multiply the transform's unk200 factor by its parents', climbing parent_transform while bit 0x200 of unk20c
@@ -1947,6 +2001,13 @@ void* func_004D99A0(void* object);
  * @param object Object to wait on.
  */
 void func_004D99B0(LibBusyObject* object);
+
+/**
+ * @brief Queue the object again when its DMA channel changes.
+ * @param object Transfer object implementing the DMA callbacks.
+ * @param channel Requested DMA channel.
+ */
+void func_004D9AB0(LibBusyObject* object, u8 channel);
 
 /**
  * @brief Pass the pointer at offset 0x634 and the remaining arguments to a helper.

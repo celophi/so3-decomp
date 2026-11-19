@@ -273,13 +273,13 @@ class LibMovieLoopListener : public LibMovieListener
 {
 public:
     /**
-     * @brief Handle a callback from the archive.
-     * @param first First argument.
-     * @param second Second argument.
-     * @param third Third argument.
-     * @param fourth Fourth argument.
+     * @brief Descramble streamed movie data in place.
+     * @param data Address of the data to descramble.
+     * @param size Size of the data in bytes.
+     * @param buffer Start of the ring buffer the data is in.
+     * @param buffer_size Size of the ring buffer in bytes.
      */
-    virtual void handle(u32 first, u32 second, u32 third, u32 fourth);
+    virtual void handle(u32 data, u32 size, u32 buffer, u32 buffer_size);
 };
 
 /** 0x20-byte thread that feeds the decoder, vtable D_1725A0 in main data. */

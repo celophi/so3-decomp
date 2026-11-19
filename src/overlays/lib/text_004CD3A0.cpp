@@ -307,9 +307,103 @@ void lib_normalize_quaternion(FieldVec4B* quaternion)
     normalize_quaternion(quaternion);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD8C0);
+/**
+ * @brief Build a quaternion's rotation matrix with the VU0 microprogram at 0x720.
+ * @param quaternion Source quaternion.
+ * @return Rotation matrix.
+ */
+static inline LibMatrix44Value quaternion_rotation_matrix(const void* quaternion)
+{
+    LibMatrix44Value result;
+    vu0_start_microprogram_720_vf5(quaternion);
+    vu0_wait_microprogram();
+    vu0_store_vf8_vf11(&result);
+    return result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CDA40);
+/**
+ * @brief Extract rotation angles from a quaternion, through its rotation matrix.
+ * @param angles Receives the angles about x, y and z.
+ * @param quaternion Source quaternion.
+ */
+void func_004CD8C0(LibVector4* angles, const LibVector4* quaternion)
+{
+    LibVector4 result;
+    FieldVec4B normalized(quaternion->x, quaternion->y, quaternion->z, quaternion->w);
+
+    normalize_quaternion(&normalized);
+
+    LibMatrix44Value matrix = quaternion_rotation_matrix(quaternion);
+
+    result.z = -func_00142048(matrix.m[0][1]);
+    float cosine = lib_cosine(result.z);
+
+    if (cosine != 0.0f)
+    {
+        result.x = -func_004CD010(matrix.m[1][1] / cosine);
+
+        if (-cosine * matrix.m[2][1] < 0.0f)
+        {
+            result.x = -result.x;
+        }
+
+        result.y = func_004CD010(matrix.m[0][0] / cosine);
+
+        if (cosine * matrix.m[0][2] > 0.0f)
+        {
+            result.y = -result.y;
+        }
+    }
+    else
+    {
+        result.x = 0.0f;
+        result.y = 0.0f;
+    }
+
+    *reinterpret_cast<unsigned __int128*>(angles) = *reinterpret_cast<const unsigned __int128*>(&result);
+}
+
+/**
+ * @brief Extract rotation components from a quaternion.
+ * @param angles Destination rotation vector.
+ * @param quaternion Source quaternion.
+ */
+void func_004CDA40(LibVector4* angles, const LibVector4* quaternion)
+{
+    LibVector4 result;
+    FieldVec4B normalized(quaternion->x, quaternion->y, quaternion->z, quaternion->w);
+
+    normalize_quaternion(&normalized);
+
+    LibMatrix44Value matrix = quaternion_rotation_matrix(quaternion);
+
+    result.x = -func_00142048(matrix.m[1][2]);
+    float cosine = lib_cosine(result.x);
+
+    if (cosine != 0.0f)
+    {
+        result.z = func_004CD010(matrix.m[1][1] / cosine);
+
+        if (-cosine * matrix.m[1][0] < 0.0f)
+        {
+            result.z = -result.z;
+        }
+
+        result.y = func_004CD010(matrix.m[2][2] / cosine);
+
+        if (cosine * matrix.m[2][0] > 0.0f)
+        {
+            result.y = -result.y;
+        }
+    }
+    else
+    {
+        result.y = 0.0f;
+        result.z = 0.0f;
+    }
+
+    *reinterpret_cast<unsigned __int128*>(angles) = *reinterpret_cast<const unsigned __int128*>(&result);
+}
 
 /**
  * @brief Build the unit quaternion for three rotation angles about the positive axes: the product (y * x) * z of the
@@ -496,7 +590,43 @@ extern "C" FieldVec4B lib_quaternion_inverse(const FieldVec4B& quaternion)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEBA0);
+/**
+ * @brief Extract three rotation components from a matrix.
+ * @param angles Destination for three floats.
+ * @param matrix Transformation matrix.
+ */
+void func_004CEBA0(float* angles, const LibMatrix44Value* matrix)
+{
+    LibMatrix44Value rows;
+
+    vu0_start_microprogram_830_matrix(matrix);
+    vu0_wait_microprogram();
+    vu0_store_vf1_vf4(&rows);
+    angles[0] = -func_00142048(rows.m[1][2]);
+    float cosine = lib_cosine(angles[0]);
+
+    if (cosine != 0.0f)
+    {
+        angles[2] = func_004CD010(rows.m[1][1] / cosine);
+
+        if (-cosine * rows.m[1][0] < 0.0f)
+        {
+            angles[2] = -angles[2];
+        }
+
+        angles[1] = func_004CD010(rows.m[2][2] / cosine);
+
+        if (cosine * rows.m[2][0] > 0.0f)
+        {
+            angles[1] = -angles[1];
+        }
+    }
+    else
+    {
+        angles[1] = 0.0f;
+        angles[2] = 0.0f;
+    }
+}
 
 /**
  * @brief Transpose a matrix.
@@ -621,7 +751,33 @@ extern "C" void func_004CEF20(const LibMatrix44Value* input, LibMatrix44Value* o
     vu0_inverse_translation(output, input);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CEFD0);
+/**
+ * @brief Invert a rigid transform: transpose its rotation and rotate the negated translation back.
+ * @param input Transform to invert.
+ * @param output Receives the inverse.
+ */
+void func_004CEFD0(const LibMatrix44Value* input, LibMatrix44Value* output)
+{
+    LibVector4 translation;
+
+    ((unsigned __int128*)output)[0] = 0;
+    ((unsigned __int128*)output)[1] = 0;
+    ((unsigned __int128*)output)[2] = 0;
+    ((unsigned __int128*)output)[3] = 0;
+    output->m[0][0] = 1.0f;
+    output->m[1][1] = 1.0f;
+    output->m[2][2] = 1.0f;
+    output->m[3][3] = 1.0f;
+    translation.x = input->m[0][3];
+    translation.y = input->m[1][3];
+    translation.z = input->m[2][3];
+    vu0_rotate_translation_vf4(&translation, input);
+    ee_transpose_matrix(output, input);
+    vu0_store_vf4(&translation);
+    matrix_row_vector(*output, 0).w = -translation.x;
+    matrix_row_vector(*output, 1).w = -translation.y;
+    matrix_row_vector(*output, 2).w = -translation.z;
+}
 
 /**
  * @brief Invert an orthonormal rotation and its translation column.
@@ -1390,7 +1546,175 @@ extern "C" LibSpritePacket* func_004D0A30(LibSpritePacket* packet)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0B10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0F80);
+/**
+ * @brief Bring the renderer in line with the active layer mask: (re)allocate or free the per-layer buffers when the
+ *        mask changed, give every object that asked for layers a clone in each active one, and reset each active
+ *        layer's camera to its square screen.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D0F80(LibRenderer* renderer)
+{
+    if (D_001B65C0)
+    {
+        D_001B65C0 = 0;
+
+        if (D_001B65BC)
+        {
+            if (!renderer->unk43d4)
+            {
+                renderer->unk43d4 = new (0) u8[0x2000];
+
+                if (!renderer->unk43d4)
+                {
+                    return;
+                }
+            }
+
+            u32 bit = 1;
+
+            for (s32 i = 0; i < 32; i++)
+            {
+                if (D_001B65BC & bit)
+                {
+                    if (!renderer->unk43d8[i])
+                    {
+                        renderer->unk43d8[i] = new (0) u8[0x2000];
+
+                        if (!renderer->unk43d8[i])
+                        {
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    delete[] renderer->unk43d8[i];
+                    renderer->unk43d8[i] = 0;
+                }
+
+                bit <<= 1;
+            }
+        }
+        else if (renderer->unk43d4)
+        {
+            delete[] renderer->unk43d4;
+            renderer->unk43d4 = 0;
+
+            for (s32 i = 0; i < 32; i++)
+            {
+                delete[] renderer->unk43d8[i];
+                renderer->unk43d8[i] = 0;
+            }
+        }
+    }
+
+    if (!D_001B65BC)
+    {
+        return;
+    }
+
+    LibListSentinel* node = &renderer->sentinel;
+
+    for (;;)
+    {
+        node = node->next;
+
+        if (&renderer->sentinel == node)
+        {
+            break;
+        }
+
+        LibTransformOwner* object = static_cast<LibTransformOwner*>(node);
+        u32 pending = object->unk88;
+
+        if (!pending)
+        {
+            continue;
+        }
+
+        s32 layer = 1;
+        u32 bit = layer;
+
+        while (pending)
+        {
+            if ((D_001B65BC & bit) && (pending & 1))
+            {
+                LibTransformOwner* copy = object->clone();
+
+                if (copy)
+                {
+                    copy->layer = layer;
+                    object->unk88 &= ~bit;
+                    copy->unk88 = 0;
+                    u32 mask = ~copy->unk8c;
+                    u32 previous = D_001B65BC;
+                    D_001B65BC &= mask;
+                    copy->unk8c = 0;
+
+                    if (previous != D_001B65BC)
+                    {
+                        D_001B65C0 = 1;
+                    }
+
+                    if (renderer->layers[layer - 1].display_manager)
+                    {
+                        copy->display_manager = renderer->layers[layer - 1].display_manager;
+                    }
+
+                    renderer->append_node(copy, LibUpdateList::DEFAULT_NODE_KIND);
+                }
+            }
+
+            pending >>= 1;
+            bit <<= 1;
+            layer++;
+        }
+    }
+
+    u32 active = D_001B65BC;
+
+    if (!active)
+    {
+        return;
+    }
+
+    s32 index = 1;
+
+    do
+    {
+        if (active & 1)
+        {
+            LibDisplayManager* manager = renderer->layers[index - 1].display_manager;
+
+            if (manager)
+            {
+                LibCamera* camera = static_cast<LibCamera*>(manager->current_display);
+
+                if (camera)
+                {
+                    s32 half = renderer->layers[index - 1].size / 2;
+                    camera->screen_min.x = 2048 - half;
+                    camera->screen_min.y = 2048 - half;
+                    camera->screen_min.z = 20.0f;
+                    camera->screen_min.w = 1.0f;
+                    camera->screen_max.x = 2048 + half;
+                    camera->screen_max.y = 2048 + half;
+                    camera->screen_max.z = 40000.0f;
+                    camera->screen_max.w = 1.0f;
+                    camera->unk3c8 = 20;
+                    camera->unk3cc = 0xFA00;
+                    camera->unk3d2 = 0;
+                    camera->pixel_aspect = 1.0f;
+                    camera->update_projection();
+                    manager->prepare_camera();
+                }
+            }
+        }
+
+        active >>= 1;
+        index++;
+    } while (active);
+}
 
 /** @brief Run the renderer's per-frame passes, then its light steps. */
 void LibClass178C90::update()
@@ -3178,7 +3502,7 @@ struct LibImageUpload16
     const void* colors;
 };
 
-extern "C" s16 func_004DC970(LibVramAllocator* vram, s16 first, s16 size, s32 slot);
+extern "C" s16 func_004DC970(LibVramAllocator* vram, s16 format, s16 size, s32 slot);
 
 /** "Vram exhaused\n" */
 extern "C" const char D_00507270[];
@@ -3606,7 +3930,7 @@ void LibTextureCache::reset()
     for (s32 index = 0; index < count; index++)
     {
         clut_used[index] = 0;
-        cluts[index].unk00 = 0;
+        cluts[index].id = 0;
         clut_slot_entries[index] = 0;
     }
 
@@ -3625,7 +3949,7 @@ void LibTextureCache::reset()
     unk04 = 2;
     next[0] = 0;
     previous[0] = 0;
-    unk2210 = 0;
+    next_clut = 0;
     unk220c = 0;
     stamp = 0;
 }
@@ -3691,7 +4015,7 @@ LibTextureCache::LibTextureCache(s32 size, s32 count)
     texture_slot = func_004DCA70(g_vram_allocator, size, LIB_TEXTURE_CACHE_TEXTURE_ALIGNMENT, LIB_VRAM_NEW_SLOT);
     clut_slot = func_004DC8B0(g_vram_allocator, capacity * LIB_TEXTURE_CACHE_CLUT_BYTES, LIB_VRAM_NEW_SLOT);
     texture_address = (g_vram_allocator->unk04[texture_slot] & 0x3FFF) << 6;
-    unk2664 = ((g_vram_allocator->allocations[texture_slot] >> 5) & 0x3FFF) << 6;
+    clut_address = ((g_vram_allocator->allocations[texture_slot] >> 5) & 0x3FFF) << 6;
     texture_size = size;
     clut_count = capacity;
     reset();
@@ -4100,30 +4424,6 @@ extern "C" void lib_invalidate_transform_chain(LibTransform* object)
 #define LIB_IK_ALIGNED_COSINE 0.99999988f
 #define LIB_IK_SETTLED_DISTANCE 1.0f
 
-/**
- * @brief Read the parent's combined matrix, updating the parent first if needed.
- * @param object Transform whose parent is read.
- * @return Parent's base transform, or null without a parent.
- */
-static inline const LibMatrix44Value* lib_get_parent_matrix(LibTransform* object)
-{
-    if (object->parent_transform == 0)
-    {
-        return 0;
-    }
-
-    if (!object->parent_transform->matrix_ready)
-    {
-        object->parent_transform->update_transform_matrix();
-
-        if (object->parent_transform->unk51)
-        {
-            object->transform_dirty = 1;
-        }
-    }
-
-    return &object->parent_transform->base_transform;
-}
 
 /**
  * @brief Turn the joints above a transform so that it reaches toward a target (cyclic coordinate descent).
@@ -4234,9 +4534,54 @@ extern "C" FieldVec4B func_004DA6F0(const LibTransform* object)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DA730);
-
 #define LIB_TRANSFORM_FLAGS_01C0 0x1C0
+
+/**
+ * @brief Work out a transform's world position from its scale, rotation, translation, parent and offset, without
+ *        touching its cached matrices.
+ * @param object Transform.
+ * @param position Receives the position, with w set to one.
+ */
+extern "C" void func_004DA730(LibTransform* object, LibVector4* position)
+{
+    LibTransform* parent = object->parent_transform;
+    const LibMatrix44Value* parent_matrix = parent != 0 ? &parent->base_transform : 0;
+    LibMatrix44Value result;
+
+    vu0_load_scale_vf17(&object->scale);
+    vu0_load_rotation_vf5(&object->orientation);
+    vu0_load_translation_vf16(&object->translation);
+    vu0_start_microprogram_728();
+
+    if (parent_matrix != 0)
+    {
+        vu0_load_rows_vf1_vf3(parent_matrix);
+        ee_prefetch(&object->offset_transform);
+        vu0_start_microprogram_ae8();
+
+        if (!(object->unk20c & LIB_TRANSFORM_FLAGS_01C0))
+        {
+            vu0_wait_microprogram();
+            vu0_start_microprogram_830_scale_rows();
+        }
+
+        LibMatrix44Value* output = &result;
+        vu0_load_matrix_vf5_vf7_vf4(&object->offset_transform);
+        vu0_multiply_store_result_vf4(output);
+    }
+    else
+    {
+        vu0_scale_rotation_rows();
+        LibMatrix44Value* output = &result;
+        vu0_load_matrix_vf5_vf8(&object->offset_transform);
+        vu0_multiply_store_result_vf8(output);
+    }
+
+    position->x = result.m[0][3];
+    position->y = result.m[1][3];
+    position->z = result.m[2][3];
+    position->w = 1.0f;
+}
 
 /** @brief Update the cached transformation matrices. */
 void LibTransform::update_transform_matrix()
@@ -4319,7 +4664,7 @@ void LibTransform::update_transform_matrix()
  * @brief Rebuild the offset matrix from the stored translation, quaternion and scale.
  * @param object Transform whose offset matrix is updated.
  */
-void lib_rebuild_offset_transform(LibTransform* object)
+static inline void rebuild_offset_transform(LibTransform* object)
 {
     LibMatrix44Value scale;
     LibMatrix44Value rotation;
@@ -4342,6 +4687,16 @@ void lib_rebuild_offset_transform(LibTransform* object)
     vu0_multiply_matrix(output, &rotation, &scale);
 }
 
+/**
+ * @brief Rebuild the offset matrix from the stored translation, quaternion and scale.
+ * @param object Transform whose offset matrix is updated.
+ */
+void lib_rebuild_offset_transform(LibTransform* object)
+{
+    rebuild_offset_transform(object);
+}
+
+
 // TODO: Another destructor that inlines its whole base chain down to LibLink; see LibClass178C00's above.
 #pragma push
 #pragma inline_depth(7)
@@ -4357,7 +4712,30 @@ LibTransform::~LibTransform()
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DAD90);
+/** @brief Initialize the object and its transform state. */
+LibTransform::LibTransform()
+{
+    offset_scale.x = 1.0f;
+    offset_scale.y = 1.0f;
+    offset_scale.z = 1.0f;
+    offset_scale.w = 1.0f;
+    unk200 = 1.0f;
+    parent_transform = 0;
+    unk20c = 0x1FF;
+    unk20e_0 = 0;
+    unk20e_1 = 0;
+    unk20e_2 = 0;
+    unk20e_3 = 0;
+    unk20e_4 = 0;
+    type_id = 2;
+    *reinterpret_cast<unsigned __int128*>(&offset_translation) = 0;
+    offset_translation.w = 1.0f;
+    *reinterpret_cast<unsigned __int128*>(&offset_rotation) = 0;
+    offset_rotation.w = 1.0f;
+    base_transform.set_identity();
+    transform.set_identity();
+    rebuild_offset_transform(this);
+}
 
 /**
  * @brief Return the list kind.
@@ -4554,7 +4932,54 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB600__
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", build_clear__16LibCameraContextFP14LibScreenClearsssssUcUcUcUcUi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB9E0);
+/**
+ * @brief Queue the packets that draw a rectangle into both draw buffers, using the next free pair of packets.
+ * @param display Display.
+ * @param x Rectangle left edge.
+ * @param y Rectangle top edge.
+ * @param width Rectangle width.
+ * @param height Rectangle height.
+ * @return Nonzero when the packets were queued; zero when all six pairs are in use or the rectangle is empty.
+ */
+extern "C" s32 func_004DB9E0(LibCameraContext* display, s32 x, s32 y, s32 width, s32 height)
+{
+    if (display->unk3E78 >= 6)
+    {
+        return 0;
+    }
+
+    if (width <= 0 || height <= 0)
+    {
+        return 0;
+    }
+
+    u32 depth_mask = 0xFFFF;
+
+    if (display->display_area.depth_format == 0x30)
+    {
+        depth_mask = 0xFFFFFFFF;
+    }
+    else if (display->display_area.depth_format == 0x31)
+    {
+        depth_mask = 0xFFFFFF;
+    }
+
+    s32 set = display->unk3E7A;
+
+    for (s32 i = 0; i < 2; i++)
+    {
+        s32 index = display->unk3E78 * 2 + i + 6;
+        display->packet_sizes[set][index] = func_004DEA70(
+            display, display->packets[set][index] + 0x40, i != 0,
+            display->buffers[0].environment.context2.frame.base_pointer, display->display_area.unk10,
+            display->display_area.width, display->display_area.height, display->display_area.base_width,
+            display->display_area.base_height, depth_mask, 0, 0x80, 0, 0, 0, 1, x, y, width, height);
+    }
+
+    display->unk3E78++;
+    FlushCache(0);
+    return 1;
+}
 
 void func_004DBB70(LibCameraContext* display)
 {
@@ -5002,11 +5427,126 @@ u32 func_004DC7F0(LibVramAllocator* vram)
     return vram->unk14 - vram->base_address;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC800);
+/**
+ * @brief Build the CLUT half of a TEX0 value for a VRAM slot.
+ * @param vram Allocator holding the slot's CLUT address.
+ * @param slot VRAM slot.
+ * @param entry CLUT entry offset (CSA).
+ * @param mode CLUT load mode.
+ * @return CBP, CSA and CLD bits of TEX0.
+ */
+u64 func_004DC800(LibVramAllocator* vram, s16 slot, s16 entry, s32 mode)
+{
+    u64 csa = ((u64)entry & 0x1F) << 56;
+    u64 cld;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC8B0);
+    switch (mode)
+    {
+    case 0:
+        // TODO: Only signed constants here leave out the zero extension the other cases get; maybe a macro.
+        cld = (slot & 1) ? (s64)4 << 61 : (s64)5 << 61;
+        break;
+    case 1:
+        cld = 2ULL << 61;
+        break;
+    case 2:
+        cld = 0;
+        break;
+    default:
+        cld = 4ULL << 61;
+        break;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC970);
+    return cld | (csa | ((u64)vram->allocations[slot] << 32));
+}
+
+/**
+ * @brief Allocate VRAM after the allocator's base address and record it in a slot.
+ *
+ * The slot gets the upper word of a TEX0 with the address as CBP, in 64-word blocks.
+ * @param vram VRAM allocator.
+ * @param size Size in words.
+ * @param slot Slot to record the allocation in, or LIB_VRAM_NEW_SLOT for the next free one.
+ * @return The slot, or -1 when there's no slot or room left.
+ */
+extern "C" s16 func_004DC8B0(LibVramAllocator* vram, u32 size, s16 slot)
+{
+    s32 index = slot;
+
+    if (index == LIB_VRAM_NEW_SLOT)
+    {
+        index = vram->allocation_count++;
+
+        if (vram->allocation_count >= vram->allocation_capacity)
+        {
+            return -1;
+        }
+    }
+
+    if (vram->base_address + size >= vram->unk14)
+    {
+        return -1;
+    }
+
+    vram->allocations[index] = (((u64)vram->base_address & ~0x3F) << 31) >> 32;
+    size = (size + 0x3F) & ~0x3F;
+    vram->base_address += size;
+    return index;
+}
+
+/**
+ * @brief Words a CLUT entry takes in VRAM for a CLUT pixel format.
+ * @param format CLUT pixel format (CPSM).
+ * @return One for format 0, two for the rest.
+ */
+static inline s32 clut_entry_words(s16 format)
+{
+    switch (format)
+    {
+    case 0:
+        return 1;
+    default:
+        return 2;
+    }
+}
+
+/**
+ * @brief Allocate VRAM for a CLUT after the allocator's base address and record its TEX0 CBP and CPSM in a slot.
+ *
+ * A slot holds the upper word of TEX0: CBP (the address in 64-word blocks) at bit 37 and CPSM at bit 51.
+ * @param vram VRAM allocator.
+ * @param format CLUT pixel format (CPSM); a nonzero format takes two words per entry.
+ * @param size Entry count.
+ * @param slot Slot to record the allocation in, or LIB_VRAM_NEW_SLOT for the next free one.
+ * @return The slot, or -1 when there's no slot or room left.
+ */
+extern "C" s16 func_004DC970(LibVramAllocator* vram, s16 format, s16 size, s32 slot)
+{
+    s32 index = (s16)slot;
+
+    if (index == LIB_VRAM_NEW_SLOT)
+    {
+        index = vram->allocation_count++;
+
+        if (vram->allocation_count >= vram->allocation_capacity)
+        {
+            return -1;
+        }
+    }
+
+    u32 words = clut_entry_words(format);
+    words *= size;
+
+    if (vram->base_address + words >= vram->unk14)
+    {
+        return -1;
+    }
+
+    vram->allocations[index] = ((((u64)vram->base_address & ~0x3F) << 31) | ((u64)format << 51)) >> 32;
+    words = (words + 0x3F) & ~0x3F;
+    vram->base_address += words;
+    return index;
+}
 
 /**
  * @brief Allocate an aligned area from the texture side of the VRAM allocator.

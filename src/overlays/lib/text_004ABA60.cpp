@@ -6,6 +6,8 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/vector_vu0.h"
+#include "overlays/lib/skin_vu0.h"
+#include "ee.h"
 
 extern LibTrackPool<LibPooledSlerpQuaternionTrack>* g_slerp_quaternion_track_pool;
 extern LibTrackPool<LibPooledFloatTrack>* g_float_track_pool;
@@ -73,7 +75,80 @@ void LibClass177A80::complete_dma(u32 channel)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004ABAC0);
+/**
+ * @brief Build the bone matrices into the next of the two uncached matrix buffers: each bone's matrix times its bind
+ *        matrix, relative to the root, through the VU0 microprogram at 0x898.
+ * @param object Skin entry.
+ * @param root Model transform the bones are relative to.
+ */
+extern "C" void func_004ABAC0(LibClass177A80* object, LibTransform* root)
+{
+    if (object->second_matrices == 0)
+    {
+        return;
+    }
+
+    object->unk50 ^= 1;
+    LibMatrix44Value* output;
+    s32 count = object->header->matrix_count;
+    LibClass177A20* list = object->list;
+    output = (LibMatrix44Value*)((u32)(object->second_matrices + count * object->unk50 + 1) | EE_UNCACHED_ACCELERATED);
+    LibTransform** bones = (LibTransform**)object->unk3c;
+
+    if (list->unk8d_3)
+    {
+        root->transform_dirty = 1;
+        root->matrix_ready = 0;
+        root->unk51 = 0;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            LibTransform* bone = bones[i];
+            bone->transform_dirty = 1;
+            bone->matrix_ready = 0;
+            bone->unk51 = 0;
+        }
+    }
+
+    object->cursor = object->records;
+
+    if (!root->matrix_ready)
+    {
+        root->update_transform_matrix();
+    }
+
+    LibMatrix44Value inverse = func_004CF0B0(root->transform);
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (!bones[i]->matrix_ready)
+        {
+            bones[i]->update_transform_matrix();
+        }
+    }
+
+    const LibMatrix44Value* first = &bones[0]->transform;
+    vu0_skin_load_root(&inverse);
+    vu0_skin_load_bone(first, &object->matrices[0]);
+    vu0_skin_start();
+    s32 total = object->header->matrix_count;
+
+    if (total > 0)
+    {
+        for (s32 i = 1; i < total; i++)
+        {
+            const LibMatrix44Value* bone = &bones[i]->transform;
+            LibMatrix44Value* bind = &object->matrices[i];
+            ee_prefetch(bind);
+            vu0_skin_load_bone(bone, bind);
+            vu0_skin_store_previous(output);
+            vu0_skin_start();
+            output++;
+        }
+    }
+
+    vu0_skin_store_last(output);
+}
 
 /**
  * @brief Return the record at the cursor and move past it; each record starts with its size as a halfword.
@@ -97,9 +172,73 @@ void LibClass177A80::submit_dma(u32 channel)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_slot1C__14LibClass177A80Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_slot1C__14LibClass177A80FP12LibTransform);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", set_borrowed_data__14LibClass177A80FPv);
+/**
+ * @brief Use borrowed data and build the matrix arrays from it.
+ * @param value Borrowed data.
+ */
+void LibClass177A80::set_borrowed_data(void* value)
+{
+    data = value;
+    data_is_borrowed = 1;
+    header = reinterpret_cast<LibClass177A80Header*>(static_cast<u8*>(value) + 0x10);
+    unk38 = reinterpret_cast<u8*>(header + 1);
+    matrices = new (0) LibMatrix44Value[header->matrix_count];
+
+    if (matrices == 0)
+    {
+        return;
+    }
+
+    unk3c = new (0) u32[header->matrix_count];
+
+    if (unk3c == 0)
+    {
+        delete matrices;
+        matrices = 0;
+        return;
+    }
+
+    const float* source = reinterpret_cast<const float*>(unk38 + header->matrix_count * 4);
+    s32 count = header->matrix_count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        matrices[i].set_identity();
+        matrices[i].m[0][0] = source[0];
+        matrices[i].m[1][0] = source[1];
+        matrices[i].m[2][0] = source[2];
+        matrices[i].m[0][1] = source[3];
+        matrices[i].m[1][1] = source[4];
+        matrices[i].m[2][1] = source[5];
+        matrices[i].m[0][2] = source[6];
+        matrices[i].m[1][2] = source[7];
+        matrices[i].m[2][2] = source[8];
+        matrices[i].m[0][3] = source[9];
+        matrices[i].m[1][3] = source[10];
+        matrices[i].m[2][3] = source[11];
+        source += 12;
+    }
+
+    records = reinterpret_cast<u8*>(header) + header->records_offset;
+
+    if (header->has_second_set)
+    {
+        second_matrices = new (0) LibMatrix44Value[header->matrix_count * 2 + 2];
+
+        if (second_matrices == 0)
+        {
+            delete unk3c;
+            unk3c = 0;
+            delete matrices;
+            matrices = 0;
+            return;
+        }
+
+        FlushCache(0);
+    }
+}
 
 /** @brief Free the matrix and index arrays. */
 LibClass177A80::~LibClass177A80()

@@ -13,6 +13,9 @@
 #include "sdk/main/libkernl_00121940.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "overlays/lib/grid_emission.h"
+#include "overlays/lib/grid_frame_vu0.h"
+#include "overlays/lib/emission_vu0.h"
+#include "overlays/lib/morph_vu0.h"
 
 /** ABE as it sits in the upper word of a GIF tag's first doubleword. */
 #define GIF_TAG_HIGH_PRIM_ABE ((u32)(GIF_TAG_PRIM(GS_PRIM_ABE) >> 32))
@@ -158,7 +161,58 @@ extern "C" void func_0049DA60(LibGridEmitterB0* object, const LibGridEmitterB0* 
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049DB40);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049E270);
+struct LibColliderList;
+
+/**
+ * @brief Move a grid's colliders with the transform it emits from.
+ * @param list Colliders.
+ * @param source Transform.
+ */
+extern "C" void func_0043CCE0(LibColliderList* list, LibTransform* source);
+
+/**
+ * @brief Update a grid's force from the transform it emits from.
+ * @param force Force record; its vector is at 0x10.
+ * @param source Transform.
+ */
+extern "C" void func_004349D0(void* force, LibTransform* source);
+
+/**
+ * @brief Start a grid's emission pass: reset its cursor, copy the source's transposed transform, update its colliders
+ *        and force, and load the force, frame time and color limit into VU0.
+ * @param object Grid.
+ * @param source Transform the grid emits from.
+ */
+extern "C" void func_0049E270(LibGridEmitterB0* object, LibTransform* source)
+{
+    object->index = 0;
+    object->unk60.packed = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[0];
+    object->unk70.packed = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[1];
+    object->unk80.packed = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[2];
+    object->unk90.packed = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[3];
+
+    if (object->unkb4)
+    {
+        func_0043CCE0(static_cast<LibColliderList*>(object->unkb4), source);
+    }
+
+    if (object->unkb0)
+    {
+        func_004349D0(object->unkb0, source);
+        vu0_load_grid_force(static_cast<u8*>(object->unkb0) + 0x10);
+    }
+    else
+    {
+        vu0_clear_grid_force();
+    }
+
+    vu0_clear_grid_vf10();
+    vu0_set_emission_delta(g_frame_seconds);
+
+    FieldVec4A limit(255.0f, 255.0f, 255.0f, 255.0f);
+    vu0_clear_grid_vf30();
+    vu0_load_grid_color_limit(&limit);
+}
 
 /**
  * @brief Copy another grid's size, emission settings, frame data and the two words at 0xB0: the settings copy of
@@ -192,7 +246,42 @@ extern "C" void func_0049E360(LibGridEmitterB0* object, const LibGridEmitterB0* 
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049E440);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049EB80);
+/**
+ * @brief Start a grid's emission pass: reset its cursor, copy the source's transposed transform, update its colliders
+ *        and force, and load the force, frame time and color limit into VU0.
+ * @param object Grid.
+ * @param source Transform the grid emits from.
+ */
+extern "C" void func_0049EB80(LibGridEmitterB0* object, LibTransform* source)
+{
+    object->index = 0;
+    object->unk60.packed = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[0];
+    object->unk70.packed = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[1];
+    object->unk80.packed = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[2];
+    object->unk90.packed = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[3];
+
+    if (object->unkb4)
+    {
+        func_0043CCE0(static_cast<LibColliderList*>(object->unkb4), source);
+    }
+
+    if (object->unkb0)
+    {
+        func_004349D0(object->unkb0, source);
+        vu0_load_grid_force(static_cast<u8*>(object->unkb0) + 0x10);
+    }
+    else
+    {
+        vu0_clear_grid_force();
+    }
+
+    vu0_clear_grid_vf10();
+    vu0_set_emission_delta(g_frame_seconds);
+
+    FieldVec4A limit(255.0f, 255.0f, 255.0f, 255.0f);
+    vu0_clear_grid_vf30();
+    vu0_load_grid_color_limit(&limit);
+}
 
 /**
  * @brief Copy another grid's size, emission settings and storage settings.
@@ -237,7 +326,46 @@ void LibClass177090::copy_settings(const LibClass173A40* source)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049ED80);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A02D0);
+/**
+ * @brief Start the grid's emission pass: reset its cursor, copy the source's transposed transform, update its
+ *        colliders and force, and load the force, frame time and color limit into VU0.
+ * @param object Grid.
+ * @param source Transform the grid emits from.
+ */
+extern "C" void func_004A02D0(LibClass177090* object, LibTransform* source)
+{
+    object->unk2c = 0;
+    *reinterpret_cast<unsigned __int128*>(&object->unk60[0]) =
+        reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[0];
+    *reinterpret_cast<unsigned __int128*>(&object->unk60[1]) =
+        reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[1];
+    *reinterpret_cast<unsigned __int128*>(&object->unk60[2]) =
+        reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[2];
+    *reinterpret_cast<unsigned __int128*>(&object->unk60[3]) =
+        reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[3];
+
+    if (object->unkbc)
+    {
+        func_0043CCE0(static_cast<LibColliderList*>(object->unkbc), source);
+    }
+
+    if (object->unkb8)
+    {
+        func_004349D0(object->unkb8, source);
+        vu0_load_grid_force_vf18(static_cast<u8*>(object->unkb8) + 0x10);
+    }
+    else
+    {
+        vu0_clear_grid_force_vf18();
+    }
+
+    vu0_clear_grid_vf17();
+    vu0_set_emission_delta(g_frame_seconds);
+
+    FieldVec4A limit(255.0f, 255.0f, 255.0f, 255.0f);
+    vu0_clear_grid_vf30();
+    vu0_load_grid_color_limit(&limit);
+}
 
 /** @brief Free the storage unless it's borrowed, then destroy the grid. */
 LibClass177090::~LibClass177090()
@@ -1316,7 +1444,56 @@ s32 LibTextureCache::func_004A6D20(const LibImageHeader* image, s32 slot, LibTex
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A6EA0);
+/**
+ * @brief Find an image's CLUT and record a hit for a slot; on a miss, claim the next free CLUT for it.
+ * @param image Image header whose name and ID identify the CLUT.
+ * @param slot Slot whose CLUT is recorded.
+ * @param want_address Nonzero to return the CLUT's VRAM address on a hit.
+ * @return The CLUT's VRAM word address (always on a miss), or 0 on a hit without want_address or when every CLUT
+ *         is in use.
+ */
+u32 LibTextureCache::func_004A6EA0(const LibImageHeader* image, s32 slot, u8 want_address)
+{
+    s32 count = clut_count;
+    u32 tag = *reinterpret_cast<const u32*>(image->name);
+    u32 id = image->id;
+    LibTextureClut* table = cluts;
+    s32 i;
+
+    for (i = 0; i < count; i++)
+    {
+        if (id == table[i].id && tag == table[i].tag)
+        {
+            clut_used[i] = stamp;
+            clut_slot_entries[slot] = i;
+            return want_address == 0 ? 0 : clut_address + i * 0x100;
+        }
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        if (!clut_used[next_clut])
+        {
+            break;
+        }
+
+        next_clut = (next_clut + 1) & (clut_count - 1);
+    }
+
+    if (i == clut_count)
+    {
+        return 0;
+    }
+
+    u32 address = clut_address + next_clut * 0x100;
+    table[next_clut].id = id;
+    table[next_clut].tag = tag;
+    table[next_clut].tex0 = (((u64)address & ~0x3F) << 31) | ((u64)image->palette_format << 51);
+    clut_used[next_clut] = stamp;
+    clut_slot_entries[slot] = next_clut;
+    next_clut = (next_clut + 1) & (clut_count - 1);
+    return address;
+}
 
 /** @brief Clear the cache's stamp, the stamp of every block stamped 1, and the CLUT use flags. */
 void LibTextureCache::clear_stamps()
@@ -1415,7 +1592,79 @@ void LibModel::update()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A76D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7AC0);
+/** Partial view of the model's draw packet at unk220, written through the uncached accelerated segment. */
+typedef struct LibModelPacketHeader
+{
+    u8 unk00[0x118];
+    float unk118;
+    s32 unk11c;
+    u64 unk120;
+    u8 unk128[8];
+    u64 test;
+    u8 unk138[0x118];
+    s32 unk250;
+    s32 unk254;
+} LibModelPacketHeader;
+
+/**
+ * @brief Return the camera's TEST register value with the model's destination alpha test applied.
+ * @param model Model.
+ * @param camera Camera.
+ * @return TEST register value.
+ */
+static inline u32 lib_model_test_register(const LibModel* model, const LibCamera* camera)
+{
+    u32 test = camera->test;
+    u32 date = model->unk59c != 0 ? 0x4000 : 0;
+    u32 datm = model->unk59c == 2 ? 0x8000 : 0;
+
+    return datm | (date | (test & ~0xC000));
+}
+
+/**
+ * @brief Refresh the model's packet header from its flags and the camera's TEST register.
+ * @param model Model.
+ * @param camera Camera.
+ */
+extern "C" void func_004A7AC0(LibModel* model, const LibCamera* camera)
+{
+    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)model->unk220 | EE_UNCACHED_ACCELERATED);
+
+    model->unk59d_0 = 0;
+
+    if (model->unk797_0)
+    {
+        header->unk118 = -1.0f;
+        header->unk11c = 1;
+    }
+    else
+    {
+        header->unk118 = 1.0f;
+        header->unk11c = 0;
+    }
+
+    header->unk120 = model->unk59d_1;
+
+    if (model->unk798_2)
+    {
+        header->test = (lib_model_test_register(model, camera) & ~0x60000) | 0x20000;
+    }
+    else
+    {
+        header->test = lib_model_test_register(model, camera);
+    }
+
+    if (model->unk638)
+    {
+        header->unk250 = 0x190;
+        header->unk254 = 0x210;
+    }
+    else
+    {
+        header->unk250 = 0x220;
+        header->unk254 = 0x2D0;
+    }
+}
 
 /**
  * @brief Number the mesh's parts in their uncached view and copy each into the model's part table.
@@ -2141,7 +2390,92 @@ void LibClass177A20::submit_dma(u32 channel)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9240);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A9600);
+/** One vertex change of a morph record: two deltas, the second's w holding the vertex index. */
+struct LibMorphRecordEntry
+{
+    LibVector4 delta;
+    float delta2[3];
+    s32 vertex;
+};
+
+/** Morph record: entry count, byte size to the next record, then the entries. */
+struct LibMorphRecord
+{
+    s32 count;
+    u8 unk04[4];
+    s32 size;
+    u8 unk0c[4];
+    LibMorphRecordEntry entries[1];
+};
+
+/**
+ * @brief Run the morph microprogram on each vertex of the current record, writing the outputs' vectors and values
+ *        in place, then step to the next record. The loop overlaps each vertex's load with the previous one's result.
+ * @param output Output to update.
+ * @param index Bit index; unused.
+ */
+void LibClass1789C0::func_slot10(LibEntryOutput* output, s32 index)
+{
+    LibMorphRecord* record = (LibMorphRecord*)cursor;
+    LibMorphRecordEntry* entry = record->entries;
+    LibVector4* vectors = output->vectors;
+    ee_prefetch(entry);
+    LibClass173490Entry* values = output->values;
+    vu0_morph_load_weights(&clamped_weight);
+    s32 vertex = entry->vertex;
+    LibVector4* vector = &vectors[vertex];
+    LibClass173490Entry* value = &values[vertex];
+    vu0_morph_load(vector, value, entry);
+    vu0_morph_start_after_load();
+    s32 count = ((LibMorphRecord*)cursor)->count;
+
+    if (count == 1)
+    {
+        vu0_morph_wait();
+        vu0_morph_start_after_load();
+        vu0_morph_store(vector, value);
+        cursor += ((LibMorphRecord*)cursor)->size;
+        return;
+    }
+
+    entry++;
+    vertex = entry->vertex;
+    LibVector4* next_vector = &vectors[vertex];
+    LibClass173490Entry* next_value = &values[vertex];
+    LibVector4* last_vector;
+    LibClass173490Entry* last_value;
+    s32 i = 1;
+    vu0_morph_load(next_vector, next_value, entry);
+    i++;
+    vu0_morph_start();
+
+    while (i < count)
+    {
+        entry++;
+        last_value = next_value;
+        last_vector = next_vector;
+        vertex = entry->vertex;
+        ee_prefetch_ahead(entry);
+        next_vector = &vectors[vertex];
+        next_value = &values[vertex];
+        vu0_morph_load(next_vector, next_value, entry);
+        i++;
+        vu0_morph_store(vector, value);
+        vector = last_vector;
+        value = last_value;
+        vu0_morph_start();
+    }
+
+    vu0_morph_store(vector, value);
+
+    if (count > 1)
+    {
+        vu0_morph_start();
+        vu0_morph_store(next_vector, next_value);
+    }
+
+    cursor += ((LibMorphRecord*)cursor)->size;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", update__14LibClass177A20Fv);
 

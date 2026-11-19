@@ -89,14 +89,15 @@ public:
      * @brief Run the base update, with a fixed 1/60 s frame time while fixed stepping is on.
      * @return The base update's result.
      */
-    virtual s32 func_slot1C();
+    virtual s32 func_slot1C(LibTransform* root);
 };
 
 /**
  * @brief Run the base update, with a fixed 1/60 s frame time while fixed stepping is on.
+ * @param root Model transform, passed on.
  * @return The base update's result.
  */
-s32 FieldClass158800::func_slot1C()
+s32 FieldClass158800::func_slot1C(LibTransform* root)
 {
     float previous = g_frame_seconds;
     u8 result;
@@ -106,7 +107,7 @@ s32 FieldClass158800::func_slot1C()
         g_frame_seconds = 1.0f / 60.0f;
     }
 
-    result = LibClass174C20::func_slot1C();
+    result = LibClass174C20::func_slot1C(root);
     g_frame_seconds = previous;
     return result;
 }

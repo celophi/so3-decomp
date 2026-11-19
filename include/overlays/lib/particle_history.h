@@ -110,6 +110,15 @@ typedef struct LibHistorySourceF0
     u8 unk30[0xC0];
 } LibHistorySourceF0;
 
+/** Source record of size 0x60 with position and attribute vectors. */
+typedef struct LibHistorySource60
+{
+    LibQuad128 unk00;
+    LibQuad128 position;
+    LibQuad128 attributes;
+    u8 unk30[0x30];
+} LibHistorySource60;
+
 /** Source record of size 0x80 with position and attribute vectors. */
 typedef struct LibHistorySource80
 {

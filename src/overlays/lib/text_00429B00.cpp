@@ -89,7 +89,7 @@ public:
     virtual u8* read_record(u32 index, u32* size);
 
     /** @brief Slot 0x1C, first after LibClass1779F0's; its purpose is unknown. */
-    virtual s32 func_slot1C();
+    virtual s32 func_slot1C(LibTransform* root);
 
     /** @brief Clear both element arrays and the two flags. */
     void clear_entries();
@@ -120,9 +120,8 @@ public:
      * @brief Slot 0x84: bring the light into a view's space.
      * @param matrix View matrix.
      * @param rotation View matrix with its rows normalised, for directions.
-     * @param unk_matrix Third matrix the scene passes; none of the lights here use it.
      */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix) = 0;
+    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation) = 0;
 
     /**
      * @brief Slot 0x88: work out the light reaching a point.
@@ -143,9 +142,8 @@ public:
      * @brief Transform the light's position into the view's space.
      * @param matrix View matrix.
      * @param rotation Unused.
-     * @param unk_matrix Unused.
      */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix);
+    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
 
     /**
      * @brief Work out the vector from a point to the light, falling off with distance.
@@ -168,9 +166,8 @@ public:
      * @brief Do nothing; this light doesn't depend on the view.
      * @param matrix Unused.
      * @param rotation Unused.
-     * @param unk_matrix Unused.
      */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix)
+    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation)
     {
     }
 
@@ -197,9 +194,8 @@ public:
      * @brief Bring the position and both directions into the view's space.
      * @param matrix View matrix.
      * @param rotation View matrix with its rows normalised.
-     * @param unk_matrix Unused.
      */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix);
+    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
 
     /**
      * @brief Give a random vector from the view-space directions for points close enough to the light's axis.
@@ -228,9 +224,8 @@ public:
      * @brief Turn both directions into the view's space and halve the second.
      * @param matrix Unused.
      * @param rotation View matrix with its rows normalised.
-     * @param unk_matrix Unused.
      */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix);
+    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
 
     /**
      * @brief Pick a random vector from the view-space directions.
@@ -256,9 +251,8 @@ public:
      * @brief Turn the direction into the view's space.
      * @param matrix Unused.
      * @param rotation View matrix with its rows normalised.
-     * @param unk_matrix Unused.
      */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix);
+    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
 
     /**
      * @brief Give the view-space direction, the same for every point.
@@ -3068,9 +3062,84 @@ LibClass173630::~LibClass173630()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433C70);
+/**
+ * @brief Pick a random point in the light's box when the point is in front of the light and over its disc.
+ * @param point Point being lit.
+ * @param normal Unused.
+ * @return The picked point (unk290), or zero when the point is behind the light or outside the disc.
+ */
+const LibVector4* LibClass173630::func_slot88(const LibVector4* point, const LibVector4* normal)
+{
+    LibVector4 measure;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433EF0);
+    vu0_light_load_point(point, &view_position, &axis);
+    vu0_disc_light_offset();
+    *(unsigned __int128*)&unk290 = 0;
+    vu0_disc_light_project(&measure);
+
+    if (measure.x < 0.0f)
+    {
+        return &unk290;
+    }
+
+    vu0_disc_light_radial();
+    float x = lib_light_random_fraction();
+    vu0_disc_light_square();
+    float y = lib_light_random_fraction();
+    vu0_disc_light_sum();
+    float z = lib_light_random_fraction();
+    vu0_disc_light_subtract_radius();
+    x *= unk270.x;
+    y *= unk270.y;
+    z *= unk270.z;
+    vu0_disc_light_store_distance(&measure);
+
+    if (!(measure.x <= 0.0f))
+    {
+        return &unk290;
+    }
+
+    unk290.x = unk280.x + (unk240.x + x);
+    unk290.y = unk280.y + (unk240.y + y);
+    unk290.z = unk280.z + (unk240.z + z);
+    return &unk290;
+}
+
+
+/**
+ * @brief Bring the position and both directions into the view's space.
+ * @param matrix View matrix.
+ * @param rotation View matrix with its rows normalised.
+ */
+void LibClass173630::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation)
+{
+    LibVector4 direction;
+
+    if (!matrix_ready)
+    {
+        update_transform_matrix();
+    }
+
+    LibMatrix44Value world(*get_transposed_transform(this));
+    vu0_normalize_rows_xyz(&world);
+    LibVector4 position;
+    position.x = matrix_row(&transform, 0)->w;
+    position.y = matrix_row(&transform, 1)->w;
+    position.z = matrix_row(&transform, 2)->w;
+    position.w = 1.0f;
+    vu0_transform_emission_point(matrix, &position, &view_position);
+    vu0_light_transform_direction(&world, &unk230, &direction);
+    vu0_light_transform_direction(rotation, &direction, &unk240);
+    vu0_light_transform_direction(&world, &unk260, &direction);
+    vu0_light_transform_direction(rotation, &direction, &unk270);
+    vu0_load_vf1(&unk240);
+    unk280.x = 0.5f * unk270.x;
+    unk280.y = 0.5f * unk270.y;
+    unk280.z = 0.5f * unk270.z;
+    vu0_light_start_normalize_vf1();
+    view_position.w = radius * radius;
+    vu0_light_store_normalized_vf1(&axis);
+}
 
 }
 
@@ -3091,9 +3160,8 @@ const LibVector4* LibClass173750::func_slot88(const LibVector4* point, const Lib
  * @brief Transform the light's position into the view's space.
  * @param matrix View matrix.
  * @param rotation Unused.
- * @param unk_matrix Unused.
  */
-void LibClass173750::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix)
+void LibClass173750::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation)
 {
     LibVector4 position;
 
@@ -3144,9 +3212,8 @@ extern "C" LibVector4* func_00434330(LibClass173630* light)
  * @brief Turn both directions into the view's space and halve the second.
  * @param matrix Unused.
  * @param rotation View matrix with its rows normalised.
- * @param unk_matrix Unused.
  */
-void LibClass173870::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix)
+void LibClass173870::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation)
 {
     LibVector4 direction;
 
@@ -3170,9 +3237,8 @@ void LibClass173870::func_slot84(const LibMatrix44Value* matrix, const LibMatrix
  * @brief Turn the direction into the view's space.
  * @param matrix Unused.
  * @param rotation View matrix with its rows normalised.
- * @param unk_matrix Unused.
  */
-void LibClass173900::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation, const LibMatrix44Value* unk_matrix)
+void LibClass173900::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation)
 {
     LibVector4 direction;
 
@@ -3195,6 +3261,9 @@ typedef struct LibLightPointerList
     s16 capacity;
     s16 count;
     LibClass1736C0** lights;
+    u8 unk08[8];
+    LibVector4 ambient;
+    u8 has_positional;
 } LibLightPointerList;
 
 /**
@@ -3223,7 +3292,60 @@ void func_004348E0(LibLightPointerList* list, const LibVector4* point, const Lib
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004349D0);
+/**
+ * @brief Bring a transform's matrices up to date, put every light in the list into its space, and sum the lights of
+ *        kind zero, which don't depend on the point, into the list's ambient vector.
+ * @param list Lights.
+ * @param source Transform the lights are brought into.
+ */
+void func_004349D0(LibLightPointerList* list, LibTransform* source)
+{
+    if (!source->matrix_ready)
+    {
+        source->update_transform_matrix();
+        source->unk20e_0 = true;
+        source->unk20e_1 = 0;
+        ee_transpose_matrix(&source->transposed_transform, &source->transform);
+        func_004D9E70(source);
+    }
+    else if (!source->unk20e_0)
+    {
+        source->unk20e_0 = 1;
+        source->unk20e_1 = 0;
+        ee_transpose_matrix(&source->transposed_transform, &source->transform);
+        func_004D9E70(source);
+    }
+    else if (!source->unk20e_2)
+    {
+        func_004D9E70(source);
+    }
+
+    const LibMatrix44Value* inverse = &source->inverse_transform;
+    LibMatrix44Value normalized = *inverse;
+    vu0_normalize_rows_xyz(&normalized);
+    const FieldVec4A& zero = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    copy_vector(&list->ambient, (const LibVector4*)&zero);
+    list->has_positional = 0;
+    s32 count = list->count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass1736C0* light = list->lights[i];
+        light->func_slot84(inverse, &normalized);
+
+        if (!light->kind)
+        {
+            const LibVector4* vector = light->func_slot88(0, 0);
+            list->ambient.x += vector->x;
+            list->ambient.y += vector->y;
+            list->ambient.z += vector->z;
+        }
+        else
+        {
+            list->has_positional = 1;
+        }
+    }
+}
 
 s32 func_00434F20(void* object)
 {
@@ -4100,7 +4222,78 @@ LibClass173990::~LibClass173990()
     delete[] entries;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0043B840);
+/** @brief Initialize the emitter with no source or entries, its flags cleared and its vectors reset. */
+LibClass173990::LibClass173990()
+{
+    set_type_id(0x500);
+    unk499_0 = 0;
+    source = 0;
+    entries = 0;
+    unk49a = 0;
+    unk499_1 = 0;
+    unk49b_0 = 0;
+    unk49b_1 = 0;
+    unk49b_2 = 0;
+    unk49b_3 = 0;
+    unk49b_4 = 0;
+    unk49b_5 = 0;
+    unk49b_6 = 0;
+    unk49c_2 = 0;
+    unk49b_7 = 0;
+    unk49c_0 = 0;
+    unk49c_1 = 0;
+    unk49c_5 = 0;
+    unk49c_6 = 0;
+    unk3fc = 1.0f;
+    unk400 = 0;
+    unk3f4 = 0;
+    unk3ec = 0;
+    unk3f0 = 0;
+    unk230 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk250 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk260 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk270 = FieldVec4A(128.0f, 128.0f, 128.0f, 128.0f);
+    unk290 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk2b0 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk2c0 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk2e0 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk300 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk320 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk340 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk360 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk380 = FieldVec4A(1.0f, 1.0f, 1.0f, 1.0f);
+    unk390 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk3a0 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    unk3b0 = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        unk3c0[i] = 0;
+    }
+
+    unk420 = 0;
+    entry_count = 0;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        unk480[i] = 0;
+    }
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        unk488[i] = 0;
+    }
+
+    unk497 = 0;
+    unk498 = 0;
+    unk49c_4 = 0;
+    unk490 = 0;
+    unk494 = 0;
+    unk495 = 0;
+    unk496 = 1;
+    unk3e8 = 0;
+    unk428 = 0;
+}
 
 /** @brief Do nothing (shared by every grid). */
 void LibClass173A40::func_slot10()

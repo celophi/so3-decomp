@@ -968,7 +968,7 @@ extern "C" void* func_0020CC50(FieldClass151640* object, FieldVec4A* query)
             ++index;
         }
 
-        u8 found = func_0045BFB0(shape->unk18, query);
+        u8 found = func_0045BFB0(shape->unk18, reinterpret_cast<const LibVector4*>(query));
         FieldShapeRecord20* restore_records = shape->unk14->unk0c;
         s32 restore_index = shape->unk18->unk0e;
 
@@ -1103,7 +1103,7 @@ extern "C" s32 func_0020D060(FieldShapeListOwner20* object, void* query)
 
             resource.data.prefix.unk0c = &node->record;
             D_001B656C = ((FieldShapeData10*)storage.unk00)->unk0c;
-            u8 result = func_0045CBE0(&node->shape, query);
+            u8 result = func_0045CBE0(&node->shape, static_cast<const LibVector4*>(query));
 
             if (!result)
             {
@@ -1158,7 +1158,8 @@ extern "C" s32 func_0020D1A0(FieldClass154D20* object, FieldVec4B* query)
 
             resource.data.prefix.unk0c = &node->record;
             func_0045F580(&storage, &storage);
-            u8 result = func_0045B920(&node->shape, query, &query[1]);
+            u8 result = func_0045B920(&node->shape, reinterpret_cast<const LibVector4*>(query),
+                                      reinterpret_cast<const LibVector4*>(&query[1]));
 
             if (!result)
             {
@@ -1213,7 +1214,7 @@ extern "C" s32 func_0020D330(FieldClass154D20* object, FieldClass1515D0* other)
 
             resource.data.prefix.unk0c = &node->record;
             func_0045F580(&storage, other);
-            u8 result = func_0045EBD0(&node->shape, (FieldShapeData30*)other->unk00 + 1);
+            u8 result = func_0045EBD0(&node->shape, (FieldShapeOwner18*)((FieldShapeData30*)other->unk00 + 1));
 
             if (!result)
             {

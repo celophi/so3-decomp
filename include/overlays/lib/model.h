@@ -325,7 +325,7 @@ public:
      */
     virtual u8* read_record(u32 index, u32* size);
 
-    virtual s32 func_slot1C() = 0;
+    virtual s32 func_slot1C(LibTransform* root) = 0;
 
     /**
      * @brief Add the entry to a model's child list, binding the list to the model first.
@@ -402,7 +402,7 @@ public:
      */
     virtual u8* read_record(u32 index, u32* size);
 
-    virtual s32 func_slot1C();
+    virtual s32 func_slot1C(LibTransform* root);
 
     /**
      * @brief Nothing to send.
@@ -432,6 +432,52 @@ struct LibClass174C20Header
     s32 columns;
     s32 rows;
     u8 unk08[0x18];
+};
+
+/** LibClass1734B0 entry with vtable D_1789C0 in main data; only its constructor and destructor are known. */
+class LibClass1789C0 : public LibClass1734B0
+{
+public:
+    /** @brief Start as an unattached entry of kind 2 with unk54 set to three. */
+    LibClass1789C0();
+
+    virtual ~LibClass1789C0();
+
+    /**
+     * @brief Use a morph shape resource without owning it, and apply its weight.
+     * @param value Resource data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 67.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Run the morph microprogram on each vertex of the current record, writing the outputs' vectors and
+     *        values in place, then step to the next record.
+     * @param output Output to update.
+     * @param index Bit index; unused.
+     */
+    virtual void func_slot10(LibEntryOutput* output, s32 index);
+
+    /**
+     * @brief Note whether every bit is set, count the idle frames down and rewind the records.
+     * @param root Model transform; unused.
+     * @return Zero on the step the countdown ends, otherwise one.
+     */
+    virtual s32 func_slot1C(LibTransform* root);
+
+    struct LibMorphShape* shape;
+    u8* records;
+    u8* cursor;
+    u8 unk3c[4];
+    float clamped_weight;
+    u8 unk44[0xC];
+    float weight;
+    s32 idle_frames;
 };
 
 /** LibClass1734B0 entry of type 35 with per-cell word arrays, with vtable D_174C20 in main data. */
@@ -467,7 +513,7 @@ public:
      */
     virtual u8* read_record(u32 index, u32* size);
 
-    virtual s32 func_slot1C();
+    virtual s32 func_slot1C(LibTransform* root);
 
     /** @brief Zero both cell arrays over the grid, including its border. */
     void clear_cells();

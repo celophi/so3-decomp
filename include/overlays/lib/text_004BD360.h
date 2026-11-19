@@ -478,7 +478,7 @@ struct LibTextWidget : public LibDrawWidget
     void* unk100;
     s32 glyph_count;
     u32 source;
-    u32 key;
+    s32 key;
     u8 flag;
     u8 pending;
     u8 unk112[2];

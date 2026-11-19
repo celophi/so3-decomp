@@ -12,6 +12,9 @@
 #include "overlays/lib/particle_history.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "vu0.h"
+#include "overlays/lib/emission_vu0.h"
+#include "overlays/lib/collider_vu0.h"
+#include "overlays/lib/light_vu0.h"
 #include "ee.h"
 
 extern "C" {
@@ -194,13 +197,75 @@ void LibClass173B10::update()
     previous_position.set(position);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_slot88__14LibClass173B10Fv);
+/**
+ * @brief Bounce a particle step off the sphere when it ends inside it: put it back on the surface and reflect its
+ *        velocity relative to the sphere's own.
+ * @param previous Previous particle position.
+ * @param position Current particle position.
+ * @param velocity Particle velocity.
+ * @param out_velocity Receives the new velocity.
+ * @param out_position Receives the corrected position.
+ * @return Whether the particle hit the sphere.
+ */
+bool LibClass173B10::collide(const LibVector4* previous, const LibVector4* position, const LibVector4* velocity,
+                             LibVector4* out_velocity, LibVector4* out_position)
+{
+    LibVector4 saved[4];
+    LibVector4 distances;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_slot84__14LibClass173B10Fv);
+    vu0_save_vf15_vf18(saved);
+    vu0_sphere_step_load(previous, position, &centre);
+    vu0_sphere_step_distances(&distances);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_slot88__14LibClass173C40Fv);
+    if (!(distances.y <= radius_squared))
+    {
+        vu0_restore_vf15_vf18(saved);
+        return false;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_0043C570);
+    distances.x = radius;
+    vu0_sphere_normal_start(&distances);
+    vu0_sphere_load_bounce(&unk230, velocity, &this->velocity);
+    vu0_sphere_bounce(&distances, out_position, out_velocity);
+    vu0_restore_vf15_vf18(saved);
+    return true;
+}
+
+/**
+ * @brief Move the sphere's centre into the frame of a matrix and refresh the radius and plane terms the collision
+ *        test uses.
+ * @param matrix Matrix to move the centre by.
+ * @param second Unused.
+ * @param third Unused.
+ */
+void LibClass173B10::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* second,
+                                 const LibMatrix44Value* third)
+{
+    if (!matrix_ready)
+    {
+        update_transform_matrix();
+    }
+
+    LibVector4 position;
+    position.x = transform.m[0][3];
+    position.y = transform.m[1][3];
+    position.z = transform.m[2][3];
+    position.w = 1.0f;
+    vu0_transform_emission_point(matrix, &position, &centre);
+    radius_squared = radius * radius;
+    centre.w = 0.5f;
+    unk230 = -1.0f;
+    unk234 = 1.0f + unk210;
+    unk238 = -unk214;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", collide__14LibClass173C40FPC10LibVector4PC10LibVector4PC10LibVector4P10LibVector4P10LibVector4);
+
+/** @brief Load vf1-vf31 back. */
+LibVu0StateGuard::~LibVu0StateGuard()
+{
+    vu0_restore_registers(registers);
+}
 
 /**
  * @brief Keep the last update's unk260 and unk270 and the transform matrix, then track the velocity of the transform's
@@ -242,11 +307,78 @@ void LibClass173C40::update()
     previous_position.set(position);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_slot84__14LibClass173C40Fv);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_slot84__14LibClass173C40FPC16LibMatrix44ValuePC16LibMatrix44ValuePC16LibMatrix44Value);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_0043CBF0);
+/**
+ * @brief Run a moving point through every collider in a list.
+ * @param list Colliders to test.
+ * @param previous Position before the step.
+ * @param position Position after the step.
+ * @param velocity Velocity over the step.
+ * @param out_velocity Receives the velocity after the last bounce, or zero.
+ * @param out_position Receives the corrected position.
+ * @return Whether any collider was hit.
+ */
+bool func_0043CBF0(LibColliderList* list, const LibVector4* previous, const LibVector4* position,
+                   const LibVector4* velocity, LibVector4* out_velocity, LibVector4* out_position)
+{
+    bool hit = false;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_0043CCE0);
+    clear_vector(out_velocity);
+    copy_vector(out_position, position);
+    list->hit = 0;
+
+    s32 count = list->count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        hit = hit | list->colliders[i]->collide(previous, out_position, velocity, out_velocity, out_position);
+    }
+
+    return hit;
+}
+
+/**
+ * @brief Bring a transform's matrices up to date and run every collider in a list against it, passing a copy of its
+ *        inverse with the rotation rows normalised.
+ * @param list Colliders to run.
+ * @param source Transform the colliders follow.
+ */
+extern "C" void func_0043CCE0(LibColliderList* list, LibTransform* source)
+{
+    if (!source->matrix_ready)
+    {
+        source->update_transform_matrix();
+        source->unk20e_0 = true;
+        source->unk20e_1 = 0;
+        ee_transpose_matrix(&source->transposed_transform, &source->transform);
+        func_004D9E70(source);
+    }
+    else if (!source->unk20e_0)
+    {
+        source->unk20e_0 = 1;
+        source->unk20e_1 = 0;
+        ee_transpose_matrix(&source->transposed_transform, &source->transform);
+        func_004D9E70(source);
+    }
+    else if (!source->unk20e_2)
+    {
+        func_004D9E70(source);
+    }
+
+    const LibMatrix44Value* inverse = &source->inverse_transform;
+    LibMatrix44Value normalized = *inverse;
+    vu0_normalize_rows_xyz(&normalized);
+    list->hit = 0;
+    s32 count = list->count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        const LibMatrix44Value* matrix = &source->transform;
+        list->colliders[i]->func_slot84(inverse, &normalized, matrix);
+        list->hit = 1;
+    }
+}
 
 /** @brief Destroy the transform. */
 LibClass173C40::~LibClass173C40()
@@ -268,7 +400,50 @@ s32 func_0043D0C0(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_0043D0D0);
+/**
+ * @brief Test a cell's bit.
+ * @param set Active-cell bit set.
+ * @param index Cell index.
+ * @return The bit.
+ */
+static inline u64 grid_cell_active(const LibGridBitset* set, u32 index)
+{
+    u32 bit = index & 63;
+    return (set->bits[index >> 6] >> bit) & 1;
+}
+
+/**
+ * @brief Copy the active cells' two vectors into an output batch, growing the vf26/vf27 bounds by each position.
+ * @param object Grid owning the cells; its cursor moves past every cell looked at.
+ * @param capacity Output-entry budget, counted in steps of the grid column count.
+ * @param output Output records.
+ * @return Entries used.
+ */
+extern "C" s32 func_0043D0D0(LibClass173CD0* object, s32 capacity, LibHistoryOutput30* output)
+{
+    s32 consumed = 0;
+
+    while (consumed < capacity && (s32)object->unk2c < object->unk0c)
+    {
+        if (!grid_cell_active(object->unk1c, object->unk2c))
+        {
+            object->unk2c++;
+            continue;
+        }
+
+        LibClass173F48* cell = &object->unk14[object->unk2c];
+        output->position.raw = cell->unk10.packed;
+        vu0_load_vf1(&output->position);
+        const LibGridVector4& attributes = cell->unk20;
+        output->attributes.raw = attributes.packed;
+        vu0_extend_bounds_vf1();
+        object->unk2c++;
+        output++;
+        consumed += object->unk10;
+    }
+
+    return consumed;
+}
 
 void func_0043D1F0(void* object, const void* source)
 {
@@ -2804,7 +2979,47 @@ float func_00441520(void* object)
     return 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_00441530);
+/** The field's ground, which particles test their height against. */
+class LibGround
+{
+public:
+    /**
+     * @brief Return the ground height under a point.
+     * @param point Point to look under.
+     * @param flags Lookup flags.
+     * @return Height.
+     */
+    virtual float height_at(const LibVector4* point, s32 flags);
+};
+
+/** The current field's ground. */
+extern "C" LibGround* D_001B6548;
+
+/**
+ * @brief Test whether a particle, moved by a transform, is above the ground. Only a zero first argument asks for the
+ *        test; anything else passes.
+ * @param object Test object; unused.
+ * @param mode Zero to test against the ground.
+ * @param transform Transform to move the particle by.
+ * @param position Particle position.
+ * @return Whether the particle is above the ground (always for a nonzero mode).
+ */
+extern "C" bool func_00441530(void* object, float mode, const LibMatrix44Value* transform, const LibVector4* position)
+{
+    if (mode == 0.0f)
+    {
+        unsigned __int128 saved[7];
+        LibVector4 world;
+
+        vu0_save_particle_registers(saved);
+        vu0_apply_matrix(transform, position, &world);
+        bool above = D_001B6548->height_at(&world, 0) < world.y;
+        vu0_restore_particle_registers(saved);
+        return above;
+    }
+
+    return true;
+}
 
 LibClass173F80::~LibClass173F80()
 {

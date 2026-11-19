@@ -923,13 +923,22 @@ class LibPooledVectorTrack : public LibVectorTrack
         virtual void return_to_pool();
 };
 
-/** 48-byte keyframe of LibQuaternionCurveTrackBase: a key, a rotation and its control rotation. */
-struct LibQuaternionCurveTrackKey
+/** Key and rotation of a rotation curve keyframe; LibQuaternionCurveTrackKey adds the control rotation. */
+struct LibQuaternionCurveTrackKeyValue
 {
-    LibQuaternionCurveTrackKey();
+    LibQuaternionCurveTrackKeyValue()
+    {
+    }
 
     float key;
     FieldVec4B value;
+};
+
+/** 48-byte keyframe of LibQuaternionCurveTrackBase: a key, a rotation and its control rotation. */
+struct LibQuaternionCurveTrackKey : public LibQuaternionCurveTrackKeyValue
+{
+    LibQuaternionCurveTrackKey();
+
     FieldVec4B control;
 };
 

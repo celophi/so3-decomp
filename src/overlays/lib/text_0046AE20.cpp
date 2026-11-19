@@ -12,6 +12,7 @@
 #include "overlays/lib/transform_owner_inlines.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/vector_inlines.h"
+#include "overlays/lib/text_00419A70.h"
 
 
 typedef struct HalfwordSetterOwnertext_0046AE20
@@ -1240,7 +1241,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046DE90);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046F910);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004713C0);
+/** @brief Clear the link table and its counts. */
+LibClass173070::LibClass173070()
+{
+    unk08 = 0;
+    links = 0;
+    link_count = 0;
+    unk20 = 0;
+}
 
 /**
  * @brief Copy the extra vector and the transform state.

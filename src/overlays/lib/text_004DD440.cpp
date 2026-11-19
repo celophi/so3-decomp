@@ -405,7 +405,60 @@ void LibCameraContext::set_screen_view(s32 index, s32 x, s32 y, s32 width, s32 h
     screens[index].view_height = height;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", build_scaled_packets__16LibCameraContextFv);
+/** @brief Build the packets that draw the scaled draw area onto each screen. */
+void LibCameraContext::build_scaled_packets()
+{
+    s32 set = packet_set ^ 1;
+    u32 depth_mask = 0xFFFF;
+
+    if (display_area.depth_format == 0x30)
+    {
+        depth_mask = 0xFFFFFFFF;
+    }
+    else if (display_area.depth_format == 0x31)
+    {
+        depth_mask = 0xFFFFFF;
+    }
+
+    for (s32 i = 0; i < 2; i++)
+    {
+        packet_sizes[set][i] = func_004DEA70(
+            this, packets[set][i] + 0x40, i != 0, buffers[0].environment.context2.frame.base_pointer,
+            display_area.unk10, display_area.width, display_area.height, display_area.base_width,
+            display_area.base_height, depth_mask, blend_enabled, (s32)(128.0f * blend_alpha), 0, 0, 0, 1, 0, 0, -1, -1);
+    }
+
+    for (s32 i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+    {
+        LibDisplayScreen* screen = &screens[i];
+
+        if (!screen->enabled)
+        {
+            continue;
+        }
+
+        u8* packet = packets[set][i + 2] + 0x40;
+
+        if (screen->unkA53)
+        {
+            packet_sizes[set][i + 2] = func_004DEA70(
+                this, packet, screen->field,
+                screen->buffers[1].environment.context2.frame.base_pointer, screen->pixel_format, screen->view_width,
+                screen->view_height, screen->width, screen->height, depth_mask, blend_enabled,
+                (s32)(128.0f * blend_alpha), 0, 0, 0, 1, 0, 0, -1, -1);
+        }
+        else
+        {
+            packet_sizes[set][i + 2] = func_004DEA70(
+                this, packet, screen->field, buffers[0].environment.context2.frame.base_pointer,
+                display_area.unk10, screen->view_width, screen->view_height, screen->width, screen->height,
+                depth_mask, blend_enabled, (s32)(128.0f * blend_alpha), 0, 0, 0, 1, 0, 0, -1, -1);
+        }
+    }
+
+    FlushCache(0);
+    packet_set ^= 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE500);
 
@@ -912,7 +965,74 @@ s32 LibClass178FC0::func_004E10B0(s32 size)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", build_packet__14LibClass178FC0FPCvPv);
+/**
+ * @brief Test whether a list walk has come back to the list.
+ * @param list List sentinel.
+ * @param node Current node.
+ * @return Whether node is the sentinel.
+ */
+static inline bool at_list_end(const LibListSentinel* list, const LibListSentinel* node)
+{
+    if (list == node)
+    {
+        return true;
+    }
+
+    return false;
+}
+
+/** Node of LibClass178FC0's list; slot 0x28 writes into the owner's packet. */
+class LibPacketListNode : public LibListObject
+{
+public:
+    virtual void func_slot1C();
+
+    virtual void func_slot20();
+
+    virtual void func_slot24();
+
+    /**
+     * @brief Add the node's data to a packet.
+     * @param packet Packet being built.
+     */
+    virtual void write_packet(LibPacketBuffer* packet);
+};
+
+/**
+ * @brief Build the packet for a camera: load its screen matrix, reset the packet, set register 0x4F and let every
+ *        listed node add its data.
+ * @param matrix Camera.
+ * @param context Context kept for the nodes.
+ */
+void LibClass178FC0::build_packet(const void* matrix, void* context)
+{
+    camera = static_cast<const LibCamera*>(matrix);
+    this->context = context;
+    func_004D9AB0(D_001B65FC, 0);
+    func_004D99B0(D_001B65FC);
+    const LibMatrix44Value& view = camera->view_matrix;
+    LibMatrix44Value screen;
+    screen = func_004CF7C0(camera->projection_matrix, view);
+    vu0_start_microprogram_1f0_vf5_vf8(&screen);
+    LibListSentinel* node = &sentinel;
+    const LibCameraPacket5C0* packet = &camera->unk5c0;
+    resident_packet_rewind(unk114);
+    resident_packet_add_register(unk114, 0x4F, packet->unk120);
+
+    for (;;)
+    {
+        node = node->next;
+
+        if (at_list_end(&sentinel, node))
+        {
+            break;
+        }
+
+        static_cast<LibPacketListNode*>(node)->write_packet(unk114);
+    }
+
+    unk63 = 1;
+}
 
 /** @brief Delete the packet buffer. */
 LibClass178FC0::~LibClass178FC0()
@@ -1206,7 +1326,40 @@ s32 LibCamera::enqueue_submission()
     return resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E2120__9LibCameraFv);
+/** @brief Write the camera's matrices into its uncached packet. */
+void LibCamera::func_004E2120()
+{
+    LibVector4 angles;
+    LibCameraPacket5C0* packet = (LibCameraPacket5C0*)((u32)&unk5c0 | UNCACHED_SEGMENT);
+
+    ((unsigned __int128*)&packet->view)[0] = ((const unsigned __int128*)&view_matrix)[0];
+    ((unsigned __int128*)&packet->view)[1] = ((const unsigned __int128*)&view_matrix)[1];
+    ((unsigned __int128*)&packet->view)[2] = ((const unsigned __int128*)&view_matrix)[2];
+    ((unsigned __int128*)&packet->view)[3] = ((const unsigned __int128*)&view_matrix)[3];
+    ee_transpose_matrix(&packet->unk090, &unk340);
+    ee_transpose_matrix(&packet->projection, &projection_matrix);
+    packet->distance = projection_distance;
+    packet->scaled_distance = 1.4142135f * projection_distance;
+    packet->centre_depth = centre_depth;
+    ((unsigned __int128*)&packet->unk0e0)[0] = ((const unsigned __int128*)&unk380)[0];
+    ((unsigned __int128*)&packet->unk0e0)[1] = ((const unsigned __int128*)&unk380)[1];
+    ((unsigned __int128*)&packet->unk0e0)[2] = ((const unsigned __int128*)&unk380)[2];
+    ((unsigned __int128*)&packet->unk0e0)[3] = ((const unsigned __int128*)&unk380)[3];
+    const LibVector4* rotation = &orientation;
+    func_004CDA40(&angles, rotation);
+    float z = -angles.z;
+    packet->roll = z;
+    roll = z;
+    packet->fog_offset = fog_offset;
+    packet->fog_scale = fog_reciprocal_scale;
+
+    if (!unk3d1)
+    {
+        *reinterpret_cast<u64*>(unk558 + 0x90) = fog_color;
+        ee_sync();
+        resident_dma_queue_push(g_vif1_dma_queue, unk860);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E22B0);
 
@@ -2918,21 +3071,6 @@ s32 LibLightList::get_default_list_kind()
     return 8;
 }
 
-/**
- * @brief Test whether a list walk has come back to the list.
- * @param list List sentinel.
- * @param node Current node.
- * @return Whether node is the sentinel.
- */
-static inline bool at_list_end(const LibListSentinel* list, const LibListSentinel* node)
-{
-    if (list == node)
-    {
-        return true;
-    }
-
-    return false;
-}
 
 /**
  * @brief Give each enabled spotlight its own bit (8 up to 31) in its mask, then set that bit on every model in the

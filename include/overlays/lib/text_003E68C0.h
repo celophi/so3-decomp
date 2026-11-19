@@ -242,6 +242,14 @@ public:
      */
     void func_003F4EB0(s32 id, s32 kind, s32 area, u8 flags);
 
+    /**
+     * @brief Build a party slot's record at its level and learn the codes of its row.
+     * @param slot Party slot, from zero through two, or -1.
+     * @param output Record func_004076D0 fills.
+     * @param equipment Character equipment record.
+     */
+    void func_003F45F0(s32 slot, struct LibResourceRecordC4* output, struct LibCharacterEquipment* equipment);
+
     /** @brief Pick a new aligned buffer and reset it as the constructor does. */
     void func_003F5AC0();
 

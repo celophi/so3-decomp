@@ -35,14 +35,13 @@ extern "C" LibCodeList* D_001B64CC;
 extern "C" LibCodeTable* D_001B64D0;
 
 /**
- * @brief Learn a battle skill the character has no mastery of yet.
+ * @brief Learn a symbology; codes 0x90 and 0x91 first learn each of their three table codes the character has no mastery of.
  * @param equipment Character equipment record.
- * @param id One-based code table ID.
- * @param code Battle skill code.
+ * @param id One-based code list ID.
+ * @param code Symbology code.
  * @param level Level before learning; the new level is one more, at least one.
- * @return The learning result, or -1 when the skill already has mastery.
  */
-extern "C" s32 func_0040A5C0(struct LibCharacterEquipment* equipment, s32 id, s32 code, s32 level);
+extern "C" void func_0040A5C0(struct LibCharacterEquipment* equipment, s32 id, s32 code, s32 level);
 
 /**
  * @brief Learn a symbology the character has no mastery of yet.

@@ -1,9 +1,11 @@
 #include "include_asm.h"
 #include "vu0.h"
+#include "overlays/lib/shape_vu0.h"
 #include "overlays/lib/text_00419A70.h"
 #include "main/resident_data.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/text_0045AD10.h"
+#include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
@@ -335,27 +337,539 @@ s32 func_0045B320(FieldShapeOwner18* shape)
     return shape_child_count(shape);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045B360);
+extern "C" u8 D_001B6288;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045B740);
+/** Transform of the shape a record test runs in. */
+extern "C" LibTransform* D_001B6574;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045B920);
+/** Fractions along the segment where the last segment test found it enters and leaves a record. */
+extern "C" float D_0050CB70[];
+
+#define LIB_FLOAT_INFINITY (1.0f / 0.0f)
+
+/**
+ * @brief Test whether a shape transform's transpose of its base matrix is current.
+ * @param transform Shape transform.
+ * @return Whether the transpose is current.
+ */
+static inline bool transpose_current(const LibTransform* transform)
+{
+    return transform->unk20e_1;
+}
+
+/**
+ * @brief Rebuild a shape transform's transpose of its base matrix unless it is current.
+ * @param transform Shape transform.
+ */
+static inline void refresh_shape_transpose(LibTransform* transform)
+{
+    if (!transpose_current(transform))
+    {
+        transform->unk20e_1 = 1;
+        transform->unk20e_0 = 0;
+        ee_transpose_matrix(&transform->transposed_transform, &transform->base_transform);
+    }
+}
+
+/**
+ * @brief Recompute a shape transform's largest axis scale unless it is current.
+ * @param transform Shape transform.
+ */
+static inline void refresh_shape_scale(LibTransform* transform)
+{
+    if (!transform->unk20e_3)
+    {
+        LibVector4 scales;
+
+        transform->unk20e_3 = 1;
+        vu0_start_microprogram_7f0_rows(&transform->transform);
+        vu0_wait_microprogram();
+        vu0_read_vf6(&scales);
+        float largest = 0.0f;
+        largest = scales.x;
+        largest = ee_max(largest, scales.y);
+        largest = ee_max(largest, scales.z);
+        transform->unk204 = largest;
+    }
+}
+
+/**
+ * @brief Test whether a segment touches a box moved by the matrix in vf1-vf4, its half extents grown by vf5.y,
+ *        recording where it enters and leaves.
+ * @param centre Aligned box centre.
+ * @param half_extents Aligned half extents in xyz.
+ * @param start Aligned segment start.
+ * @param end Aligned segment end.
+ * @return Whether the segment touches the box.
+ */
+bool func_0045B360(const LibVector4* centre, const void* half_extents, const LibVector4* start,
+                   const LibVector4* end)
+{
+    LibVector4 extents;
+    LibVector4 offset;
+    LibVector4 direction;
+
+    vu0_box_segment_offset(centre, start, end, half_extents);
+    D_0050CB70[0] = -LIB_FLOAT_INFINITY;
+    D_0050CB70[1] = LIB_FLOAT_INFINITY;
+    vu0_store_vf17(&extents);
+    vu0_segment_direction();
+    vu0_box_ray_project();
+    vu0_store_box_ray_projection(&offset, &direction);
+    float start_near = D_0050CB70[0];
+    float start_far = D_0050CB70[1];
+
+    bool clip_z = false;
+    bool clip_z_low = false;
+    bool clip_y = false;
+    bool clip_y_low = false;
+    bool clip_x = false;
+
+    if (func_0045C350(&D_0050CB70[0], &D_0050CB70[1], direction.x, -offset.x - extents.x) &&
+        func_0045C350(&D_0050CB70[0], &D_0050CB70[1], -direction.x, offset.x - extents.x))
+    {
+        clip_x = true;
+    }
+
+    if (clip_x && func_0045C350(&D_0050CB70[0], &D_0050CB70[1], direction.y, -offset.y - extents.y))
+    {
+        clip_y_low = true;
+    }
+
+    if (clip_y_low && func_0045C350(&D_0050CB70[0], &D_0050CB70[1], -direction.y, offset.y - extents.y))
+    {
+        clip_y = true;
+    }
+
+    if (clip_y && func_0045C350(&D_0050CB70[0], &D_0050CB70[1], direction.z, -offset.z - extents.z))
+    {
+        clip_z_low = true;
+    }
+
+    if (clip_z_low && func_0045C350(&D_0050CB70[0], &D_0050CB70[1], -direction.z, offset.z - extents.z))
+    {
+        clip_z = true;
+    }
+
+    bool hit = clip_z != false && (D_0050CB70[0] != start_near || D_0050CB70[1] != start_far);
+
+    if (hit)
+    {
+        if (!(D_0050CB70[0] <= 0.0f) && D_0050CB70[0] < 1.0f)
+        {
+            return true;
+        }
+
+        if (!(D_0050CB70[1] <= 0.0f) && D_0050CB70[1] < 1.0f)
+        {
+            return true;
+        }
+
+        if (D_0050CB70[0] <= 0.0f && !(D_0050CB70[1] < 1.0f))
+        {
+            return true;
+        }
+
+        if (!(D_0050CB70[0] < 1.0f) && D_0050CB70[1] <= 0.0f)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    return false;
+}
+
+/**
+ * @brief Test whether a segment touches a sphere moved by the matrix in vf1-vf4, its radius scaled by vf5.x and grown
+ *        by vf5.y, recording where it enters and leaves.
+ * @param sphere Aligned sphere: centre in xyz, radius in w.
+ * @param start Aligned segment start.
+ * @param end Aligned segment end.
+ * @return Whether the segment touches the sphere.
+ */
+extern "C" bool func_0045B740(const LibVector4* sphere, const LibVector4* start, const LibVector4* end)
+{
+    LibVector4 discriminant;
+    LibVector4 enter;
+    LibVector4 leave;
+
+    vu0_segment_sphere_setup(sphere, start, end);
+    vu0_segment_sphere_store_discriminant(&discriminant);
+
+    if (discriminant.x < 0.0f)
+    {
+        return false;
+    }
+
+    if (!(discriminant.x <= -1e-6f) && discriminant.x < 1e-6f)
+    {
+        return true;
+    }
+
+    vu0_segment_sphere_fractions(&leave, &enter);
+
+    if ((!(leave.x < 1.0f) && !(enter.x < 0.0f)) || (enter.x <= 0.0f && leave.x <= 1.0f))
+    {
+        return false;
+    }
+
+    D_0050CB70[0] = enter.x;
+    D_0050CB70[1] = leave.x;
+    return true;
+}
+
+/** Radius every segment test adds to the spheres it checks. */
+extern "C" float D_001B6568;
+
+/**
+ * @brief Test whether a segment touches a collision record.
+ * @param record Record to test.
+ * @param start Aligned segment start.
+ * @param end Aligned segment end.
+ * @return Whether the record is enabled and the segment touches it.
+ */
+static inline bool segment_hits_record(FieldShapeRecord20* record, const LibVector4* start, const LibVector4* end)
+{
+    if (record->unk0c.unk00_4)
+    {
+        return false;
+    }
+
+    switch (record->unk0c.unk00_0_3)
+    {
+    case LIB_SHAPE_KIND_BOX:
+        return func_0045B360((const LibVector4*)&record->unk10, record, start, end);
+    case LIB_SHAPE_KIND_SPHERE:
+        return func_0045B740((const LibVector4*)&record->unk10, start, end);
+    default:
+        return false;
+    }
+}
+
+s32 func_0045B920(FieldShapeOwner18* shape, const LibVector4* start, const LibVector4* end)
+{
+    if (!(D_001B6288 & shape->unk08[1]))
+    {
+        return 0;
+    }
+
+    LibTransform* transform = (LibTransform*)shape->unk04;
+
+    if (transform == 0)
+    {
+        return 0;
+    }
+
+    LibVector4 saved[8];
+    LibVector4 scale;
+
+    vu0_save_vf1_vf5(saved);
+
+    if (!transform->matrix_ready)
+    {
+        transform->update_transform_matrix();
+    }
+
+    refresh_shape_transpose(transform);
+    refresh_shape_scale(transform);
+    const LibVector4* bound = (const LibVector4*)&shape->unk10;
+    scale.x = transform->unk204;
+    scale.y = D_001B6568;
+    vu0_load_matrix_and_scale(&transform->transposed_transform, &scale);
+
+    if (!func_0045B740(bound, start, end))
+    {
+        vu0_restore_vf1_vf5(saved);
+        return 0;
+    }
+
+    s32 index = shape->unk0e;
+
+    if (index >= 0)
+    {
+        D_001B6574 = transform;
+
+        if (!(D_001B6288 & shape->unk08[0]))
+        {
+            vu0_restore_vf1_vf5(saved);
+            return 0;
+        }
+
+        FieldShapeRecord20* record = &D_001B656C[index];
+
+        for (;;)
+        {
+            if (segment_hits_record(record, start, end))
+            {
+                D_0050CB30.unk04 = shape;
+                D_0050CB30.unk00 = 5;
+                D_0050CB30.unk0c = record;
+                D_0050CB30.unk2c = start;
+                D_0050CB30.unk30 = end;
+                D_0050CB30.unk14 = D_001B6574;
+                return 1;
+            }
+
+            if (record->unk0c.unk00_5)
+            {
+                break;
+            }
+
+            record++;
+        }
+    }
+
+    FieldShapeOwner18* child = shape->unk00;
+
+    if (child == 0)
+    {
+        vu0_restore_vf1_vf5(saved);
+        return 0;
+    }
+
+    for (;;)
+    {
+        if (func_0045B920(child, start, end))
+        {
+            return 1;
+        }
+
+        if (child->is_last())
+        {
+            vu0_restore_vf1_vf5(saved);
+            return 0;
+        }
+
+        child++;
+    }
+}
 
 /** Select the referenced shape record and test its descriptor. */
 s32 func_0045BD20(void* object, void* arg0, void* arg1)
 {
     void* descriptor = *(void**)object;
     D_001B656C = (struct FieldShapeRecord20*)*(void**)((u8*)descriptor + 0xC);
-    return func_0045B920((u8*)descriptor + 0x30, arg0, arg1);
+    return func_0045B920((FieldShapeOwner18*)((u8*)descriptor + 0x30), (const LibVector4*)arg0,
+                         (const LibVector4*)arg1);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045BD50);
+/**
+ * @brief Test whether a point moved by a matrix lies inside an axis-aligned box whose half extents are scaled by vf5.x.
+ * @param centre Box centre.
+ * @param half_extents Aligned half extents in xyz.
+ * @param point Aligned point to test.
+ * @param matrix Aligned matrix that moves the point into the box's space.
+ * @return Whether the point is inside (or on) the box.
+ */
+extern "C" bool func_0045BD50(const LibVector4* centre, const void* half_extents, const LibVector4* point,
+                              const LibMatrix44Value* matrix)
+{
+    LibVector4 local;
+    LibVector4 extents;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045BE60);
+    vu0_box_point_local(point, matrix, half_extents);
+    vu0_store_vf14(&local);
+    vu0_store_vf30(&extents);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045BED0);
+    if (!(centre->x - extents.x <= local.x))
+    {
+        return false;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045BFB0);
+    if (centre->x + extents.x < local.x)
+    {
+        return false;
+    }
+
+    if (!(centre->y - extents.y <= local.y))
+    {
+        return false;
+    }
+
+    if (centre->y + extents.y < local.y)
+    {
+        return false;
+    }
+
+    if (!(centre->z - extents.z <= local.z))
+    {
+        return false;
+    }
+
+    if (centre->z + extents.z < local.z)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Test whether a point is inside a sphere moved by the matrix in vf1-vf4 and scaled by vf5.x.
+ * @param sphere Sphere: centre in xyz, radius in w.
+ * @param point Point to test.
+ * @return Whether the point is inside (or on) the sphere.
+ */
+extern "C" bool func_0045BE60(const LibVector4* sphere, const LibVector4* point)
+{
+    LibVector4 margin;
+
+    vu0_sphere_point_margin(sphere, point);
+    vu0_store_vf10(&margin);
+
+    if (margin.w < 0.0f)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Test whether a point lies inside a collision shape; boxes are tested in the camera transform's space.
+ * @param shape Shape to test.
+ * @param point Aligned point to test.
+ * @return Whether the shape is enabled and contains the point.
+ */
+extern "C" bool func_0045BED0(FieldShapeRecord20* shape, const LibVector4* point)
+{
+    if (shape->unk0c.unk00_4)
+    {
+        return false;
+    }
+
+    switch (shape->unk0c.unk00_0_3)
+    {
+    case LIB_SHAPE_KIND_BOX:
+        if (!D_001B6574->unk20e_2)
+        {
+            // TODO: only two quadwords are saved, but the frame only matches with room for four.
+            LibVector4 registers[4];
+
+            vu0_save_vf6_vf8(registers);
+            func_004D9E70(D_001B6574);
+            vu0_restore_vf6_vf8(registers);
+        }
+
+        return func_0045BD50((const LibVector4*)&shape->unk10, shape, point, &D_001B6574->inverse_transform);
+    case LIB_SHAPE_KIND_SPHERE:
+        return func_0045BE60((const LibVector4*)&shape->unk10, point);
+    default:
+        return false;
+    }
+}
+
+
+
+/**
+ * @brief Test a point against a shape, its records and its children, recording the first record that contains it.
+ *
+ * The shape's bounding sphere is checked first, with the shape's transform in vf1-vf5. The caller's vf1-vf5 come
+ * back only when nothing is hit.
+ * @param shape Shape to test.
+ * @param query Aligned point to test.
+ * @return One when a record contains the point, otherwise zero.
+ */
+s32 func_0045BFB0(FieldShapeOwner18* shape, const LibVector4* query)
+{
+    if (!(D_001B6288 & shape->unk08[1]))
+    {
+        return 0;
+    }
+
+    LibTransform* transform = (LibTransform*)shape->unk04;
+
+    if (transform == 0)
+    {
+        return 0;
+    }
+
+    LibVector4 saved[8];
+    LibVector4 scale;
+    LibVector4 margin;
+
+    vu0_save_vf1_vf5(saved);
+
+    if (!transform->matrix_ready)
+    {
+        transform->update_transform_matrix();
+    }
+
+    refresh_shape_transpose(transform);
+
+    refresh_shape_scale(transform);
+
+    scale.x = transform->unk204;
+    vu0_sphere_point_margin_with(&transform->transposed_transform, &shape->unk10, &scale, query);
+    vu0_store_vf10(&margin);
+
+    if (margin.w < 0.0f)
+    {
+        vu0_restore_vf1_vf5(saved);
+        return 0;
+    }
+
+    s32 index = shape->unk0e;
+
+    if (index >= 0)
+    {
+        D_001B6574 = transform;
+
+        if (!(D_001B6288 & shape->unk08[0]))
+        {
+            vu0_restore_vf1_vf5(saved);
+            return 0;
+        }
+
+        FieldShapeRecord20* record = &D_001B656C[index];
+
+        for (;;)
+        {
+            if (func_0045BED0(record, query))
+            {
+                D_0050CB30.unk04 = shape;
+                D_0050CB30.unk00 = 4;
+                D_0050CB30.unk0c = record;
+                D_0050CB30.unk28 = query;
+                D_0050CB30.unk14 = D_001B6574;
+                return 1;
+            }
+
+            if (record->unk0c.unk00_5)
+            {
+                break;
+            }
+
+            record++;
+        }
+    }
+
+    FieldShapeOwner18* child = shape->unk00;
+
+    if (child == 0)
+    {
+        vu0_restore_vf1_vf5(saved);
+        return 0;
+    }
+
+    for (;;)
+    {
+        if (func_0045BFB0(child, query))
+        {
+            return 1;
+        }
+
+        if (child->is_last())
+        {
+            vu0_restore_vf1_vf5(saved);
+            return 0;
+        }
+
+        child++;
+    }
+}
 
 /**
  * @brief Clip a ray's fraction interval against one slab plane.
@@ -407,61 +921,1429 @@ extern "C" s32 func_0045C350(float* near_fraction, float* far_fraction, float di
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045C420);
+/**
+ * @brief Clip a ray against a box moved by the matrix in vf1-vf4 and store where it enters and leaves.
+ * @param centre Aligned box centre.
+ * @param half_extents Box half extents.
+ * @param ray Aligned ray: origin, then direction.
+ * @param points Receives the entry point, then the exit point when the ray leaves the box.
+ * @return How many points were stored.
+ */
+extern "C" s32 func_0045C420(const LibVector4* centre, const float* half_extents, const LibVector4* ray,
+                             LibVector4* points)
+{
+    LibVector4 fractions;
+    LibVector4 offset;
+    LibVector4 direction;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045C770);
+    vu0_box_ray_offset(ray, centre, ray + 1);
+    fractions.x = 0.0f;
+    fractions.y = LIB_FLOAT_INFINITY;
+    vu0_box_ray_project();
+    vu0_store_box_ray_projection(&offset, &direction);
+    float start_near = fractions.x;
+    float start_far = fractions.y;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045C910);
+    bool clip_z = false;
+    bool clip_z_low = false;
+    bool clip_y = false;
+    bool clip_y_low = false;
+    bool clip_x = false;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045CB40);
+    if (func_0045C350(&fractions.x, &fractions.y, direction.x, -offset.x - half_extents[0]) &&
+        func_0045C350(&fractions.x, &fractions.y, -direction.x, offset.x - half_extents[0]))
+    {
+        clip_x = true;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045CBE0);
+    if (clip_x && func_0045C350(&fractions.x, &fractions.y, direction.y, -offset.y - half_extents[1]))
+    {
+        clip_y_low = true;
+    }
+
+    if (clip_y_low && func_0045C350(&fractions.x, &fractions.y, -direction.y, offset.y - half_extents[1]))
+    {
+        clip_y = true;
+    }
+
+    if (clip_y && func_0045C350(&fractions.x, &fractions.y, direction.z, -offset.z - half_extents[2]))
+    {
+        clip_z_low = true;
+    }
+
+    if (clip_z_low && func_0045C350(&fractions.x, &fractions.y, -direction.z, offset.z - half_extents[2]))
+    {
+        clip_z = true;
+    }
+
+    bool hit = clip_z != false && (fractions.x != start_near || fractions.y != start_far);
+
+    if (hit)
+    {
+        vu0_load_vf16(&fractions);
+
+        if (!(fractions.x <= 0.0f))
+        {
+            vu0_ray_points_at_fractions();
+
+            if (fractions.y < LIB_FLOAT_INFINITY)
+            {
+                vu0_store_vf20_vf21(points);
+                return 2;
+            }
+
+            vu0_store_vf20(points);
+            return 1;
+        }
+
+        if (fractions.y < LIB_FLOAT_INFINITY)
+        {
+            vu0_ray_point_at_far_fraction();
+            vu0_store_vf20(points);
+            return 1;
+        }
+
+        return 0;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Find where a ray, from its origin on, enters and leaves a sphere moved by the matrix in vf1-vf4.
+ * @param sphere Aligned sphere: centre in xyz, radius in w.
+ * @param ray Aligned ray: origin, then direction.
+ * @param points Receives the entry point, then the exit point when both lie ahead of the origin.
+ * @return How many points were stored.
+ */
+extern "C" s32 func_0045C770(const LibVector4* sphere, const LibVector4* ray, LibVector4* points)
+{
+    LibVector4 discriminant;
+    LibVector4 root;
+    LibVector4 enter;
+    LibVector4 leave;
+    LibVector4 touch;
+
+    vu0_load_vf10(sphere);
+    vu0_ray_sphere_setup(ray, ray + 1);
+    vu0_ray_sphere_store_discriminant(&root, &discriminant);
+
+    if (discriminant.x < 0.0f)
+    {
+        return 0;
+    }
+
+    if (!(discriminant.x <= 0.0f))
+    {
+        vu0_ray_sphere_fractions();
+        vu0_store_ray_sphere_fractions(&enter, &leave);
+
+        if (!(enter.x < 0.0f))
+        {
+            vu0_ray_sphere_points();
+            vu0_store_vf23_vf24(points);
+            return 2;
+        }
+
+        if (!(leave.x < 0.0f))
+        {
+            // TODO: this stores the point at the entry fraction, which is behind the origin here; it looks like a
+            // slip for the exit point, but it's what the game does.
+            vu0_ray_sphere_enter_point();
+            vu0_store_vf23(points);
+            return 1;
+        }
+
+        return 0;
+    }
+
+    vu0_ray_sphere_touch();
+    vu0_store_vf20(&touch);
+
+    if (!(touch.x < 0.0f))
+    {
+        vu0_store_vf23(points);
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Test whether a ray passes through a box moved by the matrix in vf1-vf4, by its separating axes.
+ * @param centre Aligned box centre.
+ * @param half_extents Aligned half extents in xyz.
+ * @param ray Aligned ray: origin, then direction.
+ * @return Whether no axis separates them.
+ */
+extern "C" bool func_0045C910(const LibVector4* centre, const void* half_extents, const LibVector4* ray)
+{
+    LibVector4 tests[2];
+
+    vu0_box_ray_axis_x(centre, ray, ray + 1, half_extents);
+    vu0_store_vf24_vf25(tests);
+
+    if (!(tests[0].x <= 0.0f) && !(tests[1].x < 0.0f))
+    {
+        return false;
+    }
+
+    vu0_box_ray_axis_y();
+    vu0_store_vf24_vf25(tests);
+
+    if (!(tests[0].y <= 0.0f) && !(tests[1].y < 0.0f))
+    {
+        return false;
+    }
+
+    vu0_box_ray_axis_z();
+    vu0_store_vf24_vf25(tests);
+
+    if (!(tests[0].z <= 0.0f) && !(tests[1].z < 0.0f))
+    {
+        return false;
+    }
+
+    vu0_box_ray_cross_x();
+    vu0_store_vf24(tests);
+
+    if (tests[0].y < 0.0f)
+    {
+        return false;
+    }
+
+    vu0_box_ray_cross_y();
+    vu0_store_vf24(tests);
+
+    if (tests[0].x < 0.0f)
+    {
+        return false;
+    }
+
+    vu0_box_ray_cross_z();
+    vu0_store_vf24(tests);
+
+    if (tests[0].x < 0.0f)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Test whether a ray, from its origin on, passes through a sphere moved by the matrix in vf1-vf4 and scaled
+ *        by vf5.x.
+ * @param sphere Sphere: centre in xyz, radius in w.
+ * @param ray Ray: origin, then unit direction.
+ * @return Whether the ray touches the sphere.
+ */
+extern "C" bool func_0045CB40(const LibVector4* sphere, const LibVector4* ray)
+{
+    LibVector4 gap;
+
+    vu0_sphere_ray_gap(sphere, ray, ray + 1);
+    vu0_store_vf10(&gap);
+
+    if (!(gap.w <= 0.0f))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Test whether a ray passes through a collision record.
+ * @param record Record to test.
+ * @param ray Aligned ray: origin, then direction.
+ * @return Whether the record is enabled and the ray passes through it.
+ */
+static inline bool ray_hits_record(FieldShapeRecord20* record, const LibVector4* ray)
+{
+    if (record->unk0c.unk00_4)
+    {
+        return false;
+    }
+
+    switch (record->unk0c.unk00_0_3)
+    {
+    case LIB_SHAPE_KIND_BOX:
+        return func_0045C910((const LibVector4*)&record->unk10, record, ray);
+    case LIB_SHAPE_KIND_SPHERE:
+        return func_0045CB40((const LibVector4*)&record->unk10, ray);
+    default:
+        return false;
+    }
+}
+
+/**
+ * @brief Test a ray against a shape, its records and its children, recording the first record it passes through.
+ *
+ * The shape's bounding sphere is checked first, with the shape's transform in vf1-vf5. The caller's vf1-vf5 come
+ * back only when nothing is hit.
+ * @param shape Shape to test.
+ * @param ray Aligned ray: origin, then direction.
+ * @return One when the ray passes through a record, otherwise zero.
+ */
+s32 func_0045CBE0(FieldShapeOwner18* shape, const LibVector4* ray)
+{
+    if (!(D_001B6288 & shape->unk08[1]))
+    {
+        return 0;
+    }
+
+    LibTransform* transform = (LibTransform*)shape->unk04;
+
+    if (transform == 0)
+    {
+        return 0;
+    }
+
+    LibVector4 saved[8];
+    LibVector4 scale;
+    LibVector4 gap;
+
+    vu0_save_vf1_vf5(saved);
+
+    if (!transform->matrix_ready)
+    {
+        transform->update_transform_matrix();
+    }
+
+    refresh_shape_transpose(transform);
+
+    refresh_shape_scale(transform);
+
+    scale.x = transform->unk204;
+    vu0_sphere_ray_gap_with(&transform->transposed_transform, &shape->unk10, &scale, ray, ray + 1);
+    vu0_store_vf10(&gap);
+
+    if (!(gap.w <= 0.0f))
+    {
+        vu0_restore_vf1_vf5(saved);
+        return 0;
+    }
+
+    s32 index = shape->unk0e;
+
+    if (index >= 0)
+    {
+        D_001B6574 = transform;
+
+        if (!(D_001B6288 & shape->unk08[0]))
+        {
+            vu0_restore_vf1_vf5(saved);
+            return 0;
+        }
+
+        FieldShapeRecord20* record = &D_001B656C[index];
+
+        for (;;)
+        {
+            if (ray_hits_record(record, ray))
+            {
+                D_0050CB30.unk04 = shape;
+                D_0050CB30.unk00 = 3;
+                D_0050CB30.unk0c = record;
+                D_0050CB30.unk24 = ray;
+                D_0050CB30.unk14 = D_001B6574;
+                return 1;
+            }
+
+            if (record->unk0c.unk00_5)
+            {
+                break;
+            }
+
+            record++;
+        }
+    }
+
+    FieldShapeOwner18* child = shape->unk00;
+
+    if (child == 0)
+    {
+        vu0_restore_vf1_vf5(saved);
+        return 0;
+    }
+
+    for (;;)
+    {
+        if (func_0045CBE0(child, ray))
+        {
+            return 1;
+        }
+
+        if (child->is_last())
+        {
+            vu0_restore_vf1_vf5(saved);
+            return 0;
+        }
+
+        child++;
+    }
+}
 
 /** Select the referenced shape record and run the two argument test. */
 s32 func_0045D030(void* object, void* query)
 {
     void* descriptor = *(void**)object;
     D_001B656C = (struct FieldShapeRecord20*)*(void**)((u8*)descriptor + 0xC);
-    return func_0045CBE0((u8*)descriptor + 0x30, query);
+    return func_0045CBE0((FieldShapeOwner18*)((u8*)descriptor + 0x30), (const LibVector4*)query);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045D060);
+/**
+ * @brief Test whether a sphere touches a collision record; boxes are tested in the camera transform's space.
+ * @param shape Record to test.
+ * @param sphere Aligned sphere, moved by vf5-vf8 and scaled by vf9.y.
+ * @param matrix Matrix already in vf5-vf8; unused.
+ * @return Whether the record is enabled and touches the sphere.
+ */
+extern "C" bool func_0045D060(FieldShapeRecord20* shape, const LibVector4* sphere, const void* matrix)
+{
+    if (shape->unk0c.unk00_4)
+    {
+        return false;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045D140);
+    switch (shape->unk0c.unk00_0_3)
+    {
+    case LIB_SHAPE_KIND_BOX:
+        if (!D_001B6574->unk20e_2)
+        {
+            // TODO: only two quadwords are saved, but the frame only matches with room for four.
+            LibVector4 registers[4];
+
+            vu0_save_vf6_vf8(registers);
+            func_004D9E70(D_001B6574);
+            vu0_restore_vf6_vf8(registers);
+        }
+
+        return func_0045E240((const LibVector4*)&shape->unk10, shape, sphere, 1, &D_001B6574->inverse_transform);
+    case LIB_SHAPE_KIND_SPHERE:
+        return func_0045E980((const LibVector4*)&shape->unk10, sphere);
+    default:
+        return false;
+    }
+}
+
+/** Matrix of the sphere in the last hit func_0045D140 recorded, in its first word. */
+extern "C" const void* D_0050CB80[];
+
+/**
+ * @brief Test a sphere against a shape, its records and its children, recording the first record it touches.
+ *
+ * The shape's bounding sphere is checked first, with the shape's transform in vf1-vf4 and the sphere's matrix in
+ * vf5-vf8. The caller's vf1-vf9 come back only when nothing is hit.
+ * @param shape Shape to test.
+ * @param sphere Aligned sphere: centre in xyz, radius in w.
+ * @param matrix Aligned matrix that moves the sphere.
+ * @param scale Scale of the sphere's radius.
+ * @return One when a record touches the sphere, otherwise zero.
+ */
+s32 func_0045D140(FieldShapeOwner18* shape, const LibVector4* sphere, const void* matrix, float scale)
+{
+    if (!(D_001B6288 & shape->unk08[1]))
+    {
+        return 0;
+    }
+
+    LibTransform* transform = (LibTransform*)shape->unk04;
+
+    if (transform == 0)
+    {
+        return 0;
+    }
+
+    LibVector4 saved[12];
+    LibVector4 scales;
+    LibVector4 gap;
+
+    vu0_save_vf1_vf9(saved);
+
+    if (!transform->matrix_ready)
+    {
+        transform->update_transform_matrix();
+    }
+
+    refresh_shape_transpose(transform);
+
+    refresh_shape_scale(transform);
+
+    scales.x = transform->unk204;
+    scales.y = scale;
+    vu0_sphere_sphere_gap_with(&shape->unk10, &scales, &transform->transposed_transform, sphere, matrix);
+    vu0_store_vf12(&gap);
+
+    if (!(gap.x <= 0.0f))
+    {
+        vu0_restore_vf1_vf9(saved);
+        return 0;
+    }
+
+    s32 index = shape->unk0e;
+
+    if (index >= 0)
+    {
+        D_001B6574 = transform;
+
+        if (!(D_001B6288 & shape->unk08[0]))
+        {
+            vu0_restore_vf1_vf9(saved);
+            return 0;
+        }
+
+        FieldShapeRecord20* record = &D_001B656C[index];
+
+        for (;;)
+        {
+            if (func_0045D060(record, sphere, matrix))
+            {
+                D_0050CB30.unk04 = shape;
+                D_0050CB30.unk00 = 2;
+                D_0050CB30.unk0c = record;
+                D_0050CB30.unk20 = sphere;
+                D_0050CB80[0] = matrix;
+                D_0050CB30.unk14 = D_001B6574;
+                return 1;
+            }
+
+            if (record->unk0c.unk00_5)
+            {
+                break;
+            }
+
+            record++;
+        }
+    }
+
+    FieldShapeOwner18* child = shape->unk00;
+
+    if (child == 0)
+    {
+        vu0_restore_vf1_vf9(saved);
+        return 0;
+    }
+
+    for (;;)
+    {
+        if (func_0045D140(child, sphere, matrix, scale))
+        {
+            return 1;
+        }
+
+        if (child->is_last())
+        {
+            vu0_restore_vf1_vf9(saved);
+            return 0;
+        }
+
+        child++;
+    }
+}
 
 /** Select the referenced shape record and run the four argument test. */
-s32 func_0045D590(void* object, s32 arg0, s32 arg1, float value)
+s32 func_0045D590(void* object, const LibVector4* sphere, const void* matrix, float scale)
 {
     void* descriptor = *(void**)object;
     D_001B656C = (struct FieldShapeRecord20*)*(void**)((u8*)descriptor + 0xC);
-    return func_0045D140((u8*)descriptor + 0x30, arg0, arg1, value);
+    return func_0045D140((FieldShapeOwner18*)((u8*)descriptor + 0x30), sphere, matrix, scale);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045D5C0);
+/**
+ * @brief Test whether a box touches a collision record.
+ * @param record Record to test, moved by vf1-vf4.
+ * @param box Aligned box block: its centre at index 2, its half extents at index 3.
+ * @param inverse Aligned inverse of the box's matrix.
+ * @return Whether the record is enabled and touches the box.
+ */
+static inline bool box_hits_record(FieldShapeRecord20* record, const LibVector4* box, const void* inverse)
+{
+    if (record->unk0c.unk00_4)
+    {
+        return false;
+    }
+
+    switch (record->unk0c.unk00_0_3)
+    {
+    case LIB_SHAPE_KIND_BOX:
+    {
+        const LibVector4* box_extents = box + 3;
+        const LibVector4* box_centre = box + 2;
+        return func_0045E400((const LibVector4*)&record->unk10, record, box_centre, box_extents);
+    }
+    case LIB_SHAPE_KIND_SPHERE:
+    {
+        const LibVector4* sphere = (const LibVector4*)&record->unk10;
+        const LibVector4* box_extents = box + 3;
+        const LibVector4* box_centre = box + 2;
+        return func_0045E240(box_centre, box_extents, sphere, 0, inverse);
+    }
+    default:
+        return false;
+    }
+}
+
+/**
+ * @brief Test a box against a shape, its records and its children, recording the first record it touches.
+ *
+ * The shape's bounding sphere is checked against the box's first, with the shape's transform in vf1-vf4 and the
+ * box's matrix in vf5-vf8. The caller's vf1-vf9 come back only when nothing is hit.
+ * @param shape Shape to test.
+ * @param box Aligned box block: its bounding sphere (centred on the box) at index 2, its half extents at index 3.
+ * @param matrix Aligned matrix that moves the box.
+ * @param inverse Aligned inverse of the box's matrix.
+ * @param scale Scale of the box.
+ * @return One when a record touches the box, otherwise zero.
+ */
+s32 func_0045D5C0(FieldShapeOwner18* shape, const LibVector4* box, const void* matrix, const void* inverse,
+                  float scale)
+{
+    if (!(D_001B6288 & shape->unk08[1]))
+    {
+        return 0;
+    }
+
+    LibTransform* transform = (LibTransform*)shape->unk04;
+
+    if (transform == 0)
+    {
+        return 0;
+    }
+
+    LibVector4 saved[12];
+    LibVector4 scales;
+    LibVector4 gap;
+
+    vu0_save_vf1_vf9(saved);
+
+    if (!transform->matrix_ready)
+    {
+        transform->update_transform_matrix();
+    }
+
+    refresh_shape_transpose(transform);
+    refresh_shape_scale(transform);
+    scales.x = transform->unk204;
+    scales.y = scale;
+    vu0_sphere_sphere_gap_with(&shape->unk10, &scales, &transform->transposed_transform, box + 2, matrix);
+    vu0_store_vf12(&gap);
+
+    if (!(gap.x <= 0.0f))
+    {
+        vu0_restore_vf1_vf9(saved);
+        return 0;
+    }
+
+    s32 index = shape->unk0e;
+
+    if (index >= 0)
+    {
+        D_001B6574 = transform;
+
+        if (!(D_001B6288 & shape->unk08[0]))
+        {
+            vu0_restore_vf1_vf9(saved);
+            return 0;
+        }
+
+        FieldShapeRecord20* record = &D_001B656C[index];
+
+        for (;;)
+        {
+            if (box_hits_record(record, box, inverse))
+            {
+                D_0050CB30.unk04 = shape;
+                D_0050CB30.unk0c = record;
+                D_0050CB30.unk1c = box;
+                D_0050CB80[0] = matrix;
+                D_0050CB30.unk00 = 1;
+                D_0050CB30.unk14 = D_001B6574;
+                return 1;
+            }
+
+            if (record->unk0c.unk00_5)
+            {
+                break;
+            }
+
+            record++;
+        }
+    }
+
+    FieldShapeOwner18* child = shape->unk00;
+
+    if (child == 0)
+    {
+        vu0_restore_vf1_vf9(saved);
+        return 0;
+    }
+
+    for (;;)
+    {
+        if (func_0045D5C0(child, box, matrix, inverse, scale))
+        {
+            return 1;
+        }
+
+        if (child->is_last())
+        {
+            vu0_restore_vf1_vf9(saved);
+            return 0;
+        }
+
+        child++;
+    }
+}
 
 /** Select the referenced shape record and run the five argument test. */
-s32 func_0045DA90(void* object, s32 arg0, s32 arg1, s32 arg2, float value)
+s32 func_0045DA90(void* object, const LibVector4* box, const void* matrix, const void* inverse, float scale)
 {
     void* descriptor = *(void**)object;
     D_001B656C = (struct FieldShapeRecord20*)*(void**)((u8*)descriptor + 0xC);
-    return func_0045D5C0((u8*)descriptor + 0x30, arg0, arg1, arg2, value);
+    return func_0045D5C0((FieldShapeOwner18*)((u8*)descriptor + 0x30), box, matrix, inverse, scale);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045DAC0);
+/**
+ * @brief Bring a shape transform's matrices up to date and copy out its transpose and inverse.
+ * @param transform Shape transform.
+ * @param transposed Receives the transpose of the base matrix.
+ * @param inverse Receives the inverse matrix.
+ * @return The transform's largest axis scale.
+ */
+extern "C" float func_0045DAC0(LibTransform* transform, LibMatrix44Value* transposed, LibMatrix44Value* inverse)
+{
+    if (!transform->matrix_ready)
+    {
+        transform->update_transform_matrix();
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045DCC0);
+    refresh_shape_transpose(transform);
+    *transposed = transform->transposed_transform;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045E240);
+    if (!transform->unk20e_2)
+    {
+        func_004D9E70(transform);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045E400);
+    *inverse = transform->inverse_transform;
+    refresh_shape_scale(transform);
+    return transform->unk204;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045E980);
+/**
+ * @brief Work out where the last recorded hit touched.
+ *
+ * Ray hits are clipped again and segment hits use the recorded fractions; other hits take, on each axis, the middle
+ * of the overlap between the two shapes' moved boxes.
+ * @param points Receives the contact points.
+ * @return How many points were stored.
+ */
+extern "C" s32 func_0045DCC0(LibVector4* points)
+{
+    FieldShapeRecord20* first = (FieldShapeRecord20*)D_0050CB30.unk0c;
+    FieldShapeRecord20* second = (FieldShapeRecord20*)D_0050CB30.unk10;
+    FieldShapeRecordInfo& first_info = first->unk0c;
+    FieldShapeRecordInfo& second_info = second->unk0c;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045EA10);
+    if (D_0050CB30.unk00 == 3)
+    {
+        switch (first_info.unk00_0_3)
+        {
+        case LIB_SHAPE_KIND_BOX:
+            return func_0045C420((const LibVector4*)&first->unk10, (const float*)first,
+                                 (const LibVector4*)D_0050CB30.unk24, points);
+        case LIB_SHAPE_KIND_SPHERE:
+            return func_0045C770((const LibVector4*)&first->unk10, (const LibVector4*)D_0050CB30.unk24, points);
+        }
+    }
+    else if (D_0050CB30.unk00 == 4)
+    {
+        *(FieldVec4B*)points = *(const FieldVec4B*)D_0050CB30.unk28;
+        return 1;
+    }
+    else if (D_0050CB30.unk00 == 5)
+    {
+        s32 count = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045EBD0);
+        const float* fractions = D_0050CB70;
+        const void* start = D_0050CB30.unk2c;
+        const void* end = D_0050CB30.unk30;
+        vu0_segment_load(fractions, start, end);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F2B0);
+        if ((!(D_0050CB70[0] <= 0.0f) && D_0050CB70[0] < 1.0f) ||
+            (D_0050CB70[0] <= 0.0f && !(D_0050CB70[1] < 1.0f)) || (!(D_0050CB70[0] < 1.0f) && D_0050CB70[1] <= 0.0f))
+        {
+            vu0_segment_point_x();
+            vu0_store_vf16(&points[count]);
+            count++;
+        }
+
+        if ((!(D_0050CB70[1] <= 0.0f) && D_0050CB70[1] < 1.0f) ||
+            (D_0050CB70[0] <= 0.0f && !(D_0050CB70[1] < 1.0f)) || (!(D_0050CB70[0] < 1.0f) && D_0050CB70[1] <= 0.0f))
+        {
+            vu0_segment_point_y();
+            vu0_store_vf16(&points[count]);
+            count++;
+        }
+
+        return count;
+    }
+
+    FieldVec4B first_extents;
+    FieldVec4B second_extents;
+    LibVector4 first_centre;
+    LibVector4 second_centre;
+    LibVector4 first_size;
+    LibVector4 second_size;
+    const void* second_matrix;
+    const void* second_position;
+
+    switch (first_info.unk00_0_3)
+    {
+    case LIB_SHAPE_KIND_BOX:
+        first_extents = *(const FieldVec4B*)first;
+        break;
+    case LIB_SHAPE_KIND_SPHERE:
+    {
+        float radius = first->unk00;
+        first_extents.x = radius;
+        first_extents.y = radius;
+        first_extents.z = radius;
+        break;
+    }
+    }
+
+    switch (D_0050CB30.unk00)
+    {
+    case 0:
+    {
+        second_position = &second->unk10;
+        LibTransform* second_transform = static_cast<LibTransform*>(D_0050CB30.unk18);
+        second_matrix = &second_transform->transposed_transform;
+
+        switch (second_info.unk00_0_3)
+        {
+        case LIB_SHAPE_KIND_BOX:
+            second_extents = *(const FieldVec4B*)second;
+            break;
+        case LIB_SHAPE_KIND_SPHERE:
+        {
+            float radius = second->unk00;
+            second_extents.x = radius;
+            second_extents.y = radius;
+            second_extents.z = radius;
+            break;
+        }
+        }
+
+        break;
+    }
+    case 1:
+    {
+        const LibVector4* box = (const LibVector4*)D_0050CB30.unk1c;
+        second_position = box + 2;
+        second_extents = *(const FieldVec4B*)(box + 3);
+        second_matrix = D_0050CB80[0];
+        break;
+    }
+    case 2:
+    {
+        const LibVector4* sphere = (const LibVector4*)D_0050CB30.unk20;
+        second_extents.x = sphere->w;
+        second_extents.y = sphere->w;
+        second_extents.z = sphere->w;
+        second_position = sphere;
+        second_matrix = D_0050CB80[0];
+        break;
+    }
+    }
+
+    vu0_move_box_pair(&first_extents, &second_extents, &first->unk10,
+                      &static_cast<LibTransform*>(D_0050CB30.unk14)->transposed_transform, second_position,
+                      second_matrix);
+    vu0_store_box_pair(&first_centre, &second_centre, &first_size, &second_size);
+
+    if (first_centre.x < second_centre.x)
+    {
+        points->x = 0.5f * ((second_centre.x - second_size.x) + (first_centre.x + first_size.x));
+    }
+    else
+    {
+        points->x = 0.5f * ((second_centre.x + second_size.x) + (first_centre.x - first_size.x));
+    }
+
+    if (first_centre.y < second_centre.y)
+    {
+        points->y = 0.5f * ((second_centre.y - second_size.y) + (first_centre.y + first_size.y));
+    }
+    else
+    {
+        points->y = 0.5f * ((second_centre.y + second_size.y) + (first_centre.y - first_size.y));
+    }
+
+    if (first_centre.z < second_centre.z)
+    {
+        points->z = 0.5f * ((second_centre.z - second_size.z) + (first_centre.z + first_size.z));
+    }
+    else
+    {
+        points->z = 0.5f * ((second_centre.z + second_size.z) + (first_centre.z - first_size.z));
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Test whether a sphere, moved by vf1-vf4 or vf5-vf8, overlaps a box moved by a matrix.
+ * @param centre Box centre.
+ * @param half_extents Aligned half extents in xyz.
+ * @param sphere Aligned sphere: centre in xyz, radius in w.
+ * @param second Non-zero to move the sphere by vf5-vf8 and scale it by vf9.y rather than vf1-vf4 and vf9.x.
+ * @param matrix Aligned matrix that moves the sphere into the box's space.
+ * @return Whether they overlap.
+ */
+bool func_0045E240(const LibVector4* centre, const void* half_extents, const LibVector4* sphere, s32 second,
+                   const void* matrix)
+{
+    LibVector4 local;
+    LibVector4 smallest;
+    LibVector4 largest;
+
+    vu0_load_vf16_vf19(matrix);
+    vu0_load_vf13(sphere);
+
+    if (second)
+    {
+        vu0_move_vf13_by_vf5();
+        vu0_scale_vf13_radius_y();
+    }
+    else
+    {
+        vu0_move_vf13_by_vf1();
+        vu0_scale_vf13_radius_x();
+    }
+
+    vu0_sphere_into_box_space();
+    vu0_store_vf14(&local);
+    vu0_load_vf15(centre);
+    vu0_load_vf16(half_extents);
+
+    if (second)
+    {
+        vu0_scale_vf16_x();
+    }
+    else
+    {
+        vu0_scale_vf16_y();
+    }
+
+    vu0_box_corners();
+    float distance = 0.0f;
+    vu0_store_box_corners(&largest, &smallest);
+
+    if (local.x < smallest.x)
+    {
+        float delta = local.x - smallest.x;
+        distance += delta * delta;
+    }
+    else if (!(local.x <= largest.x))
+    {
+        float delta = local.x - largest.x;
+        distance += delta * delta;
+    }
+
+    if (local.y < smallest.y)
+    {
+        float delta = local.y - smallest.y;
+        distance += delta * delta;
+    }
+    else if (!(local.y <= largest.y))
+    {
+        float delta = local.y - largest.y;
+        distance += delta * delta;
+    }
+
+    if (local.z < smallest.z)
+    {
+        float delta = local.z - smallest.z;
+        distance += delta * delta;
+    }
+    else if (!(local.z <= largest.z))
+    {
+        float delta = local.z - largest.z;
+        distance += delta * delta;
+    }
+
+    return distance <= local.w;
+}
+
+/**
+ * @brief Test whether two boxes, moved by the matrices in vf1-vf4 and vf5-vf8 and scaled by vf9.x and vf9.y,
+ *        overlap, by their fifteen separating axes.
+ * @param first_centre First box centre.
+ * @param first_half_extents Aligned half extents of the first box in xyz.
+ * @param second_centre Second box centre.
+ * @param second_half_extents Aligned half extents of the second box in xyz.
+ * @return Whether no axis separates them.
+ */
+bool func_0045E400(const LibVector4* first_centre, const void* first_half_extents, const LibVector4* second_centre,
+                   const void* second_half_extents)
+{
+    LibVector4 distance;
+    LibVector4 extent;
+
+    vu0_box_box_axis_1(first_centre, first_half_extents, second_centre, second_half_extents);
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.x <= extent.x))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_2();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.y <= extent.y))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_3();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.z <= extent.z))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_4();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.x <= extent.x) || !(distance.y <= extent.y) || !(distance.z <= extent.z))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_5();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.x <= extent.x))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_6();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.y <= extent.y))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_7();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.z <= extent.z))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_8();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.x <= extent.x))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_9();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.y <= extent.y))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_10();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.z <= extent.z))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_11();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.x <= extent.x))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_12();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.y <= extent.y))
+    {
+        return false;
+    }
+
+    vu0_box_box_axis_13();
+    vu0_store_box_box_axis(&distance, &extent);
+
+    if (!(distance.z <= extent.z))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Test whether two spheres, moved by the matrices in vf1-vf4 and vf5-vf8 and scaled by vf9.x and vf9.y, touch.
+ * @param first First sphere: centre in xyz, radius in w.
+ * @param second Second sphere.
+ * @return Whether they overlap or touch.
+ */
+extern "C" bool func_0045E980(const LibVector4* first, const LibVector4* second)
+{
+    LibVector4 gap;
+
+    vu0_sphere_sphere_gap(first, second);
+    vu0_store_vf11(&gap);
+
+    if (!(gap.x <= 0.0f))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+/** Transform of the second shape in a two-shape test. */
+extern "C" LibTransform* D_001B6578;
+
+/**
+ * @brief Test whether two collision records touch; boxes are tested in their owners' transform space.
+ * @param first First record, moved by vf1-vf4 and scaled by vf9.x.
+ * @param second Second record, moved by vf5-vf8 and scaled by vf9.y.
+ * @return Whether both records are enabled and touch.
+ */
+extern "C" bool func_0045EA10(FieldShapeRecord20* first, FieldShapeRecord20* second)
+{
+    FieldShapeRecordInfo& first_info = first->unk0c;
+    FieldShapeRecordInfo& second_info = second->unk0c;
+
+    if (first_info.unk00_4 || second_info.unk00_4)
+    {
+        return false;
+    }
+
+    switch (first_info.unk00_0_3)
+    {
+    case LIB_SHAPE_KIND_BOX:
+        switch (second_info.unk00_0_3)
+        {
+        case LIB_SHAPE_KIND_BOX:
+        {
+            const LibVector4* second_centre = (const LibVector4*)&second->unk10;
+            const LibVector4* first_centre = (const LibVector4*)&first->unk10;
+            return func_0045E400(first_centre, first, second_centre, second);
+        }
+        case LIB_SHAPE_KIND_SPHERE:
+            if (!D_001B6574->unk20e_2)
+            {
+                // TODO: only two quadwords are saved, but the frame only matches with room for four.
+                LibVector4 registers[4];
+
+                vu0_save_vf6_vf8(registers);
+                func_004D9E70(D_001B6574);
+                vu0_restore_vf6_vf8(registers);
+            }
+
+            return func_0045E240((const LibVector4*)&first->unk10, first, (const LibVector4*)&second->unk10, 1,
+                                 &D_001B6574->inverse_transform);
+        }
+
+        break;
+    case LIB_SHAPE_KIND_SPHERE:
+        switch (second_info.unk00_0_3)
+        {
+        case LIB_SHAPE_KIND_BOX:
+            if (!D_001B6578->unk20e_2)
+            {
+                LibVector4 registers[4];
+
+                vu0_save_vf6_vf8(registers);
+                func_004D9E70(D_001B6578);
+                vu0_restore_vf6_vf8(registers);
+            }
+
+            return func_0045E240((const LibVector4*)&second->unk10, second, (const LibVector4*)&first->unk10, 0,
+                                 &D_001B6578->inverse_transform);
+        case LIB_SHAPE_KIND_SPHERE:
+        {
+            const LibVector4* second_sphere = (const LibVector4*)&second->unk10;
+            const LibVector4* first_sphere = (const LibVector4*)&first->unk10;
+            return func_0045E980(first_sphere, second_sphere);
+        }
+        }
+
+        break;
+    }
+
+    return false;
+}
+
+/** Shape mask of the second shape in a two-shape test. */
+extern "C" u8 D_001B628C;
+
+/**
+ * @brief Test two shapes, their records and their children against each other, recording the first touching pair.
+ *
+ * The bounding spheres are checked first, with the first shape's transform in vf1-vf4 and the second's in vf5-vf8.
+ * The caller's vf1-vf9 come back only when nothing is hit.
+ * @param first First shape.
+ * @param second Second shape.
+ * @return One when a pair of records touch, otherwise zero.
+ */
+s32 func_0045EBD0(FieldShapeOwner18* first, FieldShapeOwner18* second)
+{
+    if (!(D_001B6288 & first->unk08[1]) || !(D_001B628C & second->unk08[1]))
+    {
+        return 0;
+    }
+
+    LibTransform* first_transform = (LibTransform*)first->unk04;
+    LibTransform* second_transform = (LibTransform*)second->unk04;
+
+    if (first_transform == 0)
+    {
+        return 0;
+    }
+
+    if (second_transform == 0)
+    {
+        return 0;
+    }
+
+    LibVector4 saved[12];
+    LibVector4 scales;
+    LibVector4 gap;
+
+    vu0_save_vf1_vf9(saved);
+
+    if (!first_transform->matrix_ready)
+    {
+        first_transform->update_transform_matrix();
+    }
+
+    if (!second_transform->matrix_ready)
+    {
+        second_transform->update_transform_matrix();
+    }
+
+    refresh_shape_transpose(first_transform);
+    refresh_shape_transpose(second_transform);
+    refresh_shape_scale(first_transform);
+    refresh_shape_scale(second_transform);
+
+    scales.x = first_transform->unk204;
+    scales.y = second_transform->unk204;
+    vu0_sphere_sphere_gap_with(&first->unk10, &scales, &first_transform->transposed_transform, &second->unk10,
+                               &second_transform->transposed_transform);
+    vu0_store_vf12(&gap);
+
+    if (!(gap.x <= 0.0f))
+    {
+        vu0_restore_vf1_vf9(saved);
+        return 0;
+    }
+
+    s32 first_index = first->unk0e;
+    s16 second_index = second->unk0e;
+
+    if (first_index >= 0 && second_index >= 0)
+    {
+        D_001B6574 = first_transform;
+        D_001B6578 = second_transform;
+
+        if (!(D_001B6288 & first->unk08[0]) || !(D_001B628C & second->unk08[0]))
+        {
+            vu0_restore_vf1_vf9(saved);
+            return 0;
+        }
+
+        FieldShapeRecord20* first_record = &D_001B656C[first_index];
+
+        for (;;)
+        {
+            FieldShapeRecord20* second_record = &D_001B6570[second_index];
+
+            for (;;)
+            {
+                if (func_0045EA10(first_record, second_record))
+                {
+                    D_0050CB30.unk04 = first;
+                    D_0050CB30.unk08 = second;
+                    D_0050CB30.unk0c = first_record;
+                    D_0050CB30.unk10 = second_record;
+                    D_0050CB30.unk00 = 0;
+                    D_0050CB30.unk14 = D_001B6574;
+                    D_0050CB30.unk18 = D_001B6578;
+                    return 1;
+                }
+
+                if (second_record->unk0c.unk00_5)
+                {
+                    break;
+                }
+
+                second_record++;
+            }
+
+            if (first_record->unk0c.unk00_5)
+            {
+                break;
+            }
+
+            first_record++;
+        }
+    }
+
+    FieldShapeOwner18* first_child = first->unk00;
+    FieldShapeOwner18* second_child = second->unk00;
+
+    if (first_child != 0 && second_child != 0)
+    {
+        for (;;)
+        {
+            if (func_0045EBD0(first, second_child))
+            {
+                return 1;
+            }
+
+            if (second_child->is_last())
+            {
+                break;
+            }
+
+            second_child++;
+        }
+
+        for (;;)
+        {
+            if (func_0045EBD0(first_child, second))
+            {
+                return 1;
+            }
+
+            if (first_child->is_last())
+            {
+                break;
+            }
+
+            first_child++;
+        }
+    }
+    else if (first_child != 0)
+    {
+        for (;;)
+        {
+            if (func_0045EBD0(first_child, second))
+            {
+                return 1;
+            }
+
+            if (first_child->is_last())
+            {
+                break;
+            }
+
+            first_child++;
+        }
+    }
+    else if (second_child != 0)
+    {
+        for (;;)
+        {
+            if (func_0045EBD0(first, second_child))
+            {
+                return 1;
+            }
+
+            if (second_child->is_last())
+            {
+                break;
+            }
+
+            second_child++;
+        }
+    }
+
+    vu0_restore_vf1_vf9(saved);
+    return 0;
+}
+
+/**
+ * @brief Test whether a transform's transpose of its combined matrix is current.
+ * @param transform Transform.
+ * @return Whether the transpose is current.
+ */
+static inline bool transform_transpose_current(const LibTransform* transform)
+{
+    return transform->unk20e_0;
+}
+
+/**
+ * @brief Rebuild a transform's transpose of its combined matrix unless it is current.
+ * @param transform Transform.
+ */
+static inline void refresh_transform_transpose(LibTransform* transform)
+{
+    if (!transform_transpose_current(transform))
+    {
+        transform->unk20e_0 = 1;
+        transform->unk20e_1 = 0;
+        ee_transpose_matrix(&transform->transposed_transform, &transform->transform);
+    }
+}
+
+/**
+ * @brief Load two shapes' matrices into vf1-vf4 and vf5-vf8 and their largest axis scales into vf9.
+ * @param first First shape.
+ * @param second Second shape.
+ */
+extern "C" void func_0045F2B0(FieldShapeOwner18* first, FieldShapeOwner18* second)
+{
+    LibTransform* first_transform = (LibTransform*)first->unk04;
+    LibTransform* second_transform = (LibTransform*)second->unk04;
+
+    if (first_transform != 0 && second_transform != 0)
+    {
+        LibVector4 scales;
+
+        if (!first_transform->matrix_ready)
+        {
+            first_transform->update_transform_matrix();
+        }
+
+        if (!second_transform->matrix_ready)
+        {
+            second_transform->update_transform_matrix();
+        }
+
+        refresh_transform_transpose(first_transform);
+        refresh_transform_transpose(second_transform);
+        refresh_shape_scale(first_transform);
+        refresh_shape_scale(second_transform);
+        scales.x = first_transform->unk204;
+        scales.y = second_transform->unk204;
+        vu0_load_shape_pair(&first_transform->transposed_transform, &second_transform->transposed_transform, &scales);
+    }
+}
 
 /**
  * @brief Publish the two bound shape record arrays for subsequent predicates.
@@ -488,7 +2370,7 @@ s32 func_0045F5A0(void* object, void* other)
     u8* second = *(u8**)other + 0x30;
     D_001B656C = (struct FieldShapeRecord20*)*(void**)(first + 0xC);
     D_001B6570 = (struct FieldShapeRecord20*)*(void**)(*(u8**)other + 0xC);
-    return func_0045EBD0(first + 0x30, second);
+    return func_0045EBD0((FieldShapeOwner18*)(first + 0x30), (FieldShapeOwner18*)second);
 }
 
 /** Matrix func_0045F5E0 resets. */
@@ -1917,7 +3799,48 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462C70__
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462FC0__13LibDrawWidgetFP13LibDrawRecord);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00463500__13LibDrawWidgetFP13LibDrawRecordi);
+/**
+ * @brief Start the drawing packet: reset the block counts, open the main packet with its fixed GS setup, and open
+ *        the second block with the same setup when there's one.
+ * @param records Records to draw; unused.
+ * @param count Number of records; unused.
+ */
+void LibDrawWidget::func_00463500(LibDrawRecord* records, s32 count)
+{
+    unke4 = 0;
+    unke0 = 0;
+    unkdc = 0;
+    unkd8 = 0;
+    packet = (u64*)dma_address;
+    packet_cursor = (u64*)dma_address;
+
+    u64* cursor = packet_cursor;
+    cursor[0] = DMA_TAG(3, DMA_TAG_ID_CNT, 0);
+    cursor[2] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+    cursor[3] = 0xF077;
+    cursor[4] = 0x8007FF8001300000ULL;
+    cursor[5] = 0x0007FF86AA440000ULL;
+    cursor[6] = 0x356;
+    cursor[7] = 0;
+    packet_cursor = cursor + 8;
+    unk5c = (u8*)dma_address + unk48;
+    unk60 = unk5c;
+
+    if (unkac > 0)
+    {
+        unk64 = unk5c + unk4c;
+        unk68 = unk64;
+
+        u64* block = (u64*)unk68;
+        block[0] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+        block[1] = 0xF077;
+        block[2] = 0x8007FF8001300000ULL;
+        block[3] = 0x0007FF8622C10000ULL;
+        block[4] = 0x356;
+        block[5] = 0;
+        unk68 = (u8*)(block + 6);
+    }
+}
 
 #define LIB_ALIGN_CENTER 1
 
@@ -2030,7 +3953,163 @@ void LibDrawWidget::add_text(const char* text)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464040);
+/** Glyph code for a character the converter has no range for. */
+struct LibCharacterGlyph
+{
+    u8 character;
+    u16 code;
+};
+
+/** Glyph codes for the punctuation in ASCII text, ending with a zero character. */
+extern "C" const LibCharacterGlyph D_004ED230[];
+
+/**
+ * @brief Convert ASCII and half-width katakana text to glyph codes. A '~' switches between hiragana and katakana;
+ *        a following dakuten or handakuten mark is merged into the kana.
+ * @param widget Widget the codes are for; unused.
+ * @param codes Receives the glyph codes, ending with zero.
+ * @param text Text to convert.
+ * @return Number of glyphs written.
+ */
+extern "C" s32 func_00464040(LibDrawWidget* widget, u16* codes, const char* text)
+{
+    s32 count = 0;
+
+    if (text != 0)
+    {
+        u8 hiragana = 0;
+
+        while (1)
+        {
+            u8 character = *text++;
+            u16 code;
+
+            // TODO: Comparing with 0L (long is 64 bits here) is the only way I've found to get the sign extension before
+            // this test. My guess is the original compared the character with NULL.
+            if (character == 0L)
+            {
+                *codes = 0;
+                break;
+            }
+
+            if (character == '~')
+            {
+                hiragana ^= 1;
+                continue;
+            }
+
+            code = 0xF1;
+
+            if (character >= '0' && character <= '9')
+            {
+                code = character - 0x2F;
+            }
+            else if (character >= 'A' && character <= 'Z')
+            {
+                code = character - 0x33;
+            }
+            else if (character >= 'a' && character <= 'z')
+            {
+                code = character - 0x39;
+            }
+            else if (character == 0xB0)
+            {
+                code = 0x9D;
+            }
+            else if (character >= 0xA6 && character < 0xDE)
+            {
+                if (hiragana)
+                {
+                    if (character < 0xB0)
+                    {
+                        code = character - 0x64;
+                    }
+                    else if (static_cast<u8>(*text) == 0xDE)
+                    {
+                        text++;
+
+                        if (character >= 0xB6 && character < 0xC5)
+                        {
+                            code = character - 0x3C;
+                        }
+                        else if (character >= 0xCA && character < 0xCF)
+                        {
+                            code = character - 0x41;
+                        }
+                    }
+                    else if (static_cast<u8>(*text) == 0xDF)
+                    {
+                        text++;
+
+                        if (character >= 0xCA && character < 0xCF)
+                        {
+                            code = character - 0x3C;
+                        }
+                    }
+                    else
+                    {
+                        code = character - 0x64;
+                    }
+                }
+                else
+                {
+                    if (character < 0xB0)
+                    {
+                        code = character - 0x13;
+                    }
+                    else if (static_cast<u8>(*text) == 0xDE)
+                    {
+                        text++;
+
+                        if (character == 0xB3)
+                        {
+                            code = 0xCB;
+                        }
+                        else if (character >= 0xB6 && character < 0xC5)
+                        {
+                            code = character + 0x16;
+                        }
+                        else if (character >= 0xCA && character < 0xCF)
+                        {
+                            code = character + 0x11;
+                        }
+                    }
+                    else if (static_cast<u8>(*text) == 0xDF)
+                    {
+                        text++;
+
+                        if (character >= 0xCA && character < 0xCF)
+                        {
+                            code = character + 0x16;
+                        }
+                    }
+                    else
+                    {
+                        code = character - 0x13;
+                    }
+                }
+            }
+            else
+            {
+                u8 key;
+
+                for (const LibCharacterGlyph* entry = D_004ED230; (key = entry->character) != 0; entry++)
+                {
+                    if (key == character)
+                    {
+                        code = entry->code;
+                        break;
+                    }
+                }
+            }
+
+            *codes++ = code;
+            count++;
+        }
+    }
+
+    return count;
+}
 
 /**
  * @brief Text code callback: the name of party slot `index`.
@@ -2762,7 +4841,7 @@ extern "C" u8 D_00505D00[];
  * @param key Key to find.
  * @return The key's data in the slot's second section, or the placeholder text at D_00505D00 when it isn't there.
  */
-extern "C" void* func_00465340(FieldRuntime* runtime, s32 slot_index, s32 key)
+extern "C" void* func_00465340(FieldRuntime* runtime, u32 slot_index, s32 key)
 {
     void* result = D_00505D00;
     LibManagedResourceSlot* slot = &runtime->resource_slots[slot_index];
@@ -4387,7 +6466,7 @@ void LibObject1751A0::set_phase_period(u8 period)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004683E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004683E0__15LibObject1751A0Fv);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468590);
 

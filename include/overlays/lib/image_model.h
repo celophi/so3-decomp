@@ -208,6 +208,12 @@ public:
     void clear_image();
 
     /**
+     * @brief Point the setup packet at the renderer's first pass target: find its image once, look it up in the
+     *        texture cache, and copy its TEX0 (and its CLUT's, for the indexed formats) into the packet.
+     */
+    void func_004683E0();
+
+    /**
      * @brief Set the primitive the model draws, its blend mode and the packet values that go with them.
      * @param primitive Primitive kind, 0 to 6.
      * @param value Value stored in the packet and at unkade.

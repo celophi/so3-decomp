@@ -2,7 +2,9 @@
 #include "ee.h"
 #include "gs.h"
 #include "include_asm.h"
+#include "overlays/lib/segment_vu0.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/quaternion_vu0.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/text_0049B820.h"
@@ -3965,7 +3967,160 @@ extern "C" ResidentObject1B64F8* D_001B64F8;
 
 extern "C" char* func_004642E0(void* context, s32 index);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6A40);
+extern "C" s32 func_00464040(LibDrawWidget* widget, u16* codes, const char* text);
+
+extern "C" s32 func_00463E60(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
+
+/**
+ * @brief Count the glyphs the widget's text lays out, expanding numbers, names and item names.
+ * @param widget Text widget.
+ * @return Number of glyphs.
+ */
+extern "C" s32 func_004C6A40(LibTextWidget* widget)
+{
+    u16 codes[0x80];
+    s32 count = 0;
+    const u8* text;
+
+    if (widget->pending)
+    {
+        text = static_cast<const u8*>(func_00465340(g_field_runtime, widget->source, widget->key));
+    }
+    else
+    {
+        text = static_cast<const u8*>(widget->unk100);
+    }
+
+    while (*text)
+    {
+        s32 c = *text++;
+
+        if (c & 0x80)
+        {
+            s32 code = (c & 0x7F) | (*text++ << 7);
+
+            if (code & 0x4000)
+            {
+                switch (code)
+                {
+                case 0x4002:
+                case 0x4008:
+                case 0x401A:
+                case 0x4020:
+                    text++;
+                    break;
+                case 0x4005:
+                case 0x4006:
+                case 0x400A:
+                case 0x400C:
+                case 0x400E:
+                case 0x4014:
+                case 0x4015:
+                case 0x401E:
+                    text += 4;
+                    break;
+                case 0x4012:
+                    count += widget->format_number_codes(codes, g_field_runtime->message_arguments[*text++]);
+                    break;
+                case 0x4013:
+                case 0x4021:
+                {
+                    s32 index = *text++;
+
+                    index = code == 0x4013 ? index : g_field_runtime->message_arguments[index];
+                    count += func_00464040(widget, codes, func_004642E0(widget, index));
+                    break;
+                }
+                case 0x4022:
+                case 0x4023:
+                {
+                    s32 value = g_field_runtime->message_arguments[*text++];
+                    u16 id = 0;
+                    s32 variant = 0;
+
+                    if (code == 0x4022)
+                    {
+                        u16 key = value;
+                        bool valid = false;
+
+                        if (key > 0 && key < 0x2EF)
+                        {
+                            valid = true;
+                        }
+
+                        if (valid)
+                        {
+                            id = value;
+                        }
+                    }
+                    else
+                    {
+                        LibGameState* state = reinterpret_cast<LibGameState*>(D_001B64F8);
+                        s16 identifier = value;
+                        bool valid = false;
+
+                        if (identifier > 0 && identifier <= LIB_ALLOCATION_COUNT)
+                        {
+                            valid = true;
+                        }
+
+                        ItemCreationAllocationRecord* record;
+
+                        if (valid)
+                        {
+                            record = reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[identifier - 1]);
+                        }
+                        else
+                        {
+                            record = 0;
+                        }
+
+                        if (record != 0 && allocation_in_use(record))
+                        {
+                            id = record->definition_index() + 1;
+                            variant = record->modification_number;
+                        }
+                    }
+
+                    if (id)
+                    {
+                        count += func_00463E60(widget, codes, id, variant);
+                    }
+
+                    break;
+                }
+                case 0x4011:
+                    while (*text)
+                    {
+                        text++;
+                    }
+
+                    text++;
+                    break;
+                case 0x401C:
+                    while (*text)
+                    {
+                        count++;
+                        text++;
+                    }
+
+                    text++;
+                    break;
+                case 0x401D:
+                    count++;
+                    text++;
+                    break;
+                }
+
+                continue;
+            }
+        }
+
+        count++;
+    }
+
+    return count;
+}
 
 extern "C" void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, u8 flag)
 {
@@ -5172,44 +5327,6 @@ LibClass1788B0::LibClass1788B0()
 }
 
 
-/** LibClass1734B0 entry with vtable D_1789C0 in main data; only its constructor and destructor are known. */
-class LibClass1789C0 : public LibClass1734B0
-{
-public:
-    /** @brief Start as an unattached entry of kind 2 with unk54 set to three. */
-    LibClass1789C0();
-
-    /** @brief Destroy the entry. */
-    virtual ~LibClass1789C0();
-
-    /**
-     * @brief Use a morph shape resource without owning it, and apply its weight.
-     * @param value Resource data.
-     */
-    virtual void set_borrowed_data(void* value);
-
-    /**
-     * @brief Return the entry's type code.
-     * @return 67.
-     */
-    virtual s32 func_slot14();
-
-    /**
-     * @brief Note whether every bit is set, count the idle frames down and rewind the records.
-     * @return Zero on the step the countdown ends, otherwise one.
-     */
-    virtual s32 func_slot1C();
-
-    LibMorphShape* shape;
-    u8* records;
-    u8* cursor;
-    u8 unk3c[4];
-    float clamped_weight;
-    u8 unk44[0xC];
-    float weight;
-    s32 idle_frames;
-};
-
 /** @brief Destroy the entry. */
 LibClass1789C0::~LibClass1789C0()
 {
@@ -5284,9 +5401,10 @@ void lib_morph_target_set_weight(LibMorphTarget* target, float weight)
 
 /**
  * @brief Note whether every bit is set, count the idle frames down and rewind the records.
+ * @param root Model transform; unused.
  * @return Zero on the step the countdown ends, otherwise one.
  */
-s32 LibClass1789C0::func_slot1C()
+s32 LibClass1789C0::func_slot1C(LibTransform* root)
 {
     if (shape->bit_count == shape->unk08)
     {
@@ -5635,9 +5753,89 @@ LibListReceiver::LibListReceiver()
     sentinel.next = &sentinel;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA090);
+#define LIB_FLOAT_BITS_ONE 0x3F800000
+#define LIB_FLOAT_BITS_MINUS_ONE 0xBF800000
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA180);
+/**
+ * @brief Compute three sines on VU0 and store them.
+ * @param output Receives the sines of x, y and z.
+ * @param x First angle in radians.
+ * @param y Second angle in radians.
+ * @param z Third angle in radians.
+ */
+void func_004CA090(FieldVec4A* output, float x, float y, float z)
+{
+    // TODO: Same shape as func_004CD2C0 (signs as float bit patterns, `!!` odd tests).
+    union
+    {
+        float angles[4];
+        u32 signs[4];
+    } values __attribute__((aligned(16)));
+    s32 count_words[4] __attribute__((aligned(16)));
+
+    values.angles[0] = x;
+    values.angles[1] = y;
+    values.angles[2] = z;
+    vu0_sines_load(&values);
+    u32 negative = LIB_FLOAT_BITS_MINUS_ONE;
+    vu0_sines_reduce();
+    s32* counts = count_words;
+    vu0_sines_store_counts(counts);
+    u32 positive = LIB_FLOAT_BITS_ONE;
+    vu0_sines_evaluate();
+
+    bool odd_x = !!(counts[0] & 1);
+    bool odd_y = !!(counts[1] & 1);
+    bool odd_z = !!(counts[2] & 1);
+
+    values.signs[0] = odd_x ? negative : positive;
+    values.signs[1] = odd_y ? negative : positive;
+    values.signs[2] = odd_z ? negative : positive;
+    vu0_sines_apply_signs(&values);
+    vu0_sines_store(output);
+}
+
+/**
+ * @brief Find the squared distance from a point to a segment and the fraction along it of the closest point.
+ * @param segment Aligned segment: start, then axis.
+ * @param point Aligned point.
+ * @param fraction Receives the fraction along the axis, clamped to [0, 1].
+ * @return The squared distance.
+ */
+extern "C" float func_004CA180(const LibVector4* segment, const LibVector4* point, float* fraction)
+{
+    LibVector4 projection;
+    LibVector4 length;
+
+    vu0_segment_project_start(point, segment, segment + 1);
+    vu0_segment_store_dot(&projection);
+
+    if (projection.x <= 0.0f)
+    {
+        projection.x = 0.0f;
+        vu0_segment_square_start_offset();
+    }
+    else
+    {
+        vu0_segment_start_fraction(&length);
+
+        if (!(projection.x < length.x))
+        {
+            projection.x = 1.0f;
+            vu0_segment_end_offset();
+        }
+        else
+        {
+            vu0_segment_inner_offset(&projection);
+        }
+
+        vu0_segment_square_offset();
+    }
+
+    *fraction = projection.x;
+    vu0_segment_store_distance(&projection);
+    return projection.x;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA270);
 
@@ -6067,11 +6265,105 @@ extern "C" float func_004CCD90(float value)
     return (fifth_term + result) + (1.0f / 720.0f) * (cubed * cubed);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCE10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCEE0);
+extern "C" void func_004CCEE0(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t);
+
+/**
+ * @brief Interpolate a rotation curve segment: slerp the keys and the control rotations, then slerp those two by
+ *        2t(1 - t).
+ * @param output Receives the rotation.
+ * @param from Rotation at the start of the segment.
+ * @param to Rotation at the end of the segment.
+ * @param from_control Control rotation of the start key.
+ * @param to_control Control rotation of the end key.
+ * @param t Position in the segment, zero to one.
+ */
+extern "C" void func_004CCE10(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, const FieldVec4B* from_control, const FieldVec4B* to_control,
+                              float t)
+{
+    FieldVec4B keys;
+    FieldVec4B controls;
+
+    func_004CCEE0(&keys, from, to, t);
+    float weight = 2.0f * (1.0f - t) * t;
+    vu0_quaternion_norm_finish(&keys);
+    func_004CCEE0(&controls, from_control, to_control, t);
+    vu0_quaternion_norm_finish(&controls);
+    func_004CCEE0(output, &keys, &controls, weight);
+    vu0_quaternion_norm_finish(output);
+}
+
+/**
+ * @brief Start a spherical interpolation between two rotations (linear when they're within about 18 degrees of
+ *        parallel); the result is left in vf16 with its normalization pending in Q, for vu0_quaternion_norm_finish.
+ * @param output Destination the caller stores into; unused here.
+ * @param from Rotation at t = 0.
+ * @param to Rotation at t = 1.
+ * @param t Interpolation position.
+ */
+extern "C" void func_004CCEE0(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t)
+{
+    float lower_dot = -0.95f;
+    float dot = ((from->x * to->x + from->y * to->y) + from->z * to->z) + from->w * to->w;
+    float full_weight = 1.0f;
+    float upper_dot = 0.95f;
+
+    if (dot > lower_dot && dot < upper_dot)
+    {
+        float angle = func_004CD010(dot);
+        func_004CD2C0(angle * (full_weight - t), angle * t, angle);
+        vu0_quaternion_spherical_positive_wait(from, to);
+    }
+    else
+    {
+        FieldVec4A weights;
+        weights.y = t;
+        weights.x = full_weight - t;
+        vu0_quaternion_linear_positive(from, to, &weights);
+    }
+
+    vu0_quaternion_norm_begin();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CD010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CD2C0);
+/**
+ * @brief Start the native three-angle trigonometric approximation, leaving its result in VU0 vf13.
+ *
+ * The caller must wait for VU0 before consuming the result.
+ * @param x First angle in radians.
+ * @param y Second angle in radians.
+ * @param z Third angle in radians.
+ */
+void func_004CD2C0(float x, float y, float z)
+{
+    // TODO: The signs only match as float bit patterns moved through integer registers, and the odd tests only with
+    // `!!`, so the original probably built the sign vector some other way.
+    union
+    {
+        float angles[4];
+        u32 signs[4];
+    } values __attribute__((aligned(16)));
+    s32 count_words[4] __attribute__((aligned(16)));
+
+    values.angles[0] = x;
+    values.angles[1] = y;
+    values.angles[2] = z;
+    vu0_sines_load(&values);
+    u32 negative = LIB_FLOAT_BITS_MINUS_ONE;
+    vu0_sines_reduce();
+    s32* counts = count_words;
+    vu0_sines_store_counts(counts);
+    u32 positive = LIB_FLOAT_BITS_ONE;
+    vu0_sines_evaluate();
+
+    bool odd_x = !!(counts[0] & 1);
+    bool odd_y = !!(counts[1] & 1);
+    bool odd_z = !!(counts[2] & 1);
+
+    values.signs[0] = odd_x ? negative : positive;
+    values.signs[1] = odd_y ? negative : positive;
+    values.signs[2] = odd_z ? negative : positive;
+    vu0_sines_apply_signs(&values);
+}
 

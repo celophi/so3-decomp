@@ -18,6 +18,7 @@
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/grid_emission.h"
+#include "overlays/lib/text_0043BD00.h"
 
 extern LibTrackPool<LibPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
 
@@ -2537,7 +2538,47 @@ void LibClass174120::copy_settings(const LibClass173A40* source)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00445950);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00446EA0);
+extern "C" void func_0043CCE0(LibColliderList* list, LibTransform* source);
+
+extern "C" void func_004349D0(void* force, LibTransform* source);
+
+/**
+ * @brief Set up a grid's particle pass: restart its index, copy the source's transposed matrix, refresh its colliders
+ *        and force field (vf18 from the force, else zero), and load the pass constants (vf17, the frame delta in vf5,
+ *        vf30 and the 255 colour limit in vf29). Vtable slot 0x0C of LibClass174120 and LibClass173F80.
+ * @param object Grid.
+ * @param source Transform the grid is attached to.
+ */
+extern "C" void func_00446EA0(LibClass174120* object, LibTransform* source)
+{
+    object->unk2c = 0;
+    *(unsigned __int128*)&object->unk60[0] = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[0];
+    *(unsigned __int128*)&object->unk60[1] = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[1];
+    *(unsigned __int128*)&object->unk60[2] = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[2];
+    *(unsigned __int128*)&object->unk60[3] = reinterpret_cast<const unsigned __int128*>(&source->transposed_transform)[3];
+
+    if (object->unkbc)
+    {
+        func_0043CCE0(static_cast<LibColliderList*>(object->unkbc), source);
+    }
+
+    if (object->unkb8)
+    {
+        func_004349D0(object->unkb8, source);
+        vu0_load_grid_force_vf18(static_cast<u8*>(object->unkb8) + 0x10);
+    }
+    else
+    {
+        vu0_clear_grid_force_vf18();
+    }
+
+    vu0_clear_grid_vf17();
+    vu0_set_emission_delta(g_frame_seconds);
+
+    FieldVec4A limit(255.0f, 255.0f, 255.0f, 255.0f);
+    vu0_clear_grid_vf30();
+    vu0_load_grid_color_limit(&limit);
+}
 
 /** @brief Free the storage unless it's borrowed, then destroy the grid. */
 LibClass174120::~LibClass174120()
@@ -3226,8 +3267,6 @@ extern "C" LibRenderDataRecord* func_00448910(u32 first_key, u32 second_key)
     return 0;
 }
 
-#define LIB_TEXTURE_TAG_LATF 0x4674404C
-
 /**
  * @brief Find an image by its two keys, skipping one resource: MLPS images are layer render targets, LATF the
  * renderer's first pass target, and the rest are searched in the registered resources, newest first.
@@ -3480,7 +3519,49 @@ s32 LibPooledQuaternionCurveTrack::read_key(s32 index, float* key, void* value, 
 }
 
 // Every instruction matches; the two vector copies in the shift loop use each other's stack slots.
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", insert_curve_key__29LibPooledQuaternionCurveTrackFifPC10FieldVec4APC10FieldVec4APC10FieldVec4A);
+/**
+ * @brief Insert a keyframe with its control rotation, moving the later keys up.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @param control Control rotation.
+ * @param unused Unused.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibPooledQuaternionCurveTrack::insert_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused)
+{
+    s32 count;
+    s32 i;
+
+    count = state.key_count;
+
+    if (index >= count)
+    {
+        return 0;
+    }
+
+    if (count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (i = count; i > index; i--)
+    {
+        key_array[i] = key_array[i - 1];
+    }
+
+    key_array[index].value = *value;
+    key_array[index].control = *control;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.key_count++;
+    return 1;
+}
 
 /**
  * @brief Replace an indexed keyframe and its control rotation.

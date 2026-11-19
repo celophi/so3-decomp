@@ -76,6 +76,21 @@ static inline void vu0_start_microprogram_ae8(void)
 }
 
 /**
+ * @brief Load a matrix into vf1-vf4 and start the microprogram at 0x830 on it.
+ * @param matrix Aligned matrix.
+ * @see Lib's matrix-to-angles at 0x4CEBA0; vu0_start_microprogram_830_scale_rows runs the same program.
+ */
+static inline void vu0_start_microprogram_830_matrix(const void* matrix)
+{
+    asm __volatile__("lqc2 $vf1, 0x0(%0)\n"
+                     "lqc2 $vf2, 0x10(%0)\n"
+                     "lqc2 $vf3, 0x20(%0)\n"
+                     "lqc2 $vf4, 0x30(%0)\n"
+                     "nop\n"
+                     "vcallms 0x830" : : "r"(matrix) : "memory");
+}
+
+/**
  * @brief Start the microprogram at 0x830 and scale the rows in vf1-vf3 by vf17.
  * @see vu0_load_scale_vf17.
  */
@@ -183,6 +198,58 @@ static inline void vu0_multiply_store_vf8(void* base, void* result)
                      "sqc2 $vf10, 0x10(%1)\n"
                      "sqc2 $vf11, 0x20(%1)\n"
                      "sqc2 $vf8, 0x30(%1)" : : "r"(base), "r"(result) : "memory");
+}
+
+/**
+ * @brief Multiply the rows in vf1-vf3 by the matrix in vf5-vf7 and vf4 and store only the product.
+ * @param result Aligned destination matrix.
+ * @see vu0_multiply_store_vf4, which also stores the rows; Lib's func_004DA730 only wants the product.
+ */
+static inline void vu0_multiply_store_result_vf4(void* result)
+{
+    asm __volatile__(
+                     "vmulax.xyzw $ACC, $vf5, $vf1x\n"
+                     "vmadday.xyzw $ACC, $vf6, $vf1y\n"
+                     "vmaddaz.xyzw $ACC, $vf7, $vf1z\n"
+                     "vmaddw.xyzw $vf9, $vf4, $vf1w\n"
+                     "vmulax.xyzw $ACC, $vf5, $vf2x\n"
+                     "vmadday.xyzw $ACC, $vf6, $vf2y\n"
+                     "vmaddaz.xyzw $ACC, $vf7, $vf2z\n"
+                     "vmaddw.xyzw $vf10, $vf4, $vf2w\n"
+                     "vmulax.xyzw $ACC, $vf5, $vf3x\n"
+                     "vmadday.xyzw $ACC, $vf6, $vf3y\n"
+                     "vmaddaz.xyzw $ACC, $vf7, $vf3z\n"
+                     "vmaddw.xyzw $vf11, $vf4, $vf3w\n"
+                     "sqc2 $vf9, 0x0(%0)\n"
+                     "sqc2 $vf10, 0x10(%0)\n"
+                     "sqc2 $vf11, 0x20(%0)\n"
+                     "sqc2 $vf4, 0x30(%0)" : : "r"(result) : "memory");
+}
+
+/**
+ * @brief Multiply the rows in vf1-vf3 by the matrix in vf5-vf7 and vf8 and store only the product.
+ * @param result Aligned destination matrix.
+ * @see vu0_multiply_store_vf8, which also stores the rows; Lib's func_004DA730 only wants the product.
+ */
+static inline void vu0_multiply_store_result_vf8(void* result)
+{
+    asm __volatile__(
+                     "vmulax.xyzw $ACC, $vf5, $vf1x\n"
+                     "vmadday.xyzw $ACC, $vf6, $vf1y\n"
+                     "vmaddaz.xyzw $ACC, $vf7, $vf1z\n"
+                     "vmaddw.xyzw $vf9, $vf8, $vf1w\n"
+                     "vmulax.xyzw $ACC, $vf5, $vf2x\n"
+                     "vmadday.xyzw $ACC, $vf6, $vf2y\n"
+                     "vmaddaz.xyzw $ACC, $vf7, $vf2z\n"
+                     "vmaddw.xyzw $vf10, $vf8, $vf2w\n"
+                     "vmulax.xyzw $ACC, $vf5, $vf3x\n"
+                     "vmadday.xyzw $ACC, $vf6, $vf3y\n"
+                     "vmaddaz.xyzw $ACC, $vf7, $vf3z\n"
+                     "vmaddw.xyzw $vf11, $vf8, $vf3w\n"
+                     "sqc2 $vf9, 0x0(%0)\n"
+                     "sqc2 $vf10, 0x10(%0)\n"
+                     "sqc2 $vf11, 0x20(%0)\n"
+                     "sqc2 $vf8, 0x30(%0)" : : "r"(result) : "memory");
 }
 
 #endif

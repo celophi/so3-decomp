@@ -10,6 +10,7 @@
 #include "overlays/lib/clip_region.h"
 #include "overlays/lib/transform_owner_inlines.h"
 #include "overlays/lib/text_004095C0.h"
+#include "overlays/lib/character_record.h"
 #include "main/resident_data.h"
 #include "main/entry_table.h"
 #include "main/system.h"
@@ -1145,12 +1146,93 @@ const LibVector4* LibClass172120::get_bounding_sphere()
     return reinterpret_cast<const LibVector4*>(result);
 }
 
+extern "C" u8 D_001B64A8;
 
+/** Per-level rows of six learned codes, picked by a slot's row index. */
+extern "C" const u8* D_004EC22C[];
 
+/**
+ * @brief Build a party slot's record at its level and learn the codes of its row.
+ *
+ * Slots outside zero through two, or at a level outside one through ten, only
+ * get the default record. Each learned code also takes the next battle skill
+ * index entry. The battle strategy is reset and the first anti-attack aura chosen.
+ * @param slot Party slot, from zero through two, or -1.
+ * @param output Record func_004076D0 fills.
+ * @param equipment Character equipment record.
+ */
+void LibClass3F5B80::func_003F45F0(s32 slot, LibResourceRecordC4* output, LibCharacterEquipment* equipment)
+{
+    LibClass3F5B80Buffer* data = buffer;
+    s32 level;
+    const u8* codes;
+    s32 i;
 
+    if (slot >= 0 && slot < 3)
+    {
+        level = data->unk678[slot];
+    }
+    else
+    {
+        level = -1;
+    }
 
+    if (level <= 0 || level > 10)
+    {
+        func_004076D0(output, (LibResourceRecord114*)equipment, 0);
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F45F0);
+    D_001B64A8 = 1;
+    func_004076D0(output, (LibResourceRecord114*)equipment, level);
+    D_001B64A8 = 0;
+    codes = D_004EC22C[level] + data->unk67B[slot] * 6;
+
+    for (i = 0; i < 6; i++)
+    {
+        s32 code = codes[i];
+        bool learned = false;
+
+        if (code > 0 && code < 30)
+        {
+            s32 amount;
+
+            if (code == 1)
+            {
+                if (level == 9)
+                {
+                    amount = 980;
+                }
+                else
+                {
+                    amount = 175;
+                }
+            }
+            else
+            {
+                amount = 120;
+            }
+
+            func_0040A370(equipment, level, code, amount);
+            learned = true;
+        }
+        else if (code >= 30 && code < 155)
+        {
+            func_0040A5C0(equipment, level, code, code == 0x92 ? 705 : 150);
+            learned = true;
+        }
+
+        if (learned)
+        {
+            set_battle_skill_index(equipment, i, func_0040AE00(level, code));
+        }
+    }
+
+    equipment->battle_strategy = 0;
+    equipment->character_resource_variant = data->unk675[slot];
+    equipment->encoded_anti_attack_aura_mask = 1 ^ 0x77;
+    set_tactical_skill_state(equipment, 4, 1);
+}
 
 /**
  * @brief Store the halfword at 0x66C, using 1000 for values outside 0 to 999.
