@@ -1,5 +1,6 @@
 #include "include_asm.h"
 #include "main/resident_data.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_0013CD50.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/scene.h"
@@ -7,8 +8,11 @@
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/image_model.h"
+#include "overlays/lib/transform_owner_inlines.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/vector_inlines.h"
+#include "overlays/lib/text_00419A70.h"
 
 
 typedef struct HalfwordSetterOwnertext_0046AE20
@@ -314,16 +318,6 @@ public:
     }
 };
 
-/** Partial grid with vtable D_173DA0 in main data. */
-class LibClass173DA0 : public LibClass173E70
-{
-public:
-    /** @brief Destroy the grid. */
-    virtual ~LibClass173DA0()
-    {
-    }
-};
-
 /** Partial grid with vtable D_176AE0 in main data. */
 class LibClass176AE0 : public LibClass173DA0
 {
@@ -470,26 +464,6 @@ public:
     virtual ~LibClass176D50();
 };
 
-/** Shared object whose reference count is at offset 0x8. */
-class LibReferenceCounted
-{
-public:
-    /** @brief Destroy the shared object. */
-    virtual ~LibReferenceCounted();
-
-    u8 unk04[4];
-    s32 reference_count;
-};
-
-/** Partial Lib object with vtable D_1751A0 in main data; it holds one counted reference at offset 0xA80. */
-struct LibObject1751A0
-{
-    u8 unk00[0xA80];
-    LibReferenceCounted* reference;
-    u8 unkA84[0x58];
-    u8 holds_reference;
-};
-
 /** Partial receiver with a flag byte at 0x8D. */
 typedef struct LibFlagState8D
 {
@@ -565,6 +539,9 @@ class LibClass175390 : public LibListSentinel
 public:
     /** @brief Destroy the node. */
     virtual ~LibClass175390();
+
+    u8 unk0c[4];
+    LibPointerList* items;
 };
 
 /** Transform with one extra vector, with vtable D_1753A0 in main data. */
@@ -675,6 +652,25 @@ typedef struct LibLinkGroup
     u8 unk499_2_7 : 6;
 } LibLinkGroup;
 
+/** Partial transform record of a scene entry. */
+typedef struct LibSceneTransformRecord
+{
+    u8 unk00[4];
+    s32 parent;
+    u8 unk08[0xC];
+    u32 unk14;
+    u8 unk18[0xC];
+    float orientation[4];
+    float translation[3];
+    u8 unk40[4];
+    float scale[3];
+    u8 unk50[4];
+    float offset_rotation[4];
+    float offset_translation[3];
+    u8 unk70[4];
+    float offset_scale[3];
+} LibSceneTransformRecord;
+
 /** Partial kind-1/8 renderable entry object. */
 typedef struct LibRenderableEntryObject
 {
@@ -691,15 +687,17 @@ extern "C"
 {
     void func_0047A130(void* object, void* cell, void* row, s32 index, void* extra4, void* extra5, void* extra6, void* extra7, void* extra8);
 
-    void func_004B3D80(void* object, void* handle);
-
     void func_004A22C0(void* object);
 
     s32 func_004A9000(void* object);
 
-    void func_0046B480(LibObject1751A0* holder, LibReferenceCounted* reference);
+    void func_0046B480(LibObject1751A0* holder, LibGridBase* reference);
 
     void func_0046C090(LibEntryManager* manager, void* handle);
+
+    void lib_collect_entry_tree(LibEntryManager* manager, s32 index, LibEntryHandleCollection* collection);
+
+    void func_0046C3F0(LibEntryManager* scene, LibTransform* object, const LibSceneTransformRecord* record);
 
     void func_004720F0(LibFloat4* vector);
 
@@ -855,9 +853,81 @@ static inline void lib_set_translation(LibOrientedTransform* object, float x, fl
     object->translation.w = 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046AE20);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", set_image__15LibObject1751A0FP22LibResourceChunkHeaderUi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B0D0);
+/** @brief Size and allocate the packet buffers for the grid, and point the DMA chains at them. */
+void LibObject1751A0::allocate_packets()
+{
+    if (reference != 0 && reference->func_slotc0())
+    {
+        s32 unit = reference->func_slot38();
+        s32 batch = 0x30 / unit;
+
+        switch (kind)
+        {
+        case 2:
+        case 4:
+            batch /= 2;
+            break;
+        case 3:
+        case 5:
+        case 6:
+            batch = 0x12 / unit;
+            break;
+        }
+
+        batch *= unit;
+        delete packet;
+        packet = 0;
+        delete unka84;
+        unka84 = 0;
+        delete unka90;
+        unka90 = 0;
+        delete unka8c;
+        unka8c = 0;
+        s32 batches = (batch + unit * reference->func_slot34() - 1) / batch;
+        s32 size = batches * 4 + 0x18;
+        unka84 = new (0) u8[size * 32];
+        unka88 = unka84 + size * 16;
+        unka8c = new (0) u8[0x400];
+        s32 qwords = (batches * 0x20u + batch * (batches * 0x30u)) / 16 + 0x12;
+
+        if (!copied)
+        {
+            packet = new (0) LibImagePacket;
+            unka90 = new (0) u8[qwords * 32];
+            unka94 = unka90 + qwords * 16;
+        }
+
+        if (unka84 == 0 || (!copied && unka90 == 0) || unka8c == 0 || (!copied && packet == 0))
+        {
+            delete packet;
+            delete unka84;
+            delete unka90;
+            delete unka8c;
+            packet = 0;
+            unka84 = 0;
+            unka90 = 0;
+            unka8c = 0;
+            return;
+        }
+
+        if (packet)
+        {
+            memset_guess(packet, 0, sizeof(LibImagePacket));
+        }
+
+        chains[0].tags[0][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka8c + 0x40);
+        chains[1].tags[0][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka8c + 0x40);
+        chains[0].tags[1][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka84 + 0x40);
+        chains[1].tags[1][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka88 + 0x40);
+        chains[0].tags[2][0] = DMA_TAG_ID_END;
+        chains[1].tags[2][0] = DMA_TAG_ID_END;
+        FlushCache(0);
+        unkadd = 0;
+        next_cell = 0;
+    }
+}
 
 /**
  * @brief Release the counted reference the object holds and clear it.
@@ -865,28 +935,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B0D0);
  */
 void func_0046B3F0(LibObject1751A0* object)
 {
-    LibReferenceCounted* reference = object->reference;
-
-    if (reference)
-    {
-        if (object->holds_reference)
-        {
-            if (reference->reference_count > 0)
-            {
-                reference->reference_count--;
-            }
-        }
-        else if (reference->reference_count > 0)
-        {
-            if (--reference->reference_count == 0)
-            {
-                delete reference;
-            }
-        }
-    }
-
-    object->holds_reference = 0;
-    object->reference = 0;
+    object->release_reference();
 }
 
 /**
@@ -894,28 +943,84 @@ void func_0046B3F0(LibObject1751A0* object)
  * @param holder Object that keeps the reference.
  * @param reference Shared object to hold.
  */
-void func_0046B480(LibObject1751A0* holder, LibReferenceCounted* reference)
+void func_0046B480(LibObject1751A0* holder, LibGridBase* reference)
 {
-    holder->holds_reference = 1;
-    holder->reference = reference;
-    reference->reference_count++;
+    holder->hold_reference(reference);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B4A0);
+/** Registry of the image resources in use. */
+extern "C" LibImageRegistry* g_image_registry;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B620);
+/** @brief Let go of the shared object, unregister the image and free the buffers. */
+LibObject1751A0::~LibObject1751A0()
+{
+    release_reference();
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B7D0);
+    if (registered)
+    {
+        func_004D0260(g_image_registry, this);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B7E0);
+    delete packet;
+    delete unka84;
+    delete unka90;
+    delete unka8c;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B7F0);
+/** @brief Start without an image, with an open bounding box and two texture upload records. */
+LibObject1751A0::LibObject1751A0()
+{
+    set_type_id(0x400);
+    clear_vector(&bounding_sphere);
+    bounding_sphere.w = 1.0f;
+    bounding_sphere.w = 10000.0f;
+    set_vector(&box_min, -10000.0f, -10000.0f, -10000.0f, 0.0f);
+    set_vector(&box_max, 10000.0f, 10000.0f, 10000.0f, 0.0f);
+    diagonal = 1.0f;
+    unkaa4 = 10.0f;
+    unka98 = -1;
+    unka9c = -1;
+    unkae6 = 0;
+    holds_reference = 0;
+    reference = 0;
+    unka84 = 0;
+    unka88 = 0;
+    unka90 = 0;
+    unka94 = 0;
+    packet = 0;
+    unka8c = 0;
+    unkade = 0;
+    unkada = 1;
+    unkadb = 1;
+    next_cell = 0;
+    unkadf = 0;
+    unkabc = 0.0f;
+    unkac0 = 1.0f;
+    unkae0 = 0;
+    image = 0;
+    unkae4 = 0;
+    registered = 0;
+    unkacc = 0;
+    user_count = 0;
+    phase = 0;
+    phase_period = 0;
+    unkaa8 = 10.0f;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B800);
+    s32 i = 0;
+    LibVector4* row = unk240;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B810);
+    do
+    {
+        set_vector(&row[i], 1e-10f, 1e-10f, 1e-10f, 1e-10f);
+    } while (++i < 4);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046B820);
+    unkae3 = 0;
+    unkac8 = 0;
+    unkaac = 0;
+    copied = 0;
+    source = 0;
+    FlushCache(0);
+}
 
 /** @brief Destroy the look-at transform and its transform base. */
 LibLookAtTransform::~LibLookAtTransform()
@@ -1054,7 +1159,81 @@ void func_0046C090(LibEntryManager* manager, void* handle)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C180);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C3F0);
+/**
+ * @brief Set a transform's offset translation (w one) and rebuild its offset matrix.
+ * @param object Transform.
+ * @param x Translation x.
+ * @param y Translation y.
+ * @param z Translation z.
+ */
+static inline void lib_set_offset_translation(LibTransform* object, float x, float y, float z)
+{
+    object->offset_translation.x = x;
+    object->offset_translation.y = y;
+    object->offset_translation.z = z;
+    object->offset_translation.w = 1.0f;
+    lib_rebuild_offset_transform(object);
+    object->transform_dirty = 1;
+}
+
+/**
+ * @brief Set a transform's offset rotation quaternion and rebuild its offset matrix.
+ * @param object Transform.
+ * @param x Quaternion x.
+ * @param y Quaternion y.
+ * @param z Quaternion z.
+ * @param w Quaternion w.
+ */
+static inline void lib_set_offset_rotation(LibTransform* object, float x, float y, float z, float w)
+{
+    object->offset_rotation.x = x;
+    object->offset_rotation.y = y;
+    object->offset_rotation.z = z;
+    object->offset_rotation.w = w;
+    lib_rebuild_offset_transform(object);
+    object->transform_dirty = 1;
+}
+
+/**
+ * @brief Set a transform's offset scale and rebuild its offset matrix.
+ * @param object Transform.
+ * @param x Scale x.
+ * @param y Scale y.
+ * @param z Scale z.
+ */
+static inline void lib_set_offset_scale(LibTransform* object, float x, float y, float z)
+{
+    object->offset_scale.x = x;
+    object->offset_scale.y = y;
+    object->offset_scale.z = z;
+    lib_rebuild_offset_transform(object);
+    object->transform_dirty = 1;
+}
+
+/**
+ * @brief Set a transform up from a scene record: its parent entry, flags, transform and offset transform.
+ * @param scene Scene holding the parent entry.
+ * @param object Transform to set up.
+ * @param record Transform record; a negative parent index leaves the parent alone.
+ */
+void func_0046C3F0(LibEntryManager* scene, LibTransform* object, const LibSceneTransformRecord* record)
+{
+    if (record->parent >= 0)
+    {
+        object->parent_transform = static_cast<LibTransform*>(scene->entries[record->parent].handle);
+    }
+
+    object->unk20c = scene->unk9E ? record->unk14 : record->unk14 | 0x1C0;
+    object->set_translation(record->translation[0], record->translation[1], record->translation[2]);
+    object->set_orientation_components(record->orientation[0], record->orientation[1], record->orientation[2],
+                                       record->orientation[3]);
+    object->set_scale(record->scale[0], record->scale[1], record->scale[2]);
+    lib_set_offset_translation(object, record->offset_translation[0], record->offset_translation[1],
+                               record->offset_translation[2]);
+    lib_set_offset_rotation(object, record->offset_rotation[0], record->offset_rotation[1], record->offset_rotation[2],
+                            record->offset_rotation[3]);
+    lib_set_offset_scale(object, record->offset_scale[0], record->offset_scale[1], record->offset_scale[2]);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C540);
 
@@ -1062,7 +1241,14 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046DE90);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046F910);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004713C0);
+/** @brief Clear the link table and its counts. */
+LibClass173070::LibClass173070()
+{
+    unk08 = 0;
+    links = 0;
+    link_count = 0;
+    unk20 = 0;
+}
 
 /**
  * @brief Copy the extra vector and the transform state.
@@ -1174,7 +1360,44 @@ s32 lib_get_entry_child_count(LibEntryManager* manager, s32 index)
     return manager->entries[index].metadata->child_count;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472220);
+/**
+ * @brief Flag an entry and the entries below it (draw flag 0x8) and add their handles to a collection.
+ * @param manager Scene holding the entries.
+ * @param index Entry to start from; an entry with unk00 set is skipped with everything below it.
+ * @param collection Collection that receives the handles.
+ */
+void lib_collect_entry_tree(LibEntryManager* manager, s32 index, LibEntryHandleCollection* collection)
+{
+    LibManagedEntry* entry = &manager->entries[index];
+
+    if (entry->unk00 == 0)
+    {
+        static_cast<LibTransformOwner*>(entry->handle)->draw_flags |= LIB_DRAW_FLAG_0008;
+        lib_append_entry_handle(collection, manager->entries[index].handle);
+        LibEntryMetadata* metadata = manager->entries[index].metadata;
+        s32 count = metadata->child_count;
+        s32 i;
+        s32* children = static_cast<s32*>(lib_get_entry_data_inline(manager, metadata));
+
+        for (i = 0; i < count; i++)
+        {
+            s32 child = children[i];
+
+            if (manager->entries[child].unk00 == 0)
+            {
+                lib_object_add_flags(manager->entries[child].handle, LIB_DRAW_FLAG_0008);
+                lib_append_entry_handle(collection, manager->entries[child].handle);
+                s32 child_count = manager->entries[child].metadata->child_count;
+                s32* grandchildren = static_cast<s32*>(lib_get_entry_data(manager, manager->entries[child].metadata));
+
+                for (s32 j = 0; j < child_count; j++)
+                {
+                    lib_collect_entry_tree(manager, grandchildren[j], collection);
+                }
+            }
+        }
+    }
+}
 
 /**
  * @brief Add bits to the object's flags.
@@ -1370,7 +1593,53 @@ void func_00472720(LibEntryManager* manager, s32 enable)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_004728A0);
+/**
+ * @brief Turn fogging on or off for the scene's models and its emitters' image models.
+ * @param manager Scene.
+ * @param enabled Nonzero for fog.
+ * @param check Nonzero to skip entries with metadata flag 0x4.
+ */
+void func_004728A0(LibEntryManager* manager, u8 enabled, s32 check)
+{
+    if (manager->entries == 0)
+    {
+        return;
+    }
+
+    for (s32 index = 0; index < manager->header->count; index++)
+    {
+        LibManagedEntry* entry = &manager->entries[index];
+        void* handle = entry->handle;
+
+        if (handle != 0 && entry->unk00 == 0)
+        {
+            LibEntryMetadata* metadata = entry->metadata;
+
+            if (metadata->state == 2 || metadata->state == 0)
+            {
+                if (metadata->kind == 1 || metadata->kind == 8)
+                {
+                    if (!check || !(metadata->flags & 4))
+                    {
+                        static_cast<LibColorModel*>(handle)->set_fog_enabled(enabled);
+                    }
+                }
+                else if (metadata->kind == 10)
+                {
+                    if (!check || !(metadata->flags & 4))
+                    {
+                        LibClass173990* emitter = static_cast<LibClass173990*>(handle);
+
+                        if (emitter && !emitter->unk49b_0)
+                        {
+                            emitter->source->set_fog_enabled(enabled);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472A00);
 
@@ -1933,7 +2202,133 @@ void* lib_find_renderable_entry(LibEntryManager* manager, const char* name)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", lib_scene_release_entries);
+/**
+ * @brief Let go of an emitter's image model, queueing its grid when nothing else uses it, then destroy the emitter.
+ * @param emitter Emitter, or null.
+ */
+static inline void lib_scene_release_emitter(LibClass173990* emitter)
+{
+    if (emitter)
+    {
+        LibObject1751A0* source = emitter->source;
+
+        if (source)
+        {
+            LibGridBase* grid = source->reference;
+            func_0046B3F0(source);
+
+            if (grid && grid->user_count == 0)
+            {
+                resident_enqueue_object(g_resident_release_queues, grid);
+            }
+        }
+
+        emitter->destroy();
+    }
+}
+
+/**
+ * @brief Release the scene's entries (detach and free what they created).
+ * @param scene Scene.
+ */
+void lib_scene_release_entries(LibEntryManager* scene)
+{
+    if (scene->entries == 0)
+    {
+        return;
+    }
+
+    for (s32 index = 0; index < scene->header->count; index++)
+    {
+        LibManagedEntry* entry = &scene->entries[index];
+
+        switch (entry->unk00)
+        {
+        case 1:
+            if (entry->handle)
+            {
+                resident_enqueue_object(g_resident_release_queues, entry->handle);
+            }
+
+            break;
+        }
+    }
+
+    for (s32 index = 0; index < scene->header->count; index++)
+    {
+        LibManagedEntry* entry = &scene->entries[index];
+
+        switch (entry->unk00)
+        {
+        case 0:
+            u8 kind = entry->metadata->kind;
+
+            if (kind == 10)
+            {
+                LibClass173990* emitter = static_cast<LibClass173990*>(entry->handle);
+
+                if (emitter)
+                {
+                    lib_scene_release_emitter(emitter);
+                }
+            }
+            else if (kind == 0x17)
+            {
+                if (entry->handle)
+                {
+                    lib_object_detach_owner(entry->handle);
+                    static_cast<LibListObject*>(scene->entries[index].handle)->destroy();
+                }
+            }
+            else if (entry->handle)
+            {
+                static_cast<LibListObject*>(entry->handle)->destroy();
+            }
+
+            break;
+        }
+    }
+
+    LibClass175390* node = static_cast<LibClass175390*>(scene->unk80.sentinel.next);
+
+    for (;;)
+    {
+        if (&scene->unk80.sentinel == node)
+        {
+            break;
+        }
+
+        LibClass175390* next = static_cast<LibClass175390*>(node->next);
+        scene->unk80.unlink(node);
+        delete node->items;
+        delete node;
+        node = next;
+    }
+
+    delete[] scene->entries;
+    scene->entries = 0;
+
+    for (s32 slot = 0; slot < LIB_ENTRY_MANAGER_SLOT_COUNT; slot++)
+    {
+        LibAnimation* animation = scene->unk34[slot];
+
+        if (animation)
+        {
+            if (scene->unk9f[slot])
+            {
+                animation->secondary_binding_owner = 0;
+                lib_animation_clear_targets_by_kind(animation, 8);
+            }
+            else
+            {
+                animation->primary_binding_owner = 0;
+                lib_animation_clear_targets(animation);
+            }
+
+            scene->unk34[slot] = 0;
+        }
+    }
+}
 
 /** @brief Destroy the node. */
 LibClass175390::~LibClass175390()
@@ -2034,11 +2429,13 @@ u32 func_00478F70(const void* object)
     return receiver->unk08;
 }
 
-/** Return the word at receiver offset 0xC. */
-u32 func_00478F80(const void* object)
+/**
+ * @brief Return how many nodes the list holds.
+ * @return Node count.
+ */
+u32 LibListReceiver::get_node_count() const
 {
-    const WordGetterOwnertext_0046AE20* receiver = (const WordGetterOwnertext_0046AE20*)object;
-    return receiver->unk0c;
+    return node_count;
 }
 
 /**

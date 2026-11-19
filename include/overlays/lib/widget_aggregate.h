@@ -295,8 +295,11 @@ public:
      */
     virtual void func_00412C40(u32 first, u32 second, u32 third);
 
-    /** @brief Called by the state hook; the base does nothing. */
-    virtual void func_004662A0();
+    /**
+     * @brief Called by the state hook when the list closes; the base does nothing.
+     * @param result Chosen item number, or zero when cancelled.
+     */
+    virtual void func_004662A0(s32 result);
 
     /**
      * @brief Add a line of text from a resource slot.
@@ -306,6 +309,20 @@ public:
      */
     LibTextWidget* add_item(s32 slot, u32 key);
 
+    /**
+     * @brief Set the list up for up to 16 items: frame, cursor, markers and item text widgets, attached by the flags.
+     * @param capacity Number of items, at most 16.
+     * @param flags Bit 0x10000 hides the frame, 0x4 the cursor, 0x8 both markers; 0x2 picks the single marker over
+     *        the pair; 0x20 clears unk13f8 and unkab; 0x1, 0x10 and 0x80000000 are kept as flags.
+     * @param text_flag Flag passed to each item's text setup.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     * @param width Frame width.
+     * @param height Frame height.
+     * @return 1 on success, 0 when a part can't be set up or the capacity is too large.
+     */
+    s32 init(s32 capacity, u32 flags, u8 text_flag, float x, float y, float width, float height);
+
     ItemCreationClass175030 unkf0;
     LibClass1722E0 unk16c;
     ItemCreationClass172600 unk1fc;
@@ -313,6 +330,18 @@ public:
     LibTextWidget items[16];
     s32 item_capacity;
     s32 item_count;
+    s32 unk13f0;
+    s32 unk13f4;
+    s32 unk13f8;
+    u8 unk13fc;
+    u8 text_flag;
+    u8 unk13fe;
+    u8 unk13ff;
+    u8 show_frame;
+    u8 show_cursor;
+    u8 show_marker;
+    u8 show_markers;
+    u8 unk1404;
 };
 
 #endif

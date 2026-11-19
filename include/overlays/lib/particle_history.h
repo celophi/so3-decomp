@@ -92,6 +92,158 @@ typedef struct LibHistorySourceB0
     u8 unk30[0x80];
 } LibHistorySourceB0;
 
+/** Source record of size 0x140 with position and attribute vectors. */
+typedef struct LibHistorySource140
+{
+    LibQuad128 unk00;
+    LibQuad128 position;
+    LibQuad128 attributes;
+    u8 unk30[0x110];
+} LibHistorySource140;
+
+/** Source record of size 0xF0 with position and attribute vectors. */
+typedef struct LibHistorySourceF0
+{
+    LibQuad128 unk00;
+    LibQuad128 position;
+    LibQuad128 attributes;
+    u8 unk30[0xC0];
+} LibHistorySourceF0;
+
+/** Source record of size 0x60 with position and attribute vectors. */
+typedef struct LibHistorySource60
+{
+    LibQuad128 unk00;
+    LibQuad128 position;
+    LibQuad128 attributes;
+    u8 unk30[0x30];
+} LibHistorySource60;
+
+/** Source record of size 0x80 with position and attribute vectors. */
+typedef struct LibHistorySource80
+{
+    LibQuad128 unk00;
+    LibQuad128 position;
+    LibQuad128 attributes;
+    u8 unk30[0x50];
+} LibHistorySource80;
+
+/** Receiver prefix the history copier at 0x4984C0 reads; its sources are 0x140-byte records. */
+typedef struct LibHistoryReceiver4984C0
+{
+    u8 unk00[0xC];
+    s32 limit;
+    s32 samples;
+    LibHistorySource140* source;
+    u32 unk18;
+    LibHistoryMask* mask;
+    LibHistoryRecord40* history;
+    u32 unk24;
+    union
+    {
+        float value;
+        u32 bits;
+    } unk28;
+    s32 index;
+    float unk30;
+    float decrement;
+    u8 unk38[0xC];
+    float scale;
+    u8 unk48[5];
+    u8 mode;
+    u8 unk4e[8];
+    u8 policy;
+} LibHistoryReceiver4984C0;
+
+/** Receiver prefix the history copier at 0x492010 reads; its sources are 0xF0-byte records. */
+typedef struct LibHistoryReceiver492010
+{
+    u8 unk00[0xC];
+    s32 limit;
+    s32 samples;
+    LibHistorySourceF0* source;
+    u32 unk18;
+    LibHistoryMask* mask;
+    LibHistoryRecord40* history;
+    u32 unk24;
+    union
+    {
+        float value;
+        u32 bits;
+    } unk28;
+    s32 index;
+    float unk30;
+    float decrement;
+    u8 unk38[0xC];
+    float scale;
+    u8 unk48[5];
+    u8 mode;
+    u8 unk4e[8];
+    u8 policy;
+} LibHistoryReceiver492010;
+
+/** Receiver prefix the history copier at 0x48BAB0 reads; its sources are 0x80-byte records. */
+typedef struct LibHistoryReceiver48BAB0
+{
+    u8 unk00[0xC];
+    s32 limit;
+    s32 samples;
+    LibHistorySource80* source;
+    u32 unk18;
+    LibHistoryMask* mask;
+    LibHistoryRecord40* history;
+    u32 unk24;
+    union
+    {
+        float value;
+        u32 bits;
+    } unk28;
+    s32 index;
+    float unk30;
+    float decrement;
+    u8 unk38[0xC];
+    float scale;
+    u8 unk48[5];
+    u8 mode;
+    u8 unk4e[8];
+    u8 policy;
+} LibHistoryReceiver48BAB0;
+
+/** Source record of size 0x30 with position and attribute vectors. */
+typedef struct LibHistorySource30
+{
+    LibQuad128 unk00;
+    LibQuad128 position;
+    LibQuad128 attributes;
+} LibHistorySource30;
+
+/** Receiver prefix the history copier at 0x43EA10 reads; its sources are 0x30-byte records. */
+typedef struct LibHistoryReceiver43EA10
+{
+    u8 unk00[0xC];
+    s32 limit;
+    s32 samples;
+    LibHistorySource30* source;
+    u32 unk18;
+    LibHistoryMask* mask;
+    LibHistoryRecord40* history;
+    u32 unk24;
+    union
+    {
+        float value;
+        u32 bits;
+    } unk28;
+    s32 index;
+    float unk30;
+    float decrement;
+    u8 unk38[0xC];
+    float scale;
+    u8 unk48[5];
+    u8 mode;
+    u8 unk4e[8];
+    u8 policy;
+} LibHistoryReceiver43EA10;
+
 /** Receiver prefix the history copier at 0x441C40 reads; its sources are 0x170-byte records. */
 typedef struct LibHistoryReceiver441C40
 {

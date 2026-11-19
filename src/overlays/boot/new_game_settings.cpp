@@ -20,7 +20,7 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/vector_inlines.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 
 extern BootFloorQuery* g_floor_query;
 extern const struct BootLabelOffsets g_settings_label_offsets;

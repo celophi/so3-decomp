@@ -657,7 +657,7 @@ void func_001DE400(FieldFlaggedListObject* list, s32 flag)
 
         if (node->unk7c)
         {
-            func_004728A0(node->unk7c, flag != 0, 0);
+            func_004728A0((LibEntryManager*)node->unk7c, flag != 0, 0);
         }
     }
 }

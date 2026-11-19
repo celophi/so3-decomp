@@ -43,8 +43,6 @@ typedef struct {
 extern "C" {
 #endif
 
-void func_00434FA0(void* object);
-
 /**
  * @brief Multiply a vector by the 4x4 matrix whose rows are already loaded in vf1-vf4.
  *
@@ -79,13 +77,6 @@ void func_00433AA0(void);
  * @param object Rendering state whose combined factor is updated.
  */
 void lib_update_color_factor(LibTextBufferState* object);
-
-/**
- * @brief Return the input pointer unchanged.
- * @param object Pointer to return.
- * @return The input pointer.
- */
-void* func_0042E9A0(void* object);
 
 /** Store the word at receiver offset 0x24. */
 void func_00432710(void* object, u32 value);

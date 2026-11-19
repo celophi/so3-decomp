@@ -1,11 +1,14 @@
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "include_asm.h"
+#include "overlays/lib/text_0045AD10.h"
 #include "angle.h"
 #include "vu0.h"
 #include "clamp.h"
 #include "overlays/lib/character_record.h"
 #include "overlays/lib/render_buffer.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libm_guess_0013F3E0.h"
+#include "sdk/main/libc_guess_00137290.h"
 #include "overlays/lib/text_003F90C0.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "sdk/main/libdma_0012B2C8.h"
@@ -20,6 +23,8 @@
 #include "main/utility.h"
 #include "main/dma_queue.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/text_004DD440.h"
+#include "overlays/lib/emission.h"
 
 /** LibShortBitTableHeader with a colour after the records offset; the words start at 0x10. */
 struct LibColorBitTableHeader
@@ -28,6 +33,19 @@ struct LibColorBitTableHeader
     s16 unk02;
     s32 records_offset;
     float color[4];
+    u32 unk18[2];
+    u32 words[1];
+};
+
+/** LibColorBitTableHeader whose colour holds texture offsets, a scale and a mapping mode. */
+struct LibOffsetBitTableHeader
+{
+    s16 bit_count;
+    s16 unk02;
+    s32 records_offset;
+    float offset[2];
+    float scale;
+    s32 mapping;
     u32 unk18[2];
     u32 words[1];
 };
@@ -177,6 +195,14 @@ public:
     virtual u8* read_record(u32 index, u32* size);
 
     /**
+     * @brief Note whether every bit is set; in mapping mode 2 scroll the offsets by the camera's reflection off the
+     *        model, otherwise count the blend mode down. Rewind the records.
+     * @param root Model transform; unused.
+     * @return Zero on the step the countdown ends, otherwise one.
+     */
+    virtual s32 func_slot1C(LibTransform* root);
+
+    /**
      * @brief Pick the blend mode: offsets other than zero mark the owning list the first time; zero offsets use
      *        mode 2 once the list was marked.
      */
@@ -221,7 +247,7 @@ public:
         update_blend_mode();
     }
 
-    LibColorBitTableHeader* table;
+    LibOffsetBitTableHeader* table;
     u8* records;
     u8* cursor;
     u8 unk3c[4];
@@ -281,9 +307,10 @@ public:
 
     /**
      * @brief Note whether every bit is set, count the blend mode down and rewind the records.
+     * @param root Model transform; unused.
      * @return Zero on the step the countdown ends, otherwise one.
      */
-    virtual s32 func_slot1C();
+    virtual s32 func_slot1C(LibTransform* root);
 
     LibColorBitTableHeader* table;
     u8* records;
@@ -431,19 +458,6 @@ public:
 class LibClass1746D0 : public LibContainer
 {
 public:
-#ifndef LIB_1746D0_DTOR_FIRST
-    /**
-     * @brief Run the show, wait and fade-out steps.
-     * @param first First update flag.
-     * @param second Second update flag.
-     * @param third Third update flag.
-     */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
-
-    /** @brief Destroy the text, the frame and the container. */
-    virtual ~LibClass1746D0();
-
-#else
     /** @brief Destroy the text, the frame and the container. */
     virtual ~LibClass1746D0();
 
@@ -455,7 +469,6 @@ public:
      */
     virtual void func_00412C40(u32 first, u32 second, u32 third);
 
-#endif
     /**
      * @brief Set up the frame and the text and attach them.
      * @param flags Bit 0 puts the frame at the right edge, bit 1 at the bottom.
@@ -473,6 +486,7 @@ public:
 };
 
 /** Packed frame colors that LibClass1746D0::init picks from. */
+extern "C" const u32 D_004ED130[];
 
 /** Hardware address register of DMA channel 1 (VIF1). Proposed for ee.h next to D1_QWC. */
 #define D1_MADR ((volatile u32*)0x10009010)
@@ -484,13 +498,6 @@ class LibClass174840 : public LibTransformOwner, public DmaSubmission
 {
 public:
     /**
-     * @brief Build the packet for this frame.
-     * @param matrix Matrix supplied by the caller.
-     * @param context Opaque caller context.
-     */
-    virtual void build_packet(const void* matrix, void* context);
-
-    /**
      * @brief Set up the transform and allocate the packet.
      * @param unk94 Stored at unk94.
      */
@@ -498,6 +505,13 @@ public:
 
     /** @brief Delete the packet and destroy the transform owner. */
     virtual ~LibClass174840();
+
+    /**
+     * @brief Build the packet for this frame.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
 
     /** @brief Detach from the owner and release the transform. */
     virtual void destroy();
@@ -602,9 +616,42 @@ void LibClass1745F0::destroy()
     resident_enqueue_object(g_resident_release_queues, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AD80);
+/** @brief Destroy the captures, then the list object. */
+LibClass1745F0::~LibClass1745F0()
+{
+    release_captures();
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044AE70);
+/**
+ * @brief Set up the capture positions and one capture.
+ * @param display Display the captures read from.
+ * @param unk78 Object whose transform the update reads.
+ */
+LibClass1745F0::LibClass1745F0(LibCameraContext* display, void* unk78)
+{
+    positions[0] = FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    positions[1] = FieldVec4A(160.0f, 0.0f, 0.0f, 1.0f);
+    positions[2] = FieldVec4A(-160.0f, 0.0f, 0.0f, 1.0f);
+    positions[3] = FieldVec4A(80.0f, 0.0f, 0.0f, 1.0f);
+    positions[4] = FieldVec4A(-80.0f, 0.0f, 0.0f, 1.0f);
+    this->display = display;
+    this->unk78 = unk78;
+    unk88 = 1;
+    recreated = 1;
+    unk84 = 10.0f;
+
+    for (s32 i = 0; i < LIB_CLASS_1745F0_CAPTURE_COUNT; i++)
+    {
+        captures[i] = 0;
+
+        for (s32 j = 0; j < LIB_CLASS_1745F0_STRIP_WORDS; j++)
+        {
+            strips[i][j] = 0;
+        }
+    }
+
+    set_capture_count(1);
+}
 
 #pragma inline_depth(7)
 
@@ -654,15 +701,19 @@ void LibCallbackTransform::set_codes_and_z(s32 code, u32 first, float z, u32 sec
     geometry_dirty = 1;
 }
 
-/** @brief Update the vector's x and y components while preserving z. */
-extern "C" void func_0044B190(LibVectorUpdateView* state, float x, float y)
+/**
+ * @brief Move the transform in x and y, keeping its z, and mark its geometry for rebuilding.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ */
+void LibCallbackTransform::set_position(float x, float y)
 {
-    float z = state->unk20.z;
-    state->unk20.x = x;
-    state->unk20.y = y;
-    state->unk20.z = z;
-    state->unk20.w = 1.0f;
-    state->unkAE = 1;
+    float z = translation.z;
+    translation.x = x;
+    translation.y = y;
+    translation.z = z;
+    translation.w = 1.0f;
+    geometry_dirty = 1;
 }
 
 /** @brief Detach the transform once and mark it released. */
@@ -840,9 +891,145 @@ LibClass1746D0::~LibClass1746D0()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B6A0);
+/**
+ * @brief Run the show, wait and fade-out steps.
+ * @param first First update flag.
+ * @param second Second update flag.
+ * @param third Third update flag.
+ */
+void LibClass1746D0::func_00412C40(u32 first, u32 second, u32 third)
+{
+    switch (state)
+    {
+    case 0:
+        if (frame.state == 1)
+        {
+            timer = 15.0f;
+            state++;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044B860);
+        break;
+    case 1:
+        timer -= g_field_runtime->rate;
+
+        if (timer <= 0.0f)
+        {
+            text.unk3d = 1;
+            text.draw_alpha = 0.0f;
+            text.needs_redraw = 1;
+            state++;
+        }
+
+        break;
+    case 2:
+    {
+        float alpha = text.draw_alpha;
+        alpha += 2.1333334f * field_rate(g_field_runtime);
+
+        if (128.0f <= alpha)
+        {
+            alpha = 128.0f;
+            state++;
+        }
+
+        text.draw_alpha = alpha;
+        text.needs_redraw = 1;
+        break;
+    }
+    case 3:
+        if (frame.state == 2)
+        {
+            timer = 150.0f;
+            state++;
+        }
+
+        break;
+    case 4:
+        timer -= g_field_runtime->rate;
+
+        if (timer <= 0.0f)
+        {
+            state++;
+        }
+
+        break;
+    case 5:
+    {
+        float alpha = unkE0;
+        alpha -= 4.266667f * field_rate(g_field_runtime);
+
+        if (alpha <= 0.0f)
+        {
+            destroy();
+        }
+
+        unkE0 = alpha;
+        geometry_dirty = 1;
+        break;
+    }
+    }
+}
+
+/**
+ * @brief Lay out the label: its text 40 units in from the chosen corner (bit 0 of flags: right, bit 1: bottom) and
+ *        the frame around it in one of the packed colors.
+ * @param flags Corner bits.
+ * @param color Index into the frame colors.
+ * @param slot Text resource slot.
+ * @param key Text key.
+ * @return 1 on success, 0 when the text or frame can't be set up.
+ */
+s32 LibClass1746D0::init(u32 flags, s32 color, s32 slot, s32 key)
+{
+    lib_container_init(this, 2, 0.0f, 0.0f, 0, 0.0f, 0);
+
+    if (!lib_text_init_resource_rectangle(&text, slot, key, 1, 0.0f, 0.0f, 0.0f, 0.0f))
+    {
+        return 0;
+    }
+
+    text.unk3d = 0;
+    LibTextExtent* bounds = lib_text_measure_bounds(&text);
+    float text_x = 40.0f;
+    float width = text_x + bounds->width;
+    float frame_x;
+    float text_y;
+
+    if ((flags & 1) == 0)
+    {
+        frame_x = 0.0f;
+    }
+    else
+    {
+        frame_x = g_field_runtime->unk524;
+        text_x = frame_x - width;
+    }
+
+    if ((flags & 2) == 0)
+    {
+        text_y = 32.0f;
+    }
+    else
+    {
+        text_y = g_field_runtime->unk528 - (40.0f + bounds->height);
+    }
+
+    float frame_y = text_y + bounds->height;
+
+    text.unk18.unk00 = text_x;
+    text.unk18.unk04 = text_y;
+    text.needs_redraw = 1;
+
+    if (!frame.init(D_004ED130[color], flags & 1, frame_x, frame_y, width))
+    {
+        return 0;
+    }
+
+    lib_container_attach_widget(this, &frame);
+    lib_container_attach_widget(this, &text);
+    state = 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", draw__14LibClass174790Fv);
 
@@ -958,8 +1145,6 @@ s32 LibClass174790::init(u32 color, u32 mirrored, float x, float y, float width)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044BF50);
-
 LibClass1747C0::~LibClass1747C0()
 {
 }
@@ -975,7 +1160,7 @@ void LibClass1747C0::render()
 {
 }
 
-extern "C" u8 D_00508240[];
+extern "C" float D_00508230[];
 
 /**
  * @brief Return the shared bounding sphere every object of this class uses.
@@ -983,7 +1168,7 @@ extern "C" u8 D_00508240[];
  */
 const LibVector4* LibClass1747C0::get_bounding_sphere()
 {
-    return reinterpret_cast<const LibVector4*>(D_00508240);
+    return reinterpret_cast<const LibVector4*>(&D_00508230[4]);
 }
 
 /**
@@ -1033,7 +1218,32 @@ LibClass174840::~LibClass174840()
     delete packet;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044CF30);
+/**
+ * @brief Set up the transform and allocate the packet.
+ * @param unk94 Stored at unk94.
+ */
+LibClass174840::LibClass174840(void* unk94)
+{
+    this->unk94 = unk94;
+    unk9c = 0;
+    unk9d = 0;
+    unk65 = 0;
+    type_id = 0x900;
+    draw_flags = 0x400;
+    unka8 = 0;
+    unkac = 0;
+    unkae = 0;
+    unkb0 = 15632.07421875f;
+    unkb4 = 1;
+    unkd4 = 10;
+    unkd0 = unkd8;
+    unkdc = 15632.07421875f;
+    unke0 = 1;
+    unkda = 0;
+    unke4 = 0;
+    packet = new (0) LibPacketBuffer(0x80);
+    D_001B6560 = 0;
+}
 
 /**
  * @brief Set the receiver's byte at offset 0x60 to 8.
@@ -1043,8 +1253,6 @@ extern "C" void func_0044D070(LibObjectByte60* object)
 {
     object->unk60 = 8;
 }
-
-extern "C" u8 D_00508230[];
 
 /**
  * @brief Return the address of D_00508230.
@@ -1064,10 +1272,6 @@ extern "C" void func_0044D090(LibTransformOwner* object)
     object->owner = 0;
     object->LibTransformOwner::destroy();
 }
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0B0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D0C0);
 
 /** @brief Update the transform and mark the renderer's first pass ready. */
 void LibClass1748D0::update()
@@ -1112,7 +1316,37 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D600);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D9C0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044E080);
+/** Packet that sets context 1's depth buffer, depth test and clamping for the object's drawing. */
+struct LibDepthStatePacket
+{
+    GsGifTag tag;
+    GsRegisterValue registers[3];
+};
+
+/**
+ * @brief Add the depth state packet to the object's packet: the display's depth buffer with writes enabled, the depth
+ * test, and the clamp mode.
+ * @param object Object whose packet to extend.
+ */
+extern "C" void func_0044E080(LibClass1748D0* object)
+{
+    if (object->packet == 0)
+    {
+        return;
+    }
+
+    LibDepthStatePacket* state = reinterpret_cast<LibDepthStatePacket*>(resident_packet_reserve(object->packet, 0));
+    state->tag.tag = GIF_TAG_NREG(1) | 3;
+    state->tag.registers = 0;
+    state->tag.fields.register0 = GIF_REGISTER_AD;
+    state->registers[0].data = *reinterpret_cast<const u32*>(&static_cast<LibRenderer*>(g_renderer)->display->buffers[0].environment.context1.depth_buffer);
+    state->registers[0].address = GS_REGISTER_ZBUF_1;
+    state->registers[1].data = 0x5000B;
+    state->registers[1].address = GS_REGISTER_TEST_1;
+    state->registers[2].data = 0xFFFFFFF0ULL;
+    state->registers[2].address = GS_REGISTER_CLAMP_1;
+    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(state + 1));
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__14LibClass1748D0FPCvPv);
 
@@ -1300,7 +1534,60 @@ LibClass174AC0::~LibClass174AC0()
     ::operator delete(samples);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044FDA0__14LibClass174AC0Fii);
+/**
+ * @brief Set the grid size (2 to 256 columns, at least 2 rows), reallocate the packet and refill the sample table
+ *        with the cosine and sine of each column's angle around a full turn; drops the packet when the table can't
+ *        be allocated.
+ * @param columns Column count.
+ * @param rows Row count.
+ */
+void LibClass174AC0::func_0044FDA0(s32 columns, s32 rows)
+{
+    if (columns > 256)
+    {
+        columns = 256;
+    }
+
+    if (columns < 2)
+    {
+        columns = 2;
+    }
+
+    this->columns = columns;
+
+    if (rows < 2)
+    {
+        rows = 2;
+    }
+
+    this->rows = rows;
+    delete packet;
+    packet = new (0) LibPacketBuffer(rows * 16 + columns * rows * 6 + 0x20);
+
+    if (packet == 0)
+    {
+        return;
+    }
+
+    ::operator delete(samples);
+    samples = new (0) float[columns * 2];
+
+    if (samples == 0)
+    {
+        delete packet;
+        packet = 0;
+        return;
+    }
+
+    for (s32 i = 0; i < columns; i++)
+    {
+        LibVector4 pair;
+
+        lib_compute_sine_cosine_pair(&pair, 6.2831855f * i / (columns - 1.0f));
+        static_cast<float*>(samples)[i * 2] = pair.z;
+        static_cast<float*>(samples)[i * 2 + 1] = pair.w;
+    }
+}
 
 /** @brief Start with type ID 0xA02 and no buffers. */
 LibClass174AC0::LibClass174AC0()
@@ -1318,7 +1605,46 @@ LibClass174B70::~LibClass174B70()
     ::operator delete(samples);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451850__14LibClass174B70Fii);
+/**
+ * @brief Set the grid size (2 to 256 columns, at least 2 rows), reallocate the packet and refill the sample table
+ *        with the cosine and sine of each column's angle around a full turn.
+ * @param columns Column count.
+ * @param rows Row count.
+ */
+void LibClass174B70::func_00451850(s32 columns, s32 rows)
+{
+    if (columns > 256)
+    {
+        columns = 256;
+    }
+
+    if (columns < 2)
+    {
+        columns = 2;
+    }
+
+    this->columns = columns;
+
+    if (rows < 2)
+    {
+        rows = 2;
+    }
+
+    this->rows = rows;
+    delete packet;
+    packet = new (0) LibPacketBuffer(rows * 16 + columns * rows * 6 + 0x20);
+    ::operator delete(samples);
+    samples = new (0) float[columns * 2];
+
+    for (s32 i = 0; i < columns; i++)
+    {
+        LibVector4 pair;
+
+        lib_compute_sine_cosine_pair(&pair, 6.2831855f * i / (columns - 1.0f));
+        static_cast<float*>(samples)[i * 2] = pair.z;
+        static_cast<float*>(samples)[i * 2 + 1] = pair.w;
+    }
+}
 
 /** @brief Start with type ID 0xA01 and no buffers. */
 LibClass174B70::LibClass174B70()
@@ -1402,37 +1728,213 @@ extern "C" s32 func_00451B90(s32 code)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451C00);
+/**
+ * @brief Upload a resource's image blocks into VRAM rows, packing them left to right across 1024 pixels, and wait
+ *        for the transfer.
+ * @param source Resource with the block layout.
+ * @param start First destination row.
+ * @param count Number of blocks.
+ * @return The data after the last uploaded block.
+ */
+extern "C" u8* func_00451C00(LibResourceHeader* source, s32 start, s32 count)
+{
+    u64* packet = static_cast<u64*>(memalign(0x80, (count << 7) + 0x110));
+    u8* data = reinterpret_cast<u8*>(source) + source->offsets[3];
+    s32 limit = (0x400 / source->unk30) * source->unk30;
+    s32 x = 0;
+    u64* cursor = packet;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        cursor[0] = DMA_TAG(6, DMA_TAG_ID_CNT, 0);
+        cursor[2] = GIF_TAG_NREG(1) | 4;
+        cursor[3] = 0xE;
+        cursor[4] = (u64)0x24100000 << 32;
+        cursor[5] = GS_REGISTER_BITBLTBUF;
+        cursor[6] = ((u64)x << 32) | ((u64)start << 48);
+        cursor[7] = GS_REGISTER_TRXPOS;
+        cursor[8] = source->unk30 | ((u64)source->unk34 << 32);
+        cursor[9] = GS_REGISTER_TRXREG;
+        cursor[10] = 0;
+        cursor[11] = GS_REGISTER_TRXDIR;
+        cursor[12] = (source->unk24 / 16) | (GIF_TAG_FLG_IMAGE | GIF_TAG_EOP);
+        cursor[13] = 0;
+        cursor[14] = DMA_TAG(source->unk24 / 16, DMA_TAG_ID_REF, data);
+        x += source->unk30;
+        cursor += 16;
+
+        if (x >= limit)
+        {
+            start += source->unk34;
+            x = 0;
+        }
+
+        data += source->unk28;
+    }
+
+    *cursor = DMA_TAG_ID_END;
+    FlushCache(0);
+    func_004DC4F0(g_packet_queue, 3, 0, packet, 0, 0);
+    func_004DBEE0(g_packet_queue, 0);
+    free_guess(packet);
+    FlushCache(0);
+    return data;
+}
 
 /**
- * @brief Return the fixed value 35.
- * @param object Unused receiver.
- * @return Always 35.
+ * @brief Return the entry's type code.
+ * @return 35.
  */
-extern "C" s32 func_00451E20(void* object)
+s32 LibClass174C20::func_slot14()
 {
     return 35;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00451E30);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452270);
+/**
+ * @brief Add an amount at a position, spread bilinearly over the four cells around it.
+ * @param entry Grid entry.
+ * @param position Position to add at.
+ * @param amount Amount to add.
+ */
+extern "C" void func_00452270(LibClass174C20* entry, const LibVector4* position, float amount)
+{
+    s32 stride = entry->header->columns + 2;
+    s32 cell;
+    float x;
+    float y;
+
+    if (func_00452390(entry, position, &cell, &x, &y))
+    {
+        float* cells = entry->unk44;
+
+        cells[cell] += amount * ((1.0f - x) * (1.0f - y));
+        cells[cell + 1] += amount * (x * (1.0f - y));
+        cells[cell + stride] += amount * ((1.0f - x) * y);
+        cells[cell + stride + 1] += amount * (x * y);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452390);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004526A0);
+/**
+ * @brief Fill the output's vertices for a bit: each vertex's cell index picks its depth (stored in y) and its
+ *        16-byte value.
+ * @param output Output to fill.
+ * @param index Bit index, which picks the record of cell indices.
+ */
+void LibClass174C20::func_slot10(LibEntryOutput* output, s32 index)
+{
+    LibVector4* vectors = output->vectors;
+    LibClass173490Entry* values = output->values;
+    u16* cells = static_cast<u16*>(output->records[index]);
+    s32 count = output->count;
+    float* depths = unk40;
+    LibClass173490Entry* entries = unk4c;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452870);
+    for (s32 i = 0; i < count; i++)
+    {
+        u16 cell = *cells++;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452CA0);
+        vectors->y = depths[cell];
+        *values = entries[cell];
+        vectors++;
+        values++;
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452CD0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_slot1C__14LibClass174C20FP12LibTransform);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452DC0);
+/**
+ * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
+ * @param index Bit index; unused.
+ * @param size Size in halfwords; receives the size in bytes.
+ * @return Record.
+ */
+u8* LibClass174C20::read_record(u32 index, u32* size)
+{
+    *size = (*size * 2 + 15) & ~15;
+    u8* record = cursor;
+    cursor += *size;
+    return record;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452F00);
+/** @brief Zero both cell arrays over the grid, including its border. */
+void LibClass174C20::clear_cells()
+{
+    s32 rows;
+    s32 columns;
+    float* first;
+    float* second;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452FA0);
+    first = unk40;
+
+    if (first == 0)
+    {
+        return;
+    }
+
+    rows = header->rows + 2;
+    columns = header->columns + 2;
+    second = unk44;
+
+    for (s32 row = 0; row < rows; row++)
+    {
+        for (s32 column = 0; column < columns; column++)
+        {
+            *first++ = 0;
+            *second++ = 0;
+        }
+    }
+}
+
+/**
+ * @brief Use borrowed data, allocate the cell arrays for its grid and clear them.
+ * @param value Borrowed data.
+ */
+void LibClass174C20::set_borrowed_data(void* value)
+{
+    data = value;
+    data_is_borrowed = 1;
+    header = reinterpret_cast<LibClass174C20Header*>(static_cast<u8*>(value) + 0x10);
+    s32 count = (header->columns + 2) * (header->rows + 2) + 1;
+    unk48 = reinterpret_cast<u32*>(header + 1);
+    unk34 = unk48 + ((count + 2) & ~3);
+    unk44 = new (0) float[count];
+    unk40 = new (0) float[count];
+    unk4c = new (0) LibClass173490Entry[count];
+
+    if (unk40 == 0 || unk44 == 0 || unk4c == 0)
+    {
+        delete[] unk40;
+        delete[] unk44;
+        delete[] unk4c;
+        unk40 = 0;
+        unk44 = 0;
+    }
+
+    clear_cells();
+}
+
+/** @brief Free the cell arrays. */
+LibClass174C20::~LibClass174C20()
+{
+    delete[] unk40;
+    delete[] unk44;
+    delete[] unk4c;
+}
+
+/** @brief Start with no arrays. */
+LibClass174C20::LibClass174C20()
+{
+    unk19 = 1;
+    unk0f = 7;
+    unk40 = 0;
+    unk44 = 0;
+    unk4c = 0;
+    unk3c = 0;
+}
 
 // TODO: The resource widget's destructor inlines its base's, which other modules keep out of line, so the base
 // destructor is only inline in this unit.
@@ -2355,7 +2857,92 @@ u8* LibClass174D10::read_record(u32 index, u32* size)
     return lib_entry_read_record(this, cursor, index, size);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456360);
+/**
+ * @brief Note whether every bit is set; in mapping mode 2 scroll the offsets by the camera's reflection off the
+ *        model, otherwise count the blend mode down. Rewind the records.
+ * @param root Model transform; unused.
+ * @return Zero on the step the countdown ends, otherwise one.
+ */
+s32 LibClass174D10::func_slot1C(LibTransform* root)
+{
+    if (table->bit_count == table->unk02)
+    {
+        unk19 = 1;
+    }
+    else
+    {
+        unk19 = 0;
+    }
+
+    if (table->mapping == 2)
+    {
+        LibVector4 normal;
+        LibVector4 view;
+        LibVector4 reflection;
+        const LibMatrix44Value* matrix = list->model->get_transform_matrix();
+        normal.x = matrix->m[0][1];
+        normal.y = -matrix->m[1][1];
+        normal.z = matrix->m[2][1];
+        lib_normalize_vector3(&normal.x);
+
+        LibCamera* camera = static_cast<LibCamera*>(g_display_manager->current_display);
+
+        if (camera != 0)
+        {
+            view.x = camera->transform.m[0][3];
+            view.y = camera->transform.m[1][3];
+            view.z = camera->transform.m[2][3];
+            view.w = 1.0f;
+        }
+
+        view.x -= matrix->m[0][3];
+        view.y -= matrix->m[1][3];
+        view.z -= matrix->m[2][3];
+        lib_normalize_vector3(&view.x);
+        float scale = 2.0f * (normal.x * view.x + normal.y * view.y + normal.z * view.z);
+        reflection.x = scale * normal.x - view.x;
+        reflection.y = scale * normal.y - view.y;
+        reflection.z = scale * normal.z - view.z;
+        float u = 0.5f - 0.1591554433f * func_00142148(ee_abs(reflection.z), reflection.x);
+        float v = 0.5f - 0.1591554433f * func_00142148(reflection.y, reflection.z);
+        offset_u = u * table->scale;
+
+        while (offset_u >= 2.0f)
+        {
+            offset_u -= 2.0f;
+        }
+
+        while (offset_u <= 0.0f)
+        {
+            offset_u += 1.0f;
+        }
+
+        offset_v = v * table->scale;
+
+        while (offset_v >= 2.0f)
+        {
+            offset_v -= 2.0f;
+        }
+
+        while (offset_v <= 0.0f)
+        {
+            offset_v += 1.0f;
+        }
+    }
+    else if (blend_mode != 0 && --blend_mode == 0)
+    {
+        if (unk18 && list)
+        {
+            list->unk8d_1 = 1;
+        }
+
+        unk18 = 0;
+        return 0;
+    }
+
+    cursor = records;
+    return 1;
+}
 
 /**
  * @brief Use a resource's bit table, records and two offsets without owning them.
@@ -2365,13 +2952,13 @@ void LibClass174D10::set_borrowed_data(void* value)
 {
     data = value;
     data_is_borrowed = 1;
-    table = reinterpret_cast<LibColorBitTableHeader*>(static_cast<u8*>(value) + 0x10);
+    table = reinterpret_cast<LibOffsetBitTableHeader*>(static_cast<u8*>(value) + 0x10);
     u32* words = table->words;
     s32 count = table->bit_count;
     bits.borrow_words(count, words);
     records = reinterpret_cast<u8*>(table) + table->records_offset;
-    set_offset_u(table->color[0]);
-    set_offset_v(table->color[1]);
+    set_offset_u(table->offset[0]);
+    set_offset_v(table->offset[1]);
 }
 
 /** @brief Start as an entry of kind 5 with blend mode 0. */
@@ -2425,9 +3012,10 @@ u8* LibClass174D50::read_record(u32 index, u32* size)
 
 /**
  * @brief Note whether every bit is set, count the blend mode down and rewind the records.
+ * @param root Model transform; unused.
  * @return Zero on the step the countdown ends, otherwise one.
  */
-s32 LibClass174D50::func_slot1C()
+s32 LibClass174D50::func_slot1C(LibTransform* root)
 {
     if (table->bit_count == table->unk02)
     {
@@ -3210,6 +3798,13 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", lib_options_set
 
 
 
+// TODO: Freeing the settings inlines the trophy flags' destructor, which text_004095C0 keeps out of line, so it's
+// only inline in this unit.
+/** @brief Destroy the flags. */
+inline LibTrophyFlags::~LibTrophyFlags()
+{
+}
+
 // TODO: Like the saved-data functions before it, this only matches at optimization level 0.
 #pragma push
 #pragma optimization_level 0
@@ -3330,9 +3925,55 @@ void lib_allocate_system_data(void)
 
 #pragma pop
 
-extern "C" s32 func_0045ABA0(void)
+/**
+ * @brief Report the list kind.
+ * @return Nine.
+ */
+s32 LibClass174D70::get_default_list_kind()
 {
     return 9;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0045ABB0);
+/** @brief Copy the first display manager's camera transform (flag 0x1), fog (0x2) and view (0x4) to the others. */
+void LibClass174D70::update()
+{
+    LibCamera* source = static_cast<LibCamera*>(managers[0]->current_display);
+
+    if (source)
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            LibCamera* camera = static_cast<LibCamera*>(managers[i + 1]->current_display);
+
+            if (camera)
+            {
+                if (flags & 0x1)
+                {
+                    camera->set_translation_vector(&source->translation);
+                    camera->set_orientation(&source->orientation);
+                    camera->set_scale_vector(&source->scale);
+                }
+
+                if (flags & 0x2)
+                {
+                    float offset;
+                    float reciprocal_scale;
+
+                    camera->fog_color = source->fog_color;
+                    source->get_fog_coefficients(&offset, &reciprocal_scale);
+                    camera->set_fog_coefficients(offset, reciprocal_scale);
+                    camera->set_near_fog_fraction(source->near_fog_fraction);
+                    camera->set_far_fog_fraction(source->far_fog_fraction);
+                    camera->fog_enabled = source->fog_enabled;
+                }
+
+                if (flags & 0x4)
+                {
+                    camera->horizontal_fov = source->horizontal_fov;
+                    camera->pixel_aspect = source->pixel_aspect;
+                    camera->width_scale = source->width_scale;
+                }
+            }
+        }
+    }
+}

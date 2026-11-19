@@ -101,21 +101,6 @@ public:
     LibStorageBlock0C unk40;
 };
 
-/** Partial Lib widget with vtable D_175170 in main data. */
-class LibClass175170 : public LibWidget
-{
-public:
-    virtual ~LibClass175170();
-
-    /** @brief Refresh the widget's drawing state. */
-    virtual void func_00413D20();
-
-    /** @brief Draw the widget. */
-    virtual void draw();
-
-    LibStorageBlock0C unk40;
-};
-
 /** Number of slots in use in the first retained set; trailing empty slots are trimmed. */
 extern "C" u8 D_001B650C;
 
@@ -144,6 +129,9 @@ extern "C" void func_004289B0(LibListObject* object);
 
 /** Point (0, 0, 0, 1): the transforms' local origin. */
 extern "C" LibVector4 D_00507F60;
+
+/** Link solver constants: x and y unused here, z the share a fixed point's partner takes when its weight is tiny, w a scale for the correction. */
+extern "C" LibVector4 D_00507F50;
 
 /** Direction (0, -1, 0, 1): the transforms' local down axis. */
 extern "C" LibVector4 D_00507F70;
@@ -289,9 +277,14 @@ public:
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
-    u8 unk210[0x10];
+    u32 unk210;
+    u8 unk214[0xC];
     LibMatrix44Value inverse;
     LibVector4 down;
+    float unk270;
+    float unk274;
+    float unk278;
+    float unk27c;
 };
 
 /** Partial LibClass172BD0 with vtable D_172CF0 in main data. */
@@ -312,7 +305,11 @@ public:
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
-    u8 unk210[0x20];
+    u32 unk210_mask;
+    u8 unk214[0xC];
+    float unk220;
+    float unk224;
+    u8 unk228[8];
     LibVector4 down;
 };
 
@@ -330,12 +327,14 @@ public:
      * @param position Sphere centre, in world space.
      * @param output Receives the corrected centre.
      * @param radius Sphere radius.
-     * @return Nonzero when the centre was moved.
+     * @return Whether the centre was moved.
      */
-    virtual s32 func_00425870(const LibVector4* position, LibVector4* output, float radius);
+    virtual bool func_00425870(const LibVector4* position, LibVector4* output, float radius);
 
     LibVector4 down;
     LibVector4 position;
+    float extent_x;
+    float extent_z;
 };
 
 /** Partial LibClass172A20 with vtable D_172E10 in main data. */
@@ -352,9 +351,11 @@ public:
      * @param position Sphere centre, in world space.
      * @param output Receives the corrected centre.
      * @param radius Sphere radius.
-     * @return Nonzero when the centre was moved.
+     * @return Whether the centre was moved.
      */
-    virtual s32 func_00425870(const LibVector4* position, LibVector4* output, float radius);
+    virtual bool func_00425870(const LibVector4* position, LibVector4* output, float radius);
+
+    LibVector4 extent;
 };
 
 /** Partial LibClass172A20 with vtable D_172EA0 in main data. */
@@ -371,9 +372,9 @@ public:
      * @param position Sphere centre, in world space.
      * @param output Receives the corrected centre.
      * @param radius Sphere radius.
-     * @return Nonzero when the centre was moved.
+     * @return Whether the centre was moved.
      */
-    virtual s32 func_00425870(const LibVector4* position, LibVector4* output, float radius);
+    virtual bool func_00425870(const LibVector4* position, LibVector4* output, float radius);
 
     LibVector4 down;
     LibVector4 position;
@@ -717,7 +718,10 @@ public:
     /** @brief Release the image capture, then delete the object. */
     virtual void destroy();
 
-    /** @brief Advance the object. */
+    /**
+     * @brief Read back the 16 by 16 depth block centred on (x, y) and record the share of its values below the
+     *        threshold. The first update only starts the read.
+     */
     virtual void update();
 
     /** @brief Detach and destroy the image capture, if there is one. */
@@ -726,9 +730,21 @@ public:
     void* unk14;
     void* unk18;
     u8 unk1c;
-    u8 unk1d[0x40F];
-    s32 unk42c;
+    u8 unk1d[3];
+    u8 depth[0x400];
+    s32 x;
+    s32 y;
+    u32 threshold;
+    float coverage;
     LibImageCapture* capture;
+};
+
+/** One ray of a LibClass1728E0 burst: its angle and two lengths for each segment. */
+struct LibLightRay
+{
+    float angle;
+    float first[8];
+    float second[8];
 };
 
 /** Partial packet builder base with vtable D_1728C0 in main data; its two builder slots are pure. */
@@ -793,8 +809,15 @@ public:
     u8 unk0c[0x10];
     s32 unk1c;
     s32 unk20;
-    u8 unk24[0x20];
-    void* unk44;
+    float unk24;
+    float unk28;
+    float unk2c;
+    float unk30;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float max_length;
+    LibLightRay* rays;
 };
 
 /** Partial packet builder with vtable D_172900 in main data. */
@@ -951,6 +974,84 @@ public:
 
     /** @brief Update every node in the list, in order. */
     virtual void update();
+};
+
+class LibClass173070;
+
+/** 0x40-byte link from one LibClass173070 node to another. */
+struct LibClass173070Link
+{
+    u8 unk00[0x21];
+    u8 blocked;
+    u8 unk22[6];
+    float rest_length;
+    float stiffness;
+    u8 unk30[8];
+    LibClass173070* target;
+    u8 unk3c[4];
+};
+
+#define LIB_LINK_NODE_GRAVITY 0x01
+#define LIB_LINK_NODE_DAMPING 0x02
+#define LIB_LINK_NODE_FORCE 0x40
+
+/** Node with a table of links to other nodes, built in arrays by the scene loader; 0xA0 bytes, vtable D_173070. */
+class LibClass173070
+{
+public:
+    u8 fixed;
+    u8 flags;
+    u8 group;
+    u8 unk03;
+    LibTransform* transform;
+    u32 unk08;
+    LibClass173070Link* links;
+    float unk10;
+    s32 link_count;
+    u32 unk18;
+    u32 unk1c;
+    float unk20;
+    float weight;
+    float damping;
+    u8 unk2c[4];
+    LibVector4 position;
+    LibVector4 previous_position;
+    LibVector4 velocity;
+    LibVector4 orientation;
+    u8 unk70[0x20];
+
+    /** @brief Clear the link table and its counts. */
+    LibClass173070();
+
+    /** @brief Release the buffer's allocation. */
+    virtual ~LibClass173070();
+
+    u8 unk94[0xC];
+};
+
+/** List object with an array of LibClass173070 and two buffers, with vtable D_173050 in main data; only its destructor is known. */
+class LibClass173050 : public LibListObject
+{
+public:
+    /** @brief Destroy the array and release both buffers. */
+    virtual ~LibClass173050();
+
+    /**
+     * @brief Return the list kind.
+     * @return Five.
+     */
+    virtual s32 get_default_list_kind();
+
+    virtual void update();
+
+    s16 node_count;
+    u8 unk16[2];
+    s16 group_count;
+    u8 unk1a[6];
+    float unk20;
+    LibClass173070* unk24;
+    u8* unk28;
+    u8* unk2c;
 };
 
 typedef ItemCreationClass172600 LibClass172600;

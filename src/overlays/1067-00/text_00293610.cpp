@@ -2,6 +2,7 @@
 #include "overlays/1067-00/text_00293610.h"
 #include "overlays/1067-00/text_0029E9E0.h"
 #include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/model.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/particle_history.h"
 #include "overlays/lib/row_fill.h"
@@ -17,8 +18,6 @@ extern "C" float g_frame_seconds;
 extern "C" void func_428670(void* object);
 
 extern "C" void func_426C20(void* object);
-
-extern "C" u8 func_452870(void* object, void* context);
 
 /**
  * @brief Advance a nonnegative countdown and report whether it has expired.
@@ -73,7 +72,32 @@ void func_00293750(FieldClass157400* object)
     }
 }
 
-u8 func_002937F0(FieldClass1587E8* object, void* context)
+/** Type-35 grid entry with vtable D_158800 in main data that updates with a fixed time step when that's enabled. */
+class FieldClass158800 : public LibClass174C20
+{
+public:
+    /** @brief Destroy the object. */
+    virtual ~FieldClass158800();
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 35.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Run the base update, with a fixed 1/60 s frame time while fixed stepping is on.
+     * @return The base update's result.
+     */
+    virtual s32 func_slot1C(LibTransform* root);
+};
+
+/**
+ * @brief Run the base update, with a fixed 1/60 s frame time while fixed stepping is on.
+ * @param root Model transform, passed on.
+ * @return The base update's result.
+ */
+s32 FieldClass158800::func_slot1C(LibTransform* root)
 {
     float previous = g_frame_seconds;
     u8 result;
@@ -83,7 +107,7 @@ u8 func_002937F0(FieldClass1587E8* object, void* context)
         g_frame_seconds = 1.0f / 60.0f;
     }
 
-    result = func_452870(object, context);
+    result = LibClass174C20::func_slot1C(root);
     g_frame_seconds = previous;
     return result;
 }
@@ -256,19 +280,16 @@ bool func_00295C10(FieldObject1584B0* object)
     return *object->unkA0 != 1;
 }
 
-/** Partial LibClass174C20 with vtable D_158800 in main data. */
-class FieldClass158800 : public LibClass174C20
-{
-public:
-    /** @brief Destroy the object. */
-    virtual ~FieldClass158800();
-};
 
 FieldClass158800::~FieldClass158800()
 {
 }
 
-s32 func_00295C90(void* object)
+/**
+ * @brief Return the entry's type code.
+ * @return 35.
+ */
+s32 FieldClass158800::func_slot14()
 {
     return 35;
 }

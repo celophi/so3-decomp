@@ -228,6 +228,13 @@ public:
      */
     void set_codes_and_z(s32 code, u32 first, float z, u32 second, u32 third);
 
+    /**
+     * @brief Move the transform in x and y, keeping its z, and mark its geometry for rebuilding.
+     * @param x Horizontal position.
+     * @param y Vertical position.
+     */
+    void set_position(float x, float y);
+
     void* unk94;
     u8 unk98[8];
     s32 unka0;
@@ -469,13 +476,28 @@ struct LibTextWidget : public LibDrawWidget
 
     LibListObject* unkfc;
     void* unk100;
-    u8 unk104[4];
+    s32 glyph_count;
     u32 source;
-    u32 key;
+    s32 key;
     u8 flag;
     u8 pending;
     u8 unk112[2];
 };
+
+/** Text widget that draws its records straight away, with vtable 0x178720 in main data. */
+struct LibClass178720 : public LibTextWidget
+{
+    virtual ~LibClass178720();
+
+    /** @brief Lay the text out and draw its records once, waiting for the texture upload when one is queued. */
+    virtual void draw();
+};
+
+/**
+ * @brief Hand the widget's attached object to the resident release queue, then release its drawing storage.
+ * @param widget Widget to clear.
+ */
+extern "C" void func_004C7D00(LibTextWidget* widget);
 
 /** 0x57C-byte multiline text widget with trailing scroll state. */
 struct LibObject174D90 : public LibTextWidget
@@ -539,13 +561,26 @@ struct LibObject174D90 : public LibTextWidget
      */
     s32 init_multiline_resource_rectangle(float x, float y, float width, float height, s32 slot, s32 key, u32 mode, u32 flag);
 
-    u8 unk114[0x410];
+    class LibClass175170* unk114;
+    void* unk118;
+    u8 unk11c[0x408];
     float unk524;
     float unk528;
     float unk52c;
-    u8 unk530[0x34];
+    u8 unk530[0x10];
+    u32 mode;
+    u8 unk544[0xC];
+    s32 unk550;
+    s32 unk554;
+    s32 unk558;
+    u8 unk55c[8];
     s32 unk564;
-    u8 unk568[0x12];
+    s32 unk568;
+    u8 unk56c[9];
+    u8 unk575;
+    u8 unk576;
+    u8 unk577;
+    u8 unk578[2];
     u8 unk57a;
     u8 unk57b;
 
@@ -554,6 +589,15 @@ struct LibObject174D90 : public LibTextWidget
      * @return The func_00451B90 result, or zero.
      */
     s32 func_0045F660();
+
+    /**
+     * @brief Test whether the text has run to its end.
+     * @return One when it has, otherwise zero.
+     */
+    u8 text_finished() const
+    {
+        return unk550 < 0;
+    }
 };
 
 /** 0x90-byte widget, constructed inline over LibWidget. */
@@ -606,7 +650,10 @@ struct LibPanel : public LibWidget
     LibUiRect16 unk50;
     void* unk60;
     u32 colors[4];
-    u8 unk74[0x10];
+    float centre_x;
+    float centre_y;
+    float step_width;
+    float step_height;
     float unk84;
     u8 transition_state;
     u8 unk89;
@@ -1255,7 +1302,7 @@ public:
     u8 unk3c[4];
     LibAnimationEntry14* entries;
     float* frame;
-    u32 unk48;
+    LibClass173180* longest_channel;
     u8 unk4c[4];
     LibAnimationEntry14* cached_entry;
     u8 unk54[4];
@@ -1601,6 +1648,13 @@ void lib_animation_clear_targets_by_kind(LibAnimation* object, u8 kind);
 void lib_animation_clear_matching_target(LibAnimation* object, const void* target);
 
 /**
+ * @brief Clear the populated entries bound to a target, when the animation has entries.
+ * @param object Animation object.
+ * @param target Bound target to remove.
+ */
+void func_004B3D80(LibAnimation* object, const void* target);
+
+/**
  * @brief Replace the animation data with a decoded resource buffer.
  * @param object Animation object.
  * @param source Resource header to decode.
@@ -1745,92 +1799,6 @@ void func_004C61F0(N54Owner84_004BD360* object);
 s32 lib_load_shared_font(struct LibFontChunk* chunks, struct ResidentResourceHeader* source);
 
 }
-#endif
-
-#ifdef __cplusplus
-class LibMessageWindow;
-
-/** Multiline text of a message window, passing its control codes on to the window. MAIN vtable at 0x174EB0. */
-class LibMessageWindowText : public LibObject174D90
-{
-public:
-    virtual ~LibMessageWindowText();
-
-    /** @brief Flag the restart for the window. */
-    virtual void func_0045F600();
-
-    /** @brief Flag the end of the text for the window. */
-    virtual void func_0045F610();
-
-    /**
-     * @brief Pass a three-value control code to the window.
-     * @param first First value.
-     * @param second Second value.
-     * @param third Third value.
-     */
-    virtual void func_0045F620(s16 first, s16 second, u32 third);
-
-    /**
-     * @brief Pass a one-value control code to the window.
-     * @param value Control value.
-     */
-    virtual void func_0045F630(u32 value);
-
-    /**
-     * @brief Pass a one-value control code to the window and set its flag byte at 0x1064.
-     * @param value Control value.
-     */
-    virtual void func_0045F640(u32 value);
-
-    /** @brief Flag a control code for the window and set its flag byte at 0x1064. */
-    virtual void func_0045F650();
-
-    LibMessageWindow* owner;
-};
-
-/** Partial message window: a container holding a panel, two clipping widgets and its multiline text. MAIN vtable at 0x174DD0. */
-class LibMessageWindow : public LibContainer
-{
-public:
-    /** @brief Destroy the window and its widgets. */
-    virtual ~LibMessageWindow();
-
-    /**
-     * @brief Advance from state 4 or 6 to the next state.
-     * @return One when the state advanced, otherwise zero.
-     */
-    s32 func_00461B60();
-
-    /**
-     * @brief In state 4 or 6, load new text into the window and go back to state 2.
-     * @param source Resource source word.
-     * @param key Text resource key.
-     * @param mode Drawing mode; its bits 16 and 18 are kept from the current mode.
-     * @param flag Resource state flag.
-     * @return One when the text was loaded, otherwise zero.
-     */
-    s32 func_00461BA0(u32 source, s32 key, u32 mode, u32 flag);
-
-    u8 unkf0[0x9D0];
-    LibMessageWindowText text;
-    u32 source;
-    s32 key;
-    u32 mode;
-    s32 state;
-    u32 unk1050;
-    s16 unk1054;
-    s16 unk1056;
-    u32 unk1058;
-    u8 unk105c;
-    u8 unk105d;
-    u8 unk105e;
-    u8 unk105f;
-    u8 unk1060;
-    u8 unk1061;
-    u8 unk1062;
-    u8 unk1063;
-    u8 unk1064;
-};
 #endif
 
 #endif

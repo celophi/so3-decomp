@@ -1,6 +1,7 @@
 #ifndef SO3_OVERLAYS_LIB_VECTOR_VU0_H
 #define SO3_OVERLAYS_LIB_VECTOR_VU0_H
 
+#include "vu0.h"
 #include "overlays/lib/text_003E68C0.h"
 /**
  * @brief Store the xyz dot product of point minus origin with direction in output.x.
@@ -49,20 +50,6 @@ static inline void vu0_blend_four(const void* weights, const void* first, const 
         "vmaddw.xyzw $vf12, $vf16, $vf12w\n"
         :
         : "r"(weights), "r"(first), "r"(second)
-        : "memory");
-}
-
-/**
- * @brief Store vf12.
- * @param output Aligned destination.
- * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf).
- */
-static inline void vu0_store_vf12(void* output)
-{
-    asm __volatile__(
-        "sqc2       $vf12, 0x0(%0)\n"
-        :
-        : "r"(output)
         : "memory");
 }
 

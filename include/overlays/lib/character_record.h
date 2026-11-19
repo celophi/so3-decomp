@@ -114,6 +114,58 @@ static inline u32 sp_cp_checksum(const LibCharacterEquipment* equipment)
 }
 
 /**
+ * @brief Read a battle skill's mastery when the mastery table passes its checksum.
+ * @param equipment Character equipment record.
+ * @param index Battle skill index.
+ * @return Mastery, or zero for a failed checksum or an index outside the table.
+ */
+static inline s32 lib_equipment_battle_skill_mastery(LibCharacterEquipment* equipment, s32 index)
+{
+    if (equipment->battle_skill_mastery_checksum != halfwords_checksum(equipment->encoded_battle_skill_mastery, sizeof(equipment->encoded_battle_skill_mastery)))
+    {
+        return 0;
+    }
+
+    if (index < 0)
+    {
+        return 0;
+    }
+
+    if ((u32)index >= 42)
+    {
+        return 0;
+    }
+
+    return equipment->encoded_battle_skill_mastery[index] ^ 0x7E93;
+}
+
+/**
+ * @brief Read a symbology's mastery when the mastery table passes its checksum.
+ * @param equipment Character equipment record.
+ * @param index Symbology index.
+ * @return Mastery, or zero for a failed checksum or an index outside the table.
+ */
+static inline s32 lib_equipment_symbology_mastery(LibCharacterEquipment* equipment, s32 index)
+{
+    if (equipment->symbology_mastery_checksum != halfwords_checksum(equipment->encoded_symbology_mastery, sizeof(equipment->encoded_symbology_mastery)))
+    {
+        return 0;
+    }
+
+    if (index < 0)
+    {
+        return 0;
+    }
+
+    if ((u32)index >= 32)
+    {
+        return 0;
+    }
+
+    return equipment->encoded_symbology_mastery[index] ^ 0x7E93;
+}
+
+/**
  * @brief Checksum the encoded levels.
  * @param record Character record.
  * @return Checksum.
@@ -121,6 +173,21 @@ static inline u32 sp_cp_checksum(const LibCharacterEquipment* equipment)
 static inline s32 level_checksum(const LibCharacterRecord* record)
 {
     return record->checksum_salt ^ (record->encoded_level ^ (record->encoded_base_level + record->checksum_salt));
+}
+
+/**
+ * @brief Read the character's level when the encoded levels pass their checksum.
+ * @param record Character record.
+ * @return Level, or one for a failed checksum.
+ */
+static inline s32 lib_character_level(const LibCharacterRecord* record)
+{
+    if (record->level_checksum != level_checksum(record))
+    {
+        return 1;
+    }
+
+    return record->encoded_level ^ 0x7E93;
 }
 
 /**
@@ -875,6 +942,67 @@ static inline s32 set_character_level(LibCharacterRecord* record, s32 level)
     record->encoded_level = level ^ 0x7E93;
     record->level_checksum = level_checksum(record);
     return level;
+}
+
+/**
+ * @brief Decode a tactical skill state after validating the state checksum.
+ * @param equipment Character equipment record.
+ * @param index State index.
+ * @return State, or zero for an invalid checksum.
+ */
+static inline s32 tactical_skill_state(const LibCharacterEquipment* equipment, s32 index)
+{
+    if (equipment->tactical_skill_states_checksum != tactical_skill_states_checksum(equipment->encoded_tactical_skill_states))
+    {
+        return 0;
+    }
+
+    return (s8)equipment->encoded_tactical_skill_states[index] ^ 0x77;
+}
+
+/**
+ * @brief Store a tactical skill state after validating the state checksum.
+ * @param equipment Character equipment record.
+ * @param index State index.
+ * @param state State to store.
+ */
+static inline void set_tactical_skill_state(LibCharacterEquipment* equipment, s32 index, s32 state)
+{
+    if (equipment->tactical_skill_states_checksum == tactical_skill_states_checksum(equipment->encoded_tactical_skill_states))
+    {
+        equipment->encoded_tactical_skill_states[index] = state ^ 0x77;
+        equipment->tactical_skill_states_checksum = tactical_skill_states_checksum(equipment->encoded_tactical_skill_states);
+    }
+}
+
+/**
+ * @brief Store a battle skill index, plus one, after validating the index checksum.
+ * @param equipment Character equipment record.
+ * @param index Entry index, from zero through five.
+ * @param skill Battle skill index, below 42.
+ */
+static inline void set_battle_skill_index(LibCharacterEquipment* equipment, s32 index, s32 skill)
+{
+    if (equipment->battle_skill_indices_checksum != battle_skill_indices_checksum(equipment->encoded_battle_skill_indices))
+    {
+        return;
+    }
+
+    if (index < 0 || (u32)index >= 6)
+    {
+        return;
+    }
+
+    skill += LIMIT_BIAS;
+
+    if (skill >= 42 + LIMIT_BIAS)
+    {
+        return;
+    }
+
+    skill -= LIMIT_BIAS;
+    equipment->encoded_battle_skill_indices[index] = (skill + 1) ^ 0x77;
+    equipment->battle_skill_indices_checksum = battle_skill_indices_checksum(equipment->encoded_battle_skill_indices);
 }
 
 #endif

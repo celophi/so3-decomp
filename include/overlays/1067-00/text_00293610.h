@@ -20,7 +20,6 @@ typedef struct FieldClass157400
     float delay;
 } FieldClass157400;
 
-typedef struct FieldClass1587E8 FieldClass1587E8;
 typedef struct FieldResourceHeader273720 FieldResourceHeader273720;
 typedef struct FieldResourceRecord273720 FieldResourceRecord273720;
 
@@ -208,14 +207,6 @@ s32 func_00293740(FieldClass157400* object);
  * @param object Receiver whose countdown controls its update.
  */
 void func_00293750(FieldClass157400* object);
-
-/**
- * @brief Update the receiver with a temporary fixed time step when enabled.
- * @param object Receiver to update.
- * @param context Object passed to the underlying update.
- * @return The underlying update result.
- */
-u8 func_002937F0(FieldClass1587E8* object, void* context);
 
 /**
  * @brief Initialize the embedded scalar pair to 5.0 and -1.
@@ -609,13 +600,6 @@ FieldObject175370* func_0029BE20(FieldObject157AF0* object);
  * @param object Callback receiver.
  */
 void func_0029BE60(void* object);
-
-/**
- * @brief Return the fixed value 35.
- * @param object Receiver or first argument; unused.
- * @return Always 35.
- */
-s32 func_00295C90(void* object);
 
 #ifdef __cplusplus
 }

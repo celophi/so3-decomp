@@ -7,6 +7,7 @@
 #include "overlays/lib/vector.h"
 #include "gs.h"
 #include "ee.h"
+#include "overlays/lib/image_header.h"
 
 #ifdef __cplusplus
 class LibListSentinel;
@@ -35,6 +36,32 @@ public:
     virtual ~LibRenderResource()
     {
     }
+
+    /**
+     * @brief Return the resource's first data block.
+     * @return Data pointer, or null.
+     */
+    virtual void* get_data() = 0;
+
+    /**
+     * @brief Resolve a stored byte offset relative to the resource payload.
+     * @param offset Pointer to the stored byte offset.
+     * @return Resolved pointer, or null.
+     */
+    virtual void* resolve_offset(const u32* offset) = 0;
+
+    /**
+     * @brief Find an indexed entry across the resource's children; the base has none.
+     * @param index Entry index.
+     * @return Null.
+     */
+    virtual void* find_child_data(s32 index)
+    {
+        return 0;
+    }
+
+    /** @brief Let go of the textures of every image the resource holds. */
+    void release_textures();
 };
 
 /** Resource storage with borrowed-data and manager-registration state. */
@@ -94,6 +121,26 @@ public:
     u8 unk1f;
 };
 
+/**
+ * @brief Point a resource's record cursor at its first part record.
+ * @param resource Resource to rewind.
+ */
+extern "C" void func_004D5C10(LibResourceBuffer* resource);
+
+/**
+ * @brief Return the record at a resource's cursor and move the cursor to the next one.
+ * @param resource Resource to read.
+ * @return The record, or null at the end.
+ */
+extern "C" void* func_004D5AC0(LibResourceBuffer* resource);
+
+/**
+ * @brief Return a resource's own payload, after the chunk header.
+ * @param resource Resource to read.
+ * @return Payload pointer, or null without storage.
+ */
+extern "C" u8* func_004D5B50(LibResourceBuffer* resource);
+
 /** Header shared by the linked image and sequence chunks. */
 struct LibResourceChunkHeader
 {
@@ -105,25 +152,42 @@ struct LibResourceChunkHeader
 
 #define LIB_IMAGE_CHUNK_MAGIC 0x00534946
 
-/** Header of a FIS image; the image block sits image_offset bytes after it. */
-struct LibImageHeader
+/** Values of LibRenderDataRecord::storage_kind. */
+enum
 {
-    u8 unk00[4];
-    char name[4];
-    s32 id;
-    u32 image_offset;
-    u8 unk10[4];
-    u32 palette_offset;
+    RENDER_DATA_INLINE = 0,
+    RENDER_DATA_SHARED = 1,
+    RENDER_DATA_OFFSET = 4,
+    RENDER_DATA_RESOLVED = 5
 };
 
-/** Block of a FIS image that holds its size; the width and height are powers of two. */
-struct LibImageInfo
+/** Resource record prefix whose data word can hold an offset or resolved pointer. */
+struct LibRenderDataRecord
 {
-    u8 unk00[8];
-    u32 pixel_offset;
-    u16 texture_code;
-    u8 width_log2;
-    u8 height_log2;
+    u32 next_offset;
+    s16 storage_kind;
+    s16 index;
+    u32 key08;
+    u32 key0c;
+    u8 unk10[0x10];
+    void* resolved_data;
+    u32 unk24;
+
+    union
+    {
+        void* data;
+        u32 data_offset;
+    };
+
+    u32 unk2c;
+};
+
+/** Partial header of an image's data; a shared record finds its image by the two keys. */
+struct LibImageDataHeader
+{
+    u8 unk00[4];
+    u32 first_key;
+    u32 second_key;
 };
 
 /** A FIS image chunk: the chunk header, then the image header. */
@@ -205,7 +269,7 @@ struct LibDrawSetupPacket
 {
     u32 size;
     u32 unk04;
-    u8 unk08[4];
+    u32 texture_offset;
     u32 unk0c;
     u32 unk10;
     u32 unk14;
@@ -217,7 +281,7 @@ struct LibDrawSetupPacket
     u8 unk3D;
     u8 unk3e;
     u8 unk3f;
-    u8 unk40[4];
+    u32 texture_count;
     u32 unk44;
     u32 unk48;
     u32 unk4c;
@@ -242,6 +306,21 @@ struct LibDrawSetupPacket
 #define LIB_DRAW_PRIMITIVE_TAG (GIF_TAG_NREG(3) | GIF_TAG_PRE | GIF_TAG_EOP)
 
 #define LIB_DRAW_TEXTURE_PACKET_SIZE 48
+
+/** Per-texture record in a draw buffer's packet, staged in the scratchpad and copied out by DMA. */
+struct LibDrawTexturePacket
+{
+    u32 next_offset;
+    s16 unk04;
+    s16 index;
+    u32 unk08;
+    u32 unk0c;
+    u8 unk10[0x10];
+    u32 unk20;
+    u8 unk24[4];
+    const LibImageHeader* texture;
+    u8 unk2c[4];
+};
 
 /** ALPHA_1 value for each blend mode. */
 extern "C" const u64 D_004ED320[];

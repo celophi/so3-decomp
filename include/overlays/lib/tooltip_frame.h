@@ -35,7 +35,6 @@ class EquipFactorTooltip : public LibContainer
             type_id = 0x6FF8;
         }
 
-        /** @brief Destroy the text array, tooltip, and container bases. */
         virtual ~EquipFactorTooltip();
 
         /**
@@ -48,7 +47,11 @@ class EquipFactorTooltip : public LibContainer
 
         EquipTooltipFrame frame;
         LibTextWidget factor_texts[8];
-        u8 unk9e0[0x30];
+        float position_x;
+        float position_y;
+        float position_z;
+        s32 factor_ids[8];
+        u8 unka0c;
 };
 #endif
 

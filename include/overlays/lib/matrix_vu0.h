@@ -201,6 +201,37 @@ static inline void vu0_transform_translation(void* vector, const void* matrix)
 }
 
 /**
+ * @brief Rotate a translation by three matrix rows into vf4, leaving the store for vu0_store_vf4.
+ * @param vector Aligned vector whose xyz components are rotated.
+ * @param matrix Aligned source matrix.
+ * @see vu0_transform_translation, which stores right away; Lib's rigid inverse at 0x4CEFD0 transposes in between.
+ */
+static inline void vu0_rotate_translation_vf4(const void* vector, const void* matrix)
+{
+    asm __volatile__(
+        "lqc2 $vf1, 0x00(%1)\n"
+        "lqc2 $vf2, 0x10(%1)\n"
+        "lqc2 $vf3, 0x20(%1)\n"
+        "lqc2 $vf4, 0x00(%0)\n"
+        "vmulax.xyz $ACC, $vf1, $vf4x\n"
+        "vmadday.xyz $ACC, $vf2, $vf4y\n"
+        "vmaddz.xyz $vf4, $vf3, $vf4z\n"
+        :
+        : "r"(vector), "r"(matrix)
+        : "memory");
+}
+
+/**
+ * @brief Store vf4.
+ * @param vector Aligned destination.
+ * @see vu0_rotate_translation_vf4.
+ */
+static inline void vu0_store_vf4(void* vector)
+{
+    asm __volatile__("sqc2 $vf4, 0x00(%0)\n" : : "r"(vector) : "memory");
+}
+
+/**
  * @brief Multiply two aligned 4x4 matrices.
  * @param output Destination matrix, which may alias either input.
  * @param left Left factor.

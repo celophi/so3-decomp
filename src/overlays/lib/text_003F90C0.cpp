@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/text_004095C0.h"
 #include "clamp.h"
 #include "ee.h"
 #include "overlays/lib/text_003F90C0.h"
@@ -1350,7 +1351,17 @@ extern "C" u32 func_00405440(void* object, const u8* data, s32 count)
     return checksum;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00405530);
+/**
+ * @brief Checksum an array of halfwords.
+ * @param object Unused receiver.
+ * @param data Halfwords to checksum.
+ * @param size Size of the array in bytes.
+ * @return Checksum.
+ */
+extern "C" u32 func_00405530(void* object, const s16* data, s32 size)
+{
+    return halfwords_checksum(data, size);
+}
 
 /**
  * @brief Store the base critical rate, limited to zero through 255.
@@ -2263,7 +2274,179 @@ extern "C" u8 func_004081D0(s32 id)
     return D_001B64E0[id - 1];
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00408200);
+/** Twenty-byte power record of the table at D_001B64BC, indexed by ID minus one. */
+struct LibPowerEntry
+{
+    u32 unk00;
+    u16 unk04;
+    u16 base;
+    u16 intelligence_scale;
+    u16 level_scale;
+    u8 unk0c;
+    u8 unk0d;
+    u16 checksum;
+    u8 unk10;
+    u8 flags;
+    u16 unk12;
+};
+
+extern "C" LibPowerEntry* D_001B64BC;
+
+/**
+ * @brief Look up a power, scale it by level and intelligence and limit it to -99999 through 99999.
+ *
+ * A record whose checksum fails gives a much smaller power and 0xF3 for unk0d.
+ * IDs 3 and 18 scale by level only.
+ * @param id One-based power ID, from one through 29.
+ * @param mode Zero or one, picking the scale and the flag bit tested.
+ * @param level Level, limited to one through ten.
+ * @param record Character record supplying intelligence, or null.
+ * @param power Receives the power, or null.
+ * @param kind Receives the low six flag bits, or null.
+ * @param unk10 Receives unk10, or null.
+ * @param unk00 Receives unk00, or null.
+ * @param unk04 Receives unk04 as a float, or null.
+ * @param unk0d Receives unk0d, or 0xF3 for a failed checksum, or null.
+ * @param scaled Receives the power scaled by unk12 / 2048, or null.
+ * @return 1 when the flag bit for the mode is set, otherwise 0.
+ */
+extern "C" s32 func_00408200(s32 id, s32 mode, s32 level, const LibCharacterRecord* record, s32* power, s32* kind, s32* unk10, u32* unk00, float* unk04,
+                             s32* unk0d, s32* scaled)
+{
+    LibPowerEntry* entry;
+    s32 value;
+    s32 intelligence_scale;
+    s32 level_scale;
+    s32 extra;
+    s32 weight;
+    s32 scale;
+    u16 checksum;
+    u8 flags;
+
+    if (id <= 0 || id > 29)
+    {
+        return 0;
+    }
+
+    if (level < 0)
+    {
+        level = 1;
+    }
+    else if (level > 10)
+    {
+        level = 10;
+    }
+
+    entry = &D_001B64BC[id - 1];
+
+    if (unk00 != 0)
+    {
+        *unk00 = entry->unk00;
+    }
+
+    weight = entry->unk04;
+
+    if (unk04 != 0)
+    {
+        *unk04 = weight;
+    }
+
+    value = entry->base;
+    intelligence_scale = entry->intelligence_scale;
+    level_scale = entry->level_scale;
+    extra = entry->unk0d;
+
+    checksum = extra + ((value - 500 + weight * 3) + (level_scale - intelligence_scale * 5) - id * 493);
+
+    if (checksum != entry->checksum)
+    {
+        value /= 128;
+
+        if (record != 0)
+        {
+            value += (level * level_scale) / 2048 + (intelligence_scale * character_intelligence(record)) / 16000;
+        }
+
+        value /= 256;
+        extra = 0xF3;
+    }
+    else if (id == 3 || id == 18)
+    {
+        value += (level * level_scale) / 128;
+
+        if (mode == 0)
+        {
+            value = (value * 4) / 5;
+        }
+    }
+    else
+    {
+        if (mode == 0)
+        {
+            if (value <= 400)
+            {
+                intelligence_scale = (intelligence_scale * 24) / 64;
+                level_scale = (level_scale * 32) / 64;
+            }
+            else
+            {
+                intelligence_scale = (intelligence_scale * 14) / 64;
+                level_scale = (level_scale * 24) / 64;
+            }
+        }
+
+        if (record != 0)
+        {
+            value += (level * level_scale) / 128 + (intelligence_scale * character_intelligence(record)) / 2048;
+        }
+    }
+
+    if (unk10 != 0)
+    {
+        *unk10 = entry->unk10;
+    }
+
+    flags = entry->flags;
+    scale = entry->unk12;
+    value += 773;
+
+    if (value > 100772)
+    {
+        value = 100772;
+    }
+
+    if (value < -99226)
+    {
+        value = -99226;
+    }
+
+    if (power != 0)
+    {
+        *power = value - 773;
+    }
+
+    if (scaled != 0)
+    {
+        *scaled = ((value - 773) * scale) / 2048;
+    }
+
+    if (kind != 0)
+    {
+        *kind = flags & 0x3F;
+    }
+
+    if (unk0d != 0)
+    {
+        *unk0d = extra;
+    }
+
+    if (((flags & 0x40) && mode == 0) || ((flags & 0x80) && mode == 1))
+    {
+        return 1;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Read the selected pair of scaled byte values from the Lib table.

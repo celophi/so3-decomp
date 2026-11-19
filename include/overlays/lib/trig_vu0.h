@@ -93,6 +93,46 @@ static inline void vu0_sincos_store(LibVector4* output)
 }
 
 /**
+ * @brief Start the degree-nine sine/cosine evaluation and load the sign lanes.
+ * @param table Aligned shared coefficient and scratch table.
+ * @see vu0_sincos_evaluate_degree9, which does this and vu0_sincos_finish_to_table's arithmetic in one block; lib's
+ *      tangent at 0x4CC070 reloads the table address between the two halves.
+ */
+static inline void vu0_sincos_begin_evaluate_degree9(const void* table)
+{
+    asm __volatile__(
+        "vmulay.zw  $ACC, $vf15, $vf13y\n"
+        "vmaddx.zw  $vf14, $vf31, $vf13x\n"
+        "lqc2       $vf19, 0x10(%0)\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
+/**
+ * @brief Finish the degree-nine sine/cosine evaluation and store the pair back into the shared table's second
+ *        quadword (cosine at 0x18, sine at 0x1C).
+ * @param table Aligned shared coefficient and scratch table.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); vu0_sincos_begin_evaluate_degree9.
+ */
+static inline void vu0_sincos_finish_to_table(void* table)
+{
+    asm __volatile__(
+        "vmula.zw   $ACC, $vf14, $vf15\n"
+        "vmaddw.zw  $vf14, $vf31, $vf12w\n"
+        "vmula.zw   $ACC, $vf14, $vf15\n"
+        "vmaddz.zw  $vf14, $vf31, $vf12z\n"
+        "vmul.zw    $vf16, $vf16, $vf19\n"
+        "vmula.zw   $ACC, $vf14, $vf15\n"
+        "vmaddw.zw  $vf14, $vf31, $vf0w\n"
+        "vmul.zw    $vf13, $vf14, $vf16\n"
+        "sqc2       $vf13, 0x10(%0)\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
+/**
  * @brief Load the angle, reduction constants, and degree-nine coefficients.
  * @param table Aligned shared coefficient and scratch table.
  */
@@ -313,6 +353,82 @@ static inline void vu0_trig_finish_evaluate_degree9(const void* table)
         :
         : "r"(table)
         : "memory");
+}
+
+/**
+ * @brief Load three angles into vf20 for the sine microprograms.
+ * @param angles Aligned angles in x, y and z.
+ * @see Lib's three-angle sines at 0x4CD2C0 (slerp weights) and 0x4CA090.
+ */
+static inline void vu0_sines_load(const void* angles)
+{
+    asm __volatile__("lqc2 $vf20, 0x0(%0)\n" : : "r"(angles) : "memory");
+}
+
+/**
+ * @brief Start the angle reduction microprogram (0x9E8); it leaves the half-turn counts in vf17.
+ * @see Lib's three-angle sines at 0x4CD2C0 (slerp weights) and 0x4CA090.
+ */
+static inline void vu0_sines_reduce()
+{
+    asm __volatile__("vcallms 0x9E8\n" : : : "memory");
+}
+
+/**
+ * @brief Wait for the reduction and store its half-turn counts.
+ * @param counts Aligned four-word destination.
+ * @see Lib's three-angle sines at 0x4CD2C0 (slerp weights) and 0x4CA090.
+ */
+static inline void vu0_sines_store_counts(void* counts)
+{
+    asm __volatile__(
+        "cfc2.i     $t1, $vi0\n"
+        "sqc2       $vf17, 0x0(%0)\n"
+        :
+        : "r"(counts)
+        : "t1", "memory");
+}
+
+/**
+ * @brief Start the polynomial microprogram (0xA18) on the reduced angles.
+ * @see Lib's three-angle sines at 0x4CD2C0 (slerp weights) and 0x4CA090.
+ */
+static inline void vu0_sines_evaluate()
+{
+    asm __volatile__("vcallms 0xA18\n" : : : "memory");
+}
+
+/**
+ * @brief Load the per-angle signs into vf19, wait, and start the microprogram (0xA78) that applies them; the sines
+ *        end up in vf13.
+ * @param signs Aligned signs (one or minus one) in x, y and z.
+ * @see Lib's three-angle sines at 0x4CD2C0 (slerp weights) and 0x4CA090.
+ */
+static inline void vu0_sines_apply_signs(const void* signs)
+{
+    asm __volatile__(
+        "lqc2       $vf19, 0x0(%0)\n"
+        "cfc2.i     $t1, $vi0\n"
+        "nop\n"
+        "vcallms    0xA78\n"
+        :
+        : "r"(signs)
+        : "t1", "memory");
+}
+
+/**
+ * @brief Wait for the sine microprograms and store the sines from vf13.
+ * @param sines Aligned destination.
+ * @see Lib's three-angle sines at 0x4CA090.
+ */
+static inline void vu0_sines_store(void* sines)
+{
+    asm __volatile__(
+        "cfc2.i     $t1, $vi0\n"
+        "sqc2       $vf13, 0x0(%0)\n"
+        :
+        : "r"(sines)
+        : "t1", "memory");
 }
 
 #endif

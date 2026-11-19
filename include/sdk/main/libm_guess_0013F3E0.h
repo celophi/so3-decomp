@@ -41,6 +41,13 @@ float sqrtf(float value);
 float func_00141EC0(float angle);
 
 /**
+ * @brief Single-precision inverse sine (the Euler pitch helpers use it on matrix entries).
+ * @param value Sine, between -1 and 1.
+ * @return Angle in radians.
+ */
+float func_00142048(float value);
+
+/**
  * @brief Compute the angle from two floating-point components.
  * @param y First component.
  * @param x Second component.

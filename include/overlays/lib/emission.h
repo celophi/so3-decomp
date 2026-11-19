@@ -56,12 +56,26 @@ public:
     static void operator delete[](void* object, s32 heap);
 };
 
-/** Partial object an emitter draws from; it is destroyed when its last emitter lets go. */
-class LibEmitterSource : public LibListObject
+class LibObject1751A0;
+/** 16-byte element of LibClass173490's two arrays; its contents aren't known yet, it's copied as one 128-bit value. */
+struct LibClass173490Entry
 {
-public:
-    u8 unk14[0xABC];
-    s32 user_count;
+    LibClass173490Entry()
+    {
+    }
+
+    /**
+     * @brief Copy all 16 bytes.
+     * @param other Element to copy.
+     * @return This element.
+     */
+    LibClass173490Entry& operator=(const LibClass173490Entry& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    u32 unk00[4];
 };
 
 /** 0x4A0-byte emitter whose remaining resource and grid settings are unrecovered. */
@@ -110,9 +124,45 @@ public:
      */
     virtual void copy_state(const LibClass173990* other);
 
-    u8 unk214[0x1D0];
-    LibEmitterSource* source;
-    u8 unk3e8[0x1C];
+    /** @brief Stop using the source image model, destroying it when this was its last user. */
+    void release_source();
+
+    u8 unk214[0x1C];
+    FieldVec4A unk230;
+    u8 unk240[0x10];
+    FieldVec4A unk250;
+    FieldVec4A unk260;
+    FieldVec4A unk270;
+    u8 unk280[0x10];
+    FieldVec4A unk290;
+    u8 unk2a0[0x10];
+    FieldVec4A unk2b0;
+    FieldVec4A unk2c0;
+    u8 unk2d0[0x10];
+    FieldVec4A unk2e0;
+    u8 unk2f0[0x10];
+    FieldVec4A unk300;
+    u8 unk310[0x10];
+    FieldVec4A unk320;
+    u8 unk330[0x10];
+    FieldVec4A unk340;
+    u8 unk350[0x10];
+    FieldVec4A unk360;
+    u8 unk370[0x10];
+    FieldVec4A unk380;
+    FieldVec4A unk390;
+    FieldVec4A unk3a0;
+    FieldVec4A unk3b0;
+    u32 unk3c0[8];
+    LibClass173490Entry* entries;
+    LibObject1751A0* source;
+    u32 unk3e8;
+    u32 unk3ec;
+    u32 unk3f0;
+    u32 unk3f4;
+    u8 unk3f8[4];
+    float unk3fc;
+    u32 unk400;
     float unk404;
     float unk408;
     float unk40c;
@@ -120,20 +170,41 @@ public:
     float unk414;
     float unk418;
     float unk41c;
-    u8 unk420[8];
+    u32 unk420;
+    s32 entry_count;
     u32 unk428;
-    u8 unk42c[0x65];
+    u8 unk42c[0x54];
+    u8 unk480[8];
+    u8 unk488[8];
+    u8 unk490;
     u8 unk491;
     u8 unk492;
     u8 unk493;
-    u8 unk494[7];
-    u8 unk49b_0_5 : 6;
+    u8 unk494;
+    u8 unk495;
+    u8 unk496;
+    u8 unk497;
+    u8 unk498;
+    u8 unk499_0 : 1;
+    u8 unk499_1 : 1;
+    u8 unk499_2_7 : 6;
+    u8 unk49a;
+    u8 unk49b_0 : 1;
+    u8 unk49b_1 : 1;
+    u8 unk49b_2 : 1;
+    u8 unk49b_3 : 1;
+    u8 unk49b_4 : 1;
+    u8 unk49b_5 : 1;
     u8 unk49b_6 : 1;
     u8 unk49b_7 : 1;
     u8 unk49c_0 : 1;
     u8 unk49c_1 : 1;
     u8 unk49c_2 : 1;
-    u8 unk49c_3_7 : 5;
+    u8 unk49c_3 : 1;
+    u8 unk49c_4 : 1;
+    u8 unk49c_5 : 1;
+    u8 unk49c_6 : 1;
+    u8 unk49c_7 : 1;
     u8 unk49d[3];
 };
 

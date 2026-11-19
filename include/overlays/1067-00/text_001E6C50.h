@@ -10,7 +10,7 @@
 #include "main/release_queue.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004BD360.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 #include "overlays/lib/shape.h"
 
 /** Mask selection and angular interval used by shape evaluators. */

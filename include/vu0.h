@@ -445,6 +445,21 @@ static inline void vu0_scale_error_vf6(void)
 }
 
 /**
+ * @brief Store vf12.
+ * @param output Aligned destination.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf). Lib's vector blends and its shape tree test at
+ *      0x45D140 store their results this way.
+ */
+static inline void vu0_store_vf12(void* output)
+{
+    asm __volatile__(
+        "sqc2       $vf12, 0x0(%0)\n"
+        :
+        : "r"(output)
+        : "memory");
+}
+
+/**
  * @brief Store vf6, where microprogram 0 leaves its result.
  * @param result 16-byte aligned destination.
  * @see vu0_start_microprogram_vf5.
@@ -508,6 +523,150 @@ static inline void vu0_store_decoded_quaternion(void* out)
         "sqc2      $vf1, 0(%0)\n"
         :
         : "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Seed VU0's random number register R from a word.
+ * @param seed Seed word, moved into vf31 first.
+ * @see VRINIT and VRGET in the EE Core Instruction Set Manual (VU0 macro mode); lib's VIF0 channel constructor
+ *      (0x4D9AF0).
+ */
+static inline void vu0_random_seed(u32 seed)
+{
+    asm __volatile__(
+        "qmtc2.ni  %0, $vf31\n"
+        "vrinit    $R, $vf31x\n"
+        "vrget.x   $vf31, $R\n"
+        :
+        : "r"(seed));
+}
+
+/**
+ * @brief Save vf1-vf31 to a 31-quadword block.
+ * @param registers Aligned block of 31 quadwords.
+ * @see Lib's LibVu0StateGuard (the particle colliders at 0x43BEA0 / 0x43C0C0 keep VU0 state around their callbacks).
+ */
+static inline void vu0_save_registers(void* registers)
+{
+    asm __volatile__(
+        "sqc2 $vf1, 0x0(%0)\n"
+        "sqc2 $vf2, 0x10(%0)\n"
+        "sqc2 $vf3, 0x20(%0)\n"
+        "sqc2 $vf4, 0x30(%0)\n"
+        "sqc2 $vf5, 0x40(%0)\n"
+        "sqc2 $vf6, 0x50(%0)\n"
+        "sqc2 $vf7, 0x60(%0)\n"
+        "sqc2 $vf8, 0x70(%0)\n"
+        "sqc2 $vf9, 0x80(%0)\n"
+        "sqc2 $vf10, 0x90(%0)\n"
+        "sqc2 $vf11, 0xA0(%0)\n"
+        "sqc2 $vf12, 0xB0(%0)\n"
+        "sqc2 $vf13, 0xC0(%0)\n"
+        "sqc2 $vf14, 0xD0(%0)\n"
+        "sqc2 $vf15, 0xE0(%0)\n"
+        "sqc2 $vf16, 0xF0(%0)\n"
+        "sqc2 $vf17, 0x100(%0)\n"
+        "sqc2 $vf18, 0x110(%0)\n"
+        "sqc2 $vf19, 0x120(%0)\n"
+        "sqc2 $vf20, 0x130(%0)\n"
+        "sqc2 $vf21, 0x140(%0)\n"
+        "sqc2 $vf22, 0x150(%0)\n"
+        "sqc2 $vf23, 0x160(%0)\n"
+        "sqc2 $vf24, 0x170(%0)\n"
+        "sqc2 $vf25, 0x180(%0)\n"
+        "sqc2 $vf26, 0x190(%0)\n"
+        "sqc2 $vf27, 0x1A0(%0)\n"
+        "sqc2 $vf28, 0x1B0(%0)\n"
+        "sqc2 $vf29, 0x1C0(%0)\n"
+        "sqc2 $vf30, 0x1D0(%0)\n"
+        "sqc2 $vf31, 0x1E0(%0)\n"
+        :
+        : "r"(registers)
+        : "memory");
+}
+
+/**
+ * @brief Load vf1-vf31 back from a block vu0_save_registers filled.
+ * @param registers Aligned block of 31 quadwords.
+ * @see Lib's LibVu0StateGuard (the particle colliders at 0x43BEA0 / 0x43C0C0 keep VU0 state around their callbacks).
+ */
+static inline void vu0_restore_registers(const void* registers)
+{
+    asm __volatile__(
+        "lqc2 $vf1, 0x0(%0)\n"
+        "lqc2 $vf2, 0x10(%0)\n"
+        "lqc2 $vf3, 0x20(%0)\n"
+        "lqc2 $vf4, 0x30(%0)\n"
+        "lqc2 $vf5, 0x40(%0)\n"
+        "lqc2 $vf6, 0x50(%0)\n"
+        "lqc2 $vf7, 0x60(%0)\n"
+        "lqc2 $vf8, 0x70(%0)\n"
+        "lqc2 $vf9, 0x80(%0)\n"
+        "lqc2 $vf10, 0x90(%0)\n"
+        "lqc2 $vf11, 0xA0(%0)\n"
+        "lqc2 $vf12, 0xB0(%0)\n"
+        "lqc2 $vf13, 0xC0(%0)\n"
+        "lqc2 $vf14, 0xD0(%0)\n"
+        "lqc2 $vf15, 0xE0(%0)\n"
+        "lqc2 $vf16, 0xF0(%0)\n"
+        "lqc2 $vf17, 0x100(%0)\n"
+        "lqc2 $vf18, 0x110(%0)\n"
+        "lqc2 $vf19, 0x120(%0)\n"
+        "lqc2 $vf20, 0x130(%0)\n"
+        "lqc2 $vf21, 0x140(%0)\n"
+        "lqc2 $vf22, 0x150(%0)\n"
+        "lqc2 $vf23, 0x160(%0)\n"
+        "lqc2 $vf24, 0x170(%0)\n"
+        "lqc2 $vf25, 0x180(%0)\n"
+        "lqc2 $vf26, 0x190(%0)\n"
+        "lqc2 $vf27, 0x1A0(%0)\n"
+        "lqc2 $vf28, 0x1B0(%0)\n"
+        "lqc2 $vf29, 0x1C0(%0)\n"
+        "lqc2 $vf30, 0x1D0(%0)\n"
+        "lqc2 $vf31, 0x1E0(%0)\n"
+        :
+        : "r"(registers)
+        : "memory");
+}
+
+/**
+ * @brief Save vf5 and vf26-vf31 (the registers a particle pass keeps live) to a seven-quadword block.
+ * @param registers Aligned block of seven quadwords.
+ * @see Lib's particle ground test at 0x441530, which calls back into the ground in the middle of a pass.
+ */
+static inline void vu0_save_particle_registers(void* registers)
+{
+    asm __volatile__(
+        "sqc2 $vf5, 0x0(%0)\n"
+        "sqc2 $vf26, 0x10(%0)\n"
+        "sqc2 $vf27, 0x20(%0)\n"
+        "sqc2 $vf28, 0x30(%0)\n"
+        "sqc2 $vf29, 0x40(%0)\n"
+        "sqc2 $vf30, 0x50(%0)\n"
+        "sqc2 $vf31, 0x60(%0)\n"
+        :
+        : "r"(registers)
+        : "memory");
+}
+
+/**
+ * @brief Load vf5 and vf26-vf31 back from a block vu0_save_particle_registers filled.
+ * @param registers Aligned block of seven quadwords.
+ * @see Lib's particle ground test at 0x441530, which calls back into the ground in the middle of a pass.
+ */
+static inline void vu0_restore_particle_registers(const void* registers)
+{
+    asm __volatile__(
+        "lqc2 $vf5, 0x0(%0)\n"
+        "lqc2 $vf26, 0x10(%0)\n"
+        "lqc2 $vf27, 0x20(%0)\n"
+        "lqc2 $vf28, 0x30(%0)\n"
+        "lqc2 $vf29, 0x40(%0)\n"
+        "lqc2 $vf30, 0x50(%0)\n"
+        "lqc2 $vf31, 0x60(%0)\n"
+        :
+        : "r"(registers)
         : "memory");
 }
 

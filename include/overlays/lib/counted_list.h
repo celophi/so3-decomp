@@ -40,6 +40,12 @@ public:
      * @param node Node to remove.
      */
     virtual void unlink(void* node);
+
+    /**
+     * @brief Return how many nodes the list holds.
+     * @return Node count.
+     */
+    u32 get_node_count() const;
 };
 
 #endif

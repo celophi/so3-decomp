@@ -188,4 +188,35 @@ static inline void vu0_quaternion_multiply_assign(FieldVec4B* first, const Field
         : "memory");
 }
 
+/**
+ * @brief Replace the first quaternion with its Hamilton product with the second, the first on the left.
+ * @param first Aligned left-hand quaternion and destination.
+ * @param second Aligned right-hand quaternion.
+ * @see vu0_quaternion_multiply_assign, which takes its operands the other way round; Lib's link solver at 0x426650.
+ */
+static inline void vu0_quaternion_premultiply_assign(FieldVec4B* first, const FieldVec4B* second)
+{
+    asm __volatile__(
+        "lqc2       $vf1, 0x0(%1)\n"
+        "lqc2       $vf2, 0x0(%0)\n"
+        "vmaxw.xyzw $vf5, $vf0, $vf0w\n"
+        :
+        : "r"(second), "r"(first)
+        : "memory");
+    asm __volatile__(
+        "vopmula.xyz $ACC, $vf1, $vf2\n"
+        "vopmsub.xyz $vf3, $vf2, $vf1\n"
+        "vmul.xyzw  $vf4, $vf1, $vf2\n"
+        "vmulaw.xyz $ACC, $vf2, $vf1w\n"
+        "vmaddaw.xyz $ACC, $vf1, $vf2w\n"
+        "vmaddw.xyz $vf1, $vf3, $vf0w\n"
+        "vsubaz.w   $ACC, $vf4, $vf4z\n"
+        "vmsubay.w  $ACC, $vf5, $vf4y\n"
+        "vmsubx.w   $vf1, $vf5, $vf4x\n"
+        "sqc2       $vf1, 0x0(%0)\n"
+        :
+        : "r"(first)
+        : "memory");
+}
+
 #endif

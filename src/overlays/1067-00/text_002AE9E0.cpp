@@ -3,7 +3,7 @@
 #include "overlays/1067-00/text_002AE9E0.h"
 #include "overlays/1067-00/text_00202240.h"
 #include "overlays/1067-00/text_001F9B70.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/1067-00/text_001DED80.h"

@@ -923,13 +923,22 @@ class LibPooledVectorTrack : public LibVectorTrack
         virtual void return_to_pool();
 };
 
-/** 48-byte keyframe of LibQuaternionCurveTrackBase: a key, a rotation and its control rotation. */
-struct LibQuaternionCurveTrackKey
+/** Key and rotation of a rotation curve keyframe; LibQuaternionCurveTrackKey adds the control rotation. */
+struct LibQuaternionCurveTrackKeyValue
 {
-    LibQuaternionCurveTrackKey();
+    LibQuaternionCurveTrackKeyValue()
+    {
+    }
 
     float key;
     FieldVec4B value;
+};
+
+/** 48-byte keyframe of LibQuaternionCurveTrackBase: a key, a rotation and its control rotation. */
+struct LibQuaternionCurveTrackKey : public LibQuaternionCurveTrackKeyValue
+{
+    LibQuaternionCurveTrackKey();
+
     FieldVec4B control;
 };
 
@@ -1057,6 +1066,16 @@ class LibQuaternionCurveTrackBase : public LibClass173180
          */
         u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
+        /**
+         * @brief Return one keyframe's key.
+         * @param index Keyframe index.
+         * @return The key.
+         */
+        float key_at(s32 index)
+        {
+            return key_array[index].key;
+        }
+
         LibQuaternionCurveTrackKey* key_array;
         u8 unk08[8];
         LibQuaternionCurveTrackKey single_key;
@@ -1110,6 +1129,13 @@ class LibPooledQuaternionCurveTrack : public LibQuaternionCurveTrackBase
         virtual FieldVec4A sample(float key);
 
         /**
+         * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the rotation and its change per frame.
+         * @param key Evaluation key.
+         * @return Evaluated rotation.
+         */
+        FieldVec4A sample_once(float key);
+
+        /**
          * @brief Append a keyframe with its control rotation.
          * @param value Keyframe rotation.
          * @param control Control rotation.
@@ -1158,7 +1184,9 @@ class LibPooledQuaternionCurveTrack : public LibQuaternionCurveTrackBase
         LibQuaternionCurveTrackKey* find_key_before(float offset);
 
         float last_key;
-        u8 unk64[0xC];
+        LibQuaternionCurveTrackKey* lower_key;
+        LibQuaternionCurveTrackKey* upper_key;
+        u8 unk6c[4];
         FieldVec4B last_value;
         FieldVec4B value_rate;
 };
@@ -1698,8 +1726,6 @@ struct LibFloatQuaternionTrackKey
     float key;
     float first;
     float second;
-
-    u8 unk0c[4];
     FieldVec4B value;
 };
 
@@ -1839,6 +1865,16 @@ public:
      */
     u8 find_surrounding_keys(float key, s32* lower, s32* upper);
 
+    /**
+     * @brief Return one keyframe's key.
+     * @param index Keyframe index.
+     * @return The key.
+     */
+    float key_at(s32 index)
+    {
+        return key_array[index].key;
+    }
+
     LibFloatQuaternionTrackKey* key_array;
     u8 unk08[8];
     LibFloatQuaternionTrackKey single_key;
@@ -1875,6 +1911,13 @@ public:
 
     virtual FieldVec4A sample(float key) const;
 
+    /**
+     * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the rotation and its change per frame.
+     * @param key Evaluation key.
+     * @return Evaluated rotation.
+     */
+    FieldVec4A sample_once(float key);
+
     virtual void return_to_pool();
 
     /**
@@ -1888,10 +1931,12 @@ public:
      */
     s32 insert_entry(s32 index, float key, const FieldVec4A* value, float first, float second);
 
-    u32 unk50;
+    float last_fraction;
     float value_rate;
     u32 unk58;
-    u8 unk5c[0x24];
+    LibFloatQuaternionTrackKey* lower_key;
+    LibFloatQuaternionTrackKey* upper_key;
+    u8 unk64[0x1C];
 };
 
 
@@ -2078,6 +2123,13 @@ public:
     virtual void on_set_single_key(const FieldVec4A* value, float key);
 
     virtual FieldVec4A sample(float key) const;
+
+    /**
+     * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the rotation and its change per frame.
+     * @param key Evaluation key.
+     * @return Evaluated rotation.
+     */
+    FieldVec4A sample_once(float key);
 
     /**
      * @brief Pack a rotation and append it after the last keyframe.

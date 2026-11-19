@@ -2,7 +2,9 @@
 #include "ee.h"
 #include "gs.h"
 #include "include_asm.h"
+#include "overlays/lib/segment_vu0.h"
 #include "overlays/lib/text_004BD360.h"
+#include "overlays/lib/quaternion_vu0.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/text_0049B820.h"
@@ -17,12 +19,15 @@
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libkernl_00121940.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 #include "clamp.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/vector_inlines.h"
 #include "main/system.h"
 #include "main/utility.h"
+#include "overlays/lib/text_004DD440.h"
+#include "overlays/lib/text_004095C0.h"
+#include "overlays/lib/item_allocation.h"
 
 /**
  * @brief Subtract the first three components of one vector from another.
@@ -344,7 +349,197 @@ s32 LibVectorTrackBase::get_cycle_count() const
     return state.cycle_count;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BD4F0);
+/**
+ * @brief Apply one transform entry at a frame: sample its channel and hand the value to the target's translation,
+ *        orientation or scale. Other entry types go to func_004B4840.
+ * @param object Animation object.
+ * @param entry Entry to apply.
+ * @param frame Frame.
+ * @param mode Nonzero to return as soon as a channel runs longer than the status so far.
+ * @param status Longest cycle count so far.
+ * @return The longest cycle count, including this entry's.
+ */
+extern "C" s32 func_004BD4F0(LibAnimation* object, LibAnimationEntry14* entry, float frame, s32 mode, s32 status)
+{
+    LibAnimationTarget* target = static_cast<LibAnimationTarget*>(entry->target);
+
+    switch (entry->type)
+    {
+    case 1:
+    {
+        LibPooledVectorTrack* track = static_cast<LibPooledVectorTrack*>(entry->channel);
+        FieldVec4A value = track->sample(frame);
+        s32 cycles = track->get_cycle_count();
+
+        if (status < cycles)
+        {
+            object->longest_channel = track;
+            status = cycles;
+
+            if (mode)
+            {
+                break;
+            }
+        }
+
+        value.w = 1.0f;
+        target->set_translation_vector(reinterpret_cast<const LibVector4*>(&value));
+        break;
+    }
+    case 2:
+    {
+        LibPooledVectorCurveTrack* track = static_cast<LibPooledVectorCurveTrack*>(entry->channel);
+        FieldVec4A value = track->sample_once(frame);
+        s32 cycles = track->get_cycle_count();
+
+        if (status < cycles)
+        {
+            object->longest_channel = track;
+            status = cycles;
+
+            if (mode)
+            {
+                break;
+            }
+        }
+
+        value.w = 1.0f;
+        target->set_translation_vector(reinterpret_cast<const LibVector4*>(&value));
+        break;
+    }
+    case 4:
+    {
+        LibPooledSlerpQuaternionTrack* track = static_cast<LibPooledSlerpQuaternionTrack*>(entry->channel);
+        FieldVec4B value;
+        value = track->sample(frame);
+        s32 cycles = track->get_cycle_count();
+
+        if (status < cycles)
+        {
+            object->longest_channel = track;
+            status = cycles;
+
+            if (mode)
+            {
+                break;
+            }
+        }
+
+        target->set_orientation(reinterpret_cast<const LibVector4*>(&value));
+        break;
+    }
+    case 5:
+    {
+        LibPooledFloatQuaternionTrack* track = static_cast<LibPooledFloatQuaternionTrack*>(entry->channel);
+        FieldVec4A value = track->sample_once(frame);
+        s32 cycles = track->get_cycle_count();
+
+        if (status < cycles)
+        {
+            object->longest_channel = track;
+            status = cycles;
+
+            if (mode)
+            {
+                break;
+            }
+        }
+
+        target->set_orientation(reinterpret_cast<const LibVector4*>(&value));
+        break;
+    }
+    case 8:
+    {
+        LibPooledVectorTrack* track = static_cast<LibPooledVectorTrack*>(entry->channel);
+        FieldVec4A value = track->sample(frame);
+        s32 cycles = track->get_cycle_count();
+
+        if (status < cycles)
+        {
+            object->longest_channel = track;
+            status = cycles;
+
+            if (mode)
+            {
+                break;
+            }
+        }
+
+        value.w = 1.0f;
+        target->set_scale_vector(reinterpret_cast<const LibVector4*>(&value));
+        break;
+    }
+    case 9:
+    {
+        LibPooledVectorCurveTrack* track = static_cast<LibPooledVectorCurveTrack*>(entry->channel);
+        FieldVec4A value = track->sample_once(frame);
+        s32 cycles = track->get_cycle_count();
+
+        if (status < cycles)
+        {
+            object->longest_channel = track;
+            status = cycles;
+
+            if (mode)
+            {
+                break;
+            }
+        }
+
+        value.w = 1.0f;
+        target->set_scale_vector(reinterpret_cast<const LibVector4*>(&value));
+        break;
+    }
+    case 6:
+    {
+        LibPooledQuaternionCurveTrack* track = static_cast<LibPooledQuaternionCurveTrack*>(entry->channel);
+        FieldVec4A value = track->sample_once(frame);
+        s32 cycles = track->get_cycle_count();
+
+        if (status < cycles)
+        {
+            object->longest_channel = track;
+            status = cycles;
+
+            if (mode)
+            {
+                break;
+            }
+        }
+
+        target->set_orientation(reinterpret_cast<const LibVector4*>(&value));
+        break;
+    }
+    default:
+        if (entry->type == 0x135)
+        {
+            LibPooledQuaternionTrack* track = static_cast<LibPooledQuaternionTrack*>(entry->channel);
+            FieldVec4A value = track->sample_once(frame);
+            s32 cycles = track->get_cycle_count();
+
+            if (status < cycles)
+            {
+                object->longest_channel = track;
+                status = cycles;
+
+                if (mode)
+                {
+                    break;
+                }
+            }
+
+            target->set_orientation(reinterpret_cast<const LibVector4*>(&value));
+        }
+        else
+        {
+            status = func_004B4840(object, entry, frame, mode, status);
+        }
+
+        break;
+    }
+
+    return status;
+}
 
 /** @brief Apply the frame the animation follows, once a frame has elapsed. */
 void LibAnimation::update()
@@ -660,7 +855,7 @@ LibAnimation::LibAnimation()
     playing = 0;
     entries = 0;
     frame = 0;
-    unk48 = 0;
+    longest_channel = 0;
     started = 0;
     unk6d = 0;
     unk6b = 0;
@@ -2810,8 +3005,10 @@ LibWidget::LibWidget()
     needs_redraw = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4A00);
-
+// TODO: The game inlines this into LibPanel's destructor copy, which the vtable emits at the end of the unit, so
+// it was an inline candidate there; scoped auto_inline is the only way I've found to get that.
+#pragma push
+#pragma auto_inline on
 extern "C" void lib_panel_detach(LibPanel* object)
 {
     LibPanelAssociationState* state = (LibPanelAssociationState*)object;
@@ -2822,6 +3019,7 @@ extern "C" void lib_panel_detach(LibPanel* object)
         state->association = 0;
     }
 }
+#pragma pop
 
 /** Panel transform with its callback interface at 0x90. */
 class FieldClass15BA90 : public LibTransformOwner, public LibDmaCallbacks
@@ -2869,7 +3067,29 @@ extern "C" s32 lib_panel_init_transform(LibPanel* object, float z)
     return 1;
 }
 
+/** Arguments func_004C4B90 builds a panel's packet from. */
+struct LibPanelDrawArgs
+{
+    const LibVector4* position;
+    const LibUiRect16* rect;
+    u32 address;
+    u32* colors;
+    float alpha;
+    float unk84;
+    u8 unk8b;
+    u8 unk8a;
+};
+
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4B90);
+
+/**
+ * @brief Write a panel's drawing packet.
+ * @param panel Panel.
+ * @param packet Where the packet's contents start.
+ * @param args What to draw.
+ * @return The end of the packet.
+ */
+extern "C" u8* func_004C4B90(LibPanel* panel, u8* packet, const LibPanelDrawArgs* args);
 
 typedef struct LibPanelColorState
 {
@@ -2894,9 +3114,173 @@ extern "C" void lib_panel_set_colors(LibPanel* object, const LibWidgetColors4C55
     state->redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C55E0);
+/**
+ * @brief Read a container's alpha, which scales its widgets' alpha.
+ * @param container Container.
+ * @return Alpha, 128 for opaque.
+ */
+static inline float container_alpha(const LibContainer* container)
+{
+    return container->unkE0;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C56E0);
+/** @brief Build the panel's packet once until it is marked for redrawing; a hidden panel just clears the flag. */
+void LibPanel::draw()
+{
+    if (!unk8c)
+    {
+        unk3b = 0;
+    }
+    else if (!unk3b)
+    {
+        LibPanelDrawArgs args;
+        u64* buffer = reinterpret_cast<u64*>(unk40.dma_address);
+
+        packet = packet_tag = buffer;
+        args.position = &container->translation;
+        args.rect = transition_state == 0 ? &unk18 : &unk50;
+        args.address = container->unka4 + unk34;
+        args.colors = colors;
+        args.alpha = draw_alpha * container_alpha(container) / 128.0f;
+        args.unk84 = unk84;
+        args.unk8b = unk8b;
+        args.unk8a = unk8a;
+        u8* end = func_004C4B90(this, reinterpret_cast<u8*>(buffer) + 0x10, &args);
+        *packet_tag = DMA_TAG((u32)(end - reinterpret_cast<u8*>(packet_tag) - 0x10) >> 4, DMA_TAG_ID_END, 0);
+        unk3b = 1;
+    }
+}
+
+/** @brief Run the open/close transition: grow or shrink the frame about its centre and fade it in or out. */
+void LibPanel::func_00413D20()
+{
+    s32 state = transition_state;
+
+    if (!state)
+    {
+        return;
+    }
+
+    switch (state)
+    {
+    case 1:
+        centre_x = unk18.unk08 / 2.0f + unk18.unk00;
+        centre_y = unk18.unk0c / 2.0f + unk18.unk04;
+        unk50.unk08 = 48.0f;
+        unk50.unk0c = 48.0f;
+        step_width = (unk18.unk08 - 48.0f) / 4.7999997f;
+        step_height = (unk18.unk0c - 48.0f) / 4.7999997f;
+        draw_alpha = 0.0f;
+        unk89 = 1;
+        unk8c = 1;
+        transition_state++;
+        break;
+    case 2:
+        unk50.unk08 += step_width * field_rate(g_field_runtime);
+
+        if (!(unk50.unk08 < unk18.unk08))
+        {
+            unk50.unk08 = unk18.unk08;
+            transition_state++;
+        }
+
+        break;
+    case 3:
+        unk50.unk0c += step_height * field_rate(g_field_runtime);
+
+        if (!(unk50.unk0c < unk18.unk0c))
+        {
+            unk50.unk0c = unk18.unk0c;
+            transition_state++;
+        }
+
+        break;
+    case 4:
+        if (draw_alpha == 128.0f)
+        {
+            unk89 = 0;
+            transition_state = 0;
+
+            if (unk60)
+            {
+                static_cast<FieldClass15BA90*>(unk60)->pending = 1;
+            }
+        }
+
+        break;
+    case 5:
+        if (unk60)
+        {
+            static_cast<FieldClass15BA90*>(unk60)->pending = 0;
+        }
+
+        centre_x = unk18.unk08 / 2.0f + unk18.unk00;
+        centre_y = unk18.unk0c / 2.0f + unk18.unk04;
+        unk50.unk08 = unk18.unk08;
+        unk50.unk0c = unk18.unk0c;
+        step_width = (unk50.unk08 - 48.0f) / 4.7999997f;
+        step_height = (unk50.unk0c - 48.0f) / 4.7999997f;
+        unk89 = 2;
+        transition_state++;
+        break;
+    case 6:
+        unk50.unk0c -= step_height * field_rate(g_field_runtime);
+
+        if (unk50.unk0c <= 48.0f)
+        {
+            unk50.unk0c = 48.0f;
+            transition_state++;
+        }
+
+        break;
+    case 7:
+        unk50.unk08 -= step_width * field_rate(g_field_runtime);
+
+        if (unk50.unk08 <= 48.0f)
+        {
+            unk50.unk08 = 48.0f;
+            transition_state++;
+        }
+
+        break;
+    case 8:
+        if (draw_alpha == 0.0f)
+        {
+            unk8c = 0;
+            unk89 = 0;
+            transition_state = 0;
+        }
+
+        break;
+    }
+
+    float alpha = draw_alpha;
+    float rate = g_field_runtime->rate;
+
+    if (unk89 == 1)
+    {
+        alpha += 13.333334f * rate;
+
+        if (!(alpha <= 128.0f))
+        {
+            alpha = 128.0f;
+        }
+    }
+    else if (unk89 == 2)
+    {
+        alpha -= 13.333334f * rate;
+
+        if (alpha < 0.0f)
+        {
+            alpha = 0.0f;
+        }
+    }
+
+    draw_alpha = alpha;
+    unk50.unk00 = centre_x - unk50.unk08 / 2.0f;
+    unk50.unk04 = centre_y - unk50.unk0c / 2.0f;
+    needs_redraw = 1;
+}
 
 /** Partial resident panel defaults containing the four packed colors. */
 struct LibPanelDefaults
@@ -3290,7 +3674,132 @@ void func_004C61F0(N54Owner84_004BD360* object)
     func_00461830((u8*)object + 0xD0, adjusted);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6230);
+/**
+ * @brief Release the widgets marked for removal, then update and draw the rest and chain their packets behind a
+ *        context-2 setup packet.
+ * @param first Nonzero to chain the widget packets.
+ * @param second Nonzero to update the widgets.
+ * @param third Nonzero to draw the widgets.
+ */
+void LibContainer::func_0044B100(u32 first, u32 second, u32 third)
+{
+    if (first && second)
+    {
+        func_00412C40(first, second, third);
+
+        if (unkaf)
+        {
+            return;
+        }
+    }
+
+    LibListSentinel* previous = &sentinel;
+
+    for (;;)
+    {
+        LibWidget* child = reinterpret_cast<LibWidget*>(previous->next);
+
+        if (reinterpret_cast<LibWidget*>(this) == child)
+        {
+            break;
+        }
+
+        if (child->unk3a)
+        {
+            LibListReceiver::unlink(child);
+            child->container = 0;
+            resident_enqueue_object(g_resident_release_queues, child);
+        }
+        else
+        {
+            previous = child;
+        }
+    }
+
+    if (first && unkab)
+    {
+        u32 head = 0;
+        u64* tail;
+        LibWidget* child = reinterpret_cast<LibWidget*>(this);
+
+        for (;;)
+        {
+            child = reinterpret_cast<LibWidget*>(child->next);
+
+            if (reinterpret_cast<LibWidget*>(this) == child)
+            {
+                break;
+            }
+
+            if (!child->unk39 || !child->unk3d)
+            {
+                continue;
+            }
+
+            if (second && unkac && child->unk3e)
+            {
+                child->func_00413D20();
+            }
+
+            if (!third || !unkad || !child->unk39 || !child->unk3d || !child->visible)
+            {
+                continue;
+            }
+
+            if (geometry_dirty)
+            {
+                child->needs_redraw = 1;
+            }
+
+            if (child->needs_redraw)
+            {
+                child->unk3b = 0;
+                child->needs_redraw = 0;
+            }
+
+            child->draw();
+
+            if (!child->unk3b)
+            {
+                continue;
+            }
+
+            u32 address = (u32)child->packet & 0x0FFFFFFF;
+
+            if (head == 0)
+            {
+                head = address;
+            }
+            else
+            {
+                *tail = DMA_TAG(*(u16*)tail, DMA_TAG_ID_NEXT, address);
+            }
+
+            tail = reinterpret_cast<u64*>(((u32)child->packet_tag & 0x0FFFFFFF) | 0x20000000);
+        }
+
+        if (third && unkad && head)
+        {
+            *tail = DMA_TAG(*(u16*)tail, DMA_TAG_ID_END, 0);
+            u64* packet = reinterpret_cast<u64*>(unkD0.dma_address);
+            packet[0] = DMA_TAG(5, DMA_TAG_ID_NEXT, head);
+            packet[2] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 4;
+            packet[3] = 0xE;
+            packet[4] = 0x1000F | ((u64)unkaa << 17);
+            packet[5] = GS_REGISTER_TEST_2;
+            // TODO: The target loads only the low word of ZBUF_1 (lwu); find the field it really reads.
+            packet[6] = *reinterpret_cast<u32*>(&g_display->buffers[0].environment.context1.depth_buffer);
+            packet[7] = GS_REGISTER_ZBUF_2;
+            packet[8] = 0x61;
+            packet[9] = GS_REGISTER_TEX1_2;
+            packet[10] = GS_ALPHA_NORMAL;
+            packet[11] = GS_REGISTER_ALPHA_2;
+            unk63 = 1;
+        }
+
+        geometry_dirty = 0;
+    }
+}
 
 /**
  * @brief Allocate container drawing storage and initialize its transform.
@@ -3319,11 +3828,34 @@ extern "C" s32 lib_container_init(LibContainer* object, s32 code, float x, float
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C65E0);
+/** @brief Destroy the list receiver and its sentinel. */
+inline LibListReceiver::~LibListReceiver()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6700);
+// TODO: The container's destructor inlines LibCallbackTransform's, which text_0044ABE0 keeps out of line, so the base
+// destructor is only inline in this unit.
+inline LibCallbackTransform::~LibCallbackTransform()
+{
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6710);
+/** @brief Delete every attached widget, then release the drawing storage. */
+LibContainer::~LibContainer()
+{
+    for (;;)
+    {
+        LibWidget* child = reinterpret_cast<LibWidget*>(sentinel.next);
+
+        if (reinterpret_cast<LibWidget*>(this) == child)
+        {
+            break;
+        }
+
+        LibListReceiver::unlink(child);
+        child->container = 0;
+        delete child;
+    }
+}
 
 extern "C" void func_004C74E0(LibTextWidget* object);
 
@@ -3348,7 +3880,7 @@ extern "C" void func_004C67C0(LibTextWidget* object, s32 slot, s32 key)
     object->needs_redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6840);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", draw__14LibClass178720Fv);
 
 /**
  * @brief Set the text widget up for free text: no resource slot, a 1024 by 1024 area and storage for the records.
@@ -3390,7 +3922,7 @@ typedef struct LibTextBoundsState
     u8 pending;
 } LibTextBoundsState;
 
-extern "C" s32 func_004C7D40(LibTextWidget* object, u32 source, u32 key, u8 flag);
+extern "C" s32 func_004C7D40(LibTextWidget* object, s32 source, u32 key, u8 flag);
 
 /**
  * @brief Refresh the text layout and return its measured bounds.
@@ -3421,7 +3953,174 @@ extern "C" LibTextExtent* lib_text_measure_bounds(LibTextWidget* object)
     return &state->bounds;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6A40);
+/**
+ * @brief Test whether an allocation record is in use.
+ * @param record Allocation record.
+ * @return Its allocated flag.
+ */
+static inline bool allocation_in_use(const ItemCreationAllocationRecord* record)
+{
+    return record->allocated;
+}
+
+extern "C" ResidentObject1B64F8* D_001B64F8;
+
+extern "C" char* func_004642E0(void* context, s32 index);
+
+extern "C" s32 func_00464040(LibDrawWidget* widget, u16* codes, const char* text);
+
+extern "C" s32 func_00463E60(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
+
+/**
+ * @brief Count the glyphs the widget's text lays out, expanding numbers, names and item names.
+ * @param widget Text widget.
+ * @return Number of glyphs.
+ */
+extern "C" s32 func_004C6A40(LibTextWidget* widget)
+{
+    u16 codes[0x80];
+    s32 count = 0;
+    const u8* text;
+
+    if (widget->pending)
+    {
+        text = static_cast<const u8*>(func_00465340(g_field_runtime, widget->source, widget->key));
+    }
+    else
+    {
+        text = static_cast<const u8*>(widget->unk100);
+    }
+
+    while (*text)
+    {
+        s32 c = *text++;
+
+        if (c & 0x80)
+        {
+            s32 code = (c & 0x7F) | (*text++ << 7);
+
+            if (code & 0x4000)
+            {
+                switch (code)
+                {
+                case 0x4002:
+                case 0x4008:
+                case 0x401A:
+                case 0x4020:
+                    text++;
+                    break;
+                case 0x4005:
+                case 0x4006:
+                case 0x400A:
+                case 0x400C:
+                case 0x400E:
+                case 0x4014:
+                case 0x4015:
+                case 0x401E:
+                    text += 4;
+                    break;
+                case 0x4012:
+                    count += widget->format_number_codes(codes, g_field_runtime->message_arguments[*text++]);
+                    break;
+                case 0x4013:
+                case 0x4021:
+                {
+                    s32 index = *text++;
+
+                    index = code == 0x4013 ? index : g_field_runtime->message_arguments[index];
+                    count += func_00464040(widget, codes, func_004642E0(widget, index));
+                    break;
+                }
+                case 0x4022:
+                case 0x4023:
+                {
+                    s32 value = g_field_runtime->message_arguments[*text++];
+                    u16 id = 0;
+                    s32 variant = 0;
+
+                    if (code == 0x4022)
+                    {
+                        u16 key = value;
+                        bool valid = false;
+
+                        if (key > 0 && key < 0x2EF)
+                        {
+                            valid = true;
+                        }
+
+                        if (valid)
+                        {
+                            id = value;
+                        }
+                    }
+                    else
+                    {
+                        LibGameState* state = reinterpret_cast<LibGameState*>(D_001B64F8);
+                        s16 identifier = value;
+                        bool valid = false;
+
+                        if (identifier > 0 && identifier <= LIB_ALLOCATION_COUNT)
+                        {
+                            valid = true;
+                        }
+
+                        ItemCreationAllocationRecord* record;
+
+                        if (valid)
+                        {
+                            record = reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[identifier - 1]);
+                        }
+                        else
+                        {
+                            record = 0;
+                        }
+
+                        if (record != 0 && allocation_in_use(record))
+                        {
+                            id = record->definition_index() + 1;
+                            variant = record->modification_number;
+                        }
+                    }
+
+                    if (id)
+                    {
+                        count += func_00463E60(widget, codes, id, variant);
+                    }
+
+                    break;
+                }
+                case 0x4011:
+                    while (*text)
+                    {
+                        text++;
+                    }
+
+                    text++;
+                    break;
+                case 0x401C:
+                    while (*text)
+                    {
+                        count++;
+                        text++;
+                    }
+
+                    text++;
+                    break;
+                case 0x401D:
+                    count++;
+                    text++;
+                    break;
+                }
+
+                continue;
+            }
+        }
+
+        count++;
+    }
+
+    return count;
+}
 
 extern "C" void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, u8 flag)
 {
@@ -3434,42 +4133,6 @@ extern "C" void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, 
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6E10);
-
-/** One glyph's drawing state in a LibClass178780 batch. */
-struct LibGlyphDraw6C : public LibDrawState64
-{
-    /** @brief Initialize the drawing state and clear both trailing words. */
-    LibGlyphDraw6C();
-
-    u32 unk64;
-    u32 unk68;
-};
-
-/** 0x30-byte batch of glyph drawing states a text widget keeps at unkfc, with vtable D_178780 in main data. */
-class LibClass178780 : public LibListObject
-{
-public:
-    /** @brief Start without storage or glyphs. */
-    LibClass178780() : glyphs(0)
-    {
-    }
-
-    /** @brief Free the glyphs and the drawing storage. */
-    virtual ~LibClass178780();
-
-    /**
-     * @brief Allocate drawing storage and glyph states for a glyph count.
-     * @param count Number of glyphs.
-     * @return One on success, or zero when an allocation fails.
-     */
-    s32 init(s32 count);
-
-    LibStorageBlock0C storage;
-    u8 unk20[4];
-    LibGlyphDraw6C* glyphs;
-    s32 glyph_capacity;
-    s32 glyph_count;
-};
 
 /**
  * @brief Step the animation of every glyph that is animated and started before the widget's time.
@@ -3524,17 +4187,466 @@ extern "C" bool func_004C71E0(LibTextWidget* object)
     return step_glyphs(object);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7290);
+/**
+ * @brief Pick 0x200020 for codes whose low four bits are below 14, else 0x200030.
+ * @param code Code.
+ * @return Selected value.
+ */
+extern "C" s32 func_00451B60(s32 code);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C74E0);
+/**
+ * @brief Turn a button glyph code into the glyph of the pad button the player has mapped to it.
+ * @param runtime Runtime holding the button map.
+ * @param code Glyph code.
+ * @return Glyph index.
+ */
+extern "C" s32 func_00464EF0(FieldRuntime* runtime, s32 code);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C79C0);
+/**
+ * @brief Lay out a pad-button glyph as a record at the pen and bind an animated glyph slot of the widget's batch to
+ *        it, reusing the slot already bound to this text position.
+ * @param widget Text widget.
+ * @param text Text position of the glyph code.
+ */
+extern "C" void func_004C7290(LibTextWidget* widget, const u8* text)
+{
+    LibGlyphDraw6C* candidate;
+    LibClass178780* batch;
+    LibDrawRecord* record = widget->next_record;
+    s32 glyph = func_00464EF0(g_field_runtime, *text);
+
+    record->code = 0x401D;
+    record->left = widget->pen_x;
+    record->top = widget->pen_y;
+    record->unk14.scale = widget->draw_scale;
+    record->scale_y = widget->draw_scale_y;
+    u32 size = func_00451B60(glyph);
+    record->right = widget->pen_x + (float)(size & 0xFFFF) * widget->draw_scale;
+    float height = (float)(size >> 16) * widget->draw_scale_y;
+    record->bottom = widget->pen_y + height;
+    widget->line_height = height;
+
+    if (height < widget->min_height)
+    {
+        widget->min_height = height;
+    }
+
+    if (height > widget->max_height)
+    {
+        widget->max_height = height;
+    }
+
+    widget->pen_x = widget->unk90 + (widget->next_record->right + widget->unk88);
+    widget->next_record++;
+    widget->record_count++;
+    batch = static_cast<LibClass178780*>(widget->unkfc);
+
+    if (batch == 0)
+    {
+        return;
+    }
+
+    LibGlyphDraw6C* slot = 0;
+    candidate = batch->glyphs;
+
+    for (s32 i = 0; i < batch->glyph_capacity; i++, candidate++)
+    {
+        if (candidate->unk60)
+        {
+            if (candidate->unk68 == reinterpret_cast<u32>(text))
+            {
+                slot = candidate;
+                break;
+            }
+        }
+        else if (slot == 0)
+        {
+            slot = candidate;
+        }
+    }
+
+    if (slot == 0)
+    {
+        return;
+    }
+
+    if (!slot->unk60)
+    {
+        batch->glyph_count++;
+        slot->unk60 = 1;
+        slot->unk68 = reinterpret_cast<u32>(text);
+        slot->set_display_chunk(glyph + 0x22);
+        slot->start(0);
+    }
+
+    slot->set_position(record->left, record->top);
+    slot->unk30 = record->unk14.scale;
+    slot->unk34 = record->scale_y;
+    slot->unk64 = reinterpret_cast<u32>(record);
+}
+
+extern "C" void func_00463DD0(LibDrawWidget* widget, u16 id, s32 variant);
+
+/**
+ * @brief Lay the widget's text out line by line into its records, applying the style codes, and restore the style the
+ *        text started with.
+ * @param widget Text widget.
+ */
+extern "C" void func_004C74E0(LibTextWidget* widget)
+{
+    u32 tint = widget->tint;
+    float scale = widget->draw_scale;
+    float scale_y = widget->draw_scale_y;
+    s32 align = widget->horizontal_align;
+    float spacing = widget->unk88;
+    float line_spacing = widget->unk8c;
+    s32 total = 0;
+    bool more = true;
+
+    widget->pen_y = 0.0f;
+    const u8* text = static_cast<const u8*>(widget->unk100);
+    LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(widget->unk70);
+
+    do
+    {
+        widget->begin_layout(records, widget->pen_y);
+
+        for (;;)
+        {
+            s32 code = *text++;
+
+            // TODO: The game sign-extends the code before this test, which a compare with a long zero gives.
+            if (code == 0L)
+            {
+                more = false;
+                break;
+            }
+
+            if (code & 0x80)
+            {
+                code = (code & 0x7F) | (*text++ << 7);
+
+                if (code & 0x4000)
+                {
+                    switch (code)
+                    {
+                    case 0x4000:
+                    case 0x4001:
+                        goto line_end;
+                    case 0x4002:
+                        widget->horizontal_align = *text++;
+                        break;
+                    case 0x4003:
+                        widget->horizontal_align = align;
+                        break;
+                    case 0x4005:
+                    case 0x4006:
+                    case 0x4014:
+                    case 0x4015:
+                    case 0x401E:
+                        text += 4;
+                        break;
+                    case 0x401A:
+                    case 0x4020:
+                        text++;
+                        break;
+                    case 0x4008:
+                        widget->tint = widget->get_palette_color(*text++);
+                        break;
+                    case 0x4009:
+                        widget->tint = tint;
+                        break;
+                    case 0x400A:
+                    {
+                        float factor;
+                        u8* bytes = reinterpret_cast<u8*>(&factor);
+
+                        bytes[0] = text[0];
+                        bytes[1] = text[1];
+                        bytes[2] = text[2];
+                        bytes[3] = text[3];
+                        text += 4;
+                        widget->draw_scale = factor * scale;
+                        widget->draw_scale_y = factor * scale_y;
+                        break;
+                    }
+                    case 0x400B:
+                        widget->draw_scale = scale;
+                        widget->draw_scale_y = scale_y;
+                        break;
+                    case 0x400C:
+                    {
+                        u8* bytes = reinterpret_cast<u8*>(&widget->unk88);
+
+                        bytes[0] = text[0];
+                        bytes[1] = text[1];
+                        bytes[2] = text[2];
+                        bytes[3] = text[3];
+                        text += 4;
+                        break;
+                    }
+                    case 0x400D:
+                        widget->unk88 = spacing;
+                        break;
+                    case 0x400E:
+                    {
+                        u8* bytes = reinterpret_cast<u8*>(&widget->unk8c);
+
+                        bytes[0] = text[0];
+                        bytes[1] = text[1];
+                        bytes[2] = text[2];
+                        bytes[3] = text[3];
+                        text += 4;
+                        break;
+                    }
+                    case 0x400F:
+                        widget->unk8c = line_spacing;
+                        break;
+                    case 0x4010:
+                        widget->begin_run();
+                        break;
+                    case 0x4011:
+                    {
+                        const u8* start = text;
+
+                        while (*text)
+                        {
+                            text++;
+                        }
+
+                        widget->end_run(const_cast<u8*>(start), text - start);
+                        text++;
+                        break;
+                    }
+                    case 0x4012:
+                        widget->add_number(g_field_runtime->message_arguments[*text++]);
+                        break;
+                    case 0x4013:
+                    case 0x4021:
+                    {
+                        s32 index = *text++;
+
+                        index = code == 0x4013 ? index : g_field_runtime->message_arguments[index];
+                        widget->add_text(func_004642E0(widget, index));
+                        break;
+                    }
+                    case 0x4022:
+                    case 0x4023:
+                    {
+                        s32 value = g_field_runtime->message_arguments[*text++];
+                        u16 id = 0;
+                        s32 variant = 0;
+
+                        if (code == 0x4022)
+                        {
+                            id = value;
+                        }
+                        else
+                        {
+                            LibGameState* state = reinterpret_cast<LibGameState*>(D_001B64F8);
+                            s16 identifier = value;
+                            bool valid = false;
+
+                            if (identifier > 0 && identifier <= LIB_ALLOCATION_COUNT)
+                            {
+                                valid = true;
+                            }
+
+                            ItemCreationAllocationRecord* record;
+
+                            if (valid)
+                            {
+                                record = reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[identifier - 1]);
+                            }
+                            else
+                            {
+                                record = 0;
+                            }
+
+                            if (record != 0 && allocation_in_use(record))
+                            {
+                                id = record->definition_index() + 1;
+                                variant = record->modification_number;
+                            }
+                        }
+
+                        func_00463DD0(widget, id, variant);
+                        break;
+                    }
+                    case 0x401C:
+                    {
+                        const u8* start = text;
+
+                        while (*text)
+                        {
+                            text++;
+                        }
+
+                        widget->add_number_record(const_cast<u8*>(start), text - start);
+                        text++;
+                        break;
+                    }
+                    case 0x401D:
+                        func_004C7290(widget, text++);
+                        break;
+                    }
+
+                    continue;
+                }
+            }
+
+            widget->add_glyph(code);
+        }
+
+    line_end:
+        if (widget->record_count > 0)
+        {
+            widget->func_004637A0(records, widget->record_count);
+            records += widget->record_count;
+            total += widget->record_count;
+        }
+    } while (more);
+
+    widget->align_records_vertically(reinterpret_cast<LibDrawRecord*>(widget->unk70), total);
+    widget->unk74 = reinterpret_cast<u8*>(records);
+    widget->record_count = total;
+    widget->tint = tint;
+    widget->draw_scale = scale;
+    widget->draw_scale_y = scale_y;
+    widget->unk88 = spacing;
+    widget->unk8c = line_spacing;
+    widget->horizontal_align = align;
+}
+
+/**
+ * @brief Count what the widget's text holds: glyphs found in its resource (or the runtime's first slot) and
+ *        missing ones, the space control codes add, line breaks, quoted string bytes and button glyphs.
+ * @param widget Text widget.
+ */
+extern "C" void func_004C79C0(LibTextWidget* widget)
+{
+    widget->unkb0 = 0;
+    widget->unkac = 0;
+    widget->unka8 = 0;
+    widget->unka4 = 0;
+    widget->glyph_count = 0;
+    widget->unkb4 = 0;
+    const u8* text = static_cast<const u8*>(widget->unk100);
+
+    while (*text)
+    {
+        s32 code = *text++;
+
+        if (code & 0x80)
+        {
+            code = (code & 0x7F) | (*text++ << 7);
+
+            if (code & 0x4000)
+            {
+                switch (code)
+                {
+                case 0x4002:
+                case 0x4008:
+                case 0x401A:
+                case 0x4020:
+                    text++;
+                    break;
+                case 0x4005:
+                case 0x4006:
+                case 0x400A:
+                case 0x400C:
+                case 0x400E:
+                case 0x4014:
+                case 0x4015:
+                case 0x401E:
+                    text += 4;
+                    break;
+                case 0x4012:
+                    text++;
+                    widget->unka4 += 11;
+                    break;
+                case 0x4013:
+                case 0x4021:
+                    text++;
+                    widget->unka4 += 0x20;
+                    break;
+                case 0x4022:
+                case 0x4023:
+                    text++;
+                    widget->unka8 += 0x40;
+                    break;
+                case 0x4010:
+                    widget->unkb4++;
+                    widget->unkac++;
+                    break;
+                case 0x4011:
+                    while (*text)
+                    {
+                        text++;
+                        widget->unkb0++;
+                    }
+
+                    text++;
+                    break;
+                case 0x401C:
+                    widget->unkb4++;
+                    widget->unkac++;
+
+                    while (*text)
+                    {
+                        text++;
+                        widget->unkb0++;
+                    }
+
+                    text++;
+                    break;
+                case 0x401D:
+                    text++;
+                    widget->unkb4++;
+                    widget->glyph_count++;
+                    break;
+                }
+
+                continue;
+            }
+        }
+
+        s32 index;
+        LibManagedResourceSlot* slot;
+
+        slot = widget->resource_slot;
+        index = code - 1;
+
+        if (slot->flag)
+        {
+            if (code <= 300)
+            {
+                slot = &g_field_runtime->resource_slots[0];
+            }
+            else
+            {
+                index -= 300;
+            }
+        }
+
+        if (index < slot->loaded)
+        {
+            widget->unka4++;
+        }
+        else
+        {
+            widget->unka8++;
+        }
+    }
+
+    widget->unkb4 += widget->unka4 + widget->unka8;
+}
 
 /**
  * @brief Hand the widget's attached object to the resident release queue, then release its drawing storage.
  * @param widget Widget to clear.
  */
-extern "C" void func_004C7D00(LibTextWidget* widget)
+static inline void lib_text_release_glyphs(LibTextWidget* widget)
 {
     if (widget->unkfc != 0)
     {
@@ -3545,7 +4657,136 @@ extern "C" void func_004C7D00(LibTextWidget* widget)
     widget->release_storage();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7D40);
+/**
+ * @brief Hand the widget's attached object to the resident release queue, then release its drawing storage.
+ * @param widget Widget to clear.
+ */
+extern "C" void func_004C7D00(LibTextWidget* widget)
+{
+    lib_text_release_glyphs(widget);
+}
+
+/**
+ * @brief Allocate a glyph batch's drawing storage and glyph states for a glyph count.
+ * @param batch Glyph batch.
+ * @param count Number of glyphs.
+ * @return Whether both allocations succeeded.
+ */
+static inline bool lib_glyph_batch_init(LibClass178780* batch, s32 count)
+{
+    batch->glyph_capacity = count;
+    batch->glyph_count = 0;
+
+    if (count > 0)
+    {
+        if (!lib_allocate_drawing_storage(&batch->storage, (u32)(count * 0x70 + 0x10) / 8))
+        {
+            return 0;
+        }
+
+        batch->glyphs = new (0) LibGlyphDraw6C[count];
+
+        if (batch->glyphs == 0)
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Allocate drawing storage and glyph states for a glyph count.
+ * @param count Number of glyphs.
+ * @return One on success, or zero when an allocation fails.
+ */
+s32 LibClass178780::init(s32 count)
+{
+    glyph_capacity = count;
+    glyph_count = 0;
+
+    if (count > 0)
+    {
+        if (!lib_allocate_drawing_storage(&storage, (u32)(count * 0x70 + 0x10) / 8))
+        {
+            return 0;
+        }
+
+        glyphs = new (0) LibGlyphDraw6C[count];
+
+        if (glyphs == 0)
+        {
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/**
+ * @brief Measure the widget's text.
+ * @param object Text widget.
+ */
+extern "C" void func_004C79C0(LibTextWidget* object);
+
+/**
+ * @brief Point the text widget at a keyed text of a resource slot: measure it, allocate its drawing storage and its
+ *        glyph states. Slot or key zero leaves the widget without text.
+ * @param object Text widget.
+ * @param slot Resource slot index.
+ * @param key Key of the text in the slot's index.
+ * @param flag Nonzero to reset the drawing state first.
+ * @return One, or zero when an allocation failed.
+ */
+extern "C" s32 func_004C7D40(LibTextWidget* object, s32 slot, u32 key, u8 flag)
+{
+    object->unk39 = 0;
+    lib_text_release_glyphs(object);
+
+    if (flag)
+    {
+        object->reset_drawing_state();
+    }
+
+    // TODO: The game sign-extends the slot before testing it, which a compare with a long zero gives; I don't know
+    // what the original compared against.
+    if (slot == 0L || key == 0)
+    {
+        object->unk100 = 0;
+    }
+    else
+    {
+        object->resource_slot = &g_field_runtime->resource_slots[slot];
+        object->unk100 = func_00465340(g_field_runtime, slot, key);
+        func_004C79C0(object);
+
+        if (!object->allocate_storage(object->unka4, object->unka8, object->unkac, object->unkb0))
+        {
+            return 0;
+        }
+
+        if (object->glyph_count > 0)
+        {
+            object->unkfc = new (0) LibClass178780;
+
+            if (object->unkfc == 0)
+            {
+                return 0;
+            }
+
+            s32 count = object->glyph_count;
+
+            if (!lib_glyph_batch_init(static_cast<LibClass178780*>(object->unkfc), count))
+            {
+                return 0;
+            }
+        }
+    }
+
+    object->pending = 0;
+    object->unk39 = 1;
+    return 1;
+}
 
 /** @brief Initialize the drawing state and clear both trailing words. */
 LibGlyphDraw6C::LibGlyphDraw6C()
@@ -3603,7 +4844,7 @@ extern "C" s32 lib_text_init_resource_rectangle(LibTextWidget* object, s32 slot,
 }
 
 /** @brief Delete the attached list object, then destroy the drawing widget. */
-LibTextWidget::~LibTextWidget()
+inline LibTextWidget::~LibTextWidget()
 {
     if (unkfc != 0)
     {
@@ -3612,32 +4853,9 @@ LibTextWidget::~LibTextWidget()
     }
 }
 
-/**
- * @brief Allocate drawing storage and glyph states for a glyph count.
- * @param count Number of glyphs.
- * @return One on success, or zero when an allocation fails.
- */
-s32 LibClass178780::init(s32 count)
+/** @brief Destroy the text widget. */
+LibClass178720::~LibClass178720()
 {
-    glyph_capacity = count;
-    glyph_count = 0;
-
-    if (count > 0)
-    {
-        if (!lib_allocate_drawing_storage(&storage, (u32)(count * 0x70 + 0x10) / 8))
-        {
-            return 0;
-        }
-
-        glyphs = new (0) LibGlyphDraw6C[count];
-
-        if (glyphs == 0)
-        {
-            return 0;
-        }
-    }
-
-    return 1;
 }
 
 /** @brief Free the glyphs and the drawing storage. */
@@ -3726,7 +4944,7 @@ public:
      * @param source Model to copy.
      * @return Nonzero on success.
      */
-    virtual s32 func_004C8680(LibUpdateList* links, LibModel* source);
+    virtual s32 func_004C8680(LibUpdateList* links, LibClass173380* source);
 
     /**
      * @brief Virtual slot 0x100.
@@ -3822,8 +5040,8 @@ s32 LibClass1788B0::get_after_packet_size()
 
 extern "C" u8 D_001B65B0;
 extern "C" s32 D_001B65B4;
-extern "C" u8 D_0050CBC0[];
-extern "C" u8 D_0050CC00[];
+extern "C" LibMatrix44Value D_0050CBC0;
+extern "C" LibMatrix44Value D_0050CC00;
 
 extern "C" void func_004E22B0(LibListObject* camera, s32 step, void* first, void* second);
 
@@ -3835,7 +5053,7 @@ void func_004C8390(LibDisplayManager* manager)
 {
     if (D_001B65B0 && manager->current_display != 0)
     {
-        func_004E22B0(manager->current_display, D_001B65B4, D_0050CBC0, D_0050CC00);
+        func_004E22B0(manager->current_display, D_001B65B4, &D_0050CBC0, &D_0050CC00);
     }
 }
 
@@ -3862,7 +5080,68 @@ s32 LibClass1788B0::build_after_packet(s32 block, s32 address)
     return block + 0x10;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", build_before_packet__14LibClass1788B0Fii);
+/**
+ * @brief Copy a matrix's four rows, each as one 128-bit value.
+ * @param rows Destination rows.
+ * @param matrix Matrix to copy.
+ */
+static inline void copy_matrix_rows(LibVector4* rows, const LibMatrix44Value* matrix)
+{
+    ((unsigned __int128*)rows)[0] = ((const unsigned __int128*)matrix)[0];
+    ((unsigned __int128*)rows)[1] = ((const unsigned __int128*)matrix)[1];
+    ((unsigned __int128*)rows)[2] = ((const unsigned __int128*)matrix)[2];
+    ((unsigned __int128*)rows)[3] = ((const unsigned __int128*)matrix)[3];
+}
+
+/** One matrix and the VIF codes that unpack it into VU1 data memory. */
+struct LibMatrixUpload
+{
+    union
+    {
+        u32 vif_codes[4];
+        unsigned __int128 vif_qword;
+    };
+
+    LibVector4 rows[4];
+};
+
+/** Packet that uploads the two camera matrices ahead of a model's own packet. */
+struct LibCameraMatrixPacket
+{
+    u64 dma_tag;
+    u64 unk08;
+    LibMatrixUpload first;
+    LibMatrixUpload second;
+};
+
+/**
+ * @brief Upload the two camera work matrices before the model's packet when it has no display manager of its own.
+ * @param block Packet to write.
+ * @param address Unused.
+ * @return The end of the written packet.
+ */
+s32 LibClass1788B0::build_before_packet(s32 block, s32 address)
+{
+    if (!D_001B65B0)
+    {
+        return block;
+    }
+
+    if (display_manager)
+    {
+        return block;
+    }
+
+    LibCameraMatrixPacket* packet = reinterpret_cast<LibCameraMatrixPacket*>(block);
+    packet->dma_tag = DMA_TAG(10, DMA_TAG_ID_CNT, 0);
+    packet->first.vif_qword = 0;
+    packet->first.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V4_32, 4, 0x34);
+    copy_matrix_rows(packet->first.rows, &D_0050CBC0);
+    packet->second.vif_qword = 0;
+    packet->second.vif_codes[3] = VIF_UNPACK(VIF_UNPACK_V4_32, 4, 0x3D);
+    copy_matrix_rows(packet->second.rows, &D_0050CC00);
+    return block + sizeof(LibCameraMatrixPacket);
+}
 
 /** @brief Draw the model the way a plain LibModel does. */
 void LibClass1787A0::render()
@@ -3926,7 +5205,32 @@ LibTransformOwner* LibClass1788B0::clone()
     return copy;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8680__14LibClass1788B0FP13LibUpdateListP8LibModel);
+/**
+ * @brief Build from a model of the source class, sharing its owner.
+ * @param links Update list for the new model.
+ * @param source Model to copy.
+ * @return Nonzero on success.
+ */
+s32 LibClass1788B0::func_004C8680(LibUpdateList* links, LibClass173380* source)
+{
+    if (!LibModel::build_from(links, source))
+    {
+        return 0;
+    }
+
+    LibModel* owner = source->unk830;
+    unk838 = owner;
+    owner->unk790++;
+    unk821 = source->unk836;
+    unk822 = source->unk837;
+    unk825 = source->unk835;
+    unk823 = source->unk834;
+    sphere_radius_scale = source->unk848;
+    copy_vector(&unk850, &source->unk820);
+    unk82c = source->unk854;
+    unk830 = source->unk858;
+    return 1;
+}
 
 /**
  * @brief Build from another model of this class, sharing its owner.
@@ -4023,44 +5327,6 @@ LibClass1788B0::LibClass1788B0()
 }
 
 
-/** LibClass1734B0 entry with vtable D_1789C0 in main data; only its constructor and destructor are known. */
-class LibClass1789C0 : public LibClass1734B0
-{
-public:
-    /** @brief Start as an unattached entry of kind 2 with unk54 set to three. */
-    LibClass1789C0();
-
-    /** @brief Destroy the entry. */
-    virtual ~LibClass1789C0();
-
-    /**
-     * @brief Use a morph shape resource without owning it, and apply its weight.
-     * @param value Resource data.
-     */
-    virtual void set_borrowed_data(void* value);
-
-    /**
-     * @brief Return the entry's type code.
-     * @return 67.
-     */
-    virtual s32 func_slot14();
-
-    /**
-     * @brief Note whether every bit is set, count the idle frames down and rewind the records.
-     * @return Zero on the step the countdown ends, otherwise one.
-     */
-    virtual s32 func_slot1C();
-
-    LibMorphShape* shape;
-    u8* records;
-    u8* cursor;
-    u8 unk3c[4];
-    float clamped_weight;
-    u8 unk44[0xC];
-    float weight;
-    s32 idle_frames;
-};
-
 /** @brief Destroy the entry. */
 LibClass1789C0::~LibClass1789C0()
 {
@@ -4135,9 +5401,10 @@ void lib_morph_target_set_weight(LibMorphTarget* target, float weight)
 
 /**
  * @brief Note whether every bit is set, count the idle frames down and rewind the records.
+ * @param root Model transform; unused.
  * @return Zero on the step the countdown ends, otherwise one.
  */
-s32 LibClass1789C0::func_slot1C()
+s32 LibClass1789C0::func_slot1C(LibTransform* root)
 {
     if (shape->bit_count == shape->unk08)
     {
@@ -4194,7 +5461,17 @@ LibClass174C90::LibClass174C90()
     unk0e = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9970);
+// TODO: The light's destructor inlines its base's, which text_0046AE20 keeps out of line, so the base destructor is
+// only inline in this unit.
+/** @brief Destroy the look-at transform. */
+inline LibLookAtTransform::~LibLookAtTransform()
+{
+}
+
+/** @brief Destroy the light and its look-at transform. */
+LibLight::~LibLight()
+{
+}
 
 /**
  * @brief Read a spotlight's position, direction, and the cosine and sine of its cone angle.
@@ -4210,21 +5487,53 @@ extern "C" void lib_spot_light_get_frame(LibLight* light, LibVector4* frame)
         light->update_transform_matrix();
     }
 
-    value.x = light->world.m[0][3];
-    value.y = light->world.m[1][3];
-    value.z = light->world.m[2][3];
+    value.x = light->transform.m[0][3];
+    value.y = light->transform.m[1][3];
+    value.z = light->transform.m[2][3];
     value.w = 1.0f;
     copy_vector(&frame[0], &value);
-    value.x = light->world.m[0][1];
-    value.y = light->world.m[1][1];
-    value.z = light->world.m[2][1];
+    value.x = light->transform.m[0][1];
+    value.y = light->transform.m[1][1];
+    value.z = light->transform.m[2][1];
     copy_vector(&frame[1], &value);
     lib_compute_sine_cosine_pair_degree9(&value, DEGREES_TO_RADIANS * light->cone_angle);
     frame[2].x = value.z;
     frame[2].y = value.w;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9AC0);
+/**
+ * @brief Copy another light's colour, frame, cone and flags.
+ * @param source Light to copy.
+ */
+void LibLight::copy_light_state(const LibLight* source)
+{
+    copy_vector(&color, &source->color);
+    copy_vector(&tinted_color, &source->tinted_color);
+    copy_vector(&position, &source->position);
+    copy_vector(&direction, &source->direction);
+    cone_angle = source->cone_angle;
+    packed_intensity = source->packed_intensity;
+    unk268 = source->unk268;
+    unk26c = source->unk26c;
+    unk270 = source->unk270;
+    unk274 = source->unk274;
+    unk278 = source->unk278;
+    unk27c = source->unk27c;
+    unk280 = source->unk280;
+    unk284 = source->unk284;
+    unk288 = source->unk288;
+    unk289 = source->unk289;
+    unk28a = source->unk28a;
+    unk28b = source->unk28b;
+    unk28c = source->unk28c;
+    unk28d = source->unk28d;
+    unk28e = source->unk28e;
+    enabled = source->enabled;
+    unk290 = source->unk290;
+    unk291 = source->unk291;
+    kind = source->kind;
+    mask = source->mask;
+}
 
 /**
  * @brief Cache the spotlight's cone falloff terms from the cosines of its two half-angles.
@@ -4249,17 +5558,50 @@ void LibLight::update_frame()
         update_transform_matrix();
     }
 
-    position.x = world.m[0][3];
-    position.y = world.m[1][3];
-    position.z = world.m[2][3];
+    position.x = transform.m[0][3];
+    position.y = transform.m[1][3];
+    position.z = transform.m[2][3];
     position.w = 1.0f;
-    direction.x = world.m[0][1];
-    direction.y = world.m[1][1];
-    direction.z = world.m[2][1];
+    direction.x = transform.m[0][1];
+    direction.y = transform.m[1][1];
+    direction.z = transform.m[2][1];
     direction.w = 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9CA0);
+/** @brief Face the look-at target, if any, by turning the light's orientation towards it, then update the matrix. */
+void LibLight::update_transform_matrix()
+{
+    transform_dirty = 1;
+
+    if (look_at_target)
+    {
+        if (!look_at_target->matrix_ready)
+        {
+            look_at_target->update_transform_matrix();
+        }
+
+        LibTransform::update_transform_matrix();
+        matrix_ready = 0;
+
+        LibVector4 target;
+        LibVector4 angles;
+        LibVector4 orientation;
+        const LibTransform* target_transform = look_at_target;
+        target.x = target_transform->transform.m[0][3];
+        target.y = target_transform->transform.m[1][3];
+        target.z = target_transform->transform.m[2][3];
+        target.w = 1.0f;
+        angles.x = transform.m[0][3];
+        angles.y = transform.m[1][3];
+        angles.z = transform.m[2][3];
+        angles.w = 1.0f;
+        lib_direction_angles_xy(&angles, &target, roll_angle);
+        func_004CDBC0(&orientation, &angles);
+        copy_orientation(&orientation);
+    }
+
+    LibTransform::update_transform_matrix();
+}
 
 /**
  * @brief Return how strongly a spotlight lights a point: zero behind it, rising to one inside its inner cone.
@@ -4411,9 +5753,89 @@ LibListReceiver::LibListReceiver()
     sentinel.next = &sentinel;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA090);
+#define LIB_FLOAT_BITS_ONE 0x3F800000
+#define LIB_FLOAT_BITS_MINUS_ONE 0xBF800000
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA180);
+/**
+ * @brief Compute three sines on VU0 and store them.
+ * @param output Receives the sines of x, y and z.
+ * @param x First angle in radians.
+ * @param y Second angle in radians.
+ * @param z Third angle in radians.
+ */
+void func_004CA090(FieldVec4A* output, float x, float y, float z)
+{
+    // TODO: Same shape as func_004CD2C0 (signs as float bit patterns, `!!` odd tests).
+    union
+    {
+        float angles[4];
+        u32 signs[4];
+    } values __attribute__((aligned(16)));
+    s32 count_words[4] __attribute__((aligned(16)));
+
+    values.angles[0] = x;
+    values.angles[1] = y;
+    values.angles[2] = z;
+    vu0_sines_load(&values);
+    u32 negative = LIB_FLOAT_BITS_MINUS_ONE;
+    vu0_sines_reduce();
+    s32* counts = count_words;
+    vu0_sines_store_counts(counts);
+    u32 positive = LIB_FLOAT_BITS_ONE;
+    vu0_sines_evaluate();
+
+    bool odd_x = !!(counts[0] & 1);
+    bool odd_y = !!(counts[1] & 1);
+    bool odd_z = !!(counts[2] & 1);
+
+    values.signs[0] = odd_x ? negative : positive;
+    values.signs[1] = odd_y ? negative : positive;
+    values.signs[2] = odd_z ? negative : positive;
+    vu0_sines_apply_signs(&values);
+    vu0_sines_store(output);
+}
+
+/**
+ * @brief Find the squared distance from a point to a segment and the fraction along it of the closest point.
+ * @param segment Aligned segment: start, then axis.
+ * @param point Aligned point.
+ * @param fraction Receives the fraction along the axis, clamped to [0, 1].
+ * @return The squared distance.
+ */
+extern "C" float func_004CA180(const LibVector4* segment, const LibVector4* point, float* fraction)
+{
+    LibVector4 projection;
+    LibVector4 length;
+
+    vu0_segment_project_start(point, segment, segment + 1);
+    vu0_segment_store_dot(&projection);
+
+    if (projection.x <= 0.0f)
+    {
+        projection.x = 0.0f;
+        vu0_segment_square_start_offset();
+    }
+    else
+    {
+        vu0_segment_start_fraction(&length);
+
+        if (!(projection.x < length.x))
+        {
+            projection.x = 1.0f;
+            vu0_segment_end_offset();
+        }
+        else
+        {
+            vu0_segment_inner_offset(&projection);
+        }
+
+        vu0_segment_square_offset();
+    }
+
+    *fraction = projection.x;
+    vu0_segment_store_distance(&projection);
+    return projection.x;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA270);
 
@@ -4431,7 +5853,49 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_matrix_to_q
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_matrix_look_at);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC070);
+extern "C" LibTrigQuotients D_0050CD20;
+
+/**
+ * @brief Evaluate the degree-nine VU0 tangent: sine over cosine of one angle.
+ * @param angle Angle in radians.
+ * @return Approximated tangent.
+ */
+extern "C" float func_004CC070(float angle)
+{
+    D_0050CC80.phase.angle = angle;
+    vu0_sincos_load_degree9(&D_0050CC80);
+    vu0_sincos_reduce(&D_0050CD20);
+    bool cosine_negative = bool(D_0050CD20.cosine_half_turns & 1);
+    bool sine_negative = bool(D_0050CD20.sine_half_turns & 1);
+    vu0_sincos_square();
+    float cosine_sign;
+
+    if (cosine_negative)
+    {
+        cosine_sign = -1.0f;
+    }
+    else
+    {
+        cosine_sign = 1.0f;
+    }
+
+    D_0050CC80.sign = cosine_sign;
+    float sine_sign;
+
+    if (sine_negative)
+    {
+        sine_sign = -1.0f;
+    }
+    else
+    {
+        sine_sign = 1.0f;
+    }
+
+    D_0050CC80.phase.sine_sign = sine_sign;
+    vu0_sincos_begin_evaluate_degree9(&D_0050CC80);
+    vu0_sincos_finish_to_table(&D_0050CC80);
+    return D_0050CC80.phase.result / D_0050CC80.sign;
+}
 
 /**
  * @brief Compute the VU0 sine and cosine approximations for an angle.
@@ -4801,11 +6265,105 @@ extern "C" float func_004CCD90(float value)
     return (fifth_term + result) + (1.0f / 720.0f) * (cubed * cubed);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCE10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CCEE0);
+extern "C" void func_004CCEE0(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t);
+
+/**
+ * @brief Interpolate a rotation curve segment: slerp the keys and the control rotations, then slerp those two by
+ *        2t(1 - t).
+ * @param output Receives the rotation.
+ * @param from Rotation at the start of the segment.
+ * @param to Rotation at the end of the segment.
+ * @param from_control Control rotation of the start key.
+ * @param to_control Control rotation of the end key.
+ * @param t Position in the segment, zero to one.
+ */
+extern "C" void func_004CCE10(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, const FieldVec4B* from_control, const FieldVec4B* to_control,
+                              float t)
+{
+    FieldVec4B keys;
+    FieldVec4B controls;
+
+    func_004CCEE0(&keys, from, to, t);
+    float weight = 2.0f * (1.0f - t) * t;
+    vu0_quaternion_norm_finish(&keys);
+    func_004CCEE0(&controls, from_control, to_control, t);
+    vu0_quaternion_norm_finish(&controls);
+    func_004CCEE0(output, &keys, &controls, weight);
+    vu0_quaternion_norm_finish(output);
+}
+
+/**
+ * @brief Start a spherical interpolation between two rotations (linear when they're within about 18 degrees of
+ *        parallel); the result is left in vf16 with its normalization pending in Q, for vu0_quaternion_norm_finish.
+ * @param output Destination the caller stores into; unused here.
+ * @param from Rotation at t = 0.
+ * @param to Rotation at t = 1.
+ * @param t Interpolation position.
+ */
+extern "C" void func_004CCEE0(FieldVec4B* output, const FieldVec4B* from, const FieldVec4B* to, float t)
+{
+    float lower_dot = -0.95f;
+    float dot = ((from->x * to->x + from->y * to->y) + from->z * to->z) + from->w * to->w;
+    float full_weight = 1.0f;
+    float upper_dot = 0.95f;
+
+    if (dot > lower_dot && dot < upper_dot)
+    {
+        float angle = func_004CD010(dot);
+        func_004CD2C0(angle * (full_weight - t), angle * t, angle);
+        vu0_quaternion_spherical_positive_wait(from, to);
+    }
+    else
+    {
+        FieldVec4A weights;
+        weights.y = t;
+        weights.x = full_weight - t;
+        vu0_quaternion_linear_positive(from, to, &weights);
+    }
+
+    vu0_quaternion_norm_begin();
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CD010);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CD2C0);
+/**
+ * @brief Start the native three-angle trigonometric approximation, leaving its result in VU0 vf13.
+ *
+ * The caller must wait for VU0 before consuming the result.
+ * @param x First angle in radians.
+ * @param y Second angle in radians.
+ * @param z Third angle in radians.
+ */
+void func_004CD2C0(float x, float y, float z)
+{
+    // TODO: The signs only match as float bit patterns moved through integer registers, and the odd tests only with
+    // `!!`, so the original probably built the sign vector some other way.
+    union
+    {
+        float angles[4];
+        u32 signs[4];
+    } values __attribute__((aligned(16)));
+    s32 count_words[4] __attribute__((aligned(16)));
+
+    values.angles[0] = x;
+    values.angles[1] = y;
+    values.angles[2] = z;
+    vu0_sines_load(&values);
+    u32 negative = LIB_FLOAT_BITS_MINUS_ONE;
+    vu0_sines_reduce();
+    s32* counts = count_words;
+    vu0_sines_store_counts(counts);
+    u32 positive = LIB_FLOAT_BITS_ONE;
+    vu0_sines_evaluate();
+
+    bool odd_x = !!(counts[0] & 1);
+    bool odd_y = !!(counts[1] & 1);
+    bool odd_z = !!(counts[2] & 1);
+
+    values.signs[0] = odd_x ? negative : positive;
+    values.signs[1] = odd_y ? negative : positive;
+    values.signs[2] = odd_z ? negative : positive;
+    vu0_sines_apply_signs(&values);
+}
 

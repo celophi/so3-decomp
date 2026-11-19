@@ -37,6 +37,11 @@
 #define D9_QWC ((volatile u32*)0x1000D420)
 #define D9_SADR ((volatile u32*)0x1000D480)
 
+/** DMA channel 0 (VIF0) registers. */
+#define D0_CHCR ((volatile u32*)0x10008000)
+#define D0_QWC ((volatile u32*)0x10008020)
+#define D0_TADR ((volatile u32*)0x10008030)
+
 /** DMA channel 1 (VIF1) registers. */
 #define D1_CHCR ((volatile u32*)0x10009000)
 #define D1_MADR ((volatile u32*)0x10009010)
@@ -66,6 +71,7 @@
 /** IPU bit pointer: the bit position in the current quadword, FIFO quadword count and FIFO position. */
 #define IPU_BP ((volatile u32*)0x10002020)
 
+#define D_STAT_CIS0 0x1
 #define D_STAT_CIS1 0x2
 #define D_STAT_CIS8 0x100
 #define D_STAT_CIS9 0x200
@@ -115,11 +121,13 @@ static inline float ee_max(float left, float right)
  * @brief Return the absolute value of a floating-point operand with the EE scalar instruction.
  * @param value Operand.
  * @return Absolute value produced by the EE scalar instruction.
- * @see abs.s in the EE Core Instruction Set Manual; SO3 keeps one whose result is never used (main 0x10E4B0).
+ * @see abs.s in the EE Core Instruction Set Manual; SO3 keeps one whose result is never used (main 0x10E4B0), and
+ *      lib 0x456360 keeps its offset wrap loops unrotated, which only an asm statement in the function gives.
  */
 static inline float ee_abs(float value)
 {
-    // TODO: This is only asm because the compiler drops an unused abs; check whether the original was asm too.
+    // TODO: This is asm because the compiler drops an unused abs and rotates loops next to a plain one; check whether
+    // the original was asm too.
     float result;
     asm __volatile__("abs.s %0, %1" : "=f"(result) : "f"(value));
     return result;
@@ -174,6 +182,16 @@ static inline float ee_max_in_place(float left, const float& right)
 static inline void ee_prefetch(const void* address)
 {
     asm __volatile__("pref 0, 0(%0)" : : "r"(address));
+}
+
+/**
+ * @brief Prefetch the cache line 0x40 bytes past an address (one pref with an offset).
+ * @param address Base address.
+ * @see ee_prefetch; Lib's morph loop at 0x4A9600 prefetches two 0x20-byte records ahead this way.
+ */
+static inline void ee_prefetch_ahead(const void* address)
+{
+    asm __volatile__("pref 0, 0x40(%0)" : : "r"(address));
 }
 
 /**

@@ -20,6 +20,36 @@ typedef struct LibTextExtent LibTextExtent;
 typedef struct ItemCreationClass175030 LibClass175030;
 #endif
 #ifdef __cplusplus
+class LibDisplayManager;
+
+/** List object that copies its first display manager's camera state to the others, with vtable D_174D70 in main data. */
+class LibClass174D70 : public LibListObject
+{
+public:
+    /** @brief Start with no objects and flag 0x1 set. */
+    LibClass174D70();
+
+    /** @brief Free the buffer and detach. */
+    virtual ~LibClass174D70();
+
+    /**
+     * @brief Report the list kind.
+     * @return Nine.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Copy the first display manager's camera transform (flag 0x1), fog (0x2) and view (0x4) to the others. */
+    virtual void update();
+
+    u8 count;
+    u8 flags;
+    u8 unk16[2];
+    LibDisplayManager* managers[9];
+    u8* unk3c;
+};
+#endif
+
+#ifdef __cplusplus
 /** Managed three-word DMA storage, initialized by clearing its allocation. */
 class LibStorageBlock0C
 {
@@ -106,7 +136,12 @@ struct LibDrawRecord
         LibDrawRecord* end;
     } unk14;
 
-    u32 color;
+    union
+    {
+        u32 color;
+        float scale_y;
+    };
+
     u16 code;
     u16 glyph;
 };
@@ -278,13 +313,17 @@ struct LibDrawWidget : public LibWidget
     u32 unk4c;
     u32 unk50;
     u32 dma_address;
-    u8 unk58[0x14];
+    u64* packet_cursor;
+    u8* unk5c;
+    u8* unk60;
+    u8* unk64;
+    u8* unk68;
     LibManagedResourceSlot* resource_slot;
     u8* unk70;
     u8* unk74;
 
-    u32 unk78;
-    u32 unk7c;
+    float unk78;
+    float unk7c;
     float draw_scale;
     float draw_scale_y;
     float unk88;
@@ -298,7 +337,7 @@ struct LibDrawWidget : public LibWidget
     s32 unka8;
     s32 unkac;
     s32 unkb0;
-    u32 unkb4;
+    s32 unkb4;
     s32 record_count;
     LibDrawRecord* run_head;
     LibDrawRecord* next_record;
@@ -307,7 +346,10 @@ struct LibDrawWidget : public LibWidget
     float line_height;
     float min_height;
     float max_height;
-    u8 unkd8[0x10];
+    s32 unkd8;
+    s32 unkdc;
+    s32 unke0;
+    s32 unke4;
     LibTextExtent extent;
     u8 unkf8;
     u8 unkf9;
@@ -410,8 +452,7 @@ public:
     LibStorageBlock0C unk00;
     u8 unk0c[4];
     LibPoint2 position;
-    float unk18;
-    float unk1c;
+    LibPoint2 previous_position;
     LibPoint2 target;
     float move_frames;
     float speed;
@@ -425,8 +466,8 @@ public:
     {
         position.y = 0.0f;
         position.x = 0.0f;
-        unk1c = 0.0f;
-        unk18 = 0.0f;
+        previous_position.y = 0.0f;
+        previous_position.x = 0.0f;
         target.y = 0.0f;
         target.x = 0.0f;
     }
@@ -467,7 +508,15 @@ public:
      * @brief Move one frame's distance towards the target, and then call on_arrived once it reaches the target.
      * @return One if the position changed since the last step, otherwise zero.
      */
-    s32 step();
+    bool step();
+
+    /**
+     * @brief Rebuild the drawing packet at an offset from an origin.
+     * @param origin Origin the position is relative to.
+     * @param tag Packet tag word.
+     * @param alpha Draw alpha.
+     */
+    void func_00466E70(const LibVector4* origin, u32 tag, float alpha);
 };
 
 /** Partial kind-9 widget with a storage base at offset 0x40. */
@@ -718,12 +767,22 @@ public:
     u8 release_queued;
     u8 unk602[2];
 };
+
+/**
+ * @brief Read the runtime's frame rate.
+ * @param runtime Field runtime.
+ * @return Frames elapsed this update.
+ */
+static inline float field_rate(const FieldRuntime* runtime)
+{
+    return runtime->rate;
+}
 #endif
 
 typedef struct FieldRuntime FieldRuntime;
 typedef struct LibTransformOwner LibTransformOwner;
 
-/** Partial 0x1C-byte prefix of the result selected by Lib shape predicates. */
+/** Partial result selected by Lib shape predicates. */
 typedef struct LibShapeTestResult1C
 {
     u32 unk00;
@@ -733,12 +792,17 @@ typedef struct LibShapeTestResult1C
     void* unk10;
     struct LibTransformOwner* unk14;
     struct LibTransformOwner* unk18;
+    const void* unk1c;
+    const void* unk20;
+    const void* unk24;
+    const void* unk28;
+    const void* unk2c;
+    const void* unk30;
 } LibShapeTestResult1C;
 
 
 #ifdef __cplusplus
 extern "C" {
-void func_0046A3B0(void* receiver);
 #endif
 
 /**
@@ -858,7 +922,38 @@ extern LibShapeTestResult1C D_0050CB30;
  * @param query Query position.
  * @return Predicate status.
  */
-s32 func_0045BFB0(void* shape, void* query);
+s32 func_0045BFB0(FieldShapeOwner18* shape, const LibVector4* query);
+
+/**
+ * @brief Test whether a sphere, moved by vf1-vf4 or vf5-vf8, overlaps a box moved by a matrix.
+ * @param centre Box centre.
+ * @param half_extents Aligned half extents in xyz.
+ * @param sphere Aligned sphere: centre in xyz, radius in w.
+ * @param second Non-zero to move the sphere by vf5-vf8 and scale it by vf9.y rather than vf1-vf4 and vf9.x.
+ * @param matrix Aligned matrix that moves the sphere into the box's space.
+ * @return Whether they overlap.
+ */
+bool func_0045E240(const LibVector4* centre, const void* half_extents, const LibVector4* sphere, s32 second,
+                  const void* matrix);
+
+/**
+ * @brief Test whether two boxes, moved by the matrices in vf1-vf4 and vf5-vf8, overlap.
+ * @param first_centre First box centre.
+ * @param first_half_extents Aligned half extents of the first box in xyz.
+ * @param second_centre Second box centre.
+ * @param second_half_extents Aligned half extents of the second box in xyz.
+ * @return Whether they overlap.
+ */
+bool func_0045E400(const LibVector4* first_centre, const void* first_half_extents, const LibVector4* second_centre,
+                   const void* second_half_extents);
+
+/**
+ * @brief Test whether two spheres, moved by the matrices in vf1-vf4 and vf5-vf8 and scaled by vf9.x and vf9.y, touch.
+ * @param first First sphere: centre in xyz, radius in w.
+ * @param second Second sphere.
+ * @return Whether they overlap or touch.
+ */
+bool func_0045E980(const LibVector4* first, const LibVector4* second);
 
 /**
  * @brief Publish the two bound shape record arrays for subsequent predicates.
@@ -868,13 +963,38 @@ s32 func_0045BFB0(void* shape, void* query);
 void func_0045F580(void* first, void* second);
 
 /**
- * @brief Evaluate the shape descriptor against two query values.
- * @param shape Shape descriptor.
- * @param first First query value.
- * @param second Second query value.
- * @return Predicate status.
+ * @brief Test a segment against a shape, its records and its children, recording the first record it touches.
+ *
+ * The shape's bounding sphere is checked first, with the shape's transform in vf1-vf5. The caller's vf1-vf5 come
+ * back only when nothing is hit.
+ * @param shape Shape to test.
+ * @param start Aligned segment start.
+ * @param end Aligned segment end.
+ * @return One when the segment touches a record, otherwise zero.
  */
-s32 func_0045B920(void* shape, void* first, void* second);
+s32 func_0045B920(FieldShapeOwner18* shape, const LibVector4* start, const LibVector4* end);
+
+/**
+ * @brief Clip a ray's fraction interval against one slab plane.
+ * @param near_fraction Entry fraction, raised when the plane cuts the start of the interval.
+ * @param far_fraction Exit fraction, lowered when the plane cuts the end of the interval.
+ * @param direction Ray direction along the slab axis.
+ * @param distance Signed distance from the ray start to the plane along the axis.
+ * @return One while the interval is not empty, otherwise zero.
+ */
+s32 func_0045C350(float* near_fraction, float* far_fraction, float direction, float distance);
+
+/**
+ * @brief Test whether a segment touches a box moved by the matrix in vf1-vf4, its half extents grown by vf5.y,
+ *        recording where it enters and leaves.
+ * @param centre Aligned box centre.
+ * @param half_extents Aligned half extents in xyz.
+ * @param start Aligned segment start.
+ * @param end Aligned segment end.
+ * @return Whether the segment touches the box.
+ */
+bool func_0045B360(const LibVector4* centre, const void* half_extents, const LibVector4* start,
+                   const LibVector4* end);
 
 /**
  * @brief Find a record of the shape with the given name in bound shape data.
@@ -940,15 +1060,18 @@ s32 func_0045B320(FieldShapeOwner18* shape);
  * @param key Key to find.
  * @return The key's data in the slot's second section, or the placeholder text when it isn't there.
  */
-void* func_00465340(FieldRuntime* runtime, s32 slot_index, s32 key);
+void* func_00465340(FieldRuntime* runtime, u32 slot_index, s32 key);
 
 /**
- * @brief Evaluate the shape descriptor against the supplied query.
- * @param shape Shape descriptor.
- * @param query Predicate input.
- * @return Predicate status.
+ * @brief Test a ray against a shape, its records and its children, recording the first record it passes through.
+ *
+ * The shape's bounding sphere is checked first, with the shape's transform in vf1-vf5. The caller's vf1-vf5 come
+ * back only when nothing is hit.
+ * @param shape Shape to test.
+ * @param ray Aligned ray: origin, then direction.
+ * @return One when the ray passes through a record, otherwise zero.
  */
-s32 func_0045CBE0(void* shape, void* query);
+s32 func_0045CBE0(FieldShapeOwner18* shape, const LibVector4* ray);
 
 /**
  * @brief Append a transform receiver to the runtime display queue.
@@ -1003,10 +1126,10 @@ s32 func_0045BD20(void* object, void* arg0, void* arg1);
 s32 func_0045D030(void* object, void* query);
 
 /** Run the four argument shape test on the referenced descriptor at offset 0x30. */
-s32 func_0045D590(void* object, s32 arg0, s32 arg1, float value);
+s32 func_0045D590(void* object, const LibVector4* sphere, const void* matrix, float scale);
 
 /** Run the five argument shape test on the referenced descriptor at offset 0x30. */
-s32 func_0045DA90(void* object, s32 arg0, s32 arg1, s32 arg2, float value);
+s32 func_0045DA90(void* object, const LibVector4* box, const void* matrix, const void* inverse, float scale);
 
 /** Current shape record selected by a shape test. */
 extern struct FieldShapeRecord20* D_001B656C;
@@ -1014,9 +1137,33 @@ extern struct FieldShapeRecord20* D_001B656C;
 /** Shape record of the other descriptor in a two-descriptor test. */
 extern struct FieldShapeRecord20* D_001B6570;
 
-s32 func_0045D140(void* shape, s32 arg0, s32 arg1, float value);
+/**
+ * @brief Test a sphere against a shape, its records and its children, recording the first record it touches.
+ *
+ * The shape's bounding sphere is checked first, with the shape's transform in vf1-vf4 and the sphere's matrix in
+ * vf5-vf8. The caller's vf1-vf9 come back only when nothing is hit.
+ * @param shape Shape to test.
+ * @param sphere Aligned sphere: centre in xyz, radius in w.
+ * @param matrix Aligned matrix that moves the sphere.
+ * @param scale Scale of the sphere's radius.
+ * @return One when a record touches the sphere, otherwise zero.
+ */
+s32 func_0045D140(FieldShapeOwner18* shape, const LibVector4* sphere, const void* matrix, float scale);
 
-s32 func_0045D5C0(void* shape, s32 arg0, s32 arg1, s32 arg2, float value);
+/**
+ * @brief Test a box against a shape, its records and its children, recording the first record it touches.
+ *
+ * The shape's bounding sphere is checked against the box's first, with the shape's transform in vf1-vf4 and the
+ * box's matrix in vf5-vf8. The caller's vf1-vf9 come back only when nothing is hit.
+ * @param shape Shape to test.
+ * @param box Aligned box block: its bounding sphere (centred on the box) at index 2, its half extents at index 3.
+ * @param matrix Aligned matrix that moves the box.
+ * @param inverse Aligned inverse of the box's matrix.
+ * @param scale Scale of the box.
+ * @return One when a record touches the box, otherwise zero.
+ */
+s32 func_0045D5C0(FieldShapeOwner18* shape, const LibVector4* box, const void* matrix, const void* inverse,
+                  float scale);
 
 /**
  * @brief Run func_0045EBD0 on the objects referenced by the first words of two objects.
@@ -1034,13 +1181,7 @@ s32 func_0045F5A0(void* object, void* other);
  * @param second Second shape descriptor.
  * @return One when the shape test succeeds, otherwise zero.
  */
-s32 func_0045EBD0(void* first, void* second);
-
-/** Return the fixed integer value 7. */
-s32 func_00468360(void* object);
-
-/** Return the fixed value 0. */
-s32 func_00468370(void* object);
+s32 func_0045EBD0(FieldShapeOwner18* first, FieldShapeOwner18* second);
 
 void func_0045F600(void* object);
 
@@ -1054,36 +1195,13 @@ void func_0045F640(void* object);
 
 void func_0045F650(void* object);
 
-void func_00461960(void* object);
 
-void func_00461970(void* object);
-
-void func_00461980(void* object);
-
-void func_00461990(void* object);
-
-void func_004619A0(void* object);
-
-void func_004619B0(void* object);
-
-void func_004619C0(void* object);
-
-void func_004619D0(void* object);
-
-void func_004619E0(void* object);
-
-
-/** Forward the receiver to lib_finish_packet. */
-void func_0046A3F0(void* object);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#ifdef __cplusplus
-extern "C" s32 func_0046A410(void* object);
-#endif
 
 #ifdef __cplusplus
 extern "C"

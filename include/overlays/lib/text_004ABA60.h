@@ -1,5 +1,5 @@
-#ifndef SO3_OVERLAYS_LIB_TEXT_004AB8B0_H
-#define SO3_OVERLAYS_LIB_TEXT_004AB8B0_H
+#ifndef SO3_OVERLAYS_LIB_TEXT_004ABA60_H
+#define SO3_OVERLAYS_LIB_TEXT_004ABA60_H
 
 #include "types.h"
 #include "overlays/lib/text_004BD360.h"
@@ -50,21 +50,21 @@ s32 func_004B4840(LibAnimation* object, LibAnimationEntry14* entry, float frame,
 void lib_animation_read_channel_pose(LibAnimation* object, LibAnimationTarget* target);
 
 /**
- * @brief Process the animation at a requested frame.
+ * @brief Apply every eligible animation entry at a frame through func_004BD4F0.
  * @param object Animation object.
- * @param frame Requested frame.
- * @param mode Processing mode.
- * @return Processing status.
+ * @param frame Requested frame; a negative frame leaves the animation marked as restarting.
+ * @param mode Nonzero to stop at the first entry that returns a nonzero status.
+ * @return Status of the last applied entry, or 0 when the animation has no entries.
  */
 s32 func_004B43C0(LibAnimation* object, float frame, s32 mode);
 
 /**
- * @brief Process the animation into a vector state at a requested frame.
+ * @brief Apply every entry of one target at a frame, when the animation belongs to the current scene.
  * @param object Animation object.
- * @param target Vector state.
- * @param frame Requested frame.
- * @param mode Processing mode.
- * @return Processing status.
+ * @param target Target whose entries to apply.
+ * @param frame Requested frame; a negative frame leaves the animation marked as restarting.
+ * @param mode Nonzero to stop at the first entry that returns a nonzero status.
+ * @return Status of the last applied entry, or 0 when nothing was applied.
  */
 s32 func_004B46E0(LibAnimation* object, LibAnimationTarget* target, float frame, s32 mode);
 
@@ -80,18 +80,12 @@ s32 func_004B46E0(LibAnimation* object, LibAnimationTarget* target, float frame,
  */
 
 
-/** Return the fixed integer value 99. */
-s32 func_004ABAA0(void* object);
-
 /** Return the fixed value 0. */
 s32 func_004B3D60(void* object);
 
 /** Return the fixed value 0. */
 s32 func_004B3D70(void* object);
 
-void func_004ABAB0(void* object);
-
-void func_004ABD30(void* object);
 
 
 

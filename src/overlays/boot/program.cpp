@@ -16,7 +16,7 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/vector_inlines.h"
-#include "overlays/lib/text_004AB8B0.h"
+#include "overlays/lib/text_004ABA60.h"
 #include "main/debug.h"
 
 extern LibScreenText* g_screen_text;

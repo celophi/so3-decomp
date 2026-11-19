@@ -44,13 +44,12 @@ struct ItemCreationAllocationRecord
             u16 unk0b_high : 2;
         } bits;
     } factors_567;
-    u8 modification_number : 7;
-    u8 equipped_owner_low_bit : 1;
-    u8 equipped_owner_high_bits : 3;
-    u8 checksum_shift : 2;
-    u8 battle_usable : 1;
-    u8 allocated : 1;
-    u8 new_item : 1;
+    u16 modification_number : 7;
+    u16 equipped_owner : 4;
+    u16 checksum_shift : 2;
+    u16 battle_usable : 1;
+    u16 allocated : 1;
+    u16 new_item : 1;
     u16 checksum;
 
     /**

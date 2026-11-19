@@ -26,19 +26,6 @@ class LibOrientedTransform;
 struct LibVector4;
 
 /**
- * @brief Store state value 7 in the transform's byte at offset 0x60.
- * @param object Transform owner.
- */
-extern "C" void func_003F4560(LibTransformOwner* object);
-
-/**
- * @brief Return the fixed value 14.
- * @param object Receiver or first argument; unused.
- * @return Always 14.
- */
-extern "C" s32 func_003F4550(void* object);
-
-/**
  * @brief Store a word at receiver offset 0x14.
  * @param object Receiver.
  * @param value Word value.
@@ -79,18 +66,6 @@ extern "C" void* func_003F3EF0(void* object);
  * @param value Word value.
  */
 extern "C" void func_003F3F00(void* object, u32 value);
-
-/**
- * @brief Copy the byte at offset 0xB4 to offset 0x60.
- * @param object Receiver to update.
- */
-extern "C" void func_003EEDE0(void* object);
-
-/** Build and return a pointer to the four-word stack value. */
-extern "C" void* func_003EEDF0(void);
-
-/** Build and return a pointer to the four-word stack value. */
-extern "C" void* func_003F4570(void);
 
 /**
  * @brief Clear the receiver's first two words and return the receiver.
@@ -235,9 +210,13 @@ public:
 struct LibClass3F5B80Buffer
 {
     LibClass3F5B80Entry entries[0x1A];
-    u8 unk0D0[0x598];
+    u8 unk0D0[0x10];
+    u8 unk0E0[3][0xC4];
+    u8 unk32C[3][0x114];
     s16 unk668;
-    u8 unk66A[0x0B];
+    s16 unk66A;
+    s16 unk66C;
+    u8 unk66E[7];
     u8 unk675[3];
     u8 unk678[3];
     u8 unk67B[5];
@@ -263,8 +242,28 @@ public:
      */
     void func_003F4EB0(s32 id, s32 kind, s32 area, u8 flags);
 
+    /**
+     * @brief Build a party slot's record at its level and learn the codes of its row.
+     * @param slot Party slot, from zero through two, or -1.
+     * @param output Record func_004076D0 fills.
+     * @param equipment Character equipment record.
+     */
+    void func_003F45F0(s32 slot, struct LibResourceRecordC4* output, struct LibCharacterEquipment* equipment);
+
     /** @brief Pick a new aligned buffer and reset it as the constructor does. */
     void func_003F5AC0();
+
+    /**
+     * @brief Store the halfword at 0x66C, using 1000 for values outside 0 to 999.
+     * @param value Value to store.
+     */
+    void func_003F49E0(s32 value);
+
+    /** @brief Put the 26 entries in the order of the table at D_004EC0D0. */
+    void func_003F4BF0();
+
+    /** @brief Copy the buffer's three records into resident entries 2 and 3. */
+    void func_003F4DE0();
 
     /**
      * @brief Store a byte in one of three backing-buffer slots.
@@ -408,6 +407,12 @@ public:
 
     /** @brief Detach from the owner, then destroy the intrusive links. */
     virtual ~LibListObject()
+    {
+        lib_object_detach_owner(this);
+    }
+
+    /** @brief Detach from the owner. */
+    void detach_owner()
     {
         lib_object_detach_owner(this);
     }
@@ -567,10 +572,6 @@ public:
 #endif
 
 #ifdef __cplusplus
-extern "C" s32 func_003EF090(void* object);
-
-extern "C" s32 func_003F2570(void* object);
-
 #endif
 
 #ifdef __cplusplus

@@ -456,14 +456,78 @@ class LibClass173E70 : public LibClass173A40
         /** @brief Start with no storage. */
         LibClass173E70();
 
-        /** @brief Destroy the grid. */
+        /** @brief Release the cells, the bit set and the secondary elements. */
         virtual ~LibClass173E70();
 
-        void* unk14;
-        void* unk18;
-        void* unk1c;
-        void* unk20;
-        void* unk24;
+        /**
+         * @brief Report a selected cell.
+         * @return One.
+         */
+        virtual s32 func_slot3C();
+
+        /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        /**
+         * @brief Copy another grid's size and resize this grid to match.
+         * @param source Grid to copy.
+         */
+        virtual void copy_settings(const LibClass173A40* source);
+
+        LibClass173F48* unk14;
+        LibClass173F48* unk18;
+        LibGridBitset* unk1c;
+        LibClass173F38* unk20;
+        LibClass173F38* unk24;
+};
+
+/** Partial grid with vtable D_173DA0 in main data. */
+class LibClass173DA0 : public LibClass173E70
+{
+    public:
+        virtual ~LibClass173DA0()
+        {
+        }
+
+        /**
+         * @brief Copy another grid's size and emission settings.
+         * @param source Grid to copy.
+         */
+        virtual void copy_settings(const LibClass173A40* source);
+
+        // TODO: The game's slots 0x10 and 0x14 are func_0043E2F0 and func_0043EA10, which take an output budget, an
+        // output array and a flag; the base declares them without parameters, so they're free functions for now.
+        virtual void func_slot10();
+
+        virtual void func_slot14();
+
+        float unk28;
+        u32 unk2c;
+        float unk30;
+        float unk34;
+        float unk38;
+        float unk3c;
+        u8 unk40[4];
+        u32 unk44;
+        LibClass173990* unk48;
+        u8 unk4c;
+        u8 unk4d;
+        u8 unk4e;
+        u8 unk4f;
+        u32 unk50;
+        u8 unk54;
+        u8 unk55;
+        u8 unk56;
+        u8 unk57;
+        u8 unk58[8];
+        LibVector4 unk60[4];
+        u32 unka0;
+        u32 unka4;
+        u8 unka8[8];
 };
 
 /** Partial grid with vtable D_174240 in main data. */
@@ -659,6 +723,13 @@ class LibClass174120 : public LibClass174050
         u8 unkc9;
         u8 unkca[6];
 };
+
+/** LibClass174120 grid with vtable D_173F80 in main data; only its destructor is in C so far. */
+class LibClass173F80 : public LibClass174120
+{
+    public:
+        virtual ~LibClass173F80();
+};
 #else
 /** Opaque level-selection controller used by the C handle-collection interface. */
 typedef struct LibLodController LibEntryHandleCollection;
@@ -719,9 +790,6 @@ float func_004A22B0(void* object);
 /** Return the fixed integer value 1. */
 s32 func_004A08B0(void* object);
 
-/** Return the fixed integer value 11. */
-s32 func_004A8FF0(void* object);
-
 /** Return the fixed value 0. */
 s32 func_004A0C50(void* object);
 
@@ -735,18 +803,8 @@ void func_004A0C40(void* object);
 
 void func_004A0C60(void* object);
 
-void func_004A9220(void* object);
-
-void func_004A9230(void* object);
-
 /** Clear the word at receiver offset 0x2C and copy four aligned values from the source. */
 void func_004A06B0(void* object, const void* source);
-
-/**
- * @brief Queue the object's receiver for deferred destruction.
- * @param object Object containing the receiver at offset 0x14, or null.
- */
-void lib_queue_object_release(void* object);
 
 #ifdef __cplusplus
 }

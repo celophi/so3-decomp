@@ -5,6 +5,55 @@
 #include "main/item_category.h"
 #include "overlays/lib/semaphore.h"
 
+#define LIB_CODE_LIST_ENTRY_COUNT 32
+
+/** Two-byte entry of a LibCodeList; only its first byte is searched. */
+typedef struct LibCodeListEntry
+{
+    u8 code;
+    u8 unk01;
+} LibCodeListEntry;
+
+/** One of the ten 0x42-byte code lists at D_001B64CC. */
+typedef struct LibCodeList
+{
+    LibCodeListEntry entries[LIB_CODE_LIST_ENTRY_COUNT];
+    u8 unk40[2];
+} LibCodeList;
+
+/** One of the ten 0x56-byte code tables at D_001B64D0. */
+typedef struct LibCodeTable
+{
+    LibCodeListEntry high_codes[26];
+    LibCodeListEntry low_codes[16];
+    u8 unk54[2];
+} LibCodeTable;
+
+#ifdef __cplusplus
+extern "C" LibCodeList* D_001B64CC;
+
+extern "C" LibCodeTable* D_001B64D0;
+
+/**
+ * @brief Learn a symbology; codes 0x90 and 0x91 first learn each of their three table codes the character has no mastery of.
+ * @param equipment Character equipment record.
+ * @param id One-based code list ID.
+ * @param code Symbology code.
+ * @param level Level before learning; the new level is one more, at least one.
+ */
+extern "C" void func_0040A5C0(struct LibCharacterEquipment* equipment, s32 id, s32 code, s32 level);
+
+/**
+ * @brief Learn a symbology the character has no mastery of yet.
+ * @param equipment Character equipment record.
+ * @param id One-based code list ID.
+ * @param code Symbology code.
+ * @param level Level before learning; the new level is one more, at least one.
+ * @return func_00409DA0's result, or -1 when the symbology already has mastery.
+ */
+extern "C" s32 func_0040A370(struct LibCharacterEquipment* equipment, s32 id, s32 code, s32 level);
+#endif
+
 typedef struct FieldRecord FieldRecord;
 
 typedef struct ItemCreationAllocationRecord ItemCreationAllocationRecord;
@@ -340,6 +389,21 @@ s32 func_0040F2E0(LibClass1721B0* object);
  */
 s32 func_0040F3E0(LibClass1721B0* object);
 
+/**
+ * @brief Fill the icon.sys buffer: header, background, lights, title and the save's icon file for all three views.
+ * @param object Save data manager.
+ * @return One.
+ */
+s32 func_0040F940(LibClass1721B0* object);
+
+/**
+ * @brief Clear the icon.sys buffer, allocate and clear the 0xB3B0-byte buffer and the save data buffer when missing,
+ * and point the file request at all three.
+ * @param object Save data manager.
+ * @return One, or zero when an allocation fails.
+ */
+s32 func_0040E7F0(LibClass1721B0* object);
+
 /** Store the byte at receiver offset 0x8D4. */
 void func_0040FAF0(void* object, u8 value);
 
@@ -527,9 +591,6 @@ u32 func_0040D760(ItemCreationAllocationRecord* record);
  */
 u32 func_00414130(const ItemCreationCategoryRecord* record);
 
-/** Return the fixed integer value 4. */
-s32 func_0040E3A0(void* object);
-
 /**
  * @brief libmpeg background callback; nothing to do.
  * @param mpeg libmpeg decoder; unused.
@@ -580,7 +641,11 @@ void func_0040B1F0(void);
 #ifdef __cplusplus
 extern "C"
 {
-    u32 func_0040AFA0();
+    /**
+     * @brief Load and decode the game table resource at a random 16-byte offset inside a fresh allocation, then point
+     *        the table globals into it.
+     */
+    void func_0040AFA0();
 
     /**
      * @brief Create the value table and store it in the resident entry table.

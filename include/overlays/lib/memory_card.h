@@ -4,6 +4,8 @@
 #include "types.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/semaphore.h"
+#include "main/thread.h"
 
 #define LIB_MEMORY_CARD_SLOT_COUNT 2
 #define LIB_MEMORY_CARD_SLOT_OPEN 0x2
@@ -35,7 +37,7 @@ struct LibMemoryCardSlot
     s32 free_space;
     s32 formatted;
     s32 result;
-    u8 unk58[4];
+    s32 fd;
     struct LibCardFileRequest* request;
     u8 unk60[0x14];
     u8* buffer;
@@ -43,6 +45,19 @@ struct LibMemoryCardSlot
     s32 unk7C;
     char name[0x40];
     u8 unkC0[0x40];
+};
+
+/** Thread with a semaphore, with vtable D_173580 in main data; it sits next to the memory card code. */
+class LibClass173580 : public ResidentThread
+{
+public:
+    virtual ~LibClass173580();
+
+    /** @brief Thread body. */
+    virtual void run();
+
+    u8 unk10[0xC];
+    LibSemaphore semaphore;
 };
 
 /** Partial 0x58-byte memory card object that runs the two transfer modes. */
@@ -88,13 +103,46 @@ enum LibCardSlotMask
     LIB_CARD_SLOT_2 = 0x2
 };
 
+/** One entry of a memory card directory listing (Sony's sceMcTblGetDir). */
+struct LibCardDirectoryEntry
+{
+    u8 created[8];
+    u8 modified[8];
+    u32 size;
+    u16 attributes;
+    u16 unk16;
+    u32 unk18;
+    u32 application_number;
+    char name[32];
+};
+
+/** Contents of a save's icon.sys file (Sony's sceMcIconSys). */
+struct LibIconSys
+{
+    char magic[4];
+    u16 unk04;
+    u16 title_line_offset;
+    u32 unk08;
+    u32 background_alpha;
+    s32 background_colors[4][4];
+    float light_directions[3][4];
+    float light_colors[3][4];
+    float ambient_color[4];
+    char title[0x44];
+    char list_icon[0x40];
+    char copy_icon[0x40];
+    char delete_icon[0x40];
+    u8 unk1c4[0x200];
+};
+
 /** One file of a memory card request: Lib opens `<directory>/<name>` and transfers size bytes at data. */
+
 struct LibCardFileBuffer
 {
     char* name;
     void* data;
     u32 size;
-    u32 unk0C;
+    s32 offset;
 };
 
 /** Memory card request for files in one directory; Lib keeps a pointer to it in the slot until it finishes. */

@@ -76,7 +76,7 @@
     },
     {
       "source": "src/overlays/lib/text_004BD360.cpp",
-      "flags": ["-O4,p", "-inline", "level=7"]
+      "flags": ["-O4,p", "-inline", "level=7", "-inline", "bottomup"]
     },
     {
       "source": "src/overlays/lib/text_0047AE20.cpp",
@@ -127,7 +127,7 @@
       "flags": ["-O4,p"]
     },
     {
-      "source": "src/overlays/lib/text_004AB8B0.cpp",
+      "source": "src/overlays/lib/text_004ABA60.cpp",
       "flags": ["-O4,p"]
     },
     {

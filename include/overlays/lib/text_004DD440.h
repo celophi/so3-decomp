@@ -14,28 +14,10 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector.h"
 
-/** Transform that faces an optional target with a roll about the viewing direction. */
-class LibLookAtTransform : public LibTransform
-{
-public:
-    /** @brief Initialize the transform without a look-at target or roll. */
-    LibLookAtTransform();
-
-    virtual ~LibLookAtTransform();
-
-    /**
-     * @brief Copy the look-at target and inherited transform state.
-     * @param source Transform to copy; its roll angle is not copied.
-     */
-    virtual void copy_look_at_state(const LibLookAtTransform* source);
-
-    /** @brief Update the matrix to face the target when one is attached. */
-    virtual void update_transform_matrix();
-
-    LibTransform* look_at_target;
-    float roll_angle;
-};
-/** Size of the area a display draws to: a base size scaled, then rounded up to GS page-friendly sizes. */
+/**
+ * Area a display draws to (a base size scaled, then rounded up to GS page-friendly sizes) and the formats its draw
+ * buffers use.
+ */
 struct LibDisplayArea
 {
     float scale_x;
@@ -44,6 +26,11 @@ struct LibDisplayArea
     s16 base_height;
     s16 width;
     s16 height;
+    s16 unk10;
+    s16 depth_test;
+    s16 depth_format;
+    u8 scaled;
+    u8 unk17;
 };
 
 /** GS drawing environment for one draw buffer: a GIF tag and both contexts' registers in A+D form. */
@@ -309,11 +296,6 @@ public:
     LibDrawEnvironment environments[2];
     LibDisplayScreen screens[LIB_DISPLAY_SCREEN_COUNT];
     LibDisplayArea display_area;
-    s16 unk3C70;
-    s16 depth_test;
-    s16 depth_format;
-    u8 scaled;
-    u8 unk3C77;
     u32 vram_free_page;
     u32 vram_base_page;
     u32 depth_buffer_pages;
@@ -427,6 +409,34 @@ extern "C" void func_004DCDE0(LibCameraContext* display, bool enabled, bool firs
  * @param display Display.
  */
 extern "C" void func_004DE500(LibCameraContext* display);
+
+/**
+ * @brief Build a packet that draws a rectangle into one of the display's buffers.
+ * @param display Display.
+ * @param packet Packet to fill.
+ * @param field Interlaced field the packet draws.
+ * @param frame_base Frame buffer page.
+ * @param pixel_format Frame buffer pixel format.
+ * @param width Width drawn.
+ * @param height Height drawn.
+ * @param base_width Width of the buffer drawn from.
+ * @param base_height Height of the buffer drawn from.
+ * @param depth_mask Mask for the depth buffer's pixel format.
+ * @param blend Blend the packet with the alpha.
+ * @param alpha Blend alpha, 0x80 for one.
+ * @param unk12 Unknown.
+ * @param unk13 Unknown.
+ * @param unk14 Unknown.
+ * @param unk15 Unknown.
+ * @param x Rectangle left edge.
+ * @param y Rectangle top edge.
+ * @param rect_width Rectangle width.
+ * @param rect_height Rectangle height.
+ * @return Packet size.
+ */
+extern "C" u32 func_004DEA70(LibCameraContext* display, u8* packet, u8 field, u32 frame_base, s16 pixel_format, s16 width,
+                             s16 height, s16 base_width, s16 base_height, u32 depth_mask, s32 blend, s32 alpha,
+                             s32 unk12, s32 unk13, s32 unk14, s32 unk15, s32 x, s32 y, s32 rect_width, s32 rect_height);
 
 /** GS ALPHA register values; the first is the usual (Cs - Cd) * As + Cd blend. */
 extern "C" u64 D_004ED330[];
@@ -558,6 +568,29 @@ public:
 };
 
 #define LIB_CAMERA_MODE_FACE_CURRENT_CAMERA 1
+
+/**
+ * VU packet the camera keeps at 0x5C0 and writes through the uncached segment: its matrices and screen terms. The
+ * word at 0x120 is what LibClass178FC0 writes to register 0x4F.
+ */
+struct LibCameraPacket5C0
+{
+    u8 unk000[0x10];
+    LibMatrix44Value view;
+    LibMatrix44Value projection;
+    LibMatrix44Value unk090;
+    float distance;
+    float scaled_distance;
+    u8 unk0d8[4];
+    float centre_depth;
+    LibMatrix44Value unk0e0;
+    u32 unk120;
+    u8 unk124[0x30];
+    float roll;
+    float fog_offset;
+    float fog_scale;
+    u8 unk160[0x140];
+};
 
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */
 class LibCamera : public LibLookAtTransform, public DmaSubmission
@@ -714,7 +747,7 @@ public:
     float unk270;
     float projection_distance;
     float pixel_aspect;
-    u32 unk27c;
+    float roll;
     float unk280;
     float unk284;
     u8 unk288[8];
@@ -725,7 +758,7 @@ public:
     LibMatrix44Value projection_matrix;
     LibMatrix44Value unk340;
     LibMatrix44Value unk380;
-    u8 unk3c0[4];
+    u32 test;
     float centre_depth;
     s32 unk3c8;
     s32 unk3cc;
@@ -754,8 +787,9 @@ public:
     u8* unk558;
     u8 unk55c[4];
     float rotation_angles[3];
-    u8 unk56c[0x2F4];
-    DmaSubmission* unk860;
+    u8 unk56c[0x54];
+    LibCameraPacket5C0 unk5c0;
+    LibClass179130* unk860;
     u8 unk864[0x1C];
 };
 
@@ -918,7 +952,8 @@ public:
      */
     s32 func_004E10B0(s32 size);
 
-    u8 unk10c[8];
+    const class LibCamera* camera;
+    void* context;
     LibPacketBuffer* unk114;
 };
 #endif

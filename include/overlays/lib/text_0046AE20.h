@@ -151,12 +151,13 @@ void* lib_get_entry_data(LibEntryManager* manager, LibEntryMetadata* metadata);
 void lib_update_renderable_entries(LibEntryManager* manager);
 
 /**
- * @brief Update each active entry of the object's table with a boolean setting and an option flag.
- * @param object Object whose entry table is updated.
- * @param enable Boolean setting forwarded to each entry.
- * @param option Nonzero to select the alternate update path.
+ * @brief Turn fogging on or off for the scene's models and its emitters' image models.
+ * @param manager Scene.
+ * @param enabled Nonzero for fog.
+ * @param check Nonzero to skip entries with metadata flag 0x4.
  */
-void func_004728A0(void* object, s32 enable, s32 option);
+void func_004728A0(LibEntryManager* manager, u8 enabled, s32 check);
+
 
 /**
  * @brief Find the next renderable entry after the entry that owns a handle.
@@ -307,9 +308,6 @@ float func_0047ADC0(void* object);
 
 /** Return the word at receiver offset 0x8. */
 u32 func_00478F70(const void* object);
-
-/** Return the word at receiver offset 0xC. */
-u32 func_00478F80(const void* object);
 
 /** Return the word at receiver offset 0xB8. */
 u32 func_00479FE0(const void* object);

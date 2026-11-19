@@ -347,4 +347,83 @@ static inline void vu0_spot_light_store_edge_terms(void* out)
         : "memory");
 }
 
+/**
+ * @brief Start a disc light: vf22 = point (vf19) - light position (vf20).
+ * @see vu0_light_load_point for the loads; Lib's light with vtable D_173630 (0x433C70).
+ */
+static inline void vu0_disc_light_offset(void)
+{
+    asm __volatile__("vsub.xyz $vf22, $vf19, $vf20\n");
+}
+
+/**
+ * @brief Measure the offset along the light's axis (vf21) into vf23.x, project the point onto the light's plane into
+ *        vf24, and store vf23.
+ * @param out 16-byte aligned destination for vf23.
+ * @see vu0_disc_light_offset.
+ */
+static inline void vu0_disc_light_project(void* out)
+{
+    asm __volatile__(
+        "vmul.xyz   $vf23, $vf22, $vf21\n"
+        "vaddw.xyz  $vf31, $vf0, $vf0w\n"
+        "vadday.x   $ACC, $vf23, $vf23y\n"
+        "vmaddz.x   $vf23, $vf31, $vf23z\n"
+        "vadda.xyz  $ACC, $vf0, $vf19\n"
+        "vmsubx.xyz $vf24, $vf21, $vf23x\n"
+        "sqc2       $vf23, 0x0(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief vf25 = projected point (vf24) - light position (vf20).
+ * @see vu0_disc_light_project.
+ */
+static inline void vu0_disc_light_radial(void)
+{
+    asm __volatile__("vsub.xyz $vf25, $vf24, $vf20\n");
+}
+
+/**
+ * @brief Square vf25's components.
+ * @see vu0_disc_light_radial.
+ */
+static inline void vu0_disc_light_square(void)
+{
+    asm __volatile__("vmul.xyz $vf25, $vf25, $vf25\n");
+}
+
+/**
+ * @brief Sum vf25's squared components into vf25.x.
+ * @see vu0_disc_light_square.
+ */
+static inline void vu0_disc_light_sum(void)
+{
+    asm __volatile__(
+        "vaddw.xyz  $vf31, $vf0, $vf0w\n"
+        "vadday.x   $ACC, $vf25, $vf25y\n"
+        "vmaddz.x   $vf25, $vf31, $vf25z\n");
+}
+
+/**
+ * @brief Subtract the light's squared radius (vf20.w) from the squared distance in vf25.x.
+ * @see vu0_disc_light_sum.
+ */
+static inline void vu0_disc_light_subtract_radius(void)
+{
+    asm __volatile__("vsubw.x $vf25, $vf25, $vf20w\n");
+}
+
+/**
+ * @brief Store vf25, whose x is the squared distance from the disc's edge.
+ * @param out 16-byte aligned destination.
+ * @see vu0_disc_light_subtract_radius.
+ */
+static inline void vu0_disc_light_store_distance(void* out)
+{
+    asm __volatile__("sqc2 $vf25, 0x0(%0)\n" : : "r"(out) : "memory");
+}
+
 #endif
