@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/text_004095C0.h"
 #include "clamp.h"
 #include "ee.h"
 #include "overlays/lib/text_003F90C0.h"
@@ -1350,7 +1351,17 @@ extern "C" u32 func_00405440(void* object, const u8* data, s32 count)
     return checksum;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00405530);
+/**
+ * @brief Checksum an array of halfwords.
+ * @param object Unused receiver.
+ * @param data Halfwords to checksum.
+ * @param size Size of the array in bytes.
+ * @return Checksum.
+ */
+extern "C" u32 func_00405530(void* object, const s16* data, s32 size)
+{
+    return halfwords_checksum(data, size);
+}
 
 /**
  * @brief Store the base critical rate, limited to zero through 255.

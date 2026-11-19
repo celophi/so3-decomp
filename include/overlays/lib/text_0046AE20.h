@@ -309,9 +309,6 @@ float func_0047ADC0(void* object);
 /** Return the word at receiver offset 0x8. */
 u32 func_00478F70(const void* object);
 
-/** Return the word at receiver offset 0xC. */
-u32 func_00478F80(const void* object);
-
 /** Return the word at receiver offset 0xB8. */
 u32 func_00479FE0(const void* object);
 

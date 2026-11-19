@@ -10,6 +10,7 @@
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/render_channel.h"
 #include "overlays/lib/vector.h"
+#include "overlays/lib/image_header.h"
 #include "main/main.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 
@@ -593,6 +594,8 @@ struct LibSceneLayer
     u8 unk04[0x64];
 };
 
+// TODO: This is LibRenderer::layers seen 0x64 bytes early (each LibRenderLayer's display_manager at +4), indexed by
+// layer number; LibColorModel::update only matches through this indexing, not layers[layer - 1].
 /** Partial view of the update list that owns a scene's objects, reaching its layer records. */
 struct LibSceneLayerTable
 {
@@ -732,7 +735,7 @@ public:
     u16 type_id;
     u8 unk6e[0x12];
     LibDisplayManager* display_manager;
-    u8 unk84[4];
+    float depth;
     u32 unk88;
     u32 unk8c;
 };
@@ -744,40 +747,7 @@ enum
     LIB_LIGHT_KIND_SPOT = 6
 };
 
-/** Partial light, kept in g_light_list. */
-class LibLight : public LibTransformOwner
-{
-    public:
-        /** @brief Update the transform matrix if it isn't ready, then cache the position and direction from it. */
-        void update_frame();
-
-        LibMatrix44Value world;
-        u8 unkd0[0x150];
-        LibVector4 color;
-        LibVector4 tinted_color;
-        LibVector4 position;
-        LibVector4 direction;
-        float cone_angle;
-        float packed_intensity;
-        u8 unk268[4];
-        float unk26c;
-        float unk270;
-        u8 unk274[4];
-        float unk278;
-        u8 unk27c[0xC];
-        u8 unk288;
-        u8 unk289;
-        u8 unk28a;
-        u8 unk28b;
-        u8 unk28c;
-        u8 unk28d;
-        u8 unk28e;
-        u8 enabled;
-        u8 unk290;
-        u8 unk291[3];
-        s32 kind;
-        u32 mask;
-};
+class LibLight;
 
 /**
  * @brief Read a spotlight's position, direction, and the cosine and sine of its cone angle.
@@ -938,10 +908,30 @@ public:
     /** @brief Clear each registered resource's second state byte. */
     virtual void update();
 
+    /**
+     * @brief Step the search cursor down to the next registered resource.
+     * @return The resource at the cursor, or null once the cursor has passed the first one.
+     */
+    LibRenderResource* next_entry()
+    {
+        LibRenderResource* entry = 0;
+        s32 index = cursor;
+
+        if (index >= 0)
+        {
+            cursor = index - 1;
+            entry = entries[index];
+        }
+
+        return entry;
+    }
+
     LibRenderResource** entries;
     s32 capacity;
     s32 count;
+    s32 cursor;
 };
+
 
 extern "C"
 {
@@ -1121,18 +1111,19 @@ extern LibCameraContext* D_001B6520;
 #define LIB_RENDERER_BUFFER_SIZE 0x2000
 
 /** Partial renderer pass that draws to the display at 0x94. */
-struct LibRendererPass
+struct LibRendererPass : public LibListObject
 {
-    u8 unk00[0x94];
+    u8 unk14[0x80];
     LibCameraContext* display;
     u8 unk98[4];
     u8 unk9c;
+    u8 unk9d;
 };
 
 /** Partial renderer pass that lib_initialize can switch on, drawing to the display at 0x128. */
-struct LibRendererExtra
+struct LibRendererExtra : public LibListObject
 {
-    u8 unk00[0x96];
+    u8 unk14[0x82];
     u8 enabled;
     u8 unk97[0x91];
     LibCameraContext* display;
@@ -1164,6 +1155,137 @@ extern "C" void func_004D3480(class LibRenderer* renderer);
  * @param renderer Renderer.
  */
 extern "C" void func_004D3780(class LibRenderer* renderer);
+
+/** LibUpdateList subclass with vtable D_00178B30 in main data; only its destructor is known. */
+class LibClass178B30 : public LibUpdateList
+{
+public:
+    virtual ~LibClass178B30();
+};
+
+/** Update list that is also a list object (vtables D_00178F30 and D_00178F68 in main data); only its destructor is known. */
+class LibClass178F30 : public LibUpdateList, public LibListObject
+{
+public:
+    /** @brief Start with nothing displayed and object kind bit 2 set. */
+    LibClass178F30();
+
+    virtual ~LibClass178F30();
+
+    /**
+     * @brief Return the list kind.
+     * @return Eight.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Update the display list. */
+    virtual void update();
+
+    u8 unk8c[4];
+    u32 unk90;
+    u8 unk94;
+    u8 unk95;
+    u8 unk96[2];
+};
+
+/** Transform owner that is also a DMA submission (vtables D_00178C00 and D_00178C74 in main data); only its destructor is known. */
+class LibClass178C00 : public LibTransformOwner, public DmaSubmission
+{
+public:
+    /** @brief Set the object's type ID after the base constructors. */
+    LibClass178C00();
+
+    virtual ~LibClass178C00();
+
+    /** @brief Forget the owning list, then destroy through the base. */
+    virtual void destroy();
+
+    /** @brief Queue this object's DMA submission on the VIF1 queue. */
+    virtual void render();
+
+    /**
+     * @brief Build this object's VIF1 packet.
+     * @param matrix View matrix.
+     * @param context Packet building context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Start the object's DMA chain on channel 1 (VIF1).
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Finish the object's packet.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    u8 unk94[0x4C];
+    u8 chain[0x20];
+    u8 unk100[0x80];
+};
+
+/** Transform owner that is also a DMA submission (vtables D_00178B70 and D_00178BE4 in main data); only its destructor is known. */
+class LibClass178B70 : public LibTransformOwner, public DmaSubmission
+{
+public:
+    /** @brief Set the object's type ID after the base constructors. */
+    LibClass178B70();
+
+    virtual ~LibClass178B70();
+
+    /** @brief Forget the owning list, then destroy through the base. */
+    virtual void destroy();
+
+    /** @brief Queue this object's DMA submission on the VIF1 queue. */
+    virtual void render();
+
+    /**
+     * @brief Build this object's VIF1 packet.
+     * @param matrix View matrix.
+     * @param context Packet building context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Start the object's DMA chain on channel 1 (VIF1).
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Finish the object's packet.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    u8 unk94[0x4C];
+    u8 chain[0x10];
+    u8 unkf0[0x70];
+};
+
+/**
+ * One of the renderer's 32 extra layers: a square render target of `size` pixels, with an MLPS image header and its
+ * info block built in place so the layer can be looked up like any other image.
+ */
+struct LibRenderLayer
+{
+    s32 size;
+    LibDisplayManager* display_manager;
+    u32 unk08;
+    s16 unk0c;
+    s16 unk0e;
+    u32 tag;
+    s32 index;
+    u8 unk18[0x18];
+    LibImageHeader* image;
+    u8 unk34[4];
+    LibImageHeader header;
+    u8 unk54[4];
+    LibImageInfo info;
+};
 
 /** Partial Lib renderer (g_renderer); it alternates between two packet buffers each frame. */
 class LibRenderer : public LibUpdateList
@@ -1220,7 +1342,7 @@ public:
     void update_lights();
 
     u8* cursor;
-    u8 unk7c[4];
+    u8* unk7c;
     u8 buffers[2][LIB_RENDERER_BUFFER_SIZE];
     LibDisplayManager* manager;
     LibLightList* light_list;
@@ -1245,13 +1367,26 @@ public:
     u8 unk40ce;
     u8 unk40cf[2];
     u8 buffer_index;
-    u8 unk40d2[0x386];
+    u8 unk40d2[6];
+    LibClass178B30 unk40d8;
+    u8 unk4150[0x284];
+    u8* unk43d4;
+    u8* unk43d8[32];
     LibRendererPass* unk4458;
-    u8 unk445c[4];
+    LibRendererPass* unk445c;
     LibRendererPass* unk4460;
     LibRendererPass* unk4464;
     LibRendererPass* unk4468;
     LibRendererExtra* extra;
+    LibClass178F30 unk4470[32];
+    LibClass178C00 unk5770[32];
+    LibClass178B70 unk8770[32];
+    LibRenderLayer layers[32];
+    LibListObject* unkc070[32];
+    u8 unkc0f0[0x40];
+    u8 unkc130[32][0x100];
+    u8 unke130[32][0x60];
+    u8 unked30[32][0x60];
 };
 
 inline void LibRenderer::update_lights()
@@ -1261,6 +1396,13 @@ inline void LibRenderer::update_lights()
     func_004D3290(this);
     light_list->assign_spot_lights(this);
 }
+
+/**
+ * @brief Build the packets of one of the renderer's extra layers.
+ * @param renderer Renderer.
+ * @param layer Layer number, from 1.
+ */
+extern "C" void func_004D0B10(LibRenderer* renderer, u32 layer);
 
 /** Reciprocal of g_frame_ticks, refreshed each frame. */
 extern float g_inverse_frame_ticks;
@@ -1354,6 +1496,74 @@ public:
  * @return The combined factor.
  */
 extern "C" float func_004DA0F0(LibTransform* transform);
+
+/** Transform that faces an optional target with a roll about the viewing direction. */
+class LibLookAtTransform : public LibTransform
+{
+public:
+    /** @brief Initialize the transform without a look-at target or roll. */
+    LibLookAtTransform();
+
+    virtual ~LibLookAtTransform();
+
+    /**
+     * @brief Copy the look-at target and inherited transform state.
+     * @param source Transform to copy; its roll angle is not copied.
+     */
+    virtual void copy_look_at_state(const LibLookAtTransform* source);
+
+    /** @brief Update the matrix to face the target when one is attached. */
+    virtual void update_transform_matrix();
+
+    LibTransform* look_at_target;
+    float roll_angle;
+};
+
+/** Partial light, kept in g_light_list, with vtable 0x1789E0 in main data. */
+class LibLight : public LibLookAtTransform
+{
+public:
+    virtual ~LibLight();
+
+    /** @brief Face the look-at target, if any, by turning the light's orientation towards it, then update the matrix. */
+    virtual void update_transform_matrix();
+
+    /**
+     * @brief Copy another light's colour, frame, cone and flags.
+     * @param source Light to copy.
+     */
+    virtual void copy_light_state(const LibLight* source);
+
+    /** @brief Update the transform matrix if it isn't ready, then cache the position and direction from it. */
+    void update_frame();
+
+    LibVector4 color;
+    LibVector4 tinted_color;
+    LibVector4 position;
+    LibVector4 direction;
+    float cone_angle;
+    float packed_intensity;
+    float unk268;
+    float unk26c;
+    float unk270;
+    float unk274;
+    float unk278;
+    float unk27c;
+    float unk280;
+    float unk284;
+    u8 unk288;
+    u8 unk289;
+    u8 unk28a;
+    u8 unk28b;
+    u8 unk28c;
+    u8 unk28d;
+    u8 unk28e;
+    u8 enabled;
+    u8 unk290;
+    u8 unk291;
+    s32 kind;
+    u32 mask;
+};
 
 /**
  * @brief Invert the transform's transposed matrix into its inverse transform.
@@ -1549,6 +1759,13 @@ FieldVec4B lib_quaternion_inverse(const FieldVec4B& quaternion);
 void lib_direction_angles_xy(LibVector4* value, const LibVector4* target, float y_angle);
 
 /**
+ * @brief Convert rotation angles to an orientation quaternion.
+ * @param orientation Receives the quaternion.
+ * @param angles Rotation angles in xyz.
+ */
+void func_004CDBC0(LibVector4* orientation, const LibVector4* angles);
+
+/**
  * @brief Replace a position with direction angles toward a target, using the XZ plane for heading.
  * @param value Source position, overwritten with elevation in x, heading in y, and w set to one.
  * @param target Target position; only x, y, and z are read.
@@ -1655,12 +1872,12 @@ s32 func_004D8D20(u8* image, s32 slot);
 extern const u32 D_004EC600[];
 
 /**
- * @brief Allocate VRAM for a 16x16 CT32 image and queue its upload.
- * @param image Image to upload.
- * @param count Passed to the VRAM allocator.
- * @return VRAM slot, or -1.
+ * @brief Reserve VRAM for a 16 by 16 CT32 image and queue its upload.
+ * @param colors Pixels to upload.
+ * @param slot VRAM slot to reuse, or -1 for a new one.
+ * @return The slot, or -1 when the packet can't be allocated.
  */
-s16 func_004D8C20(const void* image, s32 count);
+s16 func_004D8C20(const void* colors, s32 slot);
 
 /** The game's VRAM allocator. */
 extern LibVramAllocator* g_vram_allocator;
@@ -1696,14 +1913,6 @@ void func_004DBB70(struct LibCameraContext* display);
  * @param object Object to detach; the owner receives it through its virtual handler at vtable offset 0x1C.
  */
 void lib_object_detach_owner(void* object);
-
-/**
- * @brief Test whether a list traversal has reached its sentinel.
- * @param sentinel List sentinel.
- * @param node Current node.
- * @return 1 if node is the sentinel, otherwise 0.
- */
-s32 func_004D6DC0(const void* sentinel, const void* node);
 
 /**
  * @brief Get the next node in a circular list traversal.
@@ -1937,118 +2146,5 @@ public:
 };
 #endif
 
-#ifdef __cplusplus
-/** LibUpdateList subclass with vtable D_00178B30 in main data; only its destructor is known. */
-class LibClass178B30 : public LibUpdateList
-{
-public:
-    virtual ~LibClass178B30();
-};
-#endif
-
-#ifdef __cplusplus
-/** Update list that is also a list object (vtables D_00178F30 and D_00178F68 in main data); only its destructor is known. */
-class LibClass178F30 : public LibUpdateList, public LibListObject
-{
-public:
-    /** @brief Start with nothing displayed and object kind bit 2 set. */
-    LibClass178F30();
-
-    virtual ~LibClass178F30();
-
-    /**
-     * @brief Return the list kind.
-     * @return Eight.
-     */
-    virtual s32 get_default_list_kind();
-
-    /** @brief Update the display list. */
-    virtual void update();
-
-    u8 unk8c[4];
-    u32 unk90;
-    u8 unk94;
-    u8 unk95;
-    u8 unk96[2];
-};
-#endif
-
-#ifdef __cplusplus
-/** Transform owner that is also a DMA submission (vtables D_00178C00 and D_00178C74 in main data); only its destructor is known. */
-class LibClass178C00 : public LibTransformOwner, public DmaSubmission
-{
-public:
-    /** @brief Set the object's type ID after the base constructors. */
-    LibClass178C00();
-
-    virtual ~LibClass178C00();
-
-    /** @brief Forget the owning list, then destroy through the base. */
-    virtual void destroy();
-
-    /** @brief Queue this object's DMA submission on the VIF1 queue. */
-    virtual void render();
-
-    /**
-     * @brief Build this object's VIF1 packet.
-     * @param matrix View matrix.
-     * @param context Packet building context.
-     */
-    virtual void build_packet(const void* matrix, void* context);
-
-    /**
-     * @brief Start the object's DMA chain on channel 1 (VIF1).
-     * @param channel DMA channel; unused.
-     */
-    virtual void submit_dma(u32 channel);
-
-    /**
-     * @brief Finish the object's packet.
-     * @param channel DMA channel; unused.
-     */
-    virtual void complete_dma(u32 channel);
-
-    u8 unk94[0x4C];
-    u8 chain[0x10];
-};
-
-/** Transform owner that is also a DMA submission (vtables D_00178B70 and D_00178BE4 in main data); only its destructor is known. */
-class LibClass178B70 : public LibTransformOwner, public DmaSubmission
-{
-public:
-    /** @brief Set the object's type ID after the base constructors. */
-    LibClass178B70();
-
-    virtual ~LibClass178B70();
-
-    /** @brief Forget the owning list, then destroy through the base. */
-    virtual void destroy();
-
-    /** @brief Queue this object's DMA submission on the VIF1 queue. */
-    virtual void render();
-
-    /**
-     * @brief Build this object's VIF1 packet.
-     * @param matrix View matrix.
-     * @param context Packet building context.
-     */
-    virtual void build_packet(const void* matrix, void* context);
-
-    /**
-     * @brief Start the object's DMA chain on channel 1 (VIF1).
-     * @param channel DMA channel; unused.
-     */
-    virtual void submit_dma(u32 channel);
-
-    /**
-     * @brief Finish the object's packet.
-     * @param channel DMA channel; unused.
-     */
-    virtual void complete_dma(u32 channel);
-
-    u8 unk94[0x4C];
-    u8 chain[0x10];
-};
-#endif
 
 #endif

@@ -14,6 +14,7 @@
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/emission_vu0.h"
 #include "overlays/lib/shape_vu0.h"
+#include "overlays/lib/light_random.h"
 
 
 
@@ -893,7 +894,97 @@ s32 LibClass1728A0::get_default_list_kind()
     return 16;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421250);
+/**
+ * @brief Read back the 16 by 16 depth block centred on (x, y) and record the share of its values below the threshold.
+ *        The first update only starts the read.
+ */
+void LibClass1728A0::update()
+{
+    LibRenderer* renderer = static_cast<LibRenderer*>(static_cast<LibListObject*>(unk14)->owner);
+    LibCameraContext* display = renderer->display;
+    LibDisplayArea* area = &display->display_area;
+    s32 left = x - 8;
+    s32 top = y - 8;
+    s32 width = display->display_area.width;
+
+    if (left < 0)
+    {
+        left = 0;
+    }
+
+    if (top < 0)
+    {
+        top = 0;
+    }
+
+    lib_image_capture_store(capture, depth, (*reinterpret_cast<const u32*>(&display->buffers[0].environment.context1.depth_buffer) & 0x1FF) << 5,
+                            width / 64, area->depth_format, left, top, 16, 16);
+
+    if (unk1c)
+    {
+        unk1c = 0;
+        return;
+    }
+
+    s32 count = 0;
+
+    switch (area->depth_format)
+    {
+    case GS_PSMZ32:
+    {
+        u32* value = (u32*)depth;
+
+        for (s32 i = 0; i < 0x100; i++)
+        {
+            if (*value < threshold)
+            {
+                count++;
+            }
+
+            value++;
+        }
+
+        break;
+    }
+    case GS_PSMZ24:
+    {
+        u8* value = depth;
+
+        for (s32 i = 0; i < 0x100; i++)
+        {
+            u32 depth_value = value[0] | (value[1] << 8) | (value[2] << 16);
+
+            value += 3;
+
+            if (depth_value < threshold)
+            {
+                count++;
+            }
+        }
+
+        break;
+    }
+    case GS_PSMZ16:
+    case GS_PSMZ16S:
+    {
+        u16* value = (u16*)depth;
+
+        for (s32 i = 0; i < 0x100; i++)
+        {
+            if (*value < threshold)
+            {
+                count++;
+            }
+
+            value++;
+        }
+
+        break;
+    }
+    }
+
+    coverage = count * (1.0f / 256.0f);
+}
 
 /** @brief Release the image capture, then delete the object. */
 void LibClass1728A0::destroy()
@@ -921,7 +1012,7 @@ LibClass1728A0::LibClass1728A0() : unk14(0), unk18(0)
     capture = new (0) LibImageCapture;
     ((LibUpdateList*)g_renderer)->append_node(capture, -1);
     unk1c = 1;
-    unk42c = 0;
+    coverage = 0;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650);
@@ -1286,13 +1377,147 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425490);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425600);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004257A0);
+/** Partial particle a field acts on: the masks of the fields that skip it. */
+struct LibFieldTarget
+{
+    u8 unk00[0x1C];
+    u32 skip_mask;
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425870);
+/**
+ * @brief Push along the field's direction by a random amount between unk220 and unk220 + unk224, unless the
+ * particle's mask skips this field.
+ * @param position Particle position; unused.
+ * @param unk Unused.
+ * @param output Receives the push.
+ * @param source Particle.
+ */
+void LibClass172CF0::func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source)
+{
+    u32 skip = static_cast<const LibFieldTarget*>(source)->skip_mask;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425970);
+    if (unk210_mask & skip)
+    {
+        *(unsigned __int128*)output = 0;
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425AC0);
+    float scale = unk220 + unk224 * lib_light_random_fraction();
+    output->x = down.x * scale;
+    output->y = down.y * scale;
+    output->z = down.z * scale;
+}
+
+/**
+ * @brief Keep a sphere above the shape's plane while it is over the shape's rectangle.
+ * @param centre Sphere centre, in world space.
+ * @param output Receives the corrected centre.
+ * @param radius Sphere radius.
+ * @return Whether the sphere touches the plane inside the rectangle; the centre is moved out of the plane either way.
+ */
+bool LibClass172D80::func_00425870(const LibVector4* centre, LibVector4* output, float radius)
+{
+    LibVector4 distance;
+    LibVector4 local;
+
+    vu0_shape_load_plane(centre, &position, &down);
+    vu0_shape_set_radius(radius);
+    vu0_shape_plane_distance(&distance);
+
+    if (distance.x <= 0.0f)
+    {
+        vu0_shape_push_out(output);
+        vu0_apply_matrix(&inverse_transform, centre, &local);
+
+        if (!(local.x - radius < -extent_x) && local.x + radius <= extent_x && !(local.z - radius < -extent_z) &&
+            local.z + radius <= extent_z)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief Keep a sphere on the outside of the box, worked out in the box's local space.
+ * @param centre Sphere centre, in world space.
+ * @param output Receives the corrected centre.
+ * @param radius Sphere radius.
+ * @return Whether the centre was moved.
+ */
+bool LibClass172E10::func_00425870(const LibVector4* centre, LibVector4* output, float radius)
+{
+    LibVector4 local;
+
+    vu0_apply_matrix(&inverse_transform, centre, &local);
+    copy_vector(output, &local);
+    bool moved = false;
+
+    if (local.x - radius < -extent.x)
+    {
+        output->x = -extent.x + radius;
+        moved = true;
+    }
+    else if (!(local.x + radius <= extent.x))
+    {
+        output->x = extent.x - radius;
+        moved = true;
+    }
+
+    if (local.y - radius < -extent.y)
+    {
+        output->y = -extent.y + radius;
+        moved = true;
+    }
+    else if (!(local.y + radius <= extent.y))
+    {
+        output->y = extent.y - radius;
+        moved = true;
+    }
+
+    if (local.z - radius < -extent.z)
+    {
+        output->z = -extent.z + radius;
+        moved = true;
+    }
+    else if (!(local.z + radius <= extent.z))
+    {
+        output->z = extent.z - radius;
+        moved = true;
+    }
+
+    if (moved)
+    {
+        vu0_apply_matrix(&transposed_transform, output, output);
+    }
+
+    return moved;
+}
+
+/**
+ * @brief Keep a sphere on the outside of the shape's plane.
+ * @param centre Sphere centre, in world space.
+ * @param output Receives the corrected centre.
+ * @param radius Sphere radius.
+ * @return Whether the centre was moved.
+ */
+bool LibClass172EA0::func_00425870(const LibVector4* centre, LibVector4* output, float radius)
+{
+    LibVector4 distance;
+
+    vu0_shape_load_plane(centre, &position, &down);
+    vu0_shape_set_radius(radius);
+    vu0_shape_plane_distance(&distance);
+
+    if (distance.x <= 0.0f)
+    {
+        vu0_shape_push_out(output);
+        return true;
+    }
+
+    return false;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425B40);
 
@@ -1300,7 +1525,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425C90);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425E10);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00425FC0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284E0__14LibClass172F30FP14LibClass172AB0P10LibVector4PfPf);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004260C0);
 
@@ -1398,7 +1623,68 @@ void LibClass173080::update()
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428570);
+class LibClass173070;
+
+/** 0x40-byte link from one LibClass173070 node to another. */
+struct LibClass173070Link
+{
+    u8 unk00[0x21];
+    u8 blocked;
+    u8 unk22[0x16];
+    LibClass173070* target;
+    u8 unk3c[4];
+};
+
+class LibClass173070
+{
+public:
+    u8 unk00[2];
+    u8 group;
+    u8 unk03;
+    LibTransform* transform;
+    u8 unk08[4];
+    LibClass173070Link* links;
+    u8 unk10[4];
+    s32 link_count;
+    u8 unk18[0x78];
+
+    /** @brief Release the buffer's allocation. */
+    virtual ~LibClass173070();
+};
+
+/**
+ * @brief Give a group number to every node reachable over unblocked links whose target's transform hangs off the
+ * node's own transform, stopping at a link between two nodes that are both grouped already.
+ * @param owner Node owner, passed on.
+ * @param node Node to spread from.
+ * @param group Group number.
+ * @return Whether any node was grouped.
+ */
+extern "C" bool func_00428570(class LibClass173050* owner, LibClass173070* node, u8 group)
+{
+    bool grouped = false;
+    s32 count = node->link_count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibClass173070Link* link = &node->links[i];
+
+        if (node->group != 0xFF && link->target->group != 0xFF)
+        {
+            return grouped;
+        }
+
+        if (link->target->transform->parent_transform == node->transform && !link->blocked)
+        {
+            node->group = group;
+            link->target->group = group;
+            func_00428570(owner, link->target, group);
+            grouped = true;
+        }
+    }
+
+    return grouped;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428670);
 
@@ -1431,7 +1717,32 @@ void func_004288C0(u8 tag)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428A50);
+/**
+ * @brief Add an object to the second retained set, reusing a free slot first.
+ * @param object Object to retain.
+ * @param kind Kind byte stored with it.
+ */
+extern "C" void func_00428A50(LibListObject* object, u8 kind)
+{
+    s32 i;
+
+    for (i = 0; i < D_001B6514; i++)
+    {
+        if (D_00507E50[i] == 0)
+        {
+            D_00507E50[i] = object;
+            D_00507E10[i] = kind;
+            return;
+        }
+    }
+
+    if (D_001B6514 < 64)
+    {
+        D_00507E10[D_001B6514] = kind;
+        D_00507E50[D_001B6514] = object;
+        D_001B6514++;
+    }
+}
 
 /**
  * @brief Count the objects in the second retained set.
@@ -1502,7 +1813,32 @@ void func_00428B90(u8 tag)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00428D20);
+/**
+ * @brief Add an object to the first retained set, reusing a free slot first.
+ * @param object Object to retain.
+ * @param kind Kind byte stored with it.
+ */
+extern "C" void func_00428D20(LibListObject* object, u8 kind)
+{
+    s32 i;
+
+    for (i = 0; i < D_001B650C; i++)
+    {
+        if (D_00507CD0[i] == 0)
+        {
+            D_00507CD0[i] = object;
+            D_00507DD0[i] = kind;
+            return;
+        }
+    }
+
+    if (D_001B650C < 64)
+    {
+        D_00507DD0[D_001B650C] = kind;
+        D_00507CD0[D_001B650C] = object;
+        D_001B650C++;
+    }
+}
 
 /**
  * @brief Report the list kind used when registration requests the default.
@@ -1558,17 +1894,6 @@ LibClass172F30::~LibClass172F30()
 }
 
 /** Buffer owner whose data comes before its vptr, with vtable D_173070 in main data; only its destructor is known. */
-class LibClass173070
-{
-public:
-    u8 unk00[0xC];
-    u8* unk0c;
-    u8 unk10[0x80];
-
-    /** @brief Release the buffer's allocation. */
-    virtual ~LibClass173070();
-};
-
 /** List object with an array of LibClass173070 and two buffers, with vtable D_173050 in main data; only its destructor is known. */
 class LibClass173050 : public LibListObject
 {
@@ -1601,9 +1926,9 @@ LibClass173050::~LibClass173050()
 /** @brief Release the buffer's allocation. */
 LibClass173070::~LibClass173070()
 {
-    if (unk0c)
+    if (links)
     {
-        ::operator delete[](unk0c - 0x10);
+        ::operator delete[](reinterpret_cast<u8*>(links) - 0x10);
     }
 }
 

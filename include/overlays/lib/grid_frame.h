@@ -167,4 +167,239 @@ static inline GridFrameMotion* grid_cell_motion_00488110(GridCell00488110* cell)
     return motion;
 }
 
+
+typedef struct GridCell00494BB0
+{
+    u8 unk00[0xF0];
+    GridFrameMotion motion;
+} GridCell00494BB0;
+
+typedef struct GridOwner00494BB0
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    GridCell00494BB0* unk14;
+    u8 unk18[4];
+    GridBitset* unk1C;
+    GridRowElement* unk20;
+    u8 unk24[8];
+    s32 unk2C;
+    float unk30;
+    u8 unk34[0x18];
+    u8 unk4C;
+    u8 unk4d[0xA];
+    u8 skip_frame_playback;
+    u8 unk58[0x48];
+    GridFrameHeader* frame_header;
+    GridFrameRecord* frame_records;
+} GridOwner00494BB0;
+
+/**
+ * @brief Get a 0x120-byte cell's motion state at offset 0xF0.
+ * @param cell Cell to read.
+ * @return The motion state, or null when the cell address is null.
+ */
+static inline GridFrameMotion* grid_cell_motion_00494BB0(GridCell00494BB0* cell)
+{
+    GridFrameMotion* motion = (GridFrameMotion*)cell;
+
+    if (cell != 0)
+    {
+        motion = &cell->motion;
+    }
+
+    return motion;
+}
+
+/** The 0x140-byte cell element func_00497DA0 indexes; its motion state is read just past it. */
+typedef struct GridCell00497DA0
+{
+    u8 unk00[0x140];
+} GridCell00497DA0;
+
+typedef struct GridOwner00497DA0
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    GridCell00497DA0* unk14;
+    u8 unk18[4];
+    GridBitset* unk1C;
+    GridRowElement* unk20;
+    u8 unk24[8];
+    s32 unk2C;
+    float unk30;
+    u8 unk34[0x18];
+    u8 unk4C;
+    u8 unk4d[0xA];
+    u8 skip_frame_playback;
+    u8 unk58[0x48];
+    GridFrameHeader* frame_header;
+    GridFrameRecord* frame_records;
+} GridOwner00497DA0;
+
+/**
+ * @brief Get the motion state that follows a 0x140-byte cell element.
+ *
+ * TODO: The game steps the cells 0x140 bytes apart (LibClass1741F8) but reads the motion state at offset 0x140, past the
+ * element, where a 0x170-byte LibGridCell170 keeps it; I don't know why the array is typed as the base.
+ * @param cell Cell to read.
+ * @return The motion state, or null when the cell address is null.
+ */
+static inline GridFrameMotion* grid_cell_motion_00497DA0(GridCell00497DA0* cell)
+{
+    GridFrameMotion* motion = (GridFrameMotion*)cell;
+
+    if (cell != 0)
+    {
+        motion = (GridFrameMotion*)(cell + 1);
+    }
+
+    return motion;
+}
+
+
+/** The 0xF0-byte cell element func_004918F0 indexes; its motion state is read just past it. */
+typedef struct GridCell004918F0
+{
+    u8 unk00[0xF0];
+} GridCell004918F0;
+
+typedef struct GridOwner004918F0
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    GridCell004918F0* unk14;
+    u8 unk18[4];
+    GridBitset* unk1C;
+    GridRowElement* unk20;
+    u8 unk24[8];
+    s32 unk2C;
+    float unk30;
+    u8 unk34[0x18];
+    u8 unk4C;
+    u8 unk4d[0xA];
+    u8 skip_frame_playback;
+    u8 unk58[0x48];
+    GridFrameHeader* frame_header;
+    GridFrameRecord* frame_records;
+} GridOwner004918F0;
+
+/**
+ * @brief Get the motion state that follows a 0xF0-byte cell element.
+ *
+ * TODO: The game steps the cells 0xF0 bytes apart (LibClass174208) but reads the motion state at offset 0xF0, past the
+ * element, where a 0x120-byte LibClass177158 keeps it; I don't know why the array is typed as the base.
+ * @param cell Cell to read.
+ * @return The motion state, or null when the cell address is null.
+ */
+static inline GridFrameMotion* grid_cell_motion_004918F0(GridCell004918F0* cell)
+{
+    GridFrameMotion* motion = (GridFrameMotion*)cell;
+
+    if (cell != 0)
+    {
+        motion = (GridFrameMotion*)(cell + 1);
+    }
+
+    return motion;
+}
+
+/** The 0x80-byte cell element func_0048B3D0 indexes; its motion state is read just past it. */
+typedef struct GridCell0048B3D0
+{
+    u8 unk00[0x80];
+} GridCell0048B3D0;
+
+typedef struct GridOwner0048B3D0
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    GridCell0048B3D0* unk14;
+    u8 unk18[4];
+    GridBitset* unk1C;
+    GridRowElement* unk20;
+    u8 unk24[8];
+    s32 unk2C;
+    float unk30;
+    u8 unk34[0x18];
+    u8 unk4C;
+    u8 unk4d[0xA];
+    u8 skip_frame_playback;
+    u8 unk58[0x48];
+    GridFrameHeader* frame_header;
+    GridFrameRecord* frame_records;
+} GridOwner0048B3D0;
+
+/**
+ * @brief Get the motion state that follows a 0x80-byte cell element.
+ *
+ * TODO: The game steps the cells 0x80 bytes apart (LibClass174218) but reads the motion state at offset 0x80, past the
+ * element, where a 0xB0-byte LibClass177168 keeps it; I don't know why the array is typed as the base.
+ * @param cell Cell to read.
+ * @return The motion state, or null when the cell address is null.
+ */
+static inline GridFrameMotion* grid_cell_motion_0048B3D0(GridCell0048B3D0* cell)
+{
+    GridFrameMotion* motion = (GridFrameMotion*)cell;
+
+    if (cell != 0)
+    {
+        motion = (GridFrameMotion*)(cell + 1);
+    }
+
+    return motion;
+}
+
+
+/** The 0x30-byte cell element func_0043E2F0 indexes; its motion state is read just past it. */
+typedef struct GridCell0043E2F0
+{
+    u8 unk00[0x30];
+} GridCell0043E2F0;
+
+typedef struct GridOwner0043E2F0
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    GridCell0043E2F0* unk14;
+    u8 unk18[4];
+    GridBitset* unk1C;
+    GridRowElement* unk20;
+    u8 unk24[8];
+    s32 unk2C;
+    float unk30;
+    u8 unk34[0x18];
+    u8 unk4C;
+    u8 unk4d[0xA];
+    u8 skip_frame_playback;
+    u8 unk58[0x48];
+    GridFrameHeader* frame_header;
+    GridFrameRecord* frame_records;
+} GridOwner0043E2F0;
+
+/**
+ * @brief Get the motion state that follows a 0x30-byte cell element.
+ *
+ * TODO: The game steps the cells 0x30 bytes apart (LibClass173E70 allocates LibClass173F48 cells) but reads the motion
+ * state at offset 0x30, past the element, as for a 0x60-byte cell; I don't know which class that is.
+ * @param cell Cell to read.
+ * @return The motion state, or null when the cell address is null.
+ */
+static inline GridFrameMotion* grid_cell_motion_0043E2F0(GridCell0043E2F0* cell)
+{
+    GridFrameMotion* motion = (GridFrameMotion*)cell;
+
+    if (cell != 0)
+    {
+        motion = (GridFrameMotion*)(cell + 1);
+    }
+
+    return motion;
+}
+
 #endif

@@ -2549,35 +2549,32 @@ LibClass174120::~LibClass174120()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00447030);
-
 /**
  * @brief Copy another grid's size and settings, reallocating this grid to match.
- *
- * LibClass174050's copy_settings (vtable slot 0xB4).
- * @param object Grid to update.
- * @param other Grid to copy.
+ * @param source Grid to copy.
  */
-void func_00447090(LibGridEmitter* object, const LibGridEmitter* other)
+void LibClass174050::copy_settings(const LibClass173A40* source)
 {
-    object->cell_count = other->cell_count;
-    object->columns = other->columns;
-    object->resize(object->cell_count, object->columns);
-    object->unk28 = other->unk28;
-    object->unk30 = other->unk30;
-    object->unk34 = other->unk34;
-    object->unk38 = other->unk38;
-    object->primary_emitter = other->primary_emitter;
-    object->unk4C = other->unk4C;
-    object->unk4D = other->unk4D;
-    object->primary_emission_flags = other->primary_emission_flags;
-    object->primary_emission_count = other->primary_emission_count;
-    object->secondary_emitter = other->secondary_emitter;
-    object->secondary_emission_flags = other->secondary_emission_flags;
-    object->secondary_emission_count = other->secondary_emission_count;
-    object->unk3C = other->unk3C;
-    object->frame_header = other->frame_header;
-    object->frame_records = other->frame_records;
+    const LibClass174050* other = static_cast<const LibClass174050*>(source);
+
+    unk0c = other->unk0c;
+    unk10 = other->unk10;
+    resize(unk0c, unk10);
+    unk28 = other->unk28;
+    unk30 = other->unk30;
+    unk34 = other->unk34;
+    unk38 = other->unk38;
+    unk48 = other->unk48;
+    unk4c = other->unk4c;
+    unk4d = other->unk4d;
+    unk4e = other->unk4e;
+    unk4f = other->unk4f;
+    unk50 = other->unk50;
+    unk54 = other->unk54;
+    unk55 = other->unk55;
+    unk3c = other->unk3c;
+    unka0 = other->unka0;
+    unka4 = other->unka4;
 }
 
 void func_00447160(void* object, const void* source)
@@ -3182,9 +3179,115 @@ s32 func_00448900(void* object)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448910);
+extern "C" LibImageRegistry* g_image_registry;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448A10);
+/**
+ * @brief Find a registered image record by its image's two keys, searching the newest resources first, and mark its
+ * resource as used.
+ * @param first_key First key of the image.
+ * @param second_key Second key of the image.
+ * @return The record, or null when no resource holds the image.
+ */
+extern "C" LibRenderDataRecord* func_00448910(u32 first_key, u32 second_key)
+{
+    LibRenderResource* resource;
+
+    g_image_registry->cursor = g_image_registry->count - 1;
+
+    while ((resource = g_image_registry->next_entry()) != 0)
+    {
+        for (LibRenderDataRecord* record = static_cast<LibRenderDataRecord*>(resource->get_data()); record != 0;
+             record = static_cast<LibRenderDataRecord*>(resource->resolve_offset(&record->next_offset)))
+        {
+            if (record->storage_kind == RENDER_DATA_SHARED || record->storage_kind == RENDER_DATA_OFFSET)
+            {
+                continue;
+            }
+
+            LibImageDataHeader* image;
+
+            if (record->data)
+            {
+                image = static_cast<LibImageDataHeader*>(record->data);
+            }
+            else
+            {
+                image = reinterpret_cast<LibImageDataHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
+            }
+
+            if (image->second_key == second_key && image->first_key == first_key)
+            {
+                resource->unk00 = 1;
+                return record;
+            }
+        }
+    }
+
+    return 0;
+}
+
+#define LIB_TEXTURE_TAG_LATF 0x4674404C
+
+/**
+ * @brief Find an image by its two keys, skipping one resource: MLPS images are layer render targets, LATF the
+ * renderer's first pass target, and the rest are searched in the registered resources, newest first.
+ * @param skip Resource not to search.
+ * @param first_key First key of the image (its tag).
+ * @param second_key Second key of the image (the layer for MLPS).
+ * @return The image header for MLPS and LATF, otherwise the record holding the image, or null.
+ */
+extern "C" void* func_00448A10(void* skip, u32 first_key, u32 second_key)
+{
+    if (first_key == LIB_TEXTURE_TAG_MLPS)
+    {
+        return &static_cast<LibRenderer*>(g_renderer)->layers[second_key - 1].unk08;
+    }
+
+    if (first_key == LIB_TEXTURE_TAG_LATF)
+    {
+        return reinterpret_cast<u8*>(static_cast<LibRenderer*>(g_renderer)->unk4458) + 0xA8;
+    }
+
+    LibRenderResource* resource;
+
+    g_image_registry->cursor = g_image_registry->count - 1;
+
+    while ((resource = g_image_registry->next_entry()) != 0)
+    {
+        if (resource == skip)
+        {
+            continue;
+        }
+
+        for (LibRenderDataRecord* record = static_cast<LibRenderDataRecord*>(resource->get_data()); record != 0;
+             record = static_cast<LibRenderDataRecord*>(resource->resolve_offset(&record->next_offset)))
+        {
+            if (record->storage_kind == RENDER_DATA_SHARED || record->storage_kind == RENDER_DATA_OFFSET)
+            {
+                continue;
+            }
+
+            LibImageDataHeader* image;
+
+            if (record->data)
+            {
+                image = static_cast<LibImageDataHeader*>(record->data);
+            }
+            else
+            {
+                image = reinterpret_cast<LibImageDataHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
+            }
+
+            if (image->second_key == second_key && image->first_key == first_key)
+            {
+                resource->unk00 = 1;
+                return record;
+            }
+        }
+    }
+
+    return 0;
+}
 
 /**
  * @brief Append a keyframe through append_curve_key, with a zero control rotation when none is given.
@@ -3430,7 +3533,80 @@ s32 LibPooledQuaternionCurveTrack::append_curve_key(const FieldVec4A* value, con
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_004492D0);
+/**
+ * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the rotation and its change per frame.
+ *
+ * At or past the last key it returns the last key's rotation and sets the cycle count to one; before the first key it
+ * samples normally.
+ * @param key Evaluation key.
+ * @return Evaluated rotation.
+ */
+FieldVec4A LibPooledQuaternionCurveTrack::sample_once(float key)
+{
+    FieldVec4B result;
+
+    if (!key_array)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.key_count == 1)
+    {
+        return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
+    }
+
+    if (!(key < key_at(state.key_count - 1)))
+    {
+        state.cycle_count = 1;
+        state.search_index = 0;
+        return *reinterpret_cast<FieldVec4A*>(&key_array[state.key_count - 1].value);
+    }
+
+    if (key < key_at(0))
+    {
+        return sample(key);
+    }
+
+    state.cycle_count = 0;
+
+    while (state.search_index > 0 && key < key_at(state.search_index))
+    {
+        state.search_index--;
+    }
+
+    if (state.search_index < 0)
+    {
+        state.search_index = 0;
+    }
+
+    while (state.search_index + 1 < state.key_count && !(key < key_at(state.search_index + 1)))
+    {
+        state.search_index++;
+    }
+
+    if (state.search_index >= state.key_count - 1)
+    {
+        state.search_index = state.key_count - 2;
+    }
+
+    if (state.segment_lower != state.search_index)
+    {
+        state.segment_lower = state.search_index;
+        lower_key = &key_array[state.search_index];
+        upper_key = &key_array[state.search_index + 1];
+    }
+
+    LibQuaternionCurveTrackKey* upper;
+    LibQuaternionCurveTrackKey* lower;
+
+    lower = lower_key;
+    upper = upper_key;
+    func_004CCE10(&result, &lower->value, &upper->value, &lower->control, &upper->control, (key - lower->key) / (upper->key - lower->key));
+    last_key = key;
+    value_rate = quaternion_scaled(g_inverse_frame_ticks, quaternion_difference(result, last_value));
+    last_value = result;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 /**
  * @brief Interpolate the track at a key and cache the rotation and its change per second.

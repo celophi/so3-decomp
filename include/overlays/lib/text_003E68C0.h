@@ -26,19 +26,6 @@ class LibOrientedTransform;
 struct LibVector4;
 
 /**
- * @brief Store state value 7 in the transform's byte at offset 0x60.
- * @param object Transform owner.
- */
-extern "C" void func_003F4560(LibTransformOwner* object);
-
-/**
- * @brief Return the fixed value 14.
- * @param object Receiver or first argument; unused.
- * @return Always 14.
- */
-extern "C" s32 func_003F4550(void* object);
-
-/**
  * @brief Store a word at receiver offset 0x14.
  * @param object Receiver.
  * @param value Word value.
@@ -79,18 +66,6 @@ extern "C" void* func_003F3EF0(void* object);
  * @param value Word value.
  */
 extern "C" void func_003F3F00(void* object, u32 value);
-
-/**
- * @brief Copy the byte at offset 0xB4 to offset 0x60.
- * @param object Receiver to update.
- */
-extern "C" void func_003EEDE0(void* object);
-
-/** Build and return a pointer to the four-word stack value. */
-extern "C" void* func_003EEDF0(void);
-
-/** Build and return a pointer to the four-word stack value. */
-extern "C" void* func_003F4570(void);
 
 /**
  * @brief Clear the receiver's first two words and return the receiver.
@@ -589,10 +564,6 @@ public:
 #endif
 
 #ifdef __cplusplus
-extern "C" s32 func_003EF090(void* object);
-
-extern "C" s32 func_003F2570(void* object);
-
 #endif
 
 #ifdef __cplusplus

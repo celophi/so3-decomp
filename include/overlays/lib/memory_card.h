@@ -103,12 +103,39 @@ enum LibCardSlotMask
     LIB_CARD_SLOT_2 = 0x2
 };
 
-/** One file of a memory card request: Lib opens `<directory>/<name>` and transfers size bytes at data. */
+/** One entry of a memory card directory listing (Sony's sceMcTblGetDir). */
+struct LibCardDirectoryEntry
+{
+    u8 created[8];
+    u8 modified[8];
+    u32 size;
+    u16 attributes;
+    u16 unk16;
+    u32 unk18;
+    u32 application_number;
+    char name[32];
+};
+
 /** Contents of a save's icon.sys file (Sony's sceMcIconSys). */
 struct LibIconSys
 {
-    u8 unk00[0x3C4];
+    char magic[4];
+    u16 unk04;
+    u16 title_line_offset;
+    u32 unk08;
+    u32 background_alpha;
+    s32 background_colors[4][4];
+    float light_directions[3][4];
+    float light_colors[3][4];
+    float ambient_color[4];
+    char title[0x44];
+    char list_icon[0x40];
+    char copy_icon[0x40];
+    char delete_icon[0x40];
+    u8 unk1c4[0x200];
 };
+
+/** One file of a memory card request: Lib opens `<directory>/<name>` and transfers size bytes at data. */
 
 struct LibCardFileBuffer
 {

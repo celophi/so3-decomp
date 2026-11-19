@@ -14,28 +14,10 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector.h"
 
-/** Transform that faces an optional target with a roll about the viewing direction. */
-class LibLookAtTransform : public LibTransform
-{
-public:
-    /** @brief Initialize the transform without a look-at target or roll. */
-    LibLookAtTransform();
-
-    virtual ~LibLookAtTransform();
-
-    /**
-     * @brief Copy the look-at target and inherited transform state.
-     * @param source Transform to copy; its roll angle is not copied.
-     */
-    virtual void copy_look_at_state(const LibLookAtTransform* source);
-
-    /** @brief Update the matrix to face the target when one is attached. */
-    virtual void update_transform_matrix();
-
-    LibTransform* look_at_target;
-    float roll_angle;
-};
-/** Size of the area a display draws to: a base size scaled, then rounded up to GS page-friendly sizes. */
+/**
+ * Area a display draws to (a base size scaled, then rounded up to GS page-friendly sizes) and the formats its draw
+ * buffers use.
+ */
 struct LibDisplayArea
 {
     float scale_x;
@@ -44,6 +26,11 @@ struct LibDisplayArea
     s16 base_height;
     s16 width;
     s16 height;
+    s16 unk10;
+    s16 depth_test;
+    s16 depth_format;
+    u8 scaled;
+    u8 unk17;
 };
 
 /** GS drawing environment for one draw buffer: a GIF tag and both contexts' registers in A+D form. */
@@ -309,11 +296,6 @@ public:
     LibDrawEnvironment environments[2];
     LibDisplayScreen screens[LIB_DISPLAY_SCREEN_COUNT];
     LibDisplayArea display_area;
-    s16 unk3C70;
-    s16 depth_test;
-    s16 depth_format;
-    u8 scaled;
-    u8 unk3C77;
     u32 vram_free_page;
     u32 vram_base_page;
     u32 depth_buffer_pages;

@@ -13,7 +13,10 @@
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/image_model.h"
 #include "overlays/lib/widget_aggregate.h"
+#include "overlays/lib/message_window.h"
 #include "overlays/lib/text_004095C0.h"
+#include "overlays/lib/item_allocation.h"
+#include "sdk/main/libm_guess_0013F3E0.h"
 
 extern "C" void func_00461830(void* embedded, void* adjusted);
 
@@ -568,7 +571,155 @@ void LibObject174D90::draw()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F710);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045FE90);
+/**
+ * @brief Test whether an allocation record is in use.
+ * @param record Allocation record.
+ * @return Its allocated flag.
+ */
+static inline bool allocation_in_use(const ItemCreationAllocationRecord* record)
+{
+    return record->allocated;
+}
+
+extern "C" ResidentObject1B64F8* D_001B64F8;
+
+extern "C" char* func_004642E0(void* context, s32 index);
+
+extern "C" s32 func_00464040(LibDrawWidget* widget, u16* codes, const char* text);
+
+extern "C" s32 func_00463E60(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
+
+/**
+ * @brief Count the glyphs a text lays out, expanding numbers, names and item names, up to its end code.
+ * @param widget Widget the text is laid out for.
+ * @param source Encoded text.
+ * @return Number of glyphs.
+ */
+extern "C" s32 func_0045FE90(LibDrawWidget* widget, const u8* source)
+{
+    u16 codes[64];
+    s32 count = 0;
+    const u8* text = source;
+
+    for (;;)
+    {
+        s32 c = *text++;
+
+        if (c & 0x80)
+        {
+            u16 code = (c & 0x7F) | (*text++ << 7);
+
+            if (code & 0x4000)
+            {
+                switch (code)
+                {
+                case 0x4002:
+                case 0x4008:
+                case 0x401A:
+                case 0x4020:
+                    text++;
+                    break;
+                case 0x4005:
+                case 0x4006:
+                case 0x400A:
+                case 0x400C:
+                case 0x400E:
+                case 0x4014:
+                case 0x4015:
+                    text += 4;
+                    break;
+                case 0x4011:
+                    while (*text)
+                    {
+                        text++;
+                    }
+
+                    text++;
+                    break;
+                case 0x4012:
+                    count += widget->format_number_codes(codes, g_field_runtime->message_arguments[*text++]);
+                    break;
+                case 0x4013:
+                case 0x4021:
+                {
+                    s32 index = *text++;
+
+                    index = code == 0x4013 ? index : g_field_runtime->message_arguments[index];
+
+                    count += func_00464040(widget, codes, func_004642E0(widget, index));
+                    break;
+                }
+                case 0x4022:
+                case 0x4023:
+                {
+                    s32 value = g_field_runtime->message_arguments[*text++];
+                    u16 id = 0;
+                    s32 variant = 0;
+
+                    if (code == 0x4022)
+                    {
+                        id = value;
+                    }
+                    else
+                    {
+                        LibGameState* state = reinterpret_cast<LibGameState*>(D_001B64F8);
+                        s16 identifier = value;
+                        bool valid = false;
+
+                        if (identifier > 0 && identifier <= LIB_ALLOCATION_COUNT)
+                        {
+                            valid = true;
+                        }
+
+                        ItemCreationAllocationRecord* record;
+
+                        if (valid)
+                        {
+                            record = reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[identifier - 1]);
+                        }
+                        else
+                        {
+                            record = 0;
+                        }
+
+                        if (record != 0 && allocation_in_use(record))
+                        {
+                            id = record->definition_index() + 1;
+                            variant = record->modification_number;
+                        }
+                    }
+
+                    count += func_00463E60(widget, codes, id, variant);
+                    break;
+                }
+                case 0x401C:
+                    while (*text)
+                    {
+                        text++;
+                    }
+
+                    text++;
+                    count++;
+                    break;
+                case 0x401D:
+                    text++;
+                    count++;
+                    break;
+                case 0x401F:
+                    // TODO: A goto out of the switch is what puts the shared count++ block before the return like the game.
+                    goto end;
+                }
+
+                continue;
+            }
+        }
+
+        count++;
+    }
+
+end:
+    return count;
+}
 
 /**
  * @brief Work out the extra spacing that spreads a run of draw records to the widget's width.
@@ -614,13 +765,535 @@ extern "C" float func_004601F0(LibDrawWidget* widget, LibDrawRecord* first, LibD
     return spacing;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004602B0);
+/**
+ * @brief Find where a laid-out line may break: walk back from the last record while the glyph classes on either side
+ *        must stay together.
+ * @param object Multiline text widget.
+ * @param first First record of the line.
+ * @param last Record the line would break at.
+ * @return Record to break at.
+ */
+extern "C" LibDrawRecord* func_004602B0(LibObject174D90* object, LibDrawRecord* first, LibDrawRecord* last)
+{
+    s32 next = 0;
+    bool joined = false;
+    s32 count = 0;
+    LibDrawRecord* record = last;
+
+    for (;;)
+    {
+        if (record == first)
+        {
+            return last;
+        }
+
+        s32 kind;
+        s32 code = record->code;
+
+        if (code & 0x4000)
+        {
+            if (code == 0xFFFF)
+            {
+                kind = 9;
+            }
+            else if (code == 0x401C)
+            {
+                kind = 14;
+            }
+            else if (code == 0x401D)
+            {
+                kind = 15;
+            }
+            else
+            {
+                if (code == 0x4019)
+                {
+                    break;
+                }
+
+                if (code == 0x4018)
+                {
+                    joined = true;
+                }
+
+                goto keep;
+            }
+        }
+        else if (code == 11)
+        {
+            kind = 0;
+        }
+        else if (code == 12)
+        {
+            kind = 1;
+        }
+        else if (code > 0 && code < 11)
+        {
+            kind = 2;
+        }
+        else if (code >= 13 && code < 0x42)
+        {
+            kind = 3;
+        }
+        else if (code == 0x42)
+        {
+            kind = 10;
+        }
+        else if (code == 0x9D || code == 0x11B)
+        {
+            kind = 4;
+        }
+        else if (code >= 0x43 && code < 0x4D)
+        {
+            kind = 5;
+        }
+        else if (code >= 0x4D && code < 0x93)
+        {
+            kind = 6;
+        }
+        else if (code >= 0x94 && code < 0x9D)
+        {
+            kind = 7;
+        }
+        else if (code >= 0x93 && code < 0xE5)
+        {
+            kind = 8;
+        }
+        else if (code == 0xE8 || code == 0xE9)
+        {
+            kind = 9;
+        }
+        else if (code == 0x102)
+        {
+            kind = 3;
+        }
+        else if (code >= 0xEA && code < 0x107)
+        {
+            kind = 10;
+        }
+        else if (code >= 0x107 && code < 0x114)
+        {
+            kind = 11;
+        }
+        else if (code == 0x114)
+        {
+            kind = 16;
+        }
+        else if (code >= 0x114 && code < 0x125)
+        {
+            kind = 12;
+        }
+        else
+        {
+            kind = 13;
+        }
+
+        if (count == 0 && kind == 9)
+        {
+            return record + 1;
+        }
+
+        if (count == 0 || kind == 11 || joined)
+        {
+            next = kind;
+            joined = false;
+            goto keep;
+        }
+
+        if (kind == next)
+        {
+            if (kind == 6)
+            {
+                return record + 1;
+            }
+
+            goto keep;
+        }
+
+        switch (next)
+        {
+        case 0:
+        case 1:
+            if (kind == 2 || kind == 3)
+            {
+                next = kind;
+                goto keep;
+            }
+
+            break;
+        case 2:
+            if (kind == 0 || kind == 1)
+            {
+                next = kind;
+                goto keep;
+            }
+
+            break;
+        case 4:
+        case 5:
+        case 7:
+        case 10:
+            next = kind;
+            goto keep;
+        case 6:
+            switch (kind)
+            {
+            case 4:
+            case 5:
+                next = kind;
+                goto keep;
+            case 13:
+                if (object->unk558 < 2)
+                {
+                    break;
+                }
+
+                next = kind;
+                goto keep;
+            }
+
+            break;
+        case 8:
+            switch (kind)
+            {
+            case 4:
+            case 7:
+                next = kind;
+                goto keep;
+            case 13:
+                if (object->unk558 < 2)
+                {
+                    break;
+                }
+
+                next = kind;
+                goto keep;
+            }
+
+            break;
+        case 13:
+            if (object->unk558 < 2)
+            {
+                break;
+            }
+
+            if (kind == 2)
+            {
+                next = kind;
+                goto keep;
+            }
+
+            if (kind == 6 && (code == 0x51 || code == 0x7E))
+            {
+                goto keep;
+            }
+
+            break;
+        case 14:
+            next = kind;
+            goto keep;
+        case 16:
+            switch (kind)
+            {
+            case 1:
+            case 3:
+                next = kind;
+                goto keep;
+            }
+
+            break;
+        case 3:
+            if (kind == 16)
+            {
+                next = kind;
+                goto keep;
+            }
+
+            break;
+        }
+
+        return record + 1;
+
+    keep:
+        count++;
+        record--;
+    }
+
+    return record;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00460750);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461230);
+/**
+ * @brief Measure the widget's text page by page: per page, count the glyphs found in its resource (or the runtime's
+ *        first slot) and missing ones, the space control codes add, line breaks, quoted string bytes and button
+ *        glyphs, and keep the largest page's counts.
+ * @param object Multiline text widget.
+ */
+extern "C" void func_00461230(LibObject174D90* object)
+{
+    object->unkb0 = 0;
+    object->unkac = 0;
+    object->unka8 = 0;
+    object->unka4 = 0;
+    object->glyph_count = 0;
+    object->unkb4 = 0;
+    const u8* text = static_cast<const u8*>(object->unk100);
+    bool more = true;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004614E0);
+    do
+    {
+        s32 lines = 0;
+        s32 buttons = 0;
+        s32 found = 0;
+        s32 missing = 0;
+        s32 breaks = 0;
+        s32 quoted = 0;
+
+        for (;;)
+        {
+            s32 code = *text++;
+
+            // TODO: The game sign-extends the code before this test, which a compare with a long zero gives.
+            if (code == 0L)
+            {
+                more = false;
+                break;
+            }
+
+            if (code & 0x80)
+            {
+                code = (code & 0x7F) | (*text++ << 7);
+
+                if (code & 0x4000)
+                {
+                    switch (code)
+                    {
+                    case 0x4000:
+                    case 0x4004:
+                    case 0x4007:
+                    case 0x4016:
+                    case 0x4017:
+                    case 0x4018:
+                    case 0x4019:
+                    case 0x401F:
+                        lines++;
+                        break;
+                    case 0x4001:
+                        lines++;
+                        goto page_end;
+                    case 0x4020:
+                        lines++;
+                        text++;
+                        break;
+                    case 0x4002:
+                    case 0x4008:
+                    case 0x401A:
+                        text++;
+                        break;
+                    case 0x4005:
+                    case 0x4006:
+                    case 0x4014:
+                    case 0x4015:
+                    case 0x401E:
+                        lines++;
+                        text += 4;
+                        break;
+                    case 0x400A:
+                    case 0x400C:
+                    case 0x400E:
+                        text += 4;
+                        break;
+                    case 0x4012:
+                        found += 11;
+                        text++;
+                        break;
+                    case 0x4013:
+                    case 0x4021:
+                        found += 0x20;
+                        text++;
+                        break;
+                    case 0x4022:
+                    case 0x4023:
+                        missing += 0x40;
+                        text++;
+                        break;
+                    case 0x4010:
+                        lines++;
+                        breaks++;
+                        break;
+                    case 0x4011:
+                        while (*text)
+                        {
+                            quoted++;
+                            text++;
+                        }
+
+                        text++;
+                        break;
+                    case 0x401C:
+                        lines++;
+                        breaks++;
+
+                        while (*text)
+                        {
+                            text++;
+                            quoted++;
+                        }
+
+                        text++;
+                        break;
+                    case 0x401D:
+                        lines++;
+                        buttons++;
+                        text++;
+                        break;
+                    }
+
+                    continue;
+                }
+            }
+
+            s32 index;
+            LibManagedResourceSlot* slot;
+
+            slot = object->resource_slot;
+            index = code - 1;
+
+            if (slot->flag)
+            {
+                if (code <= 300)
+                {
+                    slot = &g_field_runtime->resource_slots[0];
+                }
+                else
+                {
+                    index -= 300;
+                }
+            }
+
+            if (index < slot->loaded)
+            {
+                found++;
+            }
+            else
+            {
+                missing++;
+            }
+        }
+
+    page_end:
+        lines += found + missing;
+
+        if (object->unkb4 < lines)
+        {
+            object->unkb4 = lines;
+        }
+
+        if (object->glyph_count < buttons)
+        {
+            object->glyph_count = buttons;
+        }
+
+        if (object->unka4 < found)
+        {
+            object->unka4 = found;
+        }
+
+        if (object->unka8 < missing)
+        {
+            object->unka8 = missing;
+        }
+
+        if (object->unkac < breaks)
+        {
+            object->unkac = breaks;
+        }
+
+        if (object->unkb0 < quoted)
+        {
+            object->unkb0 = quoted;
+        }
+    } while (more);
+
+    object->unkb4 += 0x80;
+}
+
+/**
+ * @brief Point the multiline widget at a keyed text of a resource slot: measure it and allocate its drawing storage,
+ *        glyph states and line table.
+ * @param object Multiline text widget.
+ * @param slot Resource slot index.
+ * @param key Key of the text in the slot's index.
+ * @param mode Drawing mode mask.
+ * @param flag Nonzero to reset the drawing state and the scroll speed first.
+ * @return One, or zero when an allocation failed.
+ */
+extern "C" s32 func_004614E0(LibObject174D90* object, s32 slot, s32 key, u32 mode, u32 flag)
+{
+    object->unk39 = 0;
+
+    if (object->unk70)
+    {
+        resident_queue_allocation_release(g_resident_release_queues, object->unk70);
+        object->unk70 = 0;
+    }
+
+    func_004C7D00(object);
+
+    if (flag)
+    {
+        object->reset_drawing_state();
+    }
+
+    object->resource_slot = &g_field_runtime->resource_slots[slot];
+    object->unk100 = func_00465340(g_field_runtime, slot, key);
+    func_00461230(object);
+
+    if (!object->allocate_storage(object->unka4, object->unka8, object->unkac, object->unkb0))
+    {
+        return 0;
+    }
+
+    if (object->glyph_count > 0)
+    {
+        object->unkfc = new (0) LibClass178780;
+
+        if (object->unkfc == 0)
+        {
+            return 0;
+        }
+
+        if (!static_cast<LibClass178780*>(object->unkfc)->init(object->glyph_count))
+        {
+            return 0;
+        }
+    }
+
+    object->unk70 = static_cast<u8*>(::operator new[](object->unkb4 * 32, 0));
+
+    if (object->unk70 == 0)
+    {
+        return 0;
+    }
+
+    if (flag)
+    {
+        object->unk52c = object->unk524;
+        object->unk558 = object->unk554;
+    }
+
+    object->mode = mode;
+    object->unk118 = object->unk100;
+    object->unk568 = 0;
+    object->unk550 = 5;
+    object->unk575 = 0;
+    object->unk577 = 0;
+    object->pending = 0;
+    object->unk57a = 1;
+    object->unk39 = 1;
+    return 1;
+}
 
 typedef struct LibMultilineRectangleState
 {
@@ -749,43 +1422,81 @@ LibStorageBlock0C::~LibStorageBlock0C()
     }
 }
 
-void func_00461960(void* object)
+/** @brief Hook run when the text restarts; the base window does nothing. */
+void LibMessageWindow::func_00461960()
 {
 }
 
-void func_00461970(void* object)
+/** @brief Hook run at the end of the text; the base window does nothing. */
+void LibMessageWindow::func_00461970()
 {
 }
 
-void func_00461980(void* object)
+/**
+ * @brief Hook for a text control code with three values; the base window does nothing.
+ * @param first First value.
+ * @param second Second value.
+ * @param third Third value.
+ */
+void LibMessageWindow::func_00461980(s16 first, s16 second, u32 third)
 {
 }
 
-void func_00461990(void* object)
+/** @brief Hook for the event flagged at 0x105F; the base window does nothing. */
+void LibMessageWindow::func_00461990()
 {
 }
 
-void func_004619A0(void* object)
+/** @brief Hook for the event flagged at 0x1060; the base window does nothing. */
+void LibMessageWindow::func_004619A0()
 {
 }
 
-void func_004619B0(void* object)
+/** @brief Window hook at slot 0xC8; the base window does nothing. */
+void LibMessageWindow::func_004619B0()
 {
 }
 
-void func_004619C0(void* object)
+/**
+ * @brief Hook for a text control code with one value; the base window does nothing.
+ * @param value Control value.
+ */
+void LibMessageWindow::func_004619C0(u32 value)
 {
 }
 
-void func_004619D0(void* object)
+/**
+ * @brief Hook for a second text control code with one value; the base window does nothing.
+ * @param value Control value.
+ */
+void LibMessageWindow::func_004619D0(u32 value)
 {
 }
 
-void func_004619E0(void* object)
+/** @brief Hook for a text control code; the base window does nothing. */
+void LibMessageWindow::func_004619E0()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004619F0);
+/** @brief Destroy the panel. */
+inline LibClass1722E0::~LibClass1722E0()
+{
+}
+
+/** @brief Release the widget storage and destroy its base. */
+inline ItemCreationClass1746A0::~ItemCreationClass1746A0()
+{
+}
+
+/** @brief Destroy the widget. */
+inline LibClass175170::~LibClass175170()
+{
+}
+
+/** @brief Destroy the window and its widgets. */
+LibMessageWindow::~LibMessageWindow()
+{
+}
 
 #define LIB_MESSAGE_WINDOW_STATE_WAIT 4
 #define LIB_MESSAGE_WINDOW_STATE_WAIT_END 6
@@ -833,11 +1544,253 @@ s32 LibMessageWindow::func_00461BA0(u32 source, s32 key, u32 mode, u32 flag)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461C30);
+/**
+ * @brief Step the window's open/close sequence: open the frame, show the panel and text, wait for the text to finish,
+ *        hide the text, close the frame and finish.
+ * @param first Unused.
+ * @param second Unused.
+ * @param third Unused.
+ */
+void LibMessageWindow::func_00412C40(u32 first, u32 second, u32 third)
+{
+    switch (state)
+    {
+    case 0:
+        if (!(mode & 0x10000))
+        {
+            frame.unk3d = 1;
+            frame.transition_state = 1;
+            state++;
+        }
+        else
+        {
+            state = 2;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461E50);
+        break;
+    case 1:
+        if (frame.in_transition_state(0))
+        {
+            state++;
+        }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00461FA0);
+        break;
+    case 2:
+        unk180.unk3d = 1;
+        text.unk3d = 1;
+        state++;
+        break;
+    case 3:
+        if (!text.text_finished())
+        {
+            break;
+        }
+
+        if (mode & 0x80000)
+        {
+            unk105f = 1;
+        }
+
+        state++;
+    case 4:
+        if (mode & 0x80000)
+        {
+            break;
+        }
+
+        state++;
+    case 5:
+        text.unk3d = 0;
+
+        if (mode & 0x100000)
+        {
+            unk1060 = 1;
+        }
+
+        state++;
+    case 6:
+        if (mode & 0x100000)
+        {
+            break;
+        }
+
+        state++;
+    case 7:
+        if (!(mode & 0x10000))
+        {
+            frame.transition_state = 5;
+            state++;
+        }
+        else
+        {
+            state = 9;
+        }
+
+        break;
+    case 8:
+        if (frame.in_transition_state(0))
+        {
+            frame.unk3d = 0;
+            unk180.unk3d = 0;
+            state++;
+        }
+
+        break;
+    case 9:
+        state = -1;
+        unkab = 0;
+        func_004619B0();
+
+        if (mode & 0x80000000)
+        {
+            destroy();
+        }
+
+        break;
+    }
+}
+
+/**
+ * @brief Update and draw the container, then run the hooks for the text events flagged since the last call.
+ * @param first Nonzero to chain the widget packets.
+ * @param second Nonzero to update the widgets.
+ * @param third Nonzero to draw the widgets.
+ */
+void LibMessageWindow::func_0044B100(u32 first, u32 second, u32 third)
+{
+    LibContainer::func_0044B100(first, second, third);
+
+    if (unk105c)
+    {
+        func_00461960();
+        unk105c = 0;
+    }
+
+    if (unk105d)
+    {
+        func_00461970();
+        unk105d = 0;
+    }
+
+    if (unk105e)
+    {
+        func_00461980(unk1054, unk1056, unk1058);
+        unk105e = 0;
+    }
+
+    if (unk1061)
+    {
+        func_004619C0(unk1050);
+        unk1061 = 0;
+    }
+
+    if (unk1062)
+    {
+        func_004619D0(unk1050);
+        unk1062 = 0;
+    }
+
+    if (unk1063)
+    {
+        func_004619E0();
+        unk1063 = 0;
+    }
+
+    if (unk105f)
+    {
+        func_00461990();
+        unk105f = 0;
+    }
+
+    if (unk1060)
+    {
+        func_004619A0();
+        unk1060 = 0;
+    }
+}
+
+extern "C" s32 func_00468230(LibClass175170* object, float x, float y);
+
+/**
+ * @brief Set the message window up at a position and size: its frame, cursor, two clipping widgets and its text,
+ *        loaded from a keyed text.
+ * @param window Window to set up.
+ * @param source Resource source word.
+ * @param key Text resource key.
+ * @param mode Drawing mode; bit 17 hides the text, bit 18 keeps the cursor detached from it.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Window width.
+ * @param height Window height.
+ * @param flag Resource state flag.
+ * @return One on success, or zero when a widget can't be set up.
+ */
+extern "C" s32 func_00461FA0(LibMessageWindow* window, u32 source, s32 key, u32 mode, float x, float y, float width,
+                             float height, u32 flag)
+{
+    window->source = source;
+    window->key = key;
+    window->mode = mode;
+    lib_container_init(window, 4, x, y, 0, 0.0f, 0);
+
+    if (!window->frame.init_frame(width, height))
+    {
+        return 0;
+    }
+
+    if (!func_00468230(&window->unk180, width - 28.0f, height - 8.0f))
+    {
+        return 0;
+    }
+
+    if (!lib_scissor_init_rectangle(&window->unka18, 0.0f, 16.0f, width, height - 32.0f))
+    {
+        return 0;
+    }
+
+    if (!lib_scissor_init_reset(&window->unka6c, 1))
+    {
+        return 0;
+    }
+
+    if (!lib_multiline_text_init_resource_rectangle(&window->text, 16.0f, 16.0f, width - 32.0f, height - 32.0f,
+                                                     window->source, window->key, window->mode, flag))
+    {
+        return 0;
+    }
+
+    window->text.owner = window;
+    window->frame.unk3d = 0;
+    window->unk180.unk3d = 0;
+    window->text.unk3d = 0;
+
+    if (window->mode & 0x20000)
+    {
+        window->text.visible = 0;
+    }
+
+    if (!(window->mode & 0x40000))
+    {
+        window->text.unk114 = &window->unk180;
+    }
+
+    lib_container_attach_widget(window, &window->frame);
+    lib_container_attach_widget(window, &window->unka18);
+    lib_container_attach_widget(window, &window->text);
+    lib_container_attach_widget(window, &window->unka6c);
+    lib_container_attach_widget(window, &window->unk180);
+    window->state = 0;
+    window->unk1064 = 0;
+    window->unk1063 = 0;
+    window->unk1062 = 0;
+    window->unk1061 = 0;
+    window->unk1060 = 0;
+    window->unk105f = 0;
+    window->unk105e = 0;
+    window->unk105d = 0;
+    window->unk105c = 0;
+    return 1;
+}
 
 /** @brief Flag a control code for the window and set its flag byte at 0x1064. */
 void LibMessageWindowText::func_0045F650()
@@ -893,15 +1846,6 @@ void LibMessageWindowText::func_0045F600()
     owner->unk105c = 1;
 }
 
-/** @brief Destroy the text. */
-LibMessageWindowText::~LibMessageWindowText()
-{
-}
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004622F0);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462300);
-
 void LibWidget::draw()
 {
 }
@@ -935,7 +1879,37 @@ void LibDrawWidget::draw_records(LibDrawRecord* records, s32 count)
     func_004623F0();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004623F0__13LibDrawWidgetFv);
+/** @brief Close the drawing packet: a texture flush when unkdc is set, REF tags for the two blocks in use, then END. */
+void LibDrawWidget::func_004623F0()
+{
+    u64* packet = packet_cursor;
+
+    if (unkdc > 0)
+    {
+        packet[0] = DMA_TAG(2, DMA_TAG_ID_CNT, 0);
+        packet[2] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+        packet[3] = GIF_REGISTER_AD;
+        packet[4] = 0;
+        packet[5] = GS_REGISTER_TEXFLUSH;
+        packet += 6;
+    }
+
+    if (unke0 > 0)
+    {
+        packet[0] = DMA_TAG((u32)(unk60 - unk5c) >> 4, DMA_TAG_ID_REF, (u32)unk5c & 0x0FFFFFFF);
+        packet += 2;
+    }
+
+    if (unke4 > 0)
+    {
+        packet[0] = DMA_TAG((u32)(unk68 - unk64) >> 4, DMA_TAG_ID_REF, (u32)unk64 & 0x0FFFFFFF);
+        packet += 2;
+    }
+
+    packet_tag = packet;
+    packet[0] = DMA_TAG(0, DMA_TAG_ID_END, 0);
+    packet_cursor = packet + 2;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004624E0__13LibDrawWidgetFP13LibDrawRecord);
 
@@ -978,6 +1952,9 @@ void LibDrawWidget::align_records_vertically(LibDrawRecord* records, s32 count)
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004637A0__13LibDrawWidgetFP13LibDrawRecordi);
+
+/** "%d". */
+extern const char D_00505CF8[];
 
 extern "C" s32 func_00463C90(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
 
@@ -1093,9 +2070,6 @@ void LibDrawWidget::add_number(s32 value)
 }
 
 #define LIB_NUMBER_CODE_OTHER 11
-
-/** "%d". */
-extern const char D_00505CF8[];
 
 /**
  * @brief Format a number as character codes: one plus the digit for digits, 11 for anything else.
@@ -1685,7 +2659,92 @@ extern "C" LibResourceChunkHeader* func_004650B0(FieldRuntime* runtime, s32 inde
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00465100);
+/**
+ * @brief Count the 0x401E control codes in a keyed text and copy their four-byte arguments.
+ * @param runtime Field runtime.
+ * @param slot Resource slot index.
+ * @param key Key of the text in the slot's index.
+ * @param arguments Receives four bytes per code, or null.
+ * @return Number of 0x401E codes.
+ */
+extern "C" s32 func_00465100(FieldRuntime* runtime, s32 slot, s32 key, u8* arguments)
+{
+    s32 count = 0;
+    const u8* text = static_cast<const u8*>(func_00465340(runtime, slot, key));
+
+    while (*text)
+    {
+        u16 code = *text++;
+
+        // TODO: The game sign-extends the code before this test, which a compare with a long zero gives.
+        if (code == 0L)
+        {
+            break;
+        }
+
+        if (code & 0x80)
+        {
+            code = (code & 0x7F) | (*text++ << 7);
+
+            if (code & 0x4000)
+            {
+                switch (code)
+                {
+                case 0x4002:
+                case 0x4008:
+                case 0x4012:
+                case 0x4013:
+                case 0x401A:
+                case 0x401D:
+                case 0x4020:
+                case 0x4021:
+                case 0x4022:
+                case 0x4023:
+                    text++;
+                    break;
+                case 0x4005:
+                case 0x4006:
+                case 0x400A:
+                case 0x400C:
+                case 0x400E:
+                case 0x4014:
+                case 0x4015:
+                    text += 4;
+                    break;
+                case 0x4011:
+                case 0x401C:
+                    while (*text)
+                    {
+                        text++;
+                    }
+
+                    text++;
+                    break;
+                case 0x401E:
+                    count++;
+
+                    if (arguments)
+                    {
+                        arguments[0] = text[0];
+                        arguments[1] = text[1];
+                        arguments[2] = text[2];
+                        arguments[3] = text[3];
+                        text += 4;
+                        arguments += 4;
+                    }
+                    else
+                    {
+                        text += 4;
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
+
+    return count;
+}
 
 /** One entry of a resource slot's key index: a key and the offset of its data in the second section. */
 struct LibResourceIndexEntry
@@ -2397,18 +3456,16 @@ FieldRuntime::FieldRuntime(float width, float height, u16 reserved_width, u16 re
     g_update_list->append_node(this, -1);
 }
 
-/** @brief Called by the state hook; the base does nothing. */
-void LibClass174F70::func_004662A0()
+/**
+ * @brief Called by the state hook when the list closes; the base does nothing.
+ * @param result Chosen item number, or zero when cancelled.
+ */
+void LibClass174F70::func_004662A0(s32 result)
 {
 }
 
 /** @brief Release the widget storage and destroy its bases. */
 inline ItemCreationClass175030::~ItemCreationClass175030()
-{
-}
-
-/** @brief Destroy the panel. */
-inline LibClass1722E0::~LibClass1722E0()
 {
 }
 
@@ -2452,9 +3509,390 @@ LibTextWidget* LibClass174F70::add_item(s32 slot, u32 key)
     return item;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00412C40__14LibClass174F70FUiUiUi);
+/**
+ * @brief Run the list's open, select and close states: open the frame, show the items, fade in, move the cursor with
+ *        the pad until an item is confirmed or the list cancelled, then fade out, hide and close.
+ * @param first First update flag, unused here.
+ * @param second Second update flag, unused here.
+ * @param third Third update flag, unused here.
+ */
+void LibClass174F70::func_00412C40(u32 first, u32 second, u32 third)
+{
+    if (unk13f8 == 0)
+    {
+        return;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466AD0);
+    switch (unk13f8)
+    {
+    case 1:
+        if (show_frame)
+        {
+            unk16c.transition_state = 1;
+            unk13f8++;
+        }
+        else
+        {
+            unk13f8 = 3;
+        }
+
+        break;
+    case 2:
+        if (unk16c.in_transition_state(0))
+        {
+            unk13f8++;
+        }
+
+        break;
+    case 3:
+    {
+        LibTextWidget* item = items;
+
+        for (s32 i = 0; i < item_capacity; i++, item++)
+        {
+            item->unk3d = 1;
+        }
+
+        unk1fc.unk3d = 1;
+        unk250.unk3d = 1;
+        unkf0.unk3d = 1;
+        s32 index = unk13f0 < 0 ? 0 : unk13f0 - 1;
+        float y = index * 28;
+        LibTextWidget* selected = &items[index];
+        unk1fc.unk18.unk04 = 16.0f + y;
+        unk1fc.needs_redraw = 1;
+        unk250.unk18.unk04 = 40.0f + y;
+        unk250.needs_redraw = 1;
+        unkf0.position.y = 30.0f + y;
+        unkf0.needs_redraw = 1;
+        float width = selected->extent.width;
+        unk1fc.unk18.unk08 = 2.0f + width;
+        unk250.unk18.unk08 = width;
+
+        if (show_frame)
+        {
+            unk13f8 = 5;
+        }
+        else
+        {
+            unkE0 = 0.0f;
+            unk13f8++;
+        }
+
+        break;
+    }
+    case 4:
+    {
+        float alpha = unkE0;
+
+        alpha += 21.333334f * field_rate(g_field_runtime);
+
+        if (!(alpha < 128.0f))
+        {
+            alpha = 128.0f;
+            unk13f8++;
+        }
+
+        unkE0 = alpha;
+        geometry_dirty = 1;
+        break;
+    }
+    case 5:
+        if (unk13f0 < 0)
+        {
+            unk13f0 = 1;
+        }
+
+        unk13f4 = -1;
+        unk13f8++;
+        break;
+    case 6:
+    {
+        if (!unkf0.arrived)
+        {
+            break;
+        }
+
+        s32 index = unk13f0 < 0 ? 0 : unk13f0 - 1;
+        float y = index * 28;
+        LibTextWidget* selected = &items[index];
+        unk1fc.unk18.unk04 = 16.0f + y;
+        unk1fc.needs_redraw = 1;
+        unk250.unk18.unk04 = 40.0f + y;
+        unk250.needs_redraw = 1;
+        unkf0.position.y = 30.0f + y;
+        unkf0.needs_redraw = 1;
+        float width = selected->extent.width;
+        unk1fc.unk18.unk08 = 2.0f + width;
+        unk250.unk18.unk08 = width;
+
+        u16 repeat = g_field_runtime->inputs[unk13fc].unk04;
+        bool moved = false;
+
+        if (repeat & 0x10)
+        {
+            if (unk13f0 > 1)
+            {
+                unk13f0--;
+            }
+            else
+            {
+                unk13f0 = item_capacity;
+            }
+
+            moved = true;
+        }
+        else if (repeat & 0x40)
+        {
+            if (unk13f0 < item_capacity)
+            {
+                unk13f0++;
+            }
+            else
+            {
+                unk13f0 = 1;
+            }
+
+            moved = true;
+        }
+
+        if (moved)
+        {
+            resident_sound_play(g_sound, 0, 0, 0, 127, 64, 0);
+
+            if (show_cursor)
+            {
+                unkf0.set_move_target(36.0f, (unk13f0 - 1) * 28 + 30, 0.05f);
+            }
+
+            break;
+        }
+
+        u16 pressed = g_field_runtime->inputs[unk13fc].unk02;
+
+        if (pressed & g_field_runtime->button_map->buttons[0])
+        {
+            resident_sound_play(g_sound, 1, 0, 0, 127, 64, 0);
+            unk13f4 = unk13f0;
+        }
+        else if (unk13fe && (pressed & g_field_runtime->button_map->buttons[1]))
+        {
+            resident_sound_play(g_sound, 2, 0, 0, 127, 64, 0);
+            unk13f4 = 0;
+        }
+
+        if (unk13f4 >= 0)
+        {
+            if (unk13ff)
+            {
+                unk13f8 = 0;
+            }
+            else
+            {
+                unk13f8++;
+            }
+        }
+
+        break;
+    }
+    case 7:
+        if (show_frame)
+        {
+            unk13f8 = 9;
+        }
+        else
+        {
+            unk13f8++;
+        }
+
+        break;
+    case 8:
+    {
+        float alpha = unkE0;
+
+        alpha -= 21.333334f * field_rate(g_field_runtime);
+
+        if (alpha <= 0.0f)
+        {
+            alpha = 0.0f;
+            unk13f8++;
+        }
+
+        unkE0 = alpha;
+        geometry_dirty = 1;
+        break;
+    }
+    case 9:
+        LibTextWidget* item = items;
+
+        for (s32 i = 0; i < item_capacity; i++, item++)
+        {
+            item->unk3d = 0;
+        }
+
+        unk1fc.unk3d = 0;
+        unk250.unk3d = 0;
+        unkf0.unk3d = 0;
+
+        if (show_frame)
+        {
+            unk16c.transition_state = 5;
+            unk13f8++;
+        }
+        else
+        {
+            unk13f8 = 11;
+        }
+
+        break;
+    case 10:
+        if (unk16c.in_transition_state(0))
+        {
+            unk13f8++;
+        }
+
+        break;
+    case 11:
+        unk13f8 = 0;
+        unkab = 0;
+        func_004662A0(unk13f4);
+
+        if (unk1404)
+        {
+            destroy();
+        }
+
+        break;
+    }
+}
+
+/**
+ * @brief Set the list up for up to 16 items: frame, cursor, markers and item text widgets, attached by the flags.
+ * @param capacity Number of items, at most 16.
+ * @param flags Bit 0x10000 hides the frame, 0x4 the cursor, 0x8 both markers; 0x2 picks the single marker over the
+ *        pair; 0x20 clears unk13f8 and unkab; 0x1, 0x10 and 0x80000000 are kept as flags.
+ * @param text_flag Flag passed to each item's text setup.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param width Frame width.
+ * @param height Frame height.
+ * @return 1 on success, 0 when a part can't be set up or the capacity is too large.
+ */
+s32 LibClass174F70::init(s32 capacity, u32 flags, u8 text_flag, float x, float y, float width, float height)
+{
+    if (capacity > 16)
+    {
+        return 0;
+    }
+
+    item_capacity = capacity;
+    item_count = 0;
+    unk13f4 = -1;
+    unk13f0 = -1;
+    unk13fc = 0;
+    this->text_flag = text_flag;
+    unk13fe = (flags & 0x1) != 0;
+    unk13ff = (flags & 0x10) != 0;
+    show_frame = (flags & 0x10000) == 0;
+    show_cursor = (flags & 0x4) == 0;
+    unk1404 = (flags & 0x80000000) != 0;
+    bool marker = false;
+    bool markers = false;
+
+    if (!(flags & 0x8))
+    {
+        if (flags & 0x2)
+        {
+            marker = true;
+        }
+        else
+        {
+            markers = true;
+        }
+    }
+
+    show_marker = marker;
+    show_markers = markers;
+    lib_container_init(this, 3, x, y, 0, 0.0f, 0);
+
+    if (!unk16c.init_frame(width, height))
+    {
+        return 0;
+    }
+
+    if (show_frame)
+    {
+        lib_container_attach_widget(this, &unk16c);
+    }
+
+    if (!func_0041AD10(&unk1fc, 40.0f, 16.0f, 0.0f, 28.0f))
+    {
+        return 0;
+    }
+
+    if (show_markers)
+    {
+        lib_container_attach_widget(this, &unk1fc);
+    }
+
+    if (!lib_marker_init_rectangle(&unk250, 40.0f, 40.0f, 0.0f, 2.25f))
+    {
+        return 0;
+    }
+
+    if (show_marker)
+    {
+        lib_container_attach_widget(this, &unk250);
+    }
+
+    LibTextWidget* item = items;
+
+    for (s32 i = 0; i < item_capacity; i++, item++)
+    {
+        if (!lib_text_init_resource_rectangle(item, 0, 0, this->text_flag, 0.0f, 0.0f, 0.0f, 0.0f))
+        {
+            return 0;
+        }
+
+        item->unk18.unk00 = 40.0f;
+        item->unk18.unk04 = 16 + i * 28;
+        item->needs_redraw = 1;
+        lib_container_attach_widget(this, item);
+    }
+
+    if (!lib_moving_widget_init_position(&unkf0, 36.0f, 30.0f))
+    {
+        return 0;
+    }
+
+    if (show_cursor)
+    {
+        lib_container_attach_widget(this, &unkf0);
+    }
+
+    LibTextWidget* hidden = items;
+
+    for (s32 i = 0; i < item_capacity; i++, hidden++)
+    {
+        hidden->unk3d = 0;
+    }
+
+    unk1fc.unk3d = 0;
+    unk250.unk3d = 0;
+    unkf0.unk3d = 0;
+
+    if (flags & 0x20)
+    {
+        unk13f8 = 0;
+        unkab = 0;
+    }
+    else
+    {
+        unk13f8 = 1;
+    }
+
+    return 1;
+}
 
 /**
  * @brief Set the movement target and reset its completion flags.
@@ -2471,9 +3909,9 @@ void LibMovementState::set_move_target(float x, float y, float duration)
     arrived = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E70);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E70__16LibMovementStateFPC10LibVector4Uif);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004670B0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", step__16LibMovementStateFv);
 
 /**
  * @brief Allocate the drawing storage and show the state at a position at full alpha.
@@ -2496,9 +3934,28 @@ s32 LibMovementState::init_position(float x, float y)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004672C0);
+/** @brief Build the packet once, at the container's position, and point the widget's packet at it. */
+void ItemCreationClass175030::draw()
+{
+    if (!unk3b)
+    {
+        LibContainer* owner = container;
+        LibCallbackTransform& transform = *owner;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467320);
+        func_00466E70(&transform.translation, transform.unka4 + unk34, owner->unkE0);
+        packet = packet_tag = reinterpret_cast<u64*>(unk00.dma_address);
+        unk3b = 1;
+    }
+}
+
+/** @brief Move one step and redraw when the position changed. */
+void ItemCreationClass175030::func_00413D20()
+{
+    if (step())
+    {
+        needs_redraw = 1;
+    }
+}
 
 typedef struct LibFieldWidgetState
 {
@@ -2562,7 +4019,34 @@ void LibSelectionCursor::render()
     func_00461830(&this->LibMovementState::unk00, static_cast<LibDmaCallbacks*>(this));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0044B100__18LibSelectionCursorFUiUiUi);
+/**
+ * @brief Move the cursor one step and redraw it when asked.
+ * @param first Nothing happens unless set.
+ * @param second Step the movement; a changed position marks the geometry dirty.
+ * @param third Rebuild the packet if the geometry is dirty, then mark the cursor for drawing.
+ */
+void LibSelectionCursor::func_0044B100(u32 first, u32 second, u32 third)
+{
+    if (!first)
+    {
+        return;
+    }
+
+    if (second && step())
+    {
+        geometry_dirty = 1;
+    }
+
+    if (third)
+    {
+        if (geometry_dirty)
+        {
+            func_00466E70(0, unka4, 128.0f);
+        }
+
+        unk63 = 1;
+    }
+}
 
 /**
  * @brief Reset the translation, set the drawing codes and depth, and place the cursor.
@@ -2588,7 +4072,34 @@ ItemCreationClass175110::~ItemCreationClass175110()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", draw__23ItemCreationClass175110Fv);
+/** @brief Draw the animation's current frame into the widget's packet. */
+void ItemCreationClass175110::draw()
+{
+    if (unkc0 < 0 && !unkb4)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (unk3b)
+    {
+        return;
+    }
+
+    unk50.set_position(unk18.unk00, unk18.unk04);
+    unk50.unk50 = draw_alpha;
+    u64* start = reinterpret_cast<u64*>(unk40.dma_address);
+    u64* cursor = start;
+    packet_tag = start;
+    packet = start;
+    cursor += 2;
+    LibContainer* owner = container;
+    LibCallbackTransform& transform = *owner;
+
+    func_004535B0(&unk50, &cursor, &transform.translation, transform.unka4 + unk34, owner->unkE0, 0);
+    *packet_tag = DMA_TAG((reinterpret_cast<u32>(cursor) - reinterpret_cast<u32>(packet_tag) - LIB_DRAW_QWORD_SIZE) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_END, 0);
+    unk3b = 1;
+}
 
 /** @brief Restart the animation when its resource changed, otherwise step it and redraw on a frame change. */
 void ItemCreationClass175110::func_00413D20()
@@ -2715,16 +4226,115 @@ s32 LibStringLabel::init_text_rectangle(float x, float y, float width, float hei
     return 1;
 }
 
-/** @brief Destroy the widget. */
-LibClass175170::~LibClass175170()
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", draw__14LibClass175170Fv);
+
+/** @brief Fade the widget in or out while it opens or closes, and turn the rings while it shows. */
+void LibClass175170::func_00413D20()
 {
+    if (unk890)
+    {
+        if (unk88c == 0)
+        {
+            if (unk890 == 1)
+            {
+                unk888 = 0.0f;
+                draw_alpha = 0.0f;
+                unk894 = 1;
+                unk890++;
+            }
+
+            unk888 += 0.12f * field_rate(g_field_runtime);
+            draw_alpha += 17.066668f * field_rate(g_field_runtime);
+
+            if (!(draw_alpha < 128.0f))
+            {
+                draw_alpha = 128.0f;
+                unk890 = 0;
+            }
+        }
+        else
+        {
+            unk888 -= 0.12f * field_rate(g_field_runtime);
+            draw_alpha -= 17.066668f * field_rate(g_field_runtime);
+
+            if (draw_alpha <= 0.0f)
+            {
+                unk894 = 0;
+                unk890 = 0;
+            }
+        }
+    }
+
+    if (unk894)
+    {
+        unk884 += 5.0f * field_rate(g_field_runtime);
+
+        if (!(unk884 <= 360.0f))
+        {
+            unk884 -= 360.0f;
+        }
+
+        unk50.step();
+        needs_redraw = 1;
+    }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00467BC0);
+/**
+ * @brief Place the widget and set up its animations: the main one from display chunk 0x43, then two rows of ten
+ *        cells from chunk 0x44 in the two row colors.
+ * @param object Widget to set up.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @return 1 on success, 0 when the drawing storage can't be allocated.
+ */
+extern "C" s32 func_00468230(LibClass175170* object, float x, float y)
+{
+    object->unk18.unk00 = x;
+    object->unk18.unk04 = y;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004680B0);
+    if (!lib_allocate_drawing_storage(&object->unk40, 0x138))
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468230);
+    object->unk50.set_display_chunk(0x43);
+    object->unk50.start(0);
+    object->unk50.unk20 = 12.0f;
+    object->unk50.unk24 = 12.0f;
+
+    LibImageAnimation* cell = object->cells[0];
+
+    for (s32 row = 0; row < 2; row++)
+    {
+        for (s32 column = 0; column < 10; column++, cell++)
+        {
+            cell->set_display_chunk(0x44);
+            cell->start(0);
+            cell->unk20 = 4.0f;
+            cell->unk24 = 4.0f;
+
+            if (row == 0)
+            {
+                cell->unk44 = 128.0f;
+                cell->unk48 = 28.0f;
+                cell->unk4c = 28.0f;
+            }
+            else
+            {
+                cell->unk44 = 40.0f;
+                cell->unk48 = 40.0f;
+                cell->unk4c = 128.0f;
+            }
+        }
+    }
+
+    object->unk884 = 0;
+    object->unk890 = 0;
+    object->unk894 = 0;
+    object->unk34 = 7;
+    object->unk39 = 1;
+    return 1;
+}
 
 /**
  * @brief Report the model's list kind.

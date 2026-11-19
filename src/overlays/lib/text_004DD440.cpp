@@ -6,6 +6,9 @@
 #include "overlays/lib/model.h"
 #include "overlays/lib/tracks.h"
 #include "overlays/lib/tooltip_frame.h"
+#include "overlays/lib/item_allocation.h"
+#include "overlays/lib/text_004095C0.h"
+#include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libgraph_0012EAC8.h"
@@ -245,7 +248,7 @@ void LibCameraContext::vblank(s32 field)
         return;
     }
 
-    if (scaled)
+    if (display_area.scaled)
     {
         circuit2_screen = false;
 
@@ -468,20 +471,20 @@ void LibCameraContext::configure_buffers(s16 pixel_format, s16 width, s16 height
     display_area.base_width = width;
     field_height = height * fields;
     display_area.base_height = field_height;
-    this->depth_test = depth_test;
-    this->depth_format = depth_format;
+    display_area.depth_test = depth_test;
+    display_area.depth_format = depth_format;
 
-    if (unk3C70 == -1)
+    if (display_area.unk10 == -1)
     {
-        unk3C70 = pixel_format;
+        display_area.unk10 = pixel_format;
     }
 
     resize_display_area();
 
-    if (scaled)
+    if (display_area.scaled)
     {
-        sceGsSetDefDrawEnv(&buffers[0].environment.context1, unk3C70, display_area.width, display_area.height, depth_test, depth_format);
-        sceGsSetDefDrawEnv2(&buffers[0].environment.context2, unk3C70, display_area.width, display_area.height, depth_test, depth_format);
+        sceGsSetDefDrawEnv(&buffers[0].environment.context1, display_area.unk10, display_area.width, display_area.height, depth_test, depth_format);
+        sceGsSetDefDrawEnv2(&buffers[0].environment.context2, display_area.unk10, display_area.width, display_area.height, depth_test, depth_format);
     }
     else
     {
@@ -494,12 +497,12 @@ void LibCameraContext::configure_buffers(s16 pixel_format, s16 width, s16 height
     sceGsSetDefDrawEnv(&buffers[2].environment.context1, pixel_format, width, height, depth_test, depth_format);
     sceGsSetDefDrawEnv2(&buffers[2].environment.context2, pixel_format, width, height, depth_test, depth_format);
 
-    if (scaled)
+    if (display_area.scaled)
     {
         buffers[1].environment.context1.depth_buffer.base_pointer = buffers[1].environment.context2.depth_buffer.base_pointer =
             buffers[0].environment.context1.depth_buffer.base_pointer = buffers[0].environment.context2.depth_buffer.base_pointer = vram_base_page;
         // TODO: This is overwritten before anything reads it, but the target still tests the area's format here.
-        depth_bytes = unk3C70 == GS_PSMCT16 || unk3C70 == GS_PSMCT16S ? 2 : 4;
+        depth_bytes = display_area.unk10 == GS_PSMCT16 || display_area.unk10 == GS_PSMCT16S ? 2 : 4;
     }
     else
     {
@@ -510,7 +513,7 @@ void LibCameraContext::configure_buffers(s16 pixel_format, s16 width, s16 height
 
     depth_bytes = depth_format == GS_PSMZ16 || depth_format == GS_PSMZ16S ? 2 : 4;
 
-    if (scaled)
+    if (display_area.scaled)
     {
         if (depth_test == 0)
         {
@@ -524,7 +527,7 @@ void LibCameraContext::configure_buffers(s16 pixel_format, s16 width, s16 height
         depth_buffer_pages = pages;
 
         vram_free_page = vram_base_page + depth_buffer_pages + lib_buffer_pages(pixel_format, width, field_height) +
-                         lib_buffer_pages(unk3C70, display_area.width, display_area.height);
+                         lib_buffer_pages(display_area.unk10, display_area.width, display_area.height);
 
         for (i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
         {
@@ -589,7 +592,36 @@ void LibCameraContext::configure_buffers(s16 pixel_format, s16 width, s16 height
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E02C0);
+/**
+ * @brief Show only read circuit 1 with a fixed output alpha in every display environment, and keep the alpha.
+ * @param display Camera context.
+ * @param alpha Alpha from zero to one.
+ */
+extern "C" void func_004E02C0(LibCameraContext* display, float alpha)
+{
+    s32 value = (s32)(255.0f * alpha);
+
+    if (value < 0)
+    {
+        value = 0;
+    }
+
+    if (value > 255)
+    {
+        value = 255;
+    }
+
+    for (s32 i = 0; i < LIB_DISPLAY_BUFFER_COUNT; i++)
+    {
+        display->display_environments[i].pmode.circuit1 = 1;
+        display->display_environments[i].pmode.fixed_alpha = 1;
+        display->display_environments[i].pmode.blend_background = 0;
+        display->display_environments[i].pmode.alpha = value;
+    }
+
+    display->blend_field_alpha = value;
+    display->unk3E64 = 1;
+}
 
 /**
  * @brief Set up the display environments for a frame size. The three frame buffers follow the depth buffer; each
@@ -643,10 +675,10 @@ void LibCameraContext::configure_display(s16 pixel_format, s16 width, s16 height
 
     blend_field_alpha = 0;
 
-    if (scaled)
+    if (display_area.scaled)
     {
-        sceGsSetDefDrawEnv(&buffers[1].environment.context1, pixel_format, display_area.base_width, display_area.base_height, depth_test, depth_format);
-        sceGsSetDefDrawEnv2(&buffers[1].environment.context2, pixel_format, display_area.base_width, display_area.base_height, depth_test, depth_format);
+        sceGsSetDefDrawEnv(&buffers[1].environment.context1, pixel_format, display_area.base_width, display_area.base_height, display_area.depth_test, display_area.depth_format);
+        sceGsSetDefDrawEnv2(&buffers[1].environment.context2, pixel_format, display_area.base_width, display_area.base_height, display_area.depth_test, display_area.depth_format);
         buffers[1].environment.context1.depth_buffer.base_pointer = buffers[1].environment.context2.depth_buffer.base_pointer =
             buffers[0].environment.context1.depth_buffer.base_pointer;
         buffers[1].environment.context2.frame.base_pointer = buffers[1].environment.context1.frame.base_pointer = vram_base_page + depth_buffer_pages;
@@ -669,14 +701,14 @@ inline void LibCameraContext::apply_scale(u8 unk3C77, float scale_x, float scale
 {
     display_area.scale_x = scale_x;
     display_area.scale_y = scale_y;
-    scaled = !(scale_x == 1.0f && scale_y == 1.0f);
-    this->unk3C77 = unk3C77;
+    display_area.scaled = !(scale_x == 1.0f && scale_y == 1.0f);
+    display_area.unk17 = unk3C77;
     unk3E65 = 0;
     unk3E66 = 0;
     unk3E68 = 0;
-    this->unk3C70 = unk3C70;
+    display_area.unk10 = unk3C70;
 
-    if (scaled)
+    if (display_area.scaled)
     {
         lib_start_register_list(&buffers[1].environment.gif_tag, LIB_AD_WRITE_COUNT(LibDrawEnvironment));
     }
@@ -730,12 +762,48 @@ void LibCameraContext::set_scale(u8 unk3C77, float scale_x, float scale_y, s16 u
     apply_scale(unk3C77, scale_x, scale_y, unk3C70);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E0D20);
+/**
+ * @brief Give an allocation back through the system's release queues, when there is one.
+ * @param allocation Allocation, or null.
+ */
+static inline void lib_release_allocation(void* allocation)
+{
+    if (allocation != 0)
+    {
+        resident_queue_allocation_release(resident_system_get_release_queues(resident_get_system()), allocation);
+    }
+}
+
+/** @brief Destroy the display. */
+LibCameraContext::~LibCameraContext()
+{
+    for (s32 i = 0; i < LIB_DISPLAY_PACKET_COUNT; i++)
+    {
+        delete packets[0][i];
+        delete packets[1][i];
+    }
+
+    for (s32 i = 0; i < LIB_DISPLAY_PACKET_LIST_COUNT; i++)
+    {
+        delete list_buffers[i];
+        delete list_packets[i];
+        delete list_sizes[i];
+    }
+
+    for (s32 i = 0; i < LIB_DISPLAY_PACKET_SET_COUNT; i++)
+    {
+        delete unk3E08[i];
+    }
+
+    lib_release_allocation(effect_buffers[0]);
+    lib_release_allocation(effect_buffers[1]);
+    delete unk3E34;
+}
 
 /** @brief Initialize the display. */
 LibCameraContext::LibCameraContext()
 {
-    unk3C70 = -1;
+    display_area.unk10 = -1;
     unk3E6A = 0;
     unk3E6B = 0;
     packet_queue = 0;
@@ -2987,7 +3055,20 @@ LibLightList::LibLightList()
     unk382 = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __dt__18EquipFactorTooltipFv);
+// TODO: The game inlines the frame's destructor into the tooltip's, though the frame's copy is out of line too; a
+// scoped auto_inline on its definition, placed first, is the only way I've found to get both.
+#pragma push
+#pragma auto_inline on
+/** @brief Destroy the tooltip and its drawing storage. */
+EquipTooltipFrame::~EquipTooltipFrame()
+{
+}
+#pragma pop
+
+/** @brief Destroy the text array, tooltip, and container bases. */
+EquipFactorTooltip::~EquipFactorTooltip()
+{
+}
 
 extern "C" void lib_factor_tooltip_hide(void* object)
 {
@@ -2995,18 +3076,142 @@ extern "C" void lib_factor_tooltip_hide(void* object)
     receiver->unkcb = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_factor_tooltip_show);
+extern "C" ResidentObject1B64F8* D_001B64F8;
+
+/**
+ * @brief Show the factors of an allocation in the tooltip at a position, unless it's already showing; an invalid
+ * allocation, one without the factor flag or one without factors hides it.
+ * @param object Factor tooltip.
+ * @param identifier One-based allocation ID.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Depth.
+ */
+extern "C" void lib_factor_tooltip_show(EquipFactorTooltip* object, s16 identifier, float x, float y, float z)
+{
+    if (object->unkab)
+    {
+        return;
+    }
+
+    LibGameState* state = reinterpret_cast<LibGameState*>(D_001B64F8);
+    bool valid = false;
+
+    if (identifier > 0 && identifier <= LIB_ALLOCATION_COUNT)
+    {
+        valid = true;
+    }
+
+    ItemCreationAllocationRecord* record;
+
+    if (valid)
+    {
+        record = reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[identifier - 1]);
+    }
+    else
+    {
+        record = 0;
+    }
+
+    if (record == 0 || !record->allocated)
+    {
+        object->unkab = 0;
+        return;
+    }
+
+    u16 factors[8];
+    s32 count = 0;
+    u16* factor = factors;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        u16 value = func_0040D930(record, i);
+
+        if (value > 0 && value != 700)
+        {
+            *factor++ = value;
+            count++;
+        }
+    }
+
+    if (count == 0)
+    {
+        object->unkab = 0;
+        return;
+    }
+
+    u32 base = g_field_runtime->text_banks[1].base_key;
+    u16* name = factors;
+    s32* id = object->factor_ids;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        *id = i < count ? *name - 1 + base : 0;
+        name++;
+        id++;
+    }
+
+    object->position_x = x;
+    object->position_y = y;
+    object->position_z = z;
+    object->unka0c = 1;
+    object->unkab = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_00412C40__18EquipFactorTooltipFUiUiUi);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_factor_tooltip_init);
+/**
+ * @brief Allocate the frame's drawing storage and mark it ready.
+ * @param frame Tooltip frame.
+ * @return Whether the storage was allocated.
+ */
+static inline bool lib_tooltip_frame_init(EquipTooltipFrame* frame)
+{
+    if (!lib_allocate_drawing_storage(&frame->unk40, 0x12))
+    {
+        return false;
+    }
+
+    frame->unk39 = 1;
+    return true;
+}
+
+/**
+ * @brief Set the tooltip up: an empty container with its frame and eight factor texts, hidden.
+ * @param object Factor tooltip.
+ * @return One, or zero when a drawing storage can't be allocated.
+ */
+extern "C" s32 lib_factor_tooltip_init(EquipFactorTooltip* object)
+{
+    lib_container_init(object, 1, 0.0f, 0.0f, 0, 0.0f, 0);
+
+    if (!lib_tooltip_frame_init(&object->frame))
+    {
+        return 0;
+    }
+
+    lib_container_attach_widget(object, &object->frame);
+
+    LibTextWidget* text = object->factor_texts;
+
+    for (s32 i = 0; i < 8; i++, text++)
+    {
+        if (!lib_text_init_resource_rectangle(text, 0, 0, 0, 0.0f, 0.0f, 0.0f, 0.0f))
+        {
+            return 0;
+        }
+
+        text->unk18.unk00 = 6.0f;
+        text->tint = 0;
+        text->unkf9 = 0;
+        lib_container_attach_widget(object, text);
+    }
+
+    object->unka0c = 0;
+    object->unkab = 0;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", draw__17EquipTooltipFrameFv);
 
-/** @brief Destroy the tooltip and its drawing storage. */
-EquipTooltipFrame::~EquipTooltipFrame()
-{
-}
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9FE0);
 

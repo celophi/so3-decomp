@@ -57,7 +57,26 @@ public:
 };
 
 class LibObject1751A0;
-struct LibClass173490Entry;
+/** 16-byte element of LibClass173490's two arrays; its contents aren't known yet, it's copied as one 128-bit value. */
+struct LibClass173490Entry
+{
+    LibClass173490Entry()
+    {
+    }
+
+    /**
+     * @brief Copy all 16 bytes.
+     * @param other Element to copy.
+     * @return This element.
+     */
+    LibClass173490Entry& operator=(const LibClass173490Entry& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    u32 unk00[4];
+};
 
 /** 0x4A0-byte emitter whose remaining resource and grid settings are unrecovered. */
 class LibClass173990 : public LibTransform, public LibClass173A28

@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/render_buffer.h"
 #include "overlays/lib/text_003E68C0.h"
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "overlays/lib/text_0044ABE0.h"
@@ -7,6 +8,7 @@
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/clip_region.h"
+#include "overlays/lib/transform_owner_inlines.h"
 #include "overlays/lib/text_004095C0.h"
 #include "main/resident_data.h"
 #include "main/entry_table.h"
@@ -18,16 +20,15 @@
 /** Bounding sphere objects without bounds report: centred on the origin, radius 1000000. */
 extern "C" LibVector4 g_default_bounding_sphere;
 
-struct LibStateByteB4View
+/** Pair of words, eight bytes, in the array LibClass172120 allocates at unka0. */
+struct LibClass172120Entry
 {
-    u8 pad00[0x60];
-    u8 state60;
-    u8 pad61[0x53];
-    u8 stateB4;
-};
+    LibClass172120Entry()
+    {
+        unk04 = 0;
+        unk00 = 0;
+    }
 
-struct LibWordPairView
-{
     u32 unk00;
     u32 unk04;
 };
@@ -78,7 +79,30 @@ void LibListObject::render()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", draw__14LibClass171DA0Fv);
+/** @brief Draw the animation's current frame into the widget's packet, when it has one. */
+void LibClass171DA0::draw()
+{
+    unk3b = 0;
+    u64* start = reinterpret_cast<u64*>(unk40.dma_address);
+    u64* cursor = start;
+    packet = start;
+    animation.unk00 = unkb4;
+
+    if (func_00453150(&animation, &cursor, 0))
+    {
+        animation.set_position(unk18.unk00, unk18.unk04);
+        animation.unk50 = draw_alpha;
+        packet_tag = cursor;
+        cursor += 2;
+        LibContainer* owner = container;
+        LibCallbackTransform& transform = *owner;
+
+        func_004535B0(&animation, &cursor, &transform.translation, transform.unka4 + unk34, owner->unkE0, 0);
+        *packet_tag = DMA_TAG((reinterpret_cast<u32>(cursor) - reinterpret_cast<u32>(packet_tag) - LIB_DRAW_QWORD_SIZE) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_END, 0);
+        unk3b = 1;
+        needs_redraw = 1;
+    }
+}
 
 /** @brief Restart the animation when asked, otherwise step it unless it's paused. */
 void LibClass171DA0::func_00413D20()
@@ -129,14 +153,18 @@ extern "C" s32 func_003EED40(LibClass171DA0* object, u32 unkb4, void* resource, 
     return 1;
 }
 
-extern "C" void func_003EEDE0(void* object)
+/** @brief Use the region's own draw bucket. */
+void LibClipRegion::set_default_draw_bucket()
 {
-    LibStateByteB4View* state = (LibStateByteB4View*)object;
-    state->state60 = state->stateB4;
+    draw_bucket = default_bucket;
 }
 
-/** Build a four-word stack value and return its address. */
-void* func_003EEDF0(void)
+// TODO: Returns the address of a local, as the original does: a sphere at the origin with radius 1e30.
+/**
+ * @brief Return a bounding sphere that covers everything.
+ * @return Sphere at the origin with a huge radius.
+ */
+const LibVector4* LibClipRegion::get_bounding_sphere()
 {
     s32 stack[4];
     stack[0] = 0;
@@ -144,7 +172,7 @@ void* func_003EEDF0(void)
     stack[1] = 0;
     s32* result = stack;
     stack[2] = 0;
-    return result;
+    return reinterpret_cast<const LibVector4*>(result);
 }
 
 /**
@@ -311,9 +339,9 @@ void LibOrientedTransform::set_scale(float x, float y, float z)
 
 /**
  * @brief Send the region's packet on DMA channel 1 (VIF1).
- * @param value Notification value; unused.
+ * @param channel DMA channel; unused.
  */
-void LibClipRegion::on_packet_notify(u32 value)
+void LibClipRegion::submit_dma(u32 channel)
 {
     dma_pending = 1;
     *D1_QWC = packet_quadwords;
@@ -324,27 +352,55 @@ void LibClipRegion::on_packet_notify(u32 value)
 
 /**
  * @brief Finish the region's packet.
- * @param value Notification value; unused.
+ * @param channel DMA channel; unused.
  */
-void LibClipRegion::on_packet_complete(u32 value)
+void LibClipRegion::complete_dma(u32 channel)
 {
     lib_finish_packet(this);
 }
 
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_003EF090(void* object)
+/** @brief Queue this object's DMA submission on the VIF1 queue. */
+void LibClipRegion::render()
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
-    }
-
-    return resident_dma_queue_push(g_vif1_dma_queue, submission);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003EF0C0);
+/**
+ * @brief Rebuild the packet: set the scissor to the display's, or to the region's rectangle when it has no
+ *        display, then record the packet's size and address.
+ * @param matrix View matrix; unused.
+ * @param context Packet building context; unused.
+ */
+void LibClipRegion::build_packet(const void* matrix, void* context)
+{
+    resident_packet_rewind(packet);
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 0));
+    cursor[0] = 0;
+    u32* vif = reinterpret_cast<u32*>(cursor + 1);
+    vif[0] = 0x06008000;
+    u32* direct = vif + 1;
+    GsGifTag* tag = reinterpret_cast<GsGifTag*>(cursor + 2);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    cursor += 4;
+
+    if (display)
+    {
+        *cursor++ = func_004DBCA0(display, 3);
+    }
+    else
+    {
+        *cursor++ = (left | (right << 16)) | ((u64)top << 32) | ((u64)bottom << 48);
+    }
+
+    *cursor++ = GS_REGISTER_SCISSOR_1;
+    resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor));
+    packet_quadwords = resident_packet_end_unmask_path3(packet);
+    *direct = VIF_DIRECTHL(packet_quadwords - 2);
+    packet_address = resident_packet_get_address(packet);
+    unk63 = 1;
+}
 
 /** @brief Delete the packet and destroy the region. */
 LibClipRegion::~LibClipRegion()
@@ -361,7 +417,17 @@ LibPacketBuffer::~LibPacketBuffer()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", __ct__13LibClipRegionFv);
+/** @brief Start as an unattached kind-2 object with a 16-quadword packet and no camera. */
+LibClipRegion::LibClipRegion()
+{
+    unk65 = 0;
+    type_id = 0x1300;
+    draw_flags = 0x400;
+    packet = new (0) LibPacketBuffer(16);
+    FlushCache(0);
+    display = 0;
+    default_bucket = 0;
+}
 
 /** @brief Delete the object through its virtual destructor; null is ignored. */
 void LibListObject::destroy()
@@ -566,9 +632,10 @@ public:
 
     s32 unk260;
     LibClass172080Record records[6];
-    u8 unk2ac[8];
+    float unk2ac;
+    u32 unk2b0;
     s32 unk2b4;
-    u8 unk2b8[4];
+    float unk2b8;
     s32 unk2bc;
     u8* unk2c0;
     u8 unk2c4_0 : 1;
@@ -619,51 +686,183 @@ LibClass172080::LibClass172080()
     unk260 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1160);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1250);
-
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1330);
-
 /**
- * Transform owner that sends a DMA chain built at 0x150, with vtable D_172120 in main data. Its update is
- * func_003F2CB0 and its destructor func_003F3F10; only its DMA callbacks are written so far.
+ * Transform owner that sends a DMA chain built at 0x150 and draws through a display of its own, with vtable
+ * D_172120 in main data. It runs a timed transition (func_003F1160) on itself and on the held LibClass172080.
  */
-class LibClass172120 : public LibTransformOwner, public LibDmaCallbacks
+class LibClass172120 : public LibTransformOwner, public DmaSubmission
 {
 public:
-    /** @brief Release the class's texture and its buffers. */
+    /** @brief Set up the transform, its packet buffer, entry array and own display, with the transition idle. */
+    LibClass172120();
+
     virtual ~LibClass172120();
 
     /**
      * @brief Finish the object's packet.
-     * @param value Notification value; unused.
+     * @param channel DMA channel; unused.
      */
-    virtual void on_packet_complete(u32 value);
+    virtual void complete_dma(u32 channel);
 
     /**
      * @brief Start the object's DMA chain on channel 1 (VIF1).
-     * @param value Notification value; unused.
+     * @param channel DMA channel; unused.
      */
-    virtual void on_packet_notify(u32 value);
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Report the list kind used when registration requests the default.
+     * @return Always 14.
+     */
+    virtual s32 get_default_list_kind();
 
     /** @brief Destroy the transform, then the held object. */
     virtual void destroy();
 
-    u8 unk94[4];
+    virtual void update();
+
+    /** @brief Queue this object's DMA submission on the VIF1 queue. */
+    virtual void render();
+
+    /** @brief Use draw bucket 7. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return a bounding sphere that covers everything.
+     * @return Sphere at the origin with a huge radius.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Build this object's packet.
+     * @param matrix View matrix.
+     * @param context Packet building context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    LibCameraContext* display;
     LibPacketBuffer* packet;
     void* unk9c;
-    u8* unka0;
+    LibClass172120Entry* unka0;
     LibListObject* held;
-    u8 unka8[0xA8];
+    u8 unka8[8];
+    u32 unkb0;
+    float unkb4;
+    float unkb8;
+    float unkbc;
+    float unkc0;
+    float unkc4;
+    float unkc8;
+    float unkcc;
+    float unkd0;
+    float unkd4;
+    float unkd8;
+    float unkdc;
+    u32 unke0;
+    u8 unke4[4];
+    float unke8;
+    u32 unkec;
+    u8 unkf0[8];
+    u8 unkf8;
+    u8 unkf9;
+    u8 unkfa;
+    u8 unkfb;
+    u32 unkfc;
+    s32 unk100;
+    u32 unk104;
+    u8 unk108[0x48];
     u8 chain[0x10];
 };
 
 /**
- * @brief Start the object's DMA chain on channel 1 (VIF1).
- * @param value Notification value; unused.
+ * @brief Start a timed transition unless one is running: store its mode, duration and rate, and in mode 1 the step
+ *        towards 208. When unkf9 is 1 it also starts the held object's own transition.
+ * @param object Object to update.
+ * @param mode Transition mode.
+ * @param duration Duration.
+ * @param rate Rate the step is derived from.
  */
-void LibClass172120::on_packet_notify(u32 value)
+extern "C" void func_003F1160(LibClass172120* object, u8 mode, float duration, float rate)
+{
+    if (!(object->unkc8 <= 0.0f && object->unkcc <= 0.0f))
+    {
+        return;
+    }
+
+    object->unkfa = mode;
+    object->unkd0 = duration;
+    object->unkd4 = rate;
+    object->unkc8 = 1e-05f;
+    object->unkcc = 1e-05f;
+
+    if (mode == 1)
+    {
+        object->unkdc = (208.0f - object->unkc4) / duration;
+    }
+
+    if (object->unkf9 == 1)
+    {
+        object->unkc0 = 1.0f;
+        LibClass172080* target = static_cast<LibClass172080*>(object->held);
+
+        if (target)
+        {
+            target->unk2c4_0 = 1;
+            target->unk2ac = duration;
+            target->unk2b0 = 0;
+            target->unk2b8 = g_frame_ticks;
+            target->unk2bc = 0xF6;
+        }
+    }
+
+    object->unkd8 = -object->unkc0 / object->unkd4;
+}
+
+/** GS A+D packet that flushes the texture cache and sets context 2's texture, blend and test state. */
+struct LibTextureStatePacket
+{
+    GsGifTag tag;
+    GsRegisterValue registers[6];
+};
+
+/**
+ * @brief Add the texture state packet to the region's packet: TEXFLUSH, TEXCLUT, TEX1_2, ALPHA_2, TEST_2 and TEXA.
+ * @param object Region whose packet to extend.
+ */
+extern "C" void func_003F1250(LibClipRegion* object)
+{
+    LibTextureStatePacket* state = reinterpret_cast<LibTextureStatePacket*>(resident_packet_reserve(object->packet, 7));
+
+    if (state == 0)
+    {
+        return;
+    }
+
+    state->tag.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | 6;
+    state->tag.registers = 0;
+    state->tag.fields.register0 = GIF_REGISTER_AD;
+    state->registers[0].data = 1;
+    state->registers[0].address = GS_REGISTER_TEXFLUSH;
+    state->registers[1].data = 4;
+    state->registers[1].address = GS_REGISTER_TEXCLUT;
+    state->registers[2].data = 0x61;
+    state->registers[2].address = GS_REGISTER_TEX1_2;
+    state->registers[3].data = 0x44;
+    state->registers[3].address = GS_REGISTER_ALPHA_2;
+    state->registers[4].data = 0x5000D;
+    state->registers[4].address = GS_REGISTER_TEST_2;
+    state->registers[5].data = 0x8000008080ULL;
+    state->registers[5].address = GS_REGISTER_TEXA;
+    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(state + 1));
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1330);
+
+/**
+ * @brief Start the object's DMA chain on channel 1 (VIF1).
+ * @param channel DMA channel; unused.
+ */
+void LibClass172120::submit_dma(u32 channel)
 {
     dma_pending = 1;
     *D1_QWC = 0;
@@ -674,29 +873,22 @@ void LibClass172120::on_packet_notify(u32 value)
 
 /**
  * @brief Finish the object's packet.
- * @param value Notification value; unused.
+ * @param channel DMA channel; unused.
  */
-void LibClass172120::on_packet_complete(u32 value)
+void LibClass172120::complete_dma(u32 channel)
 {
     lib_finish_packet(this);
 }
 
-/** Queue the DMA submission embedded at offset 0x90 when present. */
-s32 func_003F2570(void* object)
+/** @brief Queue this object's DMA submission on the VIF1 queue. */
+void LibClass172120::render()
 {
-    DmaSubmission* submission = reinterpret_cast<DmaSubmission*>(object);
-
-    if (object != 0)
-    {
-        submission = (DmaSubmission*)((u8*)submission + 0x90);
-    }
-
-    return resident_dma_queue_push(g_vif1_dma_queue, submission);
+    resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F25A0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", build_packet__14LibClass172120FPCvPv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F2CB0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", update__14LibClass172120Fv);
 
 extern "C" void func_003F3E60(void* object, u32 value)
 {
@@ -718,7 +910,15 @@ extern "C" void func_003F3E90(void* object, u32 value)
     *(u32*)((u8*)object + 0x8C) = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F3EA0);
+/**
+ * @brief Make the renderer, its passes and the global display pointers draw on a display.
+ * @param renderer Renderer.
+ * @param display Display to draw on.
+ */
+extern "C" void func_003F3EA0(LibRenderer* renderer, LibCameraContext* display)
+{
+    renderer->set_display(display);
+}
 
 extern "C" void* func_003F3EF0(void* object)
 {
@@ -741,18 +941,57 @@ LibClass172120::~LibClass172120()
 
     if (unka0)
     {
-        ::operator delete[](unka0 - 0x10);
+        ::operator delete[](reinterpret_cast<u8*>(unka0) - 0x10);
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4070);
-
-extern "C" void* func_003F42A0(void* object)
+/** @brief Set up the transform, its packet buffer, entry array and own display, with the transition idle. */
+LibClass172120::LibClass172120()
 {
-    LibWordPairView* state = (LibWordPairView*)object;
-    state->unk04 = 0;
-    state->unk00 = 0;
-    return object;
+    unk9c = 0;
+    display = 0;
+    packet = 0;
+    held = 0;
+    unka0 = 0;
+    unkec = 0;
+    unkf8 = 0;
+    unk104 = 0;
+    unke8 = g_frame_ticks;
+    unke0 = 0x100;
+    unk65 = 0;
+    draw_flags = 0x400;
+    LibVector4 origin;
+    origin.w = 1.0f;
+    origin.x = 0.0f;
+    origin.y = 0.0f;
+    origin.z = 0.0f;
+    set_translation_vector(&origin);
+    type_id = 0x4200;
+    float scale_x;
+    float scale_y;
+    g_display->get_area_scale(&scale_x, &scale_y);
+    unkfc = 0xD090;
+    unk100 = 8;
+    unkb0 = 0;
+    unkb8 = 1.0f;
+    unkc0 = 0.0f;
+    unkbc = 0.005f;
+    unkc4 = 0.0f;
+    unkb4 = 0.01f;
+    unkc8 = 0.0f;
+    unkcc = 0.0f;
+    unkf9 = 0;
+    static_cast<LibRenderer*>(g_renderer)->unk4458->unk9d = 0;
+    packet = new (0) LibPacketBuffer(0x400);
+    unka0 = new (0) LibClass172120Entry[(unk100 * 2 + 1) * 2];
+    display = new (0) LibCameraContext;
+
+    if (display)
+    {
+        display->initialize(2);
+    }
+
+    FlushCache(0);
 }
 
 /** @brief Destroy the held object, then leave the owner's list and delete this object. */
@@ -876,22 +1115,26 @@ const LibVector4* LibTransform::get_offset_scale() const
 }
 
 /**
- * @brief Return the fixed value 14.
- * @param object Receiver or first argument; unused.
+ * @brief Report the list kind used when registration requests the default.
  * @return Always 14.
  */
-extern "C" s32 func_003F4550(void* object)
+s32 LibClass172120::get_default_list_kind()
 {
     return 14;
 }
 
-extern "C" void func_003F4560(LibTransformOwner* object)
+/** @brief Use draw bucket 7. */
+void LibClass172120::set_default_draw_bucket()
 {
-    object->draw_bucket = 7;
+    draw_bucket = 7;
 }
 
-/** Build a four-word stack value and return its address. */
-void* func_003F4570(void)
+// TODO: Returns the address of a local, as the original does: a sphere at the origin with radius 1e30.
+/**
+ * @brief Return a bounding sphere that covers everything.
+ * @return Sphere at the origin with a huge radius.
+ */
+const LibVector4* LibClass172120::get_bounding_sphere()
 {
     s32 stack[4];
     stack[0] = 0;
@@ -899,7 +1142,7 @@ void* func_003F4570(void)
     stack[1] = 0;
     s32* result = stack;
     stack[2] = 0;
-    return result;
+    return reinterpret_cast<const LibVector4*>(result);
 }
 
 

@@ -126,13 +126,69 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049CA60);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049D260);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049DA60);
+/**
+ * @brief Copy another grid's size, emission settings, frame data and the two words at 0xB0: the settings copy of
+ *        LibClass175900 (vtable slot 0xB4, also inherited by LibClass175830).
+ * @param object Grid to update.
+ * @param other Grid to copy.
+ */
+extern "C" void func_0049DA60(LibGridEmitterB0* object, const LibGridEmitterB0* other)
+{
+    object->cell_count = other->cell_count;
+    object->columns = other->columns;
+    object->resize(object->cell_count, object->columns);
+    object->unk28 = other->unk28;
+    object->unk30 = other->unk30;
+    object->unk34 = other->unk34;
+    object->unk38 = other->unk38;
+    object->primary_emitter = other->primary_emitter;
+    object->unk4C = other->unk4C;
+    object->unk4D = other->unk4D;
+    object->primary_emission_flags = other->primary_emission_flags;
+    object->primary_emission_count = other->primary_emission_count;
+    object->secondary_emitter = other->secondary_emitter;
+    object->secondary_emission_flags = other->secondary_emission_flags;
+    object->secondary_emission_count = other->secondary_emission_count;
+    object->unk3C = other->unk3C;
+    object->frame_header = other->frame_header;
+    object->frame_records = other->frame_records;
+    object->unkb0 = other->unkb0;
+    object->unkb4 = other->unkb4;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049DB40);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049E270);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049E360);
+/**
+ * @brief Copy another grid's size, emission settings, frame data and the two words at 0xB0: the settings copy of
+ *        LibClass175760 (vtable slot 0xB4, also inherited by LibClass175690).
+ * @param object Grid to update.
+ * @param other Grid to copy.
+ */
+extern "C" void func_0049E360(LibGridEmitterB0* object, const LibGridEmitterB0* other)
+{
+    object->cell_count = other->cell_count;
+    object->columns = other->columns;
+    object->resize(object->cell_count, object->columns);
+    object->unk28 = other->unk28;
+    object->unk30 = other->unk30;
+    object->unk34 = other->unk34;
+    object->unk38 = other->unk38;
+    object->primary_emitter = other->primary_emitter;
+    object->unk4C = other->unk4C;
+    object->unk4D = other->unk4D;
+    object->primary_emission_flags = other->primary_emission_flags;
+    object->primary_emission_count = other->primary_emission_count;
+    object->secondary_emitter = other->secondary_emitter;
+    object->secondary_emission_flags = other->secondary_emission_flags;
+    object->secondary_emission_count = other->secondary_emission_count;
+    object->unk3C = other->unk3C;
+    object->frame_header = other->frame_header;
+    object->frame_records = other->frame_records;
+    object->unkb0 = other->unkb0;
+    object->unkb4 = other->unkb4;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_0049E440);
 
@@ -944,7 +1000,51 @@ void LibModel::select_payload(void* payload, u8 set)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3F50);
+/**
+ * @brief Draw a payload override with a packet set, building that set's override packet the first time.
+ * @param payload Payload to draw instead of the resource's own.
+ * @param set Packet set to draw.
+ */
+void LibModel::load_payload(void* payload, u8 set)
+{
+    uses_payload_override = 1;
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(resource));
+    s32 part_count = mesh->part_count;
+
+    if (override_packets[set] == 0)
+    {
+        s32 size = part_count * LIB_MODEL_PART_QWORDS + LIB_MODEL_PACKET_FIXED_QWORDS;
+        delete override_packets[set];
+
+        if (D_001B659C != 0)
+        {
+            override_packets[set] = resident_heap_allocate(D_001B659C, size * 16);
+        }
+        else
+        {
+            override_packets[set] = malloc_guess(size * 16);
+        }
+
+        u64* call_tag = &packet_chains[set].tags[1][0];
+
+        if (override_packets[set] == 0)
+        {
+            return;
+        }
+
+        *call_tag = DMA_TAG(0, DMA_TAG_ID_CALL, static_cast<u8*>(override_packets[set]) + LIB_MODEL_PACKET_HEADER_SIZE);
+        FlushCache(0);
+
+        if (unk793 < 4)
+        {
+            unk793 += 2;
+        }
+
+        unk795 = 1;
+    }
+
+    LibModelBase::load_payload(payload, set);
+}
 
 /**
  * @brief Give the centre for Lib's oriented-box visibility test, from the mesh, when the model is unscaled.
@@ -1317,9 +1417,74 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A76D0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7AC0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7C20);
+/**
+ * @brief Number the mesh's parts in their uncached view and copy each into the model's part table.
+ * @param model Model whose resource holds the mesh.
+ */
+extern "C" void func_004A7C20(LibModel* model)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource));
+    s32* items = reinterpret_cast<s32*>(reinterpret_cast<u8*>(mesh) + mesh->unk38);
+    s32 count;
+    s32* offsets = items + 1;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7D50);
+    if (mesh->unk38 == 0)
+    {
+        return;
+    }
+
+    count = *items;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibModelPart* source = reinterpret_cast<LibModelPart*>((u32)(reinterpret_cast<u8*>(mesh) + *offsets * 16) | UNCACHED_SEGMENT);
+        source->slot = i + 1;
+        unsigned __int128* to = reinterpret_cast<unsigned __int128*>(static_cast<LibModelPart*>(model->parts) + i);
+        unsigned __int128* from = reinterpret_cast<unsigned __int128*>(source);
+
+        for (s32 j = 0; j < sizeof(LibModelPart) / 16; j++)
+        {
+            *to++ = *from++;
+        }
+
+        offsets++;
+    }
+}
+
+/**
+ * @brief Number the mesh's parts in their uncached view and copy each into the model's part table through its uncached
+ * view.
+ * @param model Model whose resource holds the mesh.
+ */
+extern "C" void func_004A7D50(LibModel* model)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource));
+    s32* items = reinterpret_cast<s32*>(reinterpret_cast<u8*>(mesh) + mesh->unk38);
+    s32 count;
+    s32* offsets = items + 1;
+
+    if (mesh->unk38 == 0)
+    {
+        return;
+    }
+
+    count = *items;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibModelPart* source = reinterpret_cast<LibModelPart*>((u32)(reinterpret_cast<u8*>(mesh) + *offsets * 16) | UNCACHED_SEGMENT);
+        source->slot = i + 1;
+        unsigned __int128* to = reinterpret_cast<unsigned __int128*>((u32)(static_cast<LibModelPart*>(model->parts) + i) | UNCACHED_SEGMENT);
+        unsigned __int128* from = reinterpret_cast<unsigned __int128*>(source);
+
+        for (s32 j = 0; j < sizeof(LibModelPart) / 16; j++)
+        {
+            *to++ = *from++;
+        }
+
+        offsets++;
+    }
+}
 
 /** @brief Allocate and fill the model's packets from its mesh. */
 void LibModel::build_packets()
@@ -1991,7 +2156,45 @@ s32 LibModelBase::has_packet()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AA420);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AAFF0);
+/**
+ * @brief Build a packet set's payload in its buffer: align the buffer to 128 bytes, copy the model's resource payload
+ *        into it through the uncached segment, then hand it to the model.
+ * @param list List whose payload to build.
+ * @param set Packet set.
+ */
+extern "C" void func_004AAFF0(LibClass177A20* list, s32 set)
+{
+    list->payloads[set] = reinterpret_cast<void*>((reinterpret_cast<u32>(list->payload_buffers[set]) + 127) & ~127);
+    const unsigned __int128* source = reinterpret_cast<const unsigned __int128*>(
+        list->model->resource != 0 ? func_004D5B50(list->model->resource) : 0);
+    unsigned __int128* dest = reinterpret_cast<unsigned __int128*>(reinterpret_cast<u32>(list->payloads[set]) | EE_UNCACHED_ACCELERATED);
+    s32 size = func_004D5F50(list->model);
+    s32 blocks = size / 128;
+
+    for (s32 i = 0; i < blocks; i++)
+    {
+        dest[0] = source[0];
+        dest[1] = source[1];
+        dest[2] = source[2];
+        dest[3] = source[3];
+        dest[4] = source[4];
+        dest[5] = source[5];
+        dest[6] = source[6];
+        dest[7] = source[7];
+        source += 8;
+        dest += 8;
+    }
+
+    s32 rest = (size - blocks * 128) / 16;
+
+    for (s32 i = 0; i < rest; i++)
+    {
+        *dest++ = *source++;
+    }
+
+    list->model->load_payload(list->payloads[set], set);
+    list->model->select_payload(list->payloads[set], set);
+}
 
 /**
  * @brief Allocate a packet set's payload buffer for the model's payload, then build the payload in it.

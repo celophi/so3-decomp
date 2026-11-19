@@ -121,11 +121,13 @@ static inline float ee_max(float left, float right)
  * @brief Return the absolute value of a floating-point operand with the EE scalar instruction.
  * @param value Operand.
  * @return Absolute value produced by the EE scalar instruction.
- * @see abs.s in the EE Core Instruction Set Manual; SO3 keeps one whose result is never used (main 0x10E4B0).
+ * @see abs.s in the EE Core Instruction Set Manual; SO3 keeps one whose result is never used (main 0x10E4B0), and
+ *      lib 0x456360 keeps its offset wrap loops unrotated, which only an asm statement in the function gives.
  */
 static inline float ee_abs(float value)
 {
-    // TODO: This is only asm because the compiler drops an unused abs; check whether the original was asm too.
+    // TODO: This is asm because the compiler drops an unused abs and rotates loops next to a plain one; check whether
+    // the original was asm too.
     float result;
     asm __volatile__("abs.s %0, %1" : "=f"(result) : "f"(value));
     return result;

@@ -26,6 +26,7 @@ enum
     GS_PSMCT16 = 0x02,
     GS_PSMCT16S = 0x0A,
     GS_PSMT4HH = 0x2C,
+    GS_PSMZ32 = 0x30,
     GS_PSMZ24 = 0x31,
     GS_PSMZ16 = 0x32,
     GS_PSMZ16S = 0x3A
@@ -74,6 +75,8 @@ enum
     GS_REGISTER_PABE = 0x49,
     GS_REGISTER_FBA_1 = 0x4A,
     GS_REGISTER_FBA_2 = 0x4B,
+    GS_REGISTER_ZBUF_1 = 0x4E,
+    GS_REGISTER_ZBUF_2 = 0x4F,
     GS_REGISTER_BITBLTBUF = 0x50,
     GS_REGISTER_TRXPOS = 0x51,
     GS_REGISTER_TRXREG = 0x52,
@@ -121,6 +124,9 @@ typedef struct GsRegisterValue
 #define GIF_TAG_HIGH_PRIM_FGE ((u32)(GIF_TAG_PRIM(GS_PRIM_FGE) >> 32))
 
 #define GIF_TAG_EOP 0x8000
+
+/** GIF tag FLG field set to IMAGE: the data that follows is a transfer to local memory. */
+#define GIF_TAG_FLG_IMAGE ((u64)2 << 58)
 
 /** GIF tag NREG field: how many registers each loop writes. */
 #define GIF_TAG_NREG(count) ((u64)(count) << 60)

@@ -82,6 +82,8 @@ public:
 /** The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
 struct LibTrophyFlags
 {
+    ~LibTrophyFlags();
+
     LibBitArray flags;
     s32 trophy_key;
     u32 checksum_seed;
@@ -303,13 +305,6 @@ void func_0044D070(LibObjectByte60* object);
 const void* func_0044D080(void);
 
 /**
- * @brief Return the fixed value 35.
- * @param object Unused receiver.
- * @return Always 35.
- */
-s32 func_00451E20(void* object);
-
-/**
  * @brief Return the fixed value 9.
  * @return Always 9.
  */
@@ -458,32 +453,6 @@ void lib_draw_state_init(LibDrawState64* state);
  */
 extern "C" void func_0044D090(LibTransformOwner* object);
 
-/** Four scalar components stored in a LibVectorUpdateView. */
-typedef struct LibFloatVector4
-{
-    float x;
-    float y;
-    float z;
-    float w;
-} LibFloatVector4;
-
-/** Partial state updated by func_0044B190; its caller passes the containing object's +0x20 address. */
-typedef struct LibVectorUpdateView
-{
-    u8 unk00[0x20];
-    LibFloatVector4 unk20;
-    u8 unk30[0x7E];
-    u8 unkAE;
-} LibVectorUpdateView;
-
-/**
- * @brief Update x and y, preserve z, set w to one, and mark the state.
- * @param state Partial vector state.
- * @param x Horizontal component.
- * @param y Vertical component.
- */
-extern "C" void func_0044B190(LibVectorUpdateView* state, float x, float y);
-
 /**
  * @brief Queue the receiver's DMA callback interface.
  * @param object Transform receiver.
@@ -592,6 +561,86 @@ struct LibImageAnimation
     u8 unk61[3];
 };
 
+/** One glyph's drawing state in a LibClass178780 batch. */
+struct LibGlyphDraw6C : public LibDrawState64
+{
+    /** @brief Initialize the drawing state and clear both trailing words. */
+    LibGlyphDraw6C();
+
+    u32 unk64;
+    u32 unk68;
+};
+
+/** 0x30-byte batch of glyph drawing states a text widget keeps at unkfc, with vtable D_178780 in main data. */
+class LibClass178780 : public LibListObject
+{
+public:
+    /** @brief Start without storage or glyphs. */
+    LibClass178780() : glyphs(0)
+    {
+    }
+
+    /** @brief Free the glyphs and the drawing storage. */
+    virtual ~LibClass178780();
+
+    /**
+     * @brief Allocate drawing storage and glyph states for a glyph count.
+     * @param count Number of glyphs.
+     * @return One on success, or zero when an allocation fails.
+     */
+    s32 init(s32 count);
+
+    LibStorageBlock0C storage;
+    u8 unk20[4];
+    LibGlyphDraw6C* glyphs;
+    s32 glyph_capacity;
+    s32 glyph_count;
+};
+
+/**
+ * @brief Draw an image animation's current frame into a packet.
+ * @param animation Animation to draw.
+ * @param cursor Packet cursor; advanced past what is written.
+ * @param origin Origin the animation's position is relative to.
+ * @param depth Depth value.
+ * @param scale Scale.
+ * @param flag Draw flag.
+ */
+/** Partial Lib widget with vtable D_175170 in main data. */
+class LibClass175170 : public LibWidget
+{
+public:
+    virtual ~LibClass175170();
+
+    /** @brief Refresh the widget's drawing state. */
+    virtual void func_00413D20();
+
+    /** @brief Draw the widget. */
+    virtual void draw();
+
+    LibStorageBlock0C unk40;
+    u8 unk4c[4];
+    LibImageAnimation unk50;
+    LibImageAnimation cells[2][10];
+    float unk884;
+    float unk888;
+    s32 unk88c;
+    s32 unk890;
+    u8 unk894;
+};
+
+/**
+ * @brief Prepare an image animation's packet at a cursor.
+ * @param animation Animation to prepare.
+ * @param cursor Packet cursor.
+ * @param flag Flag; zero here.
+ * @return Nonzero when there is something to draw.
+ */
+extern "C" s32 func_00453150(LibImageAnimation* animation, u64** cursor, s32 flag);
+
+extern "C" void func_004535B0(LibImageAnimation* animation, u64** cursor, const LibVector4* origin, u32 depth, float scale,
+                              s32 flag);
+
 /**
  * Transform that draws one VIF1 packet of its own, with vtables D_1748D0 and D_174954 in main data; LibClass172080
  * and the other emitter-like classes derive from it.
@@ -641,14 +690,6 @@ public:
     float unk248;
     float unk24c;
     float unk250;
-};
-
-/** Partial Lib class with vtable D_174C20 in main data; its destructor is func_00452F00. */
-class LibClass174C20
-{
-public:
-    /** @brief Destroy the object. */
-    virtual ~LibClass174C20();
 };
 
 /** Clipping widget with resident vtable at 0x1746A0. */

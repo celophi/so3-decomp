@@ -78,11 +78,7 @@ enum
     IMAGE_SEQUENCE_MAGIC = 0x41534946,
     IMAGE_SEQUENCE_LOOP = 0,
     IMAGE_SEQUENCE_PING_PONG = 1,
-    IMAGE_SEQUENCE_CLAMP = 2,
-    RENDER_DATA_INLINE = 0,
-    RENDER_DATA_SHARED = 1,
-    RENDER_DATA_OFFSET = 4,
-    RENDER_DATA_RESOLVED = 5
+    IMAGE_SEQUENCE_CLAMP = 2
 };
 
 enum
@@ -107,27 +103,6 @@ struct LibImageSequenceHeader
     u16 entry_count;
     u16 playback_mode;
     u32 duration;
-};
-
-/** Resource record prefix whose data word can hold an offset or resolved pointer. */
-struct LibRenderDataRecord
-{
-    u32 next_offset;
-    s16 storage_kind;
-    s16 index;
-    u32 key08;
-    u32 key0c;
-    u8 unk10[0x10];
-    void* resolved_data;
-    u32 unk24;
-
-    union
-    {
-        void* data;
-        u32 data_offset;
-    };
-
-    u32 unk2c;
 };
 
 extern "C" void func_004D6C20(LibUpdateList* list, void** items, u32* offsets);
@@ -336,9 +311,61 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CD8C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CDA40);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CDBC0);
+/**
+ * @brief Build the unit quaternion for three rotation angles about the positive axes: the product (y * x) * z of the
+ *        three rotations, normalized.
+ * @param orientation Receives the quaternion.
+ * @param angles Angles in radians about x, y and z.
+ */
+extern "C" void func_004CDBC0(LibVector4* orientation, const LibVector4* angles)
+{
+    LibVector4 x_axis;
+    LibVector4 y_axis;
+    LibVector4 z_axis;
+    FieldVec4B x_rotation;
+    FieldVec4B y_rotation;
+    FieldVec4B z_rotation;
+    FieldVec4B rotation;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CE040);
+    set_vector(&x_axis, 1.0f, 0.0f, 0.0f, angles->x);
+    set_vector(&y_axis, 0.0f, 1.0f, 0.0f, angles->y);
+    set_vector(&z_axis, 0.0f, 0.0f, 1.0f, angles->z);
+    quaternion_from_axis_angle(&x_rotation, &x_axis);
+    quaternion_from_axis_angle(&y_rotation, &y_axis);
+    quaternion_from_axis_angle(&z_rotation, &z_axis);
+    rotation = multiply_rotations(y_rotation, x_rotation);
+    rotation = multiply_rotations(rotation, z_rotation);
+    normalize_quaternion(&rotation);
+    *reinterpret_cast<FieldVec4B*>(orientation) = rotation;
+}
+
+/**
+ * @brief Build the unit quaternion for three rotation angles about the negative axes: the product (y * z) * x of the
+ *        three rotations, normalized.
+ * @param output Receives the quaternion.
+ * @param angles Angles in radians about x, y and z.
+ */
+extern "C" void func_004CE040(LibVector4* output, const LibVector4* angles)
+{
+    LibVector4 x_axis;
+    LibVector4 y_axis;
+    LibVector4 z_axis;
+    FieldVec4B x_rotation;
+    FieldVec4B y_rotation;
+    FieldVec4B z_rotation;
+    FieldVec4B rotation;
+
+    set_vector(&x_axis, -1.0f, 0.0f, 0.0f, angles->x);
+    set_vector(&y_axis, 0.0f, -1.0f, 0.0f, angles->y);
+    set_vector(&z_axis, 0.0f, 0.0f, -1.0f, angles->z);
+    quaternion_from_axis_angle(&x_rotation, &x_axis);
+    quaternion_from_axis_angle(&y_rotation, &y_axis);
+    quaternion_from_axis_angle(&z_rotation, &z_axis);
+    rotation = multiply_rotations(y_rotation, z_rotation);
+    rotation = multiply_rotations(rotation, x_rotation);
+    normalize_quaternion(&rotation);
+    *reinterpret_cast<FieldVec4B*>(output) = rotation;
+}
 
 /**
  * @brief Build the unit quaternion for three rotation angles.
@@ -1173,7 +1200,36 @@ void LibClass178B70::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", build_packet__14LibClass178B70FPCvPv);
+/**
+ * @brief Expire the layer's texture, refresh four of the display's draw register values in the renderer's
+ *        per-layer packet, then chain that packet with a texture flush.
+ * @param matrix View matrix; unused.
+ * @param context Packet building context; unused.
+ */
+void LibClass178B70::build_packet(const void* matrix, void* context)
+{
+    u8 index = layer;
+    LibRenderer* renderer = static_cast<LibRenderer*>(g_renderer);
+
+    g_texture_cache->expire_texture(index + 0x100);
+    u64* packet = reinterpret_cast<u64*>(reinterpret_cast<u32>(renderer->unked30[index - 1]) | EE_UNCACHED_ACCELERATED);
+    packet[4] = func_004DBCA0(renderer->display, 0);
+    packet[6] = func_004DBCA0(renderer->display, 1);
+    packet[8] = func_004DBCA0(renderer->display, 2);
+    packet[10] = func_004DBCA0(renderer->display, 3);
+    owner = static_cast<LibRenderer*>(g_renderer);
+    u64* tags = reinterpret_cast<u64*>(reinterpret_cast<u32>(chain) | EE_UNCACHED_ACCELERATED);
+    tags[0] = DMA_TAG(6, DMA_TAG_ID_REF, static_cast<LibRenderer*>(owner)->unked30[layer - 1]);
+    tags[2] = DMA_TAG(3, DMA_TAG_ID_CNT, 0);
+    *reinterpret_cast<unsigned __int128*>(&tags[4]) = 0;
+    reinterpret_cast<u32*>(tags)[11] = VIF_DIRECTHL(2);
+    tags[6] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    tags[7] = GIF_REGISTER_AD;
+    tags[8] = 0;
+    tags[9] = GS_REGISTER_TEXFLUSH;
+    tags[10] = DMA_TAG_ID_END;
+    unk63 = 1;
+}
 
 /** @brief Set the object's type ID after the base constructors. */
 LibClass178B70::LibClass178B70()
@@ -1210,7 +1266,21 @@ void LibClass178C00::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", build_packet__14LibClass178C00FPCvPv);
+/**
+ * @brief Build the layer's packets, then point the chain at the renderer's per-layer packet (6 quadwords) and its
+ *        16-quadword block.
+ * @param matrix View matrix; unused.
+ * @param context Packet building context; unused.
+ */
+void LibClass178C00::build_packet(const void* matrix, void* context)
+{
+    func_004D0B10(static_cast<LibRenderer*>(g_renderer), layer);
+    owner = static_cast<LibRenderer*>(g_renderer);
+    u64* tags = reinterpret_cast<u64*>(reinterpret_cast<u32>(chain) | EE_UNCACHED_ACCELERATED);
+    tags[0] = DMA_TAG(6, DMA_TAG_ID_REF, static_cast<LibRenderer*>(owner)->unke130[layer - 1]);
+    tags[2] = DMA_TAG(0x10, 0, static_cast<LibRenderer*>(owner)->unkc130[layer - 1]);
+    unk63 = 1;
+}
 
 /** @brief Set the object's type ID after the base constructors. */
 LibClass178C00::LibClass178C00()
@@ -1219,7 +1289,43 @@ LibClass178C00::LibClass178C00()
     type_id = 0xB00;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D08D0);
+/**
+ * @brief Set up one of the renderer's extra layers as a square render target, with its MLPS image header and info
+ *        block built in place.
+ * @param renderer Renderer.
+ * @param layer Layer number, from 1.
+ * @param size Width and height in pixels, a power of two.
+ * @param manager Display manager the layer draws with.
+ */
+extern "C" void func_004D08D0(LibRenderer* renderer, s32 layer, s32 size, LibDisplayManager* manager)
+{
+    renderer->layers[layer - 1].size = size;
+    renderer->layers[layer - 1].display_manager = manager;
+    renderer->layers[layer - 1].unk08 = 0;
+    renderer->layers[layer - 1].unk0c = 0;
+    renderer->layers[layer - 1].unk0e = 0x40;
+    renderer->layers[layer - 1].tag = LIB_TEXTURE_TAG_MLPS;
+    renderer->layers[layer - 1].index = layer;
+    renderer->layers[layer - 1].image = &renderer->layers[layer - 1].header;
+    *reinterpret_cast<u32*>(renderer->layers[layer - 1].header.name) = LIB_TEXTURE_TAG_MLPS;
+    renderer->layers[layer - 1].header.id = layer;
+    renderer->layers[layer - 1].header.unk02 = 0;
+    renderer->layers[layer - 1].header.image_offset = reinterpret_cast<u8*>(&renderer->layers[layer - 1].info) - reinterpret_cast<u8*>(&renderer->layers[layer - 1].header);
+    renderer->layers[layer - 1].info.data_size = size * size * 2;
+    renderer->layers[layer - 1].info.width = size;
+    renderer->layers[layer - 1].info.height = size;
+
+    s32 bits = 0;
+
+    while (size != 0)
+    {
+        size >>= 1;
+        bits++;
+    }
+
+    renderer->layers[layer - 1].info.width_log2 = bits - 1;
+    renderer->layers[layer - 1].info.height_log2 = bits - 1;
+}
 
 /** GS packet that draws eight sprite vertices with the depth test and scissor set around them. */
 struct LibSpritePacket
@@ -1309,7 +1415,112 @@ extern "C" void func_004D1320(LibRenderer* renderer)
     renderer->update_lights();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D1360);
+/**
+ * @brief Sort a range of draw objects by depth, deepest first: an explicit-stack quicksort down to runs of ten,
+ *        then one insertion pass.
+ * @param renderer Renderer; unused.
+ * @param items Objects to sort.
+ * @param first First index.
+ * @param last One past the last index.
+ */
+extern "C" void func_004D1360(LibRenderer* renderer, LibTransformOwner** items, s32 first, s32 last)
+{
+    s32 low_stack[32];
+    s32 high_stack[32];
+    s32 i;
+    s32 j;
+    s32 low;
+    s32 high;
+    s32 depth;
+
+    if (first == last)
+    {
+        return;
+    }
+
+    low = first;
+    high = last - 1;
+    depth = 0;
+
+    for (;;)
+    {
+        if (high - low < 10)
+        {
+            if (depth == 0)
+            {
+                break;
+            }
+
+            depth--;
+            low = low_stack[depth];
+            high = high_stack[depth];
+        }
+
+        float pivot = items[(low + high) / 2]->depth;
+        i = low;
+        j = high;
+
+        for (;;)
+        {
+            while (items[i]->depth > pivot)
+            {
+                i++;
+            }
+
+            while (items[j]->depth < pivot)
+            {
+                j--;
+            }
+
+            if (i >= j)
+            {
+                break;
+            }
+
+            LibTransformOwner* swap = items[i];
+            items[i] = items[j];
+            items[j] = swap;
+            i++;
+            j--;
+        }
+
+        if (i - low > high - j)
+        {
+            if (i - low > 10)
+            {
+                low_stack[depth] = low;
+                high_stack[depth] = i - 1;
+                depth++;
+            }
+
+            low = j + 1;
+        }
+        else
+        {
+            if (high - j > 10)
+            {
+                low_stack[depth] = j + 1;
+                high_stack[depth] = high;
+                depth++;
+            }
+
+            high = i - 1;
+        }
+    }
+
+    for (s32 k = first + 1; k < last; k++)
+    {
+        LibTransformOwner* item = items[k];
+        float key = item->depth;
+
+        for (j = k - 1; j >= first && items[j]->depth < key; j--)
+        {
+            items[j + 1] = items[j];
+        }
+
+        items[j + 1] = item;
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D1550);
 
@@ -1387,7 +1598,32 @@ void LibRenderer::begin_frame()
     unk40ca = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4D00);
+// TODO: The renderer's destructor inlines this member's destructor, so it's inline here; its out-of-line copy still
+// comes from the vtable.
+/** @brief Destroy the list. */
+inline LibClass178B30::~LibClass178B30()
+{
+}
+
+/** @brief Destroy the passes, buffers and member objects, then the list. */
+LibRenderer::~LibRenderer()
+{
+    delete[] unk43d4;
+
+    for (s32 i = 0; i < 32; i++)
+    {
+        delete[] unk43d8[i];
+        unkc070[i]->destroy();
+    }
+
+    unk4458->destroy();
+    unk445c->destroy();
+    unk4460->destroy();
+    unk4464->destroy();
+    unk4468->destroy();
+    extra->destroy();
+    delete[] unk7c;
+}
 
 LibClass178F30::~LibClass178F30()
 {
@@ -1409,10 +1645,6 @@ LibClass178B70::~LibClass178B70()
 #pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5160);
-
-LibClass178B30::~LibClass178B30()
-{
-}
 
 /** @brief Start with nothing displayed and object kind bit 2 set. */
 LibClass178F30::LibClass178F30()
@@ -1707,7 +1939,78 @@ void LibModelBase::update()
     LibColorModel::update();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5E10);
+/**
+ * @brief Read a mesh's render-data record count.
+ * @param mesh Mesh header.
+ * @return Number of records.
+ */
+static inline s32 mesh_record_count(const LibMeshHeader& mesh)
+{
+    return mesh.unk40;
+}
+
+/**
+ * @brief Find the model's render-data record for an index and report its image's two keys, resolving an offset
+ * record to a pointer on the way.
+ * @param model Model whose mesh holds the records.
+ * @param index Record index.
+ * @param first_key Receives the image's first key.
+ * @param second_key Receives the image's second key.
+ */
+extern "C" void func_004D5E10(LibModel* model, s32 index, u32* first_key, u32* second_key)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource));
+
+    if (mesh->unk38 == 0)
+    {
+        return;
+    }
+
+    if (mesh->unk08 == 0)
+    {
+        return;
+    }
+
+    LibRenderDataRecord* record = reinterpret_cast<LibRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + mesh->unk08);
+
+    for (s32 i = 0; i < mesh_record_count(*mesh); i++)
+    {
+        s16 kind = record->storage_kind;
+
+        if (record->index == index)
+        {
+            if (kind == RENDER_DATA_OFFSET)
+            {
+                kind = RENDER_DATA_RESOLVED;
+                record->storage_kind = kind;
+                record->data = reinterpret_cast<u8*>(record) + record->data_offset;
+                record->resolved_data = record->data;
+            }
+
+            if (kind == RENDER_DATA_SHARED)
+            {
+                *first_key = record->key08;
+                *second_key = record->key0c;
+            }
+            else if (kind == RENDER_DATA_INLINE)
+            {
+                LibImageDataHeader* image = reinterpret_cast<LibImageDataHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
+                *first_key = image->first_key;
+                *second_key = image->second_key;
+            }
+            else if (kind == RENDER_DATA_RESOLVED)
+            {
+                LibImageDataHeader* image = static_cast<LibImageDataHeader*>(record->resolved_data);
+                *first_key = image->first_key;
+                *second_key = image->second_key;
+            }
+
+            return;
+        }
+
+        record = reinterpret_cast<LibRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + record->next_offset);
+    }
+}
 
 /**
  * @brief Return the size of a model's mesh payload: the size its header gives, or the chunk's payload size.
@@ -1787,7 +2090,64 @@ void LibModelBase::load_payload(void* payload, u8 set)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", set_fog_enabled__12LibModelBaseFUc);
+/**
+ * @brief Turn fogging on or off, in the resource's primitives too: the FGE bit of every flagged part's primitive
+ *        tags, written through the uncached segment.
+ * @param enabled Nonzero for fog.
+ */
+void LibModelBase::set_fog_enabled(u8 enabled)
+{
+    if (fog_enabled != enabled && resource != 0)
+    {
+        LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(resource));
+        func_004D5C10(resource);
+        s32 count = mesh->part_count;
+
+        if (enabled)
+        {
+            for (s32 i = 0; i < count; i++)
+            {
+                LibMeshPartRecord* record = static_cast<LibMeshPartRecord*>(func_004D5AC0(resource));
+
+                if (record->unk14 & 1)
+                {
+                    LibModelPart* part = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(&record->part) | EE_UNCACHED_ACCELERATED);
+                    part->first_tag_high |= GIF_TAG_HIGH_PRIM_FGE;
+                    part->second_tag_high |= GIF_TAG_HIGH_PRIM_FGE;
+
+                    if (part->unk84)
+                    {
+                        part->third_tag_high |= GIF_TAG_HIGH_PRIM_FGE;
+                        part->fourth_tag_high |= GIF_TAG_HIGH_PRIM_FGE;
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (s32 i = 0; i < count; i++)
+            {
+                LibMeshPartRecord* record = static_cast<LibMeshPartRecord*>(func_004D5AC0(resource));
+
+                if (record->unk14 & 1)
+                {
+                    LibModelPart* part = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(&record->part) | EE_UNCACHED_ACCELERATED);
+                    part->first_tag_high &= ~GIF_TAG_HIGH_PRIM_FGE;
+                    part->second_tag_high &= ~GIF_TAG_HIGH_PRIM_FGE;
+
+                    if (part->unk84)
+                    {
+                        part->third_tag_high &= ~GIF_TAG_HIGH_PRIM_FGE;
+                        part->fourth_tag_high &= ~GIF_TAG_HIGH_PRIM_FGE;
+                    }
+                }
+            }
+        }
+
+        fog_enabled = enabled;
+        unk59d_0 = 1;
+    }
+}
 
 extern "C" void func_004D6230(void* receiver, u32 arg1, u32 arg2)
 {
@@ -1795,7 +2155,16 @@ extern "C" void func_004D6230(void* receiver, u32 arg1, u32 arg2)
     func_00448A10(object->unk634, arg1, arg2);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6250);
+/** @brief Delete the resource when the model owns it, then forget it. */
+void LibModelBase::release_resource()
+{
+    if (owns_resource)
+    {
+        delete resource;
+    }
+
+    resource = 0;
+}
 
 /**
  * @brief Borrow mesh data into the model's resource, give it the render channels and take its resident mask.
@@ -1968,7 +2337,39 @@ extern "C" void func_004D68F0(LibUpdateList* list, LibUpdateList* owner)
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D69A0);
+// TODO: The target unrolls the recursion eight calls deep and calls the node count getter's out-of-line copy (kept
+// in text_0046AE20) at the last level, so the getter is inline in this unit and auto inlining runs at depth eight.
+#pragma push
+#pragma auto_inline on
+#pragma inline_depth(8)
+
+/**
+ * @brief Return how many nodes the list holds.
+ * @return Node count.
+ */
+inline u32 LibListReceiver::get_node_count() const
+{
+    return node_count;
+}
+
+/**
+ * @brief Count the nodes of a list and every list chained after it.
+ * @param list First list.
+ * @return Total node count.
+ */
+extern "C" s32 func_004D69A0(LibUpdateList* list)
+{
+    s32 count = list->get_node_count();
+
+    if (list->next_list)
+    {
+        count += func_004D69A0(list->next_list);
+    }
+
+    return count;
+}
+
+#pragma pop
 
 /**
  * @brief Collect the list chain's nodes into an array grouped by list kind.
@@ -2012,27 +2413,82 @@ extern "C" void lib_list_collect_nodes_by_kind(LibUpdateList* list, void** items
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D6C20);
+// TODO: The target inlines the recursion three levels deep and calls the traversal helpers' out-of-line copies at the
+// last level, so the helpers are inline here and auto inlining runs at depth three.
+#pragma push
+#pragma auto_inline on
+#pragma inline_depth(3)
 
-extern "C" s32 func_004D6DB0(const LibListNode* node)
+/**
+ * @brief Read the signed index used to select a node output counter.
+ * @param node Current list node.
+ * @return The sign-extended index value.
+ */
+extern "C" inline s32 func_004D6DB0(const LibListNode* node)
 {
     return node->unk0c;
 }
 
-extern "C" s32 func_004D6DC0(const void* sentinel, const void* node)
+/**
+ * @brief Test whether a list traversal has reached its sentinel.
+ * @param sentinel List sentinel.
+ * @param node Current node.
+ * @return True if node is the sentinel.
+ */
+extern "C" inline bool func_004D6DC0(const void* sentinel, const void* node)
 {
     return sentinel == node;
 }
 
-extern "C" LibListNode* func_004D6DD0(const LibListNode* node)
+/**
+ * @brief Get the next node in a circular list traversal.
+ * @param node Current node or list sentinel.
+ * @return Next node, which may be the list sentinel.
+ */
+extern "C" inline LibListNode* func_004D6DD0(const LibListNode* node)
 {
     return node->next;
 }
 
-extern "C" void* func_004D6DE0(void* object)
+/**
+ * @brief Return the supplied object pointer.
+ * @param object Object or subobject pointer.
+ * @return The same pointer.
+ */
+extern "C" inline void* func_004D6DE0(void* object)
 {
     return object;
 }
+
+/**
+ * @brief Put the nodes of a list and every list chained after it into an array grouped by list kind.
+ * @param list First list.
+ * @param items Array with room for every node in the chain.
+ * @param offsets Next free position for each list kind; advanced past each node placed.
+ */
+extern "C" void func_004D6C20(LibUpdateList* list, void** items, u32* offsets)
+{
+    LibListNode* node = static_cast<LibListNode*>(func_004D6DE0(list));
+
+    for (;;)
+    {
+        node = func_004D6DD0(node);
+
+        if (func_004D6DC0(list, node))
+        {
+            break;
+        }
+
+        items[offsets[func_004D6DB0(node)]++] = node;
+    }
+
+    if (list->next_list)
+    {
+        func_004D6C20(list->next_list, items, offsets);
+    }
+}
+
+#pragma pop
 
 /**
  * @brief Add each list's per-kind prefix sums to the chain's kind offsets.
@@ -2715,9 +3171,153 @@ void lib_begin_frame_packet(void)
     resident_packet_submit(&D_0050CD60, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8C20);
+/** Packet that loads a 16 by 16 CT32 image into VRAM, with the pixels it reads. */
+struct LibImageUpload16
+{
+    GsLoadImage image;
+    const void* colors;
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D8D20);
+extern "C" s16 func_004DC970(LibVramAllocator* vram, s16 first, s16 size, s32 slot);
+
+/** "Vram exhaused\n" */
+extern "C" const char D_00507270[];
+
+/**
+ * @brief Reserve VRAM for a 16 by 16 CT32 image and queue its upload.
+ * @param colors Pixels to upload.
+ * @param slot VRAM slot to reuse, or -1 for a new one.
+ * @return The slot, or -1 when the packet can't be allocated.
+ */
+extern "C" s16 func_004D8C20(const void* colors, s32 slot)
+{
+    LibImageUpload16* upload = new (0) LibImageUpload16;
+
+    if (upload == 0)
+    {
+        return -1;
+    }
+
+    s32 index = func_004DC970(g_vram_allocator, 0, 0x100, slot);
+
+    if (index == -1)
+    {
+        printf(D_00507270);
+    }
+
+    sceGsSetDefLoadImage(&upload->image, (g_vram_allocator->allocations[index] >> 5) & 0x3FFF, 1, 0, 0, 0, 16, 16);
+    upload->colors = colors;
+    FlushCache(0);
+    func_004DC4F0(g_packet_queue, 1, 1, upload, 0, 0);
+    return index;
+}
+
+extern "C" s16 func_004DCB30(LibVramAllocator* vram, s16 format, s16 width, s16 height, s32 slot);
+
+/**
+ * @brief Reserve VRAM for an image and its palette and queue their uploads.
+ * @param image Image chunk.
+ * @param slot VRAM slot to reuse, or -1 for a new one.
+ * @return The image's slot in the low half and the palette's in the high half, or -1 when a packet can't be
+ *         allocated.
+ */
+s32 func_004D8D20(u8* image, s32 slot)
+{
+    s16 palette_index;
+    LibImageHeader* header;
+    LibImageInfo* info;
+
+    header = reinterpret_cast<LibImageHeader*>(image + 0x10);
+    palette_index = 0;
+    info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(header) + header->image_offset);
+
+    if (header->unk02 != 0)
+    {
+        LibImageUpload16* upload = new (0) LibImageUpload16;
+
+        if (upload == 0)
+        {
+            return -1;
+        }
+
+        LibImagePalette* palette = reinterpret_cast<LibImagePalette*>(reinterpret_cast<u8*>(header) + header->palette_offset);
+        palette_index = func_004DC970(g_vram_allocator, header->palette_format, header->palette_size / 4, slot);
+
+        if (palette_index == -1)
+        {
+            printf(D_00507270);
+        }
+
+        sceGsSetDefLoadImage(&upload->image, (g_vram_allocator->allocations[palette_index] >> 5) & 0x3FFF,
+                             (palette->bitbltbuf >> 48) & 0x3F, header->palette_format, 0, 0, palette->trxreg & 0xFFF,
+                             (palette->trxreg >> 32) & 0xFFF);
+        upload->colors = palette->colors;
+        FlushCache(0);
+        func_004DC4F0(g_packet_queue, 1, 1, upload, 0, 0);
+    }
+
+    s32 width = info->width;
+    s32 height = info->height;
+    s32 format = info->texture_code;
+    s32 area_width;
+    s32 area_height;
+    s32 area_format;
+
+    if (header->flags & LIB_IMAGE_SWIZZLED)
+    {
+        switch (format)
+        {
+        case 0x14:
+            area_width = width << 1;
+            area_height = height << 2;
+            break;
+        case 0x13:
+            area_width = width << 1;
+            area_height = height << 1;
+            break;
+        case 2:
+        case 0xA:
+            area_width = width;
+            area_height = height << 1;
+            break;
+        default:
+            area_width = width;
+            area_height = height;
+            break;
+        }
+
+        area_format = format;
+        format = 0;
+    }
+    else
+    {
+        area_width = width;
+        area_height = height;
+        area_format = format;
+    }
+
+    u8* pixels = reinterpret_cast<u8*>(header) + info->pixel_offset;
+    s16 index = func_004DCB30(g_vram_allocator, area_format, area_width, area_height, slot);
+
+    if (index == -1)
+    {
+        printf(D_00507270);
+    }
+
+    LibImageUpload16* upload = new (0) LibImageUpload16;
+
+    if (upload == 0)
+    {
+        return -1;
+    }
+
+    sceGsSetDefLoadImage(&upload->image, g_vram_allocator->unk04[index] & 0x3FFF, width >> 6, format, 0, 0, width,
+                         height);
+    upload->colors = pixels + 0x80;
+    FlushCache(0);
+    func_004DC4F0(g_packet_queue, 1, 1, upload, 0, 0);
+    return index | palette_index << 16;
+}
 
 extern "C" ResidentDmaQueue* D_001B6604;
 extern "C" ResidentDmaQueue* D_001B6608;
@@ -2966,7 +3566,31 @@ u32 LibTextureCache::find_texture(LibTextureRequest* request, u32 tag, u32 id, s
     return func_004A7100(this, request, tag, id, slot, unk5, user);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", release_area_end__15LibTextureCacheFUi);
+/**
+ * @brief Release every loaded block that overlaps the last part of the texture area.
+ * @param size Size of the part, counted back from the end of the area.
+ */
+void LibTextureCache::release_area_end(u32 size)
+{
+    u32 index = blocks[0].next_block;
+    u32 start;
+    u32 end = texture_address + texture_size;
+    start = end - size;
+
+    for (; index != 0; index = blocks[index].next_block)
+    {
+        if (blocks[index].state == 1)
+        {
+            u32 first = blocks[index].address;
+            u32 last = first + blocks[index].size;
+
+            if ((first >= start && first < end) || (last >= start && last < end) || (start >= first && last > end))
+            {
+                release_block(index);
+            }
+        }
+    }
+}
 
 /** @brief Empty the cache: one free block over the whole texture area, no textures and no CLUTs. */
 void LibTextureCache::reset()
@@ -3215,7 +3839,24 @@ void LibMicrocodeLoader::submit_dma(u32 channel)
     *D1_CHCR = DMA_CHCR_START | DMA_CHCR_TAG_TRANSFER | DMA_CHCR_MODE_CHAIN | DMA_CHCR_DIR_FROM_MEMORY;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", get_program_tag__18LibMicrocodeLoaderFi);
+/** DMA tags that upload each VU1 microprogram, in program order. */
+struct LibProgramTagTable
+{
+    const u64* tags[LIB_VU1_PROGRAM_COUNT];
+};
+
+extern "C" const LibProgramTagTable D_004ED3B0;
+
+/**
+ * @brief Return the DMA tag that uploads a microprogram.
+ * @param program Program index.
+ * @return DMA REF tag.
+ */
+u64 LibMicrocodeLoader::get_program_tag(s32 program)
+{
+    LibProgramTagTable table = D_004ED3B0;
+    return *table.tags[program];
+}
 
 /**
  * @brief Switch to a microprogram.
@@ -3814,7 +4455,48 @@ void LibDisplayManager::prepare_camera()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update__14LibClass178F30Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB410);
+/** 0x80-byte packet a ring slot holds: two float quadwords around ten doubleword fields. */
+struct LibRingPacket
+{
+    float unk00[4];
+    u64 unk10;
+    u64 unk18;
+    u64 unk20;
+    u64 unk28;
+    u64 unk30;
+    u64 unk38;
+    u64 unk40;
+    u64 unk48;
+    u64 unk50;
+    u64 unk58;
+    float unk60[4];
+    u64 unk70;
+    u64 unk78;
+};
+
+/**
+ * @brief Copy a packet into the ring's next slot (wrapping from 254 back to one), clear its words at 0x60 and 0x68 and
+ * store a value at 0x20, all through the uncached accelerated view.
+ * @param ring Packet ring.
+ * @param packet Packet to copy.
+ * @param value Doubleword stored at 0x20.
+ * @return The slot.
+ */
+extern "C" LibRingPacket* func_004DB410(LibPacketRing* ring, const LibRingPacket* packet, u64 value)
+{
+    if (++ring->next_slot >= 0xFF)
+    {
+        ring->next_slot = 1;
+    }
+
+    LibRingPacket* slot = reinterpret_cast<LibRingPacket*>(ring->slots[ring->next_slot]);
+    LibRingPacket* uncached = reinterpret_cast<LibRingPacket*>((u32)slot | EE_UNCACHED_ACCELERATED);
+    *uncached = *packet;
+    *reinterpret_cast<u64*>((u32)&slot->unk60 | EE_UNCACHED_ACCELERATED) = 0;
+    *reinterpret_cast<u64*>((u32)&slot->unk60[2] | EE_UNCACHED_ACCELERATED) = 0;
+    *reinterpret_cast<u64*>((u32)&slot->unk20 | EE_UNCACHED_ACCELERATED) = value;
+    return slot;
+}
 
 /** @brief Flush the data cache and start writing at slot one. */
 LibPacketRing::LibPacketRing()
@@ -4326,7 +5008,39 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC8B0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DC970);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCA70);
+/**
+ * @brief Allocate an aligned area from the texture side of the VRAM allocator.
+ * @param vram Allocator.
+ * @param size Size in bytes.
+ * @param alignment Alignment in bytes.
+ * @param slot Slot to reuse, or -1 for a new one.
+ * @return Slot of the area, or -1 when VRAM is full.
+ */
+extern "C" s16 func_004DCA70(LibVramAllocator* vram, u32 size, u32 alignment, s16 slot)
+{
+    s32 index = slot;
+
+    vram->base_address = (vram->base_address + alignment - 1) & -alignment;
+
+    if (index == -1)
+    {
+        index = vram->unk04_count++;
+
+        if (vram->unk04_count >= vram->unk04_capacity)
+        {
+            return -1;
+        }
+    }
+
+    if (vram->base_address + size >= vram->unk14)
+    {
+        return -1;
+    }
+
+    vram->unk04[index] = (u64)(vram->base_address >> 6);
+    vram->base_address += (size + 63) & ~63;
+    return index;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCB30);
 
@@ -4483,7 +5197,7 @@ void LibCameraContext::set_output(bool enabled, bool circuit1)
 /** @brief Rebuild the scaled display's packets, if it's scaled and has a draw area. */
 void LibCameraContext::refresh_scaled_packets()
 {
-    if (scaled && display_area.width > 0 && display_area.height > 0)
+    if (display_area.scaled && display_area.width > 0 && display_area.height > 0)
     {
         build_scaled_packets();
     }
@@ -4533,7 +5247,7 @@ u32 LibCameraContext::wait_for_field(s32 frame)
         field = 0;
     }
 
-    if (scaled)
+    if (display_area.scaled)
     {
         return field;
     }
@@ -4552,8 +5266,8 @@ u32 LibCameraContext::wait_for_field(s32 frame)
         field = 0;
     }
 
-    // TODO: scaled was already handled above; this second test is the only shape I found that matches.
-    if (!scaled)
+    // TODO: display_area.scaled was already handled above; this second test is the only shape I found that matches.
+    if (!display_area.scaled)
     {
         unk3E4C = field;
 

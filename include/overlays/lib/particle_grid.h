@@ -86,7 +86,10 @@ typedef struct LibGridRow40
 } LibGridRow40;
 
 #ifdef __cplusplus
-/** Root of the grid element classes, with vtable D_173F48 in main data; its only virtual is the destructor. */
+/**
+ * Root of the grid element classes and the 0x30-byte cell of LibClass173E70, with vtable D_173F48 in main data; its
+ * only virtual is the destructor.
+ */
 class LibClass173F48 : public LibClass173A28
 {
 public:
@@ -97,21 +100,20 @@ public:
     virtual ~LibClass173F48()
     {
     }
+
+    u8 unk04[0xC];
+    LibGridVector4 unk10;
+    LibGridVector4 unk20;
 };
 
 /** The 64-byte secondary row element, with vtable D_173F38 in main data. */
 class LibClass173F38 : public LibClass173F48
 {
 public:
-    /** @brief Construct the element. */
     LibClass173F38();
 
-    /** @brief Destroy the element. */
     virtual ~LibClass173F38();
 
-    u8 unk04[0xC];
-    LibGridVector4 unk10;
-    LibGridVector4 unk20;
     LibGridFrameVector unk30;
 };
 
@@ -127,9 +129,6 @@ public:
     {
     }
 
-    u8 unk04[0xC];
-    LibGridVector4 unk10;
-    LibGridVector4 unk20;
     u8 unk30[0xC];
     float unk3C;
     u8 unk40[0x20];
@@ -150,15 +149,13 @@ public:
     u8 unk60[0x20];
 };
 
-/** 0xB0-byte grid cell of LibClass1774E0, with vtable D_177168 in main data. */
-class LibClass177168 : public LibClass174218
+/** 0xB0-byte grid cell of LibClass1774E0 with its motion state at 0x80, with vtable D_177168 in main data. */
+class LibClass177168 : public LibClass174218, public LibGridFrameMotion
 {
 public:
     LibClass177168();
 
     virtual ~LibClass177168();
-
-    u8 unk80[0x30];
 };
 
 /** 0xF0-byte grid cell, with vtable D_174208 in main data. */
@@ -230,7 +227,7 @@ public:
 
     virtual ~LibClass177188();
 
-    u8 unk04[0x5C];
+    u8 unk30[0x30];
 };
 #else
 /** Bit set of the grid's active cells. */
@@ -456,6 +453,39 @@ class LibGridEmitter : public LibGridBase
         LibGridFrameHeader* frame_header;
         LibGridFrameRecord* frame_records;
 };
+
+/** Grid emitter with two more words at 0xB0 that its settings copy carries over. */
+class LibGridEmitterB0 : public LibGridEmitter
+{
+    public:
+        void* unkb0;
+        void* unkb4;
+};
+#endif
+
+#ifdef __cplusplus
+/** Grid receiver the frame-vector updater at 0x48E550 reads: 0x447500's layout over LibClass177168 cells. */
+typedef struct LibGridReceiver48E550
+{
+    u8 unk00[0xC];
+    s32 cell_count;
+    s32 columns;
+    LibClass177168* cells;
+    u32 unk18;
+    LibGridBitset* active;
+    LibGridRow40* rows;
+    u32 unk24;
+    float unk28;
+    s32 index;
+    float unk30;
+    u8 unk34[0x18];
+    u8 unk4C;
+    u8 unk4D[0xA];
+    u8 skip_frame_playback;
+    u8 unk58[0x48];
+    LibGridFrameHeader* frame_header;
+    LibGridFrameRecord* frame_records;
+} LibGridReceiver48E550;
 #endif
 
 #ifdef __cplusplus
@@ -535,13 +565,6 @@ void func_00484D80(LibGridEmitter* object, const LibGridEmitter* other);
  * @param other Grid to copy.
  */
 void func_00481AC0(LibGridEmitter* object, const LibGridEmitter* other);
-
-/**
- * @brief Copy another grid's size and settings, reallocating this grid to match.
- * @param object Grid to update.
- * @param other Grid to copy.
- */
-void func_00447090(LibGridEmitter* object, const LibGridEmitter* other);
 
 /**
  * @brief Copy another grid's size and settings, reallocating this grid to match.

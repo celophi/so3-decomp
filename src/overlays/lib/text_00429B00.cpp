@@ -15,6 +15,7 @@
 #include "overlays/lib/memory_card.h"
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/light_random.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "ee.h"
 #include "overlays/lib/text_004DD440.h"
@@ -32,108 +33,6 @@
 #include "main/system.h"
 #include "main/utility.h"
 #include "main/resource_queue.h"
-
-/**
- * LibModel of type 0x120 with three owned child objects and its own update list, with vtable D_173380 in main data.
- * What it draws isn't known yet.
- */
-class LibClass173380 : public LibModel
-{
-public:
-    /** @brief Construct the model with its default settings. */
-    LibClass173380();
-
-    /** @brief Destroy the child objects, then the model. */
-    virtual ~LibClass173380()
-    {
-        for (s32 i = 0; i < 3; i++)
-        {
-            if (children[i])
-            {
-                children[i]->destroy();
-                children[i] = 0;
-            }
-        }
-    }
-
-    /** @brief Destroy the child objects, then destroy the model through its base. */
-    virtual void destroy();
-
-    /** @brief Update the objects in the model's own list, then the model. */
-    virtual void update();
-
-    virtual void render();
-
-    /** @brief Use the draw bucket stored at unk83c. */
-    virtual void set_default_draw_bucket();
-
-    /**
-     * @brief Give no centre for the oriented-box visibility test.
-     * @param output Unused.
-     * @return Zero.
-     */
-    virtual s32 get_box_cull_center(void* output);
-
-    /**
-     * @brief Return LibModel's bounding sphere with the radius scaled by unk848.
-     * @return Bounding sphere (centre in xyz, radius in w).
-     */
-    virtual const LibVector4* get_bounding_sphere();
-
-    virtual void build_packet(const void* matrix, void* context);
-
-    /** @brief Build LibModel's packets, then this model's own unless it was built from another one. */
-    virtual void build_packets();
-
-    /**
-     * @brief Extra quadwords to reserve in the draw packet.
-     * @return 256.
-     */
-    virtual s32 get_extra_packet_size();
-
-    /**
-     * @brief Slot 0x44 of the second vtable; its purpose is unknown.
-     * @return 128.
-     */
-    virtual s32 func_slot44();
-
-    /**
-     * @brief Build this model from another one of the same kind and copy its settings.
-     * @param links Display list the model draws through, or null.
-     * @param source Model to copy.
-     * @return Nonzero on success.
-     */
-    virtual s32 build_from(LibUpdateList* links, LibClass173380* source);
-
-    /** @brief Finish the packet, or mark the transfer done when unk838 is set. */
-    virtual void func_slot4C();
-
-    LibVector4 unk820;
-    LibModel* unk830;
-    u8 unk834;
-    u8 unk835;
-    u8 unk836;
-    u8 unk837;
-    u8 unk838;
-    u8 unk839;
-    u8 unk83a;
-    u8 unk83b;
-    u8 unk83c;
-    u8 unk83d;
-    u8 unk83e;
-    u8 built_from_source;
-    float unk840;
-    float unk844;
-    float unk848;
-    float unk84c;
-    float unk850;
-    float unk854;
-    float unk858;
-    u32 unk85c;
-    u32 unk860[6];
-    LibTransformOwner* children[3];
-    LibUpdateList objects;
-};
 
 /** LibClass173380 that LibClass173380::build_packet creates, with vtable D_173270 in main data. */
 class LibClass173270 : public LibClass173380
@@ -155,27 +54,6 @@ public:
     virtual void complete_dma(u32 channel);
 };
 
-/** 16-byte element of LibClass173490's two arrays; its contents aren't known yet, it's copied as one 128-bit value. */
-struct LibClass173490Entry
-{
-    LibClass173490Entry()
-    {
-    }
-
-    /**
-     * @brief Copy all 16 bytes.
-     * @param other Element to copy.
-     * @return This element.
-     */
-    LibClass173490Entry& operator=(const LibClass173490Entry& other)
-    {
-        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
-        return *this;
-    }
-
-    u32 unk00[4];
-};
-
 /** LibClass1734B0 entry of type 34 with two element arrays, with vtable D_173490 in main data. */
 class LibClass173490 : public LibClass1734B0
 {
@@ -188,7 +66,13 @@ public:
 
     virtual void set_borrowed_data(void* value);
 
-    virtual void func_slot10();
+    /**
+     * @brief Copy each vertex's cell element into the output, or, when unk4c is clear, the output's values back
+     *        into the cells and set unk4d.
+     * @param output Output to fill or read.
+     * @param index Bit index, which picks the record of cell indices.
+     */
+    virtual void func_slot10(LibEntryOutput* output, s32 index);
 
     /**
      * @brief Return the entry's type code.
@@ -228,6 +112,10 @@ public:
 class LibClass1736C0 : public LibTransform
 {
 public:
+    virtual ~LibClass1736C0()
+    {
+    }
+
     /**
      * @brief Slot 0x84: bring the light into a view's space.
      * @param matrix View matrix.
@@ -302,6 +190,9 @@ public:
 class LibClass173630 : public LibClass1736C0
 {
 public:
+    /** @brief Destroy the light. */
+    virtual ~LibClass173630();
+
     /**
      * @brief Bring the position and both directions into the view's space.
      * @param matrix View matrix.
@@ -392,29 +283,6 @@ public:
     LibClass1734D0();
 };
 
-/** Seed of the 1664525/1013904223 linear congruential sequence Lib's lights draw from. */
-extern "C" u32 D_001B65B8;
-
-/**
- * @brief Advance the light random seed.
- * @return New seed.
- */
-static inline u32 lib_light_random()
-{
-    D_001B65B8 = 1664525L * D_001B65B8 + 1013904223L;
-    return D_001B65B8;
-}
-
-/**
- * @brief Turn the next light random seed into a fraction by using its low 23 bits as a float mantissa.
- * @return Random value from 0 up to 1.
- */
-static inline float lib_light_random_fraction()
-{
-    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
-    return *(float*)&bits - 1.0f;
-}
-
 /**
  * @brief Report whether the transform's transposed matrix is up to date.
  * @param transform Transform to check.
@@ -451,7 +319,6 @@ static inline const LibMatrix44Value* get_transposed_transform(LibTransform* tra
     return &transform->transposed_transform;
 }
 
-
 /** Sound bank set Lib plays its sounds through. */
 extern ResidentSoundBankSet* D_001B6524;
 
@@ -485,7 +352,6 @@ typedef struct WordSetterOwnertext_00429B00
     u8 unk28[0x400];
     u32 unk428;
 } WordSetterOwnertext_00429B00;
-
 
 
 }
@@ -1314,11 +1180,89 @@ s32 LibClass173490::func_slot14()
 
 extern "C" {
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042D9B0);
+s32 func_0042DCE0(LibClass173490* entry, const LibVector4* position, s32* cell, float* x, float* y);
+
+/**
+ * @brief Multiply the first three components of a vector by another vector's.
+ * @param vector Vector to scale.
+ * @param scale Per-component factors; w is unused.
+ * @return The scaled vector.
+ */
+static inline FieldVec4B scale_components(const FieldVec4B& vector, const LibVector4& scale)
+{
+    FieldVec4B result = vector;
+    result.x *= scale.x;
+    result.y *= scale.y;
+    result.z *= scale.z;
+    return result;
+}
+
+/**
+ * @brief Add a vector at a position, spread bilinearly over the four cells around it.
+ * @param entry Grid entry.
+ * @param position Position to add at.
+ * @param amount Vector to add.
+ */
+void func_0042D9B0(LibClass173490* entry, const LibVector4* position, const LibVector4* amount)
+{
+    s32 stride = entry->unk30[0] + 2;
+    s32 cell;
+    float x;
+    float y;
+
+    if (func_0042DCE0(entry, position, &cell, &x, &y))
+    {
+        // TODO: The second cell array holds vectors here; LibClass173490Entry may really be a FieldVec4B.
+        FieldVec4B* cells = reinterpret_cast<FieldVec4B*>(entry->unk44);
+        float weight;
+
+        weight = (1.0f - x) * (1.0f - y);
+        cells[cell] += scale_components(FieldVec4B(weight, weight, weight, weight), *amount);
+        weight = x * (1.0f - y);
+        cells[cell + 1] += scale_components(FieldVec4B(weight, weight, weight, weight), *amount);
+        weight = (1.0f - x) * y;
+        cells[cell + stride] += scale_components(FieldVec4B(weight, weight, weight, weight), *amount);
+        weight = x * y;
+        cells[cell + stride + 1] += scale_components(FieldVec4B(weight, weight, weight, weight), *amount);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042DCE0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042DFF0);
+/**
+ * @brief Copy each vertex's cell element into the output, or, when unk4c is clear, the output's values back into
+ *        the cells and set unk4d.
+ * @param output Output to fill or read.
+ * @param index Bit index, which picks the record of cell indices.
+ */
+void LibClass173490::func_slot10(LibEntryOutput* output, s32 index)
+{
+    LibClass173490Entry* values = output->values;
+    u16* cells = static_cast<u16*>(output->records[index]);
+    s32 count = output->count;
+    LibClass173490Entry* entries = unk40;
+
+    if (unk4c)
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            *values = entries[*cells];
+            cells++;
+            values++;
+        }
+    }
+    else
+    {
+        unk4d = 1;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            entries[*cells] = *values;
+            cells++;
+            values++;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E240);
 
@@ -3119,7 +3063,10 @@ void func_00433AA0(void)
 
 void* func_00433BE0(u32 alignment, u32 size) { return memalign(alignment, size); }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", __dt__14LibClass173630Fv);
+/** @brief Destroy the light. */
+LibClass173630::~LibClass173630()
+{
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00433C70);
 

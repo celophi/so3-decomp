@@ -101,21 +101,6 @@ public:
     LibStorageBlock0C unk40;
 };
 
-/** Partial Lib widget with vtable D_175170 in main data. */
-class LibClass175170 : public LibWidget
-{
-public:
-    virtual ~LibClass175170();
-
-    /** @brief Refresh the widget's drawing state. */
-    virtual void func_00413D20();
-
-    /** @brief Draw the widget. */
-    virtual void draw();
-
-    LibStorageBlock0C unk40;
-};
-
 /** Number of slots in use in the first retained set; trailing empty slots are trimmed. */
 extern "C" u8 D_001B650C;
 
@@ -312,7 +297,11 @@ public:
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
-    u8 unk210[0x20];
+    u32 unk210_mask;
+    u8 unk214[0xC];
+    float unk220;
+    float unk224;
+    u8 unk228[8];
     LibVector4 down;
 };
 
@@ -330,12 +319,14 @@ public:
      * @param position Sphere centre, in world space.
      * @param output Receives the corrected centre.
      * @param radius Sphere radius.
-     * @return Nonzero when the centre was moved.
+     * @return Whether the centre was moved.
      */
-    virtual s32 func_00425870(const LibVector4* position, LibVector4* output, float radius);
+    virtual bool func_00425870(const LibVector4* position, LibVector4* output, float radius);
 
     LibVector4 down;
     LibVector4 position;
+    float extent_x;
+    float extent_z;
 };
 
 /** Partial LibClass172A20 with vtable D_172E10 in main data. */
@@ -352,9 +343,11 @@ public:
      * @param position Sphere centre, in world space.
      * @param output Receives the corrected centre.
      * @param radius Sphere radius.
-     * @return Nonzero when the centre was moved.
+     * @return Whether the centre was moved.
      */
-    virtual s32 func_00425870(const LibVector4* position, LibVector4* output, float radius);
+    virtual bool func_00425870(const LibVector4* position, LibVector4* output, float radius);
+
+    LibVector4 extent;
 };
 
 /** Partial LibClass172A20 with vtable D_172EA0 in main data. */
@@ -371,9 +364,9 @@ public:
      * @param position Sphere centre, in world space.
      * @param output Receives the corrected centre.
      * @param radius Sphere radius.
-     * @return Nonzero when the centre was moved.
+     * @return Whether the centre was moved.
      */
-    virtual s32 func_00425870(const LibVector4* position, LibVector4* output, float radius);
+    virtual bool func_00425870(const LibVector4* position, LibVector4* output, float radius);
 
     LibVector4 down;
     LibVector4 position;
@@ -717,7 +710,10 @@ public:
     /** @brief Release the image capture, then delete the object. */
     virtual void destroy();
 
-    /** @brief Advance the object. */
+    /**
+     * @brief Read back the 16 by 16 depth block centred on (x, y) and record the share of its values below the
+     *        threshold. The first update only starts the read.
+     */
     virtual void update();
 
     /** @brief Detach and destroy the image capture, if there is one. */
@@ -726,8 +722,12 @@ public:
     void* unk14;
     void* unk18;
     u8 unk1c;
-    u8 unk1d[0x40F];
-    s32 unk42c;
+    u8 unk1d[3];
+    u8 depth[0x400];
+    s32 x;
+    s32 y;
+    u32 threshold;
+    float coverage;
     LibImageCapture* capture;
 };
 

@@ -466,15 +466,22 @@ class LibClass173E70 : public LibClass173A40
         virtual s32 func_slot3C();
 
         /**
+         * @brief Reallocate the cells, the bit set and the secondary elements for a new size.
+         * @param rows Cell count.
+         * @param columns Secondary elements per cell plus one.
+         */
+        virtual void resize(s32 rows, s32 columns);
+
+        /**
          * @brief Copy another grid's size and resize this grid to match.
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
 
-        void* unk14;
+        LibClass173F48* unk14;
         LibClass173F48* unk18;
         LibGridBitset* unk1c;
-        void* unk20;
+        LibClass173F38* unk20;
         LibClass173F38* unk24;
 };
 
@@ -486,15 +493,17 @@ class LibClass173DA0 : public LibClass173E70
         {
         }
 
-        virtual void func_slot10();
-
-        virtual void func_slot14();
-
         /**
          * @brief Copy another grid's size and emission settings.
          * @param source Grid to copy.
          */
         virtual void copy_settings(const LibClass173A40* source);
+
+        // TODO: The game's slots 0x10 and 0x14 are func_0043E2F0 and func_0043EA10, which take an output budget, an
+        // output array and a flag; the base declares them without parameters, so they're free functions for now.
+        virtual void func_slot10();
+
+        virtual void func_slot14();
 
         float unk28;
         u32 unk2c;
@@ -713,6 +722,13 @@ class LibClass174120 : public LibClass174050
         u8 unkc8;
         u8 unkc9;
         u8 unkca[6];
+};
+
+/** LibClass174120 grid with vtable D_173F80 in main data; only its destructor is in C so far. */
+class LibClass173F80 : public LibClass174120
+{
+    public:
+        virtual ~LibClass173F80();
 };
 #else
 /** Opaque level-selection controller used by the C handle-collection interface. */

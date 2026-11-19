@@ -93,6 +93,46 @@ static inline void vu0_sincos_store(LibVector4* output)
 }
 
 /**
+ * @brief Start the degree-nine sine/cosine evaluation and load the sign lanes.
+ * @param table Aligned shared coefficient and scratch table.
+ * @see vu0_sincos_evaluate_degree9, which does this and vu0_sincos_finish_to_table's arithmetic in one block; lib's
+ *      tangent at 0x4CC070 reloads the table address between the two halves.
+ */
+static inline void vu0_sincos_begin_evaluate_degree9(const void* table)
+{
+    asm __volatile__(
+        "vmulay.zw  $ACC, $vf15, $vf13y\n"
+        "vmaddx.zw  $vf14, $vf31, $vf13x\n"
+        "lqc2       $vf19, 0x10(%0)\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
+/**
+ * @brief Finish the degree-nine sine/cosine evaluation and store the pair back into the shared table's second
+ *        quadword (cosine at 0x18, sine at 0x1C).
+ * @param table Aligned shared coefficient and scratch table.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); vu0_sincos_begin_evaluate_degree9.
+ */
+static inline void vu0_sincos_finish_to_table(void* table)
+{
+    asm __volatile__(
+        "vmula.zw   $ACC, $vf14, $vf15\n"
+        "vmaddw.zw  $vf14, $vf31, $vf12w\n"
+        "vmula.zw   $ACC, $vf14, $vf15\n"
+        "vmaddz.zw  $vf14, $vf31, $vf12z\n"
+        "vmul.zw    $vf16, $vf16, $vf19\n"
+        "vmula.zw   $ACC, $vf14, $vf15\n"
+        "vmaddw.zw  $vf14, $vf31, $vf0w\n"
+        "vmul.zw    $vf13, $vf14, $vf16\n"
+        "sqc2       $vf13, 0x10(%0)\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
+/**
  * @brief Load the angle, reduction constants, and degree-nine coefficients.
  * @param table Aligned shared coefficient and scratch table.
  */

@@ -273,6 +273,21 @@ public:
     u8 unk8e[2];
 };
 
+struct LibClass173490Entry;
+
+/**
+ * What an entry fills for one bit: a vector and a 16-byte value per vertex, from the entry's record for that
+ * bit.
+ */
+struct LibEntryOutput
+{
+    s32 count;
+    LibVector4* vectors;
+    LibClass173490Entry* values;
+    u8 unk0c[0xC];
+    void* records[1];
+};
+
 /** Partial entry of a LibClass177A20 list, with vtable D_1779F0 in main data. */
 class LibClass1779F0 : public LibListSentinel
 {
@@ -289,7 +304,12 @@ public:
      */
     virtual void set_borrowed_data(void* value);
 
-    virtual void func_slot10() = 0;
+    /**
+     * @brief Fill the output's vertices from the entry's record for a bit.
+     * @param output Output to fill.
+     * @param index Bit index.
+     */
+    virtual void func_slot10(LibEntryOutput* output, s32 index) = 0;
 
     /**
      * @brief Return the entry's type code.
@@ -366,7 +386,7 @@ public:
      */
     virtual void set_borrowed_data(void* value);
 
-    virtual void func_slot10();
+    virtual void func_slot10(LibEntryOutput* output, s32 index);
 
     /**
      * @brief Return the entry's type code.
@@ -406,6 +426,81 @@ public:
     u8 unk50;
 };
 
+/** Leading grid size of the data a LibClass174C20 borrows; the cell words follow at 0x20. */
+struct LibClass174C20Header
+{
+    s32 columns;
+    s32 rows;
+    u8 unk08[0x18];
+};
+
+/** LibClass1734B0 entry of type 35 with per-cell word arrays, with vtable D_174C20 in main data. */
+class LibClass174C20 : public LibClass1734B0
+{
+public:
+    /** @brief Start with no arrays. */
+    LibClass174C20();
+
+    /** @brief Free the cell arrays. */
+    virtual ~LibClass174C20();
+
+    /**
+     * @brief Use borrowed data, allocate the cell arrays for its grid and clear them.
+     * @param value Borrowed data.
+     */
+    virtual void set_borrowed_data(void* value);
+
+    virtual void func_slot10(LibEntryOutput* output, s32 index);
+
+    /**
+     * @brief Return the entry's type code.
+     * @return 35.
+     */
+    virtual s32 func_slot14();
+
+    /**
+     * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16
+     *        bytes.
+     * @param index Bit index; unused.
+     * @param size Size in halfwords; receives the size in bytes.
+     * @return Record.
+     */
+    virtual u8* read_record(u32 index, u32* size);
+
+    virtual s32 func_slot1C();
+
+    /** @brief Zero both cell arrays over the grid, including its border. */
+    void clear_cells();
+
+    LibClass174C20Header* header;
+    u32* unk34;
+    u8* cursor;
+    u32 unk3c;
+    float* unk40;
+    float* unk44;
+    u32* unk48;
+    LibClass173490Entry* unk4c;
+};
+
+/**
+ * @brief Find the grid cell under a position and the position's fractions inside it.
+ * @param entry Grid entry.
+ * @param position Position to look up.
+ * @param cell Receives the cell index.
+ * @param x Receives the horizontal fraction.
+ * @param y Receives the vertical fraction.
+ * @return Nonzero when the position is on the grid.
+ */
+extern "C" s32 func_00452390(LibClass174C20* entry, const LibVector4* position, s32* cell, float* x, float* y);
+
+/**
+ * @brief Add an amount at a position, spread bilinearly over the four cells around it.
+ * @param entry Grid entry.
+ * @param position Position to add at.
+ * @param amount Amount to add.
+ */
+extern "C" void func_00452270(LibClass174C20* entry, const LibVector4* position, float amount);
+
 /** LibClass1779F0 entry with vtable D_00174C90 in main data that the textured entries 174C70/174CB0/174D10 extend. */
 class LibClass174C90 : public LibClass1779F0
 {
@@ -444,6 +539,9 @@ public:
      * @return Always one.
      */
     s32 borrow_mesh(void* data);
+
+    /** @brief Delete the resource when the model owns it, then forget it. */
+    void release_resource();
 
     /** @brief Unregister the resource when owned, then destroy the model through its base. */
     virtual void destroy()
@@ -840,6 +938,108 @@ public:
     u8 unk7e4[0x34];
     LibModel* source;
     u8 unk81c[4];
+};
+
+/**
+ * LibModel of type 0x120 with three owned child objects and its own update list, with vtable D_173380 in main data.
+ * What it draws isn't known yet.
+ */
+class LibClass173380 : public LibModel
+{
+public:
+    /** @brief Construct the model with its default settings. */
+    LibClass173380();
+
+    /** @brief Destroy the child objects, then the model. */
+    virtual ~LibClass173380()
+    {
+        for (s32 i = 0; i < 3; i++)
+        {
+            if (children[i])
+            {
+                children[i]->destroy();
+                children[i] = 0;
+            }
+        }
+    }
+
+    /** @brief Destroy the child objects, then destroy the model through its base. */
+    virtual void destroy();
+
+    /** @brief Update the objects in the model's own list, then the model. */
+    virtual void update();
+
+    virtual void render();
+
+    /** @brief Use the draw bucket stored at unk83c. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Give no centre for the oriented-box visibility test.
+     * @param output Unused.
+     * @return Zero.
+     */
+    virtual s32 get_box_cull_center(void* output);
+
+    /**
+     * @brief Return LibModel's bounding sphere with the radius scaled by unk848.
+     * @return Bounding sphere (centre in xyz, radius in w).
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    virtual void build_packet(const void* matrix, void* context);
+
+    /** @brief Build LibModel's packets, then this model's own unless it was built from another one. */
+    virtual void build_packets();
+
+    /**
+     * @brief Extra quadwords to reserve in the draw packet.
+     * @return 256.
+     */
+    virtual s32 get_extra_packet_size();
+
+    /**
+     * @brief Slot 0x44 of the second vtable; its purpose is unknown.
+     * @return 128.
+     */
+    virtual s32 func_slot44();
+
+    /**
+     * @brief Build this model from another one of the same kind and copy its settings.
+     * @param links Display list the model draws through, or null.
+     * @param source Model to copy.
+     * @return Nonzero on success.
+     */
+    virtual s32 build_from(LibUpdateList* links, LibClass173380* source);
+
+    /** @brief Finish the packet, or mark the transfer done when unk838 is set. */
+    virtual void func_slot4C();
+
+    LibVector4 unk820;
+    LibModel* unk830;
+    u8 unk834;
+    u8 unk835;
+    u8 unk836;
+    u8 unk837;
+    u8 unk838;
+    u8 unk839;
+    u8 unk83a;
+    u8 unk83b;
+    u8 unk83c;
+    u8 unk83d;
+    u8 unk83e;
+    u8 built_from_source;
+    float unk840;
+    float unk844;
+    float unk848;
+    float unk84c;
+    float unk850;
+    float unk854;
+    float unk858;
+    u32 unk85c;
+    u32 unk860[6];
+    LibTransformOwner* children[3];
+    LibUpdateList objects;
 };
 
 #endif

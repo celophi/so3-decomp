@@ -86,7 +86,17 @@ segments:
       - [0xF6BC0, cpp, text_004DD440]
       # The data starts here. A jump table gets a .rodata entry once the function that uses it is compiled;
       # everything else stays as raw pieces.
+      # text_004DD440 ends with an 8-byte thunk at 0x4E9FE0; the game pads its object to 0x4EA000.
+      - [0x103770, pad, text_tail_pad]
       - [0x103780, databin, data]
+      - start: 0x11EE90
+        type: .rodata
+        name: text_004095C0
+        linker_section: .rodata.00505710
+        rodata_anchors:
+          - {function: func_00411250, offset: 0x0, size: 0x18}
+        linker_section_order: .rodata
+      - [0x11EEA8, rodatabin, rodata_00505728]
       - start: 0x11EEB0
         type: .rodata
         name: text_004095C0
@@ -103,6 +113,14 @@ segments:
           - {function: func_00431AB0, offset: 0x0, size: 0x1C}
         linker_section_order: .rodata
       - [0x11F0DC, rodatabin, rodata_0050595C]
+      - start: 0x11F280
+        type: .rodata
+        name: text_0044ABE0
+        linker_section: .rodata.00505B00
+        rodata_anchors:
+          - {function: func_00412C40__14LibClass1746D0FUiUiUi, offset: 0x0, size: 0x18}
+        linker_section_order: .rodata
+      - [0x11F298, rodatabin, rodata_00505B18]
       - start: 0x11F2B0
         type: .rodata
         name: text_0044ABE0
@@ -111,6 +129,36 @@ segments:
           - {function: func_00458700, offset: 0x0, size: 0x2C}
         linker_section_order: .rodata
       - [0x11F2DC, rodatabin, rodata_00505B5C]
+      - start: 0x11F2E0
+        type: .rodata
+        name: text_0045AD10
+        linker_section: .rodata.00505B60
+        rodata_anchors:
+          - {function: func_004602B0, offset: 0x0, size: 0x44}
+        linker_section_order: .rodata
+      - [0x11F324, rodatabin, rodata_00505BA4]
+      - start: 0x11F3C0
+        type: .rodata
+        name: text_0045AD10
+        linker_section: .rodata.00505C40
+        rodata_anchors:
+          - {function: func_00461230, offset: 0x0, size: 0x90}
+        linker_section_order: .rodata
+      - start: 0x11F450
+        type: .rodata
+        name: text_0045AD10
+        linker_section: .rodata.00505CD0
+        rodata_anchors:
+          - {function: func_00412C40__16LibMessageWindowFUiUiUi, offset: 0x0, size: 0x28}
+        linker_section_order: .rodata
+      - [0x11F478, rodatabin, rodata_00505CF8]
+      - start: 0x11F4A0
+        type: .rodata
+        name: text_0045AD10
+        linker_section: .rodata.00505D20
+        rodata_anchors:
+          - {function: func_00412C40__14LibClass174F70FUiUiUi, offset: 0x0, size: 0x30}
+        linker_section_order: .rodata
       - start: 0x11F4D0
         type: .rodata
         name: text_0045AD10
@@ -119,6 +167,30 @@ segments:
           - {function: set_primitive__15LibObject1751A0FiUcif, offset: 0x0, size: 0x1C}
         linker_section_order: .rodata
       - [0x11F4EC, rodatabin, rodata_00505D6C]
+      - start: 0x11FE00
+        type: .rodata
+        name: text_004BD360
+        linker_section: .rodata.00506680
+        rodata_anchors:
+          - {function: func_004BD4F0, offset: 0x0, size: 0x28}
+        linker_section_order: .rodata
+      - [0x11FE28, rodatabin, rodata_005066A8]
+      - start: 0x120910
+        type: .rodata
+        name: text_004BD360
+        linker_section: .rodata.00507190
+        rodata_anchors:
+          - {function: func_00413D20__8LibPanelFv, offset: 0x0, size: 0x24}
+        linker_section_order: .rodata
+      - [0x120934, rodatabin, rodata_005071B4]
+      - start: 0x120940
+        type: .rodata
+        name: text_004BD360
+        linker_section: .rodata.005071C0
+        rodata_anchors:
+          - {function: func_004C74E0, offset: 0x0, size: 0x90}
+        linker_section_order: .rodata
+      - [0x1209D0, rodatabin, rodata_00507250]
       - start: 0x120A70
         type: .rodata
         name: text_004CD3A0

@@ -9,10 +9,15 @@
 #include "overlays/lib/movie_player.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libc_guess_0013C948.h"
+#include "sdk/main/libc_0013C6D0.h"
+#include "sdk/main/libc_0013CA60.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "clamp.h"
 #include "overlays/lib/memory_card.h"
+#include "overlays/lib/text_00429B00.h"
+#include "overlays/lib/character_record.h"
 #include "main/system.h"
 
 #define LIB_GAME_DATA_RESOURCE 10
@@ -23,7 +28,6 @@
 #define LIB_SAVE_DATA_SIZE 0x11ABA2
 #define LIB_VALUE_TABLE_COUNT 51
 #define LIB_CODE_LIST_COUNT 10
-#define LIB_CODE_LIST_ENTRY_COUNT 32
 
 typedef struct HalfwordSetterOwnertext_004095C0
 {
@@ -99,28 +103,6 @@ typedef struct LibGameStateInitial34
     u8 unk03;
 } LibGameStateInitial34;
 
-/** Two-byte entry of a LibCodeList; only its first byte is searched. */
-typedef struct LibCodeListEntry
-{
-    u8 code;
-    u8 unk01;
-} LibCodeListEntry;
-
-/** One of the ten 0x42-byte code lists at D_001B64CC. */
-typedef struct LibCodeList
-{
-    LibCodeListEntry entries[LIB_CODE_LIST_ENTRY_COUNT];
-    u8 unk40[2];
-} LibCodeList;
-
-/** One of the ten 0x56-byte code tables at D_001B64D0. */
-typedef struct LibCodeTable
-{
-    LibCodeListEntry high_codes[26];
-    LibCodeListEntry low_codes[16];
-    u8 unk54[2];
-} LibCodeTable;
-
 /** Four-byte factor record of the D_00504AA0 table, indexed by factor ID minus one. */
 typedef struct LibRecord504AA0
 {
@@ -145,6 +127,59 @@ typedef struct LibFactorValue
 } LibFactorValue;
 
 /** Partial save data manager with vtable D_1721B0 in main data: a memory card, its card files and their request. */
+/** Settings the save data keeps outside the system settings' checksums. */
+struct LibSaveOptions
+{
+    u8 widescreen;
+    u8 sealed_flag;
+    u8 extra_flag;
+    u8 universe_unlocked;
+    u8 unk18D;
+    u8 sound_output;
+    u8 unk06[2];
+    float speaker_angles[4];
+};
+
+/** Start of the save data: the CRCs that check it and the other save files. */
+struct LibSaveDataHeader
+{
+    char title[0x10];
+    u32 data_crc;
+    u32 extra_data_crc;
+    u32 icon_sys_crc;
+    u32 unk980_crc;
+};
+
+/**
+ * @brief Compute a CRC-32 (polynomial 0x04C11DB7, most significant bit first).
+ * @param data Bytes.
+ * @param size Byte count.
+ * @return The CRC.
+ */
+static inline u32 lib_crc32(const u8* data, s32 size)
+{
+    u32 crc = 0xFFFFFFFF;
+
+    for (s32 i = 0; i < size; i++)
+    {
+        crc ^= data[i] << 24;
+
+        for (s32 bit = 0; bit < 8; bit++)
+        {
+            if (crc & 0x80000000)
+            {
+                crc = (crc << 1) ^ 0x4C11DB7;
+            }
+            else
+            {
+                crc <<= 1;
+            }
+        }
+    }
+
+    return ~crc;
+}
+
 struct LibClass1721B0 : public LibListObject
 {
     /** @brief Free the flag storage and the value list, then detach. */
@@ -170,18 +205,20 @@ struct LibClass1721B0 : public LibListObject
     s16 unk20;
     s16 unk22;
     s16 unk24;
-    u8 unk26[6];
+    u8 unk26[2];
+    LibSystemSettings* settings;
     LibClass1721E0 values;
     u16 id_count;
-    s16 ids[0x23];
+    s16 ids[0x21];
+    u8* unk7c;
     LibIconSys* icon_sys;
-    LibCardFileBuffer files[2];
-    u8 unka4[0x230];
+    LibCardFileBuffer files[37];
     LibCardFileRequest request;
     u8 unk2e4[0x4B4];
     u8* unk798;
     u8* unk79c;
-    char directory[0xC4];
+    char directory[0xC0];
+    LibCardDirectoryEntry* entry;
     LibBitArray flags;
     u16 unk878;
     u16 unk87a;
@@ -189,7 +226,7 @@ struct LibClass1721B0 : public LibListObject
     u8 unk880;
     u8 unk881[3];
     u8* unk884;
-    u8 unk888[4];
+    s32 unk888;
     u8 unk88c[0x40];
     u8 unk8cc;
     u8 unk8cd[3];
@@ -202,16 +239,39 @@ struct LibClass1721B0 : public LibListObject
     u8 unk90b;
     u8 unk90c[4];
     u8* unk910;
-    u8 unk914[0x5C];
+    LibSaveOptions options;
+    LibSaveDataHeader header;
+    u8 unk94c[0x20];
+    s32 unk96c;
     u8 unk970;
-    u8 unk971[0xF];
+    u8 unk971[3];
+    u32 unk974;
+    u32 unk978;
+    s32 unk97c;
     u8* unk980;
     u32 unk984;
     u32 unk988;
+    u8 unk98c;
 };
 
 /** The icon.sys file name. */
 extern "C" char D_004EC440[];
+
+extern "C" char D_004EC3C0[];
+
+extern "C" const char D_004EC340[];
+
+extern "C" const char D_005056E0[];
+
+extern "C" const u8 D_004EC480[];
+
+extern "C" const u8 D_004EC4C0[];
+
+extern "C" const u8 D_004EC4F0[];
+
+extern "C" const u8 D_004EC520[];
+
+extern "C" char D_004EC400[];
 
 /** Three codes checked by func_0040A9B0. */
 extern "C" u8 D_001B6198[3];
@@ -228,10 +288,8 @@ extern "C" u8* D_001B64EC;
 extern "C" ItemCreationCategoryDefinition* D_001B64F4;
 
 /** Code lists that func_0040AFA0 points into its loaded resource. */
-extern "C" LibCodeList* D_001B64CC;
 
 /** Code tables that func_0040AFA0 points into its loaded resource. */
-extern "C" LibCodeTable* D_001B64D0;
 
 extern "C" const LibRecord504AA0 D_00504AA0[];
 
@@ -488,13 +546,49 @@ static inline bool timer_active(const LibGameStateTimer* timer)
     return false;
 }
 
+/**
+ * @brief Learn a symbology at a level (func_00409DA0 isn't decompiled yet).
+ * @param equipment Character equipment record.
+ * @param id One-based code list ID.
+ * @param code Symbology code.
+ * @param level New level.
+ * @param flag Passed on to func_0040A9F0.
+ * @return Result of the learning step.
+ */
+extern "C" s32 func_00409DA0(LibCharacterEquipment* equipment, s32 id, s32 code, s32 level, s32 flag);
+
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004095C0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00409A10);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00409DA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040A370);
+/**
+ * @brief Learn a symbology the character has no mastery of yet.
+ * @param equipment Character equipment record.
+ * @param id One-based code list ID.
+ * @param code Symbology code.
+ * @param level Level before learning; the new level is one more, at least one.
+ * @return func_00409DA0's result, or -1 when the symbology already has mastery.
+ */
+extern "C" s32 func_0040A370(LibCharacterEquipment* equipment, s32 id, s32 code, s32 level)
+{
+    s32 index = func_0040AF10(id, code);
+
+    if (lib_equipment_symbology_mastery(equipment, index) != 0)
+    {
+        return -1;
+    }
+
+    level++;
+
+    if (level <= 0)
+    {
+        level = 1;
+    }
+
+    return func_00409DA0(equipment, id, code, level, 1);
+}
 
 /**
  * @brief Run func_0040A9F0 for a code with flag 1, and again with flag 0 for codes 1 through 29 of code lists 2 and 9.
@@ -640,7 +734,89 @@ void func_0040AF80(void)
     free_guess(D_001B64AC);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040AFA0);
+/** One section of the game table resource: its offset from the start of the decoded resource and its size. */
+struct LibTableSection
+{
+    u32 offset;
+    u32 size;
+};
+
+/** Decoded game table resource (archive key 0x42C): a header, then its section list. */
+struct LibTableResource
+{
+    u8 unk00[8];
+    LibTableSection sections[13];
+};
+
+extern "C" u8* D_001B64B0;
+extern "C" u8* D_001B64B4;
+extern "C" u8* D_001B64B8;
+extern "C" u8* D_001B64BC;
+extern "C" u8* D_001B64C0;
+extern "C" u8* D_001B64C4;
+extern "C" u8* D_001B64C8;
+extern "C" u8* D_001B64D4;
+extern "C" u8* D_001B64D8;
+extern "C" u8* D_001B64DC;
+extern "C" u8* D_001B64E0;
+extern "C" u16* D_001B64E4;
+extern "C" u8* D_001B64E8;
+extern "C" u8 D_001B64A8;
+extern "C" u8* D_00507C00[10];
+
+/**
+ * @brief Load and decode the game table resource at a random 16-byte offset inside a fresh allocation, then point
+ *        the table globals into it.
+ */
+void func_0040AFA0(void)
+{
+    // TODO: The game reads both of these before setting them, so whatever the registers hold feeds the offset.
+    u32 noise;
+    u32 seed;
+    u32 seconds = resident_input_get_seconds(resident_system_get_input(resident_get_system()));
+    seed += seed + seconds;
+    seed = noise + (TIMER0_COUNT + (seed + resident_next_random_word()));
+    D_001B64AC = malloc_guess(0x2442);
+    D_001B64B0 = static_cast<u8*>(D_001B64AC) + (seed & 0xF) * 16;
+    FlushCache(0);
+    u8* data = static_cast<u8*>(memalign(0x80, resident_get_resource_size(g_resource_archive, 0x42C)));
+    FlushCache(0);
+    resident_queue_resource_request(g_resource_queue, 0x42C, data, 0x80002000, 0x34BC0, 0, 0, 0, 1);
+
+    while (resident_find_resource_request(g_resource_queue, 0x42C, (u32)data, 0x80002000, 0xFFFFFFFF, 0))
+    {
+    }
+
+    resident_decode_resource_block(g_resident_resource_decoder, reinterpret_cast<ResidentResourceHeader*>(data),
+                                   D_001B64B0, 0);
+    free_guess(data);
+    LibTableResource* resource = reinterpret_cast<LibTableResource*>(D_001B64B0);
+    D_001B64C4 = D_001B64B0 + resource->sections[0].offset;
+    D_00507C00[1] = 0;
+    D_001B64C8 = D_001B64C4 + 0x500;
+    D_00507C00[0] = D_001B64C4 + 0x122;
+    D_00507C00[2] = D_001B64C4 + 0x190;
+    D_00507C00[3] = D_001B64C4 + 0x1FE;
+    D_00507C00[4] = D_001B64C4 + 0x26C;
+    D_00507C00[5] = D_001B64C4 + 0x2DA;
+    D_00507C00[6] = D_001B64C4 + 0x348;
+    D_00507C00[7] = D_001B64C4 + 0x3B6;
+    D_00507C00[8] = D_001B64C4 + 0x424;
+    D_00507C00[9] = D_001B64C4 + 0x492;
+    D_001B64C0 = D_001B64B0 + resource->sections[1].offset;
+    D_001B64BC = D_001B64B0 + resource->sections[2].offset;
+    D_001B64B8 = D_001B64B0 + resource->sections[3].offset;
+    D_001B64B4 = D_001B64B0 + resource->sections[4].offset;
+    D_001B64CC = reinterpret_cast<LibCodeList*>(D_001B64B0 + resource->sections[5].offset);
+    D_001B64D0 = reinterpret_cast<LibCodeTable*>(D_001B64B0 + resource->sections[6].offset);
+    D_001B64D4 = D_001B64B0 + resource->sections[7].offset;
+    D_001B64D8 = D_001B64B0 + resource->sections[8].offset;
+    D_001B64DC = D_001B64B0 + resource->sections[9].offset;
+    D_001B64E0 = D_001B64B0 + resource->sections[10].offset;
+    D_001B64E4 = reinterpret_cast<u16*>(D_001B64B0 + resource->sections[11].offset);
+    D_001B64E8 = D_001B64B0 + resource->sections[12].offset;
+    D_001B64A8 = 0;
+}
 
 /** @brief Remove the value table from the resident entry table and free it. */
 void func_0040B1F0(void)
@@ -1209,7 +1385,101 @@ void func_0040C4C0(LibGameState* state)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040C690);
+/** A LibGameStateRecord0C's ID and unk00 while the records are ranked. */
+typedef struct LibGameStateRank
+{
+    s32 id;
+    s32 value;
+} LibGameStateRank;
+
+/**
+ * @brief Swap two ranking entries.
+ * @param first First entry.
+ * @param second Second entry.
+ */
+static inline void swap_ranks(LibGameStateRank* first, LibGameStateRank* second)
+{
+    s32 id = first->id;
+    s32 value = first->value;
+    first->id = second->id;
+    first->value = second->value;
+    second->id = id;
+    second->value = value;
+}
+
+/**
+ * @brief Rank the used LibGameStateRecord0C entries by unk00, highest first: list their IDs in record0c_order, give
+ * each its place in unk07 (equal values share one) and count them in record0c_order_count.
+ * @param state Game state.
+ */
+extern "C" void func_0040C690(LibGameState* state)
+{
+    LibGameStateRank ranks[LIB_GAME_STATE_RECORD0C_COUNT];
+    LibGameStateRecord0C* record = state->unk10d88;
+    LibGameStateRank* rank = ranks;
+
+    for (s32 i = 0; i < LIB_GAME_STATE_RECORD0C_COUNT; i++)
+    {
+        s32 id = 0;
+        s32 value = -1;
+
+        if (record->unk08)
+        {
+            id = record->unk06;
+            value = record->unk00;
+        }
+
+        rank->id = id;
+        rank->value = value;
+        record->unk07 = 0;
+        rank++;
+        record++;
+    }
+
+    for (s32 i = 0; i <= LIB_GAME_STATE_RECORD0C_COUNT - 2; i++)
+    {
+        for (s32 j = LIB_GAME_STATE_RECORD0C_COUNT - 1; j >= i + 1; j--)
+        {
+            LibGameStateRank* current = &ranks[j];
+            LibGameStateRank* previous = current - 1;
+
+            if (previous->value < current->value)
+            {
+                swap_ranks(current, previous);
+            }
+        }
+    }
+
+    s32 count = 0;
+    s32 place = 0;
+    s32 previous = 0;
+    LibGameStateRank* entry = ranks;
+    u8* order = state->record0c_order;
+
+    for (s32 i = 0; i < LIB_GAME_STATE_RECORD0C_COUNT; i++)
+    {
+        s32 id = entry->id;
+        *order = id;
+
+        if (id)
+        {
+            if (entry->value != previous)
+            {
+                previous = entry->value;
+                place = i + 1;
+            }
+
+            s32 index = (u8)id - 1;
+            state->unk10d88[index].unk07 = place;
+            count++;
+        }
+
+        entry++;
+        order++;
+    }
+
+    state->record0c_order_count = count;
+}
 
 /**
  * @brief Record which character has an allocation equipped and update its item type's counts.
@@ -1619,13 +1889,294 @@ s32 LibClass1721B0::get_default_list_kind()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040E3B0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040E7F0);
+/**
+ * @brief Clear the icon.sys buffer, allocate and clear the 0xB3B0-byte buffer and the save data buffer when missing,
+ * and point the file request at all three.
+ * @param object Save data manager.
+ * @return One, or zero when an allocation fails.
+ */
+s32 func_0040E7F0(LibClass1721B0* object)
+{
+    if (object->icon_sys)
+    {
+        memset_guess(object->icon_sys, 0, LIB_ICON_SYS_SIZE);
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040E930);
+    u32 size = object->unk974 + object->unk978;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040EC10);
+    if (object->unk79c == 0)
+    {
+        object->unk79c = new (0) u8[size];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040EE30);
+        if (object->unk79c == 0)
+        {
+            return 0;
+        }
+    }
+
+    if (object->unk79c)
+    {
+        memset_guess(object->unk79c, 0, size);
+    }
+
+    if (object->unk980 == 0)
+    {
+        object->unk980 = new (0) u8[0xB3B0];
+
+        if (object->unk980 == 0)
+        {
+            return 0;
+        }
+    }
+
+    if (object->unk980)
+    {
+        memset_guess(object->unk980, 0, 0xB3B0);
+    }
+
+    object->files[0].name = D_004EC440;
+    object->files[0].data = object->icon_sys;
+    object->files[0].size = LIB_ICON_SYS_SIZE;
+    object->files[0].offset = 0;
+    object->files[1].name = D_004EC3C0;
+    object->files[1].data = object->unk980;
+    object->files[1].size = 0xB3B0;
+    object->files[1].offset = 0;
+    object->files[2].name = object->directory;
+    object->files[2].data = object->unk79c;
+    object->files[2].size = size;
+    object->files[2].offset = 0;
+    object->request.directory = object->directory;
+    object->request.file_count = 3;
+    object->request.unk08 = 0;
+    object->request.files = object->files;
+    object->unk1a = 0;
+    return 1;
+}
+
+/**
+ * @brief Check the loaded save data, icon.sys and the 0xB3B0-byte buffer against the CRCs in the save data's header,
+ * keeping the last two CRCs.
+ * @param object Save data manager.
+ * @return One when every CRC matches.
+ */
+extern "C" s32 func_0040E930(LibClass1721B0* object)
+{
+    LibSaveDataHeader* header = reinterpret_cast<LibSaveDataHeader*>(object->unk79c);
+
+    if (!header)
+    {
+        return 0;
+    }
+
+    if (!object->icon_sys)
+    {
+        return 0;
+    }
+
+    if (!object->unk980)
+    {
+        return 0;
+    }
+
+    u32 data_crc = header->data_crc;
+    u32 extra_data_crc = header->extra_data_crc;
+    u32 icon_sys_crc = header->icon_sys_crc;
+    u32 unk980_crc = header->unk980_crc;
+    header->data_crc = 0;
+
+    if (data_crc != lib_crc32(object->unk79c, object->unk974))
+    {
+        return 0;
+    }
+
+    if (extra_data_crc != lib_crc32(object->unk79c + object->unk974, object->unk978))
+    {
+        return 0;
+    }
+
+    if (icon_sys_crc == 0)
+    {
+        return 0;
+    }
+
+    u32 icon_crc = lib_crc32(reinterpret_cast<u8*>(object->icon_sys), sizeof(LibIconSys));
+
+    if (icon_sys_crc != icon_crc)
+    {
+        return 0;
+    }
+
+    if (unk980_crc == 0)
+    {
+        return 0;
+    }
+
+    u32 unk980_check = lib_crc32(object->unk980, object->unk97c);
+
+    if (unk980_crc != unk980_check)
+    {
+        return 0;
+    }
+
+    object->unk984 = icon_crc;
+    object->unk988 = unk980_check;
+    return 1;
+}
+
+/**
+ * @brief Record in the settings' unk25_bit6 and unk18D whether the loaded trophy flags were valid.
+ * @param object Save data manager.
+ * @param value Whether the checksum held.
+ */
+static inline void set_trophy_flags_valid(LibClass1721B0* object, bool value)
+{
+    if (object->settings)
+    {
+        object->settings->unk25_bit6 = value;
+    }
+
+    if (object->settings)
+    {
+        object->settings->unk18D = value;
+    }
+}
+
+/**
+ * @brief Copy the trophy flags, trophy key and checksum out of the loaded save data into the settings, record in the
+ * settings whether their checksum holds, and free the save data.
+ * @param object Save data manager.
+ * @return Whether the checksum holds; zero when no save data is loaded.
+ */
+extern "C" s32 func_0040EC10(LibClass1721B0* object)
+{
+    u8* data = object->unk79c;
+
+    if (!data)
+    {
+        return 0;
+    }
+
+    s32 valid;
+
+    if (*reinterpret_cast<s32*>(data) == 0)
+    {
+        valid = 0;
+    }
+    else
+    {
+        u8* source = data + 0x4B4;
+        LibTrophyFlags* flags = &object->settings->trophy_flags;
+        u8 bits[(LIB_TROPHY_COUNT + 7) / 8];
+        memset_guess(bits, 0, sizeof(bits));
+        memcpy_guess(bits, source, sizeof(bits));
+
+        for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
+        {
+            u32 byte = (u32)i >> 3;
+            u32 bit = i & 7;
+
+            if (bits[i / 8] & (1 << (i % 8)))
+            {
+                flags->flags.bytes[byte] |= 1LL << bit;
+            }
+            else
+            {
+                flags->flags.bytes[byte] &= ~(1LL << bit);
+            }
+        }
+
+        flags->trophy_key = *reinterpret_cast<s32*>(data);
+        memcpy_guess(&flags->checksum_seed, source + sizeof(bits), 8);
+        u32 seed = flags->checksum_seed;
+        u32 checksum;
+        lib_trophy_flags_checksum(flags, &seed, &checksum);
+        valid = flags->checksum == checksum;
+    }
+
+    if (valid)
+    {
+        set_trophy_flags_valid(object, true);
+    }
+    else
+    {
+        set_trophy_flags_valid(object, false);
+    }
+
+    if (object->unk79c)
+    {
+        delete[] object->unk79c;
+        object->unk79c = 0;
+    }
+
+    return valid;
+}
+
+/**
+ * @brief Check the trophy flags against their stored checksum.
+ * @param flags Trophy flags.
+ * @return Nonzero when the checksum holds.
+ */
+static inline s32 lib_trophy_flags_checksum_holds(LibTrophyFlags* flags)
+{
+    u32 seed = flags->checksum_seed;
+    u32 checksum;
+    lib_trophy_flags_checksum(flags, &seed, &checksum);
+    return flags->checksum == checksum;
+}
+
+/**
+ * @brief Copy the settings' trophy flags with their checksum seed and checksum into the trophy buffer when their
+ * checksum holds and their trophy key matches the save's; otherwise clear the flags.
+ * @param object Save data manager.
+ * @return One when the buffer was filled.
+ */
+extern "C" s32 func_0040EE30(LibClass1721B0* object)
+{
+    LibTrophyFlags* flags = &object->settings->trophy_flags;
+
+    if (!flags)
+    {
+        return 0;
+    }
+
+    if (!flags)
+    {
+        return 0;
+    }
+
+    if (!lib_trophy_flags_checksum_holds(flags))
+    {
+        flags->flags.clear();
+        return 0;
+    }
+
+    memset_guess(object->unk2e4, 0, sizeof(object->unk2e4));
+    *reinterpret_cast<s32*>(object->unk2e4) = flags->trophy_key;
+
+    if (*reinterpret_cast<s32*>(object->unk2e4) != *reinterpret_cast<s32*>(object->unk88c))
+    {
+        return 0;
+    }
+
+    object->unk888 = flags->flags.size;
+    u32* seal = &flags->checksum_seed;
+    u8* bytes = flags->flags.bytes;
+
+    if (object->unk884 == 0)
+    {
+        object->unk884 = new (0) u8[object->unk888 + 8];
+    }
+
+    if (!object->unk884)
+    {
+        return 0;
+    }
+
+    memcpy_guess(object->unk884, bytes, object->unk888);
+    memcpy_guess(object->unk884 + object->unk888, seal, 8);
+    return 1;
+}
 
 /**
  * @brief Append a value and its ID.
@@ -1874,11 +2425,180 @@ s32 func_0040F3E0(LibClass1721B0* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040F4F0);
+/**
+ * @brief Point the file request at the save's files for writing: the two header blocks, one trophy record per listed
+ * ID, the trophy flags, the extra file and icon.sys.
+ * @param object Save data manager.
+ * @return One, or zero without a memory card or when the trophy flags don't check out.
+ */
+extern "C" s32 func_0040F4F0(LibClass1721B0* object)
+{
+    if (!object->card)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040F740);
+    u8 ready = func_0040EE30(object);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040F940);
+    if (!ready)
+    {
+        return 0;
+    }
+
+    func_00432710(object->card, 2);
+    func_0040F940(object);
+    object->files[0].name = object->directory;
+    object->files[0].data = object->unk88c;
+    object->files[0].size = 0x40;
+    object->files[0].offset = 0;
+    object->files[1].name = object->directory;
+    object->files[1].data = object->unk884;
+    object->files[1].size = 0x2E;
+    object->files[1].offset = 0x4B4;
+
+    for (s32 i = 0; i < object->id_count; i++)
+    {
+        object->files[i + 2].name = object->directory;
+        object->files[i + 2].data = *static_cast<void**>(func_00411DD0(&object->values, i));
+        object->files[i + 2].size = LIB_TROPHY_RECORD_SIZE;
+        object->files[i + 2].offset = object->ids[i] * LIB_TROPHY_RECORD_SIZE + 0x4E2;
+    }
+
+    object->files[object->id_count + 2].name = object->directory;
+    object->files[object->id_count + 2].data = object->unk2e4;
+    object->files[object->id_count + 2].size = sizeof(object->unk2e4);
+    object->files[object->id_count + 2].offset = 0;
+    object->files[object->id_count + 3].name = D_004EC400;
+    object->files[object->id_count + 3].data = object->unk7c;
+    object->files[object->id_count + 3].size = 0x7F16;
+    object->files[object->id_count + 3].offset = 0;
+    object->files[object->id_count + 4].name = D_004EC440;
+    object->files[object->id_count + 4].data = object->icon_sys;
+    object->files[object->id_count + 4].size = LIB_ICON_SYS_SIZE;
+    object->files[object->id_count + 4].offset = 0;
+    object->request.directory = object->directory;
+    object->request.file_count = object->id_count + 5;
+    object->request.unk08 = 0;
+    object->request.files = object->files;
+    object->unk1a = 0;
+    return 1;
+}
+
+/** One encoded trophy record. */
+struct LibTrophyRecordBuffer
+{
+    u8 bytes[LIB_TROPHY_RECORD_SIZE];
+};
+
+/**
+ * @brief Build a fresh save: free the old buffers, fill a new save data buffer with the trophy key and 300 copies of
+ * an empty trophy record, and point the file request at the four save files.
+ * @param object Save data manager.
+ * @return One, or zero without a memory card or when the allocation fails.
+ */
+extern "C" s32 func_0040F740(LibClass1721B0* object)
+{
+    if (!object->card)
+    {
+        return 0;
+    }
+
+    func_00432710(object->card, 0x202);
+    func_0040F940(object);
+
+    if (object->unk798 != 0)
+    {
+        delete_array(object->unk798);
+    }
+
+    if (object->unk79c != 0)
+    {
+        delete_array(object->unk79c);
+    }
+
+    if (!object->unk798)
+    {
+        object->unk798 = new (0) u8[0x11ABA2];
+    }
+
+    if (!object->unk798)
+    {
+        return 0;
+    }
+
+    memset_guess(object->unk798, 0, 0x11ABA2);
+    s32 key = object->settings->trophy_flags.trophy_key;
+    memcpy_guess(object->unk798, &key, sizeof(key));
+    LibTrophyRecordBuffer* record = new (0) LibTrophyRecordBuffer;
+    memset_guess(record, 0, sizeof(*record));
+    lib_trophy_record_encode(record);
+    u8* copy = object->unk798 + 0x4E2;
+
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
+    {
+        memcpy_guess(copy, record, sizeof(*record));
+        copy += sizeof(*record);
+    }
+
+    delete record;
+    object->files[0].name = D_004EC440;
+    object->files[0].data = object->unk8d8;
+    object->files[0].size = LIB_ICON_SYS_SIZE;
+    object->files[0].offset = 0;
+    object->files[1].name = object->directory;
+    object->files[1].data = object->unk798;
+    object->files[1].size = 0x11ABA2;
+    object->files[1].offset = 0;
+    object->files[2].name = D_004EC400;
+    object->files[2].data = object->unk7c;
+    object->files[2].size = 0x7F16;
+    object->files[2].offset = 0;
+    object->files[3].name = D_004EC440;
+    object->files[3].data = object->icon_sys;
+    object->files[3].size = LIB_ICON_SYS_SIZE;
+    object->files[3].offset = 0;
+    object->request.directory = object->directory;
+    object->request.file_count = 4;
+    object->request.unk08 = 0;
+    object->request.files = object->files;
+    object->unk1a = 0;
+    return 1;
+}
+
+/**
+ * @brief Fill the icon.sys buffer: header, background, lights, title and the save's icon file for all three views.
+ * @param object Save data manager.
+ * @return One.
+ */
+extern "C" s32 func_0040F940(LibClass1721B0* object)
+{
+    if (object->icon_sys)
+    {
+        memset_guess(object->icon_sys, 0, LIB_ICON_SYS_SIZE);
+    }
+
+    object->icon_sys->magic[0] = 'P';
+    object->icon_sys->magic[1] = 'S';
+    object->icon_sys->magic[2] = '2';
+    object->icon_sys->magic[3] = 'D';
+    char title[sizeof(object->icon_sys->title)];
+    char unused[sizeof(object->icon_sys->title)];
+    memset_guess(title, 0, sizeof(title));
+    memset_guess(unused, 0, sizeof(unused));
+    strcpy_guess(title, D_004EC340);
+    strcat(title, D_005056E0);
+    strcpy_guess(object->icon_sys->title, title);
+    object->icon_sys->title_line_offset = 10;
+    object->icon_sys->background_alpha = 0x40;
+    memcpy_guess(object->icon_sys->background_colors, D_004EC480, sizeof(object->icon_sys->background_colors));
+    memcpy_guess(object->icon_sys->light_directions, D_004EC4C0, sizeof(object->icon_sys->light_directions));
+    memcpy_guess(object->icon_sys->light_colors, D_004EC4F0, sizeof(object->icon_sys->light_colors));
+    memcpy_guess(object->icon_sys->ambient_color, D_004EC520, sizeof(object->icon_sys->ambient_color));
+    memcpy_guess(object->icon_sys->list_icon, D_004EC400, strlen(D_004EC400));
+    memcpy_guess(object->icon_sys->copy_icon, D_004EC400, strlen(D_004EC400));
+    memcpy_guess(object->icon_sys->delete_icon, D_004EC400, strlen(D_004EC400));
+    return 1;
+}
 
 /**
  * @brief Clear the byte at receiver offset 0x8D4.
@@ -1908,7 +2628,10 @@ void func_0040FB00(void* object, u8 value)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", update__14LibClass1721B0Fv);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", __dt__14LibTrophyFlagsFv);
+/** @brief Destroy the flags. */
+LibTrophyFlags::~LibTrophyFlags()
+{
+}
 
 /**
  * @brief Advance the icon.sys write: start the transfer, then rewrite the icon file and transfer it, then wait for
@@ -1984,7 +2707,84 @@ extern "C" s16 func_004110C0(LibClass1721B0* object)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411250);
+/**
+ * @brief Advance the save directory check: read the card's directory, wait, look the save's entry up, wait, mark
+ *        the entry and write it back, wait.
+ * @param object Save data manager.
+ * @return The last card call's result, or -1 without a card.
+ */
+extern "C" s16 func_00411250(LibClass1721B0* object)
+{
+    s16 result = -1;
+
+    if (object->card != 0)
+    {
+        switch (object->unk1a)
+        {
+        case 0:
+            result = func_004324D0(object->card, object->unk1c, &object->request);
+
+            if (result == 0)
+            {
+                object->unk1a++;
+            }
+
+            break;
+        case 1:
+            result = lib_memory_card_get_result(object->card, object->unk1c, &object->result);
+
+            if (result != 0 && result == 1 && result >= 0)
+            {
+                result = -1;
+                object->unk1a++;
+            }
+
+            break;
+        case 2:
+            result = lib_memory_card_probe_file(object->card, object->unk1c, object->directory, 0, 1,
+                                                reinterpret_cast<u8*>(object->entry));
+
+            if (result != -1)
+            {
+                object->unk1a++;
+            }
+
+            break;
+        case 3:
+            result = lib_memory_card_get_result(object->card, object->unk1c, &object->result);
+
+            if (result != 0 && result == 1 && result >= 0)
+            {
+                result = -1;
+                object->unk1a++;
+            }
+
+            break;
+        case 4:
+            object->entry->attributes |= 8;
+            result = func_004323E0(object->card, object->unk1c, object->directory, 4,
+                                   reinterpret_cast<u8*>(object->entry));
+
+            if (result != -1)
+            {
+                object->unk1a++;
+            }
+
+            break;
+        case 5:
+            result = lib_memory_card_get_result(object->card, object->unk1c, &object->result);
+
+            if (result != 0 && result == 1)
+            {
+                object->unk1a++;
+            }
+
+            break;
+        }
+    }
+
+    return result;
+}
 
 /** Lib's main update list. */
 extern "C" LibUpdateList* g_update_list;
@@ -3144,7 +3944,48 @@ s32 lib_item_code_init_rectangle(LibObject172410* object, float x, float y, floa
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414010);
+/**
+ * @brief Collect the codes of the game state bitsets an item type is marked in, one bit per code.
+ * @param record Item type's category record.
+ * @param mask Receives the 64-bit code mask as two words.
+ */
+extern "C" void func_00414010(const ItemCreationCategoryRecord* record, u32* mask)
+{
+    u32 codes[2];
+    LibGameStateBitset* bitset;
+    s32 i;
+    u32* low;
+    u32* high;
+
+    // TODO: The target keeps both word addresses in registers across the loop; these pointers are how I got that.
+    low = &codes[0];
+    high = &codes[1];
+    *high = 0;
+    *low = 0;
+    bitset = lib_game_state()->bitsets;
+
+    for (i = 0; i < LIB_GAME_STATE_BITSET_COUNT; i++)
+    {
+        u16 item_type = record->catalog_index + 1;
+        s32 index = item_type - 1;
+
+        if ((u8)(bitset->bits[index / 8] & (1 << (index & 7))))
+        {
+            s32 code = func_0040B330(i + 1);
+
+            if (code)
+            {
+                s32 bit = code - 1;
+                codes[bit / 32] |= 1 << (bit & 31);
+            }
+        }
+
+        bitset++;
+    }
+
+    mask[0] = *low;
+    mask[1] = *high;
+}
 
 /**
  * @brief Read one of an item definition's eight factor IDs.
@@ -3279,6 +4120,8 @@ struct LibMpegStreamData
     u8* header;
     u8* data;
     s32 length;
+    s64 pts;
+    s64 dts;
 };
 
 extern "C" s32 func_00415D30(u8* first, s32 first_size, u8* second, s32 second_size, const u8* head, s32 head_size, const u8* body,

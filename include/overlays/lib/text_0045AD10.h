@@ -136,7 +136,12 @@ struct LibDrawRecord
         LibDrawRecord* end;
     } unk14;
 
-    u32 color;
+    union
+    {
+        u32 color;
+        float scale_y;
+    };
+
     u16 code;
     u16 glyph;
 };
@@ -308,13 +313,17 @@ struct LibDrawWidget : public LibWidget
     u32 unk4c;
     u32 unk50;
     u32 dma_address;
-    u8 unk58[0x14];
+    u64* packet_cursor;
+    u8* unk5c;
+    u8* unk60;
+    u8* unk64;
+    u8* unk68;
     LibManagedResourceSlot* resource_slot;
     u8* unk70;
     u8* unk74;
 
-    u32 unk78;
-    u32 unk7c;
+    float unk78;
+    float unk7c;
     float draw_scale;
     float draw_scale_y;
     float unk88;
@@ -328,7 +337,7 @@ struct LibDrawWidget : public LibWidget
     s32 unka8;
     s32 unkac;
     s32 unkb0;
-    u32 unkb4;
+    s32 unkb4;
     s32 record_count;
     LibDrawRecord* run_head;
     LibDrawRecord* next_record;
@@ -337,7 +346,10 @@ struct LibDrawWidget : public LibWidget
     float line_height;
     float min_height;
     float max_height;
-    u8 unkd8[0x10];
+    u8 unkd8[4];
+    s32 unkdc;
+    s32 unke0;
+    s32 unke4;
     LibTextExtent extent;
     u8 unkf8;
     u8 unkf9;
@@ -440,8 +452,7 @@ public:
     LibStorageBlock0C unk00;
     u8 unk0c[4];
     LibPoint2 position;
-    float unk18;
-    float unk1c;
+    LibPoint2 previous_position;
     LibPoint2 target;
     float move_frames;
     float speed;
@@ -455,8 +466,8 @@ public:
     {
         position.y = 0.0f;
         position.x = 0.0f;
-        unk1c = 0.0f;
-        unk18 = 0.0f;
+        previous_position.y = 0.0f;
+        previous_position.x = 0.0f;
         target.y = 0.0f;
         target.x = 0.0f;
     }
@@ -497,7 +508,15 @@ public:
      * @brief Move one frame's distance towards the target, and then call on_arrived once it reaches the target.
      * @return One if the position changed since the last step, otherwise zero.
      */
-    s32 step();
+    bool step();
+
+    /**
+     * @brief Rebuild the drawing packet at an offset from an origin.
+     * @param origin Origin the position is relative to.
+     * @param tag Packet tag word.
+     * @param alpha Draw alpha.
+     */
+    void func_00466E70(const LibVector4* origin, u32 tag, float alpha);
 };
 
 /** Partial kind-9 widget with a storage base at offset 0x40. */
@@ -748,6 +767,16 @@ public:
     u8 release_queued;
     u8 unk602[2];
 };
+
+/**
+ * @brief Read the runtime's frame rate.
+ * @param runtime Field runtime.
+ * @return Frames elapsed this update.
+ */
+static inline float field_rate(const FieldRuntime* runtime)
+{
+    return runtime->rate;
+}
 #endif
 
 typedef struct FieldRuntime FieldRuntime;
@@ -1076,24 +1105,6 @@ void func_0045F630(void* object);
 void func_0045F640(void* object);
 
 void func_0045F650(void* object);
-
-void func_00461960(void* object);
-
-void func_00461970(void* object);
-
-void func_00461980(void* object);
-
-void func_00461990(void* object);
-
-void func_004619A0(void* object);
-
-void func_004619B0(void* object);
-
-void func_004619C0(void* object);
-
-void func_004619D0(void* object);
-
-void func_004619E0(void* object);
 
 
 

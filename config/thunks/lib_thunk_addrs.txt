@@ -32,16 +32,16 @@
 @144@submit_dma__14LibClass178C00FUi = 0x004D5840;
 @144@complete_dma__14LibClass178B70FUi = 0x004D5850;
 @144@submit_dma__14LibClass178B70FUi = 0x004D5860;
-@144@on_packet_complete__13LibClipRegionFUi = 0x003EF840;
-@144@on_packet_notify__13LibClipRegionFUi = 0x003EF850;
+@144@complete_dma__13LibClipRegionFUi = 0x003EF840;
+@144@submit_dma__13LibClipRegionFUi = 0x003EF850;
 @120@update__14LibClass178F30Fv = 0x004DB3E0;
 @120@get_default_list_kind__14LibClass178F30Fv = 0x004DB3F0;
 @144@__dt__14LibClass178FC0Fv = 0x004E1450;
 @264@on_packet_complete__14LibClass178FC0FUi = 0x004E1460;
 @1600@complete_dma__14LibClass1787A0FUi = 0x004C9650;
 @144@on_packet_complete__14LibClass171F40FUi = 0x003F45E0;
-@144@on_packet_complete__14LibClass172120FUi = 0x003F45A0;
-@144@on_packet_notify__14LibClass172120FUi = 0x003F45B0;
+@144@complete_dma__14LibClass172120FUi = 0x003F45A0;
+@144@submit_dma__14LibClass172120FUi = 0x003F45B0;
 @528@complete_dma__14LibClass1748D0FUi = 0x003F45C0;
 @528@submit_dma__14LibClass1748D0FUi = 0x003F45D0;
 @144@on_packet_complete__18LibSelectionCursorFUi = 0x004675E0;
@@ -72,3 +72,6 @@
 @40@complete_dma__14LibClass177A20FUi = 0x004ABA40;
 @40@submit_dma__14LibClass177A20FUi = 0x004ABA50;
 @528@__dt__14LibClass173990Fv = 0x0043BCF0;
+@32@func_0044B100__16LibMessageWindowFUiUiUi = 0x004622F0;
+@32@__dt__16LibMessageWindowFv = 0x00462300;
+@32@__dt__18EquipFactorTooltipFv = 0x004E9FE0;

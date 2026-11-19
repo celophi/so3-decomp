@@ -727,7 +727,7 @@ s32 LibSlerpQuaternionKeyTrack::on_append_key(const FieldVec4A* value, float key
 void LibPooledFloatQuaternionTrack::reset_state()
 {
     unk58 = 0;
-    unk50 = 0;
+    last_fraction = 0;
     LibFloatQuaternionTrackBase::reset_state();
 }
 
@@ -824,9 +824,88 @@ void LibFloatQuaternionTrackBase::set_before_mode(u32 mode)
     state.extends_segment = state.before_mode == LIB_TRACK_END_EXTEND_SEGMENT || state.after_mode == LIB_TRACK_END_EXTEND_SEGMENT;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", get_end_delta__29LibPooledFloatQuaternionTrackCFPv);
+/**
+ * @brief Multiply two quaternions.
+ * @param first Left quaternion.
+ * @param second Right quaternion.
+ * @return first times second.
+ */
+static inline FieldVec4B lib_quaternion_product(const FieldVec4B& first, const FieldVec4B& second)
+{
+    FieldVec4B result;
+    result.x = first.w * second.x + second.w * first.x + first.y * second.z - first.z * second.y;
+    result.y = first.w * second.y + second.w * first.y + first.z * second.x - first.x * second.z;
+    result.z = first.w * second.z + second.w * first.z + first.x * second.y - first.y * second.x;
+    result.w = first.w * second.w - first.x * second.x - first.y * second.y - first.z * second.z;
+    return result;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", insert_entry__29LibPooledFloatQuaternionTrackFifPC10FieldVec4Aff);
+/**
+ * @brief Report the rotation from the first key to the last one.
+ * @param output Receives the rotation.
+ */
+void LibPooledFloatQuaternionTrack::get_end_delta(void* output) const
+{
+    if (key_array == 0)
+    {
+        return;
+    }
+
+    const FieldVec4B* end = &key_array[state.key_count - 1].value;
+    FieldVec4B* delta = static_cast<FieldVec4B*>(output);
+    FieldVec4B inverse = lib_quaternion_inverse(key_array[0].value);
+    *delta = lib_quaternion_product(*end, inverse);
+}
+
+/**
+ * @brief Insert a keyframe, moving the later keys up.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @param first First extra value.
+ * @param second Second extra value.
+ * @return Nonzero when the keyframe was stored.
+ */
+s32 LibPooledFloatQuaternionTrack::insert_entry(s32 index, float key, const FieldVec4A* value, float first, float second)
+{
+    s32 count;
+    s32 i;
+
+    if (key_array == 0)
+    {
+        return 0;
+    }
+
+    count = state.key_count;
+
+    if (index >= count)
+    {
+        return 0;
+    }
+
+    if (count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (i = count; i > index; i--)
+    {
+        key_array[i] = key_array[i - 1];
+    }
+
+    key_array[index].value = *value;
+    key_array[index].first = first;
+    key_array[index].second = second;
+    key_array[index].key = key;
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].key;
+    }
+
+    state.key_count++;
+    return 1;
+}
 
 /**
  * @brief Read an indexed keyframe.
@@ -894,11 +973,84 @@ void LibPooledFloatQuaternionTrack::append_key_record(const void* record)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004AD860);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample_once__24LibPooledQuaternionTrackFf);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004ADC60);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004AE5A0);
+/**
+ * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the rotation and its change per frame.
+ *
+ * At or past the last key it returns the last key's rotation and sets the cycle count to one.
+ * @param key Evaluation key.
+ * @return Evaluated rotation.
+ */
+FieldVec4A LibPooledFloatQuaternionTrack::sample_once(float key)
+{
+    FieldVec4B result;
+
+    if (!key_array)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.key_count == 1)
+    {
+        return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
+    }
+
+    if (!(key < key_at(state.key_count - 1)))
+    {
+        state.cycle_count = 1;
+        state.search_index = 0;
+        return *reinterpret_cast<FieldVec4A*>(&key_array[state.key_count - 1].value);
+    }
+
+    state.cycle_count = 0;
+
+    while (state.search_index > 0 && key < key_at(state.search_index))
+    {
+        state.search_index--;
+    }
+
+    if (state.search_index < 0)
+    {
+        state.search_index = 0;
+    }
+
+    while (state.search_index + 1 < state.key_count && !(key < key_at(state.search_index + 1)))
+    {
+        state.search_index++;
+    }
+
+    if (state.search_index >= state.key_count - 1)
+    {
+        state.search_index = state.key_count - 2;
+    }
+
+    if (state.segment_lower != state.search_index)
+    {
+        state.segment_lower = state.search_index;
+        lower_key = &key_array[state.search_index];
+        upper_key = &key_array[state.search_index + 1];
+    }
+
+    LibFloatQuaternionTrackKey* lower = lower_key;
+    LibFloatQuaternionTrackKey* upper = upper_key;
+    float t = (key - lower->key) / (upper->key - lower->key);
+    float fall = 3.0f - 2.0f * t;
+    float before_squared = (1.0f - t) * (1.0f - t);
+    float after = t - 1.0f;
+    float squared = t * t;
+    float end_weight = squared * fall;
+    float start_tangent_weight = before_squared * t;
+    float end_tangent_weight = after * squared;
+    float fraction = end_weight + start_tangent_weight * lower->second + end_tangent_weight * upper->first;
+
+    lib_quaternion_slerp_async(&result, &lower->value, &upper->value, fraction);
+    value_rate = g_inverse_frame_ticks * (fraction - last_fraction);
+    last_fraction = fraction;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample__29LibPooledFloatQuaternionTrackCFf);
 
@@ -2496,7 +2648,22 @@ LibPooledSlerpQuaternionTrack::~LibPooledSlerpQuaternionTrack()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", get_end_delta__29LibPooledSlerpQuaternionTrackCFPv);
+/**
+ * @brief Report the rotation from the first key to the last one.
+ * @param output Receives the rotation.
+ */
+void LibPooledSlerpQuaternionTrack::get_end_delta(void* output) const
+{
+    if (key_array == 0)
+    {
+        return;
+    }
+
+    const FieldVec4B* end = &key_array[state.key_count - 1].value;
+    FieldVec4B* delta = static_cast<FieldVec4B*>(output);
+    FieldVec4B inverse = lib_quaternion_inverse(key_array[0].value);
+    *delta = lib_quaternion_product(*end, inverse);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample__29LibPooledSlerpQuaternionTrackCFf);
 
@@ -3718,7 +3885,83 @@ extern "C" void lib_animation_read_channel_pose(LibAnimation* object, LibAnimati
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004B43C0);
+/**
+ * @brief Apply one animation entry at a frame (func_004B4840's counterpart for func_004B43C0).
+ * @param object Animation object.
+ * @param entry Entry to apply.
+ * @param frame Frame.
+ * @param mode Mode passed through.
+ * @param status Status so far.
+ * @return The entry's status.
+ */
+extern "C" s32 func_004BD4F0(LibAnimation* object, LibAnimationEntry14* entry, float frame, s32 mode, s32 status);
+
+/**
+ * @brief Apply every eligible animation entry at a frame through func_004BD4F0.
+ * @param object Animation object.
+ * @param frame Requested frame; a negative frame leaves the animation marked as restarting.
+ * @param mode Nonzero to stop at the first entry that returns a nonzero status.
+ * @return Status of the last applied entry, or 0 when the animation has no entries.
+ */
+extern "C" s32 func_004B43C0(LibAnimation* object, float frame, s32 mode)
+{
+    s32 status;
+    u8 restarting;
+    s32 count;
+    s32 index;
+
+    if (object->entries == 0)
+    {
+        return 0;
+    }
+
+    object->longest_channel = 0;
+    object->unk60 = 0;
+    status = 0;
+    restarting = !object->started;
+    count = object->entry_count;
+
+    for (index = 0; index < count; index++)
+    {
+        LibAnimationEntry14* entry = &object->entries[index];
+
+        if (entry->channel != 0)
+        {
+            if (entry->target != 0 || (entry->kind >= LIB_ANIMATION_KIND_UNBOUND_FIRST && entry->kind < LIB_ANIMATION_KIND_UNBOUND_END))
+            {
+                if (entry->flags & LIB_ANIMATION_ENTRY_SKIP)
+                {
+                    continue;
+                }
+
+                if (!(entry->flags & LIB_ANIMATION_ENTRY_RESTART_ONLY) || restarting)
+                {
+                    if (object->unk60 == entry->target)
+                    {
+                        status = func_004BD4F0(object, entry, (float)(s32)frame, mode, status);
+                    }
+                    else
+                    {
+                        object->unk60 = 0;
+                        status = func_004BD4F0(object, entry, frame, mode, status);
+                    }
+                }
+            }
+        }
+
+        if (mode != 0 && status != 0)
+        {
+            break;
+        }
+    }
+
+    if (!(frame < 0.0f))
+    {
+        object->started = 1;
+    }
+
+    return status;
+}
 
 /**
  * @brief Apply every eligible animation entry at a frame.
@@ -3740,7 +3983,7 @@ s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode)
     }
 
     object->unk60 = 0;
-    object->unk48 = 0;
+    object->longest_channel = 0;
     status = 0;
     restarting = !object->started;
     count = object->entry_count;
@@ -3787,7 +4030,67 @@ s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode)
     return status;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004B46E0);
+/** Partial view of the object at D_001B664C: the scene number animations can be tied to. */
+struct LibAnimationScene
+{
+    u8 unk00[0x14];
+    s32 scene;
+};
+
+extern "C" LibAnimationScene* D_001B664C;
+
+/**
+ * @brief Apply every entry of one target at a frame, when the animation belongs to the current scene.
+ * @param object Animation object.
+ * @param target Target whose entries to apply.
+ * @param frame Requested frame; a negative frame leaves the animation marked as restarting.
+ * @param mode Nonzero to stop at the first entry that returns a nonzero status.
+ * @return Status of the last applied entry, or 0 when nothing was applied.
+ */
+extern "C" s32 func_004B46E0(LibAnimation* object, LibAnimationTarget* target, float frame, s32 mode)
+{
+    if (object->entries == 0)
+    {
+        return 0;
+    }
+
+    if (object->unk6b && object->unk6b - 1 != D_001B664C->scene)
+    {
+        return 0;
+    }
+
+    object->longest_channel = 0;
+    s32 status = 0;
+    s32 count = object->entry_count;
+
+    for (s32 index = 0; index < count; index++)
+    {
+        LibAnimationEntry14* entry = &object->entries[index];
+
+        if (entry->target == target)
+        {
+            if (entry->channel != 0 && entry->target != 0)
+            {
+                if (!(entry->flags & LIB_ANIMATION_ENTRY_RESTART_ONLY) || !object->started)
+                {
+                    status = func_004B4840(object, entry, frame, mode, status);
+                }
+            }
+
+            if (mode != 0 && status != 0)
+            {
+                break;
+            }
+        }
+    }
+
+    if (!(frame < 0.0f))
+    {
+        object->started = 1;
+    }
+
+    return status;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004B4840);
 

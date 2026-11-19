@@ -2421,11 +2421,13 @@ u32 func_00478F70(const void* object)
     return receiver->unk08;
 }
 
-/** Return the word at receiver offset 0xC. */
-u32 func_00478F80(const void* object)
+/**
+ * @brief Return how many nodes the list holds.
+ * @return Node count.
+ */
+u32 LibListReceiver::get_node_count() const
 {
-    const WordGetterOwnertext_0046AE20* receiver = (const WordGetterOwnertext_0046AE20*)object;
-    return receiver->unk0c;
+    return node_count;
 }
 
 /**
