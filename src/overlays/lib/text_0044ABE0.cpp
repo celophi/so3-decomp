@@ -1,4 +1,5 @@
 #include "overlays/lib/dma_callbacks_inlines.h"
+#include "overlays/lib/ripple_vu0.h"
 #include "include_asm.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "angle.h"
@@ -25,6 +26,7 @@
 #include "overlays/lib/model.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/emission.h"
+#include "overlays/lib/transform_vu0.h"
 
 /** LibShortBitTableHeader with a colour after the records offset; the words start at 0x10. */
 struct LibColorBitTableHeader
@@ -127,9 +129,20 @@ public:
      */
     virtual u8* read_record(u32 index, u32* size);
 
+    /**
+     * @brief Note whether every bit is set and rewind the records. With a camera, rebuild the rotation from the
+     *        root's matrix and move the camera's position into the root's space.
+     * @param root Model transform.
+     * @return One.
+     */
+    virtual s32 func_slot1C(LibTransform* root);
+
     LibBitTableHeader* table;
     u8* records;
     u8* cursor;
+    u8 unk3c[4];
+    FieldVec4B camera_position;
+    LibMatrix44Value rotation;
 };
 
 /** LibClass174C90 subclass with vtable D_00174CB0 in main data. */
@@ -160,9 +173,20 @@ public:
      */
     virtual u8* read_record(u32 index, u32* size);
 
+    /**
+     * @brief Note whether every bit is set and rewind the records. With a camera, rebuild the rotation from the
+     *        root's matrix and move the camera's position into the root's space.
+     * @param root Model transform.
+     * @return One.
+     */
+    virtual s32 func_slot1C(LibTransform* root);
+
     LibShortBitTableHeader* table;
     u8* records;
     u8* cursor;
+    u8 unk3c[4];
+    FieldVec4B camera_position;
+    LibMatrix44Value rotation;
 };
 
 /** LibClass174C90 subclass with vtable D_00174D10 in main data. */
@@ -320,31 +344,6 @@ public:
     s32 blend_mode;
 };
 
-/** Transform owner with vtable D_001747C0 in main data that expires the cached texture 1 when it's drawn. */
-class LibClass1747C0 : public LibTransformOwner
-{
-public:
-    virtual ~LibClass1747C0();
-
-    /** @brief Do nothing. */
-    virtual void render();
-
-    /** @brief Draw in bucket 8. */
-    virtual void set_default_draw_bucket();
-
-    /**
-     * @brief Return the shared bounding sphere every object of this class uses.
-     * @return Bounding sphere.
-     */
-    virtual const LibVector4* get_bounding_sphere();
-
-    /**
-     * @brief Expire every cached copy of texture 1.
-     * @param matrix Unused.
-     * @param context Unused.
-     */
-    virtual void build_packet(const void* matrix, void* context);
-};
 
 class LibCameraContext;
 
@@ -467,7 +466,7 @@ public:
      * @param second Second update flag.
      * @param third Third update flag.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /**
      * @brief Set up the frame and the text and attach them.
@@ -493,74 +492,6 @@ extern "C" const u32 D_004ED130[];
 
 extern "C" u64 D_001B6560;
 
-/** Transform owner that sends its own packet on VIF1, with vtable D_174840 in main data. */
-class LibClass174840 : public LibTransformOwner, public DmaSubmission
-{
-public:
-    /**
-     * @brief Set up the transform and allocate the packet.
-     * @param unk94 Stored at unk94.
-     */
-    LibClass174840(void* unk94);
-
-    /** @brief Delete the packet and destroy the transform owner. */
-    virtual ~LibClass174840();
-
-    /**
-     * @brief Build the packet for this frame.
-     * @param matrix Matrix supplied by the caller.
-     * @param context Opaque caller context.
-     */
-    virtual void build_packet(const void* matrix, void* context);
-
-    /** @brief Detach from the owner and release the transform. */
-    virtual void destroy();
-
-    /** @brief Queue the packet on VIF1. */
-    virtual void render();
-
-    /** @brief Draw in bucket 8. */
-    virtual void set_default_draw_bucket();
-
-    /**
-     * @brief Return the bounding sphere D_00508230.
-     * @return Bounding sphere.
-     */
-    virtual const LibVector4* get_bounding_sphere();
-
-    /**
-     * @brief Send the packet's pending data on VIF1 in normal mode.
-     * @param channel DMA channel; unused.
-     */
-    virtual void submit_dma(u32 channel);
-
-    /**
-     * @brief Finish the packet.
-     * @param channel DMA channel; unused.
-     */
-    virtual void complete_dma(u32 channel);
-
-    void* unk94;
-    LibPacketBuffer* packet;
-    u8 unk9c;
-    u8 unk9d;
-    u8 unk9e[2];
-    u32 qwc;
-    u8 unka4[4];
-    u32 unka8;
-    s16 unkac;
-    s16 unkae;
-    float unkb0;
-    s32 unkb4;
-    u8 unkb8[0x18];
-    void* unkd0;
-    s32 unkd4;
-    u8 unkd8[2];
-    s16 unkda;
-    float unkdc;
-    s32 unke0;
-    u32 unke4;
-};
 
 
 extern "C" void func_004A8F10(void* object);
@@ -661,7 +592,7 @@ LibCallbackTransform::~LibCallbackTransform()
 }
 
 /** @brief Run the default transform state hook. */
-void LibCallbackTransform::func_0044B100(u32 first, u32 second, u32 third)
+void LibCallbackTransform::func_0044B100(bool first, bool second, bool third)
 {
 }
 
@@ -740,7 +671,43 @@ extern "C" void func_0044B210(LibCallbackTransform* object)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__20LibCallbackTransformFPCvPv);
+/**
+ * @brief Unless the transform is queued for release, work out the three flags from the field runtime's switches and
+ *        the transform's own, and pass them to func_0044B100.
+ * @param matrix Unused.
+ * @param context Unused.
+ */
+void LibCallbackTransform::build_packet(const void* matrix, void* context)
+{
+    if (unkaf)
+    {
+        return;
+    }
+
+    FieldRuntime* runtime = g_field_runtime;
+    bool third = false;
+
+    if (runtime->unk600 && unkad)
+    {
+        third = true;
+    }
+
+    bool first = runtime->unk5fe != 0;
+
+    if (first)
+    {
+        first = unkab != 0;
+    }
+
+    bool second = runtime->unk5ff != 0;
+
+    if (second)
+    {
+        second = unkac != 0;
+    }
+
+    func_0044B100(first, second, third);
+}
 
 /** @brief Initialize transform flags and drawing modes after the base receivers. */
 LibCallbackTransform::LibCallbackTransform()
@@ -897,7 +864,7 @@ LibClass1746D0::~LibClass1746D0()
  * @param second Second update flag.
  * @param third Third update flag.
  */
-void LibClass1746D0::func_00412C40(u32 first, u32 second, u32 third)
+void LibClass1746D0::func_00412C40(bool first, bool second, bool third)
 {
     switch (state)
     {
@@ -1314,7 +1281,74 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D1D0);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D600);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D9C0);
+/** Vertex of a screen-space polygon: texture coordinates, then the position relative to the screen centre. */
+struct LibScreenVertex
+{
+    float u;
+    float v;
+    float x;
+    float y;
+};
+
+/**
+ * @brief Add a textured triangle strip or fan, in screen coordinates relative to the display's centre, to the
+ *        object's packet.
+ * @param object Object whose packet to extend.
+ * @param count Number of vertices.
+ * @param vertices Vertices.
+ * @param depth Depth of every vertex.
+ * @param color Vertex colour.
+ * @param blend Nonzero to alpha blend.
+ * @param fan Nonzero for a triangle fan, zero for a strip.
+ */
+extern "C" void func_0044D9C0(LibClass1748D0* object, s32 count, const LibScreenVertex* vertices, u32 depth, u32 color,
+                              s32 blend, s32 fan)
+{
+    if (object->packet == 0)
+    {
+        return;
+    }
+
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 0));
+    LibCameraContext* display = static_cast<LibRenderer*>(g_renderer)->display;
+    LibDisplayArea& area = display->display_area;
+    s32 left = (GS_COORDINATE_CENTRE - area.width / 2) << 4;
+    s32 top = (GS_COORDINATE_CENTRE - area.height / 2) << 4;
+    GsGifTag* tag = reinterpret_cast<GsGifTag*>(cursor);
+    tag->tag = GIF_TAG_NREG(1) | 2;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+
+    if (fan)
+    {
+        cursor[2] = (s32)((blend ? GS_PRIM_ABE : 0) | 0x115);
+        cursor += 3;
+    }
+    else
+    {
+        cursor[2] = (s32)((blend ? GS_PRIM_ABE : 0) | 0x114);
+        cursor += 3;
+    }
+
+    cursor[0] = GS_REGISTER_PRIM;
+    cursor[1] = color;
+    cursor[2] = GS_REGISTER_RGBAQ;
+    tag = reinterpret_cast<GsGifTag*>(cursor + 3);
+    tag->tag = (u64)count | GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_UV;
+    tag->fields.register1 = GIF_REGISTER_XYZ2;
+    cursor += 5;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        cursor[0] = (s32)((s32)(16.0f * vertices[i].u) | (s32)(16.0f * vertices[i].v) << 16);
+        cursor[1] = (u64)depth << 32 | ((u64)(left + (s32)(16.0f * vertices[i].x)) | (u64)(top + (s32)(16.0f * vertices[i].y)) << 16);
+        cursor += 2;
+    }
+
+    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+}
 
 /** Packet that sets context 1's depth buffer, depth test and clamping for the object's drawing. */
 struct LibDepthStatePacket
@@ -1348,7 +1382,90 @@ extern "C" void func_0044E080(LibClass1748D0* object)
     resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(state + 1));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__14LibClass1748D0FPCvPv);
+/** TEX0_1 value LibClass1748D0 draws with. */
+extern "C" u64 D_001B6560;
+
+/**
+ * @brief Read the renderer's ZBUF_1 value.
+ * @return First draw buffer's depth buffer register, zero-extended.
+ */
+static inline u64 lib_renderer_depth_buffer()
+{
+    return *reinterpret_cast<const u32*>(&static_cast<LibRenderer*>(g_renderer)->display->buffers[0].environment.context1.depth_buffer);
+}
+
+/**
+ * @brief Start the packet with the drawing state (texture, alpha, depth buffer and test, clamping), then put the
+ *        camera's view and projection times the object's matrix, transposed, into vf1-vf4.
+ * @param matrix Camera.
+ * @param context Opaque caller context; unused.
+ */
+void LibClass1748D0::build_packet(const void* matrix, void* context)
+{
+    const LibCamera* camera = static_cast<const LibCamera*>(matrix);
+
+    if (packet == 0)
+    {
+        return;
+    }
+
+    resident_packet_rewind(packet);
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 0));
+    *cursor++ = 0;
+    packet_tag = reinterpret_cast<u32*>(cursor) + 1;
+    *reinterpret_cast<u32*>(cursor) = 0x06008000;
+    *cursor++ = 0;
+    *cursor++ = GIF_TAG_NREG(1) | 7;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+    *cursor++ = D_001B6560;
+    *cursor++ = GS_REGISTER_TEX0_1;
+    *cursor++ = 0x80;
+    *cursor++ = GS_REGISTER_TEXA;
+    *cursor++ = 0;
+    *cursor++ = GS_REGISTER_FBA_1;
+    *cursor++ = 0x44;
+    *cursor++ = GS_REGISTER_ALPHA_1;
+
+    if (unk245)
+    {
+        *cursor++ = lib_renderer_depth_buffer() | (u64)1 << 32;
+    }
+    else
+    {
+        *cursor++ = lib_renderer_depth_buffer();
+    }
+
+    *cursor++ = GS_REGISTER_ZBUF_1;
+
+    if (unk244)
+    {
+        *cursor++ = 0x3000B;
+    }
+    else
+    {
+        *cursor++ = 0x5000B;
+    }
+
+    *cursor++ = GS_REGISTER_TEST_1;
+    *cursor++ = 0xFFFFFFF5ULL;
+    *cursor++ = GS_REGISTER_CLAMP_1;
+    resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor));
+
+    if (!matrix_ready)
+    {
+        update_transform_matrix();
+    }
+
+    LibMatrix44Value screen;
+    screen = func_004CF7C0(camera->view_matrix, *get_transform_matrix());
+    screen = func_004CF7C0(camera->projection_matrix, screen);
+    ee_transpose_matrix(&screen, &screen);
+    unk238 = camera->unk3c8 << 4;
+    unk23c = camera->unk3cc << 4;
+    vu0_load_matrix(&screen);
+}
 
 /**
  * @brief Place the bounding sphere at the transform's origin, with the cull radius.
@@ -1391,9 +1508,22 @@ public:
      */
     void set_grid_size(s32 columns, s32 rows);
 
-    u8 unk260[0x20];
+    float row_amplitude;
+    float row_frequency;
+    float row_phase;
+    u8 unk26c[4];
+    float column_amplitude;
+    float column_frequency;
+    float column_phase;
+    u8 unk27c[4];
     s32 columns;
     s32 rows;
+    float left;
+    float top;
+    float width;
+    float height;
+    u32 unk298;
+    u32 alpha;
 };
 
 /** LibClass1748D0 that LibClass174AC0 and LibClass174B70 build on, with vtables D_174A10 and D_174A94 in main data. */
@@ -1499,7 +1629,123 @@ LibClass1748D0::LibClass1748D0()
     set_default_draw_bucket();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", build_packet__14LibClass174970FPCvPv);
+extern "C" LibVector4 D_00508250[];
+
+extern "C" LibVector4 D_0050A250[];
+
+extern "C" void func_0044D600(LibClass1748D0* object, s32 count, LibVector4* vertices, LibVector4* offsets, u32 unk,
+                              u8 blend, s32 unk2);
+
+/**
+ * @brief Build a waving grid: each row of the strip is offset by a row sine wave that flips sign every column, and
+ *        each column's lower edge by a column sine wave, then draw the rows two at a time.
+ * @param matrix View matrix, passed to the base builder.
+ * @param context Packet building context, passed to the base builder.
+ */
+void LibClass174970::build_packet(const void* matrix, void* context)
+{
+    float offsets[256];
+    float y;
+    float x;
+    float step;
+    float next_y;
+    float row_step;
+    float wave;
+    float previous;
+    float column_step;
+
+    if (!packet)
+    {
+        unk63 = 0;
+        return;
+    }
+
+    LibClass1748D0::build_packet(matrix, context);
+    u8 blend = 0;
+
+    if (alpha)
+    {
+        resident_packet_set_alpha_1(packet, alpha);
+        blend = 1;
+    }
+
+    s32 row_count = rows;
+    s32 column_count = columns;
+    y = top;
+    next_y = y + height / ((float)row_count - 1.0f);
+    row_step = 1.0f / row_count;
+    column_step = 1.0f / column_count;
+
+    for (s32 i = 0; i < column_count; i++)
+    {
+        offsets[i] = column_amplitude * lib_sine(column_phase + column_step * (6.2831855f * column_frequency * (float)(i + 1)));
+    }
+
+    wave = row_amplitude * lib_sine(row_phase);
+
+    for (s32 row = 0; row < row_count; row++)
+    {
+        previous = wave;
+        wave = row_amplitude * lib_sine(row_phase + row_step * (6.2831855f * row_frequency * (float)(row + 1)));
+        x = left;
+        step = width / ((float)column_count - 1.0f);
+
+        if (row == 0)
+        {
+            for (s32 i = 0; i < column_count; i++)
+            {
+                float offset = offsets[i];
+
+                D_00508250[i * 2].x = x;
+                D_00508250[i * 2].y = y;
+                D_00508250[i * 2].z = 0.0f;
+                D_00508250[i * 2 + 1].x = x;
+                D_00508250[i * 2 + 1].y = next_y;
+                D_00508250[i * 2 + 1].z = 0.0f;
+                D_0050A250[i * 2].x = x + previous;
+                D_0050A250[i * 2].y = y - offset;
+                D_0050A250[i * 2].z = 0.0f;
+                D_0050A250[i * 2 + 1].x = x + wave;
+                D_0050A250[i * 2 + 1].y = next_y + offset;
+                D_0050A250[i * 2 + 1].z = 0.0f;
+                previous *= -1.0f;
+                wave *= -1.0f;
+                x += step;
+            }
+
+            func_0044D600(this, column_count * 2, D_00508250, D_0050A250, unk298, blend, 0);
+        }
+        else
+        {
+            for (s32 i = 0; i < column_count; i++)
+            {
+                copy_vector(&D_00508250[i * 2], &D_00508250[i * 2 + 1]);
+                copy_vector(&D_0050A250[i * 2], &D_0050A250[i * 2 + 1]);
+            }
+
+            float sign = (row & 1) ? 1.0f : -1.0f;
+
+            for (s32 i = 0; i < column_count; i++)
+            {
+                D_00508250[i * 2 + 1].y = next_y;
+                D_0050A250[i * 2 + 1].x = x + wave;
+                float offset = offsets[i];
+
+                D_0050A250[i * 2 + 1].y = next_y + offset * sign;
+                wave *= -1.0f;
+                x += step;
+            }
+
+            func_0044D600(this, column_count * 2, D_00508250, D_0050A250, unk298, blend, 0);
+        }
+
+        y = next_y;
+        next_y += height / ((float)row_count - 1.0f);
+    }
+
+    func_0044E080(this);
+    unk63 = 1;
+}
 
 /** @brief Destroy the transform. */
 LibClass174970::~LibClass174970()
@@ -1583,7 +1829,7 @@ void LibClass174AC0::func_0044FDA0(s32 columns, s32 rows)
     {
         LibVector4 pair;
 
-        lib_compute_sine_cosine_pair(&pair, 6.2831855f * i / (columns - 1.0f));
+        lib_compute_sine_cosine_pair(6.2831855f * i / (columns - 1.0f), &pair);
         static_cast<float*>(samples)[i * 2] = pair.z;
         static_cast<float*>(samples)[i * 2 + 1] = pair.w;
     }
@@ -1640,7 +1886,7 @@ void LibClass174B70::func_00451850(s32 columns, s32 rows)
     {
         LibVector4 pair;
 
-        lib_compute_sine_cosine_pair(&pair, 6.2831855f * i / (columns - 1.0f));
+        lib_compute_sine_cosine_pair(6.2831855f * i / (columns - 1.0f), &pair);
         static_cast<float*>(samples)[i * 2] = pair.z;
         static_cast<float*>(samples)[i * 2 + 1] = pair.w;
     }
@@ -1844,7 +2090,116 @@ void LibClass174C20::func_slot10(LibEntryOutput* output, s32 index)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_slot1C__14LibClass174C20FP12LibTransform);
+/**
+ * @brief Run one step of the ripple grid: drop a random ripple when enabled, spread the heights into the
+ *        velocities (only on masked cells unless the grid is unmasked), move the masked heights, then rebuild each
+ *        cell's normal on VU0. Rewind the records.
+ * @param root Model transform the grid belongs to.
+ * @return One.
+ */
+s32 LibClass174C20::func_slot1C(LibTransform* root)
+{
+    this->root = root;
+    s32 depth = header->rows + 2;
+    s32 width = header->columns + 2;
+    float* height = unk40;
+    float* velocity = unk44;
+    LibClass173490Entry* normals = unk4c;
+
+    if (header->random_drops)
+    {
+        s32 x = resident_random_below(width - 2) + 1;
+        s32 y = resident_random_below(depth - 2) + 1;
+        velocity[x + y * width] += header->drop_strength;
+    }
+
+    float* mask = reinterpret_cast<float*>(unk48);
+    float step = header->speed * g_frame_seconds;
+
+    if (header->unmasked)
+    {
+        for (s32 y = 1; y < depth - 1; y++)
+        {
+            for (s32 x = 1; x < width - 1; x++)
+            {
+                s32 cell = x + y * width;
+                float sum = height[cell - 1];
+                sum += height[cell + 1];
+                sum += height[cell - width];
+                sum += height[cell + width];
+                sum -= 4.0f * height[cell];
+                velocity[cell] += sum * step;
+            }
+        }
+    }
+    else
+    {
+        for (s32 y = 1; y < depth - 1; y++)
+        {
+            s32 next = y * width + 1;
+
+            for (s32 x = width - 2; x != 0; x--)
+            {
+                s32 cell = next++;
+                float weight = mask[cell];
+
+                if (weight != 0.0f)
+                {
+                    float sum = height[cell - 1];
+                    sum += height[cell + 1];
+                    sum += height[cell - width];
+                    sum += height[cell + width];
+                    sum -= 4.0f * height[cell];
+                    velocity[cell] = weight * (velocity[cell] + sum * step);
+                }
+            }
+        }
+    }
+
+    for (s32 y = 0; y < depth; y++)
+    {
+        s32 next = y * width;
+
+        for (s32 x = width; x != 0; x--)
+        {
+            s32 cell = next++;
+
+            if (mask[cell] != 0.0f)
+            {
+                height[cell] += g_frame_seconds * velocity[cell];
+            }
+        }
+    }
+
+    LibVector4 slope;
+    slope.y = -header->normal_scale;
+    vu0_set_vf31_one();
+
+    for (s32 y = 1; y < depth; y++)
+    {
+        s32 cell = y * width + 1;
+        const LibVector4* first = &slope;
+        LibClass173490Entry* normal;
+        slope.x = height[cell + 1] - height[cell - 1];
+        slope.z = height[cell + width] - height[cell - width];
+        vu0_start_microprogram_9b0_vf1(first);
+
+        for (s32 x = 1; x < width - 2;)
+        {
+            cell++;
+            slope.x = height[cell + 1] - height[cell - 1];
+            slope.z = height[cell + width] - height[cell - width];
+            normal = &normals[x++ + y * width];
+            vu0_restart_microprogram_9b0_vf1(&slope, normal);
+        }
+
+        normal = &normals[y * width + width - 2];
+        vu0_wait_store_vf3(normal);
+    }
+
+    cursor = reinterpret_cast<u8*>(unk34);
+    return 1;
+}
 
 /**
  * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
@@ -1933,7 +2288,7 @@ LibClass174C20::LibClass174C20()
     unk40 = 0;
     unk44 = 0;
     unk4c = 0;
-    unk3c = 0;
+    root = 0;
 }
 
 // TODO: The resource widget's destructor inlines its base's, which other modules keep out of line, so the base
@@ -2136,7 +2491,75 @@ u8* LibClass174C70::read_record(u32 index, u32* size)
     return lib_entry_read_record(this, cursor, index, size);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454360);
+extern "C" LibMatrix44Value D_0050CA50;
+
+/**
+ * @brief Note whether every bit is set and rewind the records. With a camera, rebuild the rotation from the root's
+ *        matrix and move the camera's position into the root's space.
+ * @param root Model transform.
+ * @return One.
+ */
+s32 LibClass174C70::func_slot1C(LibTransform* root)
+{
+    if (table->bit_count == table->unk04)
+    {
+        unk19 = 1;
+    }
+    else
+    {
+        unk19 = 0;
+    }
+
+    cursor = records;
+    LibCamera* camera;
+
+    if (list->model->display_manager != 0)
+    {
+        camera = static_cast<LibCamera*>(list->model->display_manager->current_display);
+    }
+    else
+    {
+        camera = static_cast<LibCamera*>(g_display_manager->current_display);
+    }
+
+    if (camera == 0)
+    {
+        return 1;
+    }
+
+    if (!root->matrix_ready)
+    {
+        root->update_transform_matrix();
+    }
+
+    const LibMatrix44Value* matrix = root->get_transform_matrix();
+    rotation = *matrix;
+    vu0_start_microprogram_830_matrix(&rotation);
+    vu0_wait_microprogram();
+    vu0_store_vf1_vf4(&rotation);
+    // TODO: Only a pointer per row, each declared right before its store, gives the three address registers and
+    // three zero registers the game has. I'd like to find the real shape.
+    float* x_axis = rotation.m[0];
+    x_axis[3] = 0.0f;
+    float* y_axis = rotation.m[1];
+    y_axis[3] = 0.0f;
+    float* z_axis = rotation.m[2];
+    z_axis[3] = 0.0f;
+
+    if (table->unk0c != 0)
+    {
+        rotation = func_004CF7C0(rotation, D_0050CA50);
+    }
+
+    rotation = func_004CECD0(rotation);
+    LibMatrix44Value inverse = func_004CF580(*matrix);
+    camera_position.x = camera->transform.m[0][3];
+    camera_position.y = camera->transform.m[1][3];
+    camera_position.z = camera->transform.m[2][3];
+    camera_position.w = 1.0f;
+    camera_position = func_004CF6C0(inverse, reinterpret_cast<const FieldVec4A&>(camera_position));
+    return 1;
+}
 
 /**
  * @brief Use a resource's bit table and the records after it, without owning them.
@@ -2203,7 +2626,76 @@ u8* LibClass174CB0::read_record(u32 index, u32* size)
     return lib_entry_read_record(this, cursor, index, size);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454A50);
+/** Rotation that turns (x, y, z) into (x, -z, y), rebuilt whenever a LibClass174CB0 is constructed. */
+extern "C" LibMatrix44Value D_0050CA90;
+
+/**
+ * @brief Note whether every bit is set and rewind the records. With a camera, rebuild the rotation from the root's
+ *        matrix and move the camera's position into the root's space.
+ * @param root Model transform.
+ * @return One.
+ */
+s32 LibClass174CB0::func_slot1C(LibTransform* root)
+{
+    if (table->bit_count == table->unk02)
+    {
+        unk19 = 1;
+    }
+    else
+    {
+        unk19 = 0;
+    }
+
+    cursor = records;
+    LibCamera* camera;
+
+    if (list->model->display_manager != 0)
+    {
+        camera = static_cast<LibCamera*>(list->model->display_manager->current_display);
+    }
+    else
+    {
+        camera = static_cast<LibCamera*>(g_display_manager->current_display);
+    }
+
+    if (camera == 0)
+    {
+        return 1;
+    }
+
+    if (!root->matrix_ready)
+    {
+        root->update_transform_matrix();
+    }
+
+    const LibMatrix44Value* matrix = root->get_transform_matrix();
+    rotation = *matrix;
+    vu0_start_microprogram_830_matrix(&rotation);
+    vu0_wait_microprogram();
+    vu0_store_vf1_vf4(&rotation);
+    // TODO: Only a pointer per row, each declared right before its store, gives the three address registers and
+    // three zero registers the game has. I'd like to find the real shape.
+    float* x_axis = rotation.m[0];
+    x_axis[3] = 0.0f;
+    float* y_axis = rotation.m[1];
+    y_axis[3] = 0.0f;
+    float* z_axis = rotation.m[2];
+    z_axis[3] = 0.0f;
+
+    if (table->unk0c != 0)
+    {
+        rotation = func_004CF7C0(rotation, D_0050CA90);
+    }
+
+    rotation = func_004CECD0(rotation);
+    LibMatrix44Value inverse = func_004CF580(*matrix);
+    camera_position.x = camera->transform.m[0][3];
+    camera_position.y = camera->transform.m[1][3];
+    camera_position.z = camera->transform.m[2][3];
+    camera_position.w = 1.0f;
+    camera_position = func_004CF6C0(inverse, reinterpret_cast<const FieldVec4A&>(camera_position));
+    return 1;
+}
 
 /**
  * @brief Use a resource's bit table and the records after it, without owning them.
@@ -2219,9 +2711,6 @@ void LibClass174CB0::set_borrowed_data(void* value)
     bits.borrow_words(count, words);
     records = reinterpret_cast<u8*>(table) + table->records_offset;
 }
-
-/** Rotation that turns (x, y, z) into (x, -z, y), rebuilt whenever a LibClass174CB0 is constructed. */
-extern "C" LibMatrix44Value D_0050CA90;
 
 /** @brief Start as an entry of kind 4 and rebuild the axis-swap matrix at D_0050CA90. */
 LibClass174CB0::LibClass174CB0()

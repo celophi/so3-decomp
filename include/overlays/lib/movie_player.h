@@ -114,6 +114,15 @@ struct LibMovieTimeStamp
 /** Byte ring the archive streams the movie file into, ahead of demultiplexing. */
 struct LibMovieStreamBuffer
 {
+    /**
+     * @brief Return the data, aligned to 64 bytes.
+     * @return Aligned start of the data.
+     */
+    u8* aligned_data()
+    {
+        return reinterpret_cast<u8*>((reinterpret_cast<u32>(data) + 63) & ~63);
+    }
+
     u8 unk00[0x40];
     u8 data[LIB_MOVIE_STREAM_BUFFER_SIZE + 0x40];
     s32 position;
@@ -212,7 +221,7 @@ public:
     u8 unk15E645;
     s32 stopped;
     s32 unk15E64C;
-    u8 unk15E650[4];
+    s32 unk15E650;
     u8 unk15E654;
     s32 unk15E658;
     s32 width;
@@ -382,7 +391,8 @@ public:
     u8 unk15E795;
     u8 unk15E796;
     u8 unk15E797;
-    u8 unk15E798[0xC];
+    u8 unk15E798[8];
+    s32 unk15E7A0;
     s32 unk15E7A4;
     u8 unk15E7A8[0x18];
 };

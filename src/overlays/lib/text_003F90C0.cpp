@@ -1,4 +1,6 @@
 #include "include_asm.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
+#include "overlays/lib/light_random.h"
 #include "overlays/lib/text_004095C0.h"
 #include "clamp.h"
 #include "ee.h"
@@ -782,15 +784,1253 @@ extern "C" s32 lib_character_limit_attack(const LibCharacterRecord* record, s32 
     return limit_by_type(record, attack, 9999, 99999);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_003FFF10);
+/** Each character's tactical skill levels: the level each of the seven skills comes at (0xFF for never), then a check byte. */
+extern "C" u8* D_001B64D4;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00400350);
+/**
+ * @brief Decode a tactical skill state after validating the state checksum and the index.
+ * @param equipment Character equipment record.
+ * @param index State index.
+ * @return State, or zero for an invalid checksum or index.
+ */
+static inline s32 lib_checked_tactical_skill_state(LibCharacterEquipment* equipment, s32 index)
+{
+    if (equipment->tactical_skill_states_checksum != tactical_skill_states_checksum(equipment->encoded_tactical_skill_states))
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_004005C0);
+    if (index < 0)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00400830);
+    if ((u32)index >= 7)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00401780);
+    return (s8)equipment->encoded_tactical_skill_states[index] ^ 0x77;
+}
+
+/**
+ * @brief Store a tactical skill state after validating the state checksum and the index.
+ * @param equipment Character equipment record.
+ * @param index State index.
+ * @param state State to store.
+ */
+static inline void lib_set_checked_tactical_skill_state(LibCharacterEquipment* equipment, s32 index, s32 state)
+{
+    if (equipment->tactical_skill_states_checksum != tactical_skill_states_checksum(equipment->encoded_tactical_skill_states))
+    {
+        return;
+    }
+
+    if (index < 0)
+    {
+        return;
+    }
+
+    if ((u32)index >= 7)
+    {
+        return;
+    }
+
+    // TODO: The game stores this as a signed byte (-0x78, not 0x88, for state -1); the array may really be s8.
+    reinterpret_cast<s8*>(equipment->encoded_tactical_skill_states)[index] = state ^ 0x77;
+    equipment->tactical_skill_states_checksum = tactical_skill_states_checksum(equipment->encoded_tactical_skill_states);
+}
+
+/**
+ * @brief Read the character's level when the encoded levels pass their checksum.
+ *
+ * Same as lib_character_level, but with a non-const record so the field addresses aren't hoisted out of a loop.
+ * @param record Character record.
+ * @return Level, or one for a failed checksum.
+ */
+static inline s32 lib_record_level(LibCharacterRecord* record)
+{
+    if (record->level_checksum != (record->checksum_salt ^ (record->encoded_level ^ (record->encoded_base_level + record->checksum_salt))))
+    {
+        return 1;
+    }
+
+    return record->encoded_level ^ 0x7E93;
+}
+
+/**
+ * @brief Learn the first tactical skill the character's level has reached that it doesn't have yet.
+ * @param object Unused receiver.
+ * @param record Character record.
+ * @param equipment Character equipment record.
+ * @return The skill's index plus one, or zero when none was learned or the level table fails its check.
+ */
+extern "C" s32 func_003FFF10(void* object, LibCharacterRecord* record, LibCharacterEquipment* equipment)
+{
+    u8* levels;
+    s32 learned = -1;
+    s32 sum = 0;
+    levels = D_001B64D4 + (record->character_id - 1) * 8;
+
+    for (s32 i = 0; i < 7; i++)
+    {
+        if (learned == -1)
+        {
+            u8 level = *levels;
+
+            if (level != 0xFF && lib_checked_tactical_skill_state(equipment, i) == 0 && lib_record_level(record) >= level)
+            {
+                learned = i;
+            }
+        }
+
+        sum += *levels++;
+    }
+
+    if (learned != -1 && *levels == ((sum * 99 + 22) & 0xFF))
+    {
+        if (learned == 2 || learned == 3 || learned == 5 || learned == 6)
+        {
+            lib_set_checked_tactical_skill_state(equipment, learned, -1);
+        }
+        else
+        {
+            lib_set_checked_tactical_skill_state(equipment, learned, 1);
+        }
+
+        return learned + 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Decode MP after validating its checksum.
+ * @param record Character record.
+ * @return MP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_mp(LibCharacterRecord* record)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_mp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Decode HP after validating its checksum.
+ * @param record Character record.
+ * @return HP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_hp(LibCharacterRecord* record)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_hp ^ 0x7DE3F7E3;
+}
+
+// TODO: The maximum HP/MP setters have the HP/MP setter inlined with its
+// helpers called out of line, like the knockback and defense ones. These
+// copies are a guess at that.
+
+/**
+ * @brief Store MP through the out-of-line limit and flag functions.
+ * @param record Character record.
+ * @param mp MP to store.
+ * @return Stored MP, or zero for an invalid checksum.
+ */
+static inline s32 lower_mp(LibCharacterRecord* record, s32 mp)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        lib_character_add_flags(record, 1);
+        return 0;
+    }
+
+    mp = lib_character_limit_mp(record, mp);
+
+    if (mp > decoded_max_mp(record))
+    {
+        mp = decoded_max_mp(record);
+    }
+
+    if (mp == 0)
+    {
+        lib_character_add_flags(record, 1);
+    }
+
+    if (mp != 0 && (record->encoded_hp ^ 0x7DE3F7E3) != 0)
+    {
+        lib_character_mask_flags(record, ~1);
+    }
+
+    record->encoded_mp = mp ^ 0x7DE3F7E3;
+    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
+    return mp;
+}
+
+/**
+ * @brief Store HP through the out-of-line limit and flag functions.
+ * @param record Character record.
+ * @param hp HP to store.
+ * @return Stored HP, or zero for an invalid checksum.
+ */
+static inline s32 lower_hp(LibCharacterRecord* record, s32 hp)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        lib_character_add_flags(record, 1);
+        return 0;
+    }
+
+    hp = lib_character_limit_hp(record, hp);
+
+    if (hp > decoded_max_hp(record))
+    {
+        hp = decoded_max_hp(record);
+    }
+
+    if (hp == 0)
+    {
+        lib_character_add_flags(record, 1);
+    }
+
+    if (hp != 0 && (record->encoded_mp ^ 0x7DE3F7E3) != 0)
+    {
+        lib_character_mask_flags(record, ~1);
+    }
+
+    record->encoded_hp = hp ^ 0x7DE3F7E3;
+    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
+    return hp;
+}
+
+/**
+ * @brief Learn the first symbology the character's level has reached that it doesn't have yet.
+ * @param object Unused receiver.
+ * @param record Character record.
+ * @param equipment Character equipment record.
+ * @return The symbology's code, or zero when none was learned or the level list fails its check.
+ */
+extern "C" s32 func_00400350(void* object, const LibCharacterRecord* record, LibCharacterEquipment* equipment)
+{
+    LibCodeList* list;
+    const u8* level;
+    s32 found;
+    s32 sum;
+    s32 i;
+    s32 id;
+
+    found = -1;
+    sum = 0;
+    id = lib_character_id(record);
+    list = &D_001B64CC[id - 1];
+    level = &list->entries[0].unk01;
+
+    for (i = 0; i < LIB_CODE_LIST_ENTRY_COUNT; i++, level += 2)
+    {
+        if (found == -1 && *level != 0xFF)
+        {
+            if (lib_equipment_symbology_mastery(equipment, i) == 0 && !(lib_character_level(record) < *level))
+            {
+                found = i;
+            }
+        }
+
+        sum += *level;
+    }
+
+    if (found != -1 && *level == (u8)(sum * 17))
+    {
+        s32 code = list->entries[found].code;
+        func_0040A370(equipment, id, code, 1);
+        return code;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Learn the first battle skill the character's level has reached that it doesn't have yet.
+ * @param object Unused receiver.
+ * @param record Character record.
+ * @param equipment Character equipment record.
+ * @return The battle skill's code, or zero when none was learned or the level table fails its check.
+ */
+extern "C" s32 func_004005C0(void* object, const LibCharacterRecord* record, LibCharacterEquipment* equipment)
+{
+    LibCodeTable* table;
+    const u8* level;
+    s32 found;
+    s32 sum;
+    s32 i;
+    s32 id;
+
+    found = -1;
+    sum = 0;
+    id = lib_character_id(record);
+    table = &D_001B64D0[id - 1];
+    level = &table->high_codes[0].unk01;
+
+    for (i = 0; i < 42; i++, level += 2)
+    {
+        if (found == -1 && *level != 0xFF)
+        {
+            if (lib_equipment_battle_skill_mastery(equipment, i) == 0 && !(lib_character_level(record) < *level))
+            {
+                found = i;
+            }
+        }
+
+        sum += *level;
+    }
+
+    if (found != -1 && *level == (u8)(sum * 29 + 15))
+    {
+        s32 code = table->high_codes[found].code;
+        func_0040A5C0(equipment, id, code, 1);
+        return code;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Decode the base HP after validating the HP checksum.
+ * @param record Character record.
+ * @return Base HP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_base_hp(LibCharacterRecord* record)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_base_hp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Decode the base MP after validating the MP checksum.
+ * @param record Character record.
+ * @return Base MP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_base_mp(LibCharacterRecord* record)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_base_mp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the maximum HP through the out-of-line helpers, lowering the HP to it.
+ * @param record Character record.
+ * @param max_hp Maximum HP.
+ */
+static inline void raise_max_hp(LibCharacterRecord* record, s32 max_hp)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        lib_character_add_flags(record, 1);
+        return;
+    }
+
+    max_hp = lib_character_limit_hp(record, max_hp);
+
+    if (max_hp < 0)
+    {
+        max_hp = 0;
+    }
+
+    record->encoded_max_hp = max_hp ^ 0x7DE3F7E3;
+    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
+
+    if (max_hp < (s32)lib_character_get_hp(record))
+    {
+        lib_character_set_hp(record, max_hp);
+    }
+}
+
+/**
+ * @brief Store the base HP through the out-of-line helpers.
+ * @param record Character record.
+ * @param base_hp Base HP.
+ */
+static inline void raise_base_hp(LibCharacterRecord* record, s32 base_hp)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        lib_character_add_flags(record, 1);
+        return;
+    }
+
+    base_hp = lib_character_limit_hp(record, base_hp);
+
+    if (base_hp < 0)
+    {
+        base_hp = 0;
+    }
+
+    record->encoded_base_hp = base_hp ^ 0x7DE3F7E3;
+    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
+}
+
+/**
+ * @brief Store the maximum MP through the out-of-line helpers, lowering the MP to it.
+ * @param record Character record.
+ * @param max_mp Maximum MP.
+ */
+static inline void raise_max_mp(LibCharacterRecord* record, s32 max_mp)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        lib_character_add_flags(record, 1);
+        return;
+    }
+
+    max_mp = lib_character_limit_mp(record, max_mp);
+    record->encoded_max_mp = max_mp ^ 0x7DE3F7E3;
+    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
+
+    if (max_mp < (s32)lib_character_get_mp(record))
+    {
+        lib_character_set_mp(record, max_mp);
+    }
+}
+
+/**
+ * @brief Store the base MP through the out-of-line helpers.
+ * @param record Character record.
+ * @param base_mp Base MP.
+ */
+static inline void raise_base_mp(LibCharacterRecord* record, s32 base_mp)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        lib_character_add_flags(record, 1);
+        return;
+    }
+
+    base_mp = lib_character_limit_mp(record, base_mp);
+    record->encoded_base_mp = base_mp ^ 0x7DE3F7E3;
+    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
+}
+
+/**
+ * @brief Decode SP after validating the SP/CP checksum.
+ * @param equipment Character equipment record.
+ * @return SP, or zero for an invalid checksum.
+ */
+static inline s32 equipment_sp(const LibCharacterEquipment* equipment)
+{
+    if (equipment->sp_cp_checksum != (equipment->checksum_salt ^ (equipment->encoded_sp ^ (equipment->encoded_cp + equipment->checksum_salt))))
+    {
+        return 0;
+    }
+
+    return equipment->encoded_sp ^ 0x7E93;
+}
+
+/**
+ * @brief Decode CP after validating the SP/CP checksum.
+ * @param equipment Character equipment record.
+ * @return CP, or zero for an invalid checksum.
+ */
+static inline s32 equipment_cp(const LibCharacterEquipment* equipment)
+{
+    if (equipment->sp_cp_checksum != (equipment->checksum_salt ^ (equipment->encoded_sp ^ (equipment->encoded_cp + equipment->checksum_salt))))
+    {
+        return 0;
+    }
+
+    return equipment->encoded_cp ^ 0x7E93;
+}
+
+/**
+ * @brief Store SP, limited to zero through 9999, after validating the SP/CP checksum.
+ * @param equipment Character equipment record.
+ * @param sp SP to store.
+ */
+static inline void store_equipment_sp(LibCharacterEquipment* equipment, s32 sp)
+{
+    if (equipment->sp_cp_checksum == (equipment->checksum_salt ^ (equipment->encoded_sp ^ (equipment->encoded_cp + equipment->checksum_salt))))
+    {
+        sp = limit_value(sp, 0, 9999);
+        equipment->encoded_sp = sp ^ 0x7E93;
+        equipment->sp_cp_checksum = sp_cp_checksum(equipment);
+    }
+}
+
+/**
+ * @brief Store CP, limited to zero through fifteen, after validating the SP/CP checksum.
+ * @param equipment Character equipment record.
+ * @param cp CP to store.
+ */
+static inline void store_equipment_cp(LibCharacterEquipment* equipment, s32 cp)
+{
+    if (equipment->sp_cp_checksum == (equipment->checksum_salt ^ (equipment->encoded_sp ^ (equipment->encoded_cp + equipment->checksum_salt))))
+    {
+        cp = limit_value(cp, 0, 15);
+        equipment->encoded_cp = cp ^ 0x7E93;
+        equipment->sp_cp_checksum = sp_cp_checksum(equipment);
+    }
+}
+
+/** Level-up report; func_00400830 adds the SP and CP it gave. */
+struct LibLevelUpReport
+{
+    u8 unk000[0x4FC];
+    u32 unk4fc;
+    s32 sp_gained;
+    s32 cp_gained;
+};
+
+extern "C" u8* D_001B64DC;
+
+/**
+ * @brief Grow a character's HP, MP, SP and CP for reaching a level, by character type.
+ * @param report Level-up report; the SP and CP given are added to it.
+ * @param record Character record.
+ * @param equipment Character equipment record.
+ * @param level New level.
+ */
+extern "C" void func_00400830(LibLevelUpReport* report, LibCharacterRecord* record, LibCharacterEquipment* equipment, s32 level)
+{
+    s32 type = record->character_id;
+    s32 hp_growth;
+    s32 mp_growth;
+
+    // TODO: Both level thresholds are written as an offset compare in the game (level + 1393 < 1433 here and
+    // level + 1884 < 1924 for MP); a plain `level < 40` compiles to a different compare.
+    if (level + 1393 < 1433)
+    {
+        if (type == 4 || type == 7)
+        {
+            hp_growth = (level * 3 + (resident_random_below(5) + 8)) * 2;
+        }
+        else if (type == 1 || type == 6 || type == 10)
+        {
+            hp_growth = (level * 3 + (resident_random_below(4) + 5)) * 2;
+        }
+        else if (type == 5 || type == 8 || type == 9)
+        {
+            hp_growth = (level * 3 / 2 + (resident_random_below(3) + 7)) * 2;
+        }
+        else
+        {
+            hp_growth = (level * 5 / 4 + (resident_random_below(3) + 5)) * 2;
+        }
+    }
+    else
+    {
+        if (type == 4 || type == 7)
+        {
+            hp_growth = level * 8 / 5 + (resident_random_below(5) + 19);
+        }
+        else if (type == 1 || type == 6 || type == 10)
+        {
+            hp_growth = level * 3 / 2 + (resident_random_below(4) + 2);
+        }
+        else if (type == 5 || type == 8 || type == 9)
+        {
+            hp_growth = level * 8 / 6 + (resident_random_below(4) + 10);
+        }
+        else
+        {
+            hp_growth = level + resident_random_below(4) + 15;
+        }
+    }
+
+    raise_max_hp(record, hp_growth + character_max_hp(record));
+    raise_base_hp(record, hp_growth + character_base_hp(record));
+    lower_hp(record, hp_growth + character_hp(record));
+
+    if (level + 1884 < 1924)
+    {
+        if (type == 4 || type == 7)
+        {
+            mp_growth = level / 3 + resident_random_below(2) + 2;
+        }
+        else if (type == 1 || type == 6 || type == 10)
+        {
+            mp_growth = level / 3 + resident_random_below(3) + 3;
+        }
+        else if (type == 5 || type == 8 || type == 9)
+        {
+            mp_growth = level / 3 + resident_random_below(3) + 4;
+        }
+        else
+        {
+            mp_growth = level / 2 + resident_random_below(4) + 8;
+        }
+    }
+    else
+    {
+        if (type == 4 || type == 7)
+        {
+            mp_growth = level / 8 + resident_random_below(3) + 1;
+        }
+        else if (type == 1 || type == 6 || type == 10)
+        {
+            mp_growth = level / 6 + resident_random_below(4) + 3;
+        }
+        else if (type == 5 || type == 8 || type == 9)
+        {
+            mp_growth = level / 5 + resident_random_below(2) + 4;
+        }
+        else
+        {
+            mp_growth = level * 2 / 7 + resident_random_below(4) + 4;
+        }
+    }
+
+    raise_max_mp(record, mp_growth + character_max_mp(record));
+    raise_base_mp(record, mp_growth + character_base_mp(record));
+    lower_mp(record, mp_growth + character_mp(record));
+
+    // TODO: The game divides three times the level by twelve rather than the level by four.
+    s32 sp = level * 3 / 12;
+    s32 bonus = sp;
+
+    if (sp >= 3)
+    {
+        bonus = sp / 2;
+        bonus += resident_random_below(3);
+    }
+
+    if (level < 40)
+    {
+        sp = level + (bonus - sp / 3);
+    }
+    else
+    {
+        sp = level / 2 + (bonus - sp / 4);
+    }
+
+    if (sp <= 0)
+    {
+        sp = 1;
+    }
+
+    s32 current = equipment_sp(equipment);
+    store_equipment_sp(equipment, current + sp);
+    report->sp_gained += sp;
+    const u8* table = D_001B64DC + (type - 1) * 32;
+    s32 cp = -1;
+    s32 level_sum = 0;
+    s32 value_sum = 0;
+
+    for (s32 i = 0; i < 15; i++)
+    {
+        if (cp == -1 && table[0] != 0xFF && level == table[0])
+        {
+            cp = table[1];
+        }
+
+        level_sum += table[0];
+        value_sum += table[1];
+        table += 2;
+    }
+
+    if (cp == -1 || table[0] != (u8)(level_sum + value_sum * 22 + 7))
+    {
+        cp = 0;
+    }
+
+    report->cp_gained += cp;
+    store_equipment_cp(equipment, equipment_cp(equipment) + cp);
+}
+
+/**
+ * @brief Decode the base attack after validating its checksum.
+ * @param record Character record.
+ * @return Base attack, or zero for an invalid checksum.
+ */
+static inline s32 character_base_attack(const LibCharacterRecord* record)
+{
+    if (record->attack_checksum != (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack))))
+    {
+        return 0;
+    }
+
+    return record->encoded_base_attack ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the base attack, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base attack.
+ */
+static inline void raise_base_attack(LibCharacterRecord* record, s32 value)
+{
+    if (record->attack_checksum == (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack))))
+    {
+        value = limit_by_type(record, value, 9999, 99999);
+        record->encoded_base_attack = value ^ 0x7DE3F7E3;
+        record->attack_checksum = (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack)));
+    }
+}
+
+/**
+ * @brief Decode the effective attack after validating its checksum.
+ * @param record Character record.
+ * @return Effective attack, or zero for an invalid checksum.
+ */
+static inline s32 character_effective_attack(const LibCharacterRecord* record)
+{
+    if (record->attack_checksum != (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack))))
+    {
+        return 0;
+    }
+
+    return record->encoded_effective_attack ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the effective attack through the out-of-line helpers, lowering the current value to it.
+ * @param record Character record.
+ * @param value Effective attack.
+ */
+static inline void raise_effective_attack(LibCharacterRecord* record, s32 value)
+{
+    if (record->attack_checksum == (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack))))
+    {
+        value = lib_character_limit_attack(record, value);
+        record->encoded_effective_attack = value ^ 0x7DE3F7E3;
+        record->attack_checksum = (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack)));
+
+        if (value < func_003FFE50(record))
+        {
+            lib_character_set_attack(record, value);
+        }
+    }
+}
+
+/**
+ * @brief Decode the base intelligence after validating its checksum.
+ * @param record Character record.
+ * @return Base intelligence, or zero for an invalid checksum.
+ */
+static inline s32 character_base_intelligence(const LibCharacterRecord* record)
+{
+    if (record->hit_checksum != (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        return 0;
+    }
+
+    return record->encoded_base_intelligence ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the base intelligence, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base intelligence.
+ */
+static inline void raise_base_intelligence(LibCharacterRecord* record, s32 value)
+{
+    if (record->hit_checksum == (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        value = limit_by_type(record, value, 9999, 9999);
+        record->encoded_base_intelligence = value ^ 0x7DE3F7E3;
+        record->hit_checksum = (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit)));
+    }
+}
+
+/**
+ * @brief Decode the effective intelligence after validating its checksum.
+ * @param record Character record.
+ * @return Effective intelligence, or zero for an invalid checksum.
+ */
+static inline s32 character_effective_intelligence(const LibCharacterRecord* record)
+{
+    if (record->hit_checksum != (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        return 0;
+    }
+
+    return record->encoded_effective_intelligence ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the effective intelligence through the out-of-line helpers, lowering the current value to it.
+ * @param record Character record.
+ * @param value Effective intelligence.
+ */
+static inline void raise_effective_intelligence(LibCharacterRecord* record, s32 value)
+{
+    if (record->hit_checksum == (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        value = lib_character_limit_intelligence(record, value);
+        record->encoded_effective_intelligence = value ^ 0x7DE3F7E3;
+        record->hit_checksum = (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit)));
+
+        if (value < lib_character_get_intelligence(record))
+        {
+            lib_character_set_intelligence(record, value);
+        }
+    }
+}
+
+/**
+ * @brief Decode the base hit after validating its checksum.
+ * @param record Character record.
+ * @return Base hit, or zero for an invalid checksum.
+ */
+static inline s32 character_base_hit(const LibCharacterRecord* record)
+{
+    if (record->hit_checksum != (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        return 0;
+    }
+
+    return record->encoded_base_hit ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the base hit, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base hit.
+ */
+static inline void raise_base_hit(LibCharacterRecord* record, s32 value)
+{
+    if (record->hit_checksum == (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        value = limit_by_type(record, value, 9999, 9999);
+        record->encoded_base_hit = value ^ 0x7DE3F7E3;
+        record->hit_checksum = (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit)));
+    }
+}
+
+/**
+ * @brief Decode the effective hit after validating its checksum.
+ * @param record Character record.
+ * @return Effective hit, or zero for an invalid checksum.
+ */
+static inline s32 character_effective_hit(const LibCharacterRecord* record)
+{
+    if (record->hit_checksum != (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        return 0;
+    }
+
+    return record->encoded_effective_hit ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the effective hit through the out-of-line helpers, lowering the current value to it.
+ * @param record Character record.
+ * @param value Effective hit.
+ */
+static inline void raise_effective_hit(LibCharacterRecord* record, s32 value)
+{
+    if (record->hit_checksum == (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
+    {
+        value = lib_character_limit_hit(record, value);
+        record->encoded_effective_hit = value ^ 0x7DE3F7E3;
+        record->hit_checksum = (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit)));
+
+        if (value < func_003FF8F0(record))
+        {
+            lib_character_set_hit(record, value);
+        }
+    }
+}
+
+/**
+ * @brief Decode the base defense after validating its checksum.
+ * @param record Character record.
+ * @return Base defense, or zero for an invalid checksum.
+ */
+static inline s32 character_base_defense(const LibCharacterRecord* record)
+{
+    if (record->defense_checksum != (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense))))
+    {
+        return 0;
+    }
+
+    return record->encoded_base_defense ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the base defense, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base defense.
+ */
+static inline void raise_base_defense(LibCharacterRecord* record, s32 value)
+{
+    if (record->defense_checksum == (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense))))
+    {
+        value = limit_by_type_above(record, value, 9999, 9999, 99999, 99999);
+        record->encoded_base_defense = value ^ 0x7DE3F7E3;
+        record->defense_checksum = (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense)));
+    }
+}
+
+/**
+ * @brief Decode the effective defense after validating its checksum.
+ * @param record Character record.
+ * @return Effective defense, or zero for an invalid checksum.
+ */
+static inline s32 character_effective_defense(const LibCharacterRecord* record)
+{
+    if (record->defense_checksum != (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense))))
+    {
+        return 0;
+    }
+
+    return record->encoded_effective_defense ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the effective defense through the out-of-line helpers, lowering the current value to it.
+ * @param record Character record.
+ * @param value Effective defense.
+ */
+static inline void raise_effective_defense(LibCharacterRecord* record, s32 value)
+{
+    if (record->defense_checksum == (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense))))
+    {
+        value = lib_character_limit_defense(record, value);
+        record->encoded_effective_defense = value ^ 0x7DE3F7E3;
+        record->defense_checksum = (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense)));
+
+        if (value < func_003FFAC0(record))
+        {
+            lib_character_set_defense(record, value);
+        }
+    }
+}
+
+/**
+ * @brief Decode the base agility after validating its checksum.
+ * @param record Character record.
+ * @return Base agility, or zero for an invalid checksum.
+ */
+static inline s32 character_base_agility(const LibCharacterRecord* record)
+{
+    if (record->agility_checksum != (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility))))
+    {
+        return 0;
+    }
+
+    return record->encoded_base_agility ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Store the base agility, limited by type, after validating its checksum.
+ * @param record Character record.
+ * @param value Base agility.
+ */
+static inline void raise_base_agility(LibCharacterRecord* record, s32 value)
+{
+    if (record->agility_checksum == (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility))))
+    {
+        value = limit_by_type(record, value, 9999, 9999);
+        record->encoded_base_agility = value ^ 0x7DE3F7E3;
+        record->agility_checksum = (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility)));
+    }
+}
+
+/**
+ * @brief Store the effective agility through the out-of-line helpers, lowering the current value to it.
+ * @param record Character record.
+ * @param value Effective agility.
+ */
+static inline void raise_effective_agility(LibCharacterRecord* record, s32 value)
+{
+    if (record->agility_checksum == (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility))))
+    {
+        value = lib_character_limit_agility(record, value);
+        record->encoded_effective_agility = value ^ 0x7DE3F7E3;
+        record->agility_checksum = (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility)));
+
+        if (value < lib_character_get_effective_agility(record))
+        {
+            lib_character_set_effective_agility(record, value);
+        }
+    }
+}
+
+/**
+ * @brief Decode the base stamina after validating its checksum.
+ * @param equipment Character equipment record.
+ * @return Base stamina, or zero for an invalid checksum.
+ */
+static inline s32 equipment_base_stamina(const LibCharacterEquipment* equipment)
+{
+    if (equipment->stamina_checksum != (equipment->checksum_salt ^ (equipment->encoded_stamina ^ (equipment->encoded_base_stamina + equipment->encoded_effective_stamina))))
+    {
+        return 0;
+    }
+
+    return equipment->encoded_base_stamina ^ 0x7E93;
+}
+
+/**
+ * @brief Store the base stamina, limited to zero through 9999, after validating its checksum.
+ * @param equipment Character equipment record.
+ * @param value Base stamina.
+ */
+static inline void raise_base_stamina(LibCharacterEquipment* equipment, s32 value)
+{
+    if (equipment->stamina_checksum == (equipment->checksum_salt ^ (equipment->encoded_stamina ^ (equipment->encoded_base_stamina + equipment->encoded_effective_stamina))))
+    {
+        value = limit_value(value, 0, 9999);
+        equipment->encoded_base_stamina = value ^ 0x7E93;
+        equipment->stamina_checksum = stamina_checksum(equipment);
+    }
+}
+
+/**
+ * @brief Decode the effective stamina after validating its checksum.
+ * @param equipment Character equipment record.
+ * @return Effective stamina, or zero for an invalid checksum.
+ */
+static inline s32 equipment_effective_stamina(const LibCharacterEquipment* equipment)
+{
+    if (equipment->stamina_checksum != (equipment->checksum_salt ^ (equipment->encoded_stamina ^ (equipment->encoded_base_stamina + equipment->encoded_effective_stamina))))
+    {
+        return 0;
+    }
+
+    return equipment->encoded_effective_stamina ^ 0x7E93;
+}
+
+/**
+ * @brief Store the effective stamina through the out-of-line helpers, lowering the stamina to it.
+ * @param equipment Character equipment record.
+ * @param value Effective stamina.
+ */
+static inline void raise_effective_stamina(LibCharacterEquipment* equipment, s32 value)
+{
+    if (equipment->stamina_checksum == (equipment->checksum_salt ^ (equipment->encoded_stamina ^ (equipment->encoded_base_stamina + equipment->encoded_effective_stamina))))
+    {
+        equipment->encoded_effective_stamina = lib_equipment_limit_stamina(equipment, value) ^ 0x7E93;
+
+        if (func_003FF0C0(equipment) > (equipment->encoded_effective_stamina ^ 0x7E93))
+        {
+            lib_equipment_set_stamina(equipment, equipment->encoded_effective_stamina ^ 0x7E93);
+        }
+
+        equipment->stamina_checksum = stamina_checksum(equipment);
+    }
+}
+
+/**
+ * @brief Read the character's base level when the encoded levels pass their checksum.
+ * @param record Character record.
+ * @return Base level, or one for a failed checksum.
+ */
+static inline s32 lib_character_base_level(const LibCharacterRecord* record)
+{
+    if (record->level_checksum != (record->checksum_salt ^ (record->encoded_level ^ (record->encoded_base_level + record->checksum_salt))))
+    {
+        return 1;
+    }
+
+    return record->encoded_base_level ^ 0x7E93;
+}
+
+/**
+ * @brief Store the level, limited to zero through 255, after validating the level checksum.
+ * @param record Character record.
+ * @param level Level.
+ */
+static inline void store_character_level(LibCharacterRecord* record, s32 level)
+{
+    if (record->level_checksum == (record->checksum_salt ^ (record->encoded_level ^ (record->encoded_base_level + record->checksum_salt))))
+    {
+        level = limit_value(level, 0, 255);
+        record->encoded_level = level ^ 0x7E93;
+        record->level_checksum = level_checksum(record);
+    }
+}
+
+/**
+ * @brief Store the base level, limited to zero through 255, after validating the level checksum.
+ * @param record Character record.
+ * @param level Base level.
+ */
+static inline void store_character_base_level(LibCharacterRecord* record, s32 level)
+{
+    if (record->level_checksum == (record->checksum_salt ^ (record->encoded_level ^ (record->encoded_base_level + record->checksum_salt))))
+    {
+        level = limit_value(level, 0, 255);
+        record->encoded_base_level = level ^ 0x7E93;
+        record->level_checksum = level_checksum(record);
+    }
+}
+
+/**
+ * @brief Decode the experience after validating the flags/experience checksum.
+ * @param record Character record.
+ * @return Experience, or zero for an invalid checksum.
+ */
+static inline s32 character_experience(const LibCharacterRecord* record)
+{
+    if (record->flags_experience_checksum != (record->checksum_salt ^ (record->encoded_experience ^ (record->encoded_flags + record->checksum_salt))))
+    {
+        return 0;
+    }
+
+    return record->encoded_experience ^ 0x7DE3F7E3;
+}
+
+extern "C" u8* D_001B64C0;
+
+/**
+ * @brief Level a character up while its experience reaches the next threshold: HP and MP every pass of a full level
+ *        up, then attack, intelligence, hit, defense, stamina and agility by the type's growth row.
+ * @param report Level-up report; its SP and CP totals are cleared first.
+ * @param record Character record.
+ * @param equipment Character equipment record.
+ * @return Number of levels gained.
+ */
+extern "C" s32 func_00401780(LibLevelUpReport* report, LibCharacterRecord* record, LibCharacterEquipment* equipment)
+{
+    report->sp_gained = 0;
+    report->cp_gained = 0;
+
+    // TODO: The game writes every level-255 test as an offset compare like this one.
+    if (lib_record_level(record) + 0x1AF == 0x2AE || lib_character_base_level(record) + 0x18F == 0x28E)
+    {
+        return 0;
+    }
+
+    s32 sum = 0;
+
+    for (s32 i = 0; i < 0x13F; i++)
+    {
+        sum += reinterpret_cast<s32*>(report)[i];
+    }
+
+    s32 count;
+
+    if (sum != 0)
+    {
+        count = resident_random_range(4, 8) + 1;
+
+        if (count > 6)
+        {
+            return 0;
+        }
+    }
+    else
+    {
+        count = 3;
+    }
+
+    s32 bonus = count / 3;
+    s32 levels = 0;
+    s32* thresholds = reinterpret_cast<s32*>(report) + (report->unk4fc ^ 0x400013B);
+    s32 type = record->character_id - 1;
+    u8* row = D_001B64C0 + type * 13;
+
+    while (character_experience(record) >= thresholds[lib_record_level(record) - 1])
+    {
+        if (lib_record_level(record) + 0x279 == 0x378 || lib_character_base_level(record) + 0x13F == 0x23E)
+        {
+            break;
+        }
+
+        levels++;
+
+        if (count == 3)
+        {
+            func_00400830(report, record, equipment, lib_record_level(record) + 1);
+        }
+
+        s32 row_sum = 0;
+        s32 i;
+
+        for (i = 0; i < 12; i++)
+        {
+            row_sum += row[i];
+        }
+
+        if ((u8)(row_sum - (type + 0x24)) != row[i])
+        {
+            bonus = resident_random_below(5);
+        }
+
+        for (s32 stat = 0; stat < 6; stat++)
+        {
+            s32 growth = row[stat * 2 + 1] + resident_random_below(row[stat * 2]);
+
+            switch (stat)
+            {
+            case 0:
+                if (count != 3)
+                {
+                    growth = (D_001B65B8 = 1664525L * D_001B65B8 + 1013904223L) % 6 - 3;
+                }
+
+                raise_base_attack(record, growth + character_base_attack(record));
+                raise_effective_attack(record, growth + character_effective_attack(record));
+                break;
+            case 1:
+                if (count == 3)
+                {
+                    raise_base_intelligence(record, growth + character_base_intelligence(record));
+                    raise_effective_intelligence(record, growth + character_effective_intelligence(record));
+                }
+
+                break;
+            case 2:
+                if (count < 3)
+                {
+                    growth = resident_random_range(-3, 2);
+                }
+
+                raise_base_hit(record, growth + character_base_hit(record));
+                raise_effective_hit(record, growth + character_effective_hit(record));
+                break;
+            case 3:
+                if (bonus == 1)
+                {
+                    raise_base_defense(record, growth + character_base_defense(record));
+                    raise_effective_defense(record, growth + character_effective_defense(record));
+                }
+
+                break;
+            case 4:
+                if (bonus != 1)
+                {
+                    growth = resident_random_range(-2, 1);
+                }
+
+                raise_base_stamina(equipment, growth + equipment_base_stamina(equipment));
+                raise_effective_stamina(equipment, growth + equipment_effective_stamina(equipment));
+                break;
+            case 5:
+                if (bonus == 1)
+                {
+                    raise_base_agility(record, growth + character_base_agility(record));
+                    raise_effective_agility(record, growth + character_effective_agility(record));
+                }
+
+                break;
+            }
+        }
+
+        store_character_level(record, lib_record_level(record) + 1);
+        store_character_base_level(record, lib_character_base_level(record) + 1);
+    }
+
+    return levels;
+}
 
 /**
  * @brief Return the experience still needed to reach a level.
@@ -1859,114 +3099,6 @@ extern "C" s32 func_00406C60(LibCharacterRecord* record, s32 base_mp)
 }
 
 /**
- * @brief Decode MP after validating its checksum.
- * @param record Character record.
- * @return MP, or zero (setting the down flag) for an invalid checksum.
- */
-static inline s32 character_mp(LibCharacterRecord* record)
-{
-    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
-    {
-        add_character_flags(record, 1);
-        return 0;
-    }
-
-    return record->encoded_mp ^ 0x7DE3F7E3;
-}
-
-/**
- * @brief Decode HP after validating its checksum.
- * @param record Character record.
- * @return HP, or zero (setting the down flag) for an invalid checksum.
- */
-static inline s32 character_hp(LibCharacterRecord* record)
-{
-    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
-    {
-        add_character_flags(record, 1);
-        return 0;
-    }
-
-    return record->encoded_hp ^ 0x7DE3F7E3;
-}
-
-// TODO: The maximum HP/MP setters have the HP/MP setter inlined with its
-// helpers called out of line, like the knockback and defense ones. These
-// copies are a guess at that.
-
-/**
- * @brief Store MP through the out-of-line limit and flag functions.
- * @param record Character record.
- * @param mp MP to store.
- * @return Stored MP, or zero for an invalid checksum.
- */
-static inline s32 lower_mp(LibCharacterRecord* record, s32 mp)
-{
-    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
-    {
-        lib_character_add_flags(record, 1);
-        return 0;
-    }
-
-    mp = lib_character_limit_mp(record, mp);
-
-    if (mp > decoded_max_mp(record))
-    {
-        mp = decoded_max_mp(record);
-    }
-
-    if (mp == 0)
-    {
-        lib_character_add_flags(record, 1);
-    }
-
-    if (mp != 0 && (record->encoded_hp ^ 0x7DE3F7E3) != 0)
-    {
-        lib_character_mask_flags(record, ~1);
-    }
-
-    record->encoded_mp = mp ^ 0x7DE3F7E3;
-    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
-    return mp;
-}
-
-/**
- * @brief Store HP through the out-of-line limit and flag functions.
- * @param record Character record.
- * @param hp HP to store.
- * @return Stored HP, or zero for an invalid checksum.
- */
-static inline s32 lower_hp(LibCharacterRecord* record, s32 hp)
-{
-    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
-    {
-        lib_character_add_flags(record, 1);
-        return 0;
-    }
-
-    hp = lib_character_limit_hp(record, hp);
-
-    if (hp > decoded_max_hp(record))
-    {
-        hp = decoded_max_hp(record);
-    }
-
-    if (hp == 0)
-    {
-        lib_character_add_flags(record, 1);
-    }
-
-    if (hp != 0 && (record->encoded_mp ^ 0x7DE3F7E3) != 0)
-    {
-        lib_character_mask_flags(record, ~1);
-    }
-
-    record->encoded_hp = hp ^ 0x7DE3F7E3;
-    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
-    return hp;
-}
-
-/**
  * @brief Store the maximum MP, limited by type, and lower the MP to it.
  * @param record Character record.
  * @param max_mp Maximum MP.
@@ -2149,7 +3281,212 @@ extern "C" s16 func_004076C0(LibCharacterRecord* record, s16 id)
     return record->character_id;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_004076D0);
+extern "C" void func_00402B30(LibCharacterRecord* record, LibCharacterEquipment* equipment);
+
+extern "C" const char D_00501CF0[];
+extern "C" const char D_00501CE8[];
+extern "C" const char D_00501CE0[];
+extern "C" const char D_00501CD8[];
+extern "C" const char D_00501CD0[];
+extern "C" const char D_00501CC8[];
+extern "C" const char D_00501CC0[];
+extern "C" const char D_00501CB8[];
+extern "C" const char D_00501CB0[];
+extern "C" const char D_00501CA8[];
+
+/**
+ * @brief Copy a character name.
+ * @param name Name buffer.
+ * @param text Name.
+ */
+static inline void copy_character_name(char* name, const char* text)
+{
+    const char* source = text;
+    char* destination = name;
+
+    while ((*destination++ = *source++))
+    {
+    }
+}
+
+/**
+ * @brief Clear a character's records to zero under fresh checksum salts, then give a party member its starting
+ *        values and name.
+ * @param record Character record to fill.
+ * @param equipment Character equipment record to fill.
+ * @param id Character ID; zero leaves the records cleared.
+ */
+void func_004076D0(LibCharacterRecord* record, LibCharacterEquipment* equipment, s32 id)
+{
+    s32 i;
+
+    memset_guess(record, 0, sizeof(LibCharacterRecord));
+    record->checksum_salt = resident_next_random_word();
+    record->level_checksum = level_checksum(record);
+    record->flags_experience_checksum = flags_experience_checksum(record);
+    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
+    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
+    record->attack_checksum = attack_checksum(record);
+    record->defense_checksum = defense_checksum(record);
+    record->agility_checksum = agility_checksum(record);
+    record->hit_checksum = hit_checksum(record);
+    record->knockback_power_checksum = knockback_power_checksum(record);
+    record->knockback_resistance_checksum = knockback_resistance_checksum(record);
+    record->critical_rate_checksum = critical_rate_checksum(record);
+    func_004076C0(record, 0);
+    func_004076B0(record, 0);
+    func_00407640(record, 0);
+    lib_character_set_level(record, 0);
+    lib_character_set_base_level(record, 0);
+    lib_character_set_experience(record, 0);
+    lib_character_set_hp(record, 0);
+    lib_character_set_max_hp(record, 0);
+    func_00407050(record, 0);
+    lib_character_set_mp(record, 0);
+    lib_character_set_max_mp(record, 0);
+    func_00406C60(record, 0);
+    lib_character_set_fury(record, 0.0f);
+    lib_character_set_max_fury(record, 0.0f);
+    func_00406AB0(record, 0.0f);
+    lib_character_set_attack(record, 0);
+    lib_character_set_effective_attack(record, 0);
+    lib_character_set_base_attack(record, 0);
+    lib_character_set_defense(record, 0);
+    lib_character_set_base_defense(record, 0);
+    lib_character_set_effective_defense(record, 0);
+    lib_character_set_agility(record, 0);
+    lib_character_set_base_agility(record, 0);
+    lib_character_set_effective_agility(record, 0);
+    lib_character_set_hit(record, 0);
+    lib_character_set_base_hit(record, 0);
+    lib_character_set_effective_hit(record, 0);
+    lib_character_set_intelligence(record, 0);
+    lib_character_set_base_intelligence(record, 0);
+    lib_character_set_effective_intelligence(record, 0);
+    lib_character_set_knockback_power(record, 0);
+    lib_character_set_base_knockback_power(record, 0);
+    lib_character_set_effective_knockback_power(record, 0);
+    lib_character_set_knockback_resistance(record, 0);
+    lib_character_set_base_knockback_resistance(record, 0);
+    lib_character_set_effective_knockback_resistance(record, 0);
+    lib_character_set_critical_rate(record, 0);
+    lib_character_set_effective_critical_rate(record, 0);
+    lib_character_set_base_critical_rate(record, 0);
+
+    memset_guess(equipment, 0, sizeof(LibCharacterEquipment));
+    equipment->checksum_salt = resident_next_random_word();
+    equipment->luck_checksum = luck_checksum(equipment);
+    equipment->stamina_checksum = stamina_checksum(equipment);
+    equipment->equipment_checksum =
+        equipment->checksum_salt ^ ((equipment->encoded_equipment_ids[1] + equipment->encoded_equipment_ids[2]) ^ (equipment->encoded_equipment_ids[3] + equipment->encoded_equipment_ids[0]));
+    equipment->sp_cp_checksum = sp_cp_checksum(equipment);
+    equipment->symbology_mastery_checksum = func_00405530(equipment, equipment->encoded_symbology_mastery, sizeof(equipment->encoded_symbology_mastery));
+    equipment->battle_skill_mastery_checksum = func_00405530(equipment, equipment->encoded_battle_skill_mastery, sizeof(equipment->encoded_battle_skill_mastery));
+    equipment->tactical_skill_states_checksum = func_00405440(equipment, equipment->encoded_tactical_skill_states, sizeof(equipment->encoded_tactical_skill_states));
+    equipment->battle_skill_indices_checksum = func_00405440(equipment, equipment->encoded_battle_skill_indices, sizeof(equipment->encoded_battle_skill_indices));
+    equipment->status_skill_levels_checksum = func_00405440(equipment, equipment->encoded_status_skill_levels, sizeof(equipment->encoded_status_skill_levels));
+    lib_equipment_set_base_luck(equipment, 0);
+    lib_equipment_set_effective_luck(equipment, 0);
+    lib_equipment_set_luck(equipment, 0);
+    lib_equipment_set_base_stamina(equipment, 0);
+    lib_equipment_set_effective_stamina(equipment, 0);
+    lib_equipment_set_stamina(equipment, 0);
+    lib_equipment_set_slot_count(equipment, 4);
+    lib_equipment_set_slot_limit(equipment, 4);
+
+    for (i = 0; i < 4; i++)
+    {
+        lib_equipment_set_equipment_id(equipment, i, 0);
+    }
+
+    lib_equipment_set_sp(equipment, 0);
+    lib_equipment_set_cp(equipment, 0);
+    // TODO: The game passes the equipment record here; the store lands in its unk1c.
+    lib_character_set_base_mp(reinterpret_cast<LibCharacterRecord*>(equipment), 0);
+
+    for (i = 0; i < 24; i++)
+    {
+        equipment->character_name[i] = 0;
+    }
+
+    func_00404CE0(equipment, 0);
+    func_00404CD0(equipment, 0);
+    func_00404CC0(equipment, 0);
+    func_00404CA0(equipment, 0);
+
+    for (i = 0; i < 5; i++)
+    {
+        lib_equipment_set_status_skill_level(equipment, i, 0);
+    }
+
+    for (i = 0; i < 6; i++)
+    {
+        lib_equipment_clear_battle_skill_index(equipment, i);
+    }
+
+    for (i = 0; i < 7; i++)
+    {
+        lib_equipment_set_tactical_skill_state(equipment, i, 0);
+    }
+
+    for (i = 0; i < 32; i++)
+    {
+        lib_equipment_set_symbology_mastery(equipment, i, 0);
+    }
+
+    for (i = 0; i < 42; i++)
+    {
+        lib_equipment_set_battle_skill_mastery(equipment, i, 0);
+    }
+
+    for (i = 0; i < 4; i++)
+    {
+        lib_equipment_set_elemental_response(equipment, i, 0);
+    }
+
+    func_00404560(equipment, 0);
+    record->character_id = id;
+    record->stat_limit_type = 0;
+
+    if (id > 0)
+    {
+        func_00402B30(record, equipment);
+    }
+
+    switch (id)
+    {
+    case 1:
+        copy_character_name(equipment->character_name, D_00501CF0);
+        break;
+    case 2:
+        copy_character_name(equipment->character_name, D_00501CE8);
+        break;
+    case 3:
+        copy_character_name(equipment->character_name, D_00501CE0);
+        break;
+    case 4:
+        copy_character_name(equipment->character_name, D_00501CD8);
+        break;
+    case 5:
+        copy_character_name(equipment->character_name, D_00501CD0);
+        break;
+    case 6:
+        copy_character_name(equipment->character_name, D_00501CC8);
+        break;
+    case 7:
+        copy_character_name(equipment->character_name, D_00501CC0);
+        break;
+    case 8:
+        copy_character_name(equipment->character_name, D_00501CB8);
+        break;
+    case 9:
+        copy_character_name(equipment->character_name, D_00501CB0);
+        break;
+    case 10:
+        copy_character_name(equipment->character_name, D_00501CA8);
+        break;
+    }
+}
 
 /**
  * @brief Read one of a character's four table values after validating its checksum.
@@ -2557,7 +3894,152 @@ extern "C" s32 func_004087A0(s32 record, s32 index)
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00408850);
+/** Mastery level steps of each battle skill: nine steps, then a check byte. */
+extern "C" u8* D_001B64C8;
+
+/** Mastery level steps of each symbology, laid out like D_001B64C8. */
+extern "C" u8* D_001B64C4;
+
+/** Per-character mastery level steps of the character-specific battle skills, laid out like D_001B64C8. */
+extern "C" u8* D_00507C00[10];
+
+/**
+ * @brief Resolve a protected detail entry and return its selected values.
+ * @param detail Detail record containing the encoded entry arrays.
+ * @param code Signed record code, from one through ten.
+ * @param index Signed entry index, from zero through forty-one.
+ * @param kind Optional destination for the entry kind.
+ * @param value Optional destination for the entry value.
+ * @param result_index Optional destination for the result index.
+ * @param remainder Optional destination for the remaining value.
+ * @return Signed lookup result, or zero when the entry is unavailable.
+ */
+extern "C" s32 func_00408850(void* detail, s32 code, s32 index, s32* kind, s32* value, s32* result_index, s32* remainder)
+{
+    LibCharacterEquipment* equipment = static_cast<LibCharacterEquipment*>(detail);
+
+    if (index < 0 || index >= 42 || code - 1 < 0 || code - 1 >= 10)
+    {
+        return 0;
+    }
+
+    s32 table = code - 1;
+
+    s32 entry;
+    s32 mastery;
+    u8* steps;
+
+    if (index < 26)
+    {
+        entry = D_001B64D0->high_codes[index].code;
+        mastery = lib_equipment_battle_skill_mastery(equipment, index);
+        steps = D_001B64C8 + index * 10;
+    }
+    else
+    {
+        // TODO: The game adds the entry offset before the table's; indexing D_001B64D0[table] adds them the other way.
+        LibCodeListEntry* codes = &D_001B64D0->high_codes[index];
+        entry = codes[table * (sizeof(LibCodeTable) / sizeof(LibCodeListEntry))].code;
+
+        if (entry > 0 && entry < 30)
+        {
+            s32 position = func_0040AF10(code, entry);
+            mastery = lib_equipment_symbology_mastery(equipment, position);
+            steps = D_001B64C4 + (entry - 1) * 10;
+        }
+        else
+        {
+            mastery = lib_equipment_battle_skill_mastery(equipment, index);
+            // TODO: Only a separate index local and the offset added afterwards match here.
+            s32 id = code - 1;
+            steps = D_00507C00[id];
+            steps += (index - 26) * 10;
+        }
+    }
+
+    if (kind != 0)
+    {
+        *kind = entry;
+    }
+
+    if (entry == 0 || mastery == 0)
+    {
+        return 0;
+    }
+
+    s32 sign;
+
+    if (mastery < 0)
+    {
+        mastery = -mastery;
+        sign = -1;
+    }
+    else
+    {
+        sign = 1;
+    }
+
+    if (value != 0)
+    {
+        *value = mastery - 1;
+    }
+
+    u8 found = 0;
+    s32 total = 0;
+    u8 valid = func_00408E20(steps, entry);
+
+    for (s32 i = 0; i < 9; i++)
+    {
+        total += *steps;
+
+        if (mastery - 1 < total)
+        {
+            if (result_index != 0)
+            {
+                *result_index = i + 1;
+            }
+
+            if (remainder != 0)
+            {
+                *remainder = total - (mastery - 1);
+            }
+
+            found = 1;
+            break;
+        }
+
+        steps++;
+    }
+
+    if (!found)
+    {
+        if (result_index != 0)
+        {
+            *result_index = 10;
+        }
+
+        if (remainder != 0)
+        {
+            *remainder = 0;
+        }
+    }
+
+    if (!valid)
+    {
+        if (result_index != 0)
+        {
+            *result_index = 1;
+        }
+
+        if (remainder != 0)
+        {
+            *remainder = 76;
+            *remainder += 13;
+        }
+    }
+
+    return sign;
+}
 
 /**
  * @brief Validate a nine-byte block against the checksum byte after it.
@@ -2592,4 +4074,242 @@ extern "C" s32 func_00408E20(u8* data, s32 seed)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003F90C0", func_00408EA0);
+/** Three codes the combined code 0x90 stands for. */
+extern "C" u8 D_001B6198[3];
+
+/** Three codes the combined code 0x91 stands for. */
+extern "C" u8 D_001B619C[3];
+
+/**
+ * @brief Decode a battle skill index after validating the index checksum and the slot.
+ * @param equipment Character equipment record.
+ * @param slot Entry index, from zero through five.
+ * @return The battle skill index plus one, or zero for an invalid checksum or slot.
+ */
+static inline s32 lib_battle_skill_index(LibCharacterEquipment* equipment, s32 slot)
+{
+    if (equipment->battle_skill_indices_checksum != battle_skill_indices_checksum(equipment->encoded_battle_skill_indices))
+    {
+        return 0;
+    }
+
+    if (slot < 0)
+    {
+        return 0;
+    }
+
+    if ((u32)slot >= 6)
+    {
+        return 0;
+    }
+
+    return equipment->encoded_battle_skill_indices[slot] ^ 0x77;
+}
+
+/**
+ * @brief Resolve a symbology entry and its mastery step. Parts of the combined codes 0x90 and 0x91 only count while
+ *        the combined symbology is unlearned, or, in mode zero, while it's set in battle skill slot four or five.
+ * @param equipment Character equipment record.
+ * @param code Code list ID, from one through ten.
+ * @param index Entry index, from zero through thirty-one.
+ * @param kind Optional destination for the entry's code.
+ * @param value Optional destination for the mastery minus one.
+ * @param result_index Optional destination for the mastery step, from one through ten.
+ * @param remainder Optional destination for the amount left to the next step.
+ * @param mode Nonzero to skip the battle skill slot check.
+ * @return 1 or -1 by the sign of the mastery, or zero when the entry is unavailable.
+ */
+extern "C" s32 func_00408EA0(LibCharacterEquipment* equipment, s32 code, s32 index, s32* kind, s32* value, s32* result_index,
+                             s32* remainder, s32 mode)
+{
+    s32 sign = 0;
+
+    if (index < 0 || index >= 32 || code - 1 < 0 || code - 1 >= 10)
+    {
+        return 0;
+    }
+
+    s32 table = code - 1;
+    // TODO: The level walk starts from the list pointer itself; a separate &entries[0].unk01 pointer doesn't match.
+    const u8* level = reinterpret_cast<const u8*>(&D_001B64CC[table]);
+    s32 entry = level[index * 2];
+    level++;
+    s32 sum = 0;
+
+    for (s32 i = 0; i < LIB_CODE_LIST_ENTRY_COUNT; i++, level += 2)
+    {
+        sum += *level;
+    }
+
+    if (*level != (u8)(sum * 17))
+    {
+        return 0;
+    }
+
+    if (kind != 0)
+    {
+        *kind = entry;
+    }
+
+    s32 mastery = lib_equipment_symbology_mastery(equipment, index);
+
+    if (entry == 0)
+    {
+        return 0;
+    }
+
+    if (mastery <= -1)
+    {
+        mastery = -mastery;
+        sign = -1;
+    }
+    else if (mastery > 0)
+    {
+        sign = 1;
+    }
+    else if (mastery == 0)
+    {
+        return 0;
+    }
+
+    u8 plain = 0;
+
+    if (code - 1 == 1 || code - 1 == 8)
+    {
+        plain = 1;
+    }
+    else if (D_001B64CC[table].entries[index].unk01 != 0xFF)
+    {
+        plain = 1;
+    }
+
+    if (!plain)
+    {
+        for (s32 pass = 0; pass < 2; pass++)
+        {
+            const u8* parts;
+            s32 combined;
+            // TODO: Both arms set the part count, which keeps it in a register like the game's.
+            s32 count;
+
+            if (pass == 0)
+            {
+                count = 3;
+                parts = D_001B6198;
+                combined = 0x90;
+            }
+            else
+            {
+                count = 3;
+                parts = D_001B619C;
+                combined = 0x91;
+            }
+
+            for (s32 j = 0; j < count; j++)
+            {
+                if (entry != parts[j])
+                {
+                    continue;
+                }
+
+                if (lib_equipment_battle_skill_mastery(equipment, func_0040AE00(code, combined)) == 0)
+                {
+                    sign = 0;
+                    continue;
+                }
+
+                if (mode != 0)
+                {
+                    goto resolved;
+                }
+
+                s32 saved = sign;
+                sign = 0;
+
+                for (s32 slot = 0; slot < 2; slot++)
+                {
+                    s32 skill = lib_battle_skill_index(equipment, slot + 4);
+
+                    if (skill > 0)
+                    {
+                        s32 skill_kind;
+                        func_00408850(equipment, code, skill - 1, &skill_kind, 0, 0, 0);
+
+                        if (skill_kind == combined)
+                        {
+                            sign = saved;
+                            goto resolved;
+                        }
+                    }
+                }
+
+                goto done;
+            }
+        }
+    }
+
+resolved:
+    if (value != 0)
+    {
+        *value = mastery - 1;
+    }
+
+    u8 found = 0;
+    u8* steps = D_001B64C4 + (entry - 1) * 10;
+    s32 total = 0;
+
+    if (!func_00408E20(steps, entry))
+    {
+        if (result_index != 0)
+        {
+            *result_index = 1;
+        }
+
+        if (remainder != 0)
+        {
+            *remainder = 18;
+            *remainder += 81;
+        }
+
+        goto done;
+    }
+
+    for (s32 i = 0; i < 9; i++)
+    {
+        total += *steps;
+
+        if (mastery - 1 < total)
+        {
+            if (result_index != 0)
+            {
+                *result_index = i + 1;
+            }
+
+            if (remainder != 0)
+            {
+                *remainder = total - (mastery - 1);
+            }
+
+            found = 1;
+            break;
+        }
+
+        steps++;
+    }
+
+    if (!found)
+    {
+        if (result_index != 0)
+        {
+            *result_index = 10;
+        }
+
+        if (remainder != 0)
+        {
+            *remainder = 0;
+        }
+    }
+
+done:
+    return sign;
+}

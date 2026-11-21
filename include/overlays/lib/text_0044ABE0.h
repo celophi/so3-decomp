@@ -641,6 +641,110 @@ extern "C" s32 func_00453150(LibImageAnimation* animation, u64** cursor, s32 fla
 extern "C" void func_004535B0(LibImageAnimation* animation, u64** cursor, const LibVector4* origin, u32 depth, float scale,
                               s32 flag);
 
+/** Transform owner with vtable D_001747C0 in main data that expires the cached texture 1 when it's drawn. */
+class LibClass1747C0 : public LibTransformOwner
+{
+public:
+    /** @brief Set the type ID and draw flags after the base constructors. */
+    LibClass1747C0()
+    {
+        unk65 = 0;
+        set_type_id(0x901);
+        set_draw_flags(0x400);
+    }
+
+    virtual ~LibClass1747C0();
+
+    /** @brief Do nothing. */
+    virtual void render();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return the shared bounding sphere every object of this class uses.
+     * @return Bounding sphere.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Expire every cached copy of texture 1.
+     * @param matrix Unused.
+     * @param context Unused.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+};
+
+/** Transform owner that sends its own packet on VIF1, with vtable D_174840 in main data. */
+class LibClass174840 : public LibTransformOwner, public DmaSubmission
+{
+public:
+    /**
+     * @brief Set up the transform and allocate the packet.
+     * @param unk94 Stored at unk94.
+     */
+    LibClass174840(void* unk94);
+
+    /** @brief Delete the packet and destroy the transform owner. */
+    virtual ~LibClass174840();
+
+    /**
+     * @brief Build the packet for this frame.
+     * @param matrix Matrix supplied by the caller.
+     * @param context Opaque caller context.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    /** @brief Detach from the owner and release the transform. */
+    virtual void destroy();
+
+    /** @brief Queue the packet on VIF1. */
+    virtual void render();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return the bounding sphere D_00508230.
+     * @return Bounding sphere.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Send the packet's pending data on VIF1 in normal mode.
+     * @param channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 channel);
+
+    /**
+     * @brief Finish the packet.
+     * @param channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 channel);
+
+    void* unk94;
+    LibPacketBuffer* packet;
+    u8 unk9c;
+    u8 unk9d;
+    u8 unk9e[2];
+    u32 qwc;
+    u8 unka4[4];
+    u32 unka8;
+    s16 unkac;
+    s16 unkae;
+    float unkb0;
+    s32 unkb4;
+    u8 unkb8[0x18];
+    void* unkd0;
+    s32 unkd4;
+    u8 unkd8[2];
+    s16 unkda;
+    float unkdc;
+    s32 unke0;
+    u32 unke4;
+    u8 unke8[0x18];
+};
+
 /**
  * Transform that draws one VIF1 packet of its own, with vtables D_1748D0 and D_174954 in main data; LibClass172080
  * and the other emitter-like classes derive from it.
@@ -683,7 +787,8 @@ public:
     LibVector4 bounding_sphere;
     LibPacketBuffer* packet;
     u32* packet_tag;
-    u8 unk238[8];
+    s32 unk238;
+    s32 unk23c;
     u32 qwc;
     u8 unk244;
     u8 unk245;

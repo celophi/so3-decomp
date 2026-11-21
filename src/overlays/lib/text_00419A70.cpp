@@ -676,7 +676,92 @@ void LibClass172750::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041E910);
+/**
+ * @brief Pack a GS XYZ2 value.
+ * @param x Horizontal position in 12.4 fixed point.
+ * @param y Vertical position in 12.4 fixed point.
+ * @param z Depth.
+ * @return XYZ2 register value.
+ */
+static inline u64 gs_xyz2(s32 x, s32 y, u32 z)
+{
+    return ((u64)y << 16) | (u64)x | ((u64)z << 32);
+}
+
+/**
+ * @brief Rebuild the packet when the display's frame changes: draw the whole display in 64-pixel sprite strips with
+ *        the frame masked off, then restore FRAME_1, ZBUF_1 and TEST_1.
+ * @param matrix View matrix; unused.
+ * @param context Packet building context; unused.
+ */
+void LibClass172750::build_packet(const void* matrix, void* context)
+{
+    u64 frame = func_004DBCA0(display, 0) | ((u64)0xFFFFFF << 32);
+
+    if (tex0 != frame)
+    {
+        tex0 = frame;
+        resident_packet_rewind(packet);
+        u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 0));
+        cursor[0] = 0;
+        u32* vif = reinterpret_cast<u32*>(cursor + 1);
+        vif[0] = 0x06008000;
+        u32* direct = vif + 1;
+        owner = (LibUpdateList*)g_renderer;
+        LibDisplayArea* area = &display->display_area;
+        GsGifTag* tag = reinterpret_cast<GsGifTag*>(cursor + 2);
+        tag->tag = GIF_TAG_NREG(1) | 6;
+        tag->registers = 0;
+        tag->fields.register0 = GIF_REGISTER_AD;
+        cursor[4] = frame;
+        cursor[5] = GS_REGISTER_FRAME_1;
+        cursor[6] = 0x32000000 | ((u64)1 << 32);
+        cursor[7] = GS_REGISTER_ZBUF_1;
+        cursor[8] = 0x30000;
+        cursor[9] = GS_REGISTER_TEST_1;
+        cursor[10] = GS_PRIM_SPRITE;
+        cursor[11] = GS_REGISTER_PRIM;
+        cursor[12] = 0;
+        cursor[13] = GS_REGISTER_FBA_1;
+        cursor[14] = 0;
+        cursor[15] = GS_REGISTER_RGBAQ;
+
+        s32 strips = area->width / 64;
+        s32 left = (0x800 - area->width / 2) * 16;
+        s32 top = (0x800 - area->height / 2) * 16;
+
+        tag = reinterpret_cast<GsGifTag*>(cursor + 16);
+        tag->tag = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | strips;
+        tag->registers = 0;
+        tag->fields.register0 = GIF_REGISTER_XYZ2;
+        tag->fields.register1 = GIF_REGISTER_XYZ2;
+        cursor += 18;
+
+        for (s32 i = 0; i < strips; i++)
+        {
+            cursor[0] = gs_xyz2(left + i * 0x400, top, 0xFFFFFF);
+            cursor[1] = gs_xyz2(left + (i + 1) * 0x400, top + area->height * 16, 0xFFFFFF);
+            cursor += 2;
+        }
+
+        tag = reinterpret_cast<GsGifTag*>(cursor);
+        tag->tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | 3;
+        tag->registers = 0;
+        tag->fields.register0 = GIF_REGISTER_AD;
+        cursor[2] = func_004DBCA0(display, 0);
+        cursor[3] = GS_REGISTER_FRAME_1;
+        cursor[4] = func_004DBCA0(display, 1);
+        cursor[5] = GS_REGISTER_ZBUF_1;
+        cursor[6] = func_004DBCA0(display, 4);
+        cursor[7] = GS_REGISTER_TEST_1;
+        resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor + 8));
+        packet_quadwords = resident_packet_end_unmask_path3(packet);
+        *direct = VIF_DIRECTHL(packet_quadwords - 2);
+        packet_address = resident_packet_get_address(packet);
+    }
+
+    unk63 = 1;
+}
 
 /** @brief Delete the packet and destroy the object. */
 LibClass172750::~LibClass172750()
@@ -1062,7 +1147,7 @@ LibClass1728A0::LibClass1728A0() : unk14(0), unk18(0)
     coverage = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650__14LibClass1728E0FPvUifffffff);
 
 /**
  * @brief Lay out the builder's rays: random angles kept apart (the spacing halves after ten failed tries) and two
@@ -1155,9 +1240,186 @@ LibClass1728E0::LibClass1728E0() : rays(0)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004221A0);
+/**
+ * @brief Pack a screen position as a GS XY value in 12.4 fixed point.
+ * @param x Horizontal position in pixels.
+ * @param y Vertical position in pixels.
+ * @return XY part of an XYZ2 value.
+ */
+static inline u64 lib_screen_xy(float x, float y)
+{
+    return (s64)(s32)(16.0f * x) | ((s64)(s32)(16.0f * y) << 16);
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422850);
+/**
+ * @brief Write a ring: a fan filling the inner circle in the modulated color, then a strip out to the outer edge that
+ *        fades to transparent. Nothing is written when the ring would leave the 4096-pixel drawing area.
+ * @param cursor Where to write.
+ * @param color Packed RGB color the ring's own color is modulated by.
+ * @param x Centre x, in screen pixels.
+ * @param y Centre y, in screen pixels.
+ * @param scale Size scale.
+ * @param angle Rotation in radians.
+ * @param alpha Opacity scale.
+ * @param scale_x Horizontal stretch.
+ * @param scale_y Vertical stretch.
+ * @return The cursor after the data.
+ */
+void* LibClass172900::func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+                                    float scale_x, float scale_y)
+{
+    float cosines[48];
+    float sines[48];
+    float px;
+    float py;
+    u64* out = static_cast<u64*>(cursor);
+    float outer = scale * (width + inner_radius);
+
+    if (x - outer < 0.0f)
+    {
+        return out;
+    }
+
+    if (!(x + outer <= 4095.0f))
+    {
+        return out;
+    }
+
+    if (y - outer < 0.0f)
+    {
+        return out;
+    }
+
+    if (!(y + outer <= 4095.0f))
+    {
+        return out;
+    }
+
+    float inner = inner_radius * scale;
+    u32 opacity = (u32)(128.0f * (alpha * this->alpha));
+
+    if (opacity > 0x80)
+    {
+        opacity = 0x80;
+    }
+
+    s32 count = segments + 1;
+
+    if (count <= 0)
+    {
+        return out;
+    }
+
+    GsGifTag* tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 2;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    out[2] = 0x4D;
+    out[3] = GS_REGISTER_PRIM;
+    u32 red = (this->color & 0xFF) * (color & 0xFF) / 255;
+    u32 green = ((this->color >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    u32 blue = ((this->color >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    out[4] = (opacity << 24) | ((blue << 16) | (red | (green << 8)));
+    out[5] = GS_REGISTER_RGBAQ;
+    tag = reinterpret_cast<GsGifTag*>(out + 6);
+    tag->tag = GIF_TAG_NREG(1) | GIF_TAG_FLG_REGLIST | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_XYZ2;
+    out[8] = lib_screen_xy(x, y);
+
+    if (count <= 0)
+    {
+        count = 1;
+    }
+
+    tag = reinterpret_cast<GsGifTag*>(out + 10);
+    tag->tag = GIF_TAG_NREG(1) | GIF_TAG_FLG_REGLIST | count;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_XYZ2;
+    out += 12;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibVector4 pair;
+
+        lib_compute_sine_cosine_pair((1.5707964f + angle) + 6.2831855f * (float)i / (float)(count - 1), &pair);
+        cosines[i] = pair.z * scale_x;
+        sines[i] = pair.w * scale_y;
+        px = x + inner * cosines[i];
+        py = y + inner * sines[i];
+        *out++ = lib_screen_xy(px, py);
+    }
+
+    if (count & 1)
+    {
+        out++;
+    }
+
+    tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    out[2] = 0x4C;
+    out[3] = GS_REGISTER_PRIM;
+    tag = reinterpret_cast<GsGifTag*>(out + 4);
+    tag->tag = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | (count * 2);
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_RGBAQ;
+    tag->fields.register1 = GIF_REGISTER_XYZ2;
+    out += 6;
+    red = (this->color & 0xFF) * (color & 0xFF) / 255;
+    green = ((this->color >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    blue = ((this->color >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    u32 edge = (blue << 16) | (red | (green << 8));
+    u32 centre = edge | (opacity << 24);
+
+    for (s32 i = 0; i < count; i++)
+    {
+        px = x + inner * cosines[i];
+        py = y + inner * sines[i];
+        out[0] = centre;
+        out[1] = lib_screen_xy(px, py);
+        out[2] = edge;
+        out[3] = lib_screen_xy(x + outer * cosines[i], y + outer * sines[i]);
+        out += 4;
+    }
+
+    return out;
+}
+
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650__14LibClass172920FPvUifffffff);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422F70);
 
@@ -1290,7 +1552,7 @@ LibClass172900::~LibClass172900()
  */
 s32 LibClass172900::func_00424860()
 {
-    return unk20 / 2 + unk20 * 2 + 9;
+    return segments / 2 + segments * 2 + 9;
 }
 
 /** @brief Destroy the builder. */
@@ -1818,9 +2080,95 @@ extern "C" void func_00425B40(LibClass173070* node, LibClass173070Link* link, co
  */
 extern "C" float func_004CA180(const LibVector4* segment, const LibVector4* point, float* fraction);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284F0__14LibClass172F30FP14LibClass172AB0PC10LibVector4P10LibVector4PfPf);
+/**
+ * @brief Find the squared distance between two segments and the fractions along them of the closest points.
+ * @param first Aligned first segment: start, then axis.
+ * @param second Aligned second segment: start, then axis.
+ * @param first_fraction Receives the fraction along the first segment.
+ * @param second_fraction Receives the fraction along the second segment.
+ * @return The squared distance.
+ */
+extern "C" float func_004CA270(const LibVector4* first, const LibVector4* second, float* first_fraction,
+                               float* second_fraction);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284F0__14LibClass172FC0FP14LibClass172AB0PC10LibVector4P10LibVector4PfPf);
+/**
+ * @brief Test this sphere against a scaled capsule whose matrix the caller has loaded into vf24-vf27: bring the centre
+ *        into the capsule's space, rescale it per axis for the capsule's scale, then test as with an unscaled one.
+ * @param other Capsule (a LibClass172FC0).
+ * @param scale Capsule's per-axis scale.
+ * @param direction Receives the unit direction from this sphere to the capsule's closest point.
+ * @param first Receives the fraction along the capsule's axis.
+ * @param second Receives the overlap depth.
+ * @return Nonzero when they touch.
+ */
+s32 LibClass172F30::func_004284F0(LibClass172AB0* other, const LibVector4* scale, LibVector4* direction, float* first,
+                                  float* second)
+{
+    LibVector4 centre;
+    float fraction;
+    vu0_point_through_vf24(&position);
+    vu0_scale_by_radii(static_cast<LibClass172FC0*>(other)->unk220, unk220, scale);
+    vu0_store_vf1(&centre);
+    float distance_squared = func_004CA180(&static_cast<LibClass172FC0*>(other)->local_point, &centre, &fraction);
+    float other_radius = static_cast<LibClass172FC0*>(other)->unk220;
+    float reach = unk220 + other_radius;
+
+    if (distance_squared <= reach * reach)
+    {
+        const LibVector4* segment = &static_cast<LibClass172FC0*>(other)->local_point;
+        const LibVector4* start = &static_cast<LibClass172FC0*>(other)->local_point;
+        const LibVector4* point = &centre;
+        vu0_segment_point_offset(start, segment + 1, fraction, point);
+        *first = fraction;
+        *second = reach - __sqrt(distance_squared, distance_squared);
+        vu0_store_unit_offset(direction);
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief Test this capsule against a scaled one whose matrix the caller has loaded into vf24-vf27: bring this
+ *        capsule's segment into the other's space, rescale its start per axis for the other's scale, then test as
+ *        with an unscaled one.
+ * @param other Other capsule (a LibClass172FC0).
+ * @param scale Other capsule's per-axis scale.
+ * @param direction Receives the unit direction from this capsule's closest point to the other's.
+ * @param first Receives the fraction along the other capsule's axis.
+ * @param second Receives the overlap depth.
+ * @return Nonzero when they touch.
+ */
+s32 LibClass172FC0::func_004284F0(LibClass172AB0* other, const LibVector4* scale, LibVector4* direction, float* first,
+                                  float* second)
+{
+    LibVector4 segment[2];
+    float own_fraction;
+    float other_fraction;
+    vu0_segment_through_vf24(&point);
+    vu0_scale_by_radii(static_cast<LibClass172FC0*>(other)->unk220, unk220, scale);
+    vu0_store_segment(segment);
+    const LibVector4* other_capsule = &static_cast<LibClass172FC0*>(other)->local_point;
+    float distance_squared = func_004CA270(segment, other_capsule, &own_fraction, &other_fraction);
+    float other_radius = static_cast<LibClass172FC0*>(other)->unk220;
+    float reach = unk220 + other_radius;
+
+    if (distance_squared <= reach * reach)
+    {
+        const LibVector4* start = &segment[0];
+        const LibVector4* direction_axis = &segment[1];
+        const LibVector4* other_segment = &static_cast<LibClass172FC0*>(other)->local_point;
+        const LibVector4* other_start = &static_cast<LibClass172FC0*>(other)->local_point;
+        float fraction = own_fraction;
+        vu0_segment_segment_offset(start, direction_axis, fraction, other_start, other_segment + 1, other_fraction);
+        *first = other_fraction;
+        *second = reach - __sqrt(distance_squared, distance_squared);
+        vu0_store_unit_segment_offset(direction);
+        return 1;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Test this sphere against a capsule.
@@ -1841,7 +2189,7 @@ s32 LibClass172F30::func_004284E0(LibClass172AB0* other, LibVector4* direction, 
     {
         const LibVector4* segment = &static_cast<LibClass172FC0*>(other)->local_point;
         const LibVector4* point = &position;
-        vu0_segment_point_offset(segment, fraction, point);
+        vu0_segment_point_offset(segment, segment + 1, fraction, point);
         *first = fraction;
         *second = reach - __sqrt(distance_squared, distance_squared);
         vu0_store_unit_offset(direction);
@@ -1851,7 +2199,41 @@ s32 LibClass172F30::func_004284E0(LibClass172AB0* other, LibVector4* direction, 
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_004284E0__14LibClass172FC0FP14LibClass172AB0P10LibVector4PfPf);
+/**
+ * @brief Test this capsule against another.
+ * @param other Other capsule (a LibClass172FC0).
+ * @param direction Receives the unit direction from this capsule's closest point to the other's.
+ * @param first Receives the fraction along the other capsule's axis.
+ * @param second Receives the overlap depth.
+ * @return Nonzero when they touch.
+ */
+s32 LibClass172FC0::func_004284E0(LibClass172AB0* other, LibVector4* direction, float* first, float* second)
+{
+    float reach;
+    float own_fraction;
+    float other_fraction;
+    float distance_squared;
+    const LibVector4* other_segment = &static_cast<LibClass172FC0*>(other)->local_point;
+    const LibVector4* own_segment = &point;
+    distance_squared = func_004CA270(own_segment, other_segment, &own_fraction, &other_fraction);
+    float other_radius = static_cast<LibClass172FC0*>(other)->unk220;
+    reach = unk220 + other_radius;
+
+    if (distance_squared <= reach * reach)
+    {
+        const LibVector4* start = &point;
+        const LibVector4* direction_axis = &axis;
+        const LibVector4* segment = &static_cast<LibClass172FC0*>(other)->local_point;
+        float fraction = own_fraction;
+        vu0_segment_segment_offset(start, direction_axis, fraction, segment, segment + 1, other_fraction);
+        *first = other_fraction;
+        *second = reach - __sqrt(distance_squared, distance_squared);
+        vu0_store_unit_segment_offset(direction);
+        return 1;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Pull two linked nodes towards the link's rest length, a stiffness times the step of the way, sharing the
@@ -2697,7 +3079,7 @@ LibClass173080::~LibClass173080()
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibPooledQuaternionTrack::append_key(const void* value, const void* first, const void* second, float key)
+bool LibPooledQuaternionTrack::append_key(const void* value, const void* first, const void* second, float key)
 {
     return append_rotation(static_cast<const FieldVec4A*>(value), key);
 }
@@ -2711,7 +3093,7 @@ s32 LibPooledQuaternionTrack::append_key(const void* value, const void* first, c
  * @param second Unused.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibPooledQuaternionTrack::replace_key(s32 index, float key, const void* value, const void* first, const void* second)
+bool LibPooledQuaternionTrack::replace_key(s32 index, float key, const void* value, const void* first, const void* second)
 {
     return replace_rotation(index, key, static_cast<const FieldVec4A*>(value));
 }

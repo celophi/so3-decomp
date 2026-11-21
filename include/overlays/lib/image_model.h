@@ -328,7 +328,7 @@ public:
     float diagonal;
     float unkaa4;
     float unkaa8;
-    u32 unkaac;
+    s32 unkaac;
     u8 unkab0[8];
     s32 next_cell;
     float unkabc;

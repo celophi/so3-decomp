@@ -176,6 +176,16 @@ static inline s32 level_checksum(const LibCharacterRecord* record)
 }
 
 /**
+ * @brief Read the character's ID.
+ * @param record Character record.
+ * @return One-based character ID.
+ */
+static inline s32 lib_character_id(const LibCharacterRecord* record)
+{
+    return record->character_id;
+}
+
+/**
  * @brief Read the character's level when the encoded levels pass their checksum.
  * @param record Character record.
  * @return Level, or one for a failed checksum.
@@ -290,6 +300,75 @@ static inline s32 limit_value(s32 value, s32 low, s32 high)
     value = clamp(value, low + LIMIT_BIAS, high + LIMIT_BIAS);
     value -= LIMIT_BIAS;
     return value;
+}
+
+/**
+ * @brief Store a battle skill mastery, limited to zero through 9999, after validating the mastery checksum.
+ * @param equipment Character equipment record.
+ * @param index Skill index, from zero through 41.
+ * @param mastery Mastery to store.
+ * @return Stored mastery, or -1 for an invalid checksum or index.
+ */
+static inline s32 store_battle_skill_mastery(LibCharacterEquipment* equipment, s32 index, s32 mastery)
+{
+    if (equipment->battle_skill_mastery_checksum != halfwords_checksum(equipment->encoded_battle_skill_mastery, sizeof(equipment->encoded_battle_skill_mastery)))
+    {
+        return -1;
+    }
+
+    if (index < 0)
+    {
+        return -1;
+    }
+
+    if ((u32)index >= 42)
+    {
+        return -1;
+    }
+
+    if (mastery < 0)
+    {
+        mastery = 0;
+    }
+
+    if (mastery > 9999)
+    {
+        mastery = 9999;
+    }
+
+    equipment->encoded_battle_skill_mastery[index] = mastery ^ 0x7E93;
+    equipment->battle_skill_mastery_checksum = halfwords_checksum(equipment->encoded_battle_skill_mastery, sizeof(equipment->encoded_battle_skill_mastery));
+    return mastery;
+}
+
+/**
+ * @brief Store a symbology mastery, limited to -9999 through 9999, after validating the mastery checksum.
+ * @param equipment Character equipment record.
+ * @param index Symbology index, from zero through 31.
+ * @param mastery Mastery to store.
+ * @return Stored mastery, zero for an invalid checksum, or -1 for an invalid index.
+ */
+static inline s32 store_symbology_mastery(LibCharacterEquipment* equipment, s32 index, s32 mastery)
+{
+    if (equipment->symbology_mastery_checksum != halfwords_checksum(equipment->encoded_symbology_mastery, sizeof(equipment->encoded_symbology_mastery)))
+    {
+        return 0;
+    }
+
+    if (index < 0)
+    {
+        return -1;
+    }
+
+    if ((u32)index >= 32)
+    {
+        return -1;
+    }
+
+    mastery = limit_value(mastery, -9999, 9999);
+    equipment->encoded_symbology_mastery[index] = mastery ^ 0x7E93;
+    equipment->symbology_mastery_checksum = halfwords_checksum(equipment->encoded_symbology_mastery, sizeof(equipment->encoded_symbology_mastery));
+    return mastery;
 }
 
 /**
@@ -646,6 +725,38 @@ static inline void add_character_flags(LibCharacterRecord* record, s32 bits)
         record->encoded_flags = ((record->encoded_flags ^ 0x7DE3F7E3) | bits) ^ 0x7DE3F7E3;
         record->flags_experience_checksum = flags_experience_checksum(record);
     }
+}
+
+/**
+ * @brief Decode the maximum HP after validating the HP checksum.
+ * @param record Character record.
+ * @return Maximum HP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_max_hp(LibCharacterRecord* record)
+{
+    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_max_hp ^ 0x7DE3F7E3;
+}
+
+/**
+ * @brief Decode the maximum MP after validating the MP checksum.
+ * @param record Character record.
+ * @return Maximum MP, or zero (setting the down flag) for an invalid checksum.
+ */
+static inline s32 character_max_mp(LibCharacterRecord* record)
+{
+    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
+    {
+        add_character_flags(record, 1);
+        return 0;
+    }
+
+    return record->encoded_max_mp ^ 0x7DE3F7E3;
 }
 
 /**

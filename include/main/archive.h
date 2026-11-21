@@ -352,6 +352,14 @@ void resident_archive_stop_ring_read(ResidentArchive* archive);
 s32 resident_archive_get_ring_positions(ResidentArchive* archive, u32* position);
 
 /**
+ * @brief Advance the position at unk8C by count, wrapping it like resident_archive_get_ring_positions, take count
+ *        off unk88 (stopping at zero), then signal unk30.
+ * @param archive Resource archive.
+ * @param count Amount to move by.
+ */
+void resident_archive_consume_ring(ResidentArchive* archive, s32 count);
+
+/**
  * @brief Abort the archive's current read.
  * @param archive Resource archive.
  */

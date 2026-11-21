@@ -1297,7 +1297,7 @@ void FieldClass153E30::func_00263C70(void* value)
  * @param second Mark the packet changed.
  * @param third Allow drawing.
  */
-void ItemHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
+void ItemHpMpGauge::func_0044B100(bool first, bool second, bool third)
 {
     if (queued_for_release != 0)
     {
@@ -1306,17 +1306,17 @@ void ItemHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
 
     unk63 = 0;
 
-    if (first == 0)
+    if (!first)
     {
         return;
     }
 
-    if (second != 0)
+    if (second)
     {
         geometry_dirty = 1;
     }
 
-    if (third == 0)
+    if (!third)
     {
         return;
     }

@@ -23,7 +23,7 @@
 @32@__dt__14LibClass172320Fv = 0x00412FA0;
 @32@render__12LibContainerFv = 0x00412FB0;
 @176@on_packet_complete__12LibContainerFUi = 0x00412FC0;
-@32@func_0044B100__12LibContainerFUiUiUi = 0x00412FD0;
+@32@func_0044B100__12LibContainerFbbb = 0x00412FD0;
 @120@__dt__12LibLightListFv = 0x004E96C0;
 @120@update__12LibLightListFv = 0x004E96A0;
 @120@get_default_list_kind__12LibLightListFv = 0x004E96B0;
@@ -72,6 +72,6 @@
 @40@complete_dma__14LibClass177A20FUi = 0x004ABA40;
 @40@submit_dma__14LibClass177A20FUi = 0x004ABA50;
 @528@__dt__14LibClass173990Fv = 0x0043BCF0;
-@32@func_0044B100__16LibMessageWindowFUiUiUi = 0x004622F0;
+@32@func_0044B100__16LibMessageWindowFbbb = 0x004622F0;
 @32@__dt__16LibMessageWindowFv = 0x00462300;
 @32@__dt__18EquipFactorTooltipFv = 0x004E9FE0;

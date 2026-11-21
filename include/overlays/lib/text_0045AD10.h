@@ -140,6 +140,8 @@ struct LibDrawRecord
     {
         u32 color;
         float scale_y;
+        s16 values[2];
+        u8 value;
     };
 
     u16 code;
@@ -511,12 +513,13 @@ public:
     bool step();
 
     /**
-     * @brief Rebuild the drawing packet at an offset from an origin.
-     * @param origin Origin the position is relative to.
-     * @param tag Packet tag word.
-     * @param alpha Draw alpha.
+     * @brief Rebuild the drawing packet: the 32x32 sprite at the position relative to an origin, after a half-alpha
+     *        copy of it 4 pixels down and to the right.
+     * @param origin Origin the position is relative to, or null for the screen's.
+     * @param depth Z value of the vertices.
+     * @param alpha Draw alpha, scaled by the state's own alpha over 128.
      */
-    void func_00466E70(const LibVector4* origin, u32 tag, float alpha);
+    void func_00466E70(const LibVector4* origin, u32 depth, float alpha);
 };
 
 /** Partial kind-9 widget with a storage base at offset 0x40. */

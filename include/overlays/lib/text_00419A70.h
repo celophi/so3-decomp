@@ -511,6 +511,7 @@ public:
     u8 unkad;
     u8 unkae;
     u8 unkaf;
+    u8 unkb0[0x10];
 };
 
 /** Partial Lib transform owner with vtables D_1726C0 (primary) and D_172734 (DMA submission) in main data. */
@@ -567,6 +568,7 @@ public:
     u8 unkad;
     u8 unkae;
     u8 unkaf;
+    u8 unkb0[0x10];
 };
 
 /** Partial Lib transform owner with vtables D_172750 (primary) and D_1727C4 (DMA submission) in main data. */
@@ -613,7 +615,7 @@ public:
      */
     virtual void complete_dma(u32 channel);
 
-    u8 unk94[4];
+    LibCameraContext* display;
     LibPacketBuffer* packet;
     u32 packet_quadwords;
     u32 packet_address;
@@ -756,18 +758,20 @@ public:
     }
 
     /**
-     * @brief Build the object's packet.
-     * @param target Destination; its type isn't known yet.
-     * @param first First float argument.
-     * @param second Second float argument.
-     * @param third Third float argument.
-     * @param fourth Fourth float argument.
-     * @param fifth Fifth float argument.
-     * @param sixth Sixth float argument.
-     * @param seventh Seventh float argument.
+     * @brief Write the object's GIF data at a cursor.
+     * @param cursor Where to write.
+     * @param color Packed RGB color the object's own color is modulated by.
+     * @param x Centre x, in screen pixels.
+     * @param y Centre y, in screen pixels.
+     * @param scale Size scale.
+     * @param angle Rotation in radians.
+     * @param alpha Opacity scale.
+     * @param scale_x Horizontal stretch.
+     * @param scale_y Vertical stretch.
+     * @return The cursor after the data.
      */
-    virtual void func_00421650(void* target, float first, float second, float third, float fourth, float fifth, float sixth,
-                               float seventh) = 0;
+    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+                                float scale_x, float scale_y) = 0;
 
     /**
      * @brief Return the size of the object's packet.
@@ -787,18 +791,20 @@ public:
     virtual ~LibClass1728E0();
 
     /**
-     * @brief Build the object's packet.
-     * @param target Destination; its type isn't known yet.
-     * @param first First float argument.
-     * @param second Second float argument.
-     * @param third Third float argument.
-     * @param fourth Fourth float argument.
-     * @param fifth Fifth float argument.
-     * @param sixth Sixth float argument.
-     * @param seventh Seventh float argument.
+     * @brief Write the object's GIF data at a cursor.
+     * @param cursor Where to write.
+     * @param color Packed RGB color the object's own color is modulated by.
+     * @param x Centre x, in screen pixels.
+     * @param y Centre y, in screen pixels.
+     * @param scale Size scale.
+     * @param angle Rotation in radians.
+     * @param alpha Opacity scale.
+     * @param scale_x Horizontal stretch.
+     * @param scale_y Vertical stretch.
+     * @return The cursor after the data.
      */
-    virtual void func_00421650(void* target, float first, float second, float third, float fourth, float fifth, float sixth,
-                               float seventh);
+    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+                                float scale_x, float scale_y);
 
     /**
      * @brief Return the size of the object's packet.
@@ -806,7 +812,10 @@ public:
      */
     virtual s32 func_00424860();
 
-    u8 unk0c[0x10];
+    u8 unk0c[4];
+    float alpha;
+    u32 edge_color;
+    u32 centre_color;
     s32 unk1c;
     s32 unk20;
     float unk24;
@@ -827,18 +836,20 @@ public:
     virtual ~LibClass172900();
 
     /**
-     * @brief Build the object's packet.
-     * @param target Destination; its type isn't known yet.
-     * @param first First float argument.
-     * @param second Second float argument.
-     * @param third Third float argument.
-     * @param fourth Fourth float argument.
-     * @param fifth Fifth float argument.
-     * @param sixth Sixth float argument.
-     * @param seventh Seventh float argument.
+     * @brief Write the object's GIF data at a cursor.
+     * @param cursor Where to write.
+     * @param color Packed RGB color the object's own color is modulated by.
+     * @param x Centre x, in screen pixels.
+     * @param y Centre y, in screen pixels.
+     * @param scale Size scale.
+     * @param angle Rotation in radians.
+     * @param alpha Opacity scale.
+     * @param scale_x Horizontal stretch.
+     * @param scale_y Vertical stretch.
+     * @return The cursor after the data.
      */
-    virtual void func_00421650(void* target, float first, float second, float third, float fourth, float fifth, float sixth,
-                               float seventh);
+    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+                                float scale_x, float scale_y);
 
     /**
      * @brief Return the size of the object's packet.
@@ -846,8 +857,12 @@ public:
      */
     virtual s32 func_00424860();
 
-    u8 unk0c[0x14];
-    s32 unk20;
+    u8 unk0c[4];
+    float alpha;
+    u32 color;
+    float inner_radius;
+    float width;
+    s32 segments;
 };
 
 /** Partial packet builder with vtable D_172920 in main data. */
@@ -857,24 +872,31 @@ public:
     virtual ~LibClass172920();
 
     /**
-     * @brief Build the object's packet.
-     * @param target Destination; its type isn't known yet.
-     * @param first First float argument.
-     * @param second Second float argument.
-     * @param third Third float argument.
-     * @param fourth Fourth float argument.
-     * @param fifth Fifth float argument.
-     * @param sixth Sixth float argument.
-     * @param seventh Seventh float argument.
+     * @brief Write the object's GIF data at a cursor.
+     * @param cursor Where to write.
+     * @param color Packed RGB color the object's own color is modulated by.
+     * @param x Centre x, in screen pixels.
+     * @param y Centre y, in screen pixels.
+     * @param scale Size scale.
+     * @param angle Rotation in radians.
+     * @param alpha Opacity scale.
+     * @param scale_x Horizontal stretch.
+     * @param scale_y Vertical stretch.
+     * @return The cursor after the data.
      */
-    virtual void func_00421650(void* target, float first, float second, float third, float fourth, float fifth, float sixth,
-                               float seventh);
+    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+                                float scale_x, float scale_y);
 
     /**
      * @brief Return the size of the object's packet.
      * @return Size, in quadwords.
      */
     virtual s32 func_00424860();
+
+    u8 unk0c[4];
+    float alpha;
+    u32 colors[5];
+    float widths[5];
 };
 
 /** Partial packet builder with vtable D_172940 in main data. */
@@ -884,18 +906,20 @@ public:
     virtual ~LibClass172940();
 
     /**
-     * @brief Build the object's packet.
-     * @param target Destination; its type isn't known yet.
-     * @param first First float argument.
-     * @param second Second float argument.
-     * @param third Third float argument.
-     * @param fourth Fourth float argument.
-     * @param fifth Fifth float argument.
-     * @param sixth Sixth float argument.
-     * @param seventh Seventh float argument.
+     * @brief Write the object's GIF data at a cursor.
+     * @param cursor Where to write.
+     * @param color Packed RGB color the object's own color is modulated by.
+     * @param x Centre x, in screen pixels.
+     * @param y Centre y, in screen pixels.
+     * @param scale Size scale.
+     * @param angle Rotation in radians.
+     * @param alpha Opacity scale.
+     * @param scale_x Horizontal stretch.
+     * @param scale_y Vertical stretch.
+     * @return The cursor after the data.
      */
-    virtual void func_00421650(void* target, float first, float second, float third, float fourth, float fifth, float sixth,
-                               float seventh);
+    virtual void* func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+                                float scale_x, float scale_y);
 
     /**
      * @brief Return the size of the object's packet.
@@ -981,12 +1005,16 @@ class LibClass173070;
 /** 0x40-byte link from one LibClass173070 node to another. */
 struct LibClass173070Link
 {
-    u8 unk00[0x21];
+    LibVector4 unk00;
+    LibVector4 unk10;
+    u8 flags;
     u8 blocked;
-    u8 unk22[6];
+    u8 unk22[2];
+    float unk24;
     float rest_length;
     float stiffness;
-    u8 unk30[8];
+    float unk30;
+    float unk34;
     LibClass173070* target;
     u8 unk3c[4];
 };
@@ -1004,11 +1032,11 @@ public:
     u8 group;
     u8 unk03;
     LibTransform* transform;
-    u32 unk08;
+    LibClass172AB0* unk08;
     LibClass173070Link* links;
     float unk10;
     s32 link_count;
-    u32 unk18;
+    float unk18;
     u32 unk1c;
     float unk20;
     float weight;
@@ -1045,14 +1073,24 @@ public:
     virtual void update();
 
     s16 node_count;
-    u8 unk16[2];
+    s16 unk16;
     s16 group_count;
-    u8 unk1a[6];
+    u8 unk1a;
+    u8 unk1b[5];
     float unk20;
     LibClass173070* unk24;
-    u8* unk28;
+    LibClass172AB0** unk28;
     u8* unk2c;
+    void* unk30;
 };
+
+/**
+ * @brief Set the links up from the nodes' current transforms: each node starts at its transform's position at rest
+ *        with its orientation copied, each link's rest length becomes the current distance, the nodes are grouped
+ *        along their links, and the group buffer is reallocated for the group count.
+ * @param owner Link system.
+ */
+extern "C" void func_00428670(LibClass173050* owner);
 
 typedef ItemCreationClass172600 LibClass172600;
 typedef LibListIndicator LibClass1725D0;

@@ -25,6 +25,8 @@ enum
     GS_PSMCT24 = 0x01,
     GS_PSMCT16 = 0x02,
     GS_PSMCT16S = 0x0A,
+    GS_PSMT8 = 0x13,
+    GS_PSMT4 = 0x14,
     GS_PSMT4HH = 0x2C,
     GS_PSMZ32 = 0x30,
     GS_PSMZ24 = 0x31,
@@ -49,6 +51,7 @@ enum
     GIF_REGISTER_UV = 0x3,
     GIF_REGISTER_XYZF2 = 0x4,
     GIF_REGISTER_XYZ2 = 0x5,
+    GIF_REGISTER_XYZ3 = 0xD,
     GIF_REGISTER_AD = 0xE
 };
 
@@ -58,11 +61,13 @@ enum
     GS_REGISTER_PRIM = 0x00,
     GS_REGISTER_RGBAQ = 0x01,
     GS_REGISTER_XYZ2 = 0x05,
+    GS_REGISTER_XYZ3 = 0x0D,
     GS_REGISTER_TEX0_1 = 0x06,
     GS_REGISTER_TEX0_2 = 0x07,
     GS_REGISTER_CLAMP_1 = 0x08,
     GS_REGISTER_CLAMP_2 = 0x09,
     GS_REGISTER_TEX1_2 = 0x15,
+    GS_REGISTER_XYOFFSET_1 = 0x18,
     GS_REGISTER_PRMODECONT = 0x1A,
     GS_REGISTER_TEXCLUT = 0x1C,
     GS_REGISTER_TEXA = 0x3B,
@@ -75,6 +80,8 @@ enum
     GS_REGISTER_PABE = 0x49,
     GS_REGISTER_FBA_1 = 0x4A,
     GS_REGISTER_FBA_2 = 0x4B,
+    GS_REGISTER_FRAME_1 = 0x4C,
+    GS_REGISTER_FRAME_2 = 0x4D,
     GS_REGISTER_ZBUF_1 = 0x4E,
     GS_REGISTER_ZBUF_2 = 0x4F,
     GS_REGISTER_BITBLTBUF = 0x50,
@@ -151,7 +158,8 @@ typedef struct GsGifTag
             u64 register3 : 4;
             u64 register4 : 4;
             u64 register5 : 4;
-            u64 unused : 40;
+            u64 register6 : 4;
+            u64 unused : 36;
         } fields;
     };
 } GsGifTag;

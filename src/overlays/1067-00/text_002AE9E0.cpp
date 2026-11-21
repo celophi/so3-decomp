@@ -1836,8 +1836,8 @@ extern "C" void field_initialize_context(ResidentContext* context)
         LibBufferOwner* buffers = ::new (0) LibBufferOwner;
         func_0040AFA0();
         resident_store_entry(directory, buffers, 7);
-        LibResourceRecordC4* output = reinterpret_cast<LibResourceRecordC4*>(resident_find_entry(directory, 2));
-        LibResourceRecord114* input = reinterpret_cast<LibResourceRecord114*>(resident_find_entry(directory, 3));
+        LibCharacterRecord* output = reinterpret_cast<LibCharacterRecord*>(resident_find_entry(directory, 2));
+        LibCharacterEquipment* input = reinterpret_cast<LibCharacterEquipment*>(resident_find_entry(directory, 3));
         func_004076D0(&output[0], &input[0], 1);
         func_004076D0(&output[1], &input[1], 0);
         func_004076D0(&output[2], &input[2], 0);

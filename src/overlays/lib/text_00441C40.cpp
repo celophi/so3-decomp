@@ -1972,8 +1972,8 @@ extern "C" void func_004447E0(RowFillOwner* object, RowFillCell* cell, RowFillEl
             s32 count = object->unk10 - 1;
             angles.packed = angle_pair->packed;
             radii.packed = axis_radii->packed;
-            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
-            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            lib_compute_sine_cosine_pair(angles.floats[0], &first_trig);
+            lib_compute_sine_cosine_pair(angles.floats[1], &second_trig);
             float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
             float previous_y = radii.floats[1] * first_trig.w;
             float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
@@ -1987,8 +1987,8 @@ extern "C" void func_004447E0(RowFillOwner* object, RowFillCell* cell, RowFillEl
                 radii.floats[0] -= radius_step->floats[0];
                 radii.floats[1] -= radius_step->floats[1];
                 radii.floats[2] -= radius_step->floats[2];
-                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
-                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                lib_compute_sine_cosine_pair(angles.floats[0], &first_trig);
+                lib_compute_sine_cosine_pair(angles.floats[1], &second_trig);
                 float x = first_trig.z * (radii.floats[0] * second_trig.z);
                 position.floats[0] += x - previous_x;
                 previous_x = x;
@@ -3213,14 +3213,101 @@ void* func_00448690(void* value)
     return value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", release_textures__17LibRenderResourceFv);
-
-s32 func_00448900(void* object)
-{
-    return 0;
-}
-
 extern "C" LibImageRegistry* g_image_registry;
+
+/** @brief Let go of the textures of every image the resource holds. */
+void LibRenderResource::release_textures()
+{
+    bool reset = false;
+
+    if (unk00)
+    {
+        LibRenderDataRecord* record = static_cast<LibRenderDataRecord*>(get_data());
+
+        do
+        {
+            if (record->storage_kind != RENDER_DATA_SHARED && record->storage_kind != RENDER_DATA_OFFSET)
+            {
+                LibImageDataHeader* image;
+
+                if (record->data)
+                {
+                    image = static_cast<LibImageDataHeader*>(record->data);
+                }
+                else
+                {
+                    image = reinterpret_cast<LibImageDataHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
+                }
+
+                g_image_registry->cursor = g_image_registry->count - 1;
+                u32 first_key = image->first_key;
+                u32 second_key = image->second_key;
+                LibRenderResource* resource;
+
+                reset = true;
+
+                while ((resource = g_image_registry->next_entry()) != 0)
+                {
+                    for (LibRenderDataRecord* other = static_cast<LibRenderDataRecord*>(resource->get_data()); other != 0;
+                         other = static_cast<LibRenderDataRecord*>(resource->resolve_offset(&other->next_offset)))
+                    {
+                        if (other->storage_kind == RENDER_DATA_SHARED || other->storage_kind == RENDER_DATA_OFFSET)
+                        {
+                            continue;
+                        }
+
+                        if (other->key0c == second_key && other->key08 == first_key)
+                        {
+                            other->resolved_data = 0;
+                        }
+                    }
+                }
+            }
+
+            record = static_cast<LibRenderDataRecord*>(resolve_offset(&record->next_offset));
+        } while (record != 0);
+    }
+
+    if (reset)
+    {
+        g_texture_cache->reset();
+        return;
+    }
+
+    for (LibRenderDataRecord* record = static_cast<LibRenderDataRecord*>(get_data()); record != 0;
+         record = static_cast<LibRenderDataRecord*>(resolve_offset(&record->next_offset)))
+    {
+        if (record->storage_kind == RENDER_DATA_SHARED || record->storage_kind == RENDER_DATA_OFFSET)
+        {
+            continue;
+        }
+
+        LibImageDataHeader* image;
+
+        if (record->data)
+        {
+            image = static_cast<LibImageDataHeader*>(record->data);
+        }
+        else
+        {
+            image = reinterpret_cast<LibImageDataHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
+        }
+
+        g_texture_cache->detach_user(image->first_key, image->second_key);
+    }
+
+    for (s32 i = 0;; i++)
+    {
+        LibImageDataHeader* image = static_cast<LibImageDataHeader*>(find_child_data(i));
+
+        if (image == 0)
+        {
+            break;
+        }
+
+        g_texture_cache->detach_user(image->first_key, image->second_key);
+    }
+}
 
 /**
  * @brief Find a registered image record by its image's two keys, searching the newest resources first, and mark its
@@ -3336,7 +3423,7 @@ extern "C" void* func_00448A10(void* skip, u32 first_key, u32 second_key)
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibPooledQuaternionCurveTrack::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibPooledQuaternionCurveTrack::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     FieldVec4A zero;
     in_tangent = track_vector(static_cast<const FieldVec4A*>(in_tangent), &zero);
@@ -3352,7 +3439,7 @@ s32 LibPooledQuaternionCurveTrack::append_key(const void* value, const void* in_
  * @param out_tangent Passed on unchanged.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibPooledQuaternionCurveTrack::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibPooledQuaternionCurveTrack::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     FieldVec4A zero;
     in_tangent = track_vector(static_cast<const FieldVec4A*>(in_tangent), &zero);
@@ -3572,7 +3659,7 @@ s32 LibPooledQuaternionCurveTrack::insert_curve_key(s32 index, float key, const 
  * @param unused Unused.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibPooledQuaternionCurveTrack::replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused)
+bool LibPooledQuaternionCurveTrack::replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused)
 {
     if (index >= state.key_capacity)
     {
@@ -3599,7 +3686,7 @@ s32 LibPooledQuaternionCurveTrack::replace_curve_key(s32 index, float key, const
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibPooledQuaternionCurveTrack::append_curve_key(const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused, float key)
+bool LibPooledQuaternionCurveTrack::append_curve_key(const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused, float key)
 {
     if (state.key_count >= state.key_capacity)
     {
@@ -3993,7 +4080,7 @@ s16 LibQuaternionCurveTrackBase::get_key_capacity()
  * @param key Key the keyframe sits at.
  * @return Zero.
  */
-s32 LibQuaternionCurveTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+bool LibQuaternionCurveTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return 0;
 }
@@ -4007,7 +4094,7 @@ s32 LibQuaternionCurveTrackBase::on_append_key(const FieldVec4A* value, const Fi
  * @param second Second auxiliary vector.
  * @return Zero.
  */
-s32 LibQuaternionCurveTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+bool LibQuaternionCurveTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return 0;
 }
@@ -4207,7 +4294,7 @@ LibQuaternionCurveTrackKey::LibQuaternionCurveTrackKey()
  * @param key Key the keyframe sits at.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibQuaternionCurveTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibQuaternionCurveTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
 }
@@ -4221,7 +4308,7 @@ s32 LibQuaternionCurveTrackBase::append_key(const void* value, const void* in_ta
  * @param out_tangent Second auxiliary vector.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibQuaternionCurveTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibQuaternionCurveTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
 }

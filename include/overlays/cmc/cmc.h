@@ -787,7 +787,7 @@ public:
      * @param second Second update flag, unused here.
      * @param third Third update flag, unused here.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /**
      * @brief Create a save slot row and its panel, texts, name, play-time digits and separators.

@@ -383,6 +383,63 @@ static inline void vu0_start_microprogram_1f0_vf5_vf8(const void* matrix)
 }
 
 /**
+ * @brief Copy vf1-vf4 into vf20-vf23.
+ *
+ * Lib's renderer does this right after vu0_start_microprogram_1f0_vf5_vf8, so I
+ * think the sphere test at 0xB60 reads the view-projection matrix from vf20-vf23.
+ * @see func_004D3780 and func_004D4010 in Lib.
+ */
+static inline void vu0_copy_vf1_vf4_to_vf20_vf23(void)
+{
+    asm __volatile__("vmove.xyzw $vf20, $vf1\n"
+                     "vmove.xyzw $vf21, $vf2\n"
+                     "vmove.xyzw $vf22, $vf3\n"
+                     "vmove.xyzw $vf23, $vf4" : : : "memory");
+}
+
+/**
+ * @brief Load a matrix into vf24-vf27.
+ * @param matrix 16-byte aligned matrix.
+ * @see vu0_copy_vf1_vf4_to_vf20_vf23.
+ */
+static inline void vu0_load_vf24_vf27(const void* matrix)
+{
+    asm __volatile__("lqc2 $vf24, 0x0(%0)\n"
+                     "lqc2 $vf25, 0x10(%0)\n"
+                     "lqc2 $vf26, 0x20(%0)\n"
+                     "lqc2 $vf27, 0x30(%0)" : : "r"(matrix) : "memory");
+}
+
+/**
+ * @brief Load a bounding sphere into vf5 and start the microprogram at 0xB60.
+ *
+ * Lib's renderer reads vi2 afterwards (vu0_read_vi2) and only keeps the object
+ * when it's zero, so I think this is the view test for the sphere.
+ * @param sphere 16-byte aligned centre (xyz) and radius (w).
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see func_004D3780 and func_004D4010 in Lib.
+ */
+static inline void vu0_start_microprogram_b60_vf5(const void* sphere)
+{
+    asm __volatile__("lqc2 $vf5, 0x0(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0xB60" : : "r"(sphere) : "memory");
+}
+
+/**
+ * @brief Read vi2, waiting for the running microprogram first.
+ * @return The register's value.
+ * @see vu0_start_microprogram_b60_vf5.
+ */
+static inline s32 vu0_read_vi2(void)
+{
+    s32 value;
+    asm __volatile__("cfc2.i %0, $vi2" : "=r"(value) : : "memory");
+    return value;
+}
+
+/**
  * @brief Run microprogram 0 on a vector in place, from vf1 to vf3.
  *
  * Main calls this once, right after loading boot's microcode, so it's a

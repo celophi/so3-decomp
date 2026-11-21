@@ -5574,7 +5574,7 @@
           "aliases": []
         },
         {
-          "name": "func_00131E40",
+          "name": "__divdi3",
           "offset": 206016,
           "address": 1252928,
           "size": 1776,

@@ -154,6 +154,9 @@ struct LibProtectedRecord
 class LibProtectedValues
 {
 public:
+    /** @brief Allocate the storage at a random size and offset and store zero in every value. */
+    LibProtectedValues();
+
     /**
      * @brief Return the encoded record.
      * @return The record at the key's offset in the storage.
@@ -204,6 +207,7 @@ public:
 
     u8* storage;
     u32 key;
+    u8* decoy;
 };
 
 /** Partially known 0x680-byte backing buffer for LibClass3F5B80. */

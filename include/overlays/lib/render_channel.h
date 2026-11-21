@@ -56,6 +56,32 @@ public:
      */
     virtual void* get_entry(s32 index);
 
+    /**
+     * @brief Set the four values at unk0c.
+     * @param x Value for unk0c.
+     * @param y Value for unk10.
+     * @param width Value for unk14.
+     * @param height Value for unk18.
+     */
+    void set_rect(u32 x, u32 y, u32 width, u32 height)
+    {
+        unk0c = x;
+        unk10 = y;
+        unk14 = width;
+        unk18 = height;
+    }
+
+    /**
+     * @brief Set the two values at unk1c.
+     * @param x Value for unk1c.
+     * @param y Value for unk20.
+     */
+    void set_point(u32 x, u32 y)
+    {
+        unk1c = x;
+        unk20 = y;
+    }
+
     u32 unk0c;
     u32 unk10;
     u32 unk14;

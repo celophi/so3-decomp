@@ -6,6 +6,9 @@
 #include "vu0.h"
 
 #ifdef __cplusplus
+class LibClass173490;
+class LibClass174C20;
+
 /** Saves every VU0 register while it lives and loads them back when it goes, with vtable D_173BA0 in main data. */
 class LibVu0StateGuard
 {
@@ -50,7 +53,12 @@ public:
     u8 unk221;
     u8 unk222[2];
     float radius;
-    float radius_squared;
+    union
+    {
+        float radius_squared;
+        LibClass174C20* splash;
+    };
+    LibClass173490* ripple;
 };
 
 /** Partial transform with vtable D_173B10 in main data. */
@@ -86,15 +94,20 @@ public:
 
     virtual bool collide(const LibVector4* previous, const LibVector4* position, const LibVector4* velocity, LibVector4* out_velocity, LibVector4* out_position);
 
-    u8 unk230[0x30];
-    FieldVec4B unk260;
-    FieldVec4B unk270;
-    FieldVec4B unk280;
-    FieldVec4B unk290;
+    float half_width;
+    float unk234;
+    float half_depth;
+    u8 unk23c[0x14];
+    LibVector4 bounce;
+    FieldVec4B plane_point;
+    FieldVec4B plane_normal;
+    FieldVec4B previous_plane_point;
+    FieldVec4B previous_plane_normal;
     FieldVec4B previous_position;
     FieldVec4B velocity;
-    u8 unk2c0[0x40];
+    LibMatrix44Value world_to_local;
     LibMatrix44Value previous_transform;
+    LibMatrix44Value unk340;
 };
 
 /** Colliders a particle grid tests its moving particles against. */

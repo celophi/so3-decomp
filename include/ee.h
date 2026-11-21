@@ -11,6 +11,7 @@
 #define EE_UNCACHED_ACCELERATED 0x30000000
 #define EE_SCRATCHPAD 0x70000000
 #define DMA_ADDRESS_SCRATCHPAD 0x80000000
+#define DMA_TAG_ID_REFE 0x00000000
 #define DMA_TAG_ID_CNT 0x10000000
 #define DMA_TAG_ID_NEXT 0x20000000
 #define DMA_TAG_ID_REF 0x30000000
@@ -39,6 +40,7 @@
 
 /** DMA channel 0 (VIF0) registers. */
 #define D0_CHCR ((volatile u32*)0x10008000)
+#define D0_MADR ((volatile u32*)0x10008010)
 #define D0_QWC ((volatile u32*)0x10008020)
 #define D0_TADR ((volatile u32*)0x10008030)
 
@@ -64,9 +66,13 @@
 #define D_ENABLEW ((volatile u32*)0x1000F590)
 #define D_ENABLE_SUSPEND 0x10000
 
+/** IPU command register: writing a BCLR command with a bit offset restarts decoding at that bit. */
+#define IPU_CMD ((volatile u32*)0x10002000)
+
 /** IPU control register; IPU_CTRL_IFC is the input FIFO's quadword count. */
 #define IPU_CTRL ((volatile u32*)0x10002010)
 #define IPU_CTRL_IFC 0xF0
+#define IPU_CTRL_BUSY 0x80000000
 
 /** IPU bit pointer: the bit position in the current quadword, FIFO quadword count and FIFO position. */
 #define IPU_BP ((volatile u32*)0x10002020)

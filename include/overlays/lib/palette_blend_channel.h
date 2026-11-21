@@ -28,9 +28,10 @@ public:
      *
      * A nonempty record list with no matching selector reports success and keeps
      * the previous target. Failed lookups also leave that target unchanged.
+     * @param model Model the channel belongs to; unused.
      * @return False for a missing resource, empty record list or unsupported matching storage kind; true otherwise.
      */
-    bool load_resource();
+    bool load_resource(class LibModel* model);
 
     const LibVector4* start_colors;
     const LibVector4* end_colors;

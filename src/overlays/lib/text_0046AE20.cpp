@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/height_grid.h"
 #include "main/resident_data.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_0013CD50.h"
@@ -605,18 +606,6 @@ public:
     FieldVec4B target;
 };
 
-/** Transform with an optional owned buffer, with vtable D_175530 in main data. */
-class LibClass175530 : public LibTransform
-{
-public:
-    /** @brief Free the buffer unless it is borrowed, then destroy the transform. */
-    virtual ~LibClass175530();
-
-    u8 unk210[0x40];
-    u8* unk250;
-    u8 unk254;
-};
-
 /** Partial fixed-capacity list of key bytes with a parallel array of vectors. */
 typedef struct LibKeyedVectorList
 {
@@ -692,8 +681,6 @@ extern "C"
     s32 func_004A9000(void* object);
 
     void func_0046B480(LibObject1751A0* holder, LibGridBase* reference);
-
-    void func_0046C090(LibEntryManager* manager, void* handle);
 
     void lib_collect_entry_tree(LibEntryManager* manager, s32 index, LibEntryHandleCollection* collection);
 
@@ -2709,12 +2696,12 @@ void LibClass175430::set_translation_vector(const LibVector4* value)
 }
 
 
-/** @brief Free the buffer unless it is borrowed, then destroy the transform. */
+/** @brief Free the grid unless it is borrowed, then destroy the transform. */
 LibClass175530::~LibClass175530()
 {
-    if (!unk254)
+    if (!grid_is_borrowed)
     {
-        delete unk250;
+        delete grid;
     }
 }
 

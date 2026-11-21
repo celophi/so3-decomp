@@ -204,12 +204,14 @@ static inline void vu0_store_vf1(void* vector)
 /**
  * @brief Load a segment (start in vf1, axis in vf2) and a fraction along it (vf3.x), leave in vf10 the offset from
  *        a point to the segment point at that fraction, and start the reciprocal square root of its length squared.
- * @param segment Aligned segment: start, then axis.
+ * @param start Aligned segment start.
+ * @param axis Aligned segment axis.
  * @param fraction Fraction along the axis.
  * @param point Aligned point.
  * @see Lib's shape pair tests from 0x425C90.
  */
-static inline void vu0_segment_point_offset(const LibVector4* segment, float fraction, const void* point)
+static inline void vu0_segment_point_offset(const LibVector4* start, const LibVector4* axis, float fraction,
+                                            const void* point)
 {
     u32 scratch;
 
@@ -229,7 +231,160 @@ static inline void vu0_segment_point_offset(const LibVector4* segment, float fra
         "vmaddz.x   $vf12, $vf31, $vf11z\n"
         "vrsqrt     $Q, $vf0w, $vf12x\n"
         : "=r"(scratch)
-        : "r"(segment), "r"(segment + 1), "f"(fraction), "r"(point)
+        : "r"(start), "r"(axis), "f"(fraction), "r"(point)
+        : "memory");
+}
+
+/**
+ * @brief Transform a point by the matrix the caller left in vf24-vf27 (rows), into vf1.
+ * @param point Aligned point.
+ * @see LibClass172F30::func_004284F0; the shape tests that call it load the other shape's matrix first.
+ */
+static inline void vu0_point_through_vf24(const LibVector4* point)
+{
+    asm __volatile__(
+        "lqc2       $vf1, 0x0(%0)\n"
+        "vmulax.xyzw $ACC, $vf24, $vf1x\n"
+        "vmadday.xyzw $ACC, $vf25, $vf1y\n"
+        "vmaddaz.xyzw $ACC, $vf26, $vf1z\n"
+        "vmaddw.xyzw $vf1, $vf27, $vf0w\n"
+        :
+        : "r"(point)
+        : "memory");
+}
+
+/**
+ * @brief Transform a segment by the matrix the caller left in vf24-vf27 (rows): the start, with translation, into
+ *        vf1 and the axis, without, into vf2.
+ * @param segment Aligned segment: start, then axis.
+ * @see LibClass172FC0::func_004284F0; the shape tests that call it load the other shape's matrix first.
+ */
+static inline void vu0_segment_through_vf24(const LibVector4* segment)
+{
+    asm __volatile__(
+        "lqc2       $vf1, 0x0(%0)\n"
+        "lqc2       $vf2, 0x10(%0)\n"
+        "vmulax.xyzw $ACC, $vf24, $vf1x\n"
+        "vmadday.xyzw $ACC, $vf25, $vf1y\n"
+        "vmaddaz.xyzw $ACC, $vf26, $vf1z\n"
+        "vmaddw.xyzw $vf1, $vf27, $vf0w\n"
+        "vmulax.xyzw $ACC, $vf24, $vf2x\n"
+        "vmadday.xyzw $ACC, $vf25, $vf2y\n"
+        "vmaddz.xyzw $vf2, $vf26, $vf2z\n"
+        :
+        : "r"(segment)
+        : "memory");
+}
+
+/**
+ * @brief Scale vf1 per axis by (own + other radius) / (own radius + scale * other radius).
+ * @param other_radius Other shape's radius.
+ * @param own_radius This shape's radius.
+ * @param scale Aligned per-axis scale of the other shape.
+ * @see vu0_segment_through_vf24.
+ */
+static inline void vu0_scale_by_radii(float other_radius, float own_radius, const LibVector4* scale)
+{
+    u32 scratch;
+
+    asm __volatile__(
+        "mfc1       %0, %1\n"
+        "nop\n"
+        "qmtc2.ni   %0, $vf3\n"
+        "mfc1       %0, %2\n"
+        "nop\n"
+        "qmtc2.ni   %0, $vf4\n"
+        "lqc2       $vf5, 0x0(%3)\n"
+        "vadd.x     $vf6, $vf3, $vf4\n"
+        "vaddax.xyzw $ACC, $vf0, $vf4x\n"
+        "vmaddx.xyz $vf5, $vf5, $vf3x\n"
+        "vdiv       $Q, $vf6x, $vf5x\n"
+        "vwaitq\n"
+        "vmulq.x    $vf1, $vf1, $Q\n"
+        "vnop\n"
+        "vnop\n"
+        "vdiv       $Q, $vf6x, $vf5y\n"
+        "vwaitq\n"
+        "vmulq.y    $vf1, $vf1, $Q\n"
+        "vnop\n"
+        "vnop\n"
+        "vdiv       $Q, $vf6x, $vf5z\n"
+        "vwaitq\n"
+        "vmulq.z    $vf1, $vf1, $Q\n"
+        : "=&r"(scratch)
+        : "f"(other_radius), "f"(own_radius), "r"(scale)
+        : "memory");
+}
+
+/**
+ * @brief Store vf1 and vf2 as a segment.
+ * @param segment Aligned destination: start, then axis.
+ */
+static inline void vu0_store_segment(LibVector4* segment)
+{
+    asm __volatile__(
+        "sqc2       $vf1, 0x0(%0)\n"
+        "sqc2       $vf2, 0x10(%0)\n"
+        :
+        : "r"(segment)
+        : "memory");
+}
+
+/**
+ * @brief Start the offset between the closest points of two segments and its reciprocal length: vf11 = (second start +
+ *        second axis * second fraction) - (first start + first axis * first fraction), Q = 1 / |vf11|.
+ * @param first_start Aligned start of the first segment.
+ * @param first_axis Aligned axis of the first segment.
+ * @param first_fraction Fraction along the first segment.
+ * @param second_start Aligned start of the second segment.
+ * @param second_axis Aligned axis of the second segment.
+ * @param second_fraction Fraction along the second segment.
+ * @see vu0_segment_point_offset, the segment-to-point form; LibClass172FC0::func_004284E0.
+ */
+static inline void vu0_segment_segment_offset(const LibVector4* first_start, const LibVector4* first_axis,
+                                              float first_fraction, const LibVector4* second_start,
+                                              const LibVector4* second_axis, float second_fraction)
+{
+    u32 scratch;
+
+    asm __volatile__(
+        "lqc2       $vf4, 0x0(%4)\n"
+        "lqc2       $vf5, 0x0(%5)\n"
+        "mfc1       %0, %6\n"
+        "nop\n"
+        "qmtc2.ni   %0, $vf6\n"
+        "lqc2       $vf1, 0x0(%2)\n"
+        "lqc2       $vf2, 0x0(%1)\n"
+        "mfc1       %0, %3\n"
+        "nop\n"
+        "qmtc2.ni   %0, $vf3\n"
+        "vaddax.xyz $ACC, $vf4, $vf0x\n"
+        "vmaddax.xyz $ACC, $vf5, $vf6x\n"
+        "vmsubaw.xyz $ACC, $vf1, $vf0w\n"
+        "vmsubx.xyz $vf11, $vf2, $vf3x\n"
+        "vmaxw.xyzw $vf31, $vf0, $vf0w\n"
+        "vmul.xyz   $vf13, $vf11, $vf11\n"
+        "vadday.x   $ACC, $vf13, $vf13y\n"
+        "vmaddz.x   $vf14, $vf31, $vf13z\n"
+        "vrsqrt     $Q, $vf0w, $vf14x\n"
+        : "=&r"(scratch)
+        : "r"(first_axis), "r"(first_start), "f"(first_fraction), "r"(second_start), "r"(second_axis), "f"(second_fraction)
+        : "memory");
+}
+
+/**
+ * @brief Store the offset vu0_segment_segment_offset left in vf11, normalised.
+ * @param direction Aligned destination.
+ * @see vu0_segment_segment_offset.
+ */
+static inline void vu0_store_unit_segment_offset(void* direction)
+{
+    asm __volatile__(
+        "vwaitq\n"
+        "vmulq.xyz  $vf15, $vf11, $Q\n"
+        "sqc2       $vf15, 0x0(%0)\n"
+        :
+        : "r"(direction)
         : "memory");
 }
 

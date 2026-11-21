@@ -1127,7 +1127,7 @@ struct SkillHpMpGauge : public FieldClass1599E0, public SkillHpMpGaugeDrawer
      * @param second Mark the packet changed.
      * @param third Allow drawing.
      */
-    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    virtual void func_0044B100(bool first, bool second, bool third);
 
     /**
      * @brief Complete DMA notification processing.
@@ -1444,7 +1444,7 @@ struct SkillStatusAttachment : public LibContainer
      * @param second Unused flag.
      * @param third Unused flag.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /**
      * @brief Allocate drawing storage and attach the embedded widgets.
@@ -10319,7 +10319,7 @@ inline SkillGridChoice::SkillGridChoice()
     selected = -1;
 }
 
-void SkillHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
+void SkillHpMpGauge::func_0044B100(bool first, bool second, bool third)
 {
     if (queued_for_release != 0)
     {
@@ -10328,17 +10328,17 @@ void SkillHpMpGauge::func_0044B100(u32 first, u32 second, u32 third)
 
     unk63 = 0;
 
-    if (first == 0)
+    if (!first)
     {
         return;
     }
 
-    if (second != 0)
+    if (second)
     {
         geometry_dirty = 1;
     }
 
-    if (third == 0)
+    if (!third)
     {
         return;
     }

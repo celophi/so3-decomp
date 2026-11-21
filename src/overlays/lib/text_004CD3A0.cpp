@@ -17,6 +17,9 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/matrix_vu0.h"
 #include "vu0.h"
+#include "overlays/lib/cull_vu0.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/quaternion_vu0.h"
 #include "overlays/lib/direction_vu0.h"
 #include "overlays/lib/quaternion_inlines.h"
@@ -1368,14 +1371,14 @@ void LibClass178B70::build_packet(const void* matrix, void* context)
     LibRenderer* renderer = static_cast<LibRenderer*>(g_renderer);
 
     g_texture_cache->expire_texture(index + 0x100);
-    u64* packet = reinterpret_cast<u64*>(reinterpret_cast<u32>(renderer->unked30[index - 1]) | EE_UNCACHED_ACCELERATED);
+    u64* packet = reinterpret_cast<u64*>(reinterpret_cast<u32>(&renderer->draw_envs[1][index - 1]) | EE_UNCACHED_ACCELERATED);
     packet[4] = func_004DBCA0(renderer->display, 0);
     packet[6] = func_004DBCA0(renderer->display, 1);
     packet[8] = func_004DBCA0(renderer->display, 2);
     packet[10] = func_004DBCA0(renderer->display, 3);
     owner = static_cast<LibRenderer*>(g_renderer);
     u64* tags = reinterpret_cast<u64*>(reinterpret_cast<u32>(chain) | EE_UNCACHED_ACCELERATED);
-    tags[0] = DMA_TAG(6, DMA_TAG_ID_REF, static_cast<LibRenderer*>(owner)->unked30[layer - 1]);
+    tags[0] = DMA_TAG(6, DMA_TAG_ID_REF, &static_cast<LibRenderer*>(owner)->draw_envs[1][layer - 1]);
     tags[2] = DMA_TAG(3, DMA_TAG_ID_CNT, 0);
     *reinterpret_cast<unsigned __int128*>(&tags[4]) = 0;
     reinterpret_cast<u32*>(tags)[11] = VIF_DIRECTHL(2);
@@ -1433,8 +1436,8 @@ void LibClass178C00::build_packet(const void* matrix, void* context)
     func_004D0B10(static_cast<LibRenderer*>(g_renderer), layer);
     owner = static_cast<LibRenderer*>(g_renderer);
     u64* tags = reinterpret_cast<u64*>(reinterpret_cast<u32>(chain) | EE_UNCACHED_ACCELERATED);
-    tags[0] = DMA_TAG(6, DMA_TAG_ID_REF, static_cast<LibRenderer*>(owner)->unke130[layer - 1]);
-    tags[2] = DMA_TAG(0x10, 0, static_cast<LibRenderer*>(owner)->unkc130[layer - 1]);
+    tags[0] = DMA_TAG(6, DMA_TAG_ID_REF, &static_cast<LibRenderer*>(owner)->draw_envs[0][layer - 1]);
+    tags[2] = DMA_TAG(0x10, 0, &static_cast<LibRenderer*>(owner)->sprite_packets[layer - 1]);
     unk63 = 1;
 }
 
@@ -1483,65 +1486,33 @@ extern "C" void func_004D08D0(LibRenderer* renderer, s32 layer, s32 size, LibDis
     renderer->layers[layer - 1].info.height_log2 = bits - 1;
 }
 
-/** GS packet that draws eight sprite vertices with the depth test and scissor set around them. */
-struct LibSpritePacket
+
+/** @brief Set up the packet's fixed words: its tags and the register each write goes to. */
+LibSpritePacket::LibSpritePacket()
 {
-    u32 dma_tag[2];
-    u32 vif_flush;
-    u32 vif_direct;
-    u64 gif_tag;
-
-    union
-    {
-        u64 gif_registers;
-
-        struct
-        {
-            u64 register0 : 4;
-            u64 unused : 60;
-        } gif_register_fields;
-    };
-
-    GsRegisterValue test;
-    GsRegisterValue fba;
-    GsRegisterValue prim;
-    GsRegisterValue rgbaq;
-    GsRegisterValue xyz[8];
-    GsRegisterValue restore_test;
-    GsRegisterValue scissor;
-};
-
-/**
- * @brief Set up a sprite packet's fixed words: its tags and the register each write goes to.
- * @param packet Packet to set up.
- * @return The packet.
- */
-extern "C" LibSpritePacket* func_004D0A30(LibSpritePacket* packet)
-{
-    packet->dma_tag[0] = 0;
-    packet->dma_tag[1] = 0;
-    packet->vif_flush = 0x11000000;
-    packet->vif_direct = 0x5100000F;
-    packet->gif_tag = 14 | GIF_TAG_EOP | GIF_TAG_NREG(1);
-    packet->gif_registers = 0;
-    packet->gif_register_fields.register0 = GIF_REGISTER_AD;
-    packet->fba.data = 0;
-    packet->fba.address = GS_REGISTER_FBA_1;
-    packet->test.address = GS_REGISTER_TEST_1;
-    packet->prim.address = GS_REGISTER_PRIM;
-    packet->rgbaq.address = GS_REGISTER_RGBAQ;
+    dma_tag[0] = 0;
+    dma_tag[1] = 0;
+    vif_flush = 0x11000000;
+    vif_direct = 0x5100000F;
+    gif_tag = 14 | GIF_TAG_EOP | GIF_TAG_NREG(1);
+    gif_registers = 0;
+    gif_register_fields.register0 = GIF_REGISTER_AD;
+    fba.data = 0;
+    fba.address = GS_REGISTER_FBA_1;
+    test.address = GS_REGISTER_TEST_1;
+    prim.address = GS_REGISTER_PRIM;
+    rgbaq.address = GS_REGISTER_RGBAQ;
 
     for (s32 i = 0; i < 8; i++)
     {
-        packet->xyz[i].address = GS_REGISTER_XYZ2;
+        xyz[i].address = GS_REGISTER_XYZ2;
     }
 
-    packet->restore_test.address = GS_REGISTER_TEST_1;
-    packet->scissor.address = GS_REGISTER_SCISSOR_1;
-    packet->test.data = 0x30000;
-    packet->prim.data = GS_PRIM_SPRITE;
+    restore_test.address = GS_REGISTER_TEST_1;
+    scissor.address = GS_REGISTER_SCISSOR_1;
+    test.data = 0x30000;
+    prim.data = GS_PRIM_SPRITE;
     FlushCache(0);
-    return packet;
 }
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D0B10);
@@ -1846,17 +1817,1095 @@ extern "C" void func_004D1360(LibRenderer* renderer, LibTransformOwner** items, 
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D1550);
+/**
+ * @brief Sort a renderer's objects for one layer into a draw list: bucket them by draw bucket, sort four buckets by
+ *        depth, then lay the buckets and the renderer's own passes out in drawing order.
+ * @param renderer Renderer.
+ * @param list Receives the objects.
+ * @param layer Layer to collect; zero for the main list.
+ * @return Number of objects written.
+ */
+extern "C" s32 func_004D1550(LibRenderer* renderer, LibTransformOwner** list, s32 layer)
+{
+    s32 counts[11];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D2C70);
+    for (s32 bucket = 0; bucket < 11; bucket++)
+    {
+        counts[bucket] = 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D3290);
+    s32 total = 0;
+    LibTransformOwner*** buckets = renderer->buckets;
+    s32 count = renderer->visible_count;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D3480);
+    if (!renderer->unk40ce)
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            LibTransformOwner* object = reinterpret_cast<LibTransformOwner**>(renderer->unk7c)[i];
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D3780);
+            if (object->layer != layer)
+            {
+                continue;
+            }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4010);
+            object->unk63 = 0;
+
+            if (object->draw_flags & 0x59)
+            {
+                continue;
+            }
+
+            if (object->draw_bucket != 0)
+            {
+                buckets[object->draw_bucket][counts[object->draw_bucket]++] = object;
+            }
+            else
+            {
+                list[total++] = object;
+            }
+        }
+    }
+    else
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            LibTransformOwner* object = reinterpret_cast<LibTransformOwner**>(renderer->unk7c)[i];
+
+            if (object->layer != layer)
+            {
+                continue;
+            }
+
+            object->unk63 = 0;
+
+            if (object->draw_flags & 0x59)
+            {
+                continue;
+            }
+
+            if (object->draw_bucket != 0)
+            {
+                buckets[object->draw_bucket][counts[object->draw_bucket]++] = object;
+            }
+            else if (object->unk66)
+            {
+                buckets[0][counts[0]] = object;
+                counts[0]++;
+            }
+            else
+            {
+                list[total++] = object;
+            }
+        }
+    }
+
+    func_004D1360(renderer, renderer->buckets[2], 0, counts[2]);
+    func_004D1360(renderer, renderer->buckets[3], 0, counts[3]);
+    func_004D1360(renderer, renderer->buckets[5], 0, counts[5]);
+    func_004D1360(renderer, renderer->buckets[7], 0, counts[7]);
+
+    // TODO: The bucket loops are written `<= last` because that's what gives the target's `slti at` loop tests.
+    if (renderer->unk40cc)
+    {
+        for (s32 bucket = 0; bucket <= 3; bucket++)
+        {
+            s32 size = counts[bucket];
+            LibTransformOwner** source = renderer->buckets[bucket];
+
+            for (s32 k = 0; k < size; k++)
+            {
+                list[k + total] = source[k];
+            }
+
+            total += size;
+        }
+
+        if (renderer->extra->enabled)
+        {
+            renderer->extra->unk63 = 0;
+            list[total++] = renderer->extra;
+        }
+
+        if (renderer->unk40cd)
+        {
+            s32 size = counts[4];
+            LibTransformOwner** source = renderer->buckets[4];
+
+            for (s32 k = 0; k < size; k++)
+            {
+                list[k + total] = source[k];
+            }
+
+            total += size;
+
+            if (layer == 0)
+            {
+                renderer->unk4458->unk63 = 0;
+                list[total++] = renderer->unk4458;
+            }
+
+            for (s32 k = 0; k < counts[8]; k++)
+            {
+                list[k + total] = renderer->buckets[8][k];
+            }
+
+            total += counts[8];
+
+            if (layer == 0)
+            {
+                renderer->unk445c->unk63 = 0;
+                list[total++] = renderer->unk445c;
+            }
+
+            for (s32 bucket = 5; bucket <= 6; bucket++)
+            {
+                s32 size = counts[bucket];
+                LibTransformOwner** source = renderer->buckets[bucket];
+
+                for (s32 k = 0; k < size; k++)
+                {
+                    list[k + total] = source[k];
+                }
+
+                total += size;
+            }
+        }
+        else
+        {
+            for (s32 bucket = 4; bucket <= 6; bucket++)
+            {
+                s32 size = counts[bucket];
+                LibTransformOwner** source = renderer->buckets[bucket];
+
+                for (s32 k = 0; k < size; k++)
+                {
+                    list[k + total] = source[k];
+                }
+
+                total += size;
+            }
+        }
+    }
+    else
+    {
+        if (renderer->unk40cd)
+        {
+            for (s32 bucket = 0; bucket <= 4; bucket++)
+            {
+                s32 size = counts[bucket];
+                LibTransformOwner** source = renderer->buckets[bucket];
+
+                for (s32 k = 0; k < size; k++)
+                {
+                    list[k + total] = source[k];
+                }
+
+                total += size;
+            }
+
+            if (layer == 0)
+            {
+                renderer->unk4458->unk63 = 0;
+                list[total++] = renderer->unk4458;
+            }
+
+            for (s32 k = 0; k < counts[8]; k++)
+            {
+                list[k + total] = renderer->buckets[8][k];
+            }
+
+            total += counts[8];
+
+            if (layer == 0)
+            {
+                renderer->unk445c->unk63 = 0;
+                list[total++] = renderer->unk445c;
+            }
+
+            for (s32 bucket = 5; bucket <= 6; bucket++)
+            {
+                s32 size = counts[bucket];
+                LibTransformOwner** source = renderer->buckets[bucket];
+
+                for (s32 k = 0; k < size; k++)
+                {
+                    list[k + total] = source[k];
+                }
+
+                total += size;
+            }
+        }
+        else
+        {
+            for (s32 bucket = 0; bucket <= 6; bucket++)
+            {
+                s32 size = counts[bucket];
+                LibTransformOwner** source = renderer->buckets[bucket];
+
+                for (s32 k = 0; k < size; k++)
+                {
+                    list[k + total] = source[k];
+                }
+
+                total += size;
+            }
+        }
+
+        if (renderer->extra->enabled)
+        {
+            renderer->extra->unk63 = 0;
+            list[total++] = renderer->extra;
+        }
+    }
+
+    if (layer == 0)
+    {
+        if (renderer->unk4464->unkaf && !renderer->unk4464->unkae)
+        {
+            renderer->unk4464->unk63 = 0;
+            list[total++] = renderer->unk4464;
+        }
+
+        if ((renderer->unk4464->unkaf && renderer->unk4464->unkae) ||
+            (renderer->unk4468->unkaf && renderer->unk4468->unkae))
+        {
+            renderer->unk4460->unk63 = 0;
+            list[total++] = renderer->unk4460;
+        }
+    }
+
+    for (s32 k = 0; k < counts[7]; k++)
+    {
+        list[k + total] = renderer->buckets[7][k];
+    }
+
+    total += counts[7];
+
+    if (layer == 0)
+    {
+        if (renderer->unk4464->unkaf && renderer->unk4464->unkae && counts[7] != 0)
+        {
+            renderer->unk4464->unk63 = 0;
+            list[total++] = renderer->unk4464;
+        }
+
+        if (renderer->unk4468->unkaf)
+        {
+            renderer->unk4468->unk63 = 0;
+            list[total++] = renderer->unk4468;
+        }
+    }
+
+    if (!renderer->unk40cd)
+    {
+        if (layer == 0)
+        {
+            renderer->unk4458->unk63 = 0;
+            list[total++] = renderer->unk4458;
+        }
+
+        for (s32 k = 0; k < counts[8]; k++)
+        {
+            list[k + total] = renderer->buckets[8][k];
+        }
+
+        total += counts[8];
+
+        if (layer == 0)
+        {
+            renderer->unk445c->unk63 = 0;
+            list[total++] = renderer->unk445c;
+        }
+    }
+
+    for (s32 k = 0; k < counts[9]; k++)
+    {
+        list[k + total] = renderer->buckets[9][k];
+    }
+
+    total += counts[9];
+
+    for (s32 k = 0; k < counts[10]; k++)
+    {
+        list[k + total] = renderer->buckets[10][k];
+    }
+
+    total += counts[10];
+
+    // TODO: The game zeroes an empty count again before returning it; this keeps that.
+    if (total == 0)
+    {
+        return 0;
+    }
+
+    return total;
+}
+
+/**
+ * @brief Build this frame's draw list. With layered objects, the first object to name a layer in its mask gets that
+ *        layer's start marker, the layer's own list and its end marker in front of it.
+ */
+void LibRenderer::func_004D2C70()
+{
+    if (D_001B65BC != 0 && unk43d4 != 0)
+    {
+        LibTransformOwner* firsts[32];
+        s32 lasts[32];
+        s32 layer_counts[32];
+        s32 count;
+
+        for (s32 layer = 0; layer < 32; layer++)
+        {
+            firsts[layer] = 0;
+        }
+
+        count = func_004D1550(this, reinterpret_cast<LibTransformOwner**>(unk43d4), 0);
+
+        for (s32 i = 0; i < count; i++)
+        {
+            LibTransformOwner* entry = reinterpret_cast<LibTransformOwner**>(unk43d4)[i];
+            entry->unk69 &= 0xE0;
+            u32 mask = entry->unk8c;
+
+            if (mask != 0)
+            {
+                for (s32 layer = 0; mask != 0; mask >>= 1, layer++)
+                {
+                    if (mask & 1)
+                    {
+                        if (firsts[layer] == 0)
+                        {
+                            firsts[layer] = entry;
+                            entry->unk69 |= 4;
+                        }
+
+                        lasts[layer] = i;
+                    }
+                }
+            }
+        }
+
+        for (s32 layer = 0; layer < 32; layer++)
+        {
+            layer_counts[layer] = 0;
+
+            if (firsts[layer] == 0)
+            {
+                continue;
+            }
+
+            reinterpret_cast<LibTransformOwner**>(unk43d4)[lasts[layer]]->unk69 |= 8;
+
+            if (unk43d8[layer] == 0)
+            {
+                continue;
+            }
+
+            layer_counts[layer] = func_004D1550(this, reinterpret_cast<LibTransformOwner**>(unk43d8[layer]), layer + 1);
+
+            if (layer_counts[layer] == 0)
+            {
+                continue;
+            }
+
+            for (s32 k = 0; k < layer_counts[layer]; k++)
+            {
+                reinterpret_cast<LibTransformOwner**>(unk43d8[layer])[k]->unk69 &= 0xE0;
+            }
+        }
+
+        s32 total = 0;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            LibTransformOwner* object = reinterpret_cast<LibTransformOwner**>(unk43d4)[i];
+
+            if (object->unk69 & 4)
+            {
+                u32 mask = object->unk8c;
+
+                for (s32 layer = 0; mask != 0; mask >>= 1, layer++)
+                {
+                    if (mask & 1)
+                    {
+                        // TODO: Byte offsets into the buffer give the target's base-first address adds; indexing a
+                        // LibTransformOwner** puts the index first.
+                        s32 layer_count = layer_counts[layer];
+                        *reinterpret_cast<LibTransformOwner**>(&buffers[buffer_index][total++ * 4]) = &unk5770[layer];
+                        unk5770[layer].unk63 = 0;
+
+                        for (s32 k = 0; k < layer_count; k++)
+                        {
+                            *reinterpret_cast<LibTransformOwner**>(&buffers[buffer_index][total++ * 4]) =
+                                reinterpret_cast<LibTransformOwner**>(unk43d8[layer])[k];
+                        }
+
+                        *reinterpret_cast<LibTransformOwner**>(&buffers[buffer_index][total++ * 4]) = &unk8770[layer];
+                        unk8770[layer].unk63 = 0;
+                    }
+                }
+            }
+
+            *reinterpret_cast<LibTransformOwner**>(&buffers[buffer_index][total++ * 4]) = object;
+        }
+
+        list_counts[buffer_index] = total;
+    }
+    else
+    {
+        list_counts[buffer_index] = func_004D1550(this, reinterpret_cast<LibTransformOwner**>(buffers[buffer_index]), 0);
+    }
+}
+
+/**
+ * @brief Last light step: drop every listed model that sits behind one of the renderer's occluders, then free the
+ *        sphere buffer func_004D3780 filled.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D3290(LibRenderer* renderer)
+{
+    if (renderer->sphere_buffer == 0)
+    {
+        return;
+    }
+
+    LibCamera* camera = static_cast<LibCamera*>(renderer->manager->current_display);
+    u32 occluders = renderer->unk40d8.node_count;
+
+    if (occluders == 0 || camera == 0)
+    {
+        delete renderer->sphere_buffer;
+        renderer->sphere_buffer = 0;
+        return;
+    }
+
+    s32 occluder_count = func_00430E00(&renderer->unk40d8, camera, &renderer->unk4360);
+
+    if (occluder_count != 0)
+    {
+        s32 sphere_index = 0;
+        // TODO: count is declared before kept for the target's register order.
+        s32 count;
+        s32 kept = 0;
+        float nearest = renderer->unk40d8.nearest_depth;
+        count = renderer->visible_count;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            LibModel** visible = reinterpret_cast<LibModel**>(renderer->unk7c);
+            LibModel* model = visible[i];
+            visible[kept++] = model;
+            u16 flags = model->draw_flags;
+
+            if (flags & 0x459)
+            {
+                continue;
+            }
+
+            if (model->display_manager != 0 || model->depth < nearest)
+            {
+                sphere_index++;
+                continue;
+            }
+
+            vu0_load_vf1(reinterpret_cast<LibVector4*>(renderer->sphere_buffer) + sphere_index++);
+            vu0_first_occluder();
+            LibOccluder* first = renderer->unk40d8.nodes[0];
+            float depth = model->depth;
+
+            for (s32 j = 0; j < occluder_count; j++)
+            {
+                if (depth < first->depth)
+                {
+                    vu0_skip_occluder();
+                    continue;
+                }
+
+                vu0_start_microprogram_d58();
+                // TODO: Never read; the game still loads it here.
+                LibOccluder* next = renderer->unk40d8.nodes[j + 1];
+
+                if (vu0_read_vi2() == 0)
+                {
+                    if (flags & 0x2000)
+                    {
+                        model->update_render_channels();
+                    }
+
+                    model->draw_flags |= 0x10;
+                    kept--;
+                    break;
+                }
+            }
+        }
+
+        renderer->visible_count = kept;
+    }
+
+    delete renderer->sphere_buffer;
+    renderer->sphere_buffer = 0;
+}
+
+/**
+ * @brief Second light step: drop every listed model whose oriented box misses the camera's view volume, along with its
+ *        sphere in the sphere buffer.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D3480(LibRenderer* renderer)
+{
+    if (!renderer->box_cull_enabled)
+    {
+        return;
+    }
+
+    LibCamera* camera = static_cast<LibCamera*>(renderer->manager->current_display);
+    s32 count = renderer->visible_count;
+
+    if (camera == 0)
+    {
+        return;
+    }
+
+    LibProjectionVolume volume;
+    camera->build_projection_volume(&volume);
+    s32 kept = 0;
+    LibCullBox box;
+    LibMatrix44Value matrix;
+    LibVector4 center;
+    s32 spheres = renderer->visible_count;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibModel** visible = reinterpret_cast<LibModel**>(renderer->unk7c);
+        LibModel* model = visible[i];
+        visible[kept++] = model;
+        u16 flags = model->draw_flags;
+
+        if (flags & 0x459)
+        {
+            continue;
+        }
+
+        if (model->display_manager != 0)
+        {
+            continue;
+        }
+
+        if (!model->unk66)
+        {
+            continue;
+        }
+
+        if (!model->get_box_cull_center(&box))
+        {
+            continue;
+        }
+
+        // TODO: As in func_004D4010, the named operands give the target's register order.
+        const LibMatrix44Value* right = model->get_transform_matrix();
+        LibMatrix44Value* product = &matrix;
+        const LibMatrix44Value* left = &camera->view_matrix;
+        vu0_multiply_matrix(product, left, right);
+        ee_transpose_matrix(&matrix, &matrix);
+        const LibVector4* local_center = &box.center;
+        const LibMatrix44Value* rotation = &matrix;
+        vu0_apply_matrix(rotation, local_center, &center);
+        copy_vector(&box.center, &center);
+        copy_vector(&box.axes[0], matrix_row(&matrix, 0));
+        copy_vector(&box.axes[1], matrix_row(&matrix, 1));
+        copy_vector(&box.axes[2], matrix_row(&matrix, 2));
+
+        if (func_004CAB20(&volume, &box) != 0)
+        {
+            continue;
+        }
+
+        if (flags & 0x2000)
+        {
+            model->update_render_channels();
+        }
+
+        if (renderer->sphere_buffer != 0)
+        {
+            spheres--;
+
+            for (s32 k = kept - 1; k < spheres; k++)
+            {
+                // TODO: Reading the buffer pointer once per operand is what gives the target's registers.
+                copy_vector(&reinterpret_cast<LibVector4*>(renderer->sphere_buffer)[k],
+                            &reinterpret_cast<LibVector4*>(renderer->sphere_buffer)[k + 1]);
+            }
+        }
+
+        model->draw_flags |= 0x10;
+        kept--;
+    }
+
+    renderer->visible_count = kept;
+}
+
+extern "C" s8 D_001B65D4;
+extern "C" float D_00507250[4];
+
+/**
+ * @brief Load a camera's view-projection and depth-scaled view matrices for the sphere test.
+ * @param camera Camera whose matrices are loaded.
+ * @param scaled_view Depth-scaled, transposed view matrix.
+ */
+static inline void lib_load_cull_camera(LibCamera* camera, const LibMatrix44Value* scaled_view)
+{
+    camera->upload_clip_geometry();
+    vu0_start_microprogram_1f0_vf5_vf8(&camera->view_matrix);
+    vu0_copy_vf1_vf4_to_vf20_vf23();
+    vu0_load_vf24_vf27(scaled_view);
+}
+
+/**
+ * @brief Read whether a camera has fog.
+ * @param camera Camera.
+ * @return The camera's fog flag.
+ */
+static inline u8 lib_camera_fog_on(const LibCamera* camera)
+{
+    return camera->fog_enabled;
+}
+
+
+extern "C" s8 D_001B65D8;
+extern "C" float D_00507260[4];
+
+/**
+ * @brief First light step: test every model in the renderer against its display's camera, fade the ones flagged to
+ *        fade with distance, and list the visible ones with their depths.
+ * @param renderer Renderer.
+ */
+extern "C" void func_004D3780(LibRenderer* renderer)
+{
+    float far_factor;
+    float near_factor;
+
+    if (renderer->light_list != 0)
+    {
+        func_004E9290(renderer->light_list);
+    }
+
+    LibCamera* camera = static_cast<LibCamera*>(renderer->manager->current_display);
+
+    if (camera == 0)
+    {
+        return;
+    }
+
+    float distance = camera->projection_distance;
+    camera->upload_clip_geometry();
+    renderer->unk4360.set_identity();
+    renderer->unk4360.m[0][0] = distance;
+    renderer->unk4360.m[1][1] = distance;
+    vu0_multiply_matrix(&renderer->unk4360, &renderer->unk4360, &camera->view_matrix);
+    ee_transpose_matrix(&renderer->unk4360, &renderer->unk4360);
+    vu0_load_vf24_vf27(&renderer->unk4360);
+
+    bool fogged = lib_camera_fog_on(camera) ? true : false;
+    float cull_depth = camera->near_fog_distance + camera->near_fog_fraction * (camera->far_fog_distance - camera->near_fog_distance);
+
+    if (fogged)
+    {
+        camera->get_fog_factors(&far_factor, &near_factor);
+
+        if (near_factor < 255.0f)
+        {
+            cull_depth = -1e20f;
+        }
+    }
+
+    LibCamera* current = 0;
+    vu0_start_microprogram_1f0_vf5_vf8(&camera->view_matrix);
+    vu0_copy_vf1_vf4_to_vf20_vf23();
+
+    // TODO: Same function-local static as in func_004D4010.
+    if (!D_001B65D8)
+    {
+        D_00507260[0] = 0.0f;
+        D_00507260[1] = 0.0f;
+        D_00507260[2] = 1.0f;
+        D_00507260[3] = 1.0f;
+        D_001B65D8 = 1;
+    }
+
+    LibMatrix44Value scaled_view;
+    FieldVec4A position(0.0f, 0.0f, 0.0f, 1.0f);
+    FieldVec4A fog;
+    FieldVec4A screen;
+    FieldVec4A view_depth;
+    u8 loaded = 0;
+    bool keep_spheres = false;
+    unsigned __int128* spheres;
+
+    if (renderer->unk40d8.node_count != 0 && (renderer->unk40d2 == 1 || renderer->unk40d2 == 0))
+    {
+        keep_spheres = true;
+        renderer->sphere_buffer = new (0) u8[0x8000];
+        spheres = reinterpret_cast<unsigned __int128*>(renderer->sphere_buffer);
+    }
+
+    s32 count = 0;
+    LibListSentinel* node = &renderer->sentinel;
+
+    for (;;)
+    {
+        node = node->next;
+
+        if (at_list_end(&renderer->sentinel, node))
+        {
+            break;
+        }
+
+        LibModel* model = static_cast<LibModel*>(node);
+        u16 flags = model->draw_flags;
+
+        if (flags & 0x49)
+        {
+            if (flags & 0x2000)
+            {
+                model->update_render_channels();
+            }
+
+            continue;
+        }
+
+        if (flags & 0x400)
+        {
+            if (!model->matrix_ready)
+            {
+                model->update_transform_matrix();
+            }
+
+            model->set_default_draw_bucket();
+            *reinterpret_cast<unsigned __int128*>(&model->unk70) = *reinterpret_cast<unsigned __int128*>(&model->translation);
+            model->depth = model->translation.z;
+            model->draw_flags &= 0xFFEF;
+            model->unk66 = 1;
+            reinterpret_cast<LibModel**>(renderer->unk7c)[count++] = model;
+            continue;
+        }
+
+        model->draw_flags = flags | 0x10;
+
+        if (!model->matrix_ready)
+        {
+            model->update_transform_matrix();
+        }
+
+        if (model->display_manager != 0)
+        {
+            LibCamera* own = static_cast<LibCamera*>(model->display_manager->current_display);
+
+            if (own == 0)
+            {
+                if (flags & 0x2000)
+                {
+                    model->update_render_channels();
+                }
+
+                continue;
+            }
+
+            if (own != current)
+            {
+                current = own;
+                own->update_projection();
+                float own_distance = own->projection_distance;
+                scaled_view.set_identity();
+                scaled_view.m[0][0] = own_distance;
+                scaled_view.m[1][1] = own_distance;
+                // TODO: As in func_004D4010, the named operands give the target's register order.
+                LibMatrix44Value* product = &scaled_view;
+                const LibMatrix44Value* left = &scaled_view;
+                const LibMatrix44Value* right = &own->view_matrix;
+                vu0_multiply_matrix(product, left, right);
+                ee_transpose_matrix(&scaled_view, &scaled_view);
+                loaded = 0;
+            }
+
+            if (!loaded)
+            {
+                lib_load_cull_camera(own, &scaled_view);
+                loaded = 1;
+            }
+        }
+        else if (loaded)
+        {
+            lib_load_cull_camera(camera, &renderer->unk4360);
+            loaded = 0;
+        }
+
+        if (flags & 0x2)
+        {
+            const LibMatrix44Value* matrix;
+
+            if (flags & 0x4000)
+            {
+                if (model->parent_transform != 0)
+                {
+                    matrix = model->parent_transform->get_transform_matrix();
+                }
+                else
+                {
+                    matrix = model->get_transform_matrix();
+                }
+            }
+            else
+            {
+                matrix = model->get_transform_matrix();
+            }
+
+            vu0_start_microprogram_1f0_vf5_vf8(matrix);
+            position.x = matrix_row(matrix, 0)->w;
+            position.y = matrix_row(matrix, 1)->w;
+            position.z = matrix_row(matrix, 2)->w;
+            vu0_load_position_vf5(&position);
+            vu0_start_microprogram_d0_vf8(D_00507260);
+            float fade_distance = renderer->fade_distance;
+            float fade_scale = 1.0f / fade_distance;
+            vu0_wait_microprogram();
+            vu0_read_vf6(&view_depth);
+
+            if (!(view_depth.x <= 0.0f))
+            {
+                if (flags & 0x2000)
+                {
+                    model->update_render_channels();
+                }
+
+                continue;
+            }
+
+            if (flags & 0x800)
+            {
+                float depth = -view_depth.x;
+
+                if (depth < fade_distance)
+                {
+                    float alpha = depth * fade_scale;
+
+                    if (!(alpha <= 1.0f))
+                    {
+                        model->set_fade_alpha(1.0f, 2.0f);
+                    }
+                    else
+                    {
+                        model->set_fade_alpha(alpha, 2.0f);
+                    }
+                }
+                else
+                {
+                    model->set_fade_alpha(1.0f, 2.0f);
+                }
+            }
+        }
+
+        const LibVector4* sphere = model->get_bounding_sphere();
+        vu0_start_microprogram_b60_vf5(sphere);
+        model->draw_bucket = 0;
+        model->unk66 = 0;
+        model->set_default_draw_bucket();
+        // TODO: Never read; the game still loads it here.
+        LibListSentinel* next = node->next;
+        s32 outside = vu0_read_vi2();
+        s32 inside = vu0_read_vi3();
+        vu0_read_vf6(&model->unk70);
+
+        if (outside != 0)
+        {
+            if (flags & 0x2000)
+            {
+                model->update_render_channels();
+            }
+
+            continue;
+        }
+
+        vu0_store_vf8(&screen);
+        model->depth = screen.z;
+
+        if (inside != 0)
+        {
+            model->unk66 = 1;
+
+            if (keep_spheres)
+            {
+                *spheres++ = *reinterpret_cast<const unsigned __int128*>(sphere);
+            }
+
+            model->draw_flags &= 0xFFEF;
+        }
+        else
+        {
+            vu0_start_microprogram_c88();
+
+            if (keep_spheres)
+            {
+                *spheres++ = *reinterpret_cast<const unsigned __int128*>(sphere);
+            }
+
+            model->draw_flags &= 0xFFEF;
+            outside = vu0_read_vi2();
+            model->unk66 = outside;
+        }
+
+        reinterpret_cast<LibModel**>(renderer->unk7c)[count++] = model;
+
+        if (fogged)
+        {
+            vu0_store_vf9(&fog);
+
+            if (cull_depth <= fog.z)
+            {
+                model->unk67 = 1;
+            }
+            else
+            {
+                model->unk67 = 0;
+            }
+        }
+        else
+        {
+            model->unk67 = 0;
+        }
+    }
+
+    renderer->visible_count = count;
+}
+
+/**
+ * @brief Test each object's bounding sphere against its display's camera and mark the visible ones for drawing.
+ * @param object Renderer whose display manager gives the default camera.
+ * @param count Number of objects.
+ * @param entries Objects to test.
+ */
+extern "C" void func_004D4010(void* object, s32 count, void** entries)
+{
+    LibRenderer* renderer = static_cast<LibRenderer*>(object);
+    LibCamera* camera = static_cast<LibCamera*>(renderer->manager->current_display);
+    float far_factor;
+    float near_factor;
+
+    if (camera == 0)
+    {
+        return;
+    }
+
+    camera->update_projection();
+    float distance = camera->projection_distance;
+    camera->upload_clip_geometry();
+    renderer->unk4360.set_identity();
+    renderer->unk4360.m[0][0] = distance;
+    renderer->unk4360.m[1][1] = distance;
+    vu0_multiply_matrix(&renderer->unk4360, &renderer->unk4360, &camera->view_matrix);
+    ee_transpose_matrix(&renderer->unk4360, &renderer->unk4360);
+    vu0_load_vf24_vf27(&renderer->unk4360);
+
+    bool fogged = lib_camera_fog_on(camera) ? true : false;
+    // TODO: Never read here. func_004D3780 works out the same depth and uses it, so I think this was copied.
+    float cull_depth = camera->near_fog_distance + camera->near_fog_fraction * (camera->far_fog_distance - camera->near_fog_distance);
+
+    if (fogged)
+    {
+        camera->get_fog_factors(&far_factor, &near_factor);
+
+        if (near_factor < 255.0f)
+        {
+            cull_depth = -1e20f;
+        }
+    }
+
+    LibCamera* current = 0;
+    vu0_start_microprogram_1f0_vf5_vf8(&camera->view_matrix);
+    vu0_copy_vf1_vf4_to_vf20_vf23();
+
+    // TODO: I think this is a function-local static vector and its guard byte. It sits in a rodata piece the
+    // unit doesn't own yet, so it's written by hand through externs.
+    if (!D_001B65D4)
+    {
+        D_00507250[0] = 0.0f;
+        D_00507250[1] = 0.0f;
+        D_00507250[2] = 1.0f;
+        D_00507250[3] = 1.0f;
+        D_001B65D4 = 1;
+    }
+
+    LibMatrix44Value scaled_view;
+    // TODO: Never read, but the game still builds it on the stack.
+    FieldVec4A origin(0.0f, 0.0f, 0.0f, 1.0f);
+    u8 loaded = 0;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibTransformOwner* entry = static_cast<LibTransformOwner*>(entries[i]);
+        u16 flags = entry->draw_flags;
+
+        if (flags & 0x49)
+        {
+            continue;
+        }
+
+        if (flags & 0x400)
+        {
+            entry->draw_flags = flags & 0xFFEF;
+            continue;
+        }
+
+        entry->draw_flags = flags | 0x10;
+
+        if (!entry->matrix_ready)
+        {
+            entry->update_transform_matrix();
+        }
+
+        if (entry->display_manager != 0)
+        {
+            LibCamera* own = static_cast<LibCamera*>(entry->display_manager->current_display);
+
+            if (own != current)
+            {
+                current = own;
+                own->update_projection();
+                float own_distance = own->projection_distance;
+                scaled_view.set_identity();
+                scaled_view.m[0][0] = own_distance;
+                scaled_view.m[1][1] = own_distance;
+                // TODO: Naming the operands is the only way I've found to get the target's register order.
+                LibMatrix44Value* product = &scaled_view;
+                const LibMatrix44Value* left = &scaled_view;
+                const LibMatrix44Value* right = &own->view_matrix;
+                vu0_multiply_matrix(product, left, right);
+                ee_transpose_matrix(&scaled_view, &scaled_view);
+                loaded = 0;
+            }
+
+            if (!loaded)
+            {
+                lib_load_cull_camera(own, &scaled_view);
+                loaded = 1;
+            }
+        }
+        else if (loaded)
+        {
+            lib_load_cull_camera(camera, &renderer->unk4360);
+            loaded = 0;
+        }
+
+        vu0_start_microprogram_b60_vf5(entry->get_bounding_sphere());
+        entry->draw_bucket = 0;
+        entry->unk66 = 0;
+
+        if (vu0_read_vi2() == 0)
+        {
+            entry->draw_flags &= ~0x10;
+        }
+    }
+}
 
 /**
  * @brief Test or wait for the renderer's packets in flight.
@@ -1878,11 +2927,61 @@ bool LibRenderer::func_004D44D0(s32 poll)
     }
 
     unk40c4 = 0;
-    current_list = 0;
+    current_count = 0;
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4560__11LibRendererFv);
+/**
+ * @brief With interrupts off, flag the renderer's display once its main packet is done.
+ * @param renderer Renderer.
+ */
+static inline void lib_flag_display_idle(LibRenderer* renderer)
+{
+    LibInterruptLock interrupts;
+
+    if (!renderer->main_packet_busy && renderer->display != 0)
+    {
+        renderer->display->unk3E6A = 1;
+    }
+}
+
+/**
+ * @brief Kick the packet queue if a main packet is waiting, then render every object in the current list that is a
+ *        bucket packet with work; with none, flag the display once the main packet is done.
+ */
+void LibRenderer::func_004D4560()
+{
+    {
+        LibInterruptLock interrupts;
+
+        if (main_packet != 0)
+        {
+            func_004DC420(g_packet_queue, 0);
+        }
+    }
+
+    s32 count = current_count;
+    bool idle = true;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibTransformOwner* object = reinterpret_cast<LibTransformOwner**>(cursor)[i];
+
+        if (object->unk65 == 1 && object->unk63 != 0)
+        {
+            bucket_packet = object;
+            bucket_packet_busy = 1;
+            idle = false;
+            object->render();
+            unk40b0 = i + 1;
+        }
+    }
+
+    if (idle)
+    {
+        lib_flag_display_idle(this);
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4700__11LibRendererFv);
 
@@ -1906,12 +3005,12 @@ void LibRenderer::begin_frame()
     unk408c = 0;
     packet_ticks = 0;
     cursor = buffers[buffer_index];
-    current_list = lists[buffer_index];
+    current_count = list_counts[buffer_index];
     buffer_index ^= 1;
     main_packet = 0;
     packet_start_time = 0;
 
-    if (current_list != 0 && manager->current_display != 0)
+    if (current_count != 0 && manager->current_display != 0)
     {
         D_001B65C8 = func_004DBCA0(display, 0);
         unk40b0 = 0;
@@ -1937,7 +3036,7 @@ LibRenderer::~LibRenderer()
     for (s32 i = 0; i < 32; i++)
     {
         delete[] unk43d8[i];
-        unkc070[i]->destroy();
+        cameras[i]->destroy();
     }
 
     unk4458->destroy();
@@ -1968,14 +3067,79 @@ LibClass178B70::~LibClass178B70()
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D5160);
+extern "C" s16 D_004ED300[11];
+
+/**
+ * @brief Build the renderer's members, passes and per-layer cameras, then draw on a display.
+ * @param target Display to draw on.
+ */
+LibRenderer::LibRenderer(LibCameraContext* target)
+{
+    light_list = 0;
+    manager = 0;
+    bucket_packet_busy = 0;
+    main_packet_busy = 0;
+    unk40ca = 0;
+    unk40b4 = 0;
+    unk40c4 = 0;
+    fade_distance = 0.25f;
+    unk40ce = 1;
+    unk40cc = 0;
+    unk40cd = 0;
+    sphere_buffer = 0;
+    unk40d2 = 0;
+    box_cull_enabled = 1;
+    buffer_index = 0;
+    list_counts[0] = 0;
+    list_counts[1] = 0;
+    visible_count = 0;
+    unk7c = new (0) u8[0x2000];
+    cursor = 0;
+    u32 address = 0x70000000;
+
+    for (s32 i = 0; i < 11; i++)
+    {
+        buckets[i] = reinterpret_cast<LibTransformOwner**>(address);
+        address += D_004ED300[i] * 4;
+    }
+
+    unk4458 = reinterpret_cast<LibRendererPass*>(new (0) LibClass174840(target));
+    unk445c = reinterpret_cast<LibRendererPass*>(new (0) LibClass1747C0);
+    unk4460 = reinterpret_cast<LibRendererPass*>(new (0) LibClass172750);
+    unk4464 = reinterpret_cast<LibRendererPass*>(new (0) LibClass1726C0);
+    unk4468 = reinterpret_cast<LibRendererPass*>(new (0) LibClass172630);
+    extra = reinterpret_cast<LibRendererExtra*>(new (0) LibClass1727E0);
+    unk43d4 = 0;
+
+    for (s32 layer = 0; layer < 32; layer++)
+    {
+        cameras[layer] = new (0) LibCamera(target);
+    }
+
+    memset_guess(layers, 0, sizeof(layers));
+
+    for (s32 layer = 0; layer < 32; layer++)
+    {
+        unk43d8[layer] = 0;
+        cameras[layer]->horizontal_fov = 0.7853982f;
+        cameras[layer]->set_centre(2048.0f, 2048.0f);
+        cameras[layer]->width_scale = 1.0f;
+        cameras[layer]->unk270 = 1.0f;
+        cameras[layer]->unk3d1 = 1;
+        unk8770[layer].layer = layer + 1;
+        unk5770[layer].layer = layer + 1;
+    }
+
+    set_display(target);
+    FlushCache(0);
+}
 
 /** @brief Start with nothing displayed and object kind bit 2 set. */
 LibClass178F30::LibClass178F30()
 {
     unk94 = 0;
-    unk90 = 0;
-    unk95 = 0;
+    current_display = 0;
+    effect_enabled = 0;
     object_kind |= 4;
 }
 
@@ -3017,9 +4181,10 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update__22LibPa
  *
  * A nonempty record list with no matching selector reports success and keeps
  * the previous target. Failed lookups also leave that target unchanged.
+ * @param model Model the channel belongs to; unused.
  * @return False for a missing resource, empty record list or unsupported matching storage kind; true otherwise.
  */
-bool LibPaletteBlendChannel::load_resource()
+bool LibPaletteBlendChannel::load_resource(LibModel* model)
 {
     if (resource == 0)
     {
@@ -4831,7 +5996,60 @@ void LibDisplayManager::prepare_camera()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update__14LibClass178F30Fv);
+/**
+ * @brief Update the nodes and, with the depth effect on, project each level's far and near distances through the
+ *        current camera into the effect display's depths, then rebuild its effect packets.
+ */
+void LibClass178F30::update()
+{
+    s32 i;
+
+    unk94 = 0;
+    update_nodes();
+
+    if (effect_enabled)
+    {
+        LibCamera* camera = static_cast<LibCamera*>(current_display);
+        float half_width = (camera->screen_max.x - camera->screen_min.x) / 2.0f;
+        float distance = half_width / func_00141EC0(0.34906584f);
+        float scale = camera->unk244 / distance;
+        float step = 200.0f * (camera->unk24c * (camera->unk24c * (scale * (scale * (distance * distance / (camera->projection_distance * camera->projection_distance))))));
+        vu0_start_microprogram_1f0_vf5_vf8(&camera->projection_matrix);
+        s32 level = effect_level;
+
+        for (i = 0; i < level; i++)
+        {
+            FieldVec4A far_point(0.0f, 0.0f, camera->unk244 + step * (1.0f + i), 1.0f);
+
+            if (!(far_point.z <= camera->screen_max.z))
+            {
+                far_point.z = camera->screen_max.z;
+            }
+
+            vu0_start_microprogram_vf5(&far_point);
+            vu0_wait_microprogram();
+            vu0_read_vf6(&far_point);
+            effect_display->set_effect_first_depth(i, (s32)far_point.z);
+
+            if (unk96)
+            {
+                FieldVec4A near_point(0.0f, 0.0f, camera->unk244 - 0.2f * step * (1.0f + i), 1.0f);
+
+                if (near_point.z < 10.0f)
+                {
+                    near_point.z = 10.0f;
+                }
+
+                vu0_start_microprogram_vf5(&near_point);
+                vu0_wait_microprogram();
+                vu0_read_vf6(&near_point);
+                effect_display->set_effect_second_depth(i, (s32)near_point.z);
+            }
+        }
+
+        func_004DE500(effect_display);
+    }
+}
 
 /** 0x80-byte packet a ring slot holds: two float quadwords around ten doubleword fields. */
 struct LibRingPacket
@@ -4928,9 +6146,132 @@ extern "C" void* func_004DB5B0(u32 size)
     return memory;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DB600__16LibCameraContextFP14LibScreenClearsssssUcUcUcUcUi);
+/**
+ * @brief Build a clear packet like build_clear, for the second drawing context (TEST_2, PRIM context bit).
+ * @param clear Packet to fill.
+ * @param depth_method Depth test restored after the clear; 0 leaves depth testing off.
+ * @param x Left edge in GS coordinates.
+ * @param y Top edge in GS coordinates.
+ * @param width Width in pixels.
+ * @param height Height in pixels.
+ * @param red Red component.
+ * @param green Green component.
+ * @param blue Blue component.
+ * @param alpha Alpha component.
+ * @param depth Depth the cleared pixels get.
+ */
+void LibCameraContext::func_004DB600(LibScreenClear* clear, s16 depth_method, s16 x, s16 y, s16 width, s16 height, u8 red,
+                                     u8 green, u8 blue, u8 alpha, u32 depth)
+{
+    clear->test.address = GS_REGISTER_TEST_2;
+    clear->test.data = 0x30000;
+    clear->prim.address = GS_REGISTER_PRIM;
+    clear->prim.data = GS_PRIM_SPRITE | 0x200;
+    clear->color.address = GS_REGISTER_RGBAQ;
+    clear->color.data = (u64)red | (u64)green << 8 | (u64)blue << 16 | (u64)alpha << 24 | (u64)0x3F800000 << 32;
+    s32 strips = width / 32;
+    s32 i;
+    GsRegisterValue* vertex;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", build_clear__16LibCameraContextFP14LibScreenClearsssssUcUcUcUcUi);
+    for (i = 0; i < strips; i++)
+    {
+        vertex = &clear->vertices[i * 2];
+        vertex->address = GS_REGISTER_XYZ2;
+        vertex->data = (u64)depth << 32 | ((u64)(y << 4) << 16 | ((x + i * 32) << 4));
+        vertex = &clear->vertices[i * 2 + 1];
+        vertex->address = GS_REGISTER_XYZ2;
+        vertex->data = (u64)depth << 32 | ((x + i * 32 + 32) << 4 | (u64)((y + height) << 4) << 16);
+    }
+
+    // TODO: Padding vertices go to XYZ3, which doesn't draw; only holding the address in a local matches.
+    u64 no_kick = GS_REGISTER_XYZ3;
+
+    for (; i < LIB_SCREEN_CLEAR_STRIP_COUNT; i++)
+    {
+        vertex = &clear->vertices[i * 2];
+        vertex->address = no_kick;
+        vertex->data = (u64)depth << 32 | (x << 4 | (u64)(y << 4) << 16);
+        vertex = &clear->vertices[i * 2 + 1];
+        vertex->address = no_kick;
+        vertex->data = (u64)depth << 32 | (x << 4 | (u64)(y << 4) << 16);
+    }
+
+    clear->restore_test.address = GS_REGISTER_TEST_2;
+
+    if (depth_method)
+    {
+        clear->restore_test.data = (u64)(depth_method & 3) << 17 | 0x10000;
+    }
+    else
+    {
+        clear->restore_test.data = 0x30000;
+    }
+
+    ee_sync();
+}
+
+/**
+ * @brief Build a packet that clears a rectangle in 32-pixel-wide sprite strips with depth testing off, then restores
+ *        the depth test.
+ * @param clear Packet to fill.
+ * @param depth_method Depth test restored after the clear; 0 leaves depth testing off.
+ * @param x Left edge in GS coordinates.
+ * @param y Top edge in GS coordinates.
+ * @param width Width in pixels.
+ * @param height Height in pixels.
+ * @param red Red component.
+ * @param green Green component.
+ * @param blue Blue component.
+ * @param alpha Alpha component.
+ * @param depth Depth the cleared pixels get.
+ */
+void LibCameraContext::build_clear(LibScreenClear* clear, s16 depth_method, s16 x, s16 y, s16 width, s16 height, u8 red,
+                                   u8 green, u8 blue, u8 alpha, u32 depth)
+{
+    clear->test.address = GS_REGISTER_TEST_1;
+    clear->test.data = 0x30000;
+    clear->prim.address = GS_REGISTER_PRIM;
+    clear->prim.data = GS_PRIM_SPRITE;
+    clear->color.address = GS_REGISTER_RGBAQ;
+    clear->color.data = (u64)red | (u64)green << 8 | (u64)blue << 16 | (u64)alpha << 24 | (u64)0x3F800000 << 32;
+    s32 strips = width / 32;
+    s32 i;
+    GsRegisterValue* vertex;
+
+    for (i = 0; i < strips; i++)
+    {
+        clear->vertices[i * 2].address = GS_REGISTER_XYZ2;
+        clear->vertices[i * 2].data = (u64)depth << 32 | ((u64)(y << 4) << 16 | ((x + i * 32) << 4));
+        clear->vertices[i * 2 + 1].address = GS_REGISTER_XYZ2;
+        // TODO: The game computes this value before the vertex address; only this assignment form does that.
+        (vertex = &clear->vertices[i * 2 + 1])->data =
+            (u64)depth << 32 | ((x + i * 32 + 32) << 4 | (u64)((y + height) << 4) << 16);
+    }
+
+    u64 no_kick = GS_REGISTER_XYZ3;
+
+    for (; i < LIB_SCREEN_CLEAR_STRIP_COUNT; i++)
+    {
+        clear->vertices[i * 2].address = no_kick;
+        clear->vertices[i * 2].data = (u64)depth << 32 | (x << 4 | (u64)(y << 4) << 16);
+        clear->vertices[i * 2 + 1].address = no_kick;
+        vertex = &clear->vertices[i * 2 + 1];
+        vertex->data = (u64)depth << 32 | (x << 4 | (u64)(y << 4) << 16);
+    }
+
+    clear->restore_test.address = GS_REGISTER_TEST_1;
+
+    if (depth_method)
+    {
+        clear->restore_test.data = (u64)(depth_method & 3) << 17 | 0x10000;
+    }
+    else
+    {
+        clear->restore_test.data = 0x30000;
+    }
+
+    ee_sync();
+}
 
 /**
  * @brief Queue the packets that draw a rectangle into both draw buffers, using the next free pair of packets.

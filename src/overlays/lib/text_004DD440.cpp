@@ -1,9 +1,11 @@
+#include "angle.h"
 #include "include_asm.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/camera_vu0.h"
 #include "overlays/lib/light_vu0.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/height_grid.h"
 #include "overlays/lib/tracks.h"
 #include "overlays/lib/tooltip_frame.h"
 #include "overlays/lib/item_allocation.h"
@@ -460,11 +462,197 @@ void LibCameraContext::build_scaled_packets()
     packet_set ^= 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DE500);
+/** Packet head of func_004DF270: the context-2 setup and the sprite strips' GIF tag. */
+struct LibAlphaFillHead
+{
+    GsGifTag setup_tag;
+    GsRegisterValue frame;
+    GsRegisterValue frame_alpha;
+    GsRegisterValue test;
+    GsRegisterValue depth_buffer;
+    GsRegisterValue primitive;
+    GsRegisterValue color;
+    GsGifTag strip_tag;
+};
+
+/** Packet tail of func_004DF270: restores context 2's frame and depth buffers. */
+struct LibAlphaFillTail
+{
+    GsGifTag tag;
+    GsRegisterValue frame;
+    GsRegisterValue depth_buffer;
+};
+
+extern "C" u32 func_004DF270(LibCameraContext* display, LibAlphaFillHead* head, s32 width, s32 height, s32 alpha,
+                             u32 depth);
+
+/**
+ * @brief Build the display effect's packet in the next effect buffer: for each level, an alpha fill and a copy of the
+ * frame offset around a circle, a first pass and an optional second pass with its own depths.
+ * @param display Display.
+ */
+extern "C" void func_004DE500(LibCameraContext* display)
+{
+    if (!display->effect_enabled && display->effect_level != 0)
+    {
+        return;
+    }
+
+    display->unk3CB0 ^= 1;
+    display->unk3C90[display->unk3CB0] = 0;
+    u8* packet = display->effect_buffers[display->unk3CB0];
+
+    if (packet == 0)
+    {
+        return;
+    }
+
+    u32 size = 0;
+    u32 depth_mask = 0xFFFF;
+
+    if (display->display_area.depth_format == GS_PSMZ32)
+    {
+        depth_mask = 0xFFFFFFFF;
+    }
+    else if (display->display_area.depth_format == GS_PSMZ24)
+    {
+        depth_mask = 0xFFFFFF;
+    }
+
+    if (display->effect_first_flag)
+    {
+        u32 count = func_004DF270(display, reinterpret_cast<LibAlphaFillHead*>(packet), display->display_area.width,
+                                  display->display_area.height, 0, depth_mask);
+        packet += count * 16;
+        size += count;
+    }
+
+    for (s32 i = 0; i < display->effect_level; i++)
+    {
+        float radius = display->effect_first_scale +
+            i * (display->effect_second_scale - display->effect_first_scale) / (display->effect_level - 1);
+        float angle = TWO_PI * i;
+        s32 x = radius * (16.0f * cosf_guess(angle / display->effect_level));
+        s32 y = radius * (16.0f * sinf_guess(angle / display->effect_level));
+        u32 count;
+
+        if (display->effect_first_flag)
+        {
+            count = func_004DF270(display, reinterpret_cast<LibAlphaFillHead*>(packet), display->display_area.width,
+                                  display->display_area.height, i + 0x40, display->effect_first_depths[i]);
+            packet += count * 16;
+            size += count;
+            count = func_004DEA70(display, packet, 0, display->buffers[0].environment.context2.frame.base_pointer,
+                                  display->display_area.unk10, display->display_area.width, display->display_area.height,
+                                  display->display_area.width, display->display_area.height,
+                                  display->effect_first_depths[i], 1, 0x80, x, y, i + 0x40,
+                                  i == display->effect_level - 1 && !display->effect_second_flag, 0, 0, -1, -1);
+        }
+        else
+        {
+            count = func_004DEA70(display, packet, 0, display->buffers[0].environment.context2.frame.base_pointer,
+                                  display->display_area.unk10, display->display_area.width, display->display_area.height,
+                                  display->display_area.width, display->display_area.height,
+                                  display->effect_first_depths[i], 1, 0x40, x, y, 0,
+                                  i == display->effect_level - 1 && !display->effect_second_flag, 0, 0, -1, -1);
+        }
+
+        packet += count * 16;
+        size += count;
+    }
+
+    if (display->effect_second_flag)
+    {
+        u32 count = func_004DF270(display, reinterpret_cast<LibAlphaFillHead*>(packet), display->display_area.width,
+                                  display->display_area.height, 0x80, display->effect_mask);
+        packet += count * 16;
+        size += count;
+        float alpha = 0.75f;
+
+        for (s32 i = 0; i < display->effect_level; i++)
+        {
+            float radius = display->effect_first_scale +
+                i * (display->effect_second_scale - display->effect_first_scale) / (display->effect_level - 1);
+            float angle = TWO_PI * i;
+            s32 x = radius * (24.0f * lib_cosine_degree9(angle / display->effect_level));
+            s32 y = radius * (24.0f * lib_sine_degree9(angle / display->effect_level));
+            count = func_004DF270(display, reinterpret_cast<LibAlphaFillHead*>(packet), display->display_area.width,
+                                  display->display_area.height, 0, display->effect_second_depths[i]);
+            packet += count * 16;
+            size += count;
+            count = func_004DEA70(display, packet, 0, display->buffers[0].environment.context2.frame.base_pointer,
+                                  display->display_area.unk10, display->display_area.width, display->display_area.height,
+                                  display->display_area.width, display->display_area.height, depth_mask, 1,
+                                  (s32)(128.0f * alpha), x, y, 1, i == display->effect_level - 1 ? 1 : 0, 0, 0, -1, -1);
+            packet += count * 16;
+            size += count;
+        }
+    }
+
+    display->unk3CA8[display->unk3CB0] = display->effect_buffers[display->unk3CB0];
+    display->unk3C90[display->unk3CB0] = size;
+    FlushCache(0);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DEA70);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004DF270);
+/**
+ * @brief Build a packet that writes an alpha value into the frame buffer wherever the depth test against a depth
+ * passes, with sprites 64 pixels wide over a centred area. Only the alpha channel and no depth are written.
+ * @param display Display whose first buffer's frame and depth buffer context 2 uses.
+ * @param head Packet to build.
+ * @param width Area width in pixels.
+ * @param height Area height in pixels.
+ * @param alpha Alpha value to write.
+ * @param depth Depth the sprites are drawn at.
+ * @return Packet size in quadwords.
+ */
+extern "C" u32 func_004DF270(LibCameraContext* display, LibAlphaFillHead* head, s32 width, s32 height, s32 alpha,
+                             u32 depth)
+{
+    u64* vertex = reinterpret_cast<u64*>(head);
+    head->setup_tag.tag = GIF_TAG_NREG(1) | 6;
+    head->setup_tag.registers = 0;
+    head->setup_tag.fields.register0 = GIF_REGISTER_AD;
+    head->frame.data =
+        *reinterpret_cast<const u64*>(&display->buffers[0].environment.context1.frame) | ((u64)0xFFFFFF << 32);
+    head->frame.address = GS_REGISTER_FRAME_2;
+    head->frame_alpha.data = 0;
+    head->frame_alpha.address = GS_REGISTER_FBA_2;
+    head->test.data = 0x50000;
+    head->test.address = GS_REGISTER_TEST_2;
+    head->depth_buffer.data =
+        *reinterpret_cast<const u32*>(&display->buffers[0].environment.context1.depth_buffer) | ((u64)1 << 32);
+    head->depth_buffer.address = GS_REGISTER_ZBUF_2;
+    head->primitive.data = 0x206;
+    head->primitive.address = GS_REGISTER_PRIM;
+    head->color.data = (u32)((alpha << 24) | 0x10101);
+    head->color.address = GS_REGISTER_RGBAQ;
+    s32 left = (GS_COORDINATE_CENTRE - (width >> 1)) * 16;
+    s32 top = (GS_COORDINATE_CENTRE - (height >> 1)) * 16;
+    head->strip_tag.tag = (width + 63) / 64 | GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST;
+    head->strip_tag.registers = 0;
+    head->strip_tag.fields.register0 = GIF_REGISTER_XYZ2;
+    head->strip_tag.fields.register1 = GIF_REGISTER_XYZ2;
+    vertex += sizeof(LibAlphaFillHead) / sizeof(u64);
+
+    for (s32 x = 0; x < width; x += 64)
+    {
+        vertex[0] = (s64)(left + x * 16) | (s64)top << 16 | (u64)depth << 32;
+        vertex[1] = (s64)(left + (x + 64) * 16) | (s64)(top + height * 16) << 16 | (u64)depth << 32;
+        vertex += 2;
+    }
+
+    LibAlphaFillTail* tail = reinterpret_cast<LibAlphaFillTail*>(vertex);
+    tail->tag.tag = GIF_TAG_NREG(1) | 2;
+    tail->tag.registers = 0;
+    tail->tag.fields.register0 = GIF_REGISTER_AD;
+    tail->frame.data = *reinterpret_cast<const u64*>(&display->buffers[0].environment.context1.frame);
+    tail->frame.address = GS_REGISTER_FRAME_2;
+    tail->depth_buffer.data = *reinterpret_cast<const u32*>(&display->buffers[0].environment.context1.depth_buffer);
+    tail->depth_buffer.address = GS_REGISTER_ZBUF_2;
+    return (u32)((u8*)(tail + 1) - (u8*)head) >> 4;
+}
 
 /**
  * @brief Set the colour every draw buffer is cleared to.
@@ -965,22 +1153,6 @@ s32 LibClass178FC0::func_004E10B0(s32 size)
     return 1;
 }
 
-/**
- * @brief Test whether a list walk has come back to the list.
- * @param list List sentinel.
- * @param node Current node.
- * @return Whether node is the sentinel.
- */
-static inline bool at_list_end(const LibListSentinel* list, const LibListSentinel* node)
-{
-    if (list == node)
-    {
-        return true;
-    }
-
-    return false;
-}
-
 /** Node of LibClass178FC0's list; slot 0x28 writes into the owner's packet. */
 class LibPacketListNode : public LibListObject
 {
@@ -1088,8 +1260,8 @@ void LibCamera::initialize_projection(const LibCameraContext* context)
     unk3c8 = 10;
     unk3cc = 16770000;
     unk3d2 = 1;
-    unk280 = 2048.0f;
-    unk284 = 2048.0f;
+    centre_x = 2048.0f;
+    centre_y = 2048.0f;
     pixel_aspect = (1.3333334f * (1.0714285f * context->display_area.height)) / context->display_area.width;
     width_scale = 1.0f;
     unk270 = 1.0f;
@@ -1267,8 +1439,8 @@ void LibCamera::copy_view_and_fog(const LibCamera* source)
     pixel_aspect = source->pixel_aspect;
     screen_min = source->screen_min;
     screen_max = source->screen_max;
-    unk280 = source->unk280;
-    unk284 = source->unk284;
+    centre_x = source->centre_x;
+    centre_y = source->centre_y;
     unk3d2 = source->unk3d2;
     width_scale = source->width_scale;
     unk254 = source->unk254;
@@ -1361,7 +1533,33 @@ void LibCamera::func_004E2120()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E22B0);
+/**
+ * @brief Build the projection and clip matrices for a screen grown by a step, keeping its aspect, and write the
+ * camera's projection and clip matrices into its uncached step packet.
+ * @param camera Camera.
+ * @param step Pixels added to the screen width.
+ * @param projection Receives the stepped projection matrix, converted by func_004CECD0.
+ * @param clip Receives the stepped clip matrix, converted by func_004CECD0.
+ */
+extern "C" void func_004E22B0(LibCamera* camera, s32 step, LibMatrix44Value* projection, LibMatrix44Value* clip)
+{
+    s32 width = camera->unk3c8 + step;
+    s32 height = (s64)camera->unk3cc * width / camera->unk3c8;
+    LibMatrix44Value matrix;
+    func_004CFD80(&matrix, camera->projection_distance, camera->pixel_aspect, camera->centre_x - camera->unk3e0,
+                  camera->centre_y - camera->unk3e4, width, height, camera->screen_min.z, camera->screen_max.z);
+    *projection = func_004CECD0(matrix);
+    func_004CFA30(&matrix, reinterpret_cast<const FieldVec4A*>(&camera->screen_min),
+                  reinterpret_cast<const FieldVec4A*>(&camera->screen_max), camera->projection_distance,
+                  camera->pixel_aspect, camera->centre_x - camera->unk3e0, camera->centre_y - camera->unk3e4, width, height);
+    *clip = func_004CECD0(matrix);
+    LibCameraStepPacket* packet = (LibCameraStepPacket*)((u32)&camera->unk5c0.step | EE_UNCACHED_ACCELERATED);
+    ee_transpose_matrix(&packet->projection, &camera->projection_matrix);
+    ((unsigned __int128*)&packet->clip)[0] = ((const unsigned __int128*)&camera->unk380)[0];
+    ((unsigned __int128*)&packet->clip)[1] = ((const unsigned __int128*)&camera->unk380)[1];
+    ((unsigned __int128*)&packet->clip)[2] = ((const unsigned __int128*)&camera->unk380)[2];
+    ((unsigned __int128*)&packet->clip)[3] = ((const unsigned __int128*)&camera->unk380)[3];
+}
 
 #define LIB_FACE_CAMERA_FOV 1.5707964f
 
@@ -1409,7 +1607,7 @@ void LibCamera::update_projection()
         screen_min.z = projection_distance / 16.0f;
     }
 
-    func_004CFD80(&projection_matrix, projection_distance, pixel_aspect, unk280 - unk3e0, unk284 - unk3e4, unk3c8, unk3cc, screen_min.z,
+    func_004CFD80(&projection_matrix, projection_distance, pixel_aspect, centre_x - unk3e0, centre_y - unk3e4, unk3c8, unk3cc, screen_min.z,
                   screen_max.z);
     vu0_start_microprogram_1f0_vf5_vf8(&projection_matrix);
     FieldVec4A centre(0.0f, 0.0f, projection_distance * unk270, 1.0f);
@@ -1421,7 +1619,7 @@ void LibCamera::update_projection()
     vu0_read_vf6(&centre);
     centre_depth = centre.z;
     LibMatrix44Value clip;
-    func_004CFA30(&clip, &low, &high, projection_distance, pixel_aspect, unk280 - unk3e0, unk284 - unk3e4, unk3c8, unk3cc);
+    func_004CFA30(&clip, &low, &high, projection_distance, pixel_aspect, centre_x - unk3e0, centre_y - unk3e4, unk3c8, unk3cc);
     unk380 = func_004CECD0(clip);
     func_004E1670(this);
 }
@@ -1448,7 +1646,7 @@ LibCamera::~LibCamera()
     delete unk860;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E29E0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __ct__9LibCameraFPv);
 
 /**
  * @brief Send the packet on VIF1 in normal mode.
@@ -1976,7 +2174,7 @@ void LibPooledVectorTrack::return_to_pool()
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorCurveTrack::append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key)
+bool LibVectorCurveTrack::append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key)
 {
     if (key_array == 0)
     {
@@ -2005,7 +2203,7 @@ s32 LibVectorCurveTrack::append_curve_key(const FieldVec4A* value, const FieldVe
  * @param key Key the keyframe sits at.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorCurveTrack::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibVectorCurveTrack::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     FieldVec4A zero_first;
     FieldVec4A zero_second;
@@ -2023,7 +2221,7 @@ s32 LibVectorCurveTrack::append_key(const void* value, const void* in_tangent, c
  * @param out_tangent Tangent leaving the key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorCurveTrack::replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent)
+bool LibVectorCurveTrack::replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent)
 {
     if (key_array == 0)
     {
@@ -2057,7 +2255,7 @@ s32 LibVectorCurveTrack::replace_curve_key(s32 index, float key, const FieldVec4
  * @param out_tangent Tangent leaving the key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorCurveTrack::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibVectorCurveTrack::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     FieldVec4A zero_first;
     FieldVec4A zero_second;
@@ -2201,7 +2399,7 @@ void LibVectorTrack::get_value_rate(void* output) const
  * @param key Sort key, stored in the value's w.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorKeyTrack::on_append_key(const FieldVec4A* value, float key)
+bool LibVectorKeyTrack::on_append_key(const FieldVec4A* value, float key)
 {
     if (key_array == 0)
     {
@@ -2229,7 +2427,7 @@ s32 LibVectorKeyTrack::on_append_key(const FieldVec4A* value, float key)
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorKeyTrack::on_replace_key(s32 index, float key, const FieldVec4A* value)
+bool LibVectorKeyTrack::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     if (key_array == 0)
     {
@@ -2357,7 +2555,7 @@ s16 LibVectorCurveTrackBase::get_key_capacity()
  * @param key Key the keyframe sits at.
  * @return Zero.
  */
-s32 LibVectorCurveTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+bool LibVectorCurveTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return 0;
 }
@@ -2371,7 +2569,7 @@ s32 LibVectorCurveTrackBase::on_append_key(const FieldVec4A* value, const FieldV
  * @param second Second auxiliary vector.
  * @return Zero.
  */
-s32 LibVectorCurveTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+bool LibVectorCurveTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return 0;
 }
@@ -2794,7 +2992,7 @@ s32 LibVectorTrackBase::on_insert_key(s32 index, float key, const FieldVec4A* va
  * @param out_tangent Unused.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibVectorTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const FieldVec4A*>(value));
 }
@@ -2806,7 +3004,7 @@ s32 LibVectorTrackBase::replace_key(s32 index, float key, const void* value, con
  * @param value Keyframe value.
  * @return Zero.
  */
-s32 LibVectorTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value)
+bool LibVectorTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     return 0;
 }
@@ -2819,7 +3017,7 @@ s32 LibVectorTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* v
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibVectorTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const FieldVec4A*>(value), key);
 }
@@ -2830,7 +3028,7 @@ s32 LibVectorTrackBase::append_key(const void* value, const void* in_tangent, co
  * @param key Sort key.
  * @return Zero.
  */
-s32 LibVectorTrackBase::on_append_key(const FieldVec4A* value, float key)
+bool LibVectorTrackBase::on_append_key(const FieldVec4A* value, float key)
 {
     return 0;
 }
@@ -3011,7 +3209,7 @@ s32 LibVectorCurveTrack::insert_curve_key(s32 index, float key, const FieldVec4A
  * @param key Key the keyframe sits at.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorCurveTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibVectorCurveTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
 }
@@ -3025,7 +3223,7 @@ s32 LibVectorCurveTrackBase::append_key(const void* value, const void* in_tangen
  * @param out_tangent Tangent leaving the key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibVectorCurveTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibVectorCurveTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
 }
@@ -3296,7 +3494,105 @@ extern "C" void lib_factor_tooltip_show(EquipFactorTooltip* object, s16 identifi
     object->unkab = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_00412C40__18EquipFactorTooltipFUiUiUi);
+/**
+ * @brief Lay the tooltip out on the step after it was shown: size the factor texts to its depth, fit the frame around
+ * them and keep it on screen; then fade it in.
+ * @param first Unused.
+ * @param second Unused.
+ * @param third Unused.
+ */
+void EquipFactorTooltip::func_00412C40(bool first, bool second, bool third)
+{
+    switch (unka0c)
+    {
+    case 1:
+    {
+        s32 slot = g_field_runtime->text_banks[1].resource_slot;
+        float width = 0.0f;
+        float height = width;
+        float scale = position_z / 24.0f;
+        float spacing = 2.0f * scale;
+        float step = position_z + spacing;
+        float y = 6.0f;
+        LibTextWidget* text = factor_texts;
+
+        for (s32 i = 0; i < 8; i++, text++)
+        {
+            if (factor_ids[i])
+            {
+                lib_text_set_resource(text, slot, factor_ids[i], 0);
+                text->unk18.unk04 = y;
+                text->unk8c = spacing;
+                text->draw_scale_y = scale;
+                text->draw_scale = scale;
+                text->unk3d = 1;
+                LibTextExtent* extent = lib_text_measure_bounds(text);
+
+                if (!(extent->width <= width))
+                {
+                    width = extent->width;
+                }
+
+                height += extent->height + spacing;
+            }
+            else
+            {
+                text->unk3d = 0;
+            }
+
+            y += step;
+        }
+
+        width += 12.0f;
+        height += 12.0f;
+        frame.unk18.unk08 = width;
+        frame.unk18.unk0c = height;
+        frame.needs_redraw = 1;
+        float x = position_x;
+        float top = position_y;
+        float right = x + width + 16.0f;
+
+        if (!(right <= g_field_runtime->unk524))
+        {
+            x -= right - g_field_runtime->unk524;
+        }
+
+        float bottom = top + height + 16.0f;
+
+        if (!(bottom <= g_field_runtime->unk528))
+        {
+            top -= bottom - g_field_runtime->unk528;
+        }
+
+        if (top < position_y)
+        {
+            float above = position_y - 37.0f;
+
+            if (!(above - 16.0f < height))
+            {
+                top = above - height;
+            }
+        }
+
+        set_position(x, top);
+        unkE0 = 0.0f;
+        unka0c++;
+        break;
+    }
+
+    case 2:
+        unkE0 += 32.0f * field_rate(g_field_runtime);
+
+        if (!(unkE0 < 128.0f))
+        {
+            unkE0 = 128.0f;
+            unka0c = 0;
+        }
+
+        geometry_dirty = 1;
+        break;
+    }
+}
 
 /**
  * @brief Allocate the frame's drawing storage and mark it ready.
@@ -3350,6 +3646,76 @@ extern "C" s32 lib_factor_tooltip_init(EquipFactorTooltip* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", draw__17EquipTooltipFrameFv);
+/**
+ * @brief Read a container's alpha, which scales its widgets' alpha.
+ * @param container Container.
+ * @return Alpha, 128 for opaque.
+ */
+static inline float lib_container_alpha(const LibContainer* container)
+{
+    return container->unkE0;
+}
+
+/**
+ * @brief Pack an XYZ2 value.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Depth.
+ * @return XYZ2 register value.
+ */
+static inline u64 lib_frame_xyz(s32 x, s32 y, s32 z)
+{
+    return (u64)z << 32 | ((u64)x | (u64)y << 16);
+}
+
+/** @brief Build the packet once: a background inset by two pixels, then a two-pixel border on each side. */
+void EquipTooltipFrame::draw()
+{
+    if (!unk3b)
+    {
+        LibContainer* owner = container;
+        LibCallbackTransform& transform = *owner;
+        float alpha = (draw_alpha * lib_container_alpha(owner)) / 128.0f;
+        float left = transform.translation.x + unk18.unk00;
+        float top = transform.translation.y + unk18.unk04;
+        s32 depth = transform.unka4;
+        FieldRuntime* runtime = g_field_runtime;
+        float scale_x = runtime->screen_scale_x;
+        float offset_x = runtime->screen_offset_x;
+        float scale_y = runtime->screen_scale_y;
+        float offset_y = runtime->screen_offset_y;
+        float right = left + unk18.unk08;
+        float bottom = top + unk18.unk0c;
+        u64 color = (u32)alpha << 24;
+        u64* cursor = reinterpret_cast<u64*>(unk40.dma_address);
+        packet = packet_tag = cursor;
+        cursor[0] = 0x70000008;
+        cursor[2] = GIF_TAG_NREG(14) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+        cursor[3] = 0x00F5555555515510;
+        cursor[4] = 0x246;
+        cursor[5] = color | 0xA0D0D0;
+        s32 inner_top = (s32)(offset_y + (2.0f + top) * scale_y);
+        s32 outer_top = (s32)(offset_y + top * scale_y);
+        s32 inner_left = (s32)(offset_x + (2.0f + left) * scale_x);
+        s32 outer_left = (s32)(offset_x + left * scale_x);
+        s32 inner_bottom = (s32)(offset_y + scale_y * (bottom - 2.0f));
+        s32 outer_bottom = (s32)(offset_y + scale_y * bottom);
+        s32 inner_right = (s32)(offset_x + scale_x * (right - 2.0f));
+        s32 outer_right = (s32)(offset_x + scale_x * right);
+        cursor[6] = lib_frame_xyz(inner_left, inner_top, depth);
+        cursor[7] = lib_frame_xyz(inner_right, inner_bottom, depth);
+        cursor[8] = color | 0x80808;
+        cursor[9] = lib_frame_xyz(outer_left, outer_top, depth);
+        cursor[10] = lib_frame_xyz(outer_right, inner_top, depth);
+        cursor[11] = lib_frame_xyz(outer_left, inner_top, depth);
+        cursor[12] = lib_frame_xyz(inner_left, inner_bottom, depth);
+        cursor[13] = lib_frame_xyz(inner_right, inner_top, depth);
+        cursor[14] = lib_frame_xyz(outer_right, inner_bottom, depth);
+        cursor[15] = lib_frame_xyz(outer_left, inner_bottom, depth);
+        cursor[16] = lib_frame_xyz(outer_right, outer_bottom, depth);
+        cursor[17] = 0;
+        unk3b = 1;
+    }
+}
 
 

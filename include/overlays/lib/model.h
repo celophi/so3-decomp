@@ -23,9 +23,12 @@ struct LibMeshHeader
     u8 unk3c;
     u8 unk3d[3];
     s32 unk40;
-    u8 unk44[0xC];
+    u32 texture_scrolls_offset;
+    u32 image_sequences_offset;
+    u32 palette_blends_offset;
     u32 resident_mask;
     u16 unk54;
+    u8 unk56;
 };
 
 #define LIB_MODEL_PACKET_SET_COUNT 2
@@ -221,7 +224,7 @@ public:
      * @param set Packet set to select; only set zero when the list has a single payload.
      * @return The previously selected set, or -1 when the set isn't available.
      */
-    s32 select_payload_set(u8 set);
+    s32 select_payload_set(s32 set);
 
     /** @brief Once the list is empty, detach it, clear the model's payload and free the payload buffers. */
     void release_model();
@@ -431,7 +434,13 @@ struct LibClass174C20Header
 {
     s32 columns;
     s32 rows;
-    u8 unk08[0x18];
+    u8 unk08[8];
+    float normal_scale;
+    float speed;
+    float drop_strength;
+    u8 random_drops;
+    u8 unmasked;
+    u8 unk1e[2];
 };
 
 /** LibClass1734B0 entry with vtable D_1789C0 in main data; only its constructor and destructor are known. */
@@ -521,7 +530,7 @@ public:
     LibClass174C20Header* header;
     u32* unk34;
     u8* cursor;
-    u32 unk3c;
+    LibTransform* root;
     float* unk40;
     float* unk44;
     u32* unk48;
@@ -693,7 +702,9 @@ struct LibMeshPartRecord
 {
     u8 unk00[0x14];
     u16 unk14;
-    u8 unk16[0x2A];
+    u8 unk16[0x16];
+    u16 unk2c[4];
+    u8 unk34[0xC];
     LibModelPart part;
 };
 
@@ -909,6 +920,12 @@ public:
     /** @brief Update each render channel when the mesh asks for it. */
     void update_render_channels();
 
+    /**
+     * @brief Create the image sequence, texture scroll and palette blend channels the mesh lists, and mark the
+     *        textures the scroll and blend channels draw into.
+     */
+    void create_render_channels();
+
     /** @brief Write the pending part settings into the part records' GIF tags, then free them. */
     void apply_part_settings();
 
@@ -918,8 +935,12 @@ public:
      */
     s32 func_004A2870();
 
-    /** @brief Virtual slot 0xF0. */
-    virtual void func_slotF0();
+    /**
+     * @brief Virtual slot 0xF0: write the model's parts into its packet.
+     * @param count Value func_004A76D0 returned for the mesh, or zero.
+     * @param matrix Camera the model is drawn with.
+     */
+    virtual void func_slotF0(s32 count, const void* matrix);
 
     /**
      * @brief Extra quadwords to reserve in the model's draw packet; this model needs none.

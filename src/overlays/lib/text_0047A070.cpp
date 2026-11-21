@@ -244,8 +244,8 @@ extern "C" void func_0047A130(RowFillOwner* object, RowFillCell* cell, RowFillEl
             s32 count = object->unk10 - 1;
             angles.packed = angle_pair->packed;
             radii.packed = axis_radii->packed;
-            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
-            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            lib_compute_sine_cosine_pair(angles.floats[0], &first_trig);
+            lib_compute_sine_cosine_pair(angles.floats[1], &second_trig);
             float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
             float previous_y = radii.floats[1] * first_trig.w;
             float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
@@ -259,8 +259,8 @@ extern "C" void func_0047A130(RowFillOwner* object, RowFillCell* cell, RowFillEl
                 radii.floats[0] -= radius_step->floats[0];
                 radii.floats[1] -= radius_step->floats[1];
                 radii.floats[2] -= radius_step->floats[2];
-                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
-                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                lib_compute_sine_cosine_pair(angles.floats[0], &first_trig);
+                lib_compute_sine_cosine_pair(angles.floats[1], &second_trig);
                 float x = first_trig.z * (radii.floats[0] * second_trig.z);
                 position.floats[0] += x - previous_x;
                 previous_x = x;
@@ -694,8 +694,8 @@ extern "C" void func_0047A890(RowFillOwner* object, RowFillCell* cell, RowFillEl
             s32 count = object->unk10 - 1;
             angles.packed = angle_pair->packed;
             radii.packed = axis_radii->packed;
-            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
-            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            lib_compute_sine_cosine_pair(angles.floats[0], &first_trig);
+            lib_compute_sine_cosine_pair(angles.floats[1], &second_trig);
             float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
             float previous_y = radii.floats[1] * first_trig.w;
             float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
@@ -709,8 +709,8 @@ extern "C" void func_0047A890(RowFillOwner* object, RowFillCell* cell, RowFillEl
                 radii.floats[0] -= radius_step->floats[0];
                 radii.floats[1] -= radius_step->floats[1];
                 radii.floats[2] -= radius_step->floats[2];
-                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
-                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                lib_compute_sine_cosine_pair(angles.floats[0], &first_trig);
+                lib_compute_sine_cosine_pair(angles.floats[1], &second_trig);
                 float x = first_trig.z * (radii.floats[0] * second_trig.z);
                 position.floats[0] += x - previous_x;
                 previous_x = x;

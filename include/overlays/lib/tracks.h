@@ -125,9 +125,9 @@ public:
 
     virtual s32 get_cycle_count() const;
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -155,7 +155,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_append_key(const FieldVec4A* value, float key);
+    virtual bool on_append_key(const FieldVec4A* value, float key);
 
     /**
      * @brief Replace an indexed keyframe; the base ignores it.
@@ -164,7 +164,7 @@ public:
      * @param value Keyframe value.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
+    virtual bool on_replace_key(s32 index, float key, const FieldVec4A* value);
 
     /**
      * @brief Insert a keyframe at an index; the base ignores it.
@@ -245,9 +245,9 @@ public:
 
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
 
-    virtual s32 on_append_key(const FieldVec4A* value, float key);
+    virtual bool on_append_key(const FieldVec4A* value, float key);
 
-    virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
+    virtual bool on_replace_key(s32 index, float key, const FieldVec4A* value);
 
     virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
 
@@ -319,9 +319,9 @@ public:
 
     virtual s32 get_cycle_count() const;
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -349,7 +349,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_append_key(const float* value, float key);
+    virtual bool on_append_key(const float* value, float key);
 
     /**
      * @brief Replace an indexed keyframe; the base ignores it.
@@ -358,7 +358,7 @@ public:
      * @param value Keyframe value.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_replace_key(s32 index, float key, const float* value);
+    virtual bool on_replace_key(s32 index, float key, const float* value);
 
     /**
      * @brief Insert a keyframe at an index; the base ignores it.
@@ -430,9 +430,9 @@ public:
 
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
 
-    virtual s32 on_append_key(const float* value, float key);
+    virtual bool on_append_key(const float* value, float key);
 
-    virtual s32 on_replace_key(s32 index, float key, const float* value);
+    virtual bool on_replace_key(s32 index, float key, const float* value);
 
     virtual s32 on_insert_key(s32 index, float key, const float* value);
 
@@ -763,9 +763,9 @@ class LibVectorTrackBase : public LibClass173180
 
         virtual s32 get_cycle_count() const;
 
-        virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+        virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-        virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+        virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
         virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -793,7 +793,7 @@ class LibVectorTrackBase : public LibClass173180
          * @param key Sort key, stored in the value's w.
          * @return Nonzero when the keyframe was stored.
          */
-        virtual s32 on_append_key(const FieldVec4A* value, float key);
+        virtual bool on_append_key(const FieldVec4A* value, float key);
 
         /**
          * @brief Replace an indexed keyframe; the base ignores it.
@@ -802,7 +802,7 @@ class LibVectorTrackBase : public LibClass173180
          * @param value Keyframe value.
          * @return Nonzero when the keyframe was stored.
          */
-        virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
+        virtual bool on_replace_key(s32 index, float key, const FieldVec4A* value);
 
         /**
          * @brief Insert a keyframe at an index; the base ignores it.
@@ -878,9 +878,9 @@ class LibVectorKeyTrack : public LibVectorTrackBase
 
         virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
 
-        virtual s32 on_append_key(const FieldVec4A* value, float key);
+        virtual bool on_append_key(const FieldVec4A* value, float key);
 
-        virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value);
+        virtual bool on_replace_key(s32 index, float key, const FieldVec4A* value);
 
         virtual s32 on_insert_key(s32 index, float key, const FieldVec4A* value);
 
@@ -962,9 +962,9 @@ class LibQuaternionCurveTrackBase : public LibClass173180
 
         virtual s32 get_cycle_count() const;
 
-        virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+        virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-        virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+        virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
         virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -994,7 +994,7 @@ class LibQuaternionCurveTrackBase : public LibClass173180
          * @param key Sort key.
          * @return Nonzero when the keyframe was stored.
          */
-        virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+        virtual bool on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
         /**
          * @brief Replace an indexed keyframe; the base ignores it.
@@ -1005,7 +1005,7 @@ class LibQuaternionCurveTrackBase : public LibClass173180
          * @param second Second control value.
          * @return Nonzero when the keyframe was stored.
          */
-        virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+        virtual bool on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
         /**
          * @brief Insert a keyframe at an index; the base ignores it.
@@ -1100,9 +1100,9 @@ class LibPooledQuaternionCurveTrack : public LibQuaternionCurveTrackBase
     public:
         virtual ~LibPooledQuaternionCurveTrack();
 
-        virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+        virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-        virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+        virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
         virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -1143,7 +1143,7 @@ class LibPooledQuaternionCurveTrack : public LibQuaternionCurveTrackBase
          * @param key Sort key.
          * @return Nonzero when the keyframe was stored.
          */
-        virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused, float key);
+        virtual bool append_curve_key(const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused, float key);
 
         /**
          * @brief Replace an indexed keyframe and its control rotation.
@@ -1154,7 +1154,7 @@ class LibPooledQuaternionCurveTrack : public LibQuaternionCurveTrackBase
          * @param unused Unused.
          * @return Nonzero when the keyframe was stored.
          */
-        virtual s32 replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused);
+        virtual bool replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* control, const FieldVec4A* unused);
 
         /**
          * @brief Insert a keyframe and its control rotation at an index.
@@ -1219,9 +1219,9 @@ public:
 
     virtual s32 get_cycle_count() const;
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -1251,7 +1251,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
+    virtual bool on_append_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
     /**
      * @brief Replace an indexed keyframe; the base ignores it.
@@ -1262,7 +1262,7 @@ public:
      * @param out_tangent Outgoing tangent.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
+    virtual bool on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
 
     /**
      * @brief Insert a keyframe at an index; the base ignores it.
@@ -1312,7 +1312,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key) = 0;
+    virtual bool append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key) = 0;
 
     /**
      * @brief Set every key's tangents from a quadratic through it and its two neighbours (the first and last keys
@@ -1364,9 +1364,9 @@ public:
     {
     }
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -1393,7 +1393,7 @@ public:
      */
     FieldVec4A sample_once(float key);
 
-    virtual s32 append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
+    virtual bool append_curve_key(const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent, float key);
 
     /**
      * @brief Replace an indexed keyframe with both tangents.
@@ -1404,7 +1404,7 @@ public:
      * @param out_tangent Outgoing tangent.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
+    virtual bool replace_curve_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* in_tangent, const FieldVec4A* out_tangent);
 
     /**
      * @brief Insert a keyframe with both tangents.
@@ -1486,9 +1486,9 @@ public:
 
     virtual s32 get_cycle_count() const;
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -1518,7 +1518,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
+    virtual bool on_append_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
     /**
      * @brief Replace an indexed keyframe; the base ignores it.
@@ -1529,7 +1529,7 @@ public:
      * @param out_tangent Outgoing tangent.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
+    virtual bool on_replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
     /**
      * @brief Insert a keyframe at an index; the base ignores it.
@@ -1579,7 +1579,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key) = 0;
+    virtual bool append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key) = 0;
 
     /** @brief Delete the key storage unless it is external, and clear the key pointer. */
     void free_keys();
@@ -1613,9 +1613,9 @@ public:
     {
     }
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -1633,7 +1633,7 @@ public:
 
     virtual float sample(float key);
 
-    virtual s32 append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
+    virtual bool append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key);
 
     /**
      * @brief Replace an indexed keyframe with both tangents.
@@ -1644,7 +1644,7 @@ public:
      * @param out_tangent Outgoing tangent.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 replace_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
+    virtual bool replace_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent);
 
     /**
      * @brief Insert a keyframe with both tangents.
@@ -1758,9 +1758,9 @@ public:
 
     virtual s32 get_cycle_count() const;
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -1790,7 +1790,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+    virtual bool on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
     /**
      * @brief Replace an indexed keyframe; the base ignores it.
@@ -1801,7 +1801,7 @@ public:
      * @param second Second auxiliary value.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+    virtual bool on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
     /**
      * @brief Insert a keyframe at an index; the base ignores it.
@@ -1887,11 +1887,11 @@ class LibPooledFloatQuaternionTrack : public LibFloatQuaternionTrackBase
 public:
     virtual ~LibPooledFloatQuaternionTrack();
 
-    virtual s32 append_key(const void* value, const void* first, const void* second, float key);
+    virtual bool append_key(const void* value, const void* first, const void* second, float key);
 
     virtual void append_key_record(const void* record);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* first, const void* second);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* first, const void* second);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* first, const void* second);
 
@@ -1987,9 +1987,9 @@ public:
 
     virtual s32 get_cycle_count() const;
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -2019,7 +2019,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
+    virtual bool on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key);
 
     /**
      * @brief Replace an indexed keyframe; the base ignores it.
@@ -2030,7 +2030,7 @@ public:
      * @param second Second auxiliary value.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
+    virtual bool on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second);
 
     /**
      * @brief Insert a keyframe at an index; the base ignores it.
@@ -2100,9 +2100,9 @@ class LibPooledQuaternionTrack : public LibQuaternionTrackBase
 public:
     virtual ~LibPooledQuaternionTrack();
 
-    virtual s32 append_key(const void* value, const void* first, const void* second, float key);
+    virtual bool append_key(const void* value, const void* first, const void* second, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* first, const void* second);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* first, const void* second);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* first, const void* second);
 
@@ -2137,7 +2137,7 @@ public:
      * @param key Sort key.
      * @return One when there was room, otherwise zero.
      */
-    virtual s32 append_rotation(const FieldVec4A* value, float key);
+    virtual bool append_rotation(const FieldVec4A* value, float key);
 
     /**
      * @brief Pack a rotation into an existing keyframe.
@@ -2146,7 +2146,7 @@ public:
      * @param value Keyframe rotation.
      * @return One when the index is within the capacity, otherwise zero.
      */
-    virtual s32 replace_rotation(s32 index, float key, const FieldVec4A* value);
+    virtual bool replace_rotation(s32 index, float key, const FieldVec4A* value);
 
     /**
      * @brief Shift the later keyframes up and pack a rotation at an index.

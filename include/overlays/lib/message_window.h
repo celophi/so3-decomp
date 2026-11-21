@@ -58,9 +58,9 @@ public:
      * @param second Nonzero to update the widgets.
      * @param third Nonzero to draw the widgets.
      */
-    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    virtual void func_0044B100(bool first, bool second, bool third);
 
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /** @brief Hook run when the text restarts; the base window does nothing. */
     virtual void func_00461960();

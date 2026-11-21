@@ -110,7 +110,7 @@ CmcRowRecord* CardFileList::func_0034BB50(u16 slot)
  * @param second Second update flag, unused here.
  * @param third Third update flag, unused here.
  */
-void CardFileList::func_00412C40(u32 first, u32 second, u32 third)
+void CardFileList::func_00412C40(bool first, bool second, bool third)
 {
     if (unk4a4 != 0)
     {
@@ -5158,7 +5158,7 @@ float LibClass1723F0::func_00412C30()
     return 0.0f;
 }
 
-void LibContainer::func_00412C40(u32 first, u32 second, u32 third)
+void LibContainer::func_00412C40(bool first, bool second, bool third)
 {
 }
 
