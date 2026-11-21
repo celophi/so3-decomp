@@ -55,6 +55,13 @@ void lib_scene_load_data(LibEntryManager* scene, struct ResidentResourceHeader* 
 void func_0046B3F0(LibObject1751A0* object);
 
 /**
+ * @brief Detach a handle from its kind-10 entry and pass it to each enabled slot object.
+ * @param manager Runtime entry table and slot objects.
+ * @param handle Handle of the entry to detach.
+ */
+void func_0046C090(LibEntryManager* manager, void* handle);
+
+/**
  * @brief Find a camera entry matching its name and state filters.
  * @param object Manager supplying the entry table.
  * @param name Entry name; null or empty accepts any name.

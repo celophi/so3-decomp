@@ -454,7 +454,18 @@ s32 func_0040A9B0(s32 code);
  */
 void func_0040A520(FieldRecord* entry, s32 list_id, s32 code, s32 first, s32 second);
 
-s32 func_0040A9F0(FieldRecord* entry, s32 list_id, s32 code, s32 flag, s32 first, s32 second);
+/**
+ * @brief Change a character's mastery of a code: a symbology (flag zero) or a battle skill. The mastery is set to the
+ * amount, or moved away from zero by it.
+ * @param equipment Character equipment record.
+ * @param list_id One-based code list ID.
+ * @param code Code.
+ * @param flag Zero for a symbology, nonzero for a battle skill.
+ * @param amount Amount to add, or the new mastery.
+ * @param replace Nonzero to set the mastery to the amount.
+ * @return The code's mastery index, or -1 when the list doesn't have the code.
+ */
+s32 func_0040A9F0(struct LibCharacterEquipment* equipment, s32 list_id, s32 code, s32 flag, s32 amount, s32 replace);
 
 /**
  * @brief Find a code in one of the ten code tables at D_001B64D0.
@@ -520,7 +531,7 @@ void func_0040B7E0(LibGameState* state);
  */
 u8 func_0040B840(LibGameState* state);
 
-s32 func_0040BB00(LibGameState* state);
+u8 func_0040BB00(LibGameState* state);
 
 /**
  * @brief Start a game state timer for an item type, finishing the most recently started timer when none is free.
@@ -538,7 +549,7 @@ void func_0040C180(LibGameState* state, u16 item_type);
  * @param set_flag08 Nonzero to set flag 0x08 and count the item type in unk11726 (flag 0x04 set) or unk1172a.
  * @return One when the inventor was recorded; zero for an unlimited-stock item type or one that already has an inventor.
  */
-s32 func_0040C300(LibGameState* state, u16 item_type, u8 inventor_id, s32 set_flag04, s32 set_flag08);
+s32 func_0040C300(LibGameState* state, u16 item_type, u8 inventor_id, u8 set_flag04, s32 set_flag08);
 
 
 /**

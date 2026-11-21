@@ -751,15 +751,15 @@ void* func_004A08C0(const void* object, s32 index);
 void lib_append_entry_handle(LibEntryHandleCollection* collection, void* object);
 
 /**
- * @brief Update the renderable object's resource buffers and state flags.
- * @param object Renderable object.
+ * @brief Clear the 0x2E part markers of a model flagged for it, in every payload it draws, and reset its state.
+ * @param object Model.
  */
 void func_004A2370(void* object);
 
 /**
- * @brief Set renderable resource state when its buffers are eligible.
- * @param object Renderable receiver.
- * @return One when state was applied, or zero when the request was skipped.
+ * @brief Write the 0x2E part markers of a model that doesn't have them yet, in every payload it draws, and flag it.
+ * @param object Model.
+ * @return One when the markers were written, zero when the model was skipped.
  */
 s32 func_004A29D0(void* object);
 

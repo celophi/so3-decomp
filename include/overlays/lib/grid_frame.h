@@ -402,4 +402,38 @@ static inline GridFrameMotion* grid_cell_motion_0043E2F0(GridCell0043E2F0* cell)
     return motion;
 }
 
+/** Element inside a GridCell00441660 that keeps a copy of the cell's boundary count. */
+typedef struct GridCellElement00441660
+{
+    u8 unk00[0xC];
+    s32 boundary_count;
+} GridCellElement00441660;
+
+/** 0x170-byte grid cell with its motion state at 0x140. */
+typedef struct GridCell00441660
+{
+    u8 unk00[0x10];
+    GridCellElement00441660 element;
+    u8 unk20[0x111];
+    u8 flags;
+    u8 unk132[0xE];
+    GridFrameMotion motion;
+} GridCell00441660;
+
+typedef struct GridOwner00441660
+{
+    u8 unk00[0xC];
+    s32 unk0C;
+    s32 unk10;
+    GridCell00441660* unk14;
+    u8 unk18[4];
+    GridBitset* unk1C;
+    GridRowElement* unk20;
+    u8 unk24[8];
+    s32 unk2C;
+    u8 unk30[0x70];
+    GridFrameHeader* frame_header;
+    GridFrameRecord* frame_records;
+} GridOwner00441660;
+
 #endif

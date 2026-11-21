@@ -2498,7 +2498,7 @@ public:
      * @param second Second state value.
      * @param third Third state value.
      */
-    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    virtual void func_0044B100(bool first, bool second, bool third);
 
     /**
      * @brief Run the default DMA completion hook.

@@ -41,6 +41,13 @@ float sqrtf(float value);
 float func_00141EC0(float angle);
 
 /**
+ * @brief Single-precision inverse cosine (lib turns a dot product of unit vectors into an angle with it).
+ * @param value Cosine, between -1 and 1.
+ * @return Angle in radians.
+ */
+float func_00141F48(float value);
+
+/**
  * @brief Single-precision inverse sine (the Euler pitch helpers use it on matrix entries).
  * @param value Sine, between -1 and 1.
  * @return Angle in radians.

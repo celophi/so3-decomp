@@ -370,11 +370,11 @@ struct LibTextureEntry
 /** VRAM area a texture cache miss asks for. */
 struct LibTextureRequest
 {
-    s16 width;
+    u16 width;
     s16 height;
     s32 size;
     u8 unk08[4];
-    s16 psm;
+    u16 psm;
     u8 width_log2;
     u8 height_log2;
 };
@@ -384,6 +384,8 @@ struct LibTextureRequest
 #define LIB_TEXTURE_PRIORITY_MAX 10
 #define LIB_TEXTURE_PRIORITY_MIN -10
 #define LIB_TEXTURE_PRIORITY_KEEP -5
+#define LIB_TEXTURE_PRIORITY_RECENT -3
+#define LIB_TEXTURE_FLAG_DOUBLE_WIDTH 0x2000
 
 /** Partial 0x2910-byte VRAM texture cache (g_texture_cache). It may sit at the start of scratchpad memory. */
 class LibTextureCache
@@ -565,11 +567,12 @@ extern "C" LibTextureCache* g_texture_cache;
  * @param tag Request tag.
  * @param id Texture ID.
  * @param slot Slot whose last hit is recorded.
- * @param unk5 Unknown.
+ * @param flags Loader flags (LIB_TEXTURE_FLAG_*).
  * @param user Object that owns the texture, or null.
- * @return VRAM word address of the texture, or 0.
+ * @return VRAM word address of the texture, 0 when no spare block record is left, or 1 when no block is large
+ *         enough.
  */
-extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5,
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 flags,
                              LibTextureUser* user);
 
 
@@ -635,9 +638,19 @@ struct LibSceneLayerTable
 struct LibCullBox
 {
     LibVector4 center;
-    u8 unk10[0x30];
+    FieldVec4B axes[3];
     LibVector4 half_extents;
 };
+
+struct LibProjectionVolume;
+
+/**
+ * @brief Test an oriented box against a projection volume.
+ * @param volume View volume.
+ * @param box Box in view space.
+ * @return Nonzero when the box reaches into the volume.
+ */
+extern "C" s32 func_004CAB20(const LibProjectionVolume* volume, const LibCullBox* box);
 
 /** Partial 0x90-byte transform owner with vtable D_178A90 in main data. */
 class LibTransformOwner : public LibOrientedTransform
@@ -751,7 +764,8 @@ public:
     u8 unk69;
     u16 draw_flags;
     u16 type_id;
-    u8 unk6e[0x12];
+    u8 unk6e[2];
+    LibVector4 unk70;
     LibDisplayManager* display_manager;
     float depth;
     u32 unk88;
@@ -932,16 +946,7 @@ public:
      */
     LibRenderResource* next_entry()
     {
-        LibRenderResource* entry = 0;
-        s32 index = cursor;
-
-        if (index >= 0)
-        {
-            cursor = index - 1;
-            entry = entries[index];
-        }
-
-        return entry;
+        return cursor < 0 ? 0 : entries[cursor--];
     }
 
     LibRenderResource** entries;
@@ -1129,19 +1134,22 @@ extern LibCameraContext* D_001B6520;
 #define LIB_RENDERER_BUFFER_SIZE 0x2000
 
 /** Partial renderer pass that draws to the display at 0x94. */
-struct LibRendererPass : public LibListObject
+struct LibRendererPass : public LibTransformOwner
 {
-    u8 unk14[0x80];
+    u8 unk90[4];
     LibCameraContext* display;
     u8 unk98[4];
     u8 unk9c;
     u8 unk9d;
+    u8 unk9e[0x10];
+    u8 unkae;
+    u8 unkaf;
 };
 
 /** Partial renderer pass that lib_initialize can switch on, drawing to the display at 0x128. */
-struct LibRendererExtra : public LibListObject
+struct LibRendererExtra : public LibTransformOwner
 {
-    u8 unk14[0x82];
+    u8 unk90[6];
     u8 enabled;
     u8 unk97[0x91];
     LibCameraContext* display;
@@ -1172,14 +1180,57 @@ extern "C" void func_004D3480(class LibRenderer* renderer);
  * @brief First of the renderer's light steps.
  * @param renderer Renderer.
  */
+/**
+ * @brief Sort a renderer's objects into a draw list.
+ * @param renderer Renderer.
+ * @param list Receives the objects.
+ * @param layer Layer to collect; zero for the main list.
+ * @return Number of objects written.
+ */
+extern "C" s32 func_004D1550(class LibRenderer* renderer, class LibTransformOwner** list, s32 layer);
+
 extern "C" void func_004D3780(class LibRenderer* renderer);
 
-/** LibUpdateList subclass with vtable D_00178B30 in main data; only its destructor is known. */
+/** Rectangle in its local xz plane, given by its half extents; I think these are occluders. */
+struct LibOccluder
+{
+    u8 unk000[0x210];
+    float half_width;
+    float half_depth;
+    float depth;
+    u8 unk21c[4];
+    LibVector4 corners[4];
+};
+
+/** LibUpdateList subclass with vtable D_00178B30 in main data, holding the renderer's occluders. */
 class LibClass178B30 : public LibUpdateList
 {
 public:
     virtual ~LibClass178B30();
+
+    LibOccluder* nodes[128];
+    float nearest_depth;
+    u8 unk27c[0xC];
 };
+
+/**
+ * @brief Collect up to 128 occluders, upload the ones in view to VU0 (nine qwords each from qword 8) and note the
+ *        nearest one's depth.
+ * @param list Occluder list.
+ * @param camera Camera to test against.
+ * @param matrix Depth-scaled view matrix.
+ * @return Number of occluders uploaded.
+ */
+extern "C" s32 func_00430E00(LibClass178B30* list, class LibCamera* camera, const LibMatrix44Value* matrix);
+
+/**
+ * @brief Upload an occluder to VU0 data memory at a slot if it's in view.
+ * @param occluder Occluder.
+ * @param position Camera position, w one.
+ * @param slot First VU0 data qword to write.
+ * @return Nonzero when the occluder was uploaded.
+ */
+extern "C" s32 func_00431090(LibOccluder* occluder, const LibVector4* position, s32 slot);
 
 /** Update list that is also a list object (vtables D_00178F30 and D_00178F68 in main data); only its destructor is known. */
 class LibClass178F30 : public LibUpdateList, public LibListObject
@@ -1199,11 +1250,12 @@ public:
     /** @brief Update the display list. */
     virtual void update();
 
-    u8 unk8c[4];
-    u32 unk90;
+    LibCameraContext* effect_display;
+    LibListObject* current_display;
     u8 unk94;
-    u8 unk95;
-    u8 unk96[2];
+    u8 effect_enabled;
+    u8 unk96;
+    s8 effect_level;
 };
 
 /** Transform owner that is also a DMA submission (vtables D_00178C00 and D_00178C74 in main data); only its destructor is known. */
@@ -1305,10 +1357,87 @@ struct LibRenderLayer
     LibImageInfo info;
 };
 
+/** GS packet that draws eight sprite vertices with the depth test and scissor set around them. */
+struct LibSpritePacket
+{
+    LibSpritePacket();
+
+    u32 dma_tag[2];
+    u32 vif_flush;
+    u32 vif_direct;
+    u64 gif_tag;
+
+    union
+    {
+        u64 gif_registers;
+
+        struct
+        {
+            u64 register0 : 4;
+            u64 unused : 60;
+        } gif_register_fields;
+    };
+
+    GsRegisterValue test;
+    GsRegisterValue fba;
+    GsRegisterValue prim;
+    GsRegisterValue rgbaq;
+    GsRegisterValue xyz[8];
+    GsRegisterValue restore_test;
+    GsRegisterValue scissor;
+};
+
+/** Packet that sets FRAME_1, ZBUF_1, XYOFFSET_1 and SCISSOR_1 through A+D. */
+struct LibDrawEnvPacket
+{
+    /** @brief Set up the packet's fixed words: its tags and the register each write goes to. */
+    LibDrawEnvPacket()
+    {
+        vif_flush = 0x11000000;
+        vif_nop[0] = 0;
+        vif_nop[1] = 0;
+        vif_direct = 0x51000005;
+        gif_tag = 4 | GIF_TAG_EOP | GIF_TAG_NREG(1);
+        gif_registers = 0;
+        gif_register_fields.register0 = GIF_REGISTER_AD;
+        frame.address = GS_REGISTER_FRAME_1;
+        zbuf.address = GS_REGISTER_ZBUF_1;
+        xyoffset.address = GS_REGISTER_XYOFFSET_1;
+        scissor.address = GS_REGISTER_SCISSOR_1;
+    }
+
+    u32 vif_flush;
+    u32 vif_nop[2];
+    u32 vif_direct;
+    u64 gif_tag;
+
+    union
+    {
+        u64 gif_registers;
+
+        struct
+        {
+            u64 register0 : 4;
+            u64 unused : 60;
+        } gif_register_fields;
+    };
+
+    GsRegisterValue frame;
+    GsRegisterValue zbuf;
+    GsRegisterValue xyoffset;
+    GsRegisterValue scissor;
+};
+
 /** Partial Lib renderer (g_renderer); it alternates between two packet buffers each frame. */
 class LibRenderer : public LibUpdateList
 {
 public:
+    /**
+     * @brief Build the renderer's members, passes and per-layer cameras, then draw on a display.
+     * @param target Display to draw on.
+     */
+    LibRenderer(LibCameraContext* target);
+
     /** @brief Destroy the renderer. */
     virtual ~LibRenderer();
 
@@ -1339,8 +1468,16 @@ public:
 
     void func_004D4700();
 
+    /**
+     * @brief Kick the packet queue if a main packet is waiting, then render every object in the current list that is a
+     *        bucket packet with work; with none, flag the display once the main packet is done.
+     */
     void func_004D4560();
 
+    /**
+     * @brief Build this frame's draw list. With layered objects, the first object to name a layer in its mask gets that
+     *        layer's start marker, the layer's own list and its end marker in front of it.
+     */
     void func_004D2C70();
 
     /**
@@ -1367,27 +1504,35 @@ public:
     LibCameraContext* display;
     u32 unk408c;
     u8 unk4090[4];
-    void* current_list;
-    void* lists[2];
+    s32 current_count;
+    s32 list_counts[2];
     u32 unk40a0;
     s32 packet_ticks;
     LibTransformOwner* main_packet;
     LibTransformOwner* bucket_packet;
     u32 unk40b0;
-    u8 unk40b4[0xC];
+    u32 unk40b4;
+    float fade_distance;
+    u8 unk40bc[4];
     s32 packet_start_time;
     s32 unk40c4;
     u8 main_packet_busy;
     u8 bucket_packet_busy;
     u8 unk40ca;
     u8 unk40cb;
-    u8 unk40cc[2];
+    u8 unk40cc;
+    u8 unk40cd;
     u8 unk40ce;
-    u8 unk40cf[2];
+    u8 unk40cf;
+    u8 box_cull_enabled;
     u8 buffer_index;
-    u8 unk40d2[6];
+    u8 unk40d2;
+    u8 unk40d3[5];
     LibClass178B30 unk40d8;
-    u8 unk4150[0x284];
+    LibMatrix44Value unk4360;
+    u8* sphere_buffer;
+    LibTransformOwner** buckets[11];
+    u8 unk43d0[4];
     u8* unk43d4;
     u8* unk43d8[32];
     LibRendererPass* unk4458;
@@ -1400,11 +1545,12 @@ public:
     LibClass178C00 unk5770[32];
     LibClass178B70 unk8770[32];
     LibRenderLayer layers[32];
-    LibListObject* unkc070[32];
+    class LibCamera* cameras[32];
     u8 unkc0f0[0x40];
-    u8 unkc130[32][0x100];
-    u8 unke130[32][0x60];
-    u8 unked30[32][0x60];
+    LibSpritePacket sprite_packets[32];
+    LibDrawEnvPacket draw_envs[2][32];
+    u8 unkf930[0x40];
+    s32 visible_count;
 };
 
 inline void LibRenderer::update_lights()
@@ -1420,7 +1566,7 @@ inline void LibRenderer::update_lights()
  * @param renderer Renderer.
  * @param layer Layer number, from 1.
  */
-extern "C" void func_004D0B10(LibRenderer* renderer, u32 layer);
+extern "C" s32 func_004D0B10(LibRenderer* renderer, u32 layer);
 
 /** Reciprocal of g_frame_ticks, refreshed each frame. */
 extern float g_inverse_frame_ticks;

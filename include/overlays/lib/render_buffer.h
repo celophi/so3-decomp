@@ -122,6 +122,19 @@ public:
 };
 
 /**
+ * @brief Return the record at a resource's second cursor and move that cursor to the next one.
+ * @param resource Resource to read.
+ * @return The record, or null at the end.
+ */
+extern "C" void* func_004D5A90(LibResourceBuffer* resource);
+
+/**
+ * @brief Point a resource's second cursor at its first record, 0x70 bytes into its storage.
+ * @param resource Resource to rewind.
+ */
+extern "C" void func_004D5BB0(LibResourceBuffer* resource);
+
+/**
  * @brief Point a resource's record cursor at its first part record.
  * @param resource Resource to rewind.
  */

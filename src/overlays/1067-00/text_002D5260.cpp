@@ -137,7 +137,7 @@ public:
      * @param second Second value.
      * @param third Third value.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /**
      * @brief Create an option row.

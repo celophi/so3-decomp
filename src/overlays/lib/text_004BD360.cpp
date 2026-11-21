@@ -5,6 +5,7 @@
 #include "overlays/lib/segment_vu0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/quaternion_vu0.h"
+#include "overlays/lib/quaternion_inlines.h"
 #include "overlays/lib/vector.h"
 #include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/text_0049B820.h"
@@ -19,6 +20,7 @@
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libkernl_00121940.h"
+#include "sdk/main/libm_guess_0013F3E0.h"
 #include "overlays/lib/text_004ABA60.h"
 #include "clamp.h"
 #include "overlays/lib/text_0044ABE0.h"
@@ -775,7 +777,161 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BDE00);
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_animation_bind_channels);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004BFE10);
+#define LIB_ANIMATION_TAG_SAFH 0x53414648
+
+/** Chunk of an animation resource: a tag and the offset of the next chunk. */
+struct LibAnimationChunk
+{
+    u32 tag;
+    u8 unk04[8];
+    s32 next;
+    s32 node_count;
+    s32 entry_count;
+    s32 version;
+    float unk1c;
+    u32 node_offsets[1];
+};
+
+/** Track record inside an animation node; size is the offset of the next one. */
+struct LibAnimationTrack
+{
+    u8 unk00[2];
+    u8 flags;
+    u8 kind;
+    s16 type;
+    u8 unk06[2];
+    s32 size;
+    u8 looped;
+};
+
+/** Node record of an animation resource: its name, track count and name checksum, then its tracks. */
+struct LibAnimationNode
+{
+    char name[0x10];
+    u32 flags;
+    s16 track_count;
+    u8 unk16[2];
+    s32 checksum;
+    u8 unk1c[4];
+    LibAnimationTrack tracks[1];
+};
+
+/**
+ * @brief Bind an animation's tracks to the parts of a target, by part name.
+ * @param object Animation object.
+ * @param target Scene whose named entries the tracks drive; also registered as the animation's binding owner.
+ * @return 1 when bound (or already bound), 0 when the resource has no usable track chunk.
+ */
+s32 func_004BFE10(void* object, void* target)
+{
+    LibAnimation* animation = static_cast<LibAnimation*>(object);
+    LibAnimationBindingOwner* owner = static_cast<LibAnimationBindingOwner*>(target);
+    LibAnimationChunk* chunk = static_cast<LibAnimationChunk*>(animation->resource_data);
+
+    if (!chunk)
+    {
+        return 0;
+    }
+
+    if (animation->targets_bound)
+    {
+        return 1;
+    }
+
+    LibAnimationChunk* cursor = chunk;
+
+    for (;;)
+    {
+        if (cursor->tag == LIB_ANIMATION_TAG_SAFH)
+        {
+            break;
+        }
+
+        cursor = cursor->next == 0 ? 0 : reinterpret_cast<LibAnimationChunk*>(reinterpret_cast<u8*>(cursor) + cursor->next);
+
+        if (cursor == 0)
+        {
+            return 0;
+        }
+    }
+
+    chunk = cursor;
+
+    animation->header = chunk;
+
+    if (chunk->version != 8)
+    {
+        return 0;
+    }
+
+    animation->node_count = chunk->node_count;
+    animation->entry_count = chunk->entry_count;
+    animation->unk64 = chunk->unk1c;
+    animation->node_offsets = chunk->node_offsets;
+
+    if (animation->entries && !animation->unk6d)
+    {
+        lib_animation_release_channels(animation);
+    }
+
+    delete[] animation->entries;
+    animation->entries = new (0) LibAnimationEntry14[animation->entry_count];
+
+    if (!animation->entries)
+    {
+        return 0;
+    }
+
+    s32 count = animation->entry_count;
+
+    for (s32 index = 0; index < count; index++)
+    {
+        animation->entries[index].channel = 0;
+    }
+
+    s32 slot = 0;
+    count = animation->node_count;
+
+    if (owner)
+    {
+        lib_animation_register_binding(owner, animation, 0);
+        animation->primary_binding_owner = owner;
+    }
+
+    for (s32 n = 0; n < count; n++)
+    {
+        LibAnimationNode* node = reinterpret_cast<LibAnimationNode*>(
+            static_cast<u8*>(animation->resource_data) + animation->node_offsets[n]);
+        LibAnimationTrack* track = node->tracks;
+        s32 track_count = node->track_count;
+        void* part = 0;
+
+        if (track->kind < 0xE0 &&
+            !(part = lib_find_named_entry_cached(static_cast<LibEntryManager*>(target), node->name, node->checksum)))
+        {
+            for (s32 index = 0; index < track_count; index++)
+            {
+                animation->entries[slot++].target = 0;
+            }
+        }
+        else
+        {
+            for (s32 index = 0; index < track_count; index++, slot++)
+            {
+                animation->entries[slot].type = track->type;
+                animation->entries[slot].kind = track->kind;
+                animation->entries[slot].flags = track->flags | ((node->flags & 0x10) ? 0x10 : 0) | (track->looped ? 0x20 : 0);
+                animation->entries[slot].target = part;
+                *reinterpret_cast<u32*>(animation->entries[slot].unk0c) = 0;
+                animation->entries[slot].state_name = node->name;
+                track = reinterpret_cast<LibAnimationTrack*>(reinterpret_cast<u8*>(track) + track->size);
+            }
+        }
+    }
+
+    animation->targets_bound = 1;
+    return 1;
+}
 
 /**
  * @brief Replace the animation data with a decoded resource buffer.
@@ -1750,7 +1906,7 @@ s32 LibWordTrackBase::on_insert_key(s32 index, float key, const void* value)
  * @param value Key value.
  * @return Nonzero when the key was stored.
  */
-s32 LibWordTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibWordTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, value);
 }
@@ -1762,7 +1918,7 @@ s32 LibWordTrackBase::replace_key(s32 index, float key, const void* value, const
  * @param value Key value.
  * @return Zero.
  */
-s32 LibWordTrackBase::on_replace_key(s32 index, float key, const void* value)
+bool LibWordTrackBase::on_replace_key(s32 index, float key, const void* value)
 {
     return 0;
 }
@@ -1775,7 +1931,7 @@ s32 LibWordTrackBase::on_replace_key(s32 index, float key, const void* value)
  * @param key Key position.
  * @return Nonzero when the key was stored.
  */
-s32 LibWordTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibWordTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(value, in_tangent, out_tangent, key);
 }
@@ -1788,7 +1944,7 @@ s32 LibWordTrackBase::append_key(const void* value, const void* in_tangent, cons
  * @param key Key position.
  * @return Zero.
  */
-s32 LibWordTrackBase::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibWordTrackBase::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return 0;
 }
@@ -1914,7 +2070,7 @@ s32 LibWordKeyTrack::on_insert_key(s32 index, float key, const void* value)
  * @param value Key value.
  * @return One when stored, or zero when storage is absent or the index is too large.
  */
-s32 LibWordKeyTrack::on_replace_key(s32 index, float key, const void* value)
+bool LibWordKeyTrack::on_replace_key(s32 index, float key, const void* value)
 {
     if (key_array == 0)
     {
@@ -1947,7 +2103,7 @@ s32 LibWordKeyTrack::on_replace_key(s32 index, float key, const void* value)
  * @param key Key position.
  * @return One when appended, or zero when storage is absent or full.
  */
-s32 LibWordKeyTrack::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibWordKeyTrack::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     if (key_array == 0)
     {
@@ -2281,7 +2437,150 @@ void LibAnimationTarget::set_scale(float x, float y, float z)
     scale.z = z;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C3590);
+/** Partial aim settings of a func_004C3590 record. */
+struct LibAimSettings
+{
+    u8 unk00[4];
+    s32 positive;
+    u8 unk08[4];
+    s32 axis;
+};
+
+/** Partial record func_004C3590 aims. */
+struct LibAimRecord
+{
+    u8 unk00[4];
+    LibAimSettings* settings;
+    u8 unk08[0x1C];
+    float roll;
+    LibTransform* target;
+};
+
+/**
+ * @brief Dot product of the x, y and z components.
+ * @param first First vector.
+ * @param second Second vector.
+ * @return Dot product.
+ */
+static inline float lib_dot3(const LibVector4* first, const FieldVec4B* second)
+{
+    return first->x * second->x + first->y * second->y + first->z * second->z;
+}
+
+/**
+ * @brief Cross product of the x, y and z components; w is left alone.
+ * @param output Receives first cross second.
+ * @param first First vector.
+ * @param second Second vector.
+ */
+static inline void lib_cross3(LibVector4* output, const FieldVec4B* first, const LibVector4* second)
+{
+    output->x = first->y * second->z - first->z * second->y;
+    output->y = first->z * second->x - first->x * second->z;
+    output->z = first->x * second->y - first->y * second->x;
+}
+
+/**
+ * @brief Build the rotation that turns a record's aim axis towards its target, seen from an origin in a matrix's
+ * space, then rolls it about that axis.
+ * @param record Record with the aim settings, roll angle and target transform.
+ * @param matrix Matrix whose inverse takes the target's position into the origin's space.
+ * @param origin Position the axis turns from.
+ * @return Quaternion roll, then flip, then turn; the identity when the axis already points at the target.
+ */
+extern "C" FieldVec4B func_004C3590(LibAimRecord* record, const LibMatrix44Value* matrix, const FieldVec4B* origin)
+{
+    LibVector4 axis_angle;
+    axis_angle.x = 0.0f;
+    axis_angle.y = 0.0f;
+    axis_angle.z = 0.0f;
+    axis_angle.w = 0.0f;
+    s32 axis = record->settings->axis;
+    axis_angle.w = 1.0f;
+    LibVector4 flip;
+    flip.x = 0.0f;
+    flip.y = 0.0f;
+    flip.z = 0.0f;
+    flip.w = 0.0f;
+    float sign = 1.0f;
+
+    if (record->settings->positive == 0)
+    {
+        sign = -1.0f;
+    }
+
+    float offset = 0.0f;
+
+    switch (axis)
+    {
+    case 0:
+        axis_angle.x = sign;
+
+        if (sign < 0.0f)
+        {
+            axis_angle.x = 1.0f;
+            flip.y = 1.0f;
+            flip.w = PI;
+        }
+
+        offset = -PI / 2;
+        break;
+
+    case 1:
+        axis_angle.y = sign;
+        break;
+
+    case 2:
+        axis_angle.z = sign;
+
+        if (sign < 0.0f)
+        {
+            axis_angle.z = 1.0f;
+            flip.x = 1.0f;
+            flip.w = PI;
+        }
+
+        break;
+    }
+
+    LibMatrix44Value inverse = func_004CF0B0(*matrix);
+    LibTransform* target = record->target;
+
+    if (!target->matrix_ready)
+    {
+        target->update_transform_matrix();
+    }
+
+    target = record->target;
+    FieldVec4B direction;
+    direction.x = target->transform.m[0][3];
+    direction.y = target->transform.m[1][3];
+    direction.z = target->transform.m[2][3];
+    direction.w = 1.0f;
+    direction = func_004CF6C0(inverse, reinterpret_cast<const FieldVec4A&>(direction));
+    direction -= *origin;
+    lib_normalize_vector3(&direction.x);
+    float dot = lib_dot3(&axis_angle, &direction);
+
+    if (dot < 0.9999999f)
+    {
+        LibVector4 turn;
+        lib_cross3(&turn, &direction, &axis_angle);
+        turn.w = 1.0f;
+        lib_normalize_vector3(&turn.x);
+        turn.w = func_00141F48(dot);
+        FieldVec4B turn_rotation;
+        FieldVec4B roll_rotation;
+        FieldVec4B flip_rotation;
+        lib_quaternion_from_axis_angle(&turn_rotation, &turn);
+        lib_quaternion_from_axis_angle(&flip_rotation, &flip);
+        axis_angle.w = record->roll + offset;
+        lib_quaternion_from_axis_angle(&roll_rotation, &axis_angle);
+        return multiply_rotations(multiply_rotations(roll_rotation, flip_rotation), turn_rotation);
+    }
+
+    return FieldVec4B(0.0f, 0.0f, 0.0f, 1.0f);
+}
 
 /** @brief Construct the track with both trailing words cleared. */
 LibClass1783C0::LibClass1783C0()
@@ -2568,7 +2867,7 @@ s32 LibClass1784E0::on_insert_key(s32 index, float key, const void* value)
  * @param value Key value.
  * @return Nonzero when the key was stored.
  */
-s32 LibClass1784E0::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibClass1784E0::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, value);
 }
@@ -2580,7 +2879,7 @@ s32 LibClass1784E0::replace_key(s32 index, float key, const void* value, const v
  * @param value Key value.
  * @return Zero.
  */
-s32 LibClass1784E0::on_replace_key(s32 index, float key, const void* value)
+bool LibClass1784E0::on_replace_key(s32 index, float key, const void* value)
 {
     return 0;
 }
@@ -2593,7 +2892,7 @@ s32 LibClass1784E0::on_replace_key(s32 index, float key, const void* value)
  * @param key Key position.
  * @return Nonzero when the key was stored.
  */
-s32 LibClass1784E0::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibClass1784E0::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(value, in_tangent, out_tangent, key);
 }
@@ -2606,7 +2905,7 @@ s32 LibClass1784E0::append_key(const void* value, const void* in_tangent, const 
  * @param key Key position.
  * @return Zero.
  */
-s32 LibClass1784E0::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibClass1784E0::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return 0;
 }
@@ -2732,7 +3031,7 @@ s32 LibClass178450::on_insert_key(s32 index, float key, const void* value)
  * @param value Key value.
  * @return One when stored, or zero when storage is absent or the index is too large.
  */
-s32 LibClass178450::on_replace_key(s32 index, float key, const void* value)
+bool LibClass178450::on_replace_key(s32 index, float key, const void* value)
 {
     if (key_array == 0)
     {
@@ -2765,7 +3064,7 @@ s32 LibClass178450::on_replace_key(s32 index, float key, const void* value)
  * @param key Key position.
  * @return One when appended, or zero when storage is absent or full.
  */
-s32 LibClass178450::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibClass178450::on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     if (key_array == 0)
     {
@@ -3681,7 +3980,7 @@ void func_004C61F0(N54Owner84_004BD360* object)
  * @param second Nonzero to update the widgets.
  * @param third Nonzero to draw the widgets.
  */
-void LibContainer::func_0044B100(u32 first, u32 second, u32 third)
+void LibContainer::func_0044B100(bool first, bool second, bool third)
 {
     if (first && second)
     {
@@ -4175,7 +4474,61 @@ void LibTextWidget::func_00413D20()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C7010__13LibTextWidgetFv);
+/** Glyph placement record in a text resource: position, then the scale pair the glyph draws with. */
+struct LibGlyphSource
+{
+    float x;
+    float y;
+    u8 unk08[0xC];
+    float unk14;
+    float unk18;
+};
+
+/**
+ * @brief Write the visible glyphs of the widget's batch into its packet storage and chain the storage after the
+ *        widget's packet tag.
+ */
+void LibTextWidget::func_004C7010()
+{
+    LibClass178780* batch = static_cast<LibClass178780*>(unkfc);
+
+    if (batch != 0 && batch->glyph_count > 0)
+    {
+        s32 drawn = 0;
+        u64* start = reinterpret_cast<u64*>(batch->storage.dma_address);
+        u64* cursor = start;
+        cursor += 2;
+        LibContainer* owner = container;
+        LibVector4 origin;
+        origin.x = owner->translation.x + unk18.unk00 - unk78;
+        origin.y = owner->translation.y + unk18.unk04 - unk7c;
+        LibContainer* parent = container;
+        u32 depth = parent->unka4 + 5;
+        float scale = draw_alpha * container_alpha(parent) / 128.0f;
+        LibGlyphDraw6C* glyph = static_cast<LibClass178780*>(unkfc)->glyphs;
+
+        for (s32 i = 0; i < static_cast<LibClass178780*>(unkfc)->glyph_capacity; i++, glyph++)
+        {
+            if (glyph->unk60 && glyph->unk64 < reinterpret_cast<u32>(unk74))
+            {
+                const LibGlyphSource* source = reinterpret_cast<const LibGlyphSource*>(glyph->unk64);
+                glyph->set_position(source->x, source->y);
+                glyph->unk30 = source->unk14;
+                glyph->unk34 = source->unk18;
+                func_004535B0(glyph, &cursor, &origin, depth, scale, 0);
+                drawn++;
+            }
+        }
+
+        if (drawn > 0)
+        {
+            s32 address = reinterpret_cast<u32>(start) & 0x0FFFFFFF;
+            *packet_tag = DMA_TAG(*reinterpret_cast<u16*>(packet_tag), DMA_TAG_ID_NEXT, address);
+            *start = DMA_TAG((reinterpret_cast<u32>(cursor) - reinterpret_cast<u32>(start + 2)) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_END, 0);
+            packet_tag = start;
+        }
+    }
+}
 
 /**
  * @brief Step the animation of every glyph that is animated and started before the widget's time.
@@ -5043,8 +5396,6 @@ extern "C" s32 D_001B65B4;
 extern "C" LibMatrix44Value D_0050CBC0;
 extern "C" LibMatrix44Value D_0050CC00;
 
-extern "C" void func_004E22B0(LibListObject* camera, s32 step, void* first, void* second);
-
 /**
  * @brief Step the manager's current camera with Lib's two camera work buffers when the step is enabled.
  * @param manager Display manager whose camera to step.
@@ -5053,7 +5404,7 @@ void func_004C8390(LibDisplayManager* manager)
 {
     if (D_001B65B0 && manager->current_display != 0)
     {
-        func_004E22B0(manager->current_display, D_001B65B4, &D_0050CBC0, &D_0050CC00);
+        func_004E22B0(static_cast<LibCamera*>(manager->current_display), D_001B65B4, &D_0050CBC0, &D_0050CC00);
     }
 }
 
@@ -5635,7 +5986,49 @@ extern "C" float func_004C9D80(LibLight* light, const LibVector4* point)
     return value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C9E80);
+/**
+ * @brief Return one row of a light's transform.
+ * @param light Light.
+ * @param axis Row index.
+ * @return The row's four values.
+ */
+static inline const float* light_row(const LibLight* light, s32 axis)
+{
+    return light->transform.m[axis];
+}
+
+/**
+ * @brief Read one coordinate of a light's position.
+ * @param light Light.
+ * @param axis Axis index.
+ * @return The translation along the axis.
+ */
+static inline float light_translation(const LibLight* light, s32 axis)
+{
+    return light_row(light, axis)[3];
+}
+
+/**
+ * @brief Return the direction a light shines on a point: from the light's position for point and spot kinds when
+ *        it has one, otherwise its own direction.
+ * @param light Light.
+ * @param out Receives the unit direction.
+ * @param point Point being lit.
+ */
+extern "C" void func_004C9E80(LibLight* light, LibVector4* out, const LibVector4* point)
+{
+    if ((light->kind & 3) && light->unk288)
+    {
+        out->x = point->x - light_translation(light, 0);
+        out->y = point->y - light_translation(light, 1);
+        out->z = point->z - light_translation(light, 2);
+        lib_normalize_vector3(&out->x);
+    }
+    else
+    {
+        copy_vector(out, &light->direction);
+    }
+}
 
 /**
  * @brief Read a light's direction (its transform's y axis) from its current transform matrix.
@@ -5899,10 +6292,10 @@ extern "C" float func_004CC070(float angle)
 
 /**
  * @brief Compute the VU0 sine and cosine approximations for an angle.
- * @param output Aligned vector receiving cosine in z and sine in w; x and y retain shared polynomial coefficients.
  * @param angle Angle in radians.
+ * @param output Aligned vector receiving cosine in z and sine in w; x and y retain shared polynomial coefficients.
  */
-extern "C" void lib_compute_sine_cosine_pair(LibVector4* output, float angle)
+extern "C" void lib_compute_sine_cosine_pair(float angle, LibVector4* output)
 {
     D_0050CC80.phase.angle = angle;
     vu0_sincos_load(&D_0050CC80);

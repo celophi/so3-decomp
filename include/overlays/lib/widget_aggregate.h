@@ -211,7 +211,7 @@ public:
      * @param second Second update flag.
      * @param third Third update flag.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /**
      * @brief Create the row for an index.
@@ -293,7 +293,7 @@ public:
      * @param second Second update flag.
      * @param third Third update flag.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /**
      * @brief Called by the state hook when the list closes; the base does nothing.

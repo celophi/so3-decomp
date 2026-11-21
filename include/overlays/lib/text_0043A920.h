@@ -297,9 +297,6 @@ s32 func_00447C70(void* object);
 /** Return the fixed value 0. */
 s32 func_00447C90(void* object);
 
-/** Return the fixed value 0. */
-s32 func_00448900(void* object);
-
 
 
 void func_0043D220(void* object);

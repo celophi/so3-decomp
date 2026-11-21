@@ -43,7 +43,7 @@ class EquipFactorTooltip : public LibContainer
          * @param second Second update flag.
          * @param third Third update flag.
          */
-        virtual void func_00412C40(u32 first, u32 second, u32 third);
+        virtual void func_00412C40(bool first, bool second, bool third);
 
         EquipTooltipFrame frame;
         LibTextWidget factor_texts[8];

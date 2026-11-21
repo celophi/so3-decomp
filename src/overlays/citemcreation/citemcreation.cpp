@@ -111,7 +111,7 @@ public:
      * @param second Second value.
      * @param third Third value.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /**
      * @brief Create an option row.
@@ -175,7 +175,7 @@ public:
      * @param second Second value.
      * @param third Third value.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     /**
      * @brief Create an option row.
@@ -4055,7 +4055,7 @@ InventorStatusWindow::~InventorStatusWindow()
  * @param second Second inherited update flag, unused here.
  * @param third Third inherited update flag, unused here.
  */
-void InventorStatusList::func_00412C40(u32 first, u32 second, u32 third)
+void InventorStatusList::func_00412C40(bool first, bool second, bool third)
 {
     if (unk4a4 != 0)
     {
@@ -17562,7 +17562,7 @@ float func_0036E7B0(void* object)
  * @param second Unused second argument.
  * @param third Unused third argument.
  */
-void LibContainer::func_00412C40(u32 first, u32 second, u32 third)
+void LibContainer::func_00412C40(bool first, bool second, bool third)
 {
 }
 

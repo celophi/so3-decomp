@@ -19,6 +19,7 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/character_record.h"
 #include "main/system.h"
+#include "main/input.h"
 
 #define LIB_GAME_DATA_RESOURCE 10
 #define LIB_GAME_STATE_RECORD0C_FIXED_ID 29
@@ -185,6 +186,9 @@ static inline u32 lib_crc32(const u8* data, s32 size)
 
 struct LibClass1721B0 : public LibListObject
 {
+    /** @brief Start idle with no card, empty file and ID lists, and the save directory name. */
+    LibClass1721B0();
+
     /** @brief Free the flag storage and the value list, then detach. */
     virtual ~LibClass1721B0();
 
@@ -220,11 +224,12 @@ struct LibClass1721B0 : public LibListObject
     u8 unk2e4[0x4B4];
     u8* unk798;
     u8* unk79c;
-    char directory[0xC0];
+    char directory[0x40];
+    u8 entry_buffer[0x80];
     LibCardDirectoryEntry* entry;
     LibBitArray flags;
     u16 unk878;
-    u16 unk87a;
+    s16 unk87a;
     s32 result;
     u8 unk880;
     u8 unk881[3];
@@ -549,18 +554,171 @@ static inline bool timer_active(const LibGameStateTimer* timer)
     return false;
 }
 
-/**
- * @brief Learn a symbology at a level (func_00409DA0 isn't decompiled yet).
- * @param equipment Character equipment record.
- * @param id One-based code list ID.
- * @param code Symbology code.
- * @param level New level.
- * @param flag Passed on to func_0040A9F0.
- * @return Result of the learning step.
- */
-extern "C" s32 func_00409DA0(LibCharacterEquipment* equipment, s32 id, s32 code, s32 level, s32 flag);
+/** One 0x14-byte record of the checksummed table at D_001B64B8. */
+struct LibProtectedStatEntry
+{
+    u16 unk00;
+    u16 unk02;
+    u16 unk04;
+    u16 unk06;
+    u16 unk08;
+    u16 checksum;
+    u16 unk0c;
+    u16 unk0e;
+    u8 unk10;
+    u8 unk11;
+    u8 unk12;
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004095C0);
+extern "C" LibProtectedStatEntry* D_001B64B8;
+
+/**
+ * @brief Read a code's record from the table at D_001B64B8, replacing it with random values when its checksum fails,
+ * and scale two of its values by the character's maximum MP and HP (as percentages, at least the record's minimums).
+ * @param code One-based record code, 1 through 154.
+ * @param entry Character record, or null not to scale.
+ * @param detail Nonzero to keep the first two values (randomized too) when the checksum fails; otherwise they become 0.
+ * @param first Receives value 0x00, or null.
+ * @param second Receives value 0x02, or null.
+ * @param third Receives value 0x10, or null.
+ * @param fourth Receives value 0x11, or null.
+ * @param fifth Receives value 0x08, or null.
+ * @param sixth Receives value 0x12, or null.
+ * @param seventh Receives value 0x04 scaled by the maximum MP, or null.
+ * @param eighth Receives value 0x06 scaled by the maximum HP, or null.
+ * @return Nonzero when the code is in range.
+ */
+u8 func_004095C0(s32 code, FieldRecord* entry, void* detail, s32* first, s32* second, s32* third, s32* fourth, s32* fifth,
+                 s32* sixth, s32* seventh, s32* eighth)
+{
+    if (code - 1 < 0 || code - 1 >= 0x9A)
+    {
+        return 0;
+    }
+
+    LibProtectedStatEntry* stat = &D_001B64B8[code - 1];
+    s32 value00 = stat->unk00;
+    s32 value02 = stat->unk02;
+    s32 value04 = stat->unk04;
+    s32 value06 = stat->unk06;
+    // TODO: value10-12 and min_mp are declared before their loads only because that puts the spill slots and
+    // registers in the game's order; I haven't found a more natural shape that does.
+    s32 value10;
+    s32 value11;
+    s32 value12;
+    s32 value08 = stat->unk08;
+    s32 min_mp;
+    s32 min_hp = stat->unk0c;
+    min_mp = stat->unk0e;
+    value10 = stat->unk10;
+    value11 = stat->unk11;
+    value12 = stat->unk12;
+    bool tampered;
+
+    u16 sum = (value00 + value02 + value06 + value04 + min_hp + min_mp) * 18 + 0x1E99 - (value10 + value11 + value12) -
+              code * 0xC1;
+
+    if (sum == stat->checksum)
+    {
+        tampered = false;
+    }
+    else
+    {
+        value11 = resident_random_below(20) + 0x4B;
+        value12 = resident_random_below(10) + 0x55;
+        value10 = resident_random_below(4) + 0xA;
+        tampered = true;
+    }
+
+    if (tampered)
+    {
+        value08 = (resident_next_random_word() & 0xFF) + 0x20;
+
+        if (detail != 0)
+        {
+            value00 = resident_random_range(0x51, 0x61) + 0x7D;
+            value02 = (code - 1) * 2 + 0x3C8;
+            value04 = resident_random_range(0x51, 0x62) + 0x292;
+            value06 = resident_random_range(0x4F, 0x5D) + 0x103;
+        }
+        else
+        {
+            value00 = 0;
+            value02 = 0;
+        }
+    }
+
+    if (entry != 0)
+    {
+        LibCharacterRecord* record = reinterpret_cast<LibCharacterRecord*>(entry);
+        s32 hp_percent = value06;
+        s32 mp_percent = value04;
+        value06 = value06 * character_max_hp(record) / 100;
+        value04 = value04 * character_max_mp(record) / 100;
+
+        if (hp_percent > 0 && value06 <= 0)
+        {
+            value06 = 1;
+        }
+
+        if (mp_percent > 0 && value04 <= 0)
+        {
+            value04 = 1;
+        }
+
+        if (value06 < min_hp)
+        {
+            value06 = min_hp;
+        }
+
+        if (value04 < min_mp)
+        {
+            value04 = min_mp;
+        }
+    }
+
+    if (first != 0)
+    {
+        *first = value00;
+    }
+
+    if (second != 0)
+    {
+        *second = value02;
+    }
+
+    if (seventh != 0)
+    {
+        *seventh = value04;
+    }
+
+    if (eighth != 0)
+    {
+        *eighth = value06;
+    }
+
+    if (third != 0)
+    {
+        *third = value10;
+    }
+
+    if (fourth != 0)
+    {
+        *fourth = value11;
+    }
+
+    if (sixth != 0)
+    {
+        *sixth = value12;
+    }
+
+    if (fifth != 0)
+    {
+        *fifth = value08;
+    }
+
+    return 1;
+}
 
 /**
  * @brief Point the fifth tactical skill state at one of the anti-attack auras the mask allows.
@@ -615,7 +773,55 @@ extern "C" void func_00409A10(LibCharacterEquipment* equipment)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00409DA0);
+/**
+ * @brief Change a character's symbology mastery; outside code lists 2 and 9, adding to it also unlocks the 0x90 and 0x91
+ * battle skills for codes in their tables once the character has both masteries. In code lists 2 and 9 the battle skill
+ * mastery changes too.
+ * @param equipment Character equipment record.
+ * @param id One-based code list ID.
+ * @param code Code.
+ * @param amount Amount to add, or the new mastery.
+ * @param replace Nonzero to set the mastery to the amount.
+ * @return The changed mastery index (the battle skill's in code lists 2 and 9), or -1 when the list doesn't have the
+ *         code.
+ */
+extern "C" s32 func_00409DA0(LibCharacterEquipment* equipment, s32 id, s32 code, s32 amount, s32 replace)
+{
+    s32 result = func_0040A9F0(equipment, id, code, 0, amount, replace);
+
+    if (id == 2 || id == 9)
+    {
+        result = func_0040A9F0(equipment, id, code, 1, amount, replace);
+    }
+    else if (replace == 0)
+    {
+        s32 index = func_0040AF10(id, code);
+
+        if (func_0040A9B0(code))
+        {
+            s32 skill = func_0040AE00(id, 0x90);
+
+            if (skill >= 0 && lib_equipment_symbology_mastery(equipment, index) != 0 &&
+                lib_equipment_battle_skill_mastery(equipment, skill) != 0)
+            {
+                func_0040A520(reinterpret_cast<FieldRecord*>(equipment), id, 0x90, amount, 0);
+            }
+        }
+
+        if (func_0040A970(code))
+        {
+            s32 skill = func_0040AE00(id, 0x91);
+
+            if (skill >= 0 && lib_equipment_symbology_mastery(equipment, index) != 0 &&
+                lib_equipment_battle_skill_mastery(equipment, skill) != 0)
+            {
+                func_0040A520(reinterpret_cast<FieldRecord*>(equipment), id, 0x91, amount, 0);
+            }
+        }
+    }
+
+    return result;
+}
 
 /**
  * @brief Learn a symbology the character has no mastery of yet.
@@ -654,11 +860,11 @@ extern "C" s32 func_0040A370(LibCharacterEquipment* equipment, s32 id, s32 code,
  */
 void func_0040A520(FieldRecord* entry, s32 list_id, s32 code, s32 first, s32 second)
 {
-    func_0040A9F0(entry, list_id, code, 1, first, second);
+    func_0040A9F0(reinterpret_cast<LibCharacterEquipment*>(entry), list_id, code, 1, first, second);
 
     if ((list_id == 2 || list_id == 9) && code > 0 && code < 30)
     {
-        func_0040A9F0(entry, list_id, code, 0, first, second);
+        func_0040A9F0(reinterpret_cast<LibCharacterEquipment*>(entry), list_id, code, 0, first, second);
     }
 }
 
@@ -686,7 +892,7 @@ extern "C" void func_0040A5C0(LibCharacterEquipment* equipment, s32 id, s32 code
         {
             if (lib_equipment_symbology_mastery(equipment, func_0040AF10(id, D_001B6198[i])) == 0)
             {
-                func_0040A9F0((FieldRecord*)equipment, id, D_001B6198[i], 0, level, 1);
+                func_0040A9F0(equipment, id, D_001B6198[i], 0, level, 1);
             }
         }
     }
@@ -696,7 +902,7 @@ extern "C" void func_0040A5C0(LibCharacterEquipment* equipment, s32 id, s32 code
         {
             if (lib_equipment_symbology_mastery(equipment, func_0040AF10(id, D_001B619C[i])) == 0)
             {
-                func_0040A9F0((FieldRecord*)equipment, id, D_001B619C[i], 0, level, 1);
+                func_0040A9F0(equipment, id, D_001B619C[i], 0, level, 1);
             }
         }
     }
@@ -740,7 +946,69 @@ s32 func_0040A9B0(s32 code)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040A9F0);
+/**
+ * @brief Change a character's mastery of a code: a symbology (flag zero) or a battle skill. The mastery is set to the
+ * amount, or moved away from zero by it.
+ * @param equipment Character equipment record.
+ * @param list_id One-based code list ID.
+ * @param code Code.
+ * @param flag Zero for a symbology, nonzero for a battle skill.
+ * @param amount Amount to add, or the new mastery.
+ * @param replace Nonzero to set the mastery to the amount.
+ * @return The code's mastery index, or -1 when the list doesn't have the code.
+ */
+s32 func_0040A9F0(LibCharacterEquipment* equipment, s32 list_id, s32 code, s32 flag, s32 amount, s32 replace)
+{
+    s32 index;
+    s32 mastery;
+
+    if (flag == 0)
+    {
+        index = func_0040AF10(list_id, code);
+
+        if (index == -1)
+        {
+            return -1;
+        }
+
+        mastery = lib_equipment_symbology_mastery(equipment, index);
+    }
+    else
+    {
+        index = func_0040AE00(list_id, code);
+
+        if (index == -1)
+        {
+            return -1;
+        }
+
+        mastery = lib_equipment_battle_skill_mastery(equipment, index);
+    }
+
+    if (replace != 0)
+    {
+        mastery = amount;
+    }
+    else if (mastery >= 0)
+    {
+        mastery += amount;
+    }
+    else
+    {
+        mastery -= amount;
+    }
+
+    if (flag == 0)
+    {
+        store_symbology_mastery(equipment, index, mastery);
+    }
+    else
+    {
+        store_battle_skill_mastery(equipment, index, mastery);
+    }
+
+    return index;
+}
 
 /**
  * @brief Find a code in one of the ten code tables at D_001B64D0.
@@ -844,7 +1112,6 @@ struct LibTableResource
 
 extern "C" u8* D_001B64B0;
 extern "C" u8* D_001B64B4;
-extern "C" u8* D_001B64B8;
 extern "C" u8* D_001B64BC;
 extern "C" u8* D_001B64C0;
 extern "C" u8* D_001B64C4;
@@ -899,7 +1166,7 @@ void func_0040AFA0(void)
     D_00507C00[9] = D_001B64C4 + 0x492;
     D_001B64C0 = D_001B64B0 + resource->sections[1].offset;
     D_001B64BC = D_001B64B0 + resource->sections[2].offset;
-    D_001B64B8 = D_001B64B0 + resource->sections[3].offset;
+    D_001B64B8 = reinterpret_cast<LibProtectedStatEntry*>(D_001B64B0 + resource->sections[3].offset);
     D_001B64B4 = D_001B64B0 + resource->sections[4].offset;
     D_001B64CC = reinterpret_cast<LibCodeList*>(D_001B64B0 + resource->sections[5].offset);
     D_001B64D0 = reinterpret_cast<LibCodeTable*>(D_001B64B0 + resource->sections[6].offset);
@@ -1264,7 +1531,98 @@ u8 func_0040B840(LibGameState* state)
     return state->unk117a4;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040BB00);
+/** One 6-byte inventor record of D_00501DA0. */
+struct LibInventorEntry
+{
+    u8 unk00[2];
+    u8 skill;
+    u8 unk03;
+    s8 cost_bonus;
+    u8 unk05;
+};
+
+extern "C" LibInventorEntry D_00501DA0[];
+
+/**
+ * @brief Let each working inventor try to create its item: on a skill roll it pays its cost (for paid work), adds the
+ * item's difficulty to its progress and either creates the item or raises the item's shop stock.
+ * @param state Game state.
+ * @return One when an item was created.
+ */
+u8 func_0040BB00(LibGameState* state)
+{
+    u8 created = 0;
+    LibSystemSettings* settings =
+        reinterpret_cast<LibSystemSettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), LIB_ENTRY_SYSTEM_SETTINGS));
+    s32 fol = settings_fol(settings);
+
+    for (s32 i = 0; i < state->unk117a2; i++)
+    {
+        u8 inventor = state->unk11760[i];
+        LibGameStateRecord0C* record = &state->unk10d88[inventor - 1];
+
+        if (record->unk0a == 1)
+        {
+            // TODO: paid is declared ahead of its assignment only for the game's spill slot and load order.
+            u8 paid;
+            LibInventorEntry* entry = &D_00501DA0[inventor - 1];
+            u16 item_type = record->unk04;
+            paid = record->unk08 == 2;
+            s32 skill = entry->skill;
+            s32 bonus = entry->cost_bonus;
+            u32 price = func_00414130(&state->item_types[item_type - 1]) / 10;
+            s32 percent = bonus + (resident_random_below(11) + 0x5F);
+            s32 cost = 0.5f + price * (float)percent / 100.0f;
+            cost = cost > 0 ? cost : 1;
+            u32 points = D_001B64F0[item_type - 1].creation_difficulty;
+            bool success = (s32)resident_random_below(100) < skill + 45 - (s32)points;
+
+            if (success)
+            {
+                if (paid)
+                {
+                    if (fol < cost)
+                    {
+                        continue;
+                    }
+
+                    fol -= cost;
+                }
+
+                points += record->unk00;
+                points = points < 100000000 ? points : 99999999;
+                record->unk00 = points;
+
+                if (func_0040C300(state, item_type, inventor, paid, 1))
+                {
+                    func_0040C180(state, item_type);
+                    created = 1;
+                }
+                else
+                {
+                    s32 range = 100 - D_001B64F0[item_type - 1].creation_difficulty;
+                    s32 gain = (range / 20 + resident_random_below(range / 2)) / 6 + 1;
+                    ItemCreationCategoryRecord* category = &state->item_types[item_type - 1];
+                    s32 stock = gain + category->shop_stock;
+
+                    if (stock < 0)
+                    {
+                        stock = 0;
+                    }
+                    else if (stock > 99)
+                    {
+                        stock = 99;
+                    }
+
+                    category->shop_stock = stock;
+                }
+            }
+        }
+    }
+
+    set_settings_fol(settings, fol);
+    return created;
+}
 
 /**
  * @brief Pick 11 to 15 random LibGameStateRecord0C entries with unk08 and unk09 set and unk0a clear, give each a random
@@ -1394,7 +1752,7 @@ void func_0040C180(LibGameState* state, u16 item_type)
  * @param set_flag08 Nonzero to set flag 0x08 and count the item type in unk11726 (flag 0x04 set) or unk1172a.
  * @return One when the inventor was recorded; zero for an unlimited-stock item type or one that already has an inventor.
  */
-s32 func_0040C300(LibGameState* state, u16 item_type, u8 inventor_id, s32 set_flag04, s32 set_flag08)
+s32 func_0040C300(LibGameState* state, u16 item_type, u8 inventor_id, u8 set_flag04, s32 set_flag08)
 {
     ItemCreationCategoryRecord* record = &state->item_types[item_type - 1];
 
@@ -1631,7 +1989,91 @@ s32 func_0040C8F0(LibGameState* state, u16 item_type)
     return func_0040C9F0(state, lib_allocation_get_identifier(records[0]));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040C9F0);
+/**
+ * @brief Test whether an allocation record is in use.
+ * @param record Allocation record.
+ * @return Its allocated flag.
+ */
+static inline bool allocation_in_use(const ItemCreationAllocationRecord* record)
+{
+    return record->allocated;
+}
+
+/**
+ * @brief Read the one-based item type of an allocation.
+ * @param record Allocation record.
+ * @return Item type ID, or one when the record's checksum differs.
+ */
+static inline u16 allocation_item_type(ItemCreationAllocationRecord* record)
+{
+    return record->definition_index() + 1;
+}
+
+/**
+ * @brief Remove an allocation in use from its item type's list and update the factor and inventory counts.
+ * @param object Game state.
+ * @param identifier One-based allocation ID.
+ * @return One on success, or zero when the ID is invalid or the allocation is free.
+ */
+extern "C" s32 func_0040C9F0(void* object, s16 identifier)
+{
+    LibGameState* state = static_cast<LibGameState*>(object);
+    bool valid = false;
+
+    if (identifier > 0 && identifier <= LIB_ALLOCATION_COUNT)
+    {
+        valid = true;
+    }
+
+    ItemCreationAllocationRecord* record =
+        valid ? reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[identifier - 1]) : 0;
+
+    if (record == 0 || !allocation_in_use(record))
+    {
+        return 0;
+    }
+
+    u16 item_type = allocation_item_type(record);
+    lower_factor_counts(record);
+    record->allocated = 0;
+
+    s32 type_index = item_type - 1;
+
+    if (D_001B64F0[type_index].unsellable)
+    {
+        state->unk11722--;
+    }
+    else
+    {
+        state->unk11724--;
+    }
+
+    LibInventoryAllocationLinks* link = &state->links[identifier - 1];
+    s16 previous = link->previous;
+    s16 next = link->next;
+
+    if (previous > 0)
+    {
+        s32 index = previous - 1;
+        LibInventoryAllocationLinks* previous_link = &state->links[index];
+        previous_link->next = next;
+    }
+    else
+    {
+        ItemCreationCategoryRecord* category = &state->item_types[type_index];
+        category->allocation_list_head = next;
+    }
+
+    if (next > 0)
+    {
+        s32 index = next - 1;
+        LibInventoryAllocationLinks* next_link = &state->links[index];
+        next_link->previous = previous;
+    }
+
+    func_0040D050(state, item_type);
+    return 1;
+}
 
 /**
  * @brief Allocate a new item of a type, link it into its item type's list and update the counts.
@@ -3257,7 +3699,110 @@ LibClass1721B0::~LibClass1721B0()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00411830);
+/** Directory name the save data lives in. */
+extern "C" const char D_004EC2C0[];
+
+/** Suffix appended to the directory name. */
+extern "C" const char D_00505700[];
+
+/**
+ * @brief Join two strings into a buffer when they fit, leaving the buffer alone otherwise.
+ * @param buffer Destination.
+ * @param size Size of the destination.
+ * @param first First string, or null to do nothing.
+ * @param second String appended to the first, or null.
+ */
+static inline void lib_join_name(char* buffer, u32 size, const char* first, const char* second)
+{
+    if (first != 0 && strlen(first) + strlen(second) + 1 <= size)
+    {
+        memset_guess(buffer, 0, size);
+        strcpy_guess(buffer, first);
+
+        if (second != 0)
+        {
+            strcat(buffer, second);
+        }
+    }
+}
+
+LibClass1721B0::LibClass1721B0()
+{
+    card = 0;
+    unk18 = 0;
+    unk1c = -1;
+    unk1e = -1;
+    unk20 = -1;
+    unk87a = -1;
+    unk878 = 0;
+    result = -1;
+    icon_sys = 0;
+    unk798 = 0;
+    unk79c = 0;
+    unk1a = -1;
+    id_count = 0;
+    unk7c = 0;
+    settings = 0;
+    settings = reinterpret_cast<LibSystemSettings*>(resident_find_entry(resident_get_entry_table(resident_get_system()), LIB_ENTRY_SYSTEM_SETTINGS));
+
+    for (s32 i = 0; i < 37; i++)
+    {
+        files[i].name = 0;
+        files[i].data = 0;
+        files[i].size = 0;
+        files[i].offset = 0;
+    }
+
+    request.directory = 0;
+    request.file_count = 0;
+    request.unk08 = 0;
+    request.files = 0;
+    id_count = 0;
+
+    for (s32 i = 0; i < 0x20; i++)
+    {
+        ids[i] = -1;
+    }
+
+    memset_guess(entry_buffer, 0, sizeof(entry_buffer));
+    entry = reinterpret_cast<LibCardDirectoryEntry*>((reinterpret_cast<u32>(entry_buffer) + 0x3F) & ~0x3F);
+    lib_join_name(directory, sizeof(directory), D_004EC2C0, D_00505700);
+    unk880 = 0;
+    unk884 = 0;
+    unk888 = 0;
+    unk90b = 0;
+    unk90c[0] = 0;
+    unk90c[1] = 0;
+    unk910 = 0;
+    unk96c = 0;
+    unk970 = 0;
+    unk974 = 0x40;
+    unk978 = 0x18;
+    unk97c = 0xB3B0;
+    unk96c = unk974 + unk978;
+    unk980 = 0;
+    unk984 = 0;
+    unk988 = 0;
+    unk98c = 0;
+    unk8cc = 0;
+
+    for (s32 i = 0; i < 0x40; i++)
+    {
+        unk88c[i] = 0;
+    }
+
+    unk8cd[0] = 0;
+    unk8cd[1] = 0;
+    unk8d0 = 0;
+    unk8d4 = 0;
+    unk8d8 = 0;
+    unk90a = 0;
+
+    for (s32 i = 0; i < sizeof(unk8dc); i++)
+    {
+        unk8dc[i] = 0;
+    }
+}
 
 /** @brief Allocate the head node and start empty. */
 LibClass1721E0::LibClass1721E0()
@@ -3401,7 +3946,7 @@ static inline void aggregate_set_rows_visible(LibClass1721F0* list, u8 visible)
  * @param second Second update flag, unused here.
  * @param third Third update flag, unused here.
  */
-void LibClass1721F0::func_00412C40(u32 first, u32 second, u32 third)
+void LibClass1721F0::func_00412C40(bool first, bool second, bool third)
 {
     if (unk318 != 0)
     {
@@ -3765,7 +4310,7 @@ float LibClass1723F0::func_00412C30()
  * @param second Second update flag.
  * @param third Third update flag.
  */
-void LibContainer::func_00412C40(u32 first, u32 second, u32 third)
+void LibContainer::func_00412C40(bool first, bool second, bool third)
 {
 }
 
@@ -4613,7 +5158,101 @@ extern "C" s32 func_00414D30(LibMovieStreamBuffer* buffer, s32 size)
     return added;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00414DB0);
+/**
+ * @brief Copy a header and a body into the two parts of a ring buffer's free space.
+ * @param first Start of the free space.
+ * @param first_size Size of the part before the end of the ring.
+ * @param second Start of the ring, for the part that wraps.
+ * @param second_size Size of the wrapped part.
+ * @param head Header bytes.
+ * @param head_size Header size.
+ * @param body Body bytes.
+ * @param body_size Body size.
+ * @return Bytes written, or 0 when they don't fit.
+ */
+static inline s32 lib_ring_copy(u8* first, s32 first_size, u8* second, s32 second_size, const u8* head, s32 head_size, const u8* body,
+                                s32 body_size)
+{
+    if (first_size + second_size < head_size + body_size)
+    {
+        return 0;
+    }
+
+    if (head_size >= first_size)
+    {
+        memcpy_guess(first, head, first_size);
+        memcpy_guess(second, head + first_size, head_size - first_size);
+        memcpy_guess(second + head_size - first_size, body, body_size);
+    }
+    else
+    {
+        s32 remaining = first_size - head_size;
+
+        if (body_size >= remaining)
+        {
+            memcpy_guess(first, head, head_size);
+            memcpy_guess(first + head_size, body, remaining);
+            memcpy_guess(second, body + first_size - head_size, body_size - remaining);
+        }
+        else
+        {
+            memcpy_guess(first, head, head_size);
+            memcpy_guess(first + head_size, body, body_size);
+        }
+    }
+
+    return head_size + body_size;
+}
+
+extern "C" void func_00417D30(LibMovieRing* ring, s32 amount);
+
+extern "C" void func_00417E50(LibMovieRing* ring, u8** first, s32* first_size, u8** second, s32* second_size);
+
+/**
+ * @brief Copy a video packet's payload out of the demultiplexer's ring into the decoder's ring and record its
+ * timestamps.
+ * @param mpeg Demultiplexer; unused.
+ * @param packet Packet from libmpeg.
+ * @param decoder Decoder receiving the payload.
+ * @return One when the payload was copied, or zero when it didn't fit.
+ */
+extern "C" s32 func_00414DB0(void* mpeg, LibMpegStreamData* packet, LibMovieDecoder* decoder)
+{
+    LibMovieStreamBuffer* buffer = &decoder->input;
+    s32 size = buffer->size;
+    u8* end;
+    u32 head_size;
+    u8* body;
+    u32 length;
+    s32 body_size;
+    s32 first_size;
+    s32 second_size;
+    u8* first;
+    u8* second;
+    u8* first_uncached;
+    u8* head;
+    u8* second_uncached;
+
+    head = packet->data;
+    end = buffer->data + size;
+    head_size = end - head;
+    body = buffer->data;
+    length = packet->length;
+    head_size = head_size < length ? head_size : length;
+    body_size = length - head_size;
+    func_00417E50(decoder, &first, &first_size, &second, &second_size);
+    first_uncached = (u8*)((u32)first | UNCACHED_SEGMENT);
+    second_uncached = (u8*)((u32)second | UNCACHED_SEGMENT);
+    s32 written = lib_ring_copy(first_uncached, first_size, second_uncached, second_size, head, head_size, body, body_size);
+
+    if (written > 0)
+    {
+        decoder->add_timestamp(packet->pts, packet->dts, first, written);
+    }
+
+    func_00417D30(decoder, written);
+    return written > 0;
+}
 
 /** libmpeg's timestamp callback data. */
 struct LibMpegTimeStampData
@@ -4693,8 +5332,12 @@ extern "C"
      */
     void sceMpegGetPictureAbort(void* mpeg);
 
-    /** @brief Feed the decoder from the stream thread's side. */
-    void func_00417740(LibMovieDecoder* decoder);
+    /**
+     * @brief Move the ring's DMA chain on.
+     * @param decoder Decoder whose ring is fed.
+     * @return True while sectors are queued.
+     */
+    bool func_00417740(LibMovieDecoder* decoder);
 }
 
 /**
@@ -4747,7 +5390,185 @@ s32 func_004152B0(void* mpeg, void* data, void* user)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004152C0);
+extern "C"
+{
+    /**
+     * @brief Tell whether libmpeg has reached the end of the stream.
+     * @param mpeg libmpeg decoder.
+     * @return Nonzero at the end.
+     */
+    s32 sceMpegIsEnd(void* mpeg);
+
+    /**
+     * @brief Decode the next picture.
+     * @param mpeg libmpeg decoder.
+     * @param image Destination image.
+     * @param macroblocks Size of the destination in macroblocks.
+     * @return Nonzero on success.
+     */
+    s32 sceMpegGetPicture(void* mpeg, void* image, s32 macroblocks);
+
+    /**
+     * @brief Take a free frame to decode into.
+     * @param state Movie state.
+     * @return The frame, or null when none is free.
+     */
+    u8* func_004190C0(LibMovieState* state);
+
+    /**
+     * @brief Mark the frame being decoded as ready.
+     * @param state Movie state.
+     */
+    void func_004191A0(LibMovieState* state);
+
+    extern ResidentDmaQueue* D_001B6604;
+    extern ResidentDmaQueue* D_001B6608;
+}
+
+/**
+ * @brief Wait until the ring is not being changed, by taking and releasing its semaphore.
+ * @param decoder Movie decoder.
+ */
+static inline void lib_movie_decoder_sync(LibMovieDecoder* decoder)
+{
+    LibSemaphoreLock lock(&decoder->semaphore);
+}
+
+/**
+ * @brief Read how many whole sectors the decoder's ring holds, under its semaphore.
+ * @param decoder Movie decoder.
+ * @return Bytes in whole sectors.
+ */
+static inline s32 lib_movie_ring_sectors(LibMovieDecoder* decoder)
+{
+    s32 buffered;
+
+    {
+        LibSemaphoreLock lock(&decoder->semaphore);
+        buffered = decoder->unkC999C & ~0x7FF;
+    }
+
+    return buffered;
+}
+
+/**
+ * @brief Decode the next picture into a free frame once enough data is buffered (before the first picture, 512 KB
+ *        while the disc is still reading), with channels 8 and 9 stopped; a paced movie then waits out the rest of
+ *        the frame time on timer 0.
+ * @param decoder Movie decoder.
+ * @return 0 after a picture or when there is nothing to do yet, -1 once the stream has ended.
+ */
+extern "C" s32 func_004152C0(LibMovieDecoder* decoder)
+{
+    if (sceMpegIsEnd(decoder->mpeg))
+    {
+        if (decoder->state->ready_count >= 2)
+        {
+            return -1;
+        }
+
+        decoder->stopped = 3;
+        return -1;
+    }
+
+    if (decoder->stopped == 1)
+    {
+        if (decoder->state->ready_count >= 2)
+        {
+            return -1;
+        }
+
+        decoder->stopped = 3;
+        return -1;
+    }
+
+    s32 buffered;
+
+    {
+        LibSemaphoreLock lock(&decoder->semaphore);
+        buffered = (decoder->unkC999C & ~0x7FF) + decoder->unkC9998 * 0x800;
+    }
+
+    if (buffered == 0)
+    {
+        return 0;
+    }
+
+    if (decoder->stopped != 2 && g_resource_archive->read_busy)
+    {
+        if ((!decoder->unk15E654 && lib_movie_ring_sectors(decoder) < 0x80000) ||
+            lib_movie_ring_sectors(decoder) < 0x2800)
+        {
+            return 0;
+        }
+    }
+
+    decoder->unk15E654 = 1;
+    lib_movie_decoder_sync(decoder);
+
+    decoder->unk15E650 = lib_movie_ring_sectors(decoder);
+    u8* frame = func_004190C0(decoder->state);
+
+    if (!frame)
+    {
+        return 0;
+    }
+
+    u8* image = reinterpret_cast<u8*>(reinterpret_cast<u32>(frame) | UNCACHED_SEGMENT);
+    s32 start = TIMER0_COUNT;
+    D_001B6604->wait_idle();
+    D_001B6608->wait_idle();
+    D_001B6604->stop();
+    D_001B6608->stop();
+    sceMpegGetPicture(decoder->mpeg, image, 0x460);
+    decoder->unk15E658++;
+    EnableDmac(D_001B6604->channel);
+    EnableDmac(D_001B6608->channel);
+    s32 limit = 0x106;
+
+    if (resident_get_system()->progressive)
+    {
+        limit = 0x20C;
+    }
+
+    if (decoder->unk15E645)
+    {
+        // TODO: the wait keeps the elapsed time in memory, which only volatile gives me so far.
+        volatile s32 elapsed;
+
+        do
+        {
+            elapsed = TIMER0_COUNT - start;
+
+            if (elapsed < 0)
+            {
+                elapsed += 0x8000;
+            }
+        } while (elapsed < limit);
+    }
+
+    if (decoder->stopped == 1)
+    {
+        if (decoder->state->ready_count >= 2)
+        {
+            return -1;
+        }
+
+        decoder->stopped = 3;
+        return -1;
+    }
+
+    // TODO: The game tests libmpeg's frame count here and never uses the result, so the comparison is a guess.
+    bool first_picture = false;
+
+    if (*reinterpret_cast<s32*>(decoder->mpeg + 8) == 0)
+    {
+        first_picture = true;
+    }
+
+    func_004191A0(decoder->state);
+    return 0;
+}
 
 extern "C" s32 sceMpegReset(void* mpeg);
 
@@ -4773,7 +5594,76 @@ extern "C" s32 func_004159E0(LibMovieDecoder* decoder)
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00415A70);
+extern "C" void func_00113EA0(void);
+
+/**
+ * @brief Decode pictures until libmpeg reaches the end of the stream or the decoder is stopped: wait for buffered data
+ * and a free frame, then decode into the frame with channels 8 and 9 stopped.
+ * @param decoder Decoder.
+ * @return 1 at the end of the stream, -1 when the decoder was stopped.
+ */
+extern "C" s32 func_00415A70(LibMovieDecoder* decoder)
+{
+    s32 result = 1;
+
+    while (!sceMpegIsEnd(decoder->mpeg))
+    {
+        if (decoder->stopped == 1)
+        {
+            result = -1;
+            break;
+        }
+
+        s32 buffered;
+
+        {
+            LibSemaphoreLock lock(&decoder->semaphore);
+            buffered = (decoder->unkC999C & ~0x7FF) + decoder->unkC9998 * 0x800;
+        }
+
+        if (buffered == 0)
+        {
+            continue;
+        }
+
+        u8* frame;
+
+        do
+        {
+            frame = func_004190C0(decoder->state);
+        } while (frame == 0 || decoder->state->unk80BC <= 1);
+
+        (void)TIMER0_COUNT;
+        u8* image = reinterpret_cast<u8*>(reinterpret_cast<u32>(frame) | UNCACHED_SEGMENT);
+        func_00113EA0();
+        D_001B6604->wait_idle();
+        D_001B6608->wait_idle();
+        D_001B6604->stop();
+        D_001B6608->stop();
+        sceMpegGetPicture(decoder->mpeg, image, decoder->width / 16 * decoder->height / 16);
+        EnableDmac(D_001B6604->channel);
+        EnableDmac(D_001B6608->channel);
+
+        if (decoder->stopped == 1)
+        {
+            result = -1;
+            break;
+        }
+
+        // TODO: The game tests libmpeg's frame count here and never uses the result, so the comparison is a guess.
+        bool first_picture = false;
+
+        if (*reinterpret_cast<s32*>(decoder->mpeg + 8) == 0)
+        {
+            first_picture = true;
+        }
+
+        func_004191A0(decoder->state);
+    }
+
+    sceMpegReset(decoder->mpeg);
+    return result;
+}
 
 /**
  * @brief Copy a header and a body into the two parts of a ring buffer's free space.
@@ -4815,8 +5705,6 @@ extern "C" inline s32 func_00415D30(u8* first, s32 first_size, u8* second, s32 s
 
     return head_size + body_size;
 }
-
-extern "C" void func_00415A70(LibMovieDecoder* decoder);
 
 /**
  * @brief Restart decoding from the stream buffer, wait until a decoded frame has been taken, then mark the decoder
@@ -5205,7 +6093,96 @@ extern "C" void func_00417460(LibMovieRing* ring)
     ring->saved_ipu_ctrl = *IPU_CTRL;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00417740);
+/**
+ * @brief Move the ring's DMA chain on while holding the semaphore: with channel 4 paused, drop the sectors the IPU has
+ *        read since the last call, append the whole sectors buffered since (REF tags, REFE on the last), and restart
+ *        the channel from where it stopped.
+ * @param decoder Decoder whose ring is fed.
+ * @return True while sectors are queued.
+ */
+extern "C" bool func_00417740(LibMovieDecoder* decoder)
+{
+    LibSemaphoreLock lock(&decoder->semaphore);
+
+    if (!decoder->unkC99D0)
+    {
+        return false;
+    }
+
+    {
+        LibInterruptLock interrupts;
+        *D_ENABLEW = *D_ENABLER | D_ENABLE_SUSPEND;
+        *D4_CHCR = DMA_CHCR_DIR_FROM_MEMORY | DMA_CHCR_MODE_CHAIN;
+        *D_ENABLEW = *D_ENABLER & ~D_ENABLE_SUSPEND;
+    }
+
+    u32 chcr = *D4_CHCR;
+    u32 madr = *D4_MADR;
+    s32 index;
+
+    if (madr == reinterpret_cast<u32>(decoder->tags[decoder->ring_sectors + 1]))
+    {
+        index = 0;
+    }
+    else
+    {
+        index = (madr - reinterpret_cast<u32>(decoder->sectors)) / LIB_MOVIE_SECTOR_SIZE;
+    }
+
+    s32 consumed = (index + decoder->ring_sectors - decoder->unkC9994) % decoder->ring_sectors;
+    decoder->unkC9994 = (decoder->unkC9994 + consumed) % decoder->ring_sectors;
+    decoder->unkC9998 -= consumed;
+    index = (decoder->unkC9994 + decoder->unkC9998) % decoder->ring_sectors;
+    s32 count = decoder->unkC999C / LIB_MOVIE_SECTOR_SIZE;
+    decoder->unkC999C %= LIB_MOVIE_SECTOR_SIZE;
+    u8 extended = 0;
+
+    if (count > 0)
+    {
+        s32 last = (decoder->ring_sectors + (decoder->unkC9994 + decoder->unkC9998 - 1)) % decoder->ring_sectors;
+        *(u64*)((u32)decoder->tags[last] | UNCACHED_SEGMENT) =
+            DMA_TAG(LIB_MOVIE_SECTOR_SIZE / 16, DMA_TAG_ID_REF, (u8*)decoder->sectors + last * LIB_MOVIE_SECTOR_SIZE);
+        extended = 1;
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (i == count - 1)
+        {
+            *(u64*)((u32)decoder->tags[index] | UNCACHED_SEGMENT) =
+                DMA_TAG(LIB_MOVIE_SECTOR_SIZE / 16, DMA_TAG_ID_REFE, (u8*)decoder->sectors + index * LIB_MOVIE_SECTOR_SIZE);
+        }
+        else
+        {
+            *(u64*)((u32)decoder->tags[index] | UNCACHED_SEGMENT) =
+                DMA_TAG(LIB_MOVIE_SECTOR_SIZE / 16, DMA_TAG_ID_REF, (u8*)decoder->sectors + index * LIB_MOVIE_SECTOR_SIZE);
+        }
+
+        index = (index + 1) % decoder->ring_sectors;
+    }
+
+    decoder->unkC9998 += count;
+
+    if (decoder->unkC9998)
+    {
+        if (extended)
+        {
+            chcr = (chcr & 0x0FFFFFFF) | DMA_TAG_ID_REF;
+        }
+
+        LibInterruptLock interrupts;
+        *D_ENABLEW = *D_ENABLER | D_ENABLE_SUSPEND;
+        *D4_CHCR = chcr | DMA_CHCR_START;
+        *D_ENABLEW = *D_ENABLER & ~D_ENABLE_SUSPEND;
+    }
+
+    if (decoder->unkC9998)
+    {
+        return true;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Add to unkC999C and unkC99D8 while holding its semaphore.
@@ -5443,7 +6420,205 @@ s32 func_004194F0(void* object)
     return 12;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00419500);
+extern "C"
+{
+    /**
+     * @brief Demultiplex a PSS stream chunk into libmpeg's ring.
+     * @param mpeg libmpeg decoder.
+     * @param data Stream data.
+     * @param size Bytes of stream data.
+     * @param ring Ring buffer.
+     * @param ring_size Ring buffer size.
+     * @return Bytes consumed.
+     */
+    s32 sceMpegDemuxPssRing(void* mpeg, u8* data, s32 size, u8* ring, s32 ring_size);
+
+    /** @brief Keep the movie's sound stream fed. */
+    void func_004144F0(LibMovieStream* stream);
+}
+
+/**
+ * @brief Read how much the archive still has to read for its streaming read, under its semaphore.
+ * @param archive Resource archive.
+ * @return Bytes left to read.
+ */
+static inline s32 lib_archive_pending(ResidentArchive* archive)
+{
+    (void)archive->disc_thread.semaphore.wait();
+    s32 remaining = archive->disc_thread.unk88;
+    (void)archive->disc_thread.semaphore.signal();
+    return remaining;
+}
+
+/**
+ * @brief Feed the decoder from the disc while a movie plays: take what the archive's ring holds (at most 0x1E000
+ *        bytes, half that for a skippable movie), end the stream on a sequence end code or on the movie's own end
+ *        marker, otherwise demultiplex it into libmpeg's ring; end the stream once the archive has nothing left to
+ *        read. Sleeps between passes.
+ */
+void LibMovieThread::run()
+{
+    for (;;)
+    {
+        if (player->is_playing)
+        {
+            ResidentArchive* archive = g_resource_archive;
+
+            if (archive->read_busy || lib_archive_pending(archive) > 0)
+            {
+                u8* data;
+                s32 size = resident_archive_get_ring_positions(g_resource_archive, reinterpret_cast<u32*>(&data));
+
+                func_00414D30(&decoder->input, size);
+
+                if (player->unk15E796)
+                {
+                    size = (size > 0x1E000) ? 0x1E000 : size;
+                    size /= 2;
+                }
+                else
+                {
+                    size = (size > 0x1E000) ? 0x1E000 : size;
+                }
+
+                if (size > 0)
+                {
+                    u8 ended = 0;
+
+                    if (data[0] == 0 && data[1] == 0 && data[2] == 1 && data[3] == 0xB9 && size == 0x800)
+                    {
+                        decoder->end_stream();
+                        ended = 1;
+                    }
+                    else if (player->unk15E797 && player->unk15E7A0 == size)
+                    {
+                        s32 i;
+
+                        for (i = 0; i < 8; i++)
+                        {
+                            if (player->unk15E798[i] != data[i])
+                            {
+                                break;
+                            }
+                        }
+
+                        if (i == 8)
+                        {
+                            decoder->end_stream();
+                            ended = 1;
+                        }
+                    }
+
+                    if (!ended)
+                    {
+                        // TODO: The mpeg argument only lands in the game's register with the decoder in a local,
+                        // and the ring start only keeps its two additions when it reads the member again.
+                        LibMovieDecoder* target = decoder;
+                        size = sceMpegDemuxPssRing(target->mpeg, data, size, decoder->input.aligned_data(),
+                                                   LIB_MOVIE_STREAM_BUFFER_SIZE);
+                        func_00414CE0(&decoder->input, size);
+                        resident_archive_consume_ring(g_resource_archive, size);
+                    }
+                }
+                else
+                {
+                    resident_archive_consume_ring(g_resource_archive, 0);
+                }
+
+                func_004144F0(stream);
+            }
+            else if (decoder->stopped != 2)
+            {
+                decoder->end_stream();
+            }
+        }
+
+        resident_thread_sleep();
+    }
+}
+
+extern "C"
+{
+    /**
+     * @brief Ask libmpeg whether its reference buffers are empty.
+     * @param mpeg libmpeg decoder.
+     * @return Nonzero when they are.
+     */
+    s32 sceMpegIsRefBuffEmpty(void* mpeg);
+
+    /**
+     * @brief Decode the next picture into a free frame once enough data is buffered.
+     * @param decoder Movie decoder.
+     * @return 0 after a picture or when there is nothing to do yet, -1 once the stream has ended.
+     */
+    s32 func_004152C0(LibMovieDecoder* decoder);
+}
+
+/**
+ * @brief Tell whether the decoder has used up its input: nothing left in the ring and libmpeg's reference buffers
+ *        empty.
+ * @param decoder Movie decoder.
+ * @return Nonzero when drained.
+ */
+static inline s32 lib_movie_drained(LibMovieDecoder* decoder)
+{
+    s32 buffered;
+
+    {
+        LibSemaphoreLock lock(&decoder->semaphore);
+        buffered = (decoder->unkC999C & ~0x7FF) + decoder->unkC9998 * 0x800;
+    }
+
+    bool drained = buffered == 0;
+
+    if (drained)
+    {
+        drained = sceMpegIsRefBuffEmpty(decoder->mpeg);
+    }
+
+    return drained;
+}
+
+/**
+ * @brief Stop the movie once it has finished; otherwise wake the reading thread and, unless the movie can be
+ *        skipped and this is an odd frame, wait for the last packet and decode the next picture.
+ */
+void LibMoviePlayer::update()
+{
+    if (!is_playing)
+    {
+        return;
+    }
+
+    s32 state = decoder.stopped;
+
+    if (state == 3 || (state == 2 && (lib_movie_drained(&decoder) || decoder.unk15E64C > 10)) || unk15E790 > 20)
+    {
+        is_playing = 0;
+        g_resource_queue->unk2c = 0;
+        resident_archive_do_nothing(g_resource_archive);
+        resident_archive_stop_ring_read(g_resource_archive);
+        stream.stop_sound();
+        return;
+    }
+
+    resident_thread_wake(thread);
+
+    if (unk15E796 && (g_input_system->vblank_total & 1))
+    {
+        return;
+    }
+
+    if (unk63)
+    {
+        // TODO: the wait reloads the flag every pass, which only volatile gives me so far.
+        while (!*(volatile u8*)&unk62)
+        {
+        }
+    }
+
+    func_004152C0(&decoder);
+}
 
 // TODO: the compiler emits its out-of-line copies of inline destructors with whatever inline depth is set here at
 // the end of the file. The list aggregate's copies (LibClass172320, LibClass1723F0) only match at depth one.

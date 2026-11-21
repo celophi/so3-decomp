@@ -1,4 +1,5 @@
 #include "overlays/lib/palette_blend_channel.h"
+#include "overlays/lib/texture_scroll_channel.h"
 #include "include_asm.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_0049B820.h"
@@ -891,7 +892,110 @@ extern "C" void func_004A22C0(LibModelBase* model)
     model->object_kind |= 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2370);
+/**
+ * @brief Clear the first of a part record's four marker slots that holds 0x2E, through the uncached segment.
+ * @param record Part record.
+ */
+static inline void lib_clear_part_marker(void* record)
+{
+    LibMeshPartRecord* uncached = reinterpret_cast<LibMeshPartRecord*>(reinterpret_cast<u32>(record) | UNCACHED_SEGMENT);
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        if (uncached->unk2c[i] == 0x2E)
+        {
+            uncached->unk2c[i] = 0;
+            break;
+        }
+    }
+}
+
+/**
+ * @brief Clear the 0x2E part markers of a model flagged for it, in every payload it draws, and reset its state.
+ * @param object Model.
+ */
+void func_004A2370(void* object)
+{
+    LibModel* model = static_cast<LibModel*>(object);
+
+    if (!model->unk797_7)
+    {
+        return;
+    }
+
+    if (model->uses_payload_override && !model->children.has_payload())
+    {
+        return;
+    }
+
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource));
+
+    if (mesh->unk56 < 4)
+    {
+        s32 count = mesh->part_count;
+
+        if (model->unk768 != 0)
+        {
+            void*** table = reinterpret_cast<void***>(static_cast<u8*>(model->unk768) + count * 12);
+
+            for (s32 i = 0; i < count; i++)
+            {
+                lib_clear_part_marker(*table[i]);
+            }
+        }
+
+        if (model->uses_payload_override)
+        {
+            func_004D5BB0(model->resource);
+
+            for (s32 i = 0; i < count; i++)
+            {
+                lib_clear_part_marker(func_004D5A90(model->resource));
+            }
+
+            s32 set = model->children.select_payload_set(0);
+            func_004D5C10(model->resource);
+
+            for (s32 i = 0; i < count; i++)
+            {
+                lib_clear_part_marker(func_004D5AC0(model->resource));
+            }
+
+            reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource))->unk54 &= ~2;
+
+            if (model->children.select_payload_set(1) >= 0)
+            {
+                func_004D5C10(model->resource);
+
+                for (s32 i = 0; i < count; i++)
+                {
+                    lib_clear_part_marker(func_004D5AC0(model->resource));
+                }
+
+                reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource))->unk54 &= ~2;
+            }
+
+            model->children.select_payload_set(set);
+        }
+        else
+        {
+            func_004D5C10(model->resource);
+
+            for (s32 i = 0; i < count; i++)
+            {
+                lib_clear_part_marker(func_004D5AC0(model->resource));
+            }
+        }
+
+        model->resource->unk01 |= 1;
+        model->unk780 = 0;
+        reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource))->unk54 &= ~2;
+        model->unk797_7 = 0;
+        model->unk796 = 0;
+        model->unk59d_0 = 1;
+        model->object_kind &= ~1;
+    }
+}
 
 /**
  * @brief Test whether any part of the mesh blends with an ALPHA setting weighted by destination alpha.
@@ -935,7 +1039,118 @@ s32 LibModel::func_004A2870()
     return 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A29D0);
+/**
+ * @brief Write 0x2E into the first empty one of a part record's four marker slots, through the uncached segment.
+ * @param record Part record.
+ */
+static inline void lib_set_part_marker(void* record)
+{
+    LibMeshPartRecord* uncached = reinterpret_cast<LibMeshPartRecord*>(reinterpret_cast<u32>(record) | UNCACHED_SEGMENT);
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        if (uncached->unk2c[i] == 0)
+        {
+            uncached->unk2c[i] = 0x2E;
+            break;
+        }
+    }
+}
+
+/**
+ * @brief Write the 0x2E part markers of a model that doesn't have them yet, in every payload it draws, and flag it.
+ * @param object Model.
+ * @return One when the markers were written, zero when the model was skipped.
+ */
+s32 func_004A29D0(void* object)
+{
+    LibModel* model = static_cast<LibModel*>(object);
+
+    if (model->unk797_7)
+    {
+        return 0;
+    }
+
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource));
+
+    if (mesh->unk54 & 2)
+    {
+        return 0;
+    }
+
+    if (mesh->unk56 >= 4)
+    {
+        return 0;
+    }
+
+    if (model->uses_payload_override && !model->children.has_payload())
+    {
+        return 0;
+    }
+
+    s32 count = mesh->part_count;
+
+    if (model->unk768 != 0)
+    {
+        void*** table = reinterpret_cast<void***>(static_cast<u8*>(model->unk768) + count * 12);
+
+        for (s32 i = 0; i < count; i++)
+        {
+            lib_set_part_marker(*table[i]);
+        }
+    }
+
+    if (model->uses_payload_override)
+    {
+        func_004D5BB0(model->resource);
+
+        for (s32 i = 0; i < count; i++)
+        {
+            lib_set_part_marker(func_004D5A90(model->resource));
+        }
+
+        s32 set = model->children.select_payload_set(0);
+        func_004D5C10(model->resource);
+
+        for (s32 i = 0; i < count; i++)
+        {
+            lib_set_part_marker(func_004D5AC0(model->resource));
+        }
+
+        reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource))->unk54 |= 2;
+
+        if (model->children.select_payload_set(1) >= 0)
+        {
+            func_004D5C10(model->resource);
+
+            for (s32 i = 0; i < count; i++)
+            {
+                lib_set_part_marker(func_004D5AC0(model->resource));
+            }
+
+            reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource))->unk54 |= 2;
+        }
+
+        model->children.select_payload_set(set);
+    }
+    else
+    {
+        func_004D5C10(model->resource);
+
+        for (s32 i = 0; i < count; i++)
+        {
+            lib_set_part_marker(func_004D5AC0(model->resource));
+        }
+    }
+
+    reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource))->unk54 |= 2;
+    model->unk797_7 = 1;
+    model->unk780 = 0;
+    model->unk796 = 0;
+    model->unk59d_0 = 1;
+    model->object_kind &= ~1;
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2EF0);
 
@@ -1088,7 +1303,175 @@ s32 LibModel::build_from(LibUpdateList* links, LibModel* source)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3A30);
+/** Image sequence channel description in a mesh. */
+struct LibImageSequenceEntry
+{
+    u8 unk00[8];
+    s32 texture;
+    u32 unk0c;
+};
+
+/** Texture scroll channel description in a mesh. */
+struct LibTextureScrollEntry
+{
+    u8 unk00[8];
+    s32 texture;
+    u32 unk0c;
+    u32 unk10;
+    u32 unk14;
+    u32 unk18;
+    u32 unk1c;
+    u32 unk20;
+    u32 mode;
+    u32 unk28;
+    float scale;
+};
+
+/** Palette blend channel description in a mesh, followed by its colours and palette indices. */
+struct LibPaletteBlendEntry
+{
+    u8 unk00[8];
+    s32 texture;
+    u32 unk0c;
+    float blend;
+    s32 entry_count;
+    u32 colors_offset;
+    u32 size;
+};
+
+/** Count-prefixed list of channel descriptions in a mesh. */
+struct LibMeshChannelTable
+{
+    s32 count;
+    u8 entries[1];
+};
+
+/**
+ * @brief Return a model's mesh header.
+ * @param model Model.
+ * @return The resource's payload as a mesh header, or null when the resource has no data.
+ */
+static inline LibMeshHeader* lib_model_mesh(LibModel* model)
+{
+    return reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource));
+}
+
+/**
+ * @brief Clear the per-texture channel flags and create the mesh's image sequence, texture scroll and palette blend
+ *        channels, stopping at the first one that can't be allocated.
+ */
+void LibModel::create_render_channels()
+{
+    if (resource == 0)
+    {
+        return;
+    }
+
+    s32 i;
+
+    for (i = 0; i < 0x20; i++)
+    {
+        unk748[i] = 0;
+    }
+
+    LibMeshHeader* mesh = lib_model_mesh(this);
+
+    if (mesh->image_sequences_offset != 0)
+    {
+        LibMeshChannelTable* table = reinterpret_cast<LibMeshChannelTable*>(reinterpret_cast<u8*>(mesh) + mesh->image_sequences_offset);
+        LibImageSequenceEntry* entry = reinterpret_cast<LibImageSequenceEntry*>(table->entries);
+
+        for (s32 i = 0; i < table->count; i++, entry++)
+        {
+            LibImageSequenceChannel* channel = new (0) LibImageSequenceChannel;
+
+            if (channel == 0)
+            {
+                return;
+            }
+
+            channel->resource = resource;
+            channel->unk38 = entry->texture;
+
+            if (channel->load_resource())
+            {
+                channel->unk3c = entry->unk0c;
+                render_channels.append(channel);
+            }
+            else
+            {
+                delete channel;
+            }
+        }
+    }
+
+    if (mesh->texture_scrolls_offset != 0)
+    {
+        LibMeshChannelTable* table = reinterpret_cast<LibMeshChannelTable*>(reinterpret_cast<u8*>(mesh) + mesh->texture_scrolls_offset);
+        LibTextureScrollEntry* entry = reinterpret_cast<LibTextureScrollEntry*>(table->entries);
+
+        for (s32 i = 0; i < table->count; i++, entry++)
+        {
+            LibTextureScrollChannel* channel = new (0) LibTextureScrollChannel;
+
+            if (channel == 0)
+            {
+                return;
+            }
+
+            unk748[entry->texture] = 1;
+            channel->unk41 = i + 1;
+            channel->unk38 = entry->texture;
+            channel->set_rect(entry->unk0c, entry->unk10, entry->unk14, entry->unk18);
+            channel->set_point(entry->unk1c, entry->unk20);
+            channel->unk3c = entry->unk28;
+            channel->mode = entry->mode;
+            channel->scale = entry->scale;
+            render_channels.append(channel);
+        }
+    }
+
+    if (mesh->palette_blends_offset != 0)
+    {
+        LibMeshChannelTable* table = reinterpret_cast<LibMeshChannelTable*>(reinterpret_cast<u8*>(mesh) + mesh->palette_blends_offset);
+        LibPaletteBlendEntry* entry = reinterpret_cast<LibPaletteBlendEntry*>(table->entries);
+
+        for (s32 i = 0; i < table->count; i++)
+        {
+            LibPaletteBlendChannel* channel = new (0) LibPaletteBlendChannel;
+
+            if (channel == 0)
+            {
+                return;
+            }
+
+            unk748[entry->texture] |= 2;
+            channel->unk41 = i + 1;
+            channel->unk38 = entry->texture;
+            channel->unk3c = entry->unk0c;
+            channel->resource = resource;
+            channel->blend = entry->blend;
+
+            if (channel->load_resource(this))
+            {
+                const LibVector4* colors = reinterpret_cast<const LibVector4*>(reinterpret_cast<u8*>(entry) + entry->colors_offset);
+                s32 count = entry->entry_count;
+                channel->entry_count = count;
+                const LibVector4* end = colors + count;
+                channel->palette_indices = reinterpret_cast<const u8*>(end + count);
+                channel->start_colors = colors;
+                channel->end_colors = end;
+                render_channels.append(channel);
+            }
+            else
+            {
+                delete channel;
+            }
+
+            entry = reinterpret_cast<LibPaletteBlendEntry*>(reinterpret_cast<u8*>(entry) + entry->size);
+        }
+    }
+}
 
 /** @brief Destroy the channel; its palette, source colors and indices are borrowed. */
 LibPaletteBlendChannel::~LibPaletteBlendChannel()
@@ -1369,7 +1752,230 @@ void* LibRenderChannel::append_packets(void* packet)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A59D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A5E60);
+/** Partial view of the model's draw packet at unk220, written through the uncached accelerated segment. */
+typedef struct LibModelPacketHeader
+{
+    u8 unk00[0xA0];
+    unsigned __int128 transform[4];
+    u8 unke0[0x24];
+    s32 unk104;
+    u8 unk108[4];
+    s32 unk10c;
+    u8 unk110[8];
+    float unk118;
+    s32 unk11c;
+    u64 unk120;
+    u8 unk128[8];
+    u64 test;
+    u8 unk138[0x118];
+    s32 unk250;
+    s32 unk254;
+    u8 unk258[0x50];
+    s32 unk2a8;
+} LibModelPacketHeader;
+
+/**
+ * @brief Run the model's per-packet step that build_packet skips after unk797_2 was set.
+ * @param model Model.
+ * @param context Opaque caller context.
+ */
+extern "C" void func_004A59D0(LibModel* model, void* context);
+
+/**
+ * @brief Count what a mesh with unk54 set adds to the packet.
+ * @param model Model.
+ * @return The count build_packet passes on to func_004A62D0.
+ */
+extern "C" s32 func_004A76D0(LibModel* model);
+
+/**
+ * @brief Refresh the model's packet header from its flags and the camera's TEST register.
+ * @param model Model.
+ * @param camera Camera.
+ */
+extern "C" void func_004A7AC0(LibModel* model, const LibCamera* camera);
+
+/**
+ * @brief Copy the mesh's parts into the model's part table.
+ * @param model Model whose resource holds the mesh.
+ */
+extern "C" void func_004A7D50(LibModel* model);
+
+/**
+ * @brief Write the packet data for a mesh with unk38 set or with a count from func_004A76D0.
+ * @param model Model.
+ * @param count Value func_004A76D0 returned for the mesh, or zero.
+ */
+extern "C" void func_004A62D0(LibModel* model, s32 count);
+
+/**
+ * @brief Write the model's parts for one pass.
+ * @param model Model.
+ * @param matrix Camera the model is drawn with.
+ * @param first Nonzero for the pass of a mesh without unk3c.
+ * @return Zero when the parts couldn't be written and the packets have to go.
+ */
+extern "C" s32 func_004A4710(LibModel* model, const void* matrix, s32 first);
+
+/**
+ * @brief Build the model's packet: rebuild the packets when the mesh changed, refresh the packet header from the
+ *        model's state, then write the parts.
+ * @param matrix Camera the model is drawn with.
+ * @param context Opaque caller context.
+ */
+void LibModel::build_packet(const void* matrix, void* context)
+{
+    if (resource == 0)
+    {
+        return;
+    }
+
+    if (source != 0)
+    {
+        void* payload_override = resource->payload_override;
+        select_payload(payload_override, source->get_packet_set());
+    }
+
+    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)unk220 | EE_UNCACHED_ACCELERATED);
+    const unsigned __int128* from = reinterpret_cast<const unsigned __int128*>(&transform);
+
+    if (unk5a1)
+    {
+        unk5a1 = 0;
+    }
+    else
+    {
+        unsigned __int128* to = header->transform;
+
+        *to++ = *from++;
+        *to++ = *from++;
+        *to++ = *from++;
+        *to++ = *from++;
+    }
+
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(resource));
+
+    // TODO: The game keeps a jump at the end of this arm for something set here and never read; the flag is a guess.
+    bool rebuilt = false;
+
+    if (packet == 0)
+    {
+        build_packets();
+        unk791 = 1;
+
+        if (packet == 0)
+        {
+            unk63 = 0;
+            return;
+        }
+
+        rebuilt = true;
+    }
+    else
+    {
+        s32 parts = mesh->part_count;
+
+        if (unk77c != parts)
+        {
+            build_packets();
+
+            if (packet == 0)
+            {
+                unk63 = 0;
+                return;
+            }
+        }
+    }
+
+    payload = reinterpret_cast<u8*>(mesh);
+
+    if (!unk797_2)
+    {
+        func_004A59D0(this, context);
+    }
+
+    unk797_2 = 0;
+
+    if (unk59d_0)
+    {
+        func_004A7AC0(this, static_cast<const LibCamera*>(matrix));
+    }
+
+    s32 count = 0;
+
+    if (mesh->unk54 != 0)
+    {
+        count = func_004A76D0(this);
+    }
+
+    u8 fogged = fog_enabled ? (u8)(unk67 ? true : false) : 0;
+    header->unk10c = fogged;
+    u8 blended = blend_mode ? true : false;
+    header->unk2a8 = blended;
+    u8 depth_blended = (mesh->unk3d[0] || (draw_flags & 0x800)) ? 0 : (u8)(blend_mode ? true : false);
+    header->unk104 = depth_blended;
+
+    if (unk797_1)
+    {
+        func_004A7D50(this);
+        unk797_1 = 0;
+    }
+
+    if (mesh->unk38 != 0 || count != 0)
+    {
+        func_004A62D0(this, count);
+    }
+
+    if (draw_bucket_choice)
+    {
+        if (mesh->unk3c == 0)
+        {
+            if (unk793 < 4)
+            {
+                unk793++;
+                unk795 = 1;
+            }
+
+            if (!func_004A4710(this, matrix, 1))
+            {
+                delete packet;
+                packet = 0;
+                delete base_packet;
+                base_packet = 0;
+                lib_finish_packet(this);
+                return;
+            }
+        }
+        else if (blend_mode && !func_004A4710(this, matrix, 0))
+        {
+            delete packet;
+            packet = 0;
+            delete base_packet;
+            base_packet = 0;
+            lib_finish_packet(this);
+            return;
+        }
+    }
+
+    if (unk211 && !blend_mode)
+    {
+        unk211 = 0;
+
+        if (unk770)
+        {
+            apply_part_settings();
+        }
+
+        delete unk768;
+        unk768 = 0;
+        delete unk76c;
+        unk76c = 0;
+    }
+
+    func_slotF0(count, matrix);
+    ee_sync();
+    unk63 = 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A62D0);
 
@@ -1517,7 +2123,202 @@ void LibTextureCache::clear_stamps()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A7100);
+/**
+ * @brief Get the buffer width to record for a texture; with LIB_TEXTURE_FLAG_DOUBLE_WIDTH, 8-bit and 4-bit textures
+ * get twice their width.
+ * @param request Texture being loaded.
+ * @param flags Loader flags.
+ * @return Buffer width in pixels.
+ */
+static inline s32 lib_texture_buffer_width(const LibTextureRequest* request, u16 flags)
+{
+    s32 width = request->width;
+
+    if (flags & LIB_TEXTURE_FLAG_DOUBLE_WIDTH)
+    {
+        switch (request->psm)
+        {
+        case GS_PSMT4:
+            return width * 2;
+
+        case GS_PSMT8:
+            return width * 2;
+
+        case GS_PSMCT16:
+        case GS_PSMCT16S:
+        default:
+            return width;
+        }
+    }
+
+    return width;
+}
+
+/**
+ * @brief Load a texture the cache missed: claim a free block large enough for it, releasing unstamped textures from
+ * the least recently used end when there is none, and record the texture in it.
+ * @param cache Cache to add the texture to.
+ * @param request Texture to load.
+ * @param tag Request tag.
+ * @param id Texture ID.
+ * @param slot Slot whose last hit is recorded.
+ * @param flags Loader flags (LIB_TEXTURE_FLAG_*).
+ * @param user Object that owns the texture, or null.
+ * @return VRAM word address of the texture, 0 when no spare block record is left, or 1 when no block is large
+ *         enough.
+ */
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 flags,
+                             LibTextureUser* user)
+{
+    u32 index;
+    s32 need;
+
+    if (request->psm == GS_PSMCT24)
+    {
+        need = (request->size / 3 + GS_VRAM_PAGE_WORDS - 1) & ~(GS_VRAM_PAGE_WORDS - 1);
+    }
+    else
+    {
+        need = (request->size / 4 + GS_VRAM_PAGE_WORDS - 1) & ~(GS_VRAM_PAGE_WORDS - 1);
+    }
+
+    u32 found = 0;
+
+    for (index = cache->blocks[0].next_block; index != 0; index = cache->blocks[index].next_block)
+    {
+        if (cache->blocks[index].state == LIB_TEXTURE_BLOCK_FREE && cache->blocks[index].size >= need)
+        {
+            found = index;
+            break;
+        }
+    }
+
+    if (found == 0)
+    {
+        for (index = cache->previous[0]; index != 0;)
+        {
+            u32 older = cache->previous[index];
+
+            if (cache->blocks[index].stamp == 0)
+            {
+                s32 size = cache->blocks[index].size;
+                cache->previous[cache->next[index]] = older;
+                cache->next[cache->previous[index]] = cache->next[index];
+                u32 before = cache->blocks[index].previous_block;
+                u32 after = cache->blocks[index].next_block;
+
+                if (cache->blocks[before].state == LIB_TEXTURE_BLOCK_FREE)
+                {
+                    cache->blocks[index].state = LIB_TEXTURE_BLOCK_UNUSED;
+                    size += cache->blocks[before].size;
+                    cache->blocks[before].size = size;
+                    cache->blocks[after].previous_block = before;
+                    cache->blocks[before].next_block = after;
+                    index = before;
+                }
+
+                if (cache->blocks[after].state == LIB_TEXTURE_BLOCK_FREE)
+                {
+                    cache->blocks[after].state = LIB_TEXTURE_BLOCK_UNUSED;
+                    size += cache->blocks[after].size;
+                    cache->blocks[index].size = size;
+                    cache->blocks[index].next_block = cache->blocks[after].next_block;
+                    cache->blocks[cache->blocks[after].next_block].previous_block = index;
+                }
+
+                cache->blocks[index].state = LIB_TEXTURE_BLOCK_FREE;
+
+                if (size >= need)
+                {
+                    found = index;
+                    break;
+                }
+            }
+
+            index = older;
+        }
+    }
+
+    u32 address;
+
+    if (found != 0)
+    {
+        address = cache->blocks[found].address;
+
+        if (cache->blocks[found].size - need != 0)
+        {
+            s32 tries;
+
+            for (tries = 0; tries < LIB_TEXTURE_CACHE_ENTRY_COUNT; tries++)
+            {
+                if (cache->blocks[cache->unk04].state == LIB_TEXTURE_BLOCK_UNUSED)
+                {
+                    break;
+                }
+
+                cache->unk04 = (cache->unk04 + 1) & 0xFF;
+            }
+
+            if (tries == LIB_TEXTURE_CACHE_ENTRY_COUNT)
+            {
+                return 0;
+            }
+
+            u32 spare = cache->unk04;
+            cache->unk04 = (spare + 1) & 0xFF;
+            cache->blocks[spare].address = cache->blocks[found].address + need;
+            cache->blocks[spare].size = cache->blocks[found].size - need;
+            cache->blocks[spare].state = LIB_TEXTURE_BLOCK_FREE;
+            cache->blocks[found].size = need;
+            cache->blocks[cache->blocks[found].next_block].previous_block = spare;
+            cache->blocks[spare].next_block = cache->blocks[found].next_block;
+            cache->blocks[found].next_block = spare;
+            cache->blocks[spare].previous_block = found;
+        }
+
+        cache->blocks[found].state = LIB_TEXTURE_BLOCK_USED;
+        cache->blocks[found].stamp = cache->stamp;
+        cache->blocks[found].id = id;
+
+        if (user != 0 && user->priority >= LIB_TEXTURE_PRIORITY_RECENT)
+        {
+            cache->next[found] = cache->next[0];
+            cache->previous[found] = 0;
+            cache->previous[cache->next[0]] = found;
+            cache->next[0] = found;
+        }
+        else
+        {
+            cache->next[found] = 0;
+            cache->previous[found] = cache->previous[0];
+            cache->next[cache->previous[0]] = found;
+            cache->previous[0] = found;
+        }
+    }
+    else
+    {
+        return 1;
+    }
+
+    s32 width = lib_texture_buffer_width(request, flags);
+
+    cache->entries[found].tag = tag;
+    cache->entries[found].tex0 = (u32)((address / GS_VRAM_BLOCK_WORDS) | ((width & ~(GS_BUFFER_WIDTH_PIXELS - 1)) << 8)
+                                       | (request->psm << 20))
+        | GS_TEX0_TW(request->width_log2) | GS_TEX0_TH(request->height_log2);
+    cache->entries[found].user = user;
+
+    if (user != 0)
+    {
+        s32 priority = user->priority;
+        priority -= 2;
+        priority = clamp_low(priority, LIB_TEXTURE_PRIORITY_MIN);
+        user->priority = priority;
+    }
+
+    cache->slot_entries[slot] = found;
+    return address;
+}
 
 /**
  * @brief Release a texture's block back to the free area, merging it with free neighbours.
@@ -1592,19 +2393,6 @@ void LibModel::update()
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A76D0);
 
-/** Partial view of the model's draw packet at unk220, written through the uncached accelerated segment. */
-typedef struct LibModelPacketHeader
-{
-    u8 unk00[0x118];
-    float unk118;
-    s32 unk11c;
-    u64 unk120;
-    u8 unk128[8];
-    u64 test;
-    u8 unk138[0x118];
-    s32 unk250;
-    s32 unk254;
-} LibModelPacketHeader;
 
 /**
  * @brief Return the camera's TEST register value with the model's destination alpha test applied.
@@ -2293,7 +3081,7 @@ extern "C" s32 func_004A9000(LibClass177A20* list)
  * @param set Packet set to select; only set zero when the list has a single payload.
  * @return The previously selected set, or -1 when the set isn't available.
  */
-s32 LibClass177A20::select_payload_set(u8 set)
+s32 LibClass177A20::select_payload_set(s32 set)
 {
     if (set && unk8d_0)
     {
@@ -2584,7 +3372,95 @@ void LibClass177A20::release_model()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004AB360);
+/**
+ * @brief Attach a list to a model: add it to the links, size its two bitsets to the model's parts (clearing the
+ *        first), and allocate its five per-part buffers, all or none.
+ * @param list List with no model yet.
+ * @param model Model to attach.
+ * @param links List to add the list to.
+ */
+extern "C" void func_004AB360(LibClass177A20* list, LibModel* model, LibUpdateList* links)
+{
+    if (list->model)
+    {
+        return;
+    }
+
+    links->append_node(static_cast<LibListObject*>(list), LibUpdateList::DEFAULT_NODE_KIND);
+    list->model = model;
+    u32 count = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(list->model->resource))->part_count;
+
+    if (!list->unk2c.words_are_borrowed)
+    {
+        delete[] list->unk2c.words;
+    }
+
+    list->unk2c.bit_count = count;
+    s32 words = (count + 31) / 32;
+    list->unk2c.word_count = words;
+    list->unk2c.words = new (0) u32[list->unk2c.word_count];
+    list->unk2c.words_are_borrowed = 0;
+
+    s32 word_count = list->unk2c.word_count;
+
+    for (s32 i = 0; i < word_count; i++)
+    {
+        list->unk2c.words[i] = 0;
+    }
+
+    if (!list->unk40.words_are_borrowed)
+    {
+        delete[] list->unk40.words;
+    }
+
+    list->unk40.bit_count = count;
+    list->unk40.word_count = words;
+    list->unk40.words = new (0) u32[list->unk40.word_count];
+    list->unk40.words_are_borrowed = 0;
+    delete list->unk5c;
+    delete list->unk60;
+    delete list->unk68;
+    delete list->unk6c;
+    delete list->unk70;
+
+    if (D_001B65A8)
+    {
+        u32 size = (count * 0x10 + 0x10 + count * 2) * 0x10;
+        list->unk5c = resident_heap_allocate(D_001B65A8, size);
+        list->unk60 = resident_heap_allocate(D_001B65A8, size);
+        size = (count + 2) * 0x10;
+        list->unk68 = resident_heap_allocate(D_001B65A8, size);
+        list->unk6c = resident_heap_allocate(D_001B65A8, size);
+        list->unk70 = resident_heap_allocate(D_001B65A8, (count + 1) * 0x58);
+    }
+    else
+    {
+        u32 size = (count * 0x10 + 0x10 + count * 2) * 0x10;
+        list->unk5c = malloc_guess(size);
+        list->unk60 = malloc_guess(size);
+        size = (count + 2) * 0x10;
+        list->unk68 = malloc_guess(size);
+        list->unk6c = malloc_guess(size);
+        list->unk70 = malloc_guess((count + 1) * 0x58);
+    }
+
+    FlushCache(0);
+
+    if (!list->unk5c || !list->unk60 || !list->unk68 || !list->unk6c || !list->unk70)
+    {
+        delete list->unk5c;
+        delete list->unk60;
+        delete list->unk68;
+        delete list->unk6c;
+        delete list->unk70;
+        list->unk5c = 0;
+        list->unk60 = 0;
+        list->unk68 = 0;
+        list->unk6c = 0;
+        list->unk70 = 0;
+        return;
+    }
+}
 
 /** @brief Release the model and the payload buffers, then destroy the list. */
 LibClass177A20::~LibClass177A20()

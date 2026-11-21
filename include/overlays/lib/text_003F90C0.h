@@ -193,6 +193,14 @@ void func_00408600(s32 index, s32 component, float* first, float* second);
 s32 func_408EA0(void* detail, s32 code, s32 index, s32* kind, s32* value, s32* result_index, s32* remainder, s32 mode);
 
 /**
+ * @brief Validate a nine-byte block against the checksum byte after it.
+ * @param data Nine bytes followed by their checksum.
+ * @param seed Value mixed into the sum.
+ * @return One when the checksum matches, otherwise zero.
+ */
+s32 func_00408E20(u8* data, s32 seed);
+
+/**
  * @brief Resolve a protected detail entry and return its selected values.
  * @param detail Detail record containing the encoded entry arrays.
  * @param code Signed record code, from one through ten.
@@ -258,7 +266,7 @@ struct LibResourceRecord114
 
 extern "C"
 {
-    void func_004076D0(LibResourceRecordC4* output, LibResourceRecord114* input, s32 flag);
+    void func_004076D0(LibCharacterRecord* record, LibCharacterEquipment* equipment, s32 id);
 }
 #endif
 

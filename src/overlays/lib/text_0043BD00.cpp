@@ -3,6 +3,8 @@
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/particle_grid.h"
 #include "overlays/lib/text_0043BD00.h"
+#include "overlays/lib/matrix_vu0.h"
+#include "overlays/lib/counted_list.h"
 #include "main/resident_data.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/row_fill.h"
@@ -16,6 +18,10 @@
 #include "overlays/lib/collider_vu0.h"
 #include "overlays/lib/light_vu0.h"
 #include "ee.h"
+#include "overlays/lib/model.h"
+#include "main/utility.h"
+
+extern "C" void func_0042D9B0(LibClass173490* entry, const LibVector4* position, const LibVector4* amount);
 
 extern "C" {
 
@@ -259,22 +265,113 @@ void LibClass173B10::func_slot84(const LibMatrix44Value* matrix, const LibMatrix
     unk238 = -unk214;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", collide__14LibClass173C40FPC10LibVector4PC10LibVector4PC10LibVector4P10LibVector4P10LibVector4);
-
 /** @brief Load vf1-vf31 back. */
-LibVu0StateGuard::~LibVu0StateGuard()
+inline LibVu0StateGuard::~LibVu0StateGuard()
 {
     vu0_restore_registers(registers);
 }
 
 /**
- * @brief Keep the last update's unk260 and unk270 and the transform matrix, then track the velocity of the transform's
+ * @brief Bounce a particle step off the plane when it crosses it inside the collider's rectangle, also accepting a
+ *        crossing of the plane's previous position while it moves, and set off the splash and ripple effects.
+ * @param previous Previous particle position.
+ * @param position Current particle position.
+ * @param velocity Particle velocity.
+ * @param out_velocity Receives the new velocity.
+ * @param out_position Receives the corrected position.
+ * @return Whether the particle hit the plane.
+ */
+bool LibClass173C40::collide(const LibVector4* previous, const LibVector4* position, const LibVector4* velocity,
+                             LibVector4* out_velocity, LibVector4* out_position)
+{
+    LibVector4 saved[4];
+    LibVector4 distances;
+    LibVector4 previous_distances;
+    LibVector4 local;
+
+    vu0_save_vf15_vf18(saved);
+    vu0_plane_step_load(previous, position, &plane_point, &plane_normal);
+    vu0_plane_step_distances(&distances);
+
+    if (distances.x < -1.0f || !(distances.y <= 0.0f))
+    {
+        if (unk221)
+        {
+            vu0_plane_other_load(position, &previous_plane_point, &previous_plane_normal);
+            vu0_plane_previous_distance(&previous_distances);
+
+            if (previous_distances.x < -1.0f || !(previous_distances.y <= 0.0f))
+            {
+                vu0_restore_vf15_vf18(saved);
+                return false;
+            }
+
+            vu0_plane_load(&plane_point, &plane_normal);
+        }
+        else
+        {
+            vu0_restore_vf15_vf18(saved);
+            return false;
+        }
+    }
+
+    vu0_plane_load_matrix(&world_to_local);
+    vu0_plane_transform_hit(&local);
+
+    if (local.x < -half_width || !(local.x <= half_width))
+    {
+        vu0_restore_vf15_vf18(saved);
+        return false;
+    }
+
+    if (local.z < -half_depth || !(local.z <= half_depth))
+    {
+        vu0_restore_vf15_vf18(saved);
+        return false;
+    }
+
+    vu0_plane_store_hit(out_position);
+    vu0_plane_bounce(&bounce, velocity, &this->velocity, out_velocity);
+
+    if (unk222[0])
+    {
+        LibVu0StateGuard guard;
+        LibVector4 point;
+
+        vu0_plane_transform_hit_with(&unk340, &point);
+        point.w = 1.0f;
+
+        if (splash)
+        {
+            func_00452270(splash, &point, velocity->y * radius);
+        }
+
+        if (ripple)
+        {
+            LibVector4 amount;
+            float z = radius * (0.01f * (velocity->y * resident_random_fraction()));
+            float x = radius * (0.01f * (velocity->y * resident_random_fraction()));
+            amount.x = x;
+            amount.y = 0.0f;
+            amount.z = z;
+            amount.w = 1.0f;
+            LibVector4* spread = &amount;
+            func_0042D9B0(ripple, &point, spread);
+        }
+    }
+
+    vu0_restore_vf15_vf18(saved);
+    return true;
+}
+
+/**
+ * @brief Keep the last update's plane and transform matrix, then track the velocity of the transform's
  * position, scaled by one plus unk210, after the first update.
  */
 void LibClass173C40::update()
 {
-    unk290.set(unk270);
-    unk280.set(unk260);
+    previous_plane_normal.set(plane_normal);
+    previous_plane_point.set(plane_point);
 
     if (!started)
     {
@@ -307,7 +404,126 @@ void LibClass173C40::update()
     previous_position.set(position);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_slot84__14LibClass173C40FPC16LibMatrix44ValuePC16LibMatrix44ValuePC16LibMatrix44Value);
+/**
+ * @brief Read one column of a matrix's first three rows, negated.
+ * @param vector Destination; w is left alone.
+ * @param matrix Source matrix.
+ * @param column Column to read.
+ */
+static inline void lib_negated_matrix_column(LibVector4* vector, const LibMatrix44Value* matrix, s32 column)
+{
+    const float* row0 = matrix->m[0];
+    const float* row1 = matrix->m[1];
+    const float* row2 = matrix->m[2];
+    vector->x = -row0[column];
+    vector->y = -row1[column];
+    vector->z = -row2[column];
+}
+
+/**
+ * @brief Read one column of a matrix's first three rows and set w to one.
+ * @param vector Destination.
+ * @param matrix Source matrix.
+ * @param column Column to read.
+ * @return The destination.
+ */
+static inline LibVector4* lib_matrix_column_point(LibVector4* vector, const LibMatrix44Value* matrix, s32 column)
+{
+    const float* row0 = matrix->m[0];
+    const float* row1 = matrix->m[1];
+    const float* row2 = matrix->m[2];
+    vector->x = row0[column];
+    vector->y = row1[column];
+    vector->z = row2[column];
+    vector->w = 1.0f;
+    return vector;
+}
+
+/**
+ * @brief Move the plane into the frame of a matrix, keep its last position for crossing tests, and find the parent
+ *        model's splash and ripple entries when the collider sets off effects.
+ * @param matrix Matrix to move the plane point by.
+ * @param second Matrix to turn the plane normal by.
+ * @param third Matrix the rectangle test and the effects work in.
+ */
+void LibClass173C40::func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* second,
+                                 const LibMatrix44Value* third)
+{
+    if (!matrix_ready)
+    {
+        update_transform_matrix();
+    }
+
+    LibVector4 vector;
+    vector.x = transform.m[0][3];
+    vector.y = transform.m[1][3];
+    vector.z = transform.m[2][3];
+    vector.w = 1.0f;
+    vu0_transform_emission_point(matrix, &vector, &plane_point);
+
+    const LibMatrix44Value* current = &transform;
+    lib_negated_matrix_column(&vector, current, 1);
+    bounce.x = -1.0f;
+    bounce.y = 1.0f + unk210;
+    bounce.z = -unk214;
+    lib_normalize_vector3(&vector.x);
+    vu0_transform_emission_direction(second, &vector, &plane_normal);
+
+    LibMatrix44Value inverse = func_004CF0B0(*current);
+    LibMatrix44Value product;
+    LibMatrix44Value* out = &product;
+    const LibMatrix44Value* left = &inverse;
+    vu0_multiply_matrix(out, left, third);
+    ee_transpose_matrix(&world_to_local, &product);
+    unk221 = 0;
+
+    if (started)
+    {
+        vu0_transform_emission_point(matrix, lib_matrix_column_point(&vector, &previous_transform, 3),
+                                     &previous_plane_point);
+        lib_negated_matrix_column(&vector, &previous_transform, 1);
+        lib_normalize_vector3(&vector.x);
+        vu0_transform_emission_direction(second, &vector, &previous_plane_normal);
+
+        if (previous_plane_point.x != plane_point.x || previous_plane_point.y != plane_point.y ||
+            previous_plane_point.z != plane_point.z)
+        {
+            unk221 = 1;
+        }
+
+        if (previous_plane_normal.x != plane_normal.x || previous_plane_normal.y != plane_normal.y ||
+            previous_plane_normal.z != plane_normal.z)
+        {
+            unk221 = 1;
+        }
+    }
+
+    ee_transpose_matrix(&unk340, third);
+
+    if (unk222[0])
+    {
+        splash = 0;
+        ripple = 0;
+        LibListSentinel* end = &static_cast<LibModel*>(parent_transform)->children.sentinel;
+
+        for (LibListSentinel* node = end->next; !at_list_end(end, node); node = node->next)
+        {
+            u8 kind = static_cast<LibClass1779F0*>(node)->unk0f;
+
+            if (kind == 7)
+            {
+                splash = static_cast<LibClass174C20*>(node);
+                return;
+            }
+
+            if (kind == 8)
+            {
+                ripple = reinterpret_cast<LibClass173490*>(node);
+                return;
+            }
+        }
+    }
+}
 
 /**
  * @brief Run a moving point through every collider in a list.
@@ -530,8 +746,8 @@ extern "C" void func_0043D270(RowFillOwner* object, RowFillCell* cell, RowFillEl
             s32 count = object->unk10 - 1;
             angles.packed = angle_pair->packed;
             radii.packed = axis_radii->packed;
-            lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
-            lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+            lib_compute_sine_cosine_pair(angles.floats[0], &first_trig);
+            lib_compute_sine_cosine_pair(angles.floats[1], &second_trig);
             float previous_x = first_trig.z * (radii.floats[0] * second_trig.z);
             float previous_y = radii.floats[1] * first_trig.w;
             float previous_z = first_trig.z * (radii.floats[2] * second_trig.w);
@@ -545,8 +761,8 @@ extern "C" void func_0043D270(RowFillOwner* object, RowFillCell* cell, RowFillEl
                 radii.floats[0] -= radius_step->floats[0];
                 radii.floats[1] -= radius_step->floats[1];
                 radii.floats[2] -= radius_step->floats[2];
-                lib_compute_sine_cosine_pair(&first_trig, angles.floats[0]);
-                lib_compute_sine_cosine_pair(&second_trig, angles.floats[1]);
+                lib_compute_sine_cosine_pair(angles.floats[0], &first_trig);
+                lib_compute_sine_cosine_pair(angles.floats[1], &second_trig);
                 float x = first_trig.z * (radii.floats[0] * second_trig.z);
                 position.floats[0] += x - previous_x;
                 previous_x = x;
@@ -3025,7 +3241,207 @@ LibClass173F80::~LibClass173F80()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0043BD00", func_00441660);
+/**
+ * @brief Advance active cells' frame vectors and playback state into an output batch; a cell with flag 2 set keeps its
+ *        frame time, and each cell keeps a copy of its boundary count.
+ * @param object Grid owning the cells and frame resource.
+ * @param capacity Output-entry budget, counted in steps of the grid column count.
+ * @param output Output records, with each cell written at the start of its row.
+ * @param preserve_row_vector Nonzero to retain the saved xyz components in the first row element.
+ */
+extern "C" void func_00441660(GridOwner00441660* object, s32 capacity, GridOutputRecord* output, s32 preserve_row_vector)
+{
+    s32 columns = object->unk10;
+    s32 index = object->unk2C;
+    s32 cells = object->unk0C;
+    u64* words = object->unk1C->unk08;
+    u64 mask = (u64)1 << (index & 63);
+    s32 word_index = index / 64;
+    u64 active_word = words[word_index++];
+    s32 consumed = 0;
+    GridFrameHeader* header = object->frame_header;
+    float frame_seconds = 1.0f / 60.0f;
+    float delta = g_frame_seconds;
+    s32 frame_count = header->frame_count;
+    s32 loop_mode = header->loop_mode;
+    vu0_set_grid_frame_delta(delta);
+
+    if (columns == 1)
+    {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridCell00441660* cell;
+                GridFrameState* frame;
+                s32 frame_index;
+                GridCellElement00441660* element;
+                GridFrameVector* value;
+
+                mask <<= 1;
+
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                cell = &object->unk14[index];
+                frame = &cell->motion.frame;
+
+                if (!(cell->flags & 2))
+                {
+                    frame->remaining_time -= delta;
+                }
+
+                value = &cell->motion.value;
+                frame_index = frame->frame_index;
+                element = &cell->element;
+                vu0_load_grid_frame_vectors(value, &cell->motion.rate);
+
+                while (frame->remaining_time <= 0.0f)
+                {
+                    s32 step = frame->reverse != 0 ? -1 : 1;
+                    frame->remaining_time += frame_seconds * object->frame_records[frame_index].duration_frames;
+                    frame_index += step;
+
+                    if (frame_index >= frame_count)
+                    {
+                        switch (loop_mode)
+                        {
+                            case 0:
+                                frame_index = 0;
+                                break;
+                            case 1:
+                                frame->reverse = 1;
+                                frame_index--;
+                                break;
+                            case 2:
+                                frame_index--;
+                                break;
+                        }
+
+                        frame->boundary_count++;
+                    }
+                    else if (frame_index < 0)
+                    {
+                        frame->reverse = 0;
+                        frame_index = 0;
+                        frame->boundary_count++;
+                    }
+
+                    frame->frame_index = frame_index;
+                }
+
+                index++;
+                element->boundary_count = frame->boundary_count;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                output->frame_vector.components.frame_index = frame_index;
+                vu0_store_grid_frame_vector(value);
+                output += columns;
+            }
+    }
+    else
+    {
+            while (consumed < capacity && index < cells)
+            {
+                u64 active = active_word & mask;
+                GridCell00441660* cell;
+                GridFrameState* frame;
+                s32 frame_index;
+                GridCellElement00441660* element;
+                GridFrameVector* value;
+                GridFrameVector* previous;
+
+                mask <<= 1;
+
+                if (mask == 0)
+                {
+                    mask = 1;
+                    active_word = words[word_index++];
+                }
+
+                if (active == 0)
+                {
+                    index++;
+                    continue;
+                }
+
+                cell = &object->unk14[index];
+                frame = &cell->motion.frame;
+
+                if (!(cell->flags & 2))
+                {
+                    frame->remaining_time -= delta;
+                }
+
+                frame_index = frame->frame_index;
+                previous = &object->unk20[index * (columns - 1)].unk30;
+                element = &cell->element;
+                value = &cell->motion.value;
+
+                if (preserve_row_vector == 0)
+                {
+                    previous->packed = value->packed;
+                }
+
+                previous->components.frame_index = frame_index;
+                vu0_load_grid_frame_vectors(value, &cell->motion.rate);
+
+                while (frame->remaining_time <= 0.0f)
+                {
+                    s32 step = frame->reverse != 0 ? -1 : 1;
+                    frame->remaining_time += frame_seconds * object->frame_records[frame_index].duration_frames;
+                    frame_index += step;
+
+                    if (frame_index >= frame_count)
+                    {
+                        switch (loop_mode)
+                        {
+                            case 0:
+                                frame_index = 0;
+                                break;
+                            case 1:
+                                frame->reverse = 1;
+                                frame_index--;
+                                break;
+                            case 2:
+                                frame_index--;
+                                break;
+                        }
+
+                        frame->boundary_count++;
+                    }
+                    else if (frame_index < 0)
+                    {
+                        frame->reverse = 0;
+                        frame_index = 0;
+                        frame->boundary_count++;
+                    }
+
+                    frame->frame_index = frame_index;
+                }
+
+                index++;
+                element->boundary_count = frame->boundary_count;
+                ee_prefetch(&object->unk14[index]);
+                vu0_advance_grid_frame_vector();
+                consumed += columns;
+                vu0_store_grid_frame_vector(&output->frame_vector);
+                output->frame_vector.components.frame_index = frame_index;
+                vu0_store_grid_frame_vector(value);
+                output += columns;
+            }
+    }
+}
 
 /**
  * @brief Clear the cell word at offset 0x1C, then reset the cell through func_00441C10.

@@ -89,6 +89,22 @@ segments:
       # text_004DD440 ends with an 8-byte thunk at 0x4E9FE0; the game pads its object to 0x4EA000.
       - [0x103770, pad, text_tail_pad]
       - [0x103780, databin, data]
+      - start: 0x11B410
+        type: .rodata
+        name: text_003F90C0
+        linker_section: .rodata.00501C90
+        rodata_anchors:
+          - {function: func_00401780, offset: 0x0, size: 0x18}
+        linker_section_order: .rodata
+      - [0x11B428, rodatabin, data_00501CA8]
+      - start: 0x11B480
+        type: .rodata
+        name: text_003F90C0
+        linker_section: .rodata.00501D00
+        rodata_anchors:
+          - {function: func_004076D0, offset: 0x0, size: 0x2C}
+        linker_section_order: .rodata
+      - [0x11B4AC, rodatabin, data_00501D2C]
       - start: 0x11EE90
         type: .rodata
         name: text_004095C0
@@ -118,7 +134,7 @@ segments:
         name: text_0044ABE0
         linker_section: .rodata.00505B00
         rodata_anchors:
-          - {function: func_00412C40__14LibClass1746D0FUiUiUi, offset: 0x0, size: 0x18}
+          - {function: func_00412C40__14LibClass1746D0Fbbb, offset: 0x0, size: 0x18}
         linker_section_order: .rodata
       - [0x11F298, rodatabin, rodata_00505B18]
       - start: 0x11F2B0
@@ -149,7 +165,7 @@ segments:
         name: text_0045AD10
         linker_section: .rodata.00505CD0
         rodata_anchors:
-          - {function: func_00412C40__16LibMessageWindowFUiUiUi, offset: 0x0, size: 0x28}
+          - {function: func_00412C40__16LibMessageWindowFbbb, offset: 0x0, size: 0x28}
         linker_section_order: .rodata
       - [0x11F478, rodatabin, rodata_00505CF8]
       - start: 0x11F4A0
@@ -157,7 +173,7 @@ segments:
         name: text_0045AD10
         linker_section: .rodata.00505D20
         rodata_anchors:
-          - {function: func_00412C40__14LibClass174F70FUiUiUi, offset: 0x0, size: 0x30}
+          - {function: func_00412C40__14LibClass174F70Fbbb, offset: 0x0, size: 0x30}
         linker_section_order: .rodata
       - start: 0x11F4D0
         type: .rodata

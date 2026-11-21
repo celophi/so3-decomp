@@ -41,10 +41,16 @@ struct LibDrawEnvironment
     GsDrawContext context2;
 };
 
+#define LIB_SCREEN_CLEAR_STRIP_COUNT 30
+
 /** GS packet that clears a draw buffer in 32-pixel-wide strips. */
 struct LibScreenClear
 {
-    u8 unk00[0x400];
+    GsRegisterValue test;
+    GsRegisterValue prim;
+    GsRegisterValue color;
+    GsRegisterValue vertices[LIB_SCREEN_CLEAR_STRIP_COUNT * 2];
+    GsRegisterValue restore_test;
 };
 
 /** One of the display's draw buffers: its environment and the packet that clears it. */
@@ -282,6 +288,26 @@ public:
     void get_area_scale(float* x, float* y);
 
     /**
+     * @brief Set the depth one level of the first effect is drawn at.
+     * @param index Effect level.
+     * @param depth Screen depth.
+     */
+    void set_effect_first_depth(s32 index, s32 depth)
+    {
+        effect_first_depths[index] = depth;
+    }
+
+    /**
+     * @brief Set the depth one level of the second effect is drawn at.
+     * @param index Effect level.
+     * @param depth Screen depth.
+     */
+    void set_effect_second_depth(s32 index, s32 depth)
+    {
+        effect_second_depths[index] = depth;
+    }
+
+    /**
      * @brief Wait for the next field and set the draw buffers' half-pixel offsets for it.
      * @param frame Render iteration, which picks the draw buffer.
      * @return Field the frame is drawn for (always 0 for progressive output).
@@ -355,11 +381,12 @@ public:
     u8 effect_enabled;
     u8 effect_first_flag;
     u8 effect_second_flag;
-    u8 effect_level;
+    s8 effect_level;
     float effect_first_scale;
     float effect_second_scale;
     u32 effect_mask;
-    u8 unk3E8C[0x80];
+    u32 effect_first_depths[16];
+    u32 effect_second_depths[16];
 
     /** @brief Destroy the display. */
     virtual ~LibCameraContext();
@@ -411,6 +438,16 @@ extern "C" void func_004DCDE0(LibCameraContext* display, bool enabled, bool firs
 extern "C" void func_004DE500(LibCameraContext* display);
 
 /**
+ * @brief Build the projection and clip matrices for a screen grown by a step, keeping its aspect, and write the
+ * camera's projection and clip matrices into its uncached step packet.
+ * @param camera Camera.
+ * @param step Pixels added to the screen width.
+ * @param projection Receives the stepped projection matrix, converted by func_004CECD0.
+ * @param clip Receives the stepped clip matrix, converted by func_004CECD0.
+ */
+extern "C" void func_004E22B0(class LibCamera* camera, s32 step, LibMatrix44Value* projection, LibMatrix44Value* clip);
+
+/**
  * @brief Build a packet that draws a rectangle into one of the display's buffers.
  * @param display Display.
  * @param packet Packet to fill.
@@ -435,8 +472,8 @@ extern "C" void func_004DE500(LibCameraContext* display);
  * @return Packet size.
  */
 extern "C" u32 func_004DEA70(LibCameraContext* display, u8* packet, u8 field, u32 frame_base, s16 pixel_format, s16 width,
-                             s16 height, s16 base_width, s16 base_height, u32 depth_mask, s32 blend, s32 alpha,
-                             s32 unk12, s32 unk13, s32 unk14, s32 unk15, s32 x, s32 y, s32 rect_width, s32 rect_height);
+                             s16 height, s16 base_width, s16 base_height, u32 depth_mask, u8 blend, s32 alpha,
+                             s32 unk12, s32 unk13, s32 unk14, u8 unk15, s32 x, s32 y, s32 rect_width, s32 rect_height);
 
 /** GS ALPHA register values; the first is the usual (Cs - Cd) * As + Cd blend. */
 extern "C" u64 D_004ED330[];
@@ -569,6 +606,16 @@ public:
 
 #define LIB_CAMERA_MODE_FACE_CURRENT_CAMERA 1
 
+/** Part of a camera's uncached packet that func_004E22B0 fills: the projection and the clip matrix. */
+struct LibCameraStepPacket
+{
+    u8 unk00[0x10];
+    LibMatrix44Value projection;
+    u8 unk50[0x10];
+    LibMatrix44Value clip;
+    u8 unka0[0x40];
+};
+
 /**
  * VU packet the camera keeps at 0x5C0 and writes through the uncached segment: its matrices and screen terms. The
  * word at 0x120 is what LibClass178FC0 writes to register 0x4F.
@@ -589,7 +636,8 @@ struct LibCameraPacket5C0
     float roll;
     float fog_offset;
     float fog_scale;
-    u8 unk160[0x140];
+    u8 unk160[0x60];
+    LibCameraStepPacket step;
 };
 
 /** Scene and model-preview camera, with its submission callback interface at 0x220. */
@@ -667,6 +715,17 @@ public:
      * @param source Camera to copy.
      */
     void copy_view_and_fog(const LibCamera* source);
+
+    /**
+     * @brief Set the screen centre in GS coordinates.
+     * @param x Centre x.
+     * @param y Centre y.
+     */
+    void set_centre(float x, float y)
+    {
+        centre_x = x;
+        centre_y = y;
+    }
 
     /**
      * @brief Read the configured far and near fog factors.
@@ -748,8 +807,8 @@ public:
     float projection_distance;
     float pixel_aspect;
     float roll;
-    float unk280;
-    float unk284;
+    float centre_x;
+    float centre_y;
     u8 unk288[8];
     FieldVec4B screen_min;
     FieldVec4B screen_max;
@@ -804,6 +863,14 @@ extern "C" void lib_load_camera_screen_matrix(const LibCamera* camera);
  * @param camera Camera to upload.
  */
 extern "C" void func_004E1670(LibCamera* camera);
+
+class LibLightList;
+
+/**
+ * @brief Light step run before the renderer tests its models: refresh the list's light matrices and sort its lights.
+ * @param list Light list.
+ */
+extern "C" void func_004E9290(LibLightList* list);
 #endif
 
 #ifdef __cplusplus

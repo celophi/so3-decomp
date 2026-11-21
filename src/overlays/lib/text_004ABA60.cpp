@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "main/dma_queue.h"
 #include "overlays/lib/text_004ABA60.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004CD3A0.h"
@@ -172,7 +173,98 @@ void LibClass177A80::submit_dma(u32 channel)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_slot1C__14LibClass177A80FP12LibTransform);
+/** DMA queue of the VIF0 channel. */
+extern "C" ResidentDmaQueue* D_001B660C;
+
+/**
+ * @brief Build the bone matrices in the scratchpad, behind a VIF UNPACK to VU0 memory 0x10, and send them over VIF0.
+ * @param root Model transform the bones are relative to.
+ * @return One when the matrices were sent, zero without bones.
+ */
+s32 LibClass177A80::func_slot1C(LibTransform* root)
+{
+    s32 count;
+    LibTransform** bones = (LibTransform**)unk3c;
+
+    if (bones == 0)
+    {
+        return 0;
+    }
+
+    count = header->matrix_count;
+    LibClass177A20* owner = list;
+
+    if (owner->unk8d_3)
+    {
+        root->transform_dirty = 1;
+        root->matrix_ready = 0;
+        root->unk51 = 0;
+
+        for (s32 i = 0; i < count; i++)
+        {
+            LibTransform* bone = bones[i];
+            bone->transform_dirty = 1;
+            bone->matrix_ready = 0;
+            bone->unk51 = 0;
+        }
+    }
+
+    cursor = records;
+    LibMatrix44Value* output = (LibMatrix44Value*)(EE_SCRATCHPAD + 0x10);
+
+    if (!root->matrix_ready)
+    {
+        root->update_transform_matrix();
+    }
+
+    LibMatrix44Value inverse = func_004CF0B0(root->transform);
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (!bones[i]->matrix_ready)
+        {
+            bones[i]->update_transform_matrix();
+        }
+    }
+
+    const LibMatrix44Value* first = &bones[0]->transform;
+    vu0_skin_load_root(&inverse);
+    vu0_skin_load_bone(first, &matrices[0]);
+    vu0_skin_start();
+    s32 total = header->matrix_count;
+
+    if (total > 0)
+    {
+        for (s32 i = 1; i < total; i++)
+        {
+            const LibMatrix44Value* bone = &bones[i]->transform;
+            LibMatrix44Value* bind = &matrices[i];
+            ee_prefetch(bind);
+            vu0_skin_load_bone(bone, bind);
+            vu0_skin_store_previous(output);
+            vu0_skin_start();
+            output++;
+        }
+    }
+
+    s32 quadwords = header->matrix_count * 4;
+    u32* tag = (u32*)EE_SCRATCHPAD;
+    *(unsigned __int128*)tag = 0;
+    tag[3] = (quadwords << 16) | 0x6C000010;
+    s32 transfer = quadwords + 1;
+    ResidentDmaQueue* queue = D_001B660C;
+    queue->current = 0;
+    queue->busy = 1;
+    *D0_QWC = transfer;
+    // TODO: The address only shares the tag's register when it's put back in tag first, so I think the game did that.
+    tag = (u32*)(0x80000000 | EE_SCRATCHPAD);
+    *D0_MADR = (u32)tag;
+    *D_STAT = 1;
+    vu0_skin_store_last(output);
+    ee_sync();
+    *D0_CHCR = 0x101;
+    return 1;
+}
 
 /**
  * @brief Use borrowed data and build the matrix arrays from it.
@@ -680,7 +772,7 @@ s32 LibSlerpQuaternionTrackBase::on_insert_key(s32 index, float key, const Field
  * @param out_tangent Unused.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibSlerpQuaternionTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibSlerpQuaternionTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const FieldVec4A*>(value));
 }
@@ -692,7 +784,7 @@ s32 LibSlerpQuaternionTrackBase::replace_key(s32 index, float key, const void* v
  * @param value Key value.
  * @return Zero.
  */
-s32 LibSlerpQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value)
+bool LibSlerpQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     return 0;
 }
@@ -705,7 +797,7 @@ s32 LibSlerpQuaternionTrackBase::on_replace_key(s32 index, float key, const Fiel
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibSlerpQuaternionTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibSlerpQuaternionTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const FieldVec4A*>(value), key);
 }
@@ -716,7 +808,7 @@ s32 LibSlerpQuaternionTrackBase::append_key(const void* value, const void* in_ta
  * @param key Key position.
  * @return Zero.
  */
-s32 LibSlerpQuaternionTrackBase::on_append_key(const FieldVec4A* value, float key)
+bool LibSlerpQuaternionTrackBase::on_append_key(const FieldVec4A* value, float key)
 {
     return 0;
 }
@@ -810,7 +902,7 @@ s32 LibSlerpQuaternionKeyTrack::on_insert_key(s32 index, float key, const FieldV
  * @param value Keyframe value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibSlerpQuaternionKeyTrack::on_replace_key(s32 index, float key, const FieldVec4A* value)
+bool LibSlerpQuaternionKeyTrack::on_replace_key(s32 index, float key, const FieldVec4A* value)
 {
     if (key_array == 0)
     {
@@ -841,7 +933,7 @@ s32 LibSlerpQuaternionKeyTrack::on_replace_key(s32 index, float key, const Field
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibSlerpQuaternionKeyTrack::on_append_key(const FieldVec4A* value, float key)
+bool LibSlerpQuaternionKeyTrack::on_append_key(const FieldVec4A* value, float key)
 {
     if (key_array == 0)
     {
@@ -870,9 +962,103 @@ void LibPooledFloatQuaternionTrack::reset_state()
     LibFloatQuaternionTrackBase::reset_state();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", append_key__29LibPooledFloatQuaternionTrackFPCvPCvPCvf);
+/**
+ * @brief Store a keyframe after the last one and update the span.
+ * @param track Track with room for another key.
+ * @param value Keyframe rotation.
+ * @param first First extra value.
+ * @param second Second extra value.
+ * @param key Sort key.
+ * @return False when the track has no keys allocated or is full.
+ */
+static inline bool lib_float_quaternion_append(LibPooledFloatQuaternionTrack* track, const FieldVec4A* value, float first,
+                                               float second, float key)
+{
+    if (track->key_array == 0)
+    {
+        return false;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", replace_key__29LibPooledFloatQuaternionTrackFifPCvPCvPCv);
+    if (track->state.key_count >= track->state.key_capacity)
+    {
+        return false;
+    }
+
+    track->key_array[track->state.key_count].value = *value;
+    track->key_array[track->state.key_count].first = first;
+    track->key_array[track->state.key_count].second = second;
+    track->key_array[track->state.key_count].key = key;
+    track->state.span = key - track->key_array[0].key;
+    track->state.key_count++;
+    return true;
+}
+
+/**
+ * @brief Append a keyframe, with zero for a missing extra value.
+ * @param value Keyframe rotation.
+ * @param first First extra value, or null for zero.
+ * @param second Second extra value, or null for zero.
+ * @param key Sort key.
+ * @return Whether the keyframe was stored.
+ */
+bool LibPooledFloatQuaternionTrack::append_key(const void* value, const void* first, const void* second, float key)
+{
+    float first_value = (first == 0) ? 0.0f : *static_cast<const float*>(first);
+    float second_value = (second == 0) ? 0.0f : *static_cast<const float*>(second);
+    return lib_float_quaternion_append(this, static_cast<const FieldVec4A*>(value), first_value, second_value, key);
+}
+
+/**
+ * @brief Store a keyframe over an existing one; replacing the last keyframe updates the span.
+ * @param track Track.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @param first First extra value.
+ * @param second Second extra value.
+ * @return False when the track has no keys allocated or the index is past its capacity.
+ */
+static inline bool lib_float_quaternion_replace(LibPooledFloatQuaternionTrack* track, s32 index, float key,
+                                                const FieldVec4A* value, float first, float second)
+{
+    if (track->key_array == 0)
+    {
+        return false;
+    }
+
+    if (index >= track->state.key_capacity)
+    {
+        return false;
+    }
+
+    track->key_array[index].value = *value;
+    track->key_array[index].first = first;
+    track->key_array[index].second = second;
+    track->key_array[index].key = key;
+
+    if (index == track->state.key_count - 1)
+    {
+        track->state.span = key - track->key_array[0].key;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Replace a keyframe, with zero for a missing extra value; replacing the last keyframe updates the span.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @param first First extra value, or null for zero.
+ * @param second Second extra value, or null for zero.
+ * @return Whether the keyframe was stored.
+ */
+bool LibPooledFloatQuaternionTrack::replace_key(s32 index, float key, const void* value, const void* first, const void* second)
+{
+    float first_value = (first == 0) ? 0.0f : *static_cast<const float*>(first);
+    float second_value = (second == 0) ? 0.0f : *static_cast<const float*>(second);
+    return lib_float_quaternion_replace(this, index, key, static_cast<const FieldVec4A*>(value), first_value, second_value);
+}
 
 /**
  * @brief Insert a keyframe, with zero for a missing extra value.
@@ -1439,7 +1625,7 @@ float LibFloatCurveTrack::sample(float key)
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibFloatCurveTrack::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibFloatCurveTrack::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     float in_value;
     float out_value;
@@ -1459,7 +1645,7 @@ s32 LibFloatCurveTrack::append_key(const void* value, const void* in_tangent, co
  * @param out_tangent Outgoing tangent, or null for zero.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibFloatCurveTrack::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibFloatCurveTrack::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     float in_value;
     float out_value;
@@ -1863,7 +2049,7 @@ s16 LibFloatQuaternionTrackBase::get_key_capacity()
 /**
  * @brief Store a keyframe; the base ignores it.
  */
-s32 LibFloatQuaternionTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+bool LibFloatQuaternionTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return 0;
 }
@@ -1871,7 +2057,7 @@ s32 LibFloatQuaternionTrackBase::on_append_key(const FieldVec4A* value, const Fi
 /**
  * @brief Store a keyframe; the base ignores it.
  */
-s32 LibFloatQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+bool LibFloatQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return 0;
 }
@@ -2209,7 +2395,7 @@ s16 LibFloatCurveTrackBase::get_key_capacity()
 /**
  * @brief Store a keyframe; the base ignores it.
  */
-s32 LibFloatCurveTrackBase::on_append_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
+bool LibFloatCurveTrackBase::on_append_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
     return 0;
 }
@@ -2217,7 +2403,7 @@ s32 LibFloatCurveTrackBase::on_append_key(const float* value, const float* in_ta
 /**
  * @brief Store a keyframe; the base ignores it.
  */
-s32 LibFloatCurveTrackBase::on_replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
+bool LibFloatCurveTrackBase::on_replace_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
 {
     return 0;
 }
@@ -2512,7 +2698,7 @@ s32 LibFloatCurveTrack::insert_curve_key(s32 index, float key, const float* valu
  * @param out_tangent Tangent leaving the key.
  * @return One if stored, or zero if storage is absent or the index is outside capacity.
  */
-s32 LibFloatCurveTrack::replace_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
+bool LibFloatCurveTrack::replace_curve_key(s32 index, float key, const float* value, const float* in_tangent, const float* out_tangent)
 {
     if (!key_array)
     {
@@ -2545,7 +2731,7 @@ s32 LibFloatCurveTrack::replace_curve_key(s32 index, float key, const float* val
  * @param key Key associated with the new entry.
  * @return One if appended, or zero if storage is absent or capacity is exhausted.
  */
-s32 LibFloatCurveTrack::append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
+bool LibFloatCurveTrack::append_curve_key(const float* value, const float* in_tangent, const float* out_tangent, float key)
 {
     if (!key_array)
     {
@@ -2574,7 +2760,7 @@ s32 LibFloatCurveTrack::append_curve_key(const float* value, const float* in_tan
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibFloatQuaternionTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibFloatQuaternionTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
 }
@@ -2588,7 +2774,7 @@ s32 LibFloatQuaternionTrackBase::append_key(const void* value, const void* in_ta
  * @param out_tangent Second auxiliary value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibFloatQuaternionTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibFloatQuaternionTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
 }
@@ -2627,7 +2813,7 @@ void LibFloatQuaternionTrackBase::set_single_key(const void* value, const void* 
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibFloatCurveTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibFloatCurveTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent), key);
 }
@@ -2641,7 +2827,7 @@ s32 LibFloatCurveTrackBase::append_key(const void* value, const void* in_tangent
  * @param out_tangent Outgoing tangent.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibFloatCurveTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibFloatCurveTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const float*>(value), static_cast<const float*>(in_tangent), static_cast<const float*>(out_tangent));
 }
@@ -3231,7 +3417,7 @@ s32 LibFloatTrackBase::on_insert_key(s32 index, float key, const float* value)
  * @param out_tangent Unused.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibFloatTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibFloatTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const float*>(value));
 }
@@ -3243,7 +3429,7 @@ s32 LibFloatTrackBase::replace_key(s32 index, float key, const void* value, cons
  * @param value Key value.
  * @return Zero.
  */
-s32 LibFloatTrackBase::on_replace_key(s32 index, float key, const float* value)
+bool LibFloatTrackBase::on_replace_key(s32 index, float key, const float* value)
 {
     return 0;
 }
@@ -3256,7 +3442,7 @@ s32 LibFloatTrackBase::on_replace_key(s32 index, float key, const float* value)
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibFloatTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibFloatTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const float*>(value), key);
 }
@@ -3267,7 +3453,7 @@ s32 LibFloatTrackBase::append_key(const void* value, const void* in_tangent, con
  * @param key Key position.
  * @return Zero.
  */
-s32 LibFloatTrackBase::on_append_key(const float* value, float key)
+bool LibFloatTrackBase::on_append_key(const float* value, float key)
 {
     return 0;
 }
@@ -3396,7 +3582,7 @@ s32 LibFloatKeyTrack::on_insert_key(s32 index, float key, const float* value)
  * @param value Entry value to copy.
  * @return One if stored, or zero if storage is absent or the index is outside capacity.
  */
-s32 LibFloatKeyTrack::on_replace_key(s32 index, float key, const float* value)
+bool LibFloatKeyTrack::on_replace_key(s32 index, float key, const float* value)
 {
     if (key_array == 0)
     {
@@ -3429,7 +3615,7 @@ s32 LibFloatKeyTrack::on_replace_key(s32 index, float key, const float* value)
  * @param key Key associated with the entry.
  * @return One if appended, or zero if storage is absent or full.
  */
-s32 LibFloatKeyTrack::on_append_key(const float* value, float key)
+bool LibFloatKeyTrack::on_append_key(const float* value, float key)
 {
     if (key_array == 0)
     {
@@ -3704,7 +3890,24 @@ FieldVec4B LibSlerpQuaternionHistory::sample(float key)
     return sample_with_blend(key, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample__22LibLinearVectorHistoryFf);
+/**
+ * @brief Interpolate the recorded values linearly at a key.
+ * @param key Sample key.
+ * @return The value at the key, or zero with nothing recorded.
+ */
+FieldVec4B LibLinearVectorHistory::sample(float key)
+{
+    if (sample_count == 0)
+    {
+        return FieldVec4B(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    s32 lower;
+    s32 upper;
+    float blend = find_blend(key, &lower, &upper);
+    FieldVec4B result = (values[upper] - values[lower]) * blend + values[lower];
+    return result;
+}
 
 /**
  * @brief Evaluate the history at a key, blending linearly between its two samples.

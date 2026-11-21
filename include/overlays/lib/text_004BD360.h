@@ -216,7 +216,7 @@ public:
      * @param second Second state value.
      * @param third Third state value.
      */
-    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    virtual void func_0044B100(bool first, bool second, bool third);
 
     /**
      * @brief Set the transform codes and its third coordinate.
@@ -308,7 +308,7 @@ public:
      * @param second Second value.
      * @param third Third value.
      */
-    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    virtual void func_0044B100(bool first, bool second, bool third);
 
     /**
      * @brief Finish the cursor's drawing packet.
@@ -398,7 +398,7 @@ public:
      * @param second Second update flag.
      * @param third Third update flag.
      */
-    virtual void func_0044B100(u32 first, u32 second, u32 third);
+    virtual void func_0044B100(bool first, bool second, bool third);
 
     /** @brief Prepare the container storage. */
     virtual void render();
@@ -415,7 +415,7 @@ public:
      * @param second Second update flag.
      * @param third Third update flag.
      */
-    virtual void func_00412C40(u32 first, u32 second, u32 third);
+    virtual void func_00412C40(bool first, bool second, bool third);
 
     LibStorageBlock0C unkD0;
     u8 unkDC[4];
@@ -563,24 +563,34 @@ struct LibObject174D90 : public LibTextWidget
 
     class LibClass175170* unk114;
     void* unk118;
-    u8 unk11c[0x408];
+    u8 unk11c[8];
+    float line_heights[256];
     float unk524;
     float unk528;
     float unk52c;
-    u8 unk530[0x10];
+    float wait_time;
+    float scroll_target;
+    float scroll_speed;
+    float line_bottom;
     u32 mode;
-    u8 unk544[0xC];
+    u32 resource_mode;
+    s32 unk548;
+    u8 unk54c[4];
     s32 unk550;
     s32 unk554;
     s32 unk558;
-    u8 unk55c[8];
+    s32 unk55c;
+    s32 line_index;
     s32 unk564;
     s32 unk568;
-    u8 unk56c[9];
+    s32 unk56c;
+    float unk570;
+    u8 pad_index;
     u8 unk575;
     u8 unk576;
     u8 unk577;
-    u8 unk578[2];
+    u8 unk578;
+    u8 unk579;
     u8 unk57a;
     u8 unk57b;
 
@@ -766,7 +776,7 @@ public:
      * @param key Sort key.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
     /**
      * @brief Append a keyframe from an unpacked record; the root ignores it.
@@ -783,7 +793,7 @@ public:
      * @param out_tangent Outgoing tangent, for curve tracks.
      * @return Nonzero when the keyframe was stored.
      */
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     /**
      * @brief Insert a keyframe at an index; the root ignores it.
@@ -922,9 +932,9 @@ public:
 
     virtual s32 get_cycle_count() const;
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -954,7 +964,7 @@ public:
      * @param key Key position.
      * @return Nonzero when the key was stored.
      */
-    virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
     /**
      * @brief Replace an indexed key; the base ignores it.
@@ -963,7 +973,7 @@ public:
      * @param value Key value.
      * @return Nonzero when the key was stored.
      */
-    virtual s32 on_replace_key(s32 index, float key, const void* value);
+    virtual bool on_replace_key(s32 index, float key, const void* value);
 
     /**
      * @brief Insert a key before an index; the base ignores it.
@@ -1035,9 +1045,9 @@ public:
 
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
 
-    virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 on_replace_key(s32 index, float key, const void* value);
+    virtual bool on_replace_key(s32 index, float key, const void* value);
 
     virtual s32 on_insert_key(s32 index, float key, const void* value);
 
@@ -1079,9 +1089,9 @@ public:
 
     virtual s32 get_cycle_count() const;
 
-    virtual s32 append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
+    virtual bool replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
     virtual s32 insert_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent);
 
@@ -1111,7 +1121,7 @@ public:
      * @param key Key position.
      * @return Nonzero when the key was stored.
      */
-    virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
     /**
      * @brief Replace an indexed key; the base ignores it.
@@ -1120,7 +1130,7 @@ public:
      * @param value Key value.
      * @return Nonzero when the key was stored.
      */
-    virtual s32 on_replace_key(s32 index, float key, const void* value);
+    virtual bool on_replace_key(s32 index, float key, const void* value);
 
     /**
      * @brief Insert a key before an index; the base ignores it.
@@ -1192,9 +1202,9 @@ public:
 
     virtual s32 read_key(s32 index, float* key, void* value, void* first, void* second) const;
 
-    virtual s32 on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
+    virtual bool on_append_key(const void* value, const void* in_tangent, const void* out_tangent, float key);
 
-    virtual s32 on_replace_key(s32 index, float key, const void* value);
+    virtual bool on_replace_key(s32 index, float key, const void* value);
 
     virtual s32 on_insert_key(s32 index, float key, const void* value);
 
@@ -1297,15 +1307,15 @@ public:
 
     u8 unk14[0x1C];
     void* resource_data;
-    u8 unk34[4];
+    s32 node_count;
     s32 entry_count;
-    u8 unk3c[4];
+    u32* node_offsets;
     LibAnimationEntry14* entries;
     float* frame;
     LibClass173180* longest_channel;
     u8 unk4c[4];
     LibAnimationEntry14* cached_entry;
-    u8 unk54[4];
+    void* header;
     LibAnimationBindingOwner* primary_binding_owner;
     LibAnimationBindingOwner* secondary_binding_owner;
     void* unk60;
@@ -1485,10 +1495,10 @@ float func_004CD010(float value);
 
 /**
  * @brief Compute the VU0 sine and cosine approximations for an angle.
- * @param output Aligned vector receiving cosine in z and sine in w; x and y retain shared polynomial coefficients.
  * @param angle Angle in radians.
+ * @param output Aligned vector receiving cosine in z and sine in w; x and y retain shared polynomial coefficients.
  */
-void lib_compute_sine_cosine_pair(LibVector4* output, float angle);
+void lib_compute_sine_cosine_pair(float angle, LibVector4* output);
 
 /**
  * @brief Compute degree-nine VU0 sine and cosine approximations.

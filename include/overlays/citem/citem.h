@@ -375,7 +375,7 @@ class ItemHpMpGauge : public FieldClass1599E0, public ItemHpMpGaugeDrawer
          * @param second Mark the packet changed.
          * @param third Allow drawing.
          */
-        virtual void func_0044B100(u32 first, u32 second, u32 third);
+        virtual void func_0044B100(bool first, bool second, bool third);
 
         /**
          * @brief Complete DMA notification processing.

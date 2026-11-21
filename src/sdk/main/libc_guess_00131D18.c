@@ -6,7 +6,7 @@ INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", func_001
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", func_00131E20);
 
-INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", func_00131E40);
+INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", __divdi3);
 
 INCLUDE_ASM("build/main/asm/nonmatchings/sdk/main/libc_guess_00131D18", func_00132530);
 

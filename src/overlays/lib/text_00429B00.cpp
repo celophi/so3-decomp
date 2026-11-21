@@ -10,6 +10,7 @@
 #include "overlays/lib/emission.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/image_model.h"
+#include "overlays/lib/text_0046AE20.h"
 #include "overlays/lib/emission_vu0.h"
 #include "overlays/lib/light_vu0.h"
 #include "overlays/lib/memory_card.h"
@@ -350,7 +351,44 @@ typedef struct WordSetterOwnertext_00429B00
 
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", read_key__24LibPooledQuaternionTrackCFiPfPvPvPv);
+/**
+ * @brief Read an indexed keyframe, unpacking its rotation.
+ * @param index Keyframe index.
+ * @param key Receives the sort key, or null.
+ * @param value Receives the rotation, or null; w is rebuilt from x, y and z.
+ * @param first Unused.
+ * @param second Unused.
+ * @return One when the index is within the capacity, otherwise zero.
+ */
+s32 LibPooledQuaternionTrack::read_key(s32 index, float* key, void* value, void* first, void* second) const
+{
+    if (index >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    if (key)
+    {
+        *key = key_array[index].get_key();
+    }
+
+    if (value)
+    {
+        FieldVec4A* rotation = static_cast<FieldVec4A*>(value);
+        rotation->x = (1.0f / 32768.0f) * key_array[index].packed_rotation[0];
+        rotation->y = (1.0f / 32768.0f) * key_array[index].packed_rotation[1];
+        rotation->z = (1.0f / 32768.0f) * key_array[index].packed_rotation[2];
+        float y = rotation->y;
+        float x = rotation->x;
+        float z = rotation->z;
+        y *= y;
+        x *= x;
+        float w_squared = 1.0f - (x + y + z * z);
+        rotation->w = __sqrt(w_squared, w_squared);
+    }
+
+    return 1;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", insert_rotation__24LibPooledQuaternionTrackFifPC10FieldVec4A);
 
@@ -465,7 +503,7 @@ s16 LibQuaternionTrackBase::get_key_capacity()
  * @param key Sort key.
  * @return Zero.
  */
-s32 LibQuaternionTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
+bool LibQuaternionTrackBase::on_append_key(const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second, float key)
 {
     return 0;
 }
@@ -479,7 +517,7 @@ s32 LibQuaternionTrackBase::on_append_key(const FieldVec4A* value, const FieldVe
  * @param second Second auxiliary value.
  * @return Zero.
  */
-s32 LibQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
+bool LibQuaternionTrackBase::on_replace_key(s32 index, float key, const FieldVec4A* value, const FieldVec4A* first, const FieldVec4A* second)
 {
     return 0;
 }
@@ -669,7 +707,7 @@ void quaternion_track_pool_free(LibTrackPool<LibPooledQuaternionTrack>* pool, Li
  * @param key Sort key.
  * @return Zero.
  */
-s32 LibClass173180::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibClass173180::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return 0;
 }
@@ -683,7 +721,7 @@ s32 LibClass173180::append_key(const void* value, const void* in_tangent, const 
  * @param out_tangent Outgoing tangent.
  * @return Zero.
  */
-s32 LibClass173180::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibClass173180::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return 0;
 }
@@ -746,7 +784,7 @@ void LibClass173180::release()
  * @param key Sort key.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibQuaternionTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
+bool LibQuaternionTrackBase::append_key(const void* value, const void* in_tangent, const void* out_tangent, float key)
 {
     return on_append_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
 }
@@ -760,7 +798,7 @@ s32 LibQuaternionTrackBase::append_key(const void* value, const void* in_tangent
  * @param out_tangent Second auxiliary value.
  * @return Nonzero when the keyframe was stored.
  */
-s32 LibQuaternionTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
+bool LibQuaternionTrackBase::replace_key(s32 index, float key, const void* value, const void* in_tangent, const void* out_tangent)
 {
     return on_replace_key(index, key, static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent));
 }
@@ -1090,7 +1128,77 @@ void func_0042B000(LibModel* model)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042B110);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", render__14LibClass173380Fv);
+// TODO: These list loops are entered with a jump to their test like update()'s, and the two child offsets only land
+// in the game's registers with loop invariants left in place, so I think the original had both turned off here.
+#pragma push
+#pragma opt_rotateloops off
+#pragma opt_loop_invariants off
+
+/**
+ * @brief Render the children slot by slot (each attached model's child in that slot, then this model's own), then
+ *        the attached models, then this model.
+ */
+void LibClass173380::render()
+{
+    if (unk838)
+    {
+        LibModel::render();
+    }
+    else
+    {
+        s32 i = 2;
+
+        do
+        {
+            if (children[i])
+            {
+                LibListSentinel* node = objects.sentinel.next;
+
+                while (&objects.sentinel != node)
+                {
+                    LibTransformOwner* child = static_cast<LibClass173380*>(node)->children[i];
+
+                    if (child && child->unk63)
+                    {
+                        child->render();
+                    }
+
+                    node = node->next;
+                }
+
+                if (children[i]->unk63)
+                {
+                    children[i]->render();
+                }
+            }
+        } while (--i >= 0);
+
+        LibListSentinel* node = objects.sentinel.next;
+
+        while (&objects.sentinel != node)
+        {
+            LibTransformOwner* object = static_cast<LibTransformOwner*>(node);
+
+            if (object->unk63)
+            {
+                object->render();
+            }
+
+            node = node->next;
+        }
+
+        if (unk83d)
+        {
+            LibModel::complete_dma(0);
+        }
+        else
+        {
+            LibModel::render();
+        }
+    }
+}
+
+#pragma pop
 
 }
 
@@ -1894,23 +2002,112 @@ s32 func_00430CA0(ResidentSoundEmitter* emitter, s32 bank, s32 kind)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00430E00);
+/** Half the camera's screen width, for the occluder upload. */
+extern "C" float D_001B652C;
 
-/** Partial object with a rectangle in its local xz plane, given by its half extents. */
-typedef struct LibRectangle431020
+/** Half the camera's screen height, for the occluder upload. */
+extern "C" float D_001B6530;
+
+/** Camera near depth, for the occluder upload. */
+extern "C" float D_001B6534;
+
+/** Camera far depth, for the occluder upload. */
+extern "C" float D_001B6538;
+
+/**
+ * @brief Collect up to 128 occluders, upload the ones in view to VU0 (nine qwords each from qword 8) and note the
+ *        nearest one's depth.
+ * @param list Occluder list.
+ * @param camera Camera to test against.
+ * @param matrix Depth-scaled view matrix.
+ * @return Number of occluders uploaded.
+ */
+extern "C" s32 func_00430E00(LibClass178B30* list, LibCamera* camera, const LibMatrix44Value* matrix)
 {
-    u8 unk00[0x210];
-    float half_width;
-    float half_depth;
-    u8 unk218[8];
-    LibVector4 corners[4];
-} LibRectangle431020;
+    s32 count = 0;
+    LibOccluder** nodes = list->nodes;
+    LibListSentinel* node = &list->sentinel;
+
+    for (;;)
+    {
+        node = node->next;
+
+        if (at_list_end(&list->sentinel, node))
+        {
+            break;
+        }
+
+        nodes[count++] = reinterpret_cast<LibOccluder*>(node);
+
+        if (count >= 128)
+        {
+            return 0;
+        }
+
+        static_cast<LibTransformOwner*>(static_cast<LibListObject*>(node))->update_transform_matrix();
+    }
+
+    if (count == 0)
+    {
+        return 0;
+    }
+
+    LibVector4 position;
+    position.x = camera->transform.m[0][3];
+    position.y = camera->transform.m[1][3];
+    position.z = camera->transform.m[2][3];
+    position.w = 1.0f;
+    float nearest = 1e30f;
+    vu0_load_vf24_vf27(matrix);
+    count = 0;
+    float near;
+    float far;
+    float half_width = 0.5f * (camera->screen_max.x - camera->screen_min.x);
+    float half_height = 0.5f * (camera->screen_max.y - camera->screen_min.y);
+    far = camera->screen_max.z;
+    near = camera->screen_min.z;
+    D_001B6534 = near;
+    D_001B6538 = far;
+    D_001B652C = half_width;
+    D_001B6530 = half_height;
+    s32 slot = 8;
+    s32 total = list->node_count;
+
+    for (s32 i = 0; i < total; i++)
+    {
+        LibOccluder* occluder = nodes[i];
+
+        if (func_00431090(occluder, &position, slot) && !(occluder->depth < camera->screen_min.z))
+        {
+            slot += 9;
+            nodes[count++] = occluder;
+
+            if (occluder->depth < nearest)
+            {
+                nearest = occluder->depth;
+            }
+        }
+
+        if (count >= 26)
+        {
+            break;
+        }
+    }
+
+    if (count == 0)
+    {
+        return 0;
+    }
+
+    list->nearest_depth = nearest;
+    return count;
+}
 
 /**
  * @brief Work out the four corners of the rectangle from its half extents, in the xz plane at y zero.
  * @param object Rectangle; the corners' w is left alone.
  */
-extern "C" void func_00431020(LibRectangle431020* object)
+extern "C" void func_00431020(LibOccluder* object)
 {
     object->corners[0].x = -object->half_width;
     object->corners[0].y = 0.0f;
@@ -3568,7 +3765,125 @@ void func_004352B0(LibClass173990* emitter, u32 flag, float first, float second)
     emitter->unk408 = second;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_004352E0);
+/**
+ * @brief Copy another emitter's settings, entries and offset transform.
+ * @param other Emitter to copy.
+ */
+void LibClass173990::copy_state(const LibClass173990* other)
+{
+    unk220 = other->unk220;
+    unk230 = other->unk230;
+    unk240 = other->unk220;
+    unk250 = other->unk250;
+    unk260 = other->unk260;
+    unk270 = other->unk270;
+    unk240 = other->unk240;
+    unk290 = other->unk290;
+    unk2a0 = other->unk2a0;
+    unk2b0 = other->unk2b0;
+    unk2c0 = other->unk2c0;
+    unk2d0 = other->unk2d0;
+    unk2e0 = other->unk2e0;
+    unk2f0 = other->unk2f0;
+    unk300 = other->unk2c0;
+    unk310 = other->unk2d0;
+    unk320 = other->unk2e0;
+    unk330 = other->unk2f0;
+    unk340 = other->unk2c0;
+    unk350 = other->unk2d0;
+    unk360 = other->unk2e0;
+    unk370 = other->unk2f0;
+    unk380 = other->unk380;
+    unk390 = other->unk390;
+    unk3a0 = other->unk3a0;
+    unk3b0 = other->unk3b0;
+    unk3c0[0] = other->unk3c0[0];
+    unk3c0[1] = other->unk3c0[1];
+    unk3c0[2] = other->unk3c0[2];
+    unk3c0[3] = other->unk3c0[3];
+    source = other->source;
+    unk42c = other->unk42c;
+    unk499_0 = 1;
+    unk3ec = other->unk3ec;
+    unk3f0 = other->unk3f0;
+    unk3f4 = other->unk3f4;
+    unk3f8 = other->unk3f8;
+    unk420 = other->unk420;
+    unk49a = other->unk49a;
+    unk499_1 = other->unk499_1;
+    unk49b_0 = other->unk49b_0;
+    unk49b_1 = other->unk49b_1;
+    unk49b_2 = other->unk49b_2;
+    unk49b_3 = other->unk49b_3;
+    unk49b_4 = other->unk49b_4;
+    unk49b_6 = other->unk49b_6;
+    unk49b_7 = other->unk49b_7;
+    unk49c_0 = other->unk49c_0;
+    unk49c_1 = other->unk49c_1;
+    unk49c_5 = other->unk49c_5;
+    unk3fc = other->unk3fc;
+    unk404 = other->unk404;
+    unk408 = other->unk408;
+    unk40c = other->unk40c;
+    unk410 = other->unk410;
+    unk414 = other->unk414;
+    unk491 = other->unk491;
+    unk418 = other->unk418;
+    unk41c = other->unk41c;
+    unk49c_2 = other->unk49c_2;
+    unk492 = other->unk492;
+    unk493 = other->unk493;
+    unk428 = other->unk428;
+    unk434 = other->unk434;
+    unk438 = other->unk438;
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        unk480[i] = other->unk480[i];
+    }
+
+    for (s32 i = 0; i < 8; i++)
+    {
+        unk488[i] = other->unk488[i];
+    }
+
+    unk49c_3 = other->unk49c_3;
+    unk49c_6 = other->unk49c_6;
+    s32 count = other->entry_count;
+
+    if (count != 0)
+    {
+        delete[] entries;
+        entries = new (0) LibClass173490Entry[count];
+
+        if (entries != 0)
+        {
+            entry_count = count;
+        }
+        else
+        {
+            entry_count = 0;
+        }
+
+        for (s32 i = 0; i < other->entry_count; i++)
+        {
+            const LibClass173490Entry& entry = other->entries[i];
+
+            if (entries != 0)
+            {
+                entries[i] = entry;
+            }
+        }
+    }
+    else
+    {
+        entry_count = 0;
+        delete[] entries;
+        entries = 0;
+    }
+
+    LibTransform::copy_offset_transform_state(other);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00435840);
 
@@ -4161,7 +4476,225 @@ void func_0043AFC0(void* object)
     receiver->unk480 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0043AFD0);
+/**
+ * @brief Test whether an image model is active: flagged with unkadf and either without an unkabc period or with its
+ * phase running.
+ * @param image Image model.
+ * @return Whether it is active.
+ */
+static inline bool lib_image_model_active(const LibObject1751A0* image)
+{
+    if (image->unkadf)
+    {
+        if (image->unkabc == 0.0f)
+        {
+            return true;
+        }
+
+        if (image->phase_period && image->phase)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief Update the emitter while it has an image model: follow and face the camera as flagged, pass the transform to
+ * the image model, end the emitter once its lifetime is over, track its velocity and emit whole entries at its rate.
+ */
+void LibClass173990::update()
+{
+    if (source == 0)
+    {
+        return;
+    }
+
+    if (draw_flags & LIB_DRAW_FOLLOW_CAMERA)
+    {
+        LibCamera* camera;
+
+        if (display_manager != 0)
+        {
+            camera = static_cast<LibCamera*>(display_manager->current_display);
+        }
+        else
+        {
+            camera = static_cast<LibCamera*>(g_display_manager->current_display);
+        }
+
+        if (camera != 0)
+        {
+            if (camera->matrix_ready == 0)
+            {
+                camera->update_transform_matrix();
+            }
+
+            const LibMatrix44Value* matrix = camera->get_transform_matrix();
+            set_translation(matrix->m[0][3], translation.y, matrix->m[2][3]);
+        }
+    }
+
+    if (draw_flags & (LIB_DRAW_FACE_CAMERA_X | LIB_DRAW_FACE_CAMERA_Y | LIB_DRAW_FACE_CAMERA_Z))
+    {
+        LibCamera* camera;
+
+        if (display_manager != 0)
+        {
+            camera = static_cast<LibCamera*>(display_manager->current_display);
+        }
+        else
+        {
+            camera = static_cast<LibCamera*>(g_display_manager->current_display);
+        }
+
+        if (camera != 0)
+        {
+            if (camera->matrix_ready == 0)
+            {
+                camera->update_transform_matrix();
+            }
+
+            LibVector4 angles;
+            const float* camera_angles = camera->rotation_angles;
+            func_004CDA40(&angles, &orientation);
+
+            if (draw_flags & LIB_DRAW_FACE_CAMERA_X)
+            {
+                angles.x = -camera_angles[0];
+            }
+
+            if (draw_flags & LIB_DRAW_FACE_CAMERA_Y)
+            {
+                angles.y = camera_angles[1];
+            }
+
+            if (draw_flags & LIB_DRAW_FACE_CAMERA_Z)
+            {
+                angles.z = -camera_angles[2];
+            }
+
+            angles.y += 3.1415927f;
+            set_rotation_vector(&angles);
+            matrix_ready = 0;
+        }
+    }
+
+    if (unk499_1 && source != 0)
+    {
+        source->set_translation_vector(&translation);
+        source->set_orientation(&orientation);
+        source->set_scale_vector(&scale);
+    }
+
+    unk400 += g_frame_seconds;
+
+    if (unk49b_6 && !(unk400 < unk404))
+    {
+        if (!(unk400 < unk408) || source->unkaac == 0.0f)
+        {
+            if (unk3e8 != 0)
+            {
+                func_0046C090(reinterpret_cast<LibEntryManager*>(unk3e8), this);
+            }
+
+            LibObject1751A0* held = source;
+            s32 users;
+
+            if (held->user_count > 0)
+            {
+                users = --held->user_count;
+            }
+            else
+            {
+                users = 0;
+            }
+
+            if (users == 0)
+            {
+                LibGridBase* grid = source->reference;
+                func_0046B3F0(source);
+
+                if (grid->user_count == 0)
+                {
+                    delete grid;
+                }
+
+                source->destroy();
+            }
+
+            destroy();
+        }
+
+        return;
+    }
+
+    if (unk49b_4 || unk49c_5 || unk49c_6)
+    {
+        if (!unk49b_5)
+        {
+            if (matrix_ready == 0)
+            {
+                update_transform_matrix();
+            }
+
+            unk49b_5 = 1;
+            *reinterpret_cast<unsigned __int128*>(&velocity) = 0;
+            *reinterpret_cast<unsigned __int128*>(&position_delta) = 0;
+            previous_position.x = transform.m[0][3];
+            previous_position.y = transform.m[1][3];
+            previous_position.z = transform.m[2][3];
+            previous_position.w = 1.0f;
+        }
+        else
+        {
+            if (matrix_ready == 0)
+            {
+                update_transform_matrix();
+            }
+
+            FieldVec4A position;
+            position.x = transform.m[0][3];
+            position.y = transform.m[1][3];
+            position.z = transform.m[2][3];
+            position.w = 1.0f;
+            float scale = 60.0f * (1.0f / g_frame_ticks);
+            position_delta.x = previous_position.x - position.x;
+            position_delta.y = previous_position.y - position.y;
+            position_delta.z = previous_position.z - position.z;
+            velocity.x = scale * (position.x - previous_position.x);
+            velocity.y = scale * (position.y - previous_position.y);
+            velocity.z = scale * (position.z - previous_position.z);
+            previous_position = position;
+        }
+    }
+
+    if (lib_image_model_active(source) && (source->draw_flags & 0x10))
+    {
+        return;
+    }
+
+    float chance = unk3f0;
+
+    if (chance >= 100.0f)
+    {
+        unk3f4 += unk3ec * g_frame_seconds;
+    }
+    else
+    {
+        float random = resident_random_below(10000);
+        float spread = 0.01f * (100.0f - chance) * random;
+        unk3f4 += unk3ec * g_frame_seconds * (0.0001f * spread + 0.01f * unk3f0);
+    }
+
+    if (!(unk3f4 < 1.0f))
+    {
+        s32 count = unk3f4;
+        unk3f4 -= count;
+        emit_entries(count, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    }
+}
 
 // TODO: The destructor inlines this too; see the operator delete note above.
 #pragma push

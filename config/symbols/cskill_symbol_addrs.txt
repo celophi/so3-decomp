@@ -937,7 +937,7 @@ func_002BC4F0__20SkillHpMpGaugeDrawerFUiUif = 0x0035DDE0; // type:func allow_dup
 
 func_0035D340 = 0x0035D340; // type:func absolute:True allow_duplicated:True
 
-func_0044B100__14SkillHpMpGaugeFUiUiUi = 0x0035D340; // type:func allow_duplicated:True
+func_0044B100__14SkillHpMpGaugeFbbb = 0x0035D340; // type:func allow_duplicated:True
 
 
 build_packet__20SkillHpMpGaugeDrawerFv = 0x0035D540; // type:func
@@ -1047,7 +1047,7 @@ __vt__15LibDmaCallbacks = 0x00182F40; // size:0x10 absolute:True
 
 on_packet_complete__15LibDmaCallbacksFUi = 0x0035C040; // type:func allow_duplicated:True
 
-func_0044B100__16FieldClass1599E0FUiUiUi = 0x002BC260; // type:func absolute:True
+func_0044B100__16FieldClass1599E0Fbbb = 0x002BC260; // type:func absolute:True
 
 on_packet_complete__16FieldClass1599E0FUi = 0x002BC270; // type:func absolute:True
 

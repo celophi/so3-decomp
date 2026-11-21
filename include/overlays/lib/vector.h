@@ -230,6 +230,52 @@ public:
     float z;
     float w;
 } __attribute__((aligned(16)));
+
+/**
+ * @brief Subtract the first three components of one vector from another.
+ * @param left Vector to subtract from.
+ * @param right Vector to subtract.
+ * @return The difference, with left's fourth component.
+ */
+static inline FieldVec4B operator-(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4B result(left);
+    result.x -= right.x;
+    result.y -= right.y;
+    result.z -= right.z;
+    return result;
+}
+
+/**
+ * @brief Scale all four components of a vector.
+ * @param left Vector to scale.
+ * @param right Scale.
+ * @return The scaled vector.
+ */
+static inline FieldVec4B operator*(const FieldVec4B& left, float right)
+{
+    FieldVec4B result(left);
+    result.x *= right;
+    result.y *= right;
+    result.z *= right;
+    result.w *= right;
+    return result;
+}
+
+/**
+ * @brief Add the first three components of two vectors.
+ * @param left First vector.
+ * @param right Second vector.
+ * @return The sum, with left's fourth component.
+ */
+static inline FieldVec4B operator+(const FieldVec4B& left, const FieldVec4B& right)
+{
+    FieldVec4B result(left);
+    result.x += right.x;
+    result.y += right.y;
+    result.z += right.z;
+    return result;
+}
 #endif
 
 #endif

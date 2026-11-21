@@ -48,6 +48,22 @@ public:
     u32 get_node_count() const;
 };
 
+/**
+ * @brief Test whether a list walk has come back to the list.
+ * @param list List sentinel.
+ * @param node Current node.
+ * @return Whether node is the sentinel.
+ */
+static inline bool at_list_end(const LibListSentinel* list, const LibListSentinel* node)
+{
+    if (list == node)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 #endif
 
 #endif

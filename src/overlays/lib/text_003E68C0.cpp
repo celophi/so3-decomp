@@ -16,6 +16,8 @@
 #include "main/system.h"
 #include "main/utility.h"
 #include "main/input.h"
+#include "overlays/lib/light_random.h"
+#include "ee.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 
 /** Bounding sphere objects without bounds report: centred on the origin, radius 1000000. */
@@ -1179,12 +1181,12 @@ void LibClass3F5B80::func_003F45F0(s32 slot, LibResourceRecordC4* output, LibCha
 
     if (level <= 0 || level > 10)
     {
-        func_004076D0(output, (LibResourceRecord114*)equipment, 0);
+        func_004076D0(reinterpret_cast<LibCharacterRecord*>(output), equipment, 0);
         return;
     }
 
     D_001B64A8 = 1;
-    func_004076D0(output, (LibResourceRecord114*)equipment, level);
+    func_004076D0(reinterpret_cast<LibCharacterRecord*>(output), equipment, level);
     D_001B64A8 = 0;
     codes = D_004EC22C[level] + data->unk67B[slot] * 6;
 
@@ -1450,6 +1452,11 @@ LibClass3F5B80::LibClass3F5B80()
     reset_buffer(this);
 }
 
+// TODO: reset() inlines the three setters and the constructor inlines reset(), so I think the unit was built with
+// auto-inlining; this scoped pragma stands in for it until the flags are settled.
+#pragma push
+#pragma auto_inline on
+
 /**
  * @brief Read the checked word.
  * @return The word, or zero when its two copies disagree.
@@ -1534,12 +1541,25 @@ void LibProtectedValues::set_large_value(s32 value)
     }
 
     LibProtectedRecord* values = record();
-    u32 key = (resident_next_random_word() & 0xFFFF) + LIB_PROTECTED_LARGE_KEY_BASE;
-    values->large_key = key;
-    values->large_value = value ^ key;
+    // TODO: The key is a chained assignment, not a local, so reset() and the constructor get the game's registers
+    // when they inline this.
+    values->large_value =
+        value ^ (values->large_key = (resident_next_random_word() & 0xFFFF) + LIB_PROTECTED_LARGE_KEY_BASE);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", reset__18LibProtectedValuesFv);
+/** @brief Pick a new random offset into the storage and store zero in every value. */
+void LibProtectedValues::reset()
+{
+    u32 seed = D_001B65B8 = 1664525L * D_001B65B8 + 1013904223L;
+    key = ((resident_input_get_seconds(resident_system_get_input(resident_get_system())) +
+            (seed + TIMER0_COUNT * resident_next_random_word())) &
+           0xF) *
+          8;
+    key ^= LIB_PROTECTED_OFFSET_KEY;
+    set_large_value(0);
+    set_small_value(0);
+    set_checked_word(0);
+}
 
 /** @brief Release both owned buffers. */
 LibBufferOwner::~LibBufferOwner()
@@ -1548,6 +1568,25 @@ LibBufferOwner::~LibBufferOwner()
     ::operator delete(first);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F6000);
+/** @brief Allocate the storage at a random size and offset and store zero in every value. */
+LibProtectedValues::LibProtectedValues()
+{
+    s32 count;
+
+    // TODO: count is read before it's set, so the decoy's size comes from whatever the register held. That's the
+    // game's code.
+    decoy = new (0) u8[(count + 0x24D + resident_next_random_word()) % 150];
+    count = resident_random_below(80) + 1;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        lib_light_random();
+    }
+
+    storage = new (0) u8[resident_random_below(20) * 16 + 0xA8];
+    reset();
+}
+
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F64A0);

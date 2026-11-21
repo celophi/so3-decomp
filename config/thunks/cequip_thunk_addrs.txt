@@ -5,5 +5,5 @@
 @32@__dt__12LibContainerFv = 0x004C6700;
 @32@render__12LibContainerFv = 0x00412FB0;
 @176@on_packet_complete__12LibContainerFUi = 0x00412FC0;
-@32@func_0044B100__12LibContainerFUiUiUi = 0x00412FD0;
+@32@func_0044B100__12LibContainerFbbb = 0x00412FD0;
 @32@__dt__18EquipFactorTooltipFv = 0x004E9FE0;

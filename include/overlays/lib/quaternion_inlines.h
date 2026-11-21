@@ -27,7 +27,7 @@ static inline void quaternion_from_axis_angle(FieldVec4B* output, const LibVecto
 {
     LibVector4 pair;
 
-    lib_compute_sine_cosine_pair(&pair, 0.5f * axis_angle->w);
+    lib_compute_sine_cosine_pair(0.5f * axis_angle->w, &pair);
     float sine = pair.w;
 
     output->w = pair.z;

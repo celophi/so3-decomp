@@ -2451,7 +2451,310 @@ void LibObject174D90::draw()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_0045F710);
+extern "C" s32 func_004614E0(LibObject174D90* object, s32 slot, s32 key, u32 mode, u8 flag);
+
+extern "C" void func_00460750(LibObject174D90* object);
+
+extern "C" bool func_004C71E0(LibTextWidget* object);
+
+/**
+ * @brief Run the text one frame: finish a pending resource load, track the advance button, run the current wait or
+ *        scroll, then read records and their control codes until one starts a new wait.
+ */
+void LibObject174D90::func_00413D20()
+{
+    if (pending && func_004614E0(this, source, key, resource_mode, flag) == 0)
+    {
+        return;
+    }
+
+    func_004C71E0(this);
+    FieldRuntime* runtime = g_field_runtime;
+    u16 confirm = runtime->button_map->buttons[0] | runtime->button_map->buttons[1];
+    u16 held = runtime->inputs[pad_index].unk00;
+    u16 pressed = runtime->inputs[pad_index].unk02;
+
+    switch (unk568)
+    {
+    case 0:
+        unk577 = 0;
+        unk570 = 0.0f;
+        unk56c = 0;
+        unk568++;
+    case 1:
+        if (pressed & confirm)
+        {
+            if (!(mode & 0x20) && unk570 < 12.0f && unk56c > 0)
+            {
+                unk577 = 1;
+            }
+
+            unk56c++;
+            unk570 = 0.0f;
+            unk568++;
+        }
+
+        break;
+    case 2:
+        if (!(held & confirm))
+        {
+            unk577 = 0;
+            unk570 = 0.0f;
+            unk568--;
+        }
+
+        break;
+    }
+
+    unk570 += field_rate(g_field_runtime);
+
+    switch (unk550)
+    {
+    case 5:
+        unk548 = 0;
+        func_00460750(this);
+        unk74 = unk70;
+        line_index = 0;
+        unk564 = 0;
+        line_bottom = line_heights[0];
+        unk7c = 0.0f;
+        unk550 = 0;
+        func_0045F600();
+        break;
+    case 1:
+    {
+        // TODO: Written this way round for the target's movn into the pressed register.
+        pressed = unk55c == 0 ? pressed : held;
+
+        if ((mode & 0x21) || unk575 || !(pressed & confirm))
+        {
+            wait_time -= field_rate(g_field_runtime);
+        }
+        else
+        {
+            wait_time = 0.0f;
+        }
+
+        if (wait_time <= 0.0f)
+        {
+            if (!unk55c)
+            {
+                unk577 = 0;
+            }
+
+            unk550 = 0;
+        }
+
+        break;
+    }
+    case 3:
+        if (pressed & confirm)
+        {
+            LibClass175170* box = unk114;
+
+            if (box)
+            {
+                box->unk88c = 1;
+                box->unk890 = 1;
+            }
+
+            unk577 = 0;
+            unk550 = 0;
+        }
+
+        break;
+    case 2:
+    {
+        float step = scroll_speed * field_rate(g_field_runtime);
+
+        if (unk577)
+        {
+            step *= 2.0f;
+        }
+
+        unk7c += step;
+
+        if (!(unk7c < scroll_target))
+        {
+            unk7c = scroll_target;
+            unk550 = 0;
+        }
+
+        break;
+    }
+    case 4:
+        if (!unk579)
+        {
+            LibClass175170* box = unk114;
+
+            if (box)
+            {
+                box->unk88c = 1;
+                box->unk890 = 1;
+            }
+
+            unk577 = 0;
+            unk550 = 0;
+        }
+
+        break;
+    }
+
+    if (unk550 != 0)
+    {
+        goto done;
+    }
+
+    for (;;)
+    {
+        u8 fast = (mode & 1) || unk575;
+        LibDrawRecord* record = reinterpret_cast<LibDrawRecord*>(unk74);
+        // TODO: The game sign-extends the code to 64 bits before testing it; this cast is the only spelling I've found.
+        s32 end = record->code;
+
+        if ((s64)end == 0)
+        {
+            unk564 = 0;
+            unk550 = -1;
+            func_0045F610();
+            goto done;
+        }
+
+        unk74 = reinterpret_cast<u8*>(record + 1);
+        u16 code = record->code;
+
+        if (code & 0x4000)
+        {
+            switch (code)
+            {
+            case 0x4000:
+            {
+                func_00460750(this);
+
+                if (++line_index >= 0x100)
+                {
+                    continue;
+                }
+
+                line_bottom += line_heights[line_index];
+                float overflow = line_bottom - unk7c - unk18.unk0c;
+
+                if (overflow <= 0.0f)
+                {
+                    continue;
+                }
+
+                scroll_target = unk7c + overflow;
+                scroll_speed = overflow / 10.0;
+                unk550 = 2;
+                goto done;
+            }
+            case 0x4001:
+                unk118 = record->unk10;
+                unk568 = 0;
+                unk550 = 5;
+                goto done;
+            case 0x4004:
+                if (!fast)
+                {
+                    unk564 = 0;
+
+                    LibClass175170* box = unk114;
+
+                    if (box)
+                    {
+                        box->unk88c = 0;
+                        box->unk890 = 1;
+                    }
+
+                    if (!(mode & 2))
+                    {
+                        unk550 = 3;
+                        goto done;
+                    }
+
+                    func_0045F650();
+                    unk579 = 1;
+                    unk550 = 4;
+                    goto done;
+                }
+
+                wait_time = 60.0f * unk528;
+                unk55c = 1;
+                unk550 = 1;
+                goto done;
+            case 0x4005:
+                if (mode & 0x10)
+                {
+                    continue;
+                }
+
+                wait_time = 60.0f * record->unk14.scale;
+                unk55c = 1;
+                unk550 = 1;
+                goto done;
+            case 0x4006:
+                if (mode & 4)
+                {
+                    continue;
+                }
+
+                unk52c = unk524 / 4.0f / 0.05f * (record->unk14.scale / 4.0f);
+                continue;
+            case 0x4007:
+                if (mode & 4)
+                {
+                    continue;
+                }
+
+                unk52c = unk524 / 4.0f;
+                continue;
+            case 0x4014:
+                func_0045F630(record->color);
+                continue;
+            case 0x4015:
+                func_0045F640(record->color);
+                unk579 = 1;
+                unk550 = 4;
+                goto done;
+            case 0x4016:
+                unk575 = 1;
+                continue;
+            case 0x4017:
+                unk575 = 0;
+                continue;
+            case 0x401E:
+                func_0045F620(record->values[0], record->values[1], record->glyph);
+                continue;
+            case 0x4020:
+                unk57a = record->value;
+                continue;
+            }
+        }
+        else
+        {
+            unk564 = code;
+
+            if (!fast && unk577)
+            {
+                continue;
+            }
+
+            if (unk52c <= 0.0f)
+            {
+                continue;
+            }
+
+            wait_time = 60.0f * unk52c;
+            unk55c = 1;
+            unk550 = 1;
+            goto done;
+        }
+    }
+
+done:
+    needs_redraw = 1;
+}
 
 /**
  * @brief Test whether an allocation record is in use.
@@ -3111,7 +3414,7 @@ extern "C" void func_00461230(LibObject174D90* object)
  * @param flag Nonzero to reset the drawing state and the scroll speed first.
  * @return One, or zero when an allocation failed.
  */
-extern "C" s32 func_004614E0(LibObject174D90* object, s32 slot, s32 key, u32 mode, u32 flag)
+extern "C" s32 func_004614E0(LibObject174D90* object, s32 slot, s32 key, u32 mode, u8 flag)
 {
     object->unk39 = 0;
 
@@ -3217,7 +3520,7 @@ extern "C" void lib_multiline_text_init_rectangle(LibObject174D90* object, float
     state->unk574 = 0;
 }
 
-extern "C" s32 func_004614E0(LibObject174D90* object, s32 slot, s32 key, u32 mode, u32 flag);
+extern "C" s32 func_004614E0(LibObject174D90* object, s32 slot, s32 key, u32 mode, u8 flag);
 
 /**
  * @brief Initialize the multiline text rectangle and load its resource.
@@ -3433,7 +3736,7 @@ s32 LibMessageWindow::func_00461BA0(u32 source, s32 key, u32 mode, u32 flag)
  * @param second Unused.
  * @param third Unused.
  */
-void LibMessageWindow::func_00412C40(u32 first, u32 second, u32 third)
+void LibMessageWindow::func_00412C40(bool first, bool second, bool third)
 {
     switch (state)
     {
@@ -3538,7 +3841,7 @@ void LibMessageWindow::func_00412C40(u32 first, u32 second, u32 third)
  * @param second Nonzero to update the widgets.
  * @param third Nonzero to draw the widgets.
  */
-void LibMessageWindow::func_0044B100(u32 first, u32 second, u32 third)
+void LibMessageWindow::func_0044B100(bool first, bool second, bool third)
 {
     LibContainer::func_0044B100(first, second, third);
 
@@ -3874,7 +4177,74 @@ void LibDrawWidget::align_records_vertically(LibDrawRecord* records, s32 count)
     extent.width = extent.width - extent.unk00;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004637A0__13LibDrawWidgetFP13LibDrawRecordi);
+/**
+ * @brief Shift laid-out records to the horizontal alignment, drop them to the line's bottom, and move the pen to the
+ *        next line.
+ * @param records Records to shift.
+ * @param count Number of records.
+ */
+void LibDrawWidget::func_004637A0(LibDrawRecord* records, s32 count)
+{
+    if (horizontal_align != 0)
+    {
+        float shift = unk18.unk08 - (pen_x - unk88 - unk90);
+
+        if (horizontal_align == 1)
+        {
+            shift /= 2.0f;
+        }
+
+        LibDrawRecord* record = records;
+
+        for (s32 i = 0; i < count; i++, record++)
+        {
+            record->left += shift;
+            record->right += shift;
+        }
+    }
+
+    if (min_height != max_height)
+    {
+        float bottom = pen_y + max_height;
+
+        LibDrawRecord* record = records;
+
+        for (s32 i = 0; i < count; i++, record++)
+        {
+            record->top = bottom - (record->bottom - record->top);
+            record->bottom = bottom;
+        }
+    }
+
+    if (run_head != 0)
+    {
+        LibDrawRecord* record = records;
+
+        for (s32 i = 0; i < count; i++, record++)
+        {
+            record->top += 12.0f;
+            record->bottom += 12.0f;
+        }
+
+        max_height += 12.0f;
+    }
+
+    float left = records->left;
+
+    if (left < extent.unk00)
+    {
+        extent.unk00 = left;
+    }
+
+    float right = left + (pen_x - unk88 - unk90);
+
+    if (!(right <= extent.width))
+    {
+        extent.width = right;
+    }
+
+    pen_y += max_height + unk8c;
+}
 
 /** "%d". */
 extern const char D_00505CF8[];
@@ -5595,7 +5965,7 @@ LibTextWidget* LibClass174F70::add_item(s32 slot, u32 key)
  * @param second Second update flag, unused here.
  * @param third Third update flag, unused here.
  */
-void LibClass174F70::func_00412C40(u32 first, u32 second, u32 third)
+void LibClass174F70::func_00412C40(bool first, bool second, bool third)
 {
     if (unk13f8 == 0)
     {
@@ -5988,7 +6358,72 @@ void LibMovementState::set_move_target(float x, float y, float duration)
     arrived = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00466E70__16LibMovementStateFPC10LibVector4Uif);
+/**
+ * @brief Pack an XYZ2 value.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Depth.
+ * @return XYZ2 register value.
+ */
+static inline u64 lib_sprite_xyz(s32 x, s32 y, s32 z)
+{
+    return (u64)z << 32 | ((u64)x | (u64)y << 16);
+}
+
+/**
+ * @brief Rebuild the drawing packet: the 32x32 sprite at the position relative to an origin, after a half-alpha copy
+ *        of it 4 pixels down and to the right.
+ * @param origin Origin the position is relative to, or null for the screen's.
+ * @param depth Z value of the vertices.
+ * @param alpha Draw alpha, scaled by the state's own alpha over 128.
+ */
+void LibMovementState::func_00466E70(const LibVector4* origin, u32 depth, float alpha)
+{
+    u64* packet = reinterpret_cast<u64*>(unk00.dma_address);
+    packet[0] = 0x70000008;
+    packet[2] = GIF_TAG_NREG(14) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+    packet[3] = 0x005353153531F077;
+    packet[4] = 0x8007FF0001300000;
+    packet[5] = 0x0107FF0622C10400;
+    packet[6] = 0x356;
+    packet[7] = 0;
+    float x;
+    float y;
+    FieldRuntime* runtime = g_field_runtime;
+    float scale_x = runtime->screen_scale_x;
+    float scale_y = runtime->screen_scale_y;
+    float offset_x = runtime->screen_offset_x;
+    float offset_y = runtime->screen_offset_y;
+
+    if (origin == 0)
+    {
+        y = 0.0f;
+        x = y;
+    }
+    else
+    {
+        x = origin->x;
+        y = origin->y;
+    }
+
+    x += position.x - 32.0f;
+    y += position.y;
+    float level = (alpha * this->alpha) / 128.0f;
+    s32 left = (s32)(offset_x + x * scale_x);
+    s32 right = (s32)(offset_x + (32.0f + x) * scale_x);
+    s32 top = (s32)(offset_y + y * scale_y);
+    s32 bottom = (s32)(offset_y + (32.0f + y) * scale_y);
+    packet[8] = (u64)(s32)(0.5f * level) << 24;
+    packet[9] = 0x0A080008;
+    packet[10] = lib_sprite_xyz(left + 0x40, top + 0x40, depth);
+    packet[11] = 0x0BF801F8;
+    packet[12] = lib_sprite_xyz(right + 0x40, bottom + 0x40, depth);
+    packet[13] = (u64)(s32)level << 24 | 0x808080;
+    packet[14] = 0x0A080008;
+    packet[15] = lib_sprite_xyz(left, top, depth);
+    packet[16] = 0x0BF801F8;
+    packet[17] = lib_sprite_xyz(right, bottom, depth);
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", step__16LibMovementStateFv);
 
@@ -6104,7 +6539,7 @@ void LibSelectionCursor::render()
  * @param second Step the movement; a changed position marks the geometry dirty.
  * @param third Rebuild the packet if the geometry is dirty, then mark the cursor for drawing.
  */
-void LibSelectionCursor::func_0044B100(u32 first, u32 second, u32 third)
+void LibSelectionCursor::func_0044B100(bool first, bool second, bool third)
 {
     if (!first)
     {
@@ -6470,7 +6905,65 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004683E0__
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00468590);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", claim_cell__15LibObject1751A0FPC10LibVector4PP14LibClass174228Pi);
+/**
+ * @brief Claim the next free cell of the referenced grid, searching on from next_cell, and place it.
+ * @param position Position to give the cell.
+ * @param cell Receives the cell.
+ * @param value Receives the grid's value for the cell, when not null.
+ * @return The cell index, or -1 when there is no grid or every cell is taken.
+ */
+s32 LibObject1751A0::claim_cell(const LibVector4* position, LibClass174228** cell, s32* value)
+{
+    if (reference == 0)
+    {
+        return -1;
+    }
+
+    s32 count = reference->func_slot34();
+    LibGridBitset* used = reference->func_slot30();
+    LibClass174228* claimed;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        s32 index = next_cell;
+        // TODO: bits holds the word array before the word; a pointer local of its own swaps two registers.
+        u64 bits = (u64)used->bits;
+        u64* word = (u64*)bits + ((u32)index >> 6);
+        bits = *word;
+        u32 bit = index & 0x3F;
+
+        if (!((bits >> bit) & 1))
+        {
+            *word = bits | ((u64)1 << bit);
+            reference->func_slot38();
+            claimed = reference->func_slot1c(next_cell);
+
+            if (value)
+            {
+                *value = reference->func_slot20(next_cell);
+            }
+
+            *cell = claimed;
+            claimed->unk10.packed = *(const unsigned __int128*)position;
+
+            if (++next_cell >= count)
+            {
+                next_cell = 0;
+            }
+
+            unkada = 1;
+            unkadb = 1;
+            return index;
+        }
+
+        if (++next_cell >= count)
+        {
+            next_cell = 0;
+        }
+    }
+
+    return -1;
+}
 
 /**
  * @brief Make a copy of this model that stays linked to it.
