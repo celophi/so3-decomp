@@ -98,7 +98,7 @@ public:
     u32* unk30;
     u32* unk34;
     u32 unk38;
-    u32 unk3c;
+    LibTransform* unk3c;
     LibClass173490Entry* unk40;
     LibClass173490Entry* unk44;
     u32* unk48;
@@ -390,11 +390,145 @@ s32 LibPooledQuaternionTrack::read_key(s32 index, float* key, void* value, void*
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", insert_rotation__24LibPooledQuaternionTrackFifPC10FieldVec4A);
+/**
+ * @brief Shift the later keyframes up and pack a rotation at an index.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @return One when the index is a stored key and there was room, otherwise zero.
+ */
+s32 LibPooledQuaternionTrack::insert_rotation(s32 index, float key, const FieldVec4A* value)
+{
+    s32 i;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", replace_rotation__24LibPooledQuaternionTrackFifPC10FieldVec4A);
+    if (index >= state.key_count)
+    {
+        return 0;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", append_rotation__24LibPooledQuaternionTrackFPC10FieldVec4Af);
+    if (state.key_count >= state.key_capacity)
+    {
+        return 0;
+    }
+
+    for (i = state.key_count; i > index; i--)
+    {
+        key_array[i] = key_array[i - 1];
+    }
+
+    s32 x = 32768.0f * value->x;
+    s32 y = 32768.0f * value->y;
+    s32 z = 32768.0f * value->z;
+
+    if (value->w < 0.0f)
+    {
+        x = -x;
+        y = -y;
+        z = -z;
+    }
+
+    x = clamp_high(x, 32767);
+    y = clamp_high(y, 32767);
+    z = clamp_high(z, 32767);
+    x = clamp_low(x, -32768);
+    y = clamp_low(y, -32768);
+    z = clamp_low(z, -32768);
+    key_array[index].packed_rotation[0] = x;
+    key_array[index].packed_rotation[1] = y;
+    key_array[index].packed_rotation[2] = z;
+    key_array[index].set_key(key);
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].get_key();
+    }
+
+    state.key_count++;
+    return 1;
+}
+
+/**
+ * @brief Pack a rotation into an existing keyframe.
+ * @param index Keyframe index.
+ * @param key Sort key.
+ * @param value Keyframe rotation.
+ * @return True when the index is within the capacity.
+ */
+bool LibPooledQuaternionTrack::replace_rotation(s32 index, float key, const FieldVec4A* value)
+{
+    if (index >= state.key_capacity)
+    {
+        return false;
+    }
+
+    s32 x = 32768.0f * value->x;
+    s32 y = 32768.0f * value->y;
+    s32 z = 32768.0f * value->z;
+
+    if (value->w < 0.0f)
+    {
+        x = -x;
+        y = -y;
+        z = -z;
+    }
+
+    x = clamp_high(x, 32767);
+    y = clamp_high(y, 32767);
+    z = clamp_high(z, 32767);
+    x = clamp_low(x, -32768);
+    y = clamp_low(y, -32768);
+    z = clamp_low(z, -32768);
+    key_array[index].packed_rotation[0] = x;
+    key_array[index].packed_rotation[1] = y;
+    key_array[index].packed_rotation[2] = z;
+    key_array[index].set_key(key);
+
+    if (index == state.key_count - 1)
+    {
+        state.span = key - key_array[0].get_key();
+    }
+
+    return true;
+}
+
+/**
+ * @brief Pack a rotation and append it after the last keyframe.
+ * @param value Keyframe rotation.
+ * @param key Sort key.
+ * @return True when there was room.
+ */
+bool LibPooledQuaternionTrack::append_rotation(const FieldVec4A* value, float key)
+{
+    if (state.key_count >= state.key_capacity)
+    {
+        return false;
+    }
+
+    s32 x = 32768.0f * value->x;
+    s32 y = 32768.0f * value->y;
+    s32 z = 32768.0f * value->z;
+
+    if (value->w < 0.0f)
+    {
+        x = -x;
+        y = -y;
+        z = -z;
+    }
+
+    x = clamp_high(x, 32767);
+    y = clamp_high(y, 32767);
+    z = clamp_high(z, 32767);
+    x = clamp_low(x, -32768);
+    y = clamp_low(y, -32768);
+    z = clamp_low(z, -32768);
+    key_array[state.key_count].packed_rotation[0] = x;
+    key_array[state.key_count].packed_rotation[1] = y;
+    key_array[state.key_count].packed_rotation[2] = z;
+    key_array[state.key_count].set_key(key);
+    state.span = key - key_array[0].get_key();
+    state.key_count++;
+    return true;
+}
 
 /** @brief Reset the cached sampling state. */
 void LibPooledQuaternionTrack::reset_state()

@@ -6433,8 +6433,12 @@ extern "C"
      */
     s32 sceMpegDemuxPssRing(void* mpeg, u8* data, s32 size, u8* ring, s32 ring_size);
 
-    /** @brief Keep the movie's sound stream fed. */
-    void func_004144F0(LibMovieStream* stream);
+    /**
+     * @brief Keep the movie's sound stream fed.
+     * @param stream Movie stream.
+     * @return Bytes handed to the sound stream.
+     */
+    s32 func_004144F0(LibMovieStream* stream);
 }
 
 /**

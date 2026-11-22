@@ -1966,6 +1966,15 @@ struct LibQuaternionTrackKey
         return key;
     }
 
+    /**
+     * @brief Store the key, truncated to a halfword.
+     * @param value Key.
+     */
+    void set_key(float value)
+    {
+        key = value;
+    }
+
     s16 packed_rotation[3];
     s16 key;
 };

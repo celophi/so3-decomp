@@ -926,6 +926,12 @@ public:
      * @return Size, in quadwords.
      */
     virtual s32 func_00424860();
+
+    u8 unk0c[4];
+    float alpha;
+    u32 colors[4];
+    float inner_radius;
+    float widths[2];
 };
 
 /**
@@ -1017,6 +1023,8 @@ struct LibClass173070Link
     float unk34;
     LibClass173070* target;
     u8 unk3c[4];
+
+    LibClass173070Link() {}
 };
 
 #define LIB_LINK_NODE_GRAVITY 0x01
