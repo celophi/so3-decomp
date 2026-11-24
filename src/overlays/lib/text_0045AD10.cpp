@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/scratchpad_texture_cache.h"
 #include "vu0.h"
 #include "overlays/lib/shape_vu0.h"
 #include "overlays/lib/text_00419A70.h"
@@ -3207,7 +3208,519 @@ extern "C" LibDrawRecord* func_004602B0(LibObject174D90* object, LibDrawRecord* 
     return record;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00460750);
+/** A decoded text code in the scratchpad: the code, a count or length, and its argument. */
+struct LibTextRecord
+{
+    u16 code;
+    u16 extra;
+
+    union
+    {
+        u32 value;
+        float number;
+        const u8* text;
+        u8 bytes[4];
+    };
+};
+
+#define LIB_TEXT_RECORDS reinterpret_cast<LibTextRecord*>(0x70000000)
+#define LIB_TEXT_RECORDS_END reinterpret_cast<LibTextRecord*>(0x70000C78)
+
+extern "C" void func_004C7290(LibDrawWidget* widget, const u8* text);
+
+/**
+ * @brief Test a one-based allocation ID against the allocation count.
+ * @param identifier One-based allocation ID.
+ * @return Nonzero when the ID is in range.
+ */
+static inline s32 allocation_identifier_valid(s16 identifier)
+{
+    // TODO: Returned as s32 from a bool local, which gives the game's extra andi before the test.
+    bool valid = false;
+
+    if (identifier > 0 && identifier <= LIB_ALLOCATION_COUNT)
+    {
+        valid = true;
+    }
+
+    return valid;
+}
+
+/**
+ * @brief Walk back from a record to the start of its run.
+ * @param record Record inside a run.
+ * @return The run's LIB_DRAW_RECORD_RUN record.
+ */
+static inline LibDrawRecord* run_start(LibDrawRecord* record)
+{
+    for (;;)
+    {
+        if (record->code == LIB_DRAW_RECORD_RUN)
+        {
+            break;
+        }
+
+        record--;
+    }
+
+    return record;
+}
+
+/**
+ * @brief Decode the next page of text into scratchpad records, then lay them out line by line, wrapping a line
+ *        that runs past the widget's width at the start of its run or the break func_004602B0 picks. Up to 12 lines
+ *        wrap; each laid-out line's height goes into line_heights.
+ * @param object Multiline text widget.
+ */
+extern "C" void func_00460750(LibObject174D90* object)
+{
+    u16 codes[64];
+
+    if (object->unk548 < 0)
+    {
+        return;
+    }
+
+    if (object->unk548 == 0)
+    {
+        if (object->unkfc != 0)
+        {
+            LibGlyphDraw6C* glyph = static_cast<LibClass178780*>(object->unkfc)->glyphs;
+
+            for (s32 i = 0; i < static_cast<LibClass178780*>(object->unkfc)->glyph_capacity; i++, glyph++)
+            {
+                lib_draw_state_init(glyph);
+            }
+        }
+
+        object->text_cursor = static_cast<const u8*>(object->unk118);
+        object->record_cursor = reinterpret_cast<LibDrawRecord*>(object->unk70);
+        object->pen_y = 0.0f;
+        object->line_count = 0;
+        object->unk548++;
+    }
+
+    lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+
+    const u8* text = object->text_cursor;
+    LibTextRecord* record = LIB_TEXT_RECORDS;
+
+    for (;;)
+    {
+        u16 code = *text++;
+
+        // TODO: The game compares the code as 64-bit here; I haven't found a cleaner spelling.
+        if ((s64)(s32)code == 0)
+        {
+            record->code = 0;
+            goto decoded;
+        }
+
+        if (code & 0x80)
+        {
+            code = (code & 0x7F) | (*text++ << 7);
+
+            if (code & 0x4000)
+            {
+                switch (code)
+                {
+                case 0x4002:
+                case 0x401A:
+                case 0x4020:
+                    record->value = *text++;
+                    break;
+                case 0x4005:
+                case 0x4006:
+                case 0x400A:
+                case 0x400C:
+                case 0x400E:
+                case 0x4014:
+                case 0x4015:
+                {
+                    u8* bytes = record->bytes;
+
+                    for (s32 i = 0; i < 4; i++)
+                    {
+                        *bytes++ = *text++;
+                    }
+
+                    break;
+                }
+                case 0x4000:
+                    if (object->mode & 8)
+                    {
+                        continue;
+                    }
+
+                    record->code = 0x4000;
+                    goto decoded;
+                case 0x4001:
+                    record->code = 0x4001;
+                    record->text = text;
+                    goto decoded;
+                case 0x4003:
+                    record->value = 0;
+                    code = 0x4002;
+                    break;
+                case 0x4008:
+                    record->value = object->get_palette_color(*text++);
+                    break;
+                case 0x4009:
+                    record->value = 0x808080;
+                    code = 0x4008;
+                    break;
+                case 0x400B:
+                    code = 0x400A;
+                    record->number = 1.0f;
+                    break;
+                case 0x400D:
+                    record->value = 0;
+                    code = 0x400C;
+                    break;
+                case 0x400F:
+                    code = 0x400E;
+                    record->number = 2.0f;
+                    break;
+                case 0x4011:
+                case 0x401C:
+                    record->text = text;
+
+                    while (*text)
+                    {
+                        text++;
+                    }
+
+                    record->extra = text - record->text;
+                    text++;
+                    break;
+                case 0x4012:
+                {
+                    object->format_number_codes(codes, g_field_runtime->message_arguments[*text++]);
+
+                    for (u16* glyph = codes; *glyph; glyph++)
+                    {
+                        record->code = *glyph;
+                        record++;
+
+                        if (record == LIB_TEXT_RECORDS_END)
+                        {
+                            record->code = 0x4001;
+                            record->text = text;
+                            goto decoded;
+                        }
+                    }
+
+                    continue;
+                }
+                case 0x4013:
+                case 0x4021:
+                {
+                    s32 index = *text++;
+
+                    index = code == 0x4013 ? index : g_field_runtime->message_arguments[index];
+
+                    func_00464040(object, codes, func_004642E0(object, index));
+                    u16* glyph = codes;
+                    s32 spacer = 0;
+
+                    while (*glyph)
+                    {
+                        if (!spacer)
+                        {
+                            record->code = *glyph++;
+                        }
+                        else
+                        {
+                            record->code = 0x4018;
+                        }
+
+                        record++;
+
+                        if (record == LIB_TEXT_RECORDS_END)
+                        {
+                            record->code = 0x4001;
+                            record->text = text;
+                            goto decoded;
+                        }
+
+                        spacer ^= 1;
+                    }
+
+                    continue;
+                }
+                case 0x4022:
+                case 0x4023:
+                {
+                    s32 value = g_field_runtime->message_arguments[*text++];
+                    u16 id = 0;
+                    s32 variant = 0;
+
+                    if (code == 0x4022)
+                    {
+                        id = value;
+                    }
+                    else
+                    {
+                        LibGameState* state = reinterpret_cast<LibGameState*>(D_001B64F8);
+                        ItemCreationAllocationRecord* allocation;
+
+                        if (allocation_identifier_valid(value))
+                        {
+                            allocation = reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[(s16)value - 1]);
+                        }
+                        else
+                        {
+                            allocation = 0;
+                        }
+
+                        if (allocation != 0 && allocation_in_use(allocation))
+                        {
+                            u16 stored = allocation->checksum;
+                            u16 index;
+
+                            if (stored != allocation->calculate_checksum())
+                            {
+                                index = 0;
+                            }
+                            else
+                            {
+                                index = allocation->definition_factors.bits.definition_index;
+                            }
+
+                            id = index + 1;
+                            variant = allocation->modification_number;
+                        }
+                    }
+
+                    func_00463E60(object, codes, id, variant);
+
+                    for (u16* glyph = codes; *glyph; glyph++)
+                    {
+                        record->code = *glyph;
+                        record++;
+
+                        if (record == LIB_TEXT_RECORDS_END)
+                        {
+                            record->code = 0x4001;
+                            record->text = text;
+                            goto decoded;
+                        }
+                    }
+
+                    continue;
+                }
+                case 0x401B:
+                    record->value = object->unk554;
+                    code = 0x401A;
+                    break;
+                case 0x401D:
+                    record->text = text;
+                    text++;
+                    break;
+                case 0x401E:
+                {
+                    u8* bytes = record->bytes;
+
+                    for (s32 i = 0; i < 4; i++)
+                    {
+                        *bytes++ = *text++;
+                    }
+
+                    record->extra = func_0045FE90(object, text);
+                    break;
+                }
+                }
+            }
+        }
+
+        record->code = code;
+        record++;
+
+        if (record == LIB_TEXT_RECORDS_END)
+        {
+            record->code = 0x4001;
+            record->text = text;
+            break;
+        }
+    }
+
+decoded:
+    object->text_cursor = text;
+
+    if (record->code != 0x4000)
+    {
+        object->unk548 = -1;
+    }
+
+    // TODO: Declaring source first and assigning it later is what keeps records in s4 and source in s5.
+    LibTextRecord* source;
+    LibDrawRecord* records = object->record_cursor;
+    s32 total = 0;
+    s32 lines = 0;
+    source = LIB_TEXT_RECORDS;
+    bool more = true;
+
+    while (more)
+    {
+        LibTextRecord* line_start = source;
+        s32 align = object->horizontal_align;
+        u32 tint = object->tint;
+        LibDrawRecord* wrap = 0;
+        float scale = object->draw_scale;
+        float scale_y = object->draw_scale_y;
+        float spacing = object->unk88;
+        float leading = object->unk8c;
+        object->unk90 = 0.0f;
+
+    retry:
+        object->begin_layout(records, object->pen_y);
+        u8 going = 1;
+        u8 in_run = 0;
+
+        while (going)
+        {
+            if (!in_run && object->next_record == wrap)
+            {
+                lines++;
+                object->next_record->code = 0x4000;
+                object->next_record++;
+                object->record_count++;
+                break;
+            }
+
+            s32 code = source->code;
+
+            if ((s64)code == 0)
+            {
+                object->next_record->code = 0;
+                going = more = 0;
+                object->next_record++;
+                object->record_count++;
+            }
+            else if (code < 0x4000 || code == 0x401C || code == 0x401D)
+            {
+                LibDrawRecord* glyph = object->next_record;
+                float pen_x = object->pen_x;
+
+                switch (source->code)
+                {
+                case 0x401C:
+                    object->add_number_record(const_cast<u8*>(source->text), source->extra);
+                    break;
+                case 0x401D:
+                    func_004C7290(object, source->text);
+                    break;
+                default:
+                    object->add_glyph(source->code);
+                    break;
+                }
+
+                if (wrap == 0 && lines < 12 && !(pen_x + (glyph->right - glyph->left) <= object->unk18.unk08))
+                {
+                    if (in_run)
+                    {
+                        wrap = run_start(glyph);
+                    }
+                    else if (source->code >= 0x4000 || static_cast<LibManagedResourceSlot*>(glyph->unk10)->flag)
+                    {
+                        wrap = func_004602B0(object, records, glyph);
+                    }
+                    else
+                    {
+                        wrap = glyph;
+                    }
+
+                    if (object->unk558 & 1)
+                    {
+                        object->unk90 = func_004601F0(object, records, wrap - 1);
+                    }
+
+                    object->horizontal_align = align;
+                    object->tint = tint;
+                    source = line_start;
+                    object->draw_scale = scale;
+                    object->draw_scale_y = scale_y;
+                    object->unk88 = spacing;
+                    object->unk8c = leading;
+                    goto retry;
+                }
+            }
+            else
+            {
+                switch (code)
+                {
+                case 0x4000:
+                    object->next_record->code = 0x4000;
+                    going = more = 0;
+                    object->next_record++;
+                    object->record_count++;
+                    break;
+                case 0x4001:
+                    object->next_record->code = 0x4001;
+                    going = more = 0;
+                    object->next_record->unk10 = const_cast<u8*>(source->text);
+                    object->next_record++;
+                    object->record_count++;
+                    break;
+                case 0x4002:
+                    object->horizontal_align = source->value;
+                    break;
+                case 0x4008:
+                    object->tint = source->value;
+                    break;
+                case 0x400A:
+                    object->draw_scale = object->draw_scale_y = source->number;
+                    break;
+                case 0x400C:
+                    object->unk88 = source->number;
+                    break;
+                case 0x400E:
+                    object->unk8c = source->number;
+                    break;
+                case 0x4010:
+                    object->begin_run();
+                    in_run = 1;
+                    break;
+                case 0x4011:
+                    object->end_run(const_cast<u8*>(source->text), source->extra);
+                    in_run = 0;
+                    break;
+                case 0x401A:
+                    object->unk558 = source->value;
+                    break;
+                default:
+                    object->next_record->code = code;
+                    object->next_record->glyph = source->extra;
+                    object->next_record->unk10 = reinterpret_cast<void*>(source->value);
+                    object->next_record->unk14.scale = source->number;
+                    object->next_record->color = source->value;
+                    object->next_record++;
+                    object->record_count++;
+                    break;
+                }
+            }
+
+            source++;
+        }
+
+        if (object->record_count > 0)
+        {
+            object->func_004637A0(records, object->record_count);
+            records += object->record_count;
+            total += object->record_count;
+
+            if (object->line_count < 256)
+            {
+                object->line_heights[object->line_count] = object->max_height + object->unk8c;
+            }
+
+            object->line_count++;
+        }
+    }
+
+    object->record_count = total;
+    object->record_cursor += object->record_count;
+}
 
 /**
  * @brief Measure the widget's text page by page: per page, count the glyphs found in its resource (or the runtime's
@@ -4249,7 +4762,7 @@ void LibDrawWidget::func_004637A0(LibDrawRecord* records, s32 count)
 /** "%d". */
 extern const char D_00505CF8[];
 
-extern "C" s32 func_00463C90(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
+extern "C" s32 func_00463C90(LibDrawWidget* widget, u16* codes, s32 id, u8 variant);
 
 extern "C" s32 func_00463E60(LibDrawWidget* widget, u16* codes, u16 id, s32 variant);
 
@@ -4259,7 +4772,7 @@ extern "C" s32 func_00463E60(LibDrawWidget* widget, u16* codes, u16 id, s32 vari
  * @param id ID passed to the code lookup.
  * @param variant Second lookup argument.
  */
-extern "C" void func_00463C00(LibDrawWidget* widget, u16 id, s32 variant)
+extern "C" void func_00463C00(LibDrawWidget* widget, s32 id, u8 variant)
 {
     u16 codes[0x80];
     s32 count = func_00463C90(widget, codes, id, variant);
@@ -4888,7 +5401,27 @@ LibTextExtent* func_00464C20(LibObject174F20* object)
     return &object->extent;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00464C80);
+/** @brief Lay the number out in the scratchpad and draw it, once; the largest s32 means no number. */
+void LibObject174F20::draw()
+{
+    if (numeric_value == 0x7FFFFFFF)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(0x70000000);
+        begin_layout(records, 0.0f);
+        add_number(numeric_value);
+        func_004637A0(records, record_count);
+        align_records_vertically(records, record_count);
+        draw_records(records, record_count);
+        unk3b = 1;
+    }
+}
 
 /** One opaque 0x50-byte resource slot in the runtime's sixteen-slot table. */
 typedef struct LibNumericResourceSlot
@@ -6425,7 +6958,78 @@ void LibMovementState::func_00466E70(const LibVector4* origin, u32 depth, float 
     packet[17] = lib_sprite_xyz(right, bottom, depth);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", step__16LibMovementStateFv);
+/**
+ * @brief Measure an offset's length from the absolute values of its components.
+ * @param x Horizontal offset.
+ * @param y Vertical offset.
+ * @return Length.
+ */
+static inline float movement_length(float x, float y)
+{
+    float abs_x = ee_abs(x);
+    float abs_y = __s_abs(y);
+    float squared = abs_x * abs_x + abs_y * abs_y;
+    return __sqrt(squared, squared);
+}
+
+/**
+ * @brief Move towards the target by the speed scaled by the frame rate, arriving once within a quarter pixel.
+ * @return Whether the position changed.
+ */
+bool LibMovementState::step()
+{
+    bool changed = false;
+
+    if (!arrived)
+    {
+        for (s32 moved = 0;; moved++)
+        {
+            float dx = target.x - position.x;
+            float dy = target.y - position.y;
+            float distance = __s_abs(movement_length(dx, dy));
+
+            if (!(distance < 0.25f))
+            {
+                if (moved)
+                {
+                    break;
+                }
+
+                if (!speed_ready)
+                {
+                    speed = distance / move_frames;
+                    speed_ready++;
+                }
+
+                float step = speed * field_rate(g_field_runtime);
+
+                if (!(step <= distance))
+                {
+                    step = distance;
+                }
+
+                float angle = func_00142148(dy, dx);
+
+                position.x += step * lib_cosine_degree9(angle);
+                position.y += step * lib_sine_degree9(angle);
+            }
+            else
+            {
+                arrived = 1;
+                on_arrived();
+                break;
+            }
+        }
+    }
+
+    if (position.x != previous_position.x || position.y != previous_position.y)
+    {
+        changed = true;
+    }
+
+    previous_position = position;
+    return changed;
+}
 
 /**
  * @brief Allocate the drawing storage and show the state at a position at full alpha.
@@ -6712,7 +7316,27 @@ s32 func_004679B0(LibStringLabel* object)
     return func_00464040(object, codes, object->text);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004679D0);
+/** @brief Lay the text out in the scratchpad and draw it, once. */
+void LibStringLabel::draw()
+{
+    if (text == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(0x70000000);
+        begin_layout(records, 0.0f);
+        add_text(text);
+        func_004637A0(records, record_count);
+        align_records_vertically(records, record_count);
+        draw_records(records, record_count);
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Configure the drawing rectangle and string.

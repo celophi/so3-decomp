@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "sdk/main/libc_guess_0013A4C0.h"
 #include "overlays/lib/tracks.h"
 #include "clamp.h"
 #include "overlays/lib/vector_inlines.h"
@@ -3206,11 +3207,45 @@ LibColorModel::~LibColorModel()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_00448360);
-
-void* func_00448690(void* value)
+/** @brief Initialize the color state and clear the draw packet. */
+LibColorModel::LibColorModel()
 {
-    return value;
+    LibModelPacket* packet = reinterpret_cast<LibModelPacket*>(reinterpret_cast<u32>(&draw_packet) & 0x0FFFFFFF);
+
+    memset_guess(packet, 0, sizeof(LibModelPacket));
+    set_vector(reinterpret_cast<LibVector4*>(&packet->unk10), 255.0f, 255.0f, 255.0f, 255.0f);
+    set_vector(reinterpret_cast<LibVector4*>(&packet->unke0), 1.0f, 1.0f, 1.0f, 1.0f);
+    unk65 = 0;
+    packet->unk00[0] = 0;
+    packet->unk00[1] = 0;
+    packet->unk00[2] = 0;
+    packet->unpack = VIF_UNPACK(VIF_UNPACK_V4_32, 0x2F, 0);
+    packet->mscal = VIF_MSCAL(reinterpret_cast<u32>(D_238) >> 3);
+    packet->unk304[0] = 0;
+    packet->unk304[1] = 0;
+    packet->unk304[2] = 0;
+    packet->frame_alpha = 0;
+    packet->frame_alpha_address = GS_REGISTER_FBA_1;
+    packet->unkf0 = 0;
+    packet->test = *reinterpret_cast<u32*>(&g_display->buffers[0].environment.context1.test) & ~0xC000;
+    packet->test_address = GS_REGISTER_TEST_1;
+    func_004CFF80(reinterpret_cast<LibMatrix44Value*>(&packet->unka0));
+    set_vector(&base_color_factor, 1.0f, 1.0f, 1.0f, 1.0f);
+    set_vector(&combined_color_factor, 1.0f, 1.0f, 1.0f, 1.0f);
+    set_vector(&color_modulation, 1.0f, 1.0f, 1.0f, 1.0f);
+    unk59d_0 = 1;
+    color_dirty = 1;
+    fog_enabled = 0;
+    light_mask = 0;
+    unk59c = 0;
+    unk59d_1 = D_001B6550;
+    original = 0;
+    next_clone = 0;
+}
+
+/** @brief Leave the matrix uninitialized. */
+inline LibModelPacketMatrix::LibModelPacketMatrix()
+{
 }
 
 extern "C" LibImageRegistry* g_image_registry;

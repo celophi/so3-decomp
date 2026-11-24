@@ -1,6 +1,8 @@
 #include "angle.h"
 #include "include_asm.h"
 #include "overlays/lib/vector_inlines.h"
+#include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/look_at_transform_inlines.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/camera_vu0.h"
 #include "overlays/lib/light_vu0.h"
@@ -323,7 +325,268 @@ void LibCameraContext::vblank(s32 field)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", flip__16LibCameraContextFiP14LibPacketQueue);
+/**
+ * @brief Check whether a screen shows the other field.
+ * @param screen Screen.
+ * @param field Field being drawn.
+ * @return True when the screen's field differs.
+ */
+static inline bool lib_screen_off_field(const LibDisplayScreen* screen, s32 field)
+{
+    return !(screen->field == field);
+}
+
+/**
+ * @brief Finish a render iteration: send its draw packets to the queue and pick the buffers to show.
+ * @param frame Render iteration.
+ * @param queue Packet queue the frame's packets go to.
+ */
+void LibCameraContext::flip(s32 frame, LibPacketQueue* queue)
+{
+    s32 field;
+
+    packet_queue = queue;
+
+    if (display_area.scaled)
+    {
+        unk3E6A = 0;
+        unk3E6B = 0;
+        field = resident_input_wait_vblank(resident_system_get_input(&g_system), -1);
+
+        if (resident_get_system()->progressive)
+        {
+            field = 0;
+        }
+
+        if (unk3E67)
+        {
+            func_004DC4F0(queue, 4, 0, &buffers[1], 0, 0);
+            func_004DC4F0(queue, 2, 0, packets[packet_set][field] + 0x40, packet_sizes[packet_set][field], 0);
+
+            if (unk3E78)
+            {
+                for (s32 i = 0; i < unk3E78; i++)
+                {
+                    s32 slot = field + i * 2 + 6;
+
+                    func_004DC4F0(queue, 2, 0, packets[unk3E7A][slot] + 0x40, packet_sizes[unk3E7A][slot], 0);
+                }
+            }
+
+            if (unk3E48)
+            {
+                func_004DC4F0(queue, 2, 0, unk3E34, unk3E3C, 0);
+            }
+        }
+
+        if (list_buffers[0] != 0)
+        {
+            send_list_set = unk3E18;
+            send_list_count = unk3E14;
+            send_packet_list(field, false);
+        }
+
+        sceGsPutDispEnv(&display_environments[0]);
+
+        if (unk3E67)
+        {
+            for (s32 i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+            {
+                if (screens[i].enabled && screens[i].circuit2 && lib_screen_off_field(&screens[i], field))
+                {
+                    func_004DC4F0(queue, 4, 0, &screens[i].buffers[0], 0, 0);
+                    func_004DC4F0(queue, 2, 0, packets[packet_set][i + 2] + 0x40, packet_sizes[packet_set][i + 2], 0);
+
+                    if (unk3E78)
+                    {
+                        for (s32 j = 0; j < unk3E78; j++)
+                        {
+                            s32 slot = (field ^ 1) + j * 2 + 6;
+
+                            func_004DC4F0(queue, 2, 0, packets[unk3E7A][slot] + 0x40, packet_sizes[unk3E7A][slot], 0);
+                        }
+                    }
+
+                    if (unk3E48)
+                    {
+                        func_004DC4F0(queue, 2, 0, unk3E34, unk3E3C, 0);
+                    }
+
+                    screens[i].unkA57 = 1;
+                }
+                else
+                {
+                    screens[i].unkA57 = 0;
+                }
+            }
+        }
+        else
+        {
+            for (s32 i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+            {
+                if (screens[i].enabled && screens[i].circuit2 && lib_screen_off_field(&screens[i], field))
+                {
+                    screens[i].unkA57 = 1;
+                }
+                else
+                {
+                    screens[i].unkA57 = 0;
+                }
+            }
+        }
+
+        if (list_buffers[0] != 0)
+        {
+            if (unk3E30 == 1)
+            {
+                send_packet_list(field ^ 1, true);
+            }
+
+            unk3E18 ^= 1;
+            unk3E14 = 0;
+            unk3E20 = list_buffers[unk3E18 * 2] + 0x40;
+            unk3E24 = list_buffers[unk3E18 * 2 + 1] + 0x40;
+
+            for (s32 i = 0; i < unk3E10; i++)
+            {
+                list_sizes[unk3E18 * 2][i] = 0;
+                list_sizes[unk3E18 * 2 + 1][i] = 0;
+            }
+        }
+
+        func_004DC4F0(queue, 4, 0, &buffers[0], 0, 0);
+        current_buffer = 0;
+
+        for (s32 i = 0; i < LIB_DISPLAY_SCREEN_COUNT; i++)
+        {
+            if (screens[i].enabled && screens[i].field == field && screens[i].unkA51)
+            {
+                GS_DISPFB1 = *(u64*)&screens[i].display_environment.framebuffer;
+                GS_DISPLAY1 = *(u64*)&screens[i].display_environment.display;
+            }
+        }
+
+        return;
+    }
+
+    FlushCache(0);
+
+    if (frame_buffer_count == 2)
+    {
+        if (frame & 1)
+        {
+            current_buffer = 1;
+            sceGsPutDrawEnv(&buffers[1].environment.gif_tag);
+
+            if (!unk3E65)
+            {
+                sceGsPutDispEnv(&display_environments[1]);
+            }
+        }
+        else
+        {
+            current_buffer = 0;
+            sceGsPutDrawEnv(&buffers[0].environment.gif_tag);
+
+            if (!unk3E65)
+            {
+                sceGsPutDispEnv(&display_environments[0]);
+            }
+        }
+    }
+    else
+    {
+        s32 index = frame % 3;
+
+        if (unk3E65)
+        {
+            switch (index)
+            {
+                case 0:
+                    sceGsPutDrawEnv(&buffers[0].environment.gif_tag);
+                    break;
+                case 1:
+                    sceGsPutDrawEnv(&buffers[1].environment.gif_tag);
+                    break;
+                case 2:
+                    sceGsPutDrawEnv(&buffers[2].environment.gif_tag);
+                    break;
+            }
+        }
+        else if (unk3E66 && !unk3E68)
+        {
+            switch (index)
+            {
+                case 0:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = blend_registers[0].framebuffer;
+                        GS_DISPLAY1 = blend_registers[0].display;
+                    }
+
+                    sceGsPutDispEnv(&blend_environments[0]);
+                    sceGsPutDrawEnv(&buffers[1].environment.gif_tag);
+                    break;
+                case 1:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = blend_registers[1].framebuffer;
+                        GS_DISPLAY1 = blend_registers[1].display;
+                    }
+
+                    sceGsPutDispEnv(&blend_environments[1]);
+                    sceGsPutDrawEnv(&buffers[2].environment.gif_tag);
+                    break;
+                case 2:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = blend_registers[2].framebuffer;
+                        GS_DISPLAY1 = blend_registers[2].display;
+                    }
+
+                    sceGsPutDispEnv(&blend_environments[2]);
+                    sceGsPutDrawEnv(&buffers[0].environment.gif_tag);
+                    break;
+            }
+        }
+        else
+        {
+            switch (index)
+            {
+                case 0:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = circuit1_registers[2].framebuffer;
+                        GS_DISPLAY1 = circuit1_registers[2].display;
+                    }
+
+                    sceGsPutDispEnv(&display_environments[0]);
+                    sceGsPutDrawEnv(&buffers[1].environment.gif_tag);
+                    break;
+                case 1:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = circuit1_registers[0].framebuffer;
+                        GS_DISPLAY1 = circuit1_registers[0].display;
+                    }
+
+                    sceGsPutDispEnv(&display_environments[1]);
+                    sceGsPutDrawEnv(&buffers[2].environment.gif_tag);
+                    break;
+                case 2:
+                    if (unk3E64)
+                    {
+                        GS_DISPFB1 = circuit1_registers[1].framebuffer;
+                        GS_DISPLAY1 = circuit1_registers[1].display;
+                    }
+
+                    sceGsPutDispEnv(&display_environments[2]);
+                    sceGsPutDrawEnv(&buffers[0].environment.gif_tag);
+                    break;
+            }
+        }
+    }
+}
 
 /**
  * @brief Send one field's packet list from send_list_set. Entries flagged in unk3E08 are drawn with
@@ -1273,7 +1536,53 @@ void LibCamera::upload_clip_geometry() const
     vu0_upload_clip_geometry(clip_points, clip_normals);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E1670);
+/**
+ * @brief Load the camera's transform into VU0 (microprogram 0x1F0) and build its screen clip data.
+ * @param camera Camera to upload.
+ */
+extern "C" void func_004E1670(LibCamera* camera)
+{
+    vu0_start_microprogram_1f0_vf5_vf8(&camera->transform);
+    FieldVec4B points[10];
+    float inverse_aspect = 1.0f / camera->pixel_aspect;
+    float half_width = 0.5f * (camera->screen_max.x - camera->screen_min.x);
+    float half_height = inverse_aspect * (0.5f * (camera->screen_max.y - camera->screen_min.y));
+    float edge = 2040.0f * inverse_aspect;
+
+    points[0].x = -half_width;
+    points[0].y = -half_height;
+    points[0].z = camera->projection_distance;
+    points[1].x = half_width;
+    points[1].y = -half_height;
+    points[1].z = camera->projection_distance;
+    points[2].x = half_width;
+    points[2].y = half_height;
+    points[2].z = camera->projection_distance;
+    points[3].x = -half_width;
+    points[3].y = half_height;
+    points[3].z = camera->projection_distance;
+    points[4].set(points[0]);
+    points[4].z = camera->screen_min.z;
+    points[5].x = 0.0f;
+    points[5].y = 0.0f;
+    points[5].z = camera->screen_max.z;
+    points[6].x = -2040.0f;
+    points[6].y = -edge;
+    points[6].z = camera->projection_distance;
+    points[7].x = 2040.0f;
+    points[7].y = -edge;
+    points[7].z = camera->projection_distance;
+    points[8].x = 2040.0f;
+    points[8].y = edge;
+    points[8].z = camera->projection_distance;
+    points[9].x = -2040.0f;
+    points[9].y = edge;
+    points[9].z = camera->projection_distance;
+    vu0_transform_clip_points(points);
+    vu0_store_clip_points(camera->clip_points);
+    vu0_build_side_clip_normals(camera->clip_normals);
+    vu0_build_end_clip_normals(camera->clip_normals);
+}
 
 /**
  * @brief Build the local perspective volume for visibility tests.
@@ -1646,7 +1955,124 @@ LibCamera::~LibCamera()
     delete unk860;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", __ct__9LibCameraFPv);
+/** Camera packet that resets the context-1 drawing state, sent on VIF1. */
+struct LibCameraSetupPacket
+{
+    u64 dma_tag;
+    union
+    {
+        u64 vif;
+        u32 vif_codes[2];
+    };
+    GsGifTag tag;
+    GsRegisterValue registers[9];
+};
+
+/**
+ * @brief Initialize the camera from the resident context.
+ * @param context Resident context.
+ */
+LibCamera::LibCamera(void* context)
+{
+    const LibCameraContext* display = static_cast<const LibCameraContext*>(context);
+    LibCameraSetupPacket* packet;
+
+    centre_y = 0.0f;
+    centre_x = 0.0f;
+    set_type_id(4);
+    unk248 = 1.0f;
+    unk24c = 11.0f;
+    unk240 = 64.0f;
+    unk244 = 1000.0f;
+    unk270 = 1.0f;
+    unk3d3 = 1;
+    unk3d2 = 0;
+    unk260 = 1.0f;
+    unk264 = 1.0f;
+    unk268 = 1.0f;
+    unk26c = 1.0f;
+    far_fog_fraction = 1.0f;
+    near_fog_fraction = 0.0f;
+    far_fog_distance = 10000.0f;
+    near_fog_distance = 1000.0f;
+    near_fog_factor = 255.0f;
+    near_fog_distance = 255.0f;
+    roll = 0.0f;
+    unk3d1 = 0;
+    width_scale = 1.0f;
+    unk254 = 1.0f;
+    unk270 = 1.0f;
+    set_centre(2048.0f, 2048.0f);
+    unk5c0.unk090.set_identity();
+    unk5c0.unk120 = *reinterpret_cast<const u32*>(&display->buffers[0].environment.context1.depth_buffer);
+    unk5c0.unk124 = 0;
+    unk5c0.unk128 = GS_REGISTER_ZBUF_1;
+    unk5c0.unk12c = 0;
+    unk5c0.unk130 = *reinterpret_cast<const u32*>(&display->buffers[0].environment.context1.depth_buffer);
+    unk5c0.unk134 = 1;
+    unk5c0.unk138 = GS_REGISTER_ZBUF_1;
+    unk5c0.unk13c = 0;
+    unk5c0.vif[0] = VIF_FLUSH;
+    unk5c0.vif[1] = 0;
+    unk5c0.vif[2] = 0;
+    unk5c0.vif[3] = VIF_UNPACK(VIF_UNPACK_V4_32, 0x1B, 0x30);
+    unk5c0.unk140.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    unk5c0.unk140.registers = GIF_REGISTER_AD;
+    unk5c0.unk160.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | 2;
+    unk5c0.unk160.registers = GIF_REGISTER_AD;
+    unk5c0.unk170.data = 0xFFFFFFF0ULL;
+    unk5c0.unk170.address = GS_REGISTER_CLAMP_1;
+    unk5c0.unk180.data = 0xFFFFFFFF5ULL;
+    unk5c0.unk180.address = GS_REGISTER_CLAMP_1;
+    dma_chain.control = (u64)(u32)&unk5c0 << 32 | 0x1C;
+    unk5c0.step.projection_vif[0] = VIF_FLUSH;
+    unk5c0.step.projection_vif[1] = 0;
+    unk5c0.step.projection_vif[2] = 0;
+    unk5c0.step.projection_vif[3] = VIF_UNPACK(VIF_UNPACK_V4_32, 4, 0x34);
+    unk5c0.step.clip_vif[0] = VIF_FLUSH;
+    unk5c0.step.clip_vif[1] = 0;
+    unk5c0.step.clip_vif[2] = 0;
+    unk5c0.step.clip_vif[3] = VIF_UNPACK(VIF_UNPACK_V4_32, 4, 0x3D);
+    test = 0x5000D;
+    unk3e0 = 0.0f;
+    unk3e4 = 0.0f;
+    *reinterpret_cast<u32*>(&unk3e8[0]) = 0;
+    *reinterpret_cast<u32*>(&unk3e8[4]) = 0;
+    fog_color = 0;
+    fog_enabled = 0;
+    mode = 0;
+    anchor = 0;
+
+    unk860 = new (0) LibClass179130;
+    resident_packet_rewind(unk860->packet);
+    packet = reinterpret_cast<LibCameraSetupPacket*>(resident_packet_reserve(unk860->packet, 0));
+    packet->dma_tag = 0;
+    packet->vif = 0;
+    unk558 = reinterpret_cast<u8*>(&packet->tag);
+    packet->tag.tag = GIF_TAG_NREG(1) | GIF_TAG_EOP | 9;
+    packet->tag.registers = 0;
+    packet->tag.fields.register0 = GIF_REGISTER_AD;
+    packet->registers[0].data = 4;
+    packet->registers[0].address = GS_REGISTER_TEXCLUT;
+    packet->registers[1].data = 0x61;
+    packet->registers[1].address = GS_REGISTER_TEX1_1;
+    packet->registers[2].data = GS_ALPHA_NORMAL;
+    packet->registers[2].address = GS_REGISTER_ALPHA_1;
+    packet->registers[3].data = test;
+    packet->registers[3].address = GS_REGISTER_TEST_1;
+    packet->registers[4].data = 0;
+    packet->registers[4].address = GS_REGISTER_PABE;
+    packet->registers[5].data = 1;
+    packet->registers[5].address = GS_REGISTER_PRMODECONT;
+    packet->registers[6].data = 0x8000008080ULL;
+    packet->registers[6].address = GS_REGISTER_TEXA;
+    packet->registers[7].data = 0xFFFFFFF0ULL;
+    packet->registers[7].address = GS_REGISTER_CLAMP_1;
+    packet->registers[8].address = GS_REGISTER_FOGCOL;
+    resident_packet_align_cursor(unk860->packet, reinterpret_cast<u8*>(packet + 1));
+    unk860->qwc = resident_packet_end(unk860->packet);
+    packet->vif_codes[1] = VIF_DIRECTHL(unk860->qwc - 1);
+}
 
 /**
  * @brief Send the packet on VIF1 in normal mode.
@@ -3380,7 +3806,149 @@ void LibLightList::update()
 }
 
 // LibLightList's per-frame light update; the intensity test's abs.s is still coloured differently.
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E9290);
+/**
+ * @brief Light step run before the renderer tests its models: refresh the list's light matrices and sort its lights.
+ * @param lights Light list.
+ */
+extern "C" void func_004E9290(LibLightList* lights)
+{
+    func_004CFF80(&lights->unk90);
+    func_004CFF80(&lights->unkd0);
+    LibCamera* camera = static_cast<LibCamera*>(lights->manager->current_display);
+
+    if (camera == 0)
+    {
+        return;
+    }
+
+    float scale = 1.0f;
+    float red = camera->unk260 * scale;
+    float green = camera->unk264 * scale;
+    float blue = camera->unk268 * scale;
+    LibListSentinel* node = &lights->sentinel;
+    bool dirty = false;
+    lights->unk37e = 1;
+    lights->has_local_lights = 0;
+    lights->light_count = 0;
+    lights->unk364_count = 0;
+
+    for (;;)
+    {
+        node = node->next;
+
+        if (at_list_end(&lights->sentinel, node))
+        {
+            break;
+        }
+
+        LibLight* light = static_cast<LibLight*>(node);
+
+        float brightness = light->color.w;
+
+        if (ee_abs(brightness) < 0.0001f)
+        {
+            light->enabled = 0;
+            continue;
+        }
+
+        light->enabled = 1;
+        light->update_frame();
+        LibVector4 tinted;
+        tinted.x = red * light->color.x;
+        tinted.y = green * light->color.y;
+        tinted.z = blue * light->color.z;
+        copy_vector(&light->tinted_color, &tinted);
+
+        if (light->kind & LIB_LIGHT_LOCAL)
+        {
+            lights->has_local_lights = 1;
+
+            if (!light->unk28e)
+            {
+                continue;
+            }
+        }
+
+        lights->light_count++;
+
+        if (dirty)
+        {
+            continue;
+        }
+
+        if ((light->unk28b && light->unk289) || light->unk288)
+        {
+            dirty = true;
+        }
+
+        if (light->unk28e)
+        {
+            dirty = true;
+        }
+
+        if (light->unk290)
+        {
+            dirty = true;
+        }
+    }
+
+    if (!dirty && lights->light_count <= 4)
+    {
+        func_004CFF80((LibMatrix44Value*)lights->directions);
+        func_004CFF80((LibMatrix44Value*)lights->colors);
+        lights->unk37e = 0;
+        lights->mask = -1;
+        s32 count = 0;
+        LibListSentinel* packed = &lights->sentinel;
+
+        for (;;)
+        {
+            packed = packed->next;
+
+            if (at_list_end(&lights->sentinel, packed))
+            {
+                break;
+            }
+
+            LibLight* light = static_cast<LibLight*>(packed);
+
+            if (!light->enabled || (light->kind & LIB_LIGHT_LOCAL))
+            {
+                continue;
+            }
+
+            LibVector4 direction;
+            lib_light_get_direction(&direction, light);
+            lights->directions[count].x = -direction.x;
+            lights->directions[count].y = -direction.y;
+            lights->directions[count].z = -direction.z;
+            float intensity = light->color.w;
+            float* reds = lights->colors[0];
+            float* greens = lights->colors[1];
+            float* blues = lights->colors[2];
+            reds[count] = light->tinted_color.x * intensity;
+            greens[count] = light->tinted_color.y * intensity;
+            blues[count] = light->tinted_color.z * intensity;
+
+            if (light->unk28c)
+            {
+                lights->unk364[lights->unk364_count++] = light;
+            }
+
+            u32 light_mask = light->mask;
+            lights->mask &= light_mask;
+            count++;
+            light->packed_intensity = intensity;
+
+            if (count == 4)
+            {
+                break;
+            }
+        }
+    }
+
+    vu0_multiply_xyzw(&lights->unk340, &lights->unk320, &lights->unk330);
+}
 
 /** @brief Start with no lights, a (0, 0, 0, 1) ambient colour and white light scales. */
 LibLightList::LibLightList()

@@ -105,6 +105,14 @@ segments:
           - {function: func_004076D0, offset: 0x0, size: 0x2C}
         linker_section_order: .rodata
       - [0x11B4AC, rodatabin, data_00501D2C]
+      - start: 0x11EE20
+        type: .rodata
+        name: text_004095C0
+        linker_section: .rodata.005056A0
+        rodata_anchors:
+          - {function: func_0040D930, offset: 0x0, size: 0x20}
+        linker_section_order: .rodata
+      - [0x11EE40, rodatabin, rodata_005056C0]
       - start: 0x11EE90
         type: .rodata
         name: text_004095C0
@@ -153,6 +161,13 @@ segments:
           - {function: func_004602B0, offset: 0x0, size: 0x44}
         linker_section_order: .rodata
       - [0x11F324, rodatabin, rodata_00505BA4]
+      - start: 0x11F330
+        type: .rodata
+        name: text_0045AD10
+        linker_section: .rodata.00505BB0
+        rodata_anchors:
+          - {function: func_00460750, offset: 0x0, size: 0x90}
+        linker_section_order: .rodata
       - start: 0x11F3C0
         type: .rodata
         name: text_0045AD10

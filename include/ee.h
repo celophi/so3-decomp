@@ -16,6 +16,7 @@
 #define DMA_TAG_ID_NEXT 0x20000000
 #define DMA_TAG_ID_REF 0x30000000
 #define DMA_TAG_ID_CALL 0x50000000
+#define DMA_TAG_ID_RET 0x60000000
 #define DMA_TAG_ID_END 0x70000000
 #define DMA_TAG(qwc, id, address) ((u64)(qwc) | (id) | ((u64)(u32)(address) << 32))
 
@@ -94,6 +95,9 @@
 /** VIF codes: STCYCL, and UNPACK with its formats and flags. */
 #define VIF_STCYCL(cl, wl) (0x01000000 | ((wl) << 8) | (cl))
 
+/** VIF MSCAL: start the microprogram at address (in doublewords) once the running one ends. */
+#define VIF_MSCAL(address) (0x14000000 | (address))
+
 /** VIF MSCALF: wait for the GIF and the running microprogram, then start the one at address (in doublewords). */
 #define VIF_MSCALF(address) (0x15000000 | (address))
 
@@ -137,6 +141,55 @@ static inline float ee_abs(float value)
     float result;
     asm __volatile__("abs.s %0, %1" : "=f"(result) : "f"(value));
     return result;
+}
+
+/**
+ * @brief Divide a numerator by the square root of a value with the EE scalar instruction.
+ * @param numerator Numerator, usually one.
+ * @param value Value under the square root.
+ * @return numerator / sqrt(value) produced by rsqrt.s.
+ * @see rsqrt.s in the EE Core Instruction Set Manual; Lib's vector normalisers (0x4CF5E0, 0x4CF640).
+ */
+static inline float ee_rsqrt(float numerator, float value)
+{
+    // TODO: The compiler's __rsqrt gives the same instruction but lets later loads move above it; check if this was asm.
+    asm __volatile__("rsqrt.s %0, %1, %0" : "+f"(value) : "f"(numerator));
+    return value;
+}
+
+/**
+ * @brief Return the square root of a floating-point operand with the EE scalar instruction.
+ * @param value Operand.
+ * @return Square root produced by sqrt.s.
+ * @see sqrt.s in the EE Core Instruction Set Manual; Lib's matrix-to-quaternion conversion (0x4CC520).
+ */
+static inline float ee_sqrt(float value)
+{
+    // TODO: The compiler's __sqrt adds two nops and works in place where the game doesn't; check if this was asm.
+    float result;
+    asm __volatile__("sqrt.s %0, %1" : "=f"(result) : "f"(value));
+    return result;
+}
+
+/**
+ * @brief Wait until the DMA channels selected in D_PCR's CPC bits have finished (bc0f on COP0's condition).
+ * @see bc0f in the EE Core Instruction Set Manual and the DMAC's D_PCR in the EE User's Manual; Lib waits this way after
+ *      starting a scratchpad transfer with CPC8 set (0x4142E0 and seven more).
+ */
+static inline void ee_wait_dma_condition(void)
+{
+    // TODO: There's no C form for bc0f; check whether the game's loop was asm too.
+    asm __volatile__(
+        "1:\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "nop\n"
+        "bc0f 1b\n"
+        :
+        :
+        : "memory");
 }
 
 /**
@@ -240,6 +293,20 @@ static inline u32 ee_get_status(void)
     u32 status = 0;
     asm __volatile__("mfc0 %0, $12" : "=r"(status));
     return status;
+}
+
+/**
+ * @brief Join the low halfwords of two words into one word with the EE's PINTEH instruction.
+ * @param high Word whose low halfword becomes the upper half.
+ * @param low Word whose low halfword becomes the lower half.
+ * @return The joined word.
+ * @see EE Core Instruction Set Manual (PINTEH); Lib's environment map at 0x4540E0.
+ */
+static inline u32 ee_join_halfwords(u32 high, u32 low)
+{
+    // TODO: This is asm because the compiler has no way to write PINTEH; check whether the original was asm too.
+    asm __volatile__("pinteh %0, %1, %0" : "+r"(low) : "r"(high));
+    return low;
 }
 
 /**

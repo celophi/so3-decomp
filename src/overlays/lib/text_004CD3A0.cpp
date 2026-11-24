@@ -24,6 +24,7 @@
 #include "overlays/lib/direction_vu0.h"
 #include "overlays/lib/quaternion_inlines.h"
 #include "ee.h"
+#include "overlays/lib/scratchpad_texture_cache.h"
 #include "clamp.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_004DD440.h"
@@ -35,6 +36,7 @@
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/transform_vu0.h"
+#include "overlays/lib/palette_blend_vu0.h"
 
 #define TEXTURE_TRANSFER_GIF_TAG 0x1000000000008004ULL
 #define LIB_TEXTURE_TAG_MLPS 0x4D6C5073
@@ -944,9 +946,35 @@ LibMatrix44Value func_004CF580(const LibMatrix44Value& input)
     return result;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", lib_normalize_vector3);
+/**
+ * @brief Normalize the first three floating-point components in place.
+ * @param value At least three components with nonzero squared length.
+ */
+void lib_normalize_vector3(float* value)
+{
+    float scale = ee_rsqrt(1.0f, value[0] * value[0] + value[1] * value[1] + value[2] * value[2]);
+    value[0] *= scale;
+    value[1] *= scale;
+    value[2] *= scale;
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004CF640);
+/**
+ * @brief Normalize four floating-point components in place, leaving a zero vector unchanged.
+ * @param value Four components, such as a quaternion.
+ */
+void func_004CF640(float* value)
+{
+    float length = value[0] * value[0] + value[1] * value[1] + value[2] * value[2] + value[3] * value[3];
+
+    if (length != 0.0f)
+    {
+        float scale = ee_rsqrt(1.0f, length);
+        value[0] *= scale;
+        value[1] *= scale;
+        value[2] *= scale;
+        value[3] *= scale;
+    }
+}
 
 /**
  * @brief Multiply a matrix by a column vector.
@@ -2983,7 +3011,156 @@ void LibRenderer::func_004D4560()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004D4700__11LibRendererFv);
+extern "C" void func_004D90B0(void* address, void* scratchpad);
+
+/**
+ * @brief Build the frame's packets: copy the texture cache to the scratchpad, build every object's packet in two
+ *        passes (on VU0 while the microcode upload runs, then on the CPU with camera switches), start the objects that
+ *        render their own main packet, and copy the cache back.
+ */
+void LibRenderer::func_004D4700()
+{
+    unk40d4 = g_texture_cache;
+    g_texture_cache = new (EE_SCRATCHPAD) LibTextureCache;
+    FlushCache(0);
+    func_004D90B0(unk40d4, g_texture_cache);
+    unk40cf = 1;
+    s32 count = current_count;
+    unk4090 = -1;
+    u8 timed = 0;
+    LibListObject* camera = manager->current_display;
+    LibListObject* current = camera;
+
+    {
+        LibInterruptLock interrupts;
+        unk40ca = 1;
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        reinterpret_cast<LibTransformOwner**>(cursor)[i]->unk62 = 0;
+    }
+
+    if (g_microcode_loader->unk06)
+    {
+        ee_wait_dma_condition();
+        EnableDmac(D_001B6608->channel);
+
+        for (s32 pass = 0; pass < 2; pass++)
+        {
+            for (s32 i = 0; i < count; i++)
+            {
+                if (!g_microcode_loader->unk06)
+                {
+                    break;
+                }
+
+                LibTransformOwner* object = reinterpret_cast<LibTransformOwner**>(cursor)[i];
+
+                if (object->unk65 == pass && !object->unk63)
+                {
+                    if (object->display_manager != 0)
+                    {
+                        object->build_packet(object->display_manager->current_display, light_list);
+                    }
+                    else
+                    {
+                        object->build_packet(current, light_list);
+                    }
+
+                    if (object->unk69 & 8)
+                    {
+                        g_texture_cache->expire_texture(object->layer);
+                    }
+                }
+            }
+        }
+
+        LibMicrocodeLoader* loader = g_microcode_loader;
+
+        while (*(volatile u8*)&loader->unk06)
+        {
+        }
+
+        manager->submit_camera();
+    }
+    else
+    {
+        manager->submit_camera();
+        ee_wait_dma_condition();
+        EnableDmac(D_001B6608->channel);
+    }
+
+    func_004DBEE0(g_packet_queue, 0);
+    resident_sync_gs_path(g_input_system, 0, 0);
+
+    for (s32 pass = 0; pass < 2; pass++)
+    {
+        for (s32 i = 0; i < count; i++)
+        {
+            LibTransformOwner* object = reinterpret_cast<LibTransformOwner**>(cursor)[i];
+
+            if (object->unk65 != pass)
+            {
+                continue;
+            }
+
+            if (object->display_manager != 0)
+            {
+                LibListObject* display = object->display_manager->current_display;
+
+                if (current != display)
+                {
+                    if (!object->display_manager->unk94)
+                    {
+                        object->display_manager->prepare_camera();
+                    }
+
+                    object->display_manager->submit_camera();
+                }
+
+                current = display;
+            }
+            else if (current != camera)
+            {
+                current = camera;
+
+                if (!g_microcode_loader->unk06)
+                {
+                    manager->func_004DB0F0();
+                    manager->submit_camera();
+                }
+            }
+
+            if (!object->unk63)
+            {
+                u8 flags = object->unk69;
+                object->build_packet(current, light_list);
+
+                if (flags & 8)
+                {
+                    g_texture_cache->expire_texture(object->layer);
+                }
+            }
+
+            if (pass == 0 && object->unk63)
+            {
+                if (!timed)
+                {
+                    timed = 1;
+                    packet_start_time = TIMER0_COUNT;
+                }
+
+                main_packet = object;
+                main_packet_busy = 1;
+                object->render();
+                unk408c = i + 1;
+            }
+        }
+    }
+
+    lib_restore_texture_cache(this);
+}
 
 /** @brief Start a frame: swap packet buffers and, with a list and a camera, build the frame's packets. */
 void LibRenderer::begin_frame()
@@ -4174,7 +4351,28 @@ void LibScreenText::load_font()
     begin(0, 0);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update__22LibPaletteBlendChannelFv);
+/** @brief Blend each selected palette entry between its start and end color by the blend weight, on VU0. */
+void LibPaletteBlendChannel::update()
+{
+    if (target != 0)
+    {
+        LibImageHeader* image = target;
+        float weights[4] __attribute__((aligned(16)));
+        LibImagePalette* palette = reinterpret_cast<LibImagePalette*>(reinterpret_cast<u8*>(image) + image->palette_offset);
+        weights[0] = blend;
+        u32* colors = reinterpret_cast<u32*>(reinterpret_cast<u32>(palette->colors) | EE_UNCACHED_ACCELERATED);
+        weights[1] = 1.0f - blend;
+        vu0_load_vf3(weights);
+
+        for (s32 i = 0; i < entry_count; i++)
+        {
+            u32* slot = &colors[palette_indices[i]];
+            const LibVector4* start = &start_colors[i];
+            const LibVector4* end = &end_colors[i];
+            *slot = vu0_blend_color(start, end);
+        }
+    }
+}
 
 /**
  * @brief Bind the selected image from the source resource.
@@ -4206,11 +4404,11 @@ bool LibPaletteBlendChannel::load_resource(LibModel* model)
                 {
                     if (record->data)
                     {
-                        target = static_cast<LibImageDataHeader*>(record->data);
+                        target = static_cast<LibImageHeader*>(record->data);
                     }
                     else
                     {
-                        target = reinterpret_cast<LibImageDataHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
+                        target = reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(record) + sizeof(LibRenderDataRecord) + sizeof(LibResourceChunkHeader));
                     }
 
                     break;
@@ -4808,21 +5006,18 @@ s32 func_004D8D20(u8* image, s32 slot)
     return index | palette_index << 16;
 }
 
-extern "C" ResidentDmaQueue* D_001B6604;
-extern "C" ResidentDmaQueue* D_001B6608;
-
 /**
  * @brief Stop the channel 8 queue and start a 0x291-quadword transfer from the scratchpad.
  * @param address Main memory address.
  * @param scratchpad Scratchpad address.
  */
-extern "C" void func_004D9030(void* address, u32 scratchpad)
+extern "C" void func_004D9030(void* address, void* scratchpad)
 {
     ResidentDmaQueue* queue = D_001B6604;
     queue->current = 0;
     DisableDmac(queue->channel);
     *D8_MADR = (u32)address;
-    *D8_SADR = scratchpad;
+    *D8_SADR = (u32)scratchpad;
     *D8_QWC = 0x291;
     *D_STAT = D_STAT_CIS8;
     *D_PCR = D_PCR_CPC8;
@@ -4834,13 +5029,13 @@ extern "C" void func_004D9030(void* address, u32 scratchpad)
  * @param address Main memory address.
  * @param scratchpad Scratchpad address.
  */
-extern "C" void func_004D90B0(void* address, u32 scratchpad)
+extern "C" void func_004D90B0(void* address, void* scratchpad)
 {
     ResidentDmaQueue* queue = D_001B6608;
     queue->current = 0;
     DisableDmac(queue->channel);
     *D9_MADR = (u32)address;
-    *D9_SADR = scratchpad;
+    *D9_SADR = (u32)scratchpad;
     *D9_QWC = 0x291;
     *D_STAT = D_STAT_CIS9;
     *D_PCR = D_PCR_CPC9;
@@ -4993,7 +5188,7 @@ u64 LibTextureCache::get_clut_tex0(s16 slot, s16 entry, s32 load_mode)
  * @param user Object whose priority a hit on a user-owned texture lowers.
  * @return VRAM word address of the texture, or 0.
  */
-u32 LibTextureCache::find_texture(LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5, s32 want_address, LibTextureUser* user)
+u32 LibTextureCache::find_texture(LibTextureRequest* request, u32 tag, s32 id, s32 slot, u16 unk5, s32 want_address, LibTextureUser* user)
 {
     u32 index;
 
@@ -5192,9 +5387,8 @@ LibTextureCache::LibTextureCache(s32 size, s32 count)
     }
 }
 
-extern "C" void* func_004D99A0(void* object)
+LibTextureCache::LibTextureCache()
 {
-    return object;
 }
 
 extern "C" void func_004D99B0(LibBusyObject* object)

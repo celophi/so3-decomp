@@ -391,6 +391,8 @@ struct LibTextureRequest
 class LibTextureCache
 {
 public:
+    LibTextureCache();
+
     /**
      * @brief Allocate the texture and CLUT areas in VRAM and reset the cache.
      * @param size Size of the texture area in bytes.
@@ -461,13 +463,18 @@ public:
     }
 
     /**
-     * @brief Allocate the cache through the resident allocator.
+     * @brief Allocate the cache through the resident allocator, or place it at the scratchpad.
      * @param size Object size in bytes.
-     * @param heap Heap selector.
+     * @param heap Heap selector, or EE_SCRATCHPAD.
      * @return The allocated storage.
      */
     static void* operator new(u32 size, s32 heap)
     {
+        if (heap == EE_SCRATCHPAD)
+        {
+            return (void*)EE_SCRATCHPAD;
+        }
+
         return ::operator new(size, heap);
     }
 
@@ -495,7 +502,7 @@ public:
      * @param user Object whose priority a hit on a user-owned texture lowers.
      * @return VRAM word address of the texture, or 0.
      */
-    u32 find_texture(LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 unk5, s32 want_address,
+    u32 find_texture(LibTextureRequest* request, u32 tag, s32 id, s32 slot, u16 unk5, s32 want_address,
                      LibTextureUser* user);
 
     /**
@@ -560,6 +567,17 @@ public:
 /** The game's texture cache. */
 extern "C" LibTextureCache* g_texture_cache;
 
+/** DMA queues of channels 8 and 9 (scratchpad transfers). */
+extern "C" ResidentDmaQueue* D_001B6604;
+extern "C" ResidentDmaQueue* D_001B6608;
+
+/**
+ * @brief Stop the channel 8 queue and start a 0x291-quadword transfer from the scratchpad.
+ * @param address Main memory address.
+ * @param scratchpad Scratchpad address.
+ */
+extern "C" void func_004D9030(void* address, void* scratchpad);
+
 /**
  * @brief Load a texture the cache missed.
  * @param cache Cache to add the texture to.
@@ -572,7 +590,7 @@ extern "C" LibTextureCache* g_texture_cache;
  * @return VRAM word address of the texture, 0 when no spare block record is left, or 1 when no block is large
  *         enough.
  */
-extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 flags,
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, u16 flags,
                              LibTextureUser* user);
 
 
@@ -1503,7 +1521,7 @@ public:
     LibLightList* light_list;
     LibCameraContext* display;
     u32 unk408c;
-    u8 unk4090[4];
+    s32 unk4090;
     s32 current_count;
     s32 list_counts[2];
     u32 unk40a0;
@@ -1527,7 +1545,8 @@ public:
     u8 box_cull_enabled;
     u8 buffer_index;
     u8 unk40d2;
-    u8 unk40d3[5];
+    u8 unk40d3;
+    LibTextureCache* unk40d4;
     LibClass178B30 unk40d8;
     LibMatrix44Value unk4360;
     u8* sphere_buffer;
@@ -2135,12 +2154,6 @@ s32 func_004D6DB0(const LibListNode* node);
  */
 void* func_004D6DE0(void* object);
 
-/**
- * @brief Return the supplied object pointer.
- * @param object Object or subobject pointer.
- * @return The same pointer.
- */
-void* func_004D99A0(void* object);
 
 /**
  * @brief Wait until the object's busy flag clears.

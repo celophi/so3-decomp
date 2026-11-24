@@ -2,6 +2,7 @@
 #include "ee.h"
 #include "gs.h"
 #include "include_asm.h"
+#include "overlays/lib/scratchpad_texture_cache.h"
 #include "overlays/lib/segment_vu0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/quaternion_vu0.h"
@@ -11,6 +12,7 @@
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/trig_vu0.h"
 #include "overlays/lib/vector_vu0.h"
+#include "overlays/lib/matrix_vu0.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/light_vu0.h"
@@ -4179,7 +4181,24 @@ extern "C" void func_004C67C0(LibTextWidget* object, s32 slot, s32 key)
     object->needs_redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", draw__14LibClass178720Fv);
+/** @brief Lay the text out in the scratchpad and draw it, once. */
+void LibClass178720::draw()
+{
+    if (unk100 == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        unk70 = reinterpret_cast<u8*>(0x70000000);
+        func_004C74E0(this);
+        draw_records(reinterpret_cast<LibDrawRecord*>(unk70), record_count);
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Set the text widget up for free text: no resource slot, a 1024 by 1024 area and storage for the records.
@@ -4431,7 +4450,47 @@ extern "C" void lib_text_set_resource(LibTextWidget* object, s32 slot, u32 key, 
     state->redraw = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C6E10);
+/**
+ * @brief Lay the text out and draw it, once: in the scratchpad, or in a heap block when it has more than 0x200
+ *        glyphs.
+ */
+void LibTextWidget::draw()
+{
+    if (unk100 == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        if ((u32)unkb4 > 0x200)
+        {
+            unk70 = new (0) u8[unkb4 * sizeof(LibDrawRecord)];
+
+            if (unk70 == 0)
+            {
+                return;
+            }
+        }
+        else
+        {
+            lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+            unk70 = reinterpret_cast<u8*>(0x70000000);
+        }
+
+        func_004C74E0(this);
+        draw_records(reinterpret_cast<LibDrawRecord*>(unk70), record_count);
+        func_004C7010();
+
+        if ((u32)unkb4 > 0x200)
+        {
+            delete[] unk70;
+        }
+
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Step the animation of every glyph that is animated and started before the widget's time.
@@ -6242,9 +6301,169 @@ void LibProjectionVolume::update_coefficients()
     unk58 = (-2.0f * near_half_height) * far_distance;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_matrix_to_quaternion);
+/**
+ * @brief Point at one row of a matrix.
+ * @param matrix Matrix.
+ * @param row Row index.
+ * @return The row's four components.
+ */
+static inline const float* lib_matrix_row(const LibMatrix44Value* matrix, s32 row)
+{
+    return matrix->m[row];
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", lib_matrix_look_at);
+/**
+ * @brief Convert a rotation matrix to a quaternion.
+ * @param output Receives the quaternion.
+ * @param input Rotation matrix.
+ */
+void lib_matrix_to_quaternion(FieldVec4B* output, const LibMatrix44Value* input)
+{
+    float* q = &output->x;
+    float trace = input->m[0][0] + input->m[1][1] + input->m[2][2] + input->m[3][3];
+
+    if (trace >= 1.0f)
+    {
+        float s = 2.0f * ee_sqrt(trace);
+        q[3] = 0.25f * s;
+        s = 1.0f / s;
+        q[0] = s * (lib_matrix_row(input, 1)[2] - lib_matrix_row(input, 2)[1]);
+        q[1] = s * (lib_matrix_row(input, 2)[0] - lib_matrix_row(input, 0)[2]);
+        q[2] = s * (lib_matrix_row(input, 0)[1] - lib_matrix_row(input, 1)[0]);
+    }
+    else
+    {
+        s32 i = input->m[0][0] > input->m[1][1] ? 0 : 1;
+
+        if (input->m[2][2] > lib_matrix_row(input, i)[i])
+        {
+            i = 2;
+        }
+
+        s32 j = i + 1;
+        s32 k = j + 1;
+
+        if (j > 2)
+        {
+            j -= 3;
+        }
+
+        if (k > 2)
+        {
+            k -= 3;
+        }
+
+        float sum = 1.0f + (lib_matrix_row(input, i)[i] - lib_matrix_row(input, j)[j] - lib_matrix_row(input, k)[k]);
+        float s = 2.0f * ee_sqrt(sum);
+        q[i] = 0.25f * s;
+        s = 1.0f / s;
+        q[j] = s * (lib_matrix_row(input, i)[j] + lib_matrix_row(input, j)[i]);
+        q[k] = s * (lib_matrix_row(input, i)[k] + lib_matrix_row(input, k)[i]);
+        q[3] = s * (lib_matrix_row(input, j)[k] - lib_matrix_row(input, k)[j]);
+    }
+}
+
+/**
+ * @brief Scale three components to unit length.
+ * @param value Three components, changed in place.
+ */
+static inline void normalize_vector3(float* value)
+{
+    float scale = ee_rsqrt(1.0f, value[0] * value[0] + value[1] * value[1] + value[2] * value[2]);
+    value[0] *= scale;
+    value[1] *= scale;
+    value[2] *= scale;
+}
+
+/**
+ * @brief Set a matrix to the identity, written out in place.
+ * @param matrix Matrix to set.
+ */
+static inline void set_identity_matrix(LibMatrix44Value* matrix)
+{
+    ((unsigned __int128*)matrix)[0] = 0;
+    ((unsigned __int128*)matrix)[1] = 0;
+    ((unsigned __int128*)matrix)[2] = 0;
+    ((unsigned __int128*)matrix)[3] = 0;
+    matrix->m[0][0] = 1.0f;
+    matrix->m[1][1] = 1.0f;
+    matrix->m[2][2] = 1.0f;
+    matrix->m[3][3] = 1.0f;
+}
+
+/**
+ * @brief Return a matrix row as a vector.
+ * @param matrix Matrix to read.
+ * @param row Row index.
+ * @return The row.
+ */
+static inline LibVector4* matrix_row_vector(LibMatrix44Value* matrix, s32 row)
+{
+    return reinterpret_cast<LibVector4*>(matrix->m[row]);
+}
+
+/**
+ * @brief Cross product of the x, y and z components with w set to one.
+ * @param output Receives first cross second.
+ * @param first First vector.
+ * @param second Second vector.
+ */
+static inline void cross_vector3_w1(LibVector4* output, const FieldVec4B* first, const LibVector4* second)
+{
+    output->x = first->y * second->z - first->z * second->y;
+    output->y = first->z * second->x - first->x * second->z;
+    output->z = first->x * second->y - first->y * second->x;
+    output->w = 1.0f;
+}
+
+/**
+ * @brief Build a camera-style matrix: the z axis along the direction, the x axis from the direction and a down
+ *        vector (or one along z when the direction is nearly vertical), the position as translation; then invert it
+ *        and roll it about z.
+ * @param output Receives the matrix.
+ * @param position Translation.
+ * @param direction Direction the z axis points along.
+ * @param roll Roll angle.
+ */
+void lib_matrix_look_at(LibMatrix44Value* output, const FieldVec4B* position, const FieldVec4B* direction, float roll)
+{
+    LibMatrix44Value basis;
+    LibVector4 up;
+    LibVector4 pair;
+    LibMatrix44Value rotation;
+
+    set_identity_matrix(&basis);
+    up.y = -1.0f;
+    up.w = 1.0f;
+    up.x = 0.0f;
+    up.z = 0.0f;
+    LibVector4* z_axis = reinterpret_cast<LibVector4*>(basis.m[2]);
+    *(unsigned __int128*)z_axis = *(const unsigned __int128*)direction;
+    normalize_vector3(&z_axis->x);
+
+    // TODO: Read through a row view; plain basis.m[2][1] folds into the reload below and the abs gets its own register.
+    if (!(ee_abs(reinterpret_cast<const LibVector4*>(&basis.m[2][0])->y) <= 0.999f))
+    {
+        up.y = 0.0f;
+        up.z = basis.m[2][1];
+    }
+
+    cross_vector3_w1(matrix_row_vector(&basis, 0), direction, &up);
+    normalize_vector3(&matrix_row_vector(&basis, 0)->x);
+    cross_vector3_w1(matrix_row_vector(&basis, 1), reinterpret_cast<const FieldVec4B*>(matrix_row_vector(&basis, 2)),
+                     matrix_row_vector(&basis, 0));
+    basis.m[0][3] = position->x;
+    basis.m[1][3] = position->y;
+    basis.m[2][3] = position->z;
+    lib_compute_sine_cosine_pair(roll, &pair);
+    set_identity_matrix(&rotation);
+    rotation.m[0][0] = pair.z;
+    rotation.m[1][1] = pair.z;
+    rotation.m[0][1] = pair.w;
+    rotation.m[1][0] = -pair.w;
+    basis = func_004CF0B0(basis);
+    vu0_multiply_matrix(output, &basis, &rotation);
+}
 
 extern "C" LibTrigQuotients D_0050CD20;
 
@@ -6502,7 +6721,32 @@ extern "C" float lib_dot_point_offset(const LibVector4* point, const LibVector4*
     return result.x;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CC7A0);
+/**
+ * @brief Build the plane through three points: the normal is the cross product of the normalized directions from the
+ *        origin to the other two points, and the fourth component is minus the normal dotted with the origin.
+ * @param plane Receives the normal and the distance term.
+ * @param origin Point on the plane the two directions start from.
+ * @param first Second point.
+ * @param second Third point.
+ */
+extern "C" void func_004CC7A0(float* plane, const float* origin, const float* first, const float* second)
+{
+    float u[3];
+    float v[3];
+
+    u[0] = first[0] - origin[0];
+    u[1] = first[1] - origin[1];
+    u[2] = first[2] - origin[2];
+    normalize_vector3(u);
+    v[0] = second[0] - origin[0];
+    v[1] = second[1] - origin[1];
+    v[2] = second[2] - origin[2];
+    normalize_vector3(v);
+    plane[0] = u[1] * v[2] - u[2] * v[1];
+    plane[1] = -(u[0] * v[2] - u[2] * v[0]);
+    plane[2] = u[0] * v[1] - u[1] * v[0];
+    plane[3] = -(plane[0] * origin[0] + plane[1] * origin[1] + plane[2] * origin[2]);
+}
 
 /**
  * @brief Build a directional shadow projection onto a plane.

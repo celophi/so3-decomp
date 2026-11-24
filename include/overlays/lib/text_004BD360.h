@@ -563,7 +563,8 @@ struct LibObject174D90 : public LibTextWidget
 
     class LibClass175170* unk114;
     void* unk118;
-    u8 unk11c[8];
+    const u8* text_cursor;
+    LibDrawRecord* record_cursor;
     float line_heights[256];
     float unk524;
     float unk528;
@@ -575,7 +576,7 @@ struct LibObject174D90 : public LibTextWidget
     u32 mode;
     u32 resource_mode;
     s32 unk548;
-    u8 unk54c[4];
+    s32 line_count;
     s32 unk550;
     s32 unk554;
     s32 unk558;

@@ -1,5 +1,6 @@
 #include "overlays/lib/dma_callbacks_inlines.h"
 #include "overlays/lib/ripple_vu0.h"
+#include "overlays/lib/env_map_vu0.h"
 #include "include_asm.h"
 #include "overlays/lib/text_0045AD10.h"
 #include "angle.h"
@@ -27,6 +28,7 @@
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/emission.h"
 #include "overlays/lib/transform_vu0.h"
+#include "overlays/lib/screen_strip_vu0.h"
 
 /** LibShortBitTableHeader with a colour after the records offset; the words start at 0x10. */
 struct LibColorBitTableHeader
@@ -110,6 +112,13 @@ public:
     virtual ~LibClass174C70();
 
     /**
+     * @brief Fill the record's texture coordinates from the environment map on VU0.
+     * @param output Output whose coordinates change.
+     * @param index Bit index, which picks the record of vertex indices.
+     */
+    virtual void func_slot10(LibEntryOutput* output, s32 index);
+
+    /**
      * @brief Return the entry's type code.
      * @return 43.
      */
@@ -152,6 +161,14 @@ public:
     LibClass174CB0();
 
     virtual ~LibClass174CB0();
+
+    /**
+     * @brief Fill the record's texture coordinates from the environment map on VU0, with the table's parameter in
+     *        vf29.
+     * @param output Output whose coordinates change.
+     * @param index Bit index, which picks the record of vertex indices.
+     */
+    virtual void func_slot10(LibEntryOutput* output, s32 index);
 
     /**
      * @brief Return the entry's type code.
@@ -197,6 +214,13 @@ public:
     LibClass174D10();
 
     virtual ~LibClass174D10();
+
+    /**
+     * @brief Scroll the record's texture coordinates by the offsets on VU0.
+     * @param output Output whose coordinates change.
+     * @param index Bit index, which picks the record of coordinate indices.
+     */
+    virtual void func_slot10(LibEntryOutput* output, s32 index);
 
     /**
      * @brief Return the entry's type code.
@@ -307,6 +331,13 @@ public:
     LibClass174D50();
 
     virtual ~LibClass174D50();
+
+    /**
+     * @brief Tint the record's vertex colors by the entry's color on VU0.
+     * @param output Output whose colors change.
+     * @param index Bit index, which picks the record of color indices.
+     */
+    virtual void func_slot10(LibEntryOutput* output, s32 index);
 
     /**
      * @brief Return the entry's type code.
@@ -1277,9 +1308,134 @@ void LibClass1748D0::render()
     resident_dma_queue_push(g_vif1_dma_queue, this);
 }
 
+extern "C" float D_001B6554;
+extern "C" float D_001B6558;
+extern "C" u8 D_001B655C;
+
+/** GS XYZ words as microprogram 0x958 leaves them, with the drawing-kick-off bit in the fourth word. */
+struct LibScreenPoint
+{
+    s32 x;
+    s32 y;
+    s32 z;
+    s32 adc;
+} __attribute__((aligned(16)));
+
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D1D0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D600);
+/**
+ * @brief Add a textured, perspective-projected triangle strip or fan to the object's packet: each point is
+ *        transformed by the matrix in vf1-vf4, its ST coordinates come from the screen position scaled by unk24c /
+ *        unk250, and a vertex whose last three points left the screen or depth range is drawn without a kick.
+ * @param object Object whose packet to extend.
+ * @param count Number of vertices.
+ * @param positions Vertex positions.
+ * @param attributes Vertex vectors for microprogram 0x958.
+ * @param color Vertex color.
+ * @param blend Nonzero to alpha blend.
+ * @param fan Nonzero for a fan, zero for a strip.
+ */
+extern "C" void func_0044D600(LibClass1748D0* object, s32 count, LibVector4* positions, LibVector4* attributes,
+                              u32 color, u8 blend, s32 fan)
+{
+    if (object->packet == 0)
+    {
+        return;
+    }
+
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 0));
+    LibCameraContext* display = static_cast<LibRenderer*>(g_renderer)->display;
+    LibDisplayArea& area = display->display_area;
+    // TODO: Left over from the 2D sibling; only their loads survive, but the game has them.
+    s32 left = (GS_COORDINATE_CENTRE - area.width / 2) << 4;
+    s32 top = (GS_COORDINATE_CENTRE - area.height / 2) << 4;
+    float half_width = 0.5f * (float)area.width;
+    float half_height = 0.5f * (float)area.height;
+    float right = (float)area.width + (2048.0f - half_width);
+    float bottom = (float)area.height + (2048.0f - half_height);
+    s32 nearest = object->unk238;
+    s32 farthest = object->unk23c;
+    *cursor++ = GIF_TAG_NREG(1) | 2;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+
+    if (fan)
+    {
+        *cursor++ = (s32)((blend ? GS_PRIM_ABE : 0) | 0x15);
+    }
+    else
+    {
+        *cursor++ = (s32)((blend ? GS_PRIM_ABE : 0) | 0x14);
+    }
+
+    *cursor++ = GS_REGISTER_PRIM;
+    *cursor++ = (u64)0x3F800000 << 32 | color;
+    *cursor++ = GS_REGISTER_RGBAQ;
+    *cursor++ = (s64)count | GIF_TAG_NREG(2);
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_ST;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_XYZF2;
+    cursor++;
+
+    LibVector4 screen;
+    LibScreenPoint xyz;
+    float s;
+    float t;
+    float s_scale = D_001B6554;
+    u8 unclipped = D_001B655C;
+    float t_scale = D_001B6558;
+    u32 clip = 0;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        vu0_transform_point(&positions[i]);
+        vu0_start_divide_by_w();
+        vu0_store_projected_start_958(&attributes[i], &screen);
+        s = s_scale * (half_width + (screen.x - 2048.0f) * object->unk24c);
+        t = t_scale * (half_height + (screen.y - 2048.0f) * object->unk250);
+        cursor[0] = ((s64)*reinterpret_cast<s32*>(&s) & 0xFFFFFFFF) | (s64)*reinterpret_cast<s32*>(&t) << 32;
+
+        if (!unclipped)
+        {
+            if (!(screen.x <= right))
+            {
+                clip |= 1;
+            }
+            else if (!(screen.y <= bottom))
+            {
+                clip |= 1;
+            }
+        }
+
+        cursor += 2;
+        vu0_wait_store_vf6(&xyz);
+
+        if (xyz.x < 0 || xyz.x > 0xFFFF)
+        {
+            clip |= 1;
+        }
+        else if (xyz.y < 0 || xyz.y > 0xFFFF)
+        {
+            clip |= 1;
+        }
+        else if (xyz.z < nearest || farthest < xyz.z)
+        {
+            clip |= 1;
+        }
+
+        if (clip & 7)
+        {
+            xyz.adc = 0x8000;
+        }
+
+        *reinterpret_cast<unsigned __int128*>(cursor) = *reinterpret_cast<unsigned __int128*>(&xyz);
+        clip <<= 1;
+        cursor += 2;
+    }
+
+    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+}
 
 /** Vertex of a screen-space polygon: texture coordinates, then the position relative to the screen centre. */
 struct LibScreenVertex
@@ -2478,7 +2634,140 @@ s32 LibClass174C70::func_slot14()
     return 0x2B;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004540E0);
+/** Record of vertex indices a LibClass174C70 maps for one bit: a vertex index and a seam group per vertex. */
+struct LibEnvMapRecord
+{
+    u8 unk00[0x10];
+    u8 pairs[1];
+};
+
+/** What microprogram 0x3B0 leaves in vf25: the u coordinate as a float, then v already converted. */
+union LibEnvMapResult
+{
+    float u;
+    u32 words[4];
+} __attribute__((aligned(16)));
+
+/**
+ * @brief Fill the record's texture coordinates from the environment map on VU0, one vertex behind the
+ *        microprogram. Within a seam group, a jump in u of more than 0.4 shifts the rest of the group by a whole
+ *        turn so the coordinates stay continuous.
+ * @param output Output whose coordinates change.
+ * @param index Bit index, which picks the record of vertex indices.
+ */
+void LibClass174C70::func_slot10(LibEntryOutput* output, s32 index)
+{
+    LibEnvMapRecord* record;
+    LibClass173490Entry* values;
+    LibVector4* vectors;
+    u8* pairs;
+    u32 vertex;
+    u32 group;
+    u32* uv;
+    LibVector4* vector;
+    LibClass173490Entry* normal;
+    u32* uvs;
+    s32 count;
+    float wrap;
+    float u;
+    float limit;
+    float scale;
+    float previous_u;
+    float delta;
+    u32 previous_group;
+    s32 i;
+    u32 v;
+    u32 next_group;
+    s32 packed;
+    LibEnvMapResult result;
+
+    record = static_cast<LibEnvMapRecord*>(output->records[index]);
+    pairs = record->pairs;
+    values = output->values;
+    vectors = output->vectors;
+    vu0_load_env_map_basis(&camera_position, &rotation);
+    vertex = pairs[0];
+    group = pairs[1];
+    vector = &vectors[vertex];
+    normal = &values[vertex];
+    vu0_start_env_map(vector, normal);
+    uvs = output->uvs;
+    count = output->count;
+    wrap = 0.0f;
+    previous_group = 0;
+    i = 1;
+    previous_u = 0.0f;
+    limit = 0.4f;
+    // TODO: The game loads this dead 0.25 too; I haven't found what it was for.
+    delta = 0.25f;
+    scale = 4096.0f;
+
+    // TODO: The loop starts at its second half in the game, so I've entered it with a goto; there may be a
+    // cleaner shape.
+    goto next;
+
+    for (;;)
+    {
+        u = result.u;
+        delta = ee_abs(u - previous_u);
+
+        if (previous_group == group)
+        {
+            if (!(delta <= limit))
+            {
+                delta = u > previous_u ? -1.0f : 1.0f;
+                wrap += delta;
+            }
+        }
+        else
+        {
+            wrap = 0.0f;
+        }
+
+        previous_group = group;
+        next_group = pairs[i * 2 + 1];
+        v = result.words[1];
+        i++;
+        group = next_group;
+        previous_u = u;
+        packed = scale * (u + wrap);
+        *uv = ee_join_halfwords(v, packed);
+
+        if (i == count)
+        {
+            break;
+        }
+
+    next:
+        uv = &uvs[vertex];
+        vertex = pairs[i * 2];
+        vector = &vectors[vertex];
+        normal = &values[vertex];
+        vu0_restart_env_map(&result, vector, normal);
+    }
+
+    uv = &uvs[vertex];
+    vu0_wait_store_vf25(&result);
+    u = result.u;
+    v = result.words[1];
+    delta = ee_abs(u - previous_u);
+
+    if (previous_group == group)
+    {
+        if (!(delta <= limit))
+        {
+            delta = u > previous_u ? -1.0f : 1.0f;
+            wrap += delta;
+        }
+    }
+    else
+    {
+        wrap = 0.0f;
+    }
+
+    packed = scale * (u + wrap);
+    *uv = (v << 16) | (packed & 0xFFFF);
+}
 
 /**
  * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
@@ -2613,7 +2902,124 @@ s32 LibClass174CB0::func_slot14()
     return 0x2B;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004547C0);
+/**
+ * @brief LibClass174C70::func_slot10 with microprogram 0x5B0 and the table's parameter in vf29.
+ * @param output Output whose coordinates change.
+ * @param index Bit index, which picks the record of vertex indices.
+ */
+void LibClass174CB0::func_slot10(LibEntryOutput* output, s32 index)
+{
+    LibEnvMapRecord* record;
+    LibClass173490Entry* values;
+    LibVector4* vectors;
+    u8* pairs;
+    u32 vertex;
+    u32 group;
+    u32* uv;
+    LibVector4* vector;
+    LibClass173490Entry* normal;
+    u32* uvs;
+    s32 count;
+    float wrap;
+    float u;
+    float limit;
+    float scale;
+    float previous_u;
+    float delta;
+    u32 previous_group;
+    s32 i;
+    u32 v;
+    u32 next_group;
+    s32 packed;
+    LibEnvMapResult result;
+
+    record = static_cast<LibEnvMapRecord*>(output->records[index]);
+    pairs = record->pairs;
+    values = output->values;
+    vectors = output->vectors;
+    vu0_load_env_map_basis_vf29(&camera_position, &rotation, table->unk08);
+    vertex = pairs[0];
+    group = pairs[1];
+    vector = &vectors[vertex];
+    normal = &values[vertex];
+    vu0_start_env_map_5b0(vector, normal);
+    uvs = output->uvs;
+    count = output->count;
+    wrap = 0.0f;
+    previous_group = 0;
+    i = 1;
+    previous_u = 0.0f;
+    limit = 0.4f;
+    // TODO: The game loads this dead 0.25 too; I haven't found what it was for.
+    delta = 0.25f;
+    scale = 4096.0f;
+
+    // TODO: The loop starts at its second half in the game, so I've entered it with a goto; there may be a
+    // cleaner shape.
+    goto next;
+
+    for (;;)
+    {
+        u = result.u;
+        delta = ee_abs(u - previous_u);
+
+        if (previous_group == group)
+        {
+            if (!(delta <= limit))
+            {
+                delta = u > previous_u ? -1.0f : 1.0f;
+                wrap += delta;
+            }
+        }
+        else
+        {
+            wrap = 0.0f;
+        }
+
+        previous_group = group;
+        next_group = pairs[i * 2 + 1];
+        v = result.words[1];
+        i++;
+        group = next_group;
+        previous_u = u;
+        packed = scale * (u + wrap);
+        *uv = ee_join_halfwords(v, packed);
+
+        if (i == count)
+        {
+            break;
+        }
+
+    next:
+        uv = &uvs[vertex];
+        vertex = pairs[i * 2];
+        vector = &vectors[vertex];
+        normal = &values[vertex];
+        vu0_restart_env_map_5b0(&result, vector, normal);
+    }
+
+    uv = &uvs[vertex];
+    vu0_wait_store_vf25(&result);
+    u = result.u;
+    v = result.words[1];
+    delta = ee_abs(u - previous_u);
+
+    if (previous_group == group)
+    {
+        if (!(delta <= limit))
+        {
+            delta = u > previous_u ? -1.0f : 1.0f;
+            wrap += delta;
+        }
+    }
+    else
+    {
+        wrap = 0.0f;
+    }
+
+    packed = scale * (u + wrap);
+    *uv = (v << 16) | (packed & 0xFFFF);
+}
 
 /**
  * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
@@ -2764,7 +3170,64 @@ void* LibResourceBuffer::resolve_offset(const u32* offset)
     return lib_resource_payload(this) + byte_offset;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00454E90);
+#define LIB_DRAW_STAGED_PACKETS (EE_SCRATCHPAD + 0x1800)
+
+/**
+ * @brief Point the setup packet at the buffer's texture packets, then stage one packet per texture in the scratchpad
+ *        (each linked to the next) and copy them into the block packets with DMA channel 8.
+ * @param buffer Draw buffer whose textures to stage.
+ */
+extern "C" void func_00454E90(LibDrawBuffer* buffer)
+{
+    s32 count = buffer->texture_count;
+
+    if (count == 0)
+    {
+        buffer->setup_packet->texture_offset = 0;
+        buffer->setup_packet->texture_count = 0;
+        return;
+    }
+
+    u8* packets = buffer->block_packets + 0x30;
+    LibDrawTexturePacket* staged = reinterpret_cast<LibDrawTexturePacket*>(LIB_DRAW_STAGED_PACKETS);
+
+    buffer->setup_packet->texture_count = count;
+    buffer->setup_packet->texture_offset = packets - reinterpret_cast<u8*>(buffer->command_begin);
+
+    s32 i;
+
+    for (i = 0; i < buffer->texture_count - 1; i++)
+    {
+        // TODO: An unsigned next index is what stops the multiply turning into a running offset like the game.
+        u32 next = i + 1;
+
+        staged[i].next_offset = packets + next * LIB_DRAW_TEXTURE_PACKET_SIZE - reinterpret_cast<u8*>(buffer->command_begin);
+    }
+
+    staged[buffer->texture_count - 1].next_offset = 0;
+
+    for (s32 j = 0; j < buffer->texture_count; j++)
+    {
+        staged->unk04 = 0;
+        staged->index = j;
+        staged->unk08 = 0;
+        staged->unk0c = 0;
+        staged->unk20 = 0;
+        staged->texture = buffer->textures[j];
+        staged++;
+    }
+
+    while (!(*D_STAT & D_STAT_CIS8))
+    {
+    }
+
+    sceDmaSync(sceDmaGetChan(D_001B6604->channel), 0, 0);
+    *D8_SADR = LIB_DRAW_STAGED_PACKETS;
+    *D8_MADR = reinterpret_cast<u32>(packets);
+    *D8_QWC = (u32)(buffer->texture_count * LIB_DRAW_TEXTURE_PACKET_SIZE) / LIB_DRAW_QWORD_SIZE;
+    *D_STAT = D_STAT_CIS8;
+    *D8_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+}
 
 /**
  * @brief Add an image's texture to the draw buffer's next texture slot.
@@ -3333,7 +3796,7 @@ s32 LibClass174D10::func_slot14()
     return 40;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00456210);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_slot10__14LibClass174D10FP14LibEntryOutputi);
 
 /**
  * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.
@@ -3486,7 +3949,7 @@ s32 LibClass174D50::func_slot14()
     return 36;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004569D0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_slot10__14LibClass174D50FP14LibEntryOutputi);
 
 /**
  * @brief Return the record at the cursor and move past it, when the entry is complete or has bit `index`.

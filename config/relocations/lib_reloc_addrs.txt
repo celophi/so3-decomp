@@ -105,3 +105,6 @@ rom:0x92D78 reloc:MIPS_LO16 symbol:__vt__14LibClass175430 addend:0xB4
 // neither is the address 0x80000060.
 rom:0xF5A08 reloc:MIPS_NONE symbol:0x8000
 rom:0xF5A50 reloc:MIPS_NONE symbol:0x60
+// func_00460750 steps through 8-byte scratchpad text records; these increments aren't the low half of 0x70000008.
+rom:0x7A498 reloc:MIPS_NONE symbol:0x8
+rom:0x7A8D0 reloc:MIPS_NONE symbol:0x8

@@ -17,6 +17,10 @@
 #include "overlays/lib/grid_frame_vu0.h"
 #include "overlays/lib/emission_vu0.h"
 #include "overlays/lib/morph_vu0.h"
+#include "overlays/lib/bounding_sphere_vu0.h"
+#include "overlays/lib/matrix_vu0.h"
+#include "main/object_list.h"
+#include "overlays/lib/link_vu0.h"
 
 /** ABE as it sits in the upper word of a GIF tag's first doubleword. */
 #define GIF_TAG_HIGH_PRIM_ABE ((u32)(GIF_TAG_PRIM(GS_PRIM_ABE) >> 32))
@@ -1152,9 +1156,210 @@ s32 func_004A29D0(void* object)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A2EF0);
+/**
+ * @brief Queue the uploads of a resident image object's texture and palette when the model has marked them dirty.
+ * @param model Model whose upload flags and transfer packets are used.
+ * @param source Resident image object; shared images are skipped.
+ * @param cursor DMA chain position to write REF tags at.
+ * @return The cursor after the written tags.
+ */
+extern "C" u64* func_004A2EF0(LibModel* model, ResidentImageObject* source, u64* cursor)
+{
+    if (source->shared_image)
+    {
+        return cursor;
+    }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A3140);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(model->payload);
+    ResidentRenderDataRecord* binding = static_cast<ResidentRenderDataRecord*>(source->get_record());
+    s32 index = mesh->unk40;
+    LibImageHeader* image = reinterpret_cast<LibImageHeader*>(binding->data);
+
+    if (model->unk728[index] & 1)
+    {
+        model->unk728[index] &= ~1;
+        s32 offset = (index * 2 + 1) * sizeof(LibTextureUpload);
+        LibImageInfo* info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(image) + image->image_offset);
+        LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(image) + info->pixel_offset);
+        LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(
+            reinterpret_cast<u32>(reinterpret_cast<u8*>(model->texture_uploads) + offset) | EE_UNCACHED_ACCELERATED);
+
+        if (!(model->unk728[index] & 2))
+        {
+            unsigned __int128 bitbltbuf;
+            unsigned __int128 trxreg;
+            unsigned __int128 image_tag;
+            u64 unk68;
+
+            bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+            trxreg = *(unsigned __int128*)&packet->trxreg;
+            unk68 = *(u64*)&packet->unk64[4];
+            image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+            *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+            *(unsigned __int128*)&upload->trxreg = trxreg;
+            *(u64*)&upload->unk64[4] = unk68;
+            *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+            model->unk728[index] |= 2;
+        }
+
+        upload->bitbltbuf.data = binding->unk10[0];
+        s32 quadwords = (s32)(info->data_size + 15) / 16;
+        cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, reinterpret_cast<u8*>(model->texture_uploads) + offset);
+        cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+        cursor += 4;
+    }
+
+    if (model->unk728[index] & 4)
+    {
+        model->unk728[index] &= ~4;
+        LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(image) + image->palette_offset);
+        s32 offset = (index * 2 + 2) * sizeof(LibTextureUpload);
+        LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(
+            reinterpret_cast<u32>(reinterpret_cast<u8*>(model->texture_uploads) + offset) | EE_UNCACHED_ACCELERATED);
+
+        if (!(model->unk728[index] & 8))
+        {
+            unsigned __int128 bitbltbuf;
+            unsigned __int128 trxreg;
+            unsigned __int128 image_tag;
+            u64 unk68;
+
+            bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+            trxreg = *(unsigned __int128*)&packet->trxreg;
+            unk68 = *(u64*)&packet->unk64[4];
+            image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+            *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+            *(unsigned __int128*)&upload->trxreg = trxreg;
+            *(u64*)&upload->unk64[4] = unk68;
+            *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+            model->unk728[index] |= 8;
+        }
+
+        upload->bitbltbuf.data = binding->unk10[1];
+        s32 quadwords = (image->palette_size + 15) / 16;
+        cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, reinterpret_cast<u8*>(model->texture_uploads) + offset);
+        cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+        cursor += 4;
+    }
+
+    return cursor;
+}
+
+/**
+ * @brief Bind a resident image object's texture to the model: claim a shared image slot or load the image and its
+ *        palette into the texture cache, then point the draw packet at slot 0x1F's texture.
+ * @param model Model whose draw packet and upload flags are updated.
+ * @param source Resident image object holding the image record or shared image number.
+ * @return One when the texture cache has no room yet, otherwise zero.
+ */
+extern "C" s32 func_004A3140(LibModel* model, ResidentImageObject* source)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(model->payload);
+    ResidentRenderDataRecord* record = static_cast<ResidentRenderDataRecord*>(source->get_record());
+    u32 shared = source->shared_image;
+
+    if (record != 0 || shared != 0)
+    {
+        if (source->animated && source->channel != 0)
+        {
+            reinterpret_cast<LibRenderChannel*>(source->channel)->update();
+        }
+
+        if (shared)
+        {
+            g_texture_cache->find_texture(0, LIB_TEXTURE_TAG_MLPS, (u8)shared, 0x1F, 0, 0, 0);
+            u32 bit = 1 << ((u8)shared - 1);
+            u32 stale = *reinterpret_cast<u32*>(model->unk784) & ~bit;
+
+            if (stale)
+            {
+                *reinterpret_cast<u32*>(model->unk784) = ~stale;
+                u32 previous = D_001B65BC;
+                model->unk8c &= ~stale;
+                D_001B65BC &= ~stale;
+
+                if (previous != D_001B65BC)
+                {
+                    D_001B65C0 = 1;
+                }
+            }
+
+            if (!(bit & model->unk8c))
+            {
+                *reinterpret_cast<u32*>(model->unk784) |= bit;
+                u32 previous = D_001B65BC;
+                model->unk8c |= bit;
+                D_001B65BC |= bit;
+
+                if (previous != D_001B65BC)
+                {
+                    D_001B65C0 = 1;
+                }
+            }
+        }
+        else
+        {
+            s32 index = mesh->unk40;
+            LibImageHeader* image = reinterpret_cast<LibImageHeader*>(record->data);
+            LibImageInfo* info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(image) + image->image_offset);
+            u32 address = g_texture_cache->find_texture(reinterpret_cast<LibTextureRequest*>(info), *reinterpret_cast<u32*>(image->name),
+                                                        image->id, 0x1F, image->flags, 0, reinterpret_cast<LibTextureUser*>(record));
+
+            if (address != 0)
+            {
+                if (address == 1)
+                {
+                    return 1;
+                }
+
+                u64 bitbltbuf = *reinterpret_cast<u64*>(reinterpret_cast<u8*>(image) + info->pixel_offset + 0x20);
+                record->unk10[0] = (bitbltbuf & ~(0x3FFFULL << 32)) | (((u64)address >> 6) << 32);
+                model->unk728[index] |= 1;
+                model->unk728[index] &= ~2;
+            }
+
+            if (image->unk02)
+            {
+                u8* palette = reinterpret_cast<u8*>(image) + image->palette_offset;
+                u32 clut = g_texture_cache->func_004A6EA0(image, 0x1F, 0);
+
+                if (clut != 0)
+                {
+                    record->unk10[1] = (*reinterpret_cast<u64*>(palette + 0x20) & ~(0x3FFFULL << 32)) | (((u64)clut >> 6) << 32);
+                    model->unk728[index] |= 4;
+                    model->unk728[index] &= ~8;
+                }
+            }
+        }
+
+        LibModelPacket* packet = reinterpret_cast<LibModelPacket*>(reinterpret_cast<u32>(&model->draw_packet) | EE_UNCACHED_ACCELERATED);
+        func_004D5C10(model->resource);
+        u8* part = static_cast<u8*>(func_004D5AC0(model->resource)) + 0x40;
+        u32* uncached = reinterpret_cast<u32*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT);
+        *reinterpret_cast<u32*>(&packet->unkf4[0x1C]) = D_004ED320[source->unk2be];
+        *reinterpret_cast<u32*>(&packet->unkf4[0x20]) = uncached[0x64 / 4] | 0x80000 | (source->unk2be ? 0x200000 : 0);
+        *reinterpret_cast<float*>(&packet->unk250[0xC]) = source->unk21c;
+        u64 tex0 = g_texture_cache->entries[g_texture_cache->slot_entries[0x1F]].tex0 | (4ULL << 32);
+
+        switch ((s32)((g_texture_cache->entries[g_texture_cache->slot_entries[0x1F]].tex0 >> 20) & 0x3F))
+        {
+        case GS_PSMT4:
+            *reinterpret_cast<u64*>(&packet->unk290[0x10]) = tex0 | (g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0x1F]].tex0 | (u64)source->unk2c1 << 56);
+            *reinterpret_cast<u64*>(&packet->unk290[0]) = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0x1F]].tex0 | 0x4000000621300000ULL;
+            break;
+        case GS_PSMT8:
+            *reinterpret_cast<u64*>(&packet->unk290[0x10]) = tex0 | g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0x1F]].tex0;
+            *reinterpret_cast<u64*>(&packet->unk290[0]) = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[0x1F]].tex0 | 0x4000000621300000ULL;
+            break;
+        default:
+            *reinterpret_cast<u64*>(&packet->unk290[0]) = tex0;
+            *reinterpret_cast<u64*>(&packet->unk290[0x10]) = tex0;
+            break;
+        }
+    }
+
+    return 0;
+}
 
 /**
  * @brief Turn fogging on or off, in the model's part packets too.
@@ -1605,7 +1810,47 @@ s32 LibModel::get_box_cull_center(void* output)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", get_bounding_sphere__8LibModelFv);
+extern "C" LibVector4 g_default_bounding_sphere;
+
+/**
+ * @brief Return the mesh's bounding sphere moved by the transform, its radius scaled by the transform's x row
+ *        length, or the default sphere without a resource or payload.
+ * @return Bounding sphere.
+ */
+const LibVector4* LibModel::get_bounding_sphere()
+{
+    if (resource == 0)
+    {
+        return &g_default_bounding_sphere;
+    }
+
+    vu0_start_row_scale(&transform);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(payload);
+
+    if (mesh == 0)
+    {
+        // TODO: The game evaluates the resource payload here and drops it; only its branches are left.
+        lib_model_mesh(this);
+        return &g_default_bounding_sphere;
+    }
+
+    ee_transpose_matrix_to_registers(&transform);
+    LibVector4 sphere;
+    LibVector4 scale;
+    float radius = mesh->sphere_radius;
+    vu0_wait_microprogram();
+    vu0_store_vf6(&scale);
+    sphere.w = radius * scale.x;
+    // TODO: The centre is copied as words (lw/sw) in the game; float assignments go through the FPU.
+    u32 x = reinterpret_cast<const u32*>(mesh->sphere_center)[0];
+    u32 y = reinterpret_cast<const u32*>(mesh->sphere_center)[1];
+    u32 z = reinterpret_cast<const u32*>(mesh->sphere_center)[2];
+    reinterpret_cast<u32*>(&sphere)[0] = x;
+    reinterpret_cast<u32*>(&sphere)[1] = y;
+    reinterpret_cast<u32*>(&sphere)[2] = z;
+    vu0_transform_by_transposed(&sphere, &bounding_sphere);
+    return &bounding_sphere;
+}
 
 /** @brief Pick the draw bucket from the draw flags, blend mode and mesh. */
 void LibModel::set_default_draw_bucket()
@@ -1736,9 +1981,662 @@ void LibModel::apply_part_settings()
     unk770 = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4710);
+/** Entry of a model's part table: a mesh part record, the part it draws, and its view depth. */
+struct LibModelPartEntry
+{
+    u8* record;
+    LibModelPart* part;
+    float depth;
+};
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A4ED0);
+/** Centre of the mesh part being sorted, as the microprogram reads it. */
+extern "C" s32 D_004ED2F0[4];
+
+/**
+ * @brief Fill the model's part table: each mesh part record, the part it draws and its view depth, with opaque parts
+ *        first and blended ones (or every part while the model blends) at the end; on the first pass the blended
+ *        ones are sorted by depth. While the model blends, switch the blended parts to its ALPHA setting and keep
+ *        their old values for apply_part_settings.
+ * @param model Model.
+ * @param matrix Camera the model is drawn with.
+ * @param first Nonzero for the pass of a mesh without unk3c.
+ * @return Zero when a table couldn't be allocated.
+ */
+extern "C" s32 func_004A4710(LibModel* model, const void* matrix, s32 first)
+{
+    const LibCamera* camera = static_cast<const LibCamera*>(matrix);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(model->resource));
+    s32 part_count = mesh->part_count;
+    s32 front = 0;
+    s32 back = part_count;
+    LibModelPartEntry** sorted;
+
+    if (first)
+    {
+        s32 size = part_count * 16;
+
+        if (model->unk77c != part_count || model->unk768 == 0)
+        {
+            delete model->unk768;
+
+            if (D_001B659C != 0)
+            {
+                model->unk768 = resident_heap_allocate(D_001B659C, size);
+            }
+            else
+            {
+                model->unk768 = malloc_guess(size);
+            }
+        }
+
+        if (model->unk768 == 0)
+        {
+            return 0;
+        }
+
+        func_004D5C10(model->resource);
+        LibModelPart* part = 0;
+        const LibMatrix44Value* parent = lib_get_parent_matrix(model);
+        LibMatrix44Value view;
+
+        if (parent == 0)
+        {
+            *(unsigned __int128*)&view.m[0] = *(const unsigned __int128*)&camera->view_matrix.m[0];
+            *(unsigned __int128*)&view.m[1] = *(const unsigned __int128*)&camera->view_matrix.m[1];
+            *(unsigned __int128*)&view.m[2] = *(const unsigned __int128*)&camera->view_matrix.m[2];
+            *(unsigned __int128*)&view.m[3] = *(const unsigned __int128*)&camera->view_matrix.m[3];
+        }
+        else
+        {
+            LibMatrix44Value* out = &view;
+            vu0_multiply_matrix(out, &camera->view_matrix, parent);
+        }
+
+        vu0_start_microprogram_1f0_vf5_vf8(&view);
+        LibModelPartEntry* entries = static_cast<LibModelPartEntry*>(model->unk768);
+        sorted = reinterpret_cast<LibModelPartEntry**>(static_cast<u8*>(model->unk768) + part_count * 12);
+
+        for (s32 i = 0; i < part_count; i++)
+        {
+            LibVector4 depth;
+            u8* record = static_cast<u8*>(func_004D5AC0(model->resource));
+            D_004ED2F0[0] = *reinterpret_cast<s16*>(record + 0xC);
+            D_004ED2F0[1] = *reinterpret_cast<s16*>(record + 0xE);
+            D_004ED2F0[2] = *reinterpret_cast<s16*>(record + 0x10);
+            vu0_start_microprogram_188_vf5(D_004ED2F0);
+            entries[i].record = record;
+
+            if (*reinterpret_cast<u16*>(record + 0x14) & 1)
+            {
+                part = reinterpret_cast<LibModelPart*>(record + 0x40);
+                u32 slot = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT)->slot;
+
+                if (slot != 0)
+                {
+                    part = reinterpret_cast<LibModelPart*>(static_cast<u8*>(model->parts) + (slot - 1) * LIB_MODEL_PART_SIZE);
+                }
+            }
+
+            entries[i].part = part;
+
+            if ((reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT)->first_tag_high & GIF_TAG_HIGH_PRIM_ABE) ||
+                model->blend_mode)
+            {
+                sorted[--back] = &entries[i];
+            }
+            else
+            {
+                sorted[front++] = &entries[i];
+            }
+
+            vu0_wait_microprogram();
+            vu0_read_vf6(&depth);
+            entries[i].depth = depth.z;
+        }
+
+        s32 j;
+        s32 k;
+        LibModelPartEntry* key;
+
+        for (k = front; k < part_count; k++)
+        {
+            key = sorted[k];
+            float depth = key->depth;
+            j = k - 1;
+
+            while (j >= front && sorted[k]->depth < depth)
+            {
+                sorted[j + 1] = sorted[j];
+                j--;
+            }
+
+            sorted[j + 1] = key;
+        }
+    }
+    else
+    {
+        s32 size = part_count * 16;
+
+        if (model->unk77c != part_count || model->unk76c == 0)
+        {
+            delete model->unk76c;
+
+            if (D_001B659C != 0)
+            {
+                model->unk76c = resident_heap_allocate(D_001B659C, size);
+            }
+            else
+            {
+                model->unk76c = malloc_guess(size);
+            }
+
+            if (model->unk76c == 0)
+            {
+                return 0;
+            }
+
+            func_004D5C10(model->resource);
+            LibModelPart* part = 0;
+            LibModelPartEntry* entries = static_cast<LibModelPartEntry*>(model->unk76c);
+            sorted = reinterpret_cast<LibModelPartEntry**>(static_cast<u8*>(model->unk76c) + part_count * 12);
+
+            for (s32 i = 0; i < part_count; i++)
+            {
+                u8* record = static_cast<u8*>(func_004D5AC0(model->resource));
+                entries[i].record = record;
+
+                if (*reinterpret_cast<u16*>(record + 0x14) & 1)
+                {
+                    part = reinterpret_cast<LibModelPart*>(record + 0x40);
+                    u32 slot = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT)->slot;
+
+                    if (slot != 0)
+                    {
+                        part = reinterpret_cast<LibModelPart*>(static_cast<u8*>(model->parts) + (slot - 1) * LIB_MODEL_PART_SIZE);
+                    }
+                }
+
+                entries[i].part = part;
+
+                if ((reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(part) | UNCACHED_SEGMENT)->first_tag_high & GIF_TAG_HIGH_PRIM_ABE) ||
+                    model->blend_mode)
+                {
+                    sorted[--back] = &entries[i];
+                }
+                else
+                {
+                    sorted[front++] = &entries[i];
+                }
+            }
+        }
+        else
+        {
+            sorted = reinterpret_cast<LibModelPartEntry**>(static_cast<u8*>(model->unk76c) + part_count * 12);
+        }
+    }
+
+    if (model->blend_mode && model->unk211 != model->blend_mode && front < part_count)
+    {
+        if (model->unk770 != 0 && model->unk211 != 0)
+        {
+            model->apply_part_settings();
+        }
+
+        model->unk774 = part_count - front;
+        model->unk778 = front;
+        delete model->unk770;
+
+        if (D_001B659C != 0)
+        {
+            model->unk770 = static_cast<LibModelPartSetting*>(resident_heap_allocate(D_001B659C, model->unk774 * 12));
+        }
+        else
+        {
+            model->unk770 = static_cast<LibModelPartSetting*>(malloc_guess(model->unk774 * 12));
+        }
+
+        if (model->unk770 == 0)
+        {
+            delete model->unk768;
+            model->unk768 = 0;
+            delete model->unk76c;
+            model->unk76c = 0;
+            return 0;
+        }
+
+        model->unk211 = model->blend_mode;
+        u32 alpha = D_004ED320[model->blend_mode];
+
+        for (s32 k = front; k < part_count; k++)
+        {
+            LibModelPartSetting* setting = &model->unk770[k - front];
+            LibModelPart* part = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(sorted[k]->part) | EE_UNCACHED_ACCELERATED);
+            setting->flags = 0;
+
+            if (!(part->first_tag_high & GIF_TAG_HIGH_PRIM_ABE))
+            {
+                setting->first_value = part->unk20;
+                part->unk20 = alpha;
+                part->first_tag_high |= GIF_TAG_HIGH_PRIM_ABE;
+                part->second_tag_high |= GIF_TAG_HIGH_PRIM_ABE;
+                setting->flags = 1;
+            }
+
+            if (part->unk84 != 0 && !(part->third_tag_high & GIF_TAG_HIGH_PRIM_ABE))
+            {
+                setting->second_value = part->unk90;
+                part->unk90 = alpha;
+                part->third_tag_high |= GIF_TAG_HIGH_PRIM_ABE;
+                part->fourth_tag_high |= GIF_TAG_HIGH_PRIM_ABE;
+                setting->flags |= 2;
+            }
+        }
+    }
+
+    return 1;
+}
+
+extern "C" u8 D_6E0[];
+extern "C" u8 D_770[];
+extern "C" u8 D_880[];
+
+/** Partial view of the object a model's unk638 points at: matrix sets uploaded for each frame. */
+struct LibModelMatrixSource
+{
+    u8 unk00[0x34];
+    s32* unk34;
+    u8 unk38[0x14];
+    u32 unk4c;
+    u8 unk50;
+};
+
+/**
+ * @brief Virtual slot 0xF0: write the model's DMA chain: the microprogram, the texture and palette uploads its records
+ *        mark dirty, the render channels' packets, the before/after blocks, and the part calls.
+ * @param count Image object func_004A76D0 found for the mesh, or zero.
+ * @param matrix Camera the model is drawn with.
+ */
+void LibModel::func_slotF0(s32 count, const void* matrix)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(payload);
+    u64* tail;
+
+    if (uses_payload_override)
+    {
+        unk710 = reinterpret_cast<u32>(&packet_chains[packet_set]);
+        tail = reinterpret_cast<u64*>((reinterpret_cast<u32>(override_packets[packet_set]) + 0x40) | EE_UNCACHED_ACCELERATED);
+    }
+    else
+    {
+        unk710 = reinterpret_cast<u32>(chain);
+        tail = reinterpret_cast<u64*>((reinterpret_cast<u32>(packet) + 0x40) | EE_UNCACHED_ACCELERATED);
+    }
+
+    u64* cursor = reinterpret_cast<u64*>((reinterpret_cast<u32>(base_packet) + 0x40) | EE_UNCACHED_ACCELERATED);
+    s32 part_count = mesh->part_count;
+    s32 program;
+    u32 first_call;
+    u32 next_call;
+    u32 part_call;
+
+    // TODO: The game recomputes the three microprogram addresses in every branch; maybe they came from a macro.
+    if (unk66)
+    {
+        if (mesh->unk3d[2])
+        {
+            program = 1;
+            first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+            next_call = reinterpret_cast<u32>(D_880) >> 3;
+            part_call = reinterpret_cast<u32>(D_770) >> 3;
+        }
+        else
+        {
+            program = 2;
+            first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+            next_call = reinterpret_cast<u32>(D_880) >> 3;
+            part_call = reinterpret_cast<u32>(D_770) >> 3;
+        }
+    }
+    else
+    {
+        program = 0;
+        first_call = reinterpret_cast<u32>(D_6E0) >> 3;
+        next_call = reinterpret_cast<u32>(D_880) >> 3;
+        part_call = reinterpret_cast<u32>(D_770) >> 3;
+    }
+
+    if (g_microcode_loader->select_program(program))
+    {
+        *cursor = g_microcode_loader->get_program_tag(program);
+        cursor += 2;
+    }
+
+    if (mesh->unk08 != 0 || count != 0)
+    {
+        ResidentRenderDataRecord* record = reinterpret_cast<ResidentRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + mesh->unk08);
+        cursor[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+        *(unsigned __int128*)(cursor + 2) = 0;
+        reinterpret_cast<u32*>(cursor)[7] = 0x06008000;
+        cursor += 4;
+
+        for (s32 i = 0; i < mesh->unk40; i++)
+        {
+            s16 kind = record->storage_kind;
+            ResidentRenderDataRecord* source = record;
+            s32 index;
+
+            // TODO: Only reading the index in both arms matched; maybe this was an inline that resolves the record.
+            if (kind == 1)
+            {
+                source = reinterpret_cast<ResidentRenderDataRecord*>(record->resolved_data);
+                index = record->index;
+
+                if (source != 0)
+                {
+                    kind = 0;
+                }
+            }
+            else
+            {
+                index = record->index;
+            }
+
+            if (kind == 0 || kind == 5)
+            {
+                LibImageHeader* image = source->data != 0 ? reinterpret_cast<LibImageHeader*>(source->data)
+                                                          : reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(source) + 0x40);
+
+                if (unk728[i] & 1)
+                {
+                    unk728[i] &= ~1;
+                    LibImageInfo* info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(image) + image->image_offset);
+                    LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(image) + info->pixel_offset);
+                    LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(
+                        reinterpret_cast<u32>(reinterpret_cast<u8*>(texture_uploads) + (i * 2 + 1) * sizeof(LibTextureUpload)) | EE_UNCACHED_ACCELERATED);
+
+                    if (!(unk728[i] & 2))
+                    {
+                        unsigned __int128 bitbltbuf;
+                        unsigned __int128 trxreg;
+                        unsigned __int128 image_tag;
+                        u64 unk68;
+
+                        bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+                        trxreg = *(unsigned __int128*)&packet->trxreg;
+                        unk68 = *(u64*)&packet->unk64[4];
+                        image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+                        *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+                        *(unsigned __int128*)&upload->trxreg = trxreg;
+                        *(u64*)&upload->unk64[4] = unk68;
+                        *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+                        unk728[i] |= 2;
+                    }
+
+                    upload->bitbltbuf.data = record->unk10[0];
+                    s32 quadwords = (s32)(info->data_size + 15) / 16;
+                    cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, reinterpret_cast<u8*>(texture_uploads) + (i * 2 + 1) * sizeof(LibTextureUpload));
+                    cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+                    cursor += 4;
+                }
+
+                if (unk728[i] & 4)
+                {
+                    unk728[i] &= ~4;
+
+                    if (unk798_0)
+                    {
+                        LibImageHeader* replacement = reinterpret_cast<LibImageHeader*>(replace_texture(image, index));
+
+                        if (replacement != 0)
+                        {
+                            image = replacement;
+                        }
+                    }
+
+                    LibTextureUpload* packet = reinterpret_cast<LibTextureUpload*>(reinterpret_cast<u8*>(image) + image->palette_offset);
+                    s32 offset = (i * 2 + 2) * sizeof(LibTextureUpload);
+                    LibTextureUpload* upload = reinterpret_cast<LibTextureUpload*>(
+                        reinterpret_cast<u32>(reinterpret_cast<u8*>(texture_uploads) + offset) | EE_UNCACHED_ACCELERATED);
+
+                    if (!(unk728[i] & 8))
+                    {
+                        unsigned __int128 bitbltbuf;
+                        unsigned __int128 trxreg;
+                        unsigned __int128 image_tag;
+                        u64 unk68;
+
+                        bitbltbuf = *(unsigned __int128*)&packet->bitbltbuf;
+                        trxreg = *(unsigned __int128*)&packet->trxreg;
+                        unk68 = *(u64*)&packet->unk64[4];
+                        image_tag = *(unsigned __int128*)&packet->unk64[0xC];
+                        *(unsigned __int128*)&upload->bitbltbuf = bitbltbuf;
+                        *(unsigned __int128*)&upload->trxreg = trxreg;
+                        *(u64*)&upload->unk64[4] = unk68;
+                        *(unsigned __int128*)&upload->unk64[0xC] = image_tag;
+                        unk728[i] |= 8;
+                    }
+
+                    upload->bitbltbuf.data = record->unk10[1];
+                    s32 quadwords = (image->palette_size + 15) / 16;
+                    cursor[0] = DMA_TAG(8, DMA_TAG_ID_REF, reinterpret_cast<u8*>(texture_uploads) + offset);
+                    cursor[2] = DMA_TAG(quadwords, DMA_TAG_ID_REF, reinterpret_cast<u8*>(packet) + sizeof(LibTextureUpload));
+                    cursor += 4;
+                }
+            }
+
+            record = reinterpret_cast<ResidentRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + record->next_offset);
+        }
+
+        if (render_channels.node_count != 0)
+        {
+            LibListSentinel* node = &render_channels.sentinel;
+
+            for (;;)
+            {
+                node = node->next;
+
+                if (&render_channels.sentinel == node)
+                {
+                    break;
+                }
+
+                cursor = static_cast<u64*>(static_cast<LibRenderChannel*>(node)->append_packets(cursor));
+            }
+        }
+
+        if (count != 0)
+        {
+            cursor = func_004A2EF0(this, reinterpret_cast<ResidentImageObject*>(count), cursor);
+        }
+    }
+
+    if (before_packet_size)
+    {
+        u64* end = reinterpret_cast<u64*>(build_before_packet(
+            (reinterpret_cast<u32>(before_packet) + 0x40) | EE_UNCACHED_ACCELERATED, reinterpret_cast<s32>(matrix)));
+        *end = DMA_TAG_ID_RET;
+    }
+
+    if (after_packet_size)
+    {
+        u64* end = reinterpret_cast<u64*>(build_after_packet(
+            (reinterpret_cast<u32>(after_packet) + 0x40) | EE_UNCACHED_ACCELERATED, reinterpret_cast<s32>(matrix)));
+        *end = DMA_TAG_ID_RET;
+    }
+
+    if (unk791)
+    {
+        cursor[0] = DMA_TAG_ID_RET;
+        tail[0] = DMA_TAG(4, DMA_TAG_ID_RET, 0);
+        *(unsigned __int128*)(tail + 2) = 0;
+        reinterpret_cast<u32*>(tail)[7] = VIF_DIRECTHL(2);
+        tail[4] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+        tail[5] = GIF_REGISTER_AD;
+        tail[6] = 0;
+        tail[7] = GS_REGISTER_TEXFLUSH;
+        *(unsigned __int128*)(tail + 8) = 0;
+        reinterpret_cast<u32*>(tail)[19] = 0x06000000;
+        unk791--;
+        return;
+    }
+
+    if (unk638 != 0)
+    {
+        cursor[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+        s32 quadwords = reinterpret_cast<LibModelMatrixSource*>(unk638)->unk34[1] * 4;
+        *(unsigned __int128*)(cursor + 2) = 0;
+        reinterpret_cast<u32*>(cursor)[7] = VIF_UNPACK(VIF_UNPACK_V4_32, quadwords, 0x290);
+        LibModelMatrixSource* matrices = reinterpret_cast<LibModelMatrixSource*>(unk638);
+        cursor[4] = DMA_TAG(quadwords, DMA_TAG_ID_REF,
+                            matrices->unk4c + ((matrices->unk34[1] * matrices->unk50) << 6) + 0x40);
+        cursor += 6;
+    }
+
+    *cursor = DMA_TAG_ID_RET;
+
+    if (unk793 != 0 || (uses_payload_override && packet_set == 1 && unk795 != 0))
+    {
+        tail[0] = DMA_TAG(0x31, DMA_TAG_ID_REF, &draw_packet);
+        tail[2] = DMA_TAG(6, DMA_TAG_ID_CNT, 0);
+        *(unsigned __int128*)(tail + 4) = 0;
+        reinterpret_cast<u32*>(tail)[11] = VIF_DIRECTHL(3);
+        tail[6] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 2;
+        tail[7] = GIF_REGISTER_AD;
+        tail[8] = 0;
+        tail[9] = GS_REGISTER_TEXFLUSH;
+        u32 vu_offset = unk638 ? 0x98 : 0xE0;
+
+        if (unk796 != 2 && (unk796 != 0 || unk797_5 || (mesh->unk54 & 1)))
+        {
+            tail[10] = 0xFFFFFFFF5ULL;
+            tail[11] = GS_REGISTER_CLAMP_1;
+            tail += 12;
+        }
+        else
+        {
+            tail[10] = 0xFFFFFFFF0ULL;
+            tail[11] = GS_REGISTER_CLAMP_1;
+            tail += 12;
+        }
+
+        *(unsigned __int128*)tail = 0;
+        reinterpret_cast<u32*>(tail)[3] = 0x02000000 | vu_offset;
+        *(unsigned __int128*)(tail + 2) = 0;
+        reinterpret_cast<u32*>(tail)[7] = 0x06008000;
+        tail += 4;
+        func_004D5C10(resource);
+        u8* previous = 0;
+
+        if (draw_bucket_choice && unk768 != 0)
+        {
+            LibModelPartEntry** sorted = reinterpret_cast<LibModelPartEntry**>(static_cast<u8*>(unk768) + part_count * 0xC);
+
+            for (s32 i = 0; i < part_count; i++)
+            {
+                tail[0] = DMA_TAG(*reinterpret_cast<s16*>(sorted[0]->record + 4) / 16, DMA_TAG_ID_REF, sorted[0]->record);
+                tail[2] = DMA_TAG(0xF, DMA_TAG_ID_REF, sorted[0]->part);
+                tail[4] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+
+                if (i == 0)
+                {
+                    *(unsigned __int128*)(tail + 6) = 0;
+                    reinterpret_cast<u32*>(tail)[15] = VIF_MSCALF(first_call);
+                    tail += 8;
+                }
+                else
+                {
+                    *(unsigned __int128*)(tail + 6) = 0;
+                    reinterpret_cast<u32*>(tail)[15] = VIF_MSCAL(part_call);
+                    tail += 8;
+                }
+
+                sorted++;
+            }
+        }
+        else
+        {
+            s32 pending = 0;
+
+            for (s32 i = 0; i < part_count; i++)
+            {
+                u8* part = static_cast<u8*>(func_004D5AC0(resource));
+                tail[0] = DMA_TAG(*reinterpret_cast<s16*>(part + 4) / 16, DMA_TAG_ID_REF, part);
+                tail += 2;
+                u16 flags = *reinterpret_cast<u16*>(part + 0x14);
+
+                if (!(flags & 1))
+                {
+                    if ((flags & 8) || count != 0)
+                    {
+                        tail[0] = DMA_TAG(0xF, DMA_TAG_ID_REF, previous);
+                        tail[2] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+                        *(unsigned __int128*)(tail + 4) = 0;
+                        reinterpret_cast<u32*>(tail)[11] = VIF_MSCAL(part_call);
+                        tail += 6;
+                    }
+                    else
+                    {
+                        if (pending)
+                        {
+                            pending = 0;
+                            tail[0] = DMA_TAG(0xF, DMA_TAG_ID_REF, previous);
+                            tail += 2;
+                        }
+
+                        tail[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+                        *(unsigned __int128*)(tail + 2) = 0;
+                        reinterpret_cast<u32*>(tail)[7] = VIF_MSCAL(next_call);
+                        tail += 4;
+                    }
+                }
+                else
+                {
+                    previous = part + 0x40;
+                    u32 slot = reinterpret_cast<LibModelPart*>(reinterpret_cast<u32>(previous) | UNCACHED_SEGMENT)->slot;
+
+                    if (slot != 0)
+                    {
+                        previous = static_cast<u8*>(parts) + (slot - 1) * LIB_MODEL_PART_SIZE;
+                        tail[0] = DMA_TAG(0xF, DMA_TAG_ID_REF, previous);
+                        tail += 2;
+                    }
+
+                    pending = 1;
+                    tail[0] = DMA_TAG(1, DMA_TAG_ID_CNT, 0);
+
+                    if (i == 0)
+                    {
+                        *(unsigned __int128*)(tail + 2) = 0;
+                        reinterpret_cast<u32*>(tail)[7] = VIF_MSCALF(first_call);
+                        tail += 4;
+                    }
+                    else
+                    {
+                        *(unsigned __int128*)(tail + 2) = 0;
+                        reinterpret_cast<u32*>(tail)[7] = VIF_MSCAL(part_call);
+                        tail += 4;
+                    }
+                }
+            }
+        }
+
+        tail[0] = DMA_TAG(1, DMA_TAG_ID_RET, 0);
+        tail[2] = 0;
+        reinterpret_cast<u32*>(tail)[6] = VIF_FLUSH;
+        reinterpret_cast<u32*>(tail)[7] = 0x06000000;
+
+        if (packet_set == 1)
+        {
+            unk795 = 0;
+            return;
+        }
+
+        if (unk793 != 0)
+        {
+            unk793--;
+        }
+    }
+}
 
 /**
  * @brief Append the channel's packets to a packet chain.
@@ -1809,15 +2707,6 @@ extern "C" void func_004A7D50(LibModel* model);
 extern "C" void func_004A62D0(LibModel* model, s32 count);
 
 /**
- * @brief Write the model's parts for one pass.
- * @param model Model.
- * @param matrix Camera the model is drawn with.
- * @param first Nonzero for the pass of a mesh without unk3c.
- * @return Zero when the parts couldn't be written and the packets have to go.
- */
-extern "C" s32 func_004A4710(LibModel* model, const void* matrix, s32 first);
-
-/**
  * @brief Build the model's packet: rebuild the packets when the mesh changed, refresh the packet header from the
  *        model's state, then write the parts.
  * @param matrix Camera the model is drawn with.
@@ -1836,7 +2725,7 @@ void LibModel::build_packet(const void* matrix, void* context)
         select_payload(payload_override, source->get_packet_set());
     }
 
-    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)unk220 | EE_UNCACHED_ACCELERATED);
+    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)&draw_packet | EE_UNCACHED_ACCELERATED);
     const unsigned __int128* from = reinterpret_cast<const unsigned __int128*>(&transform);
 
     if (unk5a1)
@@ -2167,7 +3056,7 @@ static inline s32 lib_texture_buffer_width(const LibTextureRequest* request, u16
  * @return VRAM word address of the texture, 0 when no spare block record is left, or 1 when no block is large
  *         enough.
  */
-extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, s32 flags,
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, u16 flags,
                              LibTextureUser* user)
 {
     u32 index;
@@ -2391,7 +3280,138 @@ void LibModel::update()
     LibModelBase::update();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A76D0);
+extern "C" LibVector4 D_00508210[];
+extern "C" LibVector4 D_00508220[];
+extern "C" void* D_001B6660;
+
+/**
+ * @brief Return a row of a resident matrix.
+ * @param matrix Matrix to read.
+ * @param row Row index.
+ * @return The row.
+ */
+static inline const ResidentVector4* resident_matrix_row(const ResidentMatrix* matrix, s32 row)
+{
+    return &matrix->rows[row];
+}
+
+/**
+ * @brief Read an image object's unk2c7 flag.
+ * @param object Image object.
+ * @return The flag byte.
+ */
+static inline u8 image_object_unk2c7(const ResidentImageObject* object)
+{
+    // TODO: Read through a u8 accessor for the game's extra andi before the test.
+    return object->unk2c7;
+}
+
+/**
+ * @brief Update the model's packet for its mesh flags: scale and offset the texture coordinates (bit 0), follow the
+ *        image object the model's bounding sphere hits (bit 1: its transform relative to the model, the hit object's
+ *        position in model space, and the blend state), and copy the second coordinate pair (bit 2).
+ * @param model Model.
+ * @return The image object hit, or null.
+ */
+extern "C" s32 func_004A76D0(LibModel* model)
+{
+    LibModelPacket* packet;
+    u16 flags;
+    ResidentImageObject* hit;
+    flags = reinterpret_cast<LibMeshHeader*>(model->payload)->unk54;
+    packet = reinterpret_cast<LibModelPacket*>(reinterpret_cast<u32>(&model->draw_packet) | EE_UNCACHED_ACCELERATED);
+    hit = 0;
+
+    if (flags & 1)
+    {
+        const LibVector4* scale = D_00508210;
+        const LibVector4* offset = D_00508220;
+        LibVector4 value;
+        *(unsigned __int128*)&value = *(const unsigned __int128*)scale;
+        value.x *= model->unk7c0;
+        value.y *= model->unk7c4;
+        *(unsigned __int128*)&packet->unk270 = *(unsigned __int128*)&value;
+        *(unsigned __int128*)&value = *(const unsigned __int128*)offset;
+        value.x += *(float*)&model->unk7c8[0];
+        value.y += *(float*)&model->unk7c8[1];
+        *(unsigned __int128*)&packet->unk280 = *(unsigned __int128*)&value;
+    }
+
+    if (flags & 2)
+    {
+        model->unk780 = reinterpret_cast<u32>(hit = resident_update_list_hit_test(static_cast<ResidentUpdateList*>(D_001B6660), model->light_mask,
+                                            reinterpret_cast<const ResidentVector4*>(&model->bounding_sphere),
+                                            reinterpret_cast<ResidentImageObject*>(model->unk780)));
+
+        if (hit != 0)
+        {
+            LibMatrix44Value view;
+            LibVector4 position;
+            vu0_multiply_matrix(&view, &hit->unk270, &model->transform);
+            ee_transpose_matrix(&packet->unk2c0, &view);
+            position.x = resident_matrix_row(&hit->transform, 0)->w;
+            position.y = resident_matrix_row(&hit->transform, 1)->w;
+            position.z = resident_matrix_row(&hit->transform, 2)->w;
+            position.w = 1.0f;
+            const LibMatrix44Value& transform = model->transform;
+            view = func_004CF0B0(transform);
+            vu0_dot_matrix_rows(&view, &position, &packet->unk2b0);
+            *(u32*)&packet->unk290[8] = image_object_unk2c7(hit) ? 0 : 0x20;
+
+            if (!hit->unk2c6)
+            {
+                model->unk796 = 1;
+            }
+            else
+            {
+                model->unk796 = 2;
+            }
+
+            if (!model->unk797_6)
+            {
+                *(u32*)&packet->unk250[8] = 1;
+                model->unk797_6 = 1;
+
+                if (model->unk793 < 4)
+                {
+                    model->unk793++;
+                    model->unk795 = 1;
+                }
+            }
+        }
+        else
+        {
+            if (model->unk797_6)
+            {
+                *(u32*)&packet->unk250[8] = 0;
+                model->unk796 = 0;
+                model->unk797_6 = 0;
+
+                if (model->unk793 < 4)
+                {
+                    model->unk793++;
+                    model->unk795 = 1;
+                }
+            }
+
+            if (*(u32*)model->unk784)
+            {
+                model->unk88 &= ~*(u32*)model->unk784;
+                *(u32*)model->unk784 = 0;
+            }
+        }
+    }
+
+    if (flags & 4)
+    {
+        ((float*)&packet->unk270)[2] = *(float*)&model->unk7c8[2];
+        ((float*)&packet->unk270)[3] = *(float*)&model->unk7c8[3];
+        ((float*)&packet->unk280)[2] = *(float*)&model->unk7c8[4];
+        ((float*)&packet->unk280)[3] = *(float*)&model->unk7c8[5];
+    }
+
+    return reinterpret_cast<s32>(hit);
+}
 
 
 /**
@@ -2416,7 +3436,7 @@ static inline u32 lib_model_test_register(const LibModel* model, const LibCamera
  */
 extern "C" void func_004A7AC0(LibModel* model, const LibCamera* camera)
 {
-    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)model->unk220 | EE_UNCACHED_ACCELERATED);
+    LibModelPacketHeader* header = (LibModelPacketHeader*)((u32)&model->draw_packet | EE_UNCACHED_ACCELERATED);
 
     model->unk59d_0 = 0;
 

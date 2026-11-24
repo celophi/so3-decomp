@@ -585,6 +585,19 @@ extern "C" void lib_begin_frame_packet(void);
 class LibClass179130 : public DmaSubmission
 {
 public:
+    /** @brief Allocate the 22-quadword packet. */
+    LibClass179130()
+    {
+        packet = new (0) LibPacketBuffer(0x16);
+
+        if (!packet)
+        {
+            return;
+        }
+
+        FlushCache(0);
+    }
+
     /**
      * @brief Send the packet on VIF1 in normal mode.
      * @param channel DMA channel; unused.
@@ -609,9 +622,9 @@ public:
 /** Part of a camera's uncached packet that func_004E22B0 fills: the projection and the clip matrix. */
 struct LibCameraStepPacket
 {
-    u8 unk00[0x10];
+    u32 projection_vif[4];
     LibMatrix44Value projection;
-    u8 unk50[0x10];
+    u32 clip_vif[4];
     LibMatrix44Value clip;
     u8 unka0[0x40];
 };
@@ -622,7 +635,7 @@ struct LibCameraStepPacket
  */
 struct LibCameraPacket5C0
 {
-    u8 unk000[0x10];
+    u32 vif[4];
     LibMatrix44Value view;
     LibMatrix44Value projection;
     LibMatrix44Value unk090;
@@ -632,11 +645,22 @@ struct LibCameraPacket5C0
     float centre_depth;
     LibMatrix44Value unk0e0;
     u32 unk120;
-    u8 unk124[0x30];
+    u32 unk124;
+    u32 unk128;
+    u32 unk12c;
+    u32 unk130;
+    u32 unk134;
+    u32 unk138;
+    u32 unk13c;
+    GsGifTag unk140;
+    u8 unk150[4];
     float roll;
     float fog_offset;
     float fog_scale;
-    u8 unk160[0x60];
+    GsGifTag unk160;
+    GsRegisterValue unk170;
+    GsRegisterValue unk180;
+    u8 unk190[0x30];
     LibCameraStepPacket step;
 };
 
@@ -793,7 +817,7 @@ public:
     DmaSourceTag dma_chain;
     float unk240;
     float unk244;
-    u32 unk248;
+    float unk248;
     float unk24c;
     float width_scale;
     float unk254;
@@ -868,9 +892,9 @@ class LibLightList;
 
 /**
  * @brief Light step run before the renderer tests its models: refresh the list's light matrices and sort its lights.
- * @param list Light list.
+ * @param lights Light list.
  */
-extern "C" void func_004E9290(LibLightList* list);
+extern "C" void func_004E9290(LibLightList* lights);
 #endif
 
 #ifdef __cplusplus

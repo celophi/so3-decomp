@@ -1,4 +1,5 @@
 #include "include_asm.h"
+#include "overlays/lib/scratchpad_texture_cache.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/text_0045AD10.h"
@@ -2531,7 +2532,51 @@ extern "C" s16 lib_allocation_get_identifier(const ItemCreationAllocationRecord*
     return id;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040D930);
+/** One packed word of an allocation record seen as three 10-bit fields. */
+typedef struct LibAllocationFactorWord
+{
+    u32 low : 10;
+    u32 middle : 10;
+    u32 high : 10;
+    u32 unused : 2;
+} LibAllocationFactorWord;
+
+// TODO: Only matches with common subexpressions off; the factor reads otherwise reuse the checksum's loads.
+#pragma push
+#pragma opt_common_subs off
+/**
+ * @brief Read one of an allocation's eight factor codes after validating its checksum.
+ * @param record Allocation record.
+ * @param index Factor slot, 0 to 7.
+ * @return Factor code, or zero when the checksum differs or the slot is out of range.
+ */
+extern "C" u16 func_0040D930(const ItemCreationAllocationRecord* record, u32 index)
+{
+    const LibAllocationFactorWord* words = reinterpret_cast<const LibAllocationFactorWord*>(record);
+
+    switch (index)
+    {
+        case 0:
+            return record->invalid() ? 0 : (u16)words[0].middle;
+        case 1:
+            return record->invalid() ? 0 : record->definition_factors.bits.factor1;
+        case 2:
+            return record->invalid() ? 0 : record->factors_234.bits.factor2;
+        case 3:
+            return record->invalid() ? 0 : (u16)words[1].middle;
+        case 4:
+            return record->invalid() ? 0 : record->factors_234.bits.factor4;
+        case 5:
+            return record->invalid() ? 0 : record->factors_567.bits.factor5;
+        case 6:
+            return record->invalid() ? 0 : (u16)words[2].middle;
+        case 7:
+            return record->invalid() ? 0 : record->factors_567.bits.factor7;
+    }
+
+    return 0;
+}
+#pragma pop
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_0040DD20);
 
@@ -4785,7 +4830,62 @@ extern "C" LibTextExtent* func_00413D30(LibObject172410* object)
     return &object->extent;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_00413D90);
+/**
+ * @brief Lay the item code out in the scratchpad and draw it, once; when fitting is on, a code wider or taller than the
+ *        widget is laid out again at a smaller scale, and the scale is put back after drawing.
+ */
+void LibObject172410::draw()
+{
+    if (unkfc == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(0x70000000);
+        float scale_x = draw_scale;
+        float scale_y = draw_scale_y;
+        begin_layout(records, 0.0f);
+        func_00463DD0(this, unkfc, unkfe);
+        func_004637A0(records, record_count);
+        align_records_vertically(records, record_count);
+
+        if (unkfa)
+        {
+            bool fitted = false;
+            LibUiRect16* box = &unk18;
+            LibTextExtent* size = &extent;
+
+            if (!(size->width <= box->unk08))
+            {
+                draw_scale = scale_x * (box->unk08 / size->width);
+                fitted = true;
+            }
+
+            if (!(size->height <= box->unk0c))
+            {
+                draw_scale_y = scale_y * (box->unk0c / size->height);
+                fitted = true;
+            }
+
+            if (fitted)
+            {
+                begin_layout(records, 0.0f);
+                func_00463DD0(this, unkfc, unkfe);
+                func_004637A0(records, record_count);
+                align_records_vertically(records, record_count);
+            }
+        }
+
+        draw_records(records, record_count);
+        draw_scale = scale_x;
+        draw_scale_y = scale_y;
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Initialize the item code widget's rectangle and drawing storage.
@@ -4936,7 +5036,35 @@ LibObject172440::~LibObject172440()
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004142E0);
+/**
+ * @brief Lay out the text for a 16-bit ID glyph by glyph.
+ * @param widget Widget to lay out into.
+ * @param id ID passed to the code lookup.
+ * @param variant Second lookup argument.
+ */
+extern "C" void func_00463C00(LibDrawWidget* widget, s32 id, u8 variant);
+
+/** @brief Lay the detail code out in the scratchpad and draw it, once. */
+void LibObject172440::draw()
+{
+    if (unkfc == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        lib_restore_texture_cache(static_cast<LibRenderer*>(g_renderer));
+        LibDrawRecord* records = reinterpret_cast<LibDrawRecord*>(0x70000000);
+        begin_layout(records, 0.0f);
+        func_00463C00(this, unkfc, unkfe);
+        func_004637A0(records, record_count);
+        align_records_vertically(records, record_count);
+        draw_records(records, record_count);
+        unk3b = 1;
+    }
+}
 
 /**
  * @brief Initialize the detail code widget's rectangle and drawing storage.

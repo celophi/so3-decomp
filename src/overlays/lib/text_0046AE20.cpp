@@ -840,7 +840,63 @@ static inline void lib_set_translation(LibOrientedTransform* object, float x, fl
     object->translation.w = 1.0f;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", set_image__15LibObject1751A0FP22LibResourceChunkHeaderUi);
+extern "C" LibImageRegistry* g_image_registry;
+
+/**
+ * @brief Point the model at one image of a resource's FISP chunk.
+ * @param resource First chunk of the resource.
+ * @param index Image index in the FISP chunk; past the count, nothing changes.
+ */
+void LibObject1751A0::set_image(LibResourceChunkHeader* resource, u32 index)
+{
+    unk648 = resource + 1;
+    LibResourceChunkHeader* chunk = resource;
+
+    do
+    {
+        if (chunk->magic == LIB_IMAGE_SET_CHUNK_MAGIC)
+        {
+            goto found;
+        }
+
+        chunk = lib_next_chunk(chunk);
+    } while (chunk != 0);
+
+    return;
+
+found:
+    LibImageSet* set = reinterpret_cast<LibImageSet*>(chunk + 1);
+
+    if (set->count < index)
+    {
+        return;
+    }
+
+    u32* offsets = set->offsets;
+    image = reinterpret_cast<LibImageEntry*>(reinterpret_cast<u8*>(set) + offsets[index]);
+    unk624 = 0;
+    unk640 = 0;
+    setup = image->setup;
+
+    reset_texture_uploads();
+
+    FlushCache(0);
+
+    if (reference)
+    {
+        reference->func_slot50(image, image->pixels);
+    }
+
+    unk620 = 0;
+    float width = static_cast<u32>(image->width);
+    float height = static_cast<u32>(image->height);
+    height *= height;
+    width *= width;
+    width += height;
+    diagonal = ee_sqrt(width);
+    registered = 1;
+    func_004D02E0(g_image_registry, this);
+}
 
 /** @brief Size and allocate the packet buffers for the grid, and point the DMA chains at them. */
 void LibObject1751A0::allocate_packets()
@@ -936,7 +992,6 @@ void func_0046B480(LibObject1751A0* holder, LibGridBase* reference)
 }
 
 /** Registry of the image resources in use. */
-extern "C" LibImageRegistry* g_image_registry;
 
 /** @brief Let go of the shared object, unregister the image and free the buffers. */
 LibObject1751A0::~LibObject1751A0()
@@ -994,7 +1049,7 @@ LibObject1751A0::LibObject1751A0()
     unkaa8 = 10.0f;
 
     s32 i = 0;
-    LibVector4* row = unk240;
+    LibVector4* row = draw_packet.unk20.rows;
 
     do
     {
@@ -1144,7 +1199,7 @@ void func_0046C090(LibEntryManager* manager, void* handle)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C180);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C180__8LibSceneFPvPvPv);
 
 /**
  * @brief Set a transform's offset translation (w one) and rebuild its offset matrix.

@@ -448,7 +448,7 @@ void func_0041A530(void* object)
 {
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_0041A560);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", draw__16LibListIndicatorFv);
 
 /**
  * @brief Place a list indicator, set its scroll extent and position, and allocate its drawing storage.
@@ -1421,7 +1421,249 @@ void* LibClass172900::func_00421650(void* cursor, u32 color, float x, float y, f
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00421650__14LibClass172920FPvUifffffff);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", func_00422F70);
+/**
+ * @brief Write a banded ring: a fan filling the inner circle, a solid band out to the middle radius, then a band out
+ *        to the outer edge that fades to the last color. The segment count follows the ring's size. Nothing is written
+ *        when the ring would leave the 4096-pixel drawing area.
+ * @param cursor Where to write.
+ * @param color Packed RGB color the ring's centre, rim and outer colors are modulated by.
+ * @param x Centre x, in screen pixels.
+ * @param y Centre y, in screen pixels.
+ * @param scale Size scale.
+ * @param angle Rotation in radians.
+ * @param alpha Opacity scale.
+ * @param scale_x Horizontal stretch.
+ * @param scale_y Vertical stretch.
+ * @return The cursor after the data.
+ */
+void* LibClass172940::func_00421650(void* cursor, u32 color, float x, float y, float scale, float angle, float alpha,
+                                    float scale_x, float scale_y)
+{
+    float cosines[48];
+    float sines[48];
+    float px;
+    float py;
+    u64* out = static_cast<u64*>(cursor);
+    float outer = scale * (inner_radius + (widths[1] + widths[0]));
+
+    if (x - outer < 0.0f)
+    {
+        return out;
+    }
+
+    if (!(x + outer <= 4095.0f))
+    {
+        return out;
+    }
+
+    if (y - outer < 0.0f)
+    {
+        return out;
+    }
+
+    if (!(y + outer <= 4095.0f))
+    {
+        return out;
+    }
+
+    float middle = scale * (widths[0] + inner_radius);
+    float inner = inner_radius * scale;
+    u32 opacity = (u32)(128.0f * (alpha * this->alpha));
+
+    if (opacity > 0x80)
+    {
+        opacity = 0x80;
+    }
+
+    s32 count = (s32)(0.2f * middle) + 9;
+
+    if (count > 0x30)
+    {
+        count = 0x30;
+    }
+
+    if (count <= 0)
+    {
+        return out;
+    }
+
+    GsGifTag* tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 2;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    out[2] = 0x4D;
+    out[3] = GS_REGISTER_PRIM;
+    u32 red = (colors[0] & 0xFF) * (color & 0xFF) / 255;
+    u32 green = ((colors[0] >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    u32 blue = ((colors[0] >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    u32 alpha_bits = opacity << 24;
+    out[4] = alpha_bits | ((blue << 16) | (red | (green << 8)));
+    out[5] = GS_REGISTER_RGBAQ;
+    tag = reinterpret_cast<GsGifTag*>(out + 6);
+    tag->tag = GIF_TAG_NREG(1) | GIF_TAG_FLG_REGLIST | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_XYZ2;
+    out[8] = lib_screen_xy(x, y);
+    tag = reinterpret_cast<GsGifTag*>(out + 10);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    red = (colors[1] & 0xFF) * (color & 0xFF) / 255;
+    green = ((colors[1] >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    blue = ((colors[1] >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    out[12] = alpha_bits | ((blue << 16) | (red | (green << 8)));
+    out[13] = GS_REGISTER_RGBAQ;
+
+    if (count <= 0)
+    {
+        count = 1;
+    }
+
+    tag = reinterpret_cast<GsGifTag*>(out + 14);
+    tag->tag = GIF_TAG_NREG(1) | GIF_TAG_FLG_REGLIST | count;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_XYZ2;
+    out += 16;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        LibVector4 pair;
+
+        lib_compute_sine_cosine_pair(angle + 6.2831855f * (float)i / (float)(count - 1), &pair);
+        cosines[i] = pair.z * scale_x;
+        sines[i] = pair.w * scale_y;
+        px = x + inner * cosines[i];
+        py = y + inner * sines[i];
+        *out++ = lib_screen_xy(px, py);
+    }
+
+    if (count & 1)
+    {
+        out++;
+    }
+
+    tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    out[2] = 0x4C;
+    out[3] = GS_REGISTER_PRIM;
+    tag = reinterpret_cast<GsGifTag*>(out + 4);
+    tag->tag = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | (count * 2);
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_RGBAQ;
+    tag->fields.register1 = GIF_REGISTER_XYZ2;
+    out += 6;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        px = x + inner * cosines[i];
+        py = y + inner * sines[i];
+        out[0] = colors[1] | alpha_bits;
+        out[1] = lib_screen_xy(px, py);
+        out[2] = colors[2] | alpha_bits;
+        out[3] = lib_screen_xy(x + middle * cosines[i], y + middle * sines[i]);
+        out += 4;
+    }
+
+    tag = reinterpret_cast<GsGifTag*>(out);
+    tag->tag = GIF_TAG_NREG(1) | 1;
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_AD;
+    out[2] = 0x4C;
+    out[3] = GS_REGISTER_PRIM;
+    tag = reinterpret_cast<GsGifTag*>(out + 4);
+    tag->tag = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | (count * 2);
+    tag->registers = 0;
+    tag->fields.register0 = GIF_REGISTER_RGBAQ;
+    tag->fields.register1 = GIF_REGISTER_XYZ2;
+    out += 6;
+    red = (colors[2] & 0xFF) * (color & 0xFF) / 255;
+    green = ((colors[2] >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    blue = ((colors[2] >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (red > 0xFF)
+    {
+        red = 0xFF;
+    }
+
+    if (green > 0xFF)
+    {
+        green = 0xFF;
+    }
+
+    if (blue > 0xFF)
+    {
+        blue = 0xFF;
+    }
+
+    u32 centre = alpha_bits | ((blue << 16) | (red | (green << 8)));
+    u32 rim_red = (colors[3] & 0xFF) * (color & 0xFF) / 255;
+    u32 rim_green = ((colors[3] >> 8) & 0xFF) * ((color >> 8) & 0xFF) / 255;
+    u32 rim_blue = ((colors[3] >> 16) & 0xFF) * ((color >> 16) & 0xFF) / 255;
+
+    if (rim_red > 0xFF)
+    {
+        rim_red = 0xFF;
+    }
+
+    if (rim_green > 0xFF)
+    {
+        rim_green = 0xFF;
+    }
+
+    if (rim_blue > 0xFF)
+    {
+        rim_blue = 0xFF;
+    }
+
+    u32 edge = (rim_blue << 16) | (rim_red | (rim_green << 8));
+
+    for (s32 i = 0; i < count; i++)
+    {
+        px = x + middle * cosines[i];
+        py = y + middle * sines[i];
+        out[0] = centre;
+        out[1] = lib_screen_xy(px, py);
+        out[2] = edge;
+        out[3] = lib_screen_xy(x + outer * cosines[i], y + outer * sines[i]);
+        out += 4;
+    }
+
+    return out;
+}
 
 /**
  * @brief Send the data on VIF1 in normal mode.

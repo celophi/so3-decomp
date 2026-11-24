@@ -60,9 +60,7 @@ class LibObject1751A0;
 /** 16-byte element of LibClass173490's two arrays; its contents aren't known yet, it's copied as one 128-bit value. */
 struct LibClass173490Entry
 {
-    LibClass173490Entry()
-    {
-    }
+    inline LibClass173490Entry();
 
     /**
      * @brief Copy all 16 bytes.

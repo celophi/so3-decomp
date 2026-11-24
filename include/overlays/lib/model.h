@@ -7,6 +7,58 @@
 #include "overlays/lib/counted_list.h"
 #include "overlays/lib/render_buffer.h"
 #include "main/dma_queue.h"
+#include "overlays/lib/emission.h"
+
+// TODO: My guess for why LibColorModel's constructor calls this constructor; it may really be LibMatrix44Value.
+/** Matrix in a model's draw packet; its constructor is only defined after LibColorModel's. */
+class LibModelPacketMatrix
+{
+public:
+    inline LibModelPacketMatrix();
+
+    LibVector4 rows[4];
+} __attribute__((aligned(16)));
+
+/** Partial VU1 draw packet a color model keeps at 0x220 and writes through its physical address. */
+struct LibModelPacket
+{
+    u32 unk00[3];
+    u32 unpack;
+    LibClass173490Entry unk10;
+    LibModelPacketMatrix unk20;
+    LibModelPacketMatrix unk60;
+    LibModelPacketMatrix unka0;
+    LibClass173490Entry unke0;
+    s32 unkf0;
+    u8 unkf4[0x2C];
+    u64 frame_alpha;
+    u64 frame_alpha_address;
+    u64 test;
+    u64 test_address;
+    LibClass173490Entry unk140;
+    LibClass173490Entry unk150[3];
+    LibModelPacketMatrix unk180;
+    LibClass173490Entry unk1c0;
+    LibClass173490Entry unk1d0[2];
+    LibClass173490Entry unk1f0[2];
+    LibClass173490Entry unk210[2];
+    LibClass173490Entry unk230[2];
+    u8 unk250[0x10];
+    LibClass173490Entry unk260;
+    LibClass173490Entry unk270;
+    LibClass173490Entry unk280;
+    u8 unk290[0x20];
+    LibClass173490Entry unk2b0;
+    LibModelPacketMatrix unk2c0;
+    u32 mscal;
+    u32 unk304[3];
+};
+
+/** VU1 microprogram a model's draw packet starts. */
+extern "C" u8 D_238[];
+
+/** Initial unk59d_1 of a new color model. */
+extern "C" u8 D_001B6550;
 
 /** Partial header at the start of a mesh resource's payload. */
 struct LibMeshHeader
@@ -111,9 +163,8 @@ public:
      */
     virtual void copy_color_state(const LibColorModel* source);
 
-    u8 unk220[0x20];
-    LibVector4 unk240[4];
-    u8 unk280[0x2E0];
+    LibModelPacket draw_packet;
+    u8 unk530[0x30];
     LibVector4 base_color_factor;
     LibVector4 color_modulation;
     LibVector4 combined_color_factor;
@@ -287,7 +338,9 @@ struct LibEntryOutput
     s32 count;
     LibVector4* vectors;
     LibClass173490Entry* values;
-    u8 unk0c[0xC];
+    u32* uvs;
+    u32* colors;
+    u8 unk14[4];
     void* records[1];
 };
 
@@ -878,9 +931,11 @@ public:
 
     /**
      * @brief Swap a texture record while drawing when the model supplies its own textures; this model doesn't.
+     * @param image Image header the record draws.
+     * @param index Record's index.
      * @return Replacement record, or zero to keep the original.
      */
-    virtual s32 replace_texture()
+    virtual s32 replace_texture(void* image, s32 index)
     {
         return 0;
     }
@@ -936,8 +991,9 @@ public:
     s32 func_004A2870();
 
     /**
-     * @brief Virtual slot 0xF0: write the model's parts into its packet.
-     * @param count Value func_004A76D0 returned for the mesh, or zero.
+     * @brief Virtual slot 0xF0: write the model's DMA chain: the microprogram, the texture and palette uploads its
+     *        records mark dirty, the render channels' packets, the before/after blocks, and the part calls.
+     * @param count Image object func_004A76D0 found for the mesh, or zero.
      * @param matrix Camera the model is drawn with.
      */
     virtual void func_slotF0(s32 count, const void* matrix);

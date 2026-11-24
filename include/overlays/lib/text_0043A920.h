@@ -314,9 +314,6 @@ void func_00447C60(void* object);
 void func_00447C80(void* object);
 
 /** Return the first pointer argument unchanged. */
-void* func_00448690(void* value);
-
-/** Return the first pointer argument unchanged. */
 void* func_0044A330(void* value);
 
 /** Set the ready flag and copy a 128-bit value into the receiver. */

@@ -35,6 +35,11 @@
 #include "main/utility.h"
 #include "main/resource_queue.h"
 
+/** @brief Leave the element uninitialized. */
+inline LibClass173490Entry::LibClass173490Entry()
+{
+}
+
 /** LibClass173380 that LibClass173380::build_packet creates, with vtable D_173270 in main data. */
 class LibClass173270 : public LibClass173380
 {

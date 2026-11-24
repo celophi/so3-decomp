@@ -428,6 +428,25 @@ static inline void vu0_start_microprogram_b60_vf5(const void* sphere)
 }
 
 /**
+ * @brief Load a vector into vf5 and start the microprogram at 0x188.
+ *
+ * Lib runs it on each mesh part's centre after vu0_start_microprogram_1f0_vf5_vf8
+ * and sorts the parts by the z it leaves in vf6, so I think it's the point
+ * transform for program 0's matrix.
+ * TODO: Work out what else program 0x188 leaves in vf6.
+ * @param vector 16-byte aligned vector.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf, 5.4.6).
+ * @see func_004A4710 in Lib.
+ */
+static inline void vu0_start_microprogram_188_vf5(const void* vector)
+{
+    asm __volatile__("lqc2 $vf5, 0x0(%0)\n"
+                     "nop\n"
+                     "nop\n"
+                     "vcallms 0x188" : : "r"(vector) : "memory");
+}
+
+/**
  * @brief Read vi2, waiting for the running microprogram first.
  * @return The register's value.
  * @see vu0_start_microprogram_b60_vf5.
