@@ -3311,14 +3311,7 @@ LibRenderer::LibRenderer(LibCameraContext* target)
     FlushCache(0);
 }
 
-/** @brief Start with nothing displayed and object kind bit 2 set. */
-LibClass178F30::LibClass178F30()
-{
-    unk94 = 0;
-    current_display = 0;
-    effect_enabled = 0;
-    object_kind |= 4;
-}
+#include "overlays/lib/display_manager_inlines.h"
 
 /** @brief Forget the owning list, then destroy through the base. */
 void LibClass178B70::destroy()
@@ -3977,7 +3970,97 @@ void lib_update_list_update_node(void* list, void* node)
     static_cast<LibListObject*>(node)->update();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", update_nodes__13LibUpdateListFv);
+/**
+ * @brief Update every node of this list and the lists chained after it: collect them into one buffer grouped by
+ *        kind, then update each listed node in order. A node whose object_kind has bit 1 set is skipped, bit 2 clears
+ *        its matrix state first, and bit 4 runs its update on the scratchpad stack.
+ */
+void LibUpdateList::update_nodes()
+{
+    ee_clear_breakpoints();
+    active_node_count = node_count;
+
+    if (next_list)
+    {
+        active_node_count += func_004D69A0(next_list);
+    }
+
+    if (active_node_count == 0)
+    {
+        return;
+    }
+
+    if (owned_node_buffer)
+    {
+        active_node_buffer = owned_node_buffer;
+    }
+    else
+    {
+        active_node_buffer = new (0) void*[active_node_count];
+    }
+
+    if (active_node_buffer == 0)
+    {
+        return;
+    }
+
+    lib_list_collect_nodes_by_kind(this, active_node_buffer);
+
+    if (next_list)
+    {
+        func_004D68F0(next_list, this);
+    }
+
+    for (active_node_index = 0; active_node_index < active_node_count; active_node_index++)
+    {
+        LibListObject* node = static_cast<LibListObject*>(active_node_buffer[active_node_index]);
+
+        if (node == 0 || !node->is_listed)
+        {
+            continue;
+        }
+
+        u8 kind = node->object_kind;
+
+        if (kind)
+        {
+            if (kind & 2)
+            {
+                static_cast<LibTransformOwner*>(node)->matrix_ready = 0;
+                static_cast<LibTransformOwner*>(node)->unk51 = 0;
+            }
+
+            if (kind & 1)
+            {
+                continue;
+            }
+
+            if (kind & 4)
+            {
+                ee_enter_scratchpad_stack();
+                node->update();
+                ee_leave_scratchpad_stack();
+                continue;
+            }
+        }
+
+        node->update();
+    }
+
+    active_node_index = -1;
+
+    if (owned_node_buffer == 0)
+    {
+        delete[] active_node_buffer;
+    }
+
+    active_node_buffer = 0;
+
+    if (next_list)
+    {
+        func_004D68F0(next_list, 0);
+    }
+}
 
 // TODO: The target unrolls the recursion eight calls deep, which only happens with auto inlining and an inline depth
 // of eight around it.
@@ -5400,36 +5483,6 @@ extern "C" void func_004D99B0(LibBusyObject* object)
 
 /** Global VIF0 tag chains for the low channel numbers. */
 extern "C" u32 D_001B62A0[2];
-
-/**
- * DMA submission that sends a VIF0 tag chain, picked by its channel byte from the global table or, from 0x80 up, from
- * its own; the queue helpers above use it through LibBusyObject. Vtable D_178E70 in main data.
- */
-class LibVif0Channel : public DmaSubmission
-{
-public:
-    /** @brief Start idle with no channel and seed VU0's random register. */
-    LibVif0Channel();
-
-    /**
-     * @brief Mark the transfer done.
-     * @param dma_channel DMA channel; unused.
-     */
-    virtual void complete_dma(u32 dma_channel);
-
-    /**
-     * @brief Start the channel's VIF0 tag chain.
-     * @param dma_channel DMA channel; unused.
-     */
-    virtual void submit_dma(u32 dma_channel);
-
-    u8 unk04[0x4C];
-    volatile u8 busy;
-    u8 channel;
-    u8 unk52[2];
-    u32 unk54;
-    u32 tags[1];
-};
 
 /**
  * @brief Mark the transfer done.

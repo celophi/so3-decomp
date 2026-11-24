@@ -1683,7 +1683,106 @@ void func_004728A0(LibEntryManager* manager, u8 enabled, s32 check)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00472A00);
+/**
+ * @brief Add draw flags to an object.
+ * @param object Object (LibTransformOwner).
+ * @param flags Flags to add.
+ */
+static inline void lib_add_draw_flags(void* object, u16 flags)
+{
+    static_cast<LibTransformOwner*>(object)->set_draw_flags(static_cast<LibTransformOwner*>(object)->get_draw_flags() | flags);
+}
+
+/**
+ * @brief Remove draw flags from an object.
+ * @param object Object (LibTransformOwner).
+ * @param flags Flags to remove.
+ */
+static inline void lib_remove_draw_flags(void* object, u16 flags)
+{
+    static_cast<LibTransformOwner*>(object)->set_draw_flags(static_cast<LibTransformOwner*>(object)->get_draw_flags() & ~flags);
+}
+
+/**
+ * @brief Add draw flags to an emitter's image model, unless the emitter has none.
+ * @param emitter Emitter, or null.
+ * @param flags Flags to add.
+ */
+static inline void lib_emitter_add_draw_flags(LibClass173990* emitter, u16 flags)
+{
+    if (emitter && !emitter->unk49b_0)
+    {
+        lib_add_draw_flags(emitter->source, flags);
+    }
+}
+
+/**
+ * @brief Remove draw flags from an emitter's image model, unless the emitter has none.
+ * @param emitter Emitter, or null.
+ * @param flags Flags to remove.
+ */
+static inline void lib_emitter_remove_draw_flags(LibClass173990* emitter, u16 flags)
+{
+    if (emitter && !emitter->unk49b_0)
+    {
+        lib_remove_draw_flags(emitter->source, flags);
+    }
+}
+
+/**
+ * @brief Hide or show every loaded, active entry of a scene, except kind 0x17; emitters (kind 10) pass it to their
+ *        image model.
+ * @param scene Scene whose entries change.
+ * @param hidden Nonzero to hide, zero to show.
+ */
+extern "C" void func_00472A00(LibEntryManager* scene, s32 hidden)
+{
+    s32 index;
+
+    if (scene->entries == 0)
+    {
+        return;
+    }
+
+    for (index = 0; index < scene->header->count; index++)
+    {
+        void* handle;
+        LibManagedEntry* entry = &scene->entries[index];
+
+        handle = entry->handle;
+
+        if (handle != 0 && entry->unk00 == 0)
+        {
+            LibEntryMetadata* metadata = entry->metadata;
+
+            if ((metadata->state == 2 || metadata->state == 0) && metadata->kind != 0x17)
+            {
+                if (hidden)
+                {
+                    if (metadata->kind == 10)
+                    {
+                        lib_emitter_add_draw_flags(static_cast<LibClass173990*>(handle), LIB_DRAW_HIDDEN);
+                    }
+                    else
+                    {
+                        lib_add_draw_flags(scene->entries[index].handle, LIB_DRAW_HIDDEN);
+                    }
+                }
+                else
+                {
+                    if (metadata->kind == 10)
+                    {
+                        lib_emitter_remove_draw_flags(static_cast<LibClass173990*>(handle), LIB_DRAW_HIDDEN);
+                    }
+                    else
+                    {
+                        lib_remove_draw_flags(scene->entries[index].handle, LIB_DRAW_HIDDEN);
+                    }
+                }
+            }
+        }
+    }
+}
 
 /**
  * @brief Copy an entry's name into a buffer.

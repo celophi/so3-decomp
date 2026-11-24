@@ -1029,6 +1029,20 @@ extern "C" void lib_object_set_list_kind(LibListObject* node, s32 kind);
 extern "C" void lib_list_collect_nodes_by_kind(LibUpdateList* list, void** items);
 
 /**
+ * @brief Give a list and every list chained after it the same active buffer owner.
+ * @param list First list.
+ * @param owner Owner of the active node buffer.
+ */
+extern "C" void func_004D68F0(LibUpdateList* list, LibUpdateList* owner);
+
+/**
+ * @brief Count the nodes of a list and every list chained after it.
+ * @param list First list.
+ * @return Total node count.
+ */
+extern "C" s32 func_004D69A0(LibUpdateList* list);
+
+/**
  * @brief Add each list's per-kind prefix sums to the chain's kind offsets.
  * @param list First list whose counts are added.
  * @param offsets Array of NODE_KIND_COUNT offsets to update.
@@ -1118,22 +1132,32 @@ class LibLightList : public LibUpdateList, public LibListObject
         LibMatrix44Value unkd0;
         LibVector4 directions[4];
         float colors[4][4];
-        u8 unk190[0x180];
+        u8 unk190[0x40];
+        LibMatrix44Value unk1d0;
+        LibVector4 unk210[3];
+        LibMatrix44Value unk240;
+        LibVector4 unk280;
+        unsigned __int128 unk290[2];
+        unsigned __int128 unk2b0[2];
+        unsigned __int128 unk2d0[2];
+        unsigned __int128 unk2f0[2];
         FieldVec4B unk310;
         FieldVec4B unk320;
         FieldVec4B unk330;
         LibVector4 unk340;
-        u8 unk350[0x10];
+        unsigned __int128 unk350;
         LibDisplayManager* manager;
         LibLight* unk364[3];
         u32 mask;
-        u8 unk374[4];
+        s32 unk374;
         s16 light_count;
         s16 unk364_count;
-        u8 unk37c[2];
+        s8 unk37c;
+        s8 unk37d;
         u8 unk37e;
         u8 has_local_lights;
-        u8 unk380[2];
+        u8 unk380;
+        u8 unk381;
         u8 unk382;
         u8 unk383[0xD];
 };
@@ -1255,7 +1279,7 @@ class LibClass178F30 : public LibUpdateList, public LibListObject
 {
 public:
     /** @brief Start with nothing displayed and object kind bit 2 set. */
-    LibClass178F30();
+    inline LibClass178F30();
 
     virtual ~LibClass178F30();
 
@@ -1650,6 +1674,13 @@ public:
      * @return Pointer to the stored matrix; this call does not update it.
      */
     virtual const LibMatrix44Value* get_transform_matrix();
+
+    /**
+     * @brief Move a world-space position into the transform's local space.
+     * @param world Position in world space.
+     * @param local Receives the position in local space.
+     */
+    void to_local(const LibVector4* world, LibVector4* local);
 
     LibMatrix44Value transform;
     LibMatrix44Value base_transform;
@@ -2347,10 +2378,131 @@ public:
 #endif
 
 #ifdef __cplusplus
-/** List object with vtable D_178C90 in main data; only its destructor is known. */
+/**
+ * DMA submission that sends a VIF0 tag chain, picked by its channel byte from the global table or, from 0x80 up, from
+ * its own; the queue helpers above use it through LibBusyObject. Vtable D_178E70 in main data.
+ */
+class LibVif0Channel : public DmaSubmission
+{
+public:
+    /** @brief Start idle with no channel and seed VU0's random register. */
+    LibVif0Channel();
+
+    /**
+     * @brief Mark the transfer done.
+     * @param dma_channel DMA channel; unused.
+     */
+    virtual void complete_dma(u32 dma_channel);
+
+    /**
+     * @brief Start the channel's VIF0 tag chain.
+     * @param dma_channel DMA channel; unused.
+     */
+    virtual void submit_dma(u32 dma_channel);
+
+    u8 unk04[0x4C];
+    volatile u8 busy;
+    u8 channel;
+    u8 unk52[2];
+    u32 unk54;
+    u32 tags[18];
+};
+
+/** DMA callbacks object g_display_callbacks that records the display (vtable D_0014FDE0 in main data). */
+class LibDebugListener : public LibDmaCallbacks
+{
+public:
+    /**
+     * @brief Record the display.
+     * @param display Display.
+     */
+    LibDebugListener(LibCameraContext* display) : display(display)
+    {
+    }
+
+    /**
+     * @brief Main's reserved hook.
+     * @param value Notification value.
+     */
+    virtual void on_packet_notify(u32 value);
+
+    /**
+     * @brief Main's debug notification.
+     * @param value Notification word or packet address.
+     */
+    virtual void on_packet_complete(u32 value);
+
+    LibCameraContext* display;
+};
+
+/**
+ * Update list that is also a list object, with vtables D_0014FCB0 and D_0014FCE8 in main data (main's
+ * ResidentUpdateList), made by lib_initialize.
+ */
+class LibResidentUpdateList : public LibUpdateList, public LibListObject
+{
+public:
+    /** @brief Start with unk8c clear. */
+    LibResidentUpdateList() : unk8c(0)
+    {
+    }
+
+    virtual ~LibResidentUpdateList();
+
+    u32 unk8c;
+};
+
+/** Transform owner with vtable D_00174570 in main data that sends its display manager's effect packet. */
+class LibClass174570 : public LibTransformOwner
+{
+public:
+    /** @brief Start as a type 0x800 object with draw flag 0x400. */
+    LibClass174570()
+    {
+        unk65 = 1;
+        type_id = 0x800;
+        draw_flags = 0x400;
+    }
+
+    virtual ~LibClass174570();
+
+    /** @brief Send the effect display's ready packet and finish this object's packet. */
+    virtual void render();
+
+    /** @brief Draw in bucket 8. */
+    virtual void set_default_draw_bucket();
+
+    /**
+     * @brief Return a bounding sphere at the origin with a huge radius, so the object is never culled.
+     * @return Bounding sphere; it lives on this function's stack.
+     */
+    virtual const LibVector4* get_bounding_sphere();
+
+    /**
+     * @brief Promote the effect display's pending packet to the ready one when the effect is on.
+     * @param matrix Unused.
+     * @param context Unused.
+     */
+    virtual void build_packet(const void* matrix, void* context);
+
+    LibDisplayManager* manager;
+};
+#endif
+
+#ifdef __cplusplus
+/** List object with vtable D_178C90 in main data that runs the renderer's frame passes. */
 class LibClass178C90 : public LibListObject
 {
 public:
+    /**
+     * @brief Run the given renderer's passes, on the scratchpad stack.
+     * @param renderer Renderer.
+     */
+    LibClass178C90(LibRenderer* renderer) : renderer(renderer)
+    {
+        object_kind |= 4;
+    }
+
     virtual ~LibClass178C90();
 
     /**

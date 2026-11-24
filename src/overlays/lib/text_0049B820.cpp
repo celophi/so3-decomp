@@ -2648,14 +2648,19 @@ void* LibRenderChannel::append_packets(void* packet)
     return packet;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A59D0);
-
 /** Partial view of the model's draw packet at unk220, written through the uncached accelerated segment. */
 typedef struct LibModelPacketHeader
 {
-    u8 unk00[0xA0];
+    u8 unk00[0x20];
+    unsigned __int128 light_matrix[4];
+    LibMatrix44Value light_transposed;
     unsigned __int128 transform[4];
-    u8 unke0[0x24];
+    unsigned __int128 color;
+    s32 white;
+    s32 unkf4;
+    s32 unkf8;
+    s32 light_mode;
+    u8 unk100[4];
     s32 unk104;
     u8 unk108[4];
     s32 unk10c;
@@ -2665,19 +2670,184 @@ typedef struct LibModelPacketHeader
     u64 unk120;
     u8 unk128[8];
     u64 test;
-    u8 unk138[0x118];
+    u8 unk138[8];
+    unsigned __int128 ambient;
+    unsigned __int128 unk150[3];
+    LibMatrix44Value unk180;
+    unsigned __int128 unk1c0;
+    unsigned __int128 unk1d0[8];
     s32 unk250;
     s32 unk254;
-    u8 unk258[0x50];
+    u8 unk258[8];
+    unsigned __int128 unk260;
+    u8 unk270[0x2C];
+    s32 unk29c;
+    u8 unk2a0[8];
     s32 unk2a8;
 } LibModelPacketHeader;
 
 /**
- * @brief Run the model's per-packet step that build_packet skips after unk797_2 was set.
+ * @brief Light the model for this frame: its colour times the light list's, the directional and local lights from the
+ *        list (filling the model's shadow light list when unk790 is set), and the white-colour flag, all written into
+ *        the draw packet.
  * @param model Model.
- * @param context Opaque caller context.
+ * @param context Light list, or null for none.
  */
-extern "C" void func_004A59D0(LibModel* model, void* context);
+extern "C" void func_004A59D0(LibModel* model, void* context)
+{
+    LibLightList* lights = static_cast<LibLightList*>(context);
+    LibModelPacketHeader* packet = (LibModelPacketHeader*)((u32)&model->draw_packet | EE_UNCACHED_ACCELERATED);
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource));
+    LibVector4 color;
+
+    if (!(model->draw_flags & 0x10))
+    {
+        model->unk797_2 = 1;
+    }
+
+    model->shadow_lights.count = 0;
+
+    if (lights != 0)
+    {
+        vu0_multiply_xyzw_right_first(&color, &model->combined_color_factor, &lights->unk340);
+
+        if (mesh->unk3d[1] || lights->has_local_lights)
+        {
+            FieldVec4B position;
+            position.x = model->transform.m[0][3];
+            position.y = model->transform.m[1][3];
+            position.z = model->transform.m[2][3];
+            position.w = 1.0f;
+            lights->unk374 = 0;
+            lights->unk381 = 0;
+
+            if (mesh->unk3d[1])
+            {
+                LibVector4 ambient;
+
+                if (model->unk790)
+                {
+                    func_004E8510(lights, &color, &position, model->light_mask, &model->shadow_lights);
+                }
+                else
+                {
+                    func_004E8510(lights, &color, &position, model->light_mask, 0);
+                }
+
+                const unsigned __int128* matrix = reinterpret_cast<const unsigned __int128*>(&lights->unk90);
+                packet->light_matrix[0] = matrix[0];
+                packet->light_matrix[1] = matrix[1];
+                packet->light_matrix[2] = matrix[2];
+                packet->light_matrix[3] = matrix[3];
+                vu0_multiply_xyzw_vf1(&ambient, &lights->unk310, &color);
+                packet->ambient = *reinterpret_cast<unsigned __int128*>(&ambient);
+                ee_transpose_matrix_input_first(&packet->light_transposed, &lights->unk1d0);
+            }
+
+            if (lights->has_local_lights)
+            {
+                if (model->unk790)
+                {
+                    func_004E7AA0(lights, &model->bounding_sphere, &color, &position, model->light_mask,
+                                  &model->shadow_lights);
+                }
+                else
+                {
+                    func_004E7AA0(lights, &model->bounding_sphere, &color, &position, model->light_mask, 0);
+                }
+
+                s32 any = 0;
+
+                if (lights->unk37c)
+                {
+                    packet->unkf4 = 1;
+                    const unsigned __int128* rows = reinterpret_cast<const unsigned __int128*>(lights->unk210);
+                    packet->unk150[0] = rows[0];
+                    packet->unk150[1] = rows[1];
+                    packet->unk150[2] = rows[2];
+                    ee_transpose_matrix_input_first(&packet->unk180, &lights->unk240);
+                    const unsigned __int128* vector = reinterpret_cast<const unsigned __int128*>(&lights->unk280);
+                    packet->unk1c0 = *vector;
+                    any = 1;
+                }
+                else
+                {
+                    packet->unkf4 = 0;
+                }
+
+                s32 count = lights->unk37d;
+
+                if (count)
+                {
+                    packet->unkf8 = count;
+                    packet->unk1d0[0] = lights->unk2b0[0];
+                    packet->unk1d0[2] = lights->unk290[0];
+                    packet->unk1d0[4] = lights->unk2d0[0];
+                    packet->unk1d0[6] = lights->unk2f0[0];
+
+                    if (count == 2)
+                    {
+                        packet->unk1d0[1] = lights->unk2b0[1];
+                        packet->unk1d0[3] = lights->unk290[1];
+                        packet->unk1d0[5] = lights->unk2d0[1];
+                        packet->unk1d0[7] = lights->unk2f0[1];
+                    }
+
+                    any = 1;
+                }
+                else
+                {
+                    packet->unkf8 = 0;
+                }
+
+                if (any && !mesh->unk3d[1])
+                {
+                    packet->light_mode = 2;
+                }
+                else
+                {
+                    packet->light_mode = 1;
+                }
+            }
+            else
+            {
+                packet->light_mode = 0;
+            }
+
+            if (lights->unk381)
+            {
+                packet->unk260 = lights->unk350;
+                packet->unk29c = lights->unk380;
+            }
+        }
+        else
+        {
+            packet->light_mode = 0;
+        }
+    }
+    else
+    {
+        packet->light_mode = 0;
+        vu0_multiply_xyzw_right_first(&color, &model->combined_color_factor, &lights->unk340);
+    }
+
+    if (D_001B6550 && !model->unk59d_1 && !(color.w <= 0.993f))
+    {
+        color.w = 0.993f;
+    }
+
+    packet->color = *reinterpret_cast<unsigned __int128*>(&color);
+
+    if (color.w == 1.0f && color.x == 1.0f && color.y == 1.0f && color.z == 1.0f)
+    {
+        packet->white = 1;
+    }
+    else
+    {
+        packet->white = 0;
+    }
+}
+
 
 /**
  * @brief Count what a mesh with unk54 set adds to the packet.
@@ -2685,13 +2855,6 @@ extern "C" void func_004A59D0(LibModel* model, void* context);
  * @return The count build_packet passes on to func_004A62D0.
  */
 extern "C" s32 func_004A76D0(LibModel* model);
-
-/**
- * @brief Refresh the model's packet header from its flags and the camera's TEST register.
- * @param model Model.
- * @param camera Camera.
- */
-extern "C" void func_004A7AC0(LibModel* model, const LibCamera* camera);
 
 /**
  * @brief Copy the mesh's parts into the model's part table.
@@ -3812,7 +3975,7 @@ LibModel::LibModel()
         unk748[index] = 0;
     }
 
-    unk7e0 = 0;
+    shadow_lights.count = 0;
     before_packet = 0;
     after_packet = 0;
     box_cull_enabled = 0;

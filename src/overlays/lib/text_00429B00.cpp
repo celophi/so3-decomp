@@ -1,5 +1,7 @@
 #include "include_asm.h"
 #include "vu0.h"
+#include "overlays/lib/matrix_vu0.h"
+#include "overlays/lib/vector_inlines.h"
 #include "clamp.h"
 #include "overlays/lib/blend_transform.h"
 #include "overlays/lib/model.h"
@@ -16,6 +18,8 @@
 #include "overlays/lib/memory_card.h"
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/transform_inlines.h"
+#include "overlays/lib/occluder_vu0.h"
 #include "overlays/lib/light_random.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "ee.h"
@@ -44,6 +48,14 @@ inline LibClass173490Entry::LibClass173490Entry()
 class LibClass173270 : public LibClass173380
 {
 public:
+    /** @brief Start with no light and no lifetime. */
+    LibClass173270()
+    {
+        lifetime = 0;
+        light_index = -1;
+        set_type_id(0x121);
+    }
+
     /** @brief Destroy the model. */
     virtual ~LibClass173270();
 
@@ -58,6 +70,32 @@ public:
      * @param channel DMA channel number.
      */
     virtual void complete_dma(u32 channel);
+
+    /**
+     * @brief Choose the caster light the shadow is drawn for.
+     * @param index Light number in the caster's shadow light list.
+     */
+    void set_light_index(s8 index)
+    {
+        light_index = index;
+    }
+
+    /**
+     * @brief Count the lifetime down.
+     * @return Whether it ran out.
+     */
+    bool expire()
+    {
+        if (--lifetime == 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    s8 light_index;
+    s32 lifetime;
 };
 
 /** LibClass1734B0 entry of type 34 with two element arrays, with vtable D_173490 in main data. */
@@ -282,42 +320,6 @@ public:
     /** @brief Construct the transform. */
     LibClass1734D0();
 };
-
-/**
- * @brief Report whether the transform's transposed matrix is up to date.
- * @param transform Transform to check.
- * @return Nonzero when transposed_transform is current.
- */
-static inline s32 transpose_is_current(const LibTransform* transform)
-{
-    return transform->unk20e_0;
-}
-
-/**
- * @brief Mark the transpose current and rebuild it from the transform.
- * @param transform Transform to update.
- */
-static inline void transpose_transform(LibTransform* transform)
-{
-    transform->unk20e_0 = 1;
-    transform->unk20e_1 = 0;
-    ee_transpose_matrix(&transform->transposed_transform, &transform->transform);
-}
-
-/**
- * @brief Bring the transform's transposed matrix up to date if needed.
- * @param transform Transform to read.
- * @return The transposed matrix.
- */
-static inline const LibMatrix44Value* get_transposed_transform(LibTransform* transform)
-{
-    if (!transpose_is_current(transform))
-    {
-        transpose_transform(transform);
-    }
-
-    return &transform->transposed_transform;
-}
 
 /** Sound bank set Lib plays its sounds through. */
 extern ResidentSoundBankSet* D_001B6524;
@@ -1352,11 +1354,615 @@ s32 LibClass173380::get_extra_packet_size()
 
 extern "C" {
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042C5C0);
+/** Ground the shadows fall on, or null for none. */
+extern "C" LibShadowGround* D_001B651C;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042CC80);
+/**
+ * @brief Build the shadow model's packet for one of the caster's lights: the light's shadow matrix times the model's
+ *        transform, the screen scale, and the caster's texture.
+ * @param model Shadow model.
+ * @param index Light number in the caster's shadow light list.
+ * @param matrix Camera.
+ * @param context Packet building context; unused.
+ */
+void func_0042CC80(LibClass173380* model, s32 index, const void* matrix, void* context);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042D0B0);
+
+/**
+ * @brief Set the shadow model up for one of the caster's lights: the shadow plane (a plane under the caster when the
+ *        light is steep, otherwise the ground), the shadow's fade, then the packet.
+ * @param model Shadow model.
+ * @param index Light number in the caster's shadow light list.
+ * @param matrix Camera.
+ * @param context Packet building context.
+ * @param weight Light weight.
+ */
+void func_0042C5C0(LibClass173380* model, s32 index, const void* matrix, void* context, float weight)
+{
+    LibModel* caster = model->unk830;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    if (index >= caster->shadow_lights.count)
+    {
+        return;
+    }
+
+    if (model->unk834 > 0 && D_001B651C)
+    {
+        FieldVec4B origin;
+        FieldVec4B projected;
+        FieldVec4B direction;
+        FieldVec4B eye;
+        FieldVec4B right;
+        FieldVec4B forward;
+        LibMatrix44Value view;
+        FieldVec4B zero;
+        LibMatrix44Value shadow;
+        float height = 0.0f;
+        origin.x = caster->transform.m[0][3];
+        origin.y = caster->transform.m[1][3];
+        origin.z = caster->transform.m[2][3];
+        origin.w = 1.0f;
+        LibLight* light = lights->lights[index];
+        const FieldVec4B* position = reinterpret_cast<const FieldVec4B*>(&light->position);
+
+        if (model->resource)
+        {
+            height = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource))->sphere_radius;
+        }
+
+        if (light->kind & 3)
+        {
+            direction = origin - *position;
+            lib_normalize_vector3(&direction.x);
+        }
+        else
+        {
+            direction.set(*reinterpret_cast<const FieldVec4B*>(&light->direction));
+        }
+
+        if (direction.y < model->unk84c)
+        {
+            // TODO: Only the parent update is wanted here; keeping the unused matrix keeps the game's branch shape.
+            const LibMatrix44Value* parent = lib_get_parent_matrix(model);
+            float distance = (model->unk850 * model->unk70.z) / static_cast<const LibCamera*>(matrix)->projection_distance;
+            *reinterpret_cast<unsigned __int128*>(&zero) = 0;
+            eye.x = origin.x + direction.x * distance;
+            eye.y = origin.y + direction.y * distance;
+            eye.z = origin.z + direction.z * distance;
+            lib_matrix_look_at(&view, &zero, &direction, 0.0f);
+            right.x = 1.0f;
+            right.y = 0.0f;
+            right.z = 0.0f;
+            right.w = 1.0f;
+            forward.x = 0.0f;
+            forward.y = 1.0f;
+            forward.z = 0.0f;
+            forward.w = 1.0f;
+            vu0_dot_matrix_rows(&view, &right, &right);
+            vu0_dot_matrix_rows(&view, &forward, &forward);
+            right.x += eye.x;
+            right.y += eye.y;
+            right.z += eye.z;
+            forward.x += eye.x;
+            forward.y += eye.y;
+            forward.z += eye.z;
+            func_004CC7A0(&model->unk820.x, &eye.x, &right.x, &forward.x);
+        }
+        else
+        {
+            origin.y -= height;
+            model->unk820.x = 0.0f;
+            model->unk820.y = -1.0f;
+            model->unk820.z = 0.0f;
+            model->unk820.w = D_001B651C->get_height(&origin, model);
+
+            if (light->kind & 3)
+            {
+                lib_build_projective_shadow_matrix(&shadow, (const FieldVec4A*)position, (const FieldVec4A*)&model->unk820);
+            }
+            else
+            {
+                lib_build_directional_shadow_matrix(&shadow, (const FieldVec4A*)&direction, (const FieldVec4A*)&model->unk820);
+            }
+
+            vu0_dot_matrix_rows(&shadow, &origin, &projected);
+            // TODO: The game divides by w here and never uses the result.
+            float inverse = 1.0f / projected.w;
+            vu0_divide_by_w(&projected, &projected);
+            float ground = D_001B651C->get_height(&projected, model);
+
+            if (ground < model->unk820.w)
+            {
+                ground = model->unk820.w;
+            }
+
+            model->unk820.w = ground + model->unk844;
+        }
+    }
+
+    if (model->unk836 || model->unk837)
+    {
+        LibVector4 color;
+        *reinterpret_cast<unsigned __int128*>(&color) = *reinterpret_cast<const unsigned __int128*>(&model->base_color_factor);
+        float alpha = 1.0f;
+
+        if (model->unk836)
+        {
+            alpha = 0.01f * (model->unk854 * (lights->weights[index] * weight));
+
+            if (alpha <= 0.0f)
+            {
+                return;
+            }
+        }
+
+        if (model->unk837)
+        {
+            FieldVec4B position;
+            position.x = matrix_row(&model->transform, 0)->w;
+            position.y = matrix_row(&model->transform, 1)->w;
+            position.z = matrix_row(&model->transform, 2)->w;
+            position.w = 1.0f;
+            // TODO: The game multiplies by the squared length here, not one over the length; harmless for a unit normal.
+            float fade = model->unk820.w + (model->unk820.x * position.x + model->unk820.y * position.y + model->unk820.z * position.z);
+            fade = 0.001f * (model->unk858 * (-fade * ee_rsqrt_in_place(model->unk820.x * model->unk820.x + model->unk820.y * model->unk820.y + model->unk820.z * model->unk820.z, 1.0f)));
+
+            if (!(fade <= 1.0f))
+            {
+                alpha /= fade;
+            }
+        }
+
+        if (alpha <= 0.001f)
+        {
+            return;
+        }
+
+        color.w = ee_min(alpha, 1.0f);
+        *reinterpret_cast<unsigned __int128*>(&model->base_color_factor) = *reinterpret_cast<const unsigned __int128*>(&color);
+        model->update_combined_color_factor();
+    }
+
+    func_0042CC80(model, index, matrix, context);
+    model->unk83d = 0;
+    model->unk66 = 1;
+}
+
+/** Partial view of the shadow model's draw packet. */
+typedef struct LibShadowPacketHeader
+{
+    u8 unk00[0x60];
+    unsigned __int128 shadow[4];
+    unsigned __int128 transform[4];
+    u8 unke0[0x1C];
+    s32 projective;
+    u8 unk100[0x50];
+    unsigned __int128 light_position;
+    u8 unk160[0x100];
+    unsigned __int128 light_direction;
+    unsigned __int128 scale;
+    unsigned __int128 offset;
+    u64 tex0_1;
+    s32 tex0_1_register;
+    u8 unk29c[4];
+    u64 tex0_2;
+    s32 tex0_2_register;
+} LibShadowPacketHeader;
+
+/**
+ * @brief Build the rest of the shadow model's packet.
+ * @param model Shadow model.
+ * @param matrix Camera.
+ */
+void func_0042B110(LibClass173380* model, const void* matrix);
+
+/**
+ * @brief Build the shadow model's packet for one of the caster's lights: the light's shadow matrix times the model's
+ *        transform, the screen scale, and the caster's texture.
+ * @param model Shadow model.
+ * @param index Light number in the caster's shadow light list.
+ * @param matrix Camera.
+ * @param context Packet building context; unused.
+ */
+void func_0042CC80(LibClass173380* model, s32 index, const void* matrix, void* context)
+{
+    LibShadowPacketHeader* header = (LibShadowPacketHeader*)((u32)&model->draw_packet | EE_UNCACHED_ACCELERATED);
+    LibModel* caster = model->unk830;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    if (index >= caster->shadow_lights.count)
+    {
+        return;
+    }
+
+    if (model->source != 0)
+    {
+        void* payload_override = model->resource->payload_override;
+        model->select_payload(payload_override, model->source->get_packet_set());
+    }
+
+    LibVector4 scale;
+    scale.x = 0.0009765625f;
+    scale.y = 0.0009765625f;
+    float half = 0.5f;
+    LibDisplayArea& area = D_001B6520->display_area;
+    header->scale = *(unsigned __int128*)&scale;
+    LibCameraContext* display = D_001B6520;
+    scale.x *= 2047.5f - half * area.width;
+    half = display->unk3E4C ? half : 0.0f;
+    scale.y *= 2047.5f - 0.5f * area.height + half;
+    header->offset = *(unsigned __int128*)&scale;
+    LibLight* light = lights->lights[index];
+    LibMatrix44Value shadow;
+
+    if (!(light->kind & 3))
+    {
+        LibVector4 direction;
+        header->projective = 0;
+        direction.x = light->transform.m[0][1];
+        direction.y = light->transform.m[1][1];
+        direction.z = light->transform.m[2][1];
+        direction.w = 1.0f;
+        header->light_direction = *(unsigned __int128*)&direction;
+        const FieldVec4A* light_direction = (const FieldVec4A*)&light->direction;
+        lib_build_directional_shadow_matrix(&shadow, light_direction, (const FieldVec4A*)&model->unk820);
+    }
+    else
+    {
+        LibVector4 position;
+        header->projective = 1;
+        position.x = light->transform.m[0][3];
+        position.y = light->transform.m[1][3];
+        position.z = light->transform.m[2][3];
+        position.w = 1.0f;
+        header->light_position = *(unsigned __int128*)&position;
+        const FieldVec4A* light_position = (const FieldVec4A*)&light->position;
+        lib_build_projective_shadow_matrix(&shadow, light_position, (const FieldVec4A*)&model->unk820);
+    }
+
+    vu0_multiply_matrix(&shadow, &shadow, &model->transform);
+    header->shadow[0] = *(unsigned __int128*)&shadow.m[0];
+    header->shadow[1] = *(unsigned __int128*)&shadow.m[1];
+    header->shadow[2] = *(unsigned __int128*)&shadow.m[2];
+    header->shadow[3] = *(unsigned __int128*)&shadow.m[3];
+    const unsigned __int128* from = reinterpret_cast<const unsigned __int128*>(&model->transform);
+
+    if (model->unk5a1)
+    {
+        model->unk5a1 = 0;
+    }
+    else
+    {
+        unsigned __int128* to = header->transform;
+
+        *to++ = *from++;
+        *to++ = *from++;
+        *to++ = *from++;
+        *to++ = *from++;
+    }
+
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(lib_resource_payload(model->resource));
+
+    // TODO: Like LibModel::build_packet, the game keeps a jump at the end of this arm for a flag that's never read;
+    // the flag is a guess.
+    bool rebuilt = false;
+
+    if (model->packet == 0)
+    {
+        model->build_packets();
+        model->unk791 = 1;
+
+        if (model->packet == 0)
+        {
+            model->unk63 = 0;
+            return;
+        }
+
+        rebuilt = true;
+    }
+    else
+    {
+        s32 parts = mesh->part_count;
+
+        if (model->unk77c != parts)
+        {
+            model->build_packets();
+
+            if (model->packet == 0)
+            {
+                model->unk63 = 0;
+                return;
+            }
+        }
+    }
+
+    model->payload = reinterpret_cast<u8*>(mesh);
+
+    if (model->unk59d_0)
+    {
+        func_004A7AC0(model, static_cast<const LibCamera*>(matrix));
+    }
+
+    u64 tex0 = ((u64)((g_vram_allocator->allocations[30] >> 5) & 0x3FFF) << 37) | 0x2C00000;
+    header->tex0_1 = tex0;
+    header->tex0_1_register = GS_REGISTER_TEX2_1;
+    header->tex0_2 = tex0 | ((u64)1 << 56);
+    header->tex0_2_register = GS_REGISTER_TEX2_1;
+    func_0042B110(model, matrix);
+    ee_sync();
+    model->unk63 = 1;
+}
+
+/** Most lights a shadow model draws shadows for. */
+extern "C" u8 D_001B61BC;
+
+/** Frames a shadow model's extra child lives without being chosen again. */
+extern "C" s32 D_001B61B8;
+
+
+/**
+ * @brief Pick the caster's strongest lights (up to unk835), keep one child shadow model per extra light, and build
+ *        the shadows of this model, its children and the models in its own list.
+ * @param matrix Camera.
+ * @param context Packet building context.
+ */
+void LibClass173380::build_packet(const void* matrix, void* context)
+{
+    if (resource == 0)
+    {
+        return;
+    }
+
+    if (unk830 == 0)
+    {
+        return;
+    }
+
+    if (!unk830->unk63)
+    {
+        func_004A59D0(unk830, context);
+    }
+
+    LibModel* caster = unk830;
+    s32 count = caster->shadow_lights.count;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    if (count == 0)
+    {
+        return;
+    }
+
+    s32 limit = unk835;
+
+    if (D_001B61BC < limit)
+    {
+        limit = D_001B61BC;
+    }
+
+    s32 visible = 0;
+    float total = unk840;
+    s8 order[4];
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (!lights->unk04[i])
+        {
+            continue;
+        }
+
+        if (lights->lights[i]->unk291)
+        {
+            FieldVec4B position;
+            position.x = transform.m[0][3];
+            position.y = transform.m[1][3];
+            position.z = transform.m[2][3];
+            position.w = 1.0f;
+
+            if (!(lights->lights[i]->position.y <= position.y))
+            {
+                continue;
+            }
+        }
+
+        float weight = lights->weights[i];
+
+        if (!(weight <= 0.0f))
+        {
+            order[visible++] = i;
+        }
+
+        if (weight < 0.0f)
+        {
+            total += weight;
+            total = ee_max(0.0f, total);
+        }
+    }
+
+    if (visible == 0)
+    {
+        return;
+    }
+
+    if (total == 0.0f)
+    {
+        return;
+    }
+
+    for (s32 i = 0; i < 3; i++)
+    {
+        if (children[i])
+        {
+            static_cast<LibClass173270*>(children[i])->light_index = -1;
+
+            if (static_cast<LibClass173270*>(children[i])->expire())
+            {
+                LibClass173380* child = static_cast<LibClass173380*>(children[i]);
+
+                if (child->unk830)
+                {
+                    if (child->unk830->unk790)
+                    {
+                        child->unk830->unk790--;
+                    }
+
+                    child->unk830 = 0;
+                }
+
+                children[i]->destroy();
+                children[i] = 0;
+            }
+        }
+    }
+
+    if (1 < visible)
+    {
+        for (s32 i = 0; i < visible; i++)
+        {
+            for (s32 j = i + 1; j < visible; j++)
+            {
+                if (lights->weights[order[i]] < lights->weights[order[j]])
+                {
+                    s8 swap = order[i];
+                    order[i] = order[j];
+                    order[j] = swap;
+                }
+            }
+        }
+
+        if (limit < visible)
+        {
+            visible = limit;
+        }
+
+        for (s32 i = 1; i < visible; i++)
+        {
+            if (children[i - 1] == 0)
+            {
+                LibClass173270* child = new (0) LibClass173270;
+
+                if (child)
+                {
+                    if (child->build_from(0, this))
+                    {
+                        children[i - 1] = child;
+                        child->owner = owner;
+                    }
+                    else
+                    {
+                        child->destroy();
+                    }
+                }
+            }
+
+            if (children[i - 1])
+            {
+                static_cast<LibClass173270*>(children[i - 1])->lifetime = D_001B61B8;
+                static_cast<LibClass173270*>(children[i - 1])->set_light_index(order[i]);
+            }
+        }
+    }
+
+    unk83b = order[0];
+
+    if (unk838)
+    {
+        return;
+    }
+
+    bool drawn = false;
+
+    for (LibListSentinel* node = objects.sentinel.next; !at_list_end(&objects.sentinel, node); node = node->next)
+    {
+        LibClass173380* object = static_cast<LibClass173380*>(node);
+        object->unk63 = 0;
+        object->build_packet(matrix, context);
+    }
+
+    for (s32 i = 2; i >= 0; i--)
+    {
+        if (children[i] == 0)
+        {
+            continue;
+        }
+
+        s32 index = static_cast<LibClass173270*>(children[i])->light_index;
+        children[i]->unk63 = 0;
+
+        if (index >= 0)
+        {
+            for (LibListSentinel* node = objects.sentinel.next; !at_list_end(&objects.sentinel, node); node = node->next)
+            {
+                LibClass173380* object = static_cast<LibClass173380*>(node);
+
+                if (object->children[i])
+                {
+                    object->children[i]->unk63 = 0;
+
+                    if (static_cast<LibClass173380*>(object->children[i])->unk830->shadow_lights.count)
+                    {
+                        s32 object_index = static_cast<LibClass173270*>(object->children[i])->light_index;
+
+                        if (object_index >= 0)
+                        {
+                            object->children[i]->unk62 = 0;
+                            object->children[i]->update_transform_matrix();
+                            func_0042C5C0(static_cast<LibClass173380*>(object->children[i]), object_index, matrix, context, total);
+
+                            if (object->children[i]->unk63)
+                            {
+                                drawn = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            children[i]->unk62 = 0;
+            children[i]->update_transform_matrix();
+            func_0042C5C0(static_cast<LibClass173380*>(children[i]), index, matrix, context, total);
+
+            if (children[i]->unk63)
+            {
+                drawn = true;
+            }
+        }
+        else
+        {
+            for (LibListSentinel* node = objects.sentinel.next; !at_list_end(&objects.sentinel, node); node = node->next)
+            {
+                LibClass173380* object = static_cast<LibClass173380*>(node);
+
+                if (object->children[i])
+                {
+                    object->children[i]->unk63 = 0;
+                }
+            }
+        }
+    }
+
+    for (LibListSentinel* node = objects.sentinel.next; !at_list_end(&objects.sentinel, node); node = node->next)
+    {
+        LibClass173380* object = static_cast<LibClass173380*>(node);
+        object->unk63 = 0;
+        object->unk62 = 0;
+        object->update_transform_matrix();
+        func_0042C5C0(object, object->unk83b, matrix, context, total);
+
+        if (!drawn && object->unk63)
+        {
+            drawn = true;
+        }
+    }
+
+    func_0042C5C0(this, order[0], matrix, context, total);
+
+    if (drawn && !unk63)
+    {
+        unk63 = 1;
+        unk83d = 1;
+    }
+}
 
 }
 
@@ -1468,7 +2074,62 @@ void func_0042D9B0(LibClass173490* entry, const LibVector4* position, const LibV
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042DCE0);
+/**
+ * @brief Find the grid cell a position falls in, in the space of the entry's transform, and where in the cell.
+ * @param entry Grid entry.
+ * @param position Position to look up.
+ * @param cell Receives the cell index (one cell of border on every side).
+ * @param x Receives the position across the cell, from 0 to 1.
+ * @param y Receives the position down the cell, from 0 to 1.
+ * @return One when the position is over the grid, otherwise zero.
+ */
+s32 func_0042DCE0(LibClass173490* entry, const LibVector4* position, s32* cell, float* x, float* y)
+{
+    LibVector4 local;
+
+    if (entry->unk3c == 0)
+    {
+        return 0;
+    }
+
+    if (!entry->unk3c->matrix_ready)
+    {
+        entry->unk3c->update_transform_matrix();
+        mark_transpose_current(entry->unk3c);
+        func_004D9E70(entry->unk3c);
+    }
+    else if (!entry->unk3c->unk20e_0)
+    {
+        transpose_transform(entry->unk3c);
+        func_004D9E70(entry->unk3c);
+    }
+    else if (!entry->unk3c->unk20e_2)
+    {
+        func_004D9E70(entry->unk3c);
+    }
+
+    entry->unk3c->to_local(position, &local);
+    s32 width = entry->unk30[0];
+    s32 height = entry->unk30[1];
+    float size = *(float*)&entry->unk30[4];
+    float left = *(float*)&entry->unk30[2];
+    float top = *(float*)&entry->unk30[3];
+    float right = left + size * (width - 1);
+    float bottom = top + size * (height - 1);
+
+    if (local.x < left || !(local.x <= right) || local.z < top || !(local.z <= bottom))
+    {
+        return 0;
+    }
+
+    s32 column = (local.x - left) / size;
+    s32 row = (local.z - top) / size;
+    width += 2;
+    *x = (local.x - column * size - left) / size;
+    *y = (local.z - row * size - top) / size;
+    *cell = (column + 1) + (row + 1) * width;
+    return 1;
+}
 
 /**
  * @brief Copy each vertex's cell element into the output, or, when unk4c is clear, the output's values back into
@@ -1505,7 +2166,7 @@ void LibClass173490::func_slot10(LibEntryOutput* output, s32 index)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042E240);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_slot1C__14LibClass173490FP12LibTransform);
 
 /**
  * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
@@ -2262,7 +2923,119 @@ extern "C" void func_00431020(LibOccluder* object)
     object->corners[3].z = object->half_depth;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00431090);
+/**
+ * @brief Add a projected corner's outcode bits: 1/2 right/left of the half width, 4/8 below/above the half height,
+ *        0x10/0x20 nearer/farther than the depth range.
+ * @param point Projected corner.
+ * @param code Outcode to add to.
+ */
+static inline void occluder_outcode(const LibVector4* point, s32& code)
+{
+    if (!(point->x <= D_001B652C))
+    {
+        code |= 1;
+    }
+    else if (point->x < -D_001B652C)
+    {
+        code |= 2;
+    }
+
+    if (!(point->y <= D_001B6530))
+    {
+        code |= 4;
+    }
+    else if (point->y < -D_001B6530)
+    {
+        code |= 8;
+    }
+
+    if (point->z < D_001B6534)
+    {
+        code |= 0x10;
+    }
+    else if (!(point->z <= D_001B6538))
+    {
+        code |= 0x20;
+    }
+}
+
+/**
+ * @brief Upload an occluder's corners and edge normals to VU0 and tell whether it can hide anything.
+ * @param occluder Occluder.
+ * @param position Viewer position.
+ * @param slot VU0 data slot (quadword) the corners and normals go to.
+ * @return Zero when the occluder faces away (one-sided) or all four corners are off the same side of the view, else one.
+ */
+extern "C" s32 func_00431090(LibOccluder* occluder, const LibVector4* position, s32 slot)
+{
+    LibVector4 points[5];
+    vu0_occluder_load_matrix(reinterpret_cast<u8*>(occluder) + 0x90, slot);
+    vu0_occluder_build_faces(occluder->corners, position);
+    vu0_occluder_store_first_corners(points);
+    vu0_occluder_store_last_corners(points);
+    float depth = 1e30f;
+    depth = ee_min(points[0].z, depth);
+    depth = ee_min(points[1].z, depth);
+    depth = ee_min(points[2].z, depth);
+    vu0_occluder_normalize_fourth();
+    depth = ee_min(points[3].z, depth);
+    occluder->depth = depth;
+    vu0_occluder_normalize_fifth();
+
+    if (!(points[4].z <= 0.0f))
+    {
+        vu0_occluder_flip_normals();
+
+        if (occluder->unk21c[0])
+        {
+            return 0;
+        }
+    }
+
+    vu0_occluder_store_normals();
+    s32 first = 0;
+    s32 second = 0;
+    s32 third = 0;
+    s32 fourth = 0;
+    vu0_occluder_project_first(points);
+    occluder_outcode(points, first);
+
+    if (first == 0)
+    {
+        return 1;
+    }
+
+    vu0_occluder_project_second(points);
+    occluder_outcode(points, second);
+
+    if (second == 0)
+    {
+        return 1;
+    }
+
+    vu0_occluder_project_third(points);
+    occluder_outcode(points, third);
+
+    if (third == 0)
+    {
+        return 1;
+    }
+
+    vu0_occluder_project_fourth(points);
+    occluder_outcode(points, fourth);
+
+    if (fourth == 0)
+    {
+        return 1;
+    }
+
+    if (first & second & third & fourth)
+    {
+        return 0;
+    }
+
+    return 1;
+}
 
 /** @brief Construct the transform. */
 LibClass1734D0::LibClass1734D0()

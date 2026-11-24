@@ -398,6 +398,17 @@ struct LibScreenRect
     /** @brief Clear the rectangle. */
     inline LibScreenRect();
 
+    /**
+     * @brief Set the rectangle.
+     * @param x Left edge.
+     * @param y Top edge.
+     * @param width Width.
+     * @param height Height.
+     */
+    LibScreenRect(s32 x, s32 y, s32 width, s32 height) : x(x), y(y), width(width), height(height)
+    {
+    }
+
     s32 x;
     s32 y;
     s32 width;
@@ -416,6 +427,16 @@ extern "C" s32 D_001B6694;
  * @param depth Depth the fades draw at.
  */
 extern "C" void lib_set_color_fade_area(const LibScreenRect* rect, s32 depth);
+
+/**
+ * @brief Set the area and depth that new colour fades use.
+ * @param rect Area in screen pixels.
+ * @param depth Depth the fades draw at.
+ */
+static inline void lib_set_color_fade_area(const LibScreenRect& rect, s32 depth)
+{
+    lib_set_color_fade_area(&rect, depth);
+}
 
 /**
  * @brief Set up the display's effect with the scales its level picked.
@@ -543,6 +564,13 @@ public:
 class LibScreenText
 {
 public:
+    /** @brief Start without a font, with a 0x2000-quadword text packet. */
+    LibScreenText() : shared_font(0), font_image(0), packet(new (0) LibPacketBuffer(0x2000))
+    {
+        unk18 = 0;
+        depth = 0xFFFF;
+    }
+
     /**
      * @brief Set the default colours and cell size for the display's scale, put the cursor at a screen position
      *        and start the text packet with the font's drawing state.
@@ -741,6 +769,17 @@ public:
     void copy_view_and_fog(const LibCamera* source);
 
     /**
+     * @brief Set the integer depth range.
+     * @param near_depth Depth at the near end.
+     * @param far_depth Depth at the far end.
+     */
+    void set_depth_range(s32 near_depth, s32 far_depth)
+    {
+        unk3c8 = near_depth;
+        unk3cc = far_depth;
+    }
+
+    /**
      * @brief Set the screen centre in GS coordinates.
      * @param x Centre x.
      * @param y Centre y.
@@ -895,6 +934,31 @@ class LibLightList;
  * @param lights Light list.
  */
 extern "C" void func_004E9290(LibLightList* lights);
+
+struct LibShadowLightList;
+
+/**
+ * @brief Light a model with the list's directional lights.
+ * @param lights Light list.
+ * @param color Model colour, lit in place.
+ * @param position Model position.
+ * @param mask Model's light mask.
+ * @param shadow_lights Model's shadow light list to fill, or null.
+ */
+extern "C" void func_004E8510(LibLightList* lights, LibVector4* color, FieldVec4B* position, u32 mask,
+                              LibShadowLightList* shadow_lights);
+
+/**
+ * @brief Light a model with the list's local lights.
+ * @param lights Light list.
+ * @param sphere Model's bounding sphere.
+ * @param color Model colour, lit in place.
+ * @param position Model position.
+ * @param mask Model's light mask.
+ * @param shadow_lights Model's shadow light list to fill, or null.
+ */
+extern "C" void func_004E7AA0(LibLightList* lights, LibVector4* sphere, LibVector4* color, FieldVec4B* position,
+                              u32 mask, LibShadowLightList* shadow_lights);
 #endif
 
 #ifdef __cplusplus

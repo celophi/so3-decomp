@@ -2,6 +2,7 @@
 #include "overlays/lib/movie_player.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/transform_inlines.h"
 #include "overlays/lib/text_00419A70.h"
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_data.h"
@@ -1866,27 +1867,6 @@ static inline void copy_matrix(LibMatrix44Value* destination, const LibMatrix44V
     ((unsigned __int128*)destination)[1] = ((const unsigned __int128*)source)[1];
     ((unsigned __int128*)destination)[2] = ((const unsigned __int128*)source)[2];
     ((unsigned __int128*)destination)[3] = ((const unsigned __int128*)source)[3];
-}
-
-/**
- * @brief Report whether the transform's transpose is current.
- * @param transform Transform to check.
- * @return Nonzero when the transpose was rebuilt since the matrix last changed.
- */
-static inline s32 transpose_is_current(const LibTransform* transform)
-{
-    return transform->unk20e_0;
-}
-
-/**
- * @brief Mark the transpose current and rebuild it from the transform.
- * @param transform Transform to update.
- */
-static inline void transpose_transform(LibTransform* transform)
-{
-    transform->unk20e_0 = 1;
-    transform->unk20e_1 = 0;
-    ee_transpose_matrix(&transform->transposed_transform, &transform->transform);
 }
 
 /** @brief Update the matrix and the world position. */

@@ -21,6 +21,7 @@
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/transform_owner_inlines.h"
+#include "overlays/lib/transform_inlines.h"
 #include "main/system.h"
 #include "main/utility.h"
 #include "main/dma_queue.h"
@@ -1321,7 +1322,122 @@ struct LibScreenPoint
     s32 adc;
 } __attribute__((aligned(16)));
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_0044D1D0);
+/**
+ * @brief Write a Gouraud-shaded strip or fan of perspective-textured vertices into the object's packet: each vertex's
+ *        colour, its ST from the projected screen point, and its XYZF2, with the drawing kick suppressed for the
+ *        vertex and the two after it when a vertex falls outside the drawing area or the depth range.
+ * @param object Object whose packet is written.
+ * @param count Number of vertices.
+ * @param positions Vertex positions.
+ * @param attributes Per-vertex attribute vectors for the 0x958 microprogram.
+ * @param colors Packed RGBA colour of each vertex.
+ * @param blend Nonzero to alpha blend.
+ * @param fan Nonzero for a fan, zero for a strip.
+ */
+extern "C" void func_0044D1D0(LibClass1748D0* object, s32 count, LibVector4* positions, LibVector4* attributes,
+                              u32* colors, u8 blend, s32 fan)
+{
+    if (object->packet == 0)
+    {
+        return;
+    }
+
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 0));
+    LibCameraContext* display = static_cast<LibRenderer*>(g_renderer)->display;
+    LibDisplayArea& area = display->display_area;
+    // TODO: Left over from the 2D sibling; only their loads survive, but the game has them.
+    s32 left = (GS_COORDINATE_CENTRE - area.width / 2) << 4;
+    s32 top = (GS_COORDINATE_CENTRE - area.height / 2) << 4;
+    float half_width = 0.5f * (float)area.width;
+    float half_height = 0.5f * (float)area.height;
+    float right = (float)area.width + (2048.0f - half_width);
+    float bottom = (float)area.height + (2048.0f - half_height);
+    s32 nearest = object->unk238;
+    s32 farthest = object->unk23c;
+    *cursor++ = GIF_TAG_NREG(1) | 1;
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+
+    if (fan)
+    {
+        *cursor++ = (s32)((blend ? GS_PRIM_ABE : 0) | 0x1D);
+    }
+    else
+    {
+        *cursor++ = (s32)((blend ? GS_PRIM_ABE : 0) | 0x1C);
+    }
+
+    *cursor++ = GS_REGISTER_PRIM;
+    *cursor++ = (s64)count | GIF_TAG_NREG(3);
+    *cursor = 0;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_ST;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_RGBAQ;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register2 = GIF_REGISTER_XYZF2;
+    cursor++;
+
+    LibVector4 screen;
+    LibScreenPoint xyz;
+    float s;
+    float t;
+    float s_scale = D_001B6554;
+    u8 unclipped = D_001B655C;
+    float t_scale = D_001B6558;
+    u32 clip = 0;
+
+    for (s32 i = 0; i < count; i++)
+    {
+        vu0_transform_point(&positions[i]);
+        cursor[2] = (u64)(colors[i] & 0xFF) | (u64)(colors[i] & 0xFF00) << 24;
+        vu0_start_divide_by_w();
+        cursor[3] = (u64)((colors[i] & 0xFF0000) >> 16) | (u64)(colors[i] & 0xFF000000) << 8;
+        vu0_scale_by_q();
+        vu0_store_point_start_958(&attributes[i], &screen);
+        s = s_scale * (half_width + (screen.x - 2048.0f) * object->unk24c);
+        t = t_scale * (half_height + (screen.y - 2048.0f) * object->unk250);
+        cursor[0] = ((s64)*reinterpret_cast<s32*>(&s) & 0xFFFFFFFF) | (s64)*reinterpret_cast<s32*>(&t) << 32;
+        cursor[1] = 0x3F800000;
+        cursor += 4;
+
+        if (!unclipped)
+        {
+            if (!(screen.x <= right))
+            {
+                clip |= 1;
+            }
+            else if (!(screen.y <= bottom))
+            {
+                clip |= 1;
+            }
+        }
+
+        vu0_wait_store_vf6(&xyz);
+
+        if (xyz.x < 0 || xyz.x > 0xFFFF)
+        {
+            clip |= 1;
+        }
+        else if (xyz.y < 0 || xyz.y > 0xFFFF)
+        {
+            clip |= 1;
+        }
+        else if (xyz.z < nearest || farthest < xyz.z)
+        {
+            clip |= 1;
+        }
+
+        if (clip & 7)
+        {
+            xyz.adc = 0x8000;
+        }
+
+        *reinterpret_cast<unsigned __int128*>(cursor) = *reinterpret_cast<unsigned __int128*>(&xyz);
+        clip <<= 1;
+        cursor += 2;
+    }
+
+    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+}
 
 /**
  * @brief Add a textured, perspective-projected triangle strip or fan to the object's packet: each point is
@@ -2218,7 +2334,62 @@ extern "C" void func_00452270(LibClass174C20* entry, const LibVector4* position,
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_00452390);
+/**
+ * @brief Find the grid cell a position falls in, in the space of the entry's transform, and where in the cell.
+ * @param entry Grid entry.
+ * @param position Position to look up.
+ * @param cell Receives the cell index (one cell of border on every side).
+ * @param x Receives the position across the cell, from 0 to 1.
+ * @param y Receives the position down the cell, from 0 to 1.
+ * @return One when the position is over the grid, otherwise zero.
+ */
+extern "C" s32 func_00452390(LibClass174C20* entry, const LibVector4* position, s32* cell, float* x, float* y)
+{
+    LibVector4 local;
+
+    if (entry->root == 0)
+    {
+        return 0;
+    }
+
+    if (!entry->root->matrix_ready)
+    {
+        entry->root->update_transform_matrix();
+        mark_transpose_current(entry->root);
+        func_004D9E70(entry->root);
+    }
+    else if (!entry->root->unk20e_0)
+    {
+        transpose_transform(entry->root);
+        func_004D9E70(entry->root);
+    }
+    else if (!entry->root->unk20e_2)
+    {
+        func_004D9E70(entry->root);
+    }
+
+    entry->root->to_local(position, &local);
+    s32 width = entry->header->columns;
+    s32 height = entry->header->rows;
+    float size = entry->header->cell_size;
+    float left = entry->header->left;
+    float top = entry->header->top;
+    float right = left + size * (width - 1);
+    float bottom = top + size * (height - 1);
+
+    if (local.x < left || !(local.x <= right) || local.z < top || !(local.z <= bottom))
+    {
+        return 0;
+    }
+
+    s32 column = (local.x - left) / size;
+    s32 row = (local.z - top) / size;
+    width += 2;
+    *x = (local.x - column * size - left) / size;
+    *y = (local.z - row * size - top) / size;
+    *cell = (column + 1) + (row + 1) * width;
+    return 1;
+}
 
 /**
  * @brief Fill the output's vertices for a bit: each vertex's cell index picks its depth (stored in y) and its
@@ -2328,7 +2499,7 @@ s32 LibClass174C20::func_slot1C(LibTransform* root)
     }
 
     LibVector4 slope;
-    slope.y = -header->normal_scale;
+    slope.y = -header->cell_size;
     vu0_set_vf31_one();
 
     for (s32 y = 1; y < depth; y++)

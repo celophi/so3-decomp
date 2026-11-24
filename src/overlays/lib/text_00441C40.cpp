@@ -4374,34 +4374,6 @@ void LibQuaternionCurveTrackBase::set_single_key(const void* value, const void* 
     on_set_single_key(static_cast<const FieldVec4A*>(value), static_cast<const FieldVec4A*>(in_tangent), static_cast<const FieldVec4A*>(out_tangent), key);
 }
 
-/** Transform owner with vtable D_00174570 in main data that sends its display manager's effect packet. */
-class LibClass174570 : public LibTransformOwner
-{
-public:
-    virtual ~LibClass174570();
-
-    /** @brief Send the effect display's ready packet and finish this object's packet. */
-    virtual void render();
-
-    /** @brief Draw in bucket 8. */
-    virtual void set_default_draw_bucket();
-
-    /**
-     * @brief Return a bounding sphere at the origin with a huge radius, so the object is never culled.
-     * @return Bounding sphere; it lives on this function's stack.
-     */
-    virtual const LibVector4* get_bounding_sphere();
-
-    /**
-     * @brief Promote the effect display's pending packet to the ready one when the effect is on.
-     * @param matrix Unused.
-     * @param context Unused.
-     */
-    virtual void build_packet(const void* matrix, void* context);
-
-    LibDisplayManager* manager;
-};
-
 /** @brief Draw in bucket 8. */
 void LibClass174570::set_default_draw_bucket()
 {

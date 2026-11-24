@@ -71,6 +71,46 @@ static inline void vu0_multiply_xyzw(void* out, const void* left, const void* ri
 }
 
 /**
+ * @brief Multiply two vectors component by component, with the right factor as the first asm operand.
+ * @param out 16-byte aligned destination.
+ * @param left 16-byte aligned vector.
+ * @param right 16-byte aligned vector.
+ * @see vu0_multiply_xyzw; func_004A59D0 in Lib.
+ */
+static inline void vu0_multiply_xyzw_right_first(void* out, const void* left, const void* right)
+{
+    // TODO: Same as vu0_multiply_xyzw, but the operand order changes which registers the addresses get; check
+    // whether the original had two helpers.
+    asm __volatile__(
+        "lqc2      $vf12, 0(%1)\n"
+        "lqc2      $vf13, 0(%0)\n"
+        "vmul.xyzw $vf12, $vf12, $vf13\n"
+        "sqc2      $vf12, 0(%2)\n"
+        :
+        : "r"(right), "r"(left), "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Multiply two vectors component by component in vf1 and vf2.
+ * @param out 16-byte aligned destination.
+ * @param left 16-byte aligned vector.
+ * @param right 16-byte aligned vector.
+ * @see vu0_multiply_xyzw; func_004A59D0 in Lib.
+ */
+static inline void vu0_multiply_xyzw_vf1(void* out, const void* left, const void* right)
+{
+    asm __volatile__(
+        "lqc2      $vf1, 0(%0)\n"
+        "lqc2      $vf2, 0(%1)\n"
+        "vmul.xyzw $vf1, $vf1, $vf2\n"
+        "sqc2      $vf1, 0(%2)\n"
+        :
+        : "r"(left), "r"(right), "r"(out)
+        : "memory");
+}
+
+/**
  * @brief Load a 4x4 matrix into vf1-vf4.
  *
  * Callers then run Lib's func_004336E0 once per vector.

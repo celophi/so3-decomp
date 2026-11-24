@@ -158,6 +158,22 @@ static inline float ee_rsqrt(float numerator, float value)
 }
 
 /**
+ * @brief Divide a numerator by the square root of a value with the EE scalar instruction, in the numerator's register.
+ *
+ * Like ee_rsqrt, but the result replaces the numerator (`rsqrt.s fd, fd, ft`).
+ * @param numerator Numerator.
+ * @param value Value under the square root.
+ * @return numerator / sqrt(value) produced by rsqrt.s.
+ * @see rsqrt.s in the EE Core Instruction Set Manual; Lib's shadow fade (0x42CB90) and 0x4C8E24.
+ */
+static inline float ee_rsqrt_in_place(float numerator, float value)
+{
+    // TODO: MWCC's __rsqrt gives the same operand order but lets the plane loads be shared; check if this was asm.
+    asm __volatile__("rsqrt.s %0, %0, %1" : "+f"(numerator) : "f"(value));
+    return numerator;
+}
+
+/**
  * @brief Return the square root of a floating-point operand with the EE scalar instruction.
  * @param value Operand.
  * @return Square root produced by sqrt.s.
@@ -357,6 +373,37 @@ static inline void ee_transpose_matrix(void* out, const void* in)
                      : "$8", "$9", "$10", "$11", "$12", "$13", "$14", "$15", "memory");
 }
 
+/**
+ * @brief Transpose a 4x4 matrix with MMI, with the input as the first asm operand.
+ * @param out Aligned destination matrix.
+ * @param in Aligned source matrix.
+ * @see ee_transpose_matrix; func_004A59D0 in Lib.
+ */
+static inline void ee_transpose_matrix_input_first(void* out, const void* in)
+{
+    // TODO: Same as ee_transpose_matrix, but the operand order changes which registers the addresses get; check
+    // whether the original had two helpers.
+    asm __volatile__("lq       $8, 0x0(%0)\n"
+                     "lq       $9, 0x10(%0)\n"
+                     "lq       $10, 0x20(%0)\n"
+                     "lq       $11, 0x30(%0)\n"
+                     "pextlw   $12, $9, $8\n"
+                     "pextuw   $13, $9, $8\n"
+                     "pextlw   $14, $11, $10\n"
+                     "pextuw   $15, $11, $10\n"
+                     "pcpyld   $8, $14, $12\n"
+                     "pcpyud   $9, $12, $14\n"
+                     "pcpyld   $10, $15, $13\n"
+                     "pcpyud   $11, $13, $15\n"
+                     "sq       $8, 0x0(%1)\n"
+                     "sq       $9, 0x10(%1)\n"
+                     "sq       $10, 0x20(%1)\n"
+                     "sq       $11, 0x30(%1)\n"
+                     :
+                     : "r"(in), "r"(out)
+                     : "$8", "$9", "$10", "$11", "$12", "$13", "$14", "$15", "memory");
+}
+
 /*
  * My guess is the game wanted branchless selects that weren't at the mercy of
  * bad branch prediction, and the compiler only sometimes turns a ?: into
@@ -391,6 +438,46 @@ static inline s32 ee_movz(s32 value, s32 replacement, s32 condition)
 {
     asm __volatile__("movz %0, %1, %2" : "+r"(value) : "r"(replacement), "r"(condition));
     return value;
+}
+
+/**
+ * @brief Clear the breakpoint control register and the data address and value breakpoints.
+ * @see MTBPC, MTDAB, MTDABM, MTDVB and MTDVBM in the EE Core Instruction Set Manual; LibUpdateList::update_nodes in
+ *      Lib.
+ */
+static inline void ee_clear_breakpoints()
+{
+    // TODO: The debug registers have no C form; check whether the original wrote these through a macro.
+    asm __volatile__("mtbpc $zero\n"
+                     "mtdab $zero\n"
+                     "mtdabm $zero\n"
+                     "mtdvb $zero\n"
+                     "mtdvbm $zero\n");
+}
+
+/**
+ * @brief Move the stack to the top of the scratchpad, keeping the old stack pointer in s1.
+ * @see ee_leave_scratchpad_stack; LibUpdateList::update_nodes in Lib.
+ */
+static inline void ee_enter_scratchpad_stack()
+{
+    // TODO: Switching the stack pointer has no C form; check whether the original used a macro for this pair.
+    asm __volatile__("addu $17, $sp, $zero\n"
+                     "lui $8, 0x7000\n"
+                     "ori $8, $8, 0x3ff0\n"
+                     "addu $sp, $8, $zero\n"
+                     :
+                     :
+                     : "$17", "$8");
+}
+
+/**
+ * @brief Return to the stack ee_enter_scratchpad_stack saved in s1.
+ * @see ee_enter_scratchpad_stack.
+ */
+static inline void ee_leave_scratchpad_stack()
+{
+    asm __volatile__("addu $sp, $17, $zero\n");
 }
 
 #endif

@@ -7,6 +7,7 @@
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/vector_vu0.h"
+#include "overlays/lib/quaternion_vu0.h"
 #include "overlays/lib/skin_vu0.h"
 #include "ee.h"
 
@@ -957,7 +958,7 @@ bool LibSlerpQuaternionKeyTrack::on_append_key(const FieldVec4A* value, float ke
 /** @brief Clear the cached sample state and reset the keys' bookkeeping. */
 void LibPooledFloatQuaternionTrack::reset_state()
 {
-    unk58 = 0;
+    offset_cycle = 0;
     last_fraction = 0;
     LibFloatQuaternionTrackBase::reset_state();
 }
@@ -1300,7 +1301,7 @@ void LibPooledFloatQuaternionTrack::append_key_record(const void* record)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample_once__24LibPooledQuaternionTrackFf);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", func_004ADC60);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", pooled_quaternion_track_sample);
 
 /**
  * @brief Evaluate the track at a key without wrapping or extrapolating, and cache the rotation and its change per frame.
@@ -1377,7 +1378,199 @@ FieldVec4A LibPooledFloatQuaternionTrack::sample_once(float key)
     return *reinterpret_cast<FieldVec4A*>(&result);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample__29LibPooledFloatQuaternionTrackCFf);
+/**
+ * @brief Interpolate the track at a key and cache the blend fraction and its change per frame.
+ * @param key Evaluation key.
+ * @return Rotation at the key.
+ */
+FieldVec4A LibPooledFloatQuaternionTrack::sample(float key) const
+{
+    LibPooledFloatQuaternionTrack* self = const_cast<LibPooledFloatQuaternionTrack*>(this);
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    float fraction;
+    u8 extrapolate;
+    FieldVec4B result;
+
+    s16 count;
+
+    if (!key_array || !(count = state.key_count))
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.key_count == 1 && (!(key < key_array[0].key) || state.before_mode != LIB_TRACK_END_USE_PRE_START_KEY))
+    {
+        return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
+    }
+
+    if (state.search_index >= state.key_capacity)
+    {
+        self->state.search_index = 0;
+    }
+
+    extrapolate = 0;
+
+    if (state.before_mode == LIB_TRACK_END_USE_PRE_START_KEY && key < key_array[0].key)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = self->update_cycle_count(key);
+
+        if (state.cycle_count != 0)
+        {
+            if (state.before_mode == LIB_TRACK_END_HOLD && state.cycle_count < 0)
+            {
+                return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
+            }
+
+            if (state.after_mode == LIB_TRACK_END_HOLD && state.cycle_count > 0)
+            {
+                return *reinterpret_cast<FieldVec4A*>(&key_array[state.key_count - 1].value);
+            }
+        }
+
+        extrapolate = self->find_surrounding_keys(wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (!extrapolate)
+    {
+        if (state.segment_lower != lower || state.segment_upper != upper)
+        {
+            self->state.segment_lower = lower;
+            self->state.segment_upper = upper;
+
+            if (lower >= 0)
+            {
+                self->lower_key = key_array + lower;
+            }
+            else
+            {
+                self->lower_key = &self->single_key;
+            }
+
+            if (upper == state.key_count - 1 && ((!(key < key_array[0].key) && state.after_mode == LIB_TRACK_END_CYCLE_TO_FIRST) ||
+                (key < key_array[0].key && state.before_mode == LIB_TRACK_END_CYCLE_TO_FIRST)))
+            {
+                self->upper_key = key_array;
+            }
+            else if (lower < upper)
+            {
+                self->upper_key = key_array + upper;
+            }
+            else
+            {
+                self->upper_key = key_array + (state.key_count - 1);
+            }
+        }
+
+        LibFloatQuaternionTrackKey* second;
+        LibFloatQuaternionTrackKey* first = lower_key;
+        second = upper_key;
+        float t = (wrapped_key - first->key) / (second->key - first->key);
+        float after = t - 1.0f;
+        float before_squared = (1.0f - t) * (1.0f - t);
+        float squared = t * t;
+        float end_weight = squared * (3.0f - 2.0f * t);
+        float start_tangent_weight = before_squared * t;
+        float end_tangent_weight = after * squared;
+        t = end_weight + start_tangent_weight * first->second + end_tangent_weight * second->first;
+
+        lib_quaternion_slerp_async(&result, &first->value, &second->value, t);
+
+        if ((state.before_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+            (state.after_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0))
+        {
+            if (offset_cycle != state.cycle_count)
+            {
+                const FieldVec4B* end = &key_array[state.key_count - 1].value;
+                FieldVec4B delta = lib_quaternion_inverse(key_array[0].value);
+                s32 cycle;
+
+                delta = lib_quaternion_product(*end, delta);
+
+                if (state.cycle_count < 0)
+                {
+                    delta = lib_quaternion_inverse(delta);
+
+                    if (offset_cycle < 0 && state.cycle_count < offset_cycle)
+                    {
+                        delta = cycle_offset;
+
+                        for (cycle = offset_cycle; cycle > state.cycle_count; cycle--)
+                        {
+                            vu0_quaternion_multiply_assign_first_in_vf1(&delta, &delta);
+                        }
+                    }
+                    else
+                    {
+                        for (cycle = 0; cycle > state.cycle_count; cycle--)
+                        {
+                            vu0_quaternion_multiply_assign_first_in_vf1(&delta, &delta);
+                        }
+                    }
+                }
+                else if (offset_cycle > 0 && offset_cycle < state.cycle_count)
+                {
+                    delta = cycle_offset;
+
+                    for (cycle = offset_cycle; cycle < state.cycle_count; cycle++)
+                    {
+                        vu0_quaternion_multiply_assign_first_in_vf1(&delta, &delta);
+                    }
+                }
+                else
+                {
+                    for (cycle = 0; cycle < state.cycle_count; cycle++)
+                    {
+                        vu0_quaternion_multiply_assign_first_in_vf1(&delta, &delta);
+                    }
+                }
+
+                self->cycle_offset = delta;
+                vu0_quaternion_multiply_assign_first_in_vf1(&result, &delta);
+                lib_normalize_quaternion(&result);
+                self->offset_cycle = state.cycle_count;
+            }
+            else
+            {
+                vu0_quaternion_multiply_assign_first_in_vf1(&result, &cycle_offset);
+                lib_normalize_quaternion(&result);
+            }
+        }
+    }
+    else if (wrapped_key < key)
+    {
+        LibFloatQuaternionTrackKey* previous_entry = key_array + (state.key_count - 2);
+        LibFloatQuaternionTrackKey* last_entry = key_array + (state.key_count - 1);
+        float previous_key = previous_entry->key;
+        float last_key = last_entry->key;
+        float slope = key_array[state.key_count - 1].first / (last_key - previous_key);
+        fraction = 1.0f + slope * (key - last_key);
+        lib_quaternion_slerp_async(&result, &previous_entry->value, &last_entry->value, fraction);
+    }
+    else
+    {
+        LibFloatQuaternionTrackKey* entries = key_array;
+        float first_key = entries[0].key;
+        fraction = 1.0f + (entries[0].second / (entries[1].key - first_key)) * (first_key - key);
+        lib_quaternion_slerp_async(&result, &entries[1].value, &entries[0].value, fraction);
+    }
+
+    self->value_rate = g_inverse_frame_ticks * (fraction - last_fraction);
+    self->last_fraction = fraction;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 /** One row of the quadratic fit's system: three coefficients and the right-hand side. */
 struct LibFitRow
@@ -2931,8 +3124,8 @@ void LibFloatSegment::get_weights(float key, float* weights) const
 /** @brief Clear the cached sample state and reset the keys' bookkeeping. */
 void LibPooledSlerpQuaternionTrack::reset_state()
 {
-    unkB0 = 0;
-    unkB4 = 0;
+    offset_cycle = 0;
+    last_blend = 0;
     LibSlerpQuaternionTrackBase::reset_state();
 }
 
@@ -2990,7 +3183,165 @@ void LibPooledSlerpQuaternionTrack::get_end_delta(void* output) const
     *delta = lib_quaternion_product(*end, inverse);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004ABA60", sample__29LibPooledSlerpQuaternionTrackCFf);
+/**
+ * @brief Slerp the track at a key through the two-sample history and cache the blend's change per frame.
+ * @param key Evaluation key.
+ * @return Rotation at the key.
+ */
+FieldVec4A LibPooledSlerpQuaternionTrack::sample(float key) const
+{
+    LibPooledSlerpQuaternionTrack* self = const_cast<LibPooledSlerpQuaternionTrack*>(this);
+    s32 lower;
+    s32 upper;
+    float wrapped_key;
+    float blend;
+    u8 extrapolate;
+
+    if (!key_array || !state.key_count)
+    {
+        return FieldVec4A(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
+    if (state.search_index >= state.key_capacity)
+    {
+        self->state.search_index = 0;
+    }
+
+    if (state.key_count == 1 && (!(key < key_array[0].key) || state.before_mode != LIB_TRACK_END_USE_PRE_START_KEY))
+    {
+        return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
+    }
+
+    if (key < key_array[0].key && state.before_mode == LIB_TRACK_END_USE_PRE_START_KEY)
+    {
+        upper = 0;
+        wrapped_key = key;
+        lower = -1;
+    }
+    else
+    {
+        wrapped_key = self->update_cycle_count(key);
+
+        if (state.before_mode == LIB_TRACK_END_HOLD && state.cycle_count < 0)
+        {
+            return *reinterpret_cast<FieldVec4A*>(&key_array[0].value);
+        }
+
+        if (state.after_mode == LIB_TRACK_END_HOLD && state.cycle_count > 0)
+        {
+            return *reinterpret_cast<FieldVec4A*>(&key_array[state.key_count - 1].value);
+        }
+
+        extrapolate = self->find_surrounding_keys(wrapped_key, &lower, &upper);
+
+        if (extrapolate)
+        {
+            wrapped_key = key;
+        }
+    }
+
+    if (state.segment_lower != lower || state.segment_upper != upper)
+    {
+        LibSlerpQuaternionTrackKey* first;
+
+        self->state.segment_lower = lower;
+        self->state.segment_upper = upper;
+
+        if (lower >= 0)
+        {
+            first = key_array + lower;
+        }
+        else
+        {
+            first = reinterpret_cast<LibSlerpQuaternionTrackKey*>(&self->single_key);
+        }
+
+        self->sample_history.reset();
+        self->sample_history.push_sample(first->key, reinterpret_cast<FieldVec4A*>(&first->value));
+
+        s32 last = state.key_count - 1;
+
+        if (upper == last && ((!(key < key_array[0].key) && state.after_mode == LIB_TRACK_END_CYCLE_TO_FIRST) ||
+            (key < key_array[0].key && state.before_mode == LIB_TRACK_END_CYCLE_TO_FIRST)))
+        {
+            self->sample_history.push_sample(key_array[upper].key, reinterpret_cast<FieldVec4A*>(&key_array[0].value));
+        }
+        else if (lower < upper)
+        {
+            self->sample_history.push_sample(key_array[upper].key, reinterpret_cast<FieldVec4A*>(&key_array[upper].value));
+        }
+        else
+        {
+            self->sample_history.push_sample(key_array[last].key, reinterpret_cast<FieldVec4A*>(&key_array[upper].value));
+        }
+    }
+
+    FieldVec4B result = self->sample_history.sample_with_blend(wrapped_key, &blend);
+
+    if ((state.before_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count < 0) ||
+        (state.after_mode == LIB_TRACK_END_OFFSET_CYCLE && state.cycle_count > 0))
+    {
+        if (offset_cycle != state.cycle_count)
+        {
+            const FieldVec4B* end = &key_array[state.key_count - 1].value;
+            FieldVec4B delta = lib_quaternion_inverse(key_array[0].value);
+
+            delta = lib_quaternion_product(*end, delta);
+
+            if (state.cycle_count < 0)
+            {
+                delta = lib_quaternion_inverse(delta);
+
+                if (offset_cycle < 0 && state.cycle_count < offset_cycle)
+                {
+                    delta = cycle_offset;
+
+                    for (s32 cycle = offset_cycle; cycle > state.cycle_count; cycle--)
+                    {
+                        delta = lib_quaternion_product(delta, delta);
+                    }
+                }
+                else
+                {
+                    for (s32 cycle = 0; cycle > state.cycle_count; cycle--)
+                    {
+                        delta = lib_quaternion_product(delta, delta);
+                    }
+                }
+            }
+            else if (offset_cycle > 0 && offset_cycle < state.cycle_count)
+            {
+                delta = cycle_offset;
+
+                for (s32 cycle = offset_cycle; cycle < state.cycle_count; cycle++)
+                {
+                    delta = lib_quaternion_product(delta, delta);
+                }
+            }
+            else
+            {
+                for (s32 cycle = 0; cycle < state.cycle_count; cycle++)
+                {
+                    delta = lib_quaternion_product(delta, delta);
+                }
+            }
+
+            self->cycle_offset = delta;
+            result = lib_quaternion_product(result, delta);
+            lib_normalize_quaternion(&result);
+            self->offset_cycle = state.cycle_count;
+        }
+        else
+        {
+            result = lib_quaternion_product(result, cycle_offset);
+            lib_normalize_quaternion(&result);
+        }
+    }
+
+    self->value_rate = (blend - last_blend) / g_frame_ticks;
+    self->last_blend = blend;
+    return *reinterpret_cast<FieldVec4A*>(&result);
+}
 
 /**
  * @brief Store the single keyframe from plain floats.
@@ -3092,10 +3443,10 @@ void LibFloatTrack::get_value_rate(void* output) const
 
 /**
  * @brief Store a value and key in the two-entry history and count it, up to two.
- * @param value Value to store.
  * @param key Key to store.
+ * @param value Value to store.
  */
-void LibSlerpQuaternionHistory::push_sample(const FieldVec4A* value, float key)
+void LibSlerpQuaternionHistory::push_sample(float key, const FieldVec4A* value)
 {
     values[next_index] = *value;
     keys[next_index] = key;

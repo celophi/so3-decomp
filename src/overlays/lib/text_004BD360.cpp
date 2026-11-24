@@ -4,6 +4,7 @@
 #include "include_asm.h"
 #include "overlays/lib/scratchpad_texture_cache.h"
 #include "overlays/lib/segment_vu0.h"
+#include "overlays/lib/box_cull_vu0.h"
 #include "overlays/lib/text_004BD360.h"
 #include "overlays/lib/quaternion_vu0.h"
 #include "overlays/lib/quaternion_inlines.h"
@@ -5400,10 +5401,18 @@ public:
     u8 unk86c[4];
 };
 
-/** LibClass1788B0 with vtables D_1787A0 and D_178854 in main data; only its destructor is known. */
+/** Extra shadow model a LibClass1788B0 keeps for each light past its first (vtables D_1787A0 and D_178854). */
 class LibClass1787A0 : public LibClass1788B0
 {
 public:
+    /** @brief Create the shadow model with no light and no lifetime. */
+    LibClass1787A0()
+    {
+        lifetime = 0;
+        light_index = -1;
+        type_id = 0x111;
+    }
+
     /** @brief Destroy the model. */
     virtual ~LibClass1787A0();
 
@@ -5415,6 +5424,33 @@ public:
      * @param channel DMA channel; unused.
      */
     virtual void complete_dma(u32 channel);
+
+    /**
+     * @brief Set the light this shadow is drawn for.
+     * @param index Light number in the caster's shadow light list.
+     */
+    void set_light_index(s8 index)
+    {
+        light_index = index;
+    }
+
+    /**
+     * @brief Count one frame off the shadow's lifetime.
+     * @return True when the lifetime ran out.
+     */
+    bool expire()
+    {
+        if (--lifetime == 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    s8 light_index;
+    s32 lifetime;
+    u8 unk878[8];
 };
 
 /** @brief Destroy the model. */
@@ -5687,7 +5723,187 @@ const LibVector4* LibClass1788B0::get_bounding_sphere()
     return &bounding_sphere;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C8860__14LibClass1788B0FiPvPvf);
+/** Ground the second kind of shadow model is cast on, or null for none. */
+extern "C" LibShadowGround* D_001B65AC;
+
+/**
+ * @brief Set this shadow model up for one of the caster's lights: the shadow plane (case 1: a flat plane through the
+ *        caster; case 2: the ground under three projected points), the light's shadow matrix, the shadow's fade, then
+ *        the packet.
+ * @param index Light number in the caster's shadow light list.
+ * @param matrix Camera.
+ * @param context Packet building context.
+ * @param scale Light weight scale.
+ */
+void LibClass1788B0::func_004C8860(s32 index, void* matrix, void* context, float scale)
+{
+    LibModel* caster = unk838;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    switch (unk823)
+    {
+    case 1:
+    {
+        FieldVec4B origin;
+        origin.x = caster->transform.m[0][3];
+        origin.y = caster->transform.m[1][3];
+        origin.z = caster->transform.m[2][3];
+        origin.w = 1.0f;
+        unk850.x = 0.0f;
+        unk850.y = 1.0f;
+        unk850.z = 0.0f;
+        unk850.w = -origin.y + unk860;
+        break;
+    }
+    case 2:
+    {
+        if (D_001B65AC == 0)
+        {
+            break;
+        }
+
+        FieldVec4B origin;
+        FieldVec4B lowered;
+        FieldVec4B first;
+        FieldVec4B second;
+        FieldVec4B third;
+        LibMatrix44Value shadow;
+        FieldVec4B direction;
+        origin.x = caster->transform.m[0][3];
+        origin.y = caster->transform.m[1][3];
+        origin.z = caster->transform.m[2][3];
+        origin.w = 1.0f;
+        lowered.x = origin.x;
+        lowered.y = origin.y - unk868;
+        lowered.z = origin.z;
+        lowered.w = origin.w;
+        unk850.x = 0.0f;
+        unk850.y = -1.0f;
+        unk850.z = 0.0f;
+        unk850.w = D_001B65AC->get_height(&origin, this);
+        LibLight* light = lights->lights[index];
+
+        if (light->kind & 3)
+        {
+            const FieldVec4B* position = reinterpret_cast<const FieldVec4B*>(&light->position);
+            lib_build_projective_shadow_matrix(&shadow, (const FieldVec4A*)position, (const FieldVec4A*)&unk850);
+            direction = origin - *position;
+            lib_normalize_vector3(&direction.x);
+        }
+        else
+        {
+            const FieldVec4B* position = reinterpret_cast<const FieldVec4B*>(&light->direction);
+            lib_build_directional_shadow_matrix(&shadow, (const FieldVec4A*)position, (const FieldVec4A*)&unk850);
+            direction.set(*position);
+        }
+
+        vu0_dot_matrix_rows(&shadow, &origin, &first);
+        // TODO: The game divides by w here and never uses the result.
+        float inverse = 1.0f / first.w;
+        vu0_divide_by_w(&first, &first);
+        vu0_dot_matrix_rows(&shadow, &lowered, &second);
+        inverse = 1.0f / second.w;
+        vu0_divide_by_w(&second, &second);
+        float abs_x = ee_abs(direction.x);
+        third.w = 1.0f;
+        float abs_z = ee_abs(direction.z);
+
+        if (abs_x < 0.000001f && abs_z < 0.000001f)
+        {
+            third.x = first.x + unk864;
+            third.y = 0.0f;
+            third.z = first.z;
+        }
+        else
+        {
+            third.x = first.x + direction.z * unk864;
+            third.y = 0.0f;
+            third.z = first.z - direction.x * unk864;
+        }
+
+        first.y = D_001B65AC->get_height(&first, this) - unk860;
+        second.y = D_001B65AC->get_height(&second, this) - unk860;
+        third.y = D_001B65AC->get_height(&third, this) - unk860;
+        func_004CC7A0(&unk850.x, &first.x, &second.x, &third.x);
+
+        if (unk850.y < 0.0f)
+        {
+            unk850 *= -1.0f;
+        }
+
+        break;
+    }
+    }
+
+    LibMatrix44Value projection;
+    LibLight* light = lights->lights[index];
+
+    if (light->kind & 3)
+    {
+        lib_build_projective_shadow_matrix(&projection, (const FieldVec4A*)&light->position, (const FieldVec4A*)&unk850);
+    }
+    else
+    {
+        lib_build_directional_shadow_matrix(&projection, (const FieldVec4A*)&light->direction, (const FieldVec4A*)&unk850);
+    }
+
+    if (unk821 || unk822)
+    {
+        LibVector4 color;
+        *reinterpret_cast<unsigned __int128*>(&color) = *reinterpret_cast<const unsigned __int128*>(&base_color_factor);
+        float alpha = 1.0f;
+
+        if (unk821)
+        {
+            alpha = 0.01f * (unk82c * (lights->weights[index] * scale));
+
+            if (alpha <= 0.0f)
+            {
+                return;
+            }
+        }
+
+        if (unk822)
+        {
+            FieldVec4B position;
+            position.x = transform.m[0][3];
+            position.y = transform.m[1][3];
+            position.z = transform.m[2][3];
+            position.w = 1.0f;
+            float distance = unk850.w + (unk850.x * position.x + unk850.y * position.y + unk850.z * position.z);
+            float length_squared = unk850.x * unk850.x + unk850.y * unk850.y + unk850.z * unk850.z;
+
+            if (!(distance <= 0.0f) && unk823 != 1)
+            {
+                alpha = 0.0f;
+            }
+            else
+            {
+                float fade = 0.001f * (unk830 * (-distance * ee_rsqrt_in_place(length_squared, 1.0f)));
+
+                if (!(fade <= 1.0f))
+                {
+                    alpha /= fade;
+                }
+            }
+        }
+
+        if (alpha <= 0.001f)
+        {
+            return;
+        }
+
+        alpha = ee_min(alpha, 1.0f);
+        color.w = alpha;
+        *reinterpret_cast<unsigned __int128*>(&base_color_factor) = *reinterpret_cast<const unsigned __int128*>(&color);
+        update_combined_color_factor();
+    }
+
+    vu0_multiply_matrix_output_first(&transform, &projection, &transform);
+    transform_dirty = 1;
+    unk66 = 1;
+    LibModel::build_packet(matrix, context);
+}
 
 /** @brief Destroy the three held objects, then destroy the model. */
 void LibClass1788B0::destroy()
@@ -5704,7 +5920,207 @@ void LibClass1788B0::destroy()
     LibModel::destroy();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", build_packet__14LibClass1788B0FPCvPv);
+/** Most lights a LibClass1788B0 shadow draws shadows for. */
+extern "C" u8 D_001B6294;
+
+/** Frames a LibClass1788B0 shadow's extra child lives without being chosen again. */
+extern "C" s32 D_001B6298;
+
+/**
+ * @brief Pick the caster's strongest lights (up to unk825), keep one child shadow model per extra light, and build the
+ *        shadows of the children and this model.
+ * @param matrix Camera.
+ * @param context Packet building context.
+ */
+void LibClass1788B0::build_packet(const void* matrix, void* context)
+{
+    if (unk838 == 0)
+    {
+        return;
+    }
+
+    if (unk838->type_id == 2)
+    {
+        return;
+    }
+
+    if (!unk838->unk63)
+    {
+        func_004A59D0(unk838, context);
+    }
+
+    LibModel* caster = unk838;
+    s32 count = caster->shadow_lights.count;
+    LibShadowLightList* lights = &caster->shadow_lights;
+
+    if (count == 0)
+    {
+        return;
+    }
+
+    s32 limit = unk825;
+
+    if (D_001B6294 < limit)
+    {
+        limit = D_001B6294;
+    }
+
+    s32 visible = 0;
+    float total = unk834;
+    s8 order[4];
+
+    for (s32 i = 0; i < count; i++)
+    {
+        if (!lights->unk04[i])
+        {
+            continue;
+        }
+
+        if (lights->lights[i]->unk291)
+        {
+            FieldVec4B position;
+            position.x = transform.m[0][3];
+            position.y = transform.m[1][3];
+            position.z = transform.m[2][3];
+            position.w = 1.0f;
+
+            if (!(lights->lights[i]->position.y <= position.y))
+            {
+                continue;
+            }
+        }
+
+        float weight = lights->weights[i];
+
+        if (!(weight <= 0.0f))
+        {
+            order[visible++] = i;
+        }
+
+        if (weight < 0.0f)
+        {
+            total += weight;
+            total = ee_max(0.0f, total);
+        }
+    }
+
+    if (visible == 0)
+    {
+        return;
+    }
+
+    if (total == 0.0f)
+    {
+        return;
+    }
+
+    for (s32 i = 0; i < 3; i++)
+    {
+        if (unk83c[i])
+        {
+            static_cast<LibClass1787A0*>(unk83c[i])->light_index = -1;
+
+            if (static_cast<LibClass1787A0*>(unk83c[i])->expire())
+            {
+                LibClass1788B0* child = static_cast<LibClass1788B0*>(unk83c[i]);
+
+                if (child->unk838)
+                {
+                    if (child->unk838->unk790)
+                    {
+                        child->unk838->unk790--;
+                    }
+
+                    child->unk838 = 0;
+                }
+
+                unk83c[i]->destroy();
+                unk83c[i] = 0;
+            }
+        }
+    }
+
+    if (1 < visible)
+    {
+        for (s32 i = 0; i < visible; i++)
+        {
+            for (s32 j = i + 1; j < visible; j++)
+            {
+                if (lights->weights[order[i]] < lights->weights[order[j]])
+                {
+                    s8 swap = order[i];
+                    order[i] = order[j];
+                    order[j] = swap;
+                }
+            }
+        }
+
+        if (limit < visible)
+        {
+            visible = limit;
+        }
+
+        for (s32 i = 1; i < visible; i++)
+        {
+            if (unk83c[i - 1] == 0)
+            {
+                LibClass1787A0* child = new (0) LibClass1787A0;
+
+                if (child)
+                {
+                    if (child->func_004C8720(0, this))
+                    {
+                        unk83c[i - 1] = child;
+                    }
+                    else
+                    {
+                        child->destroy();
+                    }
+                }
+            }
+
+            if (unk83c[i - 1])
+            {
+                static_cast<LibClass1787A0*>(unk83c[i - 1])->lifetime = D_001B6298;
+                static_cast<LibClass1787A0*>(unk83c[i - 1])->set_light_index(order[i]);
+            }
+        }
+    }
+
+    bool drawn = false;
+
+    for (s32 i = 2; i >= 0; i--)
+    {
+        if (unk83c[i] == 0)
+        {
+            continue;
+        }
+
+        s32 index = static_cast<LibClass1787A0*>(unk83c[i])->light_index;
+        unk83c[i]->unk63 = 0;
+
+        if (index >= 0)
+        {
+            unk83c[i]->unk62 = 0;
+            unk83c[i]->update_transform_matrix();
+            static_cast<LibClass1788B0*>(unk83c[i])->func_004C8860(index, const_cast<void*>(matrix), context, total);
+
+            if (unk83c[i]->unk63)
+            {
+                drawn = true;
+            }
+        }
+    }
+
+    unk826 = 0;
+    func_004C8860(order[0], const_cast<void*>(matrix), context, total);
+
+    if (drawn && !unk63)
+    {
+        unk63 = 1;
+        unk826 = 1;
+    }
+}
 
 extern "C" void func_004C94D0(void* object, const unsigned __int128* value)
 {
@@ -6289,9 +6705,850 @@ extern "C" float func_004CA180(const LibVector4* segment, const LibVector4* poin
     return projection.x;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CA270);
+/**
+ * @brief Find the squared distance between two segments and the fractions along them of the closest points.
+ * @param first Aligned first segment: start, then axis.
+ * @param second Aligned second segment: start, then axis.
+ * @param first_fraction Receives the fraction along the first segment.
+ * @param second_fraction Receives the fraction along the second segment.
+ * @return The squared distance.
+ */
+extern "C" float func_004CA270(const LibVector4* first, const LibVector4* second, float* first_fraction,
+                               float* second_fraction)
+{
+    LibVector4 offset;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CAB20);
+    float a00;
+    float a01;
+    float a11;
+    float b0;
+    float det;
+    float b1;
+    float s;
+    float t;
+    float c;
+    float distance;
+    float temp;
+
+    const LibVector4* first_axis = first + 1;
+    const LibVector4* second_axis = second + 1;
+    vu0_segment_pair_dots(first, second, first_axis, second_axis);
+    vu0_segment_pair_store_offset(&offset);
+    a00 = vu0_read_vf12_x();
+    a01 = vu0_read_vf14_x();
+    a11 = vu0_read_vf16_x();
+    vu0_segment_pair_offset_second();
+    b0 = vu0_read_vf18_x();
+    c = vu0_read_vf20_x();
+    det = vu0_read_vf21_x();
+
+    if (!(det < 0.00001f))
+    {
+        vu0_segment_pair_solve();
+        b1 = vu0_read_vf23_x();
+        t = vu0_read_vf25_x();
+        s = vu0_read_vf24_x();
+
+        if (!(s < 0.0f))
+        {
+            if (s <= det)
+            {
+                if (!(t < 0.0f))
+                {
+                    if (t <= det)
+                    {
+                        float inverse = 1.0f / det;
+                        s *= inverse;
+                        t *= inverse;
+                        distance = s * (a00 * s + a01 * t + 2.0f * b0) + t * (a01 * s + a11 * t + 2.0f * b1) + c;
+                    }
+                    else
+                    {
+                        t = 1.0f;
+                        temp = a01 + b0;
+
+                        if (!(temp < 0.0f))
+                        {
+                            s = 0.0f;
+                            distance = a11 + 2.0f * b1 + c;
+                        }
+                        else if (!(-temp < a00))
+                        {
+                            s = 1.0f;
+                            distance = a00 + a11 + c + 2.0f * (b1 + temp);
+                        }
+                        else
+                        {
+                            s = -temp / a00;
+                            distance = temp * s + a11 + 2.0f * b1 + c;
+                        }
+                    }
+                }
+                else
+                {
+                    t = 0.0f;
+
+                    if (!(b0 < 0.0f))
+                    {
+                        s = 0.0f;
+                        distance = c;
+                    }
+                    else if (!(-b0 < a00))
+                    {
+                        s = 1.0f;
+                        distance = a00 + 2.0f * b0 + c;
+                    }
+                    else
+                    {
+                        s = -b0 / a00;
+                        distance = b0 * s + c;
+                    }
+                }
+            }
+            else
+            {
+                if (!(t < 0.0f))
+                {
+                    if (t <= det)
+                    {
+                        s = 1.0f;
+                        temp = a01 + b1;
+
+                        if (!(temp < 0.0f))
+                        {
+                            t = 0.0f;
+                            distance = a00 + 2.0f * b0 + c;
+                        }
+                        else if (!(-temp < a11))
+                        {
+                            t = 1.0f;
+                            distance = a00 + a11 + c + 2.0f * (b0 + temp);
+                        }
+                        else
+                        {
+                            t = -temp / a11;
+                            distance = temp * t + a00 + 2.0f * b0 + c;
+                        }
+                    }
+                    else
+                    {
+                        temp = a01 + b0;
+
+                        if (-temp <= a00)
+                        {
+                            t = 1.0f;
+
+                            if (!(temp < 0.0f))
+                            {
+                                s = 0.0f;
+                                distance = a11 + 2.0f * b1 + c;
+                            }
+                            else
+                            {
+                                s = -temp / a00;
+                                distance = temp * s + a11 + 2.0f * b1 + c;
+                            }
+                        }
+                        else
+                        {
+                            s = 1.0f;
+                            temp = a01 + b1;
+
+                            if (!(temp < 0.0f))
+                            {
+                                t = 0.0f;
+                                distance = a00 + 2.0f * b0 + c;
+                            }
+                            else if (!(-temp < a11))
+                            {
+                                t = 1.0f;
+                                distance = a00 + a11 + c + 2.0f * (b0 + temp);
+                            }
+                            else
+                            {
+                                t = -temp / a11;
+                                distance = temp * t + a00 + 2.0f * b0 + c;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    if (-b0 < a00)
+                    {
+                        t = 0.0f;
+
+                        if (!(b0 < 0.0f))
+                        {
+                            s = 0.0f;
+                            distance = c;
+                        }
+                        else
+                        {
+                            s = -b0 / a00;
+                            distance = b0 * s + c;
+                        }
+                    }
+                    else
+                    {
+                        s = 1.0f;
+                        temp = a01 + b1;
+
+                        if (!(temp < 0.0f))
+                        {
+                            t = 0.0f;
+                            distance = a00 + 2.0f * b0 + c;
+                        }
+                        else if (!(-temp < a11))
+                        {
+                            t = 1.0f;
+                            distance = a00 + a11 + c + 2.0f * (b0 + temp);
+                        }
+                        else
+                        {
+                            t = -temp / a11;
+                            distance = temp * t + a00 + 2.0f * b0 + c;
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            if (!(t < 0.0f))
+            {
+                if (t <= det)
+                {
+                    s = 0.0f;
+
+                    if (!(b1 < 0.0f))
+                    {
+                        t = 0.0f;
+                        distance = c;
+                    }
+                    else if (!(-b1 < a11))
+                    {
+                        t = 1.0f;
+                        distance = a11 + 2.0f * b1 + c;
+                    }
+                    else
+                    {
+                        t = -b1 / a11;
+                        distance = b1 * t + c;
+                    }
+                }
+                else
+                {
+                    temp = a01 + b0;
+
+                    if (temp < 0.0f)
+                    {
+                        t = 1.0f;
+
+                        if (!(-temp < a00))
+                        {
+                            s = 1.0f;
+                            distance = a00 + a11 + c + 2.0f * (b1 + temp);
+                        }
+                        else
+                        {
+                            s = -temp / a00;
+                            distance = temp * s + a11 + 2.0f * b1 + c;
+                        }
+                    }
+                    else
+                    {
+                        s = 0.0f;
+
+                        if (!(b1 < 0.0f))
+                        {
+                            t = 0.0f;
+                            distance = c;
+                        }
+                        else if (!(-b1 < a11))
+                        {
+                            t = 1.0f;
+                            distance = a11 + 2.0f * b1 + c;
+                        }
+                        else
+                        {
+                            t = -b1 / a11;
+                            distance = b1 * t + c;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (b0 < 0.0f)
+                {
+                    t = 0.0f;
+
+                    if (!(-b0 < a00))
+                    {
+                        s = 1.0f;
+                        distance = a00 + 2.0f * b0 + c;
+                    }
+                    else
+                    {
+                        s = -b0 / a00;
+                        distance = b0 * s + c;
+                    }
+                }
+                else
+                {
+                    s = 0.0f;
+
+                    if (!(b1 < 0.0f))
+                    {
+                        t = 0.0f;
+                        distance = c;
+                    }
+                    else if (!(-b1 < a11))
+                    {
+                        t = 1.0f;
+                        distance = a11 + 2.0f * b1 + c;
+                    }
+                    else
+                    {
+                        t = -b1 / a11;
+                        distance = b1 * t + c;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        if (!(a01 <= 0.0f))
+        {
+            if (!(b0 < 0.0f))
+            {
+                s = 0.0f;
+                t = 0.0f;
+                distance = c;
+            }
+            else if (-b0 <= a00)
+            {
+                s = -b0 / a00;
+                t = 0.0f;
+                distance = b0 * s + c;
+            }
+            else
+            {
+                b1 = -(offset.x * second_axis->x + offset.y * second_axis->y + offset.z * second_axis->z);
+                s = 1.0f;
+                temp = a00 + b0;
+
+                if (!(-temp < a01))
+                {
+                    t = 1.0f;
+                    distance = a00 + a11 + c + 2.0f * (a01 + b0 + b1);
+                }
+                else
+                {
+                    t = -temp / a01;
+                    distance = a00 + 2.0f * b0 + c + t * (a11 * t + 2.0f * (a01 + b1));
+                }
+            }
+        }
+        else
+        {
+            if (!(-b0 < a00))
+            {
+                s = 1.0f;
+                t = 0.0f;
+                distance = a00 + 2.0f * b0 + c;
+            }
+            else if (b0 <= 0.0f)
+            {
+                s = -b0 / a00;
+                t = 0.0f;
+                distance = b0 * s + c;
+            }
+            else
+            {
+                b1 = -(offset.x * second_axis->x + offset.y * second_axis->y + offset.z * second_axis->z);
+                s = 0.0f;
+
+                if (!(b0 < -a01))
+                {
+                    t = 1.0f;
+                    distance = a11 + 2.0f * b1 + c;
+                }
+                else
+                {
+                    t = -b0 / a01;
+                    distance = c + t * (2.0f * b1 + a11 * t);
+                }
+            }
+        }
+    }
+
+    *first_fraction = s;
+    *second_fraction = t;
+    return ee_abs(distance);
+}
+
+/**
+ * @brief Test an oriented box against a projection volume with separating axes: the volume's depth range and side
+ *        planes, the box's own axes, and the cross products of both sets of axes.
+ * @param volume Projection volume.
+ * @param box Oriented box.
+ * @return Zero when an axis separates them, else one.
+ */
+extern "C" s32 func_004CAB20(const LibProjectionVolume* volume, const LibCullBox* box)
+{
+    LibVector4 rows[4];
+    float low;
+    float high;
+    float limit;
+
+    vu0_box_cull_step0(box, volume);
+    vu0_box_cull_step1(box->axes, &box->half_extents);
+    vu0_box_cull_step2(&volume->z_axis);
+    vu0_box_cull_step3(rows, &volume->x_axis, &volume->near_half_width);
+    limit = volume->near_distance;
+
+    if (rows[0].z + rows[1].x < limit || !((high = rows[0].z - rows[1].x) <= volume->far_distance))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step4();
+    limit = volume->unk54;
+    vu0_box_cull_step5(rows);
+
+    if (rows[1].x + rows[0].x < limit || !(rows[1].x <= rows[0].x))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step6();
+    vu0_box_cull_step7(rows);
+
+    if (rows[0].x + rows[1].x < limit || !(rows[1].x <= rows[0].x))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step8(&volume->y_axis);
+    limit = volume->unk58;
+    vu0_box_cull_step9(rows);
+
+    if (rows[1].y + rows[0].x < limit || !(rows[1].y <= rows[0].x))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step10();
+    vu0_box_cull_step11(rows);
+
+    if (rows[1].x + rows[0].x < limit || !(rows[1].x <= rows[0].x))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step12();
+    vu0_box_cull_step13(rows);
+    low = rows[1].x;
+    high = rows[2].x;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].x + rows[3].x < low || !(rows[0].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[1].y;
+    high = rows[2].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].y + rows[3].y < low || !(rows[0].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[1].z;
+    high = rows[2].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].z + rows[3].z < low || !(rows[0].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step14();
+    vu0_box_cull_step15(rows);
+    low = rows[1].x;
+    high = rows[2].x;
+    vu0_box_cull_step16(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].x + rows[3].x < low || !(rows[0].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[1].y;
+    high = rows[2].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].y + rows[3].y < low || !(rows[0].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[1].z;
+    high = rows[2].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[0].z + rows[3].z < low || !(rows[0].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step17();
+    vu0_box_cull_step18(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step19(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step20();
+    vu0_box_cull_step21(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step22(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step23();
+    vu0_box_cull_step24(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step25(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step26();
+    vu0_box_cull_step27(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step28(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    vu0_box_cull_step29();
+    vu0_box_cull_step30(rows);
+    low = rows[0].x;
+    high = rows[1].x;
+    vu0_box_cull_step31(rows);
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].x + rows[3].x < low || !(rows[2].x - rows[3].x <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].y;
+    high = rows[1].y;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].y + rows[3].y < low || !(rows[2].y - rows[3].y <= high))
+    {
+        return 0;
+    }
+
+    low = rows[0].z;
+    high = rows[1].z;
+
+    if (low < 0.0f)
+    {
+        low *= volume->far_near_ratio;
+    }
+
+    if (!(high <= 0.0f))
+    {
+        high *= volume->far_near_ratio;
+    }
+
+    if (rows[2].z + rows[3].z < low || !(rows[2].z - rows[3].z <= high))
+    {
+        return 0;
+    }
+
+    return 1;
+}
 
 /** @brief Recompute the derived perspective-volume coefficients. */
 void LibProjectionVolume::update_coefficients()

@@ -14,6 +14,11 @@
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/text_0044ABE0.h"
 #include "overlays/lib/dma_callbacks_inlines.h"
+#include "overlays/lib/display_manager_inlines.h"
+#include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/text_00429B00.h"
+#include "overlays/lib/text_0049B820.h"
+#include "main/debug.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "sdk/main/libkernl_00121940.h"
@@ -23,7 +28,7 @@
 #include "main/resident_data.h"
 
 extern "C" {
-extern LibDisplayManager* D_001B6660;
+extern LibResidentUpdateList* D_001B6660;
 extern LibListObject* D_001B665C;
 extern LibListObject* g_image_registry;
 extern LibScreenText* g_screen_text;
@@ -41,6 +46,7 @@ extern LibDisplayManager* g_scene_display_manager;
 extern LibDisplayManager* g_default_display_manager;
 extern LibListObject* D_001B6634;
 extern LibListObject D_00507CB8;
+extern LibClass173080 D_507C40;
 extern LibTrackPool<LibPooledFloatTrack>* g_float_track_pool;
 extern LibTrackPool<LibPooledVectorTrack>* g_vector_track_pool;
 extern LibTrackPool<LibPooledSlerpQuaternionTrack>* g_slerp_quaternion_track_pool;
@@ -2296,8 +2302,6 @@ extern "C" void lib_shutdown(void)
     g_display_callbacks = 0;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", lib_initialize);
-
 /** List object with vtable D_1791E0 in main data; its update flips a parity flag every frame. */
 class LibClass1791E0 : public LibListObject
 {
@@ -2321,6 +2325,133 @@ class LibClass1791E0 : public LibListObject
 
         u32 parity;
 };
+
+/**
+ * @brief Create Lib's global objects, link them into the update lists and set up the scene camera.
+ * @param display Display Lib draws to.
+ * @param depth_far Integer depth at the scene camera's far plane.
+ * @param texture_cache_size Texture cache size in bytes.
+ * @param texture_cache_blocks Texture cache block count.
+ * @param node_count Node pointers the temporary node buffer holds.
+ * @param first First extra renderer argument; with second, both nonzero turn the extra renderer state on.
+ * @param second Second extra renderer argument.
+ */
+extern "C" void lib_initialize(LibCameraContext* display, s32 depth_far, s32 texture_cache_size, s32 texture_cache_blocks,
+                               s32 node_count, s32 first, s32 second)
+{
+    ResidentSystem* system = resident_get_system();
+    g_resource_archive = resident_get_archive(system);
+    g_resident_resource_decoder = resident_system_get_decoder(system);
+    g_input_system = resident_system_get_input(system);
+    g_resident_release_queues = resident_system_get_release_queues(system);
+    g_resource_queue = resident_system_get_resource_queue(system);
+    g_sound = resident_system_get_sound(system);
+    system->unk15C80 = reinterpret_cast<u32>(g_display_callbacks = new (0) LibDebugListener(display));
+    g_display = display;
+    resident_display_set_hook(display);
+    *(volatile u32*)0x1000E000 = 0x503;
+    g_update_list = new (0) LibUpdateList;
+    func_004D66F0(g_update_list);
+    D_001B6604 = new (0) ResidentDmaQueue(8);
+    D_001B6608 = new (0) ResidentDmaQueue(9);
+    D_001B660C = new (0) ResidentDmaQueue(0);
+    g_vif1_dma_queue = new (0) ResidentDmaQueue(1);
+    D_001B65FC = reinterpret_cast<LibBusyObject*>(new (0) LibVif0Channel);
+    g_microcode_loader = new (0) LibMicrocodeLoader;
+    g_microcode_loader->start_upload();
+    func_004D9AB0(D_001B65FC, 0);
+    g_packet_queue = new (0) LibPacketQueue(0x400);
+    g_vram_allocator = new (0) LibVramAllocator(0x20, 0x20);
+    func_004D99B0(D_001B65FC);
+    g_renderer = new (0) LibRenderer(display);
+    lib_vram_reset(g_vram_allocator, display->vram_free_page);
+    D_001B6620 = new (0) LibClass178C90(static_cast<LibRenderer*>(g_renderer));
+    g_light_list = new (0) LibLightList;
+    g_display_manager = g_default_display_manager = reinterpret_cast<LibDisplayManager*>(new (0) LibClass178F30);
+    g_scene_display_manager = reinterpret_cast<LibDisplayManager*>(new (0) LibClass178F30);
+    D_001B6648 = new (0) LibClass177940;
+    D_001B664C = new (0) LibClass1791E0;
+    g_scene_camera = new (0) LibCamera(display);
+    D_001B6634 = new (0) LibClass174D70;
+    D_001B665C = new (0) LibClass174570;
+    D_001B6660 = new (0) LibResidentUpdateList;
+    g_sound->unk0c = static_cast<ResidentSoundRenderer*>(g_renderer);
+    g_float_track_pool = new (0) LibTrackPool<LibPooledFloatTrack>;
+    g_vector_track_pool = new (0) LibTrackPool<LibPooledVectorTrack>;
+    g_slerp_quaternion_track_pool = new (0) LibTrackPool<LibPooledSlerpQuaternionTrack>;
+    g_float_curve_track_pool = new (0) LibTrackPool<LibPooledFloatCurveTrack>;
+    g_vector_curve_track_pool = new (0) LibTrackPool<LibPooledVectorCurveTrack>;
+    g_float_quaternion_track_pool = new (0) LibTrackPool<LibPooledFloatQuaternionTrack>;
+    g_quaternion_curve_track_pool = new (0) LibTrackPool<LibPooledQuaternionCurveTrack>;
+    g_quaternion_track_pool = new (0) LibTrackPool<LibPooledQuaternionTrack>;
+    g_field_allocation_heap = 0;
+    static_cast<LibCamera*>(g_scene_camera)->horizontal_fov = 1.5707964f;
+    s32 half_width = display->display_area.width / 2;
+    s32 half_height = display->display_area.height / 2;
+    LibVector4 position;
+    position.x = 0.0f;
+    position.y = 0.0f;
+    position.z = -320.0f;
+    position.w = 1.0f;
+    static_cast<LibCamera*>(g_scene_camera)->set_translation_vector(&position);
+    LibCamera* camera = static_cast<LibCamera*>(g_scene_camera);
+    camera->screen_min.x = 0x800 - half_width;
+    camera->screen_min.y = 0x800 - half_height;
+    camera->screen_min.z = 100.0f;
+    camera->screen_min.w = 1.0f;
+    camera->screen_max.x = 0x800 + half_width;
+    camera->screen_max.y = 0x800 + half_height;
+    camera->screen_max.z = 1800.0f;
+    camera->screen_max.w = 1.0f;
+    static_cast<LibCamera*>(g_scene_camera)->set_depth_range(depth_far - 100, depth_far);
+    static_cast<LibCamera*>(g_scene_camera)->pixel_aspect = 1.3333334f * (1.0714285f * display->display_area.height) / display->display_area.width;
+    static_cast<LibCamera*>(g_scene_camera)->unk3d1 = 1;
+    g_scene_display_manager->append_node(g_scene_camera, -1);
+    g_scene_display_manager->current_display = g_scene_camera;
+    static_cast<LibClass174D70*>(D_001B6634)->managers[0] = g_display_manager;
+    static_cast<LibClass177940*>(D_001B6648)->renderer = static_cast<LibRenderer*>(g_renderer);
+    g_update_list->set_next_list(g_renderer);
+    g_update_list->append_node(static_cast<LibListObject*>(g_light_list), -1);
+    g_update_list->append_node(static_cast<LibListObject*>(g_display_manager), -1);
+    g_update_list->append_node(static_cast<LibListObject*>(g_scene_display_manager), -1);
+    g_update_list->append_node(D_001B6648, -1);
+    g_update_list->append_node(D_001B6620, -1);
+    g_update_list->append_node(D_001B664C, -1);
+    g_update_list->append_node(D_001B6634, -1);
+    g_update_list->append_node(g_resource_queue, -1);
+    g_update_list->append_node(static_cast<LibListObject*>(D_001B6660), -1);
+    g_update_list->append_node(static_cast<LibListObject*>(&D_507C40), -1);
+    static_cast<LibRenderer*>(g_renderer)->append_node(D_001B665C, -1);
+    g_texture_cache = new (0) LibTextureCache(texture_cache_size, texture_cache_blocks);
+    D_001B6638 = 0;
+    g_image_registry = new (0) LibImageRegistry(node_count);
+    D_001B6644 = new (0) LibPacketRing;
+    static_cast<LibClass174570*>(D_001B665C)->manager = g_display_manager;
+    g_update_list->append_node(g_image_registry, -1);
+    static_cast<LibRenderer*>(g_renderer)->manager = g_display_manager;
+
+    if (first && second)
+    {
+        LibRendererExtra* extra = static_cast<LibRenderer*>(g_renderer)->extra;
+        func_004209C0(reinterpret_cast<LibClass1727E0*>(extra), first, second);
+        extra->enabled = 1;
+        D_001B6550 = 1;
+    }
+    else
+    {
+        static_cast<LibRenderer*>(g_renderer)->extra->enabled = 0;
+        D_001B6550 = 0;
+    }
+
+    g_screen_text = new (0) LibScreenText;
+    g_screen_text->unk18 = 1;
+    g_screen_text->load_font();
+    lib_upload_default_palette();
+    g_frame_seconds = 0.016666668f;
+    g_frame_ticks = 1.0f;
+    func_0045F5E0();
+    lib_set_color_fade_area(LibScreenRect(0, 0, 0x280, 0xE0), 0xFFFF);
+}
 
 /** @brief Destroy the object. */
 LibClass1791E0::~LibClass1791E0()

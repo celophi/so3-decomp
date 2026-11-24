@@ -42,6 +42,30 @@ static inline void vu0_store_projected_start_958(const void* attribute, void* sc
 }
 
 /**
+ * @brief Scale vf5 by the Q that vu0_start_divide_by_w started, without waiting for it.
+ * @see vu0_transform_point; func_0044D1D0 in Lib.
+ */
+static inline void vu0_scale_by_q(void)
+{
+    asm __volatile__("vmulq.xyzw $vf5, $vf5, $Q");
+}
+
+/**
+ * @brief Store the scaled screen point and start the microprogram at 0x958 on an attribute vector in vf6; it leaves
+ *        the GS XYZ words in vf6.
+ * @param attribute 16-byte aligned attribute vector.
+ * @param screen 16-byte aligned destination of the scaled point.
+ * @see vu0_store_projected_start_958; func_0044D1D0 in Lib.
+ */
+static inline void vu0_store_point_start_958(const void* attribute, void* screen)
+{
+    asm __volatile__("lqc2 $vf6, 0x0(%0)\n"
+                     "sqc2 $vf5, 0x0(%1)\n"
+                     "nop\n"
+                     "vcallms 0x958" : : "r"(attribute), "r"(screen) : "memory");
+}
+
+/**
  * @brief Wait for the running microprogram and store vf6.
  *
  * The game always reads into t1 here, so I've hard-coded it.

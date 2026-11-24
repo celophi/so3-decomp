@@ -1776,6 +1776,16 @@ void lib_build_directional_shadow_matrix(LibMatrix44Value* output, const FieldVe
  * @param plane Plane equation coefficients (normal.x, normal.y, normal.z, offset).
  */
 void lib_build_projective_shadow_matrix(LibMatrix44Value* output, const FieldVec4A* light, const FieldVec4A* plane);
+
+/**
+ * @brief Build the plane through three points: the normal is the cross product of the normalized directions from the
+ *        origin to the other two points, and the fourth component is minus the normal dotted with the origin.
+ * @param plane Receives the normal and the distance term.
+ * @param origin Point on the plane the two directions start from.
+ * @param first Second point.
+ * @param second Third point.
+ */
+void func_004CC7A0(float* plane, const float* origin, const float* first, const float* second);
 #endif
 
 /** Return the receiver address at byte offset 0x10. */

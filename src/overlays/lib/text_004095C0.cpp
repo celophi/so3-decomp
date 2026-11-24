@@ -8,6 +8,9 @@
 #include "main/resident_data.h"
 #include "overlays/lib/item_allocation.h"
 #include "overlays/lib/movie_player.h"
+#include "main/sound.h"
+#include "main/sound_stream.h"
+#include "main/stream_thread.h"
 #include "sdk/main/libc_guess_00137290.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
 #include "sdk/main/libc_guess_0013C948.h"
@@ -5114,7 +5117,198 @@ void LibMovieStream::stop_sound()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", func_004144F0);
+/**
+ * @brief Hand words of movie sound to the music stream, unless music is disabled.
+ * @param sound Sound system.
+ * @param data Words to write.
+ * @param size Size in bytes.
+ * @return Bytes taken; all of them when music is disabled.
+ */
+static inline s32 lib_movie_sound_write(ResidentSound* sound, const void* data, s32 size)
+{
+    if (sound->music_disabled)
+    {
+        return size;
+    }
+
+    return resident_stream_thread_write_words(sound->stream->thread, static_cast<const u32*>(data), size);
+}
+
+/**
+ * @brief Append movie sound to the music stream, unless music is disabled.
+ * @param sound Sound system.
+ * @param data Data to append.
+ * @param size Size in bytes.
+ * @return Bytes taken; all of them when music is disabled.
+ */
+static inline s32 lib_movie_sound_append(ResidentSound* sound, const void* data, s32 size)
+{
+    if (sound->music_disabled)
+    {
+        return size;
+    }
+
+    return resident_stream_thread_append(sound->stream->thread, data, size);
+}
+
+/**
+ * @brief Keep the movie's sound stream fed.
+ * @param stream Movie stream.
+ * @return Bytes handed to the sound stream.
+ */
+extern "C" s32 func_004144F0(LibMovieStream* stream)
+{
+    if (!stream->kind)
+    {
+        return 0;
+    }
+
+    s32 written = 0;
+    s32 position = stream->position;
+    s32 fill = stream->fill;
+    s32 size = stream->size;
+    u8* read;
+    u8* start = stream->data;
+    read = start + (size + (position - fill)) % size;
+    s32 total = fill / 1024 * 1024;
+    s32 first = stream->data + stream->size - read;
+
+    first = first < total ? first : total;
+
+    s32 second = total - first;
+
+    if (stream->kind == LIB_MOVIE_STREAM_KIND_1)
+    {
+        if (stream->unk24 == 0)
+        {
+            stream->unk24 = 0x14000;
+        }
+
+        LibMoviePlayer* player = stream->player;
+
+        if (player->decoder.state->current_frame == 0)
+        {
+            if (!stream->unk33)
+            {
+                LibMovieDecoder* decoder = &player->decoder;
+                LibMovieState* state = decoder->state;
+                state->unk80B8 -= 8;
+                state->unk80B8 = clamp_low(state->unk80B8, 0);
+                stream->unk33 = 1;
+            }
+
+            return 0;
+        }
+
+        if (first + second >= 0x400 && !stream->unk31 && stream->fill > stream->unk24)
+        {
+            ResidentSound* sound = stream->sound;
+
+            if (!sound->music_disabled)
+            {
+                resident_stream_thread_request_2(sound->stream->thread, 0, (void*)resident_sound_set_stream_second_state, 0, 0);
+            }
+
+            stream->unk31 = 1;
+        }
+    }
+    else
+    {
+        if (stream->unk24 == 0)
+        {
+            stream->unk24 = 0x4800;
+        }
+
+        if ((first + second >= 0x400 && !stream->unk31 && stream->fill < stream->unk24) || !stream->player->decoder.get_picture_count())
+        {
+            return 0;
+        }
+    }
+
+    if (first + second >= 0x400)
+    {
+        if (stream->kind == LIB_MOVIE_STREAM_KIND_1)
+        {
+            if (!stream->unk32)
+            {
+                stream->unk32 = 1;
+
+                ResidentSound* sound = g_sound;
+
+                if (!sound->music_disabled)
+                {
+                    resident_stream_thread_reset_blocks(sound->stream->thread);
+                }
+            }
+
+            written = lib_movie_sound_write(stream->sound, read, first);
+
+            if (second && written == first)
+            {
+                second = lib_movie_sound_write(stream->sound, start, second);
+                written += second;
+            }
+        }
+        else
+        {
+            if (!stream->unk31)
+            {
+                if (resident_sound_is_stream_state_set(stream->sound))
+                {
+                    return 0;
+                }
+
+                u8* buffer = stream->buffer->aligned_data();
+                ResidentSound* sound = stream->sound;
+                s32 started;
+
+                if (sound->music_disabled)
+                {
+                    started = 0;
+                }
+                else if (sound->unk38 >= 0)
+                {
+                    started = 0;
+                }
+                else
+                {
+                    resident_stream_set_volume(sound->stream, 0, 0, 0, 0x7FFF);
+                    sound->unk350 = 1;
+                    started = resident_stream_thread_request_4(sound->stream->thread, 0, (void*)resident_sound_push_stream_answer, 0, (u32*)buffer, 0);
+                }
+
+                if (started)
+                {
+                    stream->unk31 = 1;
+                }
+            }
+
+            written = lib_movie_sound_append(stream->sound, read, first);
+
+            if (second && written == first)
+            {
+                written += lib_movie_sound_append(stream->sound, start, second);
+            }
+
+            if (written == 0)
+            {
+                if (++stream->unk28 >= 120)
+                {
+                    written = first + second;
+                    stream->unk28 = 0;
+                }
+            }
+            else
+            {
+                stream->unk28 = 0;
+            }
+        }
+    }
+
+    stream->fill -= written;
+    stream->unk20 += written;
+    return written;
+}
 
 /** Stream data libmpeg hands to a stream callback: the payload sits in the demultiplexer's ring. */
 struct LibMpegStreamData
@@ -5649,7 +5843,7 @@ extern "C" s32 func_004152C0(LibMovieDecoder* decoder)
     D_001B6604->stop();
     D_001B6608->stop();
     sceMpegGetPicture(decoder->mpeg, image, 0x460);
-    decoder->unk15E658++;
+    decoder->picture_count++;
     EnableDmac(D_001B6604->channel);
     EnableDmac(D_001B6608->channel);
     s32 limit = 0x106;
@@ -5712,7 +5906,7 @@ extern "C" void func_00419110(LibMovieState* state);
 extern "C" s32 func_004159E0(LibMovieDecoder* decoder)
 {
     sceMpegReset(decoder->mpeg);
-    decoder->unk15E658 = 0;
+    decoder->picture_count = 0;
     func_00418020(decoder);
     func_00419110(decoder->state);
     decoder->input.position = 0;
@@ -6036,7 +6230,7 @@ LibMovieDecoder::LibMovieDecoder()
     input.size = LIB_MOVIE_STREAM_BUFFER_SIZE;
     unk15E645 = 1;
     TIMER0_MODE = TIMER_MODE_CLOCK_HBLANK | TIMER_MODE_COUNT_ENABLE;
-    unk15E658 = 0;
+    picture_count = 0;
     unk15E644 = 1;
     stopped = 0;
     state = new (0) LibMovieState;

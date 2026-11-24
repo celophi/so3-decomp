@@ -273,4 +273,64 @@ static inline void vu0_multiply_matrix(void* output, const void* left, const voi
         : "memory");
 }
 
+/**
+ * @brief Multiply two aligned 4x4 matrices, with the output as the first asm operand.
+ * @param output Destination matrix, which may alias either input.
+ * @param left Left factor.
+ * @param right Right factor.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); LibClass1788B0::func_004C8860 in Lib.
+ */
+static inline void vu0_multiply_matrix_output_first(void* output, const void* left, const void* right)
+{
+    // TODO: Same as vu0_multiply_matrix, but the operand order changes which registers the addresses get; check
+    // whether the original had two helpers.
+    asm __volatile__(
+        "lqc2 $vf1, 0x00(%1)\n"
+        "lqc2 $vf2, 0x10(%1)\n"
+        "lqc2 $vf3, 0x20(%1)\n"
+        "lqc2 $vf4, 0x30(%1)\n"
+        "lqc2 $vf5, 0x00(%2)\n"
+        "lqc2 $vf6, 0x10(%2)\n"
+        "lqc2 $vf7, 0x20(%2)\n"
+        "lqc2 $vf8, 0x30(%2)\n"
+        "vmulax.xyzw $ACC, $vf5, $vf1x\n"
+        "vmadday.xyzw $ACC, $vf6, $vf1y\n"
+        "vmaddaz.xyzw $ACC, $vf7, $vf1z\n"
+        "vmaddw.xyzw $vf1, $vf8, $vf1w\n"
+        "vmulax.xyzw $ACC, $vf5, $vf2x\n"
+        "vmadday.xyzw $ACC, $vf6, $vf2y\n"
+        "vmaddaz.xyzw $ACC, $vf7, $vf2z\n"
+        "vmaddw.xyzw $vf2, $vf8, $vf2w\n"
+        "vmulax.xyzw $ACC, $vf5, $vf3x\n"
+        "vmadday.xyzw $ACC, $vf6, $vf3y\n"
+        "vmaddaz.xyzw $ACC, $vf7, $vf3z\n"
+        "vmaddw.xyzw $vf3, $vf8, $vf3w\n"
+        "vmulax.xyzw $ACC, $vf5, $vf4x\n"
+        "vmadday.xyzw $ACC, $vf6, $vf4y\n"
+        "vmaddaz.xyzw $ACC, $vf7, $vf4z\n"
+        "vmaddw.xyzw $vf4, $vf8, $vf4w\n"
+        "sqc2 $vf1, 0x00(%0)\n"
+        "sqc2 $vf2, 0x10(%0)\n"
+        "sqc2 $vf3, 0x20(%0)\n"
+        "sqc2 $vf4, 0x30(%0)\n"
+        :
+        : "r"(output), "r"(left), "r"(right)
+        : "memory");
+}
+
+/**
+ * @brief Divide a vector by its w with Q (vdiv, vwaitq, vmulq) in vf20.
+ * @param vector 16-byte aligned vector.
+ * @param result 16-byte aligned destination.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); func_0042C5C0 in Lib.
+ */
+static inline void vu0_divide_by_w(const void* vector, void* result)
+{
+    asm __volatile__("lqc2 $vf20, 0x0(%0)\n"
+                     "vdiv $Q, $vf0w, $vf20w\n"
+                     "vwaitq\n"
+                     "vmulq.xyzw $vf20, $vf20, $Q\n"
+                     "sqc2 $vf20, 0x0(%1)" : : "r"(vector), "r"(result) : "memory");
+}
+
 #endif

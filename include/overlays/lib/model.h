@@ -487,8 +487,9 @@ struct LibClass174C20Header
 {
     s32 columns;
     s32 rows;
-    u8 unk08[8];
-    float normal_scale;
+    float left;
+    float top;
+    float cell_size;
     float speed;
     float drop_strength;
     u8 random_drops;
@@ -794,6 +795,16 @@ struct LibModelPacketChain
     u64 tags[3][2];
 };
 
+/** Lights that cast a model's shadows. */
+struct LibShadowLightList
+{
+    s32 count;
+    u8 unk04[4];
+    LibLight* lights[4];
+    u8 unk18[0x10];
+    float weights[4];
+};
+
 /** Partial 0x820-byte Lib model with vtable D_177820 in main data. */
 class LibModel : public LibModelBase, public DmaSubmission
 {
@@ -1057,10 +1068,24 @@ public:
     float unk7c0;
     float unk7c4;
     u32 unk7c8[6];
-    u32 unk7e0;
-    u8 unk7e4[0x34];
+    LibShadowLightList shadow_lights;
     LibModel* source;
     u8 unk81c[4];
+};
+
+class FieldVec4B;
+
+/** Ground the shadow models are cast on: gives the height under a point. */
+class LibShadowGround
+{
+public:
+    /**
+     * @brief Find the height of the ground under a point.
+     * @param point Point.
+     * @param model Shadow model asking.
+     * @return Ground height.
+     */
+    virtual float get_height(const FieldVec4B* point, LibModel* model) = 0;
 };
 
 /**
@@ -1147,7 +1172,7 @@ public:
     u8 unk838;
     u8 unk839;
     u8 unk83a;
-    u8 unk83b;
+    s8 unk83b;
     u8 unk83c;
     u8 unk83d;
     u8 unk83e;
@@ -1164,5 +1189,19 @@ public:
     LibTransformOwner* children[3];
     LibUpdateList objects;
 };
+
+/**
+ * @brief Refresh the model's packet header from its flags and the camera's TEST register.
+ * @param model Model.
+ * @param camera Camera.
+ */
+extern "C" void func_004A7AC0(LibModel* model, const LibCamera* camera);
+
+/**
+ * @brief Run the model's per-packet step that build_packet skips after unk797_2 was set.
+ * @param model Model.
+ * @param context Opaque caller context.
+ */
+extern "C" void func_004A59D0(LibModel* model, void* context);
 
 #endif
