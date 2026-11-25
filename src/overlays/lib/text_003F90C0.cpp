@@ -35,7 +35,6 @@ extern LibCharacterTableEntry* D_001B64E8;
 /** Pairs of scaled byte values, ten rows of three. */
 extern u8 D_4EC260[10][3][2];
 
-
 extern "C" void func_00409A10(LibCharacterEquipment* equipment);
 
 /**
@@ -904,115 +903,11 @@ extern "C" s32 func_003FFF10(void* object, LibCharacterRecord* record, LibCharac
     return 0;
 }
 
-/**
- * @brief Decode MP after validating its checksum.
- * @param record Character record.
- * @return MP, or zero (setting the down flag) for an invalid checksum.
- */
-static inline s32 character_mp(LibCharacterRecord* record)
-{
-    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
-    {
-        add_character_flags(record, 1);
-        return 0;
-    }
-
-    return record->encoded_mp ^ 0x7DE3F7E3;
-}
-
-/**
- * @brief Decode HP after validating its checksum.
- * @param record Character record.
- * @return HP, or zero (setting the down flag) for an invalid checksum.
- */
-static inline s32 character_hp(LibCharacterRecord* record)
-{
-    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
-    {
-        add_character_flags(record, 1);
-        return 0;
-    }
-
-    return record->encoded_hp ^ 0x7DE3F7E3;
-}
-
-// TODO: The maximum HP/MP setters have the HP/MP setter inlined with its
+  // TODO: The maximum HP/MP setters have the HP/MP setter inlined with its
 // helpers called out of line, like the knockback and defense ones. These
 // copies are a guess at that.
 
-/**
- * @brief Store MP through the out-of-line limit and flag functions.
- * @param record Character record.
- * @param mp MP to store.
- * @return Stored MP, or zero for an invalid checksum.
- */
-static inline s32 lower_mp(LibCharacterRecord* record, s32 mp)
-{
-    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
-    {
-        lib_character_add_flags(record, 1);
-        return 0;
-    }
-
-    mp = lib_character_limit_mp(record, mp);
-
-    if (mp > decoded_max_mp(record))
-    {
-        mp = decoded_max_mp(record);
-    }
-
-    if (mp == 0)
-    {
-        lib_character_add_flags(record, 1);
-    }
-
-    if (mp != 0 && (record->encoded_hp ^ 0x7DE3F7E3) != 0)
-    {
-        lib_character_mask_flags(record, ~1);
-    }
-
-    record->encoded_mp = mp ^ 0x7DE3F7E3;
-    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
-    return mp;
-}
-
-/**
- * @brief Store HP through the out-of-line limit and flag functions.
- * @param record Character record.
- * @param hp HP to store.
- * @return Stored HP, or zero for an invalid checksum.
- */
-static inline s32 lower_hp(LibCharacterRecord* record, s32 hp)
-{
-    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
-    {
-        lib_character_add_flags(record, 1);
-        return 0;
-    }
-
-    hp = lib_character_limit_hp(record, hp);
-
-    if (hp > decoded_max_hp(record))
-    {
-        hp = decoded_max_hp(record);
-    }
-
-    if (hp == 0)
-    {
-        lib_character_add_flags(record, 1);
-    }
-
-    if (hp != 0 && (record->encoded_mp ^ 0x7DE3F7E3) != 0)
-    {
-        lib_character_mask_flags(record, ~1);
-    }
-
-    record->encoded_hp = hp ^ 0x7DE3F7E3;
-    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
-    return hp;
-}
-
-/**
+  /**
  * @brief Learn the first symbology the character's level has reached that it doesn't have yet.
  * @param object Unused receiver.
  * @param record Character record.
@@ -1102,133 +997,7 @@ extern "C" s32 func_004005C0(void* object, const LibCharacterRecord* record, Lib
     return 0;
 }
 
-/**
- * @brief Decode the base HP after validating the HP checksum.
- * @param record Character record.
- * @return Base HP, or zero (setting the down flag) for an invalid checksum.
- */
-static inline s32 character_base_hp(LibCharacterRecord* record)
-{
-    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
-    {
-        add_character_flags(record, 1);
-        return 0;
-    }
-
-    return record->encoded_base_hp ^ 0x7DE3F7E3;
-}
-
-/**
- * @brief Decode the base MP after validating the MP checksum.
- * @param record Character record.
- * @return Base MP, or zero (setting the down flag) for an invalid checksum.
- */
-static inline s32 character_base_mp(LibCharacterRecord* record)
-{
-    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
-    {
-        add_character_flags(record, 1);
-        return 0;
-    }
-
-    return record->encoded_base_mp ^ 0x7DE3F7E3;
-}
-
-/**
- * @brief Store the maximum HP through the out-of-line helpers, lowering the HP to it.
- * @param record Character record.
- * @param max_hp Maximum HP.
- */
-static inline void raise_max_hp(LibCharacterRecord* record, s32 max_hp)
-{
-    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
-    {
-        lib_character_add_flags(record, 1);
-        return;
-    }
-
-    max_hp = lib_character_limit_hp(record, max_hp);
-
-    if (max_hp < 0)
-    {
-        max_hp = 0;
-    }
-
-    record->encoded_max_hp = max_hp ^ 0x7DE3F7E3;
-    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
-
-    if (max_hp < (s32)lib_character_get_hp(record))
-    {
-        lib_character_set_hp(record, max_hp);
-    }
-}
-
-/**
- * @brief Store the base HP through the out-of-line helpers.
- * @param record Character record.
- * @param base_hp Base HP.
- */
-static inline void raise_base_hp(LibCharacterRecord* record, s32 base_hp)
-{
-    if (record->hp_checksum != (record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp))))
-    {
-        lib_character_add_flags(record, 1);
-        return;
-    }
-
-    base_hp = lib_character_limit_hp(record, base_hp);
-
-    if (base_hp < 0)
-    {
-        base_hp = 0;
-    }
-
-    record->encoded_base_hp = base_hp ^ 0x7DE3F7E3;
-    record->hp_checksum = record->checksum_salt ^ (record->encoded_hp ^ (record->encoded_base_hp + record->encoded_max_hp));
-}
-
-/**
- * @brief Store the maximum MP through the out-of-line helpers, lowering the MP to it.
- * @param record Character record.
- * @param max_mp Maximum MP.
- */
-static inline void raise_max_mp(LibCharacterRecord* record, s32 max_mp)
-{
-    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
-    {
-        lib_character_add_flags(record, 1);
-        return;
-    }
-
-    max_mp = lib_character_limit_mp(record, max_mp);
-    record->encoded_max_mp = max_mp ^ 0x7DE3F7E3;
-    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
-
-    if (max_mp < (s32)lib_character_get_mp(record))
-    {
-        lib_character_set_mp(record, max_mp);
-    }
-}
-
-/**
- * @brief Store the base MP through the out-of-line helpers.
- * @param record Character record.
- * @param base_mp Base MP.
- */
-static inline void raise_base_mp(LibCharacterRecord* record, s32 base_mp)
-{
-    if (record->mp_checksum != (record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp))))
-    {
-        lib_character_add_flags(record, 1);
-        return;
-    }
-
-    base_mp = lib_character_limit_mp(record, base_mp);
-    record->encoded_base_mp = base_mp ^ 0x7DE3F7E3;
-    record->mp_checksum = record->checksum_salt ^ (record->encoded_mp ^ (record->encoded_base_mp + record->encoded_max_mp));
-}
-
-/**
+      /**
  * @brief Decode SP after validating the SP/CP checksum.
  * @param equipment Character equipment record.
  * @return SP, or zero for an invalid checksum.
@@ -1468,22 +1237,7 @@ static inline s32 character_base_attack(const LibCharacterRecord* record)
     return record->encoded_base_attack ^ 0x7DE3F7E3;
 }
 
-/**
- * @brief Store the base attack, limited by type, after validating its checksum.
- * @param record Character record.
- * @param value Base attack.
- */
-static inline void raise_base_attack(LibCharacterRecord* record, s32 value)
-{
-    if (record->attack_checksum == (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack))))
-    {
-        value = limit_by_type(record, value, 9999, 99999);
-        record->encoded_base_attack = value ^ 0x7DE3F7E3;
-        record->attack_checksum = (record->checksum_salt ^ (record->encoded_attack ^ (record->encoded_base_attack + record->encoded_effective_attack)));
-    }
-}
-
-/**
+ /**
  * @brief Decode the effective attack after validating its checksum.
  * @param record Character record.
  * @return Effective attack, or zero for an invalid checksum.
@@ -1598,22 +1352,7 @@ static inline s32 character_base_hit(const LibCharacterRecord* record)
     return record->encoded_base_hit ^ 0x7DE3F7E3;
 }
 
-/**
- * @brief Store the base hit, limited by type, after validating its checksum.
- * @param record Character record.
- * @param value Base hit.
- */
-static inline void raise_base_hit(LibCharacterRecord* record, s32 value)
-{
-    if (record->hit_checksum == (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit))))
-    {
-        value = limit_by_type(record, value, 9999, 9999);
-        record->encoded_base_hit = value ^ 0x7DE3F7E3;
-        record->hit_checksum = (record->checksum_salt ^ (record->encoded_hit ^ (record->encoded_base_hit + record->encoded_effective_hit)));
-    }
-}
-
-/**
+ /**
  * @brief Decode the effective hit after validating its checksum.
  * @param record Character record.
  * @return Effective hit, or zero for an invalid checksum.
@@ -1663,22 +1402,7 @@ static inline s32 character_base_defense(const LibCharacterRecord* record)
     return record->encoded_base_defense ^ 0x7DE3F7E3;
 }
 
-/**
- * @brief Store the base defense, limited by type, after validating its checksum.
- * @param record Character record.
- * @param value Base defense.
- */
-static inline void raise_base_defense(LibCharacterRecord* record, s32 value)
-{
-    if (record->defense_checksum == (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense))))
-    {
-        value = limit_by_type_above(record, value, 9999, 9999, 99999, 99999);
-        record->encoded_base_defense = value ^ 0x7DE3F7E3;
-        record->defense_checksum = (record->checksum_salt ^ (record->encoded_defense ^ (record->encoded_base_defense + record->encoded_effective_defense)));
-    }
-}
-
-/**
+ /**
  * @brief Decode the effective defense after validating its checksum.
  * @param record Character record.
  * @return Effective defense, or zero for an invalid checksum.
@@ -1728,22 +1452,7 @@ static inline s32 character_base_agility(const LibCharacterRecord* record)
     return record->encoded_base_agility ^ 0x7DE3F7E3;
 }
 
-/**
- * @brief Store the base agility, limited by type, after validating its checksum.
- * @param record Character record.
- * @param value Base agility.
- */
-static inline void raise_base_agility(LibCharacterRecord* record, s32 value)
-{
-    if (record->agility_checksum == (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility))))
-    {
-        value = limit_by_type(record, value, 9999, 9999);
-        record->encoded_base_agility = value ^ 0x7DE3F7E3;
-        record->agility_checksum = (record->checksum_salt ^ (record->encoded_agility ^ (record->encoded_base_agility + record->encoded_effective_agility)));
-    }
-}
-
-/**
+ /**
  * @brief Store the effective agility through the out-of-line helpers, lowering the current value to it.
  * @param record Character record.
  * @param value Effective agility.
@@ -3294,22 +3003,7 @@ extern "C" const char D_00501CB8[];
 extern "C" const char D_00501CB0[];
 extern "C" const char D_00501CA8[];
 
-/**
- * @brief Copy a character name.
- * @param name Name buffer.
- * @param text Name.
- */
-static inline void copy_character_name(char* name, const char* text)
-{
-    const char* source = text;
-    char* destination = name;
-
-    while ((*destination++ = *source++))
-    {
-    }
-}
-
-/**
+ /**
  * @brief Clear a character's records to zero under fresh checksum salts, then give a party member its starting
  *        values and name.
  * @param record Character record to fill.

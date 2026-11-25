@@ -7,6 +7,7 @@
 #include "overlays/lib/scene.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "overlays/lib/text_0049B820.h"
+#include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/text_004DD440.h"
 #include "overlays/lib/model.h"
 #include "overlays/lib/image_model.h"
@@ -14,6 +15,11 @@
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_00419A70.h"
+#include "overlays/lib/model_entries.h"
+#include "overlays/lib/scene_objects.h"
+#include "overlays/lib/text_0044ABE0.h"
+#include "overlays/lib/text_0043BD00.h"
+#include "main/object_list.h"
 
 
 typedef struct HalfwordSetterOwnertext_0046AE20
@@ -163,207 +169,1095 @@ typedef struct LibFloat4
     float w;
 } __attribute__((aligned(16))) LibFloat4;
 
-/** Partial grid with vtable D_175DE0 in main data. */
+/** Partial grid emitter with vtable D_175DE0 in main data; slot 0x18 is still pure here. */
 class LibClass175DE0 : public LibClass1774E0
 {
 public:
+    /** @brief Start emitting with unit scale, one particle per emission and no emitters. */
+    LibClass175DE0()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        primary_emitter = 0;
+        emission_kind = 0;
+        unk4d = 0;
+        primary_emission_count = 1;
+        secondary_emitter = 0;
+        secondary_emission_count = 1;
+        unk56 = 0;
+        skip_frame_playback = 0;
+        unk04 = 1;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175DE0()
     {
     }
 
+    virtual void func_slot0C();
+
+    virtual void func_slot20();
+
+    virtual void func_slot28();
+
+    virtual void func_slot2C();
+
+    virtual void func_slot40();
+
+    virtual void func_slot44();
+
+    virtual void func_slot48();
+
+    virtual void func_slot4C(float value);
+
+    virtual void func_slot50();
+
+    virtual void func_slot54();
+
+    virtual void func_slot5C(u8 mode);
+
+    virtual void func_slot60();
+
+    virtual void func_slot64(float value);
+
+    virtual void func_slot68(u8 value);
+
+    virtual void func_slot6C();
+
+    virtual void func_slot70(float value);
+
+    virtual void func_slot74();
+
+    virtual void func_slot78(float value);
+
+    virtual void func_slot7C(u32 value);
+
+    virtual void func_slot80();
+
+    virtual void func_slot84(u8 value);
+
+    virtual void func_slot88(u8 flags);
+
+    virtual void func_slot8C(u32 value);
+
+    virtual void func_slot90();
+
+    virtual void func_slot94(u8 value);
+
+    virtual void func_slot98(float value);
+
+    virtual void func_slot9C(float value);
+
+    virtual void func_slotA0(u8 flags);
+
+    virtual void func_slotA4();
+
+    virtual void func_slotA8();
+
+    virtual void func_slotAC();
+
+    virtual void func_slotB0();
+
+    virtual void func_slotB8();
+
+    virtual void func_slotBC();
+
+    float unk28;
+    s32 index;
+    float emission_value;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float secondary_emission_scale;
+    s32 unk44;
+    LibClass173990* primary_emitter;
+    u8 emission_kind;
+    u8 unk4d;
+    u8 primary_emission_flags;
+    u8 primary_emission_count;
+    LibClass173990* secondary_emitter;
+    u8 secondary_emission_flags;
+    u8 secondary_emission_count;
+    u8 unk56;
+    u8 skip_frame_playback;
+    u8 unk58[0x58];
+
+    /**
+     * @brief Set how the grid emits and the value that goes with it.
+     * @param kind Emission kind.
+     * @param value Emission value.
+     */
+    void set_emission(u8 kind, float value)
+    {
+        emission_kind = kind;
+        emission_value = value;
+    }
 };
 
 /** Partial grid with vtable D_175760 in main data. */
 class LibClass175760 : public LibClass175DE0
 {
 public:
+    /** @brief Start without either buffer. */
+    LibClass175760()
+    {
+        unkb0 = 0;
+        unkb4 = 0;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175760()
     {
     }
+
+    virtual void func_slot18();
+
+    void* unkb0;
+    void* unkb4;
+    u8 unkb8[8];
 };
 
 /** Partial grid with vtable D_175D10 in main data. */
 class LibClass175D10 : public LibClass175DE0
 {
 public:
+    LibClass175D10()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175D10()
     {
     }
+
+    virtual void func_slot18();
 };
 
-/** Partial grid with vtable D_176050 in main data. */
+/** Partial grid emitter with vtable D_176050 in main data; slot 0x18 is still pure here. */
 class LibClass176050 : public LibClass177410
 {
 public:
+    /** @brief Start emitting with unit scale, one particle per emission and no emitters. */
+    LibClass176050()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        primary_emitter = 0;
+        emission_kind = 0;
+        unk4d = 0;
+        primary_emission_count = 1;
+        secondary_emitter = 0;
+        secondary_emission_count = 1;
+        unk56 = 0;
+        skip_frame_playback = 0;
+        unk04 = 1;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176050()
     {
     }
 
+    virtual void func_slot0C();
+
+    virtual void func_slot20();
+
+    virtual void func_slot28();
+
+    virtual void func_slot2C();
+
+    virtual void func_slot40();
+
+    virtual void func_slot44();
+
+    virtual void func_slot48();
+
+    virtual void func_slot4C(float value);
+
+    virtual void func_slot50();
+
+    virtual void func_slot54();
+
+    virtual void func_slot5C(u8 mode);
+
+    virtual void func_slot60();
+
+    virtual void func_slot64(float value);
+
+    virtual void func_slot68(u8 value);
+
+    virtual void func_slot6C();
+
+    virtual void func_slot70(float value);
+
+    virtual void func_slot74();
+
+    virtual void func_slot78(float value);
+
+    virtual void func_slot7C(u32 value);
+
+    virtual void func_slot80();
+
+    virtual void func_slot84(u8 value);
+
+    virtual void func_slot88(u8 flags);
+
+    virtual void func_slot8C(u32 value);
+
+    virtual void func_slot90();
+
+    virtual void func_slot94(u8 value);
+
+    virtual void func_slot98(float value);
+
+    virtual void func_slot9C(float value);
+
+    virtual void func_slotA0(u8 flags);
+
+    virtual void func_slotA4();
+
+    virtual void func_slotA8();
+
+    virtual void func_slotAC();
+
+    virtual void func_slotB0();
+
+    virtual void func_slotB8();
+
+    virtual void func_slotBC();
+
+    float unk28;
+    s32 index;
+    float emission_value;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float secondary_emission_scale;
+    s32 unk44;
+    LibClass173990* primary_emitter;
+    u8 emission_kind;
+    u8 unk4d;
+    u8 primary_emission_flags;
+    u8 primary_emission_count;
+    LibClass173990* secondary_emitter;
+    u8 secondary_emission_flags;
+    u8 secondary_emission_count;
+    u8 unk56;
+    u8 skip_frame_playback;
+    u8 unk58[0x58];
+
+    /**
+     * @brief Set how the grid emits and the value that goes with it.
+     * @param kind Emission kind.
+     * @param value Emission value.
+     */
+    void set_emission(u8 kind, float value)
+    {
+        emission_kind = kind;
+        emission_value = value;
+    }
 };
 
 /** Partial grid with vtable D_175900 in main data. */
 class LibClass175900 : public LibClass176050
 {
 public:
+    /** @brief Start without either buffer. */
+    LibClass175900()
+    {
+        unkb0 = 0;
+        unkb4 = 0;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175900()
     {
     }
+
+    virtual void func_slot18();
+
+    void* unkb0;
+    void* unkb4;
+    u8 unkb8[8];
 };
 
 /** Partial grid with vtable D_175F80 in main data. */
 class LibClass175F80 : public LibClass176050
 {
 public:
+    LibClass175F80()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175F80()
     {
     }
+
+    virtual void func_slot18();
 };
 
-/** Partial grid with vtable D_175B70 in main data. */
+/** Partial grid emitter with vtable D_175B70 in main data; slot 0x18 is still pure here. */
 class LibClass175B70 : public LibClass1775B0
 {
 public:
+    /** @brief Start emitting with unit scale, one particle per emission and no emitters. */
+    LibClass175B70()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        primary_emitter = 0;
+        emission_kind = 0;
+        unk4d = 0;
+        primary_emission_count = 1;
+        secondary_emitter = 0;
+        secondary_emission_count = 1;
+        unk56 = 0;
+        skip_frame_playback = 0;
+        unk04 = 1;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175B70()
     {
     }
 
+    virtual void func_slot0C();
+
+    virtual void func_slot20();
+
+    virtual void func_slot28();
+
+    virtual void func_slot2C();
+
+    virtual void func_slot40();
+
+    virtual void func_slot44();
+
+    virtual void func_slot48();
+
+    virtual void func_slot4C(float value);
+
+    virtual void func_slot50();
+
+    virtual void func_slot54();
+
+    virtual void func_slot5C(u8 mode);
+
+    virtual void func_slot60();
+
+    virtual void func_slot64(float value);
+
+    virtual void func_slot68(u8 value);
+
+    virtual void func_slot6C();
+
+    virtual void func_slot70(float value);
+
+    virtual void func_slot74();
+
+    virtual void func_slot78(float value);
+
+    virtual void func_slot7C(u32 value);
+
+    virtual void func_slot80();
+
+    virtual void func_slot84(u8 value);
+
+    virtual void func_slot88(u8 flags);
+
+    virtual void func_slot8C(u32 value);
+
+    virtual void func_slot90();
+
+    virtual void func_slot94(u8 value);
+
+    virtual void func_slot98(float value);
+
+    virtual void func_slot9C(float value);
+
+    virtual void func_slotA0(u8 flags);
+
+    virtual void func_slotA4();
+
+    virtual void func_slotA8();
+
+    virtual void func_slotAC();
+
+    virtual void func_slotB0();
+
+    virtual void func_slotB8();
+
+    virtual void func_slotBC();
+
+    float unk28;
+    s32 index;
+    float emission_value;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float secondary_emission_scale;
+    s32 unk44;
+    LibClass173990* primary_emitter;
+    u8 emission_kind;
+    u8 unk4d;
+    u8 primary_emission_flags;
+    u8 primary_emission_count;
+    LibClass173990* secondary_emitter;
+    u8 secondary_emission_flags;
+    u8 secondary_emission_count;
+    u8 unk56;
+    u8 skip_frame_playback;
+    u8 unk58[0x58];
+
+    /**
+     * @brief Set how the grid emits and the value that goes with it.
+     * @param kind Emission kind.
+     * @param value Emission value.
+     */
+    void set_emission(u8 kind, float value)
+    {
+        emission_kind = kind;
+        emission_value = value;
+    }
 };
 
 /** Partial grid with vtable D_175AA0 in main data. */
 class LibClass175AA0 : public LibClass175B70
 {
 public:
+    LibClass175AA0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175AA0()
     {
     }
+
+    virtual void func_slot18();
 };
 
-/** Partial grid with vtable D_1762C0 in main data. */
+/** Partial grid emitter with vtable D_1762C0 in main data; slot 0x18 is still pure here. */
 class LibClass1762C0 : public LibClass177340
 {
 public:
+    /** @brief Start emitting with unit scale, one particle per emission and no emitters. */
+    LibClass1762C0()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        primary_emitter = 0;
+        emission_kind = 0;
+        unk4d = 0;
+        primary_emission_count = 1;
+        secondary_emitter = 0;
+        secondary_emission_count = 1;
+        unk56 = 0;
+        skip_frame_playback = 0;
+        unk04 = 1;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass1762C0()
     {
     }
 
+    virtual void func_slot0C();
+
+    virtual void func_slot20();
+
+    virtual void func_slot28();
+
+    virtual void func_slot2C();
+
+    virtual void func_slot40();
+
+    virtual void func_slot44();
+
+    virtual void func_slot48();
+
+    virtual void func_slot4C(float value);
+
+    virtual void func_slot50();
+
+    virtual void func_slot54();
+
+    virtual void func_slot5C(u8 mode);
+
+    virtual void func_slot60();
+
+    virtual void func_slot64(float value);
+
+    virtual void func_slot68(u8 value);
+
+    virtual void func_slot6C();
+
+    virtual void func_slot70(float value);
+
+    virtual void func_slot74();
+
+    virtual void func_slot78(float value);
+
+    virtual void func_slot7C(u32 value);
+
+    virtual void func_slot80();
+
+    virtual void func_slot84(u8 value);
+
+    virtual void func_slot88(u8 flags);
+
+    virtual void func_slot8C(u32 value);
+
+    virtual void func_slot90();
+
+    virtual void func_slot94(u8 value);
+
+    virtual void func_slot98(float value);
+
+    virtual void func_slot9C(float value);
+
+    virtual void func_slotA0(u8 flags);
+
+    virtual void func_slotA4();
+
+    virtual void func_slotA8();
+
+    virtual void func_slotAC();
+
+    virtual void func_slotB0();
+
+    virtual void func_slotB8();
+
+    virtual void func_slotBC();
+
+    float unk28;
+    s32 index;
+    float emission_value;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float secondary_emission_scale;
+    s32 unk44;
+    LibClass173990* primary_emitter;
+    u8 emission_kind;
+    u8 unk4d;
+    u8 primary_emission_flags;
+    u8 primary_emission_count;
+    LibClass173990* secondary_emitter;
+    u8 secondary_emission_flags;
+    u8 secondary_emission_count;
+    u8 unk56;
+    u8 skip_frame_playback;
+    u8 unk58[0x58];
+
+    /**
+     * @brief Set how the grid emits and the value that goes with it.
+     * @param kind Emission kind.
+     * @param value Emission value.
+     */
+    void set_emission(u8 kind, float value)
+    {
+        emission_kind = kind;
+        emission_value = value;
+    }
 };
 
 /** Partial grid with vtable D_1761F0 in main data. */
 class LibClass1761F0 : public LibClass1762C0
 {
 public:
+    LibClass1761F0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass1761F0()
     {
     }
+
+    virtual void func_slot18();
 };
 
-/** Partial grid with vtable D_176530 in main data. */
+/** Partial grid emitter with vtable D_176530 in main data; slot 0x18 is still pure here. */
 class LibClass176530 : public LibClass177270
 {
 public:
+    /** @brief Start emitting with unit scale, one particle per emission and no emitters. */
+    LibClass176530()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        primary_emitter = 0;
+        emission_kind = 0;
+        unk4d = 0;
+        primary_emission_count = 1;
+        secondary_emitter = 0;
+        secondary_emission_count = 1;
+        unk56 = 0;
+        skip_frame_playback = 0;
+        unk04 = 1;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176530()
     {
     }
 
+    virtual void func_slot0C();
+
+    virtual void func_slot20();
+
+    virtual void func_slot28();
+
+    virtual void func_slot2C();
+
+    virtual void func_slot40();
+
+    virtual void func_slot44();
+
+    virtual void func_slot48();
+
+    virtual void func_slot4C(float value);
+
+    virtual void func_slot50();
+
+    virtual void func_slot54();
+
+    virtual void func_slot5C(u8 mode);
+
+    virtual void func_slot60();
+
+    virtual void func_slot64(float value);
+
+    virtual void func_slot68(u8 value);
+
+    virtual void func_slot6C();
+
+    virtual void func_slot70(float value);
+
+    virtual void func_slot74();
+
+    virtual void func_slot78(float value);
+
+    virtual void func_slot7C(u32 value);
+
+    virtual void func_slot80();
+
+    virtual void func_slot84(u8 value);
+
+    virtual void func_slot88(u8 flags);
+
+    virtual void func_slot8C(u32 value);
+
+    virtual void func_slot90();
+
+    virtual void func_slot94(u8 value);
+
+    virtual void func_slot98(float value);
+
+    virtual void func_slot9C(float value);
+
+    virtual void func_slotA0(u8 flags);
+
+    virtual void func_slotA4();
+
+    virtual void func_slotA8();
+
+    virtual void func_slotAC();
+
+    virtual void func_slotB0();
+
+    virtual void func_slotB8();
+
+    virtual void func_slotBC();
+
+    float unk28;
+    s32 index;
+    float emission_value;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float secondary_emission_scale;
+    s32 unk44;
+    LibClass173990* primary_emitter;
+    u8 emission_kind;
+    u8 unk4d;
+    u8 primary_emission_flags;
+    u8 primary_emission_count;
+    LibClass173990* secondary_emitter;
+    u8 secondary_emission_flags;
+    u8 secondary_emission_count;
+    u8 unk56;
+    u8 skip_frame_playback;
+    u8 unk58[0x58];
+
+    /**
+     * @brief Set how the grid emits and the value that goes with it.
+     * @param kind Emission kind.
+     * @param value Emission value.
+     */
+    void set_emission(u8 kind, float value)
+    {
+        emission_kind = kind;
+        emission_value = value;
+    }
 };
 
 /** Partial grid with vtable D_176460 in main data. */
 class LibClass176460 : public LibClass176530
 {
 public:
+    LibClass176460()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176460()
     {
     }
+
+    virtual void func_slot18();
 };
 
-/** Partial grid with vtable D_176940 in main data. */
+/** Partial grid emitter with vtable D_176940 in main data; slot 0x18 is still pure here. */
 class LibClass176940 : public LibClass1771A0
 {
 public:
+    /** @brief Start emitting with unit scale, one particle per emission and no emitters. */
+    LibClass176940()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        primary_emitter = 0;
+        emission_kind = 0;
+        unk4d = 0;
+        primary_emission_count = 1;
+        secondary_emitter = 0;
+        secondary_emission_count = 1;
+        unk56 = 0;
+        skip_frame_playback = 0;
+        unk04 = 1;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176940()
     {
     }
 
+    virtual void func_slot0C();
+
+    virtual void func_slot20();
+
+    virtual void func_slot28();
+
+    virtual void func_slot2C();
+
+    virtual void func_slot40();
+
+    virtual void func_slot44();
+
+    virtual void func_slot48();
+
+    virtual void func_slot4C(float value);
+
+    virtual void func_slot50();
+
+    virtual void func_slot54();
+
+    virtual void func_slot5C(u8 mode);
+
+    virtual void func_slot60();
+
+    virtual void func_slot64(float value);
+
+    virtual void func_slot68(u8 value);
+
+    virtual void func_slot6C();
+
+    virtual void func_slot70(float value);
+
+    virtual void func_slot74();
+
+    virtual void func_slot78(float value);
+
+    virtual void func_slot7C(u32 value);
+
+    virtual void func_slot80();
+
+    virtual void func_slot84(u8 value);
+
+    virtual void func_slot88(u8 flags);
+
+    virtual void func_slot8C(u32 value);
+
+    virtual void func_slot90();
+
+    virtual void func_slot94(u8 value);
+
+    virtual void func_slot98(float value);
+
+    virtual void func_slot9C(float value);
+
+    virtual void func_slotA0(u8 flags);
+
+    virtual void func_slotA4();
+
+    virtual void func_slotA8();
+
+    virtual void func_slotAC();
+
+    virtual void func_slotB0();
+
+    virtual void func_slotB8();
+
+    virtual void func_slotBC();
+
+    float unk28;
+    s32 index;
+    float emission_value;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float secondary_emission_scale;
+    s32 unk44;
+    LibClass173990* primary_emitter;
+    u8 emission_kind;
+    u8 unk4d;
+    u8 primary_emission_flags;
+    u8 primary_emission_count;
+    LibClass173990* secondary_emitter;
+    u8 secondary_emission_flags;
+    u8 secondary_emission_count;
+    u8 unk56;
+    u8 skip_frame_playback;
+    u8 unk58[0x58];
+
+    /**
+     * @brief Set how the grid emits and the value that goes with it.
+     * @param kind Emission kind.
+     * @param value Emission value.
+     */
+    void set_emission(u8 kind, float value)
+    {
+        emission_kind = kind;
+        emission_value = value;
+    }
 };
 
 /** Partial grid with vtable D_1766D0 in main data. */
 class LibClass1766D0 : public LibClass176940
 {
 public:
+    LibClass1766D0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass1766D0()
     {
     }
+
+    virtual void func_slot18();
 };
 
 /** Partial grid with vtable D_176870 in main data. */
 class LibClass176870 : public LibClass176940
 {
 public:
+    LibClass176870()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176870()
     {
     }
+
+    virtual void func_slot18();
 };
 
 /** Partial grid with vtable D_176AE0 in main data. */
 class LibClass176AE0 : public LibClass173DA0
 {
 public:
+    LibClass176AE0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176AE0()
     {
     }
+
+    virtual void func_slot18();
 };
 
 /** Partial grid with vtable D_176C80 in main data. */
 class LibClass176C80 : public LibClass173DA0
 {
 public:
+    LibClass176C80()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176C80()
     {
     }
+
+    virtual void func_slot18();
 };
 
-/** Partial grid with vtable D_176EF0 in main data. */
+/** Partial grid emitter with vtable D_176EF0 in main data; slot 0x18 is still pure here. */
 class LibClass176EF0 : public LibClass177680
 {
 public:
+    /** @brief Start emitting with unit scale, one particle per emission and no emitters. */
+    LibClass176EF0()
+    {
+        unk38 = 1.0f;
+        unk44 = 0;
+        primary_emitter = 0;
+        emission_kind = 0;
+        unk4d = 0;
+        primary_emission_count = 1;
+        secondary_emitter = 0;
+        secondary_emission_count = 1;
+        unk56 = 0;
+        skip_frame_playback = 0;
+        unk04 = 1;
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176EF0()
     {
     }
 
+    virtual void func_slot0C();
+
+    virtual void func_slot20();
+
+    virtual void func_slot28();
+
+    virtual void func_slot2C();
+
+    virtual void func_slot40();
+
+    virtual void func_slot44();
+
+    virtual void func_slot48();
+
+    virtual void func_slot4C(float value);
+
+    virtual void func_slot50();
+
+    virtual void func_slot54();
+
+    virtual void func_slot5C(u8 mode);
+
+    virtual void func_slot60();
+
+    virtual void func_slot64(float value);
+
+    virtual void func_slot68(u8 value);
+
+    virtual void func_slot6C();
+
+    virtual void func_slot70(float value);
+
+    virtual void func_slot74();
+
+    virtual void func_slot78(float value);
+
+    virtual void func_slot7C(u32 value);
+
+    virtual void func_slot80();
+
+    virtual void func_slot84(u8 value);
+
+    virtual void func_slot88(u8 flags);
+
+    virtual void func_slot8C(u32 value);
+
+    virtual void func_slot90();
+
+    virtual void func_slot94(u8 value);
+
+    virtual void func_slot98(float value);
+
+    virtual void func_slot9C(float value);
+
+    virtual void func_slotA0(u8 flags);
+
+    virtual void func_slotA4();
+
+    virtual void func_slotA8();
+
+    virtual void func_slotAC();
+
+    virtual void func_slotB0();
+
+    virtual void func_slotB8();
+
+    virtual void func_slotBC();
+
+    float unk28;
+    s32 index;
+    float emission_value;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float secondary_emission_scale;
+    s32 unk44;
+    LibClass173990* primary_emitter;
+    u8 emission_kind;
+    u8 unk4d;
+    u8 primary_emission_flags;
+    u8 primary_emission_count;
+    LibClass173990* secondary_emitter;
+    u8 secondary_emission_flags;
+    u8 secondary_emission_count;
+    u8 unk56;
+    u8 skip_frame_playback;
+    u8 unk58[0x58];
+
+    /**
+     * @brief Set how the grid emits and the value that goes with it.
+     * @param kind Emission kind.
+     * @param value Emission value.
+     */
+    void set_emission(u8 kind, float value)
+    {
+        emission_kind = kind;
+        emission_value = value;
+    }
 };
 
 /** Partial grid with vtable D_176E20 in main data. */
 class LibClass176E20 : public LibClass176EF0
 {
 public:
+    LibClass176E20()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176E20()
     {
     }
+
+    virtual void func_slot18();
 };
 
 /** Partial grid with vtable D_1755C0 in main data. */
 class LibClass1755C0 : public LibClass177090
 {
 public:
+    LibClass1755C0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass1755C0();
 
@@ -373,6 +1267,10 @@ public:
 class LibClass175690 : public LibClass175760
 {
 public:
+    LibClass175690()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175690();
 };
@@ -381,6 +1279,10 @@ public:
 class LibClass175830 : public LibClass175900
 {
 public:
+    LibClass175830()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175830();
 };
@@ -389,6 +1291,10 @@ public:
 class LibClass1759D0 : public LibClass175AA0
 {
 public:
+    LibClass1759D0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass1759D0();
 };
@@ -397,6 +1303,10 @@ public:
 class LibClass175C40 : public LibClass175D10
 {
 public:
+    LibClass175C40()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175C40();
 };
@@ -405,6 +1315,10 @@ public:
 class LibClass175EB0 : public LibClass175F80
 {
 public:
+    LibClass175EB0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass175EB0();
 };
@@ -413,6 +1327,10 @@ public:
 class LibClass176120 : public LibClass1761F0
 {
 public:
+    LibClass176120()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176120();
 };
@@ -421,6 +1339,10 @@ public:
 class LibClass176390 : public LibClass176460
 {
 public:
+    LibClass176390()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176390();
 };
@@ -429,6 +1351,10 @@ public:
 class LibClass176600 : public LibClass1766D0
 {
 public:
+    LibClass176600()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176600();
 };
@@ -437,6 +1363,10 @@ public:
 class LibClass1767A0 : public LibClass176870
 {
 public:
+    LibClass1767A0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass1767A0();
 };
@@ -445,6 +1375,10 @@ public:
 class LibClass176A10 : public LibClass176AE0
 {
 public:
+    LibClass176A10()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176A10();
 };
@@ -453,6 +1387,10 @@ public:
 class LibClass176BB0 : public LibClass176C80
 {
 public:
+    LibClass176BB0()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176BB0();
 };
@@ -461,6 +1399,10 @@ public:
 class LibClass176D50 : public LibClass176E20
 {
 public:
+    LibClass176D50()
+    {
+    }
+
     /** @brief Destroy the grid. */
     virtual ~LibClass176D50();
 };
@@ -549,6 +1491,10 @@ public:
 class LibClass1753A0 : public LibTransform
 {
 public:
+    LibClass1753A0()
+    {
+    }
+
     /** @brief Destroy the transform. */
     virtual ~LibClass1753A0();
 
@@ -565,6 +1511,12 @@ public:
 class LibClass175430 : public LibModel
 {
 public:
+    /** @brief Start with the base at the origin. */
+    LibClass175430()
+    {
+        base = FieldVec4B(0.0f, 0.0f, 0.0f, 0.0f);
+    }
+
     /** @brief Destroy the model. */
     virtual ~LibClass175430();
 
@@ -682,13 +1634,18 @@ extern "C"
 
     void func_0046B480(LibObject1751A0* holder, LibGridBase* reference);
 
+    /**
+     * @brief Attach a source to the emitter, set flag bit 0 of 0x499, clear 0x3F4 and count the emitter as a user.
+     * @param object Emitter.
+     * @param source Image model to draw from.
+     */
+    void func_0043B700(void* object, void* source);
+
+    LibRenderDataRecord* func_00448910(u32 first_key, u32 second_key);
+
     void lib_collect_entry_tree(LibEntryManager* manager, s32 index, LibEntryHandleCollection* collection);
 
     void func_0046C3F0(LibEntryManager* scene, LibTransform* object, const LibSceneTransformRecord* record);
-
-    void func_004720F0(LibFloat4* vector);
-
-    LibFloat4* func_00472110(LibFloat4* vector, float value);
 
     void func_00472570(LibEntryManager* manager, s32 check);
 
@@ -849,7 +1806,7 @@ extern "C" LibImageRegistry* g_image_registry;
  */
 void LibObject1751A0::set_image(LibResourceChunkHeader* resource, u32 index)
 {
-    unk648 = resource + 1;
+    record.data = reinterpret_cast<u8*>(resource + 1);
     LibResourceChunkHeader* chunk = resource;
 
     do
@@ -874,8 +1831,8 @@ found:
 
     u32* offsets = set->offsets;
     image = reinterpret_cast<LibImageEntry*>(reinterpret_cast<u8*>(set) + offsets[index]);
-    unk624 = 0;
-    unk640 = 0;
+    record.storage_kind = 0;
+    record.resolved_data = 0;
     setup = image->setup;
 
     reset_texture_uploads();
@@ -887,7 +1844,7 @@ found:
         reference->func_slot50(image, image->pixels);
     }
 
-    unk620 = 0;
+    record.next_offset = 0;
     float width = static_cast<u32>(image->width);
     float height = static_cast<u32>(image->height);
     height *= height;
@@ -922,35 +1879,35 @@ void LibObject1751A0::allocate_packets()
         batch *= unit;
         delete packet;
         packet = 0;
-        delete unka84;
-        unka84 = 0;
-        delete unka90;
-        unka90 = 0;
+        delete unka84[0];
+        unka84[0] = 0;
+        delete unka90[0];
+        unka90[0] = 0;
         delete unka8c;
         unka8c = 0;
         s32 batches = (batch + unit * reference->func_slot34() - 1) / batch;
         s32 size = batches * 4 + 0x18;
-        unka84 = new (0) u8[size * 32];
-        unka88 = unka84 + size * 16;
+        unka84[0] = new (0) u8[size * 32];
+        unka84[1] = unka84[0] + size * 16;
         unka8c = new (0) u8[0x400];
         s32 qwords = (batches * 0x20u + batch * (batches * 0x30u)) / 16 + 0x12;
 
         if (!copied)
         {
             packet = new (0) LibImagePacket;
-            unka90 = new (0) u8[qwords * 32];
-            unka94 = unka90 + qwords * 16;
+            unka90[0] = new (0) u8[qwords * 32];
+            unka90[1] = unka90[0] + qwords * 16;
         }
 
-        if (unka84 == 0 || (!copied && unka90 == 0) || unka8c == 0 || (!copied && packet == 0))
+        if (unka84[0] == 0 || (!copied && unka90[0] == 0) || unka8c == 0 || (!copied && packet == 0))
         {
             delete packet;
-            delete unka84;
-            delete unka90;
+            delete unka84[0];
+            delete unka90[0];
             delete unka8c;
             packet = 0;
-            unka84 = 0;
-            unka90 = 0;
+            unka84[0] = 0;
+            unka90[0] = 0;
             unka8c = 0;
             return;
         }
@@ -962,8 +1919,8 @@ void LibObject1751A0::allocate_packets()
 
         chains[0].tags[0][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka8c + 0x40);
         chains[1].tags[0][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka8c + 0x40);
-        chains[0].tags[1][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka84 + 0x40);
-        chains[1].tags[1][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka88 + 0x40);
+        chains[0].tags[1][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka84[0] + 0x40);
+        chains[1].tags[1][0] = DMA_TAG(0, DMA_TAG_ID_CALL, unka84[1] + 0x40);
         chains[0].tags[2][0] = DMA_TAG_ID_END;
         chains[1].tags[2][0] = DMA_TAG_ID_END;
         FlushCache(0);
@@ -1004,8 +1961,8 @@ LibObject1751A0::~LibObject1751A0()
     }
 
     delete packet;
-    delete unka84;
-    delete unka90;
+    delete unka84[0];
+    delete unka90[0];
     delete unka8c;
 }
 
@@ -1020,20 +1977,20 @@ LibObject1751A0::LibObject1751A0()
     set_vector(&box_max, 10000.0f, 10000.0f, 10000.0f, 0.0f);
     diagonal = 1.0f;
     unkaa4 = 10.0f;
-    unka98 = -1;
-    unka9c = -1;
+    unka98[0] = -1;
+    unka98[1] = -1;
     unkae6 = 0;
     holds_reference = 0;
     reference = 0;
-    unka84 = 0;
-    unka88 = 0;
-    unka90 = 0;
-    unka94 = 0;
+    unka84[0] = 0;
+    unka84[1] = 0;
+    unka90[0] = 0;
+    unka90[1] = 0;
     packet = 0;
     unka8c = 0;
     unkade = 0;
-    unkada = 1;
-    unkadb = 1;
+    unkada[0] = 1;
+    unkada[1] = 1;
     next_cell = 0;
     unkadf = 0;
     unkabc = 0.0f;
@@ -1114,10 +2071,12 @@ void LibLookAtTransform::update_transform_matrix()
 }
 
 /**
- * @brief Create an object of kind 0x11.
+ * @brief Create an object of kind 0x11; the base scene ignores the shape and data.
+ * @param shape Emitter shape.
+ * @param data Shape data.
  * @return The new object, or null.
  */
-void* LibScene::func_0046BA00()
+void* LibScene::func_0046BA00(u8 shape, void* data)
 {
     return func_00471480(0x11);
 }
@@ -1199,7 +2158,268 @@ void func_0046C090(LibEntryManager* manager, void* handle)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C180__8LibSceneFPvPvPv);
+/** Partial view of the scene record a particle grid is built from. */
+struct LibGridSceneRecord
+{
+    u32 unk00;
+    u8 unk04[0x4];
+    u32 unk08;
+    u32 unk0c;
+    u8 unk10[0x4];
+    s32 image_offset;
+    s32 rows;
+    u8 columns;
+    u8 shape;
+    u8 kind;
+    u8 unk1f;
+    float unk20;
+    float unk24;
+    void* unk28;
+    u8 unk2c[0x1];
+    u8 unk2d;
+    u8 unk2e;
+    u8 unk2f;
+    u8 unk30[0x1];
+    u8 unk31;
+    s16 image_slot;
+    float unk34;
+    float unk38;
+    float unk3c;
+    float unk40;
+    float unk44;
+    float unk48;
+    float unk4c;
+    float unk50;
+    float unk54;
+    float unk58;
+    u32 unk5c;
+    float unk60;
+    float unk64;
+    u8 emission;
+    u8 unk69[0x2];
+    u8 unk6b;
+    u8 unk6c;
+    u8 unk6d;
+    u8 unk6e;
+    u8 unk6f;
+    u8 unk70;
+    u8 unk71;
+    u8 unk72;
+    u8 unk73;
+    u8 unk74;
+    u8 unk75;
+    u8 keyed;
+    u8 unk77;
+    u8 unk78;
+    u8 unk79;
+    u8 unk7a;
+    u8 unk7b;
+    u8 unk7c;
+    u8 unk7d;
+    u8 unk7e;
+    u8 unk7f;
+    u8 unk80;
+    u8 unk81;
+    u8 unk82;
+    u8 unk83;
+    u8 unk84;
+    u8 unk85;
+    u8 unk86;
+    u8 unk87;
+    u8 unk88;
+    u8 unk89[0x3];
+    float unk8c;
+    float unk90;
+    float unk94;
+    float value;
+    float unk9c;
+    float unka0;
+    float unka4;
+    float unka8;
+    float unkac;
+    float unkb0;
+    float unkb4;
+    float unkb8;
+    float unkbc;
+    float unkc0;
+    float unkc4;
+    float unkc8;
+    float unkcc;
+    float unkd0;
+    float unkd4;
+    float unkd8;
+    float unkdc;
+    float unke0;
+    float unke4;
+    u8 unke8;
+    u8 unke9;
+    u8 unkea;
+    u8 unkeb;
+    float unkec;
+    float unkf0;
+    float unkf4;
+    float unkf8;
+    float unkfc;
+    float unk100;
+    float unk104;
+    float unk108;
+    float unk10c;
+    float unk110;
+    float unk114;
+    float unk118;
+    float unk11c;
+    float unk120;
+    float unk124;
+    float unk128;
+    float unk12c;
+    float unk130;
+    float unk134;
+    float unk138;
+    u8 unk13c;
+    u8 unk13d;
+    u8 unk13e;
+    u8 unk13f;
+    u8 unk140;
+    u8 unk141;
+    u8 unk142;
+    u8 unk143;
+    float unk144;
+    float unk148;
+    float unk14c;
+    float unk150;
+    float unk154;
+    float unk158;
+    float unk15c;
+    float unk160;
+    float unk164;
+    float unk168;
+    float unk16c;
+    float unk170;
+    float unk174;
+    float unk178;
+    float unk17c;
+    float unk180;
+    float unk184;
+    float unk188;
+    float unk18c;
+    float unk190;
+    float unk194;
+    float unk198;
+    float unk19c;
+    float unk1a0;
+    float unk1a4;
+    u8 unk1a8;
+    u8 unk1a9;
+    u8 unk1aa;
+    u8 unk1ab;
+    float unk1ac;
+    float unk1b0;
+    float unk1b4;
+    float unk1b8;
+    float unk1bc;
+    float unk1c0;
+    float unk1c4;
+    float unk1c8;
+    u8 unk1cc;
+    u8 unk1cd;
+    u8 unk1ce;
+    u8 unk1cf;
+    u8 unk1d0;
+    u8 unk1d1;
+    u8 unk1d2;
+    u8 unk1d3;
+    u8 unk1d4;
+    u8 unk1d5;
+    u8 unk1d6;
+    u8 unk1d7[0x1];
+    float unk1d8;
+    float unk1dc;
+    float unk1e0;
+    float unk1e4;
+    float unk1e8;
+    float unk1ec;
+    float unk1f0;
+    float unk1f4;
+    float unk1f8;
+    float unk1fc;
+    float unk200;
+    float unk204;
+    float unk208;
+    float unk20c;
+    float unk210;
+    float unk214;
+    float unk218;
+    float unk21c;
+    float unk220;
+    float unk224;
+    float unk228;
+    float unk22c;
+    float unk230;
+    float unk234;
+    float unk238;
+    float unk23c;
+    s16 key_count;
+    u8 unk242[0x2];
+    s32 keys_offset;
+    u8 unk248;
+    u8 unk249;
+    u8 unk24a;
+    u8 unk24b;
+    u8 unk24c;
+};
+
+/** Key of a keyed grid in its scene record: a key byte and a vector. */
+struct LibGridSceneKey
+{
+    u8 key;
+    u8 unk01[3];
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+/**
+ * @brief Create a LibClass176D50 particle grid for a scene record and take its emission settings from the record.
+ * @param unk1 Unused.
+ * @param unk2 Unused.
+ * @param record Scene record.
+ * @return The new grid, or null.
+ */
+void* LibScene::func_0046C180(void* unk1, void* unk2, void* record)
+{
+    LibGridSceneRecord* source = static_cast<LibGridSceneRecord*>(record);
+    LibClass176D50* grid = new (0) LibClass176D50;
+
+    if (grid == 0)
+    {
+        return 0;
+    }
+
+    switch (source->emission)
+    {
+    case 0:
+        grid->set_emission(1, source->value);
+        break;
+    case 1:
+        grid->set_emission(2, source->value * source->value);
+        break;
+    case 2:
+        grid->emission_kind = 3;
+        break;
+    case 3:
+        grid->set_emission(4, source->value);
+        break;
+    case 4:
+        grid->set_emission(5, source->value);
+        break;
+    case 5:
+        grid->set_emission(6, source->value);
+        break;
+    }
+
+    return grid;
+}
 
 /**
  * @brief Set a transform's offset translation (w one) and rebuild its offset matrix.
@@ -1277,9 +2497,1054 @@ void func_0046C3F0(LibEntryManager* scene, LibTransform* object, const LibSceneT
     lib_set_offset_scale(object, record->offset_scale[0], record->offset_scale[1], record->offset_scale[2]);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046C540);
+/**
+ * @brief Create a particle grid for a scene record: the record's kind and shape pick the grid class, and its
+ *        emission settings, or for keyed grids their key list, come from the record.
+ * @param record Scene record.
+ * @return The new grid, or null.
+ */
+void* LibScene::func_0046C540(void* record)
+{
+    LibGridSceneRecord* source = static_cast<LibGridSceneRecord*>(record);
+    LibClass173A40* grid = 0;
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046DE90);
+    switch (source->kind)
+    {
+    case 0:
+        switch (source->shape)
+        {
+        case 0:
+            grid = new (0) LibClass176BB0;
+
+            if (!grid)
+            {
+                return 0;
+            }
+
+            break;
+        case 1:
+            grid = new (0) LibClass173CD0;
+
+            if (!grid)
+            {
+                return 0;
+            }
+
+            break;
+        case 2:
+            grid = new (0) LibClass176A10;
+
+            if (!grid)
+            {
+                return 0;
+            }
+
+            break;
+        case 3:
+        case 5:
+        case 6:
+            grid = new (0) LibClass1767A0;
+
+            if (!grid)
+            {
+                return 0;
+            }
+
+            break;
+        case 4:
+            grid = new (0) LibClass176600;
+
+            if (!grid)
+            {
+                return 0;
+            }
+
+            break;
+        }
+
+        break;
+    case 1:
+        switch (source->shape)
+        {
+        case 0:
+        case 1:
+        case 2:
+        {
+            LibClass176390* emitter = new (0) LibClass176390;
+            grid = emitter;
+
+            if (!emitter)
+            {
+                return 0;
+            }
+
+            switch (source->emission)
+            {
+            case 0:
+                emitter->set_emission(1, source->value);
+                break;
+            case 1:
+                emitter->set_emission(2, source->value * source->value);
+                break;
+            case 4:
+                emitter->set_emission(5, source->value);
+                break;
+            case 5:
+                emitter->set_emission(6, source->value);
+                break;
+            }
+
+            break;
+        }
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        {
+            LibClass176120* emitter = new (0) LibClass176120;
+            grid = emitter;
+
+            if (!emitter)
+            {
+                return 0;
+            }
+
+            switch (source->emission)
+            {
+            case 0:
+                emitter->set_emission(1, source->value);
+                break;
+            case 1:
+                emitter->set_emission(2, source->value * source->value);
+                break;
+            case 3:
+                emitter->set_emission(4, source->value);
+                break;
+            case 4:
+                emitter->set_emission(5, source->value);
+                break;
+            case 5:
+                emitter->set_emission(6, source->value);
+                break;
+            }
+
+            break;
+        }
+        }
+
+        break;
+    case 2:
+        switch (source->shape)
+        {
+        case 0:
+        case 1:
+        case 2:
+        {
+            LibClass175EB0* emitter = new (0) LibClass175EB0;
+            grid = emitter;
+
+            if (!emitter)
+            {
+                return 0;
+            }
+
+            switch (source->emission)
+            {
+            case 0:
+                emitter->set_emission(1, source->value);
+                break;
+            case 1:
+                emitter->set_emission(2, source->value * source->value);
+                break;
+            case 2:
+                emitter->emission_kind = 3;
+                break;
+            case 4:
+                emitter->set_emission(5, source->value);
+                break;
+            case 5:
+                emitter->set_emission(6, source->value);
+                break;
+            }
+
+            break;
+        }
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        {
+            LibClass175C40* emitter = new (0) LibClass175C40;
+            grid = emitter;
+
+            if (!emitter)
+            {
+                return 0;
+            }
+
+            switch (source->emission)
+            {
+            case 0:
+                emitter->set_emission(1, source->value);
+                break;
+            case 1:
+                emitter->set_emission(2, source->value * source->value);
+                break;
+            case 2:
+                emitter->emission_kind = 3;
+                break;
+            case 3:
+                emitter->set_emission(4, source->value);
+                break;
+            case 4:
+                emitter->set_emission(5, source->value);
+                break;
+            case 5:
+                emitter->set_emission(6, source->value);
+                break;
+            }
+
+            break;
+        }
+        }
+
+        break;
+    case 3:
+        switch (source->shape)
+        {
+        case 0:
+        case 1:
+        case 2:
+        {
+            LibClass1759D0* emitter = new (0) LibClass1759D0;
+            grid = emitter;
+
+            if (!emitter)
+            {
+                return 0;
+            }
+
+            switch (source->emission)
+            {
+            case 0:
+                emitter->set_emission(1, source->value);
+                break;
+            case 1:
+                emitter->set_emission(2, source->value * source->value);
+                break;
+            case 2:
+                emitter->emission_kind = 3;
+                break;
+            case 4:
+                emitter->set_emission(5, source->value);
+                break;
+            case 5:
+                emitter->set_emission(6, source->value);
+                break;
+            }
+
+            break;
+        }
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        {
+            LibClass176D50* emitter = new (0) LibClass176D50;
+            grid = emitter;
+
+            if (!emitter)
+            {
+                return 0;
+            }
+
+            switch (source->emission)
+            {
+            case 0:
+                emitter->set_emission(1, source->value);
+                break;
+            case 1:
+                emitter->set_emission(2, source->value * source->value);
+                break;
+            case 2:
+                emitter->emission_kind = 3;
+                break;
+            case 3:
+                emitter->set_emission(4, source->value);
+                break;
+            case 4:
+                emitter->set_emission(5, source->value);
+                break;
+            case 5:
+                emitter->set_emission(6, source->value);
+                break;
+            }
+
+            break;
+        }
+        }
+
+        break;
+    case 4:
+        switch (source->shape)
+        {
+        case 0:
+        case 1:
+        case 2:
+        {
+            LibClass175830* emitter = new (0) LibClass175830;
+            grid = emitter;
+
+            if (!emitter)
+            {
+                return 0;
+            }
+
+            switch (source->emission)
+            {
+            case 0:
+                emitter->set_emission(1, source->value);
+                break;
+            case 1:
+                emitter->set_emission(2, source->value * source->value);
+                break;
+            case 2:
+                emitter->emission_kind = 3;
+                break;
+            case 4:
+                emitter->set_emission(5, source->value);
+                break;
+            case 5:
+                emitter->set_emission(6, source->value);
+                break;
+            }
+
+            break;
+        }
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        {
+            LibClass175690* emitter = new (0) LibClass175690;
+            grid = emitter;
+
+            if (!emitter)
+            {
+                return 0;
+            }
+
+            switch (source->emission)
+            {
+            case 0:
+                emitter->set_emission(1, source->value);
+                break;
+            case 1:
+                emitter->set_emission(2, source->value * source->value);
+                break;
+            case 2:
+                emitter->emission_kind = 3;
+                break;
+            case 3:
+                emitter->set_emission(4, source->value);
+                break;
+            case 4:
+                emitter->set_emission(5, source->value);
+                break;
+            case 5:
+                emitter->set_emission(6, source->value);
+                break;
+            }
+
+            break;
+        }
+        }
+
+        break;
+    case 5:
+        switch (source->shape)
+        {
+        case 0:
+        case 1:
+        case 2:
+        {
+            LibClass1755C0* list = new (0) LibClass1755C0;
+            grid = list;
+
+            if (!list)
+            {
+                return 0;
+            }
+
+            list->set_emission(1, source->value);
+
+            if (source->keyed)
+            {
+                list->unkc8 = 1;
+            }
+
+            LibGridSceneKey* key = reinterpret_cast<LibGridSceneKey*>(reinterpret_cast<u8*>(source) + source->keys_offset);
+            s32 count = source->key_count;
+            list->unkc9 = 0;
+            list->unkb0 = new (0) u8[count];
+            list->unkb4 = new (0) LibClass173490Entry[count];
+            list->unkc0 = count;
+            list->unkc4 = 0;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                func_00479F50(reinterpret_cast<LibKeyedVectorList*>(list), key->key,
+                              reinterpret_cast<const LibFloat4*>(&FieldVec4A(key->x, key->y, key->z, key->w)));
+                key++;
+            }
+
+            break;
+        }
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        {
+            LibClass173F80* list = new (0) LibClass173F80;
+            grid = list;
+
+            if (!list)
+            {
+                return 0;
+            }
+
+            list->set_emission(1, source->value);
+
+            if (source->keyed)
+            {
+                list->unkc8 = 1;
+            }
+
+            LibGridSceneKey* key = reinterpret_cast<LibGridSceneKey*>(reinterpret_cast<u8*>(source) + source->keys_offset);
+            s32 count = source->key_count;
+            list->unkc9 = 0;
+            list->unkb0 = new (0) u8[count];
+            list->unkb4 = new (0) LibClass173490Entry[count];
+            list->unkc0 = count;
+            list->unkc4 = 0;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                func_00479EF0(reinterpret_cast<LibKeyedVectorList*>(list), key->key,
+                              reinterpret_cast<const LibFloat4*>(&FieldVec4A(key->x, key->y, key->z, key->w)));
+                key++;
+            }
+
+            break;
+        }
+        }
+
+        break;
+    case 6:
+        grid = static_cast<LibClass173A40*>(func_0046C180(reinterpret_cast<void*>(source->shape), source->unk28, record));
+        break;
+    }
+
+    return grid;
+}
+
+/**
+ * @brief View a vector as the quadword the emitter setters take.
+ * @param vector Vector to pass.
+ * @return The vector's 16 bytes.
+ */
+static inline const unsigned __int128* as_quadword(const FieldVec4A& vector)
+{
+    return reinterpret_cast<const unsigned __int128*>(&vector);
+}
+
+/**
+ * @brief Create a particle emitter for a scene record: unless the record says otherwise, also a grid and an image
+ *        object that draws it, then copy the record's grid, image and emitter settings across.
+ * @param unk1 Update list the image object joins.
+ * @param unk2 Update list the emitter joins.
+ * @param record Scene record.
+ * @return The new emitter, or null.
+ */
+void* LibScene::func_0046DE90(void* unk1, void* unk2, void* record)
+{
+    LibGridSceneRecord* source = static_cast<LibGridSceneRecord*>(record);
+
+    if (source->unk1ce != 6)
+    {
+        return 0;
+    }
+
+    LibClass173990* emitter;
+
+    if (source->kind == 6)
+    {
+        emitter = static_cast<LibClass173990*>(func_0046BA00(source->shape, source->unk28));
+    }
+    else
+    {
+        emitter = static_cast<LibClass173990*>(func_00471480(0x11));
+    }
+
+    if (!emitter)
+    {
+        return 0;
+    }
+
+    LibObject1751A0* object = 0;
+
+    if (!source->unk31)
+    {
+        object = static_cast<LibObject1751A0*>(func_00471480(0x12));
+
+        if (!object)
+        {
+            emitter->destroy();
+            return 0;
+        }
+
+        LibClass173A40* grid = static_cast<LibClass173A40*>(func_0046C540(record));
+
+        if (!grid)
+        {
+            emitter->destroy();
+            object->destroy();
+            return 0;
+        }
+
+        func_0046B480(object, reinterpret_cast<LibGridBase*>(grid));
+        grid->resize(source->rows, source->columns);
+        grid->func_slot4C(source->unk20);
+
+        switch (source->unk2d)
+        {
+        case 0:
+            grid->func_slot5C(0);
+            break;
+        case 1:
+            grid->func_slot5C(1);
+            break;
+        case 2:
+            grid->func_slot5C(2);
+            break;
+        case 3:
+            grid->func_slot5C(3);
+            break;
+        }
+
+        grid->func_slot64(source->unk34);
+
+        if (source->columns > 1)
+        {
+            grid->func_slot68(source->unk1d5);
+            grid->func_slot70(source->unk64);
+        }
+
+        grid->func_slot78(source->unk24);
+
+        if (source->unk6f)
+        {
+            grid->func_slot7C(source->unk00);
+            grid->func_slot84(source->unk70);
+            grid->func_slot88((source->unk71 ? 1 : 0) | (source->unk72 ? 2 : 0) | (source->unk73 ? 4 : 0) |
+                              (source->unk74 ? 8 : 0));
+        }
+        else
+        {
+            grid->func_slot7C(0);
+        }
+
+        if (source->unk81)
+        {
+            grid->func_slot8C(source->unk0c);
+            grid->func_slot94(source->unk82);
+            grid->func_slot98(source->unk90);
+            grid->func_slot9C(source->unk94);
+            grid->func_slotA0((source->unk83 ? 1 : 0) | (source->unk84 ? 2 : 0) | (source->unk85 ? 4 : 0) |
+                              (source->unk86 ? 8 : 0));
+        }
+        else
+        {
+            grid->func_slot8C(0);
+        }
+
+        if ((source->shape > 2 && source->shape < 5) || source->shape == 6)
+        {
+            if (source->image_offset)
+            {
+                LibRenderDataRecord* entry =
+                    reinterpret_cast<LibRenderDataRecord*>(reinterpret_cast<u8*>(source) + source->image_offset);
+
+                if (entry->storage_kind == 1)
+                {
+                    LibRenderDataRecord* shared = func_00448910(entry->key08, entry->key0c);
+
+                    if (shared)
+                    {
+                        object->set_image(shared->data ? reinterpret_cast<LibResourceChunkHeader*>(
+                                                             static_cast<u8*>(shared->data) - 0x10)
+                                                       : reinterpret_cast<LibResourceChunkHeader*>(shared + 1),
+                                          source->image_slot);
+                    }
+                }
+                else if (entry->storage_kind == 4)
+                {
+                    object->set_image(reinterpret_cast<LibResourceChunkHeader*>(reinterpret_cast<u8*>(entry) +
+                                                                                 entry->data_offset - 0x10),
+                                      source->image_slot);
+                }
+                else
+                {
+                    object->set_image(reinterpret_cast<LibResourceChunkHeader*>(entry + 1), source->image_slot);
+                }
+            }
+        }
+        else if (source->shape == 5)
+        {
+            object->clear_image();
+        }
+
+        object->set_primitive(source->shape, source->unk2e ? true : false, source->unk2f, source->unk58);
+
+        if (source->unk6d)
+        {
+            float value = source->unka0;
+            object->unkadf = 1;
+            object->unkabc = value;
+        }
+
+        if (source->unk6e)
+        {
+            object->unkae0 = source->unk6e;
+        }
+
+        func_0043B700(emitter, object);
+        object->light_mask = source->unk5c;
+
+        if (source->unk6c)
+        {
+            float value = source->unk9c;
+            object->unkae6 = 1;
+            object->unkac4 = value;
+        }
+
+        float radius = ee_max_in_place(source->unkac, source->unkb0);
+        radius = ee_max(source->unkb4, radius);
+        object->unkaa8 = radius;
+        static_cast<LibUpdateList*>(unk1)->append_node(object, LibUpdateList::DEFAULT_NODE_KIND);
+    }
+    else
+    {
+        emitter->unk49b_0 = 1;
+    }
+
+    if (source->unk78)
+    {
+        func_00435190(emitter, source->unk08);
+        func_004351A0(emitter, 1, source->unk79,
+                      (source->unk7a ? 1 : 0) | (source->unk7b ? 2 : 0) | (source->unk7c ? 4 : 0) |
+                          (source->unk7d ? 8 : 0) | (source->unk7e ? 0x10 : 0) | (source->unk7f ? 0x20 : 0) |
+                          (source->unk80 ? 0x40 : 0));
+    }
+
+    emitter->unk3ec = source->unka4;
+    emitter->unk3f0 = source->unka8;
+
+    if (source->unk1cf)
+    {
+        func_004352B0(emitter, 1, source->unk208, source->unk20c);
+        emitter->unk3e8 = reinterpret_cast<u32>(this);
+    }
+
+    if (source->unk1d0 || source->unk1d1)
+    {
+        func_00435270(emitter, source->unk1d0 ? true : false, source->unk1d1 ? true : false, source->unk1d2, source->unk210);
+
+        if (source->unk1d3)
+        {
+            func_004351D0(emitter, 1, source->unk214, source->unk218);
+        }
+    }
+
+    switch (source->unk75)
+    {
+    case 0:
+        func_0043AFC0(emitter);
+        break;
+    case 1:
+        func_0043AFA0(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 2:
+        func_0043AF80(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 3:
+        func_0043AF60(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 4:
+        func_0043AF20(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 5:
+        func_0043AF40(emitter, source->unkac, source->unkb4, source->unkb8);
+        break;
+    case 6:
+        func_0043AF00(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 7:
+        func_0043AEE0(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 8:
+        func_0043AEC0(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 9:
+        func_0043AEA0(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 10:
+        func_0043AE80(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), source->unkb8);
+        break;
+    case 11:
+        func_0043AE20(emitter, as_quadword(FieldVec4A(source->unkac, source->unkb0, source->unkb4, 1.0f)), 0, source->unk1d4 != 0, source->unke4,
+                      source->unkb8);
+        break;
+    }
+
+    if (source->kind > 0)
+    {
+        switch (source->unke9)
+        {
+        case 0:
+            func_0043ADE0(emitter, as_quadword(FieldVec4A(source->unkec, source->unkf0, source->unkf4, 1.0f)));
+            break;
+        case 1:
+            func_0043ADC0(emitter, as_quadword(FieldVec4A(source->unkec, source->unkf0, source->unkf4, 1.0f)),
+                          as_quadword(FieldVec4A(source->unkf8, source->unkfc, source->unk100, 1.0f)));
+            break;
+        case 2:
+            func_0043ADA0(emitter, as_quadword(FieldVec4A(source->unkec, source->unkf0, source->unkf4, source->unkfc)));
+            break;
+        case 3:
+            func_0043AD80(emitter, source->unk104, source->unk108);
+            break;
+        case 4:
+            func_0043AD60(emitter, source->unk104, source->unk108, source->unk10c);
+            break;
+        case 5:
+            func_0043AD40(emitter, source->unk104, source->unk108);
+            break;
+        case 6:
+            func_0043AD20(emitter, as_quadword(FieldVec4A(source->unkec, source->unkf0, source->unkf4, source->unkfc)));
+            break;
+        case 7:
+            func_0043AD00(emitter, source->unk104, source->unk108, source->unk10c, source->unkf0, source->unkfc);
+            break;
+        }
+
+        switch (source->unk140)
+        {
+        case 0:
+            func_0043ACF0(emitter, as_quadword(FieldVec4A(source->unk144, source->unk148, source->unk14c, 1.0f)));
+            break;
+        case 1:
+            func_0043ACD0(emitter, as_quadword(FieldVec4A(source->unk144, source->unk148, source->unk14c, 1.0f)),
+                          as_quadword(FieldVec4A(source->unk150, source->unk154, source->unk158, 1.0f)));
+            break;
+        case 2:
+            func_0043ACB0(emitter, as_quadword(FieldVec4A(source->unk15c, source->unk15c, source->unk15c, source->unk15c)));
+            break;
+        }
+
+        if (source->unk13c)
+        {
+            emitter->unk49b_1 = 1;
+        }
+
+        if (source->unk13f)
+        {
+            emitter->unk49b_2 = 1;
+        }
+
+        if (source->unk13e)
+        {
+            emitter->unk49b_3 = 1;
+        }
+
+        if (source->unk87)
+        {
+            float value = source->unk8c;
+            emitter->unk49c_5 = 1;
+            emitter->unk438 = value;
+        }
+
+        if (source->unk13d)
+        {
+            float value = source->unk138;
+            emitter->unk49b_4 = 1;
+            emitter->unk3fc = value;
+        }
+
+        if (source->unk88)
+        {
+            emitter->unk49c_6 = 1;
+        }
+    }
+
+    switch (source->unk143)
+    {
+    case 0:
+        func_0043ACA0(emitter, as_quadword(FieldVec4A(source->unk188, source->unk18c, source->unk190, source->unk194)));
+        break;
+    case 1:
+        func_0043AC80(emitter, as_quadword(FieldVec4A(source->unk188, source->unk18c, source->unk190, source->unk194)),
+                      as_quadword(FieldVec4A(source->unk198, source->unk19c, source->unk1a0, source->unk1a4)));
+        break;
+    case 2:
+        func_0043AC60(emitter, as_quadword(FieldVec4A(source->unk188, source->unk18c, source->unk190, source->unk194)),
+                      as_quadword(FieldVec4A(source->unk198, source->unk19c, source->unk1a0, source->unk1a4)));
+        break;
+    }
+
+    if (source->kind > 1)
+    {
+        switch (source->unk1cc)
+        {
+        case 0:
+            func_0043AC50(emitter, as_quadword(FieldVec4A(source->unk1d8, source->unk1dc, source->unk1e0, source->unk1e4)));
+            break;
+        case 1:
+            func_0043AC30(emitter, as_quadword(FieldVec4A(source->unk1d8, source->unk1dc, source->unk1e0, source->unk1e4)),
+                          as_quadword(FieldVec4A(source->unk1e8, source->unk1ec, source->unk1f0, source->unk1f4)));
+            break;
+        case 2:
+            func_0043AC10(emitter, as_quadword(FieldVec4A(source->unk1d8, source->unk1dc, source->unk1e0, source->unk1e4)),
+                          as_quadword(FieldVec4A(source->unk1e8, source->unk1ec, source->unk1f0, source->unk1f4)));
+            break;
+        }
+
+        switch (source->unk1cd)
+        {
+        case 0:
+            func_0043AC00(emitter, as_quadword(FieldVec4A(source->unk1f8, source->unk1fc, source->unk200, source->unk204)));
+            break;
+        case 1:
+            func_0043ABE0(emitter, as_quadword(FieldVec4A(source->unk1f8, source->unk1fc, source->unk200, source->unk204)));
+            break;
+        }
+    }
+
+    if (source->unk2d == 0 || source->unk2d == 2)
+    {
+        emitter->entry_count = 0;
+        delete[] emitter->entries;
+        emitter->entries = 0;
+    }
+    else
+    {
+        s32 count = source->columns - 1;
+        delete[] emitter->entries;
+        emitter->entries = new (0) LibClass173490Entry[count];
+
+        if (emitter->entries)
+        {
+            emitter->entry_count = count;
+        }
+        else
+        {
+            emitter->entry_count = 0;
+        }
+
+        for (s32 i = 0; i < source->columns - 1; i++)
+        {
+            float x = source->unk38 + ((1.0f + i) * (source->unk48 - source->unk38)) / (u32)source->columns;
+            float y = source->unk3c + ((1.0f + i) * (source->unk4c - source->unk3c)) / (u32)source->columns;
+            float z = source->unk40 + ((1.0f + i) * (source->unk50 - source->unk40)) / (u32)source->columns;
+            float w = source->unk44 + ((1.0f + i) * (source->unk54 - source->unk44)) / (u32)source->columns;
+            emitter->set_entry(i, &LibClass173490Entry(x, y, z, w));
+        }
+    }
+
+    if (source->kind > 2 && source->keyed)
+    {
+        switch (source->unk77)
+        {
+        case 0:
+            func_0043ABD0(emitter, source->unkbc, source->unkc0);
+            break;
+        case 1:
+            func_0043ABB0(emitter, source->unkbc, source->unkc0, source->unkc4, source->unkc8);
+            break;
+        }
+
+        switch (source->unke8)
+        {
+        case 0:
+            func_0043ABA0(emitter, as_quadword(FieldVec4A(source->unkcc, source->unkd0, source->unkd4, 1.0f)));
+            break;
+        case 1:
+            func_0043AB80(emitter, as_quadword(FieldVec4A(source->unkcc, source->unkd0, source->unkd4, 1.0f)),
+                          as_quadword(FieldVec4A(source->unkd8, source->unkdc, source->unke0, 1.0f)));
+            break;
+        }
+
+        switch (source->unkea)
+        {
+        case 0:
+            func_0043AB70(emitter, source->unk110, source->unk114);
+            break;
+        case 1:
+            func_0043AB50(emitter, source->unk110, source->unk114, source->unk118, source->unk11c);
+            break;
+        }
+
+        switch (source->unkeb)
+        {
+        case 0:
+            func_0043AB40(emitter, as_quadword(FieldVec4A(source->unk120, source->unk124, source->unk128, 1.0f)));
+            break;
+        case 1:
+            func_0043AB20(emitter, as_quadword(FieldVec4A(source->unk120, source->unk124, source->unk128, 1.0f)),
+                          as_quadword(FieldVec4A(source->unk12c, source->unk130, source->unk134, 1.0f)));
+            break;
+        }
+
+        switch (source->unk141)
+        {
+        case 0:
+            func_0043AB10(emitter, source->unk160, source->unk164);
+            break;
+        case 1:
+            func_0043AAF0(emitter, source->unk160, source->unk164, source->unk168, source->unk16c);
+            break;
+        }
+
+        switch (source->unk142)
+        {
+        case 0:
+            func_0043AAE0(emitter, as_quadword(FieldVec4A(source->unk170, source->unk174, source->unk178, 1.0f)));
+            break;
+        case 1:
+            func_0043AAC0(emitter, as_quadword(FieldVec4A(source->unk170, source->unk174, source->unk178, 1.0f)),
+                          as_quadword(FieldVec4A(source->unk17c, source->unk180, source->unk184, 1.0f)));
+            break;
+        }
+    }
+
+    u8 c = source->unk24a;
+    u8 b = source->unk249;
+    u8 a = source->unk248;
+    emitter->unk494 = a;
+    emitter->unk495 = b;
+    emitter->unk496 = c;
+
+    if (source->shape == 3 || source->shape == 5 || source->shape == 6)
+    {
+        switch (source->unk1a8)
+        {
+        case 0:
+            func_0043AAB0(emitter, source->unk1ac);
+            break;
+        case 1:
+            func_0043AA90(emitter, source->unk1ac, source->unk1b0);
+            break;
+        }
+
+        switch (source->unk1a9)
+        {
+        case 0:
+            func_0043AA80(emitter, source->unk1b4);
+            break;
+        case 1:
+            func_0043AA60(emitter, source->unk1b4, source->unk1b8);
+            break;
+        }
+
+        switch (source->unk1aa)
+        {
+        case 0:
+            func_0043AA50(emitter, as_quadword(FieldVec4A(source->unk1bc, source->unk1bc, source->unk1bc, source->unk1bc)));
+            break;
+        case 1:
+            func_0043AA30(emitter, as_quadword(FieldVec4A(source->unk1bc, source->unk1bc, source->unk1bc, source->unk1bc)),
+                          as_quadword(FieldVec4A(source->unk1c0, source->unk1c0, source->unk1c0, source->unk1c0)));
+            break;
+        case 2:
+            func_0043AA10(emitter, as_quadword(FieldVec4A(source->unk1bc, source->unk1bc, source->unk1bc, source->unk1bc)),
+                          as_quadword(FieldVec4A(source->unk1c0, source->unk1c0, source->unk1c0, source->unk1c0)));
+            break;
+        }
+
+        switch (source->unk1ab)
+        {
+        case 0:
+            func_0043AA00(emitter, as_quadword(FieldVec4A(source->unk1c4, source->unk1c4, source->unk1c4, source->unk1c4)));
+            break;
+        case 1:
+            func_0043A9E0(emitter, as_quadword(FieldVec4A(source->unk1c4, source->unk1c4, source->unk1c4, source->unk1c4)),
+                          as_quadword(FieldVec4A(source->unk1c8, source->unk1c8, source->unk1c8, source->unk1c8)));
+            break;
+        case 2:
+            func_0043A9C0(emitter, as_quadword(FieldVec4A(source->unk1c4, source->unk1c4, source->unk1c4, source->unk1c4)),
+                          as_quadword(FieldVec4A(source->unk1c8, source->unk1c8, source->unk1c8, source->unk1c8)));
+            break;
+        }
+
+        if (source->shape == 5)
+        {
+            switch (source->unk1d6)
+            {
+            case 0:
+                func_0043A9B0(emitter, source->unk21c);
+                break;
+            case 1:
+                func_0043A990(emitter, source->unk21c, source->unk220);
+                break;
+            }
+
+            if (object)
+            {
+                float scale = source->unk224;
+                object->unka70[0] = scale;
+                object->unka70[1] = scale;
+                object->set_unka70_zw(source->unk228, source->unk22c);
+            }
+        }
+        else if (source->shape == 6)
+        {
+            switch (source->unk24b)
+            {
+            case 0:
+                func_0043A980(emitter, source->unk230);
+                break;
+            case 1:
+                func_0043A960(emitter, source->unk230, source->unk234);
+                break;
+            }
+
+            switch (source->unk24c)
+            {
+            case 0:
+                func_0043A950(emitter, source->unk238);
+                break;
+            case 1:
+                func_0043A930(emitter, source->unk238, source->unk23c);
+                break;
+            }
+        }
+    }
+
+    if (source->unk6b)
+    {
+        emitter->unk499_1 = 1;
+    }
+
+    if (source->unk1f)
+    {
+        float value = source->unk60;
+        emitter->unk49a = source->unk1f;
+        emitter->unk434 = value;
+    }
+
+    static_cast<LibUpdateList*>(unk2)->append_node(emitter, LibUpdateList::DEFAULT_NODE_KIND);
+    return emitter;
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_0046F910);
 
@@ -1324,38 +3589,142 @@ LibCamera* LibScene::func_00471440(void* context)
     return new (0) LibCamera(context);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0046AE20", func_00471480);
-
 /**
- * @brief Set a vector to (0, 0, 0, 1).
- * @param vector Vector to set.
+ * @brief Create an object of one kind for an entry.
+ * @param kind Object kind.
+ * @return The new object, or null.
  */
-void func_004720F0(LibFloat4* vector)
+void* LibScene::func_00471480(u8 kind)
 {
-    *(unsigned __int128*)vector = 0;
-    vector->w = 1.0f;
+    switch (kind)
+    {
+    case 0:
+        return new (0) LibTransform;
+    case 1:
+        return new (0) LibLodController;
+    case 2:
+        return new (0) LibModel;
+    case 3:
+        return new (0) LibResourceBuffer;
+    case 4:
+        return new (0) LibLight;
+    case 6:
+        return new (0) LibClass175530;
+    case 7:
+        return new (0) LibClass177A80;
+    case 8:
+        return new (0) LibClass1788B0;
+    case 9:
+        return new (0) LibClass1789C0;
+    case 10:
+        return new (0) LibClass174C70;
+    case 11:
+        return new (0) LibClass174CB0;
+    case 12:
+        return new (0) LibClass174D10;
+    case 13:
+        return new (0) LibClass174D50;
+    case 14:
+        return new (0) LibClass175430;
+    case 15:
+        return new (0) LibClass173C40;
+    case 16:
+        return new (0) LibClass173B10;
+    case 17:
+        return new (0) LibClass173990;
+    case 18:
+        return new (0) LibObject1751A0;
+    case 19:
+        return new (0) LibClass173870;
+    case 20:
+        return new (0) LibClass173900;
+    case 21:
+        return new (0) LibClass1737E0;
+    case 22:
+        return new (0) LibClass173750;
+    case 23:
+        return new (0) LibClass173630;
+    case 24:
+        return new (0) LibClass174B70;
+    case 25:
+        return new (0) LibClass174AC0;
+    case 26:
+        return new (0) LibClass174970;
+    case 27:
+        return new (0) LibClass174C20;
+    case 28:
+        return new (0) ResidentImageObject;
+    case 29:
+        return new (0) LibClass1753A0;
+    case 30:
+        return new (0) LibClass172960;
+    case 31:
+        return new (0) LibClass1728A0;
+    case 32:
+        return new (0) LibClass172940;
+    case 33:
+        return new (0) LibClass172920;
+    case 34:
+        return new (0) LibClass172900;
+    case 35:
+        return new (0) LibClass1728E0;
+    case 36:
+        return new (0) LibClass173050;
+    case 37:
+        return new (0) LibClass172FC0;
+    case 38:
+        return new (0) LibClass172F30;
+    case 39:
+        return new (0) LibClass172EA0;
+    case 40:
+        return new (0) LibClass172C60;
+    case 41:
+        return new (0) LibClass172B40;
+    case 42:
+        return new (0) LibClass172CF0;
+    case 43:
+        return new (0) LibClass172E10;
+    case 44:
+        return new (0) LibClass173380;
+    case 45:
+        return new (0) LibClass1734D0;
+    case 46:
+        return new (0) LibClass173490;
+    case 47:
+        return new (0) LibClass172D80;
+    case 48:
+        return new (0) LibTransform;
+    }
+
+    return 0;
 }
 
-/** Store the low halfword at receiver offset 0x6C. */
-void func_00472100(void* object, u32 value)
+/** @brief Set the vector to (0, 0, 0, 1). */
+inline void LibClass173490Entry::set_identity()
 {
-    HalfwordSetterOwnertext_0046AE20* receiver = (HalfwordSetterOwnertext_0046AE20*)object;
-    receiver->unk6c = value;
+    *(unsigned __int128*)this = 0;
+    w = 1.0f;
 }
 
 /**
- * @brief Set all four components of a vector to one value.
- * @param vector Vector to set.
+ * @brief Set the light's transform type ID.
+ * @param type Type ID.
+ */
+inline void LibLight::set_light_type(u32 type)
+{
+    type_id = type;
+}
+
+/**
+ * @brief Set all four components to one value.
  * @param value Value for every component.
- * @return The vector.
  */
-LibFloat4* func_00472110(LibFloat4* vector, float value)
+inline LibClass173490Entry::LibClass173490Entry(float value)
 {
-    vector->x = value;
-    vector->y = value;
-    vector->z = value;
-    vector->w = value;
-    return vector;
+    x = value;
+    y = value;
+    z = value;
+    w = value;
 }
 
 /** @brief Initialize the transform without a look-at target or roll. */

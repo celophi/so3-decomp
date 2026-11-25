@@ -1013,7 +1013,7 @@ LibMatrix44Value func_004CF7C0(const LibMatrix44Value& left, const LibMatrix44Va
  * @param matrix Source matrix.
  * @return Transformed vector.
  */
-extern "C" FieldVec4A func_004CF830(const FieldVec4A& value, const LibMatrix44Value& matrix)
+extern "C" FieldVec4A func_004CF830(const FieldVec4B& value, const LibMatrix44Value& matrix)
 {
     FieldVec4A result;
     result.x = value.x * matrix.m[0][0] + value.y * matrix.m[1][0] + value.z * matrix.m[2][0] + value.w * matrix.m[3][0];
@@ -3807,10 +3807,10 @@ void LibModelBase::set_fog_enabled(u8 enabled)
     }
 }
 
-extern "C" void func_004D6230(void* receiver, u32 arg1, u32 arg2)
+extern "C" void* func_004D6230(void* receiver, u32 arg1, u32 arg2)
 {
     LibFieldPointer634* object = (LibFieldPointer634*)receiver;
-    func_00448A10(object->unk634, arg1, arg2);
+    return func_00448A10(object->unk634, arg1, arg2);
 }
 
 /** @brief Delete the resource when the model owns it, then forget it. */
@@ -4314,11 +4314,75 @@ extern "C" void lib_list_change_node_kind_counts(LibUpdateList* owner, const Lib
     ++owner->node_counts_by_kind[new_kind];
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", insert_node_after__13LibUpdateListFPvPvi);
+/**
+ * @brief Register a node after a list position.
+ * @param position Insertion position.
+ * @param object Node to insert.
+ * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+ */
+void LibUpdateList::insert_node_after(void* position, void* object, s32 kind)
+{
+    LibListObject* node = static_cast<LibListObject*>(object);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", prepend_node__13LibUpdateListFPvi);
+    if (kind < NODE_KIND_COUNT)
+    {
+        if (node->owner == 0)
+        {
+            node->owner = this;
+            kind = kind == DEFAULT_NODE_KIND ? (s16)node->get_default_list_kind() : kind;
+            node->list_kind = kind;
+            node->is_listed = 1;
+            node_counts_by_kind[kind]++;
+            LibListReceiver::insert_after(position, node);
+        }
+    }
+}
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", append_node__13LibUpdateListFPvi);
+/**
+ * @brief Register and prepend a node.
+ * @param object Node to prepend.
+ * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+ */
+void LibUpdateList::prepend_node(void* object, s32 kind)
+{
+    LibListObject* node = static_cast<LibListObject*>(object);
+
+    if (kind < NODE_KIND_COUNT)
+    {
+        if (node->owner == 0)
+        {
+            node->owner = this;
+            kind = kind == DEFAULT_NODE_KIND ? (s16)node->get_default_list_kind() : kind;
+            node->list_kind = kind;
+            node->is_listed = 1;
+            node_counts_by_kind[kind]++;
+            LibListReceiver::prepend(node);
+        }
+    }
+}
+
+/**
+ * @brief Register and append a node.
+ * @param object Node to append.
+ * @param kind List kind, or DEFAULT_NODE_KIND to use the node's virtual kind.
+ */
+void LibUpdateList::append_node(void* object, s32 kind)
+{
+    LibListObject* node = static_cast<LibListObject*>(object);
+
+    if (kind < NODE_KIND_COUNT)
+    {
+        if (node->owner == 0)
+        {
+            node->owner = this;
+            kind = kind == DEFAULT_NODE_KIND ? (s16)node->get_default_list_kind() : kind;
+            node->list_kind = kind;
+            node->is_listed = 1;
+            node_counts_by_kind[kind]++;
+            LibListReceiver::append(node);
+        }
+    }
+}
 
 /** @brief Destroy the list receiver and its sentinel. */
 inline LibListReceiver::~LibListReceiver()
@@ -6594,10 +6658,10 @@ void LibCameraContext::get_area_scale(float* x, float* y)
  * @param display Display to read.
  * @return FRAME base pointer of the second drawing context of draw buffer 0 or 1.
  */
-extern "C" u16 func_004DBC70(LibCameraContext* display)
+extern "C" s32 func_004DBC70(LibCameraContext* display)
 {
-    return display->current_buffer == 0 ? display->buffers[0].environment.context2.frame.base_pointer :
-                                          display->buffers[1].environment.context2.frame.base_pointer;
+    return display->current_buffer == 0 ? (s32)display->buffers[0].environment.context2.frame.base_pointer :
+                                          (s32)display->buffers[1].environment.context2.frame.base_pointer;
 }
 
 /**
@@ -7170,7 +7234,43 @@ extern "C" s16 func_004DCA70(LibVramAllocator* vram, u32 size, u32 alignment, s1
     return index;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004CD3A0", func_004DCB30);
+/**
+ * @brief Reserve VRAM for a width x height image and record it in the image table.
+ *
+ * An image slot holds the lower word of TEX0: TBP0 (the address in 64-word blocks), TBW and PSM.
+ * @param vram VRAM allocator.
+ * @param format Pixel format (PSM).
+ * @param width Image width in pixels.
+ * @param height Image height in pixels.
+ * @param slot Slot to record the allocation in, or LIB_VRAM_NEW_SLOT for the next free one.
+ * @return The slot, or -1 when there's no slot or room left.
+ */
+extern "C" s16 func_004DCB30(LibVramAllocator* vram, s16 format, s16 width, s16 height, s32 slot)
+{
+    s32 index = (s16)slot;
+
+    if (index == LIB_VRAM_NEW_SLOT)
+    {
+        index = vram->unk04_count++;
+
+        if (vram->unk04_count >= vram->unk04_capacity)
+        {
+            return -1;
+        }
+    }
+
+    u32 size = width * height;
+
+    if (vram->base_address + size >= vram->unk14)
+    {
+        return -1;
+    }
+
+    vram->unk04[index] = (u64)((format << 20) | ((vram->base_address >> 6) | ((width & ~63) << 8)));
+    size = (size + 0x3F) & ~0x3F;
+    vram->base_address += size;
+    return index;
+}
 
 /**
  * @brief Empty the allocator and make it start allocating at a VRAM page.

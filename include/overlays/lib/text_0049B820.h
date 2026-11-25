@@ -132,7 +132,7 @@ class LibClass173A40 : public LibClass173A28
 
         virtual void func_slot48() = 0;
 
-        virtual void func_slot4C() = 0;
+        virtual void func_slot4C(float value) = 0;
 
         virtual void func_slot50() = 0;
 
@@ -145,41 +145,41 @@ class LibClass173A40 : public LibClass173A28
          */
         virtual void resize(s32 rows, s32 columns) = 0;
 
-        virtual void func_slot5C() = 0;
+        virtual void func_slot5C(u8 mode) = 0;
 
         virtual void func_slot60() = 0;
 
-        virtual void func_slot64() = 0;
+        virtual void func_slot64(float value) = 0;
 
-        virtual void func_slot68() = 0;
+        virtual void func_slot68(u8 value) = 0;
 
         virtual void func_slot6C() = 0;
 
-        virtual void func_slot70() = 0;
+        virtual void func_slot70(float value) = 0;
 
         virtual void func_slot74() = 0;
 
-        virtual void func_slot78() = 0;
+        virtual void func_slot78(float value) = 0;
 
-        virtual void func_slot7C() = 0;
+        virtual void func_slot7C(u32 value) = 0;
 
         virtual void func_slot80() = 0;
 
-        virtual void func_slot84() = 0;
+        virtual void func_slot84(u8 value) = 0;
 
-        virtual void func_slot88() = 0;
+        virtual void func_slot88(u8 flags) = 0;
 
-        virtual void func_slot8C() = 0;
+        virtual void func_slot8C(u32 value) = 0;
 
         virtual void func_slot90() = 0;
 
-        virtual void func_slot94() = 0;
+        virtual void func_slot94(u8 value) = 0;
 
-        virtual void func_slot98() = 0;
+        virtual void func_slot98(float value) = 0;
 
-        virtual void func_slot9C() = 0;
+        virtual void func_slot9C(float value) = 0;
 
-        virtual void func_slotA0() = 0;
+        virtual void func_slotA0(u8 flags) = 0;
 
         virtual void func_slotA4() = 0;
 
@@ -200,8 +200,6 @@ class LibClass173A40 : public LibClass173A28
         virtual void func_slotBC() = 0;
 
         virtual void func_slotC0() = 0;
-
-        virtual void func_slotC4() = 0;
 
         u8 unk04;
         u32 unk08;
@@ -231,6 +229,18 @@ class LibClass1771A0 : public LibClass173A40
          * @param columns Secondary elements per cell plus one.
          */
         virtual void resize(s32 rows, s32 columns);
+
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
 
         LibClass177188* unk14;
         LibClass177188* unk18;
@@ -262,6 +272,18 @@ class LibClass177270 : public LibClass173A40
          */
         virtual void resize(s32 rows, s32 columns);
 
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
+
         LibClass174228* unk14;
         LibClass174228* unk18;
         LibGridBitset* unk1c;
@@ -291,6 +313,18 @@ class LibClass177340 : public LibClass173A40
          * @param columns Secondary elements per cell plus one.
          */
         virtual void resize(s32 rows, s32 columns);
+
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
 
         LibClass177178* unk14;
         LibClass177178* unk18;
@@ -322,6 +356,18 @@ class LibClass177410 : public LibClass173A40
          */
         virtual void resize(s32 rows, s32 columns);
 
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
+
         LibClass174218* unk14;
         LibClass174218* unk18;
         LibGridBitset* unk1c;
@@ -351,6 +397,18 @@ class LibClass1774E0 : public LibClass173A40
          * @param columns Secondary elements per cell plus one.
          */
         virtual void resize(s32 rows, s32 columns);
+
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
 
         LibClass177168* unk14;
         LibClass177168* unk18;
@@ -382,6 +440,18 @@ class LibClass1775B0 : public LibClass173A40
          */
         virtual void resize(s32 rows, s32 columns);
 
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
+
         LibClass174208* unk14;
         LibClass174208* unk18;
         LibGridBitset* unk1c;
@@ -412,6 +482,18 @@ class LibClass177680 : public LibClass173A40
          */
         virtual void resize(s32 rows, s32 columns);
 
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
+
         LibClass177158* unk14;
         LibClass177158* unk18;
         LibGridBitset* unk1c;
@@ -441,6 +523,18 @@ class LibClass177750 : public LibClass173A40
          * @param columns Secondary elements per cell plus one.
          */
         virtual void resize(s32 rows, s32 columns);
+
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
 
         LibClass1741F8* unk14;
         LibClass1741F8* unk18;
@@ -478,6 +572,18 @@ class LibClass173E70 : public LibClass173A40
          */
         virtual void copy_settings(const LibClass173A40* source);
 
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
+
         LibClass173F48* unk14;
         LibClass173F48* unk18;
         LibGridBitset* unk1c;
@@ -489,6 +595,22 @@ class LibClass173E70 : public LibClass173A40
 class LibClass173DA0 : public LibClass173E70
 {
     public:
+        /** @brief Start emitting with unit scale, one particle per emission and no emitters. */
+        LibClass173DA0()
+        {
+            unk38 = 1.0f;
+            unk44 = 0;
+            unk48 = 0;
+            unk4c = 0;
+            unk4d = 0;
+            unk4f = 1;
+            unk50 = 0;
+            unk55 = 1;
+            unk56 = 0;
+            unk57 = 0;
+            unk04 = 1;
+        }
+
         virtual ~LibClass173DA0()
         {
         }
@@ -504,6 +626,74 @@ class LibClass173DA0 : public LibClass173E70
         virtual void func_slot10();
 
         virtual void func_slot14();
+
+        virtual void func_slot0C();
+
+        virtual void func_slot20();
+
+        virtual void func_slot28();
+
+        virtual void func_slot2C();
+
+        virtual void func_slot40();
+
+        virtual void func_slot44();
+
+        virtual void func_slot48();
+
+        virtual void func_slot4C(float value);
+
+        virtual void func_slot50();
+
+        virtual void func_slot54();
+
+        virtual void func_slot5C(u8 mode);
+
+        virtual void func_slot60();
+
+        virtual void func_slot64(float value);
+
+        virtual void func_slot68(u8 value);
+
+        virtual void func_slot6C();
+
+        virtual void func_slot70(float value);
+
+        virtual void func_slot74();
+
+        virtual void func_slot78(float value);
+
+        virtual void func_slot7C(u32 value);
+
+        virtual void func_slot80();
+
+        virtual void func_slot84(u8 value);
+
+        virtual void func_slot88(u8 flags);
+
+        virtual void func_slot8C(u32 value);
+
+        virtual void func_slot90();
+
+        virtual void func_slot94(u8 value);
+
+        virtual void func_slot98(float value);
+
+        virtual void func_slot9C(float value);
+
+        virtual void func_slotA0(u8 flags);
+
+        virtual void func_slotA4();
+
+        virtual void func_slotA8();
+
+        virtual void func_slotAC();
+
+        virtual void func_slotB0();
+
+        virtual void func_slotB8();
+
+        virtual void func_slotBC();
 
         float unk28;
         u32 unk2c;
@@ -553,6 +743,18 @@ class LibClass174240 : public LibClass173A40
          */
         virtual void resize(s32 rows, s32 columns);
 
+        virtual void func_slot1C();
+
+        virtual void func_slot24();
+
+        virtual void func_slot30();
+
+        virtual void func_slot34();
+
+        virtual void func_slot38();
+
+        virtual void func_slotC0();
+
         LibGridCell170* unk14;
         LibGridCell170* unk18;
         LibGridBitset* unk1c;
@@ -590,6 +792,74 @@ class LibClass176FC0 : public LibClass177750
          */
         virtual void copy_settings(const LibClass173A40* source);
 
+        virtual void func_slot0C();
+
+        virtual void func_slot20();
+
+        virtual void func_slot28();
+
+        virtual void func_slot2C();
+
+        virtual void func_slot40();
+
+        virtual void func_slot44();
+
+        virtual void func_slot48();
+
+        virtual void func_slot4C(float value);
+
+        virtual void func_slot50();
+
+        virtual void func_slot54();
+
+        virtual void func_slot5C(u8 mode);
+
+        virtual void func_slot60();
+
+        virtual void func_slot64(float value);
+
+        virtual void func_slot68(u8 value);
+
+        virtual void func_slot6C();
+
+        virtual void func_slot70(float value);
+
+        virtual void func_slot74();
+
+        virtual void func_slot78(float value);
+
+        virtual void func_slot7C(u32 value);
+
+        virtual void func_slot80();
+
+        virtual void func_slot84(u8 value);
+
+        virtual void func_slot88(u8 flags);
+
+        virtual void func_slot8C(u32 value);
+
+        virtual void func_slot90();
+
+        virtual void func_slot94(u8 value);
+
+        virtual void func_slot98(float value);
+
+        virtual void func_slot9C(float value);
+
+        virtual void func_slotA0(u8 flags);
+
+        virtual void func_slotA4();
+
+        virtual void func_slotA8();
+
+        virtual void func_slotAC();
+
+        virtual void func_slotB0();
+
+        virtual void func_slotB8();
+
+        virtual void func_slotBC();
+
         float unk28;
         u32 unk2c;
         float unk30;
@@ -613,6 +883,17 @@ class LibClass176FC0 : public LibClass177750
         u32 unka0;
         u32 unka4;
         u8 unka8[8];
+
+        /**
+         * @brief Set how the grid emits and the value that goes with it.
+         * @param kind Emission kind.
+         * @param value Emission value.
+         */
+        void set_emission(u8 kind, float value)
+        {
+            unk4c = kind;
+            unk30 = value;
+        }
 };
 
 /** Partial LibClass176FC0 with vtable D_177090 in main data. */
@@ -631,8 +912,10 @@ class LibClass177090 : public LibClass176FC0
          */
         virtual void copy_settings(const LibClass173A40* source);
 
+        virtual void func_slot18();
+
         u8* unkb0;
-        FieldVec4A* unkb4;
+        LibClass173490Entry* unkb4;
         void* unkb8;
         void* unkbc;
         u32 unkc0;
@@ -672,6 +955,74 @@ class LibClass174050 : public LibClass174240
          */
         virtual void copy_settings(const LibClass173A40* source);
 
+        virtual void func_slot0C();
+
+        virtual void func_slot20();
+
+        virtual void func_slot28();
+
+        virtual void func_slot2C();
+
+        virtual void func_slot40();
+
+        virtual void func_slot44();
+
+        virtual void func_slot48();
+
+        virtual void func_slot4C(float value);
+
+        virtual void func_slot50();
+
+        virtual void func_slot54();
+
+        virtual void func_slot5C(u8 mode);
+
+        virtual void func_slot60();
+
+        virtual void func_slot64(float value);
+
+        virtual void func_slot68(u8 value);
+
+        virtual void func_slot6C();
+
+        virtual void func_slot70(float value);
+
+        virtual void func_slot74();
+
+        virtual void func_slot78(float value);
+
+        virtual void func_slot7C(u32 value);
+
+        virtual void func_slot80();
+
+        virtual void func_slot84(u8 value);
+
+        virtual void func_slot88(u8 flags);
+
+        virtual void func_slot8C(u32 value);
+
+        virtual void func_slot90();
+
+        virtual void func_slot94(u8 value);
+
+        virtual void func_slot98(float value);
+
+        virtual void func_slot9C(float value);
+
+        virtual void func_slotA0(u8 flags);
+
+        virtual void func_slotA4();
+
+        virtual void func_slotA8();
+
+        virtual void func_slotAC();
+
+        virtual void func_slotB0();
+
+        virtual void func_slotB8();
+
+        virtual void func_slotBC();
+
         float unk28;
         u32 unk2c;
         float unk30;
@@ -695,6 +1046,17 @@ class LibClass174050 : public LibClass174240
         u32 unka0;
         u32 unka4;
         u8 unka8[8];
+
+        /**
+         * @brief Set how the grid emits and the value that goes with it.
+         * @param kind Emission kind.
+         * @param value Emission value.
+         */
+        void set_emission(u8 kind, float value)
+        {
+            unk4c = kind;
+            unk30 = value;
+        }
 };
 
 /** Partial LibClass174050 with vtable D_174120 in main data. */
@@ -713,8 +1075,10 @@ class LibClass174120 : public LibClass174050
          */
         virtual void copy_settings(const LibClass173A40* source);
 
+        virtual void func_slot18();
+
         u8* unkb0;
-        FieldVec4A* unkb4;
+        LibClass173490Entry* unkb4;
         void* unkb8;
         void* unkbc;
         u32 unkc0;
@@ -728,6 +1092,10 @@ class LibClass174120 : public LibClass174050
 class LibClass173F80 : public LibClass174120
 {
     public:
+        LibClass173F80()
+        {
+        }
+
         virtual ~LibClass173F80();
 };
 #else

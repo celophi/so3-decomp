@@ -11,6 +11,7 @@
 #include "overlays/lib/transform_owner_inlines.h"
 #include "overlays/lib/text_004095C0.h"
 #include "overlays/lib/character_record.h"
+#include "overlays/lib/item_allocation.h"
 #include "main/resident_data.h"
 #include "main/entry_table.h"
 #include "main/system.h"
@@ -18,22 +19,24 @@
 #include "main/input.h"
 #include "overlays/lib/light_random.h"
 #include "ee.h"
+#include "sdk/main/libdma_0012B2C8.h"
 #include "sdk/main/libc_guess_0013A4C0.h"
+#include "sdk/main/libc_guess_0013C948.h"
 
 /** Bounding sphere objects without bounds report: centred on the origin, radius 1000000. */
 extern "C" LibVector4 g_default_bounding_sphere;
 
-/** Pair of words, eight bytes, in the array LibClass172120 allocates at unka0. */
+/** Screen point, zeroed on construction: LibClass172120's warp grid at unka0 and LibClass172080's ring points. */
 struct LibClass172120Entry
 {
     LibClass172120Entry()
     {
-        unk04 = 0;
-        unk00 = 0;
+        y = 0;
+        x = 0;
     }
 
-    u32 unk00;
-    u32 unk04;
+    float x;
+    float y;
 };
 
 /** Widget that plays a frame animation, with vtable D_171DA0 in main data. */
@@ -590,7 +593,99 @@ void LibClass171F40::render()
     resident_packet_submit(packet, static_cast<LibDmaCallbacks*>(this));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", build_packet__14LibClass171F40FPCvPv);
+/**
+ * @brief Build the packet: switch to the second drawing context aimed at the free VRAM page, then copy the frame
+ *        into it in eighteen strips and restore the texture state.
+ * @param matrix Unused.
+ * @param context Unused.
+ */
+void LibClass171F40::build_packet(const void* matrix, void* context)
+{
+    unk63 = 0;
+    dma_pending = 0;
+
+    if (sent)
+    {
+        return;
+    }
+
+    resident_packet_rewind(packet);
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(packet, 8));
+
+    if (cursor == 0)
+    {
+        return;
+    }
+
+    cursor[0] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 15;
+    cursor[1] = 0;
+    reinterpret_cast<GsGifTag*>(cursor)->fields.register0 = GIF_REGISTER_AD;
+    cursor[2] = (u32)(g_display->vram_free_page | 0x2080000);
+    cursor[3] = GS_REGISTER_FRAME_2;
+    cursor[4] = 0x7000 | 0x7300ULL << 32;
+    cursor[5] = 0x19;
+    cursor[6] = 0x1FF0000 | 0x19F0000ULL << 32;
+    cursor[7] = 0x41;
+    cursor[8] = 0;
+    cursor[9] = GS_REGISTER_FBA_2;
+    cursor[10] = 1;
+    cursor[11] = 0x45;
+    cursor[12] = (u64)-4;
+    cursor[13] = 0x44;
+    cursor[14] = 0x61;
+    cursor[15] = GS_REGISTER_TEX1_2;
+    cursor[16] = 5;
+    cursor[17] = GS_REGISTER_CLAMP_2;
+    cursor[18] = 0x30000;
+    cursor[19] = GS_REGISTER_TEST_2;
+    cursor[20] = (u32)(*reinterpret_cast<const u32*>(&g_display->buffers[0].environment.context1.depth_buffer) | 0x32000000) |
+                 1ULL << 32;
+    cursor[21] = GS_REGISTER_ZBUF_2;
+    cursor[22] = 1;
+    cursor[23] = GS_REGISTER_TEX1_2;
+    cursor[24] = (s64)(s32)(((u32)(g_display->buffers[0].environment.context1.frame.base_pointer << 13) >> 8) | 0x28024000) |
+                 (0x8000ULL << 16 | 2ULL << 32);
+    cursor[25] = GS_REGISTER_TEX0_2;
+    cursor[26] = 0x80 | 0x80ULL << 32;
+    cursor[27] = GS_REGISTER_TEXA;
+    cursor[28] = 0x316;
+    cursor[29] = GS_REGISTER_PRIM;
+    cursor[30] = GS_RGBA_NEUTRAL;
+    cursor[31] = GS_REGISTER_RGBAQ;
+    cursor[32] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 18;
+    cursor[33] = 0;
+    GsGifTag* strip_tag = reinterpret_cast<GsGifTag*>(&cursor[32]);
+    strip_tag->fields.register0 = GIF_REGISTER_UV;
+    strip_tag->fields.register1 = GIF_REGISTER_XYZ2;
+    strip_tag->fields.register2 = GIF_REGISTER_UV;
+    strip_tag->fields.register3 = GIF_REGISTER_XYZ2;
+    cursor += 34;
+    s32 x = 0x7000;
+
+    // TODO: An unsigned counter compared signed gives the target's unroll by eight with a remainder loop; a plain
+    // s32 counter unrolls by six.
+    for (u32 i = 0; (s32)i < 18; i++)
+    {
+        cursor[0] = (s64)(s32)(i << 9);
+        cursor[1] = (s64)x | (0x73000000 | 0xFFFFULL << 32);
+        cursor[2] = (s64)(s32)(((i + 1) << 9) | 0x1A000000);
+        cursor[3] = (s64)(x + 0x1C7) | (0x8D000000 | 0xFFFFULL << 32);
+        x += 0x1C7;
+        cursor += 4;
+    }
+
+    cursor[0] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 3;
+    cursor[1] = 0;
+    reinterpret_cast<GsGifTag*>(cursor)->fields.register0 = GIF_REGISTER_AD;
+    cursor[2] = 0x61;
+    cursor[3] = GS_REGISTER_TEX1_2;
+    cursor[4] = 0;
+    cursor[5] = GS_REGISTER_TEXFLUSH;
+    cursor[6] = 0;
+    cursor[7] = 0x45;
+    resident_packet_align_cursor(packet, reinterpret_cast<u8*>(cursor + 8));
+    unk63 = 1;
+}
 
 /** @brief Destroy the children, then destroy through the base. */
 void LibClass171F40::destroy()
@@ -607,12 +702,11 @@ void LibClass171F40::destroy()
     LibTransformOwner::destroy();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", build_packet__14LibClass172080FPCvPv);
-
-/** One of LibClass172080's six records; only its enable bit is known. */
+/** One of LibClass172080's six expanding rings. */
 struct LibClass172080Record
 {
-    u8 unk00[8];
+    float size;
+    float offset;
     u8 enabled : 1;
     u8 unk08_1_7 : 7;
     u8 unk09[3];
@@ -633,11 +727,11 @@ public:
 
     virtual void build_packet(const void* matrix, void* context);
 
-    s32 unk260;
+    float unk260;
     LibClass172080Record records[6];
     float unk2ac;
-    u32 unk2b0;
-    s32 unk2b4;
+    float unk2b0;
+    float unk2b4;
     float unk2b8;
     s32 unk2bc;
     u8* unk2c0;
@@ -646,6 +740,307 @@ public:
     u8 unk2c4_2 : 1;
     u8 unk2c4_3_7 : 5;
 };
+
+/**
+ * @brief Draw the glare: a ripple of 32-pixel tiles while the flash runs, then each live ring as three bands of quads
+ *        between six radii, 33 steps around.
+ * @param matrix Camera matrix, passed to the base.
+ * @param context Packet building context, passed to the base.
+ */
+void LibClass172080::build_packet(const void* matrix, void* context)
+{
+    s32 i;
+
+    if (!packet || !unk2c0 || unk2c4_2)
+    {
+        unk63 = 0;
+        return;
+    }
+
+    LibClass1748D0::build_packet(matrix, context);
+    unk260 -= unk2b8;
+
+    if (unk260 <= 0.0f)
+    {
+        for (s32 slot = 0; slot < 6; slot++)
+        {
+            if (!records[slot].enabled)
+            {
+                records[slot].enabled = 1;
+                records[slot].size = resident_random_range(0x10, 0x20);
+                records[slot].offset = 0;
+                unk260 = resident_random_range(0xF, 0x3C);
+                break;
+            }
+        }
+    }
+
+    for (s32 slot = 0; slot < 6; slot++)
+    {
+        if (records[slot].enabled)
+        {
+            records[slot].size -= 0.3f * unk2b8;
+
+            if (records[slot].size <= 0.0f)
+            {
+                records[slot].enabled = 0;
+            }
+            else
+            {
+                records[slot].offset += 2.0f * unk2b8;
+            }
+        }
+    }
+
+    s32 row;
+    s32 index;
+    s32 left = 0x800 - g_display->display_area.width / 2;
+    s32 top = 0x800 - g_display->display_area.height / 2;
+    s32 right = g_display->display_area.width / 2 + 0x800;
+    s32 bottom = g_display->display_area.height / 2 + 0x800;
+    LibScreenVertex quad[4];
+
+    if (unk2c4_0)
+    {
+        if (unk2c4_1)
+        {
+            unk2b0 -= unk2b8;
+
+            if (unk2b0 <= 0.0f)
+            {
+                unk2c4_2 = 1;
+            }
+        }
+        else
+        {
+            unk2b0 += unk2ac / 10.0f * unk2b8;
+
+            if (!(unk2b0 < unk2ac))
+            {
+                unk2c4_1 = 1;
+                unk2b0 -= 10.0f;
+            }
+        }
+
+        unk2b4 += 0.2f * unk2b8;
+
+        if (!(unk2b4 < 6.2831855f))
+        {
+            unk2b4 -= 6.2831855f;
+        }
+
+        LibClass172120Entry ring[7];
+        float angle;
+        float radius = 4.0f * (unk2b0 / unk2ac);
+        angle = unk2b4;
+
+        for (s32 i = 0; i < 7; i++, angle += 0.8975979f)
+        {
+            ring[i].x = radius * lib_cosine(angle);
+            ring[i].y = radius * lib_sine(angle);
+        }
+
+        float width = right - left;
+        float height = bottom - top;
+        row = 0;
+
+        for (float y = 1.0f; y < height; y += 32.0f)
+        {
+            index = row;
+
+            for (float x = 0.0f; x < width; x += 32.0f)
+            {
+                quad[0].u = x;
+                quad[0].v = y;
+                quad[1].u = x;
+                quad[1].v = 32.0f + y;
+                quad[2].u = 32.0f + x;
+                quad[2].v = y;
+                quad[3].u = 32.0f + x;
+                quad[3].v = 32.0f + y;
+                s32 point = index;
+
+                for (s32 k = 0; k < 4; k++)
+                {
+                    quad[k].x = quad[k].u + ring[point].x;
+                    quad[k].y = quad[k].v + ring[point].y;
+
+                    if (++point >= 7)
+                    {
+                        point -= 7;
+                    }
+
+                    switch (D_001B655C)
+                    {
+                    case 1:
+                        quad[k].v *= 1.2307693f;
+                        break;
+                    case 2:
+                        quad[k].v *= 0.61538464f;
+                        break;
+                    }
+                }
+
+                func_0044D9C0(this, 4, quad, D_001B6694 - unk2bc, 0x80808080, 0, 0);
+                index += 2;
+
+                if (index >= 7)
+                {
+                    index -= 7;
+                }
+            }
+
+            if (++row >= 7)
+            {
+                row -= 7;
+            }
+        }
+    }
+
+    // TODO: The original reuses row and index for the ring centre; their spill slots only match that way.
+    row = (right - left) / 2;
+    index = (bottom - top) / 2;
+
+    for (i = 0; i < 6; i++)
+    {
+        if (!records[i].enabled)
+        {
+            continue;
+        }
+
+        float angle;
+        float offset;
+        float cosine;
+        float size = records[i].size;
+        offset = records[i].offset;
+        LibClass172120Entry previous[6];
+        angle = 0.0f;
+
+        for (s32 step = 0; step < 33; step++, angle += 0.19634955f)
+        {
+            cosine = lib_cosine(angle);
+            float sine = lib_sine(angle);
+            LibClass172120Entry current[6];
+            current[0].x = row + cosine * (offset + size);
+            current[0].y = index + sine * (offset + size);
+            current[1].x = row + cosine * (offset + 0.25f * size);
+            current[1].y = index + sine * (offset + 0.25f * size);
+            current[2].x = row + cosine * (offset + 0.75f * size);
+            current[2].y = index + sine * (offset + 0.75f * size);
+            current[3].x = row + cosine * offset;
+            current[3].y = index + sine * offset;
+            current[4].x = row + cosine * (offset + 0.4f * size);
+            current[4].y = index + sine * (offset + 0.4f * size);
+            current[5].x = row + cosine * (offset + 0.6f * size);
+            current[5].y = index + sine * (offset + 0.6f * size);
+
+            if (step == 0)
+            {
+                for (s32 k = 0; k < 6; k++)
+                {
+                    previous[k] = current[k];
+                }
+            }
+            else
+            {
+                quad[0].u = quad[0].x = previous[0].x;
+                quad[0].v = quad[0].y = previous[0].y;
+                quad[1].u = quad[1].x = current[0].x;
+                quad[1].v = quad[1].y = current[0].y;
+                quad[2].u = previous[4].x;
+                quad[2].v = previous[4].y;
+                quad[2].x = previous[1].x;
+                quad[2].y = previous[1].y;
+                quad[3].u = current[4].x;
+                quad[3].v = current[4].y;
+                quad[3].x = current[1].x;
+                quad[3].y = current[1].y;
+
+                for (s32 k = 0; k < 4; k++)
+                {
+                    switch (D_001B655C)
+                    {
+                    case 1:
+                        quad[k].v *= 1.2307693f;
+                        break;
+                    case 2:
+                        quad[k].v *= 0.61538464f;
+                        break;
+                    }
+                }
+
+                func_0044D9C0(this, 4, quad, D_001B6694 - unk2bc, 0x80808080, 0, 0);
+                quad[0].u = previous[4].x;
+                quad[0].v = previous[4].y;
+                quad[0].x = previous[1].x;
+                quad[0].y = previous[1].y;
+                quad[1].u = current[4].x;
+                quad[1].v = current[4].y;
+                quad[1].x = current[1].x;
+                quad[1].y = current[1].y;
+                quad[2].u = previous[5].x;
+                quad[2].v = previous[5].y;
+                quad[2].x = previous[2].x;
+                quad[2].y = previous[2].y;
+                quad[3].u = current[5].x;
+                quad[3].v = current[5].y;
+                quad[3].x = current[2].x;
+                quad[3].y = current[2].y;
+
+                for (s32 k = 0; k < 4; k++)
+                {
+                    switch (D_001B655C)
+                    {
+                    case 1:
+                        quad[k].v *= 1.2307693f;
+                        break;
+                    case 2:
+                        quad[k].v *= 0.61538464f;
+                        break;
+                    }
+                }
+
+                func_0044D9C0(this, 4, quad, D_001B6694 - unk2bc, 0x80808080, 0, 0);
+                quad[0].u = previous[5].x;
+                quad[0].v = previous[5].y;
+                quad[0].x = previous[2].x;
+                quad[0].y = previous[2].y;
+                quad[1].u = current[5].x;
+                quad[1].v = current[5].y;
+                quad[1].x = current[2].x;
+                quad[1].y = current[2].y;
+                quad[2].u = quad[2].x = previous[3].x;
+                quad[2].v = quad[2].y = previous[3].y;
+                quad[3].u = quad[3].x = current[3].x;
+                quad[3].v = quad[3].y = current[3].y;
+
+                for (s32 k = 0; k < 4; k++)
+                {
+                    switch (D_001B655C)
+                    {
+                    case 1:
+                        quad[k].v *= 1.2307693f;
+                        break;
+                    case 2:
+                        quad[k].v *= 0.61538464f;
+                        break;
+                    }
+                }
+
+                func_0044D9C0(this, 4, quad, D_001B6694 - unk2bc, 0x80808080, 0, 0);
+
+                for (s32 k = 0; k < 6; k++)
+                {
+                    previous[k] = current[k];
+                }
+            }
+
+        }
+    }
+
+    func_0044E080(this);
+    unk63 = 1;
+}
 
 /** @brief Allocate the packet buffer over a buffer of its own and clear the records. */
 LibClass172080::LibClass172080()
@@ -764,8 +1159,9 @@ public:
     u32 unke0;
     u8 unke4[4];
     float unke8;
-    u32 unkec;
-    u8 unkf0[8];
+    u32* unkec;
+    u32* unkf0;
+    u8 unkf4[4];
     u8 unkf8;
     u8 unkf9;
     u8 unkfa;
@@ -774,7 +1170,9 @@ public:
     s32 unk100;
     u32 unk104;
     u8 unk108[0x48];
-    u8 chain[0x10];
+    u8 chain[0x840];
+    DmaSourceTag* chain_cursor;
+    u64* packet_start;
 };
 
 /**
@@ -859,7 +1257,323 @@ extern "C" void func_003F1250(LibClipRegion* object)
     resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(state + 1));
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F1330);
+/** Second entry of the ALPHA_2 table D_004ED320, which the original reads through its own label. */
+extern "C" u64 D_004ED328[];
+
+/** Screen-space rectangle of the display area, centred on the GS 0x800 origin. */
+struct LibScreenBounds
+{
+    s32 left;
+    s32 top;
+    s32 right;
+    s32 bottom;
+};
+
+/**
+ * @brief Get the display area's rectangle around the GS origin.
+ * @param bounds Rectangle to fill.
+ * @param display Display whose area to use.
+ */
+static inline void lib_screen_bounds(LibScreenBounds* bounds, LibCameraContext* display)
+{
+    bounds->left = 0x800 - display->display_area.width / 2;
+    bounds->top = 0x800 - display->display_area.height / 2;
+    bounds->right = display->display_area.width / 2 + 0x800;
+    bounds->bottom = display->display_area.height / 2 + 0x800;
+}
+
+/**
+ * @brief Draw the captured screen strips. In mode 1 each strip's upload chain is sent straight to the GIF and the
+ *        strip is drawn flat; in mode 0 the uploads are chained, each strip is drawn as two quads warped by the
+ *        unka0 grid, and then the display's second frame buffer is drawn back over the screen in 64x32 tiles.
+ * @param object Object whose capture to draw.
+ * @param mode 1 for the flat pass, 0 for the warped pass.
+ */
+extern "C" void func_003F1330(LibClass172120* object, s32 mode)
+{
+    u32 buffer = reinterpret_cast<u32>(object->unk9c) + 0x7F & ~0x7F;
+    // TODO: The original converts the width to float and sign-extends the height at run time, so they're locals.
+    s32 width = 0x200;
+    s16 height = 0x1A0;
+    LibScreenBounds bounds;
+    lib_screen_bounds(&bounds, g_display);
+    s32 step;
+    s32 strip_height;
+
+    if (mode)
+    {
+        step = 40960.0f / width;
+
+        if (resident_get_system()->progressive)
+        {
+            strip_height = 0x1C0;
+        }
+        else
+        {
+            strip_height = 0xE0;
+        }
+    }
+    else
+    {
+        strip_height = height;
+        step = 0x40;
+    }
+
+    for (s32 i = 0; i < object->unk100; i++)
+    {
+        LibTextureRequest* request = reinterpret_cast<LibTextureRequest*>(buffer | 0x20000000);
+        u64* cursor;
+
+        if (((reinterpret_cast<u32>(object->chain_cursor) & 0x0FFFFFFF) - reinterpret_cast<u32>(object->chain)) >> 4 <
+            0x7E)
+        {
+            u64* packet = reinterpret_cast<u64*>(request + 1);
+            u32 qwords = request->size >> 4;
+            packet[4] = (packet[4] & ~(0x3FFFULL << 32)) | ((u64)object->unk104 >> 6) << 32;
+
+            if (mode)
+            {
+                (object->chain_cursor++)->control =
+                    DMA_TAG(qwords + 7, DMA_TAG_ID_REF, reinterpret_cast<u32>(packet + 2) & 0x0FFFFFFF);
+                (object->chain_cursor++)->control = DMA_TAG_ID_END;
+                DmaChannel* dma = sceDmaGetChan(2);
+                dma->chcr.tag_transfer_enable = 0;
+                FlushCache(0);
+                sceDmaSend(dma, reinterpret_cast<void*>(reinterpret_cast<u32>(object->chain_cursor - 2) & 0x0FFFFFFF));
+            }
+            else
+            {
+                (object->chain_cursor++)->control =
+                    DMA_TAG(qwords + 8, DMA_TAG_ID_REF, reinterpret_cast<u32>(packet) & 0x0FFFFFFF);
+            }
+        }
+
+        resident_packet_add_register(object->packet, GS_REGISTER_TEXFLUSH, 0);
+        resident_packet_set_tex0_2(object->packet, g_texture_cache->entries[g_texture_cache->slot_entries[0x3F]].tex0);
+
+        if (mode)
+        {
+            cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 4));
+
+            if (!cursor)
+            {
+                return;
+            }
+
+            *cursor++ = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+            *cursor = 0;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_UV;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_XYZ2;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register2 = GIF_REGISTER_UV;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register3 = GIF_REGISTER_XYZ2;
+            cursor++;
+            *cursor++ = 0;
+            *cursor++ = ((s64)(bounds.top << 4) << 16 | ((bounds.left + i * step) << 4)) |
+                        (s64)(D_001B6694 - 1 - (s32)object->unke0) << 32;
+            *cursor++ = (s64)(s32)(request->width << 4 | (u16)request->height << 20);
+            *cursor++ = ((s64)((strip_height + bounds.top) << 4) << 16 | ((bounds.left + (i + 1) * step) << 4)) |
+                        (s64)(D_001B6694 - 1 - (s32)object->unke0) << 32;
+            resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+            sceGsSyncPath(0, 0);
+            resident_packet_send(object->packet);
+            sceGsSyncPath(0, 0);
+        }
+        else
+        {
+            for (s32 j = 0; j < 2; j++)
+            {
+                LibClass172120Entry* points = &object->unka0[i * 4 + j * 2];
+                float max_x;
+                float left = points[0].x;
+                max_x = ee_max(left, points[1].x);
+                max_x = ee_max(max_x, points[2].x);
+                max_x = ee_max(max_x, points[3].x);
+                float max_y = ee_max_in_place(points[0].y, points[1].y);
+                max_y = ee_max(max_y, points[2].y);
+                max_y = ee_max(max_y, points[3].y);
+
+                if (max_x <= 65536.0f && max_y <= 65536.0f)
+                {
+                    if (points[0].x <= 0.0f && points[1].x <= 0.0f)
+                    {
+                        continue;
+                    }
+
+                    if (points[2].x <= 0.0f && points[3].x <= 0.0f)
+                    {
+                        continue;
+                    }
+
+                    if (points[0].y <= 0.0f && points[1].y <= 0.0f)
+                    {
+                        continue;
+                    }
+
+                    if (points[2].y <= 0.0f && points[3].y <= 0.0f)
+                    {
+                        continue;
+                    }
+
+                    cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 5));
+
+                    if (!cursor)
+                    {
+                        return;
+                    }
+
+                    *cursor++ = GIF_TAG_NREG(8) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+                    *cursor = 0;
+                    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_UV;
+                    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_XYZ2;
+                    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register2 = GIF_REGISTER_UV;
+                    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register3 = GIF_REGISTER_XYZ2;
+                    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register4 = GIF_REGISTER_UV;
+                    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register5 = GIF_REGISTER_XYZ2;
+                    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register6 = GIF_REGISTER_UV;
+                    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register7 = GIF_REGISTER_XYZ2;
+                    cursor++;
+                    *cursor++ = (s64)(s32)((s32)(((u32)object->unkc4 & 0xFFFF) << 20) | (j * request->width / 2) << 4);
+                    *cursor++ = (s64)(s32)(u16)(u32)points[0].x | (u64)((u32)points[0].y & 0xFFFF) << 16 |
+                                (s64)(D_001B6694 - 1 - (s32)object->unke0) << 32;
+                    *cursor++ = (s64)(s32)((s32)(((u16)request->height - ((u32)object->unkc4 & 0xFFFF)) << 20) |
+                                           (j * request->width / 2) << 4);
+                    *cursor++ = (s64)(s32)(u16)(u32)points[1].x | (u64)((u32)points[1].y & 0xFFFF) << 16 |
+                                (s64)(D_001B6694 - 1 - (s32)object->unke0) << 32;
+                    *cursor++ =
+                        (s64)(s32)((s32)(((u32)object->unkc4 & 0xFFFF) << 20) | ((j + 1) * request->width / 2) << 4);
+                    *cursor++ = (s64)(s32)(u16)(u32)points[2].x | (u64)((u32)points[2].y & 0xFFFF) << 16 |
+                                (s64)(D_001B6694 - 1 - (s32)object->unke0) << 32;
+                    *cursor++ = (s64)(s32)((s32)(((u16)request->height - ((u32)object->unkc4 & 0xFFFF)) << 20) |
+                                           ((j + 1) * request->width / 2) << 4);
+                    *cursor++ = (s64)(s32)(u16)(u32)points[3].x | (u64)((u32)points[3].y & 0xFFFF) << 16 |
+                                (s64)(D_001B6694 - 1 - (s32)object->unke0) << 32;
+                    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+                }
+            }
+
+            cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 0));
+
+            if (!cursor)
+            {
+                return;
+            }
+
+            if (reinterpret_cast<u8*>(cursor) != reinterpret_cast<u8*>(object->unkf0) + 0x10)
+            {
+                *cursor++ = GIF_TAG_EOP;
+                *cursor++ = 0;
+                resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+                u32 start = reinterpret_cast<u32>(object->packet_start) & 0x0FFFFFFF;
+                s32 qwords = ((reinterpret_cast<u32>(cursor) & 0x0FFFFFFF) - start) >> 4;
+                u64 address = (u64)start << 32;
+                (object->chain_cursor++)->control = (s64)qwords | DMA_TAG_ID_REF | address;
+                *object->unkec = VIF_DIRECTHL(qwords - 1);
+                object->packet_start = cursor;
+                object->unkf0 = reinterpret_cast<u32*>(cursor);
+                *cursor = 0;
+                *object->unkf0 = 0x11000000;
+                cursor++;
+                *cursor = 0;
+                *reinterpret_cast<u32*>(cursor) = 0x06008000;
+                object->unkec = reinterpret_cast<u32*>(cursor) + 1;
+                cursor++;
+                resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+            }
+        }
+
+        buffer += object->unkfc & ~0xF;
+    }
+
+    if (mode)
+    {
+        return;
+    }
+
+    LibPacketBuffer* packet = object->packet;
+    packet->unk15 = 1;
+    u32 color;
+
+    if (object->unkf9 == 0)
+    {
+        resident_packet_set_alpha_2(object->packet, D_004ED330[0]);
+        color = (u32)(128.0f * object->unkc0) << 24 | 0x848484;
+    }
+    else
+    {
+        u64 alpha = D_004ED328[0];
+        resident_packet_set_alpha_2(object->packet, alpha);
+        color = (u32)(128.0f * object->unkc0) << 24 | 0x808080;
+    }
+
+    u64* cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 8));
+
+    if (!cursor)
+    {
+        return;
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 7;
+    reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_AD;
+    cursor++;
+    *cursor++ = 0x15;
+    *cursor++ = GS_REGISTER_TEX1_2;
+    *cursor++ = 0x356;
+    *cursor++ = GS_REGISTER_PRIM;
+    *cursor++ = color;
+    *cursor++ = GS_REGISTER_RGBAQ;
+    *cursor++ = 1;
+    *cursor++ = GS_REGISTER_COLCLAMP;
+    *cursor++ = *reinterpret_cast<const u32*>(&g_display->buffers[0].environment.context1.depth_buffer);
+    *cursor++ = GS_REGISTER_ZBUF_2;
+    *cursor++ = 0x30000;
+    *cursor++ = GS_REGISTER_TEST_2;
+    *cursor++ = 0x60;
+    *cursor++ = GS_REGISTER_TEXA;
+    resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+    s32 texture = g_display->buffers[1].environment.context1.frame.base_pointer << 5;
+    LibScreenBounds screen;
+    lib_screen_bounds(&screen, g_display);
+    float scale_x;
+    float scale_y;
+    g_display->get_area_scale(&scale_x, &scale_y);
+    float fields = resident_get_system()->progressive ? 2.0f : 1.0f;
+    s32 page_step = 0x20;
+
+    for (float y = 0.0f; y < 224.0f * fields; y += 32.0f)
+    {
+        for (float x = 0.0f; x < 640.0f; x += 64.0f)
+        {
+            cursor = reinterpret_cast<u64*>(resident_packet_reserve(object->packet, 4));
+
+            if (!cursor)
+            {
+                return;
+            }
+
+            *cursor++ = GIF_TAG_NREG(6) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+            *cursor = 0;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register0 = GIF_REGISTER_TEX0_2;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register1 = GIF_REGISTER_UV;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register2 = GIF_REGISTER_XYZ2;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register3 = GIF_REGISTER_UV;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register4 = GIF_REGISTER_XYZ2;
+            reinterpret_cast<GsGifTag*>(cursor - 1)->fields.register5 = GIF_REGISTER_NOP;
+            cursor++;
+            *cursor++ = (s64)texture | (0x58104000 | 5ULL << 32);
+            *cursor++ = 0;
+            *cursor++ = (s64)(D_001B6694 - (s32)object->unke0) << 32 |
+                        ((s64)(s32)(16.0f * (screen.left + x * scale_x)) |
+                         (s64)(s32)(16.0f * (screen.top + y * scale_y / fields)) << 16);
+            *cursor++ = 0x02000400;
+            *cursor++ = (s64)(D_001B6694 - (s32)object->unke0) << 32 |
+                        ((s64)(s32)(16.0f * (screen.left + (64.0f + x) * scale_x)) |
+                         (s64)(s32)(16.0f * (screen.top + (32.0f + y) * scale_y / fields)) << 16);
+            *cursor++ = 0;
+            resident_packet_align_cursor(object->packet, reinterpret_cast<u8*>(cursor));
+            texture += page_step;
+        }
+    }
+}
 
 /**
  * @brief Start the object's DMA chain on channel 1 (VIF1).
@@ -1418,7 +2132,433 @@ void LibClass3F5B80::func_003F4DE0()
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F4EB0);
+/** The party members' record pointers func_003F9860 fills: three character records, then their equipment. */
+struct LibPartyRecords
+{
+    LibCharacterRecord* records[3];
+    LibCharacterEquipment* equipment[3];
+};
+
+/**
+ * @brief Set up the preset battle party.
+ * @param party The three members' record pointers.
+ * @param mode Battle buffer halfword 0x66A.
+ * @param first_name Name for character 1.
+ * @param second_name Name for character 2.
+ */
+extern "C" void func_003F64A0(LibPartyRecords* party, s32 mode, char* first_name, char* second_name);
+
+extern "C" const u16 D_00143BFE[];
+extern "C" const s16 D_004EBFB0[];
+extern "C" const u8 D_004EC0C0[];
+extern "C" const s16 D_004EBEB0[];
+extern "C" const s16 D_004EBFD0[];
+extern "C" const s16 D_004EC010[];
+extern "C" const s16 D_004EBFEC[];
+
+/** Battle music override: an ID and kind pair and the track it picks. */
+struct LibBattleTrackRow
+{
+    u16 id;
+    u8 kind;
+    u8 track;
+};
+
+extern "C" LibBattleTrackRow D_004EB980[];
+
+// TODO: The track column is read through its own symbol; one table read as `.track` folds the +3 into the load.
+extern "C" u8 D_004EB983[];
+
+/**
+ * @brief Set the battle up: store the settings, copy (or, for a preset battle, rebuild) the three party records,
+ *        then fill the entry list: two fixed tracks, the area's track, each member's voice and six battle skill
+ *        sounds, the battle ID's track and an override from D_004EB980.
+ * @param id Battle ID.
+ * @param kind Battle kind.
+ * @param area Area; 0x32 sometimes becomes 0x34.
+ * @param flags Option bits.
+ */
+void LibClass3F5B80::func_003F4EB0(s32 id, s32 kind, s32 area, u8 flags)
+{
+    s32 skill_kind;
+    s32 skill_value;
+    s32 skill_index;
+    s32 skill_remainder;
+    u8 party[0x20];
+    char names[2][0x40];
+    s32 used[6];
+    LibClass3F5B80Buffer* data = buffer;
+    bool preset = (data->unk0DC & 0x80) != 0;
+
+    if (area == 0x32 && (resident_next_random_word() & 0xFFFF) < 0x4C2C)
+    {
+        area = 0x34;
+    }
+
+    if (preset)
+    {
+        area = data->unk674;
+    }
+
+    u8 clear = 0;
+    data->unk673_2 = clear;
+    data->unk673_3 = clear;
+    data->unk673_4 = clear;
+    data->unk673_0 = clear;
+    data->unk0D0 = id;
+    data->unk0D4 = kind;
+    data->unk0D8 = area;
+    data->unk670 = flags;
+
+    if (data->unk66A >= 0 || preset)
+    {
+        ResidentEntryTable* table = resident_get_entry_table(resident_get_system());
+        LibCharacterRecord* records = reinterpret_cast<LibCharacterRecord*>(resident_find_entry(table, 2));
+        LibCharacterEquipment* equipment = reinterpret_cast<LibCharacterEquipment*>(resident_find_entry(table, 3));
+
+        if (preset)
+        {
+            s32 members = data->unk671 + data->unk672;
+
+            for (s32 i = 0; i < 3; i++)
+            {
+                memcpy_guess(data->unk0E0[i], records, 0xC4);
+                memcpy_guess(data->unk32C[i], equipment, 0x114);
+
+                if (i < members)
+                {
+                    func_003F45F0(i, reinterpret_cast<LibResourceRecordC4*>(records), equipment);
+                }
+                else
+                {
+                    func_003F45F0(-1, reinterpret_cast<LibResourceRecordC4*>(records), equipment);
+                }
+
+                records++;
+                equipment++;
+            }
+        }
+        else
+        {
+            for (s32 i = 0; i < 8; i++)
+            {
+                if (i < 3)
+                {
+                    memcpy_guess(data->unk0E0[i], records, 0xC4);
+                    memcpy_guess(data->unk32C[i], equipment, 0x114);
+                    func_003F9860(party, i, (s32)records, (s32)equipment);
+                }
+
+                if (records->character_id == 1)
+                {
+                    strcpy_guess(names[0], equipment->character_name);
+                }
+                else if (records->character_id == 2)
+                {
+                    strcpy_guess(names[1], equipment->character_name);
+                }
+
+                records++;
+                equipment++;
+            }
+
+            func_003F64A0(reinterpret_cast<LibPartyRecords*>(party), data->unk66A, names[0], names[1]);
+        }
+    }
+
+    LibClass3F5B80Entry* entry = data->entries;
+    data->entries[0].unk06 = 0xD7F;
+
+    if (area >= 0x38)
+    {
+        area = 0x37;
+    }
+    else if (area < 0)
+    {
+        area = 0;
+    }
+
+    data->entries[1].unk06 = area + 0xD85;
+
+    if (data->unk673_1 || (data->unk0DC & 2))
+    {
+        data->entries[2].unk06 = -1;
+    }
+    else
+    {
+        data->entries[2].unk06 = D_00143BFE[data->unk668 * 2];
+    }
+
+    entry += 3;
+    ResidentEntryTable* table = resident_get_entry_table(resident_get_system());
+    LibCharacterRecord* records = reinterpret_cast<LibCharacterRecord*>(resident_find_entry(table, 2));
+    LibCharacterEquipment* equipment = reinterpret_cast<LibCharacterEquipment*>(resident_find_entry(table, 3));
+    u32 options = flags;
+    u32 special = options & 0x11;
+    u32 option2 = options & 2;
+    u32 option4 = options & 4;
+    u32 option8 = options & 8;
+
+    for (s32 slot = 0; slot < 3; slot++)
+    {
+        s32 i;
+        s32 character = records->character_id;
+
+        if (character > 0)
+        {
+            entry->unk06 = D_004EBFB0[character - 1];
+            s16 item_id = equipment_item_id(equipment, 0);
+            LibGameState* state = reinterpret_cast<LibGameState*>(D_001B64F8);
+            bool valid = false;
+
+            if (item_id > 0 && item_id <= LIB_ALLOCATION_COUNT)
+            {
+                valid = true;
+            }
+
+            ItemCreationAllocationRecord* record =
+                valid ? reinterpret_cast<ItemCreationAllocationRecord*>(&state->allocations[item_id - 1]) : 0;
+            s32 count = D_004EC0C0[character - 1];
+            s32 weapon = 0;
+
+            if (record != 0)
+            {
+                u16 index = record->definition_index();
+                weapon = (u16)D_001B64F0[index].weapon_variant;
+
+                if (!(weapon < count) || weapon <= -1)
+                {
+                    weapon = 0;
+                }
+            }
+
+            if (options != 0)
+            {
+                if (character == 1)
+                {
+                    if (special)
+                    {
+                        if (weapon == 10)
+                        {
+                            entry->unk06 = 0xF2C;
+                        }
+                        else
+                        {
+                            entry->unk06 = 0xF2A;
+                        }
+
+                        data->unk673_4 = 1;
+                        data->unk673_2 = 1;
+                    }
+                    else if (option2 || data->unk66A >= 0)
+                    {
+                        entry->unk06 = 0xF2B;
+                        data->unk673_2 = 1;
+                        data->unk673_0 = 1;
+                    }
+                }
+                else if (character == 2)
+                {
+                    if (option4 || data->unk66A >= 0)
+                    {
+                        entry->unk06 = 0xF63;
+                        data->unk673_3 = 1;
+                    }
+                    else if (option8)
+                    {
+                        entry->unk06 = 0xF64;
+                        data->unk673_3 = 1;
+                    }
+                }
+            }
+            else
+            {
+                s32 variant = equipment->character_resource_variant;
+
+                if (preset)
+                {
+                    bool changed = false;
+
+                    if (variant <= -1)
+                    {
+                        variant = 0;
+                        changed = true;
+                    }
+                    else if (character == 1 || character == 2)
+                    {
+                        if (variant >= 6)
+                        {
+                            variant = 5;
+                            changed = true;
+                        }
+                    }
+                    else if (variant >= 4)
+                    {
+                        changed = true;
+                        variant = 3;
+                    }
+
+                    if (changed)
+                    {
+                        equipment->character_resource_variant = variant;
+                    }
+                }
+                else if (variant <= -1 || variant >= 4)
+                {
+                    equipment->character_resource_variant = 0;
+                    variant = 0;
+                }
+
+                s32 voice = entry->unk06 + (weapon + variant * count);
+
+                if (preset)
+                {
+                    if (character == 1)
+                    {
+                        if (variant == 4)
+                        {
+                            voice = 0xF2A;
+                            data->unk673_4 = 1;
+                            data->unk673_2 = 1;
+                        }
+                        else if (variant >= 5)
+                        {
+                            voice = 0xF2B;
+                            data->unk673_2 = 1;
+                            data->unk673_0 = 1;
+                        }
+                    }
+                    else if (character == 2)
+                    {
+                        if (variant == 4)
+                        {
+                            voice = 0xF64;
+                            data->unk673_3 = 1;
+                        }
+                        else if (variant >= 5)
+                        {
+                            voice = 0xF63;
+                            data->unk673_3 = 1;
+                        }
+                    }
+                }
+
+                entry->unk06 = voice;
+            }
+
+            entry++;
+
+            for (s32 i = 0; i < 6; i++)
+            {
+                used[i] = -1;
+            }
+
+
+            for (i = 0; i < 6; i++)
+            {
+                bool found = false;
+                s32 skill = battle_skill_index(equipment, i) - 1;
+
+                if (skill >= 0)
+                {
+                    s32 result = func_00408850(equipment, character, skill, &skill_kind, &skill_value, &skill_index,
+                                               &skill_remainder);
+
+                    if (result == 1 && skill_kind >= 30 && skill_kind <= 128)
+                    {
+                        entry->unk06 = D_004EBEB0[skill_kind - 1];
+                        found = true;
+                    }
+                    else if (result != 0 && skill_kind > 0 && skill_kind < 30)
+                    {
+                        if (character == 2)
+                        {
+                            found = true;
+                            entry->unk06 = D_004EBFD0[skill_kind - 1];
+                        }
+                        else if (character == 9)
+                        {
+                            found = true;
+                            entry->unk06 = D_004EC010[skill_kind - 1];
+                        }
+                    }
+                }
+
+                if (!found)
+                {
+                    entry->unk06 = -1;
+                }
+                else
+                {
+                    s32 j;
+
+                    for (j = 0; j < 6; j++)
+                    {
+                        if (entry->unk06 == used[j])
+                        {
+                            entry->unk06 = -1;
+                            break;
+                        }
+                    }
+
+                    if (j >= 6)
+                    {
+                        used[i] = entry->unk06;
+                    }
+                }
+
+                entry++;
+            }
+        }
+        else
+        {
+            for (s32 i = 0; i < 7; i++, entry++)
+            {
+                entry->unk06 = -1;
+            }
+        }
+
+        records++;
+        equipment++;
+    }
+
+    if (id > 0x16C)
+    {
+        id = 0x16C;
+    }
+    else if (id < 0)
+    {
+        id = 0;
+    }
+
+    if (!(data->unk0DC & 0x80))
+    {
+        entry->unk06 = id + 0xDBD;
+        entry++;
+    }
+    else
+    {
+        entry->unk06 = -1;
+        entry++;
+    }
+
+    entry->unk06 = -1;
+    data->unk66F = 0;
+
+    if (!(data->unk0DC & 0x80))
+    {
+        for (u32 i = 0; i < 0x14A; i++)
+        {
+            if (id == D_004EB980[i].id && kind == D_004EB980[i].kind)
+            {
+                u8* track = &D_004EB983[i * sizeof(LibBattleTrackRow)];
+                entry->unk06 = D_004EBFEC[*track];
+                data->unk66F = *track;
+                break;
+            }
+        }
+    }
+}
 
 /**
  * @brief Pick a new 16-byte aligned place for the buffer inside the object at random, clear it and set its defaults.
@@ -1589,4 +2729,92 @@ LibProtectedValues::LibProtectedValues()
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_003E68C0", func_003F64A0);
+/**
+ * @brief Set up the preset battle party: clear all three members, rebuild characters 1 and 2 with their names and
+ *        battle strategy, give character 1 two codes and four battle skills, and give both fixed hit points, MP,
+ *        fury and base stats. Mode 3 also sets character 1's aura mask and a tactical skill, and character 2's first
+ *        two symbology masteries.
+ * @param party The three members' record pointers.
+ * @param mode Battle buffer halfword 0x66A.
+ * @param first_name Name for character 1.
+ * @param second_name Name for character 2.
+ */
+extern "C" void func_003F64A0(LibPartyRecords* party, s32 mode, char* first_name, char* second_name)
+{
+    for (s32 i = 0; i < 3; i++)
+    {
+        func_004076D0(party->records[i], party->equipment[i], 0);
+    }
+
+    LibCharacterRecord* first = party->records[0];
+    LibCharacterRecord* second = party->records[1];
+    LibCharacterEquipment* first_equipment = party->equipment[0];
+    LibCharacterEquipment* second_equipment = party->equipment[1];
+    func_004076D0(first, first_equipment, 1);
+    func_004076D0(second, second_equipment, 2);
+    copy_character_name(first_equipment->character_name, first_name);
+    copy_character_name(second_equipment->character_name, second_name);
+    first_equipment->battle_strategy = 5;
+    second_equipment->battle_strategy = 5;
+    func_0040A5C0(first_equipment, 1, 0x1F, 8);
+    func_0040A5C0(first_equipment, 1, 0x23, 8);
+    set_battle_skill_index(first_equipment, 0, func_0040AE00(1, 0x1F));
+    set_battle_skill_index(first_equipment, 1, func_0040AE00(1, 0x1F));
+    set_battle_skill_index(first_equipment, 2, func_0040AE00(1, 0x23));
+    set_battle_skill_index(first_equipment, 3, func_0040AE00(1, 0x23));
+
+    if (mode == 3)
+    {
+        store_aura_mask(first_equipment, 3);
+        set_tactical_skill_state(first_equipment, 4, 1);
+        store_symbology_mastery(second_equipment, 0, 1);
+        store_symbology_mastery(second_equipment, 1, 1);
+    }
+
+    raise_base_hp(first, 0xB45);
+    raise_base_hp(first, character_base_hp(first) + 0x64F);
+    raise_max_hp(first, 0xB45);
+    raise_max_hp(first, character_max_hp(first) + 0x64F);
+    lower_hp(first, 0xB45);
+    lower_hp(first, character_hp(first) + 0x64F);
+    raise_base_mp(first, 0x3A0);
+    raise_base_mp(first, character_base_mp(first) + 0x16);
+    raise_max_mp(first, 0x3A0);
+    raise_max_mp(first, character_max_mp(first) + 0x16);
+    lower_mp(first, 0x3A0);
+    lower_mp(first, character_mp(first) + 0x16);
+    store_character_unk28(first, 100.0f);
+    store_character_max_fury(first, 100.0f);
+    set_character_fury(first, 100.0f);
+    raise_base_attack(first, 50);
+    raise_base_defense(first, 10);
+    raise_base_agility(first, 20);
+    raise_base_hit(first, 20);
+    set_character_intelligence(first, 20);
+    store_base_knockback_power(first, 64);
+    store_base_knockback_resistance(first, 40);
+    store_character_flags(first, 0);
+    raise_base_hp(second, 0x501);
+    raise_base_hp(second, character_base_hp(second) + 0x207);
+    raise_max_hp(second, 0x501);
+    raise_max_hp(second, character_max_hp(second) + 0x207);
+    lower_hp(second, 0x501);
+    lower_hp(second, character_hp(second) + 0x207);
+    raise_base_mp(second, 0x67);
+    raise_base_mp(second, character_base_mp(second) + 0x449);
+    raise_max_mp(second, 0x67);
+    raise_max_mp(second, character_max_mp(second) + 0x449);
+    lower_mp(second, 0x67);
+    lower_mp(second, character_mp(second) + 0x449);
+    store_character_unk28(second, 100.0f);
+    store_character_max_fury(second, 100.0f);
+    set_character_fury(second, 100.0f);
+    raise_base_attack(second, 40);
+    raise_base_defense(second, 40);
+    raise_base_agility(second, 20);
+    raise_base_hit(second, 20);
+    set_character_intelligence(second, 20);
+    store_base_knockback_power(second, 64);
+    store_base_knockback_resistance(second, 40);
+    store_character_flags(second, 0);
+}

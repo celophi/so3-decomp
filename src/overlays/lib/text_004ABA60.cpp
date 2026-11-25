@@ -44,14 +44,6 @@ void float_curve_track_pool_free(LibTrackPool<LibPooledFloatCurveTrack>* pool, L
  */
 void float_quaternion_track_pool_free(LibTrackPool<LibPooledFloatQuaternionTrack>* pool, LibPooledFloatQuaternionTrack* track);
 
-/** Another animation entry flag, and the kinds an entry without a target may have. */
-enum
-{
-    LIB_ANIMATION_ENTRY_RESTART_ONLY = 0x20,
-    LIB_ANIMATION_KIND_UNBOUND_FIRST = 0xE0,
-    LIB_ANIMATION_KIND_UNBOUND_END = 0xF0
-};
-
 extern "C" {
 
 /** @brief Start unattached, with no data. */
@@ -4620,7 +4612,7 @@ extern "C" s32 func_004B43C0(LibAnimation* object, float frame, s32 mode)
 
         if (entry->channel != 0)
         {
-            if (entry->target != 0 || (entry->kind >= LIB_ANIMATION_KIND_UNBOUND_FIRST && entry->kind < LIB_ANIMATION_KIND_UNBOUND_END))
+            if (entry->target != 0 || (entry->kind >= LIB_ANIMATION_KIND_UNBOUND_FIRST && entry->kind < LIB_ANIMATION_KIND_SLOT))
             {
                 if (entry->flags & LIB_ANIMATION_ENTRY_SKIP)
                 {
@@ -4687,7 +4679,7 @@ s32 lib_animation_apply_frame(LibAnimation* object, float frame, s32 mode)
 
         if (entry->channel != 0)
         {
-            if (entry->target != 0 || (entry->kind >= LIB_ANIMATION_KIND_UNBOUND_FIRST && entry->kind < LIB_ANIMATION_KIND_UNBOUND_END))
+            if (entry->target != 0 || (entry->kind >= LIB_ANIMATION_KIND_UNBOUND_FIRST && entry->kind < LIB_ANIMATION_KIND_SLOT))
             {
                 if (entry->flags & LIB_ANIMATION_ENTRY_SKIP)
                 {

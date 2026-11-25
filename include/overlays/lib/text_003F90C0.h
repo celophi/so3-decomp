@@ -214,6 +214,15 @@ s32 func_00408E20(u8* data, s32 seed);
 s32 func_00408850(void* detail, s32 code, s32 index, s32* kind, s32* value, s32* result_index, s32* remainder);
 
 /**
+ * @brief Store one of three value pairs.
+ * @param object Receiver holding two arrays of three words.
+ * @param index Pair index, ignored outside zero through two.
+ * @param first Value for the first array.
+ * @param second Value for the second array.
+ */
+void func_003F9860(void* object, s32 index, s32 first, s32 second);
+
+/**
  * @brief Store the attack element mask.
  * @param equipment Character equipment record.
  * @param mask Element mask.

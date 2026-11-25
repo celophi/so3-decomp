@@ -82,7 +82,9 @@ public:
 /** The battle trophy flags kept with the system settings, one bit per trophy, under their own checksum. */
 struct LibTrophyFlags
 {
-    ~LibTrophyFlags();
+    ~LibTrophyFlags()
+    {
+    }
 
     LibBitArray flags;
     s32 trophy_key;
@@ -463,7 +465,11 @@ extern "C" s32 func_0044C110(LibCallbackTransform* object);
 /** One 16-byte entry of an image resource's animation frame list. */
 struct LibImageFrame
 {
-    u8 unk00[0xD];
+    u32 uv0;
+    u32 uv1;
+    u16 width;
+    u16 height;
+    u8 csa;
     u8 kind;
     u16 duration;
 };
@@ -633,13 +639,13 @@ public:
  * @brief Prepare an image animation's packet at a cursor.
  * @param animation Animation to prepare.
  * @param cursor Packet cursor.
- * @param flag Flag; zero here.
+ * @param output Receives the drawing format, or null to store it in the animation.
  * @return Nonzero when there is something to draw.
  */
-extern "C" s32 func_00453150(LibImageAnimation* animation, u64** cursor, s32 flag);
+extern "C" s32 func_00453150(LibImageAnimation* animation, u64** cursor, LibImageFormat* output);
 
 extern "C" void func_004535B0(LibImageAnimation* animation, u64** cursor, const LibVector4* origin, u32 depth, float scale,
-                              s32 flag);
+                              const LibVector4* tint);
 
 /** Transform owner with vtable D_001747C0 in main data that expires the cached texture 1 when it's drawn. */
 class LibClass1747C0 : public LibTransformOwner
@@ -797,6 +803,164 @@ public:
     float unk250;
 };
 
+/** Vertex of a screen-space polygon: texture coordinates, then the position relative to the screen centre. */
+struct LibScreenVertex
+{
+    float u;
+    float v;
+    float x;
+    float y;
+};
+
+/** Mode byte the screen-space drawing reads; LibClass172080's quads scale texture v by 16/13 for 1 and 8/13 for 2. */
+extern "C" u8 D_001B655C;
+
+/**
+ * @brief Add a textured triangle strip or fan, in screen coordinates relative to the display's centre, to the
+ *        object's packet.
+ * @param object Object whose packet to extend.
+ * @param count Number of vertices.
+ * @param vertices Vertices.
+ * @param depth Depth of every vertex.
+ * @param color Vertex colour.
+ * @param blend Nonzero to alpha blend.
+ * @param fan Nonzero for a triangle fan, zero for a strip.
+ */
+extern "C" void func_0044D9C0(LibClass1748D0* object, s32 count, const LibScreenVertex* vertices, u32 depth, u32 color,
+                              s32 blend, s32 fan);
+
+/**
+ * @brief Add the depth state packet to the object's packet: the display's depth buffer with writes enabled, the depth
+ * test, and the clamp mode.
+ * @param object Object whose packet to extend.
+ */
+extern "C" void func_0044E080(LibClass1748D0* object);
+
+/** LibClass1748D0 with its own packet builder, with vtables D_174970 and D_1749F4 in main data. */
+class LibClass174970 : public LibClass1748D0
+{
+public:
+    /** @brief Start with type ID 0xA02 and no buffers. */
+    LibClass174970();
+
+    virtual ~LibClass174970();
+
+    virtual void build_packet(const void* matrix, void* context);
+
+    /**
+     * @brief Set the grid size and replace the packet buffer with one big enough for it.
+     * @param columns Number of columns.
+     * @param rows Number of rows.
+     */
+    void set_grid_size(s32 columns, s32 rows);
+
+    float row_amplitude;
+    float row_frequency;
+    float row_phase;
+    u8 unk26c[4];
+    float column_amplitude;
+    float column_frequency;
+    float column_phase;
+    u8 unk27c[4];
+    s32 columns;
+    s32 rows;
+    float left;
+    float top;
+    float width;
+    float height;
+    u32 unk298;
+    u32 alpha;
+};
+
+/** LibClass1748D0 that LibClass174AC0 and LibClass174B70 build on, with vtables D_174A10 and D_174A94 in main data. */
+class LibClass174A10 : public LibClass1748D0
+{
+public:
+    LibClass174A10()
+    {
+    }
+
+    virtual ~LibClass174A10()
+    {
+    }
+};
+
+/** LibClass174A10 with a sample grid and two angle setters, with vtables D_174AC0 and D_174B44 in main data. */
+class LibClass174AC0 : public LibClass174A10
+{
+public:
+    /** @brief Start with type ID 0xA02 and no buffers. */
+    LibClass174AC0();
+
+    /** @brief Free the sample buffer. */
+    virtual ~LibClass174AC0();
+
+    virtual void build_packet(const void* matrix, void* context);
+
+    virtual void func_0044FDA0(s32 columns, s32 rows);
+
+    /**
+     * @brief Store three values: the first as degrees, the third as turns.
+     * @param values Three values.
+     */
+    virtual void func_00451AD0(const float* values);
+
+    /**
+     * @brief Store three values, the first and third as degrees.
+     * @param values Three values.
+     */
+    virtual void func_00451B20(const float* values);
+
+    s32 columns;
+    s32 rows;
+    float unk268;
+    float unk26c;
+    float unk270;
+    float unk274;
+    float unk278;
+    float unk27c;
+    void* samples;
+    u8 unk284[0x1C];
+};
+
+/** LibClass174A10 with a sample grid and two setters, with vtables D_174B70 and D_174BF4 in main data. */
+class LibClass174B70 : public LibClass174A10
+{
+public:
+    /** @brief Start with type ID 0xA01 and no buffers. */
+    LibClass174B70();
+
+    /** @brief Free the sample buffer. */
+    virtual ~LibClass174B70();
+
+    virtual void build_packet(const void* matrix, void* context);
+
+    virtual void func_00451850(s32 columns, s32 rows);
+
+    /**
+     * @brief Store three values, the third as turns.
+     * @param values Three values.
+     */
+    virtual void func_00451A60(const float* values);
+
+    /**
+     * @brief Store three values, the first as degrees.
+     * @param values Three values.
+     */
+    virtual void func_00451AA0(const float* values);
+
+    s32 columns;
+    s32 rows;
+    float unk268;
+    float unk26c;
+    float unk270;
+    float unk274;
+    float unk278;
+    float unk27c;
+    void* samples;
+    u8 unk284[0x1C];
+};
+
 /** Clipping widget with resident vtable at 0x1746A0. */
 class ItemCreationClass1746A0 : public LibWidget
 {
@@ -934,6 +1098,73 @@ inline ItemCreationClass1746A0::ItemCreationClass1746A0(s32 code)
     lib_scissor_init_reset(this, code);
 }
 
+#include "overlays/lib/image_capture.h"
+
+class LibCameraContext;
+
+#define LIB_CLASS_1745F0_STRIP_WORDS 64
+#define LIB_CLASS_1745F0_CAPTURE_COUNT 5
+
+/** List object that keeps up to five VRAM captures and their positions, with vtable D_1745F0 in main data. */
+class LibClass1745F0 : public LibListObject
+{
+public:
+    /**
+     * @brief Set up the capture positions and one capture.
+     * @param display Display the captures read from.
+     * @param unk78 Object whose transform the update reads.
+     */
+    LibClass1745F0(LibCameraContext* display, void* unk78);
+
+    /** @brief Destroy the captures, then the list object. */
+    virtual ~LibClass1745F0();
+
+    /**
+     * @brief Return the fixed list kind 14.
+     * @return Always 14.
+     */
+    virtual s32 get_default_list_kind();
+
+    /** @brief Destroy the captures, then queue the object for release. */
+    virtual void destroy();
+
+    /** @brief Queue this frame's captures. */
+    virtual void update();
+
+    /**
+     * @brief Destroy the current captures and create new ones, registering each with the renderer.
+     * @param count Captures to create.
+     */
+    void set_capture_count(s32 count);
+
+    /** @brief Detach and destroy every capture. */
+    void release_captures()
+    {
+        for (s32 i = 0; i < LIB_CLASS_1745F0_CAPTURE_COUNT; i++)
+        {
+            if (captures[i])
+            {
+                lib_object_detach_owner(captures[i]);
+                captures[i]->destroy();
+                captures[i] = 0;
+            }
+        }
+    }
+
+    u8 unk14[0xC];
+    FieldVec4A positions[LIB_CLASS_1745F0_CAPTURE_COUNT];
+    s32 capture_count;
+    LibCameraContext* display;
+    void* unk78;
+    float focus;
+    float focus_velocity;
+    float focus_acceleration;
+    u8 unk88;
+    u8 recreated;
+    u8 unk8a[6];
+    u32 strips[LIB_CLASS_1745F0_CAPTURE_COUNT][LIB_CLASS_1745F0_STRIP_WORDS];
+    LibImageCapture* captures[LIB_CLASS_1745F0_CAPTURE_COUNT];
+};
 #endif
 
 #endif

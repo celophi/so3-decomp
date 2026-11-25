@@ -51,8 +51,10 @@ enum
     GIF_REGISTER_UV = 0x3,
     GIF_REGISTER_XYZF2 = 0x4,
     GIF_REGISTER_XYZ2 = 0x5,
+    GIF_REGISTER_TEX0_2 = 0x7,
     GIF_REGISTER_XYZ3 = 0xD,
-    GIF_REGISTER_AD = 0xE
+    GIF_REGISTER_AD = 0xE,
+    GIF_REGISTER_NOP = 0xF
 };
 
 /** GS register addresses, as written in A+D form. */
@@ -79,6 +81,7 @@ enum
     GS_REGISTER_ALPHA_1 = 0x42,
     GS_REGISTER_ALPHA_2 = 0x43,
     GS_REGISTER_TEST_1 = 0x47,
+    GS_REGISTER_COLCLAMP = 0x46,
     GS_REGISTER_TEST_2 = 0x48,
     GS_REGISTER_PABE = 0x49,
     GS_REGISTER_FBA_1 = 0x4A,
@@ -162,7 +165,8 @@ typedef struct GsGifTag
             u64 register4 : 4;
             u64 register5 : 4;
             u64 register6 : 4;
-            u64 unused : 36;
+            u64 register7 : 4;
+            u64 unused : 32;
         } fields;
     };
 } GsGifTag;

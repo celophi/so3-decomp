@@ -1059,6 +1059,10 @@ public:
 class LibWordTrack : public LibWordKeyTrack
 {
 public:
+    LibWordTrack()
+    {
+    }
+
     virtual ~LibWordTrack();
 
     virtual void get_end_delta(void* output) const;
@@ -1241,7 +1245,7 @@ struct LibAnimationEntry14
     u8 flags;
     LibClass173180* channel;
     void* target;
-    u8 unk0c[4];
+    void* sub_target;
     const char* state_name;
 };
 
@@ -1530,7 +1534,13 @@ enum
     LIB_ANIMATION_KIND_SCALE = 2,
     LIB_ANIMATION_KIND_TRANSLATION_AXIS = 3,
     LIB_ANIMATION_KIND_ROTATION_AXIS = 4,
-    LIB_ANIMATION_KIND_SCALE_AXIS = 5
+    LIB_ANIMATION_KIND_SCALE_AXIS = 5,
+
+    /** First kind an entry may keep without a target. */
+    LIB_ANIMATION_KIND_UNBOUND_FIRST = 0xE0,
+
+    /** Kinds from here on bind to a slot of the binder's slot source instead of a scene entry. */
+    LIB_ANIMATION_KIND_SLOT = 0xF0
 };
 
 enum
@@ -1539,6 +1549,9 @@ enum
 
     /** Entry flag: lib_animation_apply_frame leaves the entry alone. */
     LIB_ANIMATION_ENTRY_SKIP = 0x10,
+
+    /** Entry flag: the entry's channel only restarts, from its track's looped byte. */
+    LIB_ANIMATION_ENTRY_RESTART_ONLY = 0x20,
 
     /** Low nibble of an entry's flags: the axis of a per-axis channel, zero for a whole vector. */
     LIB_ANIMATION_ENTRY_AXIS_MASK = 0xF
@@ -1596,11 +1609,11 @@ LibClass173180* lib_animation_find_channel(LibAnimation* object, const void* tar
 float func_004BDE00(LibAnimation* object, void* target, LibAnimation* previous, float duration);
 
 /**
- * @brief Make the animation's channels from its resource and bind each record to the scene entry it names.
+ * @brief Build the animation's channels from its 'SAFH' chunk and bind them to the scene's objects.
  * @param object Animation object.
- * @param scene Scene whose entries the records name.
- * @param slots Optional slot source for entries without a scene target.
- * @return One when bound, or zero when the animation has no resource.
+ * @param scene Scene the targets are looked up in, or null.
+ * @param slots Source of the slots that kinds 0xF0 to 0xF3 bind to, or null.
+ * @return One on success, or zero when the resource is missing or invalid or a channel can't be made.
  */
 s32 lib_animation_bind_channels(LibAnimation* object, void* scene, void* slots);
 

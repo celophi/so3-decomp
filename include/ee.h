@@ -37,6 +37,7 @@
 #define D9_CHCR ((volatile u32*)0x1000D400)
 #define D9_MADR ((volatile u32*)0x1000D410)
 #define D9_QWC ((volatile u32*)0x1000D420)
+#define D9_TADR ((volatile u32*)0x1000D430)
 #define D9_SADR ((volatile u32*)0x1000D480)
 
 /** DMA channel 0 (VIF0) registers. */

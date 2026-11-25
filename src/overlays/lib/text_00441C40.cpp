@@ -20,6 +20,7 @@
 #include "overlays/lib/vector.h"
 #include "overlays/lib/grid_emission.h"
 #include "overlays/lib/text_0043BD00.h"
+#include "overlays/lib/text_0044ABE0.h"
 
 extern LibTrackPool<LibPooledQuaternionCurveTrack>* g_quaternion_curve_track_pool;
 
@@ -2530,7 +2531,7 @@ void LibClass174120::copy_settings(const LibClass173A40* source)
     // TODO: As in LibClass177090::copy_settings, the copy marks its own storage borrowed by storing the same pointers
     // back; I haven't found a helper form that loads unkb0 and unkb4 in this order.
     u8* first = unkb0;
-    FieldVec4A* second = unkb4;
+    LibClass173490Entry* second = unkb4;
     unkc9 = 1;
     unkb0 = first;
     unkb4 = second;
@@ -4435,4 +4436,4 @@ s32 func_0044A5E0(void* object)
     return 14;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", func_0044A5F0);
+INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00441C40", update__14LibClass1745F0Fv);

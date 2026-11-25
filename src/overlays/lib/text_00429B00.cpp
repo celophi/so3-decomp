@@ -5,6 +5,7 @@
 #include "clamp.h"
 #include "overlays/lib/blend_transform.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/scene_objects.h"
 #include "main/resident_data.h"
 #include "overlays/lib/text_00429B00.h"
 #include "overlays/lib/text_0043A920.h"
@@ -20,6 +21,7 @@
 #include "overlays/lib/transform_owner_inlines.h"
 #include "overlays/lib/transform_inlines.h"
 #include "overlays/lib/occluder_vu0.h"
+#include "overlays/lib/ripple_vu0.h"
 #include "overlays/lib/light_random.h"
 #include "sdk/main/libkernl_00121940.h"
 #include "ee.h"
@@ -98,231 +100,11 @@ public:
     s32 lifetime;
 };
 
-/** LibClass1734B0 entry of type 34 with two element arrays, with vtable D_173490 in main data. */
-class LibClass173490 : public LibClass1734B0
-{
-public:
-    /** @brief Start with no entry arrays. */
-    LibClass173490();
-
-    /** @brief Free both entry arrays, then destroy the entry. */
-    virtual ~LibClass173490();
-
-    virtual void set_borrowed_data(void* value);
-
-    /**
-     * @brief Copy each vertex's cell element into the output, or, when unk4c is clear, the output's values back
-     *        into the cells and set unk4d.
-     * @param output Output to fill or read.
-     * @param index Bit index, which picks the record of cell indices.
-     */
-    virtual void func_slot10(LibEntryOutput* output, s32 index);
-
-    /**
-     * @brief Return the entry's type code.
-     * @return 34.
-     */
-    virtual s32 func_slot14();
-
-    /**
-     * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
-     * @param index Bit index; unused.
-     * @param size Size in halfwords; receives the size in bytes.
-     * @return Record.
-     */
-    virtual u8* read_record(u32 index, u32* size);
-
-    /** @brief Slot 0x1C, first after LibClass1779F0's; its purpose is unknown. */
-    virtual s32 func_slot1C(LibTransform* root);
-
-    /** @brief Clear both element arrays and the two flags. */
-    void clear_entries();
-
-    u32* unk30;
-    u32* unk34;
-    u32 unk38;
-    LibTransform* unk3c;
-    LibClass173490Entry* unk40;
-    LibClass173490Entry* unk44;
-    u32* unk48;
-    u8 unk4c;
-    u8 unk4d;
-};
-
-/**
- * Light: a LibTransform with a kind byte that the scene's models are lit by, with vtable D_1736C0 in main data.
- * Lib's object factory builds the five kinds below with inline constructors.
- */
-class LibClass1736C0 : public LibTransform
-{
-public:
-    virtual ~LibClass1736C0()
-    {
-    }
-
-    /**
-     * @brief Slot 0x84: bring the light into a view's space.
-     * @param matrix View matrix.
-     * @param rotation View matrix with its rows normalised, for directions.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation) = 0;
-
-    /**
-     * @brief Slot 0x88: work out the light reaching a point.
-     * @param point Point being lit.
-     * @param normal Normal at the point.
-     * @return Light vector; stored in the light.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal) = 0;
-
-    u8 kind;
-};
-
-/** Point light of type 0x703, with vtable D_173750 in main data. */
-class LibClass173750 : public LibClass1736C0
-{
-public:
-    /**
-     * @brief Transform the light's position into the view's space.
-     * @param matrix View matrix.
-     * @param rotation Unused.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
-
-    /**
-     * @brief Work out the vector from a point to the light, falling off with distance.
-     * @param point Point being lit.
-     * @param normal Unused.
-     * @return Light vector at unk220.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
-
-    LibVector4 unk220;
-    LibVector4 unk230;
-    LibVector4 view_position;
-};
-
-/** Light of type 0x702 that scales normals, with vtable D_1737E0 in main data. */
-class LibClass1737E0 : public LibClass1736C0
-{
-public:
-    /**
-     * @brief Do nothing; this light doesn't depend on the view.
-     * @param matrix Unused.
-     * @param rotation Unused.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation)
-    {
-    }
-
-    /**
-     * @brief Scale a normal by the light's factors.
-     * @param point Unused.
-     * @param normal Normal at the point.
-     * @return Light vector at unk220.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
-
-    LibVector4 unk220;
-    LibVector4 unk230;
-};
-
-/** Light of type 0x704 with a position, a radius and two directions, with vtable D_173630 in main data. */
-class LibClass173630 : public LibClass1736C0
-{
-public:
-    /** @brief Destroy the light. */
-    virtual ~LibClass173630();
-
-    /**
-     * @brief Bring the position and both directions into the view's space.
-     * @param matrix View matrix.
-     * @param rotation View matrix with its rows normalised.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
-
-    /**
-     * @brief Give a random vector from the view-space directions for points close enough to the light's axis.
-     * @param point Point being lit.
-     * @param normal Unused.
-     * @return Light vector at unk290; zero for points out of reach.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
-
-    LibVector4 view_position;
-    LibVector4 unk230;
-    LibVector4 unk240;
-    LibVector4 axis;
-    LibVector4 unk260;
-    LibVector4 unk270;
-    LibVector4 unk280;
-    LibVector4 unk290;
-    float radius;
-};
-
-/** Light of type 0x701 that gives a random vector between two directions, with vtable D_173870 in main data. */
-class LibClass173870 : public LibClass1736C0
-{
-public:
-    /**
-     * @brief Turn both directions into the view's space and halve the second.
-     * @param matrix Unused.
-     * @param rotation View matrix with its rows normalised.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
-
-    /**
-     * @brief Pick a random vector from the view-space directions.
-     * @param point Unused.
-     * @param normal Unused.
-     * @return Light vector at unk270.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal);
-
-    LibVector4 unk220;
-    LibVector4 unk230;
-    LibVector4 unk240;
-    LibVector4 unk250;
-    LibVector4 unk260;
-    LibVector4 unk270;
-};
-
-/** Directional light of type 0x700, with vtable D_173900 in main data. */
-class LibClass173900 : public LibClass1736C0
-{
-public:
-    /**
-     * @brief Turn the direction into the view's space.
-     * @param matrix Unused.
-     * @param rotation View matrix with its rows normalised.
-     */
-    virtual void func_slot84(const LibMatrix44Value* matrix, const LibMatrix44Value* rotation);
-
-    /**
-     * @brief Give the view-space direction, the same for every point.
-     * @param point Unused.
-     * @param normal Unused.
-     * @return Direction at unk230.
-     */
-    virtual const LibVector4* func_slot88(const LibVector4* point, const LibVector4* normal)
-    {
-        return &unk230;
-    }
-
-    LibVector4 unk220;
-    LibVector4 unk230;
-};
-
-/** LibTransform of type 0x1100 with no state of its own, with vtable D_1734D0 in main data. */
-class LibClass1734D0 : public LibTransform
-{
-public:
-    /** @brief Construct the transform. */
-    LibClass1734D0();
-};
-
 /** Sound bank set Lib plays its sounds through. */
 extern ResidentSoundBankSet* D_001B6524;
+
+/** Per sound bank slot: the last voice line asked to hold back the next sound of some events. */
+extern "C" u8 D_001B6528[RESIDENT_SOUND_BANK_SLOT_COUNT];
 
 /** Sound number tables for func_0042EB50, four numbers each; entries 1 to 10 are used. */
 extern s16* D_004ED0EC[];
@@ -2166,7 +1948,183 @@ void LibClass173490::func_slot10(LibEntryOutput* output, s32 index)
     }
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_slot1C__14LibClass173490FP12LibTransform);
+/**
+ * @brief Run one step of the ripple grid on VU0: drop a random ripple when enabled, spread the heights into the
+ *        velocities (only on masked cells unless the grid is unmasked), then move the masked heights. Rewind the
+ *        records; while the grid is idle only rewind them.
+ * @param root Model transform the grid belongs to.
+ * @return One.
+ */
+s32 LibClass173490::func_slot1C(LibTransform* root)
+{
+    if (unk4d)
+    {
+        unk4c = 1;
+    }
+
+    if (!unk4c)
+    {
+        unk38 = reinterpret_cast<u32>(unk34);
+        return 1;
+    }
+
+    unk3c = root;
+    LibClass174C20Header* header = reinterpret_cast<LibClass174C20Header*>(unk30);
+    s32 depth = header->rows + 2;
+    s32 width = header->columns + 2;
+    LibClass173490Entry* heights = unk40;
+    LibClass173490Entry* velocities = unk44;
+
+    if (header->random_drops)
+    {
+        s32 x = resident_random_below(width - 2) + 1;
+        s32 y = resident_random_below(depth - 2) + 1;
+        float* v = reinterpret_cast<float*>(velocities);
+        v[(x + y * width) * 4 + 0] += reinterpret_cast<LibClass174C20Header*>(unk30)->drop_strength * (0.02f * (resident_random_fraction() - 0.5f));
+        v[(x + y * width) * 4 + 1] += reinterpret_cast<LibClass174C20Header*>(unk30)->drop_strength * (0.02f * (resident_random_fraction() - 0.5f));
+        v[(x + y * width) * 4 + 2] += reinterpret_cast<LibClass174C20Header*>(unk30)->drop_strength * (0.02f * (resident_random_fraction() - 0.5f));
+    }
+
+    float step = reinterpret_cast<LibClass174C20Header*>(unk30)->speed * g_frame_seconds;
+    u32* mask = unk48;
+
+    if (reinterpret_cast<LibClass174C20Header*>(unk30)->unmasked)
+    {
+        vu0_ripple_set_steps(step, 4.0f * step);
+
+        if (2 < width)
+        {
+            for (s32 y = 1; y < depth - 1; y++)
+            {
+                s32 cell = y * width + 1;
+                LibClass173490Entry* left = &heights[cell - 1];
+                LibClass173490Entry* velocity = &velocities[cell];
+                u32* weights = &mask[cell];
+                vu0_ripple_load_row(left);
+                s32 count = width - 2;
+                left++;
+
+                do
+                {
+                    vu0_ripple_rotate(left);
+                    LibClass173490Entry* out = velocity;
+                    vu0_ripple_spread(out, left - width, left + width);
+                    count--;
+                    left++;
+                    velocity++;
+                    s32 done = ee_movz(0, 1, count);
+                    vu0_ripple_store_velocity(out);
+
+                    if (done)
+                    {
+                        break;
+                    }
+                } while (true);
+            }
+        }
+    }
+    else
+    {
+        vu0_ripple_set_steps(step, 4.0f * step);
+
+        if (2 < width)
+        {
+            for (s32 y = 1; y < depth - 1; y++)
+            {
+                s32 cell = y * width + 1;
+                LibClass173490Entry* left = &heights[cell - 1];
+                LibClass173490Entry* velocity = &velocities[cell];
+                u32* weights = &mask[cell];
+                vu0_ripple_load_row(left);
+                s32 count = width - 2;
+                left++;
+
+                for (;;)
+                {
+                    vu0_ripple_rotate(left);
+                    u32 weight = *weights++;
+
+                    if (weight == 0)
+                    {
+                        count--;
+                        left++;
+                        velocity++;
+
+                        if (count == 0)
+                        {
+                            break;
+                        }
+
+                        continue;
+                    }
+
+                    LibClass173490Entry* out = velocity;
+                    vu0_ripple_spread_masked(out, left - width, left + width, weight);
+                    left++;
+                    velocity++;
+                    vu0_ripple_weight_spread();
+                    count--;
+                    s32 done = ee_movz(0, 1, count);
+                    vu0_ripple_store_velocity(out);
+
+                    if (done)
+                    {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    vu0_ripple_set_frame(g_frame_seconds);
+
+    if (width != 0)
+    {
+        for (s32 y = 0; y < depth; y++)
+        {
+            s32 count = width;
+            s32 row = y * width;
+            u32* weights = &mask[row];
+            LibClass173490Entry* height = &heights[row];
+            LibClass173490Entry* velocity = &velocities[row];
+
+            for (;;)
+            {
+                u32 weight = *weights++;
+
+                if (weight == 0)
+                {
+                    count--;
+                    height++;
+                    velocity++;
+
+                    if (count == 0)
+                    {
+                        break;
+                    }
+
+                    continue;
+                }
+
+                vu0_ripple_load_cell(height, velocity);
+                count--;
+                velocity++;
+                vu0_ripple_integrate();
+                s32 done = ee_movz(0, 1, count);
+                vu0_ripple_store_height(height);
+                height++;
+
+                if (done)
+                {
+                    break;
+                }
+            }
+        }
+    }
+
+    unk38 = reinterpret_cast<u32>(unk34);
+    return 1;
+}
 
 /**
  * @brief Return the record at the cursor and move past it; the size is given in halfwords and rounded up to 16 bytes.
@@ -2193,10 +2151,10 @@ void LibClass173490::clear_entries()
     s32 rows = unk30[1] + 2;
     s32 columns = unk30[0] + 2;
     LibClass173490Entry zero;
-    zero.unk00[0] = 0;
-    zero.unk00[1] = 0;
-    zero.unk00[2] = 0;
-    zero.unk00[3] = 0;
+    zero.x = 0.0f;
+    zero.y = 0.0f;
+    zero.z = 0.0f;
+    zero.w = 0.0f;
     LibClass173490Entry* first = unk40;
     LibClass173490Entry* second = unk44;
 
@@ -2688,7 +2646,426 @@ extern "C" s32 func_0042F420(s32 table, s32 first, s32 second, s32 random, s32 s
     return lib_pick_sound_number(groups[1], random);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_0042F550);
+/**
+ * @brief Play a sound bank slot's sound for an event, or now and then one of the slot character's voice lines for it.
+ *
+ * Each slot remembers whether its last voice line asked to hold back the next sound of some events.
+ * @param emitter Object the sound follows.
+ * @param slot Sound bank slot.
+ * @param event Event the sound is for.
+ * @param voice Nonzero to allow a voice line instead of the slot's sound.
+ * @return Slot identifier of the sound, or 0 when nothing plays.
+ */
+extern "C" s32 func_0042F550(ResidentSoundEmitter* emitter, s32 slot, s32 event, s32 voice)
+{
+    if (D_001B6524 == 0)
+    {
+        return 0;
+    }
+
+    if (D_001B6524->loading != 0)
+    {
+        return 0;
+    }
+
+    if (voice == 0 || !resident_poll_resource_queue(g_resource_queue) || resident_rand() < 30000)
+    {
+        u8* held = &D_001B6528[slot];
+
+        if (*held)
+        {
+            *held = 0;
+
+            switch (D_001B6524->banks[slot])
+            {
+            case 1:
+                switch (event)
+                {
+                case 0xB:
+                case 0xD:
+                case 0x10:
+                case 0x12:
+                case 0x15:
+                case 0x17:
+                case 0x19:
+                case 0x1B:
+                case 0x1D:
+                    return 0;
+                }
+
+                break;
+            case 5:
+                switch (event)
+                {
+                case 0x13:
+                case 0x15:
+                    return 0;
+                }
+
+                break;
+            }
+        }
+
+        *held = 0;
+        return resident_sound_bank_set_play(D_001B6524, slot, event, emitter, 0, 0x7F, 0);
+    }
+
+    switch (D_001B6524->banks[slot])
+    {
+    case 1:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1357, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1358, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1359, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135A, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135B, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x135C, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135D, emitter, 0, 0x7F, 0);
+        case 0x16:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135E, emitter, 0, 0x7F, 0);
+        case 0x18:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x135F, emitter, 0, 0x7F, 0);
+        case 0x1A:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1360, emitter, 0, 0x7F, 0);
+        case 0x1C:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1361, emitter, 0, 0x7F, 0);
+        case 0xB:
+        case 0xD:
+        case 0x10:
+        case 0x12:
+        case 0x15:
+        case 0x17:
+        case 0x19:
+        case 0x1B:
+        case 0x1D:
+            D_001B6528[slot] = 0;
+            return 0;
+        }
+
+        break;
+    case 3:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1362, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1363, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1364, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1365, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1366, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1367, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1368, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1369, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136A, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136B, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136C, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 4:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136D, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136E, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x136F, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1370, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1371, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1372, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1373, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1374, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1375, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1376, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1377, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 5:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1378, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1379, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137A, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137B, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137C, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137D, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137E, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x137F, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1380, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x1381, emitter, 0, 0x7F, 0);
+        case 0x16:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1382, emitter, 0, 0x7F, 0);
+        case 0x13:
+        case 0x15:
+            D_001B6528[slot] = 0;
+            return 0;
+        }
+
+        break;
+    case 6:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1383, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1384, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1385, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1386, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1387, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1388, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1389, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138A, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138B, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138C, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138D, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 7:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138E, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x138F, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1390, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1391, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1392, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1393, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1394, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1395, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1396, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1397, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1398, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 8:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x1399, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139A, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139B, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139C, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139D, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139E, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x139F, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A0, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A1, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A2, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A3, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    case 9:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A4, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 1;
+            return resident_sound_play_voice(g_sound, 0x13A5, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A6, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A7, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A8, emitter, 0, 0x7F, 0);
+        default:
+            break;
+        }
+
+        break;
+    case 10:
+        switch (event)
+        {
+        case 0xA:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13A9, emitter, 0, 0x7F, 0);
+        case 0xB:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AA, emitter, 0, 0x7F, 0);
+        case 0xC:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AB, emitter, 0, 0x7F, 0);
+        case 0xD:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AC, emitter, 0, 0x7F, 0);
+        case 0xE:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AD, emitter, 0, 0x7F, 0);
+        case 0xF:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AE, emitter, 0, 0x7F, 0);
+        case 0x10:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13AF, emitter, 0, 0x7F, 0);
+        case 0x11:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13B0, emitter, 0, 0x7F, 0);
+        case 0x12:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13B1, emitter, 0, 0x7F, 0);
+        case 0x13:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13B2, emitter, 0, 0x7F, 0);
+        case 0x14:
+            D_001B6528[slot] = 0;
+            return resident_sound_play_voice(g_sound, 0x13B3, emitter, 0, 0x7F, 0);
+        }
+
+        break;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Play sound 9 of a sound bank slot following an emitter, unless banks are still loading.
@@ -4655,7 +5032,7 @@ void func_004351D0(LibClass173990* emitter, u32 flag, float first, float second)
  * @param value Stored in unk491.
  * @param factor Stored in unk40c.
  */
-void func_00435270(LibClass173990* emitter, u32 first_flag, u32 second_flag, u8 value, float factor)
+void func_00435270(LibClass173990* emitter, bool first_flag, bool second_flag, u8 value, float factor)
 {
     emitter->unk49b_7 = first_flag;
     emitter->unk49c_0 = second_flag;

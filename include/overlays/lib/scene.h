@@ -77,10 +77,12 @@ public:
     virtual void* func_0046C540(void* record);
 
     /**
-     * @brief Create an object of kind 0x11.
+     * @brief Create an object of kind 0x11; the base scene ignores the shape and data.
+     * @param shape Emitter shape.
+     * @param data Shape data.
      * @return The new object, or null.
      */
-    virtual void* func_0046BA00();
+    virtual void* func_0046BA00(u8 shape, void* data);
 
     /** @brief Virtual slot 0x30. */
     virtual void* func_0046C180(void* unk1, void* unk2, void* record);

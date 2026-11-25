@@ -426,4 +426,167 @@ static inline void vu0_disc_light_store_distance(void* out)
     asm __volatile__("sqc2 $vf25, 0x0(%0)\n" : : "r"(out) : "memory");
 }
 
+/**
+ * @brief Negate a vector's xyz in place (w is kept).
+ * @param vector 16-byte aligned vector.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); Lib's directional light pass (0x4E8510).
+ */
+static inline void vu0_negate_xyz(void* vector)
+{
+    asm __volatile__(
+        "lqc2      $vf1, 0x0(%0)\n"
+        "vsub.xyz  $vf1, $vf0, $vf1\n"
+        "sqc2      $vf1, 0x0(%0)\n"
+        :
+        : "r"(vector)
+        : "memory");
+}
+
+/**
+ * @brief Store a vector with its xyz negated (w is kept).
+ * @param in 16-byte aligned source.
+ * @param out 16-byte aligned destination; may be the source.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); Lib's directional light pass (0x4E8510).
+ */
+static inline void vu0_negate_xyz_to(const void* in, void* out)
+{
+    asm __volatile__(
+        "lqc2      $vf1, 0x0(%0)\n"
+        "vsub.xyz  $vf1, $vf0, $vf1\n"
+        "sqc2      $vf1, 0x0(%1)\n"
+        :
+        : "r"(in), "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Load a point, a light position and an axis for vu0_light_store_axis_distance.
+ * @param point 16-byte aligned point being lit, into vf20.
+ * @param origin 16-byte aligned light position, into vf21.
+ * @param axis 16-byte aligned axis, into vf22.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); Lib's directional light pass (0x4E8510).
+ */
+static inline void vu0_light_load_axis(const void* point, const void* origin, const void* axis)
+{
+    asm __volatile__(
+        "lqc2      $vf20, 0x0(%0)\n"
+        "lqc2      $vf21, 0x0(%1)\n"
+        "lqc2      $vf22, 0x0(%2)\n"
+        :
+        : "r"(point), "r"(origin), "r"(axis)
+        : "memory");
+}
+
+/**
+ * @brief Store the vector from the point to the light dotted with the axis, in x.
+ * @param out 16-byte aligned destination; only x holds the dot product.
+ * @see vu0_light_load_axis.
+ */
+static inline void vu0_light_store_axis_distance(void* out)
+{
+    asm __volatile__(
+        "vsub.xyzw $vf23, $vf21, $vf20\n"
+        "vaddw.x   $vf24, $vf0, $vf0w\n"
+        "vmul.xyzw $vf23, $vf22, $vf23\n"
+        "vadday.x  $ACC, $vf23, $vf23y\n"
+        "vmaddz.x  $vf23, $vf24, $vf23z\n"
+        "sqc2      $vf23, 0x0(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Load a point and a light position for vu0_light_store_offset_squared.
+ * @param point 16-byte aligned point being lit, into vf20.
+ * @param origin 16-byte aligned light position, into vf21.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); Lib's light passes (0x4E7AA0, 0x4E8510).
+ */
+static inline void vu0_light_load_offset(const void* point, const void* origin)
+{
+    asm __volatile__(
+        "lqc2      $vf20, 0x0(%0)\n"
+        "lqc2      $vf21, 0x0(%1)\n"
+        :
+        : "r"(point), "r"(origin)
+        : "memory");
+}
+
+/**
+ * @brief Store the squared components of the vector from the point to the light.
+ * @param out 16-byte aligned destination.
+ * @see vu0_light_load_offset.
+ */
+static inline void vu0_light_store_offset_squared(void* out)
+{
+    asm __volatile__(
+        "vsub.xyzw $vf22, $vf21, $vf20\n"
+        "vmul.xyzw $vf22, $vf22, $vf22\n"
+        "sqc2      $vf22, 0x0(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Load a point and a light position and take the vector between them into vf22, for
+ * vu0_light_store_squared.
+ * @param point 16-byte aligned point being lit.
+ * @param origin 16-byte aligned light position.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); Lib's directional light pass (0x4E8510).
+ */
+static inline void vu0_light_subtract_offset(const void* point, const void* origin)
+{
+    asm __volatile__(
+        "lqc2      $vf20, 0x0(%0)\n"
+        "lqc2      $vf21, 0x0(%1)\n"
+        "vsub.xyzw $vf22, $vf21, $vf20\n"
+        :
+        : "r"(point), "r"(origin)
+        : "memory");
+}
+
+/**
+ * @brief Store the squared components of the vector vu0_light_subtract_offset left in vf22.
+ * @param out 16-byte aligned destination.
+ * @see vu0_light_subtract_offset.
+ */
+static inline void vu0_light_store_squared(void* out)
+{
+    asm __volatile__(
+        "vmul.xyzw $vf22, $vf22, $vf22\n"
+        "sqc2      $vf22, 0x0(%0)\n"
+        :
+        : "r"(out)
+        : "memory");
+}
+
+/**
+ * @brief Store a matrix with each row scaled by one component of a vector: row 0 by x, row 1 by y and so on.
+ * @param scale 16-byte aligned scale vector.
+ * @param matrix 16-byte aligned source matrix.
+ * @param out 16-byte aligned destination matrix; may be the source.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); Lib's light passes (0x4E7AA0, 0x4E8510).
+ */
+static inline void vu0_scale_matrix_rows(const void* scale, const void* matrix, void* out)
+{
+    asm __volatile__(
+        "lqc2      $vf5, 0x0(%0)\n"
+        "lqc2      $vf12, 0x0(%1)\n"
+        "lqc2      $vf13, 0x10(%1)\n"
+        "lqc2      $vf14, 0x20(%1)\n"
+        "lqc2      $vf15, 0x30(%1)\n"
+        "vmulx.xyzw $vf12, $vf12, $vf5x\n"
+        "vmuly.xyzw $vf13, $vf13, $vf5y\n"
+        "vmulz.xyzw $vf14, $vf14, $vf5z\n"
+        "vmulw.xyzw $vf15, $vf15, $vf5w\n"
+        "sqc2      $vf12, 0x0(%2)\n"
+        "sqc2      $vf13, 0x10(%2)\n"
+        "sqc2      $vf14, 0x20(%2)\n"
+        "sqc2      $vf15, 0x30(%2)\n"
+        :
+        : "r"(scale), "r"(matrix), "r"(out)
+        : "memory");
+}
+
 #endif

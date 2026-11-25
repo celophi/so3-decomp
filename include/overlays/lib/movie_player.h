@@ -79,7 +79,7 @@ struct LibMovieState
     s32 current_frame;
     float unk80C4;
     float unk80C8;
-    s32 unk80CC;
+    float unk80CC;
     s32 unk80D0;
     s32 unk80D4;
     u8 widescreen;

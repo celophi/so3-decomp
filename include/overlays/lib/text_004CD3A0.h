@@ -80,8 +80,19 @@ public:
     float m[4][4];
 } __attribute__((aligned(16)));
 
+class LibModel;
+
 extern "C"
 {
+    /**
+     * @brief Find the model's render-data record for an index and report its image's two keys.
+     * @param model Model whose mesh holds the records.
+     * @param index Record index.
+     * @param first_key Receives the image's first key.
+     * @param second_key Receives the image's second key.
+     */
+    void func_004D5E10(LibModel* model, s32 index, u32* first_key, u32* second_key);
+
     /**
      * @brief Normalize the first three floating-point components in place.
      * @param value At least three components with nonzero squared length.
@@ -151,7 +162,7 @@ extern "C"
      * @param matrix Source matrix.
      * @return Transformed vector.
      */
-    FieldVec4A func_004CF830(const FieldVec4A& value, const LibMatrix44Value& matrix);
+    FieldVec4A func_004CF830(const FieldVec4B& value, const LibMatrix44Value& matrix);
 
     /**
      * @brief Compose a projection that exchanges depth and homogeneous coordinates with an inverse transform.
@@ -590,7 +601,7 @@ extern "C" void func_004D9030(void* address, void* scratchpad);
  * @return VRAM word address of the texture, 0 when no spare block record is left, or 1 when no block is large
  *         enough.
  */
-extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, u16 flags,
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, s32 id, s32 slot, u16 flags,
                              LibTextureUser* user);
 
 
@@ -812,6 +823,23 @@ extern "C" void lib_spot_light_get_frame(LibLight* light, LibVector4* frame);
  * @param light Light.
  */
 extern "C" void lib_light_get_direction(LibVector4* out, LibLight* light);
+
+/**
+ * @brief Return how strongly a spotlight lights a point: zero behind it, rising to one inside its inner cone.
+ * @param light Spotlight.
+ * @param point Point to light.
+ * @return Falloff from zero to one.
+ */
+extern "C" float func_004C9D80(LibLight* light, const LibVector4* point);
+
+/**
+ * @brief Return the direction a light shines on a point: from the light's position for point and spot kinds when
+ *        it has one, otherwise its own direction.
+ * @param light Light.
+ * @param out Receives the unit direction.
+ * @param point Point being lit.
+ */
+extern "C" void func_004C9E80(LibLight* light, LibVector4* out, const LibVector4* point);
 
 
 /** Two-callback DMA interface, with vtable D_171FF0 in main data. */
@@ -1149,7 +1177,7 @@ class LibLightList : public LibUpdateList, public LibListObject
         LibDisplayManager* manager;
         LibLight* unk364[3];
         u32 mask;
-        s32 unk374;
+        float unk374;
         s16 light_count;
         s16 unk364_count;
         s8 unk37c;
@@ -1627,6 +1655,13 @@ extern "C" s32 func_004D9A80(LibBusyObject* object, u8 channel);
 
 extern "C" void func_004C8390(LibDisplayManager* manager);
 
+/**
+ * @brief Return the frame buffer page of the draw buffer the display is on.
+ * @param display Display to read.
+ * @return FRAME base pointer of the second drawing context of draw buffer 0 or 1.
+ */
+extern "C" s32 func_004DBC70(LibCameraContext* display);
+
 extern "C" u64 func_004DBCA0(LibCameraContext* display, s32 index);
 
 /** Transform with local vectors, a cached matrix, and a parent link. */
@@ -1769,10 +1804,114 @@ public:
     float roll_angle;
 };
 
+/**
+ * 16-byte vector that Lib keeps its constructors and identity setter out of line for: LibClass173490's grid arrays
+ * and a light's colour, position and direction.
+ */
+struct LibClass173490Entry
+{
+    inline LibClass173490Entry();
+
+    /**
+     * @brief Set all four components to one value.
+     * @param value Value for every component.
+     */
+    inline LibClass173490Entry(float value);
+
+    /**
+     * @brief Set the four components.
+     * @param px First component.
+     * @param py Second component.
+     * @param pz Third component.
+     * @param pw Fourth component.
+     */
+    LibClass173490Entry(float px, float py, float pz, float pw)
+    {
+        x = px;
+        y = py;
+        z = pz;
+        w = pw;
+    }
+
+    /**
+     * @brief Copy all 16 bytes.
+     * @param other Element to copy.
+     * @return This element.
+     */
+    LibClass173490Entry& operator=(const LibClass173490Entry& other)
+    {
+        *(unsigned __int128*)this = *(const unsigned __int128*)&other;
+        return *this;
+    }
+
+    /** @brief Set the vector to (0, 0, 0, 1). */
+    inline void set_identity();
+
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+/**
+ * @brief Copy a light vector as one 128-bit value, like copy_vector does for LibVector4.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(LibClass173490Entry* destination, const LibClass173490Entry* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
+/**
+ * @brief Copy a vector into a light vector as one 128-bit value.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(LibClass173490Entry* destination, const LibVector4* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
+/**
+ * @brief Copy a light vector into a vector as one 128-bit value.
+ * @param destination Vector receiving the copy.
+ * @param source Vector to copy.
+ */
+static inline void copy_vector(LibVector4* destination, const LibClass173490Entry* source)
+{
+    *(unsigned __int128*)destination = *(const unsigned __int128*)source;
+}
+
 /** Partial light, kept in g_light_list, with vtable 0x1789E0 in main data. */
 class LibLight : public LibLookAtTransform
 {
 public:
+    /** @brief Start as a white type-3 light with the default cone and ranges, every mask bit and no direction. */
+    LibLight() : color(1.0f)
+    {
+        cone_angle = 40.0f;
+        packed_intensity = 0.0f;
+        unk268 = 480.0f;
+        unk274 = 0.0f;
+        unk278 = 44.0f;
+        unk27c = 1.0f;
+        unk288 = 0;
+        unk289 = 0;
+        unk28a = 0;
+        unk28b = 0;
+        unk28c = 0;
+        unk28d = 0;
+        unk28e = 0;
+        enabled = 0;
+        unk290 = 0;
+        unk291 = 0;
+        kind = 0;
+        mask = 7;
+        set_light_type(3);
+        direction.set_identity();
+    }
+
     virtual ~LibLight();
 
     /** @brief Face the look-at target, if any, by turning the light's orientation towards it, then update the matrix. */
@@ -1787,10 +1926,12 @@ public:
     /** @brief Update the transform matrix if it isn't ready, then cache the position and direction from it. */
     void update_frame();
 
-    LibVector4 color;
-    LibVector4 tinted_color;
-    LibVector4 position;
-    LibVector4 direction;
+    inline void set_light_type(u32 type);
+
+    LibClass173490Entry color;
+    LibClass173490Entry tinted_color;
+    LibClass173490Entry position;
+    LibClass173490Entry direction;
     float cone_angle;
     float packed_intensity;
     float unk268;
@@ -2204,8 +2345,9 @@ void func_004D9AB0(LibBusyObject* object, u8 channel);
  * @param receiver Object containing the pointer.
  * @param arg1 First value passed to the helper.
  * @param arg2 Second value passed to the helper.
+ * @return What the helper returns.
  */
-void func_004D6230(void* receiver, u32 arg1, u32 arg2);
+void* func_004D6230(void* receiver, u32 arg1, u32 arg2);
 
 /**
  * @brief Perform no work.

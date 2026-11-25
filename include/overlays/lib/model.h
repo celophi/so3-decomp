@@ -57,6 +57,12 @@ struct LibModelPacket
 /** VU1 microprogram a model's draw packet starts. */
 extern "C" u8 D_238[];
 
+/** VU1 microprogram entry a model's first part call starts. */
+extern "C" u8 D_6E0[];
+
+/** VU1 microprogram entry an image model's later cell calls start. */
+extern "C" u8 D_818[];
+
 /** Initial unk59d_1 of a new color model. */
 extern "C" u8 D_001B6550;
 
@@ -312,8 +318,8 @@ public:
     void* unk70;
     void* payload_buffers[LIB_MODEL_PACKET_SET_COUNT];
     void* payloads[LIB_MODEL_PACKET_SET_COUNT];
-    u16 unk84;
-    u8 unk86[2];
+    s16 unk84;
+    s16 unk86;
     u8 unk88;
     u8 unk89;
     u8 payload_set;
@@ -541,6 +547,7 @@ public:
     u8 unk44[0xC];
     float weight;
     s32 idle_frames;
+    u8 unk58[8];
 };
 
 /** LibClass1734B0 entry of type 35 with per-cell word arrays, with vtable D_174C20 in main data. */
@@ -933,9 +940,12 @@ public:
 
     /**
      * @brief Put one of the model's textures in VRAM when the model supplies its own textures; this model doesn't.
+     * @param image Image header the record draws.
+     * @param index Record's index.
+     * @param palette Palette packet, which the model may replace.
      * @return VRAM address, or zero to skip the texture.
      */
-    virtual s32 place_texture()
+    virtual s32 place_texture(void* image, s16 index, void** palette)
     {
         return 0;
     }

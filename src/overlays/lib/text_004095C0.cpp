@@ -3446,11 +3446,751 @@ void func_0040FB00(void* object, u8 value)
     receiver->unk90a = value;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004095C0", update__14LibClass1721B0Fv);
+extern "C" s16 func_004110C0(LibClass1721B0* object);
 
-/** @brief Destroy the flags. */
-LibTrophyFlags::~LibTrophyFlags()
+extern "C" s16 func_00411250(LibClass1721B0* object);
+
+/** Directory name the save data lives in. */
+extern "C" const char D_004EC2C0[];
+
+/** Suffix appended to the directory name. */
+extern "C" const char D_00505700[];
+
+/** Suffix appended to the directory name for the save check. */
+extern "C" const char D_00505708[];
+
+/**
+ * @brief Join two strings into a buffer when they fit, leaving the buffer alone otherwise.
+ * @param buffer Destination.
+ * @param size Size of the destination.
+ * @param first First string, or null to do nothing.
+ * @param second String appended to the first, or null.
+ */
+static inline void lib_join_name(char* buffer, u32 size, const char* first, const char* second)
 {
+    if (first != 0 && strlen(first) + strlen(second) + 1 <= size)
+    {
+        memset_guess(buffer, 0, size);
+        strcpy_guess(buffer, first);
+
+        if (second != 0)
+        {
+            strcat(buffer, second);
+        }
+    }
+}
+
+/**
+ * @brief Run the next step of the card file transfer: start it, then poll for its result.
+ * @param object Save data manager.
+ * @return One once the transfer has finished, zero while it runs, -1 without a card or between steps.
+ */
+static inline s16 lib_save_transfer(LibClass1721B0* object)
+{
+    s16 status = -1;
+
+    if (object->card)
+    {
+        switch (object->unk1a)
+        {
+        case 0:
+            status = lib_memory_card_start_transfer(object->card, object->unk1c, &object->request);
+
+            if (status == 0)
+            {
+                object->unk1a++;
+            }
+
+            break;
+        case 1:
+            status = lib_memory_card_get_result(object->card, object->unk1c, &object->result);
+
+            if (status != 0 && status == 1)
+            {
+                object->unk1a = -1;
+            }
+
+            break;
+        }
+    }
+
+    return status;
+}
+
+/**
+ * @brief Point the write request at the save directory and the save file, when there's a card.
+ * @param object Save data manager.
+ * @return Whether the request was set up.
+ */
+static inline bool lib_save_prepare_write(LibClass1721B0* object)
+{
+    if (!object->card)
+    {
+        return false;
+    }
+
+    func_0040E3B0(object);
+    object->files[0].name = object->directory;
+    object->files[0].data = object->unk910;
+    object->files[0].size = object->unk96c;
+    object->files[0].offset = 0;
+    object->request.directory = object->directory;
+    object->request.file_count = 1;
+    object->request.unk08 = 0;
+    object->request.files = object->files;
+    object->unk1a = 0;
+    return true;
+}
+
+/** @brief Run the save. */
+void LibClass1721B0::update()
+{
+    if (settings && card && card->ready && unk1c != -1)
+    {
+        s32 state = unk1e;
+
+        if (unk87a != 1)
+        {
+            state = (s16)card->slots[unk1c].card_state;
+
+            if (unk1e != state)
+            {
+                unk1e = state;
+                unk18 = 1;
+                return;
+            }
+        }
+
+        switch ((u16)unk18)
+        {
+        case 0:
+            break;
+        case 1:
+            if (state != 2)
+            {
+                func_0040F210(this, -10);
+                break;
+            }
+
+            // TODO: Casting the s16 slot index is what makes the reused index sign-extend; find the original form.
+            unk22 = card->slots[(s16)unk1c].formatted;
+
+            if (unk22 == 0)
+            {
+                if (unk878 == 0xE)
+                {
+                    unk1a = 0;
+                    unk18 = 0xE;
+                    break;
+                }
+
+                func_0040F210(this, -2);
+                break;
+            }
+
+            unk24 = card->slots[unk1c].free_space;
+            unk18 = 2;
+            unk8d0 = 0;
+            break;
+        case 2:
+            if (unk90b == 1)
+            {
+                lib_join_name(directory, sizeof(directory), D_004EC2C0, D_00505708);
+            }
+
+            if ((s16)lib_memory_card_probe_file(card, unk1c, directory, 0, 1, reinterpret_cast<u8*>(entry)) != -1)
+            {
+                unk18 = 3;
+            }
+
+            break;
+        case 3:
+        {
+            s16 status = lib_memory_card_get_result(card, unk1c, &result);
+
+            if (status == 0)
+            {
+                break;
+            }
+
+            if (status != 1)
+            {
+                break;
+            }
+
+            if (unk90b == 0)
+            {
+                if (result >= 0)
+                {
+                    unk8d0 = result;
+
+                    if (unk878 == 6)
+                    {
+                        if (result == 0)
+                        {
+                            if (!unk880)
+                            {
+                                if (unk24 < 0x4B0)
+                                {
+                                    func_0040F210(this, -3);
+                                    break;
+                                }
+
+                                func_0040F210(this, 1);
+                                break;
+                            }
+
+                            func_0040F740(this);
+                            unk18 = 8;
+                            break;
+                        }
+
+                        if (!unk880)
+                        {
+                            func_0040F2E0(this);
+                            func_00431730(card);
+                            func_004317B0(card, 1);
+                            unk18 = 0x90;
+                            break;
+                        }
+
+                        unk18 = 0xA;
+                        break;
+                    }
+
+                    if (unk878 == 0xA)
+                    {
+                        if (result == 0)
+                        {
+                            s32 count = 0;
+
+                            for (s32 i = 0; i < 300; i++)
+                            {
+                                if ((settings->trophy_flags.flags.bytes[(u32)i >> 3] >> (i & 7)) & 1)
+                                {
+                                    count++;
+                                }
+
+                                if (count > 2)
+                                {
+                                    func_0040F210(this, -11);
+                                    return;
+                                }
+                            }
+
+                            if (!unk880)
+                            {
+                                func_0040F210(this, 1);
+                                break;
+                            }
+
+                            func_0040F740(this);
+                            unk18 = 8;
+                            break;
+                        }
+
+                        if (!unk880)
+                        {
+                            func_0040F210(this, 2);
+                            break;
+                        }
+
+                        unk18 = 0xA;
+                        break;
+                    }
+
+                    if (unk878 == 0xC)
+                    {
+                        if (result == 0)
+                        {
+                            func_0040F210(this, -12);
+                            break;
+                        }
+
+                        if (!unk880)
+                        {
+                            func_0040F2E0(this);
+                            unk18 = 0x60;
+                            break;
+                        }
+
+                        func_0040F3E0(this);
+                        unk18 = 0x1A;
+                        break;
+                    }
+
+                    if (unk878 == 8)
+                    {
+                        if (!unk8cd[unk1c])
+                        {
+                            if (!unk880)
+                            {
+                                func_0040F210(this, 1);
+                                break;
+                            }
+
+                            func_0040F740(this);
+                            unk18 = 8;
+                            break;
+                        }
+
+                        func_0040F740(this);
+                        unk18 = 8;
+                    }
+
+                    break;
+                }
+
+                if (unk24 < 0x4B0)
+                {
+                    func_0040F210(this, -3);
+                }
+                else if (result == -2)
+                {
+                    func_0040F210(this, -3);
+                }
+                else if (result == -4)
+                {
+                    func_0040F210(this, -4);
+                }
+                else if (result == -5)
+                {
+                    func_0040F210(this, -5);
+                }
+                else
+                {
+                    func_0040F210(this, -10);
+                }
+
+                break;
+            }
+
+            if (unk90b != 1)
+            {
+                break;
+            }
+
+            if (result >= 0)
+            {
+                if (result == 0)
+                {
+                    func_0040F210(this, 1);
+                    break;
+                }
+
+                if (unk970)
+                {
+                    unk18 = 0x10;
+                    break;
+                }
+
+                if ((u8)func_0040E7F0(this))
+                {
+                    unk18 = 0x16;
+                    break;
+                }
+
+                func_0040F210(this, -10);
+                break;
+            }
+
+            if (result == -2)
+            {
+                func_0040F210(this, -3);
+            }
+            else if (result == -4)
+            {
+                func_0040F210(this, -4);
+            }
+            else if (result == -5)
+            {
+                func_0040F210(this, -5);
+            }
+            else
+            {
+                func_0040F210(this, -10);
+            }
+
+            break;
+        }
+        case 8:
+        {
+            s16 status = func_00411250(this);
+
+            if (status != 1)
+            {
+                break;
+            }
+
+            if (result >= 0)
+            {
+                set_trophy_flags_valid(this, true);
+                unk18 = 0xA;
+            }
+            else
+            {
+                func_0040F210(this, result);
+            }
+
+            break;
+        }
+        case 0xA:
+            func_0040F2E0(this);
+            unk18 = 0x70;
+        case 0x70:
+            if (lib_save_transfer(this) == 1)
+            {
+                if ((u8)func_0040F4F0(this))
+                {
+                    unk18 = 0x40;
+                }
+                else
+                {
+                    func_0040F210(this, -13);
+                }
+            }
+
+            break;
+        case 0x60:
+            if (lib_save_transfer(this) == 1)
+            {
+                if (*reinterpret_cast<s32*>(unk88c) == 0)
+                {
+                    func_0040F210(this, -13);
+                }
+                else
+                {
+                    func_0040F210(this, 3);
+                }
+            }
+
+            break;
+        case 0xE:
+        {
+            s16 status = -1;
+
+            if (card)
+            {
+                switch (unk1a)
+                {
+                case 0:
+                    status = func_004325A0(card, unk1c);
+
+                    if (status == 0)
+                    {
+                        unk1a++;
+                    }
+
+                    break;
+                case 1:
+                    status = lib_memory_card_get_result(card, unk1c, &result);
+
+                    if (status != 0 && status == 1)
+                    {
+                        unk1a = -1;
+                    }
+
+                    break;
+                }
+            }
+
+            if (status == 1)
+            {
+                if (result == 0)
+                {
+                    unk8cd[unk1c] = 1;
+                }
+
+                func_0040F210(this, result);
+            }
+
+            break;
+        }
+        case 0x40:
+            if (func_00411250(this) == 1)
+            {
+                func_0040F210(this, result);
+            }
+
+            break;
+        case 0x30:
+            if (lib_save_transfer(this) == 1)
+            {
+                if (result == -200)
+                {
+                    func_0040F3E0(this);
+                    unk18 = 0x30;
+                }
+                else
+                {
+                    func_0040F210(this, result);
+                }
+            }
+
+            break;
+        case 0x1A:
+            if (lib_save_transfer(this) != 1)
+            {
+                break;
+            }
+
+            // TODO: These two return where the others break; that keeps their exit branches unchained.
+            if (result < -10)
+            {
+                func_0040F210(this, -10);
+                set_trophy_flags_valid(this, false);
+                return;
+            }
+
+            if (result == -4)
+            {
+                func_0040F210(this, -14);
+                set_trophy_flags_valid(this, false);
+                return;
+            }
+
+            if (result == -200)
+            {
+                func_0040F3E0(this);
+                unk18 = 0x1A;
+                break;
+            }
+
+            if ((u8)func_0040EC10(this) == 1)
+            {
+                func_0040F210(this, result);
+                break;
+            }
+
+            func_0040F210(this, -14);
+            set_trophy_flags_valid(this, false);
+            break;
+        case 0x10:
+            if (lib_save_prepare_write(this) == false)
+            {
+                func_0040F210(this, -1);
+                break;
+            }
+
+            unk18 = 0x18;
+        case 0x18:
+        {
+            s16 status = -1;
+
+            if (card)
+            {
+                switch (unk1a)
+                {
+                case 0:
+                    status = func_004324D0(card, unk1c, &request);
+
+                    if (status == 0)
+                    {
+                        unk1a++;
+                    }
+
+                    break;
+                case 1:
+                    status = lib_memory_card_get_result(card, unk1c, &result);
+
+                    if (status != 0 && status == 1)
+                    {
+                        unk1a = -1;
+                    }
+
+                    break;
+                }
+            }
+
+            if (status == 1)
+            {
+                func_0040F210(this, result);
+            }
+
+            break;
+        }
+        case 0x16:
+            if (lib_save_transfer(this) == 1)
+            {
+                if (result == -200)
+                {
+                    unk18 = 0x30;
+                }
+                else if (result >= 0)
+                {
+                    if ((u8)func_0040E930(this))
+                    {
+                        func_0040F210(this, 4);
+                    }
+                    else
+                    {
+                        func_0040F210(this, -13);
+                    }
+                }
+                else
+                {
+                    func_0040F210(this, result);
+                }
+            }
+
+            break;
+        case 0x90:
+        {
+            if (func_004110C0(this) != 1)
+            {
+                break;
+            }
+
+            if (result < -10)
+            {
+                func_0040F210(this, -10);
+                break;
+            }
+
+            bool failed = false;
+
+            if (result < 0 && result >= -10)
+            {
+                failed = true;
+            }
+
+            s32 first = func_00431770(card, 1);
+            s32 second = func_00431770(card, 2);
+
+            if (first != 0x40)
+            {
+                failed = true;
+            }
+
+            if (second != 0x3C4)
+            {
+                failed = true;
+            }
+            else
+            {
+                if (!(entry->attributes & 8))
+                {
+                    failed = true;
+                }
+
+                if (failed == false && reinterpret_cast<u8*>(icon_sys)[0] != 'P')
+                {
+                    failed = true;
+                }
+
+                if (failed == false && reinterpret_cast<u8*>(icon_sys)[1] != 'S')
+                {
+                    failed = true;
+                }
+
+                if (failed == false && reinterpret_cast<u8*>(icon_sys)[2] != '2')
+                {
+                    failed = true;
+                }
+
+                if (failed == false && reinterpret_cast<u8*>(icon_sys)[3] != 'D')
+                {
+                    failed = true;
+                }
+
+                if (failed == false)
+                {
+                    u8* data = unk88c;
+
+                    if (*reinterpret_cast<s32*>(data) == 0)
+                    {
+                        failed = true;
+                    }
+                    else
+                    {
+                        LibTrophyFlags check;
+                        check.flags.resize(LIB_TROPHY_COUNT);
+                        check.flags.clear();
+                        u8 bits[(LIB_TROPHY_COUNT + 7) / 8];
+
+                        for (s32 i = 0; i < (s32)sizeof(bits); i++)
+                        {
+                            bits[i] = 0;
+                        }
+
+                        for (s32 i = 0; i < (s32)sizeof(bits); i++)
+                        {
+                            bits[i] = unk8dc[i];
+                        }
+
+                        for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
+                        {
+                            u32 byte = (u32)i >> 3;
+                            u32 bit = i & 7;
+
+                            if (bits[i / 8] & (1 << (i % 8)))
+                            {
+                                check.flags.bytes[byte] |= 1LL << bit;
+                            }
+                            else
+                            {
+                                check.flags.bytes[byte] &= ~(1LL << bit);
+                            }
+                        }
+
+                        check.trophy_key = *reinterpret_cast<s32*>(data);
+                        // TODO: &check.checksum_seed gets reused for the seed read; find the original form.
+                        memcpy_guess(reinterpret_cast<u8*>(&check) + 0x18, &unk8dc[sizeof(bits)], 8);
+
+                        if (!lib_trophy_flags_checksum_holds(&check))
+                        {
+                            failed = true;
+                        }
+                    }
+                }
+            }
+
+            if (failed == false)
+            {
+                func_0040F210(this, 2);
+                break;
+            }
+
+            if ((s32)unk8d0 <= 0)
+            {
+                if (unk24 < 0x4B0)
+                {
+                    func_0040F210(this, -3);
+                }
+                else
+                {
+                    func_0040F210(this, 4);
+                }
+
+                break;
+            }
+
+            if (unk90a == 1)
+            {
+                func_0040F210(this, -16);
+                break;
+            }
+
+            if (unk24 < 0x4B0)
+            {
+                if (unk8d4)
+                {
+                    func_0040F210(this, 4);
+                }
+                else
+                {
+                    func_0040F210(this, -3);
+                }
+
+                break;
+            }
+
+            // TODO: Returning here instead of breaking keeps the last branch to the exit.
+            func_0040F210(this, 4);
+            return;
+        }
+        }
+    }
 }
 
 /**
@@ -3745,33 +4485,6 @@ void LibClass1721B0::destroy()
 /** @brief Free the flag storage and the value list, then detach. */
 LibClass1721B0::~LibClass1721B0()
 {
-}
-
-/** Directory name the save data lives in. */
-extern "C" const char D_004EC2C0[];
-
-/** Suffix appended to the directory name. */
-extern "C" const char D_00505700[];
-
-/**
- * @brief Join two strings into a buffer when they fit, leaving the buffer alone otherwise.
- * @param buffer Destination.
- * @param size Size of the destination.
- * @param first First string, or null to do nothing.
- * @param second String appended to the first, or null.
- */
-static inline void lib_join_name(char* buffer, u32 size, const char* first, const char* second)
-{
-    if (first != 0 && strlen(first) + strlen(second) + 1 <= size)
-    {
-        memset_guess(buffer, 0, size);
-        strcpy_guess(buffer, first);
-
-        if (second != 0)
-        {
-            strcat(buffer, second);
-        }
-    }
 }
 
 LibClass1721B0::LibClass1721B0()

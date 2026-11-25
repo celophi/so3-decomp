@@ -274,13 +274,35 @@ class LibGridBase
         /** @brief Destroy the grid. */
         virtual ~LibGridBase();
 
-        virtual void func_slot0c() = 0;
+        /**
+         * @brief Start a pass over the cells for an image model.
+         * @param model Image model the pass builds packets for.
+         */
+        virtual void func_slot0c(void* model) = 0;
 
-        virtual void func_slot10();
+        /**
+         * @brief Write the next batch's first stream into a scratchpad buffer.
+         * @param count Most entries to write.
+         * @param buffer Buffer to fill.
+         * @param flag Pass flag.
+         */
+        virtual void func_slot10(s32 count, void* buffer, u8 flag);
 
-        virtual void func_slot14();
+        /**
+         * @brief Write the next batch's second stream into a scratchpad buffer.
+         * @param count Most entries to write.
+         * @param buffer Buffer to fill.
+         * @param flag Pass flag.
+         */
+        virtual void func_slot14(s32 count, void* buffer, u8 flag);
 
-        virtual void func_slot18() = 0;
+        /**
+         * @brief Finish the next batch in a scratchpad buffer.
+         * @param count Most entries to write.
+         * @param buffer Buffer to fill.
+         * @return Entries written; zero once the cells run out.
+         */
+        virtual s32 func_slot18(s32 count, void* buffer) = 0;
 
         /**
          * @brief Return a cell.
@@ -300,7 +322,11 @@ class LibGridBase
 
         virtual void func_slot28() = 0;
 
-        virtual void func_slot2c() = 0;
+        /**
+         * @brief Report whether the cells changed since the last update.
+         * @return Nonzero when they did.
+         */
+        virtual s32 func_slot2c() = 0;
 
         virtual LibGridBitset* func_slot30() = 0;
 
@@ -322,7 +348,11 @@ class LibGridBase
 
         virtual void func_slot44() = 0;
 
-        virtual void func_slot48() = 0;
+        /**
+         * @brief Report how far the cells reach past their positions.
+         * @return The extra radius.
+         */
+        virtual float func_slot48() = 0;
 
         virtual void func_slot4c() = 0;
 

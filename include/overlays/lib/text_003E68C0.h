@@ -214,13 +214,26 @@ public:
 struct LibClass3F5B80Buffer
 {
     LibClass3F5B80Entry entries[0x1A];
-    u8 unk0D0[0x10];
+    s32 unk0D0;
+    s32 unk0D4;
+    s32 unk0D8;
+    u32 unk0DC;
     u8 unk0E0[3][0xC4];
     u8 unk32C[3][0x114];
     s16 unk668;
     s16 unk66A;
     s16 unk66C;
-    u8 unk66E[7];
+    u8 unk66E;
+    u8 unk66F;
+    u8 unk670;
+    u8 unk671;
+    u8 unk672;
+    u8 unk673_0 : 1;
+    u8 unk673_1 : 1;
+    u8 unk673_2 : 1;
+    u8 unk673_3 : 1;
+    u8 unk673_4 : 1;
+    u8 unk674;
     u8 unk675[3];
     u8 unk678[3];
     u8 unk67B[5];
@@ -238,10 +251,12 @@ public:
     LibClass3F5B80();
 
     /**
-     * @brief Fill the buffer for the given settings.
-     * @param id First setting.
-     * @param kind Second setting.
-     * @param area Third setting.
+     * @brief Set the battle up: store the settings, copy (or, for a preset battle, rebuild) the three party records,
+     *        then fill the entry list: two fixed tracks, the area's track, each member's voice and six battle skill
+     *        sounds, the battle ID's track and an override from D_004EB980.
+     * @param id Battle ID.
+     * @param kind Battle kind.
+     * @param area Area; 0x32 sometimes becomes 0x34.
      * @param flags Option bits.
      */
     void func_003F4EB0(s32 id, s32 kind, s32 area, u8 flags);

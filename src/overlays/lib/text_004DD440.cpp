@@ -3928,7 +3928,614 @@ void LibLightList::assign_spot_lights(LibRenderer* renderer)
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E7AA0);
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004DD440", func_004E8510);
+/**
+ * @brief Return how far a light is from a point along an axis: (light position - point) . axis.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @param axis Axis to measure along.
+ * @return The distance along the axis.
+ */
+static inline float lib_light_axis_distance(const LibVector4* point, const LibVector4* origin, const LibVector4* axis)
+{
+    LibVector4 projected;
+    vu0_light_load_axis(point, origin, axis);
+    vu0_light_store_axis_distance(&projected);
+    return projected.x;
+}
+
+/**
+ * @brief Return the squared distance from a point to a light.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @return The squared distance.
+ */
+static inline float lib_light_distance_squared(const LibVector4* point, const LibVector4* origin)
+{
+    LibVector4 squared;
+    vu0_light_load_offset(point, origin);
+    vu0_light_store_offset_squared(&squared);
+    return squared.x + squared.y + squared.z;
+}
+
+/**
+ * @brief Return a light's range over its range plus its distance along an axis.
+ * @param light Light; unk268 is the range.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @param axis Axis to measure along.
+ * @return The attenuation.
+ */
+static inline float lib_light_axis_attenuation(const LibLight* light, const LibVector4* point, const LibVector4* origin,
+                                              const LibVector4* axis)
+{
+    float range = light->unk268;
+    LibVector4 projected;
+    vu0_light_load_axis(point, origin, axis);
+    vu0_light_store_axis_distance(&projected);
+    return range / (projected.x + range);
+}
+
+/**
+ * @brief Return a light's squared range over its squared range plus its squared distance along an axis.
+ * @param light Light; unk268 is the range.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @param axis Axis to measure along.
+ * @return The attenuation.
+ */
+static inline float lib_light_axis_attenuation_squared(const LibLight* light, const LibVector4* point,
+                                                      const LibVector4* origin, const LibVector4* axis)
+{
+    float range = light->unk268;
+    LibVector4 projected;
+    vu0_light_load_axis(point, origin, axis);
+    range = range * range;
+    vu0_light_store_axis_distance(&projected);
+    return range / (range + projected.x * projected.x);
+}
+
+/**
+ * @brief Return a light's range over the square root of its range plus the squared distance to a point.
+ * @param light Light; unk268 is the range.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @return The attenuation.
+ */
+static inline float lib_light_point_attenuation(const LibLight* light, const LibVector4* point, const LibVector4* origin)
+{
+    float range = light->unk268;
+    LibVector4 squared;
+    vu0_light_load_offset(point, origin);
+    vu0_light_store_offset_squared(&squared);
+    return ee_rsqrt(range, range + (squared.x + squared.y + squared.z));
+}
+
+/**
+ * @brief Return a light's squared range over its squared range plus the squared distance to a point.
+ * @param light Light; unk268 is the range.
+ * @param point Point being lit.
+ * @param origin Light position.
+ * @return The attenuation.
+ */
+static inline float lib_light_point_attenuation_squared(const LibLight* light, const LibVector4* point,
+                                                       const LibVector4* origin)
+{
+    float range = light->unk268;
+    LibVector4 squared;
+    vu0_light_subtract_offset(point, origin);
+    range = range * range;
+    vu0_light_store_squared(&squared);
+    return range / (range + (squared.x + squared.y + squared.z));
+}
+
+/**
+ * @brief Fill one entry of a model's shadow light list from a light.
+ * @param shadow Shadow light list.
+ * @param index Entry to fill.
+ * @param light Light.
+ */
+static inline void lib_shadow_light_set(LibShadowLightList* shadow, s32 index, LibLight* light)
+{
+    shadow->lights[index] = light;
+    reinterpret_cast<float*>(shadow->unk18)[index] = light->packed_intensity;
+    float scale = light->unk284;
+    shadow->weights[index] = light->packed_intensity * scale;
+    shadow->unk04[index] = light->unk28c;
+}
+
+/**
+ * @brief Write one light into the list's direction and colour matrices, and keep the brightest shadow-casting
+ * light's direction.
+ * @param lights Light list.
+ * @param index Column (and direction row) to write.
+ * @param light Light.
+ * @param direction Direction the light shines on the model.
+ */
+static inline void lib_light_list_set_column(LibLightList* lights, s32 index, LibLight* light, LibVector4* direction)
+{
+    lights->unk90.m[index][0] = -direction->x;
+    lights->unk90.m[index][1] = -direction->y;
+    lights->unk90.m[index][2] = -direction->z;
+
+    if (light->unk290)
+    {
+        float level = light->packed_intensity;
+
+        if (lights->unk374 < level)
+        {
+            lights->unk374 = level;
+            lights->unk350 = *reinterpret_cast<unsigned __int128*>(direction);
+            lights->unk380 = 0;
+            lights->unk381 = 1;
+        }
+    }
+
+    float level = light->packed_intensity;
+    float* reds = lights->unkd0.m[0];
+    float* greens = lights->unkd0.m[1];
+    float* blues = lights->unkd0.m[2];
+    reds[index] = light->tinted_color.x * level;
+    greens[index] = light->tinted_color.y * level;
+    blues[index] = light->tinted_color.z * level;
+}
+
+/**
+ * @brief Light a model with the list's directional lights.
+ * @param lights Light list.
+ * @param color Model colour, lit in place.
+ * @param position Model position.
+ * @param mask Model's light mask.
+ * @param shadow_lights Model's shadow light list to fill, or null.
+ */
+extern "C" void func_004E8510(LibLightList* lights, LibVector4* color, FieldVec4B* position, u32 mask,
+                              LibShadowLightList* shadow_lights)
+{
+    if (lights->unk37e || !(mask & lights->mask))
+    {
+        func_004CFF80(&lights->unkd0);
+        lights->unk374 = 0.0f;
+        LibLight* best[4];
+        LibLight* list[4];
+        float levels[4];
+        LibListSentinel* node = &lights->sentinel;
+        s32 count = 0;
+        bool sorting = false;
+        const LibVector4* point = reinterpret_cast<const LibVector4*>(position);
+
+        if (lights->light_count > 4)
+        {
+            best[0] = 0;
+            best[1] = 0;
+            best[2] = 0;
+            best[3] = 0;
+            levels[0] = 0.0f;
+            levels[1] = 0.0f;
+            levels[2] = 0.0f;
+            levels[3] = 0.0f;
+            sorting = true;
+        }
+
+        for (;;)
+        {
+            node = node->next;
+
+            if (at_list_end(&lights->sentinel, node))
+            {
+                break;
+            }
+
+            LibLight* light = static_cast<LibLight*>(node);
+
+            if (!light->enabled || !(mask & light->mask))
+            {
+                continue;
+            }
+
+            if (!((mask & 1) && light->unk28e) && (light->kind & 4))
+            {
+                continue;
+            }
+
+            if (light->unk28a)
+            {
+                float falloff = 1.0f;
+
+                if ((light->kind & 3) == 2)
+                {
+                    falloff = func_004C9D80(light, point);
+
+                    if (falloff == 0.0f)
+                    {
+                        continue;
+                    }
+                }
+
+                float intensity = light->color.w;
+
+                if (light->unk289)
+                {
+                    u8 kind = light->unk28b;
+                    const LibVector4* origin = reinterpret_cast<const LibVector4*>(&light->position);
+
+                    if ((light->kind & 3) == 0)
+                    {
+                        LibVector4 axis;
+                        axis.x = light->transform.m[0][1];
+                        axis.y = light->transform.m[1][1];
+                        axis.z = light->transform.m[2][1];
+                        axis.w = 1.0f;
+                        vu0_negate_xyz(&axis);
+
+                        switch (kind)
+                        {
+                        case 0:
+                            if (light->unk28d)
+                            {
+                                float range = light->unk268;
+                                float projected = lib_light_axis_distance(point, origin, &axis);
+
+                                if (!(light->unk280 < range / (projected + range)))
+                                {
+                                    continue;
+                                }
+                            }
+
+                            light->packed_intensity = intensity * falloff;
+                            break;
+                        case 1:
+                        {
+                            float attenuation = lib_light_axis_attenuation(light, point, origin, &axis);
+
+                            if (light->unk28d && !(light->unk280 < attenuation))
+                            {
+                                continue;
+                            }
+
+                            light->packed_intensity = attenuation * (intensity * falloff);
+                            break;
+                        }
+                        case 2:
+                        {
+                            float attenuation = lib_light_axis_attenuation_squared(light, point, origin, &axis);
+
+                            if (light->unk28d && !(light->unk280 < attenuation))
+                            {
+                                continue;
+                            }
+
+                            light->packed_intensity = attenuation * (intensity * falloff);
+                            break;
+                        }
+                        default:
+                            light->packed_intensity = intensity * falloff;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        switch (kind)
+                        {
+                        case 0:
+                            if (light->unk28d)
+                            {
+                                float range = light->unk268;
+                                float distance = lib_light_distance_squared(point, origin);
+                                float threshold = light->unk280;
+
+                                if (!(threshold < ee_rsqrt(range, range + distance)))
+                                {
+                                    continue;
+                                }
+                            }
+
+                            light->packed_intensity = intensity * falloff;
+                            break;
+                        case 1:
+                        {
+                            float attenuation = lib_light_point_attenuation(light, point, origin);
+
+                            if (light->unk28d && !(light->unk280 < attenuation))
+                            {
+                                continue;
+                            }
+
+                            light->packed_intensity = attenuation * (intensity * falloff);
+                            break;
+                        }
+                        case 2:
+                        {
+                            float attenuation = lib_light_point_attenuation_squared(light, point, origin);
+
+                            if (light->unk28d && !(light->unk280 < attenuation))
+                            {
+                                continue;
+                            }
+
+                            light->packed_intensity = attenuation * (intensity * falloff);
+                            break;
+                        }
+                        default:
+                            light->packed_intensity = intensity * falloff;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    light->packed_intensity = intensity * falloff;
+                }
+
+                list[count++] = light;
+
+                if (count >= 4)
+                {
+                    break;
+                }
+
+                continue;
+            }
+
+            float level;
+            float falloff = 1.0f;
+            float intensity = light->color.w;
+
+            if ((light->kind & 3) == 2)
+            {
+                falloff = func_004C9D80(light, point);
+
+                if (falloff < light->unk274)
+                {
+                    continue;
+                }
+            }
+
+            u8 kind = light->unk28b;
+            const LibVector4* origin = reinterpret_cast<const LibVector4*>(&light->position);
+
+            if ((light->kind & 3) == 0)
+            {
+                const LibMatrix44Value* matrix = &light->transform;
+                LibVector4 axis;
+                axis.x = matrix_row(matrix, 0)->y;
+                axis.y = matrix_row(matrix, 1)->y;
+                axis.z = matrix_row(matrix, 2)->y;
+                axis.w = 1.0f;
+                vu0_negate_xyz_to(&axis, &axis);
+
+                switch (kind)
+                {
+                case 0:
+                {
+                    float attenuation = lib_light_axis_attenuation(light, point, origin, &axis);
+
+                    if (sorting)
+                    {
+                        level = attenuation * (falloff * intensity);
+                    }
+
+                    light->packed_intensity = falloff * intensity;
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 1:
+                {
+                    float attenuation = lib_light_axis_attenuation(light, point, origin, &axis);
+                    level = attenuation * (falloff * intensity);
+
+                    if (light->unk289)
+                    {
+                        light->packed_intensity = level;
+                    }
+                    else
+                    {
+                        light->packed_intensity = falloff * intensity;
+                    }
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 2:
+                {
+                    float attenuation = lib_light_axis_attenuation_squared(light, point, origin, &axis);
+                    level = attenuation * (falloff * intensity);
+
+                    if (light->unk289)
+                    {
+                        light->packed_intensity = level;
+                    }
+                    else
+                    {
+                        light->packed_intensity = falloff * intensity;
+                    }
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                }
+            }
+            else
+            {
+                switch (kind)
+                {
+                case 0:
+                {
+                    float attenuation = lib_light_point_attenuation(light, point, origin);
+
+                    if (sorting)
+                    {
+                        level = attenuation * (falloff * intensity);
+                    }
+
+                    light->packed_intensity = falloff * intensity;
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 1:
+                {
+                    float attenuation = lib_light_point_attenuation(light, point, origin);
+                    level = attenuation * (falloff * intensity);
+
+                    if (light->unk289)
+                    {
+                        light->packed_intensity = level;
+                    }
+                    else
+                    {
+                        light->packed_intensity = falloff * intensity;
+                    }
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                case 2:
+                {
+                    float attenuation = lib_light_point_attenuation_squared(light, point, origin);
+                    level = attenuation * (falloff * intensity);
+
+                    if (light->unk289)
+                    {
+                        light->packed_intensity = level;
+                    }
+                    else
+                    {
+                        light->packed_intensity = falloff * intensity;
+                    }
+
+                    if (light->unk28d && !(light->unk280 < attenuation))
+                    {
+                        continue;
+                    }
+
+                    break;
+                }
+                }
+            }
+
+            if (sorting)
+            {
+                level = ee_abs(level);
+
+                if (levels[3] < level && !(level < light->unk274))
+                {
+                    for (s32 i = 0; i < 4; i++)
+                    {
+                        if (levels[i] < level)
+                        {
+                            for (s32 j = 3; j > i; j--)
+                            {
+                                levels[j] = levels[j - 1];
+                                best[j] = best[j - 1];
+                            }
+
+                            levels[i] = level;
+                            best[i] = light;
+                            break;
+                        }
+                    }
+                }
+
+                if (!(levels[3] < 1.0f))
+                {
+                    break;
+                }
+            }
+            else
+            {
+                list[count++] = light;
+            }
+        }
+
+        s32 slot;
+
+        for (slot = 0; slot < count; slot++)
+        {
+            LibLight* light = list[slot];
+
+            if (shadow_lights != 0)
+            {
+                lib_shadow_light_set(shadow_lights, slot, light);
+            }
+
+            LibVector4 direction;
+            func_004C9E80(light, &direction, point);
+            lib_light_list_set_column(lights, slot, light, &direction);
+        }
+
+        if (shadow_lights != 0)
+        {
+            shadow_lights->count = count;
+        }
+
+        if (sorting)
+        {
+            for (s32 i = 0; slot < 4; slot++)
+            {
+                LibLight* light = best[i++];
+
+                if (light != 0)
+                {
+                    if (shadow_lights != 0)
+                    {
+                        lib_shadow_light_set(shadow_lights, slot, light);
+                        shadow_lights->count++;
+                    }
+
+                    LibVector4 direction;
+                    func_004C9E80(light, &direction, point);
+                    lib_light_list_set_column(lights, slot, light, &direction);
+                }
+            }
+        }
+
+        vu0_scale_matrix_rows(color, &lights->unkd0, &lights->unk1d0);
+    }
+    else
+    {
+        vu0_scale_matrix_rows(color, lights->colors, &lights->unk1d0);
+        copy_vector(reinterpret_cast<LibVector4*>(lights->unk90.m[0]), &lights->directions[0]);
+        copy_vector(reinterpret_cast<LibVector4*>(lights->unk90.m[1]), &lights->directions[1]);
+        copy_vector(reinterpret_cast<LibVector4*>(lights->unk90.m[2]), &lights->directions[2]);
+        copy_vector(reinterpret_cast<LibVector4*>(lights->unk90.m[3]), &lights->directions[3]);
+
+        if (shadow_lights != 0)
+        {
+            s32 count = lights->unk364_count;
+
+            for (s32 i = 0; i < count; i++)
+            {
+                shadow_lights->lights[i] = lights->unk364[i];
+                reinterpret_cast<float*>(shadow_lights->unk18)[i] = lights->unk364[i]->packed_intensity;
+                shadow_lights->unk04[i] = lights->unk364[i]->unk28c;
+                float scale = lights->unk364[i]->unk284;
+                shadow_lights->weights[i] = lights->unk364[i]->packed_intensity * scale;
+            }
+
+            shadow_lights->count = lights->unk364_count;
+        }
+    }
+}
 
 /** @brief Update the listed nodes. */
 void LibLightList::update()

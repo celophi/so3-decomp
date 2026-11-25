@@ -6,6 +6,7 @@
 #include "overlays/lib/text_004DD440.h"
 #include "main/resident_data.h"
 #include "overlays/lib/model.h"
+#include "overlays/lib/model_packet.h"
 #include "overlays/lib/transform_owner_inlines.h"
 #include "ee.h"
 #include "clamp.h"
@@ -26,7 +27,6 @@
 #define GIF_TAG_HIGH_PRIM_ABE ((u32)(GIF_TAG_PRIM(GS_PRIM_ABE) >> 32))
 
 
-
 /**
  * @brief Return a part record through the uncached accelerated segment.
  * @param parts Part table.
@@ -38,7 +38,6 @@ static inline LibModelPart* lib_model_uncached_part(void* parts, s32 index)
     return reinterpret_cast<LibModelPart*>(
         reinterpret_cast<u32>(static_cast<u8*>(parts) + index * LIB_MODEL_PART_SIZE) | EE_UNCACHED_ACCELERATED);
 }
-
 
 
 #define LIB_MODEL_UNSCALED_MIN 0.999f
@@ -322,7 +321,7 @@ void LibClass177090::copy_settings(const LibClass173A40* source)
     // TODO: The copy marks its own storage borrowed by storing the same pointers back. I think this was
     // an inline setter given unkb0 and unkb4, but every helper form I tried loads them in the other order.
     u8* first = unkb0;
-    FieldVec4A* second = unkb4;
+    LibClass173490Entry* second = unkb4;
     unkc9 = 1;
     unkb0 = first;
     unkb4 = second;
@@ -2236,7 +2235,6 @@ extern "C" s32 func_004A4710(LibModel* model, const void* matrix, s32 first)
     return 1;
 }
 
-extern "C" u8 D_6E0[];
 extern "C" u8 D_770[];
 extern "C" u8 D_880[];
 
@@ -2648,44 +2646,6 @@ void* LibRenderChannel::append_packets(void* packet)
     return packet;
 }
 
-/** Partial view of the model's draw packet at unk220, written through the uncached accelerated segment. */
-typedef struct LibModelPacketHeader
-{
-    u8 unk00[0x20];
-    unsigned __int128 light_matrix[4];
-    LibMatrix44Value light_transposed;
-    unsigned __int128 transform[4];
-    unsigned __int128 color;
-    s32 white;
-    s32 unkf4;
-    s32 unkf8;
-    s32 light_mode;
-    u8 unk100[4];
-    s32 unk104;
-    u8 unk108[4];
-    s32 unk10c;
-    u8 unk110[8];
-    float unk118;
-    s32 unk11c;
-    u64 unk120;
-    u8 unk128[8];
-    u64 test;
-    u8 unk138[8];
-    unsigned __int128 ambient;
-    unsigned __int128 unk150[3];
-    LibMatrix44Value unk180;
-    unsigned __int128 unk1c0;
-    unsigned __int128 unk1d0[8];
-    s32 unk250;
-    s32 unk254;
-    u8 unk258[8];
-    unsigned __int128 unk260;
-    u8 unk270[0x2C];
-    s32 unk29c;
-    u8 unk2a0[8];
-    s32 unk2a8;
-} LibModelPacketHeader;
-
 /**
  * @brief Light the model for this frame: its colour times the light list's, the directional and local lights from the
  *        list (filling the model's shadow light list when unk790 is set), and the white-colour flag, all written into
@@ -2847,7 +2807,6 @@ extern "C" void func_004A59D0(LibModel* model, void* context)
         packet->white = 0;
     }
 }
-
 
 /**
  * @brief Count what a mesh with unk54 set adds to the packet.
@@ -3029,7 +2988,367 @@ void LibModel::build_packet(const void* matrix, void* context)
     unk63 = 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0049B820", func_004A62D0);
+extern "C" s32 D_001B6290;
+
+/** Partial view of a model part's texture registers, written through the uncached segment. */
+struct LibPartTextures
+{
+    u8 unk00[0x30];
+    u64 clut_tex0;
+    u8 unk38[8];
+    u64 tex0;
+    u8 unk48[0x3C];
+    u32 has_second;
+    u64 ref;
+    u8 unk90[0x10];
+    u64 second_clut_tex0;
+    u8 unka8[8];
+    u64 second_tex0;
+    u8 unkb8[0x30];
+    u64 second_ref;
+};
+
+/**
+ * @brief Find the record a by-key texture record refers to, looking it up again when it is missing or its inline
+ *        image no longer carries the record's keys.
+ * @param model Model whose resource is skipped in the lookup.
+ * @param record By-key record.
+ * @param header Receives the image header when it is already known, otherwise null.
+ * @return The record holding the image, or null.
+ */
+static inline ResidentRenderDataRecord* lib_model_resolve_record(LibModel* model, ResidentRenderDataRecord* record, LibImageHeader*& header)
+{
+    ResidentRenderDataRecord* source = reinterpret_cast<ResidentRenderDataRecord*>(record->resolved_data);
+
+    if (source == 0)
+    {
+        source = static_cast<ResidentRenderDataRecord*>(func_004D6230(model, record->key08, record->key0c));
+        record->resolved_data = reinterpret_cast<u32>(source);
+        return source;
+    }
+
+    header = reinterpret_cast<LibImageHeader*>(source->data);
+
+    if (header != 0)
+    {
+        return source;
+    }
+
+    header = reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(source) + 0x40);
+
+    if ((u32)header->id != record->key0c || *reinterpret_cast<u32*>(header->name) != record->key08)
+    {
+        source = static_cast<ResidentRenderDataRecord*>(func_004D6230(model, record->key08, record->key0c));
+        header = 0;
+        record->resolved_data = reinterpret_cast<u32>(source);
+    }
+
+    return source;
+}
+
+/**
+ * @brief Read the TEX0 of the texture loaded for a slot.
+ * @param cache Texture cache.
+ * @param slot Texture slot.
+ * @return TEX0 value.
+ */
+static inline u64 lib_slot_tex0(const LibTextureCache* cache, s32 slot)
+{
+    return cache->entries[cache->slot_entries[slot]].tex0;
+}
+
+/**
+ * @brief Clear the cache's stamp, the stamp of every block stamped 1, and the CLUT use flags.
+ * @param cache Texture cache.
+ */
+static inline void lib_texture_cache_clear_stamps(LibTextureCache* cache)
+{
+    cache->stamp = 0;
+
+    for (u32 index = cache->blocks[0].next_block; index != 0; index = cache->blocks[index].next_block)
+    {
+        if (cache->blocks[index].stamp == 1)
+        {
+            cache->blocks[index].stamp = 0;
+        }
+    }
+
+    unsigned __int128* flags = reinterpret_cast<unsigned __int128*>(cache->clut_used);
+    s32 count = cache->clut_count / 16;
+
+    for (s32 index = 0; index < count; index++)
+    {
+        *flags++ = 0;
+    }
+}
+
+/**
+ * @brief Write the packet data for a mesh with unk38 set or with a count from func_004A76D0.
+ * @param model Model.
+ * @param count Value func_004A76D0 returned for the mesh, or zero.
+ */
+extern "C" void func_004A62D0(LibModel* model, s32 count)
+{
+    LibMeshHeader* mesh = reinterpret_cast<LibMeshHeader*>(model->payload);
+
+    if (mesh->unk08 != 0 || count != 0)
+    {
+        LibListSentinel* node = &model->render_channels.sentinel;
+
+        for (;;)
+        {
+            node = node->next;
+
+            if (&model->render_channels.sentinel == node)
+            {
+                break;
+            }
+
+            static_cast<LibRenderChannel*>(node)->update();
+        }
+
+        u8 first = 1;
+
+        for (;;)
+        {
+            u8 failed = 0;
+            g_texture_cache->stamp = 1;
+            ResidentRenderDataRecord* record = reinterpret_cast<ResidentRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + mesh->unk08);
+
+            for (s32 i = 0; i < mesh->unk40; i++)
+            {
+                s16 storage = record->storage_kind;
+                ResidentRenderDataRecord* source = record;
+                LibImageHeader* header = 0;
+                s16 index;
+
+                if (storage == 1)
+                {
+                    index = record->index;
+                    source = lib_model_resolve_record(model, record, header);
+
+                    if (source != 0)
+                    {
+                        storage = source->storage_kind;
+                    }
+                    else
+                    {
+                        source = record;
+                    }
+                }
+                else
+                {
+                    if (storage == 4)
+                    {
+                        storage = 5;
+                        record->storage_kind = 5;
+                        record->data = reinterpret_cast<u8*>(record) + reinterpret_cast<u32>(record->data);
+                        record->resolved_data = reinterpret_cast<u32>(record->data);
+                    }
+
+                    index = record->index;
+                }
+
+                if (storage == 0 || storage == 5)
+                {
+                    if (header == 0)
+                    {
+                        LibImageHeader* data = reinterpret_cast<LibImageHeader*>(source->data);
+
+                        if (data != 0)
+                        {
+                            header = data;
+                        }
+                        else
+                        {
+                            header = reinterpret_cast<LibImageHeader*>(reinterpret_cast<u8*>(source) + 0x40);
+                        }
+                    }
+
+                    LibImageInfo* info = 0;
+
+                    if (header->image_offset)
+                    {
+                        info = reinterpret_cast<LibImageInfo*>(reinterpret_cast<u8*>(header) + header->image_offset);
+                    }
+
+                    s32 slot = index;
+                    u8* flags = &model->unk748[slot];
+
+                    if (*flags & 1)
+                    {
+                        u32 address = g_texture_cache->find_texture(reinterpret_cast<LibTextureRequest*>(info), *reinterpret_cast<u32*>(header->name),
+                                                                    header->id, slot, header->flags, 0, reinterpret_cast<LibTextureUser*>(source));
+
+                        if (address == 1)
+                        {
+                            failed = 1;
+                            break;
+                        }
+
+                        address = g_texture_cache->find_texture(reinterpret_cast<LibTextureRequest*>(info), 0x54655873, D_001B6290, slot + 0x80, header->flags,
+                                                                0, reinterpret_cast<LibTextureUser*>(source));
+
+                        if (address != 0)
+                        {
+                            if (address == 1)
+                            {
+                                failed = 1;
+                                break;
+                            }
+
+                            u64 bitbltbuf = *reinterpret_cast<u64*>(reinterpret_cast<u8*>(header) + info->pixel_offset + 0x20);
+                            record->unk10[0] = (bitbltbuf & ~(0x3FFFULL << 32)) | (((u64)address >> 6) << 32);
+                            model->unk728[i] |= 1;
+                        }
+
+                        if (++D_001B6290 == 0)
+                        {
+                            D_001B6290 = 1;
+                        }
+                    }
+                    else if (g_texture_cache->func_004A6D20(header, slot, reinterpret_cast<LibTextureUser*>(source)) && info)
+                    {
+                        u32 address = func_004A7100(g_texture_cache, reinterpret_cast<LibTextureRequest*>(info), *reinterpret_cast<u32*>(header->name),
+                                                    header->id, slot, header->flags, reinterpret_cast<LibTextureUser*>(source));
+
+                        if (address == 1)
+                        {
+                            failed = 1;
+                            break;
+                        }
+
+                        u64 bitbltbuf = *reinterpret_cast<u64*>(reinterpret_cast<u8*>(header) + info->pixel_offset + 0x20);
+                        record->unk10[0] = (bitbltbuf & ~(0x3FFFULL << 32)) | (((u64)address >> 6) << 32);
+                        model->unk728[i] |= 1;
+                    }
+
+                    if (model->unk798_0)
+                    {
+                        void* palette = reinterpret_cast<u8*>(header) + header->palette_offset;
+                        s32 address = model->place_texture(header, index, &palette);
+
+                        if (address != 0)
+                        {
+                            record->unk10[1] =
+                                (*reinterpret_cast<u64*>(static_cast<u8*>(palette) + 0x20) & ~(0x3FFFULL << 32)) | (((u64)(u32)address >> 6) << 32);
+                            model->unk728[i] |= 4;
+                            model->unk728[i] &= ~8;
+                        }
+                    }
+                    else if (header->unk02)
+                    {
+                        u8* palette = reinterpret_cast<u8*>(header) + header->palette_offset;
+                        u32 clut;
+
+                        if (*flags & 2)
+                        {
+                            clut = g_texture_cache->func_004A6EA0(header, slot, 1);
+                        }
+                        else
+                        {
+                            clut = g_texture_cache->func_004A6EA0(header, slot, 0);
+                        }
+
+                        if (clut != 0)
+                        {
+                            record->unk10[1] = (*reinterpret_cast<u64*>(palette + 0x20) & ~(0x3FFFULL << 32)) | (((u64)clut >> 6) << 32);
+                            model->unk728[i] |= 4;
+                        }
+                    }
+                }
+
+                record = reinterpret_cast<ResidentRenderDataRecord*>(reinterpret_cast<u8*>(mesh) + record->next_offset);
+            }
+
+            if (count != 0 && func_004A3140(model, reinterpret_cast<ResidentImageObject*>(count)))
+            {
+                failed = 1;
+            }
+
+            if (!failed || !first)
+            {
+                break;
+            }
+
+            lib_texture_cache_clear_stamps(g_texture_cache);
+            g_texture_cache->release_unstamped();
+            first = 0;
+        }
+
+        lib_texture_cache_clear_stamps(g_texture_cache);
+    }
+
+    if (mesh->unk38 != 0)
+    {
+        s32 part_count = *reinterpret_cast<s32*>(reinterpret_cast<u8*>(mesh) + mesh->unk38);
+
+        for (s32 k = 0; k < part_count; k++)
+        {
+            LibPartTextures* part = reinterpret_cast<LibPartTextures*>((reinterpret_cast<u32>(model->parts) + k * LIB_MODEL_PART_SIZE) | UNCACHED_SEGMENT);
+            u64 ref = part->ref;
+            u64 tex0 = (part->tex0 & 0x0000001C00000000ULL) | g_texture_cache->entries[g_texture_cache->slot_entries[(s32)ref]].tex0;
+
+            // TODO: The CLUT reads cast the slot through s32 and s16 like an s16 parameter; find the original form.
+            switch ((s32)((g_texture_cache->entries[g_texture_cache->slot_entries[(s32)ref]].tex0 >> 20) & 0x3F))
+            {
+            case GS_PSMT4:
+                part->tex0 = tex0 | (g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)ref]].tex0 | (u64)(u32)(s32)(ref >> 32) << 56);
+                part->clut_tex0 = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)ref]].tex0 | 0x4000000621300000ULL;
+                break;
+            case GS_PSMT8:
+                part->tex0 = tex0 | g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)ref]].tex0;
+                part->clut_tex0 = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)ref]].tex0 | 0x4000000621300000ULL;
+                break;
+            default:
+                part->clut_tex0 = tex0;
+                part->tex0 = tex0;
+                break;
+            }
+
+            if (part->has_second)
+            {
+                u64 second = part->second_ref;
+                u64 second_tex0 = (part->second_tex0 & 0x0000001C00000000ULL) | g_texture_cache->entries[g_texture_cache->slot_entries[(s32)second]].tex0;
+
+                switch ((s32)((g_texture_cache->entries[g_texture_cache->slot_entries[(s32)second]].tex0 >> 20) & 0x3F))
+                {
+                case GS_PSMT4:
+                    part->second_tex0 =
+                        second_tex0 | (g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)second]].tex0 | (u64)(u32)(s32)(second >> 32) << 56);
+                    part->second_clut_tex0 = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)second]].tex0 | 0x4000000621300000ULL;
+                    break;
+                case GS_PSMT8:
+                    part->second_tex0 = second_tex0 | g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)second]].tex0;
+                    part->second_clut_tex0 = g_texture_cache->cluts[g_texture_cache->clut_slot_entries[(s16)(s32)second]].tex0 | 0x4000000621300000ULL;
+                    break;
+                default:
+                    part->second_clut_tex0 = second_tex0;
+                    part->second_tex0 = second_tex0;
+                    break;
+                }
+            }
+        }
+
+        LibListSentinel* channel = &model->render_channels.sentinel;
+        u32 program = reinterpret_cast<u32>(D_678) >> 3;
+
+        for (;;)
+        {
+            channel = channel->next;
+
+            if (&model->render_channels.sentinel == channel)
+            {
+                break;
+            }
+
+            LibRenderChannel* render = static_cast<LibRenderChannel*>(channel);
+            render->source_tex0 = lib_slot_tex0(g_texture_cache, render->unk38 + 0x80);
+            render->destination_tex0 = lib_slot_tex0(g_texture_cache, render->unk38);
+            render->prepare_packets(model, program);
+        }
+    }
+}
 
 /**
  * @brief Default packet preparation that performs no work.
@@ -3219,8 +3538,7 @@ static inline s32 lib_texture_buffer_width(const LibTextureRequest* request, u16
  * @return VRAM word address of the texture, 0 when no spare block record is left, or 1 when no block is large
  *         enough.
  */
-extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, u32 id, s32 slot, u16 flags,
-                             LibTextureUser* user)
+extern "C" u32 func_004A7100(LibTextureCache* cache, LibTextureRequest* request, u32 tag, s32 id, s32 slot, u16 flags, LibTextureUser* user)
 {
     u32 index;
     s32 need;
@@ -3443,8 +3761,6 @@ void LibModel::update()
     LibModelBase::update();
 }
 
-extern "C" LibVector4 D_00508210[];
-extern "C" LibVector4 D_00508220[];
 extern "C" void* D_001B6660;
 
 /**
@@ -3576,21 +3892,6 @@ extern "C" s32 func_004A76D0(LibModel* model)
     return reinterpret_cast<s32>(hit);
 }
 
-
-/**
- * @brief Return the camera's TEST register value with the model's destination alpha test applied.
- * @param model Model.
- * @param camera Camera.
- * @return TEST register value.
- */
-static inline u32 lib_model_test_register(const LibModel* model, const LibCamera* camera)
-{
-    u32 test = camera->test;
-    u32 date = model->unk59c != 0 ? 0x4000 : 0;
-    u32 datm = model->unk59c == 2 ? 0x8000 : 0;
-
-    return datm | (date | (test & ~0xC000));
-}
 
 /**
  * @brief Refresh the model's packet header from its flags and the camera's TEST register.

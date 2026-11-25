@@ -29,6 +29,15 @@ void sceGsResetGraph(s16 mode, s16 inter, s16 omode, s16 ffmode);
 void sceGsResetPath(void);
 
 /**
+ * @brief Wait for the GS path transfers to finish, or check whether they have.
+ * @param mode 0 to wait, 1 to return the busy state at once.
+ * @param timeout Wait limit; 0 waits for as long as it takes.
+ * @return 0 once idle; with mode 1, the busy path bits.
+ * @see Sony, libgraph reference, sceGsSyncPath.
+ */
+s32 sceGsSyncPath(s32 mode, u16 timeout);
+
+/**
  * @brief Fill a display environment with the defaults for a frame buffer of the given size.
  * @param environment Environment to fill.
  * @param pixel_format Frame buffer pixel format.

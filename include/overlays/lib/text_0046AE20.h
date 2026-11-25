@@ -404,9 +404,6 @@ u8 func_0047ADE0(const void* object);
 u8 func_0047AE10(const void* object);
 
 
-/** Store the low halfword at receiver offset 0x6C. */
-void func_00472100(void* object, u32 value);
-
 /** Return the fixed integer value 1. */
 s32 func_00479FC0(void* object);
 

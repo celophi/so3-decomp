@@ -262,6 +262,32 @@ static inline void vu0_apply_matrix(const void* matrix, const void* vector, void
 }
 
 /**
+ * @brief vu0_apply_matrix with the vector's address taken first, which the colouring of some callers needs.
+ * @param matrix 16-byte aligned matrix.
+ * @param vector 16-byte aligned vector.
+ * @param out 16-byte aligned destination.
+ * @see sceVu0ApplyMatrix in Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); LibObject1751A0::update
+ *      in Lib.
+ */
+static inline void vu0_apply_matrix_vector_first(const void* matrix, const void* vector, void* out)
+{
+    asm __volatile__(
+        "lqc2      $vf5, 0x0(%0)\n"
+        "lqc2      $vf1, 0x0(%1)\n"
+        "lqc2      $vf2, 0x10(%1)\n"
+        "lqc2      $vf3, 0x20(%1)\n"
+        "lqc2      $vf4, 0x30(%1)\n"
+        "vmulax.xyzw $ACC, $vf1, $vf5x\n"
+        "vmadday.xyzw $ACC, $vf2, $vf5y\n"
+        "vmaddaz.xyzw $ACC, $vf3, $vf5z\n"
+        "vmaddw.xyzw $vf5, $vf4, $vf5w\n"
+        "sqc2      $vf5, 0x0(%2)\n"
+        :
+        : "r"(vector), "r"(matrix), "r"(out)
+        : "memory");
+}
+
+/**
  * @brief Load a vector into vf5 and start microprogram 0.
  *
  * TODO: Work out what program 0 does. So far I've only seen it give a screen position.
