@@ -5,6 +5,8 @@
 #include "sdk/main/libgraph_0012EAC8.h"
 #include "overlays/lib/text_004CD3A0.h"
 #include "main/dma_queue.h"
+#include "main/thread.h"
+#include "overlays/lib/semaphore.h"
 
 /**
  * Partial 0x210-byte object that copies a rectangle of VRAM back to main memory, with vtable D_1735A0 in main data.
@@ -58,19 +60,35 @@ public:
     u8 unk208[8];
 };
 
-/** Lib's VRAM store thread (vtable D_173580 in main data); one is shared by every capture. Partial. */
-struct LibImageStoreThread
+/**
+ * Lib's VRAM store thread, with vtable D_173580 in main data; one is shared by every capture. A capture's DMA
+ * callbacks hand it the packet and wake it, and it reads the rectangle back through VIF1.
+ */
+class LibClass173580 : public ResidentThread
 {
-    u8 unk00[0x10];
+public:
+    /** @brief Create the semaphore the DMA callbacks signal, then create and start the thread. */
+    LibClass173580()
+    {
+        semaphore.create(0, 1);
+        wake_failed = 0;
+        resident_thread_create(this, 0x28, 0x4000);
+        start();
+    }
+
+    virtual ~LibClass173580();
+
+    /** @brief Thread body: store each packet a capture hands over, then finish the capture. */
+    virtual void run();
+
     GsStoreImage* packet;
     void* destination;
     LibImageCapture* capture;
-    s32 semaphore;
-    u8 unk20[4];
+    LibSemaphore semaphore;
     u8 wake_failed;
 };
 
-extern LibImageStoreThread D_005081D0;
+extern LibClass173580 D_005081D0;
 
 extern "C"
 {

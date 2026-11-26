@@ -27,6 +27,8 @@ enum
     GS_PSMCT16S = 0x0A,
     GS_PSMT8 = 0x13,
     GS_PSMT4 = 0x14,
+    GS_PSMT8H = 0x1B,
+    GS_PSMT4HL = 0x24,
     GS_PSMT4HH = 0x2C,
     GS_PSMZ32 = 0x30,
     GS_PSMZ24 = 0x31,
@@ -193,6 +195,32 @@ typedef struct GsFrame
     u64 draw_mask : 32;
 } GsFrame;
 
+/** BITBLTBUF: the source and destination buffers of a local memory transfer. */
+typedef struct GsBitbltbuf
+{
+    u64 source_pointer : 14;
+    u64 : 2;
+    u64 source_width : 6;
+    u64 : 2;
+    u64 source_format : 6;
+    u64 : 2;
+    u64 destination_pointer : 14;
+    u64 : 2;
+    u64 destination_width : 6;
+    u64 : 2;
+    u64 destination_format : 6;
+    u64 : 2;
+} GsBitbltbuf;
+
+/** TRXREG: the size of a local memory transfer's rectangle. */
+typedef struct GsTrxreg
+{
+    u64 width : 12;
+    u64 : 20;
+    u64 height : 12;
+    u64 : 20;
+} GsTrxreg;
+
 /** SCISSOR_1/SCISSOR_2: the inclusive pixel rectangle drawing is clipped to. */
 typedef struct GsScissor
 {
@@ -340,5 +368,14 @@ typedef struct GsDisplayEnvironment
 
 /** DISPLAY2: where read circuit 2's picture sits on the screen. */
 #define GS_DISPLAY2 (*(volatile u64*)0x120000A0)
+
+/** CSR: the GS system status and control register. */
+#define GS_CSR (*(volatile u64*)0x12001000)
+#define GS_CSR_FINISH 0x2
+#define GS_CSR_RESET 0x100
+
+/** BUSDIR: the direction of the host interface; 1 reads local memory back to the host. */
+#define GS_BUSDIR (*(volatile u64*)0x12001040)
+#define GS_BUSDIR_LOCAL_TO_HOST 0x1
 
 #endif

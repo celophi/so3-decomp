@@ -2238,16 +2238,6 @@ extern "C" s32 func_004A4710(LibModel* model, const void* matrix, s32 first)
 extern "C" u8 D_770[];
 extern "C" u8 D_880[];
 
-/** Partial view of the object a model's unk638 points at: matrix sets uploaded for each frame. */
-struct LibModelMatrixSource
-{
-    u8 unk00[0x34];
-    s32* unk34;
-    u8 unk38[0x14];
-    u32 unk4c;
-    u8 unk50;
-};
-
 /**
  * @brief Virtual slot 0xF0: write the model's DMA chain: the microprogram, the texture and palette uploads its records
  *        mark dirty, the render channels' packets, the before/after blocks, and the part calls.

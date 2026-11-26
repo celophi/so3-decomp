@@ -431,4 +431,227 @@ static inline void vu0_sines_store(void* sines)
         : "t1", "memory");
 }
 
+/**
+ * @brief Clear a general register the way the arc cosine starts (`addu r, zero, zero`).
+ * @return Zero.
+ * @see The EE Core Instruction Set Manual; Lib's VU0 arc cosine (0x4CD010) is the game's only `addu r, zero, zero`.
+ */
+static inline s32 ee_acos_clear_bits(void)
+{
+    // TODO: Only an asm move gives this addu; check whether the whole arc cosine prologue was one asm block.
+    s32 bits;
+    asm __volatile__("move %0, $zero\n" : "=r"(bits));
+    return bits;
+}
+
+/**
+ * @brief Move a float's bit pattern into a general register, with the nop the arc cosine keeps after it.
+ * @param value Float to read.
+ * @return Its bits.
+ * @see mfc1 in the EE Core Instruction Set Manual; Lib's VU0 arc cosine (0x4CD010).
+ */
+static inline s32 ee_acos_float_bits(float value)
+{
+    // TODO: The compiler's own float-to-bits read doesn't keep the nop; check whether this was asm in the game.
+    s32 bits;
+    asm __volatile__(
+        "mfc1       %0, %1\n"
+        "nop\n"
+        : "=r"(bits)
+        : "f"(value));
+    return bits;
+}
+
+/**
+ * @brief Load the arc cosine table (pi, pi/2 high and low, the fdlibm pS/qS coefficients, 0.5, 2.0 and the argument)
+ *        into vf12-vf15.
+ * @param table Aligned 64-byte table at D_0050CC40.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); fdlibm's e_acosf.c for the polynomial.
+ */
+static inline void vu0_acos_load(const void* table)
+{
+    asm __volatile__(
+        "lqc2       $vf12, 0x0(%0)\n"
+        "lqc2       $vf13, 0x10(%0)\n"
+        "lqc2       $vf14, 0x20(%0)\n"
+        "lqc2       $vf15, 0x30(%0)\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
+/**
+ * @brief Arc cosine for |x| below 0.5: pi/2 - (x + x * p(x^2) / q(x^2)), written back to the table's argument lane.
+ * @param table Aligned 64-byte table at D_0050CC40.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); fdlibm's e_acosf.c.
+ */
+static inline void vu0_acos_small(void* table)
+{
+    asm __volatile__(
+        "vmul.w     $vf16, $vf15, $vf15\n"
+        "vmulax.w   $ACC, $vf16, $vf14x\n"
+        "vmadd.w    $vf17, $vf0, $vf13\n"
+        "vmulax.w   $ACC, $vf16, $vf15x\n"
+        "vmadd.w    $vf18, $vf0, $vf14\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddz.w   $vf17, $vf0, $vf13z\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmaddz.w   $vf18, $vf0, $vf14z\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddy.w   $vf17, $vf0, $vf13y\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmaddy.w   $vf18, $vf0, $vf14y\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddx.w   $vf17, $vf0, $vf13x\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmadd.w    $vf18, $vf0, $vf0\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmadd.w    $vf17, $vf0, $vf12\n"
+        "vmul.w     $vf17, $vf17, $vf16\n"
+        "vdiv       $Q, $vf17w, $vf18w\n"
+        "vmulaz.w   $ACC, $vf0, $vf12z\n"
+        "vwaitq\n"
+        "vmsubq.w   $vf17, $vf15, $Q\n"
+        "vsub.w     $vf17, $vf15, $vf17\n"
+        "vmulay.w   $ACC, $vf0, $vf12y\n"
+        "vmsub.w    $vf15, $vf0, $vf17\n"
+        "sqc2       $vf15, 0x30(%0)\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
+/**
+ * @brief Arc cosine for x at or below -0.5: pi - 2 * (s + s * p(z) / q(z)) with z = (1 + x) / 2 and s = sqrt(z).
+ * @param table Aligned 64-byte table at D_0050CC40.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); fdlibm's e_acosf.c.
+ */
+static inline void vu0_acos_negative(void* table)
+{
+    asm __volatile__(
+        "vmulay.w   $ACC, $vf0, $vf15y\n"
+        "vmaddy.w   $vf16, $vf15, $vf15y\n"
+        "vmulax.w   $ACC, $vf16, $vf14x\n"
+        "vmadd.w    $vf17, $vf0, $vf13\n"
+        "vmulax.w   $ACC, $vf16, $vf15x\n"
+        "vmadd.w    $vf18, $vf0, $vf14\n"
+        "vsqrt      $Q, $vf16w\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddz.w   $vf17, $vf0, $vf13z\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmaddz.w   $vf18, $vf0, $vf14z\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddy.w   $vf17, $vf0, $vf13y\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmaddy.w   $vf18, $vf0, $vf14y\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddx.w   $vf17, $vf0, $vf13x\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmadd.w    $vf18, $vf0, $vf0\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmadd.w    $vf17, $vf0, $vf12\n"
+        "vmulq.w    $vf19, $vf0, $Q\n"
+        "vmul.w     $vf17, $vf17, $vf16\n"
+        "vnop\n"
+        "vdiv       $Q, $vf17w, $vf18w\n"
+        "vwaitq\n"
+        "vmulaq.w   $ACC, $vf19, $Q\n"
+        "vmsubz.w   $vf17, $vf0, $vf12z\n"
+        "vadd.w     $vf17, $vf17, $vf19\n"
+        "vmulax.w   $ACC, $vf0, $vf12x\n"
+        "vmsubz.w   $vf15, $vf17, $vf15z\n"
+        "sqc2       $vf15, 0x30(%0)\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
+/**
+ * @brief Start the arc cosine for x at or above 0.5: z = (1 - x) / 2, sqrt(z) into the argument lane and most of
+ *        p(z) and q(z) in vf17 / vf18.
+ * @param table Aligned 64-byte table at D_0050CC40.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); fdlibm's e_acosf.c.
+ */
+static inline void vu0_acos_positive_begin(void* table)
+{
+    asm __volatile__(
+        "vmulay.w   $ACC, $vf0, $vf15y\n"
+        "vmsuby.w   $vf16, $vf15, $vf15y\n"
+        "vsqrt      $Q, $vf16w\n"
+        "vmulax.w   $ACC, $vf16, $vf14x\n"
+        "vmadd.w    $vf17, $vf0, $vf13\n"
+        "vmulax.w   $ACC, $vf16, $vf15x\n"
+        "vmadd.w    $vf18, $vf0, $vf14\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddz.w   $vf17, $vf0, $vf13z\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmaddz.w   $vf18, $vf0, $vf14z\n"
+        "vmulq.w    $vf15, $vf0, $Q\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddy.w   $vf17, $vf0, $vf13y\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmaddy.w   $vf18, $vf0, $vf14y\n"
+        "sqc2       $vf15, 0x30(%0)\n"
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmaddx.w   $vf17, $vf0, $vf13x\n"
+        "vmula.w    $ACC, $vf18, $vf16\n"
+        "vmadd.w    $vf18, $vf0, $vf0\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
+/**
+ * @brief Add the numerator polynomial's constant term.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); fdlibm's e_acosf.c.
+ */
+static inline void vu0_acos_positive_numerator(void)
+{
+    asm __volatile__(
+        "vmula.w    $ACC, $vf17, $vf16\n"
+        "vmadd.w    $vf17, $vf0, $vf12\n"
+        :
+        :
+        : "memory");
+}
+
+/**
+ * @brief Multiply the numerator polynomial by z.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); fdlibm's e_acosf.c.
+ */
+static inline void vu0_acos_positive_scale(void)
+{
+    asm __volatile__("vmul.w     $vf17, $vf17, $vf16\n" : : : "memory");
+}
+
+/**
+ * @brief Finish the x >= 0.5 arc cosine from the truncated root df in the table: 2 * (df + (c + sqrt(z) * r)) with
+ *        c = (z - df * df) / (s + df), written back to the argument lane.
+ * @param table Aligned 64-byte table at D_0050CC40.
+ * @see Sony's EE/VU manual (https://docs.alexrp.com/mips/ee_vu.pdf); fdlibm's e_acosf.c.
+ */
+static inline void vu0_acos_positive_finish(void* table)
+{
+    asm __volatile__(
+        "lqc2       $vf19, 0x30(%0)\n"
+        "vdiv       $Q, $vf17w, $vf18w\n"
+        "vadd.w     $vf21, $vf15, $vf19\n"
+        "vmulaw.w   $ACC, $vf0, $vf16w\n"
+        "vmsub.w    $vf20, $vf19, $vf19\n"
+        "vwaitq\n"
+        "vmulaq.w   $ACC, $vf15, $Q\n"
+        "vnop\n"
+        "vnop\n"
+        "vdiv       $Q, $vf20w, $vf21w\n"
+        "vadd.w     $vf18, $vf0, $vf0\n"
+        "vwaitq\n"
+        "vmaddq.w   $vf17, $vf0, $Q\n"
+        "vmula.w    $ACC, $vf18, $vf19\n"
+        "vmadd.w    $vf15, $vf18, $vf17\n"
+        "sqc2       $vf15, 0x30(%0)\n"
+        :
+        : "r"(table)
+        : "memory");
+}
+
 #endif

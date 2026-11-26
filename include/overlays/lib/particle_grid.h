@@ -392,17 +392,17 @@ class LibGridBase
 
         virtual void func_slot78() = 0;
 
-        virtual void func_slot7c() = 0;
+        virtual void func_slot7c(void* object) = 0;
 
-        virtual void func_slot80() = 0;
+        virtual s32 func_slot80() = 0;
 
         virtual void func_slot84() = 0;
 
         virtual void func_slot88() = 0;
 
-        virtual void func_slot8c() = 0;
+        virtual void func_slot8c(void* object) = 0;
 
-        virtual void func_slot90() = 0;
+        virtual s32 func_slot90() = 0;
 
         virtual void func_slot94() = 0;
 
@@ -412,11 +412,11 @@ class LibGridBase
 
         virtual void func_slota0() = 0;
 
-        virtual void func_slota4() = 0;
+        virtual void func_slota4(void* links) = 0;
 
         virtual void func_slota8() = 0;
 
-        virtual void func_slotac() = 0;
+        virtual void func_slotac(void* links) = 0;
 
         virtual void func_slotb0() = 0;
 

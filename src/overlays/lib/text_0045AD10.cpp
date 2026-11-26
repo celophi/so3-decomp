@@ -4613,7 +4613,195 @@ void LibDrawWidget::func_004623F0()
     packet_cursor = packet + 2;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_004624E0__13LibDrawWidgetFP13LibDrawRecord);
+/**
+ * @brief Pack a UV value.
+ * @param u Horizontal texel position, in sixteenths.
+ * @param v Vertical texel position, in sixteenths.
+ * @return UV register value.
+ */
+static inline u32 lib_glyph_uv(s32 u, s32 v)
+{
+    return (s64)u | (s64)v << 16;
+}
+
+/**
+ * @brief Pack an XYZ2 value.
+ * @param x Horizontal position.
+ * @param y Vertical position.
+ * @param z Depth.
+ * @return XYZ2 register value.
+ */
+static inline u64 lib_glyph_xyz(s32 x, s32 y, s32 z)
+{
+    return (s64)z << 32 | ((s64)x | (s64)y << 16);
+}
+
+/**
+ * @brief Draw a glyph record: copy the glyph into the next upload cell when it isn't resident, draw a seven-sprite
+ *        outline when unkf8 is set, then the shadow and the glyph; flush the texture cache once the upload cells run
+ *        out.
+ * @param record Record to draw; unk10 is its resource slot.
+ */
+void LibDrawWidget::func_004624E0(LibDrawRecord* record)
+{
+    u16 glyph = record->glyph;
+    FieldRuntime* runtime = g_field_runtime;
+    LibContainer* owner = container;
+    LibManagedResourceSlot* slot = static_cast<LibManagedResourceSlot*>(record->unk10);
+    float scale_x = runtime->screen_scale_x;
+    float offset_x = runtime->screen_offset_x;
+    float scale_y = runtime->screen_scale_y;
+    float offset_y = runtime->screen_offset_y;
+    float x = owner->translation.x + unk18.unk00 - unk78;
+    float y = owner->translation.y + unk18.unk04 - unk7c;
+    // TODO: Declared before they're assigned, top before right, for the target's register order; a guessed shape.
+    s32 left;
+    s32 top;
+    s32 right;
+    s32 bottom;
+    left = (s32)(offset_x + scale_x * (x + record->left));
+    right = (s32)(offset_x + scale_x * (x + record->right));
+    top = (s32)(offset_y + scale_y * (y + record->top));
+    bottom = (s32)(offset_y + scale_y * (y + record->bottom));
+    u32 uv_top;
+    u32 uv_bottom;
+    bool uploaded;
+
+    if (glyph >= slot->loaded)
+    {
+        s32 row = runtime->resource_area_end;
+        u64* packet = packet_cursor;
+        packet[0] = DMA_TAG(6, DMA_TAG_ID_CNT, 0);
+        packet[2] = GIF_TAG_NREG(1) | 4;
+        packet[3] = GIF_REGISTER_AD;
+        packet[4] = (u64)0x24100000 << 32;
+        packet[5] = GS_REGISTER_BITBLTBUF;
+        packet[6] = (u64)unkd8 << 32 | (u64)row << 48;
+        packet[7] = GS_REGISTER_TRXPOS;
+        packet[8] = slot->unk28 | (u64)slot->unk2c << 32;
+        packet[9] = GS_REGISTER_TRXREG;
+        packet[10] = 0;
+        packet[11] = GS_REGISTER_TRXDIR;
+        packet[12] = (s64)(slot->unk1c / 16) | GIF_TAG_FLG_IMAGE | GIF_TAG_EOP;
+        packet[13] = 0;
+        packet[14] = DMA_TAG(slot->unk1c / 16, DMA_TAG_ID_REF, slot->sections[3] + slot->unk20 * (record->glyph - slot->loaded));
+        packet_cursor = packet + 16;
+        uv_top = lib_glyph_uv(unkd8 * 16 + 8, row * 16 + 8);
+        uv_bottom = lib_glyph_uv((unkd8 + record->unk14.width) * 16 - 8, (row + slot->unk24) * 16 - 8);
+        uploaded = true;
+    }
+    else
+    {
+        s32 columns = slot->unit_count;
+        uploaded = false;
+        s32 u = slot->unk28 * (glyph % columns);
+        s32 v = slot->start + slot->unk2c * (glyph / columns);
+        uv_top = lib_glyph_uv(u * 16 + 8, v * 16 + 8);
+        uv_bottom = lib_glyph_uv((u + record->unk14.width) * 16 - 8, (v + slot->unk24) * 16 - 8);
+    }
+
+    // TODO: These are declared ahead of their values for the target's register order; a guessed shape.
+    u32 alpha_bits;
+    s32 color = record->color;
+    alpha_bits = (s32)(draw_alpha * lib_widget_container_alpha(container) / 128.0f) << 24;
+    s32 shadow_depth;
+    s32 offset;
+    u64* packet;
+    u32 shadow;
+
+    if (color == 0 || !unkf9)
+    {
+        shadow = 0;
+    }
+    else
+    {
+        shadow = alpha_bits | draw_color;
+    }
+
+    u32 fill = color | alpha_bits;
+    offset = g_field_runtime->unk544;
+    packet = reinterpret_cast<u64*>(unk60);
+    s32 depth = container->unka4;
+    shadow_depth = depth + 4;
+    s32 glyph_depth = depth + 5;
+
+    if (unkf8)
+    {
+        packet[0] = GIF_TAG_NREG(2) | GIF_TAG_FLG_REGLIST | 1;
+        packet[1] = 0xF1;
+        packet[2] = shadow;
+        packet[3] = 0;
+        packet[4] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | 7;
+        packet[5] = 0x5353;
+        packet[6] = uv_top;
+        packet[7] = lib_glyph_xyz(left - offset, top - offset, shadow_depth);
+        packet[8] = uv_bottom;
+        packet[9] = lib_glyph_xyz(right - offset, bottom - offset, shadow_depth);
+        packet[10] = uv_top;
+        packet[11] = lib_glyph_xyz(left, top - offset, shadow_depth);
+        packet[12] = uv_bottom;
+        packet[13] = lib_glyph_xyz(right, bottom - offset, shadow_depth);
+        packet[14] = uv_top;
+        packet[15] = lib_glyph_xyz(left + offset, top - offset, shadow_depth);
+        packet[16] = uv_bottom;
+        packet[17] = lib_glyph_xyz(right + offset, bottom - offset, shadow_depth);
+        packet[18] = uv_top;
+        packet[19] = lib_glyph_xyz(left - offset, top, shadow_depth);
+        packet[20] = uv_bottom;
+        packet[21] = lib_glyph_xyz(right - offset, bottom, shadow_depth);
+        packet[22] = uv_top;
+        packet[23] = lib_glyph_xyz(left + offset, top, shadow_depth);
+        packet[24] = uv_bottom;
+        packet[25] = lib_glyph_xyz(right + offset, bottom, shadow_depth);
+        packet[26] = uv_top;
+        packet[27] = lib_glyph_xyz(left - offset, top + offset, shadow_depth);
+        packet[28] = uv_bottom;
+        packet[29] = lib_glyph_xyz(right - offset, bottom + offset, shadow_depth);
+        packet[30] = uv_top;
+        packet[31] = lib_glyph_xyz(left, top + offset, shadow_depth);
+        packet[32] = uv_bottom;
+        packet[33] = lib_glyph_xyz(right, bottom + offset, shadow_depth);
+        packet += 34;
+    }
+
+    packet[0] = GIF_TAG_NREG(10) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+    packet[1] = 0x0000005353153531;
+    packet[2] = shadow;
+    packet[3] = uv_top;
+    packet[4] = lib_glyph_xyz(left + offset, top + offset, shadow_depth);
+    packet[5] = uv_bottom;
+    packet[6] = lib_glyph_xyz(right + offset, bottom + offset, shadow_depth);
+    packet[7] = fill;
+    packet[8] = uv_top;
+    packet[9] = lib_glyph_xyz(left, top, glyph_depth);
+    packet[10] = uv_bottom;
+    packet[11] = lib_glyph_xyz(right, bottom, glyph_depth);
+    unk60 = reinterpret_cast<u8*>(packet + 12);
+    unke0++;
+
+    if (uploaded)
+    {
+        if (++unkdc < g_field_runtime->unk550)
+        {
+            unkd8 += 32;
+        }
+        else
+        {
+            u64* cursor = packet_cursor;
+            cursor[0] = DMA_TAG(2, DMA_TAG_ID_CNT, 0);
+            cursor[2] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+            cursor[3] = GIF_REGISTER_AD;
+            cursor[4] = 0;
+            cursor[5] = GS_REGISTER_TEXFLUSH;
+            cursor[6] = DMA_TAG((u32)(unk60 - unk5c) >> 4, DMA_TAG_ID_REF, (u32)unk5c & 0x0FFFFFFF);
+            packet_cursor = cursor + 8;
+            unke0 = 0;
+            unkdc = 0;
+            unkd8 = 0;
+            unk5c = unk60;
+        }
+    }
+}
 
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", func_00462C70__13LibDrawWidgetFP13LibDrawRecord);
 

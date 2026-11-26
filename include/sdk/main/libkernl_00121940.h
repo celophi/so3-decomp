@@ -122,6 +122,19 @@ s32 CreateSema(SemaParam* param);
  */
 s32 EIntr(void);
 
+/**
+ * @brief Read the GS interrupt mask (IMR).
+ * @return The mask.
+ */
+u64 GsGetIMR(void);
+
+/**
+ * @brief Set the GS interrupt mask (IMR).
+ * @param mask New mask.
+ * @return The previous mask.
+ */
+u64 GsPutIMR(u64 mask);
+
 /** Alarm callback: the alarm ID, the time it was set for, and the argument passed to SetAlarm. */
 typedef void (*KernelAlarmHandler)(s32 alarm_id, u16 time, void* common);
 

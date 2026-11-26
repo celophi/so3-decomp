@@ -1772,10 +1772,10 @@ LibClass173380::LibClass173380()
     children[2] = 0;
     unk860[0] = 0;
     unk860[1] = 0;
-    unk860[2] = 0;
-    unk860[3] = 0;
-    unk860[4] = 0;
-    unk860[5] = 0;
+    unk868[0] = 0;
+    unk868[1] = 0;
+    unk870[0] = 0;
+    unk870[1] = 0;
     unk85c = 0;
     unk838 = 0;
     unk83a = 1;
@@ -3363,7 +3363,7 @@ extern "C" s32 func_00431090(LibOccluder* occluder, const LibVector4* position, 
     {
         vu0_occluder_flip_normals();
 
-        if (occluder->unk21c[0])
+        if (occluder->unk21c)
         {
             return 0;
         }
@@ -4180,7 +4180,285 @@ void LibImageCapture::on_store_complete()
     lib_finish_packet(this);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", run__14LibClass173580Fv);
+extern "C" const char D_00505960[];
+extern "C" const char D_00505990[];
+extern "C" unsigned __int128 D_004ED120;
+
+/**
+ * @brief Turn a pointer into a DMA source or destination: the physical address, with the scratchpad flag for
+ *        scratchpad memory.
+ * @param address Pointer.
+ * @return DMA address.
+ */
+static inline void lib_dma_set_address(volatile u32* madr, const void* address)
+{
+    if (((u32)address & EE_SCRATCHPAD) == EE_SCRATCHPAD)
+    {
+        *madr = ((u32)address & 0x0FFFFFFF) | DMA_ADDRESS_SCRATCHPAD;
+    }
+    else
+    {
+        *madr = (u32)address & 0x0FFFFFFF;
+    }
+}
+
+/**
+ * @brief Thread body: store each packet a capture hands over, then finish the capture.
+ *
+ * The store is Sony's sceGsExecStoreImage with the DMA waits on the thread's semaphore: the packet goes to the GS
+ * over VIF1, the rectangle comes back through the VIF1 FIFO, whole blocks of eight quadwords by DMA and the rest
+ * read by hand.
+ */
+void LibClass173580::run()
+{
+    for (;;)
+    {
+        if (wake_failed)
+        {
+            wake_failed = 0;
+        }
+        else
+        {
+            resident_thread_sleep();
+        }
+
+        u32 timeout = 0;
+        s32 blocks = 0;
+        s32 drain = 0;
+        s32 rest = 0;
+        s32 rest_bytes = 0;
+        GsStoreImage* image = packet;
+        s32 format = image->bitbltbuf.source_format;
+        s32 width = image->trxreg.width;
+        s32 height = image->trxreg.height;
+        s32 rounded_height = 0;
+        s32 bytes;
+        s32 quadwords;
+        s32 i;
+        unsigned __int128 last;
+
+        switch (format)
+        {
+            case GS_PSMCT32:
+            case GS_PSMZ32:
+                bytes = width * height * 4;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                blocks = quadwords & ~7;
+                rest = quadwords & 7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 3) & ~3;
+                    drain = (width * rounded_height >> 2) - blocks - rest - 1;
+                }
+
+                break;
+            case GS_PSMCT24:
+            case GS_PSMZ24:
+                bytes = width * height * 3;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                blocks = quadwords & ~7;
+                rest = quadwords & 7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 15) & ~15;
+                    drain = (width * rounded_height * 3 >> 4) - blocks - rest - 1;
+                }
+
+                break;
+            case GS_PSMCT16:
+            case GS_PSMCT16S:
+            case GS_PSMZ16:
+            case GS_PSMZ16S:
+                bytes = width * height * 2;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                rest = quadwords & 7;
+                blocks = quadwords & ~7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 7) & ~7;
+                    drain = (width * rounded_height >> 3) - blocks - rest - 1;
+                }
+
+                break;
+            case GS_PSMT8:
+            case GS_PSMT8H:
+                bytes = width * height;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                rest = quadwords & 7;
+                blocks = quadwords & ~7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 7) & ~7;
+                    drain = (width * rounded_height >> 4) - blocks - rest - 1;
+                }
+
+                break;
+            case GS_PSMT4:
+            case GS_PSMT4HL:
+            case GS_PSMT4HH:
+                bytes = width * height >> 1;
+                rest_bytes = bytes & 0xF;
+                quadwords = bytes >> 4;
+                rest = quadwords & 7;
+                blocks = quadwords & ~7;
+
+                if (rest_bytes == 0)
+                {
+                    rounded_height = height;
+                    drain = 0;
+                }
+                else
+                {
+                    rounded_height = (height + 7) & ~7;
+                    drain = (width * rounded_height >> 5) - blocks - rest - 1;
+                }
+
+                break;
+        }
+
+        if (rest_bytes != 0)
+        {
+            *reinterpret_cast<u64*>(reinterpret_cast<u32>(&packet->trxreg) | UNCACHED_SEGMENT) =
+                (u64)(u16)width | ((u64)rounded_height << 32);
+        }
+
+        u64 mask = GsPutIMR(GsGetIMR() | 0x200);
+        GS_CSR = GS_CSR_FINISH;
+        *D1_QWC = 7;
+        lib_dma_set_address(D1_MADR, packet);
+        *D1_CHCR = DMA_CHCR_START | DMA_CHCR_DIR_FROM_MEMORY;
+        semaphore.wait();
+
+        while ((GS_CSR & GS_CSR_FINISH) == 0)
+        {
+            if (timeout++ > 0x1000000)
+            {
+                scePrintf(D_00505960);
+                VIF1_FIFO = D_004ED120;
+                goto done;
+            }
+        }
+
+        VIF1_STAT = VIF1_STAT_FDR;
+        GS_BUSDIR = GS_BUSDIR_LOCAL_TO_HOST;
+
+        if (blocks != 0)
+        {
+            DmaSubmission* submission = capture;
+            ResidentDmaQueue* queue = g_vif1_dma_queue;
+            queue->current = submission;
+            queue->busy = 1;
+            *D1_QWC = blocks;
+            lib_dma_set_address(D1_MADR, destination);
+            *D1_CHCR = DMA_CHCR_START;
+            semaphore.wait();
+        }
+
+        for (i = 0; i < rest; i++)
+        {
+            while ((VIF1_STAT & VIF1_STAT_FQC) == 0)
+            {
+                if (timeout++ > 0x1000000)
+                {
+                    scePrintf(D_00505990);
+                    GS_CSR = GS_CSR_RESET;
+                    GS_BUSDIR = 0;
+                    GIF_CTRL = GIF_CTRL_RESET;
+                    VIF1_FBRST = VIF1_FBRST_RESET;
+                    goto done;
+                }
+            }
+
+            static_cast<unsigned __int128*>(destination)[blocks + i] = VIF1_FIFO;
+        }
+
+        if (rest_bytes != 0)
+        {
+            while ((VIF1_STAT & VIF1_STAT_FQC) == 0)
+            {
+                if (timeout++ > 0x1000000)
+                {
+                    scePrintf(D_00505990);
+                    GS_CSR = GS_CSR_RESET;
+                    GS_BUSDIR = 0;
+                    GIF_CTRL = GIF_CTRL_RESET;
+                    VIF1_FBRST = VIF1_FBRST_RESET;
+                    goto done;
+                }
+            }
+
+            last = VIF1_FIFO;
+
+            for (i = 0; i < rest_bytes; i++)
+            {
+                reinterpret_cast<u8*>(static_cast<unsigned __int128*>(destination) + (blocks + rest))[i] =
+                    reinterpret_cast<u8*>(&last)[i];
+            }
+
+            for (i = 0; i < drain; i++)
+            {
+                while ((VIF1_STAT & VIF1_STAT_FQC) == 0)
+                {
+                    if (timeout++ > 0x1000000)
+                    {
+                        scePrintf(D_00505990);
+                        GS_CSR = GS_CSR_RESET;
+                        GS_BUSDIR = 0;
+                        GIF_CTRL = GIF_CTRL_RESET;
+                        VIF1_FBRST = VIF1_FBRST_RESET;
+                        goto done;
+                    }
+                }
+
+                last = VIF1_FIFO;
+            }
+        }
+
+        VIF1_STAT = 0;
+        GS_BUSDIR = 0;
+        GsPutIMR(mask);
+        GS_CSR = GS_CSR_FINISH;
+        VIF1_FIFO = D_004ED120;
+
+    done:
+        resident_sync_gs_path(g_input_system, 0, 0);
+        capture->on_store_complete();
+        resident_dma_queue_resume(g_vif1_dma_queue);
+
+        if (capture->unk65 == 1)
+        {
+            func_004DC420(g_packet_queue, 1);
+        }
+    }
+}
 
 /**
  * @brief Let the store thread know the store packet's transfer is over.
@@ -4189,7 +4467,7 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", run__14LibClass
 void LibImageCapture::complete_dma(u32 channel)
 {
     resident_dma_queue_pause(g_vif1_dma_queue);
-    iSignalSema(D_005081D0.semaphore);
+    iSignalSema(D_005081D0.semaphore.id);
 }
 
 /**

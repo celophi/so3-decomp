@@ -423,6 +423,16 @@ public:
     u8 unkE4[0xC];
 };
 
+/**
+ * @brief Read a container's alpha, which scales its widgets' alpha.
+ * @param container Container.
+ * @return Alpha, 128 for opaque.
+ */
+static inline float lib_widget_container_alpha(const LibContainer* container)
+{
+    return container->unkE0;
+}
+
 /** Partial 0x114-byte text widget, with MAIN vtable D_178750. */
 struct LibTextWidget : public LibDrawWidget
 {

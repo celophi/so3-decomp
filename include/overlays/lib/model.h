@@ -761,12 +761,24 @@ struct LibModelPart
 /** Partial part record in a mesh resource; the model's copy of its part starts at 0x40. */
 struct LibMeshPartRecord
 {
-    u8 unk00[0x14];
+    u8 unk00[4];
+    s16 unk04;
+    u8 unk06[0xE];
     u16 unk14;
     u8 unk16[0x16];
     u16 unk2c[4];
     u8 unk34[0xC];
     LibModelPart part;
+};
+
+/** Partial view of the object a model's unk638 points at: matrix sets uploaded for each frame. */
+struct LibModelMatrixSource
+{
+    u8 unk00[0x34];
+    s32* unk34;
+    u8 unk38[0x14];
+    u32 unk4c;
+    u8 unk50;
 };
 
 /** Partial 0x80-byte texture upload block in a model's upload table. */
@@ -1195,10 +1207,19 @@ public:
     float unk854;
     float unk858;
     u32 unk85c;
-    u32 unk860[6];
+    u64* unk860[2];
+    u64* unk868[2];
+    u64* unk870[2];
     LibTransformOwner* children[3];
     LibUpdateList objects;
 };
+
+/**
+ * @brief Store unk820.
+ * @param model Model to update.
+ * @param value 16-byte aligned value to store.
+ */
+extern "C" void func_0042ABE0(LibClass173380* model, const LibVector4* value);
 
 /**
  * @brief Refresh the model's packet header from its flags and the camera's TEST register.

@@ -12,6 +12,7 @@
 #include "overlays/lib/image_capture.h"
 #include "overlays/lib/palette_blend_channel.h"
 #include "overlays/lib/text_004CD3A0.h"
+#include "overlays/lib/scene_objects.h"
 #include "overlays/lib/vector_inlines.h"
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/text_004BD360.h"

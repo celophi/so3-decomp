@@ -253,8 +253,9 @@ segments:
         rodata_anchors:
           - {function: func_0046DE90__8LibSceneFPvPvPv, table: 1, offset: 0x0, size: 0x20}
           - {function: func_0046DE90__8LibSceneFPvPvPv, table: 0, offset: 0x20, size: 0x30}
+          - {function: func_0046F910, offset: 0x50, size: 0x2C}
         linker_section_order: .rodata
-      - [0x11F6C0, rodatabin, rodata_00505F40]
+      - [0x11F6EC, rodatabin, rodata_00505F6C]
       - start: 0x11F6F0
         type: .rodata
         name: text_0046AE20
@@ -263,6 +264,14 @@ segments:
           - {function: func_00471480__8LibSceneFUc, offset: 0x0, size: 0xC4}
         linker_section_order: .rodata
       - [0x11F7B4, rodatabin, rodata_00506034]
+      - start: 0x11F7C0
+        type: .rodata
+        name: text_0046AE20
+        linker_section: .rodata.00506040
+        rodata_anchors:
+          - {function: lib_scene_build_objects, offset: 0x0, size: 0x30}
+        linker_section_order: .rodata
+      - [0x11F7F0, rodatabin, rodata_00506070]
       - start: 0x11FE00
         type: .rodata
         name: text_004BD360
@@ -308,6 +317,13 @@ segments:
     start: 0x120b00
     vram: 0x507380
     subsegments:
-      - [0x120b00, c, init]
-  - [0x1210d0, bin, init_table]
+      # Each unit's static initialiser is its __sinit in .init and one word of the table in .ctor. Units with a
+      # C++ global of their own keep their .bss (and .sbss) at the original address: lcf.py places it there.
+      - {start: 0x120b00, type: cpp, name: init_00507380, linker_section: .init, bss_address: 0x507C28,
+         sbss_address: 0x1B6500}
+      - {start: 0x120c20, type: cpp, name: init_005074A0, linker_section: .init, bss_address: 0x5081C0}
+      - [0x120ce0, c, init]
+      - {start: 0x1210d0, type: .data, name: init_00507380, linker_section: .ctor}
+      - {start: 0x1210d4, type: .data, name: init_005074A0, linker_section: .ctor}
+      - [0x1210d8, databin, init_table]
   - [0x121180]

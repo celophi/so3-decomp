@@ -45,8 +45,6 @@ extern LibUpdateList* g_update_list;
 extern LibDisplayManager* g_scene_display_manager;
 extern LibDisplayManager* g_default_display_manager;
 extern LibListObject* D_001B6634;
-extern LibListObject D_00507CB8;
-extern LibClass173080 D_507C40;
 extern LibTrackPool<LibPooledFloatTrack>* g_float_track_pool;
 extern LibTrackPool<LibPooledVectorTrack>* g_vector_track_pool;
 extern LibTrackPool<LibPooledSlerpQuaternionTrack>* g_slerp_quaternion_track_pool;
@@ -2256,7 +2254,7 @@ extern "C" void lib_shutdown(void)
     g_scene_camera->destroy();
     D_001B6634->destroy();
     lib_object_detach_owner(g_resource_queue);
-    lib_detach(D_00507CB8);
+    lib_detach(D_507C40);
     g_scene_camera = 0;
     D_001B6634 = 0;
 

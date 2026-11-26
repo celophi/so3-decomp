@@ -920,7 +920,12 @@ public:
     float unk278;
     float unk27c;
     void* samples;
-    u8 unk284[0x1C];
+    float unk284;
+    float unk288;
+    u32 first_color;
+    u32 second_color;
+    u32 alpha;
+    u8 unk298[8];
 };
 
 /** LibClass174A10 with a sample grid and two setters, with vtables D_174B70 and D_174BF4 in main data. */
@@ -958,7 +963,12 @@ public:
     float unk278;
     float unk27c;
     void* samples;
-    u8 unk284[0x1C];
+    float unk284;
+    float unk288;
+    u32 first_color;
+    u32 second_color;
+    u32 alpha;
+    u8 unk298[8];
 };
 
 /** Clipping widget with resident vtable at 0x1746A0. */

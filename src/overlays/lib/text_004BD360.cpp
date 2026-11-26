@@ -9845,7 +9845,74 @@ extern "C" void func_004CCEE0(FieldVec4B* output, const FieldVec4B* from, const 
     vu0_quaternion_norm_begin();
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004CD010);
+extern "C" float D_0050CC40[];
+extern "C" float D_0050CC7C[];
+
+/**
+ * @brief Evaluate the clamped arc-cosine approximation.
+ *
+ * fdlibm's acosf on VU0: the table at D_0050CC40 holds the constants, and the argument and result pass through its
+ * last lane (D_0050CC7C).
+ * @param value Cosine argument.
+ * @return Approximated angle in radians.
+ */
+float func_004CD010(float value)
+{
+    s32 bits = ee_acos_clear_bits();
+    s32 one = 0x3F800000;
+    bits = ee_acos_float_bits(value);
+    s32 magnitude = bits & 0x7FFFFFFF;
+
+    if (magnitude >= one)
+    {
+        if (bits > 0)
+        {
+            return 0.0f;
+        }
+
+        return 3.1415927f;
+    }
+
+    D_0050CC7C[0] = value;
+    vu0_acos_load(D_0050CC40);
+
+    if (magnitude < 0x3F000000)
+    {
+        if (magnitude < 0x23000001)
+        {
+            return 1.5707964f;
+        }
+
+        vu0_acos_small(D_0050CC40);
+        return D_0050CC7C[0];
+    }
+
+    if (bits < 0)
+    {
+        vu0_acos_negative(D_0050CC40);
+        return D_0050CC7C[0];
+    }
+
+    vu0_acos_positive_begin(D_0050CC40);
+    union
+    {
+        float f;
+        s32 i;
+    } root;
+    root.f = D_0050CC7C[0];
+    s32 root_bits = root.i;
+    vu0_acos_positive_numerator();
+    union
+    {
+        float f;
+        s32 i;
+    } truncated;
+    truncated.i = root_bits & 0xFFFFF000;
+    D_0050CC7C[0] = truncated.f;
+    vu0_acos_positive_scale();
+    vu0_acos_positive_finish(D_0050CC40);
+    return D_0050CC7C[0];
+}
 
 /**
  * @brief Start the native three-angle trigonometric approximation, leaving its result in VU0 vf13.

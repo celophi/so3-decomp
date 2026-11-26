@@ -87,6 +87,16 @@
 #define D_PCR_CPC9 0x200
 
 /** EE timer 0 counter and mode. */
+#define GIF_CTRL (*(volatile u32*)0x10003000)
+#define GIF_CTRL_RESET 0x1
+
+#define VIF1_STAT (*(volatile u32*)0x10003C00)
+#define VIF1_STAT_FDR 0x800000
+#define VIF1_STAT_FQC 0x1F000000
+#define VIF1_FBRST (*(volatile u32*)0x10003C10)
+#define VIF1_FBRST_RESET 0x1
+#define VIF1_FIFO (*(volatile unsigned __int128*)0x10005000)
+
 #define TIMER0_COUNT (*(volatile u32*)0x10000000)
 #define TIMER0_MODE (*(volatile u32*)0x10000010)
 

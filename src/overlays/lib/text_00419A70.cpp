@@ -447,16 +447,6 @@ void func_0041A530(void* object)
 {
 }
 
-/**
- * @brief Read a container's alpha, which scales its widgets' alpha.
- * @param container Container.
- * @return Alpha, 128 for opaque.
- */
-static inline float lib_widget_container_alpha(const LibContainer* container)
-{
-    return container->unkE0;
-}
-
 INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00419A70", draw__16LibListIndicatorFv);
 
 /**
@@ -3548,7 +3538,14 @@ struct SmallConditionalInput04
     float unk04;
 };
 
-extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output, float* small_output)
+/**
+ * @brief Set the output values when the input float is positive.
+ * @param value Input record; its float at 0x4 is tested.
+ * @param zero_output Receives zero.
+ * @param small_output Receives 0.05.
+ * @return 1 when the outputs were set, otherwise 0.
+ */
+s32 LibClass1730D8::func_004284A0(const void* value, float* zero_output, float* small_output)
 {
     const SmallConditionalInput04* state = (const SmallConditionalInput04*)value;
 

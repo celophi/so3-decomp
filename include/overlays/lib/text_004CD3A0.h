@@ -1211,7 +1211,12 @@ struct LibRendererPass : public LibTransformOwner
     u8 unk98[4];
     u8 unk9c;
     u8 unk9d;
-    u8 unk9e[0x10];
+    u8 unk9e[2];
+    float unka0;
+    float unka4;
+    u32 unka8;
+    u8 unkac;
+    u8 unkad;
     u8 unkae;
     u8 unkaf;
 };
@@ -1227,6 +1232,16 @@ struct LibRendererExtra : public LibTransformOwner
 
 /** Resident hit-test flags; bit 0 is set when a hit-test node is removed. */
 extern "C" u8 g_hit_test_restart;
+
+/**
+ * @brief Set up one of the renderer's extra layers as a square render target, with its MLPS image header and info
+ *        block built in place.
+ * @param renderer Renderer.
+ * @param layer Layer number, from 1.
+ * @param size Width and height in pixels, a power of two.
+ * @param manager Display manager the layer draws with.
+ */
+extern "C" void func_004D08D0(class LibRenderer* renderer, s32 layer, s32 size, LibDisplayManager* manager);
 
 /**
  * @brief Run the renderer's per-frame packet passes.
@@ -1261,16 +1276,10 @@ extern "C" s32 func_004D1550(class LibRenderer* renderer, class LibTransformOwne
 
 extern "C" void func_004D3780(class LibRenderer* renderer);
 
-/** Rectangle in its local xz plane, given by its half extents; I think these are occluders. */
-struct LibOccluder
-{
-    u8 unk000[0x210];
-    float half_width;
-    float half_depth;
-    float depth;
-    u8 unk21c[4];
-    LibVector4 corners[4];
-};
+class LibClass1734D0;
+
+/** The renderer's occluders are LibClass1734D0 rectangles. */
+typedef LibClass1734D0 LibOccluder;
 
 /** LibUpdateList subclass with vtable D_00178B30 in main data, holding the renderer's occluders. */
 class LibClass178B30 : public LibUpdateList
@@ -1955,6 +1964,12 @@ public:
     s32 kind;
     u32 mask;
 };
+
+/**
+ * @brief Cache the spotlight's cone falloff terms from the cosines of its two half-angles.
+ * @param light Spotlight to update.
+ */
+extern "C" void func_004C9BA0(LibLight* light);
 
 /**
  * @brief Invert the transform's transposed matrix into its inverse transform.

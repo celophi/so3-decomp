@@ -127,14 +127,28 @@ extern "C" void func_00428C80(LibListObject* object);
  */
 extern "C" void func_004289B0(LibListObject* object);
 
+/**
+ * @brief Add an object to the first retained set, reusing a free slot first.
+ * @param object Object to retain.
+ * @param kind Kind byte stored with it.
+ */
+extern "C" void func_00428D20(LibListObject* object, u8 kind);
+
+/**
+ * @brief Add an object to the second retained set, reusing a free slot first.
+ * @param object Object to retain.
+ * @param kind Kind byte stored with it.
+ */
+extern "C" void func_00428A50(LibListObject* object, u8 kind);
+
 /** Point (0, 0, 0, 1): the transforms' local origin. */
-extern "C" LibVector4 D_00507F60;
+extern "C" LibClass173490Entry D_00507F60;
 
 /** Link solver constants: x and y unused here, z the share a fixed point's partner takes when its weight is tiny, w a scale for the correction. */
-extern "C" LibVector4 D_00507F50;
+extern "C" LibClass173490Entry D_00507F50;
 
 /** Direction (0, -1, 0, 1): the transforms' local down axis. */
-extern "C" LibVector4 D_00507F70;
+extern "C" LibClass173490Entry D_00507F70;
 
 /** Partial Lib transform with vtable D_172A20 in main data, kept in the second retained set. */
 class LibClass172A20 : public LibTransform
@@ -162,7 +176,7 @@ public:
     virtual s32 get_default_list_kind();
 
     u8 unk210;
-    u32 unk214;
+    float unk214;
 };
 
 /** Partial Lib transform with vtable D_172AB0 in main data, kept in the first retained set. */
@@ -218,6 +232,7 @@ public:
                               float* second);
 
     u8 unk210;
+    float unk214;
 };
 
 /** Field mask new LibClass172BD0 fields start with. */
@@ -283,6 +298,19 @@ public:
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
 
+    /**
+     * @brief Set the shape's three parameters.
+     * @param first Value at 0x220.
+     * @param second Value at 0x224.
+     * @param third Value at 0x228.
+     */
+    void set_parameters(float first, float second, float third)
+    {
+        unk220 = first;
+        unk224 = second;
+        unk228 = third;
+    }
+
     float unk220;
     float unk224;
     float unk228;
@@ -311,6 +339,21 @@ public:
      * @param source Object the effect applies to; its word at 0x1C is a mask.
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
+
+    /**
+     * @brief Set the shape's four parameters.
+     * @param first Value at 0x270.
+     * @param second Value at 0x274.
+     * @param third Value at 0x278.
+     * @param fourth Value at 0x27C.
+     */
+    void set_parameters(float first, float second, float third, float fourth)
+    {
+        unk270 = first;
+        unk274 = second;
+        unk278 = third;
+        unk27c = fourth;
+    }
 
     LibMatrix44Value inverse;
     LibVector4 down;
@@ -341,6 +384,17 @@ public:
      * @param source Object the effect applies to; its word at 0x1C is a mask.
      */
     virtual void func_00428500(const LibVector4* position, const void* unk, LibVector4* output, const void* source);
+
+    /**
+     * @brief Set the shape's two parameters.
+     * @param first Value at 0x220.
+     * @param second Value at 0x224.
+     */
+    void set_parameters(float first, float second)
+    {
+        unk220 = first;
+        unk224 = second;
+    }
 
     float unk220;
     float unk224;
@@ -556,11 +610,11 @@ public:
      */
     virtual void complete_dma(u32 channel);
 
-    u8 unk94[4];
+    LibCameraContext* display;
     LibPacketBuffer* packet;
     u32 packet_quadwords;
     float unka0;
-    u32 unka4;
+    float unka4;
     u32 color;
     u8 unkac;
     u8 unkad;
@@ -887,6 +941,43 @@ public:
      */
     virtual s32 func_00424860();
 
+    /**
+     * @brief Set the colors the rays shade between.
+     * @param centre Color at the centre.
+     * @param edge Color at the ends.
+     */
+    void set_colors(u32 centre, u32 edge)
+    {
+        centre_color = centre;
+        edge_color = edge;
+    }
+
+    /**
+     * @brief Set the range and jitter of each ray's first length.
+     * @param minimum Shortest length.
+     * @param maximum Longest length.
+     * @param jitter Random extra per segment.
+     */
+    void set_first_length(float minimum, float maximum, float jitter)
+    {
+        unk24 = minimum;
+        unk28 = maximum;
+        unk34 = jitter;
+    }
+
+    /**
+     * @brief Set the range and jitter of each ray's second length.
+     * @param minimum Shortest length.
+     * @param maximum Longest length.
+     * @param jitter Random extra per segment.
+     */
+    void set_second_length(float minimum, float maximum, float jitter)
+    {
+        unk2c = minimum;
+        unk30 = maximum;
+        unk38 = jitter;
+    }
+
     float alpha;
     u32 edge_color;
     u32 centre_color;
@@ -976,9 +1067,42 @@ public:
      */
     virtual s32 func_00424860();
 
+    /**
+     * @brief Set the five colors, centre outwards.
+     * @param first Centre color.
+     * @param second Color at the inner radius.
+     * @param third Color at the first band's edge.
+     * @param fourth Color at the second band's edge.
+     * @param fifth Color at the third band's edge.
+     */
+    void set_colors(u32 first, u32 second, u32 third, u32 fourth, u32 fifth)
+    {
+        colors[0] = first;
+        colors[1] = second;
+        colors[2] = third;
+        colors[3] = fourth;
+        colors[4] = fifth;
+    }
+
+    /**
+     * @brief Set the four band widths.
+     * @param first First band.
+     * @param second Second band.
+     * @param third Third band.
+     * @param fourth Fourth band.
+     */
+    void set_widths(float first, float second, float third, float fourth)
+    {
+        widths[0] = first;
+        widths[1] = second;
+        widths[2] = third;
+        widths[3] = fourth;
+    }
+
     float alpha;
     u32 colors[5];
-    float widths[5];
+    float inner_radius;
+    float widths[4];
 };
 
 /** Partial packet builder with vtable D_172940 in main data. */
@@ -1012,6 +1136,32 @@ public:
      * @return Size, in quadwords.
      */
     virtual s32 func_00424860();
+
+    /**
+     * @brief Set the four colors, centre outwards.
+     * @param first Centre color.
+     * @param second Inner edge color.
+     * @param third Middle color.
+     * @param fourth Outer color.
+     */
+    void set_colors(u32 first, u32 second, u32 third, u32 fourth)
+    {
+        colors[0] = first;
+        colors[1] = second;
+        colors[2] = third;
+        colors[3] = fourth;
+    }
+
+    /**
+     * @brief Set the two band widths.
+     * @param inner Width of the solid band.
+     * @param outer Width of the fading band.
+     */
+    void set_widths(float inner, float outer)
+    {
+        widths[0] = inner;
+        widths[1] = outer;
+    }
 
     float alpha;
     u32 colors[4];
@@ -1090,6 +1240,15 @@ public:
     /** @brief Update every node in the list, in order. */
     virtual void update();
 };
+
+extern LibClass173080 D_507C40;
+
+/**
+ * @brief Lay out the builder's rays: random angles kept apart (the spacing halves after ten failed tries) and two
+ *        random lengths per segment, tracking the longest.
+ * @param builder Builder whose rays to allocate and fill.
+ */
+extern "C" void func_00421D80(LibClass1728E0* builder);
 
 class LibClass173070;
 
@@ -1299,8 +1458,21 @@ void func_004297F0(void* object, u8 mode);
 #endif
 
 #ifdef __cplusplus
-/** Set the output values when the input float is positive. */
-extern "C" s32 func_004284A0(void* object, const void* value, float* zero_output, float* small_output);
+/** Contact test with vtable D_1730D8 in main data; its one global (D_001B6500) is made by the static initialiser. */
+class LibClass1730D8
+{
+public:
+    /**
+     * @brief Set the output values when the input float is positive.
+     * @param value Input record; its float at 0x4 is tested.
+     * @param zero_output Receives zero.
+     * @param small_output Receives 0.05.
+     * @return 1 when the outputs were set, otherwise 0.
+     */
+    virtual s32 func_004284A0(const void* value, float* zero_output, float* small_output);
+};
+
+extern LibClass1730D8 D_001B6500;
 #endif
 
 #ifdef __cplusplus

@@ -264,15 +264,29 @@ public:
     LibVector4 unk230;
 };
 
-/** LibTransform of type 0x1100 with no state of its own, with vtable D_1734D0 in main data. */
+/**
+ * LibTransform of type 0x1100, with vtable D_1734D0 in main data: a rectangle in its local xz plane, given by its half
+ * extents; I think these are occluders.
+ */
 class LibClass1734D0 : public LibTransform
 {
 public:
     /** @brief Construct the transform. */
     LibClass1734D0();
 
-    u8 unk210[0x50];
+    float half_width;
+    float half_depth;
+    float depth;
+    u8 unk21c;
+    u8 unk21d[3];
+    LibVector4 corners[4];
 };
+
+/**
+ * @brief Work out the four corners of the rectangle from its half extents, in the xz plane at y zero.
+ * @param object Rectangle; the corners' w is left alone.
+ */
+extern "C" void func_00431020(LibClass1734D0* object);
 
 /** Model with three owned list objects, with vtables D_1788B0 and D_178964 in main data. */
 class LibClass1788B0 : public LibModel
