@@ -80,18 +80,18 @@ public:
     virtual void update();
 
     /**
-     * @brief Initialize entries in the attached grid using optional vectors.
-     * @param count Number of entries to generate.
-     * @param position_offset Position added to each generated entry, or null.
-     * @param first_offset First additional three-component offset, or null.
-     * @param second_offset Second additional three-component offset, or null.
-     * @param color_scale Four-component color multiplier, or null.
-     * @param extra6 Optional four-float input.
-     * @param extra7 Optional two-component offset.
-     * @param extra8 Optional three-component offset.
-     * @param extra9 Optional three-component offset.
-     * @param extra10 Optional three-component offset.
-     * @param extra11 Optional three-component offset.
+     * @brief Claim grid cells for new particles and fill them from the emitter's shape, colour, motion and rotation modes.
+     * @param count Number of particles to emit.
+     * @param position_offset World-space position added after the emitter's rotation, or null.
+     * @param first_offset Velocity added before the rotation, or null.
+     * @param second_offset Acceleration added before the rotation, or null.
+     * @param color_scale Colour multiplier (0-255 per channel), or null.
+     * @param extra6 Angles added to the picked ones (and the starting angles), or null.
+     * @param extra7 Angle velocity added to the picked one, or null.
+     * @param extra8 Angle acceleration added to the picked one, or null.
+     * @param extra9 Scale added to the picked one (and the starting scale), or null.
+     * @param extra10 Scale velocity added to the picked one, or null.
+     * @param extra11 Scale acceleration added to the picked one, or null.
      */
     virtual void emit_entries(s32 count, const LibVector4* position_offset, const LibVector4* first_offset, const LibVector4* second_offset,
                               const LibVector4* color_scale, const LibVector4* extra6, const LibVector4* extra7, const LibVector4* extra8,
@@ -126,7 +126,7 @@ public:
     FieldVec4A unk250;
     FieldVec4A unk260;
     FieldVec4A unk270;
-    u8 unk280[0x10];
+    FieldVec4A unk280;
     FieldVec4A unk290;
     FieldVec4A unk2a0;
     FieldVec4A unk2b0;
@@ -167,10 +167,12 @@ public:
     s32 entry_count;
     u32 unk428;
     u32 unk42c;
-    u8 unk430[4];
+    s32 unk430;
     float unk434;
     float unk438;
-    u8 unk43c[0x14];
+    float unk43c;
+    float unk440;
+    u8 unk444[0xC];
     FieldVec4A velocity;
     FieldVec4A previous_position;
     FieldVec4A position_delta;
@@ -206,6 +208,46 @@ public:
     u8 unk49c_6 : 1;
     u8 unk49c_7 : 1;
     u8 unk49d[3];
+};
+
+/**
+ * Grid cell fields LibClass173990::emit_entries fills. The grid's cell class decides how much of this exists: every
+ * cell has the colour and motion, the larger ones the tint (LibClass174218) and the rotation block (LibClass174208).
+ */
+struct LibEmitterCell
+{
+    u8 unk00[0x10];
+    FieldVec4A position;
+    FieldVec4A color;
+    FieldVec4A velocity;
+    FieldVec4A acceleration;
+    FieldVec4A unk50;
+    FieldVec4A tint;
+    FieldVec4A tint_scale;
+    FieldVec4A angles;
+    FieldVec4A angle_velocity;
+    FieldVec4A angle_acceleration;
+    FieldVec4A scale;
+    FieldVec4A scale_velocity;
+    FieldVec4A scale_acceleration;
+    FieldVec4A offset;
+};
+
+/** Quadword of a claimed cell's record: four floats, some of them used as integers (a frame index, a cleared word). */
+typedef union LibEmitterQuad
+{
+    float floats[4];
+    s32 words[4];
+} LibEmitterQuad;
+
+/** Header of a mesh part record as the emitter reads it: where its positions and normals start, from the header. */
+struct LibEmitterMeshPart
+{
+    u8 unk00[0x14];
+    u16 flags;
+    s16 vertex_count;
+    u16 positions;
+    u16 normals;
 };
 
 #endif

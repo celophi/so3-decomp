@@ -11,6 +11,7 @@
 #include "overlays/lib/text_0043A920.h"
 #include "overlays/lib/tracks.h"
 #include "overlays/lib/emission.h"
+#include "overlays/lib/particle_grid.h"
 #include "overlays/lib/text_0049B820.h"
 #include "overlays/lib/image_model.h"
 #include "overlays/lib/text_0046AE20.h"
@@ -5452,7 +5453,1548 @@ void LibClass173990::copy_state(const LibClass173990* other)
     LibTransform::copy_offset_transform_state(other);
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_00429B00", func_00435840);
+/**
+ * @brief Draw a value in [0, 1) from the light random generator's mantissa bits.
+ * @return Random fraction.
+ */
+static inline float emit_random_unit()
+{
+    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
+    return *(float*)&bits - 1.0f;
+}
+
+/**
+ * @brief Draw a value in [0, 1) weighted towards zero: one minus exp(-strength * r * r).
+ * @param strength Falloff strength, read after the draw.
+ * @return Random fraction.
+ */
+static inline float emit_random_falloff(const float* strength)
+{
+    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
+    float r = *(float*)&bits - 1.0f;
+    return 1.0f - func_004CCD90(*strength * (-r * r));
+}
+
+/**
+ * @brief Draw a value spread evenly around zero.
+ * @param range Width of the spread, read after the draw.
+ * @return Value in [-range / 2, range / 2).
+ */
+static inline float emit_random_spread(const float* range)
+{
+    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
+    float r = *(float*)&bits - 1.0f;
+    return *range * r - 0.5f * *range;
+}
+
+/**
+ * @brief Draw a value spread evenly around a base.
+ * @param base Centre, read after the draw.
+ * @param range Width of the spread, read after the draw.
+ * @return Value in [base - range / 2, base + range / 2).
+ */
+static inline float emit_random_jitter(const float* base, const float* range)
+{
+    u32 bits = (lib_light_random() & 0x7FFFFF) | 0x3F800000;
+    float r = *(float*)&bits - 1.0f;
+    return *base + *range * r - 0.5f * *range;
+}
+
+/**
+ * @brief Clear a quadword with one 128-bit store.
+ * @param vector Aligned quadword.
+ */
+static inline void emit_zero_quad(void* vector)
+{
+    *reinterpret_cast<unsigned __int128*>(vector) = 0;
+}
+
+/**
+ * @brief Return a vector's xyz length from VU0.
+ * @param vector Aligned vector.
+ * @return Length.
+ */
+static inline float emit_vector_length(const FieldVec4A* vector)
+{
+    FieldVec4A length;
+    vu0_length_xyz(&length, vector);
+    return length.x;
+}
+
+/**
+ * @brief Return a vector's squared xyz length from VU0.
+ * @param vector Aligned vector.
+ * @return Squared length.
+ */
+static inline float emit_vector_length_squared(const FieldVec4A* vector)
+{
+    FieldVec4A length;
+    vu0_length_squared_xyz(vector, &length);
+    return length.x;
+}
+
+/**
+ * @brief Return a vector's xyz length.
+ * @param vector Aligned vector.
+ * @return Length.
+ */
+static inline float emit_length_of(const FieldVec4A* vector)
+{
+    // TODO: The extra inline levels only put the length temporaries where the original's stack layout has them.
+    return emit_vector_length(vector);
+}
+
+/**
+ * @brief Return a vector's squared xyz length.
+ * @param vector Aligned vector.
+ * @return Squared length.
+ */
+static inline float emit_length_squared_of(const FieldVec4A* vector)
+{
+    // TODO: The extra inline levels only put the length temporaries where the original's stack layout has them.
+    return emit_vector_length_squared(vector);
+}
+
+/**
+ * @brief Return a vector's xyz length.
+ * @param vector Aligned vector.
+ * @return Length.
+ */
+static inline float emit_length(const FieldVec4A* vector)
+{
+    return emit_length_of(vector);
+}
+
+/**
+ * @brief Return a vector's squared xyz length.
+ * @param vector Aligned vector.
+ * @return Squared length.
+ */
+static inline float emit_length_squared(const FieldVec4A* vector)
+{
+    return emit_length_squared_of(vector);
+}
+
+/**
+ * @brief Recompute a cell's orbit offset from its two angles and its scale.
+ * @param cell Cell to update.
+ */
+static inline void emit_update_offset_from_angles(LibEmitterCell* cell)
+{
+    LibVector4 second;
+    LibVector4 first;
+    lib_compute_sine_cosine_pair(cell->angles.x, &first);
+    lib_compute_sine_cosine_pair(cell->angles.y, &second);
+    cell->offset.x = first.z * (cell->scale.x * second.z);
+    cell->offset.y = cell->scale.y * first.w;
+    cell->offset.z = first.z * (cell->scale.z * second.w);
+}
+
+/**
+ * @brief Recompute a cell's orbit offset from its two angles and its scale.
+ * @param cell Cell to update.
+ */
+static inline void emit_update_offset(LibEmitterCell* cell)
+{
+    // TODO: The extra inline level only puts the angle pairs where the original's stack layout has them.
+    emit_update_offset_from_angles(cell);
+}
+
+/**
+ * @brief Build a look-at matrix with no roll.
+ * @param look Receives the matrix.
+ * @param origin Eye position.
+ * @param target Point looked at.
+ */
+static inline void emit_look_at(LibMatrix44Value* look, const FieldVec4B* origin, const FieldVec4B* target)
+{
+    lib_matrix_look_at(look, origin, target, 0.0f);
+}
+
+/**
+ * @brief Build a look-at matrix from the origin with no roll.
+ * @param look Receives the matrix.
+ * @param target Point looked at.
+ */
+static inline void emit_look_from_origin(LibMatrix44Value* look, const FieldVec4B* target)
+{
+    const FieldVec4B& origin = FieldVec4B(0.0f, 0.0f, 0.0f, 0.0f);
+    emit_look_at(look, &origin, target);
+}
+
+/**
+ * @brief Clear a vector by copying a zero vector into it.
+ * @param vector Aligned vector to clear.
+ */
+static inline void emit_clear_vector(FieldVec4A* vector)
+{
+    FieldVec4A zero(0.0f, 0.0f, 0.0f, 0.0f);
+    const FieldVec4A* source = &zero;
+    ee_block_break();
+    *vector = *source;
+}
+
+extern "C" s8 D_001B653C;
+extern "C" FieldVec4A D_00508200;
+
+/**
+ * @brief Multiply a value by a scale.
+ * @param value Value.
+ * @param scale Scale.
+ * @return value * scale.
+ */
+static inline float emit_scaled(const float& value, float scale)
+{
+    return value * scale;
+}
+
+/**
+ * @brief Pick a new cell's velocity and acceleration for the emitter's velocity mode and store them in emitter space.
+ * @param self Emitter.
+ * @param cell Claimed cell.
+ * @param motion Receives the velocity before the rotation.
+ * @param spin_velocity Receives the rotated velocity.
+ * @param spin Receives the rotated acceleration.
+ * @param position Emission position, before the transform.
+ * @param normal Normal of the mesh vertex picked by the mesh shape.
+ * @param matrix Rotation used for the velocity.
+ * @param inverse The grid source's inverse transform.
+ * @param first_offset Velocity added before the rotation, or null.
+ * @param second_offset Acceleration added before the rotation, or null.
+ */
+static inline void emit_cell_velocity(LibClass173990* self, LibEmitterCell* cell, FieldVec4A* motion, FieldVec4A* spin_velocity, FieldVec4A* spin, const FieldVec4A* position, const FieldVec4A* normal, const LibMatrix44Value* matrix, const LibMatrix44Value* inverse, const LibVector4* first_offset, const LibVector4* second_offset)
+{
+    switch (self->unk480[1])
+    {
+    case 0:
+        *motion = self->unk230;
+        break;
+    case 1:
+        motion->x = emit_random_jitter(&self->unk230.x, &self->unk240.x);
+        motion->y = emit_random_jitter(&self->unk230.y, &self->unk240.y);
+        motion->z = emit_random_jitter(&self->unk230.z, &self->unk240.z);
+        break;
+    case 2:
+    {
+        LibVector4 first;
+        LibVector4 second;
+        float angle = emit_random_spread(&self->unk230.x);
+        float elevation = emit_random_spread(&self->unk230.z);
+        lib_compute_sine_cosine_pair_degree9(&first, angle);
+        lib_compute_sine_cosine_pair_degree9(&second, elevation);
+        float speed = emit_random_jitter(&self->unk230.y, &self->unk230.w);
+        motion->x = first.w * speed;
+        motion->y = speed * (first.z * second.z);
+        motion->z = second.w * speed;
+        break;
+    }
+    case 3:
+    {
+        LibVector4 first;
+        LibVector4 second;
+        float angle = 3.1415927f * (2.0f * emit_random_unit());
+        float elevation = 3.1415927f * emit_random_unit() - 1.5707964f;
+        lib_compute_sine_cosine_pair_degree9(&first, angle);
+        lib_compute_sine_cosine_pair_degree9(&second, elevation);
+        float speed = emit_random_jitter(&self->unk230.x, &self->unk240.x);
+        motion->x = speed * (first.z * second.z);
+        motion->y = second.w * speed;
+        motion->z = speed * (first.w * second.z);
+        break;
+    }
+    case 4:
+    {
+        float length = ee_sqrt(position->z * position->z + (position->x * position->x + position->y * position->y));
+        float r = emit_random_unit();
+        float speed = (1.0f / length + 0.01f * (length * self->unk230.z)) * (self->unk230.x + self->unk240.x * r - 0.5f * self->unk240.x);
+        motion->x = position->x * speed;
+        motion->y = position->y * speed;
+        motion->z = position->z * speed;
+        break;
+    }
+    case 5:
+    {
+        FieldVec4A direction = *position;
+        lib_normalize_vector3(&direction.x);
+        float speed = emit_random_jitter(&self->unk230.x, &self->unk240.x);
+        motion->x = -direction.z * speed;
+        motion->y = direction.y;
+        motion->z = direction.x * speed;
+        break;
+    }
+    case 6:
+    {
+        LibVector4 first;
+        LibVector4 second;
+        LibMatrix44Value look;
+        float angle = emit_random_spread(&self->unk230.x);
+        float elevation = emit_random_spread(&self->unk230.z);
+        lib_compute_sine_cosine_pair_degree9(&first, angle);
+        lib_compute_sine_cosine_pair_degree9(&second, elevation);
+        float speed = emit_random_jitter(&self->unk230.y, &self->unk230.w);
+        motion->x = first.w * speed;
+        motion->z = speed * (-first.z * second.z);
+        motion->y = second.w * speed;
+        emit_look_from_origin(&look, reinterpret_cast<const FieldVec4B*>(normal));
+        ee_transpose_matrix(&look, &look);
+        vu0_transform_emission_direction_input_first(&look, motion, motion);
+        break;
+    }
+    case 7:
+    {
+        float length = ee_sqrt(position->z * position->z + (position->x * position->x + position->y * position->y));
+        float r = emit_random_unit();
+        float speed = (1.0f / length + 0.01f * (length * self->unk230.z)) * (self->unk230.x + self->unk240.x * r - 0.5f * self->unk240.x);
+        motion->x = position->x * speed;
+        motion->y = self->unk230.y + self->unk240.y * emit_random_unit() - 0.5f * self->unk240.y;
+        motion->z = position->z * speed;
+        break;
+    }
+    }
+
+    if (first_offset != 0)
+    {
+        motion->x += first_offset->x;
+        motion->y += first_offset->y;
+        motion->z += first_offset->z;
+    }
+
+    if (!self->unk49b_1)
+    {
+        vu0_transform_emission_direction(matrix, motion, spin_velocity);
+
+        if (self->unk49b_4)
+        {
+            spin_velocity->x += self->velocity.x * self->unk3fc;
+            spin_velocity->y += self->velocity.y * self->unk3fc;
+            spin_velocity->z += self->velocity.z * self->unk3fc;
+        }
+
+        vu0_transform_emission_direction_output_first(inverse, &cell->velocity, spin_velocity);
+    }
+    else
+    {
+        if (self->unk49b_4)
+        {
+            motion->x += self->velocity.x * self->unk3fc;
+            motion->y += self->velocity.y * self->unk3fc;
+            motion->z += self->velocity.z * self->unk3fc;
+        }
+
+        *spin_velocity = *motion;
+        vu0_transform_emission_direction_output_first(inverse, &cell->velocity, motion);
+    }
+
+    FieldVec4A acceleration;
+
+    switch (self->unk480[2])
+    {
+    case 0:
+        acceleration = self->unk250;
+        break;
+    case 1:
+        acceleration.x = emit_random_jitter(&self->unk250.x, &self->unk260.x);
+        acceleration.y = emit_random_jitter(&self->unk250.y, &self->unk260.y);
+        acceleration.z = emit_random_jitter(&self->unk250.z, &self->unk260.z);
+        break;
+    case 2:
+        acceleration.x = motion->x * self->unk250.x;
+        acceleration.y = motion->y * self->unk250.y;
+        acceleration.z = motion->z * self->unk250.z;
+        break;
+    }
+
+    if (second_offset != 0)
+    {
+        acceleration.x += second_offset->x;
+        acceleration.y += second_offset->y;
+        acceleration.z += second_offset->z;
+    }
+
+    if (!self->unk49b_2)
+    {
+        vu0_transform_emission_direction(matrix, &acceleration, spin);
+        vu0_transform_emission_direction_output_first(inverse, &cell->acceleration, spin);
+    }
+    else
+    {
+        vu0_transform_emission_direction_output_first(inverse, &cell->acceleration, &acceleration);
+        *spin = acceleration;
+    }
+
+    emit_clear_vector(&cell->unk50);
+}
+
+/**
+ * @brief Pick a new cell's angles and scale with their rates and store them in the cell.
+ * @param self Emitter.
+ * @param cell Claimed cell.
+ * @param angles Receives the angles.
+ * @param scale Receives the scale.
+ * @param angle_velocity Receives the angle velocity.
+ * @param scale_velocity Receives the scale velocity.
+ * @param angle_accel Receives the angle acceleration.
+ * @param scale_accel Receives the scale acceleration.
+ * @param extra6 Angles added to the picked ones, or null.
+ * @param extra7 Angle velocity added to the picked one, or null.
+ * @param extra8 Angle acceleration added to the picked one, or null.
+ * @param extra9 Scale added to the picked one, or null.
+ * @param extra10 Scale velocity added to the picked one, or null.
+ * @param extra11 Scale acceleration added to the picked one, or null.
+ */
+static inline void emit_cell_rotation(LibClass173990* self, LibEmitterCell* cell, FieldVec4A* angles, FieldVec4A* scale, FieldVec4A* angle_velocity, FieldVec4A* scale_velocity, FieldVec4A* angle_accel, FieldVec4A* scale_accel, const LibVector4* extra6, const LibVector4* extra7, const LibVector4* extra8, const LibVector4* extra9, const LibVector4* extra10, const LibVector4* extra11)
+{
+    FieldVec4A* field = &cell->angles;
+
+    if (self->unk480[6] != 1)
+    {
+        *angles = self->unk2c0;
+    }
+    else
+    {
+        angles->x = emit_random_jitter(&self->unk2c0.x, &self->unk2d0.x);
+        angles->y = emit_random_jitter(&self->unk2c0.y, &self->unk2d0.y);
+    }
+
+    if (extra6 != 0)
+    {
+        angles->x += extra6->x;
+        angles->y += extra6->y;
+    }
+
+    *field = *angles;
+
+    field = &cell->scale;
+
+    if (self->unk480[7] != 1)
+    {
+        *scale = self->unk2e0;
+    }
+    else
+    {
+        scale->x = emit_random_jitter(&self->unk2e0.x, &self->unk2f0.x);
+        scale->y = emit_random_jitter(&self->unk2e0.y, &self->unk2f0.y);
+        scale->z = emit_random_jitter(&self->unk2e0.z, &self->unk2f0.z);
+    }
+
+    if (extra9 != 0)
+    {
+        scale->x += extra9->x;
+        scale->y += extra9->y;
+        scale->z += extra9->z;
+    }
+
+    *field = *scale;
+
+    field = &cell->angle_velocity;
+
+    if (self->unk488[0] != 1)
+    {
+        *angle_velocity = self->unk300;
+    }
+    else
+    {
+        angle_velocity->x = emit_random_jitter(&self->unk300.x, &self->unk310.x);
+        angle_velocity->y = emit_random_jitter(&self->unk300.y, &self->unk310.y);
+    }
+
+    if (extra7 != 0)
+    {
+        angle_velocity->x += extra7->x;
+        angle_velocity->y += extra7->y;
+    }
+
+    *field = *angle_velocity;
+
+    field = &cell->scale_velocity;
+
+    if (self->unk488[1] != 1)
+    {
+        *scale_velocity = self->unk320;
+    }
+    else
+    {
+        scale_velocity->x = emit_random_jitter(&self->unk320.x, &self->unk330.x);
+        scale_velocity->y = emit_random_jitter(&self->unk320.y, &self->unk330.y);
+        scale_velocity->z = emit_random_jitter(&self->unk320.z, &self->unk330.z);
+    }
+
+    if (extra10 != 0)
+    {
+        scale_velocity->x += extra10->x;
+        scale_velocity->y += extra10->y;
+        scale_velocity->z += extra10->z;
+    }
+
+    *field = *scale_velocity;
+
+    field = &cell->angle_acceleration;
+
+    if (self->unk488[2] != 1)
+    {
+        *angle_accel = self->unk340;
+    }
+    else
+    {
+        angle_accel->x = emit_random_jitter(&self->unk340.x, &self->unk350.x);
+        angle_accel->y = emit_random_jitter(&self->unk340.y, &self->unk350.y);
+    }
+
+    if (extra8 != 0)
+    {
+        angle_accel->x += extra8->x;
+        angle_accel->y += extra8->y;
+    }
+
+    *field = *angle_accel;
+
+    field = &cell->scale_acceleration;
+
+    if (self->unk488[3] != 1)
+    {
+        *scale_accel = self->unk360;
+    }
+    else
+    {
+        scale_accel->x = emit_random_jitter(&self->unk360.x, &self->unk370.x);
+        scale_accel->y = emit_random_jitter(&self->unk360.y, &self->unk370.y);
+        scale_accel->z = emit_random_jitter(&self->unk360.z, &self->unk370.z);
+    }
+
+    if (extra11 != 0)
+    {
+        scale_accel->x += extra11->x;
+        scale_accel->y += extra11->y;
+        scale_accel->z += extra11->z;
+    }
+
+    *field = *scale_accel;
+    emit_update_offset(cell);
+
+    u8 shape = self->unk480[0];
+
+    if (shape == 5 || shape == 6 || shape == 9 || shape == 10)
+    {
+        float x = cell->position.x;
+        cell->position.x = x + cell->offset.x;
+        cell->position.y += cell->offset.y;
+        cell->position.z += cell->offset.z;
+    }
+}
+
+/**
+ * @brief Pick a new cell's tint and tint scale.
+ * @param self Emitter.
+ * @param cell Claimed cell.
+ * @param position Emission position, for the distance-based tint.
+ */
+static inline void emit_cell_tint(LibClass173990* self, LibEmitterCell* cell, const FieldVec4A* position)
+{
+    FieldVec4A* tint = &cell->tint;
+
+    switch (self->unk480[4])
+    {
+    case 0:
+        *tint = self->unk290;
+        break;
+    case 1:
+        tint->x = emit_random_jitter(&self->unk290.x, &self->unk2a0.x);
+        tint->y = emit_random_jitter(&self->unk290.y, &self->unk2a0.y);
+        tint->z = emit_random_jitter(&self->unk290.z, &self->unk2a0.z);
+        tint->w = emit_random_jitter(&self->unk290.w, &self->unk2a0.w);
+        break;
+    case 2:
+    {
+        float t = ee_sqrt_in_place(position->z * position->z + (position->x * position->x + position->y * position->y));
+    t *= 0.01f;
+        tint->x = self->unk290.x + self->unk2a0.x * t;
+        tint->y = self->unk290.y + self->unk2a0.y * t;
+        tint->z = self->unk290.z + self->unk2a0.z * t;
+        tint->w = self->unk290.w + self->unk2a0.w * t;
+        break;
+    }
+    }
+
+    FieldVec4A* tint_scale = &cell->tint_scale;
+
+    switch (self->unk480[5])
+    {
+    case 0:
+        *tint_scale = self->unk2b0;
+        break;
+    case 1:
+        tint_scale->x = tint->x * self->unk2b0.x;
+        tint_scale->y = tint->y * self->unk2b0.y;
+        tint_scale->z = tint->z * self->unk2b0.z;
+        tint_scale->w = tint->w * self->unk2b0.w;
+        break;
+    }
+}
+
+/**
+ * @brief Draw a whole number from zero to count.
+ * @param count Highest value.
+ * @return Random number.
+ */
+static inline s32 emit_random_index(u8 count)
+{
+    return resident_random_below(count + 1);
+}
+
+/**
+ * @brief Fill a new cell's record: the image frame, then the two value groups.
+ * @param self Emitter.
+ * @param slot Where claim_cell stored the record.
+ */
+static inline void emit_fill_record(LibClass173990* self, void** slot)
+{
+    float rate = 0.016666668f;
+    LibEmitterQuad* record = static_cast<LibEmitterQuad*>(*slot);
+    emit_zero_quad(record + 2);
+    LibEmitterQuad* channel = record + 2;
+    LibGridFrameRecord* frames = self->source->image != 0 ? reinterpret_cast<LibGridFrameRecord*>(reinterpret_cast<u8*>(self->source->image) + 0xC0) : 0;
+
+    if (self->unk495 != 0)
+    {
+        s32 pick = emit_random_index(self->unk495);
+        s32 step = self->unk496;
+        channel->words[1] = self->unk494 + step * pick;
+    }
+    else
+    {
+        channel->words[1] = self->unk494;
+    }
+
+    if (frames != 0)
+    {
+        channel->floats[2] = rate * frames[channel->words[1]].duration_frames;
+    }
+
+    channel = static_cast<LibEmitterQuad*>(*slot);
+    channel->words[3] = 0;
+
+    switch (self->unk488[4])
+    {
+    case 0:
+        channel->floats[0] = self->unk3c0[0];
+        break;
+    case 1:
+        channel->floats[0] = emit_random_jitter(&self->unk3c0[0], &self->unk3c0[1]);
+        break;
+    }
+
+    if (self->source->kind == 6)
+    {
+        switch (self->unk488[6])
+        {
+        case 0:
+            channel->floats[2] = self->unk380.x;
+            break;
+        case 1:
+        case 2:
+        {
+            float r = emit_random_unit();
+            channel->floats[2] = self->unk380.x + r * self->unk390.x - 0.5f * self->unk390.x;
+            break;
+        }
+        }
+
+        switch (self->unk497)
+        {
+        case 0:
+            channel->floats[1] = self->unk3c0[4];
+            break;
+        case 1:
+            channel->floats[1] = emit_random_jitter(&self->unk3c0[4], &self->unk3c0[5]);
+            break;
+        }
+    }
+    else
+    {
+        switch (self->unk488[6])
+        {
+        case 0:
+            channel->floats[1] = self->unk380.x;
+            channel->floats[2] = self->unk380.y;
+            break;
+        case 1:
+            channel->floats[1] = emit_random_jitter(&self->unk380.x, &self->unk390.x);
+            channel->floats[2] = emit_random_jitter(&self->unk380.y, &self->unk390.y);
+            break;
+        case 2:
+        {
+            float r = emit_random_unit();
+            channel->floats[1] = self->unk380.x + r * self->unk390.x - 0.5f * self->unk390.x;
+            channel->floats[2] = self->unk380.y + r * self->unk390.y - 0.5f * self->unk390.y;
+            break;
+        }
+        }
+    }
+
+    switch (self->unk490)
+    {
+    case 1:
+        channel->floats[3] = self->unk43c;
+        break;
+    case 2:
+        channel->floats[3] = emit_random_jitter(&self->unk43c, &self->unk440);
+        break;
+    }
+
+    channel = static_cast<LibEmitterQuad*>(*slot) + 1;
+    channel->words[3] = 0;
+
+    switch (self->unk488[5])
+    {
+    case 0:
+        channel->floats[0] = self->unk3c0[2];
+        break;
+    case 1:
+        channel->floats[0] = emit_random_jitter(&self->unk3c0[2], &self->unk3c0[3]);
+        break;
+    }
+
+    if (self->source->kind == 6)
+    {
+        switch (self->unk488[7])
+        {
+        case 0:
+            channel->floats[2] = self->unk3a0.x;
+            break;
+        case 1:
+        case 2:
+        {
+            float r = emit_random_unit();
+            channel->floats[2] = self->unk3a0.x + r * self->unk3b0.x - 0.5f * self->unk3b0.x;
+            break;
+        }
+        }
+
+        switch (self->unk498)
+        {
+        case 0:
+            channel->floats[1] = self->unk3c0[6];
+            break;
+        case 1:
+            channel->floats[1] = emit_random_jitter(&self->unk3c0[6], &self->unk3c0[7]);
+            break;
+        }
+    }
+    else
+    {
+        switch (self->unk488[7])
+        {
+        case 0:
+            channel->floats[1] = self->unk3a0.x;
+            channel->floats[2] = self->unk3a0.y;
+            break;
+        case 1:
+            channel->floats[1] = emit_random_jitter(&self->unk3a0.x, &self->unk3b0.x);
+            channel->floats[2] = emit_random_jitter(&self->unk3a0.y, &self->unk3b0.y);
+            break;
+        case 2:
+        {
+            float r = emit_random_unit();
+            channel->floats[1] = self->unk3a0.x + r * self->unk3b0.x - 0.5f * self->unk3b0.x;
+            channel->floats[2] = self->unk3a0.y + r * self->unk3b0.y - 0.5f * self->unk3b0.y;
+            break;
+        }
+        }
+    }
+}
+
+
+/**
+ * @brief Store a cell's starting angles and scale, then recompute its orbit offset.
+ * @param cell Cell to update.
+ * @param angles Starting angles.
+ * @param scale Starting scale.
+ */
+static inline void emit_set_rotation(LibEmitterCell* cell, const FieldVec4A* angles, const FieldVec4A* scale)
+{
+    cell->angles = *angles;
+    cell->scale = *scale;
+    emit_update_offset(cell);
+}
+
+/**
+ * @brief Move a new cell by its first frame of motion and hand it to the grid.
+ * @param self Emitter.
+ * @param grid Grid that owns the cell.
+ * @param index Cell index.
+ * @param cell Where claim_cell stored the cell.
+ * @param motion Velocity, scaled to one frame here.
+ * @param angles Angles.
+ * @param scale Scale.
+ * @param angle_velocity Angle velocity, scaled to one frame here.
+ * @param scale_velocity Scale velocity, scaled to one frame here.
+ * @param world Emission position in world space.
+ * @param inverse The grid source's inverse transform.
+ * @param extra6 Starting angles, or null.
+ * @param extra9 Starting scale.
+ */
+static inline void emit_cell_motion(LibClass173990* self, LibGridBase* grid, s32 index, LibEmitterCell** cell, FieldVec4A* motion, FieldVec4A* angles, FieldVec4A* scale, FieldVec4A* angle_velocity, FieldVec4A* scale_velocity, const FieldVec4A* world, const LibMatrix44Value* inverse, const LibVector4* extra6, const LibVector4* extra9)
+{
+    FieldVec4A cell_position;
+    FieldVec4A offset;
+    FieldVec4A start_scale;
+    FieldVec4A start_angles;
+    offset.x = 0.0f;
+    offset.y = 0.0f;
+    offset.z = 0.0f;
+    offset.w = 0.0f;
+    motion->x *= 0.016666668f;
+    motion->y *= 0.016666668f;
+    motion->z *= 0.016666668f;
+    angle_velocity->x *= 0.016666668f;
+    angle_velocity->y *= 0.016666668f;
+    angle_velocity->z *= 0.016666668f;
+    scale_velocity->x *= 0.016666668f;
+    scale_velocity->y *= 0.016666668f;
+    scale_velocity->z *= 0.016666668f;
+
+    if (extra6 != 0)
+    {
+        LibVector4 second;
+        LibVector4 first;
+        start_angles = *reinterpret_cast<const FieldVec4A*>(extra6);
+        start_scale = *reinterpret_cast<const FieldVec4A*>(extra9);
+        start_angles.x += angle_velocity->x * self->unk434;
+        start_angles.y += angle_velocity->y * self->unk434;
+        start_scale.x += scale_velocity->x * self->unk434;
+        start_scale.y += scale_velocity->y * self->unk434;
+        start_scale.z += scale_velocity->z * self->unk434;
+        lib_compute_sine_cosine_pair(start_angles.x, &first);
+        lib_compute_sine_cosine_pair(start_angles.y, &second);
+        offset.x = first.z * (start_scale.x * second.z);
+        offset.y = start_scale.y * first.w;
+        offset.z = first.z * (start_scale.z * second.w);
+    }
+
+    cell_position = (*cell)->position;
+    cell_position.x = cell_position.x + offset.x + motion->x * self->unk434;
+    cell_position.y = cell_position.y + offset.y + motion->y * self->unk434;
+    cell_position.z = cell_position.z + offset.z + motion->z * self->unk434;
+    (*cell)->position = cell_position;
+
+    if (extra6 != 0 && (grid->func_slot3c() & 8))
+    {
+        emit_set_rotation(*cell, &start_angles, &start_scale);
+    }
+
+    u8 kind = self->source->kind;
+    bool shaded = false;
+
+    if (kind != 0 && kind != 3)
+    {
+        shaded = true;
+    }
+
+    u8 flag = shaded ? true : false;
+
+    if (self->unk49a == 1)
+    {
+        grid->func_slot40((*cell), grid->func_slot24(index, 0), flag, reinterpret_cast<const LibVector4*>(motion),
+                          reinterpret_cast<const LibVector4*>(angles), reinterpret_cast<const LibVector4*>(scale),
+                          reinterpret_cast<const LibVector4*>(angle_velocity),
+                          reinterpret_cast<const LibVector4*>(scale_velocity));
+    }
+    else
+    {
+        FieldVec4A direction = *world;
+
+        if (!self->unk20e_2)
+        {
+            func_004D9E70(self);
+        }
+
+        vu0_transform_emission_direction(&self->inverse_transform, &direction, &direction);
+        lib_normalize_vector3(&direction.x);
+        direction.x *= self->unk434;
+        direction.y *= self->unk434;
+        direction.z *= self->unk434;
+        vu0_apply_matrix(inverse, &direction, &direction);
+        grid->func_slot44((*cell), grid->func_slot24(index, 0), flag, reinterpret_cast<const LibVector4*>(&direction));
+    }
+}
+
+/**
+ * @brief Copy the emitter's entries into the new cell's grid rows, with the colour alpha when the grid wants it.
+ * @param self Emitter.
+ * @param grid Grid that owns the cell.
+ * @param index Cell index.
+ * @param entry_total Number of entries.
+ * @param color Colour picked for the cell.
+ */
+static inline void emit_copy_entries(LibClass173990* self, LibGridBase* grid, s32 index, s32 entry_total, const FieldVec4A* color)
+{
+    LibGridRow40* rows = reinterpret_cast<LibGridRow40*>(grid->func_slot24(index, 0));
+
+    if (grid->func_slot60() == 3)
+    {
+        for (s32 j = 0; j < entry_total; j++)
+        {
+            FieldVec4A entry = *reinterpret_cast<FieldVec4A*>(&self->entries[j]);
+            entry.w = color->w;
+            *reinterpret_cast<FieldVec4A*>(&rows[j].unk20) = entry;
+        }
+    }
+    else
+    {
+        for (s32 j = 0; j < entry_total; j++)
+        {
+            *reinterpret_cast<FieldVec4A*>(&rows[j].unk20) = *reinterpret_cast<FieldVec4A*>(&self->entries[j]);
+        }
+    }
+}
+
+/**
+ * @brief Claim grid cells for new particles and fill them from the emitter's shape, colour, motion and rotation modes.
+ * @param count Number of particles to emit.
+ * @param position_offset World-space position added after the emitter's rotation, or null.
+ * @param first_offset Velocity added before the rotation, or null.
+ * @param second_offset Acceleration added before the rotation, or null.
+ * @param color_scale Colour multiplier (0-255 per channel), or null.
+ * @param extra6 Angles added to the picked ones (and the starting angles), or null.
+ * @param extra7 Angle velocity added to the picked one, or null.
+ * @param extra8 Angle acceleration added to the picked one, or null.
+ * @param extra9 Scale added to the picked one (and the starting scale), or null.
+ * @param extra10 Scale velocity added to the picked one, or null.
+ * @param extra11 Scale acceleration added to the picked one, or null.
+ */
+void LibClass173990::emit_entries(s32 count, const LibVector4* position_offset, const LibVector4* first_offset,
+                                  const LibVector4* second_offset, const LibVector4* color_scale, const LibVector4* extra6,
+                                  const LibVector4* extra7, const LibVector4* extra8, const LibVector4* extra9,
+                                  const LibVector4* extra10, const LibVector4* extra11)
+{
+    if (source != 0)
+    {
+        if (source->reference != 0 && source->reference->func_slotc0())
+        {
+            if (!matrix_ready)
+            {
+                update_transform_matrix();
+            }
+
+            if (!transpose_is_current(this))
+            {
+                transpose_transform(this);
+            }
+
+            if (!source->matrix_ready)
+            {
+                source->update_transform_matrix();
+                mark_transpose_current(source);
+                func_004D9E70(source);
+            }
+            else if (!source->unk20e_0)
+            {
+                transpose_transform(source);
+                func_004D9E70(source);
+            }
+            else if (!source->unk20e_2)
+            {
+                func_004D9E70(source);
+            }
+
+            s32 i;
+            
+            const LibMatrix44Value* matrix = &transposed_transform;
+            LibMatrix44Value rotation = transposed_transform;
+            rotation.m[3][0] = 0.0f;
+            rotation.m[3][1] = 0.0f;
+            rotation.m[3][2] = 0.0f;
+            const LibMatrix44Value* inverse = &source->inverse_transform;
+            LibGridBase* grid = source->reference;
+
+            for (i = 0; i < count; i++)
+            {
+                void* record;
+                LibEmitterCell* cell;
+                FieldVec4A world;
+                FieldVec4A spin_velocity;
+                FieldVec4A spin;
+                FieldVec4A angles;
+                FieldVec4A angle_velocity;
+                FieldVec4A angle_accel;
+                FieldVec4A scale;
+                FieldVec4A scale_velocity;
+                FieldVec4A scale_accel;
+                FieldVec4A color;
+                FieldVec4A normal;
+                FieldVec4A position;
+                float x;
+                float y;
+                float z;
+
+                angles.x = 0.0f;
+                angles.y = 0.0f;
+                angles.z = 0.0f;
+                angles.w = 0.0f;
+                angle_velocity.x = 0.0f;
+                angle_velocity.y = 0.0f;
+                angle_velocity.z = 0.0f;
+                angle_velocity.w = 0.0f;
+                scale.x = 0.0f;
+                scale.y = 0.0f;
+                scale.z = 0.0f;
+                scale.w = 0.0f;
+                scale_velocity.x = 0.0f;
+                scale_velocity.y = 0.0f;
+                scale_velocity.z = 0.0f;
+                scale_velocity.w = 0.0f;
+
+                switch (unk480[0])
+                {
+                case 0:
+                    emit_zero_quad(&position);
+                    break;
+                case 1:
+                    if (unk3f8 == 0.0f)
+                    {
+                        x = emit_random_unit();
+                        y = emit_random_unit();
+                        z = emit_random_unit();
+                    }
+                    else
+                    {
+                        x = emit_random_falloff(&unk3f8);
+                        y = emit_random_falloff(&unk3f8);
+                        z = emit_random_falloff(&unk3f8);
+                    }
+
+                    if (resident_next_random_word() & 1)
+                    {
+                        x = -x;
+                    }
+
+                    if (resident_next_random_word() & 1)
+                    {
+                        y = -y;
+                    }
+
+                    if (resident_next_random_word() & 1)
+                    {
+                        z = -z;
+                    }
+
+                    position.x = x * unk220.x;
+                    position.y = y * unk220.y;
+                    position.z = z * unk220.z;
+                    break;
+                case 2:
+                case 5:
+                {
+                    float radius;
+                    LibVector4 first;
+                    LibVector4 second;
+
+                    if (unk3f8 == 0.0f)
+                    {
+                        radius = emit_random_unit();
+                    }
+                    else
+                    {
+                        radius = emit_random_falloff(&unk3f8);
+                    }
+
+                    float angle = 3.1415927f * (2.0f * emit_random_unit());
+                    float elevation = 3.1415927f * emit_random_unit();
+                    lib_compute_sine_cosine_pair_degree9(&first, angle);
+                    lib_compute_sine_cosine_pair_degree9(&second, elevation);
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = second.w * (first.z * (radius * unk220.x));
+                        position.y = second.z * (radius * unk220.y);
+                        position.z = second.w * (first.w * (radius * unk220.z));
+                    }
+                    else
+                    {
+                        position.x = first.z * (radius * unk220.x);
+                        position.y = 0.0f;
+                        position.z = first.w * (radius * unk220.z);
+                    }
+
+                    break;
+                }
+                case 3:
+                case 6:
+                {
+                    float radius;
+                    LibVector4 first;
+                    LibVector4 second;
+
+                    radius = 1.0f + unk3f8 * emit_random_unit() - 0.5f * unk3f8;
+                    float angle = 3.1415927f * (2.0f * emit_random_unit());
+                    float elevation = 3.1415927f * emit_random_unit();
+                    lib_compute_sine_cosine_pair_degree9(&first, angle);
+                    lib_compute_sine_cosine_pair_degree9(&second, elevation);
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = second.w * (first.z * (radius * unk220.x));
+                        position.y = second.z * (radius * unk220.y);
+                        position.z = second.w * (first.w * (radius * unk220.z));
+                    }
+                    else
+                    {
+                        position.x = first.z * (radius * unk220.x);
+                        position.y = 0.0f;
+                        position.z = first.w * (radius * unk220.z);
+                    }
+
+                    break;
+                }
+                case 4:
+                {
+                    float height = unk220.y * emit_random_unit();
+                    float angle = 3.1415927f * (2.0f * emit_random_unit());
+                    float spread;
+                    LibVector4 pair;
+
+                    if (unk3f8 == 0.0f)
+                    {
+                        spread = height * func_004CC070(0.5f * (unk220.x * emit_random_unit()));
+                    }
+                    else
+                    {
+                        spread = height * func_004CC070(0.5f * (unk220.x * emit_random_falloff(&unk3f8)));
+                    }
+
+                    lib_compute_sine_cosine_pair_degree9(&pair, angle);
+                    position.y = height;
+                    position.x = spread * pair.z;
+                    position.z = spread * pair.w;
+                    break;
+                }
+                case 7:
+                case 9:
+                {
+                    float radius;
+                    LibVector4 pair;
+
+                    if (unk3f8 == 0.0f)
+                    {
+                        radius = emit_random_unit();
+                    }
+                    else
+                    {
+                        radius = emit_random_falloff(&unk3f8);
+                    }
+
+                    lib_compute_sine_cosine_pair_degree9(&pair, 3.1415927f * (2.0f * emit_random_unit()));
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = pair.z * (radius * unk220.x);
+                        position.y = 2.0f * (unk220.y * emit_random_unit()) - unk220.y;
+                        position.z = pair.w * (radius * unk220.z);
+                    }
+                    else
+                    {
+                        position.x = pair.z * (radius * unk220.x);
+                        position.y = 0.0f;
+                        position.z = pair.w * (radius * unk220.z);
+                    }
+
+                    break;
+                }
+                case 8:
+                case 10:
+                {
+                    float radius;
+                    LibVector4 pair;
+
+                    radius = 1.0f + unk3f8 * emit_random_unit() - 0.5f * unk3f8;
+                    lib_compute_sine_cosine_pair_degree9(&pair, 3.1415927f * (2.0f * emit_random_unit()));
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = pair.z * (radius * unk220.x);
+                        position.y = 2.0f * (unk220.y * emit_random_unit()) - unk220.y;
+                        position.z = pair.w * (radius * unk220.z);
+                    }
+                    else
+                    {
+                        position.x = pair.z * (radius * unk220.x);
+                        position.y = 0.0f;
+                        position.z = pair.w * (radius * unk220.z);
+                    }
+
+                    break;
+                }
+                case 11:
+                {
+                    LibModel* model = reinterpret_cast<LibModel*>(unk42c);
+
+                    if ((u32)(u16)model->type_id >> 8 != 1)
+                    {
+                        break;
+                    }
+
+                    LibResourceBuffer* mesh = model->resource;
+
+                    if (mesh == 0)
+                    {
+                        break;
+                    }
+
+                    LibMeshHeader* data = reinterpret_cast<LibMeshHeader*>(lib_resource_active_payload(mesh));
+                    LibEmitterMeshPart* part;
+
+                    if (unk49c_3)
+                    {
+                        func_004D5C10(mesh);
+
+                        if (!unk49c_4)
+                        {
+                            s32 k = 0;
+                            unk49c_4 = 1;
+                            s32 total = data->part_count;
+                            unk430 = 0;
+
+                            for (; k < total; k++)
+                            {
+                                part = static_cast<LibEmitterMeshPart*>(func_004D5AC0(mesh));
+
+                                if (part->flags & 4)
+                                {
+                                    unk430++;
+                                }
+                            }
+                        }
+
+                        if (unk430 == 0)
+                        {
+                            part = 0;
+                        }
+                        else
+                        {
+                            s32 pick;
+
+                            if (unk430 == 1)
+                            {
+                                pick = 1;
+                            }
+                            else
+                            {
+                                pick = resident_random_below(unk430 - 1) + 1;
+                            }
+
+                            for (s32 k = 0; k < pick; k++)
+                            {
+                                do
+                                {
+                                    part = static_cast<LibEmitterMeshPart*>(func_004D5AC0(mesh));
+                                } while (part != 0 && !(part->flags & 4));
+                            }
+                        }
+                    }
+                    else
+                    {
+                        func_004D5C10(mesh);
+                        s32 pick = resident_random_below(data->part_count - 1) + 1;
+
+                        for (s32 k = 0; k < pick; k++)
+                        {
+                            part = static_cast<LibEmitterMeshPart*>(func_004D5AC0(mesh));
+                        }
+                    }
+
+                    if (part == 0)
+                    {
+                        continue;
+                    }
+
+                    s32 vertex_index = resident_random_below(part->vertex_count);
+                    const FieldVec4A* points = reinterpret_cast<const FieldVec4A*>((u32)((u8*)part + part->positions) | 0x20000000);
+                    normal = reinterpret_cast<const FieldVec4A*>((u32)((u8*)part + part->normals) | 0x20000000)[vertex_index];
+
+                    if (!model->matrix_ready)
+                    {
+                        model->update_transform_matrix();
+                        mark_transpose_current(model);
+                    }
+                    else if (!model->unk20e_0)
+                    {
+                        transpose_transform(model);
+                    }
+
+                    float radius;
+                    LibVector4 first;
+                    LibVector4 second;
+                    matrix = &model->transposed_transform;
+
+                    if (unk3f8 == 0.0f)
+                    {
+                        radius = emit_random_unit();
+                    }
+                    else
+                    {
+                        radius = emit_random_falloff(&unk3f8);
+                    }
+
+                    float angle = 3.1415927f * (2.0f * emit_random_unit());
+                    float elevation = 3.1415927f * emit_random_unit();
+                    lib_compute_sine_cosine_pair_degree9(&first, angle);
+                    lib_compute_sine_cosine_pair_degree9(&second, elevation);
+
+                    if (unk220.y != 0.0f)
+                    {
+                        position.x = second.w * (first.z * (radius * unk220.x)) + points[vertex_index].x + normal.x * unk420;
+                        position.y = second.z * (radius * unk220.y) + points[vertex_index].y + normal.y * unk420;
+                        position.z = second.w * (first.w * (radius * unk220.z)) + points[vertex_index].z + normal.z * unk420;
+                    }
+                    else
+                    {
+                        position.x = first.z * (radius * unk220.x) + points[vertex_index].x + normal.x * unk420;
+                        position.y = points[vertex_index].y + normal.y * unk420;
+                        position.z = first.w * (radius * unk220.z) + points[vertex_index].z + normal.z * unk420;
+                    }
+
+                    break;
+                }
+                }
+
+                position.w = 1.0f;
+
+                if (position_offset != 0)
+                {
+                    vu0_apply_matrix_vector_first(&rotation, &position, &world);
+                    world.x += position_offset->x;
+                    world.y += position_offset->y;
+                    world.z += position_offset->z;
+                }
+                else
+                {
+                    vu0_apply_matrix(matrix, &position, &world);
+                }
+
+                if (unk49c_5)
+                {
+                    world.x += unk438 * emit_scaled(this->velocity.x, 0.016666668f);
+                    world.y += unk438 * emit_scaled(this->velocity.y, 0.016666668f);
+                    world.z += unk438 * emit_scaled(this->velocity.z, 0.016666668f);
+                }
+
+                if (unk49c_6)
+                {
+                    world.x += (position_delta.x * (float)i) / (float)count;
+                    world.y += (position_delta.y * (float)i) / (float)count;
+                    world.z += (position_delta.z * (float)i) / (float)count;
+                }
+
+                FieldVec4A local;
+                vu0_apply_matrix(inverse, &world, &local);
+                s32 index = source->claim_cell(reinterpret_cast<const LibVector4*>(&local), reinterpret_cast<LibClass174228**>(&cell),
+                                                reinterpret_cast<s32*>(&record));
+
+                if (index == -1)
+                {
+                    return;
+                }
+
+                switch (unk480[3])
+                {
+                case 0:
+                    color = unk270;
+                    break;
+                case 1:
+                    color.x = emit_random_jitter(&unk270.x, &unk280.x);
+                    color.y = emit_random_jitter(&unk270.y, &unk280.y);
+                    color.z = emit_random_jitter(&unk270.z, &unk280.z);
+                    color.w = emit_random_jitter(&unk270.w, &unk280.w);
+                    break;
+                case 2:
+                {
+                    float t = ee_sqrt_in_place(position.z * position.z + (position.x * position.x + position.y * position.y));
+                    FieldVec4A* output = &cell->color;
+                    t *= 0.01f;
+                    color.x = unk270.x + unk280.x * t;
+                    color.y = unk270.y + unk280.y * t;
+                    color.z = unk270.z + unk280.z * t;
+                    color.w = unk270.w + unk280.w * t;
+
+                    if (!D_001B653C)
+                    {
+                        D_00508200.x = 255.0f;
+                        D_001B653C = 1;
+                        D_00508200.y = 255.0f;
+                        D_00508200.z = 255.0f;
+                        D_00508200.w = 255.0f;
+                    }
+
+                    vu0_clamp_emission_color(output, &D_00508200);
+                    break;
+                }
+                }
+
+                if (unk49b_7 || unk49c_0)
+                {
+                    float falloff;
+                    float distance;
+
+                    switch (unk491)
+                    {
+                    case 0:
+                        distance = emit_length(&position);
+                        falloff = unk40c / (distance + unk40c);
+                        break;
+                    case 1:
+                        distance = emit_length_squared(&position);
+                        falloff = (unk40c * unk40c) / (distance + unk40c * unk40c);
+                        break;
+                    }
+
+                    if (unk49c_1)
+                    {
+                        FieldVec4A direction = position;
+                        lib_normalize_vector3(&direction.x);
+                        float up = ee_max_tied(direction.y, 0.0f);
+                        up *= up;
+                        falloff *= ee_min_tied(ee_max_tied(unk41c * (up - unk418), 0.0f), 1.0f);
+                    }
+
+                    if (unk49b_7)
+                    {
+                        color.x *= falloff;
+                        color.y *= falloff;
+                        color.z *= falloff;
+                    }
+
+                    if (unk49c_0)
+                    {
+                        color.w *= falloff;
+                    }
+                }
+
+                if (color_scale != 0)
+                {
+                    color.x = 0.003921569f * (color.x * color_scale->x);
+                    color.y = 0.003921569f * (color.y * color_scale->y);
+                    color.z = 0.003921569f * (color.z * color_scale->z);
+                    color.w = 0.0078125f * (color.w * color_scale->w);
+                }
+
+                cell->color = color;
+
+                FieldVec4A motion;
+
+                if (grid->func_slot3c() & 2)
+                {
+                    emit_cell_velocity(this, cell, &motion, &spin_velocity, &spin, &position, &normal, matrix, inverse, first_offset, second_offset);
+                }
+                else
+                {
+                    emit_zero_quad(&motion);
+                    emit_zero_quad(&spin_velocity);
+                }
+
+                if (grid->func_slot3c() & 8)
+                {
+                    emit_cell_rotation(this, cell, &angles, &scale, &angle_velocity, &scale_velocity, &angle_accel, &scale_accel, extra6, extra7, extra8, extra9, extra10, extra11);
+                }
+
+                if (grid->func_slot3c() & 4)
+                {
+                    emit_cell_tint(this, cell, &position);
+                }
+
+                if (record != 0 && (grid->func_slot3c() & 0x20))
+                {
+                    emit_fill_record(this, &record);
+                }
+
+                s32 entry_total = entry_count;
+
+                if (entry_total != 0 && entries != 0)
+                {
+                    emit_copy_entries(this, grid, index, entry_total, &color);
+                }
+
+                if (unk49b_3 && (grid->func_slot3c() & 2))
+                {
+                    emit_zero_quad(&cell->velocity);
+                }
+
+                if (unk49c_2 && unk428 != 0)
+                {
+                    const LibVector4* child_position = 0;
+                    const LibVector4* child_velocity = 0;
+                    const LibVector4* child_acceleration = 0;
+                    const LibVector4* child_color = 0;
+                    const LibVector4* child_angles = 0;
+                    const LibVector4* child_angle_velocity = 0;
+                    const LibVector4* child_angle_accel = 0;
+                    const LibVector4* child_scale = 0;
+                    const LibVector4* child_scale_velocity = 0;
+                    const LibVector4* child_scale_accel = 0;
+
+                    if (unk493 & 1)
+                    {
+                        child_position = reinterpret_cast<const LibVector4*>(&world);
+                    }
+
+                    if (unk493 & 2)
+                    {
+                        child_velocity = reinterpret_cast<const LibVector4*>(&spin_velocity);
+                    }
+
+                    if (unk493 & 4)
+                    {
+                        child_acceleration = reinterpret_cast<const LibVector4*>(&spin);
+                    }
+
+                    if (unk493 & 8)
+                    {
+                        child_color = reinterpret_cast<const LibVector4*>(&color);
+                    }
+
+                    if (unk493 & 0x10)
+                    {
+                        child_angles = reinterpret_cast<const LibVector4*>(&angles);
+                        child_scale = reinterpret_cast<const LibVector4*>(&scale);
+                    }
+
+                    if (unk493 & 0x20)
+                    {
+                        child_angle_velocity = reinterpret_cast<const LibVector4*>(&angle_velocity);
+                        child_scale_velocity = reinterpret_cast<const LibVector4*>(&scale_velocity);
+                    }
+
+                    if (unk493 & 0x40)
+                    {
+                        child_angle_accel = reinterpret_cast<const LibVector4*>(&angle_accel);
+                        child_scale_accel = reinterpret_cast<const LibVector4*>(&scale_accel);
+                    }
+
+                    reinterpret_cast<LibClass173990*>(unk428)->emit_entries(unk492, child_position, child_velocity, child_acceleration, child_color, child_angles,
+                                         child_angle_velocity, child_angle_accel, child_scale, child_scale_velocity,
+                                         child_scale_accel);
+                }
+
+                if (unk49a != 0)
+                {
+                    emit_cell_motion(this, grid, index, &cell, &motion, &angles, &scale, &angle_velocity, &scale_velocity, &world, inverse, extra6, extra9);
+                }
+                else
+                {
+                    u8 kind = source->kind;
+                    bool shaded = false;
+
+                    if (kind != 0 && kind != 3)
+                    {
+                        shaded = true;
+                    }
+
+                    u8 flag = shaded ? true : false;
+                    grid->func_slot44(cell, grid->func_slot24(index, 0), flag, 0);
+                }
+            }
+        }
+    }
+}
 
 }
 

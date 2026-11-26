@@ -42,6 +42,17 @@ public:
         borrowed = 0;
     }
 
+    /**
+     * @brief Clear one bit.
+     * @param index Bit to clear.
+     */
+    void clear_bit(s32 index)
+    {
+        u32 word = (u32)index >> 6;
+        u32 bit = index & 63;
+        bits[word] &= ~((u64)1 << bit);
+    }
+
     /** @brief Clear every word. */
     void clear()
     {

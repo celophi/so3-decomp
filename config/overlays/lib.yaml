@@ -152,6 +152,23 @@ segments:
           - {function: func_00431AB0, offset: 0x0, size: 0x1C}
         linker_section_order: .rodata
       - [0x11F0DC, rodatabin, rodata_0050595C]
+      - start: 0x11F150
+        type: .rodata
+        name: text_00429B00
+        linker_section: .rodata.005059D0
+        rodata_anchors:
+          - {function: emit_entries__14LibClass173990FiPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4, table: 1, offset: 0x0, size: 0x20}
+          - {function: emit_entries__14LibClass173990FiPC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4PC10LibVector4, table: 0, offset: 0x20, size: 0x30}
+        linker_section_order: .rodata
+      - start: 0x11F1A0
+        type: .rodata
+        name: text_00441C40
+        linker_section: .rodata.00505A20
+        rodata_anchors:
+          - {function: func_00445950, table: 1, offset: 0x0, size: 0x28}
+          - {function: func_00445950, table: 0, offset: 0x30, size: 0xA8}
+        linker_section_order: .rodata
+      - [0x11F278, rodatabin, rodata_00505AF8]
       - start: 0x11F280
         type: .rodata
         name: text_0044ABE0
@@ -271,7 +288,22 @@ segments:
         rodata_anchors:
           - {function: lib_scene_build_objects, offset: 0x0, size: 0x30}
         linker_section_order: .rodata
-      - [0x11F7F0, rodatabin, rodata_00506070]
+      - start: 0x11F7F0
+        type: .rodata
+        name: text_0049B820
+        linker_section: .rodata.00506070
+        rodata_anchors:
+          - {function: func_0049ED80, table: 1, offset: 0x0, size: 0x28}
+          - {function: func_0049ED80, table: 0, offset: 0x30, size: 0xA8}
+        linker_section_order: .rodata
+      - [0x11F8C8, rodatabin, rodata_00506148]
+      - start: 0x11F8D0
+        type: .rodata
+        name: text_004ABA60
+        linker_section: .rodata.00506150
+        rodata_anchors:
+          - {function: func_004B4840, offset: 0x0, size: 0x530}
+        linker_section_order: .rodata
       - start: 0x11FE00
         type: .rodata
         name: text_004BD360

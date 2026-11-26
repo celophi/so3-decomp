@@ -318,7 +318,7 @@ class LibGridBase
          */
         virtual s32 func_slot20(s32 index) = 0;
 
-        virtual void func_slot24() = 0;
+        virtual u8* func_slot24(s32 index, s32 flag) = 0;
 
         virtual void func_slot28() = 0;
 
@@ -344,9 +344,10 @@ class LibGridBase
 
         virtual s32 func_slot3c();
 
-        virtual void func_slot40() = 0;
+        virtual void func_slot40(void* cell, void* records, u8 flag, const LibVector4* velocity, const LibVector4* angles,
+                                 const LibVector4* scale, const LibVector4* angle_velocity, const LibVector4* scale_velocity) = 0;
 
-        virtual void func_slot44() = 0;
+        virtual void func_slot44(void* cell, void* records, u8 flag, const LibVector4* direction) = 0;
 
         /**
          * @brief Report how far the cells reach past their positions.
@@ -378,7 +379,7 @@ class LibGridBase
 
         virtual void func_slot5c() = 0;
 
-        virtual void func_slot60() = 0;
+        virtual u8 func_slot60() = 0;
 
         virtual void func_slot64() = 0;
 
@@ -410,7 +411,7 @@ class LibGridBase
 
         virtual void func_slot9c() = 0;
 
-        virtual void func_slota0() = 0;
+        virtual void func_slota0(void* value) = 0;
 
         virtual void func_slota4(void* links) = 0;
 
@@ -422,7 +423,7 @@ class LibGridBase
 
         virtual void func_slotb4() = 0;
 
-        virtual void func_slotb8() = 0;
+        virtual void func_slotb8(float value) = 0;
 
         virtual void func_slotbc() = 0;
 
@@ -624,6 +625,121 @@ void func_00447500(LibGridReceiver447500* object, s32 capacity, LibGridOutputRec
 
 #ifdef __cplusplus
 }
+#endif
+
+#ifdef __cplusplus
+/** Collider the grids' kind-6 particles test against: the first virtual reports a hit. */
+class LibGridCollider
+{
+public:
+    /**
+     * @brief Test a particle.
+     * @param transform Grid's transform.
+     * @param position Particle position.
+     * @param color Particle color.
+     * @param travel Particle travel vector.
+     * @param limit Grid's limit value.
+     * @return Whether the particle hit.
+     */
+    virtual bool collide(const LibVector4* transform, const void* position, const void* color, const void* travel,
+                         float limit) = 0;
+};
+
+extern "C" LibGridCollider* D_001B6540;
+
+/** Ground the particle scripts measure heights against: the first virtual gives the height under a point. */
+class LibGridGround
+{
+public:
+    /**
+     * @brief Measure the ground height under a point.
+     * @param point Point, in the grid's space.
+     * @param unused Always null here.
+     * @return Ground height.
+     */
+    virtual float height(const LibVector4* point, void* unused) = 0;
+};
+
+extern "C" LibGridGround* D_001B654C;
+
+/** Draw record a particle step writes per grid column. */
+struct LibGridParticleOutput20
+{
+    LibGridVector4 position;
+    LibGridVector4 color;
+    LibGridVector4 unk20;
+};
+
+/** A scripted particle: the element part of a grid cell as the particle scripts use it. */
+struct LibGridParticleCell
+{
+    u8 unk00[0x10];
+    LibGridVector4 position;
+    LibGridVector4 color;
+    LibGridVector4 velocity;
+    LibGridVector4 acceleration;
+    LibGridVector4 travel;
+    LibGridVector4 color_velocity;
+    LibGridVector4 color_acceleration;
+    LibGridVector4 angle;
+    LibGridVector4 angle_velocity;
+    LibGridVector4 angle_acceleration;
+    LibGridVector4 radius;
+    LibGridVector4 radius_velocity;
+    LibGridVector4 radius_acceleration;
+    LibGridVector4 swirl;
+    LibGridVector4 unkf0;
+    LibGridVector4 unk100;
+    LibGridVector4 unk110;
+    LibGridVector4 unk120;
+    u8 script_pc;
+    u8 flags;
+    u8 color_mode;
+    u8 wait_mode;
+    float wait_value;
+};
+
+/**
+ * @brief Zero a grid vector through a cleared local.
+ * @param output Vector to clear.
+ */
+static inline void lib_grid_clear_vector(LibGridVector4* output)
+{
+    LibVector4 zero;
+    zero.x = 0.0f;
+    zero.y = 0.0f;
+    zero.z = 0.0f;
+    zero.w = 0.0f;
+    const LibVector4* value = &zero;
+    output->packed = *(unsigned __int128*)value;
+}
+
+// TODO: Only here for the collide call's colour argument. Written as &cell->color the argument moves are
+// issued in the wrong order.
+/**
+ * @brief Get a scripted particle's colour vector.
+ * @param cell Particle.
+ * @return The particle's colour.
+ */
+static inline LibGridVector4* lib_grid_particle_color(LibGridParticleCell* cell)
+{
+    return &cell->color;
+}
+
+struct LibColliderList;
+
+/**
+ * @brief Run a moving point through every collider in a list.
+ * @param list Colliders to test.
+ * @param previous Position before the step.
+ * @param position Position after the step.
+ * @param velocity Velocity over the step.
+ * @param out_velocity Receives the velocity change.
+ * @param out_position Receives the corrected position.
+ * @return Whether any collider was hit.
+ */
+extern "C" bool func_0043CBF0(LibColliderList* list, const LibVector4* previous, const LibVector4* position,
+                              const LibVector4* velocity, LibVector4* out_velocity, LibVector4* out_position);
 #endif
 
 #endif

@@ -7556,7 +7556,110 @@ s32 LibStringLabel::init_text_rectangle(float x, float y, float width, float hei
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0045AD10", draw__14LibClass175170Fv);
+/** @brief Lay the twenty cells out on two arcs around the centre cell and draw them, the back arc first. */
+void LibClass175170::draw()
+{
+    if (!unk894)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (unk3b)
+    {
+        return;
+    }
+
+    LibImageAnimation* cell = &cells[0][0];
+    float tilt_cos = lib_cosine_degree9(-0.7853982f);
+    float tilt_sin = lib_sine_degree9(-0.7853982f);
+    float angle = -unk884;
+    float limit = -180.0f;
+    float step = 12.5f;
+
+    for (s32 side = 0; side < 2; side++)
+    {
+        for (s32 i = 0; i < 10; i++)
+        {
+            float radians = (3.1415927f * angle) / 180.0f;
+            float x = 18.0f * lib_cosine_degree9(radians);
+            float y = 8.0f * lib_sine_degree9(radians);
+            cell->unk18 = x * tilt_cos - y * tilt_sin;
+            cell->unk1c = x * tilt_sin + y * tilt_cos;
+            float scale = unk888 - 0.06f * (float)i;
+
+            if (scale < 0.0f)
+            {
+                scale = 0.0f;
+            }
+
+            cell->unk34 = scale;
+            cell->unk30 = scale;
+            cell->unk60 = (float)((s32)angle % 360) >= limit;
+            cell->unk50 = draw_alpha;
+            angle += step;
+            cell++;
+        }
+
+        tilt_sin = -tilt_sin;
+        limit = -limit;
+        step = -step;
+        angle = 180.0f + unk884;
+    }
+
+    unk50.unk50 = draw_alpha;
+    u64* start = reinterpret_cast<u64*>(unk40.dma_address);
+    u64* cursor = start;
+    packet_tag = start;
+    packet = start;
+    cursor += 2;
+    LibContainer* owner = container;
+    LibVector4 origin;
+    origin.x = owner->translation.x + unk18.unk00;
+    origin.y = owner->translation.y + unk18.unk04;
+    owner = container;
+    u32 depth = owner->unka4 + unk34;
+    float scale = owner->unkE0;
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    *cursor++ = GIF_REGISTER_AD;
+    *cursor++ = 0x48;
+    *cursor++ = GS_REGISTER_ALPHA_2;
+    LibImageAnimation* front_cell = &cells[0][0];
+
+    for (s32 i = 0; i < 20; i++, front_cell++)
+    {
+        if (front_cell->unk60)
+        {
+            func_004535B0(front_cell, &cursor, &origin, depth, scale, 0);
+        }
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    *cursor++ = GIF_REGISTER_AD;
+    *cursor++ = GS_ALPHA_NORMAL;
+    *cursor++ = GS_REGISTER_ALPHA_2;
+    func_004535B0(&unk50, &cursor, &origin, depth, scale, 0);
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    *cursor++ = GIF_REGISTER_AD;
+    *cursor++ = 0x48;
+    *cursor++ = GS_REGISTER_ALPHA_2;
+    LibImageAnimation* back_cell = &cells[0][0];
+
+    for (s32 i = 0; i < 20; i++, back_cell++)
+    {
+        if (!back_cell->unk60)
+        {
+            func_004535B0(back_cell, &cursor, &origin, depth, scale, 0);
+        }
+    }
+
+    *cursor++ = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    *cursor++ = GIF_REGISTER_AD;
+    *cursor++ = GS_ALPHA_NORMAL;
+    *cursor++ = GS_REGISTER_ALPHA_2;
+    *packet_tag = DMA_TAG((reinterpret_cast<u32>(cursor) - reinterpret_cast<u32>(packet_tag) - LIB_DRAW_QWORD_SIZE) / LIB_DRAW_QWORD_SIZE, DMA_TAG_ID_END, 0);
+    unk3b = 1;
+}
 
 /** @brief Fade the widget in or out while it opens or closes, and turn the rings while it shows. */
 void LibClass175170::func_00413D20()

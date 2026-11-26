@@ -200,7 +200,12 @@ struct LibSystemSettings
     u16 cancel_buttons;
     u16 alternate_buttons;
     u16 extra_buttons;
-    u8 unk08[0x1C];
+    u16 unk08[4];
+    u32 unk10[4];
+    u8 unk20;
+    u8 unk21;
+    u8 unk22;
+    u8 unk23;
     u8 unk24_low : 2;
     u8 unk24_mid : 2;
     u8 unk24_bit4 : 1;
@@ -216,15 +221,18 @@ struct LibSystemSettings
     u8 checksum_start;
     u8 unk27;
     u8 difficulty;
-    u8 unk29[0xB];
+    u8 unk29[3];
+    u32 unk2C;
+    u32 unk30;
     u32 encoded_fol;
-    u8 unk38[8];
+    u32 unk38;
+    u32 unk3C;
     u8 unk40[LIB_SETTINGS_GRID_SIZE][LIB_SETTINGS_GRID_SIZE];
     u16 checksum;
     u16 key;
     LibFactorCounts factor_counts;
     LibSealedRecord sealed_record;
-    u8 unk188[4];
+    u32 unk188;
     u8 widescreen;
     u8 unk18D;
     u8 sound_output;
@@ -277,6 +285,40 @@ void lib_trophy_flags_checksum(LibTrophyFlags* flags, const u32* seed, u32* chec
  * @param flags Trophy flags.
  */
 void lib_trophy_flags_update_checksum(LibTrophyFlags* flags);
+
+/**
+ * @brief Encode a saved record and seal it with a fresh checksum; a damaged record is wiped instead.
+ * @param record Record to seal; an already sealed record is left alone.
+ */
+void lib_seal_record(LibSealedRecord* record);
+
+/**
+ * @brief Set the extra block's first byte when its checksum is valid, and reseal it.
+ * @param options Settings block from unk188 on.
+ * @param value New value.
+ */
+void lib_options_set_unk18(void* options, u8 value);
+
+/**
+ * @brief Set whether the Universe difficulty is unlocked when the extra block's checksum is valid, and reseal it.
+ * @param options Settings block from unk188 on.
+ * @param value New value.
+ */
+void lib_options_set_universe_unlocked(void* options, u8 value);
+
+/**
+ * @brief Set whether the 4D difficulty is unlocked when the extra block's checksum is valid, and reseal it.
+ * @param options Settings block from unk188 on.
+ * @param value New value.
+ */
+void lib_options_set_fourth_dimension_unlocked(void* options, u8 value);
+
+/**
+ * @brief Set the colour unlock level when the extra block's checksum is valid, and reseal it.
+ * @param options Settings block from unk188 on.
+ * @param value New value.
+ */
+void lib_options_set_color_unlock_level(void* options, u8 value);
 
 #ifdef __cplusplus
 /**

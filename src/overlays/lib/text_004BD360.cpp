@@ -823,43 +823,6 @@ struct LibAnimationNode
 };
 
 /**
- * Fields past the transform that func_004BDE00 reads from the objects animation entries are bound to, by entry type.
- * TODO: Replace with the real target classes (lights and cameras) once they're identified.
- */
-struct LibBlendTarget : public LibOrientedTransform
-{
-    u8 unk60[0xC];
-    u16 unk6c;
-    u8 unk6e[0x192];
-    float unk200;
-    u8 unk204[0x10];
-    float unk214;
-    u8 unk218[0x44];
-    float unk25c;
-    u8 unk260[0x310];
-    float unk570[3];
-    float unk57c[3];
-};
-
-/**
- * Fields func_004BDE00 reads from an animation entry's sub-target.
- * TODO: Replace with the real sub-target classes once they're identified.
- */
-struct LibBlendSubTarget
-{
-    u8 unk00[0x40];
-    float unk40[2];
-    s32 unk48;
-    u8 unk4c[4];
-    float unk50;
-    u8 unk54[8];
-    float unk5c;
-    u8 unk60[0x290];
-    s32 unk2f0;
-    s32 unk2f4;
-};
-
-/**
  * @brief Find the channel bound to a target with the requested entry type and axis, and cache its entry.
  * @param object Animation object; its entries must exist.
  * @param target Bound target to match.
@@ -1249,7 +1212,7 @@ extern "C" float func_004BDE00(LibAnimation* object, void* target, LibAnimation*
         case 39:
             if (bound->unk6c != 0x500)
             {
-                channel->set_single_key(bound->unk570, 0, 0, -duration);
+                channel->set_single_key(&bound->unk570, 0, 0, -duration);
             }
 
             break;
@@ -1257,7 +1220,7 @@ extern "C" float func_004BDE00(LibAnimation* object, void* target, LibAnimation*
         case 41:
             if (bound->unk6c != 0x500)
             {
-                float value = ((float*)bound->unk570)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
+                float value = ((float*)&bound->unk570)[entry->flags & LIB_ANIMATION_ENTRY_AXIS_MASK];
                 channel->set_single_key(&value, 0, 0, -duration);
             }
 
@@ -1267,7 +1230,7 @@ extern "C" float func_004BDE00(LibAnimation* object, void* target, LibAnimation*
         case 44:
             if (bound->unk6c != 0x500)
             {
-                channel->set_single_key(bound->unk57c, 0, 0, -duration);
+                channel->set_single_key(&bound->unk570.w, 0, 0, -duration);
             }
 
             break;
@@ -1275,7 +1238,7 @@ extern "C" float func_004BDE00(LibAnimation* object, void* target, LibAnimation*
         case 46:
         case 47:
         {
-            float value = bound->unk25c;
+            float value = bound->unk250.w;
             channel->set_single_key(&value, 0, 0, -duration);
             break;
         }
@@ -4186,25 +4149,6 @@ void LibAnimationTarget::set_scale(float x, float y, float z)
     scale.z = z;
 }
 
-/** Partial aim settings of a func_004C3590 record. */
-struct LibAimSettings
-{
-    u8 unk00[4];
-    s32 positive;
-    u8 unk08[4];
-    s32 axis;
-};
-
-/** Partial record func_004C3590 aims. */
-struct LibAimRecord
-{
-    u8 unk00[4];
-    LibAimSettings* settings;
-    u8 unk08[0x1C];
-    float roll;
-    LibTransform* target;
-};
-
 /**
  * @brief Dot product of the x, y and z components.
  * @param first First vector.
@@ -4233,11 +4177,12 @@ static inline void lib_cross3(LibVector4* output, const FieldVec4B* first, const
  * @brief Build the rotation that turns a record's aim axis towards its target, seen from an origin in a matrix's
  * space, then rolls it about that axis.
  * @param record Record with the aim settings, roll angle and target transform.
+ * @param key Unused; the animation passes its frame.
  * @param matrix Matrix whose inverse takes the target's position into the origin's space.
  * @param origin Position the axis turns from.
  * @return Quaternion roll, then flip, then turn; the identity when the axis already points at the target.
  */
-extern "C" FieldVec4B func_004C3590(LibAimRecord* record, const LibMatrix44Value* matrix, const FieldVec4B* origin)
+extern "C" FieldVec4B func_004C3590(LibAimRecord* record, float key, const LibMatrix44Value* matrix, const FieldVec4B* origin)
 {
     LibVector4 axis_angle;
     axis_angle.x = 0.0f;
@@ -5128,7 +5073,32 @@ struct LibPanelDrawArgs
     u8 unk8a;
 };
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4B90);
+/** One sprite of a panel frame: two UV corners and the screen points to draw them at. */
+struct LibPanelSprite
+{
+    s16 u0;
+    s16 v0;
+    s16 u1;
+    s16 v1;
+    s16 x0;
+    s16 y0;
+    s16 x1;
+    s16 y1;
+};
+
+extern "C" LibPanelSprite D_00507110[8];
+
+struct LibScreenPoint32
+{
+    LibScreenPoint32()
+    {
+        y = 0;
+        x = 0;
+    }
+
+    s32 x;
+    s32 y;
+};
 
 /**
  * @brief Write a panel's drawing packet.
@@ -5137,7 +5107,122 @@ INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_004BD360", func_004C4B90);
  * @param args What to draw.
  * @return The end of the packet.
  */
-extern "C" u8* func_004C4B90(LibPanel* panel, u8* packet, const LibPanelDrawArgs* args);
+extern "C" u8* func_004C4B90(LibPanel* panel, u8* packet, const LibPanelDrawArgs* args)
+{
+    LibScreenPoint32 points[6];
+    u64* cursor = reinterpret_cast<u64*>(packet);
+    u32 colors[4];
+    LibPanelSprite* sprite;
+    s32 i;
+    float width;
+
+    const LibVector4* position = args->position;
+    float x = position->x + args->rect->unk00;
+    float y = position->y + args->rect->unk04;
+    float scale_x = g_field_runtime->screen_scale_x;
+    float offset_x = g_field_runtime->screen_offset_x;
+    width = args->rect->unk08;
+    float height = args->rect->unk0c;
+    points[0].x = offset_x + x * scale_x;
+    points[1].x = offset_x + (4.0f + x) * scale_x;
+    points[2].x = offset_x + (24.0f + x) * scale_x;
+    x += width;
+    points[5].x = offset_x + x * scale_x;
+    points[4].x = offset_x + (x - 4.0f) * scale_x;
+    points[3].x = offset_x + (x - 24.0f) * scale_x;
+    float scale_y = g_field_runtime->screen_scale_y;
+    float offset_y = g_field_runtime->screen_offset_y;
+    points[0].y = offset_y + y * scale_y;
+    points[1].y = offset_y + (4.0f + y) * scale_y;
+    points[2].y = offset_y + (24.0f + y) * scale_y;
+    y += height;
+    points[5].y = offset_y + y * scale_y;
+    points[4].y = offset_y + (y - 4.0f) * scale_y;
+    points[3].y = offset_y + (y - 24.0f) * scale_y;
+    u64 zbuf = args->unk8b ? 1ULL << 32 : 0;
+    zbuf |= *reinterpret_cast<const u32*>(&g_display->buffers[0].environment.context1.depth_buffer) & 0xFFFFFFFFULL;
+    cursor[0] = GIF_TAG_NREG(1) | 1;
+    cursor[1] = GIF_REGISTER_AD;
+    cursor[2] = zbuf;
+    cursor[3] = GS_REGISTER_ZBUF_2;
+
+    s32 address = (s32)args->address;
+
+    if (!args->unk8a)
+    {
+        u32 alpha = (u32)((args->alpha * args->unk84) / 128.0f) << 24;
+        const u32* source = args->colors;
+        u32* out = colors;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            u32 color = source[i];
+            out[i] = color | alpha;
+        }
+    }
+    else
+    {
+        float scale = args->unk84 / 128.0f;
+        u32 alpha = args->alpha;
+        const u32* source = args->colors;
+        u32* out = colors;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            u32 color = source[i];
+            out[i] = (u64)(u32)(alpha << 24) | ((s64)(s32)(((color >> 16) & 0xFF) * scale) << 16 |
+                              ((s64)(s32)((color & 0xFF) * scale) | (s64)(s32)(((color >> 8) & 0xFF) * scale) << 8));
+        }
+    }
+
+    u64 z = (u64)address << 32;
+    cursor[4] = 0xA400000000000001ULL;
+    cursor[5] = 0x15151510 | 0xF5ULL << 32;
+    cursor[6] = 0x24C;
+    cursor[7] = colors[0];
+    cursor[8] = z | (points[1].x | (u64)points[1].y << 16);
+    cursor[9] = colors[1];
+    cursor[10] = z | (points[4].x | (u64)points[1].y << 16);
+    cursor[11] = colors[2];
+    cursor[12] = z | (points[1].x | (u64)points[4].y << 16);
+    cursor[13] = colors[3];
+    cursor[14] = z | (points[4].x | (u64)points[4].y << 16);
+    cursor[15] = 0;
+    cursor[16] = GIF_TAG_NREG(1) | 2;
+    cursor[17] = GIF_REGISTER_AD;
+    cursor[18] = *reinterpret_cast<const u32*>(&g_display->buffers[0].environment.context1.depth_buffer) & 0xFFFFFFFFULL;
+    cursor[19] = GS_REGISTER_ZBUF_2;
+    cursor[20] = 1;
+    cursor[21] = GS_REGISTER_TEX1_2;
+    cursor[22] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | 1;
+    cursor[23] = 0x1077;
+    cursor[24] = 0x8007FF0001300000ULL;
+    cursor[25] = 0x22C10400 | 0x7FF06ULL << 32;
+    cursor[26] = 0x356;
+    cursor[27] = (s64)(s32)args->alpha << 24 | 0x808080;
+    cursor[28] = GIF_TAG_NREG(4) | GIF_TAG_FLG_REGLIST | 8;
+    cursor[29] = 0x5353;
+    cursor += 30;
+    sprite = D_00507110;
+    i = 0;
+
+    do
+    {
+        cursor[0] = sprite->u0 | (s64)sprite->v0 << 16;
+        cursor[1] = z | (points[sprite->x0].x | (s64)points[sprite->y0].y << 16);
+        cursor[2] = sprite->u1 | (s64)sprite->v1 << 16;
+        cursor[3] = z | (points[sprite->x1].x | (s64)points[sprite->y1].y << 16);
+        cursor += 4;
+        sprite++;
+        i++;
+    } while (i < 8);
+
+    cursor[0] = GIF_TAG_NREG(1) | GIF_TAG_EOP | 1;
+    cursor[1] = GIF_REGISTER_AD;
+    cursor[2] = 0x61;
+    cursor[3] = GS_REGISTER_TEX1_2;
+    return reinterpret_cast<u8*>(cursor + 4);
+}
 
 typedef struct LibPanelColorState
 {

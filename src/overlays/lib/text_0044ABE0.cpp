@@ -624,7 +624,105 @@ s32 LibClass1746D0::init(u32 flags, s32 color, s32 slot, s32 key)
     return 1;
 }
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", draw__14LibClass174790Fv);
+/** Screen position in GS units. */
+struct LibQuadPoint
+{
+    /** @brief Start at the origin. */
+    LibQuadPoint()
+    {
+        y = 0;
+        x = 0;
+    }
+
+    s32 x;
+    s32 y;
+};
+
+/**
+ * @brief Read a container's alpha.
+ * @param container Container.
+ * @return Its alpha.
+ */
+static inline float lib_quad_container_alpha(const LibContainer* container)
+{
+    return container->unkE0;
+}
+
+/**
+ * @brief Pack an XYZ2 value.
+ * @param x Screen x.
+ * @param y Screen y.
+ * @param z Depth.
+ * @return XYZ2 register value.
+ */
+static inline u64 lib_quad_xyz(s32 x, s32 y, s32 z)
+{
+    return (u64)z << 32 | ((u64)x | (u64)y << 16);
+}
+
+/** @brief Write the quad into the drawing packet; with no color, just mark it for drawing again. */
+void LibClass174790::draw()
+{
+    if (color == 0)
+    {
+        unk3b = 0;
+        return;
+    }
+
+    if (!unk3b)
+    {
+        LibQuadPoint points[4];
+        float left;
+        float top;
+        float width_scale;
+        float height_scale;
+        float screen_scale_x;
+        float screen_scale_y;
+        float screen_offset_x;
+        float screen_offset_y;
+        LibContainer* owner = container;
+        LibCallbackTransform& transform = *owner;
+        FieldRuntime* runtime = g_field_runtime;
+        width_scale = scale_x;
+        left = transform.translation.x + unk18.unk00;
+        screen_scale_x = runtime->screen_scale_x;
+        screen_offset_x = runtime->screen_offset_x;
+        top = transform.translation.y + unk18.unk04;
+        height_scale = scale_y;
+        screen_scale_y = runtime->screen_scale_y;
+        screen_offset_y = runtime->screen_offset_y;
+
+        LibQuadPoint* point = points;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            point[i].x = (s32)(screen_offset_x + screen_scale_x * (left + corners[i].x * width_scale));
+            point[i].y = (s32)(screen_offset_y + screen_scale_y * (top + corners[i].y * height_scale));
+        }
+
+        u32 tint = color;
+        s32 depth = container->unka4;
+        float alpha = (draw_alpha * lib_quad_container_alpha(container)) / 128.0f;
+        u64* cursor = reinterpret_cast<u64*>(storage.dma_address);
+        packet = packet_tag = cursor;
+        cursor[0] = 0x70000006;
+        cursor[2] = GIF_TAG_NREG(10) | GIF_TAG_FLG_REGLIST | GIF_TAG_EOP | 1;
+        cursor[3] = 0x000000F515151510;
+        cursor[4] = 0x24C;
+        u64 bright = (u32)((s32)alpha << 24 | tint);
+        cursor[5] = bright;
+        cursor[6] = lib_quad_xyz(points[0].x, points[0].y, depth);
+        u64 faint = (u32)((s32)(0.1f * alpha) << 24 | tint);
+        cursor[7] = faint;
+        cursor[8] = lib_quad_xyz(points[1].x, points[1].y, depth);
+        cursor[9] = bright;
+        cursor[10] = lib_quad_xyz(points[2].x, points[2].y, depth);
+        cursor[11] = faint;
+        cursor[12] = lib_quad_xyz(points[3].x, points[3].y, depth);
+        cursor[13] = 0;
+        unk3b = 1;
+    }
+}
 
 /** @brief Advance the grow-in animation and request a redraw. */
 void LibClass174790::func_00413D20()
@@ -4524,10 +4622,9 @@ void lib_trophy_record_encode(void* record)
 #pragma pop
 
 // TODO: This only matches at optimization level 0, and with an unused local cleared at the start; I don't know
-// what the local was for. The grid functions below inline it, so auto inlining is on for it too.
+// what the local was for.
 #pragma push
 #pragma optimization_level 0
-#pragma auto_inline on
 
 /**
  * @brief Compute the checksum the game stores with its saved records.
@@ -4537,6 +4634,30 @@ void lib_trophy_record_encode(void* record)
  * @return Checksum.
  */
 u16 lib_compute_checksum(u16 seed, const void* data, s32 size)
+{
+    u32 checksum = seed;
+    u32 total = 0;
+    const u8* bytes = (const u8*)data;
+
+    for (s32 i = 0; i < size; i++)
+    {
+        u8 value = *bytes++;
+        checksum = (value << 8) + (checksum * LIB_CHECKSUM_MULTIPLIER + LIB_CHECKSUM_INCREMENT);
+    }
+
+    return checksum;
+}
+
+// TODO: The settings functions below inline the checksum, but func_004588E0 still calls lib_compute_checksum for
+// the encoded words and the extra block, so the inlined sites use this copy instead of auto inlining.
+/**
+ * @brief Inline copy of lib_compute_checksum.
+ * @param seed Starting value, usually the record's key.
+ * @param data Bytes to check.
+ * @param size Number of bytes.
+ * @return Checksum.
+ */
+static inline u16 lib_inline_checksum(u16 seed, const void* data, s32 size)
 {
     u32 checksum = seed;
     u32 total = 0;
@@ -4650,7 +4771,7 @@ void lib_trophy_flags_checksum(LibTrophyFlags* flags, const u32* seed, u32* chec
  */
 void func_004577A0(LibSystemSettings* settings, s32 row, s32 column, s32 value)
 {
-    if (settings->checksum != lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    if (settings->checksum != lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
     {
         return;
     }
@@ -4670,7 +4791,7 @@ void func_004577A0(LibSystemSettings* settings, s32 row, s32 column, s32 value)
     value -= 40597;
     settings->unk40[row - 1][column - 1] = value ^ LIB_RECORD_XOR_BYTE;
     settings->key = resident_next_random_word();
-    settings->checksum = lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
+    settings->checksum = lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
 }
 
 #pragma pop
@@ -4688,7 +4809,7 @@ void func_004577A0(LibSystemSettings* settings, s32 row, s32 column, s32 value)
  */
 s32 func_00457980(LibSystemSettings* settings, s32 row, s32 column)
 {
-    if (settings->checksum != lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    if (settings->checksum != lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
     {
         return 0;
     }
@@ -4849,7 +4970,236 @@ void func_004587C0(LibSystemSettings* settings)
 
 #pragma pop
 
-INCLUDE_ASM("build/overlays/lib/asm/nonmatchings/text_0044ABE0", func_004588E0);
+/** Settings grid defaults, XOR-encoded, indexed [column][row]. */
+extern "C" const u8 D_004ED140[LIB_SETTINGS_GRID_SIZE][LIB_SETTINGS_GRID_SIZE];
+
+#define LIB_SETTINGS_GRID_TABLE_KEY 0xF7
+
+// TODO: Like the saved-data functions around it, this only matches at optimization level 0.
+#pragma push
+#pragma optimization_level 0
+
+/**
+ * @brief Pick a new key for the settings and recompute their checksum.
+ * @param settings System settings.
+ */
+static inline void settings_reseal(LibSystemSettings* settings)
+{
+    settings->key = resident_next_random_word();
+    settings->checksum = lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
+}
+
+/**
+ * @brief Pick a new key for the extra protected block and recompute its checksum.
+ * @param settings System settings.
+ */
+static inline void settings_reseal_extra(LibSystemSettings* settings)
+{
+    settings->extra_key = resident_next_random_word();
+    settings->extra_checksum = lib_compute_checksum(settings->extra_key, &settings->extra_checksum_start, (u8*)&settings->extra_checksum - &settings->extra_checksum_start);
+}
+
+/**
+ * @brief Store unk27 when the settings checksum is valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param value Value to store.
+ */
+static inline void settings_set_unk27(LibSystemSettings* settings, u8 value)
+{
+    if (settings->checksum == lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        settings->unk27 = value;
+        settings_reseal(settings);
+    }
+}
+
+/**
+ * @brief Store the first checksummed byte when the settings checksum is valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param value Value to store.
+ */
+static inline void settings_set_checksum_start(LibSystemSettings* settings, u8 value)
+{
+    if (settings->checksum == lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        settings->checksum_start = value;
+        settings_reseal(settings);
+    }
+}
+
+/**
+ * @brief Save a difficulty when the settings checksum is valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param value Difficulty to save.
+ */
+static inline void settings_set_difficulty(LibSystemSettings* settings, u8 value)
+{
+    if (settings->checksum == lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        settings->difficulty = value;
+        settings_reseal(settings);
+    }
+}
+
+/**
+ * @brief Store unk2C, XOR-encoded, when the settings checksum is valid, and reseal the checksum.
+ * @param settings System settings.
+ * @param value Value to store.
+ */
+static inline void settings_set_unk2C(LibSystemSettings* settings, u32 value)
+{
+    if (settings->checksum == lib_inline_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        settings->unk2C = value ^ LIB_RECORD_XOR_WORD;
+        settings_reseal(settings);
+    }
+}
+
+/**
+ * @brief Store an encoded word, limited to 0 through a maximum, when the settings checksum is valid, and reseal the
+ *        checksum.
+ * @param settings System settings.
+ * @param field Encoded word to store.
+ * @param value Value to store.
+ * @param maximum Largest value kept.
+ */
+static inline void settings_set_encoded(LibSystemSettings* settings, u32* field, s32 value, s32 maximum)
+{
+    if (settings->checksum == lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start))
+    {
+        value += 40597;
+        value = clamp(value, 40597, maximum + 40597);
+        value -= 40597;
+        *field = value ^ LIB_RECORD_XOR_WORD;
+        settings->key = resident_next_random_word();
+        settings->checksum = lib_compute_checksum(settings->key, &settings->checksum_start, (u8*)&settings->checksum - &settings->checksum_start);
+    }
+}
+
+// TODO: An inline copy of lib_trophy_flags_update_checksum, which isn't inlined here on its own.
+/**
+ * @brief Pick a new random checksum seed for the trophy flags and recompute their checksum.
+ * @param flags Trophy flags.
+ */
+static inline void trophy_flags_update_checksum(LibTrophyFlags* flags)
+{
+    flags->checksum_seed = resident_next_random_word();
+    u32 value = flags->checksum_seed;
+    u32 sum = 0;
+
+    for (s32 i = 0; i < LIB_TROPHY_COUNT; i++)
+    {
+        u32 index = i;
+        s32 bit = lib_trophy_flag(flags, index);
+
+        if (value & 1)
+        {
+            bit ^= 1;
+        }
+
+        value = value * LIB_CHECKSUM_MULTIPLIER + LIB_CHECKSUM_INCREMENT;
+        sum += bit * value;
+        value = (u64)(value * value) + 0xD45666F2;
+    }
+
+    sum += flags->trophy_key ^ value;
+    flags->checksum = sum;
+}
+
+/**
+ * @brief Give the system settings their defaults: buttons, options, sealed record, trophy flags, protected values,
+ *        speaker angles from the sound system, colours, the settings grid and the factor counts.
+ * @param settings System settings.
+ */
+extern "C" void func_004588E0(LibSystemSettings* settings)
+{
+    memset_guess(settings, 0, 4);
+    settings_reseal(settings);
+    memset_guess(&settings->unk188, 0, 0x20);
+    settings_reseal_extra(settings);
+    lib_options_set_unk18(&settings->unk188, 0);
+    lib_options_set_universe_unlocked(&settings->unk188, 0);
+    lib_options_set_fourth_dimension_unlocked(&settings->unk188, 0);
+    lib_options_set_color_unlock_level(&settings->unk188, 0);
+    memset_guess(&settings->sealed_record, 0, sizeof(LibSealedRecord));
+    lib_seal_record(&settings->sealed_record);
+    settings->confirm_buttons = 0x4000;
+    settings->cancel_buttons = 0x2000;
+    settings->alternate_buttons = 0x1000;
+    settings->extra_buttons = 0x8000;
+    settings->unk08[0] = 0x400;
+    settings->unk08[1] = 0x800;
+    settings->unk08[2] = 0x100;
+    settings->unk08[3] = 0x200;
+    settings->unk20 = 0;
+    settings->unk21 = 1;
+    settings->unk24_low = 0;
+    settings->unk24_mid = 0;
+    settings->sound_output = LIB_SOUND_STEREO;
+    settings->vibration = 0;
+    settings->trophy_flags.flags.resize(LIB_TROPHY_COUNT);
+    settings->trophy_flags.flags.clear();
+    trophy_flags_update_checksum(&settings->trophy_flags);
+    settings->unk188 = resident_next_random_word();
+    settings->unk24_bit4 = 1;
+    settings_set_unk27(settings, 0);
+    settings_set_checksum_start(settings, 1);
+    settings_set_difficulty(settings, LIB_DIFFICULTY_GALAXY);
+    settings_set_encoded(settings, &settings->unk30, 0, 99999);
+    settings_set_encoded(settings, &settings->encoded_fol, 0, 99999999);
+    settings_set_encoded(settings, &settings->unk38, 0, 99999);
+    settings_set_encoded(settings, &settings->unk3C, 0, 9999);
+    settings_set_unk2C(settings, 0);
+    settings->unk22 = 1;
+    settings->unk23 = 0;
+    settings->widescreen = 0;
+    settings->unk24_bit6 = 0;
+    settings->event_skip = 0;
+    settings->unk18D = 0;
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        // TODO: Written as a byte offset; indexing the array adds the operands the other way round.
+        *(float*)((u8*)settings->speaker_angles + i * 4) = resident_system_get_sound(resident_get_system())->speaker_angles[i];
+    }
+
+    settings->unk10[0] = 0x80A0A000;
+    settings->unk10[1] = 0x80505000;
+    settings->unk10[2] = 0x80505000;
+    settings->unk10[3] = 0x80101000;
+    u8 invalid = 0;
+
+    for (s32 row = 0; row < LIB_SETTINGS_GRID_SIZE; row++)
+    {
+        for (s32 column = 0; column < LIB_SETTINGS_GRID_SIZE; column++)
+        {
+            s32 value = D_004ED140[column][row] ^ LIB_SETTINGS_GRID_TABLE_KEY;
+
+            // TODO: A test for values above 26, but only the negated form matches.
+            if (-(value + 10) < -36)
+            {
+                invalid = 1;
+            }
+
+            func_004577A0(settings, row + 1, column + 1, value);
+        }
+    }
+
+    if (invalid)
+    {
+        for (s32 row = 0; row < LIB_SETTINGS_GRID_SIZE; row++)
+        {
+            for (s32 column = 0; column < LIB_SETTINGS_GRID_SIZE; column++)
+            {
+                func_004577A0(settings, row + 1, column + 1, 1);
+            }
+        }
+    }
+
+    lib_factor_counts_reset(&settings->factor_counts);
+}
+
+#pragma pop
 
 // TODO: This only matches with tree transformation, constant folding, lifetime splitting and loop rotation
 // off: the inlined checksum keeps unfolded loop bounds and one accumulator register. I haven't found the
@@ -4902,7 +5252,7 @@ extern "C" void lib_seal_record(LibSealedRecord* record)
         }
 
         record->key = resident_next_random_word();
-        record->checksum = lib_compute_checksum(record->key * LIB_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
+        record->checksum = lib_inline_checksum(record->key * LIB_RECORD_CHECKSUM_KEY_FACTOR, record, (u8*)&record->checksum - (u8*)record);
     }
     else if (record->sealed != LIB_RECORD_SEALED)
     {

@@ -1190,6 +1190,35 @@ class LibLightList : public LibUpdateList, public LibListObject
         u8 unk383[0xD];
 };
 
+/**
+ * @brief Set a light list's ambient colour, clamping negative channels to zero.
+ * @param lights Light list.
+ * @param red Red.
+ * @param green Green.
+ * @param blue Blue.
+ */
+static inline void lib_light_list_set_ambient(LibLightList* lights, float red, float green, float blue)
+{
+    if (red < 0.0f)
+    {
+        red = 0.0f;
+    }
+
+    if (green < 0.0f)
+    {
+        green = 0.0f;
+    }
+
+    if (blue < 0.0f)
+    {
+        blue = 0.0f;
+    }
+
+    lights->unk310.x = red;
+    lights->unk310.y = green;
+    lights->unk310.z = blue;
+}
+
 extern LibLightList* g_light_list;
 
 /** Display manager whose current camera objects face by default. */

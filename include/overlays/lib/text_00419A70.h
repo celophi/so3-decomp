@@ -175,6 +175,15 @@ public:
      */
     virtual s32 get_default_list_kind();
 
+    /**
+     * @brief Keep a sphere on the outside of the shape.
+     * @param position Sphere centre, in world space.
+     * @param output Receives the corrected centre.
+     * @param radius Sphere radius.
+     * @return Whether the centre was moved.
+     */
+    virtual bool func_00425870(const LibVector4* position, LibVector4* output, float radius) = 0;
+
     u8 unk210;
     float unk214;
 };
@@ -1284,12 +1293,12 @@ public:
     u8 group;
     u8 unk03;
     LibTransform* transform;
-    LibClass172AB0* unk08;
+    LibClass172A20* unk08;
     LibClass173070Link* links;
     float unk10;
     s32 link_count;
     float unk18;
-    u32 unk1c;
+    float unk1c;
     float unk20;
     float weight;
     float damping;

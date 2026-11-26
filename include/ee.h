@@ -199,6 +199,19 @@ static inline float ee_sqrt(float value)
 }
 
 /**
+ * @brief Return the square root of a floating-point operand with the EE scalar instruction, in its own register.
+ * @param value Operand.
+ * @return Square root produced by sqrt.s.
+ * @see ee_sqrt; Lib's animation channel setter for emitter extents (0x4B4840).
+ */
+static inline float ee_sqrt_in_place(float value)
+{
+    // TODO: The same instruction as ee_sqrt with the result in the operand's register; check if this was asm.
+    asm __volatile__("sqrt.s %0, %0" : "+f"(value));
+    return value;
+}
+
+/**
  * @brief Wait until the DMA channels selected in D_PCR's CPC bits have finished (bc0f on COP0's condition).
  * @see bc0f in the EE Core Instruction Set Manual and the DMAC's D_PCR in the EE User's Manual; Lib waits this way after
  *      starting a scratchpad transfer with CPC8 set (0x4142E0 and seven more).
@@ -232,6 +245,45 @@ static inline float ee_min(float left, float right)
     float result;
     asm __volatile__("min.s %0, %1, %2" : "=f"(result) : "f"(left), "f"(right));
     return result;
+}
+
+/**
+ * @brief Like ee_max, but the result replaces the first operand (`max.s fd, fd, ft`).
+ * @param value First operand, also the result's register.
+ * @param limit Second operand.
+ * @return Maximum produced by the EE scalar instruction.
+ * @see ee_max; LibClass173990::emit_entries in Lib (0x435840).
+ */
+static inline float ee_max_tied(float value, float limit)
+{
+    // TODO: The tied operand is what keeps the result in the value's register there; check if this was asm.
+    asm __volatile__("max.s %0, %0, %1" : "+f"(value) : "f"(limit));
+    return value;
+}
+
+/**
+ * @brief Like ee_min, but the result replaces the first operand (`min.s fd, fd, ft`).
+ * @param value First operand, also the result's register.
+ * @param limit Second operand.
+ * @return Minimum produced by the EE scalar instruction.
+ * @see ee_min; LibClass173990::emit_entries in Lib (0x435840).
+ */
+static inline float ee_min_tied(float value, float limit)
+{
+    // TODO: The tied operand is what keeps the result in the value's register there; check if this was asm.
+    asm __volatile__("min.s %0, %0, %1" : "+f"(value) : "f"(limit));
+    return value;
+}
+
+/**
+ * @brief Emit no code, but end the compiler's basic block here (an asm directive always starts a new block).
+ * @see LibClass173990::emit_entries in Lib (0x435840).
+ */
+static inline void ee_block_break()
+{
+    // TODO: The original's block split here came from something I haven't found; a late block merge it caused turns
+    // off fall-through delay-slot filling for the whole function. This directive reproduces the split.
+    asm __volatile__(".set noat");
 }
 
 #ifdef __cplusplus

@@ -685,6 +685,22 @@ static inline void vu0_random_seed(u32 seed)
 }
 
 /**
+ * @brief Step VU0's random number register R and read it as a float.
+ * @return Random value from 1 up to 2.
+ * @see VRNEXT in the EE Core Instruction Set Manual (VU0 macro mode); Lib's particle scripts (func_00445950,
+ *      func_0049ED80) jitter their vectors with it.
+ */
+static inline float vu0_random_next()
+{
+    float value;
+    asm __volatile__(
+        "vrnext.x  $vf31, $R\n"
+        "qmfc2.i   %0, $vf31\n"
+        : "=r"(value));
+    return value;
+}
+
+/**
  * @brief Save vf1-vf31 to a 31-quadword block.
  * @param registers Aligned block of 31 quadwords.
  * @see Lib's LibVu0StateGuard (the particle colliders at 0x43BEA0 / 0x43C0C0 keep VU0 state around their callbacks).

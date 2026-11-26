@@ -1669,11 +1669,6 @@ typedef struct LibRenderableEntryObject
     u8 unk798_2_7 : 6;
 } LibRenderableEntryObject;
 
-/** One 16-byte value, copied as a quadword. */
-typedef struct LibQuadword
-{
-    unsigned __int128 value;
-} LibQuadword;
 
 extern "C"
 {
@@ -1717,8 +1712,6 @@ extern "C"
     void func_00478F90(LibFlagState8D* object);
 
     LibFloat4* func_004790A0(LibFloat4* vector, float x, float y, float z);
-
-    LibQuadword func_004790D0(LibQuadword* destination, const LibQuadword* source);
 
     LibFloat4* func_004790E0(LibFloat4* vector, float x, float y, float z, float w);
 
@@ -6415,35 +6408,6 @@ static inline void lib_camera_follow(LibCamera* camera, LibTransform* anchor)
 {
     camera->mode = 1;
     camera->anchor = anchor;
-}
-
-/**
- * @brief Set a light list's ambient colour, clamping negative channels to zero.
- * @param lights Light list.
- * @param red Red.
- * @param green Green.
- * @param blue Blue.
- */
-static inline void lib_light_list_set_ambient(LibLightList* lights, float red, float green, float blue)
-{
-    if (red < 0.0f)
-    {
-        red = 0.0f;
-    }
-
-    if (green < 0.0f)
-    {
-        green = 0.0f;
-    }
-
-    if (blue < 0.0f)
-    {
-        blue = 0.0f;
-    }
-
-    lights->unk310.x = red;
-    lights->unk310.y = green;
-    lights->unk310.z = blue;
 }
 
 /**

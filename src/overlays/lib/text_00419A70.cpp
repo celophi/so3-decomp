@@ -3260,8 +3260,9 @@ extern "C" void func_004261E0(LibClass173070* node, LibClass173070Link* link, Li
  * @param node First node.
  * @param link Link between them.
  * @param other Second node.
+ * @param step Unused; the solver passes it to both link functions.
  */
-extern "C" void func_00426370(LibClass173070* node, LibClass173070Link* link, LibClass173070* other)
+extern "C" void func_00426370(LibClass173070* node, LibClass173070Link* link, LibClass173070* other, float step)
 {
     LibVector4 length;
 
